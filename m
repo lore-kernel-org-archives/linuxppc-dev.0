@@ -1,23 +1,32 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H5TL6zWYzF1pD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:54:43 +1000 (AEST)
-Date: Thu, 5 Apr 2018 17:54:40 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- robh@kernel.org, aik@ozlabs.ru, jasowang@redhat.com,
- joe@perches.com, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-Message-ID: <20180405175326-mutt-send-email-mst@kernel.org>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H5bX1FT2zF1qv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 01:00:06 +1000 (AEST)
+Received: by mail-ot0-x241.google.com with SMTP id 23-v6so27512466otj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 08:00:06 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+In-Reply-To: <20180405164508.7a15a770@roar.ozlabs.ibm.com>
+References: <20180404231943.29581-1-bsingharora@gmail.com>
+ <20180404231943.29581-3-bsingharora@gmail.com>
+ <20180405095755.58b3891f@roar.ozlabs.ibm.com>
+ <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
+ <20180405150405.5b902b41@roar.ozlabs.ibm.com>
+ <20180405155307.49f748f3@gmail.com>
+ <20180405164508.7a15a770@roar.ozlabs.ibm.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 5 Apr 2018 08:00:03 -0700
+Message-ID: <CAPcyv4hQDetYZaQXHoD-L+KWrMJyypvHw=xzm7tb61qt9w=a3g@mail.gmail.com>
+Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ Christoph Hellwig <hch@lst.de>, Matthew Wilcox <mawilcox@microsoft.com>, "Luck,
+ Tony" <tony.luck@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +36,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 05, 2018 at 08:09:30PM +0530, Anshuman Khandual wrote:
-> On 04/05/2018 04:26 PM, Anshuman Khandual wrote:
-> > There are certian platforms which would like to use SWIOTLB based DMA API
-> > for bouncing purpose without actually requiring an IOMMU back end. But the
-> > virtio core does not allow such mechanism. Right now DMA MAP API is only
-> > selected for devices which have an IOMMU and then the QEMU/host back end
-> > will process all incoming SG buffer addresses as IOVA instead of simple
-> > GPA which is the case for simple bounce buffers after being processed with
-> > SWIOTLB API. To enable this usage, it introduces an architecture specific
-> > function which will just make virtio core front end select DMA operations
-> > structure.
-> > 
-> > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> 
-> + "Michael S. Tsirkin" <mst@redhat.com>
+On Wed, Apr 4, 2018 at 11:45 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> On Thu, 5 Apr 2018 15:53:07 +1000
+> Balbir Singh <bsingharora@gmail.com> wrote:
+>
+>> On Thu, 5 Apr 2018 15:04:05 +1000
+>> Nicholas Piggin <npiggin@gmail.com> wrote:
+>>
+>> > On Wed, 4 Apr 2018 20:00:52 -0700
+>> > Dan Williams <dan.j.williams@intel.com> wrote:
+>> >
+>> > > [ adding Matthew, Christoph, and Tony  ]
+>> > >
+>> > > On Wed, Apr 4, 2018 at 4:57 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> > > > On Thu,  5 Apr 2018 09:19:42 +1000
+>> > > > Balbir Singh <bsingharora@gmail.com> wrote:
+>> > > >
+>> > > >> The pmem infrastructure uses memcpy_mcsafe in the pmem
+>> > > >> layer so as to convert machine check excpetions into
+>> > > >> a return value on failure in case a machine check
+>> > > >> exception is encoutered during the memcpy.
+>> > > >>
+>> > > >> This patch largely borrows from the copyuser_power7
+>> > > >> logic and does not add the VMX optimizations, largely
+>> > > >> to keep the patch simple. If needed those optimizations
+>> > > >> can be folded in.
+>> > > >
+>> > > > So memcpy_mcsafe doesn't return number of bytes copied?
+>> > > > Huh, well that makes it simple.
+>> > >
+>> > > Well, not in current kernels, but we need to add that support or
+>> > > remove the direct call to copy_to_iter() in fs/dax.c. I'm looking
+>> > > right now to add "bytes remaining" support to the x86 memcpy_mcsafe(),
+>> > > but for copy_to_user we also need to handle bytes remaining for write
+>> > > faults. That fix is hopefully something that can land in an early
+>> > > 4.17-rc, but it won't be ready for -rc1.
+>> >
+>> > I wonder if the powerpc implementation should just go straight to
+>> > counting bytes. Backporting to this interface would be trivial, but
+>> > it would just mean there's only one variant of the code to support.
+>> > That's up to Balbir though.
+>> >
+>>
+>> I'm thinking about it, I wonder what "bytes remaining" mean in pmem context
+>> in the context of a machine check exception. Also, do we want to be byte
+>> accurate or cache-line accurate for the bytes remaining? The former is much
+>> easier than the latter :)
+>
+> The ideal would be a linear measure of how much of your copy reached
+> (or can reach) non-volatile storage with nothing further copied. You
+> may have to allow for some relaxing of the semantics depending on
+> what the architecture can support.
+>
+> What's the problem with just counting bytes copied like usercopy --
+> why is that harder than cacheline accuracy?
+>
+>> I'd rather implement the existing interface and port/support the new interface
+>> as it becomes available
+>
+> Fair enough.
 
-I'm confused by this.
+I have patches already in progress to change the interface. My
+preference is to hold off on adding a new implementation that will
+need to be immediately reworked. When I say "immediate" I mean that
+should be able to post what I have for review within the next few
+days.
 
-static bool vring_use_dma_api(struct virtio_device *vdev)
-{
-        if (!virtio_has_iommu_quirk(vdev))
-                return true;
-
-
-Why doesn't setting VIRTIO_F_IOMMU_PLATFORM on the
-hypervisor side sufficient?
+Whether this is all too late for 4.17 is another question...
