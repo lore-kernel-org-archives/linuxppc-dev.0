@@ -1,10 +1,10 @@
 Return-Path: <Yuri.Norov@cavium.com>
 Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0075.outbound.protection.outlook.com [104.47.36.75])
+ (mail-sn1nam02on0058.outbound.protection.outlook.com [104.47.36.58])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H8h32lrtzF1vV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 03:19:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H8hL6QHdzF1sY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 03:19:30 +1000 (AEST)
 From: Yury Norov <ynorov@caviumnetworks.com>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>,
@@ -22,9 +22,9 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
 Cc: Yury Norov <ynorov@caviumnetworks.com>,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] arm64: early ISB at exit from extended quiescent state
-Date: Thu,  5 Apr 2018 20:17:58 +0300
-Message-Id: <20180405171800.5648-4-ynorov@caviumnetworks.com>
+Subject: [PATCH 4/5] rcu: arm64: add rcu_dynticks_eqs_exit_sync()
+Date: Thu,  5 Apr 2018 20:17:59 +0300
+Message-Id: <20180405171800.5648-5-ynorov@caviumnetworks.com>
 In-Reply-To: <20180405171800.5648-1-ynorov@caviumnetworks.com>
 References: <20180405171800.5648-1-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
@@ -38,86 +38,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series enables delaying of kernel memory synchronization
-for CPUs running in extended quiescent state (EQS) till the exit
-of that state.
+The following patch of the series enables delaying of kernel memory
+synchronization for CPUs running in extended quiescent state (EQS)
+till the exit of that state.
 
-ARM64 uses IPI mechanism to notify all cores in  SMP system that
-kernel text is changed; and IPI handler calls isb() to synchronize.
+In previous patch ISB was added in EQS exit path to ensure that
+any change made by kernel patching framework is visible. But after
+that isb(), EQS is still enabled for a while, and there's a chance
+that some other core will modify text in parallel, and EQS core
+will be not notified about it, as EQS will mask IPI:
 
-If we don't deliver IPI to EQS CPUs anymore, we should add ISB early
-in EQS exit path.
+CPU0                            CPU1
 
-There are 2 such paths. One starts in do_idle() loop, and other
-in el0_svc entry. For do_idle(), isb() is added in
-arch_cpu_idle_exit() hook. And for SVC handler, isb is called in
-el0_svc_naked.
+ISB
+				patch_some_text()
+				kick_all_active_cpus_sync()
+exit EQS
 
-Suggested-by: Will Deacon <will.deacon@arm.com>
+// not synchronized!
+use_of_patched_text()
+
+This patch introduces rcu_dynticks_eqs_exit_sync() function and uses
+it in arm64 code to call ipi() after the exit from quiescent state.
+
+Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
 ---
- arch/arm64/kernel/entry.S   | 16 +++++++++++++++-
- arch/arm64/kernel/process.c |  7 +++++++
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ arch/arm64/kernel/Makefile | 2 ++
+ arch/arm64/kernel/rcu.c    | 8 ++++++++
+ kernel/rcu/tree.c          | 4 ++++
+ 3 files changed, 14 insertions(+)
+ create mode 100644 arch/arm64/kernel/rcu.c
 
-diff --git a/arch/arm64/kernel/entry.S b/arch/arm64/kernel/entry.S
-index c8d9ec363ddd..b1e1c19b4432 100644
---- a/arch/arm64/kernel/entry.S
-+++ b/arch/arm64/kernel/entry.S
-@@ -48,7 +48,7 @@
- 	.endm
+diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
+index 9b55a3f24be7..c87a203524ab 100644
+--- a/arch/arm64/kernel/Makefile
++++ b/arch/arm64/kernel/Makefile
+@@ -54,6 +54,8 @@ arm64-obj-$(CONFIG_ARM64_RELOC_TEST)	+= arm64-reloc-test.o
+ arm64-reloc-test-y := reloc_test_core.o reloc_test_syms.o
+ arm64-obj-$(CONFIG_CRASH_DUMP)		+= crash_dump.o
+ arm64-obj-$(CONFIG_ARM_SDE_INTERFACE)	+= sdei.o
++arm64-obj-$(CONFIG_TREE_RCU)		+= rcu.o
++arm64-obj-$(CONFIG_PREEMPT_RCU)		+= rcu.o
  
- 	.macro el0_svc_restore_syscall_args
--#if defined(CONFIG_CONTEXT_TRACKING)
-+#if !defined(CONFIG_TINY_RCU) || defined(CONFIG_CONTEXT_TRACKING)
- 	restore_syscall_args
- #endif
- 	.endm
-@@ -483,6 +483,19 @@ __bad_stack:
- 	ASM_BUG()
- 	.endm
+ arm64-obj-$(CONFIG_KVM_INDIRECT_VECTORS)+= bpi.o
  
-+/*
-+ * If CPU is in extended quiescent state we need isb to ensure that
-+ * possible change of kernel text is visible by the core.
-+ */
-+	.macro	isb_if_eqs
-+#ifndef CONFIG_TINY_RCU
-+	bl	rcu_is_watching
-+	cbnz	x0, 1f
-+	isb 					// pairs with aarch64_insn_patch_text
-+1:
-+#endif
-+	.endm
+diff --git a/arch/arm64/kernel/rcu.c b/arch/arm64/kernel/rcu.c
+new file mode 100644
+index 000000000000..67fe33c0ea03
+--- /dev/null
++++ b/arch/arm64/kernel/rcu.c
+@@ -0,0 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0
 +
- el0_sync_invalid:
- 	inv_entry 0, BAD_SYNC
- ENDPROC(el0_sync_invalid)
-@@ -949,6 +962,7 @@ alternative_else_nop_endif
- 
- el0_svc_naked:					// compat entry point
- 	stp	x0, xscno, [sp, #S_ORIG_X0]	// save the original x0 and syscall number
-+	isb_if_eqs
- 	enable_daif
- 	ct_user_exit
- 	el0_svc_restore_syscall_args
-diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-index f08a2ed9db0d..74cad496b07b 100644
---- a/arch/arm64/kernel/process.c
-+++ b/arch/arm64/kernel/process.c
-@@ -88,6 +88,13 @@ void arch_cpu_idle(void)
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
- }
- 
-+void arch_cpu_idle_exit(void)
++#include <asm/barrier.h>
++
++void rcu_dynticks_eqs_exit_sync(void)
 +{
-+	/* Pairs with aarch64_insn_patch_text() for EQS CPUs. */
-+	if (!rcu_is_watching())
-+		isb();
-+}
++	isb();
++};
+diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
+index 2a734692a581..363f91776b66 100644
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -264,6 +264,8 @@ void rcu_bh_qs(void)
+ #define rcu_eqs_special_exit() do { } while (0)
+ #endif
+ 
++void __weak rcu_dynticks_eqs_exit_sync(void) {};
 +
- #ifdef CONFIG_HOTPLUG_CPU
- void arch_cpu_idle_dead(void)
- {
+ static DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
+ 	.dynticks_nesting = 1,
+ 	.dynticks_nmi_nesting = DYNTICK_IRQ_NONIDLE,
+@@ -308,6 +310,8 @@ static void rcu_dynticks_eqs_exit(void)
+ 	 * critical section.
+ 	 */
+ 	seq = atomic_add_return(RCU_DYNTICK_CTRL_CTR, &rdtp->dynticks);
++	rcu_dynticks_eqs_exit_sync();
++
+ 	WARN_ON_ONCE(IS_ENABLED(CONFIG_RCU_EQS_DEBUG) &&
+ 		     !(seq & RCU_DYNTICK_CTRL_CTR));
+ 	if (seq & RCU_DYNTICK_CTRL_MASK) {
 -- 
 2.14.1
