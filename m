@@ -1,29 +1,49 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=np1p=g2=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Gqwb5fLSzF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 14:43:59 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id g20-v6so17481036plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 21:43:59 -0700 (PDT)
-Date: Thu, 5 Apr 2018 14:43:48 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Oliver <oohall@gmail.com>, Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-nvdimm
- <linux-nvdimm@lists.01.org>
-Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
-Message-ID: <20180405144348.141fd93f@gmail.com>
-In-Reply-To: <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
-References: <20180403142415.30083-1-oohall@gmail.com>
- <20180403142415.30083-3-oohall@gmail.com>
- <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
- <20180404220750.0436bbe1@gmail.com>
- <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
- <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Gr4H5DsmzDqZH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 14:50:39 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40Gr4H4bccz8sw1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 14:50:39 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40Gr4H13RFz9s0n
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2018 14:50:38 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w354nOfW025929
+ for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2018 00:50:37 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h57g0anu7-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 05 Apr 2018 00:50:36 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 5 Apr 2018 05:50:30 +0100
+Subject: Re: [PATCH v3 1/7] powerpc/fadump: Move the metadata region to start
+ of the reserved area.
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Ananth Narayan <ananth@in.ibm.com>, kernelfans@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <152265046485.23251.1392824827444770657.stgit@jupiter.in.ibm.com>
+ <152265058069.23251.1496677151481459154.stgit@jupiter.in.ibm.com>
+ <f5a8a0f8-0b97-ac3e-dd4b-4796d6976725@linux.vnet.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 5 Apr 2018 10:20:24 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <f5a8a0f8-0b97-ac3e-dd4b-4796d6976725@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <46bbc86a-d3c2-ad13-e17d-3e613c085e21@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,68 +53,284 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 4 Apr 2018 07:21:32 -0700
-Dan Williams <dan.j.williams@intel.com> wrote:
+On 04/04/2018 12:56 AM, Hari Bathini wrote:
+> Mahesh, I think we should explicitly document that production and
+> capture kernel
+> versions should be same. For changes like below, older/newer production
+> kernel vs
+> capture kernel is bound to fail. Of course, production and capture
+> kernel versions
+> would be the same case usually but for the uninitiated, mentioning that
+> explicitly
+> in documentation would help..?
 
-> On Wed, Apr 4, 2018 at 7:04 AM, Oliver <oohall@gmail.com> wrote:
-> > On Wed, Apr 4, 2018 at 10:07 PM, Balbir Singh <bsingharora@gmail.com> wrote:  
-> >> On Tue, 3 Apr 2018 10:37:51 -0700
-> >> Dan Williams <dan.j.williams@intel.com> wrote:
-> >>  
-> >>> On Tue, Apr 3, 2018 at 7:24 AM, Oliver O'Halloran <oohall@gmail.com> wrote:  
-> >>> > Add device-tree binding documentation for the nvdimm region driver.
-> >>> >
-> >>> > Cc: devicetree@vger.kernel.org
-> >>> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
-> >>> > ---
-> >>> > v2: Changed name from nvdimm-region to pmem-region.
-> >>> >     Cleaned up the example binding and fixed the overlapping regions.
-> >>> >     Added support for multiple regions in a single reg.
-> >>> > ---
-> >>> >  .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
-> >>> >  MAINTAINERS                                        |  1 +
-> >>> >  2 files changed, 81 insertions(+)
-> >>> >  create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt  
-> >>>
-> >>> Device-tree folks, does this look, ok?
-> >>>
-> >>> Oliver, is there any concept of a management interface to the
-> >>> device(s) backing these regions? libnvdimm calls these "nmem" devices
-> >>> and support operations like health status and namespace label
-> >>> management.  
-> >
-> > It's something I'm planning on implementing as soon as someone gives
-> > me some hardware that isn't hacked up lab crap. I'm posting this
-> > version with just regions since people have been asking for something
-> > in upstream even if it's not fully featured.
-> >
-> > Grumbling aside, the plan is to have separate drivers for the DIMM
-> > type. Discovering DIMM devices happens via the normal discovery
-> > mechanisms (e.g. an NVDIMM supporting the JEDEC interface is an I2C
-> > device) and when binding to a specific DIMM device it registers a DIMM
-> > descriptor structure and a ndctl implementation for that DIMM type
-> > with of_pmem. When of_pmem binds to a region it can plug everything
-> > into the region specific bus. There's a few details to work out, but I
-> > think it's a reasonable approach.  
-> 
-> Yeah, that sounds reasonable. It would mean that your management
-> interface would need to understand that nmems on different buses could
-> potentially move to another bus after a reconfiguration, but that's
-> not too much different than the ACPI case where nmems can join and
-> leave regions after a reset / reconfig.
-> 
-> >> We would need a way to have nmem and pmem-regions find each other. Since we
-> >> don't have the ACPI abstractions, the nmem region would need to add the
-> >> ability for a driver to have a phandle to the interleaving and nmem properties.
-> >>
-> >> I guess that would be a separate driver, that would manage the nmem devices
-> >> and there would be a way to relate the pmem and nmems. Oliver?  
-> >
-> > Yes, that's the plan.  
-> 
-> So Balbir, is that enough for an Acked-by for this device-tree proposal?
+Yeah we could do that. In ideal case production and capture kernel will
+be same. But yes, there can be cases where we may end up in older/newer
+kernel scenario. My earlier versions had backward compatibility which I
+broke in v3. I can fix that in v4. Thanks for catching it. Will also
+update documentation mentioning working kernel combinations.
 
-I don't see any major problems with the binding, but I think Oliver wanted
-to send in a few clarifications based on a private discussion.
+Thanks,
+-Mahesh.
 
-Balbir Singh.
+> 
+> Thanks
+> Hari
+> 
+> 
+> On Monday 02 April 2018 11:59 AM, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Currently the metadata region that holds crash info structure and ELF
+>> core
+>> header is placed towards the end of reserved memory area. This patch
+>> places
+>> it at the beginning of the reserved memory area.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/fadump.h |    4 ++
+>>   arch/powerpc/kernel/fadump.c      |   92
+>> ++++++++++++++++++++++++++++++++-----
+>>   2 files changed, 83 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/fadump.h
+>> b/arch/powerpc/include/asm/fadump.h
+>> index 5a23010af600..44b6ebfe9be6 100644
+>> --- a/arch/powerpc/include/asm/fadump.h
+>> +++ b/arch/powerpc/include/asm/fadump.h
+>> @@ -61,6 +61,9 @@
+>>   #define FADUMP_UNREGISTER    2
+>>   #define FADUMP_INVALIDATE    3
+>>
+>> +/* Number of dump sections requested by kernel */
+>> +#define FADUMP_NUM_SECTIONS    4
+>> +
+>>   /* Dump status flag */
+>>   #define FADUMP_ERROR_FLAG    0x2000
+>>
+>> @@ -119,6 +122,7 @@ struct fadump_mem_struct {
+>>       struct fadump_section        cpu_state_data;
+>>       struct fadump_section        hpte_region;
+>>       struct fadump_section        rmr_region;
+>> +    struct fadump_section        metadata_region;
+>>   };
+>>
+>>   /* Firmware-assisted dump configuration details. */
+>> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+>> index 3c2c2688918f..80552fd7d5f8 100644
+>> --- a/arch/powerpc/kernel/fadump.c
+>> +++ b/arch/powerpc/kernel/fadump.c
+>> @@ -188,17 +188,48 @@ static void fadump_show_config(void)
+>>       pr_debug("Boot memory size  : %lx\n", fw_dump.boot_memory_size);
+>>   }
+>>
+>> +static unsigned long get_fadump_metadata_size(void)
+>> +{
+>> +    unsigned long size = 0;
+>> +
+>> +    /*
+>> +     * If fadump is active then look into fdm_active to get metadata
+>> +     * size set by previous kernel.
+>> +     */
+>> +    if (fw_dump.dump_active) {
+>> +        size = fdm_active->cpu_state_data.destination_address -
+>> +                fdm_active->metadata_region.source_address;
+>> +        goto out;
+>> +    }
+>> +    size += sizeof(struct fadump_crash_info_header);
+>> +    size += sizeof(struct elfhdr); /* ELF core header.*/
+>> +    size += sizeof(struct elf_phdr); /* place holder for cpu notes */
+>> +    /* Program headers for crash memory regions. */
+>> +    size += sizeof(struct elf_phdr) * (memblock_num_regions(memory) +
+>> 2);
+>> +
+>> +    size = PAGE_ALIGN(size);
+>> +out:
+>> +    pr_debug("fadump Metadata size is %ld\n", size);
+>> +    return size;
+>> +}
+>> +
+>>   static unsigned long init_fadump_mem_struct(struct fadump_mem_struct
+>> *fdm,
+>>                   unsigned long addr)
+>>   {
+>> +    uint16_t num_sections = 0;
+>> +    unsigned long metadata_base = 0;
+>> +
+>>       if (!fdm)
+>>           return 0;
+>>
+>> +    /* Skip the fadump metadata area. */
+>> +    metadata_base = addr;
+>> +    addr += get_fadump_metadata_size();
+>> +
+>>       memset(fdm, 0, sizeof(struct fadump_mem_struct));
+>>       addr = addr & PAGE_MASK;
+>>
+>>       fdm->header.dump_format_version = cpu_to_be32(0x00000001);
+>> -    fdm->header.dump_num_sections = cpu_to_be16(3);
+>>       fdm->header.dump_status_flag = 0;
+>>       fdm->header.offset_first_dump_section =
+>>           cpu_to_be32((u32)offsetof(struct fadump_mem_struct,
+>> cpu_state_data));
+>> @@ -222,6 +253,7 @@ static unsigned long init_fadump_mem_struct(struct
+>> fadump_mem_struct *fdm,
+>>       fdm->cpu_state_data.source_address = 0;
+>>       fdm->cpu_state_data.source_len =
+>> cpu_to_be64(fw_dump.cpu_state_data_size);
+>>       fdm->cpu_state_data.destination_address = cpu_to_be64(addr);
+>> +    num_sections++;
+>>       addr += fw_dump.cpu_state_data_size;
+>>
+>>       /* hpte region section */
+>> @@ -230,6 +262,7 @@ static unsigned long init_fadump_mem_struct(struct
+>> fadump_mem_struct *fdm,
+>>       fdm->hpte_region.source_address = 0;
+>>       fdm->hpte_region.source_len =
+>> cpu_to_be64(fw_dump.hpte_region_size);
+>>       fdm->hpte_region.destination_address = cpu_to_be64(addr);
+>> +    num_sections++;
+>>       addr += fw_dump.hpte_region_size;
+>>
+>>       /* RMA region section */
+>> @@ -238,8 +271,25 @@ static unsigned long
+>> init_fadump_mem_struct(struct fadump_mem_struct *fdm,
+>>       fdm->rmr_region.source_address = cpu_to_be64(RMA_START);
+>>       fdm->rmr_region.source_len = cpu_to_be64(fw_dump.boot_memory_size);
+>>       fdm->rmr_region.destination_address = cpu_to_be64(addr);
+>> +    num_sections++;
+>>       addr += fw_dump.boot_memory_size;
+>>
+>> +    /*
+>> +     * fadump metadata section.
+>> +     * Add an entry with source len a zero. We are only intereseted in
+>> +     * source address which will help us to detect the location of
+>> +     * metadata area where faump header and elf core header is placed.
+>> +     */
+>> +    fdm->metadata_region.request_flag =
+>> cpu_to_be32(FADUMP_REQUEST_FLAG);
+>> +    fdm->metadata_region.source_data_type =
+>> +                    cpu_to_be16(FADUMP_REAL_MODE_REGION);
+>> +    fdm->metadata_region.source_address = cpu_to_be64(metadata_base);
+>> +    fdm->metadata_region.source_len = 0;
+>> +    fdm->metadata_region.destination_address = cpu_to_be64(addr);
+>> +    num_sections++;
+>> +
+>> +    fdm->header.dump_num_sections = cpu_to_be16(num_sections);
+>> +    BUILD_BUG_ON(num_sections != FADUMP_NUM_SECTIONS);
+>>       return addr;
+>>   }
+>>
+>> @@ -325,16 +375,17 @@ static unsigned long get_fadump_area_size(void)
+>>       size += fw_dump.cpu_state_data_size;
+>>       size += fw_dump.hpte_region_size;
+>>       size += fw_dump.boot_memory_size;
+>> -    size += sizeof(struct fadump_crash_info_header);
+>> -    size += sizeof(struct elfhdr); /* ELF core header.*/
+>> -    size += sizeof(struct elf_phdr); /* place holder for cpu notes */
+>> -    /* Program headers for crash memory regions. */
+>> -    size += sizeof(struct elf_phdr) * (memblock_num_regions(memory) +
+>> 2);
+>> -
+>> +    size += get_fadump_metadata_size();
+>>       size = PAGE_ALIGN(size);
+>>       return size;
+>>   }
+>>
+>> +static inline unsigned long get_fadump_metadata_base(
+>> +            const struct fadump_mem_struct *fdm)
+>> +{
+>> +    return be64_to_cpu(fdm->metadata_region.source_address);
+>> +}
+>> +
+>>   int __init fadump_reserve_mem(void)
+>>   {
+>>       unsigned long base, size, memory_boundary;
+>> @@ -395,9 +446,9 @@ int __init fadump_reserve_mem(void)
+>>                   (unsigned long)(size >> 20),
+>>                   (unsigned long)(base >> 20));
+>>
+>> -        fw_dump.fadumphdr_addr =
+>> -               
+>> be64_to_cpu(fdm_active->rmr_region.destination_address) +
+>> -                be64_to_cpu(fdm_active->rmr_region.source_len);
+>> +        pr_info("Number of kernel Dump sections: %d\n",
+>> +            be16_to_cpu(fdm_active->header.dump_num_sections));
+>> +        fw_dump.fadumphdr_addr = get_fadump_metadata_base(fdm_active);
+>>           pr_debug("fadumphdr_addr = %p\n",
+>>                   (void *) fw_dump.fadumphdr_addr);
+>>       } else {
+>> @@ -803,14 +854,24 @@ static int __init fadump_build_cpu_notes(const
+>> struct fadump_mem_struct *fdm)
+>>   static int __init process_fadump(const struct fadump_mem_struct
+>> *fdm_active)
+>>   {
+>>       struct fadump_crash_info_header *fdh;
+>> +    uint16_t num_sections = 0;
+>>       int rc = 0;
+>>
+>>       if (!fdm_active || !fw_dump.fadumphdr_addr)
+>>           return -EINVAL;
+>>
+>> +    /* Check if platform has honored all 4 dump sections requested. */
+>> +    num_sections = be16_to_cpu(fdm_active->header.dump_num_sections);
+>> +    if (num_sections < FADUMP_NUM_SECTIONS) {
+>> +        printk(KERN_ERR "Dump taken by platform does not "
+>> +                "contain all requested sections\n");
+>> +        return -EINVAL;
+>> +    }
+>> +
+>>       /* Check if the dump data is valid. */
+>>       if ((be16_to_cpu(fdm_active->header.dump_status_flag) ==
+>> FADUMP_ERROR_FLAG) ||
+>>               (fdm_active->cpu_state_data.error_flags != 0) ||
+>> +            (fdm_active->metadata_region.error_flags != 0) ||
+>>               (fdm_active->rmr_region.error_flags != 0)) {
+>>           printk(KERN_ERR "Dump taken by platform is not valid\n");
+>>           return -EINVAL;
+>> @@ -821,6 +882,11 @@ static int __init process_fadump(const struct
+>> fadump_mem_struct *fdm_active)
+>>           printk(KERN_ERR "Dump taken by platform is incomplete\n");
+>>           return -EINVAL;
+>>       }
+>> +    if ((fdm_active->metadata_region.bytes_dumped !=
+>> +            fdm_active->metadata_region.source_len)) {
+>> +        printk(KERN_ERR "Dump taken by platform is incomplete\n");
+>> +        return -EINVAL;
+>> +    }
+>>
+>>       /* Validate the fadump crash info header */
+>>       fdh = __va(fw_dump.fadumphdr_addr);
+>> @@ -1082,7 +1148,7 @@ static int register_fadump(void)
+>>
+>>       fadump_setup_crash_memory_ranges();
+>>
+>> -    addr = be64_to_cpu(fdm.rmr_region.destination_address) +
+>> be64_to_cpu(fdm.rmr_region.source_len);
+>> +    addr = get_fadump_metadata_base(&fdm);
+>>       /* Initialize fadump crash info header. */
+>>       addr = init_fadump_header(addr);
+>>       vaddr = __va(addr);
+>> @@ -1153,7 +1219,7 @@ void fadump_cleanup(void)
+>>       /* Invalidate the registration only if dump is active. */
+>>       if (fw_dump.dump_active) {
+>>           init_fadump_mem_struct(&fdm,
+>> -           
+>> be64_to_cpu(fdm_active->cpu_state_data.destination_address));
+>> +                get_fadump_metadata_base(fdm_active));
+>>           fadump_invalidate_dump(&fdm);
+>>       }
+>>   }
+>> @@ -1236,7 +1302,7 @@ static void fadump_invalidate_release_mem(void)
+>>           return;
+>>       }
+>>
+>> -    destination_address =
+>> be64_to_cpu(fdm_active->cpu_state_data.destination_address);
+>> +    destination_address = get_fadump_metadata_base(fdm_active);
+>>       fadump_cleanup();
+>>       mutex_unlock(&fadump_mutex);
+>>
+>>
+> 
