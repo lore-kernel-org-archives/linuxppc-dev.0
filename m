@@ -1,26 +1,27 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HBMQ3SF7zF1Wm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 04:34:58 +1000 (AEST)
-Date: Thu, 5 Apr 2018 21:34:54 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, robh@kernel.org, aik@ozlabs.ru,
- jasowang@redhat.com, joe@perches.com, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-Message-ID: <20180405213042-mutt-send-email-mst@kernel.org>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
- <20180405175326-mutt-send-email-mst@kernel.org>
- <1522940983.21446.205.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HDrc5MQKzF1xm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 06:26:56 +1000 (AEST)
+Received: by mail-wr0-x242.google.com with SMTP id 80so30503639wrb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 13:26:56 -0700 (PDT)
+Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH v4 03/19] powerpc: Mark variable `l` as unused, remove `path`
+Date: Thu,  5 Apr 2018 22:26:48 +0200
+Message-Id: <20180405202648.2836-1-malat@debian.org>
+In-Reply-To: <20180322202007.23088-4-malat@debian.org>
+References: <20180322202007.23088-4-malat@debian.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1522940983.21446.205.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 06, 2018 at 01:09:43AM +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-04-05 at 17:54 +0300, Michael S. Tsirkin wrote:
-> > On Thu, Apr 05, 2018 at 08:09:30PM +0530, Anshuman Khandual wrote:
-> > > On 04/05/2018 04:26 PM, Anshuman Khandual wrote:
-> > > > There are certian platforms which would like to use SWIOTLB based DMA API
-> > > > for bouncing purpose without actually requiring an IOMMU back end. But the
-> > > > virtio core does not allow such mechanism. Right now DMA MAP API is only
-> > > > selected for devices which have an IOMMU and then the QEMU/host back end
-> > > > will process all incoming SG buffer addresses as IOVA instead of simple
-> > > > GPA which is the case for simple bounce buffers after being processed with
-> > > > SWIOTLB API. To enable this usage, it introduces an architecture specific
-> > > > function which will just make virtio core front end select DMA operations
-> > > > structure.
-> > > > 
-> > > > Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> > > 
-> > > + "Michael S. Tsirkin" <mst@redhat.com>
-> > 
-> > I'm confused by this.
-> > 
-> > static bool vring_use_dma_api(struct virtio_device *vdev)
-> > {
-> >         if (!virtio_has_iommu_quirk(vdev))
-> >                 return true;
-> > 
-> > 
-> > Why doesn't setting VIRTIO_F_IOMMU_PLATFORM on the
-> > hypervisor side sufficient?
-> 
-> In this specific case, because that would make qemu expect an iommu,
-> and there isn't one.
+Add gcc attribute unused for `l` variable, replace `path` variable directly
+with prom_scratch. Fix warnings treated as errors with W=1:
 
+  arch/powerpc/kernel/prom_init.c:607:6: error: variable ‘l’ set but not used [-Werror=unused-but-set-variable]
+  arch/powerpc/kernel/prom_init.c:1388:8: error: variable ‘path’ set but not used [-Werror=unused-but-set-variable]
 
-I think that you can set iommu_platform in qemu without an iommu.
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+v4: redo v3 since path variable can be avoided
+v3: really move path within ifdef DEBUG_PROM
+v2: move path within ifdef DEBUG_PROM
 
+ arch/powerpc/kernel/prom_init.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-> Anshuman, you need to provide more background here. I don't have time
-> right now it's late, but explain about the fact that this is for a
-> specific type of secure VM which has only a limited pool of (insecure)
-> memory that can be shared with qemu, so all IOs need to bounce via that
-> pool, which can be achieved by using swiotlb.
-> 
-> Note: this isn't urgent, we can discuss alternative approaches, this is
-> just to start the conversation.
-> 
-> Cheers,
-> Ben.
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index f8a9a50ff9b5..4b223a9470be 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -604,7 +604,7 @@ static void __init early_cmdline_parse(void)
+ 	const char *opt;
+ 
+ 	char *p;
+-	int l = 0;
++	int l __maybe_unused = 0;
+ 
+ 	prom_cmd_line[0] = 0;
+ 	p = prom_cmd_line;
+@@ -1386,7 +1386,7 @@ static void __init reserve_mem(u64 base, u64 size)
+ static void __init prom_init_mem(void)
+ {
+ 	phandle node;
+-	char *path, type[64];
++	char type[64];
+ 	unsigned int plen;
+ 	cell_t *p, *endp;
+ 	__be32 val;
+@@ -1407,7 +1407,6 @@ static void __init prom_init_mem(void)
+ 	prom_debug("root_size_cells: %x\n", rsc);
+ 
+ 	prom_debug("scanning memory:\n");
+-	path = prom_scratch;
+ 
+ 	for (node = 0; prom_next_node(&node); ) {
+ 		type[0] = 0;
+@@ -1432,9 +1431,9 @@ static void __init prom_init_mem(void)
+ 		endp = p + (plen / sizeof(cell_t));
+ 
+ #ifdef DEBUG_PROM
+-		memset(path, 0, PROM_SCRATCH_SIZE);
+-		call_prom("package-to-path", 3, 1, node, path, PROM_SCRATCH_SIZE-1);
+-		prom_debug("  node %s :\n", path);
++		memset(prom_scratch, 0, PROM_SCRATCH_SIZE);
++		call_prom("package-to-path", 3, 1, node, prom_scratch, PROM_SCRATCH_SIZE - 1);
++		prom_debug("  node %s :\n", prom_scratch);
+ #endif /* DEBUG_PROM */
+ 
+ 		while ((endp - p) >= (rac + rsc)) {
+-- 
+2.11.0
