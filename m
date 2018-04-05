@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40GsZ86Z7zzF1w6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 15:58:08 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id bj1-v6so15266680plb.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 22:58:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40GsZC41vPzF1wB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 15:58:11 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id v5-v6so15719610plo.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 22:58:11 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Ram Pai <linuxram@us.ibm.com>
-Subject: [PATCH 1/2] powerpc/64s: Fix pkey support in dt_cpu_ftrs,
- add CPU_FTR_PKEY bit
-Date: Thu,  5 Apr 2018 15:57:54 +1000
-Message-Id: <20180405055755.30090-2-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 2/2] powerpc/64s: Fix POWER9 DD2.2 and above in cputable
+ features
+Date: Thu,  5 Apr 2018 15:57:55 +1000
+Message-Id: <20180405055755.30090-3-npiggin@gmail.com>
 In-Reply-To: <20180405055755.30090-1-npiggin@gmail.com>
 References: <20180405055755.30090-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,37 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pkey code added a CPU_FTR_PKEY bit, but did not add it to the
-dt_cpu_ftrs feature set. Although capability is supported by all
-processors in the base dt_cpu_ftrs set for 64s, it's a significant
-and sufficiently well defined feature to make it optional. So add
-it as a quirk for now, which can be versioned out then controlled
-by the firmware (once dt_cpu_ftrs gains versioning support).
+The CPU_FTR_POWER9_DD2_1 flag is intended to be set for DD2.1 and
+above (which is what the dt_cpu_ftrs setup does). Fix cputable for
+DD2.2 to match.
 
-Fixes: cf43d3b264 ("powerpc: Enable pkey subsystem ")
-Cc: Ram Pai <linuxram@us.ibm.com>
+This came about due to patches b5af4f279323 ("powerpc: Add CPU feature
+bits for TM bug workarounds on POWER9 v2.2"), and 9e9626ed3a4a
+("powerpc/64s: Fix POWER9 DD2.2 and above in DT CPU features") being
+in-flight at once. The latter patch fixed dt_cpu_ftrs like this one
+does. The former changed cputable to match dt_cpu_ftrs.
+
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/dt_cpu_ftrs.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/powerpc/include/asm/cputable.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index ed7605d8fd2d..e88fbb1fdb8f 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -729,6 +729,13 @@ static __init void cpufeatures_cpu_quirks(void)
- 		cur_cpu_spec->cpu_features &= ~(CPU_FTR_DAWR);
- 		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TLBIE_BUG;
- 	}
-+
-+	/*
-+	 * PKEY was not in the initial base or feature node
-+	 * specification, but it should become optional in the next
-+	 * cpu feature version sequence.
-+	 */
-+	cur_cpu_spec->cpu_features |= CPU_FTR_PKEY;
- }
- 
- static void __init cpufeatures_setup_finished(void)
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 4e332f3531c5..931dda8be87c 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -467,7 +467,8 @@ static inline void cpu_feature_keys_init(void) { }
+ 			     (~CPU_FTR_SAO))
+ #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
+ #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
+-#define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_P9_TM_HV_ASSIST | \
++#define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1 | \
++			       CPU_FTR_P9_TM_HV_ASSIST | \
+ 			       CPU_FTR_P9_TM_XER_SO_BUG)
+ #define CPU_FTRS_CELL	(CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
 -- 
 2.16.3
