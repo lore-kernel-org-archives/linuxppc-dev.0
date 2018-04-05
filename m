@@ -1,21 +1,29 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
+Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
+ [IPv6:2607:f8b0:400c:c08::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H0XW3lYxzF1pr
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 21:12:11 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id x77so23867009ioi.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 04:12:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H0bG717pzF1qH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 21:14:34 +1000 (AEST)
+Received: by mail-ua0-x244.google.com with SMTP id u4so15186840uaf.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 04:14:34 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
 From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [RFC 2/2] powerpc/mm/memtrace: Let the arch hotunplug code flush cache
-Date: Thu,  5 Apr 2018 21:11:53 +1000
-Message-Id: <20180405111153.907-2-bsingharora@gmail.com>
-In-Reply-To: <20180405111153.907-1-bsingharora@gmail.com>
-References: <20180405111153.907-1-bsingharora@gmail.com>
+Date: Thu, 5 Apr 2018 21:14:32 +1000
+Message-ID: <CAKTCnz=3b56bGKrqCcZOwBsu0yngS_Rw-9TieNLyHgix4eZrAQ@mail.gmail.com>
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: virtualization@lists.linux-foundation.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, robh@kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Joe Perches <joe@perches.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Markus Elfring <elfring@users.sourceforge.net>,
+ David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Don't do this via custom code, instead now that we have support
-in the arch hotplug/hotunplug code, rely on those routines
-to do the right thing.
+On Thu, Apr 5, 2018 at 8:56 PM, Anshuman Khandual
+<khandual@linux.vnet.ibm.com> wrote:
+> There are certian platforms which would like to use SWIOTLB based DMA API
+> for bouncing purpose without actually requiring an IOMMU back end. But the
+> virtio core does not allow such mechanism. Right now DMA MAP API is only
+> selected for devices which have an IOMMU and then the QEMU/host back end
+> will process all incoming SG buffer addresses as IOVA instead of simple
+> GPA which is the case for simple bounce buffers after being processed with
+> SWIOTLB API. To enable this usage, it introduces an architecture specific
+> function which will just make virtio core front end select DMA operations
+> structure.
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> This RFC is just to get some feedback. Please ignore the function call
+> back into the architecture. It can be worked out properly later on. But
+> the question is can we have virtio devices in the guest which would like
+> to use SWIOTLB based (or any custom DMA API based) bounce buffering with
+> out actually being an IOMMU devices emulated by QEMU/host as been with
+> the current VIRTIO_F_IOMMU_PLATFORM virtio flag ?
+>
+>  arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
+>  drivers/virtio/virtio_ring.c           | 4 ++++
+>  include/linux/virtio.h                 | 2 ++
+>  3 files changed, 12 insertions(+)
+>
+> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> index 06f02960b439..dd15fbddbe89 100644
+> --- a/arch/powerpc/platforms/pseries/iommu.c
+> +++ b/arch/powerpc/platforms/pseries/iommu.c
+> @@ -1396,3 +1396,9 @@ static int __init disable_multitce(char *str)
+>  __setup("multitce=", disable_multitce);
+>
+>  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+> +
+> +bool is_virtio_dma_platform(void)
+> +{
+> +       return true;
+> +}
+> +EXPORT_SYMBOL(is_virtio_dma_platform);
+> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> index 71458f493cf8..9f205a79d378 100644
+> --- a/drivers/virtio/virtio_ring.c
+> +++ b/drivers/virtio/virtio_ring.c
+> @@ -144,6 +144,10 @@ struct vring_virtqueue {
+>
+>  static bool vring_use_dma_api(struct virtio_device *vdev)
+>  {
+> +       /* Use DMA API even for virtio devices without an IOMMU */
+> +       if (is_virtio_dma_platform())
+> +               return true;
+> +
+>         if (!virtio_has_iommu_quirk(vdev))
+>                 return true;
+>
+> diff --git a/include/linux/virtio.h b/include/linux/virtio.h
+> index 988c7355bc22..d8bb83d753ea 100644
+> --- a/include/linux/virtio.h
+> +++ b/include/linux/virtio.h
+> @@ -200,6 +200,8 @@ static inline struct virtio_driver *drv_to_virtio(struct device_driver *drv)
+>  int register_virtio_driver(struct virtio_driver *drv);
+>  void unregister_virtio_driver(struct virtio_driver *drv);
+>
+> +extern bool is_virtio_dma_platform(void);
+> +
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/platforms/powernv/memtrace.c | 17 -----------------
- 1 file changed, 17 deletions(-)
+Where is the default implementation for non-pseries platforms? Will they compile
+after these changes?
 
-diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index de470caf0784..fc222a0c2ac4 100644
---- a/arch/powerpc/platforms/powernv/memtrace.c
-+++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -82,19 +82,6 @@ static const struct file_operations memtrace_fops = {
- 	.open	= simple_open,
- };
- 
--static void flush_memory_region(u64 base, u64 size)
--{
--	unsigned long line_size = ppc64_caches.l1d.size;
--	u64 end = base + size;
--	u64 addr;
--
--	base = round_down(base, line_size);
--	end = round_up(end, line_size);
--
--	for (addr = base; addr < end; addr += line_size)
--		asm volatile("dcbf 0,%0" : "=r" (addr) :: "memory");
--}
--
- static int check_memblock_online(struct memory_block *mem, void *arg)
- {
- 	if (mem->state != MEM_ONLINE)
-@@ -132,10 +119,6 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
- 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
- 			  change_memblock_state);
- 
--	/* RCU grace period? */
--	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT),
--			    nr_pages << PAGE_SHIFT);
--
- 	lock_device_hotplug();
- 	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
- 	unlock_device_hotplug();
--- 
-2.13.6
+Balbir
