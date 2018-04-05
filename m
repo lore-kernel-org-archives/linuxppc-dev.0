@@ -1,28 +1,29 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Gndn6ylLzF1kQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 13:00:55 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id f63-v6so9371641oic.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 20:00:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Gqwb5fLSzF1pY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 14:43:59 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id g20-v6so17481036plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Apr 2018 21:43:59 -0700 (PDT)
+Date: Thu, 5 Apr 2018 14:43:48 +1000
+From: Balbir Singh <bsingharora@gmail.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Oliver <oohall@gmail.com>, Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-nvdimm
+ <linux-nvdimm@lists.01.org>
+Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+Message-ID: <20180405144348.141fd93f@gmail.com>
+In-Reply-To: <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+References: <20180403142415.30083-1-oohall@gmail.com>
+ <20180403142415.30083-3-oohall@gmail.com>
+ <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
+ <20180404220750.0436bbe1@gmail.com>
+ <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
+ <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180405095755.58b3891f@roar.ozlabs.ibm.com>
-References: <20180404231943.29581-1-bsingharora@gmail.com>
- <20180404231943.29581-3-bsingharora@gmail.com>
- <20180405095755.58b3891f@roar.ozlabs.ibm.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Wed, 4 Apr 2018 20:00:52 -0700
-Message-ID: <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
-Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- Christoph Hellwig <hch@lst.de>, Matthew Wilcox <mawilcox@microsoft.com>, "Luck,
- Tony" <tony.luck@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +33,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ adding Matthew, Christoph, and Tony  ]
+On Wed, 4 Apr 2018 07:21:32 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
 
-On Wed, Apr 4, 2018 at 4:57 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Thu,  5 Apr 2018 09:19:42 +1000
-> Balbir Singh <bsingharora@gmail.com> wrote:
->
->> The pmem infrastructure uses memcpy_mcsafe in the pmem
->> layer so as to convert machine check excpetions into
->> a return value on failure in case a machine check
->> exception is encoutered during the memcpy.
->>
->> This patch largely borrows from the copyuser_power7
->> logic and does not add the VMX optimizations, largely
->> to keep the patch simple. If needed those optimizations
->> can be folded in.
->
-> So memcpy_mcsafe doesn't return number of bytes copied?
-> Huh, well that makes it simple.
+> On Wed, Apr 4, 2018 at 7:04 AM, Oliver <oohall@gmail.com> wrote:
+> > On Wed, Apr 4, 2018 at 10:07 PM, Balbir Singh <bsingharora@gmail.com> wrote:  
+> >> On Tue, 3 Apr 2018 10:37:51 -0700
+> >> Dan Williams <dan.j.williams@intel.com> wrote:
+> >>  
+> >>> On Tue, Apr 3, 2018 at 7:24 AM, Oliver O'Halloran <oohall@gmail.com> wrote:  
+> >>> > Add device-tree binding documentation for the nvdimm region driver.
+> >>> >
+> >>> > Cc: devicetree@vger.kernel.org
+> >>> > Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> >>> > ---
+> >>> > v2: Changed name from nvdimm-region to pmem-region.
+> >>> >     Cleaned up the example binding and fixed the overlapping regions.
+> >>> >     Added support for multiple regions in a single reg.
+> >>> > ---
+> >>> >  .../devicetree/bindings/pmem/pmem-region.txt       | 80 ++++++++++++++++++++++
+> >>> >  MAINTAINERS                                        |  1 +
+> >>> >  2 files changed, 81 insertions(+)
+> >>> >  create mode 100644 Documentation/devicetree/bindings/pmem/pmem-region.txt  
+> >>>
+> >>> Device-tree folks, does this look, ok?
+> >>>
+> >>> Oliver, is there any concept of a management interface to the
+> >>> device(s) backing these regions? libnvdimm calls these "nmem" devices
+> >>> and support operations like health status and namespace label
+> >>> management.  
+> >
+> > It's something I'm planning on implementing as soon as someone gives
+> > me some hardware that isn't hacked up lab crap. I'm posting this
+> > version with just regions since people have been asking for something
+> > in upstream even if it's not fully featured.
+> >
+> > Grumbling aside, the plan is to have separate drivers for the DIMM
+> > type. Discovering DIMM devices happens via the normal discovery
+> > mechanisms (e.g. an NVDIMM supporting the JEDEC interface is an I2C
+> > device) and when binding to a specific DIMM device it registers a DIMM
+> > descriptor structure and a ndctl implementation for that DIMM type
+> > with of_pmem. When of_pmem binds to a region it can plug everything
+> > into the region specific bus. There's a few details to work out, but I
+> > think it's a reasonable approach.  
+> 
+> Yeah, that sounds reasonable. It would mean that your management
+> interface would need to understand that nmems on different buses could
+> potentially move to another bus after a reconfiguration, but that's
+> not too much different than the ACPI case where nmems can join and
+> leave regions after a reset / reconfig.
+> 
+> >> We would need a way to have nmem and pmem-regions find each other. Since we
+> >> don't have the ACPI abstractions, the nmem region would need to add the
+> >> ability for a driver to have a phandle to the interleaving and nmem properties.
+> >>
+> >> I guess that would be a separate driver, that would manage the nmem devices
+> >> and there would be a way to relate the pmem and nmems. Oliver?  
+> >
+> > Yes, that's the plan.  
+> 
+> So Balbir, is that enough for an Acked-by for this device-tree proposal?
 
-Well, not in current kernels, but we need to add that support or
-remove the direct call to copy_to_iter() in fs/dax.c. I'm looking
-right now to add "bytes remaining" support to the x86 memcpy_mcsafe(),
-but for copy_to_user we also need to handle bytes remaining for write
-faults. That fix is hopefully something that can land in an early
-4.17-rc, but it won't be ready for -rc1.
+I don't see any major problems with the binding, but I think Oliver wanted
+to send in a few clarifications based on a private discussion.
+
+Balbir Singh.
