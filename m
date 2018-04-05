@@ -1,16 +1,33 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
+ [IPv6:2607:f8b0:4003:c0f::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H5Cg4HdbzF1kQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:42:55 +1000 (AEST)
-In-Reply-To: <20180405061000.30513-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s/idle: POWER9 restore AMOR after deep sleep
-Message-Id: <40H5Cg3J91z9s2R@ozlabs.org>
-Date: Fri,  6 Apr 2018 00:42:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H5DC6swLzF1kQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 00:43:22 +1000 (AEST)
+Received: by mail-ot0-x241.google.com with SMTP id p33-v6so21155747otp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 07:43:22 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
+References: <20180403142415.30083-1-oohall@gmail.com>
+ <20180403142415.30083-3-oohall@gmail.com>
+ <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
+ <20180404220750.0436bbe1@gmail.com>
+ <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
+ <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+ <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
+ <87bmexua3s.fsf@concordia.ellerman.id.au>
+ <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 5 Apr 2018 07:43:20 -0700
+Message-ID: <CAPcyv4jEFMnYqpcop=Ox-dZR3dSBRMhT05JSS-gPABX_YQGw1g@mail.gmail.com>
+Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+To: Oliver <oohall@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,17 +37,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-04-05 at 06:10:00 UTC, Nicholas Piggin wrote:
-> POWER8 restores AMOR when waking from deep sleep, but POWER9 does not,
-> because it does not go through the subcore restore.
-> 
-> Have POWER9 restore it in core restore.
-> 
-> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+On Thu, Apr 5, 2018 at 5:43 AM, Oliver <oohall@gmail.com> wrote:
+> On Thu, Apr 5, 2018 at 10:11 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Oliver <oohall@gmail.com> writes:
+>> ...
+>>>
+>>> For context Balbir is working with me on some of the pmem stuff. You
+>>> probably want an Ack from Rob rather than one of us.
+>>
+>> I'll ack it if you make all the niggly nit picky trivial annoying
+>> changes I asked for :D
+>
+> *groan*
+>
+> Fine, I'll respin it tomorrow. If anyone else has comments now would
+> be the time to make them.
 
-Applied to powerpc next, thanks.
-
-https://git.kernel.org/powerpc/c/c1b25a17d24925b0961c319cfc3fd7
-
-cheers
+Please also include my niggly nit picky trivial annoying bike shed
+color for the driver name to *not* use the "nd_region" suffix for a
+driver registering "nvdimm_bus" objects. "of_pmem_range" or
+"of_pmem_bus" or almost anything else would be fine.
