@@ -1,32 +1,18 @@
-Return-Path: <oohall@gmail.com>
-Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
- [IPv6:2607:f8b0:4001:c06::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H2Yd21RvzF1pk
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:43:16 +1000 (AEST)
-Received: by mail-io0-x231.google.com with SMTP id e79so30448823ioi.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 05:43:16 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <87bmexua3s.fsf@concordia.ellerman.id.au>
-References: <20180403142415.30083-1-oohall@gmail.com>
- <20180403142415.30083-3-oohall@gmail.com>
- <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
- <20180404220750.0436bbe1@gmail.com>
- <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
- <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
- <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
- <87bmexua3s.fsf@concordia.ellerman.id.au>
-From: Oliver <oohall@gmail.com>
-Date: Thu, 5 Apr 2018 22:43:14 +1000
-Message-ID: <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
-Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Dan Williams <dan.j.williams@intel.com>,
- Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H2hY5BbzzF1qc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:49:17 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: mauricfo@linux.vnet.ibm.com,
+	leitao@debian.org,
+	linuxram@us.ibm.com
+Subject: [PATCH] powerpc/64s: Fix section mismatch warnings from
+ setup_rfi_flush()
+Date: Thu,  5 Apr 2018 22:49:13 +1000
+Message-Id: <20180405124913.12001-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,20 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 5, 2018 at 10:11 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> Oliver <oohall@gmail.com> writes:
-> ...
->>
->> For context Balbir is working with me on some of the pmem stuff. You
->> probably want an Ack from Rob rather than one of us.
->
-> I'll ack it if you make all the niggly nit picky trivial annoying
-> changes I asked for :D
+The recent LPM changes to setup_rfi_flush() are causing some section
+mismatch warnings because we removed the __init annotation on
+setup_rfi_flush():
 
-*groan*
+  The function setup_rfi_flush() references
+  the function __init ppc64_bolted_size().
+  the function __init memblock_alloc_base().
 
-Fine, I'll respin it tomorrow. If anyone else has comments now would
-be the time to make them.
+The references are actually in init_fallback_flush(), but that is
+inlined into setup_rfi_flush().
 
->
-> cheers
+These references are safe because:
+ - only pseries calls setup_rfi_flush() at runtime
+ - pseries always passes L1D_FLUSH_FALLBACK at boot
+ - so the fallback flush area will always be allocated
+ - so the check in init_fallback_flush() will always return early:
+   /* Only allocate the fallback flush area once (at boot time). */
+   if (l1d_flush_fallback_area)
+   	return;
+
+ - and therefore we won't actually call the freed init routines.
+
+We should rework the code to make it safer by default rather than
+relying on the above, but for now as a quick-fix just add a __ref
+annotation to squash the warning.
+
+Fixes: abf110f3e1ce ("powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 66f2b6299c40..44c30dd38067 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -880,7 +880,7 @@ void rfi_flush_enable(bool enable)
+ 	rfi_flush = enable;
+ }
+ 
+-static void init_fallback_flush(void)
++static void __ref init_fallback_flush(void)
+ {
+ 	u64 l1d_size, limit;
+ 	int cpu;
+-- 
+2.14.1
