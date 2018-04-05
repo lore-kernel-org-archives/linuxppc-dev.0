@@ -1,10 +1,10 @@
 Return-Path: <Yuri.Norov@cavium.com>
 Received: from NAM02-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam02on0058.outbound.protection.outlook.com [104.47.36.58])
+ (mail-sn1nam02on0043.outbound.protection.outlook.com [104.47.36.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H8hL6QHdzF1sY
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 03:19:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H8hd1tHtzF1sD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 03:19:43 +1000 (AEST)
 From: Yury Norov <ynorov@caviumnetworks.com>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>,
@@ -22,9 +22,10 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
 Cc: Yury Norov <ynorov@caviumnetworks.com>,
  linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
  kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] rcu: arm64: add rcu_dynticks_eqs_exit_sync()
-Date: Thu,  5 Apr 2018 20:17:59 +0300
-Message-Id: <20180405171800.5648-5-ynorov@caviumnetworks.com>
+Subject: [PATCH 5/5] smp: Lazy synchronization for EQS CPUs in
+ kick_all_cpus_sync()
+Date: Thu,  5 Apr 2018 20:18:00 +0300
+Message-Id: <20180405171800.5648-6-ynorov@caviumnetworks.com>
 In-Reply-To: <20180405171800.5648-1-ynorov@caviumnetworks.com>
 References: <20180405171800.5648-1-ynorov@caviumnetworks.com>
 MIME-Version: 1.0
@@ -38,86 +39,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch of the series enables delaying of kernel memory
-synchronization for CPUs running in extended quiescent state (EQS)
-till the exit of that state.
+kick_all_cpus_sync() forces all CPUs to sync caches by sending broadcast
+IPI.  If CPU is in extended quiescent state (idle task or nohz_full
+userspace), this work may be done at the exit of this state. Delaying
+synchronization helps to save power if CPU is in idle state and decrease
+latency for real-time tasks.
 
-In previous patch ISB was added in EQS exit path to ensure that
-any change made by kernel patching framework is visible. But after
-that isb(), EQS is still enabled for a while, and there's a chance
-that some other core will modify text in parallel, and EQS core
-will be not notified about it, as EQS will mask IPI:
+This patch introduces rcu_get_eqs_cpus() and uses it in
+kick_all_cpus_sync() to delay synchronization.
 
-CPU0                            CPU1
+For task isolation (https://lkml.org/lkml/2017/11/3/589), IPI to the CPU
+running isolated task is fatal, as it breaks isolation. The approach with
+lazy synchronization helps to maintain isolated state.
 
-ISB
-				patch_some_text()
-				kick_all_active_cpus_sync()
-exit EQS
+I've tested it with test from task isolation series on ThunderX2 for
+more than 10 hours (10k giga-ticks) without breaking isolation.
 
-// not synchronized!
-use_of_patched_text()
-
-This patch introduces rcu_dynticks_eqs_exit_sync() function and uses
-it in arm64 code to call ipi() after the exit from quiescent state.
-
-Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Yury Norov <ynorov@caviumnetworks.com>
 ---
- arch/arm64/kernel/Makefile | 2 ++
- arch/arm64/kernel/rcu.c    | 8 ++++++++
- kernel/rcu/tree.c          | 4 ++++
- 3 files changed, 14 insertions(+)
- create mode 100644 arch/arm64/kernel/rcu.c
+ include/linux/rcutiny.h |  2 ++
+ include/linux/rcutree.h |  1 +
+ kernel/rcu/tiny.c       |  9 +++++++++
+ kernel/rcu/tree.c       | 23 +++++++++++++++++++++++
+ kernel/smp.c            | 21 +++++++++++++--------
+ 5 files changed, 48 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 9b55a3f24be7..c87a203524ab 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -54,6 +54,8 @@ arm64-obj-$(CONFIG_ARM64_RELOC_TEST)	+= arm64-reloc-test.o
- arm64-reloc-test-y := reloc_test_core.o reloc_test_syms.o
- arm64-obj-$(CONFIG_CRASH_DUMP)		+= crash_dump.o
- arm64-obj-$(CONFIG_ARM_SDE_INTERFACE)	+= sdei.o
-+arm64-obj-$(CONFIG_TREE_RCU)		+= rcu.o
-+arm64-obj-$(CONFIG_PREEMPT_RCU)		+= rcu.o
+diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
+index ce9beec35e34..dc7e2ea731fa 100644
+--- a/include/linux/rcutiny.h
++++ b/include/linux/rcutiny.h
+@@ -36,6 +36,8 @@ static inline int rcu_dynticks_snap(struct rcu_dynticks *rdtp)
+ /* Never flag non-existent other CPUs! */
+ static inline bool rcu_eqs_special_set(int cpu) { return false; }
  
- arm64-obj-$(CONFIG_KVM_INDIRECT_VECTORS)+= bpi.o
++void rcu_get_eqs_cpus(struct cpumask *cpus, int choose_eqs);
++
+ static inline unsigned long get_state_synchronize_rcu(void)
+ {
+ 	return 0;
+diff --git a/include/linux/rcutree.h b/include/linux/rcutree.h
+index fd996cdf1833..7a34eb8c0df3 100644
+--- a/include/linux/rcutree.h
++++ b/include/linux/rcutree.h
+@@ -74,6 +74,7 @@ static inline void synchronize_rcu_bh_expedited(void)
+ void rcu_barrier(void);
+ void rcu_barrier_bh(void);
+ void rcu_barrier_sched(void);
++void rcu_get_eqs_cpus(struct cpumask *cpus, int choose_eqs);
+ unsigned long get_state_synchronize_rcu(void);
+ void cond_synchronize_rcu(unsigned long oldstate);
+ unsigned long get_state_synchronize_sched(void);
+diff --git a/kernel/rcu/tiny.c b/kernel/rcu/tiny.c
+index a64eee0db39e..d4e94e1b0570 100644
+--- a/kernel/rcu/tiny.c
++++ b/kernel/rcu/tiny.c
+@@ -128,6 +128,15 @@ void rcu_check_callbacks(int user)
+ 		rcu_note_voluntary_context_switch(current);
+ }
  
-diff --git a/arch/arm64/kernel/rcu.c b/arch/arm64/kernel/rcu.c
-new file mode 100644
-index 000000000000..67fe33c0ea03
---- /dev/null
-+++ b/arch/arm64/kernel/rcu.c
-@@ -0,0 +1,8 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+#include <asm/barrier.h>
-+
-+void rcu_dynticks_eqs_exit_sync(void)
++/*
++ * For tiny RCU, all CPUs are active (non-EQS).
++ */
++void rcu_get_eqs_cpus(struct cpumask *cpus, int choose_eqs)
 +{
-+	isb();
-+};
++	if (!choose_eqs)
++		cpumask_copy(cpus, cpu_online_mask);
++}
++
+ /*
+  * Invoke the RCU callbacks on the specified rcu_ctrlkblk structure
+  * whose grace period has elapsed.
 diff --git a/kernel/rcu/tree.c b/kernel/rcu/tree.c
-index 2a734692a581..363f91776b66 100644
+index 363f91776b66..cb0d3afe7ea8 100644
 --- a/kernel/rcu/tree.c
 +++ b/kernel/rcu/tree.c
-@@ -264,6 +264,8 @@ void rcu_bh_qs(void)
- #define rcu_eqs_special_exit() do { } while (0)
- #endif
+@@ -419,6 +419,29 @@ bool rcu_eqs_special_set(int cpu)
+ 	return true;
+ }
  
-+void __weak rcu_dynticks_eqs_exit_sync(void) {};
++/*
++ * Get EQS CPUs. If @choose_eqs is 0, set of active (non-EQS)
++ * CPUs is returned instead.
++ *
++ * Call with disabled preemption. Make sure @cpus is cleared.
++ */
++void rcu_get_eqs_cpus(struct cpumask *cpus, int choose_eqs)
++{
++	int cpu, in_eqs;
++	struct rcu_dynticks *rdtp;
 +
- static DEFINE_PER_CPU(struct rcu_dynticks, rcu_dynticks) = {
- 	.dynticks_nesting = 1,
- 	.dynticks_nmi_nesting = DYNTICK_IRQ_NONIDLE,
-@@ -308,6 +310,8 @@ static void rcu_dynticks_eqs_exit(void)
- 	 * critical section.
- 	 */
- 	seq = atomic_add_return(RCU_DYNTICK_CTRL_CTR, &rdtp->dynticks);
-+	rcu_dynticks_eqs_exit_sync();
++	for_each_online_cpu(cpu) {
++		rdtp = &per_cpu(rcu_dynticks, cpu);
++		in_eqs = rcu_dynticks_in_eqs(atomic_read(&rdtp->dynticks));
 +
- 	WARN_ON_ONCE(IS_ENABLED(CONFIG_RCU_EQS_DEBUG) &&
- 		     !(seq & RCU_DYNTICK_CTRL_CTR));
- 	if (seq & RCU_DYNTICK_CTRL_MASK) {
++		if (in_eqs && choose_eqs)
++			cpumask_set_cpu(cpu, cpus);
++
++		if (!in_eqs && !choose_eqs)
++			cpumask_set_cpu(cpu, cpus);
++	}
++}
++
+ /*
+  * Let the RCU core know that this CPU has gone through the scheduler,
+  * which is a quiescent state.  This is called when the need for a
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 084c8b3a2681..5e6cfb57da22 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -708,19 +708,24 @@ static void do_nothing(void *unused)
+ /**
+  * kick_all_cpus_sync - Force all cpus out of idle
+  *
+- * Used to synchronize the update of pm_idle function pointer. It's
+- * called after the pointer is updated and returns after the dummy
+- * callback function has been executed on all cpus. The execution of
+- * the function can only happen on the remote cpus after they have
+- * left the idle function which had been called via pm_idle function
+- * pointer. So it's guaranteed that nothing uses the previous pointer
+- * anymore.
++ * - on current CPU call smp_mb() explicitly;
++ * - on CPUs in extended quiescent state (idle or nohz_full userspace), memory
++ *   is synchronized at the exit of that mode, so do nothing (it's safe to delay
++ *   synchronization because EQS CPUs don't run kernel code);
++ * - on other CPUs fire IPI for synchronization, which implies barrier.
+  */
+ void kick_all_cpus_sync(void)
+ {
++	struct cpumask active_cpus;
++
+ 	/* Make sure the change is visible before we kick the cpus */
+ 	smp_mb();
+-	smp_call_function(do_nothing, NULL, 1);
++
++	cpumask_clear(&active_cpus);
++	preempt_disable();
++	rcu_get_eqs_cpus(&active_cpus, 0);
++	smp_call_function_many(&active_cpus, do_nothing, NULL, 1);
++	preempt_enable();
+ }
+ EXPORT_SYMBOL_GPL(kick_all_cpus_sync);
+ 
 -- 
 2.14.1
