@@ -1,27 +1,29 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
- [IPv6:2a00:1450:400c:c0c::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jmoyer@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HDrc5MQKzF1xm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 06:26:56 +1000 (AEST)
-Received: by mail-wr0-x242.google.com with SMTP id 80so30503639wrb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 13:26:56 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
- Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH v4 03/19] powerpc: Mark variable `l` as unused, remove `path`
-Date: Thu,  5 Apr 2018 22:26:48 +0200
-Message-Id: <20180405202648.2836-1-malat@debian.org>
-In-Reply-To: <20180322202007.23088-4-malat@debian.org>
-References: <20180322202007.23088-4-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HF8K523VzDqZH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 06:40:30 +1000 (AEST)
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Balbir Singh <bsingharora@gmail.com>, "Luck\, Tony" <tony.luck@intel.com>,
+ Matthew Wilcox <mawilcox@microsoft.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
+References: <20180404231943.29581-1-bsingharora@gmail.com>
+ <20180404231943.29581-3-bsingharora@gmail.com>
+ <20180405095755.58b3891f@roar.ozlabs.ibm.com>
+ <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
+ <20180405150405.5b902b41@roar.ozlabs.ibm.com>
+ <20180405155307.49f748f3@gmail.com>
+ <20180405164508.7a15a770@roar.ozlabs.ibm.com>
+Date: Thu, 05 Apr 2018 16:40:26 -0400
+In-Reply-To: <20180405164508.7a15a770@roar.ozlabs.ibm.com> (Nicholas Piggin's
+ message of "Thu, 5 Apr 2018 16:45:08 +1000")
+Message-ID: <x496055gzet.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add gcc attribute unused for `l` variable, replace `path` variable directly
-with prom_scratch. Fix warnings treated as errors with W=1:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-  arch/powerpc/kernel/prom_init.c:607:6: error: variable ‘l’ set but not used [-Werror=unused-but-set-variable]
-  arch/powerpc/kernel/prom_init.c:1388:8: error: variable ‘path’ set but not used [-Werror=unused-but-set-variable]
+> On Thu, 5 Apr 2018 15:53:07 +1000
+> Balbir Singh <bsingharora@gmail.com> wrote:
+>> I'm thinking about it, I wonder what "bytes remaining" mean in pmem context
+>> in the context of a machine check exception. Also, do we want to be byte
+>> accurate or cache-line accurate for the bytes remaining? The former is much
+>> easier than the latter :)
+>
+> The ideal would be a linear measure of how much of your copy reached
+> (or can reach) non-volatile storage with nothing further copied. You
+> may have to allow for some relaxing of the semantics depending on
+> what the architecture can support.
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
-v4: redo v3 since path variable can be avoided
-v3: really move path within ifdef DEBUG_PROM
-v2: move path within ifdef DEBUG_PROM
+I think you've got that backwards.  memcpy_mcsafe is used to copy *from*
+persistent memory.  The idea is to catch errors when reading pmem, not
+writing to it.
 
- arch/powerpc/kernel/prom_init.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+> What's the problem with just counting bytes copied like usercopy --
+> why is that harder than cacheline accuracy?
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index f8a9a50ff9b5..4b223a9470be 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -604,7 +604,7 @@ static void __init early_cmdline_parse(void)
- 	const char *opt;
- 
- 	char *p;
--	int l = 0;
-+	int l __maybe_unused = 0;
- 
- 	prom_cmd_line[0] = 0;
- 	p = prom_cmd_line;
-@@ -1386,7 +1386,7 @@ static void __init reserve_mem(u64 base, u64 size)
- static void __init prom_init_mem(void)
- {
- 	phandle node;
--	char *path, type[64];
-+	char type[64];
- 	unsigned int plen;
- 	cell_t *p, *endp;
- 	__be32 val;
-@@ -1407,7 +1407,6 @@ static void __init prom_init_mem(void)
- 	prom_debug("root_size_cells: %x\n", rsc);
- 
- 	prom_debug("scanning memory:\n");
--	path = prom_scratch;
- 
- 	for (node = 0; prom_next_node(&node); ) {
- 		type[0] = 0;
-@@ -1432,9 +1431,9 @@ static void __init prom_init_mem(void)
- 		endp = p + (plen / sizeof(cell_t));
- 
- #ifdef DEBUG_PROM
--		memset(path, 0, PROM_SCRATCH_SIZE);
--		call_prom("package-to-path", 3, 1, node, path, PROM_SCRATCH_SIZE-1);
--		prom_debug("  node %s :\n", path);
-+		memset(prom_scratch, 0, PROM_SCRATCH_SIZE);
-+		call_prom("package-to-path", 3, 1, node, prom_scratch, PROM_SCRATCH_SIZE - 1);
-+		prom_debug("  node %s :\n", prom_scratch);
- #endif /* DEBUG_PROM */
- 
- 		while ((endp - p) >= (rac + rsc)) {
--- 
-2.11.0
+He said the former (i.e. bytes) is easier.  So, I think you're on the
+same page.  :)
+
+Cheers,
+Jeff
