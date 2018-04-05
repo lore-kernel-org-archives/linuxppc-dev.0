@@ -1,18 +1,53 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H2hY5BbzzF1qc
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:49:17 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: mauricfo@linux.vnet.ibm.com,
-	leitao@debian.org,
-	linuxram@us.ibm.com
-Subject: [PATCH] powerpc/64s: Fix section mismatch warnings from
- setup_rfi_flush()
-Date: Thu,  5 Apr 2018 22:49:13 +1000
-Message-Id: <20180405124913.12001-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H2nZ1rN8zF1qc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:53:37 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w35CoPVj055678
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 08:53:35 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h5khr9wsp-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 08:53:35 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 5 Apr 2018 13:53:30 +0100
+Subject: Re: [PATCH v9 15/24] mm: Introduce __vm_normal_page()
+To: Jerome Glisse <jglisse@redhat.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-16-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180403193927.GD5935@redhat.com>
+ <a3446d86-8a29-a9f2-a1fe-b8cc1b748132@linux.vnet.ibm.com>
+ <20180404215916.GC3331@redhat.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Thu, 5 Apr 2018 14:53:19 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180404215916.GC3331@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <6ebb4602-9455-65f3-ea60-bfaaee23a859@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,50 +57,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent LPM changes to setup_rfi_flush() are causing some section
-mismatch warnings because we removed the __init annotation on
-setup_rfi_flush():
+On 04/04/2018 23:59, Jerome Glisse wrote:
+> On Wed, Apr 04, 2018 at 06:26:44PM +0200, Laurent Dufour wrote:
+>>
+>>
+>> On 03/04/2018 21:39, Jerome Glisse wrote:
+>>> On Tue, Mar 13, 2018 at 06:59:45PM +0100, Laurent Dufour wrote:
+>>>> When dealing with the speculative fault path we should use the VMA's field
+>>>> cached value stored in the vm_fault structure.
+>>>>
+>>>> Currently vm_normal_page() is using the pointer to the VMA to fetch the
+>>>> vm_flags value. This patch provides a new __vm_normal_page() which is
+>>>> receiving the vm_flags flags value as parameter.
+>>>>
+>>>> Note: The speculative path is turned on for architecture providing support
+>>>> for special PTE flag. So only the first block of vm_normal_page is used
+>>>> during the speculative path.
+>>>
+>>> Might be a good idea to explicitly have SPECULATIVE Kconfig option depends
+>>> on ARCH_PTE_SPECIAL and a comment for !HAVE_PTE_SPECIAL in the function
+>>> explaining that speculative page fault should never reach that point.
+>>
+>> Unfortunately there is no ARCH_PTE_SPECIAL in the config file, it is defined in
+>> the per architecture header files.
+>> So I can't do anything in the Kconfig file
+> 
+> Maybe adding a new Kconfig symbol for ARCH_PTE_SPECIAL very much like
+> others ARCH_HAS_
+> 
+>>
+>> However, I can check that at build time, and doing such a check in
+>> __vm_normal_page sounds to be a good place, like that:
+>>
+>> @@ -869,6 +870,14 @@ struct page *__vm_normal_page(struct vm_area_struct *vma,
+>> unsigned long addr,
+>>
+>>         /* !HAVE_PTE_SPECIAL case follows: */
+>>
+>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>> +       /* This part should never get called when the speculative page fault
+>> +        * handler is turned on. This is mainly because we can't rely on
+>> +        * vm_start.
+>> +        */
+>> +#error CONFIG_SPECULATIVE_PAGE_FAULT requires HAVE_PTE_SPECIAL
+>> +#endif
+>> +
+>>         if (unlikely(vma_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
+>>                 if (vma_flags & VM_MIXEDMAP) {
+>>                         if (!pfn_valid(pfn))
+>>
+> 
+> I am not a fan of #if/#else/#endif in code. But that's a taste thing.
+> I honnestly think that adding a Kconfig for special pte is the cleanest
+> solution.
 
-  The function setup_rfi_flush() references
-  the function __init ppc64_bolted_size().
-  the function __init memblock_alloc_base().
+I do agree, but this should be done in a separate series.
 
-The references are actually in init_fallback_flush(), but that is
-inlined into setup_rfi_flush().
+I'll see how this could be done but there are some arch (like powerpc) where
+this is a bit obfuscated for unknown reason.
 
-These references are safe because:
- - only pseries calls setup_rfi_flush() at runtime
- - pseries always passes L1D_FLUSH_FALLBACK at boot
- - so the fallback flush area will always be allocated
- - so the check in init_fallback_flush() will always return early:
-   /* Only allocate the fallback flush area once (at boot time). */
-   if (l1d_flush_fallback_area)
-   	return;
-
- - and therefore we won't actually call the freed init routines.
-
-We should rework the code to make it safer by default rather than
-relying on the above, but for now as a quick-fix just add a __ref
-annotation to squash the warning.
-
-Fixes: abf110f3e1ce ("powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 66f2b6299c40..44c30dd38067 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -880,7 +880,7 @@ void rfi_flush_enable(bool enable)
- 	rfi_flush = enable;
- }
- 
--static void init_fallback_flush(void)
-+static void __ref init_fallback_flush(void)
- {
- 	u64 l1d_size, limit;
- 	int cpu;
--- 
-2.14.1
+For the time being, I'll remove the check and just let the comment in place.
