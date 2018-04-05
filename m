@@ -1,25 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
- [IPv6:2607:f8b0:400c:c05::242])
+Return-Path: <oohall@gmail.com>
+Received: from mail-io0-x231.google.com (mail-io0-x231.google.com
+ [IPv6:2607:f8b0:4001:c06::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40H27b2fSyzF1l6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:24:11 +1000 (AEST)
-Received: by mail-vk0-x242.google.com with SMTP id b16so14328467vka.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 05:24:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40H2Yd21RvzF1pk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Apr 2018 22:43:16 +1000 (AEST)
+Received: by mail-io0-x231.google.com with SMTP id e79so30448823ioi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 05:43:16 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CFy0im+H368Krr2QVteAumq58CRF_Kfatyv7wvj1n4AGw@mail.gmail.com>
-References: <20180405071500.22320-1-bsingharora@gmail.com>
- <20180405071500.22320-3-bsingharora@gmail.com>
- <CAOSf1CFy0im+H368Krr2QVteAumq58CRF_Kfatyv7wvj1n4AGw@mail.gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Thu, 5 Apr 2018 22:24:07 +1000
-Message-ID: <CAKTCnzngahex_sL2raoHFuXqTxgVV7a57R9YmcT1TN-ROsFXnw@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
-To: Oliver <oohall@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-nvdimm@lists.01.org" <linux-nvdimm@lists.01.org>,
- Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <87bmexua3s.fsf@concordia.ellerman.id.au>
+References: <20180403142415.30083-1-oohall@gmail.com>
+ <20180403142415.30083-3-oohall@gmail.com>
+ <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
+ <20180404220750.0436bbe1@gmail.com>
+ <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
+ <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
+ <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
+ <87bmexua3s.fsf@concordia.ellerman.id.au>
+From: Oliver <oohall@gmail.com>
+Date: Thu, 5 Apr 2018 22:43:14 +1000
+Message-ID: <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
+Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,25 +36,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 5, 2018 at 9:26 PM, Oliver <oohall@gmail.com> wrote:
-> On Thu, Apr 5, 2018 at 5:14 PM, Balbir Singh <bsingharora@gmail.com> wrote:
->> The pmem infrastructure uses memcpy_mcsafe in the pmem
->> layer so as to convert machine check excpetions into
->> a return value on failure in case a machine check
->> exception is encoutered during the memcpy.
+On Thu, Apr 5, 2018 at 10:11 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> Oliver <oohall@gmail.com> writes:
+> ...
 >>
+>> For context Balbir is working with me on some of the pmem stuff. You
+>> probably want an Ack from Rob rather than one of us.
 >
-> Would it be possible to move the bulk of the copyuser code into a
-> seperate file which can be #included once the these err macros are
-> defined? Anton's memcpy is pretty hairy and I don't think anyone wants
-> to have multiple copies of it in the tree, even in a cut down form.
+> I'll ack it if you make all the niggly nit picky trivial annoying
+> changes I asked for :D
+
+*groan*
+
+Fine, I'll respin it tomorrow. If anyone else has comments now would
+be the time to make them.
+
 >
-
-I've split it out for now, in the future that might be a good thing to do.
-The copy_tofrom_user_power7 falls backs on __copy_tofrom_user_base
-to track exactly how much is left over. Adding these changes there would
-create a larger churn and need way more testing. I've taken this short-cut
-for now with a promise to fix that as the semantics of memcpy_mcsafe()
-change to do more accurate tracking of how much was copied over.
-
-Balbir Singh.
+> cheers
