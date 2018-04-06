@@ -1,36 +1,39 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40HnKm3nR9zF1lS
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Apr 2018 03:50:36 +1000 (AEST)
-Date: Fri, 6 Apr 2018 18:50:27 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Yury Norov <ynorov@caviumnetworks.com>
-Cc: James Morse <james.morse@arm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Will Deacon <will.deacon@arm.com>, Chris Metcalf <cmetcalf@mellanox.com>,
- Christopher Lameter <cl@linux.com>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- Steven Rostedt <rostedt@goodmis.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Pekka Enberg <penberg@kernel.org>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Alexey Klimov <klimov.linux@gmail.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] arm64: entry: isb in el1_irq
-Message-ID: <20180406175027.oxaru6r3zptct7vb@lakrids.cambridge.arm.com>
-References: <20180405171800.5648-1-ynorov@caviumnetworks.com>
- <20180405171800.5648-2-ynorov@caviumnetworks.com>
- <5036b99a-9faa-c220-27dd-e0d73f8b3fc7@arm.com>
- <20180406165402.nq3sabeku2mp3hpb@yury-thinkpad>
- <20180406172211.r42reit2bnpocab2@lakrids.cambridge.arm.com>
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HnZb1Sb4zF1pr
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Apr 2018 04:01:42 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w36I0EAJ126370
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Apr 2018 14:01:40 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h6bxc4t46-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Apr 2018 14:01:40 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Fri, 6 Apr 2018 19:01:37 +0100
+Date: Fri, 6 Apr 2018 11:01:27 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, mingo@redhat.com, akpm@linux-foundation.org,
+ fweimer@redhat.com, shuah@kernel.org, msuchanek@suse.com,
+ linux-kernel@vger.kernel.org, mhocko@kernel.org, dave.hansen@intel.com,
+ paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc, pkey: make protection key 0 less special
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1522112702-27853-1-git-send-email-linuxram@us.ibm.com>
+ <876056645u.fsf@morokweng.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180406172211.r42reit2bnpocab2@lakrids.cambridge.arm.com>
+In-Reply-To: <876056645u.fsf@morokweng.localdomain>
+Message-Id: <20180406180126.GJ5743@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +43,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 06, 2018 at 06:22:11PM +0100, Mark Rutland wrote:
-> Digging a bit, I also thing that our ct_user_exit and ct_user_enter
-> usage is on dodgy ground today.
+On Wed, Apr 04, 2018 at 06:41:01PM -0300, Thiago Jung Bauermann wrote:
 > 
-> For example, in el0_dbg we call do_debug_exception() *before* calling
-> ct_user_exit. Which I believe means we'd use RCU while supposedly in an
-> extended quiescent period, which would be bad.
+> Hello Ram,
+> 
+> Ram Pai <linuxram@us.ibm.com> writes:
+> 
+> > Applications need the ability to associate an address-range with some
+> > key and latter revert to its initial default key. Pkey-0 comes close to
+> > providing this function but falls short, because the current
+> > implementation disallows applications to explicitly associate pkey-0 to
+> > the address range.
+> >
+> > Lets make pkey-0 less special and treat it almost like any other key.
+> > Thus it can be explicitly associated with any address range, and can be
+> > freed. This gives the application more flexibility and power.  The
+> > ability to free pkey-0 must be used responsibily, since pkey-0 is
+> > associated with almost all address-range by default.
+> >
+> > Even with this change pkey-0 continues to be slightly more special
+> > from the following point of view.
+> > (a) it is implicitly allocated.
+> > (b) it is the default key assigned to any address-range.
+> 
+> It's also special in more ways (and if intentional, these should be part
+> of the commit message as well):
+> 
+> (c) it's not possible to change permissions for key 0
+> 
+>   This has two causes: this patch explicitly forbids it in
+>   arch_set_user_pkey_access(), and also because even if it's allocated,
+>   the bits for key 0 in AMOR and UAMOR aren't set.
 
-It seems this is the case. I can trigger the following by having GDB
-place a SW breakpoint:
+Yes. will have to capture that one aswell.
 
-[   51.217947] =============================
-[   51.217953] WARNING: suspicious RCU usage
-[   51.217961] 4.16.0 #4 Not tainted
-[   51.217966] -----------------------------
-[   51.217974] ./include/linux/rcupdate.h:632 rcu_read_lock() used illegally while idle!
-[   51.217980]
-[   51.217980] other info that might help us debug this:
-[   51.217980]
-[   51.217987]
-[   51.217987] RCU used illegally from idle CPU!
-[   51.217987] rcu_scheduler_active = 2, debug_locks = 1
-[   51.217992] RCU used illegally from extended quiescent state!
-[   51.217999] 1 lock held by ls/2412:
-[   51.218004]  #0:  (rcu_read_lock){....}, at: [<0000000092efbdd5>] brk_handler+0x0/0x198
-[   51.218041]
-[   51.218041] stack backtrace:
-[   51.218049] CPU: 2 PID: 2412 Comm: ls Not tainted 4.16.0 #4
-[   51.218055] Hardware name: ARM Juno development board (r1) (DT)
-[   51.218061] Call trace:
-[   51.218070]  dump_backtrace+0x0/0x1c8
-[   51.218078]  show_stack+0x14/0x20
-[   51.218087]  dump_stack+0xac/0xe4
-[   51.218096]  lockdep_rcu_suspicious+0xcc/0x110
-[   51.218103]  brk_handler+0x144/0x198
-[   51.218110]  do_debug_exception+0x9c/0x190
-[   51.218116]  el0_dbg+0x14/0x20
+we cannot let userspace change permissions on key 0 because
+doing so will hurt the kernel too. Unlike x86 where keys are effective
+only in userspace, powerpc keys are effective even in the kernel.
+So if the kernel tries to access something, it will get stuck forever.
+Almost everything in the kernel is associated with key-0.
 
-We will need to fix this before we can fiddle with kick_all_cpus_sync().
+I ran a small test program which disabled access on key 0 from
+userspace, and as expected ran into softlockups. It certainly
+can lead to denial-of-service-attack. We can let apps
+shoot-itself-in-its-foot but if the shot hurts someone else, we will
+have to stop it.
 
-Thanks,
-Mark.
+The key-semantics discussed with the x86 folks did not 
+explicitly say anything about changing permissions on key-0. We will
+have to keep that part of the semantics open-ended.
+
+> 
+> (d) it can be freed, but can't be allocated again later.
+> 
+>   This is because mm_pkey_alloc() only calls __arch_activate_pkey(ret)
+>   if ret > 0.
+> 
+> It looks like (d) is a bug. Either mm_pkey_free() should fail with key
+> 0, or mm_pkey_alloc() should work with it.
+
+Well, it can be allocated, just that we do not let userspace change the
+permissions on the key.  __arch_activate_pkey(ret) does not get called
+for pkey-0.
+
+
+> 
+> (c) could be a measure to prevent users from shooting themselves in
+> their feet. But if that is the case, then mm_pkey_free() should forbid
+> freeing key 0 too.
+> 
+> > Tested on powerpc.
+> >
+> > cc: Thomas Gleixner <tglx@linutronix.de>
+> > cc: Dave Hansen <dave.hansen@intel.com>
+> > cc: Michael Ellermen <mpe@ellerman.id.au>
+> > cc: Ingo Molnar <mingo@kernel.org>
+> > cc: Andrew Morton <akpm@linux-foundation.org>
+> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> > ---
+> > History:
+> > 	v2: mm_pkey_is_allocated() continued to treat pkey-0 special.
+> > 	    fixed it.
+> >
+> >  arch/powerpc/include/asm/pkeys.h | 20 ++++++++++++++++----
+> >  arch/powerpc/mm/pkeys.c          | 20 ++++++++++++--------
+> >  2 files changed, 28 insertions(+), 12 deletions(-)
+> >
+> > diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> > index 0409c80..b598fa9 100644
+> > --- a/arch/powerpc/include/asm/pkeys.h
+> > +++ b/arch/powerpc/include/asm/pkeys.h
+> > @@ -101,10 +101,14 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
+> >
+> >  static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+> >  {
+> > -	/* A reserved key is never considered as 'explicitly allocated' */
+> > -	return ((pkey < arch_max_pkey()) &&
+> > -		!__mm_pkey_is_reserved(pkey) &&
+> > -		__mm_pkey_is_allocated(mm, pkey));
+> > +	if (pkey < 0 || pkey >= arch_max_pkey())
+> > +		return false;
+> > +
+> > +	/* Reserved keys are never allocated. */
+> > +	if (__mm_pkey_is_reserved(pkey))
+> > +		return false;
+> > +
+> > +	return __mm_pkey_is_allocated(mm, pkey);
+> >  }
+> >
+> >  extern void __arch_activate_pkey(int pkey);
+> > @@ -200,6 +204,14 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+> >  {
+> >  	if (static_branch_likely(&pkey_disabled))
+> >  		return -EINVAL;
+> > +
+> > +	/*
+> > +	 * userspace is discouraged from changing permissions of
+> > +	 * pkey-0.
+> 
+> They're not discouraged. They're not allowed to. :-)
+
+ok :-)
+
+> 
+> > +	 * powerpc hardware does not support it anyway.
+> 
+> It doesn't? I don't get that impression from reading the ISA, but
+> perhaps I'm missing something.
+
+Good Catch. I am wrongly blaming it on powerpc hardware.
+Its a semantics enforced by our pkey code to block DOS attacks.
+
+> 
+> > +	 */
+> > +	if (!pkey)
+> > +		return init_val ? -EINVAL : 0;
+> > +
+> >  	return __arch_set_user_pkey_access(tsk, pkey, init_val);
+> >  }
+> >
+> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> > index ba71c54..e7a9e34 100644
+> > --- a/arch/powerpc/mm/pkeys.c
+> > +++ b/arch/powerpc/mm/pkeys.c
+> > @@ -119,19 +119,21 @@ int pkey_initialize(void)
+> >  #else
+> >  	os_reserved = 0;
+> >  #endif
+> > -	/*
+> > -	 * Bits are in LE format. NOTE: 1, 0 are reserved.
+> > -	 * key 0 is the default key, which allows read/write/execute.
+> > -	 * key 1 is recommended not to be used. PowerISA(3.0) page 1015,
+> > -	 * programming note.
+> > -	 */
+> > +	/* Bits are in LE format. */
+> >  	initial_allocation_mask = ~0x0;
+> >
+> >  	/* register mask is in BE format */
+> >  	pkey_amr_uamor_mask = ~0x0ul;
+> >  	pkey_iamr_mask = ~0x0ul;
+> >
+> > -	for (i = 2; i < (pkeys_total - os_reserved); i++) {
+> > +	for (i = 0; i < (pkeys_total - os_reserved); i++) {
+> > +	 	/*
+> 
+> There's a space between the tabs here.
+
+ok. will fix.
+
+> 
+> > +		 * key 1 is recommended not to be used.
+> > +		 * PowerISA(3.0) page 1015,
+> > +		 */
+> > +		if (i == 1)
+> > +			continue;
+> > +
+> >  		initial_allocation_mask &= ~(0x1 << i);
+> >  		pkey_amr_uamor_mask &= ~(0x3ul << pkeyshift(i));
+> >  		pkey_iamr_mask &= ~(0x1ul << pkeyshift(i));
+> > @@ -145,7 +147,9 @@ void pkey_mm_init(struct mm_struct *mm)
+> >  {
+> >  	if (static_branch_likely(&pkey_disabled))
+> >  		return;
+> > -	mm_pkey_allocation_map(mm) = initial_allocation_mask;
+> > +
+> > +	/* allocate key-0 by default */
+> > +	mm_pkey_allocation_map(mm) = initial_allocation_mask | 0x1;
+> >  	/* -1 means unallocated or invalid */
+> >  	mm->context.execute_only_pkey = -1;
+> >  }
+> 
+> I think we should also set the AMOR and UAMOR bits for key 0. Otherwise,
+> key 0 will be in allocated-but-not-enabled state which is yet another
+> subtle way in which it will be special.
+
+No. as explained above, it will hurt to let userspace modify
+permissions on key-0.
+
+> 
+> Also, pkey_access_permitted() has a special case for key 0. Should it?
+
+we can delete that check. though it does not hurt to leave it in place.
+Access/Write/Execute on pkey-0 is always permitted.
+
+RP
