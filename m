@@ -1,19 +1,22 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HSmz3vF9zF204
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 15:24:35 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id v13so274014iob.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:24:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HSn23XWNzF1yt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 15:24:38 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id v194-v6so228344itb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:24:38 -0700 (PDT)
 From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, rashmica.g@gmail.com, benh@kernel.crashing.org,
  Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH 1/2] powerpc/mm: Flush cache on memory hot(un)plug
-Date: Fri,  6 Apr 2018 15:24:23 +1000
-Message-Id: <20180406052424.29841-1-bsingharora@gmail.com>
+Subject: [PATCH 2/2] powerpc/mm/memtrace: Let the arch hotunplug code flush
+ cache
+Date: Fri,  6 Apr 2018 15:24:24 +1000
+Message-Id: <20180406052424.29841-2-bsingharora@gmail.com>
+In-Reply-To: <20180406052424.29841-1-bsingharora@gmail.com>
+References: <20180406052424.29841-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,54 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support for flushing potentially dirty
-cache lines when memory is hot-plugged/hot-un-plugged.
-The support is currently limited to 64 bit systems.
+Don't do this via custom code, instead now that we have support
+in the arch hotplug/hotunplug code, rely on those routines
+to do the right thing.
 
-The bug was exposed when mappings for a device were
-actually hot-unplugged and plugged in back later.
-A similar issue was observed during the development
-of memtrace, but memtrace does it's own flushing of
-region via a custom routine.
-
-These patches do a flush both on hotplug/unplug to
-clear any stale data in the cache w.r.t mappings,
-there is a small race window where a clean cache
-line may be created again just prior to tearing
-down the mapping.
-
-The patches were tested by disabling the flush
-routines in memtrace and doing I/O on the trace
-file. The system immediately checkstops (quite
-reliablly if prior to the hot-unplug of the memtrace
-region, we memset the regions we are about to
-hot unplug). After these patches no custom flushing
-is needed in the memtrace code.
+Fixes: 9d5171a8f248 ("powerpc/powernv: Enable removal of memory for in memory tracing")
+because the older code uses ppc64_caches.l1d.size instead of
+ppc64_caches.l1d.line_size
 
 Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 ---
- arch/powerpc/mm/mem.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/powernv/memtrace.c | 17 -----------------
+ 1 file changed, 17 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 85245ef97e72..0a8959b15b39 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -143,6 +143,7 @@ int __meminit arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *
- 			start, start + size, rc);
- 		return -EFAULT;
- 	}
-+	flush_inval_dcache_range(start, start + size);
+diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+index de470caf0784..fc222a0c2ac4 100644
+--- a/arch/powerpc/platforms/powernv/memtrace.c
++++ b/arch/powerpc/platforms/powernv/memtrace.c
+@@ -82,19 +82,6 @@ static const struct file_operations memtrace_fops = {
+ 	.open	= simple_open,
+ };
  
- 	return __add_pages(nid, start_pfn, nr_pages, altmap, want_memblock);
- }
-@@ -169,6 +170,7 @@ int __meminit arch_remove_memory(u64 start, u64 size, struct vmem_altmap *altmap
+-static void flush_memory_region(u64 base, u64 size)
+-{
+-	unsigned long line_size = ppc64_caches.l1d.size;
+-	u64 end = base + size;
+-	u64 addr;
+-
+-	base = round_down(base, line_size);
+-	end = round_up(end, line_size);
+-
+-	for (addr = base; addr < end; addr += line_size)
+-		asm volatile("dcbf 0,%0" : "=r" (addr) :: "memory");
+-}
+-
+ static int check_memblock_online(struct memory_block *mem, void *arg)
+ {
+ 	if (mem->state != MEM_ONLINE)
+@@ -132,10 +119,6 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+ 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+ 			  change_memblock_state);
  
- 	/* Remove htab bolted mappings for this section of memory */
- 	start = (unsigned long)__va(start);
-+	flush_inval_dcache_range(start, start + size);
- 	ret = remove_section_mapping(start, start + size);
- 
- 	/* Ensure all vmalloc mappings are flushed in case they also
+-	/* RCU grace period? */
+-	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT),
+-			    nr_pages << PAGE_SHIFT);
+-
+ 	lock_device_hotplug();
+ 	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+ 	unlock_device_hotplug();
 -- 
 2.13.6
