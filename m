@@ -1,31 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HQrv6FBlzF1vP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 13:57:51 +1000 (AEST)
-Message-ID: <1522987056.21446.226.camel@kernel.crashing.org>
-Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Williams <dan.j.williams@intel.com>, Oliver <oohall@gmail.com>
-Cc: linux-nvdimm <linux-nvdimm@lists.01.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Device Tree <devicetree@vger.kernel.org>
-Date: Fri, 06 Apr 2018 13:57:36 +1000
-In-Reply-To: <CAPcyv4gv0rVQ+TTV=omcAO7tA5orufBadQn9ugK1jYwGH_NT=g@mail.gmail.com>
-References: <20180403142415.30083-1-oohall@gmail.com>
- <20180403142415.30083-3-oohall@gmail.com>
- <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
- <20180404220750.0436bbe1@gmail.com>
- <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
- <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
- <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
- <87bmexua3s.fsf@concordia.ellerman.id.au>
- <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
- <CAPcyv4jEFMnYqpcop=Ox-dZR3dSBRMhT05JSS-gPABX_YQGw1g@mail.gmail.com>
- <CAOSf1CGtNg4_siQtAw-H95Ay1m7YPvjZeqnmWvELb1xH1stRJQ@mail.gmail.com>
- <CAPcyv4gv0rVQ+TTV=omcAO7tA5orufBadQn9ugK1jYwGH_NT=g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HSjq0XVdzF1sZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 15:21:50 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id g14so10156715pfh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:21:49 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-nvdimm@lists.01.org,
+	Oliver O'Halloran <oohall@gmail.com>
+Subject: [PATCH v3 1/4] libnvdimm: Add of_node to region and bus descriptors
+Date: Fri,  6 Apr 2018 15:21:13 +1000
+Message-Id: <20180406052116.31483-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-04-05 at 19:25 -0700, Dan Williams wrote:
-> > > Please also include my niggly nit picky trivial annoying bike shed
-> > > color for the driver name to *not* use the "nd_region" suffix for a
-> > > driver registering "nvdimm_bus" objects. "of_pmem_range" or
-> > > "of_pmem_bus" or almost anything else would be fine.
-> > 
-> > Oh sure, would using of_pmem_region to match the compatible be ok?
-> 
-> That works for me.
+We want to be able to cross reference the region and bus devices
+with the device tree node that they were spawned from. libNVDIMM
+handles creating the actual devices for these internally, so we
+need to pass in a pointer to the relevant node in the descriptor.
 
-The prefix "of" is not generally used in matching properties,...
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
+---
+ drivers/nvdimm/bus.c         | 1 +
+ drivers/nvdimm/region_devs.c | 1 +
+ include/linux/libnvdimm.h    | 3 +++
+ 3 files changed, 5 insertions(+)
 
-my own pot of paint :)
-
-Cheers,
-Ben.
+diff --git a/drivers/nvdimm/bus.c b/drivers/nvdimm/bus.c
+index 78eabc3a1ab1..c6106914f396 100644
+--- a/drivers/nvdimm/bus.c
++++ b/drivers/nvdimm/bus.c
+@@ -358,6 +358,7 @@ struct nvdimm_bus *nvdimm_bus_register(struct device *parent,
+ 	nvdimm_bus->dev.release = nvdimm_bus_release;
+ 	nvdimm_bus->dev.groups = nd_desc->attr_groups;
+ 	nvdimm_bus->dev.bus = &nvdimm_bus_type;
++	nvdimm_bus->dev.of_node = nd_desc->of_node;
+ 	dev_set_name(&nvdimm_bus->dev, "ndbus%d", nvdimm_bus->id);
+ 	rc = device_register(&nvdimm_bus->dev);
+ 	if (rc) {
+diff --git a/drivers/nvdimm/region_devs.c b/drivers/nvdimm/region_devs.c
+index 1593e1806b16..30d5dc8b9bb2 100644
+--- a/drivers/nvdimm/region_devs.c
++++ b/drivers/nvdimm/region_devs.c
+@@ -1014,6 +1014,7 @@ static struct nd_region *nd_region_create(struct nvdimm_bus *nvdimm_bus,
+ 	dev->parent = &nvdimm_bus->dev;
+ 	dev->type = dev_type;
+ 	dev->groups = ndr_desc->attr_groups;
++	dev->of_node = ndr_desc->of_node;
+ 	nd_region->ndr_size = resource_size(ndr_desc->res);
+ 	nd_region->ndr_start = ndr_desc->res->start;
+ 	nd_device_register(dev);
+diff --git a/include/linux/libnvdimm.h b/include/linux/libnvdimm.h
+index ff855ed965fb..f61cb5050297 100644
+--- a/include/linux/libnvdimm.h
++++ b/include/linux/libnvdimm.h
+@@ -76,12 +76,14 @@ typedef int (*ndctl_fn)(struct nvdimm_bus_descriptor *nd_desc,
+ 		struct nvdimm *nvdimm, unsigned int cmd, void *buf,
+ 		unsigned int buf_len, int *cmd_rc);
+ 
++struct device_node;
+ struct nvdimm_bus_descriptor {
+ 	const struct attribute_group **attr_groups;
+ 	unsigned long bus_dsm_mask;
+ 	unsigned long cmd_mask;
+ 	struct module *module;
+ 	char *provider_name;
++	struct device_node *of_node;
+ 	ndctl_fn ndctl;
+ 	int (*flush_probe)(struct nvdimm_bus_descriptor *nd_desc);
+ 	int (*clear_to_send)(struct nvdimm_bus_descriptor *nd_desc,
+@@ -123,6 +125,7 @@ struct nd_region_desc {
+ 	int num_lanes;
+ 	int numa_node;
+ 	unsigned long flags;
++	struct device_node *of_node;
+ };
+ 
+ struct device;
+-- 
+2.9.5
