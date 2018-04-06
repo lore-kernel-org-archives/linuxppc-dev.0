@@ -1,20 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <BATV+ed5d6cd84c69c83c4889+5339+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HTrJ3tfmzF1qv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 16:12:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH 2/2] KVM: PPC: Book3S HV: lockless tlbie for HPT hcalls
-In-Reply-To: <20180405175631.31381-3-npiggin@gmail.com>
-References: <20180405175631.31381-1-npiggin@gmail.com>
- <20180405175631.31381-3-npiggin@gmail.com>
-Date: Fri, 06 Apr 2018 16:12:32 +1000
-Message-ID: <87a7ugeucv.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HWjY3PKpzF1s5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 17:36:49 +1000 (AEST)
+Date: Fri, 6 Apr 2018 00:16:34 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, robh@kernel.org,
+ aik@ozlabs.ru, jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+Message-ID: <20180406071634.GA31108@infradead.org>
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+ <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+ <20180405175326-mutt-send-email-mst@kernel.org>
+ <1522940983.21446.205.camel@kernel.crashing.org>
+ <20180405213042-mutt-send-email-mst@kernel.org>
+ <1522963113.21446.211.camel@kernel.crashing.org>
+ <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,54 +35,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> index 78e6a392330f..0221a0f74f07 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> @@ -439,6 +439,9 @@ static inline int try_lock_tlbie(unsigned int *lock)
->  	unsigned int tmp, old;
->  	unsigned int token = LOCK_TOKEN;
->  
-> +	if (mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
-> +		return 1;
-> +
->  	asm volatile("1:lwarx	%1,0,%2\n"
->  		     "	cmpwi	cr0,%1,0\n"
->  		     "	bne	2f\n"
-> @@ -452,6 +455,12 @@ static inline int try_lock_tlbie(unsigned int *lock)
->  	return old == 0;
->  }
->  
-> +static inline void unlock_tlbie_after_sync(unsigned int *lock)
-> +{
-> +	if (mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
-> +		return;
-> +}
+On Fri, Apr 06, 2018 at 08:23:10AM +0530, Anshuman Khandual wrote:
+> On 04/06/2018 02:48 AM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2018-04-05 at 21:34 +0300, Michael S. Tsirkin wrote:
+> >>> In this specific case, because that would make qemu expect an iommu,
+> >>> and there isn't one.
+> >>
+> >>
+> >> I think that you can set iommu_platform in qemu without an iommu.
+> > 
+> > No I mean the platform has one but it's not desirable for it to be used
+> > due to the performance hit.
+> 
+> Also the only requirement is to bounce the I/O buffers through SWIOTLB
+> implemented as DMA API which the virtio core understands. There is no
+> need for an IOMMU to be involved for the device representation in this
+> case IMHO.
 
-So this is a bit hard to follow:
-
-#define MMU_FTRS_DEFAULT_HPTE_ARCH_V2	\
-	MMU_FTR_HPTE_TABLE | MMU_FTR_PPCAS_ARCH_V2
-#define MMU_FTRS_POWER		MMU_FTRS_DEFAULT_HPTE_ARCH_V2
-#define MMU_FTRS_PPC970		MMU_FTRS_POWER | MMU_FTR_TLBIE_CROP_VA			// does NOT
-#define MMU_FTRS_POWER5		MMU_FTRS_POWER | MMU_FTR_LOCKLESS_TLBIE
-#define MMU_FTRS_POWER6		MMU_FTRS_POWER5 | MMU_FTR_KERNEL_RO | MMU_FTR_68_BIT_VA	// includes lockless TLBIE
-#define MMU_FTRS_POWER7		MMU_FTRS_POWER6						// includes lockless TLBIE
-#define MMU_FTRS_POWER8		MMU_FTRS_POWER6						// includes lockless TLBIE
-#define MMU_FTRS_POWER9		MMU_FTRS_POWER6						// includes lockless TLBIE
-#define MMU_FTRS_CELL		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | 			// does NOT
-				MMU_FTR_CI_LARGE_PAGE
-#define MMU_FTRS_PA6T		MMU_FTRS_DEFAULT_HPTE_ARCH_V2 | \			// does NOT
-				MMU_FTR_CI_LARGE_PAGE | MMU_FTR_NO_SLBIE_B
-
-
-So it's only 970, Cell and Pasemi that *don't* have lockless TLBIE.
-
-And KVM HV doesn't doesn't run on any of those.
-
-So we can just not check for the feature in the KVM HV code.
-
-Am I right?
-
-cheers
+This whole virtio translation issue is a mess.  I think we need to
+switch it to the dma API, and then quirk the legacy case to always
+use the direct mapping inside the dma API.
