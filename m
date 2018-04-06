@@ -1,31 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
+ [IPv6:2607:f8b0:400c:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HY4P1KVFzF1ys
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 18:38:12 +1000 (AEST)
-Message-ID: <1523003838.21446.238.camel@kernel.crashing.org>
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, robh@kernel.org, aik@ozlabs.ru,
- jasowang@redhat.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, joe@perches.com,
- david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net
-Date: Fri, 06 Apr 2018 18:37:18 +1000
-In-Reply-To: <20180406071634.GA31108@infradead.org>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
- <20180405175326-mutt-send-email-mst@kernel.org>
- <1522940983.21446.205.camel@kernel.crashing.org>
- <20180405213042-mutt-send-email-mst@kernel.org>
- <1522963113.21446.211.camel@kernel.crashing.org>
- <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
- <20180406071634.GA31108@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HZ7S01zmzF1vZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 19:25:55 +1000 (AEST)
+Received: by mail-vk0-x244.google.com with SMTP id r19so285740vkf.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Apr 2018 02:25:55 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180406112600.454432f0@roar.ozlabs.ibm.com>
+References: <20180404231943.29581-1-bsingharora@gmail.com>
+ <20180404231943.29581-3-bsingharora@gmail.com>
+ <20180405095755.58b3891f@roar.ozlabs.ibm.com>
+ <CAPcyv4hqKsOy9GU=NcMGj38pXnuEMRhXfox6jVwQ37+mcjnvhA@mail.gmail.com>
+ <20180405150405.5b902b41@roar.ozlabs.ibm.com>
+ <20180405155307.49f748f3@gmail.com>
+ <20180405164508.7a15a770@roar.ozlabs.ibm.com>
+ <x496055gzet.fsf@segfault.boston.devel.redhat.com>
+ <20180406112600.454432f0@roar.ozlabs.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Fri, 6 Apr 2018 19:25:52 +1000
+Message-ID: <CAKTCnz=LD_uO7bdwFHDHy9KHHJ_dPA1LdxF1Pm7OUFFGr4s_VA@mail.gmail.com>
+Subject: Re: [RESEND 2/3] powerpc/memcpy: Add memcpy_mcsafe for pmem
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, "Luck, Tony" <tony.luck@intel.com>,
+ Matthew Wilcox <mawilcox@microsoft.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christoph Hellwig <hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,35 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-04-06 at 00:16 -0700, Christoph Hellwig wrote:
-> On Fri, Apr 06, 2018 at 08:23:10AM +0530, Anshuman Khandual wrote:
-> > On 04/06/2018 02:48 AM, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2018-04-05 at 21:34 +0300, Michael S. Tsirkin wrote:
-> > > > > In this specific case, because that would make qemu expect an iommu,
-> > > > > and there isn't one.
-> > > > 
-> > > > 
-> > > > I think that you can set iommu_platform in qemu without an iommu.
-> > > 
-> > > No I mean the platform has one but it's not desirable for it to be used
-> > > due to the performance hit.
-> > 
-> > Also the only requirement is to bounce the I/O buffers through SWIOTLB
-> > implemented as DMA API which the virtio core understands. There is no
-> > need for an IOMMU to be involved for the device representation in this
-> > case IMHO.
-> 
-> This whole virtio translation issue is a mess.  I think we need to
-> switch it to the dma API, and then quirk the legacy case to always
-> use the direct mapping inside the dma API.
+On Fri, Apr 6, 2018 at 11:26 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> On Thu, 05 Apr 2018 16:40:26 -0400
+> Jeff Moyer <jmoyer@redhat.com> wrote:
+>
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>>
+>> > On Thu, 5 Apr 2018 15:53:07 +1000
+>> > Balbir Singh <bsingharora@gmail.com> wrote:
+>> >> I'm thinking about it, I wonder what "bytes remaining" mean in pmem context
+>> >> in the context of a machine check exception. Also, do we want to be byte
+>> >> accurate or cache-line accurate for the bytes remaining? The former is much
+>> >> easier than the latter :)
+>> >
+>> > The ideal would be a linear measure of how much of your copy reached
+>> > (or can reach) non-volatile storage with nothing further copied. You
+>> > may have to allow for some relaxing of the semantics depending on
+>> > what the architecture can support.
+>>
+>> I think you've got that backwards.  memcpy_mcsafe is used to copy *from*
+>> persistent memory.  The idea is to catch errors when reading pmem, not
+>> writing to it.
+>>
 
-Fine with using a dma API always on the Linux side, but we do want to
-special case virtio still at the arch and qemu side to have a "direct
-mapping" mode. Not sure how (special flags on PCI devices) to avoid
-actually going through an emulated IOMMU on the qemu side, because that
-slows things down, esp. with vhost.
+I know the comment in x86 says posted writes and cares for only loads, but I
+don't see why both sides should not be handled.
 
-IE, we can't I think just treat it the same as a physical device.
+>> > What's the problem with just counting bytes copied like usercopy --
+>> > why is that harder than cacheline accuracy?
+>>
+>> He said the former (i.e. bytes) is easier.  So, I think you're on the
+>> same page.  :)
+>
+> Oh well that makes a lot more sense in my mind now, thanks :)
 
-Cheers,
-Ben.
+I thought the cache-aligned might make sense, since usually we'd expect the
+failure to be at a cache-line level, but our copy_tofrom_user does accurate
+accounting
+
+Balbir Singh.
