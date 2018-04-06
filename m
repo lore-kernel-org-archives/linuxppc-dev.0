@@ -1,27 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mgreer@animalcreek.com>
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
+ [66.111.4.29])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HG0f0QVnzF1yR
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 07:18:57 +1000 (AEST)
-Message-ID: <1522963113.21446.211.camel@kernel.crashing.org>
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, robh@kernel.org, aik@ozlabs.ru,
- jasowang@redhat.com, joe@perches.com, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au
-Date: Fri, 06 Apr 2018 07:18:33 +1000
-In-Reply-To: <20180405213042-mutt-send-email-mst@kernel.org>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
- <20180405175326-mutt-send-email-mst@kernel.org>
- <1522940983.21446.205.camel@kernel.crashing.org>
- <20180405213042-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HMJ46HkyzF1sZ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 11:17:40 +1000 (AEST)
+From: Mark Greer <mgreer@animalcreek.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Remi Machet <rmachet@nvidia.com>, Dale Farnsworth <dale@farnsworth.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Mark Greer <mgreer@animalcreek.com>
+Subject: [PATCH 3/5] powerpc/boot: Remove support for Marvell mv64x60 i2c
+ controller
+Date: Thu,  5 Apr 2018 18:17:18 -0700
+Message-Id: <20180406011720.7728-4-mgreer@animalcreek.com>
+In-Reply-To: <20180406011720.7728-1-mgreer@animalcreek.com>
+References: <20180406011720.7728-1-mgreer@animalcreek.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +26,238 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-04-05 at 21:34 +0300, Michael S. Tsirkin wrote:
-> > In this specific case, because that would make qemu expect an iommu,
-> > and there isn't one.
-> 
-> 
-> I think that you can set iommu_platform in qemu without an iommu.
+There are no longer any platforms that use Marvell's mv64x60's i2c
+controller so remove its driver.
 
-No I mean the platform has one but it's not desirable for it to be used
-due to the performance hit.
+Signed-off-by: Mark Greer <mgreer@animalcreek.com>
+---
+ arch/powerpc/boot/Makefile      |   2 +-
+ arch/powerpc/boot/mv64x60_i2c.c | 204 ----------------------------------------
+ 2 files changed, 1 insertion(+), 205 deletions(-)
+ delete mode 100644 arch/powerpc/boot/mv64x60_i2c.c
 
-Cheers,
-Ben.
-> 
-> > Anshuman, you need to provide more background here. I don't have time
-> > right now it's late, but explain about the fact that this is for a
-> > specific type of secure VM which has only a limited pool of (insecure)
-> > memory that can be shared with qemu, so all IOs need to bounce via that
-> > pool, which can be achieved by using swiotlb.
-> > 
-> > Note: this isn't urgent, we can discuss alternative approaches, this is
-> > just to start the conversation.
-> > 
-> > Cheers,
-> > Ben.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 58f2dbfba275..bf6a46055ba7 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -120,7 +120,7 @@ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+ src-wlib-$(CONFIG_PPC_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+ src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
+-src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
++src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c ugecon.c fsl-soc.c
+ src-wlib-$(CONFIG_XILINX_VIRTEX) += uartlite.c
+ src-wlib-$(CONFIG_CPM) += cpm-serial.c
+ 
+diff --git a/arch/powerpc/boot/mv64x60_i2c.c b/arch/powerpc/boot/mv64x60_i2c.c
+deleted file mode 100644
+index 52a3212b6638..000000000000
+--- a/arch/powerpc/boot/mv64x60_i2c.c
++++ /dev/null
+@@ -1,204 +0,0 @@
+-/*
+- * Bootloader version of the i2c driver for the MV64x60.
+- *
+- * Author: Dale Farnsworth <dfarnsworth@mvista.com>
+- * Maintained by: Mark A. Greer <mgreer@mvista.com>
+- *
+- * 2003, 2007 (c) MontaVista, Software, Inc.  This file is licensed under
+- * the terms of the GNU General Public License version 2.  This program is
+- * licensed "as is" without any warranty of any kind, whether express or
+- * implied.
+- */
+-
+-#include <stdarg.h>
+-#include <stddef.h>
+-#include "types.h"
+-#include "elf.h"
+-#include "page.h"
+-#include "string.h"
+-#include "stdio.h"
+-#include "io.h"
+-#include "ops.h"
+-#include "mv64x60.h"
+-
+-/* Register defines */
+-#define MV64x60_I2C_REG_SLAVE_ADDR			0x00
+-#define MV64x60_I2C_REG_DATA				0x04
+-#define MV64x60_I2C_REG_CONTROL				0x08
+-#define MV64x60_I2C_REG_STATUS				0x0c
+-#define MV64x60_I2C_REG_BAUD				0x0c
+-#define MV64x60_I2C_REG_EXT_SLAVE_ADDR			0x10
+-#define MV64x60_I2C_REG_SOFT_RESET			0x1c
+-
+-#define MV64x60_I2C_CONTROL_ACK				0x04
+-#define MV64x60_I2C_CONTROL_IFLG			0x08
+-#define MV64x60_I2C_CONTROL_STOP			0x10
+-#define MV64x60_I2C_CONTROL_START			0x20
+-#define MV64x60_I2C_CONTROL_TWSIEN			0x40
+-#define MV64x60_I2C_CONTROL_INTEN			0x80
+-
+-#define MV64x60_I2C_STATUS_BUS_ERR			0x00
+-#define MV64x60_I2C_STATUS_MAST_START			0x08
+-#define MV64x60_I2C_STATUS_MAST_REPEAT_START		0x10
+-#define MV64x60_I2C_STATUS_MAST_WR_ADDR_ACK		0x18
+-#define MV64x60_I2C_STATUS_MAST_WR_ADDR_NO_ACK		0x20
+-#define MV64x60_I2C_STATUS_MAST_WR_ACK			0x28
+-#define MV64x60_I2C_STATUS_MAST_WR_NO_ACK		0x30
+-#define MV64x60_I2C_STATUS_MAST_LOST_ARB		0x38
+-#define MV64x60_I2C_STATUS_MAST_RD_ADDR_ACK		0x40
+-#define MV64x60_I2C_STATUS_MAST_RD_ADDR_NO_ACK		0x48
+-#define MV64x60_I2C_STATUS_MAST_RD_DATA_ACK		0x50
+-#define MV64x60_I2C_STATUS_MAST_RD_DATA_NO_ACK		0x58
+-#define MV64x60_I2C_STATUS_MAST_WR_ADDR_2_ACK		0xd0
+-#define MV64x60_I2C_STATUS_MAST_WR_ADDR_2_NO_ACK	0xd8
+-#define MV64x60_I2C_STATUS_MAST_RD_ADDR_2_ACK		0xe0
+-#define MV64x60_I2C_STATUS_MAST_RD_ADDR_2_NO_ACK	0xe8
+-#define MV64x60_I2C_STATUS_NO_STATUS			0xf8
+-
+-static u8 *ctlr_base;
+-
+-static int mv64x60_i2c_wait_for_status(int wanted)
+-{
+-	int i;
+-	int status;
+-
+-	for (i=0; i<1000; i++) {
+-		udelay(10);
+-		status = in_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_STATUS))
+-			& 0xff;
+-		if (status == wanted)
+-			return status;
+-	}
+-	return -status;
+-}
+-
+-static int mv64x60_i2c_control(int control, int status)
+-{
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
+-	return mv64x60_i2c_wait_for_status(status);
+-}
+-
+-static int mv64x60_i2c_read_byte(int control, int status)
+-{
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
+-	if (mv64x60_i2c_wait_for_status(status) < 0)
+-		return -1;
+-	return in_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_DATA)) & 0xff;
+-}
+-
+-static int mv64x60_i2c_write_byte(int data, int control, int status)
+-{
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_DATA), data & 0xff);
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
+-	return mv64x60_i2c_wait_for_status(status);
+-}
+-
+-int mv64x60_i2c_read(u32 devaddr, u8 *buf, u32 offset, u32 offset_size,
+-		 u32 count)
+-{
+-	int i;
+-	int data;
+-	int control;
+-	int status;
+-
+-	if (ctlr_base == NULL)
+-		return -1;
+-
+-	/* send reset */
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_SOFT_RESET), 0);
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_SLAVE_ADDR), 0);
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_EXT_SLAVE_ADDR), 0);
+-	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_BAUD), (4 << 3) | 0x4);
+-
+-	if (mv64x60_i2c_control(MV64x60_I2C_CONTROL_TWSIEN,
+-				MV64x60_I2C_STATUS_NO_STATUS) < 0)
+-		return -1;
+-
+-	/* send start */
+-	control = MV64x60_I2C_CONTROL_START | MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_START;
+-	if (mv64x60_i2c_control(control, status) < 0)
+-		return -1;
+-
+-	/* select device for writing */
+-	data = devaddr & ~0x1;
+-	control = MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_WR_ADDR_ACK;
+-	if (mv64x60_i2c_write_byte(data, control, status) < 0)
+-		return -1;
+-
+-	/* send offset of data */
+-	control = MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_WR_ACK;
+-	if (offset_size > 1) {
+-		if (mv64x60_i2c_write_byte(offset >> 8, control, status) < 0)
+-			return -1;
+-	}
+-	if (mv64x60_i2c_write_byte(offset, control, status) < 0)
+-		return -1;
+-
+-	/* resend start */
+-	control = MV64x60_I2C_CONTROL_START | MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_REPEAT_START;
+-	if (mv64x60_i2c_control(control, status) < 0)
+-		return -1;
+-
+-	/* select device for reading */
+-	data = devaddr | 0x1;
+-	control = MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_RD_ADDR_ACK;
+-	if (mv64x60_i2c_write_byte(data, control, status) < 0)
+-		return -1;
+-
+-	/* read all but last byte of data */
+-	control = MV64x60_I2C_CONTROL_ACK | MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_RD_DATA_ACK;
+-
+-	for (i=1; i<count; i++) {
+-		data = mv64x60_i2c_read_byte(control, status);
+-		if (data < 0) {
+-			printf("errors on iteration %d\n", i);
+-			return -1;
+-		}
+-		*buf++ = data;
+-	}
+-
+-	/* read last byte of data */
+-	control = MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_MAST_RD_DATA_NO_ACK;
+-	data = mv64x60_i2c_read_byte(control, status);
+-	if (data < 0)
+-		return -1;
+-	*buf++ = data;
+-
+-	/* send stop */
+-	control = MV64x60_I2C_CONTROL_STOP | MV64x60_I2C_CONTROL_TWSIEN;
+-	status = MV64x60_I2C_STATUS_NO_STATUS;
+-	if (mv64x60_i2c_control(control, status) < 0)
+-		return -1;
+-
+-	return count;
+-}
+-
+-int mv64x60_i2c_open(void)
+-{
+-	u32 v;
+-	void *devp;
+-
+-	devp = find_node_by_compatible(NULL, "marvell,mv64360-i2c");
+-	if (devp == NULL)
+-		goto err_out;
+-	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
+-		goto err_out;
+-
+-	ctlr_base = (u8 *)v;
+-	return 0;
+-
+-err_out:
+-	return -1;
+-}
+-
+-void mv64x60_i2c_close(void)
+-{
+-	ctlr_base = NULL;
+-}
+-- 
+2.16.2
