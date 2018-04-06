@@ -1,35 +1,43 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-ot0-x230.google.com (mail-ot0-x230.google.com
- [IPv6:2607:f8b0:4003:c0f::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HNpy5q71zF1pZ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 12:26:01 +1000 (AEST)
-Received: by mail-ot0-x230.google.com with SMTP id h55-v6so28093648ote.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 19:26:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HPQW1Q6gzF1wk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 12:53:22 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w362nF4m121062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Apr 2018 22:53:19 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h5wnfwqfq-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:53:18 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 6 Apr 2018 03:53:17 +0100
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+ <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+ <20180405175326-mutt-send-email-mst@kernel.org>
+ <1522940983.21446.205.camel@kernel.crashing.org>
+ <20180405213042-mutt-send-email-mst@kernel.org>
+ <1522963113.21446.211.camel@kernel.crashing.org>
+Cc: robh@kernel.org, aik@ozlabs.ru, jasowang@redhat.com,
+ linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 6 Apr 2018 08:23:10 +0530
 MIME-Version: 1.0
-In-Reply-To: <CAOSf1CGtNg4_siQtAw-H95Ay1m7YPvjZeqnmWvELb1xH1stRJQ@mail.gmail.com>
-References: <20180403142415.30083-1-oohall@gmail.com>
- <20180403142415.30083-3-oohall@gmail.com>
- <CAPcyv4jW5H8A96MFD7-UazNSZq-t1_NfrChNB3p9=somdBpsNw@mail.gmail.com>
- <20180404220750.0436bbe1@gmail.com>
- <CAOSf1CGdKU4zQQauqo3UoNvKnKDMHteAEtsMWVtTG7T01csMbg@mail.gmail.com>
- <CAPcyv4if4un9mgFon4ttjKDYEtHC_GP6VoxUENp7YNS50T3afA@mail.gmail.com>
- <CAOSf1CHu4R-t8q-8fL6Dyk7myFR0gTfd6-0cxqtBVGZgYZWGAw@mail.gmail.com>
- <87bmexua3s.fsf@concordia.ellerman.id.au>
- <CAOSf1CEUnucUhW_pXG=7h5QBHvaH2-ENPKjGD42_0WEvbU6-Wg@mail.gmail.com>
- <CAPcyv4jEFMnYqpcop=Ox-dZR3dSBRMhT05JSS-gPABX_YQGw1g@mail.gmail.com>
- <CAOSf1CGtNg4_siQtAw-H95Ay1m7YPvjZeqnmWvELb1xH1stRJQ@mail.gmail.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Thu, 5 Apr 2018 19:25:58 -0700
-Message-ID: <CAPcyv4gv0rVQ+TTV=omcAO7tA5orufBadQn9ugK1jYwGH_NT=g@mail.gmail.com>
-Subject: Re: [RESEND v2 3/4] doc/devicetree: Persistent memory region bindings
-To: Oliver <oohall@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Device Tree <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1522963113.21446.211.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,30 +47,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 5, 2018 at 7:14 PM, Oliver <oohall@gmail.com> wrote:
->
-> On Fri, Apr 6, 2018 at 12:43 AM, Dan Williams <dan.j.williams@intel.com> wrote:
-> > On Thu, Apr 5, 2018 at 5:43 AM, Oliver <oohall@gmail.com> wrote:
-> >> On Thu, Apr 5, 2018 at 10:11 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >>> Oliver <oohall@gmail.com> writes:
-> >>> ...
-> >>>>
-> >>>> For context Balbir is working with me on some of the pmem stuff. You
-> >>>> probably want an Ack from Rob rather than one of us.
-> >>>
-> >>> I'll ack it if you make all the niggly nit picky trivial annoying
-> >>> changes I asked for :D
-> >>
-> >> *groan*
-> >>
-> >> Fine, I'll respin it tomorrow. If anyone else has comments now would
-> >> be the time to make them.
-> >
-> > Please also include my niggly nit picky trivial annoying bike shed
-> > color for the driver name to *not* use the "nd_region" suffix for a
-> > driver registering "nvdimm_bus" objects. "of_pmem_range" or
-> > "of_pmem_bus" or almost anything else would be fine.
->
-> Oh sure, would using of_pmem_region to match the compatible be ok?
+On 04/06/2018 02:48 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-04-05 at 21:34 +0300, Michael S. Tsirkin wrote:
+>>> In this specific case, because that would make qemu expect an iommu,
+>>> and there isn't one.
+>>
+>>
+>> I think that you can set iommu_platform in qemu without an iommu.
+> 
+> No I mean the platform has one but it's not desirable for it to be used
+> due to the performance hit.
 
-That works for me.
+Also the only requirement is to bounce the I/O buffers through SWIOTLB
+implemented as DMA API which the virtio core understands. There is no
+need for an IOMMU to be involved for the device representation in this
+case IMHO.
