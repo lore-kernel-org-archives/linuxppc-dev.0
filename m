@@ -1,22 +1,23 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HSn23XWNzF1yt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 15:24:38 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id v194-v6so228344itb.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:24:38 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, rashmica.g@gmail.com, benh@kernel.crashing.org,
- Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH 2/2] powerpc/mm/memtrace: Let the arch hotunplug code flush
- cache
-Date: Fri,  6 Apr 2018 15:24:24 +1000
-Message-Id: <20180406052424.29841-2-bsingharora@gmail.com>
-In-Reply-To: <20180406052424.29841-1-bsingharora@gmail.com>
-References: <20180406052424.29841-1-bsingharora@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HT6S6VKBzF1lS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 15:39:44 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id x4-v6so7529pln.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Apr 2018 22:39:44 -0700 (PDT)
+Date: Fri, 6 Apr 2018 15:39:32 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH 2/2] KVM: PPC: Book3S HV: lockless tlbie for HPT hcalls
+Message-ID: <20180406153932.3437ad3c@roar.ozlabs.ibm.com>
+In-Reply-To: <20180405175631.31381-3-npiggin@gmail.com>
+References: <20180405175631.31381-1-npiggin@gmail.com>
+ <20180405175631.31381-3-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Don't do this via custom code, instead now that we have support
-in the arch hotplug/hotunplug code, rely on those routines
-to do the right thing.
+On Fri,  6 Apr 2018 03:56:31 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Fixes: 9d5171a8f248 ("powerpc/powernv: Enable removal of memory for in memory tracing")
-because the older code uses ppc64_caches.l1d.size instead of
-ppc64_caches.l1d.line_size
+> tlbies to an LPAR do not have to be serialised since POWER4,
+> MMU_FTR_LOCKLESS_TLBIE can be used to avoid the spin lock in
+> do_tlbies.
+> 
+> Testing was done on a POWER9 system in HPT mode, with a -smp 32 guest
+> in HPT mode. 32 instances of the powerpc fork benchmark from selftests
+> were run with --fork, and the results measured.
+> 
+> Without this patch, total throughput was about 13.5K/sec, and this is
+> the top of the host profile:
+> 
+>    74.52%  [k] do_tlbies
+>     2.95%  [k] kvmppc_book3s_hv_page_fault
+>     1.80%  [k] calc_checksum
+>     1.80%  [k] kvmppc_vcpu_run_hv
+>     1.49%  [k] kvmppc_run_core
+> 
+> After this patch, throughput was about 51K/sec, with this profile:
+> 
+>    21.28%  [k] do_tlbies
+>     5.26%  [k] kvmppc_run_core
+>     4.88%  [k] kvmppc_book3s_hv_page_fault
+>     3.30%  [k] _raw_spin_lock_irqsave
+>     3.25%  [k] gup_pgd_range
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv_rm_mmu.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 78e6a392330f..0221a0f74f07 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -439,6 +439,9 @@ static inline int try_lock_tlbie(unsigned int *lock)
+>  	unsigned int tmp, old;
+>  	unsigned int token = LOCK_TOKEN;
+>  
+> +	if (mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
+> +		return 1;
+> +
+>  	asm volatile("1:lwarx	%1,0,%2\n"
+>  		     "	cmpwi	cr0,%1,0\n"
+>  		     "	bne	2f\n"
+> @@ -452,6 +455,12 @@ static inline int try_lock_tlbie(unsigned int *lock)
+>  	return old == 0;
+>  }
+>  
+> +static inline void unlock_tlbie_after_sync(unsigned int *lock)
+> +{
+> +	if (mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
+> +		return;
+> +}
+> +
+>  static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+>  		      long npages, int global, bool need_sync)
+>  {
+> @@ -483,7 +492,7 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
+>  		}
+>  
+>  		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
+> -		kvm->arch.tlbie_lock = 0;
+> +		unlock_tlbie_after_sync(&kvm->arch.tlbie_lock);
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
----
- arch/powerpc/platforms/powernv/memtrace.c | 17 -----------------
- 1 file changed, 17 deletions(-)
+Well that's a silly bug in the !LOCKLESS path, that was supposed
+to move to unlock, of course. Will fix it up after some time for
+comments.
 
-diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index de470caf0784..fc222a0c2ac4 100644
---- a/arch/powerpc/platforms/powernv/memtrace.c
-+++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -82,19 +82,6 @@ static const struct file_operations memtrace_fops = {
- 	.open	= simple_open,
- };
- 
--static void flush_memory_region(u64 base, u64 size)
--{
--	unsigned long line_size = ppc64_caches.l1d.size;
--	u64 end = base + size;
--	u64 addr;
--
--	base = round_down(base, line_size);
--	end = round_up(end, line_size);
--
--	for (addr = base; addr < end; addr += line_size)
--		asm volatile("dcbf 0,%0" : "=r" (addr) :: "memory");
--}
--
- static int check_memblock_online(struct memory_block *mem, void *arg)
- {
- 	if (mem->state != MEM_ONLINE)
-@@ -132,10 +119,6 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
- 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
- 			  change_memblock_state);
- 
--	/* RCU grace period? */
--	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT),
--			    nr_pages << PAGE_SHIFT);
--
- 	lock_device_hotplug();
- 	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
- 	unlock_device_hotplug();
--- 
-2.13.6
+Thanks,
+Nick
