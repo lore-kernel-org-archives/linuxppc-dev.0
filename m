@@ -3,7 +3,7 @@ Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
  [66.111.4.29])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40HMJ46HkyzF1sZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40HMJ46NSnzF1v3
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Apr 2018 11:17:40 +1000 (AEST)
 From: Mark Greer <mgreer@animalcreek.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -11,10 +11,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: Remi Machet <rmachet@nvidia.com>, Dale Farnsworth <dale@farnsworth.org>,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Mark Greer <mgreer@animalcreek.com>
-Subject: [PATCH 3/5] powerpc/boot: Remove support for Marvell mv64x60 i2c
- controller
-Date: Thu,  5 Apr 2018 18:17:18 -0700
-Message-Id: <20180406011720.7728-4-mgreer@animalcreek.com>
+Subject: [PATCH 4/5] powerpc/boot: Remove core support for Marvell mv64x60
+ hostbridges
+Date: Thu,  5 Apr 2018 18:17:19 -0700
+Message-Id: <20180406011720.7728-5-mgreer@animalcreek.com>
 In-Reply-To: <20180406011720.7728-1-mgreer@animalcreek.com>
 References: <20180406011720.7728-1-mgreer@animalcreek.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,45 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no longer any platforms that use Marvell's mv64x60's i2c
-controller so remove its driver.
+There are no longer any platforms that use Marvell's mv64x60
+hostbridges so remove the supporting boot code.
 
 Signed-off-by: Mark Greer <mgreer@animalcreek.com>
 ---
- arch/powerpc/boot/Makefile      |   2 +-
- arch/powerpc/boot/mv64x60_i2c.c | 204 ----------------------------------------
- 2 files changed, 1 insertion(+), 205 deletions(-)
- delete mode 100644 arch/powerpc/boot/mv64x60_i2c.c
+ arch/powerpc/boot/Makefile  |   2 +-
+ arch/powerpc/boot/mv64x60.c | 581 --------------------------------------------
+ arch/powerpc/boot/mv64x60.h |  70 ------
+ 3 files changed, 1 insertion(+), 652 deletions(-)
+ delete mode 100644 arch/powerpc/boot/mv64x60.c
+ delete mode 100644 arch/powerpc/boot/mv64x60.h
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 58f2dbfba275..bf6a46055ba7 100644
+index bf6a46055ba7..fa16626849f4 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
 @@ -120,7 +120,7 @@ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
  src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
  src-wlib-$(CONFIG_PPC_8xx) += mpc8xx.c planetcore.c fsl-soc.c
  src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
--src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
-+src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c ugecon.c fsl-soc.c
+-src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c ugecon.c fsl-soc.c
++src-wlib-$(CONFIG_EMBEDDED6xx) += ugecon.c fsl-soc.c
  src-wlib-$(CONFIG_XILINX_VIRTEX) += uartlite.c
  src-wlib-$(CONFIG_CPM) += cpm-serial.c
  
-diff --git a/arch/powerpc/boot/mv64x60_i2c.c b/arch/powerpc/boot/mv64x60_i2c.c
+diff --git a/arch/powerpc/boot/mv64x60.c b/arch/powerpc/boot/mv64x60.c
 deleted file mode 100644
-index 52a3212b6638..000000000000
---- a/arch/powerpc/boot/mv64x60_i2c.c
+index d9bb302b91d2..000000000000
+--- a/arch/powerpc/boot/mv64x60.c
 +++ /dev/null
-@@ -1,204 +0,0 @@
+@@ -1,581 +0,0 @@
 -/*
-- * Bootloader version of the i2c driver for the MV64x60.
+- * Marvell hostbridge routines
 - *
-- * Author: Dale Farnsworth <dfarnsworth@mvista.com>
-- * Maintained by: Mark A. Greer <mgreer@mvista.com>
+- * Author: Mark A. Greer <source@mvista.com>
 - *
-- * 2003, 2007 (c) MontaVista, Software, Inc.  This file is licensed under
-- * the terms of the GNU General Public License version 2.  This program is
-- * licensed "as is" without any warranty of any kind, whether express or
-- * implied.
+- * 2004, 2005, 2007 (c) MontaVista Software, Inc. This file is licensed under
+- * the terms of the GNU General Public License version 2. This program
+- * is licensed "as is" without any warranty of any kind, whether express
+- * or implied.
 - */
 -
 -#include <stdarg.h>
@@ -78,186 +79,640 @@ index 52a3212b6638..000000000000
 -#include "ops.h"
 -#include "mv64x60.h"
 -
--/* Register defines */
--#define MV64x60_I2C_REG_SLAVE_ADDR			0x00
--#define MV64x60_I2C_REG_DATA				0x04
--#define MV64x60_I2C_REG_CONTROL				0x08
--#define MV64x60_I2C_REG_STATUS				0x0c
--#define MV64x60_I2C_REG_BAUD				0x0c
--#define MV64x60_I2C_REG_EXT_SLAVE_ADDR			0x10
--#define MV64x60_I2C_REG_SOFT_RESET			0x1c
+-#define PCI_DEVFN(slot,func)	((((slot) & 0x1f) << 3) | ((func) & 0x07))
 -
--#define MV64x60_I2C_CONTROL_ACK				0x04
--#define MV64x60_I2C_CONTROL_IFLG			0x08
--#define MV64x60_I2C_CONTROL_STOP			0x10
--#define MV64x60_I2C_CONTROL_START			0x20
--#define MV64x60_I2C_CONTROL_TWSIEN			0x40
--#define MV64x60_I2C_CONTROL_INTEN			0x80
+-#define MV64x60_CPU2MEM_WINDOWS			4
+-#define MV64x60_CPU2MEM_0_BASE			0x0008
+-#define MV64x60_CPU2MEM_0_SIZE			0x0010
+-#define MV64x60_CPU2MEM_1_BASE			0x0208
+-#define MV64x60_CPU2MEM_1_SIZE			0x0210
+-#define MV64x60_CPU2MEM_2_BASE			0x0018
+-#define MV64x60_CPU2MEM_2_SIZE			0x0020
+-#define MV64x60_CPU2MEM_3_BASE			0x0218
+-#define MV64x60_CPU2MEM_3_SIZE			0x0220
 -
--#define MV64x60_I2C_STATUS_BUS_ERR			0x00
--#define MV64x60_I2C_STATUS_MAST_START			0x08
--#define MV64x60_I2C_STATUS_MAST_REPEAT_START		0x10
--#define MV64x60_I2C_STATUS_MAST_WR_ADDR_ACK		0x18
--#define MV64x60_I2C_STATUS_MAST_WR_ADDR_NO_ACK		0x20
--#define MV64x60_I2C_STATUS_MAST_WR_ACK			0x28
--#define MV64x60_I2C_STATUS_MAST_WR_NO_ACK		0x30
--#define MV64x60_I2C_STATUS_MAST_LOST_ARB		0x38
--#define MV64x60_I2C_STATUS_MAST_RD_ADDR_ACK		0x40
--#define MV64x60_I2C_STATUS_MAST_RD_ADDR_NO_ACK		0x48
--#define MV64x60_I2C_STATUS_MAST_RD_DATA_ACK		0x50
--#define MV64x60_I2C_STATUS_MAST_RD_DATA_NO_ACK		0x58
--#define MV64x60_I2C_STATUS_MAST_WR_ADDR_2_ACK		0xd0
--#define MV64x60_I2C_STATUS_MAST_WR_ADDR_2_NO_ACK	0xd8
--#define MV64x60_I2C_STATUS_MAST_RD_ADDR_2_ACK		0xe0
--#define MV64x60_I2C_STATUS_MAST_RD_ADDR_2_NO_ACK	0xe8
--#define MV64x60_I2C_STATUS_NO_STATUS			0xf8
+-#define MV64x60_ENET2MEM_BAR_ENABLE		0x2290
+-#define MV64x60_ENET2MEM_0_BASE			0x2200
+-#define MV64x60_ENET2MEM_0_SIZE			0x2204
+-#define MV64x60_ENET2MEM_1_BASE			0x2208
+-#define MV64x60_ENET2MEM_1_SIZE			0x220c
+-#define MV64x60_ENET2MEM_2_BASE			0x2210
+-#define MV64x60_ENET2MEM_2_SIZE			0x2214
+-#define MV64x60_ENET2MEM_3_BASE			0x2218
+-#define MV64x60_ENET2MEM_3_SIZE			0x221c
+-#define MV64x60_ENET2MEM_4_BASE			0x2220
+-#define MV64x60_ENET2MEM_4_SIZE			0x2224
+-#define MV64x60_ENET2MEM_5_BASE			0x2228
+-#define MV64x60_ENET2MEM_5_SIZE			0x222c
+-#define MV64x60_ENET2MEM_ACC_PROT_0		0x2294
+-#define MV64x60_ENET2MEM_ACC_PROT_1		0x2298
+-#define MV64x60_ENET2MEM_ACC_PROT_2		0x229c
 -
--static u8 *ctlr_base;
+-#define MV64x60_MPSC2MEM_BAR_ENABLE		0xf250
+-#define MV64x60_MPSC2MEM_0_BASE			0xf200
+-#define MV64x60_MPSC2MEM_0_SIZE			0xf204
+-#define MV64x60_MPSC2MEM_1_BASE			0xf208
+-#define MV64x60_MPSC2MEM_1_SIZE			0xf20c
+-#define MV64x60_MPSC2MEM_2_BASE			0xf210
+-#define MV64x60_MPSC2MEM_2_SIZE			0xf214
+-#define MV64x60_MPSC2MEM_3_BASE			0xf218
+-#define MV64x60_MPSC2MEM_3_SIZE			0xf21c
+-#define MV64x60_MPSC_0_REMAP			0xf240
+-#define MV64x60_MPSC_1_REMAP			0xf244
+-#define MV64x60_MPSC2MEM_ACC_PROT_0		0xf254
+-#define MV64x60_MPSC2MEM_ACC_PROT_1		0xf258
+-#define MV64x60_MPSC2REGS_BASE			0xf25c
 -
--static int mv64x60_i2c_wait_for_status(int wanted)
--{
--	int i;
--	int status;
+-#define MV64x60_IDMA2MEM_BAR_ENABLE		0x0a80
+-#define MV64x60_IDMA2MEM_0_BASE			0x0a00
+-#define MV64x60_IDMA2MEM_0_SIZE			0x0a04
+-#define MV64x60_IDMA2MEM_1_BASE			0x0a08
+-#define MV64x60_IDMA2MEM_1_SIZE			0x0a0c
+-#define MV64x60_IDMA2MEM_2_BASE			0x0a10
+-#define MV64x60_IDMA2MEM_2_SIZE			0x0a14
+-#define MV64x60_IDMA2MEM_3_BASE			0x0a18
+-#define MV64x60_IDMA2MEM_3_SIZE			0x0a1c
+-#define MV64x60_IDMA2MEM_4_BASE			0x0a20
+-#define MV64x60_IDMA2MEM_4_SIZE			0x0a24
+-#define MV64x60_IDMA2MEM_5_BASE			0x0a28
+-#define MV64x60_IDMA2MEM_5_SIZE			0x0a2c
+-#define MV64x60_IDMA2MEM_6_BASE			0x0a30
+-#define MV64x60_IDMA2MEM_6_SIZE			0x0a34
+-#define MV64x60_IDMA2MEM_7_BASE			0x0a38
+-#define MV64x60_IDMA2MEM_7_SIZE			0x0a3c
+-#define MV64x60_IDMA2MEM_ACC_PROT_0		0x0a70
+-#define MV64x60_IDMA2MEM_ACC_PROT_1		0x0a74
+-#define MV64x60_IDMA2MEM_ACC_PROT_2		0x0a78
+-#define MV64x60_IDMA2MEM_ACC_PROT_3		0x0a7c
 -
--	for (i=0; i<1000; i++) {
--		udelay(10);
--		status = in_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_STATUS))
--			& 0xff;
--		if (status == wanted)
--			return status;
+-#define MV64x60_PCI_ACC_CNTL_WINDOWS		6
+-#define MV64x60_PCI0_PCI_DECODE_CNTL		0x0d3c
+-#define MV64x60_PCI1_PCI_DECODE_CNTL		0x0dbc
+-
+-#define MV64x60_PCI0_BAR_ENABLE			0x0c3c
+-#define MV64x60_PCI02MEM_0_SIZE			0x0c08
+-#define MV64x60_PCI0_ACC_CNTL_0_BASE_LO		0x1e00
+-#define MV64x60_PCI0_ACC_CNTL_0_BASE_HI		0x1e04
+-#define MV64x60_PCI0_ACC_CNTL_0_SIZE		0x1e08
+-#define MV64x60_PCI0_ACC_CNTL_1_BASE_LO		0x1e10
+-#define MV64x60_PCI0_ACC_CNTL_1_BASE_HI		0x1e14
+-#define MV64x60_PCI0_ACC_CNTL_1_SIZE		0x1e18
+-#define MV64x60_PCI0_ACC_CNTL_2_BASE_LO		0x1e20
+-#define MV64x60_PCI0_ACC_CNTL_2_BASE_HI		0x1e24
+-#define MV64x60_PCI0_ACC_CNTL_2_SIZE		0x1e28
+-#define MV64x60_PCI0_ACC_CNTL_3_BASE_LO		0x1e30
+-#define MV64x60_PCI0_ACC_CNTL_3_BASE_HI		0x1e34
+-#define MV64x60_PCI0_ACC_CNTL_3_SIZE		0x1e38
+-#define MV64x60_PCI0_ACC_CNTL_4_BASE_LO		0x1e40
+-#define MV64x60_PCI0_ACC_CNTL_4_BASE_HI		0x1e44
+-#define MV64x60_PCI0_ACC_CNTL_4_SIZE		0x1e48
+-#define MV64x60_PCI0_ACC_CNTL_5_BASE_LO		0x1e50
+-#define MV64x60_PCI0_ACC_CNTL_5_BASE_HI		0x1e54
+-#define MV64x60_PCI0_ACC_CNTL_5_SIZE		0x1e58
+-
+-#define MV64x60_PCI1_BAR_ENABLE			0x0cbc
+-#define MV64x60_PCI12MEM_0_SIZE			0x0c88
+-#define MV64x60_PCI1_ACC_CNTL_0_BASE_LO		0x1e80
+-#define MV64x60_PCI1_ACC_CNTL_0_BASE_HI		0x1e84
+-#define MV64x60_PCI1_ACC_CNTL_0_SIZE		0x1e88
+-#define MV64x60_PCI1_ACC_CNTL_1_BASE_LO		0x1e90
+-#define MV64x60_PCI1_ACC_CNTL_1_BASE_HI		0x1e94
+-#define MV64x60_PCI1_ACC_CNTL_1_SIZE		0x1e98
+-#define MV64x60_PCI1_ACC_CNTL_2_BASE_LO		0x1ea0
+-#define MV64x60_PCI1_ACC_CNTL_2_BASE_HI		0x1ea4
+-#define MV64x60_PCI1_ACC_CNTL_2_SIZE		0x1ea8
+-#define MV64x60_PCI1_ACC_CNTL_3_BASE_LO		0x1eb0
+-#define MV64x60_PCI1_ACC_CNTL_3_BASE_HI		0x1eb4
+-#define MV64x60_PCI1_ACC_CNTL_3_SIZE		0x1eb8
+-#define MV64x60_PCI1_ACC_CNTL_4_BASE_LO		0x1ec0
+-#define MV64x60_PCI1_ACC_CNTL_4_BASE_HI		0x1ec4
+-#define MV64x60_PCI1_ACC_CNTL_4_SIZE		0x1ec8
+-#define MV64x60_PCI1_ACC_CNTL_5_BASE_LO		0x1ed0
+-#define MV64x60_PCI1_ACC_CNTL_5_BASE_HI		0x1ed4
+-#define MV64x60_PCI1_ACC_CNTL_5_SIZE		0x1ed8
+-
+-#define MV64x60_CPU2PCI_SWAP_NONE		0x01000000
+-
+-#define MV64x60_CPU2PCI0_IO_BASE		0x0048
+-#define MV64x60_CPU2PCI0_IO_SIZE		0x0050
+-#define MV64x60_CPU2PCI0_IO_REMAP		0x00f0
+-#define MV64x60_CPU2PCI0_MEM_0_BASE		0x0058
+-#define MV64x60_CPU2PCI0_MEM_0_SIZE		0x0060
+-#define MV64x60_CPU2PCI0_MEM_0_REMAP_LO		0x00f8
+-#define MV64x60_CPU2PCI0_MEM_0_REMAP_HI		0x0320
+-
+-#define MV64x60_CPU2PCI1_IO_BASE		0x0090
+-#define MV64x60_CPU2PCI1_IO_SIZE		0x0098
+-#define MV64x60_CPU2PCI1_IO_REMAP		0x0108
+-#define MV64x60_CPU2PCI1_MEM_0_BASE		0x00a0
+-#define MV64x60_CPU2PCI1_MEM_0_SIZE		0x00a8
+-#define MV64x60_CPU2PCI1_MEM_0_REMAP_LO		0x0110
+-#define MV64x60_CPU2PCI1_MEM_0_REMAP_HI		0x0340
+-
+-struct mv64x60_mem_win {
+-	u32 hi;
+-	u32 lo;
+-	u32 size;
+-};
+-
+-struct mv64x60_pci_win {
+-	u32 fcn;
+-	u32 hi;
+-	u32 lo;
+-	u32 size;
+-};
+-
+-/* PCI config access routines */
+-struct {
+-	u32 addr;
+-	u32 data;
+-} static mv64x60_pci_cfgio[2] = {
+-	{ /* hose 0 */
+-		.addr	= 0xcf8,
+-		.data	= 0xcfc,
+-	},
+-	{ /* hose 1 */
+-		.addr	= 0xc78,
+-		.data	= 0xc7c,
 -	}
--	return -status;
+-};
+-
+-u32 mv64x60_cfg_read(u8 *bridge_base, u8 hose, u8 bus, u8 devfn, u8 offset)
+-{
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_cfgio[hose].addr),
+-			(1 << 31) | (bus << 16) | (devfn << 8) | offset);
+-	return in_le32((u32 *)(bridge_base + mv64x60_pci_cfgio[hose].data));
 -}
 -
--static int mv64x60_i2c_control(int control, int status)
+-void mv64x60_cfg_write(u8 *bridge_base, u8 hose, u8 bus, u8 devfn, u8 offset,
+-		u32 val)
 -{
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
--	return mv64x60_i2c_wait_for_status(status);
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_cfgio[hose].addr),
+-			(1 << 31) | (bus << 16) | (devfn << 8) | offset);
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_cfgio[hose].data), val);
 -}
 -
--static int mv64x60_i2c_read_byte(int control, int status)
+-/* I/O ctlr -> system memory setup */
+-static struct mv64x60_mem_win mv64x60_cpu2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
+-		.lo	= MV64x60_CPU2MEM_0_BASE,
+-		.size	= MV64x60_CPU2MEM_0_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_CPU2MEM_1_BASE,
+-		.size	= MV64x60_CPU2MEM_1_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_CPU2MEM_2_BASE,
+-		.size	= MV64x60_CPU2MEM_2_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_CPU2MEM_3_BASE,
+-		.size	= MV64x60_CPU2MEM_3_SIZE,
+-	},
+-};
+-
+-static struct mv64x60_mem_win mv64x60_enet2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
+-		.lo	= MV64x60_ENET2MEM_0_BASE,
+-		.size	= MV64x60_ENET2MEM_0_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_ENET2MEM_1_BASE,
+-		.size	= MV64x60_ENET2MEM_1_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_ENET2MEM_2_BASE,
+-		.size	= MV64x60_ENET2MEM_2_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_ENET2MEM_3_BASE,
+-		.size	= MV64x60_ENET2MEM_3_SIZE,
+-	},
+-};
+-
+-static struct mv64x60_mem_win mv64x60_mpsc2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
+-		.lo	= MV64x60_MPSC2MEM_0_BASE,
+-		.size	= MV64x60_MPSC2MEM_0_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_MPSC2MEM_1_BASE,
+-		.size	= MV64x60_MPSC2MEM_1_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_MPSC2MEM_2_BASE,
+-		.size	= MV64x60_MPSC2MEM_2_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_MPSC2MEM_3_BASE,
+-		.size	= MV64x60_MPSC2MEM_3_SIZE,
+-	},
+-};
+-
+-static struct mv64x60_mem_win mv64x60_idma2mem[MV64x60_CPU2MEM_WINDOWS] = {
+-	{
+-		.lo	= MV64x60_IDMA2MEM_0_BASE,
+-		.size	= MV64x60_IDMA2MEM_0_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_IDMA2MEM_1_BASE,
+-		.size	= MV64x60_IDMA2MEM_1_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_IDMA2MEM_2_BASE,
+-		.size	= MV64x60_IDMA2MEM_2_SIZE,
+-	},
+-	{
+-		.lo	= MV64x60_IDMA2MEM_3_BASE,
+-		.size	= MV64x60_IDMA2MEM_3_SIZE,
+-	},
+-};
+-
+-static u32 mv64x60_dram_selects[MV64x60_CPU2MEM_WINDOWS] = {0xe,0xd,0xb,0x7};
+-
+-/*
+- * ENET, MPSC, and IDMA ctlrs on the MV64x60 have separate windows that
+- * must be set up so that the respective ctlr can access system memory.
+- * Configure them to be same as cpu->memory windows.
+- */
+-void mv64x60_config_ctlr_windows(u8 *bridge_base, u8 *bridge_pbase,
+-		u8 is_coherent)
 -{
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
--	if (mv64x60_i2c_wait_for_status(status) < 0)
--		return -1;
--	return in_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_DATA)) & 0xff;
--}
+-	u32 i, base, size, enables, prot = 0, snoop_bits = 0;
 -
--static int mv64x60_i2c_write_byte(int data, int control, int status)
--{
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_DATA), data & 0xff);
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_CONTROL), control & 0xff);
--	return mv64x60_i2c_wait_for_status(status);
--}
+-	/* Disable ctlr->mem windows */
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), 0x3f);
+-	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_BAR_ENABLE), 0xf);
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), 0xff);
 -
--int mv64x60_i2c_read(u32 devaddr, u8 *buf, u32 offset, u32 offset_size,
--		 u32 count)
--{
--	int i;
--	int data;
--	int control;
--	int status;
+-	if (is_coherent)
+-		snoop_bits = 0x2 << 12; /* Writeback */
 -
--	if (ctlr_base == NULL)
--		return -1;
+-	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE)) & 0xf;
 -
--	/* send reset */
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_SOFT_RESET), 0);
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_SLAVE_ADDR), 0);
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_EXT_SLAVE_ADDR), 0);
--	out_le32((u32 *)(ctlr_base + MV64x60_I2C_REG_BAUD), (4 << 3) | 0x4);
+-	for (i=0; i<MV64x60_CPU2MEM_WINDOWS; i++) {
+-		if (enables & (1 << i)) /* Set means disabled */
+-			continue;
 -
--	if (mv64x60_i2c_control(MV64x60_I2C_CONTROL_TWSIEN,
--				MV64x60_I2C_STATUS_NO_STATUS) < 0)
--		return -1;
+-		base = in_le32((u32 *)(bridge_base + mv64x60_cpu2mem[i].lo))
+-			<< 16;
+-		base |= snoop_bits | (mv64x60_dram_selects[i] << 8);
+-		size = in_le32((u32 *)(bridge_base + mv64x60_cpu2mem[i].size))
+-			<< 16;
+-		prot |= (0x3 << (i << 1)); /* RW access */
 -
--	/* send start */
--	control = MV64x60_I2C_CONTROL_START | MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_START;
--	if (mv64x60_i2c_control(control, status) < 0)
--		return -1;
--
--	/* select device for writing */
--	data = devaddr & ~0x1;
--	control = MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_WR_ADDR_ACK;
--	if (mv64x60_i2c_write_byte(data, control, status) < 0)
--		return -1;
--
--	/* send offset of data */
--	control = MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_WR_ACK;
--	if (offset_size > 1) {
--		if (mv64x60_i2c_write_byte(offset >> 8, control, status) < 0)
--			return -1;
+-		out_le32((u32 *)(bridge_base + mv64x60_enet2mem[i].lo), base);
+-		out_le32((u32 *)(bridge_base + mv64x60_enet2mem[i].size), size);
+-		out_le32((u32 *)(bridge_base + mv64x60_mpsc2mem[i].lo), base);
+-		out_le32((u32 *)(bridge_base + mv64x60_mpsc2mem[i].size), size);
+-		out_le32((u32 *)(bridge_base + mv64x60_idma2mem[i].lo), base);
+-		out_le32((u32 *)(bridge_base + mv64x60_idma2mem[i].size), size);
 -	}
--	if (mv64x60_i2c_write_byte(offset, control, status) < 0)
--		return -1;
 -
--	/* resend start */
--	control = MV64x60_I2C_CONTROL_START | MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_REPEAT_START;
--	if (mv64x60_i2c_control(control, status) < 0)
--		return -1;
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_0), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_1), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_2), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_ACC_PROT_0), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_ACC_PROT_1), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_0), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_1), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_2), prot);
+-	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_3), prot);
 -
--	/* select device for reading */
--	data = devaddr | 0x1;
--	control = MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_RD_ADDR_ACK;
--	if (mv64x60_i2c_write_byte(data, control, status) < 0)
--		return -1;
+-	/* Set mpsc->bridge's reg window to the bridge's internal registers. */
+-	out_le32((u32 *)(bridge_base + MV64x60_MPSC2REGS_BASE),
+-			(u32)bridge_pbase);
 -
--	/* read all but last byte of data */
--	control = MV64x60_I2C_CONTROL_ACK | MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_RD_DATA_ACK;
+-	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), enables);
+-	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_BAR_ENABLE), enables);
+-	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_BAR_ENABLE), enables);
+-}
 -
--	for (i=1; i<count; i++) {
--		data = mv64x60_i2c_read_byte(control, status);
--		if (data < 0) {
--			printf("errors on iteration %d\n", i);
--			return -1;
+-/* PCI MEM -> system memory, et. al. setup */
+-static struct mv64x60_pci_win mv64x60_pci2mem[2] = {
+-	{ /* hose 0 */
+-		.fcn	= 0,
+-		.hi	= 0x14,
+-		.lo	= 0x10,
+-		.size	= MV64x60_PCI02MEM_0_SIZE,
+-	},
+-	{ /* hose 1 */
+-		.fcn	= 0,
+-		.hi	= 0x94,
+-		.lo	= 0x90,
+-		.size	= MV64x60_PCI12MEM_0_SIZE,
+-	},
+-};
+-
+-static struct
+-mv64x60_mem_win mv64x60_pci_acc[2][MV64x60_PCI_ACC_CNTL_WINDOWS] = {
+-	{ /* hose 0 */
+-		{
+-			.hi	= MV64x60_PCI0_ACC_CNTL_0_BASE_HI,
+-			.lo	= MV64x60_PCI0_ACC_CNTL_0_BASE_LO,
+-			.size	= MV64x60_PCI0_ACC_CNTL_0_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI0_ACC_CNTL_1_BASE_HI,
+-			.lo	= MV64x60_PCI0_ACC_CNTL_1_BASE_LO,
+-			.size	= MV64x60_PCI0_ACC_CNTL_1_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI0_ACC_CNTL_2_BASE_HI,
+-			.lo	= MV64x60_PCI0_ACC_CNTL_2_BASE_LO,
+-			.size	= MV64x60_PCI0_ACC_CNTL_2_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI0_ACC_CNTL_3_BASE_HI,
+-			.lo	= MV64x60_PCI0_ACC_CNTL_3_BASE_LO,
+-			.size	= MV64x60_PCI0_ACC_CNTL_3_SIZE,
+-		},
+-	},
+-	{ /* hose 1 */
+-		{
+-			.hi	= MV64x60_PCI1_ACC_CNTL_0_BASE_HI,
+-			.lo	= MV64x60_PCI1_ACC_CNTL_0_BASE_LO,
+-			.size	= MV64x60_PCI1_ACC_CNTL_0_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI1_ACC_CNTL_1_BASE_HI,
+-			.lo	= MV64x60_PCI1_ACC_CNTL_1_BASE_LO,
+-			.size	= MV64x60_PCI1_ACC_CNTL_1_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI1_ACC_CNTL_2_BASE_HI,
+-			.lo	= MV64x60_PCI1_ACC_CNTL_2_BASE_LO,
+-			.size	= MV64x60_PCI1_ACC_CNTL_2_SIZE,
+-		},
+-		{
+-			.hi	= MV64x60_PCI1_ACC_CNTL_3_BASE_HI,
+-			.lo	= MV64x60_PCI1_ACC_CNTL_3_BASE_LO,
+-			.size	= MV64x60_PCI1_ACC_CNTL_3_SIZE,
+-		},
+-	},
+-};
+-
+-static struct mv64x60_mem_win mv64x60_pci2reg[2] = {
+-	{
+-		.hi	= 0x24,
+-		.lo	= 0x20,
+-		.size	= 0,
+-	},
+-	{
+-		.hi	= 0xa4,
+-		.lo	= 0xa0,
+-		.size	= 0,
+-	},
+-};
+-
+-/* Only need to use 1 window (per hose) to get access to all of system memory */
+-void mv64x60_config_pci_windows(u8 *bridge_base, u8 *bridge_pbase, u8 hose,
+-		u8 bus, u32 mem_size, u32 acc_bits)
+-{
+-	u32 i, offset, bar_enable, enables;
+-
+-	/* Disable all windows but PCI MEM -> Bridge's regs window */
+-	enables = ~(1 << 9);
+-	bar_enable = hose ? MV64x60_PCI1_BAR_ENABLE : MV64x60_PCI0_BAR_ENABLE;
+-	out_le32((u32 *)(bridge_base + bar_enable), enables);
+-
+-	for (i=0; i<MV64x60_PCI_ACC_CNTL_WINDOWS; i++)
+-		out_le32((u32 *)(bridge_base + mv64x60_pci_acc[hose][i].lo), 0);
+-
+-	/* If mem_size is 0, leave windows disabled */
+-	if (mem_size == 0)
+-		return;
+-
+-	/* Cause automatic updates of PCI remap regs */
+-	offset = hose ?
+-		MV64x60_PCI1_PCI_DECODE_CNTL : MV64x60_PCI0_PCI_DECODE_CNTL;
+-	i = in_le32((u32 *)(bridge_base + offset));
+-	out_le32((u32 *)(bridge_base + offset), i & ~0x1);
+-
+-	mem_size = (mem_size - 1) & 0xfffff000;
+-
+-	/* Map PCI MEM addr 0 -> System Mem addr 0 */
+-	mv64x60_cfg_write(bridge_base, hose, bus,
+-			PCI_DEVFN(0, mv64x60_pci2mem[hose].fcn),
+-			mv64x60_pci2mem[hose].hi, 0);
+-	mv64x60_cfg_write(bridge_base, hose, bus,
+-			PCI_DEVFN(0, mv64x60_pci2mem[hose].fcn),
+-			mv64x60_pci2mem[hose].lo, 0);
+-	out_le32((u32 *)(bridge_base + mv64x60_pci2mem[hose].size),mem_size);
+-
+-	acc_bits |= MV64x60_PCI_ACC_CNTL_ENABLE;
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_acc[hose][0].hi), 0);
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_acc[hose][0].lo), acc_bits);
+-	out_le32((u32 *)(bridge_base + mv64x60_pci_acc[hose][0].size),mem_size);
+-
+-	/* Set PCI MEM->bridge's reg window to where they are in CPU mem map */
+-	i = (u32)bridge_base;
+-	i &= 0xffff0000;
+-	i |= (0x2 << 1);
+-	mv64x60_cfg_write(bridge_base, hose, bus, PCI_DEVFN(0,0),
+-			mv64x60_pci2reg[hose].hi, 0);
+-	mv64x60_cfg_write(bridge_base, hose, bus, PCI_DEVFN(0,0),
+-			mv64x60_pci2reg[hose].lo, i);
+-
+-	enables &= ~0x1; /* Enable PCI MEM -> System Mem window 0 */
+-	out_le32((u32 *)(bridge_base + bar_enable), enables);
+-}
+-
+-/* CPU -> PCI I/O & MEM setup */
+-struct mv64x60_cpu2pci_win mv64x60_cpu2pci_io[2] = {
+-	{ /* hose 0 */
+-		.lo		= MV64x60_CPU2PCI0_IO_BASE,
+-		.size		= MV64x60_CPU2PCI0_IO_SIZE,
+-		.remap_hi	= 0,
+-		.remap_lo	= MV64x60_CPU2PCI0_IO_REMAP,
+-	},
+-	{ /* hose 1 */
+-		.lo		= MV64x60_CPU2PCI1_IO_BASE,
+-		.size		= MV64x60_CPU2PCI1_IO_SIZE,
+-		.remap_hi	= 0,
+-		.remap_lo	= MV64x60_CPU2PCI1_IO_REMAP,
+-	},
+-};
+-
+-struct mv64x60_cpu2pci_win mv64x60_cpu2pci_mem[2] = {
+-	{ /* hose 0 */
+-		.lo		= MV64x60_CPU2PCI0_MEM_0_BASE,
+-		.size		= MV64x60_CPU2PCI0_MEM_0_SIZE,
+-		.remap_hi	= MV64x60_CPU2PCI0_MEM_0_REMAP_HI,
+-		.remap_lo	= MV64x60_CPU2PCI0_MEM_0_REMAP_LO,
+-	},
+-	{ /* hose 1 */
+-		.lo		= MV64x60_CPU2PCI1_MEM_0_BASE,
+-		.size		= MV64x60_CPU2PCI1_MEM_0_SIZE,
+-		.remap_hi	= MV64x60_CPU2PCI1_MEM_0_REMAP_HI,
+-		.remap_lo	= MV64x60_CPU2PCI1_MEM_0_REMAP_LO,
+-	},
+-};
+-
+-/* Only need to set up 1 window to pci mem space */
+-void mv64x60_config_cpu2pci_window(u8 *bridge_base, u8 hose, u32 pci_base_hi,
+-		u32 pci_base_lo, u32 cpu_base, u32 size,
+-		struct mv64x60_cpu2pci_win *offset_tbl)
+-{
+-	cpu_base >>= 16;
+-	cpu_base |= MV64x60_CPU2PCI_SWAP_NONE;
+-	out_le32((u32 *)(bridge_base + offset_tbl[hose].lo), cpu_base);
+-
+-	if (offset_tbl[hose].remap_hi != 0)
+-		out_le32((u32 *)(bridge_base + offset_tbl[hose].remap_hi),
+-				pci_base_hi);
+-	out_le32((u32 *)(bridge_base + offset_tbl[hose].remap_lo),
+-			pci_base_lo >> 16);
+-
+-	size = (size - 1) >> 16;
+-	out_le32((u32 *)(bridge_base + offset_tbl[hose].size), size);
+-}
+-
+-/* Read mem ctlr to get the amount of mem in system */
+-u32 mv64x60_get_mem_size(u8 *bridge_base)
+-{
+-	u32 enables, i, v;
+-	u32 mem = 0;
+-
+-	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE)) & 0xf;
+-
+-	for (i=0; i<MV64x60_CPU2MEM_WINDOWS; i++)
+-		if (!(enables & (1<<i))) {
+-			v = in_le32((u32*)(bridge_base
+-						+ mv64x60_cpu2mem[i].size));
+-			v = ((v & 0xffff) + 1) << 16;
+-			mem += v;
 -		}
--		*buf++ = data;
--	}
 -
--	/* read last byte of data */
--	control = MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_MAST_RD_DATA_NO_ACK;
--	data = mv64x60_i2c_read_byte(control, status);
--	if (data < 0)
--		return -1;
--	*buf++ = data;
--
--	/* send stop */
--	control = MV64x60_I2C_CONTROL_STOP | MV64x60_I2C_CONTROL_TWSIEN;
--	status = MV64x60_I2C_STATUS_NO_STATUS;
--	if (mv64x60_i2c_control(control, status) < 0)
--		return -1;
--
--	return count;
+-	return mem;
 -}
 -
--int mv64x60_i2c_open(void)
+-/* Get physical address of bridge's registers */
+-u8 *mv64x60_get_bridge_pbase(void)
+-{
+-	u32 v[2];
+-	void *devp;
+-
+-	devp = find_node_by_compatible(NULL, "marvell,mv64360");
+-	if (devp == NULL)
+-		goto err_out;
+-	if (getprop(devp, "reg", v, sizeof(v)) != sizeof(v))
+-		goto err_out;
+-
+-	return (u8 *)v[0];
+-
+-err_out:
+-	return 0;
+-}
+-
+-/* Get virtual address of bridge's registers */
+-u8 *mv64x60_get_bridge_base(void)
 -{
 -	u32 v;
 -	void *devp;
 -
--	devp = find_node_by_compatible(NULL, "marvell,mv64360-i2c");
+-	devp = find_node_by_compatible(NULL, "marvell,mv64360");
 -	if (devp == NULL)
 -		goto err_out;
 -	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
 -		goto err_out;
 -
--	ctlr_base = (u8 *)v;
--	return 0;
+-	return (u8 *)v;
 -
 -err_out:
--	return -1;
+-	return 0;
 -}
 -
--void mv64x60_i2c_close(void)
+-u8 mv64x60_is_coherent(void)
 -{
--	ctlr_base = NULL;
+-	u32 v;
+-	void *devp;
+-
+-	devp = finddevice("/");
+-	if (devp == NULL)
+-		return 1; /* Assume coherency on */
+-
+-	if (getprop(devp, "coherency-off", &v, sizeof(v)) < 0)
+-		return 1; /* Coherency on */
+-	else
+-		return 0;
 -}
+diff --git a/arch/powerpc/boot/mv64x60.h b/arch/powerpc/boot/mv64x60.h
+deleted file mode 100644
+index b827105e6e54..000000000000
+--- a/arch/powerpc/boot/mv64x60.h
++++ /dev/null
+@@ -1,70 +0,0 @@
+-/*
+- * Author: Mark A. Greer <source@mvista.com>
+- *
+- * 2007 (c) MontaVista Software, Inc. This file is licensed under
+- * the terms of the GNU General Public License version 2. This program
+- * is licensed "as is" without any warranty of any kind, whether express
+- * or implied.
+- */
+-
+-#ifndef _PPC_BOOT_MV64x60_H_
+-#define _PPC_BOOT_MV64x60_H_
+-
+-#define MV64x60_CPU_BAR_ENABLE			0x0278
+-
+-#define MV64x60_PCI_ACC_CNTL_ENABLE		(1<<0)
+-#define MV64x60_PCI_ACC_CNTL_REQ64		(1<<1)
+-#define MV64x60_PCI_ACC_CNTL_SNOOP_NONE		0x00000000
+-#define MV64x60_PCI_ACC_CNTL_SNOOP_WT		0x00000004
+-#define MV64x60_PCI_ACC_CNTL_SNOOP_WB		0x00000008
+-#define MV64x60_PCI_ACC_CNTL_SNOOP_MASK		0x0000000c
+-#define MV64x60_PCI_ACC_CNTL_ACCPROT		(1<<4)
+-#define MV64x60_PCI_ACC_CNTL_WRPROT		(1<<5)
+-#define MV64x60_PCI_ACC_CNTL_SWAP_BYTE		0x00000000
+-#define MV64x60_PCI_ACC_CNTL_SWAP_NONE		0x00000040
+-#define MV64x60_PCI_ACC_CNTL_SWAP_BYTE_WORD	0x00000080
+-#define MV64x60_PCI_ACC_CNTL_SWAP_WORD		0x000000c0
+-#define MV64x60_PCI_ACC_CNTL_SWAP_MASK		0x000000c0
+-#define MV64x60_PCI_ACC_CNTL_MBURST_32_BYTES	0x00000000
+-#define MV64x60_PCI_ACC_CNTL_MBURST_64_BYTES	0x00000100
+-#define MV64x60_PCI_ACC_CNTL_MBURST_128_BYTES	0x00000200
+-#define MV64x60_PCI_ACC_CNTL_MBURST_MASK	0x00000300
+-#define MV64x60_PCI_ACC_CNTL_RDSIZE_32_BYTES	0x00000000
+-#define MV64x60_PCI_ACC_CNTL_RDSIZE_64_BYTES	0x00000400
+-#define MV64x60_PCI_ACC_CNTL_RDSIZE_128_BYTES	0x00000800
+-#define MV64x60_PCI_ACC_CNTL_RDSIZE_256_BYTES	0x00000c00
+-#define MV64x60_PCI_ACC_CNTL_RDSIZE_MASK	0x00000c00
+-
+-struct mv64x60_cpu2pci_win {
+-	u32 lo;
+-	u32 size;
+-	u32 remap_hi;
+-	u32 remap_lo;
+-};
+-
+-extern struct mv64x60_cpu2pci_win mv64x60_cpu2pci_io[2];
+-extern struct mv64x60_cpu2pci_win mv64x60_cpu2pci_mem[2];
+-
+-u32 mv64x60_cfg_read(u8 *bridge_base, u8 hose, u8 bus, u8 devfn,
+-		u8 offset);
+-void mv64x60_cfg_write(u8 *bridge_base, u8 hose, u8 bus, u8 devfn,
+-		u8 offset, u32 val);
+-
+-void mv64x60_config_ctlr_windows(u8 *bridge_base, u8 *bridge_pbase,
+-		u8 is_coherent);
+-void mv64x60_config_pci_windows(u8 *bridge_base, u8 *bridge_pbase, u8 hose,
+-		u8 bus, u32 mem_size, u32 acc_bits);
+-void mv64x60_config_cpu2pci_window(u8 *bridge_base, u8 hose, u32 pci_base_hi,
+-		u32 pci_base_lo, u32 cpu_base, u32 size,
+-		struct mv64x60_cpu2pci_win *offset_tbl);
+-u32 mv64x60_get_mem_size(u8 *bridge_base);
+-u8 *mv64x60_get_bridge_pbase(void);
+-u8 *mv64x60_get_bridge_base(void);
+-u8 mv64x60_is_coherent(void);
+-
+-int mv64x60_i2c_open(void);
+-int mv64x60_i2c_read(u32 devaddr, u8 *buf, u32 offset, u32 offset_size,
+-		u32 count);
+-void mv64x60_i2c_close(void);
+-
+-#endif /* _PPC_BOOT_MV64x60_H_ */
 -- 
 2.16.2
