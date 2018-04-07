@@ -1,26 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
- [IPv6:2607:f8b0:400c:c08::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40J8Mv0TkPzF1qv
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Apr 2018 18:08:42 +1000 (AEST)
-Received: by mail-ua0-x241.google.com with SMTP id n20so2102196ual.7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Apr 2018 01:08:42 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPcyv4hRut3MjihCStXkO6QGXYQf6gmoPPmv_=9K-Z8qoVLL0Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40JD803vK5zF1vy
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Apr 2018 20:58:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: devicetree@vger.kernel.org, Oliver O'Halloran <oohall@gmail.com>,
+ linux-nvdimm@lists.01.org
+Subject: Re: [PATCH v3 3/4] doc/devicetree: Persistent memory region bindings
+In-Reply-To: <20180406052116.31483-3-oohall@gmail.com>
 References: <20180406052116.31483-1-oohall@gmail.com>
- <CAPcyv4hRut3MjihCStXkO6QGXYQf6gmoPPmv_=9K-Z8qoVLL0Q@mail.gmail.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Sat, 7 Apr 2018 18:08:39 +1000
-Message-ID: <CAKTCnzmuqTZWVXdUfMLRQMHW3MK8qtKbTXxBy9Lt32h4ET237A@mail.gmail.com>
-Subject: Re: [PATCH v3 1/4] libnvdimm: Add of_node to region and bus
- descriptors
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: "Oliver O'Halloran" <oohall@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>
-Content-Type: text/plain; charset="UTF-8"
+ <20180406052116.31483-3-oohall@gmail.com>
+Date: Sat, 07 Apr 2018 20:58:37 +1000
+Message-ID: <87zi2fb7vm.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 7, 2018 at 4:28 AM, Dan Williams <dan.j.williams@intel.com> wrote:
-> On Thu, Apr 5, 2018 at 10:21 PM, Oliver O'Halloran <oohall@gmail.com> wrote:
->> We want to be able to cross reference the region and bus devices
->> with the device tree node that they were spawned from. libNVDIMM
->> handles creating the actual devices for these internally, so we
->> need to pass in a pointer to the relevant node in the descriptor.
->>
->> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
->> Acked-by: Dan Williams <dan.j.williams@intel.com>
+Oliver O'Halloran <oohall@gmail.com> writes:
+> Add device-tree binding documentation for the nvdimm region driver.
 >
-> These look good to me. I'll get them applied today and let them soak
-> over the weekend for a pull request on Monday.
->
-> If anyone wants to add Acks or Reviews I can append them to the merge
-> tag. If there are any NAKs please speak up now, but as far as I know
-> there are no pending device-tree design concerns.
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+> ---
+> v2: Changed name from nvdimm-region to pmem-region.
+>     Cleaned up the example binding and fixed the overlapping regions.
+>     Added support for multiple regions in a single reg.
+> v3: Removed platform bus boilerplate from the example.
+>     Changed description of the volatile and reg properties
+>     to make them more clear.
 
-Hi, Dan
+Thanks.
 
-I can ack Oliver's work, will do so in each patch
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Overall
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
-
-Balbir Singh
+cheers
