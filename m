@@ -1,28 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
+ [IPv6:2a00:1450:400c:c0c::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40JvkD5cDMzDr5X
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Apr 2018 23:42:12 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id c7-v6so270620plr.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 06:42:12 -0700 (PDT)
-Date: Sun, 8 Apr 2018 23:41:50 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
- <kvm-ppc@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, Paul Mackerras
- <paulus@ozlabs.org>
-Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: trace_tlbie must not be called
- in realmode
-Message-ID: <20180408234150.36d766f6@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnzn119+T_jkWAxPXoor_bpMezdRoQ9VqN+TYTUhxvQq4Fw@mail.gmail.com>
-References: <20180405175631.31381-1-npiggin@gmail.com>
- <20180405175631.31381-2-npiggin@gmail.com>
- <CAKTCnzn119+T_jkWAxPXoor_bpMezdRoQ9VqN+TYTUhxvQq4Fw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40K3l443ZKzDr4s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 05:43:28 +1000 (AEST)
+Received: by mail-wr0-x241.google.com with SMTP id s18so6589589wrg.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 12:43:28 -0700 (PDT)
+Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] powerpc/32: Make some functions static
+Date: Sun,  8 Apr 2018 21:43:18 +0200
+Message-Id: <20180408194318.8062-1-malat@debian.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 8 Apr 2018 20:17:47 +1000
-Balbir Singh <bsingharora@gmail.com> wrote:
+In commit 4aea909eeba3 ("powerpc: Add missing prototypes in setup_32.c")
+prototypes for
 
-> On Fri, Apr 6, 2018 at 3:56 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > This crashes with a "Bad real address for load" attempting to load
-> > from the vmalloc region in realmode (faulting address is in DAR).
-> >
-> >   Oops: Bad interrupt in KVM entry/exit code, sig: 6 [#1]
-> >   LE SMP NR_CPUS=2048 NUMA PowerNV
-> >   CPU: 53 PID: 6582 Comm: qemu-system-ppc Not tainted 4.16.0-01530-g43d1859f0994
-> >   NIP:  c0000000000155ac LR: c0000000000c2430 CTR: c000000000015580
-> >   REGS: c000000fff76dd80 TRAP: 0200   Not tainted  (4.16.0-01530-g43d1859f0994)
-> >   MSR:  9000000000201003 <SF,HV,ME,RI,LE>  CR: 48082222  XER: 00000000
-> >   CFAR: 0000000102900ef0 DAR: d00017fffd941a28 DSISR: 00000040 SOFTE: 3
-> >   NIP [c0000000000155ac] perf_trace_tlbie+0x2c/0x1a0
-> >   LR [c0000000000c2430] do_tlbies+0x230/0x2f0
-> >
-> > I suspect the reason is the per-cpu data is not in the linear chunk.
-> > This could be restored if that was able to be fixed, but for now,
-> > just remove the tracepoints.  
-> 
-> Could you share the stack trace as well? I've not observed this in my testing.
+- ppc_setup_l2cr
+- ppc_setup_l3cr
+- ppc_init
 
-I can't seem to find it, I can try reproduce tomorrow. It was coming
-from h_remove hcall from the guest. It's 176 logical CPUs.
+were added but at the same time in commit d15a261d876d ("powerpc/32: Make
+some functions static") those same functions were made static. Fix
+conflicting changes by removing the prototypes and leave the function as
+static. Fix the following warnings, treated as errors with W=1:
 
-> May be I don't have as many cpus. I presume your talking about the per cpu
-> data offsets for per cpu trace data?
+  arch/powerpc/kernel/setup_32.c:127:19: error: static declaration of ‘ppc_setup_l2cr’ follows non-static declaration
+  arch/powerpc/kernel/setup_32.c:140:19: error: static declaration of ‘ppc_setup_l3cr’ follows non-static declaration
+  arch/powerpc/kernel/setup_32.c:186:19: error: static declaration of ‘ppc_init’ follows non-static declaration
 
-It looked like it was dereferencing virtually mapped per-cpu data, yes.
-Probably the perf_events deref.
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+ arch/powerpc/kernel/setup_32.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Thanks,
-Nick
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 9827b6b3aaaa..9e79be13b937 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -124,7 +124,7 @@ notrace void __init machine_init(u64 dt_ptr)
+ }
+ 
+ /* Checks "l2cr=xxxx" command-line option */
+-static int __init ppc_setup_l2cr(char *str)
++int __init ppc_setup_l2cr(char *str)
+ {
+ 	if (cpu_has_feature(CPU_FTR_L2CR)) {
+ 		unsigned long val = simple_strtoul(str, NULL, 0);
+@@ -137,7 +137,7 @@ static int __init ppc_setup_l2cr(char *str)
+ __setup("l2cr=", ppc_setup_l2cr);
+ 
+ /* Checks "l3cr=xxxx" command-line option */
+-static int __init ppc_setup_l3cr(char *str)
++int __init ppc_setup_l3cr(char *str)
+ {
+ 	if (cpu_has_feature(CPU_FTR_L3CR)) {
+ 		unsigned long val = simple_strtoul(str, NULL, 0);
+@@ -183,7 +183,7 @@ EXPORT_SYMBOL(nvram_sync);
+ 
+ #endif /* CONFIG_NVRAM */
+ 
+-static int __init ppc_init(void)
++int __init ppc_init(void)
+ {
+ 	/* clear the progress line */
+ 	if (ppc_md.progress)
+-- 
+2.11.0
