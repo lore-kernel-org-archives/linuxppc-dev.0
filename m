@@ -1,23 +1,21 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40K5GQ62CszDrnk
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 06:52:13 +1000 (AEST)
-Subject: Re: [PATCH] powerpc/mm/radix: add missing braces for single statement
- block
-To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20180408194424.8719-1-malat@debian.org>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <a21ced59-8cf6-b8e0-2305-fb9d040dfc5c@infradead.org>
-Date: Sun, 8 Apr 2018 13:34:32 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180408194424.8719-1-malat@debian.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40K9PR4trNzDqyW
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 09:58:35 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id y66so4706455pfi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 16:58:35 -0700 (PDT)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org,
+	marex@denx.de
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
+ lgirdwood@gmail.com, fabio.estevam@nxp.com
+Subject: [PATCH] ASoC: fsl_esai: Fix divisor calculation failure at lower ratio
+Date: Sun,  8 Apr 2018 16:57:35 -0700
+Message-Id: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/2018 12:44 PM, Mathieu Malaterre wrote:
-> In commit 7a22d6321c3d ("powerpc/mm/radix: Update command line parsing for
-> disable_radix") an `if` statement was added for a possible empty body
-> (prom_debug).
-> 
-> Fix the following warning, treated as error with W=1:
-> 
->   arch/powerpc/kernel/prom_init.c:656:46: error: suggest braces around empty body in an ‘if’ statement [-Werror=empty-body]
-> 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
->  arch/powerpc/kernel/prom_init.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 5ae153b97d0a..f0e802495530 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -652,8 +652,9 @@ static void __init early_cmdline_parse(void)
->  		} else
->  			prom_radix_disable = true;
->  	}
-> -	if (prom_radix_disable)
-> +	if (prom_radix_disable) {
->  		prom_debug("Radix disabled from cmdline\n");
+When the desired ratio is less than 256, the savesub (tolerance)
+in the calculation would become 0. This will then fail the loop-
+search immediately without reporting any errors.
 
-Looks like the macro for #prom_debug() should be fixed instead.
+But if the ratio is smaller enough, there is no need to calculate
+the tolerance because PM divisor alone is enough to get the ratio.
 
-> +	}
->  }
->  
->  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-> 
+So a simple fix could be just to set PM directly instead of going
+into the loop-search.
 
+Reported-by: Marek Vasut <marex@denx.de>
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Marek Vasut <marex@denx.de>
+---
+ sound/soc/fsl/fsl_esai.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+index 40a7004..da8fd98 100644
+--- a/sound/soc/fsl/fsl_esai.c
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -144,6 +144,13 @@ static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, bool tx, u32 ratio,
+ 
+ 	psr = ratio <= 256 * maxfp ? ESAI_xCCR_xPSR_BYPASS : ESAI_xCCR_xPSR_DIV8;
+ 
++	/* Do not loop-search if PM (1 ~ 256) alone can serve the ratio */
++	if (ratio <= 256) {
++		pm = ratio;
++		fp = 1;
++		goto out;
++	}
++
+ 	/* Set the max fluctuation -- 0.1% of the max devisor */
+ 	savesub = (psr ? 1 : 8)  * 256 * maxfp / 1000;
+ 
 -- 
-~Randy
+2.7.4
