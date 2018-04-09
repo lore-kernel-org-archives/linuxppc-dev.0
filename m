@@ -1,19 +1,33 @@
-Return-Path: <Vineet.Gupta1@synopsys.com>
-Received: from smtprelay.synopsys.com (us01smtprelay-2.synopsys.com
- [198.182.60.111])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KZzS3jjyzF0sk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 02:10:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Kb714xlQzDr3y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 02:17:33 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w39GG3iT022226
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 12:17:31 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h8au729j5-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 12:17:30 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 9 Apr 2018 17:17:27 +0100
 Subject: Re: [PATCH 0/3] move __HAVE_ARCH_PTE_SPECIAL in Kconfig
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+To: Vineet Gupta <Vineet.Gupta1@synopsys.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "linux-mm@kvack.org" <linux-mm@kvack.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "x86@kernel.org" <x86@kernel.org>,
  "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
  "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>,
  "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
  "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
  "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
@@ -25,22 +39,21 @@ To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
  "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
  "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
  "paulus@samba.org" <paulus@samba.org>, Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S .  Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, "Ingo  Molnar" <mingo@redhat.com>,
- Vineet Gupta <Vineet.Gupta1@synopsys.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Rich Felker <dalias@libc.org>, "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>,
- "Martin  Schwidefsky" <schwidefsky@de.ibm.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>
 References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-Message-ID: <17b19aac-fed7-23a2-013c-43ca867152e9@synopsys.com>
-Date: Mon, 9 Apr 2018 09:03:49 -0700
+ <17b19aac-fed7-23a2-013c-43ca867152e9@synopsys.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 9 Apr 2018 18:17:16 +0200
 MIME-Version: 1.0
-In-Reply-To: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
+In-Reply-To: <17b19aac-fed7-23a2-013c-43ca867152e9@synopsys.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <21c34965-ec30-4d7f-aeaf-cb3da9758a0e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,20 +63,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/09/2018 06:57 AM, Laurent Dufour wrote:
-> The per architecture __HAVE_ARCH_PTE_SPECIAL is defined statically in the
-> per architecture header files. This doesn't allow to make other
-> configuration dependent on it.
+On 09/04/2018 18:03, Vineet Gupta wrote:
+> On 04/09/2018 06:57 AM, Laurent Dufour wrote:
+>> The per architecture __HAVE_ARCH_PTE_SPECIAL is defined statically in the
+>> per architecture header files. This doesn't allow to make other
+>> configuration dependent on it.
+> 
+> So I understand this series has more "readability" value and I'm fine with this
+> change but I wonder if you really would want to make something depend on it or
+> make this de-configurable. PTE special is really a fundamental construct - e.g.
+> it is used for anon mapped pages where zero page has been wired up etc...
 
-So I understand this series has more "readability" value and I'm fine with this 
-change but I wonder if you really would want to make something depend on it or 
-make this de-configurable. PTE special is really a fundamental construct - e.g. it 
-is used for anon mapped pages where zero page has been wired up etc...
+I don't want it to be de-configurable. This is almost like
+ARCH_SUPPORTS_MEMORY_FAILURE, ARCH_USES_HIGH_VMA_FLAGS, ARCH_HAS_HMM...
 
--Vineet
+These values are selected by per architecture Kconfig files and are not exposed
+through the configuration menu.
 
-> This series is moving the __HAVE_ARCH_PTE_SPECIAL into the Kconfig files,
-> setting it automatically when architectures was already setting it in
-> header file.
->
-> There is no functional change introduced by this series.
+Concerning making something depend on it, I will probably make
+CONFIG_SPECULATIVE_PAGE_FAULT introduced by the SPF series dependent on it.
+For details, please see https://lkml.org/lkml/2018/3/13/1143
+
+Thanks,
+Laurent.
