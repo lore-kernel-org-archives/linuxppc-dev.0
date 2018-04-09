@@ -1,38 +1,17 @@
-Return-Path: <jglisse@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KYGp2sGNzDrpW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 00:54:10 +1000 (AEST)
-Date: Mon, 9 Apr 2018 10:53:56 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@synopsys.com>,
- Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 0/3] move __HAVE_ARCH_PTE_SPECIAL in Kconfig
-Message-ID: <20180409145344.GA3285@redhat.com>
-References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180409140721.GI21835@dhcp22.suse.cz>
+Return-Path: <ldv@altlinux.org>
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40KZ3L07VBzDrZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 01:29:17 +1000 (AEST)
+Date: Mon, 9 Apr 2018 18:22:53 +0300
+From: "Dmitry V. Levin" <ldv@altlinux.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: ppc compat v4.16 regression: sending SIGTRAP or SIGFPE via kill()
+ returns wrong values in si_pid and si_uid
+Message-ID: <20180409152253.GD10489@altlinux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180409140721.GI21835@dhcp22.suse.cz>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="J5MfuwkIyy7RmF4Q"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,27 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 09, 2018 at 04:07:21PM +0200, Michal Hocko wrote:
-> On Mon 09-04-18 15:57:06, Laurent Dufour wrote:
-> > The per architecture __HAVE_ARCH_PTE_SPECIAL is defined statically in the
-> > per architecture header files. This doesn't allow to make other
-> > configuration dependent on it.
-> > 
-> > This series is moving the __HAVE_ARCH_PTE_SPECIAL into the Kconfig files,
-> > setting it automatically when architectures was already setting it in
-> > header file.
-> > 
-> > There is no functional change introduced by this series.
-> 
-> I would just fold all three patches into a single one. It is much easier
-> to review that those selects are done properly when you can see that the
-> define is set for the same architecture.
-> 
-> In general, I like the patch. It is always quite painful to track per
-> arch defines.
 
-You can also add Reviewed-by: Jérôme Glisse <jglisse@redhat> my grep fu
-showed no place that was forgotten.
+--J5MfuwkIyy7RmF4Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Cheers,
-Jérôme
+Hi,
+
+There seems to be a regression in v4.16 on ppc compat very similar
+to sparc compat regression reported earlier at
+https://marc.info/?l=3Dlinux-sparc&m=3D151501500704383 .
+
+The symptoms are exactly the same: the same signal_receive test from
+the strace test suite fails with the same diagnostics:
+https://build.opensuse.org/public/build/home:ldv_alt/openSUSE_Factory_Power=
+PC/ppc/strace/_log
+
+Unfortunately, I do not have any means to investigate further,
+so just passing this information on to those who care.
+
+
+--=20
+ldv
+
+--J5MfuwkIyy7RmF4Q
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJay4VNAAoJEAVFT+BVnCUIHsEP/0dzOuE/JsoqDDRsS7s2ZmMT
+lazRZD/0abRpsonCGvNoOXm2NtqE9679S1zEmRll7lB+RZKLV3G9YmbtKeOsom7g
+YS4j5lQVeHLV+KxqcBLgxUDePGu/pXPQyY8f5cvvB/iSKGqOTe7Yd+mBUii1lu4U
+AeW3YxV72atR9Ysw826Zi57FM2XE4XCMtGYFI8QJ3VYDWne/DkbcD7hlqjCzlOwR
+pUWddlREy2fQRxwCEGgb/7AfJ+zl0z1ENJ2xxD27EFvI7VfVD8GjFinW3lJlaKF4
+zR6V85RwJSshZOiyzgu7MbujX4R7jrH6Ac6s/L5qget7k1LGcsQRFmp62XmpMVJH
+A1ptiNBfk1+OMPtFvemPU/FAu9X05/902iakGsZV2hl3JRWyA9bUfmYRBqHXvoMX
+7GYAfrGpqKA4A4eNbPC2mjwkdUSRNZa2vI8vop4vttH0MlYjIDGwyEwUCeiOD53p
+AnjxPOP4ckslvo7VPbCr2u+PPC5CVhxzPzxULgmUVBs51Iqlak+AwSVv1t/S9uew
+Iko3u2Qpxp3aYj7MHXJjNLjquPHz9SJv0xN/ZmfExN4rYseNUrlbmFAkYwLCVzk4
+bFrehE0iUz0FyoHKqX91KeVvo+d7SbRox+rRzdVfq546EMrwcpXoiIBATHLPAE8a
+k5HLVlm4I1mVfWMFZm0o
+=0jiy
+-----END PGP SIGNATURE-----
+
+--J5MfuwkIyy7RmF4Q--
