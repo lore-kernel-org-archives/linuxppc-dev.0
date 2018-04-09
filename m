@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KKCl6Hg0zDrnl
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:50:43 +1000 (AEST)
-Message-ID: <1523253032.11062.6.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2 3/9] powerpc/powernv: opal_put_chars partial write fix
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KKHC2GPKzDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:53:42 +1000 (AEST)
+Message-ID: <1523253213.11062.7.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 4/9] powerpc/powernv: OPAL console standardise
+ OPAL_BUSY loops
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Apr 2018 15:50:32 +1000
-In-Reply-To: <20180409052431.26405-4-npiggin@gmail.com>
+Date: Mon, 09 Apr 2018 15:53:33 +1000
+In-Reply-To: <20180409052431.26405-5-npiggin@gmail.com>
 References: <20180409052431.26405-1-npiggin@gmail.com>
- <20180409052431.26405-4-npiggin@gmail.com>
+ <20180409052431.26405-5-npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,33 +25,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-04-09 at 15:24 +1000, Nicholas Piggin wrote:
-> The intention here is to consume and discard the remaining buffer
-> upon error. This works if there has not been a previous partial write.
-> If there has been, then total_len is no longer total number of bytes
-> to copy. total_len is always "bytes left to copy", so it should be
-> added to written bytes.
+> Convert to using the standard delay poll/delay form.
 > 
-> This code may not be exercised any more if partial writes will not be
-> hit, but this is a small bugfix before a larger change.
+> The console code:
 > 
-
-Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
+> - Did not previously delay or sleep in its busy loop.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Does it help with anything ? We don't technically *have* to delay or
+wait, I thought it would be good to try to hit the console as fast as
+possible in that case...
+
+Ben.
+
 > ---
->  arch/powerpc/platforms/powernv/opal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/platforms/powernv/opal.c | 38 ++++++++++++++++-----------
+>  1 file changed, 23 insertions(+), 15 deletions(-)
 > 
 > diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 516e23de5a3d..87d4c0aa7f64 100644
+> index 87d4c0aa7f64..473c8ce14a34 100644
 > --- a/arch/powerpc/platforms/powernv/opal.c
 > +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -388,7 +388,7 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+> @@ -378,33 +378,41 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+>  	/* We still try to handle partial completions, though they
+>  	 * should no longer happen.
+>  	 */
+> -	rc = OPAL_BUSY;
+> -	while(total_len > 0 && (rc == OPAL_BUSY ||
+> -				rc == OPAL_BUSY_EVENT || rc == OPAL_SUCCESS)) {
+> +
+> +	while (total_len > 0) {
+>  		olen = cpu_to_be64(total_len);
+> -		rc = opal_console_write(vtermno, &olen, data);
+> +
+> +		rc = OPAL_BUSY;
+> +		while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+> +			rc = opal_console_write(vtermno, &olen, data);
+> +			if (rc == OPAL_BUSY_EVENT) {
+> +				mdelay(OPAL_BUSY_DELAY_MS);
+> +				opal_poll_events(NULL);
+> +			} else if (rc == OPAL_BUSY) {
+> +				mdelay(OPAL_BUSY_DELAY_MS);
+> +			}
+> +		}
+> +
+>  		len = be64_to_cpu(olen);
+>  
 >  		/* Closed or other error drop */
->  		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
->  		    rc != OPAL_BUSY_EVENT) {
-> -			written = total_len;
-> +			written += total_len;
+> -		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
+> -		    rc != OPAL_BUSY_EVENT) {
+> -			written += total_len;
+> +		if (rc != OPAL_SUCCESS) {
+> +			written += total_len; /* drop remaining chars */
 >  			break;
 >  		}
->  		if (rc == OPAL_SUCCESS) {
+> -		if (rc == OPAL_SUCCESS) {
+> -			total_len -= len;
+> -			data += len;
+> -			written += len;
+> -		}
+> +
+> +		total_len -= len;
+> +		data += len;
+> +		written += len;
+> +
+>  		/* This is a bit nasty but we need that for the console to
+>  		 * flush when there aren't any interrupts. We will clean
+>  		 * things a bit later to limit that to synchronous path
+>  		 * such as the kernel console and xmon/udbg
+>  		 */
+> -		do
+> +		do {
+>  			opal_poll_events(&evt);
+> -		while(rc == OPAL_SUCCESS &&
+> -			(be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT));
+> +		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
+>  	}
+>  	spin_unlock_irqrestore(&opal_write_lock, flags);
+>  	return written;
