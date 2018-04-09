@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KX1V3RZ4zDrpY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 23:57:34 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w39Du8Ge112732
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 09:57:32 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h86ynfp57-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KX1X6sTqzDrpY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 23:57:36 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w39DuQqD108252
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 09:57:34 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h89ggg1vt-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 09:57:31 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 09:57:33 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 9 Apr 2018 14:57:23 +0100
+ Mon, 9 Apr 2018 14:57:31 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
@@ -37,11 +37,11 @@ To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  Vineet Gupta <vgupta@synopsys.com>, Palmer Dabbelt <palmer@sifive.com>,
  Albert Ou <albert@sifive.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH 1/3] mm: introduce ARCH_HAS_PTE_SPECIAL
-Date: Mon,  9 Apr 2018 15:57:07 +0200
+Subject: [PATCH 3/3] mm: remove __HAVE_ARCH_PTE_SPECIAL
+Date: Mon,  9 Apr 2018 15:57:09 +0200
 In-Reply-To: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1523282229-20731-2-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1523282229-20731-4-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,169 +51,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the PTE special supports is turned on in per architecture header
-files. Most of the time, it is defined in arch/*/include/asm/pgtable.h
-depending or not on some other per architecture static definition.
+It is now replaced by Kconfig variable CONFIG_ARCH_HAS_PTE_SPECIAL.
 
-This patch introduce a new configuration variable to manage this directly
-in the Kconfig files. It would later replace __HAVE_ARCH_PTE_SPECIAL.
-
-Here notes for some architecture where the definition of
-__HAVE_ARCH_PTE_SPECIAL is not obvious:
-
-arm
- __HAVE_ARCH_PTE_SPECIAL which is currently defined in
-arch/arm/include/asm/pgtable-3level.h which is included by
-arch/arm/include/asm/pgtable.h when CONFIG_ARM_LPAE is set.
-So select ARCH_HAS_PTE_SPECIAL if ARM_LPAE.
-
-powerpc
-__HAVE_ARCH_PTE_SPECIAL is defined in 2 files:
- - arch/powerpc/include/asm/book3s/64/pgtable.h
- - arch/powerpc/include/asm/pte-common.h
-The first one is included if (PPC_BOOK3S & PPC64) while the second is
-included in all the other cases.
-So select ARCH_HAS_PTE_SPECIAL all the time.
-
-sparc:
-__HAVE_ARCH_PTE_SPECIAL is defined if defined(__sparc__) &&
-defined(__arch64__) which are defined through the compiler in
-sparc/Makefile if !SPARC32 which I assume to be if SPARC64.
-So select ARCH_HAS_PTE_SPECIAL if SPARC64
-
-Suggested-by: Jerome Glisse <jglisse@redhat.com>
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- arch/arc/Kconfig     | 1 +
- arch/arm/Kconfig     | 1 +
- arch/arm64/Kconfig   | 1 +
- arch/powerpc/Kconfig | 1 +
- arch/riscv/Kconfig   | 1 +
- arch/s390/Kconfig    | 1 +
- arch/sh/Kconfig      | 1 +
- arch/sparc/Kconfig   | 1 +
- arch/x86/Kconfig     | 1 +
- mm/Kconfig           | 3 +++
- 10 files changed, 12 insertions(+)
+ arch/arc/include/asm/pgtable.h               | 2 --
+ arch/arm/include/asm/pgtable-3level.h        | 1 -
+ arch/arm64/include/asm/pgtable.h             | 2 --
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 3 ---
+ arch/powerpc/include/asm/pte-common.h        | 3 ---
+ arch/s390/include/asm/pgtable.h              | 1 -
+ arch/sh/include/asm/pgtable.h                | 2 --
+ arch/sparc/include/asm/pgtable_64.h          | 3 ---
+ arch/x86/include/asm/pgtable_types.h         | 1 -
+ 9 files changed, 18 deletions(-)
 
-diff --git a/arch/arc/Kconfig b/arch/arc/Kconfig
-index d76bf4a83740..8516e2b0239a 100644
---- a/arch/arc/Kconfig
-+++ b/arch/arc/Kconfig
-@@ -44,6 +44,7 @@ config ARC
- 	select HAVE_GENERIC_DMA_COHERENT
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KERNEL_LZMA
-+	select ARCH_HAS_PTE_SPECIAL
+diff --git a/arch/arc/include/asm/pgtable.h b/arch/arc/include/asm/pgtable.h
+index 08fe33830d4b..8ec5599a0957 100644
+--- a/arch/arc/include/asm/pgtable.h
++++ b/arch/arc/include/asm/pgtable.h
+@@ -320,8 +320,6 @@ PTE_BIT_FUNC(mkexec,	|= (_PAGE_EXECUTE));
+ PTE_BIT_FUNC(mkspecial,	|= (_PAGE_SPECIAL));
+ PTE_BIT_FUNC(mkhuge,	|= (_PAGE_HW_SZ));
  
- config MIGHT_HAVE_PCI
- 	bool
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 1878083771af..a67973cb041c 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -7,6 +7,7 @@ config ARM
- 	select ARCH_HAS_DEBUG_VIRTUAL if MMU
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
- 	select ARCH_HAS_ELF_RANDOMIZE
-+	select ARCH_HAS_PTE_SPECIAL if ARM_LPAE
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_PHYS_TO_DMA
- 	select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 276e96ceaf27..7ae3c09921fb 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -17,6 +17,7 @@ config ARM64
- 	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
- 	select ARCH_HAS_KCOV
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
-+	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_SG_CHAIN
- 	select ARCH_HAS_STRICT_KERNEL_RWX
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c32a181a7cbb..f7415fe25c07 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -141,6 +141,7 @@ config PPC
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_PHYS_TO_DMA
- 	select ARCH_HAS_PMEM_API                if PPC64
-+	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_MEMBARRIER_CALLBACKS
- 	select ARCH_HAS_SCALED_CPUTIME		if VIRT_CPU_ACCOUNTING_NATIVE
- 	select ARCH_HAS_SG_CHAIN
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 148865de1692..b0a8404bf684 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -34,6 +34,7 @@ config RISCV
- 	select THREAD_INFO_IN_TASK
- 	select RISCV_TIMER
- 	select GENERIC_IRQ_MULTI_HANDLER
-+	select ARCH_HAS_PTE_SPECIAL
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+ {
+ 	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
+diff --git a/arch/arm/include/asm/pgtable-3level.h b/arch/arm/include/asm/pgtable-3level.h
+index 2a4836087358..6d50a11d7793 100644
+--- a/arch/arm/include/asm/pgtable-3level.h
++++ b/arch/arm/include/asm/pgtable-3level.h
+@@ -219,7 +219,6 @@ static inline pte_t pte_mkspecial(pte_t pte)
+ 	pte_val(pte) |= L_PTE_SPECIAL;
+ 	return pte;
+ }
+-#define	__HAVE_ARCH_PTE_SPECIAL
  
- config MMU
- 	def_bool y
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 32a0d5b958bf..5f1f4997e7e9 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -72,6 +72,7 @@ config S390
- 	select ARCH_HAS_GCOV_PROFILE_ALL
- 	select ARCH_HAS_GIGANTIC_PAGE if (MEMORY_ISOLATION && COMPACTION) || CMA
- 	select ARCH_HAS_KCOV
-+	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_SET_MEMORY
- 	select ARCH_HAS_SG_CHAIN
- 	select ARCH_HAS_STRICT_KERNEL_RWX
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index 97fe29316476..a6c75b6806d2 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -50,6 +50,7 @@ config SUPERH
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_FUTEX_CMPXCHG if FUTEX
- 	select HAVE_NMI
-+	select ARCH_HAS_PTE_SPECIAL
- 	help
- 	  The SuperH is a RISC processor targeted for use in embedded systems
- 	  and consumer electronics; it was also used in the Sega Dreamcast
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 8767e45f1b2b..6b5a4f05dcb2 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -86,6 +86,7 @@ config SPARC64
- 	select ARCH_USE_QUEUED_SPINLOCKS
- 	select GENERIC_TIME_VSYSCALL
- 	select ARCH_CLOCKSOURCE_DATA
-+	select ARCH_HAS_PTE_SPECIAL
+ #define pmd_write(pmd)		(pmd_isclear((pmd), L_PMD_SECT_RDONLY))
+ #define pmd_dirty(pmd)		(pmd_isset((pmd), L_PMD_SECT_DIRTY))
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index 7e2c27e63cd8..b96c8a186908 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -306,8 +306,6 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
+ #define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+ #define HUGETLB_PAGE_ORDER	(HPAGE_SHIFT - PAGE_SHIFT)
  
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bf4ddea48e61..3f5fb25486bf 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -56,6 +56,7 @@ config X86
- 	select ARCH_HAS_KCOV			if X86_64
- 	select ARCH_HAS_MEMBARRIER_SYNC_CORE
- 	select ARCH_HAS_PMEM_API		if X86_64
-+	select ARCH_HAS_PTE_SPECIAL
- 	select ARCH_HAS_REFCOUNT
- 	select ARCH_HAS_UACCESS_FLUSHCACHE	if X86_64
- 	select ARCH_HAS_SET_MEMORY
-diff --git a/mm/Kconfig b/mm/Kconfig
-index bf9d6366bced..60ae67b83e62 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -757,3 +757,6 @@ config GUP_BENCHMARK
- 	  performance of get_user_pages_fast().
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ static inline pte_t pgd_pte(pgd_t pgd)
+ {
+ 	return __pte(pgd_val(pgd));
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index a6b9f1d74600..f12d148eccbe 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -338,9 +338,6 @@ extern unsigned long pci_io_base;
+ /* Advertise special mapping type for AGP */
+ #define HAVE_PAGE_AGP
  
- 	  See tools/testing/selftests/vm/gup_benchmark.c
-+
-+config ARCH_HAS_PTE_SPECIAL
-+	bool
+-/* Advertise support for _PAGE_SPECIAL */
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ #ifndef __ASSEMBLY__
+ 
+ /*
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index c4a72c7a8c83..03dfddb1f49a 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -216,9 +216,6 @@ static inline bool pte_user(pte_t pte)
+ #define PAGE_AGP		(PAGE_KERNEL_NC)
+ #define HAVE_PAGE_AGP
+ 
+-/* Advertise support for _PAGE_SPECIAL */
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ #ifndef _PAGE_READ
+ /* if not defined, we should not find _PAGE_WRITE too */
+ #define _PAGE_READ 0
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index 2d24d33bf188..9809694e1389 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -171,7 +171,6 @@ static inline int is_module_addr(void *addr)
+ #define _PAGE_WRITE	0x020		/* SW pte write bit */
+ #define _PAGE_SPECIAL	0x040		/* SW associated with special page */
+ #define _PAGE_UNUSED	0x080		/* SW bit for pgste usage state */
+-#define __HAVE_ARCH_PTE_SPECIAL
+ 
+ #ifdef CONFIG_MEM_SOFT_DIRTY
+ #define _PAGE_SOFT_DIRTY 0x002		/* SW pte soft dirty bit */
+diff --git a/arch/sh/include/asm/pgtable.h b/arch/sh/include/asm/pgtable.h
+index 89c513a982fc..f6abfe2bca93 100644
+--- a/arch/sh/include/asm/pgtable.h
++++ b/arch/sh/include/asm/pgtable.h
+@@ -156,8 +156,6 @@ extern void page_table_range_init(unsigned long start, unsigned long end,
+ #define HAVE_ARCH_UNMAPPED_AREA
+ #define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
+ 
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ #include <asm-generic/pgtable.h>
+ 
+ #endif /* __ASM_SH_PGTABLE_H */
+diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
+index 44d6ac47e035..1393a8ac596b 100644
+--- a/arch/sparc/include/asm/pgtable_64.h
++++ b/arch/sparc/include/asm/pgtable_64.h
+@@ -117,9 +117,6 @@ bool kern_addr_valid(unsigned long addr);
+ #define _PAGE_PMD_HUGE    _AC(0x0100000000000000,UL) /* Huge page            */
+ #define _PAGE_PUD_HUGE    _PAGE_PMD_HUGE
+ 
+-/* Advertise support for _PAGE_SPECIAL */
+-#define __HAVE_ARCH_PTE_SPECIAL
+-
+ /* SUN4U pte bits... */
+ #define _PAGE_SZ4MB_4U	  _AC(0x6000000000000000,UL) /* 4MB Page             */
+ #define _PAGE_SZ512K_4U	  _AC(0x4000000000000000,UL) /* 512K Page            */
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index acfe755562a6..3e195728d7d1 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -65,7 +65,6 @@
+ #define _PAGE_PKEY_BIT2	(_AT(pteval_t, 0))
+ #define _PAGE_PKEY_BIT3	(_AT(pteval_t, 0))
+ #endif
+-#define __HAVE_ARCH_PTE_SPECIAL
+ 
+ #define _PAGE_PKEY_MASK (_PAGE_PKEY_BIT0 | \
+ 			 _PAGE_PKEY_BIT1 | \
 -- 
 2.7.4
