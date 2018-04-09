@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KJg1680GzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:25:49 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id x4-v6so4474447pln.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:25:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KJg53gcbzDr4q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:25:53 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id 61-v6so4479054plb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:25:53 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 6/9] powerpc/powernv: OPAL NVRAM driver standardise
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: [PATCH v2 7/9] powerpc/powernv: OPAL dump support standardise
  OPAL_BUSY delays
-Date: Mon,  9 Apr 2018 15:24:28 +1000
-Message-Id: <20180409052431.26405-7-npiggin@gmail.com>
+Date: Mon,  9 Apr 2018 15:24:29 +1000
+Message-Id: <20180409052431.26405-8-npiggin@gmail.com>
 In-Reply-To: <20180409052431.26405-1-npiggin@gmail.com>
 References: <20180409052431.26405-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,40 +28,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Convert to using the standard delay poll/delay form.
 
-The NVRAM driver:
+The dump code:
 
-- Did not previously delay or sleep in its busy loop.
+- Did not previously delay or sleep in the OPAL_BUSY case.
+- Used a 20ms sleep.
 
+Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/powernv/opal-nvram.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/opal-dump.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
-index ba2ff06a2c98..1bceb95f422d 100644
---- a/arch/powerpc/platforms/powernv/opal-nvram.c
-+++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-@@ -11,6 +11,7 @@
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 0dc8fa4e0af2..4ab749ceafc2 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -260,12 +260,14 @@ static int64_t dump_read_data(struct dump_obj *dump)
+ 	addr = __pa(list);
  
- #define DEBUG
- 
-+#include <linux/delay.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/of.h>
-@@ -56,8 +57,12 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
- 
+ 	/* Fetch data */
+-	rc = OPAL_BUSY_EVENT;
++	rc = OPAL_BUSY;
  	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
- 		rc = opal_write_nvram(__pa(buf), count, off);
--		if (rc == OPAL_BUSY_EVENT)
-+		if (rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_dump_read(dump->id, addr);
+ 		if (rc == OPAL_BUSY_EVENT) {
 +			msleep(OPAL_BUSY_DELAY_MS);
  			opal_poll_events(NULL);
+-			msleep(20);
 +		} else if (rc == OPAL_BUSY) {
 +			msleep(OPAL_BUSY_DELAY_MS);
-+		}
+ 		}
  	}
  
- 	if (rc)
 -- 
 2.17.0
