@@ -1,22 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KK121XZBzDr3t
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:41:26 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id a2so5234331pff.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:41:25 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 6/6] drivers/tty/hvc: remove unexplained "just in case" spin
- delay
-Date: Mon,  9 Apr 2018 15:40:56 +1000
-Message-Id: <20180409054056.27292-7-npiggin@gmail.com>
-In-Reply-To: <20180409054056.27292-1-npiggin@gmail.com>
-References: <20180409054056.27292-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KKCl6Hg0zDrnl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:50:43 +1000 (AEST)
+Message-ID: <1523253032.11062.6.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 3/9] powerpc/powernv: opal_put_chars partial write fix
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 09 Apr 2018 15:50:32 +1000
+In-Reply-To: <20180409052431.26405-4-npiggin@gmail.com>
+References: <20180409052431.26405-1-npiggin@gmail.com>
+ <20180409052431.26405-4-npiggin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This delay was in the very first OPAL console commit 6.5 years ago.
-The firmware console has hardened sufficiently to remove it.
+On Mon, 2018-04-09 at 15:24 +1000, Nicholas Piggin wrote:
+> The intention here is to consume and discard the remaining buffer
+> upon error. This works if there has not been a previous partial write.
+> If there has been, then total_len is no longer total number of bytes
+> to copy. total_len is always "bytes left to copy", so it should be
+> added to written bytes.
+> 
+> This code may not be exercised any more if partial writes will not be
+> hit, but this is a small bugfix before a larger change.
+> 
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- drivers/tty/hvc/hvc_opal.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index e151cfacf2a7..436b98258e60 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -307,14 +307,8 @@ static int udbg_opal_getc(void)
- 	int ch;
- 	for (;;) {
- 		ch = udbg_opal_getc_poll();
--		if (ch == -1) {
--			/* This shouldn't be needed...but... */
--			volatile unsigned long delay;
--			for (delay=0; delay < 2000000; delay++)
--				;
--		} else {
-+		if (ch != -1)
- 			return ch;
--		}
- 	}
- }
- 
--- 
-2.17.0
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index 516e23de5a3d..87d4c0aa7f64 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -388,7 +388,7 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+>  		/* Closed or other error drop */
+>  		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
+>  		    rc != OPAL_BUSY_EVENT) {
+> -			written = total_len;
+> +			written += total_len;
+>  			break;
+>  		}
+>  		if (rc == OPAL_SUCCESS) {
