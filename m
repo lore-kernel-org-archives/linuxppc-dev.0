@@ -1,20 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KKVq74bDzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 16:03:47 +1000 (AEST)
-Message-ID: <1523253820.11062.11.camel@kernel.crashing.org>
-Subject: Re: [PATCH 6/6] drivers/tty/hvc: remove unexplained "just in case"
- spin delay
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Apr 2018 16:03:40 +1000
-In-Reply-To: <20180409054056.27292-7-npiggin@gmail.com>
-References: <20180409054056.27292-1-npiggin@gmail.com>
- <20180409054056.27292-7-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <npiggin@gmail.com>
+Date: Mon, 9 Apr 2018 16:13:42 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
+Subject: Re: [PATCH v2 4/9] powerpc/powernv: OPAL console standardise
+ OPAL_BUSY loops
+Message-ID: <20180409161342.02f41b8a@roar.ozlabs.ibm.com>
+In-Reply-To: <1523253213.11062.7.camel@kernel.crashing.org>
+References: <20180409052431.26405-1-npiggin@gmail.com>
+ <20180409052431.26405-5-npiggin@gmail.com>
+ <1523253213.11062.7.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-04-09 at 15:40 +1000, Nicholas Piggin wrote:
-> This delay was in the very first OPAL console commit 6.5 years ago.
-> The firmware console has hardened sufficiently to remove it.
-> 
+On Mon, 09 Apr 2018 15:53:33 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  drivers/tty/hvc/hvc_opal.c | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
+> On Mon, 2018-04-09 at 15:24 +1000, Nicholas Piggin wrote:
+> > Convert to using the standard delay poll/delay form.
+> > 
+> > The console code:
+> > 
+> > - Did not previously delay or sleep in its busy loop.
+> > 
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
 > 
-> diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-> index e151cfacf2a7..436b98258e60 100644
-> --- a/drivers/tty/hvc/hvc_opal.c
-> +++ b/drivers/tty/hvc/hvc_opal.c
-> @@ -307,14 +307,8 @@ static int udbg_opal_getc(void)
->  	int ch;
->  	for (;;) {
->  		ch = udbg_opal_getc_poll();
-> -		if (ch == -1) {
-> -			/* This shouldn't be needed...but... */
-> -			volatile unsigned long delay;
-> -			for (delay=0; delay < 2000000; delay++)
-> -				;
-> -		} else {
-> +		if (ch != -1)
->  			return ch;
-> -		}
->  	}
->  }
->  
+> Does it help with anything ? We don't technically *have* to delay or
+> wait, I thought it would be good to try to hit the console as fast as
+> possible in that case...
+
+We can always make exceptions to the standard form, but in those
+cases I would like to document it in the OPAL API and comment for
+the Linux side.
+
+My thinking in this case is that it reduces time in firmware and
+in particular holding console locks. Is it likely / possible that
+we don't have enough buffering or some other issue makes it worth
+retrying so quickly?
+
+Thanks,
+Nick
