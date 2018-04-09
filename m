@@ -1,40 +1,30 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pf0-x22a.google.com (mail-pf0-x22a.google.com
- [IPv6:2607:f8b0:400e:c00::22a])
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KjDs5s50zDrqP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 06:53:01 +1000 (AEST)
+Received: from mail-qk0-f180.google.com (mail-qk0-f180.google.com
+ [209.85.220.180])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KhFb6SxrzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 06:08:35 +1000 (AEST)
-Received: by mail-pf0-x22a.google.com with SMTP id a2so6331872pff.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 13:08:35 -0700 (PDT)
-Date: Mon, 9 Apr 2018 13:08:31 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, Jerome Glisse <jglisse@redhat.com>,
- mhocko@kernel.org, aneesh.kumar@linux.vnet.ibm.com,
- akpm@linux-foundation.org, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org, Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Vineet Gupta <vgupta@synopsys.com>, Palmer Dabbelt <palmer@sifive.com>,
- Albert Ou <albert@sifive.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 2/3] mm: replace __HAVE_ARCH_PTE_SPECIAL
-In-Reply-To: <20180409175757.GA12938@infradead.org>
-Message-ID: <alpine.DEB.2.21.1804091307480.56406@chino.kir.corp.google.com>
-References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523282229-20731-3-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180409175757.GA12938@infradead.org>
+ by mail.kernel.org (Postfix) with ESMTPSA id A69A7217DF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 20:52:59 +0000 (UTC)
+Received: by mail-qk0-f180.google.com with SMTP id j73so10977544qke.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 13:52:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180409074604.17671-1-oohall@gmail.com>
+References: <20180409074604.17671-1-oohall@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 9 Apr 2018 15:52:38 -0500
+Message-ID: <CAL_Jsq+ho2QhmNmPZMDJcfSxposJd=jYDvjhXH8cMAtVFP7n4A@mail.gmail.com>
+Subject: Re: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
+To: "Oliver O'Halloran" <oohall@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-nvdimm@lists.01.org, devicetree@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 9 Apr 2018, Christoph Hellwig wrote:
+On Mon, Apr 9, 2018 at 2:46 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+> Some OF platforms (pseries and some SPARC systems) has their own
+> implementations of NUMA affinity detection rather than using the generic
+> OF_NUMA driver, which mainly exists for arm64. For other platforms one
+> of two fallbacks provided by the base OF driver are used depending on
+> CONFIG_NUMA.
+>
+> In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
+> In the =y case the fallback is a real function which is defined as a
+> weak symbol so that it may be overwritten by the architecture if desired.
+>
+> The problem with this arrangement is that the real implementations all
+> export of_node_to_nid(). Unfortunately it's not possible to export the
+> fallback since it would clash with the non-weak version. As a result
+> we get build failures when:
+>
+> a) CONFIG_NUMA=y && CONFIG_OF=y, and
+> b) The platform doesn't implement of_node_to_nid(), and
+> c) A module uses of_node_to_nid()
+>
+> Given b) will be true for most platforms this is fairly easy to hit
+> and has been observed on ia64 and x86.
 
-> > -#ifdef __HAVE_ARCH_PTE_SPECIAL
-> > +#ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
-> >  # define HAVE_PTE_SPECIAL 1
-> >  #else
-> >  # define HAVE_PTE_SPECIAL 0
-> 
-> I'd say kill this odd indirection and just use the
-> CONFIG_ARCH_HAS_PTE_SPECIAL symbol directly.
-> 
-> 
+How specifically do we hit this? The only module I see using
+of_node_to_nid in mainline is Cell EDAC driver.
 
-Agree, and I think it would be easier to audit/review if patches 1 and 3 
-were folded together to see the relationship between the newly added 
-selects and what #define's it is replacing.  Otherwise, looks good!
+> This patch remedies the problem by introducing the ARCH_HAS_OWN_OF_NUMA
+> Kconfig option which is selected if an architecture provides an
+> implementation of of_node_to_nid(). If a platform does not use it's own,
+> or the generic OF_NUMA, then always use the inline fallback in of.h so
+> we don't need to futz around with exports.
+
+I'm more inclined to figure out how to remove the export and provide a
+non DT specific function if drivers need to know this.
+
+Rob
