@@ -1,22 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KNdl3F7TzDrSD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 18:24:59 +1000 (AEST)
-Message-ID: <1523262286.11062.16.camel@kernel.crashing.org>
-Subject: Re: [PATCH 5/6] powerpc/powernv: implement opal_put_chars_nonatomic
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KNsS50wszDqnm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 18:35:05 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w398Z1j8102983
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 04:35:02 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h8033j6xu-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 04:34:49 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 9 Apr 2018 02:33:59 -0600
+Subject: Re: [PATCH V6 2/4] powerpc/mm: Add support for handling > 512TB
+ address in SLB miss
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Apr 2018 18:24:46 +1000
-In-Reply-To: <20180409162314.20e486c3@roar.ozlabs.ibm.com>
-References: <20180409054056.27292-1-npiggin@gmail.com>
- <20180409054056.27292-6-npiggin@gmail.com>
- <1523253475.11062.10.camel@kernel.crashing.org>
- <20180409162314.20e486c3@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+References: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20180326100450.18614-3-aneesh.kumar@linux.vnet.ibm.com>
+ <e593156a-d06a-9f1d-c2d3-564553c24cce@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Mon, 9 Apr 2018 14:03:51 +0530
+MIME-Version: 1.0
+In-Reply-To: <e593156a-d06a-9f1d-c2d3-564553c24cce@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <d3d9108d-38a3-0caf-8944-4ee422090421@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +42,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-04-09 at 16:23 +1000, Nicholas Piggin wrote:
-> On Mon, 09 Apr 2018 15:57:55 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 04/09/2018 12:49 PM, Christophe LEROY wrote:
 > 
-> > On Mon, 2018-04-09 at 15:40 +1000, Nicholas Piggin wrote:
-> > > The RAW console does not need writes to be atomic, so implement a
-> > > _nonatomic variant which does not take a spinlock. This API is used
-> > > in xmon, so the less locking thta's used, the better chance there is
-> > > that a crash can be debugged.  
-> > 
-> > I find the term "nonatomic" confusing...
 > 
-> I guess it is to go with the "atomic" comment for the hvsi console
-> case -- all characters must get to the console together or not at
-> all.
+> Le 26/03/2018 à 12:04, Aneesh Kumar K.V a écrit :
+>> For addresses above 512TB we allocate additional mmu contexts. To make
+>> it all easy, addresses above 512TB are handled with IR/DR=1 and with
+>> stack frame setup.
+>>
+>> The mmu_context_t is also updated to track the new extended_ids. To
+>> support upto 4PB we need a total 8 contexts.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> [mpe: Minor formatting tweaks and comment wording, switch BUG to WARN
+>>        in get_ea_context().]
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> Compilation fails on mpc885_ads_defconfig + CONFIG_HUGETLBFS :
+> 
+>    CC      arch/powerpc/mm/slice.o
+> arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
+> arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 
+> 'need_extra_context' [-Werror=implicit-function-declaration]
+> arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 
+> 'alloc_extended_context' [-Werror=implicit-function-declaration]
+> cc1: all warnings being treated as errors
+> make[1]: *** [arch/powerpc/mm/slice.o] Error 1
+> make: *** [arch/powerpc/mm] Error 2
 
-Yeah ok, it's just that in Linux "atomic" usually means something else
-:-) Why not just call it "unlocked" which is what it's about and
-matches existing practices thorough the kernel ?
 
-> > don't we have a problem if we
-> > start hitting OPAL without a lock where we can't trust
-> > opal_console_write_buffer_space anymore ? I think we need to handle
-> > partial writes in that case. Maybe we should return how much was
-> > written and leave the caller to deal with it.
-> 
-> Yes, the _nonatomic variant doesn't use opal_console_write_buffer_space
-> and it does handle partial writes by returning written bytes (although
-> callers generally tend to loop at the moment, we might do something
-> smarter with them later).
-> 
-> > I was hoping (but that isn't the case) that by nonatomic you actually
-> > meant calls that could be done in a non-atomic context, where we can do
-> > msleep instead of mdelay. That would be handy for the console coming
-> > from the hvc thread (the tty one).
-> 
-> Ah right, no. However we no longer loop until everything is written, so
-> the hvc console driver (or the console layer) should be able to deal with
-> that with sleeping. I don't think we need to put it at this level of the
-> driver, but I don't know much about the console code.
+something like below?
 
-Ok, so hopefully we shouldn't be hitting the delay..
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 9cd87d1..205fe55 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -35,6 +35,7 @@
+  #include <asm/mmu.h>
+  #include <asm/copro.h>
+  #include <asm/hugetlb.h>
++#include <asm/mmu_context.h>
 
-Cheers,
-Ben.
+  static DEFINE_SPINLOCK(slice_convert_lock);
+
+
+PPC64 was including that header via include/linux/pkeys.h
+
+-aneesh
