@@ -1,15 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Date: Mon, 9 Apr 2018 16:13:42 +1000
+Received: from mail-pf0-x22d.google.com (mail-pf0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c00::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KKxW4hwlzDrbT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 16:23:27 +1000 (AEST)
+Received: by mail-pf0-x22d.google.com with SMTP id l27so5280109pfk.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 23:23:27 -0700 (PDT)
+Date: Mon, 9 Apr 2018 16:23:14 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, skiboot@lists.ozlabs.org
-Subject: Re: [PATCH v2 4/9] powerpc/powernv: OPAL console standardise
- OPAL_BUSY loops
-Message-ID: <20180409161342.02f41b8a@roar.ozlabs.ibm.com>
-In-Reply-To: <1523253213.11062.7.camel@kernel.crashing.org>
-References: <20180409052431.26405-1-npiggin@gmail.com>
- <20180409052431.26405-5-npiggin@gmail.com>
- <1523253213.11062.7.camel@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 5/6] powerpc/powernv: implement opal_put_chars_nonatomic
+Message-ID: <20180409162314.20e486c3@roar.ozlabs.ibm.com>
+In-Reply-To: <1523253475.11062.10.camel@kernel.crashing.org>
+References: <20180409054056.27292-1-npiggin@gmail.com>
+ <20180409054056.27292-6-npiggin@gmail.com>
+ <1523253475.11062.10.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,31 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 09 Apr 2018 15:53:33 +1000
+On Mon, 09 Apr 2018 15:57:55 +1000
 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Mon, 2018-04-09 at 15:24 +1000, Nicholas Piggin wrote:
-> > Convert to using the standard delay poll/delay form.
-> > 
-> > The console code:
-> > 
-> > - Did not previously delay or sleep in its busy loop.
-> > 
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>  
+> On Mon, 2018-04-09 at 15:40 +1000, Nicholas Piggin wrote:
+> > The RAW console does not need writes to be atomic, so implement a
+> > _nonatomic variant which does not take a spinlock. This API is used
+> > in xmon, so the less locking thta's used, the better chance there is
+> > that a crash can be debugged.  
 > 
-> Does it help with anything ? We don't technically *have* to delay or
-> wait, I thought it would be good to try to hit the console as fast as
-> possible in that case...
+> I find the term "nonatomic" confusing...
 
-We can always make exceptions to the standard form, but in those
-cases I would like to document it in the OPAL API and comment for
-the Linux side.
+I guess it is to go with the "atomic" comment for the hvsi console
+case -- all characters must get to the console together or not at
+all.
 
-My thinking in this case is that it reduces time in firmware and
-in particular holding console locks. Is it likely / possible that
-we don't have enough buffering or some other issue makes it worth
-retrying so quickly?
+> don't we have a problem if we
+> start hitting OPAL without a lock where we can't trust
+> opal_console_write_buffer_space anymore ? I think we need to handle
+> partial writes in that case. Maybe we should return how much was
+> written and leave the caller to deal with it.
+
+Yes, the _nonatomic variant doesn't use opal_console_write_buffer_space
+and it does handle partial writes by returning written bytes (although
+callers generally tend to loop at the moment, we might do something
+smarter with them later).
+
+> I was hoping (but that isn't the case) that by nonatomic you actually
+> meant calls that could be done in a non-atomic context, where we can do
+> msleep instead of mdelay. That would be handy for the console coming
+> from the hvc thread (the tty one).
+
+Ah right, no. However we no longer loop until everything is written, so
+the hvc console driver (or the console layer) should be able to deal with
+that with sleeping. I don't think we need to put it at this level of the
+driver, but I don't know much about the console code.
 
 Thanks,
 Nick
