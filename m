@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KP6h4BFKzDqyH
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 18:46:36 +1000 (AEST)
-Message-ID: <1523263589.11062.20.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/64: irq_work avoid immediate interrupt when
- raised with hard irqs enabled
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 09 Apr 2018 18:46:29 +1000
-In-Reply-To: <20180405143146.4285-1-npiggin@gmail.com>
-References: <20180405143146.4285-1-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KPJX3kvXzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 18:55:08 +1000 (AEST)
+Subject: Re: [PATCH V6 2/4] powerpc/mm: Add support for handling > 512TB
+ address in SLB miss
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
+ <20180326100450.18614-3-aneesh.kumar@linux.vnet.ibm.com>
+ <e593156a-d06a-9f1d-c2d3-564553c24cce@c-s.fr>
+ <d3d9108d-38a3-0caf-8944-4ee422090421@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <33974c11-ec3e-8f38-bb0f-59345b94cf7f@c-s.fr>
+Date: Mon, 9 Apr 2018 10:55:00 +0200
+MIME-Version: 1.0
+In-Reply-To: <d3d9108d-38a3-0caf-8944-4ee422090421@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,90 +29,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-04-06 at 00:31 +1000, Nicholas Piggin wrote:
-> irq_work_raise should not schedule the hardware decrementer interrupt
-> unless it is called from NMI context. Doing so often just results in an
-> immediate masked decrementer interrupt:
-> 
->    <...>-550    90d...    4us : update_curr_rt <-dequeue_task_rt
->    <...>-550    90d...    5us : dbs_update_util_handler <-update_curr_rt
->    <...>-550    90d...    6us : arch_irq_work_raise <-irq_work_queue
->    <...>-550    90d...    7us : soft_nmi_interrupt <-soft_nmi_common
->    <...>-550    90d...    7us : printk_nmi_enter <-soft_nmi_interrupt
->    <...>-550    90d.Z.    8us : rcu_nmi_enter <-soft_nmi_interrupt
->    <...>-550    90d.Z.    9us : rcu_nmi_exit <-soft_nmi_interrupt
->    <...>-550    90d...    9us : printk_nmi_exit <-soft_nmi_interrupt
->    <...>-550    90d...   10us : cpuacct_charge <-update_curr_rt
-> 
-> Set the decrementer pending in the irq_happened mask directly, rather
-> than having the masked decrementer handler do it.
 
-Setting the paca field needs hard irqs off... also preempt_disable
-doesn't look necessary if IRQs are off.
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kernel/time.c | 35 +++++++++++++++++++++++++++++++++--
->  1 file changed, 33 insertions(+), 2 deletions(-)
+Le 09/04/2018 à 10:33, Aneesh Kumar K.V a écrit :
+> On 04/09/2018 12:49 PM, Christophe LEROY wrote:
+>>
+>>
+>> Le 26/03/2018 à 12:04, Aneesh Kumar K.V a écrit :
+>>> For addresses above 512TB we allocate additional mmu contexts. To make
+>>> it all easy, addresses above 512TB are handled with IR/DR=1 and with
+>>> stack frame setup.
+>>>
+>>> The mmu_context_t is also updated to track the new extended_ids. To
+>>> support upto 4PB we need a total 8 contexts.
+>>>
+>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>> [mpe: Minor formatting tweaks and comment wording, switch BUG to WARN
+>>>        in get_ea_context().]
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>
+>> Compilation fails on mpc885_ads_defconfig + CONFIG_HUGETLBFS :
+>>
+>>    CC      arch/powerpc/mm/slice.o
+>> arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
+>> arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 
+>> 'need_extra_context' [-Werror=implicit-function-declaration]
+>> arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 
+>> 'alloc_extended_context' [-Werror=implicit-function-declaration]
+>> cc1: all warnings being treated as errors
+>> make[1]: *** [arch/powerpc/mm/slice.o] Error 1
+>> make: *** [arch/powerpc/mm] Error 2
 > 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index a32823dcd9a4..9d1cc183c974 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -510,6 +510,35 @@ static inline void clear_irq_work_pending(void)
->  		"i" (offsetof(struct paca_struct, irq_work_pending)));
->  }
->  
-> +void arch_irq_work_raise(void)
-> +{
-> +	WARN_ON(!irqs_disabled());
-> +
-> +	preempt_disable();
-> +	set_irq_work_pending_flag();
-> +	/*
-> +	 * Regular iterrupts will check pending irq_happened as they return,
-> +	 * or process context when it next enables interrupts, so the
-> +	 * decrementer can be scheduled there.
-> +	 *
-> +	 * NMI interrupts do not, so setting the decrementer hardware
-> +	 * interrupt to fire ensures the work runs upon RI (if it's to a
-> +	 * MSR[EE]=1 context). We do not want to do this in other contexts
-> +	 * because if interrupts are hard enabled, the decrementer will
-> +	 * fire immediately here and just go to the masked handler to be
-> +	 * recorded in irq_happened.
-> +	 *
-> +	 * BookE does not support this yet, it must audit all NMI
-> +	 * interrupt handlers call nmi_enter().
-> +	 */
-> +	if (IS_ENABLED(CONFIG_BOOKE) || in_nmi()) {
-> +		set_dec(1);
-> +	} else {
-> +		local_paca->irq_happened |= PACA_IRQ_DEC;
-> +	}
-> +	preempt_enable();
-> +}
-> +
->  #else /* 32-bit */
->  
->  DEFINE_PER_CPU(u8, irq_work_pending);
-> @@ -518,16 +547,18 @@ DEFINE_PER_CPU(u8, irq_work_pending);
->  #define test_irq_work_pending()		__this_cpu_read(irq_work_pending)
->  #define clear_irq_work_pending()	__this_cpu_write(irq_work_pending, 0)
->  
-> -#endif /* 32 vs 64 bit */
-> -
->  void arch_irq_work_raise(void)
->  {
-> +	WARN_ON(!irqs_disabled());
-> +
->  	preempt_disable();
->  	set_irq_work_pending_flag();
->  	set_dec(1);
->  	preempt_enable();
->  }
->  
-> +#endif /* 32 vs 64 bit */
-> +
->  #else  /* CONFIG_IRQ_WORK */
->  
->  #define test_irq_work_pending()	0
+> 
+> something like below?
+> 
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index 9cd87d1..205fe55 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -35,6 +35,7 @@
+>   #include <asm/mmu.h>
+>   #include <asm/copro.h>
+>   #include <asm/hugetlb.h>
+> +#include <asm/mmu_context.h>
+> 
+>   static DEFINE_SPINLOCK(slice_convert_lock);
+> 
+> 
+> PPC64 was including that header via include/linux/pkeys.h
+
+Yes compilation OK now.
+
+Christophe
+
+> 
+> -aneesh
