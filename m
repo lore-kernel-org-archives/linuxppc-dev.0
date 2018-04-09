@@ -1,22 +1,20 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <oohall@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KMBD1hbszDrnm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 17:19:31 +1000 (AEST)
-Subject: Re: [PATCH V6 2/4] powerpc/mm: Add support for handling > 512TB
- address in SLB miss
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
- <20180326100450.18614-3-aneesh.kumar@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <e593156a-d06a-9f1d-c2d3-564553c24cce@c-s.fr>
-Date: Mon, 9 Apr 2018 09:19:26 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180326100450.18614-3-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KMn962xZzDrnk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 17:46:21 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id u86so5413571pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 00:46:21 -0700 (PDT)
+From: Oliver O'Halloran <oohall@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: sfr@canb.auug.org.au, linux-nvdimm@lists.01.org,
+ Oliver O'Halloran <oohall@gmail.com>, devicetree@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
+Date: Mon,  9 Apr 2018 17:46:04 +1000
+Message-Id: <20180409074604.17671-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,553 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Some OF platforms (pseries and some SPARC systems) has their own
+implementations of NUMA affinity detection rather than using the generic
+OF_NUMA driver, which mainly exists for arm64. For other platforms one
+of two fallbacks provided by the base OF driver are used depending on
+CONFIG_NUMA.
 
+In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
+In the =y case the fallback is a real function which is defined as a
+weak symbol so that it may be overwritten by the architecture if desired.
 
-Le 26/03/2018 à 12:04, Aneesh Kumar K.V a écrit :
-> For addresses above 512TB we allocate additional mmu contexts. To make
-> it all easy, addresses above 512TB are handled with IR/DR=1 and with
-> stack frame setup.
-> 
-> The mmu_context_t is also updated to track the new extended_ids. To
-> support upto 4PB we need a total 8 contexts.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> [mpe: Minor formatting tweaks and comment wording, switch BUG to WARN
->        in get_ea_context().]
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+The problem with this arrangement is that the real implementations all
+export of_node_to_nid(). Unfortunately it's not possible to export the
+fallback since it would clash with the non-weak version. As a result
+we get build failures when:
 
-Compilation fails on mpc885_ads_defconfig + CONFIG_HUGETLBFS :
+a) CONFIG_NUMA=y && CONFIG_OF=y, and
+b) The platform doesn't implement of_node_to_nid(), and
+c) A module uses of_node_to_nid()
 
-   CC      arch/powerpc/mm/slice.o
-arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
-arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 
-'need_extra_context' [-Werror=implicit-function-declaration]
-arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 
-'alloc_extended_context' [-Werror=implicit-function-declaration]
-cc1: all warnings being treated as errors
-make[1]: *** [arch/powerpc/mm/slice.o] Error 1
-make: *** [arch/powerpc/mm] Error 2
+Given b) will be true for most platforms this is fairly easy to hit
+and has been observed on ia64 and x86.
 
-Christophe
+This patch remedies the problem by introducing the ARCH_HAS_OWN_OF_NUMA
+Kconfig option which is selected if an architecture provides an
+implementation of of_node_to_nid(). If a platform does not use it's own,
+or the generic OF_NUMA, then always use the inline fallback in of.h so
+we don't need to futz around with exports.
 
-> ---
->   arch/powerpc/include/asm/book3s/64/hash-4k.h  |   6 ++
->   arch/powerpc/include/asm/book3s/64/hash-64k.h |   6 ++
->   arch/powerpc/include/asm/book3s/64/mmu.h      |  33 +++++++-
->   arch/powerpc/include/asm/mmu_context.h        |  39 ++++++++++
->   arch/powerpc/include/asm/processor.h          |   6 ++
->   arch/powerpc/kernel/exceptions-64s.S          |  11 ++-
->   arch/powerpc/kernel/traps.c                   |  12 ---
->   arch/powerpc/mm/copro_fault.c                 |   2 +-
->   arch/powerpc/mm/hash_utils_64.c               |   4 +-
->   arch/powerpc/mm/mmu_context_book3s64.c        |  15 +++-
->   arch/powerpc/mm/pgtable-hash64.c              |   2 +-
->   arch/powerpc/mm/slb.c                         | 108 ++++++++++++++++++++++++++
->   arch/powerpc/mm/slb_low.S                     |  11 ++-
->   arch/powerpc/mm/slice.c                       |  15 +++-
->   arch/powerpc/mm/tlb_hash64.c                  |   2 +-
->   15 files changed, 245 insertions(+), 27 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> index 67c5475311ee..1a35eb944481 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-> @@ -11,6 +11,12 @@
->   #define H_PUD_INDEX_SIZE  9
->   #define H_PGD_INDEX_SIZE  9
->   
-> +/*
-> + * Each context is 512TB. But on 4k we restrict our max TASK size to 64TB
-> + * Hence also limit max EA bits to 64TB.
-> + */
-> +#define MAX_EA_BITS_PER_CONTEXT		46
-> +
->   #ifndef __ASSEMBLY__
->   #define H_PTE_TABLE_SIZE	(sizeof(pte_t) << H_PTE_INDEX_SIZE)
->   #define H_PMD_TABLE_SIZE	(sizeof(pmd_t) << H_PMD_INDEX_SIZE)
-> diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> index 3bcf269f8f55..8d0cbbb31023 100644
-> --- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> +++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-> @@ -7,6 +7,12 @@
->   #define H_PUD_INDEX_SIZE  7
->   #define H_PGD_INDEX_SIZE  8
->   
-> +/*
-> + * Each context is 512TB size. SLB miss for first context/default context
-> + * is handled in the hotpath.
-> + */
-> +#define MAX_EA_BITS_PER_CONTEXT		49
-> +
->   /*
->    * 64k aligned address free up few of the lower bits of RPN for us
->    * We steal that here. For more deatils look at pte_pfn/pfn_pte()
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu.h b/arch/powerpc/include/asm/book3s/64/mmu.h
-> index c8c836e8ad1b..5094696eecd6 100644
-> --- a/arch/powerpc/include/asm/book3s/64/mmu.h
-> +++ b/arch/powerpc/include/asm/book3s/64/mmu.h
-> @@ -91,7 +91,18 @@ struct slice_mask {
->   };
->   
->   typedef struct {
-> -	mm_context_id_t id;
-> +	union {
-> +		/*
-> +		 * We use id as the PIDR content for radix. On hash we can use
-> +		 * more than one id. The extended ids are used when we start
-> +		 * having address above 512TB. We allocate one extended id
-> +		 * for each 512TB. The new id is then used with the 49 bit
-> +		 * EA to build a new VA. We always use ESID_BITS_1T_MASK bits
-> +		 * from EA and new context ids to build the new VAs.
-> +		 */
-> +		mm_context_id_t id;
-> +		mm_context_id_t extended_id[TASK_SIZE_USER64/TASK_CONTEXT_SIZE];
-> +	};
->   	u16 user_psize;		/* page size index */
->   
->   	/* Number of bits in the mm_cpumask */
-> @@ -196,5 +207,25 @@ extern void radix_init_pseries(void);
->   static inline void radix_init_pseries(void) { };
->   #endif
->   
-> +static inline int get_ea_context(mm_context_t *ctx, unsigned long ea)
-> +{
-> +	int index = ea >> MAX_EA_BITS_PER_CONTEXT;
-> +
-> +	if (likely(index < ARRAY_SIZE(ctx->extended_id)))
-> +		return ctx->extended_id[index];
-> +
-> +	/* should never happen */
-> +	WARN_ON(1);
-> +	return 0;
-> +}
-> +
-> +static inline unsigned long get_user_vsid(mm_context_t *ctx,
-> +					  unsigned long ea, int ssize)
-> +{
-> +	unsigned long context = get_ea_context(ctx, ea);
-> +
-> +	return get_vsid(context, ea, ssize);
-> +}
-> +
->   #endif /* __ASSEMBLY__ */
->   #endif /* _ASM_POWERPC_BOOK3S_64_MMU_H_ */
-> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-> index 3a15b6db9501..1835ca1505d6 100644
-> --- a/arch/powerpc/include/asm/mmu_context.h
-> +++ b/arch/powerpc/include/asm/mmu_context.h
-> @@ -60,12 +60,51 @@ extern int hash__alloc_context_id(void);
->   extern void hash__reserve_context_id(int id);
->   extern void __destroy_context(int context_id);
->   static inline void mmu_context_init(void) { }
-> +
-> +static inline int alloc_extended_context(struct mm_struct *mm,
-> +					 unsigned long ea)
-> +{
-> +	int context_id;
-> +
-> +	int index = ea >> MAX_EA_BITS_PER_CONTEXT;
-> +
-> +	context_id = hash__alloc_context_id();
-> +	if (context_id < 0)
-> +		return context_id;
-> +
-> +	VM_WARN_ON(mm->context.extended_id[index]);
-> +	mm->context.extended_id[index] = context_id;
-> +	return context_id;
-> +}
-> +
-> +static inline bool need_extra_context(struct mm_struct *mm, unsigned long ea)
-> +{
-> +	int context_id;
-> +
-> +	context_id = get_ea_context(&mm->context, ea);
-> +	if (!context_id)
-> +		return true;
-> +	return false;
-> +}
-> +
->   #else
->   extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next,
->   			       struct task_struct *tsk);
->   extern unsigned long __init_new_context(void);
->   extern void __destroy_context(unsigned long context_id);
->   extern void mmu_context_init(void);
-> +static inline int alloc_extended_context(struct mm_struct *mm,
-> +					 unsigned long ea)
-> +{
-> +	/* non book3s_64 should never find this called */
-> +	WARN_ON(1);
-> +	return -ENOMEM;
-> +}
-> +
-> +static inline bool need_extra_context(struct mm_struct *mm, unsigned long ea)
-> +{
-> +	return false;
-> +}
->   #endif
->   
->   #if defined(CONFIG_KVM_BOOK3S_HV_POSSIBLE) && defined(CONFIG_PPC_RADIX_MMU)
-> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-> index 01299cdc9806..75b084486ce1 100644
-> --- a/arch/powerpc/include/asm/processor.h
-> +++ b/arch/powerpc/include/asm/processor.h
-> @@ -119,9 +119,15 @@ void release_thread(struct task_struct *);
->    */
->   #define TASK_SIZE_USER64		TASK_SIZE_512TB
->   #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_128TB
-> +#define TASK_CONTEXT_SIZE		TASK_SIZE_512TB
->   #else
->   #define TASK_SIZE_USER64		TASK_SIZE_64TB
->   #define DEFAULT_MAP_WINDOW_USER64	TASK_SIZE_64TB
-> +/*
-> + * We don't need to allocate extended context ids for 4K page size, because
-> + * we limit the max effective address on this config to 64TB.
-> + */
-> +#define TASK_CONTEXT_SIZE		TASK_SIZE_64TB
->   #endif
->   
->   /*
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 6bee20c43feb..1a0aa70bcb2b 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -621,7 +621,10 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
->   	lwz	r9,PACA_EXSLB+EX_CCR(r13)	/* get saved CR */
->   	mtlr	r10
->   
-> -	beq-	8f		/* if bad address, make full stack frame */
-> +	/*
-> +	 * Large address, check whether we have to allocate new contexts.
-> +	 */
-> +	beq-	8f
->   
->   	bne-	cr5,2f		/* if unrecoverable exception, oops */
->   
-> @@ -685,7 +688,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
->   	mr	r3,r12
->   	mfspr	r11,SPRN_SRR0
->   	mfspr	r12,SPRN_SRR1
-> -	LOAD_HANDLER(r10,bad_addr_slb)
-> +	LOAD_HANDLER(r10, large_addr_slb)
->   	mtspr	SPRN_SRR0,r10
->   	ld	r10,PACAKMSR(r13)
->   	mtspr	SPRN_SRR1,r10
-> @@ -700,7 +703,7 @@ EXC_COMMON_BEGIN(unrecov_slb)
->   	bl	unrecoverable_exception
->   	b	1b
->   
-> -EXC_COMMON_BEGIN(bad_addr_slb)
-> +EXC_COMMON_BEGIN(large_addr_slb)
->   	EXCEPTION_PROLOG_COMMON(0x380, PACA_EXSLB)
->   	RECONCILE_IRQ_STATE(r10, r11)
->   	ld	r3, PACA_EXSLB+EX_DAR(r13)
-> @@ -710,7 +713,7 @@ EXC_COMMON_BEGIN(bad_addr_slb)
->   	std	r10, _TRAP(r1)
->   2:	bl	save_nvgprs
->   	addi	r3, r1, STACK_FRAME_OVERHEAD
-> -	bl	slb_miss_bad_addr
-> +	bl	slb_miss_large_addr
->   	b	ret_from_except
->   
->   EXC_REAL_BEGIN(hardware_interrupt, 0x500, 0x100)
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 1e48d157196a..f200bfd98b17 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1495,18 +1495,6 @@ void alignment_exception(struct pt_regs *regs)
->   	exception_exit(prev_state);
->   }
->   
-> -void slb_miss_bad_addr(struct pt_regs *regs)
-> -{
-> -	enum ctx_state prev_state = exception_enter();
-> -
-> -	if (user_mode(regs))
-> -		_exception(SIGSEGV, regs, SEGV_BNDERR, regs->dar);
-> -	else
-> -		bad_page_fault(regs, regs->dar, SIGSEGV);
-> -
-> -	exception_exit(prev_state);
-> -}
-> -
->   void StackOverflow(struct pt_regs *regs)
->   {
->   	printk(KERN_CRIT "Kernel stack overflow in process %p, r1=%lx\n",
-> diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-> index 697b70ad1195..7d0945bd3a61 100644
-> --- a/arch/powerpc/mm/copro_fault.c
-> +++ b/arch/powerpc/mm/copro_fault.c
-> @@ -112,7 +112,7 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
->   			return 1;
->   		psize = get_slice_psize(mm, ea);
->   		ssize = user_segment_size(ea);
-> -		vsid = get_vsid(mm->context.id, ea, ssize);
-> +		vsid = get_user_vsid(&mm->context, ea, ssize);
->   		vsidkey = SLB_VSID_USER;
->   		break;
->   	case VMALLOC_REGION_ID:
-> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-> index b578148d89e6..f62325d4f5f5 100644
-> --- a/arch/powerpc/mm/hash_utils_64.c
-> +++ b/arch/powerpc/mm/hash_utils_64.c
-> @@ -1261,7 +1261,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
->   		}
->   		psize = get_slice_psize(mm, ea);
->   		ssize = user_segment_size(ea);
-> -		vsid = get_vsid(mm->context.id, ea, ssize);
-> +		vsid = get_user_vsid(&mm->context, ea, ssize);
->   		break;
->   	case VMALLOC_REGION_ID:
->   		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-> @@ -1526,7 +1526,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
->   
->   	/* Get VSID */
->   	ssize = user_segment_size(ea);
-> -	vsid = get_vsid(mm->context.id, ea, ssize);
-> +	vsid = get_user_vsid(&mm->context, ea, ssize);
->   	if (!vsid)
->   		return;
->   	/*
-> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-> index 422be81bf69f..b75194dff64c 100644
-> --- a/arch/powerpc/mm/mmu_context_book3s64.c
-> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
-> @@ -179,6 +179,19 @@ void __destroy_context(int context_id)
->   }
->   EXPORT_SYMBOL_GPL(__destroy_context);
->   
-> +static void destroy_contexts(mm_context_t *ctx)
-> +{
-> +	int index, context_id;
-> +
-> +	spin_lock(&mmu_context_lock);
-> +	for (index = 0; index < ARRAY_SIZE(ctx->extended_id); index++) {
-> +		context_id = ctx->extended_id[index];
-> +		if (context_id)
-> +			ida_remove(&mmu_context_ida, context_id);
-> +	}
-> +	spin_unlock(&mmu_context_lock);
-> +}
-> +
->   #ifdef CONFIG_PPC_64K_PAGES
->   static void destroy_pagetable_page(struct mm_struct *mm)
->   {
-> @@ -217,7 +230,7 @@ void destroy_context(struct mm_struct *mm)
->   	else
->   		subpage_prot_free(mm);
->   	destroy_pagetable_page(mm);
-> -	__destroy_context(mm->context.id);
-> +	destroy_contexts(&mm->context);
->   	mm->context.id = MMU_NO_CONTEXT;
->   }
->   
-> diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
-> index 469808e77e58..a87b18cf6749 100644
-> --- a/arch/powerpc/mm/pgtable-hash64.c
-> +++ b/arch/powerpc/mm/pgtable-hash64.c
-> @@ -320,7 +320,7 @@ void hpte_do_hugepage_flush(struct mm_struct *mm, unsigned long addr,
->   
->   	if (!is_kernel_addr(addr)) {
->   		ssize = user_segment_size(addr);
-> -		vsid = get_vsid(mm->context.id, addr, ssize);
-> +		vsid = get_user_vsid(&mm->context, addr, ssize);
->   		WARN_ON(vsid == 0);
->   	} else {
->   		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 13cfe413b40d..66577cc66dc9 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -22,6 +22,7 @@
->   #include <asm/cacheflush.h>
->   #include <asm/smp.h>
->   #include <linux/compiler.h>
-> +#include <linux/context_tracking.h>
->   #include <linux/mm_types.h>
->   
->   #include <asm/udbg.h>
-> @@ -340,3 +341,110 @@ void slb_initialize(void)
->   
->   	asm volatile("isync":::"memory");
->   }
-> +
-> +static void insert_slb_entry(unsigned long vsid, unsigned long ea,
-> +			     int bpsize, int ssize)
-> +{
-> +	unsigned long flags, vsid_data, esid_data;
-> +	enum slb_index index;
-> +	int slb_cache_index;
-> +
-> +	/*
-> +	 * We are irq disabled, hence should be safe to access PACA.
-> +	 */
-> +	index = get_paca()->stab_rr;
-> +
-> +	/*
-> +	 * simple round-robin replacement of slb starting at SLB_NUM_BOLTED.
-> +	 */
-> +	if (index < (mmu_slb_size - 1))
-> +		index++;
-> +	else
-> +		index = SLB_NUM_BOLTED;
-> +
-> +	get_paca()->stab_rr = index;
-> +
-> +	flags = SLB_VSID_USER | mmu_psize_defs[bpsize].sllp;
-> +	vsid_data = (vsid << slb_vsid_shift(ssize)) | flags |
-> +		    ((unsigned long) ssize << SLB_VSID_SSIZE_SHIFT);
-> +	esid_data = mk_esid_data(ea, ssize, index);
-> +
-> +	asm volatile("slbmte %0, %1" : : "r" (vsid_data), "r" (esid_data)
-> +		     : "memory");
-> +
-> +	/*
-> +	 * Now update slb cache entries
-> +	 */
-> +	slb_cache_index = get_paca()->slb_cache_ptr;
-> +	if (slb_cache_index < SLB_CACHE_ENTRIES) {
-> +		/*
-> +		 * We have space in slb cache for optimized switch_slb().
-> +		 * Top 36 bits from esid_data as per ISA
-> +		 */
-> +		get_paca()->slb_cache[slb_cache_index++] = esid_data >> 28;
-> +		get_paca()->slb_cache_ptr++;
-> +	} else {
-> +		/*
-> +		 * Our cache is full and the current cache content strictly
-> +		 * doesn't indicate the active SLB conents. Bump the ptr
-> +		 * so that switch_slb() will ignore the cache.
-> +		 */
-> +		get_paca()->slb_cache_ptr = SLB_CACHE_ENTRIES + 1;
-> +	}
-> +}
-> +
-> +static void handle_multi_context_slb_miss(int context_id, unsigned long ea)
-> +{
-> +	struct mm_struct *mm = current->mm;
-> +	unsigned long vsid;
-> +	int bpsize;
-> +
-> +	/*
-> +	 * We are always above 1TB, hence use high user segment size.
-> +	 */
-> +	vsid = get_vsid(context_id, ea, mmu_highuser_ssize);
-> +	bpsize = get_slice_psize(mm, ea);
-> +	insert_slb_entry(vsid, ea, bpsize, mmu_highuser_ssize);
-> +}
-> +
-> +void slb_miss_large_addr(struct pt_regs *regs)
-> +{
-> +	enum ctx_state prev_state = exception_enter();
-> +	unsigned long ea = regs->dar;
-> +	int context;
-> +
-> +	if (REGION_ID(ea) != USER_REGION_ID)
-> +		goto slb_bad_addr;
-> +
-> +	/*
-> +	 * Are we beyound what the page table layout supports ?
-> +	 */
-> +	if ((ea & ~REGION_MASK) >= H_PGTABLE_RANGE)
-> +		goto slb_bad_addr;
-> +
-> +	/* Lower address should have been handled by asm code */
-> +	if (ea < (1UL << MAX_EA_BITS_PER_CONTEXT))
-> +		goto slb_bad_addr;
-> +
-> +	/*
-> +	 * consider this as bad access if we take a SLB miss
-> +	 * on an address above addr limit.
-> +	 */
-> +	if (ea >= current->mm->context.slb_addr_limit)
-> +		goto slb_bad_addr;
-> +
-> +	context = get_ea_context(&current->mm->context, ea);
-> +	if (!context)
-> +		goto slb_bad_addr;
-> +
-> +	handle_multi_context_slb_miss(context, ea);
-> +	exception_exit(prev_state);
-> +	return;
-> +
-> +slb_bad_addr:
-> +	if (user_mode(regs))
-> +		_exception(SIGSEGV, regs, SEGV_BNDERR, ea);
-> +	else
-> +		bad_page_fault(regs, ea, SIGSEGV);
-> +	exception_exit(prev_state);
-> +}
-> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-> index 2c7c717fd2ea..a83fbd2a4a24 100644
-> --- a/arch/powerpc/mm/slb_low.S
-> +++ b/arch/powerpc/mm/slb_low.S
-> @@ -75,10 +75,15 @@ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_68_BIT_VA)
->    */
->   _GLOBAL(slb_allocate)
->   	/*
-> -	 * check for bad kernel/user address
-> -	 * (ea & ~REGION_MASK) >= PGTABLE_RANGE
-> +	 * Check if the address falls within the range of the first context, or
-> +	 * if we may need to handle multi context. For the first context we
-> +	 * allocate the slb entry via the fast path below. For large address we
-> +	 * branch out to C-code and see if additional contexts have been
-> +	 * allocated.
-> +	 * The test here is:
-> +	 *   (ea & ~REGION_MASK) >= (1ull << MAX_EA_BITS_PER_CONTEXT)
->   	 */
-> -	rldicr. r9,r3,4,(63 - H_PGTABLE_EADDR_SIZE - 4)
-> +	rldicr. r9,r3,4,(63 - MAX_EA_BITS_PER_CONTEXT - 4)
->   	bne-	8f
->   
->   	srdi	r9,r3,60		/* get region */
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index 09ac1a709d0c..9cd87d11fe4e 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -648,6 +648,15 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->   	slice_print_mask(" mask", &potential_mask);
->   
->    convert:
-> +	/*
-> +	 * Try to allocate the context before we do slice convert
-> +	 * so that we handle the context allocation failure gracefully.
-> +	 */
-> +	if (need_extra_context(mm, newaddr)) {
-> +		if (alloc_extended_context(mm, newaddr) < 0)
-> +			return -ENOMEM;
-> +	}
-> +
->   	slice_andnot_mask(&potential_mask, &potential_mask, &good_mask);
->   	if (compat_maskp && !fixed)
->   		slice_andnot_mask(&potential_mask, &potential_mask, compat_maskp);
-> @@ -658,10 +667,14 @@ unsigned long slice_get_unmapped_area(unsigned long addr, unsigned long len,
->   		if (psize > MMU_PAGE_BASE)
->   			on_each_cpu(slice_flush_segments, mm, 1);
->   	}
-> +	return newaddr;
->   
->   return_addr:
-> +	if (need_extra_context(mm, newaddr)) {
-> +		if (alloc_extended_context(mm, newaddr) < 0)
-> +			return -ENOMEM;
-> +	}
->   	return newaddr;
-> -
->   }
->   EXPORT_SYMBOL_GPL(slice_get_unmapped_area);
->   
-> diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-> index 9b23f12e863c..87d71dd25441 100644
-> --- a/arch/powerpc/mm/tlb_hash64.c
-> +++ b/arch/powerpc/mm/tlb_hash64.c
-> @@ -89,7 +89,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
->   	/* Build full vaddr */
->   	if (!is_kernel_addr(addr)) {
->   		ssize = user_segment_size(addr);
-> -		vsid = get_vsid(mm->context.id, addr, ssize);
-> +		vsid = get_user_vsid(&mm->context, addr, ssize);
->   	} else {
->   		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
->   		ssize = mmu_kernel_ssize;
-> 
+Cc: devicetree@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Fixes: 298535c00a2c ("of, numa: Add NUMA of binding implementation.")
+Signed-off-by: Oliver O'Halloran <oohall@gmail.com>
+---
+ arch/powerpc/Kconfig | 1 +
+ arch/sparc/Kconfig   | 1 +
+ drivers/of/Kconfig   | 3 +++
+ drivers/of/base.c    | 7 -------
+ include/linux/of.h   | 2 +-
+ 5 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c32a181a7cbb..74ce5f3564ae 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -625,6 +625,7 @@ config NUMA
+ 	bool "NUMA support"
+ 	depends on PPC64
+ 	default y if SMP && PPC_PSERIES
++	select ARCH_HAS_OWN_OF_NUMA
+ 
+ config NODES_SHIFT
+ 	int
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 8767e45f1b2b..f8071f1c3edb 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -299,6 +299,7 @@ config GENERIC_LOCKBREAK
+ config NUMA
+ 	bool "NUMA support"
+ 	depends on SPARC64 && SMP
++	select ARCH_HAS_OWN_OF_NUMA
+ 
+ config NODES_SHIFT
+ 	int "Maximum NUMA Nodes (as a power of 2)"
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+index ad3fcad4d75b..01c62b747b25 100644
+--- a/drivers/of/Kconfig
++++ b/drivers/of/Kconfig
+@@ -103,4 +103,7 @@ config OF_OVERLAY
+ config OF_NUMA
+ 	bool
+ 
++config ARCH_HAS_OWN_OF_NUMA
++	bool
++
+ endif # OF
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index 848f549164cd..82a9584bb0e2 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -84,13 +84,6 @@ int of_n_size_cells(struct device_node *np)
+ }
+ EXPORT_SYMBOL(of_n_size_cells);
+ 
+-#ifdef CONFIG_NUMA
+-int __weak of_node_to_nid(struct device_node *np)
+-{
+-	return NUMA_NO_NODE;
+-}
+-#endif
+-
+ static struct device_node **phandle_cache;
+ static u32 phandle_cache_mask;
+ 
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 4d25e4f952d9..9bb42dac5e65 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -942,7 +942,7 @@ static inline int of_cpu_node_to_id(struct device_node *np)
+ #define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
+ #endif
+ 
+-#if defined(CONFIG_OF) && defined(CONFIG_NUMA)
++#if defined(CONFIG_OF_NUMA) || defined(CONFIG_ARCH_HAS_OWN_OF_NUMA)
+ extern int of_node_to_nid(struct device_node *np);
+ #else
+ static inline int of_node_to_nid(struct device_node *device)
+-- 
+2.9.5
