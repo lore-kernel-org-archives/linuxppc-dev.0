@@ -1,27 +1,18 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-ot0-x22d.google.com (mail-ot0-x22d.google.com
- [IPv6:2607:f8b0:4003:c0f::22d])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KCWc4zwczF14X
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 11:34:04 +1000 (AEST)
-Received: by mail-ot0-x22d.google.com with SMTP id f47-v6so6905422oth.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 18:34:04 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
-References: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
-From: Fabio Estevam <festevam@gmail.com>
-Date: Sun, 8 Apr 2018 22:34:01 -0300
-Message-ID: <CAOMZO5BK4v8arweyBy_C2n8n3ziBYC2peg9qooR8G9mrP8D9gg@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_esai: Fix divisor calculation
- failure at lower ratio
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, Marek Vasut <marex@denx.de>,
- alsa-devel@alsa-project.org,
- linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KJdl1PpmzDr4q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:24:42 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id c78so5212684pfj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:24:42 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH v2 0/9] first step of standardising OPAL_BUSY handling 
+Date: Mon,  9 Apr 2018 15:24:22 +1000
+Message-Id: <20180409052431.26405-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nicolin,
+Since v1:
+- Added console and opal-kmsg
+- Fix a missing case in opal_shutdown that would delay even if
+  OPAL_SUCCESS was returned.
 
-On Sun, Apr 8, 2018 at 8:57 PM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> When the desired ratio is less than 256, the savesub (tolerance)
-> in the calculation would become 0. This will then fail the loop-
-> search immediately without reporting any errors.
->
-> But if the ratio is smaller enough, there is no need to calculate
-> the tolerance because PM divisor alone is enough to get the ratio.
->
-> So a simple fix could be just to set PM directly instead of going
-> into the loop-search.
->
-> Reported-by: Marek Vasut <marex@denx.de>
-> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> Cc: Marek Vasut <marex@denx.de>
+Thanks,
+Nick
 
-If this fixes Marek's usecase then I think we should also add:
+Nicholas Piggin (9):
+  powerpc/powernv: define a standard delay for OPAL_BUSY type retry
+    loops
+  powerpc/powernv: OPAL RTC driver standardise OPAL_BUSY loops
+  powerpc/powernv: opal_put_chars partial write fix
+  powerpc/powernv: OPAL console standardise OPAL_BUSY loops
+  powerpc/powernv: OPAL platform standardise OPAL_BUSY loops
+  powerpc/powernv: OPAL NVRAM driver standardise OPAL_BUSY delays
+  powerpc/powernv: OPAL dump support standardise OPAL_BUSY delays
+  powerpc/xive: standardise OPAL_BUSY delays
+  powerpc/powernv: opal-kmsg standardise OPAL_BUSY handling
 
-Cc: <stable@vger.kernel.org>
+ arch/powerpc/include/asm/opal.h             |   3 +
+ arch/powerpc/platforms/powernv/opal-dump.c  |   6 +-
+ arch/powerpc/platforms/powernv/opal-kmsg.c  |  24 ++-
+ arch/powerpc/platforms/powernv/opal-nvram.c |   7 +-
+ arch/powerpc/platforms/powernv/opal-rtc.c   |   6 +-
+ arch/powerpc/platforms/powernv/opal.c       |  46 +++--
+ arch/powerpc/platforms/powernv/setup.c      |  16 +-
+ arch/powerpc/sysdev/xive/native.c           | 193 +++++++++++---------
+ drivers/rtc/rtc-opal.c                      |  33 ++--
+ 9 files changed, 203 insertions(+), 131 deletions(-)
 
-Thanks
+-- 
+2.17.0
