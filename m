@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KJfw3jkszDrqP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:25:44 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id s10-v6so4482725plp.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:25:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KJfz16TkzDrZC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 15:25:47 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id s10-v6so4482769plp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Apr 2018 22:25:47 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 4/9] powerpc/powernv: OPAL console standardise OPAL_BUSY
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH v2 5/9] powerpc/powernv: OPAL platform standardise OPAL_BUSY
  loops
-Date: Mon,  9 Apr 2018 15:24:26 +1000
-Message-Id: <20180409052431.26405-5-npiggin@gmail.com>
+Date: Mon,  9 Apr 2018 15:24:27 +1000
+Message-Id: <20180409052431.26405-6-npiggin@gmail.com>
 In-Reply-To: <20180409052431.26405-1-npiggin@gmail.com>
 References: <20180409052431.26405-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,76 +27,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Convert to using the standard delay poll/delay form.
 
-The console code:
+The platform code:
 
-- Did not previously delay or sleep in its busy loop.
+- Used delay when called from a schedule()able context.
+- Did not previously delay or sleep in the OPAL_BUSY_EVENT case.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/powernv/opal.c | 38 ++++++++++++++++-----------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c  |  8 +++++---
+ arch/powerpc/platforms/powernv/setup.c | 16 ++++++++++------
+ 2 files changed, 15 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 87d4c0aa7f64..473c8ce14a34 100644
+index 473c8ce14a34..0f03199a8664 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -378,33 +378,41 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 	/* We still try to handle partial completions, though they
- 	 * should no longer happen.
+@@ -907,10 +907,12 @@ void opal_shutdown(void)
  	 */
--	rc = OPAL_BUSY;
--	while(total_len > 0 && (rc == OPAL_BUSY ||
--				rc == OPAL_BUSY_EVENT || rc == OPAL_SUCCESS)) {
-+
-+	while (total_len > 0) {
- 		olen = cpu_to_be64(total_len);
--		rc = opal_console_write(vtermno, &olen, data);
-+
-+		rc = OPAL_BUSY;
-+		while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+			rc = opal_console_write(vtermno, &olen, data);
-+			if (rc == OPAL_BUSY_EVENT) {
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+				opal_poll_events(NULL);
-+			} else if (rc == OPAL_BUSY) {
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+			}
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_sync_host_reboot();
+-		if (rc == OPAL_BUSY)
++		if (rc == OPAL_BUSY_EVENT) {
++			msleep(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else
+-			mdelay(10);
++		} else if (rc == OPAL_BUSY) {
++			msleep(OPAL_BUSY_DELAY_MS);
 +		}
-+
- 		len = be64_to_cpu(olen);
- 
- 		/* Closed or other error drop */
--		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
--		    rc != OPAL_BUSY_EVENT) {
--			written += total_len;
-+		if (rc != OPAL_SUCCESS) {
-+			written += total_len; /* drop remaining chars */
- 			break;
- 		}
--		if (rc == OPAL_SUCCESS) {
--			total_len -= len;
--			data += len;
--			written += len;
--		}
-+
-+		total_len -= len;
-+		data += len;
-+		written += len;
-+
- 		/* This is a bit nasty but we need that for the console to
- 		 * flush when there aren't any interrupts. We will clean
- 		 * things a bit later to limit that to synchronous path
- 		 * such as the kernel console and xmon/udbg
- 		 */
--		do
-+		do {
- 			opal_poll_events(&evt);
--		while(rc == OPAL_SUCCESS &&
--			(be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT));
-+		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
  	}
- 	spin_unlock_irqrestore(&opal_write_lock, flags);
- 	return written;
+ 
+ 	/* Unregister memory dump region */
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index ef8c9ce53a61..ddaea5ba9008 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -217,10 +217,12 @@ static void  __noreturn pnv_restart(char *cmd)
+ 
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_cec_reboot();
+-		if (rc == OPAL_BUSY_EVENT)
++		if (rc == OPAL_BUSY_EVENT) {
++			msleep(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else
+-			mdelay(10);
++		} else if (rc == OPAL_BUSY) {
++			msleep(OPAL_BUSY_DELAY_MS);
++		}
+ 	}
+ 	for (;;)
+ 		opal_poll_events(NULL);
+@@ -234,10 +236,12 @@ static void __noreturn pnv_power_off(void)
+ 
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_cec_power_down(0);
+-		if (rc == OPAL_BUSY_EVENT)
++		if (rc == OPAL_BUSY_EVENT) {
++			msleep(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else
+-			mdelay(10);
++		} else if (rc == OPAL_BUSY) {
++			msleep(OPAL_BUSY_DELAY_MS);
++		}
+ 	}
+ 	for (;;)
+ 		opal_poll_events(NULL);
 -- 
 2.17.0
