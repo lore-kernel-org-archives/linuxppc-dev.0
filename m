@@ -1,59 +1,22 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <BATV+d9901c46b23ecc19815a+5342+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Kb714xlQzDr3y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 02:17:33 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w39GG3iT022226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 12:17:31 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h8au729j5-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 12:17:30 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 9 Apr 2018 17:17:27 +0100
-Subject: Re: [PATCH 0/3] move __HAVE_ARCH_PTE_SPECIAL in Kconfig
-To: Vineet Gupta <Vineet.Gupta1@synopsys.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>,
- "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Jerome Glisse <jglisse@redhat.com>,
- "mhocko@kernel.org" <mhocko@kernel.org>,
- "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
- "paulus@samba.org" <paulus@samba.org>, Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>,
- Rich Felker <dalias@libc.org>, "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>
-References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <17b19aac-fed7-23a2-013c-43ca867152e9@synopsys.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 9 Apr 2018 18:17:16 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Kd9H0w9gzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 03:49:33 +1000 (AEST)
+Date: Mon, 9 Apr 2018 10:49:18 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: linux-kernel@vger.kernel.org, sfr@canb.auug.org.au,
+ devicetree@vger.kernel.org, linux-nvdimm@lists.01.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
+Message-ID: <20180409174918.GA4629@infradead.org>
+References: <20180409074604.17671-1-oohall@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <17b19aac-fed7-23a2-013c-43ca867152e9@synopsys.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <21c34965-ec30-4d7f-aeaf-cb3da9758a0e@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180409074604.17671-1-oohall@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,26 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/04/2018 18:03, Vineet Gupta wrote:
-> On 04/09/2018 06:57 AM, Laurent Dufour wrote:
->> The per architecture __HAVE_ARCH_PTE_SPECIAL is defined statically in the
->> per architecture header files. This doesn't allow to make other
->> configuration dependent on it.
+On Mon, Apr 09, 2018 at 05:46:04PM +1000, Oliver O'Halloran wrote:
+> Some OF platforms (pseries and some SPARC systems) has their own
+> implementations of NUMA affinity detection rather than using the generic
+> OF_NUMA driver, which mainly exists for arm64. For other platforms one
+> of two fallbacks provided by the base OF driver are used depending on
+> CONFIG_NUMA.
 > 
-> So I understand this series has more "readability" value and I'm fine with this
-> change but I wonder if you really would want to make something depend on it or
-> make this de-configurable. PTE special is really a fundamental construct - e.g.
-> it is used for anon mapped pages where zero page has been wired up etc...
+> In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
+> In the =y case the fallback is a real function which is defined as a
+> weak symbol so that it may be overwritten by the architecture if desired.
+> 
+> The problem with this arrangement is that the real implementations all
+> export of_node_to_nid(). Unfortunately it's not possible to export the
+> fallback since it would clash with the non-weak version. As a result
+> we get build failures when:
+> 
+> a) CONFIG_NUMA=y && CONFIG_OF=y, and
+> b) The platform doesn't implement of_node_to_nid(), and
+> c) A module uses of_node_to_nid()
+> 
+> Given b) will be true for most platforms this is fairly easy to hit
+> and has been observed on ia64 and x86.
+> 
+> This patch remedies the problem by introducing the ARCH_HAS_OWN_OF_NUMA
+> Kconfig option which is selected if an architecture provides an
+> implementation of of_node_to_nid(). If a platform does not use it's own,
+> or the generic OF_NUMA, then always use the inline fallback in of.h so
+> we don't need to futz around with exports.
 
-I don't want it to be de-configurable. This is almost like
-ARCH_SUPPORTS_MEMORY_FAILURE, ARCH_USES_HIGH_VMA_FLAGS, ARCH_HAS_HMM...
-
-These values are selected by per architecture Kconfig files and are not exposed
-through the configuration menu.
-
-Concerning making something depend on it, I will probably make
-CONFIG_SPECULATIVE_PAGE_FAULT introduced by the SPF series dependent on it.
-For details, please see https://lkml.org/lkml/2018/3/13/1143
-
-Thanks,
-Laurent.
+I'd rather have a specific kconfig symbol for the 'generic'
+implementation, especially given that it doesn't appear to be all
+that generic.
