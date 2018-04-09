@@ -1,25 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KPJX3kvXzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 18:55:08 +1000 (AEST)
-Subject: Re: [PATCH V6 2/4] powerpc/mm: Add support for handling > 512TB
- address in SLB miss
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20180326100450.18614-1-aneesh.kumar@linux.vnet.ibm.com>
- <20180326100450.18614-3-aneesh.kumar@linux.vnet.ibm.com>
- <e593156a-d06a-9f1d-c2d3-564553c24cce@c-s.fr>
- <d3d9108d-38a3-0caf-8944-4ee422090421@linux.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <33974c11-ec3e-8f38-bb0f-59345b94cf7f@c-s.fr>
-Date: Mon, 9 Apr 2018 10:55:00 +0200
-MIME-Version: 1.0
-In-Reply-To: <d3d9108d-38a3-0caf-8944-4ee422090421@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KPQp0GTszDrpY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Apr 2018 19:00:33 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w398wrWv126361
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Apr 2018 05:00:31 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h84u68vak-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 05:00:30 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Mon, 9 Apr 2018 10:00:28 +0100
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com,
+ anju@linux.vnet.ibm.com
+Subject: [PATCH 0/4] powerpc/perf: IMC Cleanups                              
+Date: Mon,  9 Apr 2018 14:30:21 +0530
+Message-Id: <1523264425-19544-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +34,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch series includes some cleanups and Unregistration of                  
+thread-imc pmu, if the kernel does not have core-imc registered.                
+                                                                                
+The entire patch set has been verified using the static checker smatch.         
+Command used:                                                                   
+$ make ARCH=powerpc CHECK="<path>/smatch -p=kernel"  C=1 vmlinux | tee warns.txt
+                                                                                
+Tests Done:                                                                     
+                                                                                
+* Fail core-imc at init:                                                        
+nest-imc - working                                                              
+cpuhotplug - works as expected                                                  
+thread-imc - not registered                                                     
+                                                                                
+* Fail thread-imc at init:                                                      
+nest-imc - works                                                                
+core-imc - works                                                                
+cpuhotplug - works                                                              
+                                                                                
+* Fail nest-imc at init                                                         
+                                                                                
+core-imc - works                                                                
+thread-imc -works                                                               
+cpuhotplug - works                                                              
+                                                                                
+* Fail only one nest unit (say for mcs23)                                       
+                                                                                
+Other nest-units - works                                                        
+core-imc - works                                                                
+thread-imc - works                                                              
+cpuhotplug - works.                                                             
+                                                                                
+                                                                                
+* Kexec works                                                                   
+                                                                                
+The first three patches in this series addresses the comments by Dan Carpenter. 
 
 
-Le 09/04/2018 à 10:33, Aneesh Kumar K.V a écrit :
-> On 04/09/2018 12:49 PM, Christophe LEROY wrote:
->>
->>
->> Le 26/03/2018 à 12:04, Aneesh Kumar K.V a écrit :
->>> For addresses above 512TB we allocate additional mmu contexts. To make
->>> it all easy, addresses above 512TB are handled with IR/DR=1 and with
->>> stack frame setup.
->>>
->>> The mmu_context_t is also updated to track the new extended_ids. To
->>> support upto 4PB we need a total 8 contexts.
->>>
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> [mpe: Minor formatting tweaks and comment wording, switch BUG to WARN
->>>        in get_ea_context().]
->>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->>
->> Compilation fails on mpc885_ads_defconfig + CONFIG_HUGETLBFS :
->>
->>    CC      arch/powerpc/mm/slice.o
->> arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
->> arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 
->> 'need_extra_context' [-Werror=implicit-function-declaration]
->> arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 
->> 'alloc_extended_context' [-Werror=implicit-function-declaration]
->> cc1: all warnings being treated as errors
->> make[1]: *** [arch/powerpc/mm/slice.o] Error 1
->> make: *** [arch/powerpc/mm] Error 2
-> 
-> 
-> something like below?
-> 
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index 9cd87d1..205fe55 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -35,6 +35,7 @@
->   #include <asm/mmu.h>
->   #include <asm/copro.h>
->   #include <asm/hugetlb.h>
-> +#include <asm/mmu_context.h>
-> 
->   static DEFINE_SPINLOCK(slice_convert_lock);
-> 
-> 
-> PPC64 was including that header via include/linux/pkeys.h
+Anju T Sudhakar (4):
+  powerpc/perf: Rearrange memory freeing in imc init
+  powerpc/perf: Replace the direct return with goto statement
+  powerpc/perf: Return appropriate value for unknown domain
+  powerpc/perf: Unregister thread-imc if core-imc not supported
 
-Yes compilation OK now.
+ arch/powerpc/include/asm/imc-pmu.h        |  1 +
+ arch/powerpc/perf/imc-pmu.c               | 64 +++++++++++++++++++------------
+ arch/powerpc/platforms/powernv/opal-imc.c | 22 +++++++++--
+ 3 files changed, 60 insertions(+), 27 deletions(-)
 
-Christophe
-
-> 
-> -aneesh
+-- 
+2.7.4
