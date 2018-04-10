@@ -1,25 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x231.google.com (mail-pf0-x231.google.com
- [IPv6:2607:f8b0:400e:c00::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L0dh3WfPzF0dY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 18:27:04 +1000 (AEST)
-Received: by mail-pf0-x231.google.com with SMTP id o16so7656267pfk.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 01:27:04 -0700 (PDT)
-Date: Tue, 10 Apr 2018 18:26:51 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alexey
- Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: Occasionally losing the tick_sched_timer
-Message-ID: <20180410182651.727b5ae7@roar.ozlabs.ibm.com>
-In-Reply-To: <alpine.DEB.2.21.1804100923430.2058@nanos.tec.linutronix.de>
-References: <20180410121618.4fffffcc@roar.ozlabs.ibm.com>
- <alpine.DEB.2.21.1804100923430.2058@nanos.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L1B537sjzF0BV
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 18:51:41 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3A8nnMZ011061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 04:51:38 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h8rac51tu-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 04:51:38 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 10 Apr 2018 02:51:37 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: Build fix with Hugetlbfs enabled
+Date: Tue, 10 Apr 2018 14:21:26 +0530
+Message-Id: <20180410085126.15882-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,117 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Apr 2018 09:42:29 +0200 (CEST)
-Thomas Gleixner <tglx@linutronix.de> wrote:
+8xx use slice code when hugetlbfs is enabled. We missed a header include on
+8xx which resulted in the below build failure.
 
-> Nick,
-> 
-> On Tue, 10 Apr 2018, Nicholas Piggin wrote:
-> > We are seeing rare hard lockup watchdog timeouts, a CPU seems to have no
-> > more timers scheduled, despite hard and soft lockup watchdogs should have
-> > their heart beat timers and probably many others.
-> >
-> > The reproducer we have is running a KVM workload. The lockup is in the
-> > host kernel, quite rare but we may be able to slowly test things.
-> > 
-> > I have a sysrq+q snippet. CPU3 is the stuck one, you can see its tick has
-> > stopped for a long time and no hrtimer active. Included CPU4 for what the
-> > other CPUs look like.
-> > 
-> > Thomas do you have any ideas on what we might look for, or if we can add
-> > some BUG_ON()s to catch this at its source?  
-> 
-> Not really. Tracing might be a more efficient tool that random BUG_ONs.
+config: mpc885_ads_defconfig + CONFIG_HUGETLBFS
 
-Sure, we could try that. Any suggestions? timer events?
+   CC      arch/powerpc/mm/slice.o
+arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
+arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 'need_extra_context' [-Werror=implicit-function-declaration]
+arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 'alloc_extended_context' [-Werror=implicit-function-declaration]
+cc1: all warnings being treated as errors
+make[1]: *** [arch/powerpc/mm/slice.o] Error 1
+make: *** [arch/powerpc/mm] Error 2
 
-> 
-> > - CPU3 is sitting in its cpuidle loop (polling idle with all other idle
-> >   states disabled).
-> > 
-> > - `taskset -c 3 ls` basically revived the CPU and got timers running again.  
-> 
-> Which is not surprising because that kicks the CPU out of idle and starts
-> the tick timer again.
+on PPC64 the mmu_context.h was included via linux/pkeys.h
 
-Yep.
+CC: Christophe LEROY <christophe.leroy@c-s.fr>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/mm/slice.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 9cd87d11fe4e..205fe557ca10 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -35,6 +35,7 @@
+ #include <asm/mmu.h>
+ #include <asm/copro.h>
+ #include <asm/hugetlb.h>
++#include <asm/mmu_context.h>
  
-> Does this restart the watchdog timers as well?
-
-I think so, but now you ask I'm not 100% sure we directly observed it.
-We can check that next time it locks up.
-
-> > cpu: 3
-> >  clock 0:
-> >   .base:       00000000df30f5ab
-> >   .index:      0
-> >   .resolution: 1 nsecs
-> >   .get_time:   ktime_get
-> >   .offset:     0 nsecs
-> > active timers:  
-> 
-> So in theory the soft lockup watchdog hrtimer should be queued here.
-> 
-> >   .expires_next   : 9223372036854775807 nsecs
-> >   .hres_active    : 1
-> >   .nr_events      : 1446533
-> >   .nr_retries     : 1434
-> >   .nr_hangs       : 0
-> >   .max_hang_time  : 0
-> >   .nohz_mode      : 2
-> >   .last_tick      : 17763120000000 nsecs
-> >   .tick_stopped   : 1
-> >   .idle_jiffies   : 4296713609
-> >   .idle_calls     : 2573133
-> >   .idle_sleeps    : 1957794  
-> 
-> >   .idle_waketime  : 59550238131639 nsecs
-> >   .idle_sleeptime : 17504617295679 nsecs
-> >   .iowait_sleeptime: 719978688 nsecs
-> >   .last_jiffies   : 4296713608  
-> 
-> So this was the last time when the CPU came out of idle:
-> 
-> >   .idle_exittime  : 17763110009176 nsecs  
-> 
-> Here it went back into idle:
-> 
-> >   .idle_entrytime : 17763129999625 nsecs  
-> 
-> And this was the next timer wheel timer due for expiry:
-> 
-> >   .next_timer     : 17763130000000
-> >   .idle_expires   : 17763130000000 nsecs  
-> 
-> which makes no sense whatsoever, but this might be stale information. Can't
-> tell.
-
-Wouldn't we expect to see that if there is a timer that was missed
-somehow because the tick_sched_timer was not set?
-
-> 
-> > cpu: 4
-> >  clock 0:
-> >   .base:       0000000007d8226b
-> >   .index:      0
-> >   .resolution: 1 nsecs
-> >   .get_time:   ktime_get
-> >   .offset:     0 nsecs
-> > active timers: #0: <00000000a73e543a>, tick_sched_timer, S:01
-> >  	 	 # expires at 59552950000000-59552950000000 nsecs [in 2685654802 to 2685654802 nsecs]  
-> 
-> The tick timer is scheduled because the next timer wheel timer is due at
-> 59552950000000, which might be the hard watchdog timer
-> 
-> >  		 #1: <000000009b4a3b88>, hrtimer_wakeup, S:01
-> >		 # expires at 59602585423025-59602642458243 nsecs [in 52321077827 to 52378113045 nsecs]  
-> 
-> That might be the soft lockup hrtimer.
-> 
-> I'd try to gather more information about the chain of events via tracing
-> and stop the tracer once the lockup detector hits.
-
-Okay will do, thanks for taking a look.
-
-Thanks,
-Nick
+ static DEFINE_SPINLOCK(slice_convert_lock);
+ 
+-- 
+2.14.3
