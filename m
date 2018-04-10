@@ -1,40 +1,51 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LBvS714gzF2RN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 02:09:39 +1000 (AEST)
-Date: Tue, 10 Apr 2018 09:09:32 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- Jerome Glisse <jglisse@redhat.com>, mhocko@kernel.org,
- aneesh.kumar@linux.vnet.ibm.com, akpm@linux-foundation.org,
- mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
- Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Vineet Gupta <vgupta@synopsys.com>,
- Palmer Dabbelt <palmer@sifive.com>, Albert Ou <albert@sifive.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH v2 1/2] mm: introduce ARCH_HAS_PTE_SPECIAL
-Message-ID: <20180410160932.GB3614@bombadil.infradead.org>
-References: <1523373951-10981-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523373951-10981-2-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40LC891HjwzF2Sc
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 02:20:40 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3AGHZgX116720
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 12:20:39 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2h90mmr8te-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 12:20:38 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 10 Apr 2018 17:20:35 +0100
+Subject: Re: [PATCH v9 17/24] mm: Protect mm_rb tree with a rwlock
+To: David Rientjes <rientjes@google.com>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-18-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1804021711090.34466@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 10 Apr 2018 18:20:25 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1523373951-10981-2-git-send-email-ldufour@linux.vnet.ibm.com>
+In-Reply-To: <alpine.DEB.2.20.1804021711090.34466@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8191409a-d7aa-6476-6aa9-1d1c4dced788@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,10 +55,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 10, 2018 at 05:25:50PM +0200, Laurent Dufour wrote:
->  arch/powerpc/include/asm/pte-common.h                  | 3 ---
->  arch/riscv/Kconfig                                     | 1 +
->  arch/s390/Kconfig                                      | 1 +
 
-You forgot to delete __HAVE_ARCH_PTE_SPECIAL from
-arch/riscv/include/asm/pgtable-bits.h
+
+On 03/04/2018 02:11, David Rientjes wrote:
+> On Tue, 13 Mar 2018, Laurent Dufour wrote:
+> 
+>> This change is inspired by the Peter's proposal patch [1] which was
+>> protecting the VMA using SRCU. Unfortunately, SRCU is not scaling well in
+>> that particular case, and it is introducing major performance degradation
+>> due to excessive scheduling operations.
+>>
+>> To allow access to the mm_rb tree without grabbing the mmap_sem, this patch
+>> is protecting it access using a rwlock.  As the mm_rb tree is a O(log n)
+>> search it is safe to protect it using such a lock.  The VMA cache is not
+>> protected by the new rwlock and it should not be used without holding the
+>> mmap_sem.
+>>
+>> To allow the picked VMA structure to be used once the rwlock is released, a
+>> use count is added to the VMA structure. When the VMA is allocated it is
+>> set to 1.  Each time the VMA is picked with the rwlock held its use count
+>> is incremented. Each time the VMA is released it is decremented. When the
+>> use count hits zero, this means that the VMA is no more used and should be
+>> freed.
+>>
+>> This patch is preparing for 2 kind of VMA access :
+>>  - as usual, under the control of the mmap_sem,
+>>  - without holding the mmap_sem for the speculative page fault handler.
+>>
+>> Access done under the control the mmap_sem doesn't require to grab the
+>> rwlock to protect read access to the mm_rb tree, but access in write must
+>> be done under the protection of the rwlock too. This affects inserting and
+>> removing of elements in the RB tree.
+>>
+>> The patch is introducing 2 new functions:
+>>  - vma_get() to find a VMA based on an address by holding the new rwlock.
+>>  - vma_put() to release the VMA when its no more used.
+>> These services are designed to be used when access are made to the RB tree
+>> without holding the mmap_sem.
+>>
+>> When a VMA is removed from the RB tree, its vma->vm_rb field is cleared and
+>> we rely on the WMB done when releasing the rwlock to serialize the write
+>> with the RMB done in a later patch to check for the VMA's validity.
+>>
+>> When free_vma is called, the file associated with the VMA is closed
+>> immediately, but the policy and the file structure remained in used until
+>> the VMA's use count reach 0, which may happens later when exiting an
+>> in progress speculative page fault.
+>>
+>> [1] https://patchwork.kernel.org/patch/5108281/
+>>
+>> Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
+>> Cc: Matthew Wilcox <willy@infradead.org>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> 
+> Can __free_vma() be generalized for mm/nommu.c's delete_vma() and 
+> do_mmap()?
+
+Good question !
+I guess if there is no mmu, there is no page fault, so no speculative page
+fault and this patch is clearly required by the speculative page fault handler.
+By the I should probably make CONFIG_SPECULATIVE_PAGE_FAULT dependent on
+CONFIG_MMU.
+
+This being said, if your idea is to extend the mm_rb tree rwlocking to the
+nommu case, then this is another story, and I wondering if there is a real need
+in such case. But I've to admit I'm not so familliar with kernel built for
+mmuless systems.
+
+Am I missing something ?
+
+Thanks,
+Laurent.
