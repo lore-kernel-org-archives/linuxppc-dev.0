@@ -1,23 +1,34 @@
-Return-Path: <marex@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KnDd5X70zDqwP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 09:53:04 +1000 (AEST)
-Subject: Re: [PATCH] ASoC: fsl_esai: Fix divisor calculation failure at lower
- ratio
-To: Nicolin Chen <nicoleotsuka@gmail.com>, broonie@kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org, tiwai@suse.com, perex@perex.cz,
- lgirdwood@gmail.com, fabio.estevam@nxp.com
-References: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
-From: Marek Vasut <marex@denx.de>
-Message-ID: <42010284-6fbd-2d1a-ffe1-8a825478d1d7@denx.de>
-Date: Mon, 9 Apr 2018 23:43:02 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KpnW1Rl5zDr5Y
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:03:11 +1000 (AEST)
+Received: from mail-qk0-f181.google.com (mail-qk0-f181.google.com
+ [209.85.220.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id EDCEC2183B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 01:03:08 +0000 (UTC)
+Received: by mail-qk0-f181.google.com with SMTP id j73so11599138qke.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 18:03:08 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CAPcyv4iCkc7ZSB7Sjk-O7iBWvvTzhTmdccucC4uN6GEu5Bjotw@mail.gmail.com>
+References: <20180409074604.17671-1-oohall@gmail.com>
+ <CAL_Jsq+ho2QhmNmPZMDJcfSxposJd=jYDvjhXH8cMAtVFP7n4A@mail.gmail.com>
+ <CAPcyv4iCkc7ZSB7Sjk-O7iBWvvTzhTmdccucC4uN6GEu5Bjotw@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 9 Apr 2018 20:02:47 -0500
+Message-ID: <CAL_JsqJY-sh+KBVAja=epesGdd=OKJzooeLTpZZD0Z++ZxqzfA@mail.gmail.com>
+Subject: Re: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: "Oliver O'Halloran" <oohall@gmail.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Device Tree <devicetree@vger.kernel.org>,
+ linux-nvdimm <linux-nvdimm@lists.01.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/09/2018 01:57 AM, Nicolin Chen wrote:
-> When the desired ratio is less than 256, the savesub (tolerance)
-> in the calculation would become 0. This will then fail the loop-
-> search immediately without reporting any errors.
-> 
-> But if the ratio is smaller enough, there is no need to calculate
-> the tolerance because PM divisor alone is enough to get the ratio.
-> 
-> So a simple fix could be just to set PM directly instead of going
-> into the loop-search.
-> 
-> Reported-by: Marek Vasut <marex@denx.de>
-> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-> Cc: Marek Vasut <marex@denx.de>
+On Mon, Apr 9, 2018 at 4:05 PM, Dan Williams <dan.j.williams@intel.com> wrote:
+> On Mon, Apr 9, 2018 at 1:52 PM, Rob Herring <robh@kernel.org> wrote:
+>> On Mon, Apr 9, 2018 at 2:46 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
+>>> Some OF platforms (pseries and some SPARC systems) has their own
+>>> implementations of NUMA affinity detection rather than using the generic
+>>> OF_NUMA driver, which mainly exists for arm64. For other platforms one
+>>> of two fallbacks provided by the base OF driver are used depending on
+>>> CONFIG_NUMA.
+>>>
+>>> In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
+>>> In the =y case the fallback is a real function which is defined as a
+>>> weak symbol so that it may be overwritten by the architecture if desired.
+>>>
+>>> The problem with this arrangement is that the real implementations all
+>>> export of_node_to_nid(). Unfortunately it's not possible to export the
+>>> fallback since it would clash with the non-weak version. As a result
+>>> we get build failures when:
+>>>
+>>> a) CONFIG_NUMA=y && CONFIG_OF=y, and
+>>> b) The platform doesn't implement of_node_to_nid(), and
+>>> c) A module uses of_node_to_nid()
+>>>
+>>> Given b) will be true for most platforms this is fairly easy to hit
+>>> and has been observed on ia64 and x86.
+>>
+>> How specifically do we hit this? The only module I see using
+>> of_node_to_nid in mainline is Cell EDAC driver.
+>
+> The of_pmem driver is using it currently pending for a 4.17 pull
+> request. Stephen hit the compile failure in -next.
 
-On i.MX6Q with TI PCM1808
-Tested-by: Marek Vasut <marex@denx.de>
+You mean the stuff reviewed last week in the middle of the merge
+window? Sounds like 4.18 material to me.
 
-> ---
->  sound/soc/fsl/fsl_esai.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-> index 40a7004..da8fd98 100644
-> --- a/sound/soc/fsl/fsl_esai.c
-> +++ b/sound/soc/fsl/fsl_esai.c
-> @@ -144,6 +144,13 @@ static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, bool tx, u32 ratio,
->  
->  	psr = ratio <= 256 * maxfp ? ESAI_xCCR_xPSR_BYPASS : ESAI_xCCR_xPSR_DIV8;
->  
-> +	/* Do not loop-search if PM (1 ~ 256) alone can serve the ratio */
-> +	if (ratio <= 256) {
-> +		pm = ratio;
-> +		fp = 1;
-> +		goto out;
-> +	}
-> +
->  	/* Set the max fluctuation -- 0.1% of the max devisor */
->  	savesub = (psr ? 1 : 8)  * 256 * maxfp / 1000;
->  
-> 
-
-
--- 
-Best regards,
-Marek Vasut
+Rob
