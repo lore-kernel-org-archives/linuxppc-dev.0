@@ -1,45 +1,53 @@
-Return-Path: <srs0=vlyx=g7=linux.vnet.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L7cm1Kc6zF23f
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:41:44 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40L7ck5m7Tz8sys
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:41:42 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40L7cj43Nbz9s0v
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 23:41:41 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3ADdMSA100424
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 09:41:39 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2h8v0fqe5m-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L9bw06X5zF2G9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 01:11:07 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3AEpng6022285
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:11:05 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h8w118wfr-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 09:41:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:11:05 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Tue, 10 Apr 2018 14:41:36 +0100
-Subject: [PATCH v2 2/2] powerpc/fadump: Do not use hugepages when fadump is
- active
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Tue, 10 Apr 2018 19:11:31 +0530
-In-Reply-To: <152336766167.8374.13811759102783227353.stgit@hbathini.in.ibm.com>
-References: <152336766167.8374.13811759102783227353.stgit@hbathini.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 10 Apr 2018 16:11:02 +0100
+Subject: Re: [PATCH 2/3] mm: replace __HAVE_ARCH_PTE_SPECIAL
+To: David Rientjes <rientjes@google.com>, Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ linux-doc@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Jerome Glisse <jglisse@redhat.com>,
+ mhocko@kernel.org, aneesh.kumar@linux.vnet.ibm.com,
+ akpm@linux-foundation.org, mpe@ellerman.id.au,
+ benh@kernel.crashing.org, paulus@samba.org,
+ Jonathan Corbet <corbet@lwn.net>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Palmer Dabbelt <palmer@sifive.com>,
+ Albert Ou <albert@sifive.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523282229-20731-3-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180409175757.GA12938@infradead.org>
+ <alpine.DEB.2.21.1804091307480.56406@chino.kir.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 10 Apr 2018 17:10:52 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152336768322.8374.8580280567534579046.stgit@hbathini.in.ibm.com>
+In-Reply-To: <alpine.DEB.2.21.1804091307480.56406@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <3a330851-d545-ebd8-e74c-c44e12220c24@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,101 +57,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-FADump capture kernel boots in restricted memory environment preserving
-the context of previous kernel to save vmcore. Supporting hugepages in
-such environment makes things unnecessarily complicated, as hugepages
-need memory set aside for them. This means most of the capture kernel's
-memory is used in supporting hugepages. In most cases, this results in
-out-of-memory issues while booting FADump capture kernel. But hugepages
-are not of much use in capture kernel whose only job is to save vmcore.
-So, disabling hugepages support, when fadump is active, is a reliable
-solution for the out of memory issues. Introducing a flag variable to
-disable HugeTLB support when fadump is active.
+On 09/04/2018 22:08, David Rientjes wrote:
+> On Mon, 9 Apr 2018, Christoph Hellwig wrote:
+> 
+>>> -#ifdef __HAVE_ARCH_PTE_SPECIAL
+>>> +#ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
+>>>  # define HAVE_PTE_SPECIAL 1
+>>>  #else
+>>>  # define HAVE_PTE_SPECIAL 0
+>>
+>> I'd say kill this odd indirection and just use the
+>> CONFIG_ARCH_HAS_PTE_SPECIAL symbol directly.
+>>
+>>
+> 
+> Agree, and I think it would be easier to audit/review if patches 1 and 3 
+> were folded together to see the relationship between the newly added 
+> selects and what #define's it is replacing.  Otherwise, looks good!
+>
 
-Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
----
+Ok I will fold the 3 patches and introduce a new one removing HAVE_PTE_SPECIAL.
 
-Changes in v2:
-* Introduce a hugetlb_disabled flag to enable/disable hugepage support &
-  use that flag to disable hugepage support when fadump is active.
-
-
- arch/powerpc/include/asm/page.h |    1 +
- arch/powerpc/kernel/fadump.c    |    8 ++++++++
- arch/powerpc/mm/hash_utils_64.c |    6 ++++--
- arch/powerpc/mm/hugetlbpage.c   |    7 +++++++
- 4 files changed, 20 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 8da5d4c..40aee93 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -39,6 +39,7 @@
- 
- #ifndef __ASSEMBLY__
- #ifdef CONFIG_HUGETLB_PAGE
-+extern bool hugetlb_disabled;
- extern unsigned int HPAGE_SHIFT;
- #else
- #define HPAGE_SHIFT PAGE_SHIFT
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index bea8d5f..8ceabef4 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -402,6 +402,14 @@ int __init fadump_reserve_mem(void)
- 	if (fw_dump.dump_active) {
- 		pr_info("Firmware-assisted dump is active.\n");
- 
-+#ifdef CONFIG_HUGETLB_PAGE
-+		/*
-+		 * FADump capture kernel doesn't care much about hugepages.
-+		 * In fact, handling hugepages in capture kernel is asking for
-+		 * trouble. So, disable HugeTLB support when fadump is active.
-+		 */
-+		hugetlb_disabled = true;
-+#endif
- 		/*
- 		 * If last boot has crashed then reserve all the memory
- 		 * above boot_memory_size so that we don't touch it until
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index cf290d41..eab8f1d 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -571,8 +571,10 @@ static void __init htab_scan_page_sizes(void)
- 	}
- 
- #ifdef CONFIG_HUGETLB_PAGE
--	/* Reserve 16G huge page memory sections for huge pages */
--	of_scan_flat_dt(htab_dt_scan_hugepage_blocks, NULL);
-+	if (!hugetlb_disabled) {
-+		/* Reserve 16G huge page memory sections for huge pages */
-+		of_scan_flat_dt(htab_dt_scan_hugepage_blocks, NULL);
-+	}
- #endif /* CONFIG_HUGETLB_PAGE */
- }
- 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 876da2b..18c080a 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -35,6 +35,8 @@
- #define PAGE_SHIFT_16M	24
- #define PAGE_SHIFT_16G	34
- 
-+bool hugetlb_disabled = false;
-+
- unsigned int HPAGE_SHIFT;
- EXPORT_SYMBOL(HPAGE_SHIFT);
- 
-@@ -653,6 +655,11 @@ static int __init hugetlbpage_init(void)
- {
- 	int psize;
- 
-+	if (hugetlb_disabled) {
-+		pr_info("HugeTLB support is disabled!\n");
-+		return 0;
-+	}
-+
- #if !defined(CONFIG_PPC_FSL_BOOK3E) && !defined(CONFIG_PPC_8xx)
- 	if (!radix_enabled() && !mmu_has_feature(MMU_FTR_16M_PAGE))
- 		return -ENODEV;
+Thanks,
+Laurent.
