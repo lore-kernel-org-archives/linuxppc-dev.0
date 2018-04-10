@@ -1,34 +1,16 @@
-Return-Path: <robh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KpnW1Rl5zDr5Y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:03:11 +1000 (AEST)
-Received: from mail-qk0-f181.google.com (mail-qk0-f181.google.com
- [209.85.220.181])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id EDCEC2183B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 01:03:08 +0000 (UTC)
-Received: by mail-qk0-f181.google.com with SMTP id j73so11599138qke.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 18:03:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAPcyv4iCkc7ZSB7Sjk-O7iBWvvTzhTmdccucC4uN6GEu5Bjotw@mail.gmail.com>
-References: <20180409074604.17671-1-oohall@gmail.com>
- <CAL_Jsq+ho2QhmNmPZMDJcfSxposJd=jYDvjhXH8cMAtVFP7n4A@mail.gmail.com>
- <CAPcyv4iCkc7ZSB7Sjk-O7iBWvvTzhTmdccucC4uN6GEu5Bjotw@mail.gmail.com>
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 9 Apr 2018 20:02:47 -0500
-Message-ID: <CAL_JsqJY-sh+KBVAja=epesGdd=OKJzooeLTpZZD0Z++ZxqzfA@mail.gmail.com>
-Subject: Re: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: "Oliver O'Halloran" <oohall@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Device Tree <devicetree@vger.kernel.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KqCZ3b25zDrZC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:22:18 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: ard.biesheuvel@linaro.org
+Subject: [PATCH] powerpc/modules: Fix crashes by adding CONFIG_RELOCATABLE to
+ vermagic
+Date: Tue, 10 Apr 2018 11:22:06 +1000
+Message-Id: <20180410012206.4395-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,38 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 9, 2018 at 4:05 PM, Dan Williams <dan.j.williams@intel.com> wrote:
-> On Mon, Apr 9, 2018 at 1:52 PM, Rob Herring <robh@kernel.org> wrote:
->> On Mon, Apr 9, 2018 at 2:46 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
->>> Some OF platforms (pseries and some SPARC systems) has their own
->>> implementations of NUMA affinity detection rather than using the generic
->>> OF_NUMA driver, which mainly exists for arm64. For other platforms one
->>> of two fallbacks provided by the base OF driver are used depending on
->>> CONFIG_NUMA.
->>>
->>> In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
->>> In the =y case the fallback is a real function which is defined as a
->>> weak symbol so that it may be overwritten by the architecture if desired.
->>>
->>> The problem with this arrangement is that the real implementations all
->>> export of_node_to_nid(). Unfortunately it's not possible to export the
->>> fallback since it would clash with the non-weak version. As a result
->>> we get build failures when:
->>>
->>> a) CONFIG_NUMA=y && CONFIG_OF=y, and
->>> b) The platform doesn't implement of_node_to_nid(), and
->>> c) A module uses of_node_to_nid()
->>>
->>> Given b) will be true for most platforms this is fairly easy to hit
->>> and has been observed on ia64 and x86.
->>
->> How specifically do we hit this? The only module I see using
->> of_node_to_nid in mainline is Cell EDAC driver.
->
-> The of_pmem driver is using it currently pending for a 4.17 pull
-> request. Stephen hit the compile failure in -next.
+If you build the kernel with CONFIG_RELOCATABLE=n, then install the
+modules, rebuild the kernel with CONFIG_RELOCATABLE=y and leave the
+old modules installed, we crash something like:
 
-You mean the stuff reviewed last week in the middle of the merge
-window? Sounds like 4.18 material to me.
+  Unable to handle kernel paging request for data at address 0xd000000018d66cef
+  Faulting instruction address: 0xc0000000021ddd08
+  Oops: Kernel access of bad area, sig: 11 [#1]
+  Modules linked in: x_tables autofs4
+  CPU: 2 PID: 1 Comm: systemd Not tainted 4.16.0-rc6-gcc_ubuntu_le-g99fec39 #1
+  ...
+  NIP check_version.isra.22+0x118/0x170
+  Call Trace:
+    __ksymtab_xt_unregister_table+0x58/0xfffffffffffffcb8 [x_tables] (unreliable)
+    resolve_symbol+0xb4/0x150
+    load_module+0x10e8/0x29a0
+    SyS_finit_module+0x110/0x140
+    system_call+0x58/0x6c
 
-Rob
+This happens because since commit 71810db27c1c ("modversions: treat
+symbol CRCs as 32 bit quantities"), a relocatable kernel encodes and
+handles symbol CRCs differently from a non-relocatable kernel.
+
+Although it's possible we could try and detect this situation and
+handle it, it's much more robust to simply make the state of
+CONFIG_RELOCATABLE part of the module vermagic.
+
+Fixes: 71810db27c1c ("modversions: treat symbol CRCs as 32 bit quantities")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/module.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 7e28442827f1..4f6573934792 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -15,9 +15,19 @@
+ 
+ 
+ #ifdef CC_USING_MPROFILE_KERNEL
+-#define MODULE_ARCH_VERMAGIC	"mprofile-kernel"
++#define MODULE_ARCH_VERMAGIC_FTRACE	"mprofile-kernel "
++#else
++#define MODULE_ARCH_VERMAGIC_FTRACE	""
+ #endif
+ 
++#ifdef CONFIG_RELOCATABLE
++#define MODULE_ARCH_VERMAGIC_RELOCATABLE	"relocatable "
++#else
++#define MODULE_ARCH_VERMAGIC_RELOCATABLE	""
++#endif
++
++#define MODULE_ARCH_VERMAGIC MODULE_ARCH_VERMAGIC_FTRACE MODULE_ARCH_VERMAGIC_RELOCATABLE
++
+ #ifndef __powerpc64__
+ /*
+  * Thanks to Paul M for explaining this.
+-- 
+2.14.1
