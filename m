@@ -3,17 +3,16 @@ Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
  [66.111.4.29])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Kw4X3wyyzF1R7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 15:01:32 +1000 (AEST)
-Message-ID: <1523336485.3046.2.camel@russell.cc>
-Subject: Re: [PATCH 1/6] powerpc/powernv: opal-kmsg use flush fallback from
- console code
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Kw5G49NzzF1QS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 15:02:10 +1000 (AEST)
+Message-ID: <1523336524.3046.3.camel@russell.cc>
+Subject: Re: [PATCH 2/6] powerpc/powernv: Implement and use opal_flush_console
 From: Russell Currey <ruscur@russell.cc>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 10 Apr 2018 15:01:25 +1000
-In-Reply-To: <20180409054056.27292-2-npiggin@gmail.com>
+Date: Tue, 10 Apr 2018 15:02:04 +1000
+In-Reply-To: <20180409054056.27292-3-npiggin@gmail.com>
 References: <20180409054056.27292-1-npiggin@gmail.com>
- <20180409054056.27292-2-npiggin@gmail.com>
+ <20180409054056.27292-3-npiggin@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,16 +25,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-04-09 at 15:40 +1000, Nicholas Piggin wrote:
-> Use the more refined and tested event polling loop from
-> opal_put_chars
-> as the fallback console flush in the opal-kmsg path. This loop is
-> used
-> by the console driver today, whereas the opal-kmsg fallback is not
-> likely to have been used for years.
+> A new console flushing firmware API was introduced to replace event
+> polling loops, and implemented in opal-kmsg with affddff69c55e
+> ("powerpc/powernv: Add a kmsg_dumper that flushes console output on
+> panic"), to flush the console in the panic path.
 > 
-> Use WARN_ONCE rather than a printk when the fallback is invoked to
-> prepare for moving the console flush into a common function.
+> The OPAL console driver has other situations where interrupts are off
+> and it needs to flush the console synchronously. These still use a
+> polling loop.
 > 
+> So move the opal-kmsg flush code to opal_flush_console, and use the
+> new function in opal-kmsg and opal_put_chars.
+> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Cc: Russell Currey <ruscur@russell.cc>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
