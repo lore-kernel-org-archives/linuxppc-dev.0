@@ -1,30 +1,22 @@
-Return-Path: <dan.j.williams@intel.com>
-Received: from mail-ot0-x241.google.com (mail-ot0-x241.google.com
- [IPv6:2607:f8b0:4003:c0f::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KrjS26GKzF2C4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 12:29:44 +1000 (AEST)
-Received: by mail-ot0-x241.google.com with SMTP id m7-v6so11043554otd.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 19:29:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KsBZ3N7vzF29m
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 12:51:34 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, jeyu@kernel.org
+Cc: jeyu@redhat.com, akpm@linux-foundation.org, npiggin@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] powerpc/64: Fix section mismatch warnings for early
+ boot symbols
+In-Reply-To: <1522943439-26235-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+References: <1522943439-26235-1-git-send-email-mauricfo@linux.vnet.ibm.com>
+Date: Tue, 10 Apr 2018 12:51:31 +1000
+Message-ID: <87lgdvbwp8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqJY-sh+KBVAja=epesGdd=OKJzooeLTpZZD0Z++ZxqzfA@mail.gmail.com>
-References: <20180409074604.17671-1-oohall@gmail.com>
- <CAL_Jsq+ho2QhmNmPZMDJcfSxposJd=jYDvjhXH8cMAtVFP7n4A@mail.gmail.com>
- <CAPcyv4iCkc7ZSB7Sjk-O7iBWvvTzhTmdccucC4uN6GEu5Bjotw@mail.gmail.com>
- <CAL_JsqJY-sh+KBVAja=epesGdd=OKJzooeLTpZZD0Z++ZxqzfA@mail.gmail.com>
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Mon, 9 Apr 2018 19:29:41 -0700
-Message-ID: <CAPcyv4gk+5f4msuAYVFnNfZXF_cwfexs8aTj1jbm8R8H8E-MwQ@mail.gmail.com>
-Subject: Re: [PATCH] drivers/of: Introduce ARCH_HAS_OWN_OF_NUMA
-To: Rob Herring <robh@kernel.org>
-Cc: "Oliver O'Halloran" <oohall@gmail.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Device Tree <devicetree@vger.kernel.org>,
- linux-nvdimm <linux-nvdimm@lists.01.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 9, 2018 at 6:02 PM, Rob Herring <robh@kernel.org> wrote:
-> On Mon, Apr 9, 2018 at 4:05 PM, Dan Williams <dan.j.williams@intel.com> wrote:
->> On Mon, Apr 9, 2018 at 1:52 PM, Rob Herring <robh@kernel.org> wrote:
->>> On Mon, Apr 9, 2018 at 2:46 AM, Oliver O'Halloran <oohall@gmail.com> wrote:
->>>> Some OF platforms (pseries and some SPARC systems) has their own
->>>> implementations of NUMA affinity detection rather than using the generic
->>>> OF_NUMA driver, which mainly exists for arm64. For other platforms one
->>>> of two fallbacks provided by the base OF driver are used depending on
->>>> CONFIG_NUMA.
->>>>
->>>> In the CONFIG_NUMA=n case the fallback is an inline function in of.h.
->>>> In the =y case the fallback is a real function which is defined as a
->>>> weak symbol so that it may be overwritten by the architecture if desired.
->>>>
->>>> The problem with this arrangement is that the real implementations all
->>>> export of_node_to_nid(). Unfortunately it's not possible to export the
->>>> fallback since it would clash with the non-weak version. As a result
->>>> we get build failures when:
->>>>
->>>> a) CONFIG_NUMA=y && CONFIG_OF=y, and
->>>> b) The platform doesn't implement of_node_to_nid(), and
->>>> c) A module uses of_node_to_nid()
->>>>
->>>> Given b) will be true for most platforms this is fairly easy to hit
->>>> and has been observed on ia64 and x86.
->>>
->>> How specifically do we hit this? The only module I see using
->>> of_node_to_nid in mainline is Cell EDAC driver.
->>
->> The of_pmem driver is using it currently pending for a 4.17 pull
->> request. Stephen hit the compile failure in -next.
+Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> writes:
+> Some of the boot code located at the start of kernel text is "init"
+> class, in that it only runs at boot time, however marking it as normal
+> init code is problematic because that puts it into a different section
+> located at the very end of kernel text.
 >
-> You mean the stuff reviewed last week in the middle of the merge
-> window? Sounds like 4.18 material to me.
-
-It was originally posted for 4.16. The reposting and review came in
-late this cycle, but outside of a critical issue I'd rather not delay
-it again. The build error issue is resolved by not allowing modular
-builds of this driver for now.
-
+> e.g., in case the TOC is not set up, we may not be able to tolerate a
+> branch trampoline to reach the init function.
 >
-> Rob
+> Credits: code and message are based on 2016 patch by Nicholas Piggin,
+> and slightly modified so not to rename the powerpc code/symbol names.
+>
+>     Subject: [PATCH] powerpc/64: quieten section mismatch warnings
+>     From: Nicholas Piggin <npiggin at gmail.com>
+>     Date: Fri Dec 23 00:14:19 AEDT 2016
+>
+> This resolves the following section mismatch warnings:
+>
+>     WARNING: vmlinux.o(.text+0x2fa8): Section mismatch in reference from the variable __boot_from_prom to the function .init.text:prom_init()
+>     The function __boot_from_prom() references
+>     the function __init prom_init().
+>     This is often because __boot_from_prom lacks a __init
+>     annotation or the annotation of prom_init is wrong.
+>
+>     WARNING: vmlinux.o(.text+0x3238): Section mismatch in reference from the variable start_here_multiplatform to the function .init.text:early_setup()
+>     The function start_here_multiplatform() references
+>     the function __init early_setup().
+>     This is often because start_here_multiplatform lacks a __init
+>     annotation or the annotation of early_setup is wrong.
+>
+>     WARNING: vmlinux.o(.text+0x326c): Section mismatch in reference from the variable start_here_common to the function .init.text:start_kernel()
+>     The function start_here_common() references
+>     the function __init start_kernel().
+>     This is often because start_here_common lacks a __init
+>     annotation or the annotation of start_kernel is wrong.
+
+Thanks for picking this one up.
+
+I hate to be a pain ... but before we merge this and proliferate these
+names, I'd like to change the names of some of these early asm
+functions. They're terribly named due to historical reasons.
+
+I haven't actually thought of good names yet though :)
+
+I'll try and come up with some and post a patch doing the renames.
+
+cheers
