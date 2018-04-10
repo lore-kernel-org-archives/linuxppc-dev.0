@@ -1,22 +1,25 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L6S66qcGzF1ys
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 22:49:10 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id v5-v6so7431425plo.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 05:49:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L6kq1Xk6zF26V
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:01:54 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id y66so8238983pfi.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 06:01:54 -0700 (PDT)
+Date: Tue, 10 Apr 2018 23:01:36 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 5/5] KVM: PPC: Book3S HV: Radix do not clear partition
- scoped page table when page fault races with other vCPUs.
-Date: Tue, 10 Apr 2018 22:48:42 +1000
-Message-Id: <20180410124842.30184-6-npiggin@gmail.com>
-In-Reply-To: <20180410124842.30184-1-npiggin@gmail.com>
-References: <20180410124842.30184-1-npiggin@gmail.com>
+To: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, linux-rtc@vger.kernel.org
+Subject: Re: [PATCH 2/3] powerpc/powernv: Fix OPAL RTC driver OPAL_BUSY loops
+Message-ID: <20180410230136.7d0b357e@roar.ozlabs.ibm.com>
+In-Reply-To: <20180410120728.GC2745@piout.net>
+References: <20180410114933.24581-1-npiggin@gmail.com>
+ <20180410114933.24581-3-npiggin@gmail.com>
+ <20180410120728.GC2745@piout.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,97 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-KVM with an SMP radix guest can get into storms of page faults and
-tlbies due to the partition scopd page tables being invalidated and
-TLB flushed if they were found to race with another page fault that
-set them up.
+On Tue, 10 Apr 2018 14:07:28 +0200
+Alexandre Belloni <alexandre.belloni@bootlin.com> wrote:
 
-This tends to cause vCPUs to pile up if several hit common addresses,
-then page faults will get serialized on common locks, and then they
-each invalidate the previous entry and it's long enough before installing
-the new entry that will cause more CPUs to hit page faults and they will
-invalidate that new entry.
+> Hi Nicholas,
+> 
+> I would greatly appreciate a changelog and at least the cover letter
+> because it is difficult to grasp how this relates to the previous
+> patches you sent to the RTC mailing list. 
 
-There doesn't seem to be a need to invalidate in the case of an existing
-entry. This solves the tlbie storms.
+Yes good point. Basically this change is "standalone" except using
+OPAL_BUSY_DELAY_MS define from patch 1. That patch has a lot of
+comments about firmware delays I did not think would be too
+interesting.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 39 +++++++++++++++-----------
- 1 file changed, 22 insertions(+), 17 deletions(-)
+Basically we're adding msleep(10) here, because the firmware can
+repeatedly return OPAL_BUSY for long periods, so we want to context
+switch and respond to interrupts.
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index dab6b622011c..4af177d24f6c 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -243,6 +243,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 	pmd = pmd_offset(pud, gpa);
- 	if (pmd_is_leaf(*pmd)) {
- 		unsigned long lgpa = gpa & PMD_MASK;
-+		pte_t old_pte = *pmdp_ptep(pmd);
- 
- 		/*
- 		 * If we raced with another CPU which has just put
-@@ -252,18 +253,17 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 			ret = -EAGAIN;
- 			goto out_unlock;
- 		}
--		/* Valid 2MB page here already, remove it */
--		old = kvmppc_radix_update_pte(kvm, pmdp_ptep(pmd),
--					      ~0UL, 0, lgpa, PMD_SHIFT);
--		kvmppc_radix_tlbie_page(kvm, lgpa, PMD_SHIFT);
--		if (old & _PAGE_DIRTY) {
--			unsigned long gfn = lgpa >> PAGE_SHIFT;
--			struct kvm_memory_slot *memslot;
--			memslot = gfn_to_memslot(kvm, gfn);
--			if (memslot && memslot->dirty_bitmap)
--				kvmppc_update_dirty_map(memslot,
--							gfn, PMD_SIZE);
-+		WARN_ON_ONCE(pte_pfn(old_pte) != pte_pfn(pte));
-+		if (pte_val(old_pte) == pte_val(pte)) {
-+			ret = -EAGAIN;
-+			goto out_unlock;
- 		}
-+
-+		/* Valid 2MB page here already, remove it */
-+		kvmppc_radix_update_pte(kvm, pmdp_ptep(pmd),
-+					0, pte_val(pte), lgpa, PMD_SHIFT);
-+		ret = 0;
-+		goto out_unlock;
- 	} else if (level == 1 && !pmd_none(*pmd)) {
- 		/*
- 		 * There's a page table page here, but we wanted
-@@ -274,6 +274,8 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 		goto out_unlock;
- 	}
- 	if (level == 0) {
-+		pte_t old_pte;
-+
- 		if (pmd_none(*pmd)) {
- 			if (!new_ptep)
- 				goto out_unlock;
-@@ -281,13 +283,16 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 			new_ptep = NULL;
- 		}
- 		ptep = pte_offset_kernel(pmd, gpa);
--		if (pte_present(*ptep)) {
-+		old_pte = *ptep;
-+		if (pte_present(old_pte)) {
- 			/* PTE was previously valid, so invalidate it */
--			old = kvmppc_radix_update_pte(kvm, ptep, _PAGE_PRESENT,
--						      0, gpa, 0);
--			kvmppc_radix_tlbie_page(kvm, gpa, 0);
--			if (old & _PAGE_DIRTY)
--				mark_page_dirty(kvm, gpa >> PAGE_SHIFT);
-+			WARN_ON_ONCE(pte_pfn(old_pte) != pte_pfn(pte));
-+			if (pte_val(old_pte) == pte_val(pte)) {
-+				ret = -EAGAIN;
-+				goto out_unlock;
-+			}
-+			kvmppc_radix_update_pte(kvm, ptep, 0,
-+						pte_val(pte), gpa, 0);
- 		}
- 		kvmppc_radix_set_pte_at(kvm, gpa, ptep, pte);
- 	} else {
--- 
-2.17.0
+> 
+> On 10/04/2018 21:49:32+1000, Nicholas Piggin wrote:
+> > The OPAL RTC driver does not sleep in case it gets OPAL_BUSY or
+> > OPAL_BUSY_EVENT from firmware, which causes large scheduling
+> > latencies, up to 50 seconds have been observed here when RTC stops
+> > responding (BMC reboot can do it).
+> > 
+> > Fix this by converting it to the standard form OPAL_BUSY loop that
+> > sleeps.
+> > 
+> > Fixes 	 ("powerpc/powernv: Add RTC and NVRAM support plus RTAS fallbacks"
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: linux-rtc@vger.kernel.org
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arch/powerpc/platforms/powernv/opal-rtc.c |  8 +++--
+> >  drivers/rtc/rtc-opal.c                    | 37 ++++++++++++++---------  
+> 
+> From what I understand, the changes in those files are fairly
+> independent, they should probably be separated to ease merging.
+
+I'm happy to do that. It's using the same firmware call, so I thought
+a single patch would be fine. But I guess the boot call can be
+dropped from this patch because it does not  not solve the problem
+described in the changelog.
+
+Would you be happy for the driver change to be merged via the powerpc
+tree? The code being fixed here came from the same original patch as
+a similar issue being fixed in the OPAL NVRAM driver so it might be
+easier that way.
+
+Thanks,
+Nick
