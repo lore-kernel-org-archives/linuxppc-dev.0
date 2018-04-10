@@ -1,36 +1,21 @@
-Return-Path: <mauricfo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LH5f2sxlzF2Pb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 05:18:46 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3AJAeAL087425
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 15:18:43 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h90f2frtr-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 15:18:43 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mauricfo@linux.vnet.ibm.com>;
- Tue, 10 Apr 2018 13:18:41 -0600
-Subject: Re: [PATCH v3] powerpc/64: Fix section mismatch warnings for early
- boot symbols
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, jeyu@kernel.org, jeyu@redhat.com,
- akpm@linux-foundation.org, npiggin@gmail.com, linuxppc-dev@lists.ozlabs.org
-References: <1522943439-26235-1-git-send-email-mauricfo@linux.vnet.ibm.com>
- <87lgdvbwp8.fsf@concordia.ellerman.id.au>
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Date: Tue, 10 Apr 2018 16:18:35 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40LHVC4nFXzF1fF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 05:36:35 +1000 (AEST)
+Date: Tue, 10 Apr 2018 14:36:31 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: "Desnes A. Nunes do Rosario" <desnesn@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com
+Subject: Re: [PATCH, RESEND, pci, v2] pci: Delete PCI disabling informational
+ messages
+Message-ID: <20180410193631.GC54986@bhelgaas-glaptop.roam.corp.google.com>
+References: <20180404151035.12140-1-desnesn@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <87lgdvbwp8.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <27349037-9412-ae77-7419-a273e54a909d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180404151035.12140-1-desnesn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,20 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/09/2018 11:51 PM, Michael Ellerman wrote:
-> Thanks for picking this one up.
+On Wed, Apr 04, 2018 at 12:10:35PM -0300, Desnes A. Nunes do Rosario wrote:
+> The disabling informational messages on the PCI subsystem should be deleted
+> since they do not represent any real value for the system logs.
 > 
-> I hate to be a pain ... but before we merge this and proliferate these
-> names, I'd like to change the names of some of these early asm
-> functions. They're terribly named due to historical reasons.
-
-Indeed :) No worries.
-
-> I haven't actually thought of good names yet though:)
+> These messages are either not presented, or presented for all PCI devices
+> (e.g., powerpc now realigns all PCI devices to its page size). Thus, they
+> are flooding system logs and can be interpreted as a false positive for
+> total PCI failure on the system.
 > 
-> I'll try and come up with some and post a patch doing the renames.
+> [root@system user]# dmesg | grep -i disabling
+> [    0.692270] pci 0000:00:00.0: Disabling memory decoding and releasing memory resources
+> [    0.692324] pci 0000:00:00.0: disabling bridge mem windows
+> [    0.729134] pci 0001:00:00.0: Disabling memory decoding and releasing memory resources
+> [    0.737352] pci 0001:00:00.0: disabling bridge mem windows
+> [    0.776295] pci 0002:00:00.0: Disabling memory decoding and releasing memory resources
+> [    0.784509] pci 0002:00:00.0: disabling bridge mem windows
+> ... and goes on for all PCI devices on the system ...
+> 
+> Fixes: 38274637699 ("powerpc/powernv: Override pcibios_default_alignment() to force PCI devices to be page aligned")
+> Signed-off-by: Desnes A. Nunes do Rosario <desnesn@linux.vnet.ibm.com>
 
-Alright. Could you please copy me on that, and I can post an update.
+Applied to pci/resource for v4.18, thanks!
 
-cheers,
-Mauricio
+I should have gotten this in for v4.17, but I didn't; sorry about that.
+
+> ---
+>  drivers/pci/pci.c       | 1 -
+>  drivers/pci/setup-res.c | 2 --
+>  2 files changed, 3 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 8c71d1a66cdd..1563ce1ee091 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -5505,7 +5505,6 @@ void pci_reassigndev_resource_alignment(struct pci_dev *dev)
+>  		return;
+>  	}
+>  
+> -	pci_info(dev, "Disabling memory decoding and releasing memory resources\n");
+>  	pci_read_config_word(dev, PCI_COMMAND, &command);
+>  	command &= ~PCI_COMMAND_MEMORY;
+>  	pci_write_config_word(dev, PCI_COMMAND, command);
+> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> index 369d48d6c6f1..6bd35e8e7cde 100644
+> --- a/drivers/pci/setup-res.c
+> +++ b/drivers/pci/setup-res.c
+> @@ -172,8 +172,6 @@ EXPORT_SYMBOL(pci_claim_resource);
+>  
+>  void pci_disable_bridge_window(struct pci_dev *dev)
+>  {
+> -	pci_info(dev, "disabling bridge mem windows\n");
+> -
+>  	/* MMIO Base/Limit */
+>  	pci_write_config_dword(dev, PCI_MEMORY_BASE, 0x0000fff0);
+>  
+> -- 
+> 2.14.3
+> 
