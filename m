@@ -1,53 +1,27 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <festevam@gmail.com>
+Received: from mail-ot0-x230.google.com (mail-ot0-x230.google.com
+ [IPv6:2607:f8b0:4003:c0f::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L9bw06X5zF2G9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 01:11:07 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3AEpng6022285
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:11:05 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2h8w118wfr-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 11:11:05 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 10 Apr 2018 16:11:02 +0100
-Subject: Re: [PATCH 2/3] mm: replace __HAVE_ARCH_PTE_SPECIAL
-To: David Rientjes <rientjes@google.com>, Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- linux-doc@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, Jerome Glisse <jglisse@redhat.com>,
- mhocko@kernel.org, aneesh.kumar@linux.vnet.ibm.com,
- akpm@linux-foundation.org, mpe@ellerman.id.au,
- benh@kernel.crashing.org, paulus@samba.org,
- Jonathan Corbet <corbet@lwn.net>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S . Miller" <davem@davemloft.net>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Vineet Gupta <vgupta@synopsys.com>, Palmer Dabbelt <palmer@sifive.com>,
- Albert Ou <albert@sifive.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>
-References: <1523282229-20731-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523282229-20731-3-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180409175757.GA12938@infradead.org>
- <alpine.DEB.2.21.1804091307480.56406@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Tue, 10 Apr 2018 17:10:52 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L9lf1YpyzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 01:17:49 +1000 (AEST)
+Received: by mail-ot0-x230.google.com with SMTP id v6-v6so4561067otj.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 08:17:49 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.21.1804091307480.56406@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <3a330851-d545-ebd8-e74c-c44e12220c24@linux.vnet.ibm.com>
+In-Reply-To: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
+References: <1523231855-7854-1-git-send-email-nicoleotsuka@gmail.com>
+From: Fabio Estevam <festevam@gmail.com>
+Date: Tue, 10 Apr 2018 12:17:47 -0300
+Message-ID: <CAOMZO5AHDmpwZcgjrhQv_po9kcjJf0vXArrCEVqnOPcS7ci36Q@mail.gmail.com>
+Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_esai: Fix divisor calculation
+ failure at lower ratio
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>, Marek Vasut <marex@denx.de>,
+ alsa-devel@alsa-project.org,
+ linux-kernel <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,26 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/04/2018 22:08, David Rientjes wrote:
-> On Mon, 9 Apr 2018, Christoph Hellwig wrote:
-> 
->>> -#ifdef __HAVE_ARCH_PTE_SPECIAL
->>> +#ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
->>>  # define HAVE_PTE_SPECIAL 1
->>>  #else
->>>  # define HAVE_PTE_SPECIAL 0
->>
->> I'd say kill this odd indirection and just use the
->> CONFIG_ARCH_HAS_PTE_SPECIAL symbol directly.
->>
->>
-> 
-> Agree, and I think it would be easier to audit/review if patches 1 and 3 
-> were folded together to see the relationship between the newly added 
-> selects and what #define's it is replacing.  Otherwise, looks good!
+Hi Nicolin,
+
+On Sun, Apr 8, 2018 at 8:57 PM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
+> When the desired ratio is less than 256, the savesub (tolerance)
+> in the calculation would become 0. This will then fail the loop-
+> search immediately without reporting any errors.
 >
+> But if the ratio is smaller enough, there is no need to calculate
+> the tolerance because PM divisor alone is enough to get the ratio.
+>
+> So a simple fix could be just to set PM directly instead of going
+> into the loop-search.
+>
+> Reported-by: Marek Vasut <marex@denx.de>
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+> Cc: Marek Vasut <marex@denx.de>
 
-Ok I will fold the 3 patches and introduce a new one removing HAVE_PTE_SPECIAL.
+Thanks for the fix:
 
-Thanks,
-Laurent.
+Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
