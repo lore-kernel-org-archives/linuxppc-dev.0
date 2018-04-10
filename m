@@ -1,25 +1,43 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=vlyx=g7=linux.vnet.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L6kq1Xk6zF26V
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:01:54 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id y66so8238983pfi.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 06:01:54 -0700 (PDT)
-Date: Tue, 10 Apr 2018 23:01:36 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, linux-rtc@vger.kernel.org
-Subject: Re: [PATCH 2/3] powerpc/powernv: Fix OPAL RTC driver OPAL_BUSY loops
-Message-ID: <20180410230136.7d0b357e@roar.ozlabs.ibm.com>
-In-Reply-To: <20180410120728.GC2745@piout.net>
-References: <20180410114933.24581-1-npiggin@gmail.com>
- <20180410114933.24581-3-npiggin@gmail.com>
- <20180410120728.GC2745@piout.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L7cb3KkLzDqfk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:41:32 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40L7cS1jslz8sys
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 23:41:28 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40L7cP4LgPz9s3B
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 23:41:24 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3ADdHgL014649
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 09:41:23 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2h8w114cgv-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2018 09:41:22 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Tue, 10 Apr 2018 14:41:20 +0100
+Subject: [PATCH v2 1/2] powerpc/fadump: exclude memory holes while reserving
+ memory in second kernel
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Tue, 10 Apr 2018 19:11:16 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <152336766167.8374.13811759102783227353.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +47,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Apr 2018 14:07:28 +0200
-Alexandre Belloni <alexandre.belloni@bootlin.com> wrote:
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-> Hi Nicholas,
-> 
-> I would greatly appreciate a changelog and at least the cover letter
-> because it is difficult to grasp how this relates to the previous
-> patches you sent to the RTC mailing list. 
+The second kernel, during early boot after the crash, reserves rest of
+the memory above boot memory size to make sure it does not touch any of the
+dump memory area. It uses memblock_reserve() that reserves the specified
+memory region irrespective of memory holes present within that region.
+There are chances where previous kernel would have hot removed some of
+its memory leaving memory holes behind. In such cases fadump kernel reports
+incorrect number of reserved pages through arch_reserved_kernel_pages()
+hook causing kernel to hang or panic.
 
-Yes good point. Basically this change is "standalone" except using
-OPAL_BUSY_DELAY_MS define from patch 1. That patch has a lot of
-comments about firmware delays I did not think would be too
-interesting.
+Fix this by excluding memory holes while reserving rest of the memory
+above boot memory size during second kernel boot after crash.
 
-Basically we're adding msleep(10) here, because the firmware can
-repeatedly return OPAL_BUSY for long periods, so we want to context
-switch and respond to interrupts.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+---
 
-> 
-> On 10/04/2018 21:49:32+1000, Nicholas Piggin wrote:
-> > The OPAL RTC driver does not sleep in case it gets OPAL_BUSY or
-> > OPAL_BUSY_EVENT from firmware, which causes large scheduling
-> > latencies, up to 50 seconds have been observed here when RTC stops
-> > responding (BMC reboot can do it).
-> > 
-> > Fix this by converting it to the standard form OPAL_BUSY loop that
-> > sleeps.
-> > 
-> > Fixes 	 ("powerpc/powernv: Add RTC and NVRAM support plus RTAS fallbacks"
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: linux-rtc@vger.kernel.org
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/platforms/powernv/opal-rtc.c |  8 +++--
-> >  drivers/rtc/rtc-opal.c                    | 37 ++++++++++++++---------  
-> 
-> From what I understand, the changes in those files are fairly
-> independent, they should probably be separated to ease merging.
+Changes in v2:
+* Split crash dump memory reservation into a separate function.
 
-I'm happy to do that. It's using the same firmware call, so I thought
-a single patch would be fine. But I guess the boot call can be
-dropped from this patch because it does not  not solve the problem
-described in the changelog.
 
-Would you be happy for the driver change to be merged via the powerpc
-tree? The code being fixed here came from the same original patch as
-a similar issue being fixed in the OPAL NVRAM driver so it might be
-easier that way.
 
-Thanks,
-Nick
+ arch/powerpc/kernel/fadump.c |   29 +++++++++++++++++++++++------
+ 1 file changed, 23 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 3c2c268..bea8d5f 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -335,6 +335,26 @@ static unsigned long get_fadump_area_size(void)
+ 	return size;
+ }
+ 
++static void __init fadump_reserve_crash_area(unsigned long base,
++					     unsigned long size)
++{
++	struct memblock_region *reg;
++	unsigned long mstart, mend, msize;
++
++	for_each_memblock(memory, reg) {
++		mstart = max_t(unsigned long, base, reg->base);
++		mend = reg->base + reg->size;
++		mend = min(base + size, mend);
++
++		if (mstart < mend) {
++			msize = mend - mstart;
++			memblock_reserve(mstart, msize);
++			pr_info("Reserved %ldMB of memory at %#016lx for saving crash dump\n",
++				(msize >> 20), mstart);
++		}
++	}
++}
++
+ int __init fadump_reserve_mem(void)
+ {
+ 	unsigned long base, size, memory_boundary;
+@@ -380,7 +400,8 @@ int __init fadump_reserve_mem(void)
+ 		memory_boundary = memblock_end_of_DRAM();
+ 
+ 	if (fw_dump.dump_active) {
+-		printk(KERN_INFO "Firmware-assisted dump is active.\n");
++		pr_info("Firmware-assisted dump is active.\n");
++
+ 		/*
+ 		 * If last boot has crashed then reserve all the memory
+ 		 * above boot_memory_size so that we don't touch it until
+@@ -389,11 +410,7 @@ int __init fadump_reserve_mem(void)
+ 		 */
+ 		base = fw_dump.boot_memory_size;
+ 		size = memory_boundary - base;
+-		memblock_reserve(base, size);
+-		printk(KERN_INFO "Reserved %ldMB of memory at %ldMB "
+-				"for saving crash dump\n",
+-				(unsigned long)(size >> 20),
+-				(unsigned long)(base >> 20));
++		fadump_reserve_crash_area(base, size);
+ 
+ 		fw_dump.fadumphdr_addr =
+ 				be64_to_cpu(fdm_active->rmr_region.destination_address) +
