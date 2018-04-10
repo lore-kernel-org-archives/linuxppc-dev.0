@@ -1,18 +1,41 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pf0-x234.google.com (mail-pf0-x234.google.com
+ [IPv6:2607:f8b0:400e:c00::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Ky810PBlzDqlQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 16:34:40 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] Revert "powerpc/64: Fix checksum folding in csum_add()"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Shile Zhang <shile.zhang@nokia.com>
-Message-Id: <20180410063437.217D2653BC@po15720vm.idsi0.si.c-s.fr>
-Date: Tue, 10 Apr 2018 08:34:37 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40KyRD6gwYzDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 16:47:52 +1000 (AEST)
+Received: by mail-pf0-x234.google.com with SMTP id l27so7452463pfk.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 23:47:52 -0700 (PDT)
+Date: Mon, 9 Apr 2018 23:47:48 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: Andi Kleen <ak@linux.intel.com>
+cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ peterz@infradead.org, akpm@linux-foundation.org, kirill@shutemov.name,
+ mhocko@kernel.org, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 21/24] perf tools: Add support for the SPF perf
+ event
+In-Reply-To: <20180327034936.GO13724@tassilo.jf.intel.com>
+Message-ID: <alpine.DEB.2.21.1804092346090.225864@chino.kir.corp.google.com>
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
+ <alpine.DEB.2.20.1803261443560.255554@chino.kir.corp.google.com>
+ <20180327034936.GO13724@tassilo.jf.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +45,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit 6ad966d7303b70165228dba1ee8da1a05c10eefe.
+On Mon, 26 Mar 2018, Andi Kleen wrote:
 
-That commit was pointless, because csum_add() sums two 32 bits
-values, so the sum is 0x1fffffffe at the maximum.
-And then when adding upper part (1) and lower part (0xfffffffe),
-the result is 0xffffffff which doesn't carry.
-Any lower value will not carry either.
+> > Aside: should there be a new spec_flt field for struct task_struct that 
+> > complements maj_flt and min_flt and be exported through /proc/pid/stat?
+> 
+> No. task_struct is already too bloated. If you need per process tracking 
+> you can always get it through trace points.
+> 
 
-And behind the fact that this commit is useless, it also kills the
-whole purpose of having an arch specific inline csum_add()
-because the resulting code gets even worse than what is obtained
-with the generic implementation of csum_add()
+Hi Andi,
 
-0000000000000240 <.csum_add>:
- 240:	38 00 ff ff 	li      r0,-1
- 244:	7c 84 1a 14 	add     r4,r4,r3
- 248:	78 00 00 20 	clrldi  r0,r0,32
- 24c:	78 89 00 22 	rldicl  r9,r4,32,32
- 250:	7c 80 00 38 	and     r0,r4,r0
- 254:	7c 09 02 14 	add     r0,r9,r0
- 258:	78 09 00 22 	rldicl  r9,r0,32,32
- 25c:	7c 00 4a 14 	add     r0,r0,r9
- 260:	78 03 00 20 	clrldi  r3,r0,32
- 264:	4e 80 00 20 	blr
+We have
 
-In comparison, the generic implementation of csum_add() gives:
+	count_vm_event(PGFAULT);
+	count_memcg_event_mm(vma->vm_mm, PGFAULT);
 
-0000000000000290 <.csum_add>:
- 290:	7c 63 22 14 	add     r3,r3,r4
- 294:	7f 83 20 40 	cmplw   cr7,r3,r4
- 298:	7c 10 10 26 	mfocrf  r0,1
- 29c:	54 00 ef fe 	rlwinm  r0,r0,29,31,31
- 2a0:	7c 60 1a 14 	add     r3,r0,r3
- 2a4:	78 63 00 20 	clrldi  r3,r3,32
- 2a8:	4e 80 00 20 	blr
-
-And the reverted implementation for PPC64 gives:
-
-0000000000000240 <.csum_add>:
- 240:	7c 84 1a 14 	add     r4,r4,r3
- 244:	78 80 00 22 	rldicl  r0,r4,32,32
- 248:	7c 80 22 14 	add     r4,r0,r4
- 24c:	78 83 00 20 	clrldi  r3,r4,32
- 250:	4e 80 00 20 	blr
-
-Fixes: 6ad966d7303b7 ("powerpc/64: Fix checksum folding in csum_add()")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/checksum.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index 842124b199b5..4e63787dc3be 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -112,7 +112,7 @@ static inline __wsum csum_add(__wsum csum, __wsum addend)
- 
- #ifdef __powerpc64__
- 	res += (__force u64)addend;
--	return (__force __wsum) from64to32(res);
-+	return (__force __wsum)((u32)res + (res >> 32));
- #else
- 	asm("addc %0,%0,%1;"
- 	    "addze %0,%0;"
--- 
-2.13.3
+in handle_mm_fault() but not counterpart for spf.  I think it would be 
+helpful to be able to determine how much faulting can be done 
+speculatively if there is no per-process tracking without tracing.
