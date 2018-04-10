@@ -1,19 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40L58N5YgZzDqyL
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40L58N5TR9zDqxs
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 21:50:28 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id p15so8075789pff.11
+Received: by mail-pf0-x241.google.com with SMTP id u86so8088267pfd.2
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 04:50:28 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 1/3] powerpc/powernv: define a standard delay for OPAL_BUSY
- type retry loops
-Date: Tue, 10 Apr 2018 21:49:31 +1000
-Message-Id: <20180410114933.24581-2-npiggin@gmail.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-rtc@vger.kernel.org
+Subject: [PATCH 2/3] powerpc/powernv: Fix OPAL RTC driver OPAL_BUSY loops
+Date: Tue, 10 Apr 2018 21:49:32 +1000
+Message-Id: <20180410114933.24581-3-npiggin@gmail.com>
 In-Reply-To: <20180410114933.24581-1-npiggin@gmail.com>
 References: <20180410114933.24581-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,41 +26,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the start of an effort to tidy up and standardise all the
-delays. Existing loops have a range of delay/sleep periods from 1ms
-to 20ms, and some have no delay. They all loop forever except rtc,
-which times out after 10 retries, and that uses 10ms delays. So use
-10ms as our standard delay. The OPAL maintainer agrees 10ms is a
-reasonable starting point.
+The OPAL RTC driver does not sleep in case it gets OPAL_BUSY or
+OPAL_BUSY_EVENT from firmware, which causes large scheduling
+latencies, up to 50 seconds have been observed here when RTC stops
+responding (BMC reboot can do it).
 
-The idea is to use the same recipe everywhere, once this is proven to
-work then it will be documented as an OPAL API standard. Then both
-firmware and OS can agree, and if a particular call needs something
-else, then that can be documented with reasoning.
+Fix this by converting it to the standard form OPAL_BUSY loop that
+sleeps.
 
-This is not the end-all of this effort, it's just a relatively easy
-change that fixes some existing high latency delays. There should be
-provision for standardising timeouts and/or interruptible loops where
-possible, so non-fatal firmware errors don't cause hangs.
-
+Fixes 628daa8d5abfd ("powerpc/powernv: Add RTC and NVRAM support plus RTAS fallbacks"
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-rtc@vger.kernel.org
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/opal.h | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/powernv/opal-rtc.c |  8 +++--
+ drivers/rtc/rtc-opal.c                    | 37 ++++++++++++++---------
+ 2 files changed, 28 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 7159e1a6a61a..03e1a920491e 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -21,6 +21,9 @@
- /* We calculate number of sg entries based on PAGE_SIZE */
- #define SG_ENTRIES_PER_NODE ((PAGE_SIZE - 16) / sizeof(struct opal_sg_entry))
+diff --git a/arch/powerpc/platforms/powernv/opal-rtc.c b/arch/powerpc/platforms/powernv/opal-rtc.c
+index f8868864f373..aa2a5139462e 100644
+--- a/arch/powerpc/platforms/powernv/opal-rtc.c
++++ b/arch/powerpc/platforms/powernv/opal-rtc.c
+@@ -48,10 +48,12 @@ unsigned long __init opal_get_boot_time(void)
  
-+/* Default time to sleep or delay between OPAL_BUSY/OPAL_BUSY_EVENT loops */
-+#define OPAL_BUSY_DELAY_MS	10
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_rtc_read(&__y_m_d, &__h_m_s_ms);
+-		if (rc == OPAL_BUSY_EVENT)
++		if (rc == OPAL_BUSY_EVENT) {
++			mdelay(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else if (rc == OPAL_BUSY)
+-			mdelay(10);
++		} else if (rc == OPAL_BUSY) {
++			mdelay(OPAL_BUSY_DELAY_MS);
++		}
+ 	}
+ 	if (rc != OPAL_SUCCESS)
+ 		return 0;
+diff --git a/drivers/rtc/rtc-opal.c b/drivers/rtc/rtc-opal.c
+index 304e891e35fc..60f2250fd96b 100644
+--- a/drivers/rtc/rtc-opal.c
++++ b/drivers/rtc/rtc-opal.c
+@@ -57,7 +57,7 @@ static void tm_to_opal(struct rtc_time *tm, u32 *y_m_d, u64 *h_m_s_ms)
+ 
+ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
+ {
+-	long rc = OPAL_BUSY;
++	s64 rc = OPAL_BUSY;
+ 	int retries = 10;
+ 	u32 y_m_d;
+ 	u64 h_m_s_ms;
+@@ -66,13 +66,17 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
+ 
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_rtc_read(&__y_m_d, &__h_m_s_ms);
+-		if (rc == OPAL_BUSY_EVENT)
++		if (rc == OPAL_BUSY_EVENT) {
++			msleep(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else if (retries-- && (rc == OPAL_HARDWARE
+-				       || rc == OPAL_INTERNAL_ERROR))
+-			msleep(10);
+-		else if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
+-			break;
++		} else if (rc == OPAL_BUSY) {
++			msleep(OPAL_BUSY_DELAY_MS);
++		} else if (rc == OPAL_HARDWARE || rc == OPAL_INTERNAL_ERROR) {
++			if (retries--) {
++				msleep(10); /* Wait 10ms before retry */
++				rc = OPAL_BUSY; /* go around again */
++			}
++		}
+ 	}
+ 
+ 	if (rc != OPAL_SUCCESS)
+@@ -87,21 +91,26 @@ static int opal_get_rtc_time(struct device *dev, struct rtc_time *tm)
+ 
+ static int opal_set_rtc_time(struct device *dev, struct rtc_time *tm)
+ {
+-	long rc = OPAL_BUSY;
++	s64 rc = OPAL_BUSY;
+ 	int retries = 10;
+ 	u32 y_m_d = 0;
+ 	u64 h_m_s_ms = 0;
+ 
+ 	tm_to_opal(tm, &y_m_d, &h_m_s_ms);
 +
- /* /sys/firmware/opal */
- extern struct kobject *opal_kobj;
+ 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+ 		rc = opal_rtc_write(y_m_d, h_m_s_ms);
+-		if (rc == OPAL_BUSY_EVENT)
++		if (rc == OPAL_BUSY_EVENT) {
++			msleep(OPAL_BUSY_DELAY_MS);
+ 			opal_poll_events(NULL);
+-		else if (retries-- && (rc == OPAL_HARDWARE
+-				       || rc == OPAL_INTERNAL_ERROR))
+-			msleep(10);
+-		else if (rc != OPAL_BUSY && rc != OPAL_BUSY_EVENT)
+-			break;
++		} else if (rc == OPAL_BUSY) {
++			msleep(OPAL_BUSY_DELAY_MS);
++		} else if (rc == OPAL_HARDWARE || rc == OPAL_INTERNAL_ERROR) {
++			if (retries--) {
++				msleep(10); /* Wait 10ms before retry */
++				rc = OPAL_BUSY; /* go around again */
++			}
++		}
+ 	}
  
+ 	return rc == OPAL_SUCCESS ? 0 : -EIO;
 -- 
 2.17.0
