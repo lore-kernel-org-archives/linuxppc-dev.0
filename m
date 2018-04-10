@@ -1,31 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KxcX0qBPzDqRV
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 16:10:51 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id u86so7390544pfd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Apr 2018 23:10:51 -0700 (PDT)
-Date: Tue, 10 Apr 2018 16:10:39 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>, Michael Ellerman
- <mpe@ellerman.id.au>, "open list:KERNEL VIRTUAL MACHINE (KVM) FOR POWERPC"
- <kvm-ppc@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND
- 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: trace_tlbie must not be called
- in realmode
-Message-ID: <20180410161039.43b9d84e@roar.ozlabs.ibm.com>
-In-Reply-To: <1523338519.27phm7a0v6.naveen@linux.ibm.com>
-References: <20180405175631.31381-1-npiggin@gmail.com>
- <20180405175631.31381-2-npiggin@gmail.com>
- <CAKTCnzn119+T_jkWAxPXoor_bpMezdRoQ9VqN+TYTUhxvQq4Fw@mail.gmail.com>
- <20180408234150.36d766f6@roar.ozlabs.ibm.com>
- <87in8zbvbk.fsf@concordia.ellerman.id.au>
- <1523338519.27phm7a0v6.naveen@linux.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Ky8015bbzDqRk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 16:34:39 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/64: optimises from64to32()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180410063435.272F8653BC@po15720vm.idsi0.si.c-s.fr>
+Date: Tue, 10 Apr 2018 08:34:35 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,62 +21,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Apr 2018 11:25:02 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+The current implementation of from64to32() gives a poor result:
 
-> Michael Ellerman wrote:
-> > Nicholas Piggin <npiggin@gmail.com> writes:
-> >   
-> >> On Sun, 8 Apr 2018 20:17:47 +1000
-> >> Balbir Singh <bsingharora@gmail.com> wrote:
-> >>  
-> >>> On Fri, Apr 6, 2018 at 3:56 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
-> >>> > This crashes with a "Bad real address for load" attempting to load
-> >>> > from the vmalloc region in realmode (faulting address is in DAR).
-> >>> >
-> >>> >   Oops: Bad interrupt in KVM entry/exit code, sig: 6 [#1]
-> >>> >   LE SMP NR_CPUS=2048 NUMA PowerNV
-> >>> >   CPU: 53 PID: 6582 Comm: qemu-system-ppc Not tainted 4.16.0-01530-g43d1859f0994
-> >>> >   NIP:  c0000000000155ac LR: c0000000000c2430 CTR: c000000000015580
-> >>> >   REGS: c000000fff76dd80 TRAP: 0200   Not tainted  (4.16.0-01530-g43d1859f0994)
-> >>> >   MSR:  9000000000201003 <SF,HV,ME,RI,LE>  CR: 48082222  XER: 00000000
-> >>> >   CFAR: 0000000102900ef0 DAR: d00017fffd941a28 DSISR: 00000040 SOFTE: 3
-> >>> >   NIP [c0000000000155ac] perf_trace_tlbie+0x2c/0x1a0
-> >>> >   LR [c0000000000c2430] do_tlbies+0x230/0x2f0
-> >>> >
-> >>> > I suspect the reason is the per-cpu data is not in the linear chunk.
-> >>> > This could be restored if that was able to be fixed, but for now,
-> >>> > just remove the tracepoints.    
-> >>> 
-> >>> Could you share the stack trace as well? I've not observed this in my testing.  
-> >>
-> >> I can't seem to find it, I can try reproduce tomorrow. It was coming
-> >> from h_remove hcall from the guest. It's 176 logical CPUs.
-> >>  
-> >>> May be I don't have as many cpus. I presume your talking about the per cpu
-> >>> data offsets for per cpu trace data?  
-> >>
-> >> It looked like it was dereferencing virtually mapped per-cpu data, yes.
-> >> Probably the perf_events deref.  
-> > 
-> > Naveen has posted a series to (hopefully) fix this, which just missed
-> > the merge window:
-> > 
-> >   https://patchwork.ozlabs.org/patch/894757/  
-> 
-> I'm afraid that won't actually help here :(
-> That series is specific to the function tracer, while this is using 
-> static tracepoints.
-> 
-> We could convert trace_tlbie() to a TRACE_EVENT_CONDITION() and guard it 
-> within a check for paca->ftrace_enabled, but that would only be useful 
-> if the below callsites can ever be hit outside of KVM guest mode.
+0000000000000270 <.from64to32>:
+ 270:	38 00 ff ff 	li      r0,-1
+ 274:	78 69 00 22 	rldicl  r9,r3,32,32
+ 278:	78 00 00 20 	clrldi  r0,r0,32
+ 27c:	7c 60 00 38 	and     r0,r3,r0
+ 280:	7c 09 02 14 	add     r0,r9,r0
+ 284:	78 09 00 22 	rldicl  r9,r0,32,32
+ 288:	7c 00 4a 14 	add     r0,r0,r9
+ 28c:	78 03 00 20 	clrldi  r3,r0,32
+ 290:	4e 80 00 20 	blr
 
-Right, removing the trace points is the right thing to do here.
+This patch modifies from64to32() to operate in the same
+spirit as csum_fold()
 
-Doing tracing in real mode would be a whole effort itself, I'd expect.
-Or disabling realmode handling of HPT hcalls if trace points are
-active.
+It swaps the two 32-bit halves of sum then it adds it with the
+unswapped sum. If there is a carry from adding the two 32-bit halves,
+it will carry from the lower half into the upper half, giving us the
+correct sum in the upper half.
 
-Thanks,
-Nick
+The resulting code is:
+
+0000000000000260 <.from64to32>:
+ 260:	78 60 00 02 	rotldi  r0,r3,32
+ 264:	7c 60 1a 14 	add     r3,r0,r3
+ 268:	78 63 00 22 	rldicl  r3,r3,32,32
+ 26c:	4e 80 00 20 	blr
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/checksum.h | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
+index 4e63787dc3be..54065caa40b3 100644
+--- a/arch/powerpc/include/asm/checksum.h
++++ b/arch/powerpc/include/asm/checksum.h
+@@ -12,6 +12,7 @@
+ #ifdef CONFIG_GENERIC_CSUM
+ #include <asm-generic/checksum.h>
+ #else
++#include <linux/bitops.h>
+ /*
+  * Computes the checksum of a memory block at src, length len,
+  * and adds in "sum" (32-bit), while copying the block to dst.
+@@ -55,11 +56,7 @@ static inline __sum16 csum_fold(__wsum sum)
+ 
+ static inline u32 from64to32(u64 x)
+ {
+-	/* add up 32-bit and 32-bit for 32+c bit */
+-	x = (x & 0xffffffff) + (x >> 32);
+-	/* add up carry.. */
+-	x = (x & 0xffffffff) + (x >> 32);
+-	return (u32)x;
++	return (x + ror64(x, 32)) >> 32;
+ }
+ 
+ static inline __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr, __u32 len,
+-- 
+2.13.3
