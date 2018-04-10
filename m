@@ -2,19 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40KsBZ3N7vzF29m
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 12:51:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Ksrv3X3dzDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 13:21:19 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, jeyu@kernel.org
-Cc: jeyu@redhat.com, akpm@linux-foundation.org, npiggin@gmail.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc/64: Fix section mismatch warnings for early
- boot symbols
-In-Reply-To: <1522943439-26235-1-git-send-email-mauricfo@linux.vnet.ibm.com>
-References: <1522943439-26235-1-git-send-email-mauricfo@linux.vnet.ibm.com>
-Date: Tue, 10 Apr 2018 12:51:31 +1000
-Message-ID: <87lgdvbwp8.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, Balbir Singh <bsingharora@gmail.com>
+Cc: "open list\:LINUX FOR POWERPC \(32-BIT AND
+ 64-BIT\)" <linuxppc-dev@lists.ozlabs.org>,
+ "open list\:KERNEL VIRTUAL MACHINE \(KVM\) FOR POWERPC"
+ <kvm-ppc@vger.kernel.org>
+Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: trace_tlbie must not be called
+ in realmode
+In-Reply-To: <20180408234150.36d766f6@roar.ozlabs.ibm.com>
+References: <20180405175631.31381-1-npiggin@gmail.com>
+ <20180405175631.31381-2-npiggin@gmail.com>
+ <CAKTCnzn119+T_jkWAxPXoor_bpMezdRoQ9VqN+TYTUhxvQq4Fw@mail.gmail.com>
+ <20180408234150.36d766f6@roar.ozlabs.ibm.com>
+Date: Tue, 10 Apr 2018 13:21:19 +1000
+Message-ID: <87in8zbvbk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,50 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com> writes:
-> Some of the boot code located at the start of kernel text is "init"
-> class, in that it only runs at boot time, however marking it as normal
-> init code is problematic because that puts it into a different section
-> located at the very end of kernel text.
->
-> e.g., in case the TOC is not set up, we may not be able to tolerate a
-> branch trampoline to reach the init function.
->
-> Credits: code and message are based on 2016 patch by Nicholas Piggin,
-> and slightly modified so not to rename the powerpc code/symbol names.
->
->     Subject: [PATCH] powerpc/64: quieten section mismatch warnings
->     From: Nicholas Piggin <npiggin at gmail.com>
->     Date: Fri Dec 23 00:14:19 AEDT 2016
->
-> This resolves the following section mismatch warnings:
->
->     WARNING: vmlinux.o(.text+0x2fa8): Section mismatch in reference from the variable __boot_from_prom to the function .init.text:prom_init()
->     The function __boot_from_prom() references
->     the function __init prom_init().
->     This is often because __boot_from_prom lacks a __init
->     annotation or the annotation of prom_init is wrong.
->
->     WARNING: vmlinux.o(.text+0x3238): Section mismatch in reference from the variable start_here_multiplatform to the function .init.text:early_setup()
->     The function start_here_multiplatform() references
->     the function __init early_setup().
->     This is often because start_here_multiplatform lacks a __init
->     annotation or the annotation of early_setup is wrong.
->
->     WARNING: vmlinux.o(.text+0x326c): Section mismatch in reference from the variable start_here_common to the function .init.text:start_kernel()
->     The function start_here_common() references
->     the function __init start_kernel().
->     This is often because start_here_common lacks a __init
->     annotation or the annotation of start_kernel is wrong.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-Thanks for picking this one up.
+> On Sun, 8 Apr 2018 20:17:47 +1000
+> Balbir Singh <bsingharora@gmail.com> wrote:
+>
+>> On Fri, Apr 6, 2018 at 3:56 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> > This crashes with a "Bad real address for load" attempting to load
+>> > from the vmalloc region in realmode (faulting address is in DAR).
+>> >
+>> >   Oops: Bad interrupt in KVM entry/exit code, sig: 6 [#1]
+>> >   LE SMP NR_CPUS=2048 NUMA PowerNV
+>> >   CPU: 53 PID: 6582 Comm: qemu-system-ppc Not tainted 4.16.0-01530-g43d1859f0994
+>> >   NIP:  c0000000000155ac LR: c0000000000c2430 CTR: c000000000015580
+>> >   REGS: c000000fff76dd80 TRAP: 0200   Not tainted  (4.16.0-01530-g43d1859f0994)
+>> >   MSR:  9000000000201003 <SF,HV,ME,RI,LE>  CR: 48082222  XER: 00000000
+>> >   CFAR: 0000000102900ef0 DAR: d00017fffd941a28 DSISR: 00000040 SOFTE: 3
+>> >   NIP [c0000000000155ac] perf_trace_tlbie+0x2c/0x1a0
+>> >   LR [c0000000000c2430] do_tlbies+0x230/0x2f0
+>> >
+>> > I suspect the reason is the per-cpu data is not in the linear chunk.
+>> > This could be restored if that was able to be fixed, but for now,
+>> > just remove the tracepoints.  
+>> 
+>> Could you share the stack trace as well? I've not observed this in my testing.
+>
+> I can't seem to find it, I can try reproduce tomorrow. It was coming
+> from h_remove hcall from the guest. It's 176 logical CPUs.
+>
+>> May be I don't have as many cpus. I presume your talking about the per cpu
+>> data offsets for per cpu trace data?
+>
+> It looked like it was dereferencing virtually mapped per-cpu data, yes.
+> Probably the perf_events deref.
 
-I hate to be a pain ... but before we merge this and proliferate these
-names, I'd like to change the names of some of these early asm
-functions. They're terribly named due to historical reasons.
+Naveen has posted a series to (hopefully) fix this, which just missed
+the merge window:
 
-I haven't actually thought of good names yet though :)
+  https://patchwork.ozlabs.org/patch/894757/
 
-I'll try and come up with some and post a patch doing the renames.
 
 cheers
