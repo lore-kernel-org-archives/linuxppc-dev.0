@@ -1,21 +1,23 @@
 Return-Path: <rashmica.g@gmail.com>
-Received: from mail-pl0-x22e.google.com (mail-pl0-x22e.google.com
- [IPv6:2607:f8b0:400e:c01::22e])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LVgK0DwWzDqyW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 14:00:09 +1000 (AEST)
-Received: by mail-pl0-x22e.google.com with SMTP id e22-v6so389628plj.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 21:00:09 -0700 (PDT)
-Subject: Re: [PATCH 1/2] powerpc/mm: Flush cache on memory hot(un)plug
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40LVhY04B2zDsFQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 14:01:16 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id u86so309972pfd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 21:01:16 -0700 (PDT)
+Subject: Re: [PATCH 2/2] powerpc/mm/memtrace: Let the arch hotunplug code
+ flush cache
 To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, rashmica.g@gmail.com, benh@kernel.crashing.org
 References: <20180406052424.29841-1-bsingharora@gmail.com>
+ <20180406052424.29841-2-bsingharora@gmail.com>
 From: rashmica <rashmica.g@gmail.com>
-Message-ID: <2ce3da2a-e714-8dc7-bb54-faadbfcb06f9@gmail.com>
-Date: Wed, 11 Apr 2018 14:00:03 +1000
+Message-ID: <7768aa87-2729-99a1-73f9-6ecc37f1aeb2@gmail.com>
+Date: Wed, 11 Apr 2018 14:01:11 +1000
 MIME-Version: 1.0
-In-Reply-To: <20180406052424.29841-1-bsingharora@gmail.com>
+In-Reply-To: <20180406052424.29841-2-bsingharora@gmail.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,29 +31,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On 06/04/18 15:24, Balbir Singh wrote:
-> This patch adds support for flushing potentially dirty
-> cache lines when memory is hot-plugged/hot-un-plugged.
-> The support is currently limited to 64 bit systems.
+> Don't do this via custom code, instead now that we have support
+> in the arch hotplug/hotunplug code, rely on those routines
+> to do the right thing.
 >
-> The bug was exposed when mappings for a device were
-> actually hot-unplugged and plugged in back later.
-> A similar issue was observed during the development
-> of memtrace, but memtrace does it's own flushing of
-> region via a custom routine.
->
-> These patches do a flush both on hotplug/unplug to
-> clear any stale data in the cache w.r.t mappings,
-> there is a small race window where a clean cache
-> line may be created again just prior to tearing
-> down the mapping.
->
-> The patches were tested by disabling the flush
-> routines in memtrace and doing I/O on the trace
-> file. The system immediately checkstops (quite
-> reliablly if prior to the hot-unplug of the memtrace
-> region, we memset the regions we are about to
-> hot unplug). After these patches no custom flushing
-> is needed in the memtrace code.
+> Fixes: 9d5171a8f248 ("powerpc/powernv: Enable removal of memory for in memory tracing")
+> because the older code uses ppc64_caches.l1d.size instead of
+> ppc64_caches.l1d.line_size
 >
 > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
 
