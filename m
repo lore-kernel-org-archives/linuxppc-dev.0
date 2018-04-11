@@ -1,24 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LgbL0kY7zDrnm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 20:42:21 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id v5-v6so1097025plo.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 03:42:21 -0700 (PDT)
-Date: Wed, 11 Apr 2018 20:42:09 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2] powerpc/config: powernv_defconfig updates
-Message-ID: <20180411204209.6f7e1a05@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnzmsrU1WCW54ZuX=1oSGt2Pv3wSZ=NYR-692ZmzkowC0nw@mail.gmail.com>
-References: <20180411091203.28141-1-npiggin@gmail.com>
- <CAKTCnzmsrU1WCW54ZuX=1oSGt2Pv3wSZ=NYR-692ZmzkowC0nw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Lh6R2HPvzF1Pn
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 21:05:51 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: rashmica.g@gmail.com, benh@kernel.crashing.org,
+ Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/mm/memtrace: Let the arch hotunplug code
+ flush cache
+In-Reply-To: <20180406052424.29841-2-bsingharora@gmail.com>
+References: <20180406052424.29841-1-bsingharora@gmail.com>
+ <20180406052424.29841-2-bsingharora@gmail.com>
+Date: Wed, 11 Apr 2018 21:05:49 +1000
+Message-ID: <87d0z6knoy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,65 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 11 Apr 2018 20:04:45 +1000
-Balbir Singh <bsingharora@gmail.com> wrote:
+Balbir Singh <bsingharora@gmail.com> writes:
 
-> On Wed, Apr 11, 2018 at 7:12 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > For consideration:
-> >
-> > * Add IPv6 support built in + additional modules - Because it's 2018 maan.
-> > * Add DEFERRED_STRUCT_PAGE_INIT - Let's see what breaks.  
-> 
-> We did not find any benefits with this on a P8 in terms of boot time
-> with large memory. May be worth reinvestigating
+> Don't do this via custom code, instead now that we have support
+> in the arch hotplug/hotunplug code, rely on those routines
+> to do the right thing.
+>
+> Fixes: 9d5171a8f248 ("powerpc/powernv: Enable removal of memory for in memory tracing")
 
-Worth putting in the defconfig just for testing until then?
+That's not really right.
 
-> 
-> > * Add PPC_MEMTRACE - Small powernv debugfs driver for getting hardware traces.
-> > * Add MEMORY_FAILURE - Machine check exceptions can now drive memory failure.
+This patch doesn't fix it, the previous patch did.
 
-         ^^^^
-Okay for this one?
+If I just backport this patch then it's still broken.
 
-> > * Turn on FANOTIFY - This is the current filesystem notification feature.
-> > * Turn on SCOM_DEBUGFS - Handy for hardware/firmware debugging, security risk?  
-> 
-> Yep, should not be in defconfig, IMHO
+So I'll tag patch 1 with the above Fixes: tag and add stable, and then
+this just becomes a cleanup.
 
-Why not? Honest question, I hear some things about secure
-boot when I ask about this option but I'm not quite sure why, or
-what we are securing here.
+OK?
 
-If the firmware does not want us to mess with scoms, it should
-restrict the call, no?
+cheers
 
-
-> > * Turn on async SCSI scanning - Let's see what breaks.
-> >
-> > * Make a bunch of USB hid drivers modules.
-> > * Make SCSI SG, SR, and FC modules - FC is huge.
-> > * Make video drivers (except AST GPU) modules - Also huge.
-> > * Add MLX5 driver as a module - Popular demand.
-> > * Make PCI serial driver a module - Uncommon?
-> >
-> > * Get rid of /dev/port - Not used.
-> > * Remove legacy BSD ttys - Long dead.
-> > * Remove IDE - Deprecated and replaced with ATA.
-> > * Remove WIRELESS - Until we get POWER9 laptops.
-> > * Remove RAW - Long deprecated in favour of direct IO.
-> > * Remove floppy, parport, and PS2 input devices - not supported.
-> > * Remove virtio drivers, ballooning - We're host only.  
-> 
-> I still think its good to have them, may be as modules? Should I
-> switch to powerpc64le_defconfig for a single config with everything --
-> same kernel as guest and bare metal?
-
-Well powernv_defconfig never supports PAPR guest. I think the ppc64
-defconfig does both (and pseries has no bare metal).
-
-Is there a reason to use them in host? And if yes, which ones? We
-could easily make them as modules.
-
-Thanks,
-Nick
+> diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+> index de470caf0784..fc222a0c2ac4 100644
+> --- a/arch/powerpc/platforms/powernv/memtrace.c
+> +++ b/arch/powerpc/platforms/powernv/memtrace.c
+> @@ -82,19 +82,6 @@ static const struct file_operations memtrace_fops = {
+>  	.open	= simple_open,
+>  };
+>  
+> -static void flush_memory_region(u64 base, u64 size)
+> -{
+> -	unsigned long line_size = ppc64_caches.l1d.size;
+> -	u64 end = base + size;
+> -	u64 addr;
+> -
+> -	base = round_down(base, line_size);
+> -	end = round_up(end, line_size);
+> -
+> -	for (addr = base; addr < end; addr += line_size)
+> -		asm volatile("dcbf 0,%0" : "=r" (addr) :: "memory");
+> -}
+> -
+>  static int check_memblock_online(struct memory_block *mem, void *arg)
+>  {
+>  	if (mem->state != MEM_ONLINE)
+> @@ -132,10 +119,6 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+>  	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+>  			  change_memblock_state);
+>  
+> -	/* RCU grace period? */
+> -	flush_memory_region((u64)__va(start_pfn << PAGE_SHIFT),
+> -			    nr_pages << PAGE_SHIFT);
+> -
+>  	lock_device_hotplug();
+>  	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+>  	unlock_device_hotplug();
+> -- 
+> 2.13.6
