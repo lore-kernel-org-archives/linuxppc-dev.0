@@ -1,25 +1,17 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x236.google.com (mail-pl0-x236.google.com
- [IPv6:2607:f8b0:400e:c01::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LSRR3BpBzDrnk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 12:19:47 +1000 (AEST)
-Received: by mail-pl0-x236.google.com with SMTP id 61-v6so244293plb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Apr 2018 19:19:46 -0700 (PDT)
-Date: Wed, 11 Apr 2018 12:19:35 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 4/5] KVM: PPC: Book3S HV: handle need_tlb_flush in C
- before low-level guest entry
-Message-ID: <20180411121935.40f488ee@roar.ozlabs.ibm.com>
-In-Reply-To: <1523410332.11062.116.camel@au1.ibm.com>
-References: <20180410124842.30184-1-npiggin@gmail.com>
- <20180410124842.30184-5-npiggin@gmail.com>
- <1523410332.11062.116.camel@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40LV9m2MCmzDqwG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 13:38:04 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>, ruscur@russell.cc,
+ sam.bobroff@au1.ibm.com
+Subject: [PATCH] powerpc/eeh: Fix enabling bridge MMIO windows
+Date: Wed, 11 Apr 2018 13:37:58 +1000
+Message-Id: <20180411033758.20794-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 11 Apr 2018 11:32:12 +1000
-Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
+On boot we save the configuration space of PCIe bridges. We do this so
+when we get an EEH event and everything gets reset that we can restore
+them.
 
-> On Tue, 2018-04-10 at 22:48 +1000, Nicholas Piggin wrote:
-> >  
-> > +       /*
-> > +        * Do we need to flush the TLB for the LPAR? (see TLB comment above)
-> > +         * On POWER9, individual threads can come in here, but the
-> > +         * TLB is shared between the 4 threads in a core, hence
-> > +         * invalidating on one thread invalidates for all.
-> > +         * Thus we make all 4 threads use the same bit here.
-> > +         */  
-> 
-> This might be true of P9 implementation but isn't architecturally
-> correct. From an ISA perspective, the threads could have dedicatd
-> tagged TLB entries. Do we need to be careful here vs. backward
-> compatiblity ?
+Unfortunately we save this state before we've enabled the MMIO space
+on the bridges. Hence if we have to reset the bridge when we come back
+MMIO is not enabled and we end up taking an PE freeze when the driver
+starts accessing again.
 
-I think so. I noticed that, just trying to do like for like replacement
-with this patch.
+This patch forces the memory/MMIO and bus mastering on when restoring
+bridges on EEH. Ideally we'd do this correctly by saving the
+configuration space writes later, but that will have to come later in
+a larger EEH rewrite. For now we have this simple fix.
 
-Yes it should have a feature bit test for this optimization IMO. That
-can be expanded if other CPUs have the same ability... Is it even
-a worthwhile optimisation to do at this point, I wonder? I didn't see
-it being hit a lot in traces.
+The original bug can be triggered on a boston machine by doing:
+  echo 0x8000000000000000 > /sys/kernel/debug/powerpc/PCI0001/err_injct_outbound
+On boston, this PHB has a PCIe switch on it.  Without this patch,
+you'll see two EEH events, 1 expected and 1 the failure we are fixing
+here. The second EEH event causes the anything under the PHB to
+disappear (i.e. the i40e eth).
 
-> Also this won't flush ERAT entries for another thread afaik.
+With this patch, only 1 EEH event occurs and devices properly recover.
 
-Yeah, I'm still not entirely clear exactly when ERATs get invalidated.
-I would like to see more commentary here to show why it's okay.
+Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/kernel/eeh_pe.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> 
-> > +       tmp = pcpu;
-> > +       if (cpu_has_feature(CPU_FTR_ARCH_300))
-> > +               tmp &= ~0x3UL;
-> > +       if (cpumask_test_cpu(tmp, &vc->kvm->arch.need_tlb_flush)) {
-> > +               if (kvm_is_radix(vc->kvm))
-> > +                       radix__local_flush_tlb_lpid(vc->kvm->arch.lpid);
-> > +               else
-> > +                       hash__local_flush_tlb_lpid(vc->kvm->arch.lpid);
-> > +               /* Clear the bit after the TLB flush */
-> > +               cpumask_clear_cpu(tmp, &vc->kvm->arch.need_tlb_flush);
-> > +       }
-> > +  
-> 
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 2d4956e97a..ee5a67d57a 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -807,7 +807,8 @@ static void eeh_restore_bridge_bars(struct eeh_dev *edev)
+ 	eeh_ops->write_config(pdn, 15*4, 4, edev->config_space[15]);
+ 
+ 	/* PCI Command: 0x4 */
+-	eeh_ops->write_config(pdn, PCI_COMMAND, 4, edev->config_space[1]);
++	eeh_ops->write_config(pdn, PCI_COMMAND, 4, edev->config_space[1] |
++			      PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
+ 
+ 	/* Check the PCIe link is ready */
+ 	eeh_bridge_check_link(edev);
+-- 
+2.14.1
