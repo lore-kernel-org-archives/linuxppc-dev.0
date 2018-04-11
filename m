@@ -1,19 +1,21 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x22a.google.com (mail-it0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c0b::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LpBs6VRSzF1BP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 01:40:04 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id w23so2382951qtn.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 08:40:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40M0Kj5RQ8zF1S8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 09:16:41 +1000 (AEST)
+Received: by mail-it0-x22a.google.com with SMTP id t192-v6so778381itc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 16:16:41 -0700 (PDT)
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 11 Apr 2018 17:40:02 +0200
-Message-ID: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
-Subject: [GIT PULL] asm-generic fixes for v4.17-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
+Sender: linus971@gmail.com
+In-Reply-To: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
+References: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 11 Apr 2018 16:16:38 -0700
+Message-ID: <CA+55aFx4_gaBeffy9roFRnkB30fnRa=nhh5qR=o=CgrWmgphiw@mail.gmail.com>
+Subject: Re: [GIT PULL] asm-generic fixes for v4.17-rc1
+To: Arnd Bergmann <arnd@arndb.de>
 Cc: Sinan Kaya <okaya@codeaurora.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-rdma <linux-rdma@vger.kernel.org>,
@@ -40,64 +42,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit 0adb32858b0bddf4ada5f364a84ed60b196dbcda:
+On Wed, Apr 11, 2018 at 8:40 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> are available in the git repository at:
+>
+>   git+ssh://gitolite@ra.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
+> tags/asm-generic
 
-  Linux 4.16 (2018-04-01 14:20:27 -0700)
+Yeah, no they aren't available there at all.
 
-are available in the git repository at:
+That tag is some old tag from two years ago that just contains your
+ancient "asm-generic: use compat version for preadv2 and pwritev2".
 
-  git+ssh://gitolite@ra.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
-tags/asm-generic
+Forgot to push out? Or forgot to use "-f" to overwrite the old tag?
 
-for you to fetch changes up to a71e7c44ffb7baea0c0795824afc34cc0bc1a301:
-
-  io: change writeX_relaxed() to remove barriers (2018-04-10 16:37:34 +0200)
-
-----------------------------------------------------------------
-asm-generic fixes for v4.17-rc1
-
-I have one regression fix for a minor build problem after the architecture
-removal series, plus a rework of the barriers in the readl/writel
-functions, thanks to work by Sinan Kaya:
-
-This started from a discussion on the linuxpcc and rdma mailing lists
-[1]. To summarize, we decided that architectures are responsible to
-serialize readl() and writel() accesses on a device MMIO space relative
-to DMA performed by that device.
-
-This series provides a pessimistic implementation of that behavior for
-asm-generic/io.h, which is in turn used by a number of architectures
-(h8300, microblaze, nios2, openrisc, s390, sparc, um, unicore32, and
-xtensa). Some of those presumably need no extra barriers, or something
-weaker than rmb()/wmb(), and they are advised to override the new default
-for better performance.
-
-For inb()/outb(), the same barriers are used, but architectures might
-want to add another barrier to outb() here if that can guarantee
-non-posted behavior (some architectures can, others cannot do that).
-
-The readl_relaxed()/writel_relaxed() family of functions retains the
-existing behavior with no extra barriers.
-
-[1]: https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-March/170481.html
-
-----------------------------------------------------------------
-Liu, Changcheng (1):
-      dts: remove cris & metag dts hard link file
-
-Sinan Kaya (7):
-      io: define several IO & PIO barrier types for the asm-generic version
-      io: define stronger ordering for the default readX() implementation
-      io: define stronger ordering for the default writeX() implementation
-      io: change outX() to have their own IO barrier overrides
-      io: change inX() to have their own IO barrier overrides
-      io: change readX_relaxed() to remove barriers
-      io: change writeX_relaxed() to remove barriers
-
- include/asm-generic/io.h           | 161
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------
- scripts/dtc/include-prefixes/cris  |   1 -
- scripts/dtc/include-prefixes/metag |   1 -
- 3 files changed, 143 insertions(+), 20 deletions(-)
- delete mode 120000 scripts/dtc/include-prefixes/cris
- delete mode 120000 scripts/dtc/include-prefixes/metag
+                 Linus
