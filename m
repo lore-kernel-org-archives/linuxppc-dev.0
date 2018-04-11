@@ -1,20 +1,26 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ran.wang_1@nxp.com>
+Received: from NAM02-BL2-obe.outbound.protection.outlook.com
+ (mail-bl2nam02on0092.outbound.protection.outlook.com [104.47.38.92])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40LZBc2FT1zF0QP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 16:39:04 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Cc: mhairgrove@nvidia.com, arbab@linux.ibm.com, bsingharora@gmail.com,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH 2/2] powernv/npu: Prevent overwriting of
- pnv_npu2_init_contex() callback parameters
-Date: Wed, 11 Apr 2018 16:38:55 +1000
-Message-Id: <20180411063855.5451-2-alistair@popple.id.au>
-In-Reply-To: <20180411063855.5451-1-alistair@popple.id.au>
-References: <20180411063855.5451-1-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40LZbV417mzF1BS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 16:57:09 +1000 (AEST)
+From: Ran Wang <ran.wang_1@nxp.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Rob Herring
+ <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Scott Wood
+ <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>, Li Yang
+ <leoyang.li@nxp.com>
+CC: Zhao Chenhui <chenhui.zhao@freescale.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <devicetree@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>, Ran
+ Wang <ran.wang_1@nxp.com>
+Subject: [PATCH v2 1/6] powerpc/pm: Fix suspend=n in menuconfig for e500mc
+ platforms.
+Date: Wed, 11 Apr 2018 14:35:46 +0800
+Message-ID: <20180411063551.30368-1-ran.wang_1@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,70 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a single npu context per set of callback parameters. Callers
-should be prevented from overwriting existing callback values so instead
-return an error if different parameters are passed.
+Also, unselect FSL_PMC which is for older platfroms instead.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Signed-off-by: Ran Wang <ran.wang_1@nxp.com>
 ---
- arch/powerpc/include/asm/powernv.h       |  2 +-
- arch/powerpc/platforms/powernv/npu-dma.c | 16 +++++++++++++---
- 2 files changed, 14 insertions(+), 4 deletions(-)
+Changes in v2:
+  - no change
 
-diff --git a/arch/powerpc/include/asm/powernv.h b/arch/powerpc/include/asm/powernv.h
-index dc5f6a5d4575..362ea12a4501 100644
---- a/arch/powerpc/include/asm/powernv.h
-+++ b/arch/powerpc/include/asm/powernv.h
-@@ -15,7 +15,7 @@
- extern void powernv_set_nmmu_ptcr(unsigned long ptcr);
- extern struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 			unsigned long flags,
--			struct npu_context *(*cb)(struct npu_context *, void *),
-+			void (*cb)(struct npu_context *, void *),
- 			void *priv);
- extern void pnv_npu2_destroy_context(struct npu_context *context,
- 				struct pci_dev *gpdev);
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index cb77162f4e7a..193f43ea3fbc 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -407,7 +407,7 @@ struct npu_context {
- 	bool nmmu_flush;
+ arch/powerpc/Kconfig |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 73ce5dd..ed60c83 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -316,7 +316,7 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
+-		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
++		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
+ 		   || 44x || 40x
  
- 	/* Callback to stop translation requests on a given GPU */
--	struct npu_context *(*release_cb)(struct npu_context *, void *);
-+	void (*release_cb)(struct npu_context *context, void *priv);
+ config PPC_DCR_NATIVE
+@@ -940,8 +940,6 @@ config FSL_PCI
  
- 	/*
- 	 * Private pointer passed to the above callback for usage by
-@@ -705,7 +705,7 @@ static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
-  */
- struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 			unsigned long flags,
--			struct npu_context *(*cb)(struct npu_context *, void *),
-+			void (*cb)(struct npu_context *, void *),
- 			void *priv)
- {
- 	int rc;
-@@ -763,8 +763,18 @@ struct npu_context *pnv_npu2_init_context(struct pci_dev *gpdev,
- 	 */
- 	spin_lock(&npu_context_lock);
- 	npu_context = mm->context.npu_context;
--	if (npu_context)
-+	if (npu_context) {
-+		if (npu_context->release_cb != cb ||
-+			npu_context->priv != priv) {
-+			spin_unlock(&npu_context_lock);
-+			opal_npu_destroy_context(nphb->opal_id, mm->context.id,
-+						PCI_DEVID(gpdev->bus->number,
-+							gpdev->devfn));
-+			return ERR_PTR(-EINVAL);
-+		}
-+
- 		WARN_ON(!kref_get_unless_zero(&npu_context->kref));
-+	}
- 	spin_unlock(&npu_context_lock);
- 
- 	if (!npu_context) {
+ config FSL_PMC
+ 	bool
+-	default y
+-	depends on SUSPEND && (PPC_85xx || PPC_86xx)
+ 	help
+ 	  Freescale MPC85xx/MPC86xx power management controller support
+ 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
 -- 
-2.11.0
+1.7.1
