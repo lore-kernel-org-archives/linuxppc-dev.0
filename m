@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Ln4V0BCnzF1R7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Ln4V6JcDzF1R7
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 00:49:30 +1000 (AEST)
-In-Reply-To: <20180405124913.12001-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20180405175631.31381-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: leitao@debian.org, mauricfo@linux.vnet.ibm.com, linuxram@us.ibm.com
-Subject: Re: powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
-Message-Id: <40Ln4T5mK0z9s3D@ozlabs.org>
-Date: Thu, 12 Apr 2018 00:49:29 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [1/2] KVM: PPC: Book3S HV: trace_tlbie must not be called in
+ realmode
+Message-Id: <40Ln4V4S1xz9s3L@ozlabs.org>
+Date: Thu, 12 Apr 2018 00:49:30 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,38 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-04-05 at 12:49:13 UTC, Michael Ellerman wrote:
-> The recent LPM changes to setup_rfi_flush() are causing some section
-> mismatch warnings because we removed the __init annotation on
-> setup_rfi_flush():
+On Thu, 2018-04-05 at 17:56:30 UTC, Nicholas Piggin wrote:
+> This crashes with a "Bad real address for load" attempting to load
+> from the vmalloc region in realmode (faulting address is in DAR).
 > 
->   The function setup_rfi_flush() references
->   the function __init ppc64_bolted_size().
->   the function __init memblock_alloc_base().
+>   Oops: Bad interrupt in KVM entry/exit code, sig: 6 [#1]
+>   LE SMP NR_CPUS=2048 NUMA PowerNV
+>   CPU: 53 PID: 6582 Comm: qemu-system-ppc Not tainted 4.16.0-01530-g43d1859f0994
+>   NIP:  c0000000000155ac LR: c0000000000c2430 CTR: c000000000015580
+>   REGS: c000000fff76dd80 TRAP: 0200   Not tainted  (4.16.0-01530-g43d1859f0994)
+>   MSR:  9000000000201003 <SF,HV,ME,RI,LE>  CR: 48082222  XER: 00000000
+>   CFAR: 0000000102900ef0 DAR: d00017fffd941a28 DSISR: 00000040 SOFTE: 3
+>   NIP [c0000000000155ac] perf_trace_tlbie+0x2c/0x1a0
+>   LR [c0000000000c2430] do_tlbies+0x230/0x2f0
 > 
-> The references are actually in init_fallback_flush(), but that is
-> inlined into setup_rfi_flush().
+> I suspect the reason is the per-cpu data is not in the linear chunk.
+> This could be restored if that was able to be fixed, but for now,
+> just remove the tracepoints.
 > 
-> These references are safe because:
->  - only pseries calls setup_rfi_flush() at runtime
->  - pseries always passes L1D_FLUSH_FALLBACK at boot
->  - so the fallback flush area will always be allocated
->  - so the check in init_fallback_flush() will always return early:
->    /* Only allocate the fallback flush area once (at boot time). */
->    if (l1d_flush_fallback_area)
->    	return;
-> 
->  - and therefore we won't actually call the freed init routines.
-> 
-> We should rework the code to make it safer by default rather than
-> relying on the above, but for now as a quick-fix just add a __ref
-> annotation to squash the warning.
-> 
-> Fixes: abf110f3e1ce ("powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fixes: 0428491cba ("powerpc/mm: Trace tlbie(l) instructions")
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/501a78cbc17c329fabf8e9750a1e9a
+https://git.kernel.org/powerpc/c/19ce7909ed11c49f7eddf59e7f49cd
 
 cheers
