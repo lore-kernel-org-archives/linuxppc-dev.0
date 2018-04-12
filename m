@@ -1,24 +1,30 @@
-Return-Path: <ldv@altlinux.org>
-Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
- by lists.ozlabs.org (Postfix) with ESMTP id 40MJ1207cwzDrLj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 21:03:17 +1000 (AEST)
-Date: Thu, 12 Apr 2018 14:03:14 +0300
-From: "Dmitry V. Levin" <ldv@altlinux.org>
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
- kill() returns wrong values in si_pid and si_uid
-Message-ID: <20180412110314.GA28070@altlinux.org>
-References: <20180409152253.GD10489@altlinux.org>
- <20180412013435.GA21219@altlinux.org>
- <20180412095811.GC16141@n2100.armlinux.org.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
-In-Reply-To: <20180412095811.GC16141@n2100.armlinux.org.uk>
+Return-Path: <felix@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MJ5Q2Bt5zDqwG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 21:07:05 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3CB0asL120784
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:07:02 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ha4u0kvsy-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:07:02 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.ibm.com>;
+ Thu, 12 Apr 2018 12:07:00 +0100
+From: Philippe Bergheaud <felix@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com, benh@au1.ibm.com,
+ Philippe Bergheaud <felix@linux.ibm.com>
+Subject: [PATCH] cxl: Set the PBCQ Tunnel BAR register when enabling capi mode
+Date: Thu, 12 Apr 2018 13:06:42 +0200
+Message-Id: <20180412110642.26454-1-felix@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,71 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Skiboot used to set the default Tunnel BAR register value when capi mode
+was enabled. This approach was ok for the cxl driver, but prevented other
+drivers from choosing different values.
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Skiboot versions > 5.11 will not set the default value any longer. This
+patch modifies the cxl driver to set/reset the Tunnel BAR register when
+entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
 
-On Thu, Apr 12, 2018 at 10:58:11AM +0100, Russell King - ARM Linux wrote:
-> On Thu, Apr 12, 2018 at 04:34:35AM +0300, Dmitry V. Levin wrote:
-> > A similar commit v4.16-rc1~159^2~37
-> > ("signal/arm: Document conflicts with SI_USER and SIGFPE") must have
-> > introduced a similar ABI regression to compat arm.
->=20
-> So, could you explain how can this change cause a regression?
->=20
-> +#define FPE_FIXME      0
-> -               vfp_raise_sigfpe(0, regs);
-> +               vfp_raise_sigfpe(FPE_FIXME, regs);
+Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
+---
+ drivers/misc/cxl/pci.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-No, this hunk hasn't caused the regression, but another one did:
-
-diff --git a/arch/arm/include/uapi/asm/siginfo.h b/arch/arm/include/uapi/as=
-m/siginfo.h
-new file mode 100644
-index 0000000..d051388
---- /dev/null
-+++ b/arch/arm/include/uapi/asm/siginfo.h
-@@ -0,0 +1,13 @@
-+#ifndef __ASM_SIGINFO_H
-+#define __ASM_SIGINFO_H
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 83f1d08058fc..3beff9188446 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -1742,6 +1742,9 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+ 	/* Required for devices using CAPP DMA mode, harmless for others */
+ 	pci_set_master(dev);
+ 
++	if ((rc = pnv_pci_set_tunnel_bar(dev, 0x00020000E0000000ull, 1)))
++		goto err;
 +
-+#include <asm-generic/siginfo.h>
-+
-+/*
-+ * SIGFPE si_codes
-+ */
-+#ifdef __KERNEL__
-+#define FPE_FIXME      0       /* Broken dup of SI_USER */
-+#endif /* __KERNEL__ */
-+
-+#endif
-
-This is due to FPE_FIXME handling in kernel/signal.c
-
-
---=20
-ldv
-
---LQksG6bCIzRHxTLp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJazzzyAAoJEAVFT+BVnCUIw1YP/0I5ff8Z4fOIPctdlF7NS3Jh
-c2TAv7D40LUzHOnfXWx2Fy8hzScahtMi1FGOhwFCHvQawI1XYYKG1QAKOtOBV/ut
-bpPe/p/4Ib0Qjep1MNB+nhfmXHUS/GVGoFDp5cueyKqw9axCjkJGU1zZ1s4Frpme
-KMufr8I5JOh7mKh11lHiktGkP4oQFfVhHAnpn3GgsDDr0Lm3ASA759nEHQYSQ0yc
-uDNQrSYjdFoWsXoijWOq5zmABNcYi0c3L+6HJQVXH/FEXLDHyxv3uLSLWQ6KZt1G
-28vT61+SEko2RWM7ethcXc9J0VEgl20cQ5BLsYhExrje872YillIwAVHrbxE8SZh
-u6lHx+VYlHpYP+H3p67/pb1RbMGUNLK8fUv+oOif5FaPwShhRVtJGKhGsg4yyKAz
-3Kh6PkeE5LhRo4OUhq8SjeMHSPlgidmcAXZJSsNlW2A1+5IEnd640JfKyP7jcgOg
-AZEos39gLXAp0iMIff9IdrLmNtqc/LCKP5bE1PKXdpsyhMI/B3tN6h4DkTcU5X5I
-2V4SofWNC084zpxE8fHAQZ+Iwj9AEwCAatCnnoFxFm2AxyiCQmChXoS5RN+hPAOB
-6S70Qob9vxMPPPdHPyDvor6DwKUwHiPYAvfxGRq08nkDkkRLy09NCjofMBwvnGZF
-5FZOXAQ3wERpSpjaklJH
-=kR/I
------END PGP SIGNATURE-----
-
---LQksG6bCIzRHxTLp--
+ 	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
+ 		goto err;
+ 
+@@ -1768,6 +1771,7 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+ 
++	pnv_pci_set_tunnel_bar(pdev, 0x00020000E0000000ull, 0);
+ 	cxl_native_release_psl_err_irq(adapter);
+ 	cxl_unmap_adapter_regs(adapter);
+ 
+-- 
+2.16.2
