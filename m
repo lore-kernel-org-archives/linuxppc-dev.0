@@ -1,30 +1,48 @@
-Return-Path: <felix@linux.ibm.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MJ5Q2Bt5zDqwG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 21:07:05 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MK2G51R7zDrq2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 21:49:26 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3CB0asL120784
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:07:02 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ha4u0kvsy-1
+ w3CBnKIU123940
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:49:23 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ha5x8tp23-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:07:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 07:49:22 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.ibm.com>;
- Thu, 12 Apr 2018 12:07:00 +0100
-From: Philippe Bergheaud <felix@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com, benh@au1.ibm.com,
- Philippe Bergheaud <felix@linux.ibm.com>
-Subject: [PATCH] cxl: Set the PBCQ Tunnel BAR register when enabling capi mode
-Date: Thu, 12 Apr 2018 13:06:42 +0200
-Message-Id: <20180412110642.26454-1-felix@linux.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 12 Apr 2018 12:49:04 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, mhocko@kernel.org,
+ akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-doc@vger.kernel.org,
+ linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, Jerome Glisse <jglisse@redhat.com>,
+ aneesh.kumar@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ paulus@samba.org, Jonathan Corbet <corbet@lwn.net>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Vineet Gupta <vgupta@synopsys.com>, Palmer Dabbelt <palmer@sifive.com>,
+ Albert Ou <albert@sifive.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ David Rientjes <rientjes@google.com>, Robin Murphy <robin.murphy@arm.com>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: [PATCH v4] mm: remove odd HAVE_PTE_SPECIAL
+Date: Thu, 12 Apr 2018 13:48:53 +0200
+In-Reply-To: <20180411110936.GG23400@dhcp22.suse.cz>
+References: <20180411110936.GG23400@dhcp22.suse.cz>
+Message-Id: <1523533733-25437-1-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,40 +52,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Skiboot used to set the default Tunnel BAR register value when capi mode
-was enabled. This approach was ok for the cxl driver, but prevented other
-drivers from choosing different values.
+Remove the additional define HAVE_PTE_SPECIAL and rely directly on
+CONFIG_ARCH_HAS_PTE_SPECIAL.
 
-Skiboot versions > 5.11 will not set the default value any longer. This
-patch modifies the cxl driver to set/reset the Tunnel BAR register when
-entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
+There is no functional change introduced by this patch
 
-Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- drivers/misc/cxl/pci.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ mm/memory.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 83f1d08058fc..3beff9188446 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1742,6 +1742,9 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	/* Required for devices using CAPP DMA mode, harmless for others */
- 	pci_set_master(dev);
- 
-+	if ((rc = pnv_pci_set_tunnel_bar(dev, 0x00020000E0000000ull, 1)))
-+		goto err;
-+
- 	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
- 		goto err;
- 
-@@ -1768,6 +1771,7 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+diff --git a/mm/memory.c b/mm/memory.c
+index 96910c625daa..345e562a138d 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -817,17 +817,12 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
+  * PFNMAP mappings in order to support COWable mappings.
+  *
+  */
+-#ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
+-# define HAVE_PTE_SPECIAL 1
+-#else
+-# define HAVE_PTE_SPECIAL 0
+-#endif
+ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 			     pte_t pte, bool with_public_device)
  {
- 	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+ 	unsigned long pfn = pte_pfn(pte);
  
-+	pnv_pci_set_tunnel_bar(pdev, 0x00020000E0000000ull, 0);
- 	cxl_native_release_psl_err_irq(adapter);
- 	cxl_unmap_adapter_regs(adapter);
+-	if (HAVE_PTE_SPECIAL) {
++	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {
+ 		if (likely(!pte_special(pte)))
+ 			goto check_pfn;
+ 		if (vma->vm_ops && vma->vm_ops->find_special_page)
+@@ -862,7 +857,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 		return NULL;
+ 	}
  
+-	/* !HAVE_PTE_SPECIAL case follows: */
++	/* !CONFIG_ARCH_HAS_PTE_SPECIAL case follows: */
+ 
+ 	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
+ 		if (vma->vm_flags & VM_MIXEDMAP) {
+@@ -881,6 +876,7 @@ struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+ 
+ 	if (is_zero_pfn(pfn))
+ 		return NULL;
++
+ check_pfn:
+ 	if (unlikely(pfn > highest_memmap_pfn)) {
+ 		print_bad_pte(vma, addr, pte, NULL);
+@@ -904,7 +900,7 @@ struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 	/*
+ 	 * There is no pmd_special() but there may be special pmds, e.g.
+ 	 * in a direct-access (dax) mapping, so let's just replicate the
+-	 * !HAVE_PTE_SPECIAL case from vm_normal_page() here.
++	 * !CONFIG_ARCH_HAS_PTE_SPECIAL case from vm_normal_page() here.
+ 	 */
+ 	if (unlikely(vma->vm_flags & (VM_PFNMAP|VM_MIXEDMAP))) {
+ 		if (vma->vm_flags & VM_MIXEDMAP) {
+@@ -1933,7 +1929,8 @@ static int __vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
+ 	 * than insert_pfn).  If a zero_pfn were inserted into a VM_MIXEDMAP
+ 	 * without pte special, it would there be refcounted as a normal page.
+ 	 */
+-	if (!HAVE_PTE_SPECIAL && !pfn_t_devmap(pfn) && pfn_t_valid(pfn)) {
++	if (!IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL) &&
++	    !pfn_t_devmap(pfn) && pfn_t_valid(pfn)) {
+ 		struct page *page;
+ 
+ 		/*
 -- 
-2.16.2
+2.7.4
