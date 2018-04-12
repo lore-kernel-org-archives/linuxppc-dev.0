@@ -1,39 +1,26 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MBzP34TBzDqyp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 17:16:32 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id s48so5105113qtb.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 00:16:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MGZR1S74zDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 19:58:35 +1000 (AEST)
+Date: Thu, 12 Apr 2018 10:58:11 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: "Dmitry V. Levin" <ldv@altlinux.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+ linux-sparc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
+ kill() returns wrong values in si_pid and si_uid
+Message-ID: <20180412095811.GC16141@n2100.armlinux.org.uk>
+References: <20180409152253.GD10489@altlinux.org>
+ <20180412013435.GA21219@altlinux.org>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CA+55aFx4_gaBeffy9roFRnkB30fnRa=nhh5qR=o=CgrWmgphiw@mail.gmail.com>
-References: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
- <CA+55aFx4_gaBeffy9roFRnkB30fnRa=nhh5qR=o=CgrWmgphiw@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 12 Apr 2018 09:16:30 +0200
-Message-ID: <CAK8P3a2brHyWJx=WwXgxr3Gkouu5DAgqBvBQiz0rcPvZ18xO8g@mail.gmail.com>
-Subject: Re: [GIT PULL] asm-generic fixes for v4.17-rc1
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sinan Kaya <okaya@codeaurora.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-rdma <linux-rdma@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Ley Foon Tan <lftan@altera.com>,
- "moderated list:NIOS2 ARCHITECTURE" <nios2-dev@lists.rocketboards.org>,
- Michal Simek <monstr@monstr.eu>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- sparclinux <sparclinux@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linux-xtensa@linux-xtensa.org, openrisc@lists.librecores.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180412013435.GA21219@altlinux.org>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,30 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 12, 2018 at 1:16 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Wed, Apr 11, 2018 at 8:40 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->>
->> are available in the git repository at:
->>
->>   git+ssh://gitolite@ra.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
->> tags/asm-generic
->
-> Yeah, no they aren't available there at all.
->
-> That tag is some old tag from two years ago that just contains your
-> ancient "asm-generic: use compat version for preadv2 and pwritev2".
->
-> Forgot to push out? Or forgot to use "-f" to overwrite the old tag?
+On Thu, Apr 12, 2018 at 04:34:35AM +0300, Dmitry V. Levin wrote:
+> A similar commit v4.16-rc1~159^2~37
+> ("signal/arm: Document conflicts with SI_USER and SIGFPE") must have
+> introduced a similar ABI regression to compat arm.
 
-Yes, something like that, I first tagged the local branch in the wrong
-tree which had an old branch of the same name, noticed my mistake
-as I pushed it, but then screwed up again when I tried to correct it:
-I force-pushed the correct branch again, but not the tag.
+So, could you explain how can this change cause a regression?
 
-Pushed the right tag now, please pull from
++#define FPE_FIXME      0
+-               vfp_raise_sigfpe(0, regs);
++               vfp_raise_sigfpe(FPE_FIXME, regs);
 
-git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
-tags/asm-generic
+I think you're talking garbage here - look at the damned change.
+It subsitutes a definition for a constant, and vfp_raise_sigfpe()
+ends up receiving exactly the same value bother before and after
+the change.
 
-        Arnd
+The change is rather incomplete though because it should have
+also changed:
+
+        int si_code = 0;
+
+as well.
+
+So, the commit log is accurate in this case: it _is_ about
+documenting the conflicting cases between SI_USER and SIGFPE and
+that bit of the change has no ABI effect.
+
+What does slightly annoy me is the creation of uapi/asm/siginfo.h
+to contain a definition that _isn't_ to be exposed as part of the
+UAPI.  If it's not part of the UAPI, it doesn't belong in a UAPI
+header, period.  In any case, I don't think that is exposed to
+userspace.
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
