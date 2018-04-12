@@ -1,52 +1,15 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MMbT38zmzDqxs
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 23:44:52 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3CDi5Nb093487
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 09:44:50 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ha7ynt6sb-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 09:44:50 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 12 Apr 2018 14:44:46 +0100
-Subject: Re: [PATCH v9 21/24] perf tools: Add support for the SPF perf event
-To: David Rientjes <rientjes@google.com>, Andi Kleen <ak@linux.intel.com>
-Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
- akpm@linux-foundation.org, kirill@shutemov.name, mhocko@kernel.org,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1520963994-28477-22-git-send-email-ldufour@linux.vnet.ibm.com>
- <alpine.DEB.2.20.1803261443560.255554@chino.kir.corp.google.com>
- <20180327034936.GO13724@tassilo.jf.intel.com>
- <alpine.DEB.2.21.1804092346090.225864@chino.kir.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 12 Apr 2018 15:44:36 +0200
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.21.1804092346090.225864@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <de5f854b-fd39-21e1-1ce9-1c5c2d292eb8@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MMg65W68zF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 23:48:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+Subject: [PATCH] powerpc/64s: Fix CPU_FTRS_ALWAYS vs DT CPU features
+Date: Thu, 12 Apr 2018 23:47:51 +1000
+Message-Id: <20180412134751.25098-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,29 +19,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/04/2018 08:47, David Rientjes wrote:
-> On Mon, 26 Mar 2018, Andi Kleen wrote:
-> 
->>> Aside: should there be a new spec_flt field for struct task_struct that 
->>> complements maj_flt and min_flt and be exported through /proc/pid/stat?
->>
->> No. task_struct is already too bloated. If you need per process tracking 
->> you can always get it through trace points.
->>
-> 
-> Hi Andi,
-> 
-> We have
-> 
-> 	count_vm_event(PGFAULT);
-> 	count_memcg_event_mm(vma->vm_mm, PGFAULT);
-> 
-> in handle_mm_fault() but not counterpart for spf.  I think it would be 
-> helpful to be able to determine how much faulting can be done 
-> speculatively if there is no per-process tracking without tracing.
+The cpu_has_feature() mechanism has an optimisation where at build
+time we construct a mask of the CPU feature bits that will always be
+true for the given .config, based on the platform/bitness/etc. that we
+are building for.
 
-That sounds to be a good idea, I will create a separate patch a dedicated
-speculative_pgfault counter as PGFAULT is.
+That is incompatible with DT CPU features, where the set of CPU
+features is dependent on feature flags that are given to us by
+firmware.
 
-Thanks,
-Laurent.
+The result is that some feature bits can not be *disabled* by DT CPU
+features. Or more accurately, they can be disabled but they will still
+appear in the ALWAYS mask, meaning cpu_has_feature() will always
+return true for them.
+
+In the past this hasn't really been a problem because on Book3S
+64 (where we support DT CPU features), the set of ALWAYS bits has been
+very small. That was because we always built for POWER4 and later,
+meaning the set of common bits was small.
+
+The only bit that could be cleared by DT CPU features that was also in
+the ALWAYS mask was CPU_FTR_NODSISRALIGN, and that was only used in
+the alignment handler to create a fake DSISR. That code was itself
+deleted in 31bfdb036f12 ("powerpc: Use instruction emulation
+infrastructure to handle alignment faults") (Sep 2017).
+
+However the set of ALWAYS features changed with the recent commit
+db5ae1c155af ("powerpc/64s: Refine feature sets for little endian
+builds") which restricted the set of feature flags when building
+little endian to Power7 or later. That caused the ALWAYS mask to
+become much larger for little endian builds.
+
+The result is that the following feature bits can currently not
+be *disabled* by DT CPU features:
+
+  CPU_FTR_REAL_LE, CPU_FTR_MMCRA, CPU_FTR_CTRL, CPU_FTR_SMT,
+  CPU_FTR_PURR, CPU_FTR_SPURR, CPU_FTR_DSCR, CPU_FTR_PKEY,
+  CPU_FTR_VMX_COPY, CPU_FTR_CFAR, CPU_FTR_HAS_PPR.
+
+To fix it we need to mask the set of ALWAYS features with the base set
+of DT CPU features, ie. the features that are always enabled by DT CPU
+features. That way there are no bits in the ALWAYS mask that are not
+also always set by DT CPU features.
+
+Fixes: db5ae1c155af ("powerpc/64s: Refine feature sets for little endian builds")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/cputable.h | 23 +++++++++++++++++++++--
+ arch/powerpc/kernel/dt_cpu_ftrs.c   | 14 +-------------
+ 2 files changed, 22 insertions(+), 15 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 931dda8be87c..66fcab13c8b4 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -545,18 +545,37 @@ enum {
+ #ifdef CONFIG_PPC_BOOK3E
+ #define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500)
+ #else
++
++#ifdef CONFIG_PPC_DT_CPU_FTRS
++#define CPU_FTRS_DT_CPU_BASE			\
++	(CPU_FTR_LWSYNC |			\
++	 CPU_FTR_FPU_UNAVAILABLE |		\
++	 CPU_FTR_NODSISRALIGN |			\
++	 CPU_FTR_NOEXECUTE |			\
++	 CPU_FTR_COHERENT_ICACHE |		\
++	 CPU_FTR_STCX_CHECKS_ADDRESS |		\
++	 CPU_FTR_POPCNTB | CPU_FTR_POPCNTD |	\
++	 CPU_FTR_DAWR |				\
++	 CPU_FTR_ARCH_206 |			\
++	 CPU_FTR_ARCH_207S)
++#else
++#define CPU_FTRS_DT_CPU_BASE	(~0ul)
++#endif
++
+ #ifdef CONFIG_CPU_LITTLE_ENDIAN
+ #define CPU_FTRS_ALWAYS \
+ 	    (CPU_FTRS_POSSIBLE & ~CPU_FTR_HVMODE & CPU_FTRS_POWER7 & \
+ 	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & CPU_FTRS_POWER8_DD1 & \
+-	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1)
++	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
++	     CPU_FTRS_DT_CPU_BASE)
+ #else
+ #define CPU_FTRS_ALWAYS		\
+ 	    (CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
+ 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
+ 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
+ 	     CPU_FTRS_POWER8_DD1 & ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
+-	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1)
++	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
++	     CPU_FTRS_DT_CPU_BASE)
+ #endif /* CONFIG_CPU_LITTLE_ENDIAN */
+ #endif
+ #else
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index e88fbb1fdb8f..8ab51f6ca03a 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -53,18 +53,6 @@ struct dt_cpu_feature {
+ 	int disabled;
+ };
+ 
+-#define CPU_FTRS_BASE \
+-	   (CPU_FTR_LWSYNC | \
+-	    CPU_FTR_FPU_UNAVAILABLE |\
+-	    CPU_FTR_NODSISRALIGN |\
+-	    CPU_FTR_NOEXECUTE |\
+-	    CPU_FTR_COHERENT_ICACHE | \
+-	    CPU_FTR_STCX_CHECKS_ADDRESS |\
+-	    CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+-	    CPU_FTR_DAWR | \
+-	    CPU_FTR_ARCH_206 |\
+-	    CPU_FTR_ARCH_207S)
+-
+ #define MMU_FTRS_HASH_BASE (MMU_FTRS_POWER8)
+ 
+ #define COMMON_USER_BASE	(PPC_FEATURE_32 | PPC_FEATURE_64 | \
+@@ -124,7 +112,7 @@ static char dt_cpu_name[64];
+ 
+ static struct cpu_spec __initdata base_cpu_spec = {
+ 	.cpu_name		= NULL,
+-	.cpu_features		= CPU_FTRS_BASE,
++	.cpu_features		= CPU_FTRS_DT_CPU_BASE,
+ 	.cpu_user_features	= COMMON_USER_BASE,
+ 	.cpu_user_features2	= COMMON_USER2_BASE,
+ 	.mmu_features		= 0,
+-- 
+2.14.1
