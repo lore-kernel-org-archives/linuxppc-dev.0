@@ -1,15 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MMg65W68zF1RT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 23:48:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64s: Fix CPU_FTRS_ALWAYS vs DT CPU features
-Date: Thu, 12 Apr 2018 23:47:51 +1000
-Message-Id: <20180412134751.25098-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MNmB3js5zDqvH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 00:37:28 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: y2038@lists.linaro.org,
+	linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, libc-alpha@sourceware.org, tglx@linutronix.de,
+ deepa.kernel@gmail.com, viro@zeniv.linux.org.uk, ebiederm@xmission.com,
+ albert.aribaud@3adev.fr, linux-s390@vger.kernel.org,
+ schwidefsky@de.ibm.com, x86@kernel.org, catalin.marinas@arm.com,
+ will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
+ ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+Subject: [PATCH v2 00/13] y2038: convert IPC syscalls
+Date: Thu, 12 Apr 2018 16:20:11 +0200
+Message-Id: <20180412142024.853892-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,131 +27,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpu_has_feature() mechanism has an optimisation where at build
-time we construct a mask of the CPU feature bits that will always be
-true for the given .config, based on the platform/bitness/etc. that we
-are building for.
+This is an update of a series I posted a long time ago [1], updating
+the IPC subsystem to pass down 64-bit time stamps to user space.
 
-That is incompatible with DT CPU features, where the set of CPU
-features is dependent on feature flags that are given to us by
-firmware.
+In particular, for sys_msgctl, sys_semctl and sys_shmctl, I do not
+introduce a completely new set of replacement system calls, but instead
+extend the existing ones to return data in the reserved fields of the
+normal data structure.
 
-The result is that some feature bits can not be *disabled* by DT CPU
-features. Or more accurately, they can be disabled but they will still
-appear in the ALWAYS mask, meaning cpu_has_feature() will always
-return true for them.
+This should be completely transparent to any existing user space, and
+only after the 32-bit time_t wraps, it will make a difference in the
+returned data.
 
-In the past this hasn't really been a problem because on Book3S
-64 (where we support DT CPU features), the set of ALWAYS bits has been
-very small. That was because we always built for POWER4 and later,
-meaning the set of common bits was small.
+libc implementations will consequently have to provide their own data
+structures when they move to 64-bit time_t, and convert the structures
+in user space from the ones returned by the kernel.
 
-The only bit that could be cleared by DT CPU features that was also in
-the ALWAYS mask was CPU_FTR_NODSISRALIGN, and that was only used in
-the alignment handler to create a fake DSISR. That code was itself
-deleted in 31bfdb036f12 ("powerpc: Use instruction emulation
-infrastructure to handle alignment faults") (Sep 2017).
+There are three cases here:
 
-However the set of ALWAYS features changed with the recent commit
-db5ae1c155af ("powerpc/64s: Refine feature sets for little endian
-builds") which restricted the set of feature flags when building
-little endian to Power7 or later. That caused the ALWAYS mask to
-become much larger for little endian builds.
+- little-endian architectures (except powerpc and mips) can use
+  the normal layout and just cast the data structure to the user space
+  type that contains 64-bit numbers.
 
-The result is that the following feature bits can currently not
-be *disabled* by DT CPU features:
+- parisc and sparc can do the same thing with big-endian user space
 
-  CPU_FTR_REAL_LE, CPU_FTR_MMCRA, CPU_FTR_CTRL, CPU_FTR_SMT,
-  CPU_FTR_PURR, CPU_FTR_SPURR, CPU_FTR_DSCR, CPU_FTR_PKEY,
-  CPU_FTR_VMX_COPY, CPU_FTR_CFAR, CPU_FTR_HAS_PPR.
+- little-endian powerpc and most big-endian architectures have
+  to flip the upper and lower 32-bit halves of the time_t value in memory,
+  but can otherwise keep using the normal layout
 
-To fix it we need to mask the set of ALWAYS features with the base set
-of DT CPU features, ie. the features that are always enabled by DT CPU
-features. That way there are no bits in the ALWAYS mask that are not
-also always set by DT CPU features.
+- mips and big-endian xtensa need to be more careful because
+  they are not consistent in their definitions, and they have to provide
+  custom libc implementations for the system calls to use 64-bit time_t.
 
-Fixes: db5ae1c155af ("powerpc/64s: Refine feature sets for little endian builds")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h | 23 +++++++++++++++++++++--
- arch/powerpc/kernel/dt_cpu_ftrs.c   | 14 +-------------
- 2 files changed, 22 insertions(+), 15 deletions(-)
+Changes to the previous version include
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 931dda8be87c..66fcab13c8b4 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -545,18 +545,37 @@ enum {
- #ifdef CONFIG_PPC_BOOK3E
- #define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500)
- #else
-+
-+#ifdef CONFIG_PPC_DT_CPU_FTRS
-+#define CPU_FTRS_DT_CPU_BASE			\
-+	(CPU_FTR_LWSYNC |			\
-+	 CPU_FTR_FPU_UNAVAILABLE |		\
-+	 CPU_FTR_NODSISRALIGN |			\
-+	 CPU_FTR_NOEXECUTE |			\
-+	 CPU_FTR_COHERENT_ICACHE |		\
-+	 CPU_FTR_STCX_CHECKS_ADDRESS |		\
-+	 CPU_FTR_POPCNTB | CPU_FTR_POPCNTD |	\
-+	 CPU_FTR_DAWR |				\
-+	 CPU_FTR_ARCH_206 |			\
-+	 CPU_FTR_ARCH_207S)
-+#else
-+#define CPU_FTRS_DT_CPU_BASE	(~0ul)
-+#endif
-+
- #ifdef CONFIG_CPU_LITTLE_ENDIAN
- #define CPU_FTRS_ALWAYS \
- 	    (CPU_FTRS_POSSIBLE & ~CPU_FTR_HVMODE & CPU_FTRS_POWER7 & \
- 	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & CPU_FTRS_POWER8_DD1 & \
--	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1)
-+	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
-+	     CPU_FTRS_DT_CPU_BASE)
- #else
- #define CPU_FTRS_ALWAYS		\
- 	    (CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
- 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
- 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
- 	     CPU_FTRS_POWER8_DD1 & ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
--	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1)
-+	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
-+	     CPU_FTRS_DT_CPU_BASE)
- #endif /* CONFIG_CPU_LITTLE_ENDIAN */
- #endif
- #else
-diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
-index e88fbb1fdb8f..8ab51f6ca03a 100644
---- a/arch/powerpc/kernel/dt_cpu_ftrs.c
-+++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
-@@ -53,18 +53,6 @@ struct dt_cpu_feature {
- 	int disabled;
- };
- 
--#define CPU_FTRS_BASE \
--	   (CPU_FTR_LWSYNC | \
--	    CPU_FTR_FPU_UNAVAILABLE |\
--	    CPU_FTR_NODSISRALIGN |\
--	    CPU_FTR_NOEXECUTE |\
--	    CPU_FTR_COHERENT_ICACHE | \
--	    CPU_FTR_STCX_CHECKS_ADDRESS |\
--	    CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
--	    CPU_FTR_DAWR | \
--	    CPU_FTR_ARCH_206 |\
--	    CPU_FTR_ARCH_207S)
--
- #define MMU_FTRS_HASH_BASE (MMU_FTRS_POWER8)
- 
- #define COMMON_USER_BASE	(PPC_FEATURE_32 | PPC_FEATURE_64 | \
-@@ -124,7 +112,7 @@ static char dt_cpu_name[64];
- 
- static struct cpu_spec __initdata base_cpu_spec = {
- 	.cpu_name		= NULL,
--	.cpu_features		= CPU_FTRS_BASE,
-+	.cpu_features		= CPU_FTRS_DT_CPU_BASE,
- 	.cpu_user_features	= COMMON_USER_BASE,
- 	.cpu_user_features2	= COMMON_USER2_BASE,
- 	.mmu_features		= 0,
+- Rebased to the latest kernel (4.17-rc)
+
+- Dropped changes for removed architectures
+
+- Simplified the IPC code changes, based on prior work from
+  both Deepa and Eric
+
+- Fixed a few bugs that I found during rebasing, in parcular the
+  sparc version was incorrect.
+
+If everyone agrees with the series, I'd like to have it merged through
+the tip tree once Deepa's earlier syscall series in there (I have both
+in my y2038 tree [2]).
+
+    Arnd
+
+[1] https://lkml.org/lkml/2015/5/20/605
+[2] git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git y2038-next
+
+Arnd Bergmann (13):
+  y2038: asm-generic: extend sysvipc data structures
+  y2038: alpha: remove unneeded ipc uapi header files
+  y2038: ia64: remove unneeded ipc uapi header files
+  y2038: s390: remove unneeded ipc uapi header files
+  y2038: arm64: extend sysvipc compat data structures
+  y2038: mips: extend sysvipc data structures
+  y2038: x86: extend sysvipc data structures
+  y2038: parisc: extend sysvipc data structures
+  y2038: sparc: extend sysvipc data structures
+  y2038: powerpc: extend sysvipc data structures
+  y2038: xtensa: extend sysvipc data structures
+  y2038: ipc: use ktime_get_real_seconds consistently
+  y2038: ipc: report long times to user space
+
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: libc-alpha@sourceware.org
+Cc: tglx@linutronix.de
+Cc: deepa.kernel@gmail.com
+Cc: viro@zeniv.linux.org.uk
+Cc: ebiederm@xmission.com
+Cc: albert.aribaud@3adev.fr
+Cc: linux-s390@vger.kernel.org
+Cc: schwidefsky@de.ibm.com
+Cc: x86@kernel.org
+Cc: catalin.marinas@arm.com
+Cc: will.deacon@arm.com
+Cc: linux-mips@linux-mips.org
+Cc: jhogan@kernel.org
+Cc: ralf@linux-mips.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+
+ arch/alpha/include/asm/Kbuild          |  4 +++
+ arch/alpha/include/uapi/asm/ipcbuf.h   |  2 --
+ arch/alpha/include/uapi/asm/msgbuf.h   | 28 -----------------
+ arch/alpha/include/uapi/asm/sembuf.h   | 23 --------------
+ arch/alpha/include/uapi/asm/shmbuf.h   | 39 -----------------------
+ arch/arm64/include/asm/compat.h        | 32 +++++++++----------
+ arch/ia64/include/asm/Kbuild           |  4 +++
+ arch/ia64/include/uapi/asm/ipcbuf.h    |  2 --
+ arch/ia64/include/uapi/asm/msgbuf.h    | 28 -----------------
+ arch/ia64/include/uapi/asm/sembuf.h    | 23 --------------
+ arch/ia64/include/uapi/asm/shmbuf.h    | 39 -----------------------
+ arch/mips/include/asm/compat.h         | 38 ++++++++++++-----------
+ arch/mips/include/uapi/asm/msgbuf.h    | 57 ++++++++++++++++++++++------------
+ arch/mips/include/uapi/asm/sembuf.h    | 15 +++++++--
+ arch/mips/include/uapi/asm/shmbuf.h    | 23 ++++++++++++--
+ arch/parisc/include/asm/compat.h       | 32 +++++++++----------
+ arch/parisc/include/uapi/asm/msgbuf.h  | 33 ++++++++++----------
+ arch/parisc/include/uapi/asm/sembuf.h  | 16 +++++-----
+ arch/parisc/include/uapi/asm/shmbuf.h  | 19 +++++-------
+ arch/powerpc/include/asm/compat.h      | 32 +++++++++----------
+ arch/powerpc/include/uapi/asm/msgbuf.h | 18 +++++------
+ arch/powerpc/include/uapi/asm/sembuf.h | 14 ++++-----
+ arch/powerpc/include/uapi/asm/shmbuf.h | 19 +++++-------
+ arch/s390/include/asm/Kbuild           |  3 ++
+ arch/s390/include/asm/compat.h         | 32 +++++++++----------
+ arch/s390/include/uapi/asm/msgbuf.h    | 38 -----------------------
+ arch/s390/include/uapi/asm/sembuf.h    | 30 ------------------
+ arch/s390/include/uapi/asm/shmbuf.h    | 49 -----------------------------
+ arch/sparc/include/asm/compat.h        | 32 +++++++++----------
+ arch/sparc/include/uapi/asm/msgbuf.h   | 22 ++++++-------
+ arch/sparc/include/uapi/asm/sembuf.h   | 16 +++++-----
+ arch/sparc/include/uapi/asm/shmbuf.h   | 21 ++++++-------
+ arch/x86/include/asm/compat.h          | 32 +++++++++----------
+ arch/x86/include/uapi/asm/Kbuild       |  5 ++-
+ arch/x86/include/uapi/asm/msgbuf.h     |  1 -
+ arch/x86/include/uapi/asm/sembuf.h     | 11 ++++++-
+ arch/x86/include/uapi/asm/shmbuf.h     |  1 -
+ arch/xtensa/include/uapi/asm/msgbuf.h  | 25 +++++++--------
+ arch/xtensa/include/uapi/asm/sembuf.h  | 17 +++++-----
+ arch/xtensa/include/uapi/asm/shmbuf.h  | 37 +++++-----------------
+ include/uapi/asm-generic/msgbuf.h      | 17 +++++-----
+ include/uapi/asm-generic/sembuf.h      | 26 ++++++++++------
+ include/uapi/asm-generic/shmbuf.h      | 17 +++++-----
+ ipc/msg.c                              | 20 ++++++++----
+ ipc/sem.c                              | 20 ++++++++----
+ ipc/shm.c                              | 14 +++++++--
+ 46 files changed, 393 insertions(+), 633 deletions(-)
+ delete mode 100644 arch/alpha/include/uapi/asm/ipcbuf.h
+ delete mode 100644 arch/alpha/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/alpha/include/uapi/asm/sembuf.h
+ delete mode 100644 arch/alpha/include/uapi/asm/shmbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/ipcbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/sembuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/shmbuf.h
+ delete mode 100644 arch/s390/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/s390/include/uapi/asm/sembuf.h
+ delete mode 100644 arch/s390/include/uapi/asm/shmbuf.h
+ delete mode 100644 arch/x86/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/x86/include/uapi/asm/shmbuf.h
+
 -- 
-2.14.1
+2.9.0
