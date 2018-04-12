@@ -1,38 +1,21 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x22a.google.com (mail-it0-x22a.google.com
- [IPv6:2607:f8b0:4001:c0b::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40M0Kj5RQ8zF1S8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 09:16:41 +1000 (AEST)
-Received: by mail-it0-x22a.google.com with SMTP id t192-v6so778381itc.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Apr 2018 16:16:41 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
-References: <CAK8P3a081_hkr5d0FRWpTaT-AsJoqznsS1=_WF4JVLTUOupUgg@mail.gmail.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 11 Apr 2018 16:16:38 -0700
-Message-ID: <CA+55aFx4_gaBeffy9roFRnkB30fnRa=nhh5qR=o=CgrWmgphiw@mail.gmail.com>
-Subject: Re: [GIT PULL] asm-generic fixes for v4.17-rc1
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sinan Kaya <okaya@codeaurora.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-rdma <linux-rdma@vger.kernel.org>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Ley Foon Tan <lftan@altera.com>,
- "moderated list:NIOS2 ARCHITECTURE" <nios2-dev@lists.rocketboards.org>,
- Michal Simek <monstr@monstr.eu>,
- "moderated list:H8/300 ARCHITECTURE" <uclinux-h8-devel@lists.sourceforge.jp>,
- Yoshinori Sato <ysato@users.sourceforge.jp>,
- sparclinux <sparclinux@vger.kernel.org>,
- "David S. Miller" <davem@davemloft.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linux-xtensa@linux-xtensa.org, openrisc@lists.librecores.org
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40M2Pl3mNqzF1RX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Apr 2018 10:50:18 +1000 (AEST)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jens Axboe <axboe@kernel.dk>, Laurent Vivier <lvivier@redhat.com>,
+ linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org,
+ linux-block@vger.kernel.org, stable@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Message-Id: <8087d933d49bbf280ae3d39dc7c46905956ae204.1523493475.git.fthain@telegraphics.com.au>
+In-Reply-To: <cover.1523493475.git.fthain@telegraphics.com.au>
+References: <cover.1523493475.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH v2 07/10] block/swim: Rename macros to avoid inconsistent
+ inverted logic
+Date: Wed, 11 Apr 2018 20:50:14 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,18 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 11, 2018 at 8:40 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->
-> are available in the git repository at:
->
->   git+ssh://gitolite@ra.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic.git
-> tags/asm-generic
+The Sony drive status bits use active-low logic. The swim_readbit()
+function converts that to 'C' logic for readability. Hence, the
+sense of the names of the status bit macros should not be inverted.
 
-Yeah, no they aren't available there at all.
+Mostly they are correct. However, the TWOMEG_DRIVE, MFM_MODE and
+TWOMEG_MEDIA macros have inverted sense (like MkLinux). Fix this
+inconsistency and make the following patches less confusing.
 
-That tag is some old tag from two years ago that just contains your
-ancient "asm-generic: use compat version for preadv2 and pwritev2".
+The same problem affects swim3.c so fix that too.
 
-Forgot to push out? Or forgot to use "-f" to overwrite the old tag?
+No functional change.
 
-                 Linus
+The FDHD drive status bits are documented in sonydriv.cpp from MAME
+and in swimiii.h from MkLinux.
+
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: stable@vger.kernel.org # v4.14+
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Laurent Vivier <lvivier@redhat.com>
+---
+ drivers/block/swim.c  | 8 ++++----
+ drivers/block/swim3.c | 6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/block/swim.c b/drivers/block/swim.c
+index 7b847170cf71..d1ee4670666a 100644
+--- a/drivers/block/swim.c
++++ b/drivers/block/swim.c
+@@ -110,7 +110,7 @@ struct iwm {
+ /* Select values for swim_select and swim_readbit */
+ 
+ #define READ_DATA_0	0x074
+-#define TWOMEG_DRIVE	0x075
++#define ONEMEG_DRIVE	0x075
+ #define SINGLE_SIDED	0x076
+ #define DRIVE_PRESENT	0x077
+ #define DISK_IN		0x170
+@@ -118,9 +118,9 @@ struct iwm {
+ #define TRACK_ZERO	0x172
+ #define TACHO		0x173
+ #define READ_DATA_1	0x174
+-#define MFM_MODE	0x175
++#define GCR_MODE	0x175
+ #define SEEK_COMPLETE	0x176
+-#define ONEMEG_MEDIA	0x177
++#define TWOMEG_MEDIA	0x177
+ 
+ /* Bits in handshake register */
+ 
+@@ -612,7 +612,7 @@ static void setup_medium(struct floppy_state *fs)
+ 		struct floppy_struct *g;
+ 		fs->disk_in = 1;
+ 		fs->write_protected = swim_readbit(base, WRITE_PROT);
+-		fs->type = swim_readbit(base, ONEMEG_MEDIA);
++		fs->type = swim_readbit(base, TWOMEG_MEDIA);
+ 
+ 		if (swim_track00(base))
+ 			printk(KERN_ERR
+diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
+index af51015d056e..469541c1e51e 100644
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -148,7 +148,7 @@ struct swim3 {
+ #define MOTOR_ON	2
+ #define RELAX		3	/* also eject in progress */
+ #define READ_DATA_0	4
+-#define TWOMEG_DRIVE	5
++#define ONEMEG_DRIVE	5
+ #define SINGLE_SIDED	6	/* drive or diskette is 4MB type? */
+ #define DRIVE_PRESENT	7
+ #define DISK_IN		8
+@@ -156,9 +156,9 @@ struct swim3 {
+ #define TRACK_ZERO	10
+ #define TACHO		11
+ #define READ_DATA_1	12
+-#define MFM_MODE	13
++#define GCR_MODE	13
+ #define SEEK_COMPLETE	14
+-#define ONEMEG_MEDIA	15
++#define TWOMEG_MEDIA	15
+ 
+ /* Definitions of values used in writing and formatting */
+ #define DATA_ESCAPE	0x99
+-- 
+2.16.1
