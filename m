@@ -1,37 +1,33 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40N8Lf3H4RzF1r1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 06:21:30 +1000 (AEST)
-Date: Fri, 13 Apr 2018 13:21:08 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Mike Rapoport <rppt@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Richard Henderson <rth@twiddle.net>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matt Turner <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>,
- Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
-Message-ID: <20180413202108.GA30271@bombadil.infradead.org>
-References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
- <20180329154607.3d8bda75@lwn.net>
- <20180401063857.GA3357@rapoport-lnx>
- <20180413135551.0e6d1b12@lwn.net>
+Return-Path: <Dave.Martin@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40N44D2PZjzDqRk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 03:08:36 +1000 (AEST)
+Date: Fri, 13 Apr 2018 18:08:28 +0100
+From: Dave Martin <Dave.Martin@arm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Russell King - ARM Linux <linux@armlinux.org.uk>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
+ kill() returns wrong values in si_pid and si_uid
+Message-ID: <20180413170827.GB16308@e103592.cambridge.arm.com>
+References: <20180412095811.GC16141@n2100.armlinux.org.uk>
+ <20180412110314.GA28070@altlinux.org>
+ <20180412121949.GD16141@n2100.armlinux.org.uk>
+ <20180412124928.GA29458@altlinux.org>
+ <20180412131404.GE16141@n2100.armlinux.org.uk>
+ <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
+ <20180412172051.GK16141@n2100.armlinux.org.uk>
+ <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
+ <20180413094211.GN16141@n2100.armlinux.org.uk>
+ <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180413135551.0e6d1b12@lwn.net>
+In-Reply-To: <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,40 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 13, 2018 at 01:55:51PM -0600, Jonathan Corbet wrote:
-> > I believe that keeping the mm docs together will give better visibility of
-> > what (little) mm documentation we have and will make the updates easier.
-> > The documents that fit well into a certain topic could be linked there. For
-> > instance:
+On Fri, Apr 13, 2018 at 09:33:17AM -0700, Linus Torvalds wrote:
+> On Fri, Apr 13, 2018 at 2:42 AM, Russell King - ARM Linux
+> <linux@armlinux.org.uk> wrote:
+> >
+> > Yes, it does solve the problem at hand with strace - the exact patch I
+> > tested against 4.16 is below.
 > 
-> ...but this sounds like just the opposite...?  
+> Ok, good.
 > 
-> I've had this conversation with folks in a number of subsystems.
-> Everybody wants to keep their documentation together in one place - it's
-> easier for the developers after all.  But for the readers I think it's
-> objectively worse.  It perpetuates the mess that Documentation/ is, and
-> forces readers to go digging through all kinds of inappropriate material
-> in the hope of finding something that tells them what they need to know.
+> > However, FPE_FLTUNK is not defined in older kernels, so while we can
+> > fix it this way for the current merge window, that doesn't help 4.16.
 > 
-> So I would *really* like to split the documentation by audience, as has
-> been done for a number of other kernel subsystems (and eventually all, I
-> hope).
+> I wonder if we should even bother with FPE_FLTUNK.
 > 
-> I can go ahead and apply the RST conversion, that seems like a step in
-> the right direction regardless.  But I sure hope we don't really have to
-> keep it as an unorganized jumble of stuff...
+> I suspect we might as well use FPE_FLTINV, I suspect, and not have
+> this complexity at all. That case is not worth worrying about, since
+> it's a "this shouldn't happen anyway" and the *real* reason will be in
+> the kernel logs due to vfs_panic().
+> 
+> So it's not like this is something that the user should ever care
+> about the si_code about.
 
-I've started on Documentation/core-api/memory.rst which covers just
-memory allocation.  So far it has the Overview and GFP flags sections
-written and an outline for 'The slab allocator', 'The page allocator',
-'The vmalloc allocator' and 'The page_frag allocator'.  And typing this
-up, I realise we need a 'The percpu allocator'.  I'm thinking that this
-is *not* the right document for the DMA memory allocators (although it
-should link to that documentation).
+Ack, my intended meaning for FPE_FLTUNK is that the fp exception is
+either spurious or we can't tell easily (or possibly at all) which
+FPE_XXX should be returned.  It's up to userspace to figure it out
+if it really cares.  Previously we were accidentally returning SI_USER
+in si_code for arm64.
 
-I suspect the existing Documentation/vm/ should probably stay as an
-unorganised jumble of stuff.  Developers mostly talking to other MM
-developers.  Stuff that people outside the MM fraternity should know
-about needs to be centrally documented.  By all means convert it to
-ReST ... I don't much care, and it may make it easier to steal bits
-or link to it from the organised documentation.
+This case on arm looks like a more serious error for which FPE_FLTINV
+may be more appropriate anyway.
+
+[...]
+
+Cheers
+---Dave
