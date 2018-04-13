@@ -1,40 +1,31 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x233.google.com (mail-io0-x233.google.com
- [IPv6:2607:f8b0:4001:c06::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <corbet@lwn.net>
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40N7km67sYzF1pk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 05:53:52 +1000 (AEST)
-Received: by mail-io0-x233.google.com with SMTP id p139so11521826iod.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 12:53:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40N7nC414XzF1vC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 05:55:59 +1000 (AEST)
+Date: Fri, 13 Apr 2018 13:55:51 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mike Rapoport <rppt@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andrey Ryabinin
+ <aryabinin@virtuozzo.com>, Richard Henderson <rth@twiddle.net>, Ivan
+ Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Ralf
+ Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ kasan-dev@googlegroups.com, linux-alpha@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
+Message-ID: <20180413135551.0e6d1b12@lwn.net>
+In-Reply-To: <20180401063857.GA3357@rapoport-lnx>
+References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180329154607.3d8bda75@lwn.net>
+ <20180401063857.GA3357@rapoport-lnx>
 MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20180413184522.GD16308@e103592.cambridge.arm.com>
-References: <20180412124928.GA29458@altlinux.org>
- <20180412131404.GE16141@n2100.armlinux.org.uk>
- <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
- <20180412172051.GK16141@n2100.armlinux.org.uk>
- <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
- <20180413094211.GN16141@n2100.armlinux.org.uk>
- <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
- <20180413170827.GB16308@e103592.cambridge.arm.com>
- <20180413175407.GO16141@n2100.armlinux.org.uk>
- <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
- <20180413184522.GD16308@e103592.cambridge.arm.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 13 Apr 2018 12:53:49 -0700
-Message-ID: <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
-Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
- kill() returns wrong values in si_pid and si_uid
-To: Dave Martin <Dave.Martin@arm.com>
-Cc: Russell King - ARM Linux <linux@armlinux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,27 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 13, 2018 at 11:45 AM, Dave Martin <Dave.Martin@arm.com> wrote:
->
-> Most uses I've seen do nothing more than use the FPE_xyz value to
-> format diagnostic messages while dying.  I struggled to find code that
-> made a meaningful functional decision based on the value, though that's
-> not proof...
+Sorry for the silence, I'm pedaling as fast as I can, honest...
 
-Yeah. I've seen code that cares about SIGFPE deeply, but it's almost
-invariably about some emulated environment (eg Java VM, or CPU
-emulation).
+On Sun, 1 Apr 2018 09:38:58 +0300
+Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
 
-And the siginfo data is basically never good enough for those
-environments anyway on its own, so they will go and look at the actual
-instruction that caused the fault and the register state instead,
-because they need *all* the information.
+> My thinking was to start with mechanical RST conversion and then to start
+> working on the contents and ordering of the documentation. Some of the
+> existing files, e.g. ksm.txt, can be moved as is into the appropriate
+> places, others, like transhuge.txt should be at least split into admin/user
+> and developer guides.
+> 
+> Another problem with many of the existing mm docs is that they are rather
+> developer notes and it wouldn't be really straight forward to assign them
+> to a particular topic.
 
-The cases that use si_code are the ones that just trapped signals in
-order to give a more helpful abort message.
+All this sounds good.
 
-So I could certainly imagine that si_code is actually used by somebody
-who then decides to actuall act differently on it, but aside from
-perhaps printing out a different message, it sounds far-fetched.
+> I believe that keeping the mm docs together will give better visibility of
+> what (little) mm documentation we have and will make the updates easier.
+> The documents that fit well into a certain topic could be linked there. For
+> instance:
 
-                Linus
+...but this sounds like just the opposite...?  
+
+I've had this conversation with folks in a number of subsystems.
+Everybody wants to keep their documentation together in one place - it's
+easier for the developers after all.  But for the readers I think it's
+objectively worse.  It perpetuates the mess that Documentation/ is, and
+forces readers to go digging through all kinds of inappropriate material
+in the hope of finding something that tells them what they need to know.
+
+So I would *really* like to split the documentation by audience, as has
+been done for a number of other kernel subsystems (and eventually all, I
+hope).
+
+I can go ahead and apply the RST conversion, that seems like a step in
+the right direction regardless.  But I sure hope we don't really have to
+keep it as an unorganized jumble of stuff...
+
+Thanks,
+
+jon
