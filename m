@@ -1,30 +1,36 @@
-Return-Path: <srs0=lagk=hc=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MhVz1L9WzDqRk
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 12:27:07 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40MhVz0jVcz8tT4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 12:27:07 +1000 (AEST)
-Received: from mail-pl0-x232.google.com (mail-pl0-x232.google.com
- [IPv6:2607:f8b0:400e:c01::232])
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40MhVy454Vz9s0x
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2018 12:27:06 +1000 (AEST)
-Received: by mail-pl0-x232.google.com with SMTP id v5-v6so5189096plo.4
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2018 19:27:06 -0700 (PDT)
-Date: Fri, 13 Apr 2018 12:26:54 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/64s: Fix CPU_FTRS_ALWAYS vs DT CPU features
-Message-ID: <20180413122654.7e38689d@roar.ozlabs.ibm.com>
-In-Reply-To: <20180412134751.25098-1-mpe@ellerman.id.au>
-References: <20180412134751.25098-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Mt9T2CB3zF1hW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 19:42:32 +1000 (AEST)
+Date: Fri, 13 Apr 2018 10:42:11 +0100
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
+ kill() returns wrong values in si_pid and si_uid
+Message-ID: <20180413094211.GN16141@n2100.armlinux.org.uk>
+References: <20180409152253.GD10489@altlinux.org>
+ <20180412013435.GA21219@altlinux.org>
+ <20180412095811.GC16141@n2100.armlinux.org.uk>
+ <20180412110314.GA28070@altlinux.org>
+ <20180412121949.GD16141@n2100.armlinux.org.uk>
+ <20180412124928.GA29458@altlinux.org>
+ <20180412131404.GE16141@n2100.armlinux.org.uk>
+ <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
+ <20180412172051.GK16141@n2100.armlinux.org.uk>
+ <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,55 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 12 Apr 2018 23:47:51 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Thu, Apr 12, 2018 at 10:22:15AM -0700, Linus Torvalds wrote:
+> On Thu, Apr 12, 2018 at 10:20 AM, Russell King - ARM Linux
+> <linux@armlinux.org.uk> wrote:
+> >
+> > This file was created to contain FPE_FIXME, by the "signal/arm: Document
+> > conflicts with SI_USER and SIGFPE" commit so if we're removing it, it
+> > would be better to remove the whole file.
+> 
+> Fair enough. I'm not going to commit that anyway since I can't test
+> it, but yes, if it tests ok that sounds like the right thing to do.
 
-> The cpu_has_feature() mechanism has an optimisation where at build
-> time we construct a mask of the CPU feature bits that will always be
-> true for the given .config, based on the platform/bitness/etc. that we
-> are building for.
-> 
-> That is incompatible with DT CPU features, where the set of CPU
-> features is dependent on feature flags that are given to us by
-> firmware.
-> 
-> The result is that some feature bits can not be *disabled* by DT CPU
-> features. Or more accurately, they can be disabled but they will still
-> appear in the ALWAYS mask, meaning cpu_has_feature() will always
-> return true for them.
-> 
-> In the past this hasn't really been a problem because on Book3S
-> 64 (where we support DT CPU features), the set of ALWAYS bits has been
-> very small. That was because we always built for POWER4 and later,
-> meaning the set of common bits was small.
-> 
-> The only bit that could be cleared by DT CPU features that was also in
-> the ALWAYS mask was CPU_FTR_NODSISRALIGN, and that was only used in
-> the alignment handler to create a fake DSISR. That code was itself
-> deleted in 31bfdb036f12 ("powerpc: Use instruction emulation
-> infrastructure to handle alignment faults") (Sep 2017).
-> 
-> However the set of ALWAYS features changed with the recent commit
-> db5ae1c155af ("powerpc/64s: Refine feature sets for little endian
-> builds") which restricted the set of feature flags when building
-> little endian to Power7 or later. That caused the ALWAYS mask to
-> become much larger for little endian builds.
-> 
-> The result is that the following feature bits can currently not
-> be *disabled* by DT CPU features:
-> 
->   CPU_FTR_REAL_LE, CPU_FTR_MMCRA, CPU_FTR_CTRL, CPU_FTR_SMT,
->   CPU_FTR_PURR, CPU_FTR_SPURR, CPU_FTR_DSCR, CPU_FTR_PKEY,
->   CPU_FTR_VMX_COPY, CPU_FTR_CFAR, CPU_FTR_HAS_PPR.
-> 
-> To fix it we need to mask the set of ALWAYS features with the base set
-> of DT CPU features, ie. the features that are always enabled by DT CPU
-> features. That way there are no bits in the ALWAYS mask that are not
-> also always set by DT CPU features.
-> 
-> Fixes: db5ae1c155af ("powerpc/64s: Refine feature sets for little endian builds")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Yes, it does solve the problem at hand with strace - the exact patch I
+tested against 4.16 is below.
 
-Looks good to me.
+Testing this exact code path (exceptions set to VFP_EXCEPTION_ERROR)
+is something that can only happen if the hardware does something stupid,
+and I don't have a way of making it do that, so the code path can't be
+tested.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+However, FPE_FLTUNK is not defined in older kernels, so while we can
+fix it this way for the current merge window, that doesn't help 4.16.
+How we solve that depends what happens with Eric's patch (266da65e9156
+("signal: Add FPE_FLTUNK si_code for undiagnosable fp exceptions"))
+that introduces FPE_FLTUNK - and there's also the problem of NSIGFPE,
+which kernel/signal.c uses in the path that selects the siginfo layout.
+
+Given that the path we're talking about is unlikely to happen (as
+mentioned in my second paragraph) I still think reverting Eric's patch
+is the right way forward for older kernels.
+
+(Note, my previous comment about the si_code initialiser was incorrect.)
+
+diff --git a/arch/arm/include/uapi/asm/siginfo.h b/arch/arm/include/uapi/asm/siginfo.h
+deleted file mode 100644
+index d0513880be21..000000000000
+--- a/arch/arm/include/uapi/asm/siginfo.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-#ifndef __ASM_SIGINFO_H
+-#define __ASM_SIGINFO_H
+-
+-#include <asm-generic/siginfo.h>
+-
+-/*
+- * SIGFPE si_codes
+- */
+-#ifdef __KERNEL__
+-#define FPE_FIXME	0	/* Broken dup of SI_USER */
+-#endif /* __KERNEL__ */
+-
+-#endif
+diff --git a/arch/arm/vfp/vfpmodule.c b/arch/arm/vfp/vfpmodule.c
+index 4c375e11ae95..8a1a5e6048d2 100644
+--- a/arch/arm/vfp/vfpmodule.c
++++ b/arch/arm/vfp/vfpmodule.c
+@@ -28,6 +28,10 @@
+ #include <asm/thread_notify.h>
+ #include <asm/vfp.h>
+ 
++#ifndef FPE_FLTUNK
++#define FPE_FLTUNK 14
++#endif
++
+ #include "vfpinstr.h"
+ #include "vfp.h"
+ 
+@@ -257,7 +261,7 @@ static void vfp_raise_exceptions(u32 exceptions, u32 inst, u32 fpscr, struct pt_
+ 
+ 	if (exceptions == VFP_EXCEPTION_ERROR) {
+ 		vfp_panic("unhandled bounce", inst);
+-		vfp_raise_sigfpe(FPE_FIXME, regs);
++		vfp_raise_sigfpe(FPE_FLTUNK, regs);
+ 		return;
+ 	}
+ 
+
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
