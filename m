@@ -1,36 +1,34 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Mt9T2CB3zF1hW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 19:42:32 +1000 (AEST)
-Date: Fri, 13 Apr 2018 10:42:11 +0100
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- sparclinux <sparclinux@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
- kill() returns wrong values in si_pid and si_uid
-Message-ID: <20180413094211.GN16141@n2100.armlinux.org.uk>
-References: <20180409152253.GD10489@altlinux.org>
- <20180412013435.GA21219@altlinux.org>
- <20180412095811.GC16141@n2100.armlinux.org.uk>
- <20180412110314.GA28070@altlinux.org>
- <20180412121949.GD16141@n2100.armlinux.org.uk>
- <20180412124928.GA29458@altlinux.org>
- <20180412131404.GE16141@n2100.armlinux.org.uk>
- <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
- <20180412172051.GK16141@n2100.armlinux.org.uk>
- <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MtXG1Y4KzF1qv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 19:58:54 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3D9wUkH017548
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 05:58:52 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2harpdctms-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 05:58:51 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Fri, 13 Apr 2018 10:58:49 +0100
+Subject: Re: [PATCH] cxl: Set the PBCQ Tunnel BAR register when enabling capi
+ mode
+To: Philippe Bergheaud <felix@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.ibm.com, benh@au1.ibm.com
+References: <20180412110642.26454-1-felix@linux.ibm.com>
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+Date: Fri, 13 Apr 2018 11:58:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
-Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
+In-Reply-To: <20180412110642.26454-1-felix@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <7dd566a4-cc8c-f42a-964a-ea134b534704@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,84 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 12, 2018 at 10:22:15AM -0700, Linus Torvalds wrote:
-> On Thu, Apr 12, 2018 at 10:20 AM, Russell King - ARM Linux
-> <linux@armlinux.org.uk> wrote:
-> >
-> > This file was created to contain FPE_FIXME, by the "signal/arm: Document
-> > conflicts with SI_USER and SIGFPE" commit so if we're removing it, it
-> > would be better to remove the whole file.
+
+
+Le 12/04/2018 à 13:06, Philippe Bergheaud a écrit :
+> Skiboot used to set the default Tunnel BAR register value when capi mode
+> was enabled. This approach was ok for the cxl driver, but prevented other
+> drivers from choosing different values.
 > 
-> Fair enough. I'm not going to commit that anyway since I can't test
-> it, but yes, if it tests ok that sounds like the right thing to do.
-
-Yes, it does solve the problem at hand with strace - the exact patch I
-tested against 4.16 is below.
-
-Testing this exact code path (exceptions set to VFP_EXCEPTION_ERROR)
-is something that can only happen if the hardware does something stupid,
-and I don't have a way of making it do that, so the code path can't be
-tested.
-
-However, FPE_FLTUNK is not defined in older kernels, so while we can
-fix it this way for the current merge window, that doesn't help 4.16.
-How we solve that depends what happens with Eric's patch (266da65e9156
-("signal: Add FPE_FLTUNK si_code for undiagnosable fp exceptions"))
-that introduces FPE_FLTUNK - and there's also the problem of NSIGFPE,
-which kernel/signal.c uses in the path that selects the siginfo layout.
-
-Given that the path we're talking about is unlikely to happen (as
-mentioned in my second paragraph) I still think reverting Eric's patch
-is the right way forward for older kernels.
-
-(Note, my previous comment about the si_code initialiser was incorrect.)
-
-diff --git a/arch/arm/include/uapi/asm/siginfo.h b/arch/arm/include/uapi/asm/siginfo.h
-deleted file mode 100644
-index d0513880be21..000000000000
---- a/arch/arm/include/uapi/asm/siginfo.h
-+++ /dev/null
-@@ -1,13 +0,0 @@
--#ifndef __ASM_SIGINFO_H
--#define __ASM_SIGINFO_H
--
--#include <asm-generic/siginfo.h>
--
--/*
-- * SIGFPE si_codes
-- */
--#ifdef __KERNEL__
--#define FPE_FIXME	0	/* Broken dup of SI_USER */
--#endif /* __KERNEL__ */
--
--#endif
-diff --git a/arch/arm/vfp/vfpmodule.c b/arch/arm/vfp/vfpmodule.c
-index 4c375e11ae95..8a1a5e6048d2 100644
---- a/arch/arm/vfp/vfpmodule.c
-+++ b/arch/arm/vfp/vfpmodule.c
-@@ -28,6 +28,10 @@
- #include <asm/thread_notify.h>
- #include <asm/vfp.h>
- 
-+#ifndef FPE_FLTUNK
-+#define FPE_FLTUNK 14
-+#endif
-+
- #include "vfpinstr.h"
- #include "vfp.h"
- 
-@@ -257,7 +261,7 @@ static void vfp_raise_exceptions(u32 exceptions, u32 inst, u32 fpscr, struct pt_
- 
- 	if (exceptions == VFP_EXCEPTION_ERROR) {
- 		vfp_panic("unhandled bounce", inst);
--		vfp_raise_sigfpe(FPE_FIXME, regs);
-+		vfp_raise_sigfpe(FPE_FLTUNK, regs);
- 		return;
- 	}
- 
+> Skiboot versions > 5.11 will not set the default value any longer. This
+> patch modifies the cxl driver to set/reset the Tunnel BAR register when
+> entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
+> 
+> Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
+> ---
+>   drivers/misc/cxl/pci.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 83f1d08058fc..3beff9188446 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -1742,6 +1742,9 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
+>   	/* Required for devices using CAPP DMA mode, harmless for others */
+>   	pci_set_master(dev);
+>   
+> +	if ((rc = pnv_pci_set_tunnel_bar(dev, 0x00020000E0000000ull, 1)))
+> +		goto err;
+> +
 
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
-According to speedtest.net: 8.21Mbps down 510kbps up
+Isn't that call going to fail on older skiboot which don't support 
+OPAL_PCI_SET_PBCQ_TUNNEL_BAR, i.e. on p8?
+
+   Fred
+
+
+>   	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
+>   		goto err;
+>   
+> @@ -1768,6 +1771,7 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
+>   {
+>   	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
+>   
+> +	pnv_pci_set_tunnel_bar(pdev, 0x00020000E0000000ull, 0);
+>   	cxl_native_release_psl_err_irq(adapter);
+>   	cxl_unmap_adapter_regs(adapter);
+>   
+> 
