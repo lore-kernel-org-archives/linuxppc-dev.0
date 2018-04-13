@@ -1,31 +1,49 @@
-Return-Path: <felix@linux.ibm.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40MxF05TvKzF1RX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 22:00:52 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40MzKN6vkmzF1Ry
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 23:34:48 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3DC0g53084429
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 08:00:49 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hasbnqh4x-1
+ w3DDWLoV081132
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 09:34:45 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2havhe3csj-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 08:00:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Apr 2018 09:34:45 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.ibm.com>;
- Fri, 13 Apr 2018 13:00:17 +0100
-From: Philippe Bergheaud <felix@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com, benh@au1.ibm.com,
- Philippe Bergheaud <felix@linux.ibm.com>
-Subject: [PATCH v2] cxl: Set the PBCQ Tunnel BAR register when enabling capi
- mode
-Date: Fri, 13 Apr 2018 13:59:39 +0200
-Message-Id: <20180413115939.25269-1-felix@linux.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 13 Apr 2018 14:34:42 +0100
+Subject: Re: [PATCH v9 00/24] Speculative page faults
+To: Michal Hocko <mhocko@kernel.org>
+Cc: paulmck@linux.vnet.ibm.com, peterz@infradead.org,
+ akpm@linux-foundation.org, kirill@shutemov.name, ak@linux.intel.com,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1520963994-28477-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180314131118.GC23100@dhcp22.suse.cz>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Fri, 13 Apr 2018 15:34:33 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180314131118.GC23100@dhcp22.suse.cz>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <78f7f2c0-40e6-f080-e531-70305530f1ce@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +53,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Skiboot used to set the default Tunnel BAR register value when capi mode
-was enabled. This approach was ok for the cxl driver, but prevented other
-drivers from choosing different values.
+On 14/03/2018 14:11, Michal Hocko wrote:
+> On Tue 13-03-18 18:59:30, Laurent Dufour wrote:
+>> Changes since v8:
+>>  - Don't check PMD when locking the pte when THP is disabled
+>>    Thanks to Daniel Jordan for reporting this.
+>>  - Rebase on 4.16
+> 
+> Is this really worth reposting the whole pile? I mean this is at v9,
+> each doing little changes. It is quite tiresome to barely get to a
+> bookmarked version just to find out that there are 2 new versions out.
+> 
+> I am sorry to be grumpy and I can understand some frustration it doesn't
+> move forward that easilly but this is a _big_ change. We should start
+> with a real high level review rather than doing small changes here and
+> there and reach v20 quickly.
 
-Skiboot versions > 5.11 will not set the default value any longer. This
-patch modifies the cxl driver to set/reset the Tunnel BAR register when
-entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
+I know this would mean v10, but there has been a bunch of reviews from David
+Rientjes and Jerome Glisse, and I had to make many changes to address them.
+So I think this is time to push a v10.
 
-Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
----
-Changelog:
+If you have already started a review of this v9 series, please send me your
+remarks so that I can compile them in this v10 asap.
 
-v2: Restrict tunnel bar setting to power9.
-    Do not fail cxl_configure_adapter() on tunnel bar setting error.
-    Log an info message instead, and continue configuring capi mode.
----
- drivers/misc/cxl/pci.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 83f1d08058fc..355c789406f7 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1742,6 +1742,10 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	/* Required for devices using CAPP DMA mode, harmless for others */
- 	pci_set_master(dev);
- 
-+	if (cxl_is_power9())
-+		if (pnv_pci_set_tunnel_bar(dev, 0x00020000E0000000ull, 1))
-+			dev_info(&dev->dev, "Tunneled operations unsupported\n");
-+
- 	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
- 		goto err;
- 
-@@ -1768,6 +1772,8 @@ static void cxl_deconfigure_adapter(struct cxl *adapter)
- {
- 	struct pci_dev *pdev = to_pci_dev(adapter->dev.parent);
- 
-+	if (cxl_is_power9())
-+		pnv_pci_set_tunnel_bar(pdev, 0x00020000E0000000ull, 0);
- 	cxl_native_release_psl_err_irq(adapter);
- 	cxl_unmap_adapter_regs(adapter);
- 
--- 
-2.16.2
+Thanks,
+Laurent.
