@@ -1,18 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Nqnn0WyRzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 08:58:53 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aneesh.kumar@linux.ibm.com, khandual@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.17-2 tag
-Date: Sun, 15 Apr 2018 08:58:51 +1000
-Message-ID: <87zi25iedw.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40P0RG3HxQzF1RX
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 15:28:25 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id e12so2387200pgn.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 22:28:25 -0700 (PDT)
+Date: Sun, 15 Apr 2018 15:28:07 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 4/5] KVM: PPC: Book3S HV: handle need_tlb_flush in C
+ before low-level guest entry
+Message-ID: <20180415152807.2468f08a@roar.ozlabs.ibm.com>
+In-Reply-To: <20180410124842.30184-5-npiggin@gmail.com>
+References: <20180410124842.30184-1-npiggin@gmail.com>
+ <20180410124842.30184-5-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,87 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Tue, 10 Apr 2018 22:48:41 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Hi Linus,
+> Move this flushing out of assembly and have it use Linux TLB
+> flush implementations introduced earlier. This allows powerpc:tlbie
+> trace events to be used.
 
-Please pull some powerpc fixes for 4.17-rc1 if you can:
+Ah, I kept wondering why my guests were locking up with stale PWC
+after this patch... Turns out I made a significant oversight -- radix
+wants to flush the LPID's process scoped translations here, to deal
+with vCPU migration. My patch had it flushing the partition scoped.
 
-The following changes since commit 49a695ba723224875df50e327bd7b0b65dd9a56b:
+Radix and HPT have quite different requirements here, and HPT has to
+flush in real-mode. So I'll update the patch and leave the asm flush
+in place for HPT only, and do the right thing here for radix.
 
-  Merge tag 'powerpc-4.17-1' of git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux (2018-04-07 12:08:19 -0700)
+We already have other gaps with tracing HPT flushes, so they will all
+have to be dealt with some other way if we want that capability.
 
-are available in the git repository at:
+After this is fixed, the series has been stable here so far. I'll
+re-send all the tlb stuff tomorrow if it holds up.
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.17-2
-
-for you to fetch changes up to 81b654c273914704a4bdf580f28d67aaba1094e4:
-
-  powerpc/64s: Fix CPU_FTRS_ALWAYS vs DT CPU features (2018-04-13 23:51:44 +1000)
-
-- ----------------------------------------------------------------
-powerpc fixes for 4.17 #2
-
- - Fix crashes when loading modules built with a different CONFIG_RELOCATABLE
-   value by adding CONFIG_RELOCATABLE to vermagic.
-
- - Fix busy loops in the OPAL NVRAM driver if we get certain error conditions
-   from firmware.
-
- - Remove tlbie trace points from KVM code that's called in real mode, because
-   it causes crashes.
-
- - Fix checkstops caused by invalid tlbiel on Power9 Radix.
-
- - Ensure the set of CPU features we "know" are always enabled is actually the
-   minimal set when we build with support for firmware supplied CPU features.
-
-Thanks to:
-  Aneesh Kumar K.V, Anshuman Khandual, Nicholas Piggin.
-
-- ----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/8xx: Fix build with hugetlbfs enabled
-
-Anshuman Khandual (1):
-      powerpc/fscr: Enable interrupts earlier before calling get_user()
-
-Michael Ellerman (4):
-      powerpc/modules: Fix crashes by adding CONFIG_RELOCATABLE to vermagic
-      powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
-      powerpc/mm/radix: Fix checkstops caused by invalid tlbiel
-      powerpc/64s: Fix CPU_FTRS_ALWAYS vs DT CPU features
-
-Nicholas Piggin (3):
-      powerpc/powernv: define a standard delay for OPAL_BUSY type retry loops
-      powerpc/powernv: Fix OPAL NVRAM driver OPAL_BUSY loops
-      KVM: PPC: Book3S HV: trace_tlbie must not be called in realmode
-
- arch/powerpc/include/asm/cputable.h         | 23 +++++++++++++++++++--
- arch/powerpc/include/asm/module.h           | 12 ++++++++++-
- arch/powerpc/include/asm/opal.h             |  3 +++
- arch/powerpc/kernel/dt_cpu_ftrs.c           | 14 +------------
- arch/powerpc/kernel/setup_64.c              |  2 +-
- arch/powerpc/kernel/traps.c                 | 32 +++++++++++++++--------------
- arch/powerpc/kvm/book3s_hv_rm_mmu.c         |  4 ----
- arch/powerpc/mm/slice.c                     |  1 +
- arch/powerpc/mm/tlb-radix.c                 |  5 ++---
- arch/powerpc/platforms/powernv/opal-nvram.c |  7 ++++++-
- 10 files changed, 63 insertions(+), 40 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJa0oerAAoJEFHr6jzI4aWAvCIP/iG5Fv1b3MoslwQkCsAcMtTy
-zO/Ga7H54Kpiopr9F5T4JTKVOMVBb4urs8mP9RXGUzqf9iuNy3ZWGJfbHn1VXw4r
-wKFx5MfZYKNkoi8tGZHmbxhcSzFKsGHdCAEfC/SiNZCZZnbnt4NjWlUV4/QRts4a
-/LEyvrWPGzGCZF1y+LpFREAJakhJ1uklJNbqwMvRtlXmoJoqODNCRPk1Tmy8fQ8E
-eYLtAYGcN0x9w0YRo/1cTkJM/cksLPzJjZZn/6GR1vWRS544+iTSs6xT81RC7/yB
-2QVsKD+V7D3iJ3iQ4DhCNkpMHNZjLqDNymMLjcYM1H/mPobvsegwZuGDm1jr7++D
-3XBZa9wO6/dAOflu+nMlVNd323BMsdhGcI2WiZzsdkBh+aWU6hkQrgEG1uY3XV90
-8zlOk6Cmiq+aYkcemEzMCvV1gYSpiauZx2q8Y/GKww2BVekRUKpsBTgcZvvKbBUX
-XBJtAkRo5hR2o2qLAUwSXiJuGcfrlZBuZT0qCb1SYd9XRxIevvb1iQz2Yngxr6PI
-n9reO01c6a25CJQqNLH07iy+eZcsWUNcrzEjaeHaHWPl+zcl0AWEuGj3Q80/SM6Y
-rqOBMn3YSANpFjmat90c6CSWC/Bdf2nORMEtIHQ5mKsnL4rBv6X+pvMf3/TSwDNa
-QzAeCp1gwX940ngqW3H7
-=VzIU
------END PGP SIGNATURE-----
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/kvm/book3s_hv.c            | 21 +++++++++++-
+>  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 43 +------------------------
+>  2 files changed, 21 insertions(+), 43 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 81e2ea882d97..5d4783b5b47a 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -2680,7 +2680,7 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+>  	int sub;
+>  	bool thr0_done;
+>  	unsigned long cmd_bit, stat_bit;
+> -	int pcpu, thr;
+> +	int pcpu, thr, tmp;
+>  	int target_threads;
+>  	int controlled_threads;
+>  	int trap;
+> @@ -2780,6 +2780,25 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+>  		return;
+>  	}
+>  
+> +	/*
+> +	 * Do we need to flush the TLB for the LPAR? (see TLB comment above)
+> +         * On POWER9, individual threads can come in here, but the
+> +         * TLB is shared between the 4 threads in a core, hence
+> +         * invalidating on one thread invalidates for all.
+> +         * Thus we make all 4 threads use the same bit here.
+> +         */
+> +	tmp = pcpu;
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
+> +		tmp &= ~0x3UL;
+> +	if (cpumask_test_cpu(tmp, &vc->kvm->arch.need_tlb_flush)) {
+> +		if (kvm_is_radix(vc->kvm))
+> +			radix__local_flush_tlb_lpid(vc->kvm->arch.lpid);
+> +		else
+> +			hash__local_flush_tlb_lpid(vc->kvm->arch.lpid);
+> +		/* Clear the bit after the TLB flush */
+> +		cpumask_clear_cpu(tmp, &vc->kvm->arch.need_tlb_flush);
+> +	}
+> +
+>  	kvmppc_clear_host_core(pcpu);
+>  
+>  	/* Decide on micro-threading (split-core) mode */
+> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> index bd63fa8a08b5..6a23a0f3ceea 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> @@ -647,49 +647,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+>  	mtspr	SPRN_LPID,r7
+>  	isync
+>  
+> -	/* See if we need to flush the TLB */
+> -	lhz	r6,PACAPACAINDEX(r13)	/* test_bit(cpu, need_tlb_flush) */
+> -BEGIN_FTR_SECTION
+> -	/*
+> -	 * On POWER9, individual threads can come in here, but the
+> -	 * TLB is shared between the 4 threads in a core, hence
+> -	 * invalidating on one thread invalidates for all.
+> -	 * Thus we make all 4 threads use the same bit here.
+> -	 */
+> -	clrrdi	r6,r6,2
+> -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+> -	clrldi	r7,r6,64-6		/* extract bit number (6 bits) */
+> -	srdi	r6,r6,6			/* doubleword number */
+> -	sldi	r6,r6,3			/* address offset */
+> -	add	r6,r6,r9
+> -	addi	r6,r6,KVM_NEED_FLUSH	/* dword in kvm->arch.need_tlb_flush */
+> -	li	r8,1
+> -	sld	r8,r8,r7
+> -	ld	r7,0(r6)
+> -	and.	r7,r7,r8
+> -	beq	22f
+> -	/* Flush the TLB of any entries for this LPID */
+> -	lwz	r0,KVM_TLB_SETS(r9)
+> -	mtctr	r0
+> -	li	r7,0x800		/* IS field = 0b10 */
+> -	ptesync
+> -	li	r0,0			/* RS for P9 version of tlbiel */
+> -	bne	cr7, 29f
+> -28:	tlbiel	r7			/* On P9, rs=0, RIC=0, PRS=0, R=0 */
+> -	addi	r7,r7,0x1000
+> -	bdnz	28b
+> -	b	30f
+> -29:	PPC_TLBIEL(7,0,2,1,1)		/* for radix, RIC=2, PRS=1, R=1 */
+> -	addi	r7,r7,0x1000
+> -	bdnz	29b
+> -30:	ptesync
+> -23:	ldarx	r7,0,r6			/* clear the bit after TLB flushed */
+> -	andc	r7,r7,r8
+> -	stdcx.	r7,0,r6
+> -	bne	23b
+> -
+>  	/* Add timebase offset onto timebase */
+> -22:	ld	r8,VCORE_TB_OFFSET(r5)
+> +	ld	r8,VCORE_TB_OFFSET(r5)
+>  	cmpdi	r8,0
+>  	beq	37f
+>  	mftb	r6		/* current host timebase */
