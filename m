@@ -1,9 +1,9 @@
 Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PGRg19tMzF1gW
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 01:59:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PGSt0jcCzF1pS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 02:00:46 +1000 (AEST)
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Dave Martin <Dave.Martin@arm.com>,
@@ -24,14 +24,14 @@ References: <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
  <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
  <20180415131206.GR16141@n2100.armlinux.org.uk>
  <87604sa2fu.fsf_-_@xmission.com>
-Date: Sun, 15 Apr 2018 10:58:21 -0500
+Date: Sun, 15 Apr 2018 10:59:09 -0500
 In-Reply-To: <87604sa2fu.fsf_-_@xmission.com> (Eric W. Biederman's message of
  "Sun, 15 Apr 2018 10:56:21 -0500")
-Message-ID: <87tvsc8ns2.fsf_-_@xmission.com>
+Message-ID: <87muy48nqq.fsf_-_@xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Subject: [RFC PATCH 2/3] signal: Reduce copy_siginfo_to_user to just
- copy_to_user
+Subject: [RFC PATCH 3/3] signal: Stop special casing TRAP_FIXME and FPE_FIXME
+ in siginfo_layout
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,126 +42,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Now that every instance of struct siginfo is now initialized it is no
-longer necessary to copy struct siginfo piece by piece to userspace
-but instead the entire structure can be copied.
+After more experience with the cases where no one the si_code of 0 is
+used both as a signal specific si_code, and as SI_USER it appears that
+no one cares about the signal specific si_code case and the good
+solution is to just fix the architectures by using a different si_code.
 
-As well as making the code simpler and more efficient this means that
-copy_sinfo_to_user no longer cares which union member of struct
-siginfo is in use.
+In none of the conversations has anyone even suggested that anything
+depends on the signal specific redefinition of SI_USER.
 
-In practice this means that all 32bit architectures that define
-FPE_FIXME will handle properly send SI_USER when kill(SIGFPE) is sent.
-While still performing their historic architectural brokenness when 0
-is used a floating pointer signal.  This matches the current behavior
-of 64bit architectures that define FPE_FIXME who get lucky and an
-overloaded SI_USER has continuted to work through copy_siginfo_to_user
-because the 8 byte si_addr occupies the same bytes in struct siginfo
-as the 4 byte si_pid and the 4 byte si_uid.
+There are at least test cases that care when si_code as 0 does not work
+as si_user.
 
-Problematic architectures still need to fix their ABI so that signalfd
-and 32bit compat code will work properly.
+So make things simple and keep the generic code from introducing
+problems by removing the special casing of TRAP_FIXME and FPE_FIXME.
+This will ensure the generic case of sending a signal with kill will
+always set SI_USER and work.
+
+The architecture specific, and signal specific overloads that set
+si_code to 0 will now have problems with signalfd and the 32bit compat
+versions of siginfo copying.  At least until they are fixed.
 
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- kernel/signal.c | 84 ++-------------------------------------------------------
- 1 file changed, 2 insertions(+), 82 deletions(-)
+ kernel/signal.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
 diff --git a/kernel/signal.c b/kernel/signal.c
-index d4ccea599692..d56f4d496c89 100644
+index d56f4d496c89..fc82d2c0918f 100644
 --- a/kernel/signal.c
 +++ b/kernel/signal.c
-@@ -2850,89 +2850,9 @@ enum siginfo_layout siginfo_layout(int sig, int si_code)
- 
- int copy_siginfo_to_user(siginfo_t __user *to, const siginfo_t *from)
- {
--	int err;
--
--	if (!access_ok (VERIFY_WRITE, to, sizeof(siginfo_t)))
-+	if (copy_to_user(to, from , sizeof(struct siginfo)))
- 		return -EFAULT;
--	if (from->si_code < 0)
--		return __copy_to_user(to, from, sizeof(siginfo_t))
--			? -EFAULT : 0;
--	/*
--	 * If you change siginfo_t structure, please be sure
--	 * this code is fixed accordingly.
--	 * Please remember to update the signalfd_copyinfo() function
--	 * inside fs/signalfd.c too, in case siginfo_t changes.
--	 * It should never copy any pad contained in the structure
--	 * to avoid security leaks, but must copy the generic
--	 * 3 ints plus the relevant union member.
--	 */
--	err = __put_user(from->si_signo, &to->si_signo);
--	err |= __put_user(from->si_errno, &to->si_errno);
--	err |= __put_user(from->si_code, &to->si_code);
--	switch (siginfo_layout(from->si_signo, from->si_code)) {
--	case SIL_KILL:
--		err |= __put_user(from->si_pid, &to->si_pid);
--		err |= __put_user(from->si_uid, &to->si_uid);
--		break;
--	case SIL_TIMER:
--		/* Unreached SI_TIMER is negative */
--		break;
--	case SIL_POLL:
--		err |= __put_user(from->si_band, &to->si_band);
--		err |= __put_user(from->si_fd, &to->si_fd);
--		break;
--	case SIL_FAULT:
--		err |= __put_user(from->si_addr, &to->si_addr);
--#ifdef __ARCH_SI_TRAPNO
--		err |= __put_user(from->si_trapno, &to->si_trapno);
+@@ -2835,15 +2835,6 @@ enum siginfo_layout siginfo_layout(int sig, int si_code)
+ 			layout = SIL_POLL;
+ 		else if (si_code < 0)
+ 			layout = SIL_RT;
+-		/* Tests to support buggy kernel ABIs */
+-#ifdef TRAP_FIXME
+-		if ((sig == SIGTRAP) && (si_code == TRAP_FIXME))
+-			layout = SIL_FAULT;
 -#endif
--#ifdef __ia64__
--		err |= __put_user(from->si_imm, &to->si_imm);
--		err |= __put_user(from->si_flags, &to->si_flags);
--		err |= __put_user(from->si_isr, &to->si_isr);
+-#ifdef FPE_FIXME
+-		if ((sig == SIGFPE) && (si_code == FPE_FIXME))
+-			layout = SIL_FAULT;
 -#endif
--		/*
--		 * Other callers might not initialize the si_lsb field,
--		 * so check explicitly for the right codes here.
--		 */
--#ifdef BUS_MCEERR_AR
--		if (from->si_signo == SIGBUS && from->si_code == BUS_MCEERR_AR)
--			err |= __put_user(from->si_addr_lsb, &to->si_addr_lsb);
--#endif
--#ifdef BUS_MCEERR_AO
--		if (from->si_signo == SIGBUS && from->si_code == BUS_MCEERR_AO)
--			err |= __put_user(from->si_addr_lsb, &to->si_addr_lsb);
--#endif
--#ifdef SEGV_BNDERR
--		if (from->si_signo == SIGSEGV && from->si_code == SEGV_BNDERR) {
--			err |= __put_user(from->si_lower, &to->si_lower);
--			err |= __put_user(from->si_upper, &to->si_upper);
--		}
--#endif
--#ifdef SEGV_PKUERR
--		if (from->si_signo == SIGSEGV && from->si_code == SEGV_PKUERR)
--			err |= __put_user(from->si_pkey, &to->si_pkey);
--#endif
--		break;
--	case SIL_CHLD:
--		err |= __put_user(from->si_pid, &to->si_pid);
--		err |= __put_user(from->si_uid, &to->si_uid);
--		err |= __put_user(from->si_status, &to->si_status);
--		err |= __put_user(from->si_utime, &to->si_utime);
--		err |= __put_user(from->si_stime, &to->si_stime);
--		break;
--	case SIL_RT:
--		err |= __put_user(from->si_pid, &to->si_pid);
--		err |= __put_user(from->si_uid, &to->si_uid);
--		err |= __put_user(from->si_ptr, &to->si_ptr);
--		break;
--	case SIL_SYS:
--		err |= __put_user(from->si_call_addr, &to->si_call_addr);
--		err |= __put_user(from->si_syscall, &to->si_syscall);
--		err |= __put_user(from->si_arch, &to->si_arch);
--		break;
--	}
--	return err;
-+	return 0;
+ 	}
+ 	return layout;
  }
- 
- #ifdef CONFIG_COMPAT
 -- 
 2.14.1
