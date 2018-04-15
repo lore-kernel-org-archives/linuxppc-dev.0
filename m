@@ -1,36 +1,49 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PGtY0rnmzF1pP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 02:19:32 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Dave Martin <Dave.Martin@arm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>, sparclinux <sparclinux@vger.kernel.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-References: <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
- <20180412172051.GK16141@n2100.armlinux.org.uk>
- <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
- <20180413094211.GN16141@n2100.armlinux.org.uk>
- <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
- <20180413170827.GB16308@e103592.cambridge.arm.com>
- <20180413175407.GO16141@n2100.armlinux.org.uk>
- <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
- <20180413184522.GD16308@e103592.cambridge.arm.com>
- <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
- <20180415131206.GR16141@n2100.armlinux.org.uk>
-Date: Sun, 15 Apr 2018 10:22:31 -0500
-In-Reply-To: <20180415131206.GR16141@n2100.armlinux.org.uk> (Russell King's
- message of "Sun, 15 Apr 2018 14:12:06 +0100")
-Message-ID: <87lgdocx54.fsf@xmission.com>
+Return-Path: <rppt@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PJRC60Y4zF1r7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 03:29:27 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3FHT18D138170
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 13:29:24 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hbvm8h1cv-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 13:29:24 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rppt@linux.vnet.ibm.com>;
+ Sun, 15 Apr 2018 18:29:21 +0100
+Date: Sun, 15 Apr 2018 20:29:11 +0300
+From: Mike Rapoport <rppt@linux.vnet.ibm.com>
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Richard Henderson <rth@twiddle.net>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matt Turner <mattst88@gmail.com>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
+ James Hogan <jhogan@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org, kasan-dev@googlegroups.com,
+ linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
+References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
+ <20180329154607.3d8bda75@lwn.net>
+ <20180401063857.GA3357@rapoport-lnx>
+ <20180413135551.0e6d1b12@lwn.net>
+ <20180413202108.GA30271@bombadil.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
- kill() returns wrong values in si_pid and si_uid
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180413202108.GA30271@bombadil.infradead.org>
+Message-Id: <20180415172910.GA31176@rapoport-lnx>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +53,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Russell King - ARM Linux <linux@armlinux.org.uk> writes:
+On Fri, Apr 13, 2018 at 01:21:08PM -0700, Matthew Wilcox wrote:
+> On Fri, Apr 13, 2018 at 01:55:51PM -0600, Jonathan Corbet wrote:
+> > > I believe that keeping the mm docs together will give better visibility of
+> > > what (little) mm documentation we have and will make the updates easier.
+> > > The documents that fit well into a certain topic could be linked there. For
+> > > instance:
+> > 
+> > ...but this sounds like just the opposite...?  
+> > 
+> > I've had this conversation with folks in a number of subsystems.
+> > Everybody wants to keep their documentation together in one place - it's
+> > easier for the developers after all.  But for the readers I think it's
+> > objectively worse.  It perpetuates the mess that Documentation/ is, and
+> > forces readers to go digging through all kinds of inappropriate material
+> > in the hope of finding something that tells them what they need to know.
+> > 
+> > So I would *really* like to split the documentation by audience, as has
+> > been done for a number of other kernel subsystems (and eventually all, I
+> > hope).
+> > 
+> > I can go ahead and apply the RST conversion, that seems like a step in
+> > the right direction regardless.  But I sure hope we don't really have to
+> > keep it as an unorganized jumble of stuff...
+> 
+> I've started on Documentation/core-api/memory.rst which covers just
+> memory allocation.  So far it has the Overview and GFP flags sections
+> written and an outline for 'The slab allocator', 'The page allocator',
+> 'The vmalloc allocator' and 'The page_frag allocator'.  And typing this
+> up, I realise we need a 'The percpu allocator'.  I'm thinking that this
+> is *not* the right document for the DMA memory allocators (although it
+> should link to that documentation).
+> 
+> I suspect the existing Documentation/vm/ should probably stay as an
+> unorganised jumble of stuff.  Developers mostly talking to other MM
+> developers.  Stuff that people outside the MM fraternity should know
+> about needs to be centrally documented.  By all means convert it to
+> ReST ... I don't much care, and it may make it easier to steal bits
+> or link to it from the organised documentation.
+ 
+The existing Documentation/vm contains different types of documents. Some
+are indeed "Developers mostly talking to other MM developers". Some are
+really user/administrator guides. Others are somewhat in between.
 
-> On Fri, Apr 13, 2018 at 12:53:49PM -0700, Linus Torvalds wrote:
->> On Fri, Apr 13, 2018 at 11:45 AM, Dave Martin <Dave.Martin@arm.com> wrote:
->> >
->> > Most uses I've seen do nothing more than use the FPE_xyz value to
->> > format diagnostic messages while dying.  I struggled to find code that
->> > made a meaningful functional decision based on the value, though that's
->> > not proof...
->> 
->> Yeah. I've seen code that cares about SIGFPE deeply, but it's almost
->> invariably about some emulated environment (eg Java VM, or CPU
->> emulation).
->> 
->> And the siginfo data is basically never good enough for those
->> environments anyway on its own, so they will go and look at the actual
->> instruction that caused the fault and the register state instead,
->> because they need *all* the information.
->> 
->> The cases that use si_code are the ones that just trapped signals in
->> order to give a more helpful abort message.
->> 
->> So I could certainly imagine that si_code is actually used by somebody
->> who then decides to actuall act differently on it, but aside from
->> perhaps printing out a different message, it sounds far-fetched.
->
-> Okay, in that case let's just use FPE_FLTINV.  That makes the patch
-> easily back-portable for stable kernels.
+I took another look at what's there and I think we can actually move part
+of Documentation/vm to Documentation/admin-guide. We can add
+Documentation/admin-guide/vm/ and title it "Memory Management Tuning" or
+something like that. And several files, e.g. hugetlbpage, ksm, soft-dirty
+can be moved there.
 
-If we want to I don't think  backporting 266da65e9156 ("signal: Add
-FPE_FLTUNK si_code for undiagnosable fp exceptions") would be at
-all difficult.
-
-What it is changing has been stable for quite a while.  The surroundings
-might change and so it might require some trivial manual fixup but I
-don't expect any problems.
-
-Not that I want to derail the consensus but if we want to backport
-similar fixes for arm64 or the other architectures that wind up using
-FPE_FLTUNK for their fix we would need to backport 266da65e9156 anyway.
-
-Eric
+-- 
+Sincerely yours,
+Mike.
