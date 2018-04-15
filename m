@@ -1,17 +1,17 @@
 Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PGSt0jcCzF1pS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 02:00:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PGtY0rnmzF1pP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 02:19:32 +1000 (AEST)
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Martin <Dave.Martin@arm.com>,
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Dave Martin <Dave.Martin@arm.com>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  "Dmitry V. Levin" <ldv@altlinux.org>, sparclinux <sparclinux@vger.kernel.org>,
  ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>, <linux-arch@vger.kernel.org>
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 References: <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
  <20180412172051.GK16141@n2100.armlinux.org.uk>
  <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
@@ -23,15 +23,14 @@ References: <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
  <20180413184522.GD16308@e103592.cambridge.arm.com>
  <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
  <20180415131206.GR16141@n2100.armlinux.org.uk>
- <87604sa2fu.fsf_-_@xmission.com>
-Date: Sun, 15 Apr 2018 10:59:09 -0500
-In-Reply-To: <87604sa2fu.fsf_-_@xmission.com> (Eric W. Biederman's message of
- "Sun, 15 Apr 2018 10:56:21 -0500")
-Message-ID: <87muy48nqq.fsf_-_@xmission.com>
+Date: Sun, 15 Apr 2018 10:22:31 -0500
+In-Reply-To: <20180415131206.GR16141@n2100.armlinux.org.uk> (Russell King's
+ message of "Sun, 15 Apr 2018 14:12:06 +0100")
+Message-ID: <87lgdocx54.fsf@xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Subject: [RFC PATCH 3/3] signal: Stop special casing TRAP_FIXME and FPE_FIXME
- in siginfo_layout
+Subject: Re: sparc/ppc/arm compat siginfo ABI regressions: sending SIGFPE via
+ kill() returns wrong values in si_pid and si_uid
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,51 +40,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Russell King - ARM Linux <linux@armlinux.org.uk> writes:
 
-After more experience with the cases where no one the si_code of 0 is
-used both as a signal specific si_code, and as SI_USER it appears that
-no one cares about the signal specific si_code case and the good
-solution is to just fix the architectures by using a different si_code.
+> On Fri, Apr 13, 2018 at 12:53:49PM -0700, Linus Torvalds wrote:
+>> On Fri, Apr 13, 2018 at 11:45 AM, Dave Martin <Dave.Martin@arm.com> wrote:
+>> >
+>> > Most uses I've seen do nothing more than use the FPE_xyz value to
+>> > format diagnostic messages while dying.  I struggled to find code that
+>> > made a meaningful functional decision based on the value, though that's
+>> > not proof...
+>> 
+>> Yeah. I've seen code that cares about SIGFPE deeply, but it's almost
+>> invariably about some emulated environment (eg Java VM, or CPU
+>> emulation).
+>> 
+>> And the siginfo data is basically never good enough for those
+>> environments anyway on its own, so they will go and look at the actual
+>> instruction that caused the fault and the register state instead,
+>> because they need *all* the information.
+>> 
+>> The cases that use si_code are the ones that just trapped signals in
+>> order to give a more helpful abort message.
+>> 
+>> So I could certainly imagine that si_code is actually used by somebody
+>> who then decides to actuall act differently on it, but aside from
+>> perhaps printing out a different message, it sounds far-fetched.
+>
+> Okay, in that case let's just use FPE_FLTINV.  That makes the patch
+> easily back-portable for stable kernels.
 
-In none of the conversations has anyone even suggested that anything
-depends on the signal specific redefinition of SI_USER.
+If we want to I don't think  backporting 266da65e9156 ("signal: Add
+FPE_FLTUNK si_code for undiagnosable fp exceptions") would be at
+all difficult.
 
-There are at least test cases that care when si_code as 0 does not work
-as si_user.
+What it is changing has been stable for quite a while.  The surroundings
+might change and so it might require some trivial manual fixup but I
+don't expect any problems.
 
-So make things simple and keep the generic code from introducing
-problems by removing the special casing of TRAP_FIXME and FPE_FIXME.
-This will ensure the generic case of sending a signal with kill will
-always set SI_USER and work.
+Not that I want to derail the consensus but if we want to backport
+similar fixes for arm64 or the other architectures that wind up using
+FPE_FLTUNK for their fix we would need to backport 266da65e9156 anyway.
 
-The architecture specific, and signal specific overloads that set
-si_code to 0 will now have problems with signalfd and the 32bit compat
-versions of siginfo copying.  At least until they are fixed.
-
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
----
- kernel/signal.c | 9 ---------
- 1 file changed, 9 deletions(-)
-
-diff --git a/kernel/signal.c b/kernel/signal.c
-index d56f4d496c89..fc82d2c0918f 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2835,15 +2835,6 @@ enum siginfo_layout siginfo_layout(int sig, int si_code)
- 			layout = SIL_POLL;
- 		else if (si_code < 0)
- 			layout = SIL_RT;
--		/* Tests to support buggy kernel ABIs */
--#ifdef TRAP_FIXME
--		if ((sig == SIGTRAP) && (si_code == TRAP_FIXME))
--			layout = SIL_FAULT;
--#endif
--#ifdef FPE_FIXME
--		if ((sig == SIGFPE) && (si_code == FPE_FIXME))
--			layout = SIL_FAULT;
--#endif
- 	}
- 	return layout;
- }
--- 
-2.14.1
+Eric
