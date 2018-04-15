@@ -1,24 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <BATV+7d17fcac680d61fee2d2+5348+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40P0RG3HxQzF1RX
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 15:28:25 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id e12so2387200pgn.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Apr 2018 22:28:25 -0700 (PDT)
-Date: Sun, 15 Apr 2018 15:28:07 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 4/5] KVM: PPC: Book3S HV: handle need_tlb_flush in C
- before low-level guest entry
-Message-ID: <20180415152807.2468f08a@roar.ozlabs.ibm.com>
-In-Reply-To: <20180410124842.30184-5-npiggin@gmail.com>
-References: <20180410124842.30184-1-npiggin@gmail.com>
- <20180410124842.30184-5-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40P9yD4r6ZzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 22:37:24 +1000 (AEST)
+Date: Sun, 15 Apr 2018 05:11:57 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, robh@kernel.org,
+ aik@ozlabs.ru, jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+Message-ID: <20180415121157.GA17726@infradead.org>
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+ <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+ <20180405175326-mutt-send-email-mst@kernel.org>
+ <1522940983.21446.205.camel@kernel.crashing.org>
+ <20180405213042-mutt-send-email-mst@kernel.org>
+ <1522963113.21446.211.camel@kernel.crashing.org>
+ <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
+ <20180406071634.GA31108@infradead.org>
+ <1523003838.21446.238.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1523003838.21446.238.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,126 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Apr 2018 22:48:41 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> Move this flushing out of assembly and have it use Linux TLB
-> flush implementations introduced earlier. This allows powerpc:tlbie
-> trace events to be used.
-
-Ah, I kept wondering why my guests were locking up with stale PWC
-after this patch... Turns out I made a significant oversight -- radix
-wants to flush the LPID's process scoped translations here, to deal
-with vCPU migration. My patch had it flushing the partition scoped.
-
-Radix and HPT have quite different requirements here, and HPT has to
-flush in real-mode. So I'll update the patch and leave the asm flush
-in place for HPT only, and do the right thing here for radix.
-
-We already have other gaps with tracing HPT flushes, so they will all
-have to be dealt with some other way if we want that capability.
-
-After this is fixed, the series has been stable here so far. I'll
-re-send all the tlb stuff tomorrow if it holds up.
-
+On Fri, Apr 06, 2018 at 06:37:18PM +1000, Benjamin Herrenschmidt wrote:
+> > > implemented as DMA API which the virtio core understands. There is no
+> > > need for an IOMMU to be involved for the device representation in this
+> > > case IMHO.
+> > 
+> > This whole virtio translation issue is a mess.  I think we need to
+> > switch it to the dma API, and then quirk the legacy case to always
+> > use the direct mapping inside the dma API.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/kvm/book3s_hv.c            | 21 +++++++++++-
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 43 +------------------------
->  2 files changed, 21 insertions(+), 43 deletions(-)
+> Fine with using a dma API always on the Linux side, but we do want to
+> special case virtio still at the arch and qemu side to have a "direct
+> mapping" mode. Not sure how (special flags on PCI devices) to avoid
+> actually going through an emulated IOMMU on the qemu side, because that
+> slows things down, esp. with vhost.
 > 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 81e2ea882d97..5d4783b5b47a 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -2680,7 +2680,7 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
->  	int sub;
->  	bool thr0_done;
->  	unsigned long cmd_bit, stat_bit;
-> -	int pcpu, thr;
-> +	int pcpu, thr, tmp;
->  	int target_threads;
->  	int controlled_threads;
->  	int trap;
-> @@ -2780,6 +2780,25 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
->  		return;
->  	}
->  
-> +	/*
-> +	 * Do we need to flush the TLB for the LPAR? (see TLB comment above)
-> +         * On POWER9, individual threads can come in here, but the
-> +         * TLB is shared between the 4 threads in a core, hence
-> +         * invalidating on one thread invalidates for all.
-> +         * Thus we make all 4 threads use the same bit here.
-> +         */
-> +	tmp = pcpu;
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300))
-> +		tmp &= ~0x3UL;
-> +	if (cpumask_test_cpu(tmp, &vc->kvm->arch.need_tlb_flush)) {
-> +		if (kvm_is_radix(vc->kvm))
-> +			radix__local_flush_tlb_lpid(vc->kvm->arch.lpid);
-> +		else
-> +			hash__local_flush_tlb_lpid(vc->kvm->arch.lpid);
-> +		/* Clear the bit after the TLB flush */
-> +		cpumask_clear_cpu(tmp, &vc->kvm->arch.need_tlb_flush);
-> +	}
-> +
->  	kvmppc_clear_host_core(pcpu);
->  
->  	/* Decide on micro-threading (split-core) mode */
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index bd63fa8a08b5..6a23a0f3ceea 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -647,49 +647,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
->  	mtspr	SPRN_LPID,r7
->  	isync
->  
-> -	/* See if we need to flush the TLB */
-> -	lhz	r6,PACAPACAINDEX(r13)	/* test_bit(cpu, need_tlb_flush) */
-> -BEGIN_FTR_SECTION
-> -	/*
-> -	 * On POWER9, individual threads can come in here, but the
-> -	 * TLB is shared between the 4 threads in a core, hence
-> -	 * invalidating on one thread invalidates for all.
-> -	 * Thus we make all 4 threads use the same bit here.
-> -	 */
-> -	clrrdi	r6,r6,2
-> -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
-> -	clrldi	r7,r6,64-6		/* extract bit number (6 bits) */
-> -	srdi	r6,r6,6			/* doubleword number */
-> -	sldi	r6,r6,3			/* address offset */
-> -	add	r6,r6,r9
-> -	addi	r6,r6,KVM_NEED_FLUSH	/* dword in kvm->arch.need_tlb_flush */
-> -	li	r8,1
-> -	sld	r8,r8,r7
-> -	ld	r7,0(r6)
-> -	and.	r7,r7,r8
-> -	beq	22f
-> -	/* Flush the TLB of any entries for this LPID */
-> -	lwz	r0,KVM_TLB_SETS(r9)
-> -	mtctr	r0
-> -	li	r7,0x800		/* IS field = 0b10 */
-> -	ptesync
-> -	li	r0,0			/* RS for P9 version of tlbiel */
-> -	bne	cr7, 29f
-> -28:	tlbiel	r7			/* On P9, rs=0, RIC=0, PRS=0, R=0 */
-> -	addi	r7,r7,0x1000
-> -	bdnz	28b
-> -	b	30f
-> -29:	PPC_TLBIEL(7,0,2,1,1)		/* for radix, RIC=2, PRS=1, R=1 */
-> -	addi	r7,r7,0x1000
-> -	bdnz	29b
-> -30:	ptesync
-> -23:	ldarx	r7,0,r6			/* clear the bit after TLB flushed */
-> -	andc	r7,r7,r8
-> -	stdcx.	r7,0,r6
-> -	bne	23b
-> -
->  	/* Add timebase offset onto timebase */
-> -22:	ld	r8,VCORE_TB_OFFSET(r5)
-> +	ld	r8,VCORE_TB_OFFSET(r5)
->  	cmpdi	r8,0
->  	beq	37f
->  	mftb	r6		/* current host timebase */
+> IE, we can't I think just treat it the same as a physical device.
+
+We should have treated it like a physical device from the start, but
+that device has unfortunately sailed.
+
+But yes, we'll need a per-device quirk that says 'don't attach an
+iommu'.
