@@ -1,22 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5301::12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Pb4c3mB0zF1qT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 14:29:20 +1000 (AEST)
-Date: Mon, 16 Apr 2018 14:09:42 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, paulus@samba.org, clg@kaod.org
-Subject: Re: [PATCH RFC 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access
- full VCPU ID space
-Message-ID: <20180416040942.GB20551@umbus.fritz.box>
-References: <70974cfb62a7f09a53ec914d2909639884228244.1523516498.git.sam.bobroff@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
-In-Reply-To: <70974cfb62a7f09a53ec914d2909639884228244.1523516498.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Pb5f3LHZzF1vV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 14:30:13 +1000 (AEST)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH 1/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi
+ boards
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <87tvtbg0i9.fsf@concordia.ellerman.id.au>
+Date: Mon, 16 Apr 2018 06:29:55 +0200
+Cc: Bjorn Helgaas <helgaas@kernel.org>,
+ Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ Olof Johansson <olof@lixom.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Message-Id: <0146B9E7-8ECB-48DF-ACCB-4173278A3422@xenosoft.de>
+References: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
+ <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
+ <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
+ <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
+ <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
+ <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
+ <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
+ <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
+ <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
+ <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
+ <20180319191310.GG77194@bhelgaas-glaptop.roam.corp.google.com>
+ <87tvtbg0i9.fsf@concordia.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,236 +40,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Michael,
 
---zx4FCpZtqtKETZ7O
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Many thanks for your help. Did you merge Olof=E2=80=98s patch? I still have t=
+o patch the 4.17 source code.
 
-On Thu, Apr 12, 2018 at 05:02:06PM +1000, Sam Bobroff wrote:
-> It is not currently possible to create the full number of possible
-> VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
-> threads per core than it's core stride (or "VSMT mode"). This is
-> because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
-> even though the VCPU ID is less than KVM_MAX_VCPU_ID.
+Thanks,
+Christian
+
+Sent from my iPhone
+
+> On 19. Mar 2018, at 23:32, Michael Ellerman <mpe@ellerman.id.au> wrote:
 >=20
-> To address this, "pack" the VCORE ID and XIVE offsets by using
-> knowledge of the way the VCPU IDs will be used when there are less
-> guest threads per core than the core stride. The primary thread of
-> each core will always be used first. Then, if the guest uses more than
-> one thread per core, these secondary threads will sequentially follow
-> the primary in each core.
+> Bjorn Helgaas <helgaas@kernel.org> writes:
 >=20
-> So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
-> VCPUs are being spaced apart, so at least half of each core is empty
-> and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
-> into the second half of each core (4..7, in an 8-thread core).
+>>> On Fri, Mar 16, 2018 at 01:55:36PM +0100, Christian Zigotzky wrote:
+>>> Bjorn Helgaas created a patch for making PCI_SCAN_ALL_PCIE_DEVS work for=
+
+>>> Root Ports as well as Downstream. Previously PCI_SCAN_ALL_PCIE_DEVS (set=
+ by
+>>> quirks or the "pci=3Dpcie_scan_all"
+>>> kernel parameter) only affected Switch Downstream Ports, not Root Ports.=
+ The
+>>> problem is, that we have to add always the boot argument "pci=3Dpcie_sca=
+n_all"
+>>> for using Bjorn's improvements. Without the boot argument
+>>> "pci=3Dpcie_scan_all", the kernel doesn't boot on P.A. Semi boards with S=
+B600
+>>> chipset (SB600 chipset is connected via PCIe x4 to the P.A. Semi=E2=80=99=
+s
+>>> PA6T-1682M System-on-a-Chip) because the kernel can't find any drives
+>>> connected to the SB600 anymore. Olof Johansson has created a patch for
+>>> executing "pci=3Dpcie_scan_all" automatically on P.A. Semi boards. With h=
+is
+>>> patch, we don't need to add 'pci=3Dpcie_scan_all' to the kernel boot arg=
+uments
+>>> anymore.
+>>=20
+>> The patch looks fine, but I need a signed-off-by line before I can apply
+>> it.  See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.g=
+it/tree/Documentation/process/submitting-patches.rst
 >=20
-> Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
-> each core is being left empty, and we can map down into the second and
-> third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
+> I'm happy to take it, I've been meaning to check if Olof sent a SOB in
+> his original mail but haven't got to it.
 >=20
-> Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
-> threads are being used and 7/8 of the core is empty, allowing use of
-> the 1, 3, 5 and 7 thread slots.
+> ...
 >=20
-> (Strides less than 8 are handled similarly.)
+> Yes, he did, see below.
 >=20
-> This allows the VCORE ID or offset to be calculated quickly from the
-> VCPU ID or XIVE server numbers, without access to the VCPU structure.
+> So I'll merge that, I'll add a Tested-by for you Christian.
 >=20
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> Christian please don't remove any of the tags when submitting other
+> peoples' patches in future.
+>=20
+> cheers
+>=20
+>=20
+> =46rom a3b390277627b0342c8ccfc16e58679e0d8abdde Mon Sep 17 00:00:00 2001
+> From: Olof Johansson <olof@lixom.net>
+> Date: Sat, 2 Dec 2017 14:56:36 -0800
+> Subject: [PATCH] powerpc/pasemi: set PCI_SCAN_ALL_PCI_DEVS
+>=20
+> Needed on Amiga X1000 with SB600.
+>=20
+> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 > ---
-> Hello everyone,
+> arch/powerpc/platforms/pasemi/pci.c | 2 ++
+> 1 file changed, 2 insertions(+)
 >=20
-> I've tested this on P8 and P9, in lots of combinations of host and guest
-> threading modes and it has been fine but it does feel like a "tricky"
-> approach, so I still feel somewhat wary about it.
+> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/=
+pasemi/pci.c
+> index 5ff6108..ea54ed2 100644
+> --- a/arch/powerpc/platforms/pasemi/pci.c
+> +++ b/arch/powerpc/platforms/pasemi/pci.c
+> @@ -224,6 +224,8 @@ void __init pas_pci_init(void)
+>        return;
+>    }
 >=20
-> I've posted it as an RFC because I have not tested it with guest native-X=
-IVE,
-> and I suspect that it will take some work to support it.
->=20
->  arch/powerpc/include/asm/kvm_book3s.h | 19 +++++++++++++++++++
->  arch/powerpc/kvm/book3s_hv.c          | 14 ++++++++++----
->  arch/powerpc/kvm/book3s_xive.c        |  9 +++++++--
->  3 files changed, 36 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include=
-/asm/kvm_book3s.h
-> index 376ae803b69c..1295056d564a 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -368,4 +368,23 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu=
- *vcpu);
->  #define SPLIT_HACK_MASK			0xff000000
->  #define SPLIT_HACK_OFFS			0xfb000000
-> =20
-> +/* Pack a VCPU ID from the [0..KVM_MAX_VCPU_ID) space down to the
-> + * [0..KVM_MAX_VCPUS) space, while using knowledge of the guest's core s=
-tride
-> + * (but not it's actual threading mode, which is not available) to avoid
-> + * collisions.
-> + */
-> +static inline u32 kvmppc_pack_vcpu_id(struct kvm *kvm, u32 id)
-> +{
-> +	const int block_offsets[MAX_SMT_THREADS] =3D {0, 4, 2, 6, 1, 5, 3, 7};
-
-I'd suggest 1,3,5,7 at the end rather than 1,5,3,7 - accomplishes
-roughly the same thing, but I think makes the pattern more obvious.
-
-> +	int stride =3D kvm->arch.emul_smt_mode > 1 ?
-> +		     kvm->arch.emul_smt_mode : kvm->arch.smt_mode;
-
-AFAICT from BUG_ON()s etc. at the callsites, kvm->arch.smt_mode must
-always be 1 when this is called, so the conditional here doesn't seem
-useful.
-
-> +	int block =3D (id / KVM_MAX_VCPUS) * (MAX_SMT_THREADS / stride);
-> +	u32 packed_id;
+> +    pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS):
 > +
-> +	BUG_ON(block >=3D MAX_SMT_THREADS);
-> +	packed_id =3D (id % KVM_MAX_VCPUS) + block_offsets[block];
-> +	BUG_ON(packed_id >=3D KVM_MAX_VCPUS);
-> +	return packed_id;
-> +}
-
-It took me a while to wrap my head around the packing function, but I
-think I got there in the end.  It's pretty clever.
-
-One thing bothers me, though.  This certainly packs things under
-KVM_MAX_VCPUS, but not necessarily under the actual number of vcpus.
-e.g. KVM_MAC_VCPUS=3D=3D16, 8 vcpus total, stride 8, 2 vthreads/vcore (as
-qemu sees it), gives both unpacked IDs (0, 1, 8, 9, 16, 17, 24, 25)
-and packed ids of (0, 1, 8, 9, 4, 5, 12, 13) - leaving 2, 3, 6, 7
-etc. unused.
-
-So again, the question is what exactly are these remapped IDs useful
-for.  If we're indexing into a bare array of structures of size
-KVM_MAX_VCPUS then we're *already* wasting a bunch of space by having
-more entries than vcpus.  If we're indexing into something sparser,
-then why is the remapping worthwhile?
-
-
-
-> +
->  #endif /* __ASM_KVM_BOOK3S_H__ */
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 9cb9448163c4..49165cc90051 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -1762,7 +1762,7 @@ static int threads_per_vcore(struct kvm *kvm)
->  	return threads_per_subcore;
->  }
-> =20
-> -static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int cor=
-e)
-> +static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int id)
->  {
->  	struct kvmppc_vcore *vcore;
-> =20
-> @@ -1776,7 +1776,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(str=
-uct kvm *kvm, int core)
->  	init_swait_queue_head(&vcore->wq);
->  	vcore->preempt_tb =3D TB_NIL;
->  	vcore->lpcr =3D kvm->arch.lpcr;
-> -	vcore->first_vcpuid =3D core * kvm->arch.smt_mode;
-> +	vcore->first_vcpuid =3D id;
->  	vcore->kvm =3D kvm;
->  	INIT_LIST_HEAD(&vcore->preempt_list);
-> =20
-> @@ -1992,12 +1992,18 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_h=
-v(struct kvm *kvm,
->  	mutex_lock(&kvm->lock);
->  	vcore =3D NULL;
->  	err =3D -EINVAL;
-> -	core =3D id / kvm->arch.smt_mode;
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		BUG_ON(kvm->arch.smt_mode !=3D 1);
-> +		core =3D kvmppc_pack_vcpu_id(kvm, id);
-> +	} else {
-> +		core =3D id / kvm->arch.smt_mode;
-> +	}
->  	if (core < KVM_MAX_VCORES) {
->  		vcore =3D kvm->arch.vcores[core];
-> +		BUG_ON(cpu_has_feature(CPU_FTR_ARCH_300) && vcore);
->  		if (!vcore) {
->  			err =3D -ENOMEM;
-> -			vcore =3D kvmppc_vcore_create(kvm, core);
-> +			vcore =3D kvmppc_vcore_create(kvm, id & ~(kvm->arch.smt_mode - 1));
->  			kvm->arch.vcores[core] =3D vcore;
->  			kvm->arch.online_vcores++;
->  		}
-> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xiv=
-e.c
-> index f9818d7d3381..681dfe12a5f3 100644
-> --- a/arch/powerpc/kvm/book3s_xive.c
-> +++ b/arch/powerpc/kvm/book3s_xive.c
-> @@ -317,6 +317,11 @@ static int xive_select_target(struct kvm *kvm, u32 *=
-server, u8 prio)
->  	return -EBUSY;
->  }
-> =20
-> +static u32 xive_vp(struct kvmppc_xive *xive, u32 server)
-> +{
-> +	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
-> +}
-> +
-
-I'm finding the XIVE indexing really baffling.  There are a bunch of
-other places where the code uses (xive->vp_base + NUMBER) directly.
-If those are host side references, I guess they don't need updates for
-this.
-
-But if that's the case, then how does indexing into the same array
-with both host and guest server numbers make sense?
-
->  static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
->  			     struct kvmppc_xive_src_block *sb,
->  			     struct kvmppc_xive_irq_state *state)
-> @@ -1084,7 +1089,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
->  		pr_devel("Duplicate !\n");
->  		return -EEXIST;
->  	}
-> -	if (cpu >=3D KVM_MAX_VCPUS) {
-> +	if (cpu >=3D KVM_MAX_VCPU_ID) {
->  		pr_devel("Out of bounds !\n");
->  		return -EINVAL;
->  	}
-> @@ -1098,7 +1103,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
->  	xc->xive =3D xive;
->  	xc->vcpu =3D vcpu;
->  	xc->server_num =3D cpu;
-> -	xc->vp_id =3D xive->vp_base + cpu;
-> +	xc->vp_id =3D xive_vp(xive, cpu);
->  	xc->mfrr =3D 0xff;
->  	xc->valid =3D true;
-> =20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---zx4FCpZtqtKETZ7O
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlrUIgQACgkQbDjKyiDZ
-s5IJWhAAxgEIeJGew4ZOG+dJez8giDohJDtC7fdEYkwMVosLKyBHI8d/tF3uFHR/
-dUtQhJADHZrMomuQ2rhu1m9T9agUzh2GsAQ1GgWCDG1MM6JZR/PQSjbrF1p92ML3
-iuFL0lbahElZmM/BkIKPmP2u+1ZxStC69SGv909Ke5Ulvss09Hp9LCXNE2Mj6GDI
-aQLeqZbAW41fsZX52YNwBPMlRJfUbgFFjMdYoAP9pOeNS8EkmyckSKXiumYmBNGU
-ca0ZfBUod9Def4s3RYUX3A2Oj1n9/O/Gw360o+1TcFS35o+MnqfezqUwiSsPhwO/
-m3+QAern1ATjhtbnh4PUnZbN5jmUk8B8/ITm/26DVXUAnH/2Kv/nZvBK22KcHeK9
-vn/pyTrfuldjJKU37czGwFSh4/D9KldtkuVwfuyFln6aEtqtnuUG8ABwY+kPhQwN
-KKJxHUe0nmsozabg+XvKf/VxTtwXVaqBUedU6iTRm24EuQ/bGa9nlny073R6RkFe
-oG0nxxpVZLuj7Z0GDVcaWe4bmrwFOGxqVpCAb5yd9HuTZo34dN7/nRJ7Wd9PAWS3
-QBAwTBoALgPfimSoMC9MJs0iAcRTfjoPGwuug3FoL5cO1DTSkcDQQVzQOsShebSh
-hoaHUf7i+7jd7YImuPnFqIe9akwizgory5HNOfx09jPr9ZFe35o=
-=zZXF
------END PGP SIGNATURE-----
-
---zx4FCpZtqtKETZ7O--
+>    for (np =3D NULL; (np =3D of_get_next_child(root, np)) !=3D NULL;)
+>        if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
+>            of_node_get(np);
