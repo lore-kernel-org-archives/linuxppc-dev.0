@@ -1,36 +1,19 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Pb5f3LHZzF1vV
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 14:30:13 +1000 (AEST)
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH 1/1] PCI set flag PCI_SCAN_ALL_PCIE_DEVS for P.A. Semi
- boards
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-In-Reply-To: <87tvtbg0i9.fsf@concordia.ellerman.id.au>
-Date: Mon, 16 Apr 2018 06:29:55 +0200
-Cc: Bjorn Helgaas <helgaas@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Message-Id: <0146B9E7-8ECB-48DF-ACCB-4173278A3422@xenosoft.de>
-References: <4cfe3cc0-7fe3-9774-7d20-1b7fcb7aa910@xenosoft.de>
- <CAErSpo55Q8Q=5p6_+uu7ahnw+53ibVDNRXxrzRV9QnUr_9EUfw@mail.gmail.com>
- <28b43e1a-3643-9edb-7123-be1cb0dc846a@xenosoft.de>
- <CAErSpo7fup7+doD6A7RKh8kdE8HQaQrEh=gq35+nC-dBeOQ1uA@mail.gmail.com>
- <527175f7-8a13-37a1-9f0a-0b918aeebd64@xenosoft.de>
- <20171130224243.GB19640@bhelgaas-glaptop.roam.corp.google.com>
- <406ba7c4-7305-4069-227f-81afed202e47@xenosoft.de>
- <20171201232716.GA18780@bhelgaas-glaptop.roam.corp.google.com>
- <dc228918-652a-e24c-ce7b-8d1b30153d3b@xenosoft.de>
- <639e975f-1b3a-4f85-9a40-13fe2473fc28@xenosoft.de>
- <20180319191310.GG77194@bhelgaas-glaptop.roam.corp.google.com>
- <87tvtbg0i9.fsf@concordia.ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Pb8h2xXgzF1S0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 14:32:52 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h69so9918090pfe.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 21:32:52 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/5] KVM TLB flushing improvements (for radix)
+Date: Mon, 16 Apr 2018 14:32:35 +1000
+Message-Id: <20180416043240.8796-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,87 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+This series moves some of the radix mode TLB flushing into
+powerpc/mm, which allows them them to implement the powerpc:tlbie
+tracepoints for KVM invalidations.
 
-Many thanks for your help. Did you merge Olof=E2=80=98s patch? I still have t=
-o patch the 4.17 source code.
+This also fixes a partition scoped page fault performance issue
+that was found by looking at partition scoped tlbie traces.
+
+Since v1:
+- Fixed a bug where I mixed up PRS values, leading to guest page
+  fault hangs.
+- Fixed up the hash cases that still need to be done in real-mode.
+- Dropped the hash changes including the interesting case of a
+  hash tlbie issued by a radix host, for mixed mode support.
+
+This has survived some stress testing over the weekend now, so
+it should be ready for wider review.
 
 Thanks,
-Christian
+Nick
 
-Sent from my iPhone
+Nicholas Piggin (5):
+  KVM: PPC: Book3S HV: radix use correct tlbie sequence in
+    kvmppc_radix_tlbie_page
+  powerpc/mm/radix: implement LPID based TLB flushes to be used by KVM
+  KVM: PPC: Book3S HV: radix use the Linux TLB flush function in
+    kvmppc_radix_tlbie_page
+  KVM: PPC: Book3S HV: radix handle process scoped LPID flush in C, with
+    relocation on
+  KVM: PPC: Book3S HV: radix do not clear partition scoped page table
+    when page fault races with other vCPUs.
 
-> On 19. Mar 2018, at 23:32, Michael Ellerman <mpe@ellerman.id.au> wrote:
->=20
-> Bjorn Helgaas <helgaas@kernel.org> writes:
->=20
->>> On Fri, Mar 16, 2018 at 01:55:36PM +0100, Christian Zigotzky wrote:
->>> Bjorn Helgaas created a patch for making PCI_SCAN_ALL_PCIE_DEVS work for=
+ .../include/asm/book3s/64/tlbflush-radix.h    |   6 +
+ arch/powerpc/kvm/book3s_64_mmu_radix.c        |  78 ++++-----
+ arch/powerpc/kvm/book3s_hv.c                  |  26 +++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S       |  13 +-
+ arch/powerpc/mm/tlb-radix.c                   | 160 ++++++++++++++++++
+ 5 files changed, 238 insertions(+), 45 deletions(-)
 
->>> Root Ports as well as Downstream. Previously PCI_SCAN_ALL_PCIE_DEVS (set=
- by
->>> quirks or the "pci=3Dpcie_scan_all"
->>> kernel parameter) only affected Switch Downstream Ports, not Root Ports.=
- The
->>> problem is, that we have to add always the boot argument "pci=3Dpcie_sca=
-n_all"
->>> for using Bjorn's improvements. Without the boot argument
->>> "pci=3Dpcie_scan_all", the kernel doesn't boot on P.A. Semi boards with S=
-B600
->>> chipset (SB600 chipset is connected via PCIe x4 to the P.A. Semi=E2=80=99=
-s
->>> PA6T-1682M System-on-a-Chip) because the kernel can't find any drives
->>> connected to the SB600 anymore. Olof Johansson has created a patch for
->>> executing "pci=3Dpcie_scan_all" automatically on P.A. Semi boards. With h=
-is
->>> patch, we don't need to add 'pci=3Dpcie_scan_all' to the kernel boot arg=
-uments
->>> anymore.
->>=20
->> The patch looks fine, but I need a signed-off-by line before I can apply
->> it.  See https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.g=
-it/tree/Documentation/process/submitting-patches.rst
->=20
-> I'm happy to take it, I've been meaning to check if Olof sent a SOB in
-> his original mail but haven't got to it.
->=20
-> ...
->=20
-> Yes, he did, see below.
->=20
-> So I'll merge that, I'll add a Tested-by for you Christian.
->=20
-> Christian please don't remove any of the tags when submitting other
-> peoples' patches in future.
->=20
-> cheers
->=20
->=20
-> =46rom a3b390277627b0342c8ccfc16e58679e0d8abdde Mon Sep 17 00:00:00 2001
-> From: Olof Johansson <olof@lixom.net>
-> Date: Sat, 2 Dec 2017 14:56:36 -0800
-> Subject: [PATCH] powerpc/pasemi: set PCI_SCAN_ALL_PCI_DEVS
->=20
-> Needed on Amiga X1000 with SB600.
->=20
-> Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Olof Johansson <olof@lixom.net>
-> ---
-> arch/powerpc/platforms/pasemi/pci.c | 2 ++
-> 1 file changed, 2 insertions(+)
->=20
-> diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/=
-pasemi/pci.c
-> index 5ff6108..ea54ed2 100644
-> --- a/arch/powerpc/platforms/pasemi/pci.c
-> +++ b/arch/powerpc/platforms/pasemi/pci.c
-> @@ -224,6 +224,8 @@ void __init pas_pci_init(void)
->        return;
->    }
->=20
-> +    pci_set_flag(PCI_SCAN_ALL_PCIE_DEVS):
-> +
->    for (np =3D NULL; (np =3D of_get_next_child(root, np)) !=3D NULL;)
->        if (np->name && !strcmp(np->name, "pxp") && !pas_add_bridge(np))
->            of_node_get(np);
+-- 
+2.17.0
