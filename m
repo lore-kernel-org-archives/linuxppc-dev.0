@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PrcH2fSrzF1S0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 00:39:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PrcJ2VTszF1S0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 00:39:12 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: paulus@samba.org,
 	aik@ozlabs.ru
-Subject: [PATCH 1/5] powerpc/lib: Fix off-by-one in alternate feature patching
-Date: Tue, 17 Apr 2018 00:39:01 +1000
-Message-Id: <20180416143905.2716-1-mpe@ellerman.id.au>
+Subject: [PATCH 2/5] powerpc/lib: Fix feature fixup test of external branch
+Date: Tue, 17 Apr 2018 00:39:02 +1000
+Message-Id: <20180416143905.2716-2-mpe@ellerman.id.au>
+In-Reply-To: <20180416143905.2716-1-mpe@ellerman.id.au>
+References: <20180416143905.2716-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we patch an alternate feature section, we have to adjust any
-relative branches that branch out of the alternate section.
-
-But currently we have a bug if we have a branch that points to past
-the last instruction of the alternate section, eg:
+The expected case for this test was wrong, the source of the alternate
+code sequence is:
 
   FTR_SECTION_ELSE
-  1:     b       2f
-         or      6,6,6
-  2:
-  ALT_FTR_SECTION_END(...)
-         nop
+  2:	or	2,2,2
+  	PPC_LCMPI	r3,1
+  	beq	3f
+  	blt	2b
+  	b	3f
+  	b	1b
+  ALT_FTR_SECTION_END(0, 1)
+  3:	or	1,1,1
+  	or	2,2,2
+  4:	or	3,3,3
 
-This will result in a relative branch at 1 with a target that equals
-the end of the alternate section.
+So when it's patched the '3' label should still be on the 'or 1,1,1',
+and the 4 label is irrelevant and can be removed.
 
-That branch does not need adjusting when it's moved to the non-else
-location. Currently we do adjust it, resulting in a branch that goes
-off into the link-time location of the else section, which is junk.
-
-The fix is to not patch branches that have a target == end of the
-alternate section.
-
-Fixes: d20fe50a7b3c ("KVM: PPC: Book3S HV: Branch inside feature section")
-Fixes: 9b1a735de64c ("powerpc: Add logic to patch alternative feature sections")
-Cc: stable@vger.kernel.org # v2.6.27+
+Fixes: 362e7701fd18 ("powerpc: Add self-tests of the feature fixup code")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/lib/feature-fixups.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/lib/feature-fixups-test.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index 35f80ab7cbd8..288fe4f0db4e 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -55,7 +55,7 @@ static int patch_alt_instruction(unsigned int *src, unsigned int *dest,
- 		unsigned int *target = (unsigned int *)branch_target(src);
+diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
+index f4613118132e..12ff0f673956 100644
+--- a/arch/powerpc/lib/feature-fixups-test.S
++++ b/arch/powerpc/lib/feature-fixups-test.S
+@@ -167,9 +167,9 @@ globl(ftr_fixup_test6_expected)
+ 	blt	2b
+ 	b	3f
+ 	b	1b
+-2:	or	1,1,1
++3:	or	1,1,1
+ 	or	2,2,2
+-3:	or	3,3,3
++	or	3,3,3
  
- 		/* Branch within the section doesn't need translating */
--		if (target < alt_start || target >= alt_end) {
-+		if (target < alt_start || target > alt_end) {
- 			instr = translate_branch(dest, src);
- 			if (!instr)
- 				return 1;
+ 
+ #if 0
 -- 
 2.14.1
