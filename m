@@ -1,21 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PnCg4zBGzF1sj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 22:06:06 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Cc: Mark Brown <broonie@kernel.org>, broonie@kernel.org,
- alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, tiwai@suse.com,
- lgirdwood@gmail.com, fabio.estevam@nxp.com, linuxppc-dev@lists.ozlabs.org,
- alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_esai: Add freq check in set_dai_sysclk()" to the
- asoc tree
-In-Reply-To: <1523234034-33018-1-git-send-email-nicoleotsuka@gmail.com>
-Message-Id: <E1f82tQ-0000nK-OJ@debutante>
-Date: Mon, 16 Apr 2018 13:05:56 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PqzF2RRDzDqhn
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 00:10:33 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>,
+ Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: powerpc/modules: Fix crashes by adding CONFIG_RELOCATABLE to
+ vermagic
+In-Reply-To: <CAKv+Gu-FTpa9Ykw1Sdroepxp0z2fR2YAsMJzL=jNLoyvGdgqBA@mail.gmail.com>
+References: <20180410012206.4395-1-mpe@ellerman.id.au>
+ <40Ln4W304zz9s3X@ozlabs.org>
+ <CAKv+Gu-FTpa9Ykw1Sdroepxp0z2fR2YAsMJzL=jNLoyvGdgqBA@mail.gmail.com>
+Date: Tue, 17 Apr 2018 00:10:28 +1000
+Message-ID: <87in8ri6nf.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
 
-   ASoC: fsl_esai: Add freq check in set_dai_sysclk()
+> On 11 April 2018 at 16:49, Michael Ellerman
+> <patch-notifications@ellerman.id.au> wrote:
+>> On Tue, 2018-04-10 at 01:22:06 UTC, Michael Ellerman wrote:
+>>> If you build the kernel with CONFIG_RELOCATABLE=n, then install the
+>>> modules, rebuild the kernel with CONFIG_RELOCATABLE=y and leave the
+>>> old modules installed, we crash something like:
+>>>
+>>>   Unable to handle kernel paging request for data at address 0xd000000018d66cef
+>>>   Faulting instruction address: 0xc0000000021ddd08
+>>>   Oops: Kernel access of bad area, sig: 11 [#1]
+>>>   Modules linked in: x_tables autofs4
+>>>   CPU: 2 PID: 1 Comm: systemd Not tainted 4.16.0-rc6-gcc_ubuntu_le-g99fec39 #1
+>>>   ...
+>>>   NIP check_version.isra.22+0x118/0x170
+>>>   Call Trace:
+>>>     __ksymtab_xt_unregister_table+0x58/0xfffffffffffffcb8 [x_tables] (unreliable)
+>>>     resolve_symbol+0xb4/0x150
+>>>     load_module+0x10e8/0x29a0
+>>>     SyS_finit_module+0x110/0x140
+>>>     system_call+0x58/0x6c
+>>>
+>>> This happens because since commit 71810db27c1c ("modversions: treat
+>>> symbol CRCs as 32 bit quantities"), a relocatable kernel encodes and
+>>> handles symbol CRCs differently from a non-relocatable kernel.
+>>>
+>>> Although it's possible we could try and detect this situation and
+>>> handle it, it's much more robust to simply make the state of
+>>> CONFIG_RELOCATABLE part of the module vermagic.
+>>>
+>>> Fixes: 71810db27c1c ("modversions: treat symbol CRCs as 32 bit quantities")
+>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>>
+>> Applied to powerpc fixes.
+>>
+>> https://git.kernel.org/powerpc/c/73aca179d78eaa11604ba0783a6d8b
+>
+> Thanks for the cc. I guess this only affects powerpc, given that it is
+> the only arch that switches between CRC immediate values and CRC
+> offsets depending on the configuration.
 
-has been applied to the asoc tree at
+No worries.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
+Is there any reason we shouldn't always turn on CONFIG_MODULE_REL_CRCS?
+It seems to work, but I wanted to test it more before switching to that,
+hence the quick fix above.
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
+arch/um looks like it might be switching based on config, but I don't
+know enough to say:
 
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
+  config LD_SCRIPT_STATIC
+  	bool
+  	default y
+  	depends on STATIC_LINK
+  
+  config LD_SCRIPT_DYN
+  	bool
+  	default y
+  	depends on !LD_SCRIPT_STATIC
+          select MODULE_REL_CRCS if MODVERSIONS
 
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
 
-Thanks,
-Mark
-
->From 8a2278b7fb3df67cd415c679ba1a0e5e4a1761a7 Mon Sep 17 00:00:00 2001
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-Date: Sun, 8 Apr 2018 17:33:54 -0700
-Subject: [PATCH] ASoC: fsl_esai: Add freq check in set_dai_sysclk()
-
-The freq parameter indicates the physical frequency of an actual
-input clock or a desired frequency of an output clock for HCKT/R.
-It should never be passed 0. This might cause Division-by-zero.
-
-So this patch adds a check to fix it.
-
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_esai.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index da8fd98c7f51..d79e99ef31ad 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -226,6 +226,12 @@ static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
- 	unsigned long clk_rate;
- 	int ret;
- 
-+	if (freq == 0) {
-+		dev_err(dai->dev, "%sput freq of HCK%c should not be 0Hz\n",
-+			in ? "in" : "out", tx ? 'T' : 'R');
-+		return -EINVAL;
-+	}
-+
- 	/* Bypass divider settings if the requirement doesn't change */
- 	if (freq == esai_priv->hck_rate[tx] && dir == esai_priv->hck_dir[tx])
- 		return 0;
--- 
-2.17.0
+cheers
