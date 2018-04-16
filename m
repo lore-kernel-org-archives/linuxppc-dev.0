@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PrcJ2VTszF1S0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 00:39:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PrcK32Z6zF1S0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 00:39:13 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: paulus@samba.org,
 	aik@ozlabs.ru
-Subject: [PATCH 2/5] powerpc/lib: Fix feature fixup test of external branch
-Date: Tue, 17 Apr 2018 00:39:02 +1000
-Message-Id: <20180416143905.2716-2-mpe@ellerman.id.au>
+Subject: [PATCH 3/5] powerpc/lib: Fix the feature fixup tests to actually work
+Date: Tue, 17 Apr 2018 00:39:03 +1000
+Message-Id: <20180416143905.2716-3-mpe@ellerman.id.au>
 In-Reply-To: <20180416143905.2716-1-mpe@ellerman.id.au>
 References: <20180416143905.2716-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,45 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The expected case for this test was wrong, the source of the alternate
-code sequence is:
+The code patching code has always been a bit confused about whether
+it's best to use void *, unsigned int *, char *, etc. to point to
+instructions. In fact in the feature fixups tests we use both unsigned
+int[] and u8[] in different places.
 
-  FTR_SECTION_ELSE
-  2:	or	2,2,2
-  	PPC_LCMPI	r3,1
-  	beq	3f
-  	blt	2b
-  	b	3f
-  	b	1b
-  ALT_FTR_SECTION_END(0, 1)
-  3:	or	1,1,1
-  	or	2,2,2
-  4:	or	3,3,3
+Unfortunately the tests that use unsigned int[] calculate the size of
+the code blocks using subtraction of those unsigned int pointers, and
+then pass the result to memcmp(). This means we're only comparing 1/4
+of the bytes we need to, because we need to multiply by
+sizeof(unsigned int) to get the number of *bytes*.
 
-So when it's patched the '3' label should still be on the 'or 1,1,1',
-and the 4 label is irrelevant and can be removed.
+The result is that the tests do all the patching and then only compare
+some of the resulting code, so patching bugs that only effect that
+last 3/4 of the code could slip through undetected. It turns out that
+hasn't been happening, although one test had a bad expected case (see
+previous commit).
+
+Fix it for now by multiplying the size by 4 in the affected functions.
 
 Fixes: 362e7701fd18 ("powerpc: Add self-tests of the feature fixup code")
+Epic-brown-paper-bag-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/lib/feature-fixups-test.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/lib/feature-fixups.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
-index f4613118132e..12ff0f673956 100644
---- a/arch/powerpc/lib/feature-fixups-test.S
-+++ b/arch/powerpc/lib/feature-fixups-test.S
-@@ -167,9 +167,9 @@ globl(ftr_fixup_test6_expected)
- 	blt	2b
- 	b	3f
- 	b	1b
--2:	or	1,1,1
-+3:	or	1,1,1
- 	or	2,2,2
--3:	or	3,3,3
-+	or	3,3,3
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 288fe4f0db4e..097b45bd9de4 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -285,7 +285,7 @@ static void test_basic_patching(void)
+ 	extern unsigned int end_ftr_fixup_test1[];
+ 	extern unsigned int ftr_fixup_test1_orig[];
+ 	extern unsigned int ftr_fixup_test1_expected[];
+-	int size = end_ftr_fixup_test1 - ftr_fixup_test1;
++	int size = 4 * (end_ftr_fixup_test1 - ftr_fixup_test1);
  
+ 	fixup.value = fixup.mask = 8;
+ 	fixup.start_off = calc_offset(&fixup, ftr_fixup_test1 + 1);
+@@ -317,7 +317,7 @@ static void test_alternative_patching(void)
+ 	extern unsigned int ftr_fixup_test2_orig[];
+ 	extern unsigned int ftr_fixup_test2_alt[];
+ 	extern unsigned int ftr_fixup_test2_expected[];
+-	int size = end_ftr_fixup_test2 - ftr_fixup_test2;
++	int size = 4 * (end_ftr_fixup_test2 - ftr_fixup_test2);
  
- #if 0
+ 	fixup.value = fixup.mask = 0xF;
+ 	fixup.start_off = calc_offset(&fixup, ftr_fixup_test2 + 1);
+@@ -349,7 +349,7 @@ static void test_alternative_case_too_big(void)
+ 	extern unsigned int end_ftr_fixup_test3[];
+ 	extern unsigned int ftr_fixup_test3_orig[];
+ 	extern unsigned int ftr_fixup_test3_alt[];
+-	int size = end_ftr_fixup_test3 - ftr_fixup_test3;
++	int size = 4 * (end_ftr_fixup_test3 - ftr_fixup_test3);
+ 
+ 	fixup.value = fixup.mask = 0xC;
+ 	fixup.start_off = calc_offset(&fixup, ftr_fixup_test3 + 1);
+@@ -376,7 +376,7 @@ static void test_alternative_case_too_small(void)
+ 	extern unsigned int ftr_fixup_test4_orig[];
+ 	extern unsigned int ftr_fixup_test4_alt[];
+ 	extern unsigned int ftr_fixup_test4_expected[];
+-	int size = end_ftr_fixup_test4 - ftr_fixup_test4;
++	int size = 4 * (end_ftr_fixup_test4 - ftr_fixup_test4);
+ 	unsigned long flag;
+ 
+ 	/* Check a high-bit flag */
+@@ -410,7 +410,7 @@ static void test_alternative_case_with_branch(void)
+ 	extern unsigned int ftr_fixup_test5[];
+ 	extern unsigned int end_ftr_fixup_test5[];
+ 	extern unsigned int ftr_fixup_test5_expected[];
+-	int size = end_ftr_fixup_test5 - ftr_fixup_test5;
++	int size = 4 * (end_ftr_fixup_test5 - ftr_fixup_test5);
+ 
+ 	check(memcmp(ftr_fixup_test5, ftr_fixup_test5_expected, size) == 0);
+ }
+@@ -420,7 +420,7 @@ static void test_alternative_case_with_external_branch(void)
+ 	extern unsigned int ftr_fixup_test6[];
+ 	extern unsigned int end_ftr_fixup_test6[];
+ 	extern unsigned int ftr_fixup_test6_expected[];
+-	int size = end_ftr_fixup_test6 - ftr_fixup_test6;
++	int size = 4 * (end_ftr_fixup_test6 - ftr_fixup_test6);
+ 
+ 	check(memcmp(ftr_fixup_test6, ftr_fixup_test6_expected, size) == 0);
+ }
 -- 
 2.14.1
