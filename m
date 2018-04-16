@@ -1,44 +1,38 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PVfD0fhnzF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 11:09:39 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3G19BDc051668
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 21:09:37 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hcg71b41e-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 21:09:36 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Sun, 15 Apr 2018 21:09:35 -0400
-Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
- [9.57.199.110])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w3G19Yqp50659436
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 01:09:34 GMT
-Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 7A15AAE04E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 21:11:20 -0400 (EDT)
-Received: from [9.80.233.220] (unknown [9.80.233.220])
- by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP id 44CB4AE03B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Apr 2018 21:11:20 -0400 (EDT)
-Subject: Re: [PATCH] ibmvnic: Clear pending interrupt after device reset
-To: linuxppc-dev@lists.ozlabs.org
-References: <1523836416-16531-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <20180415.205512.1546339550911332998.davem@davemloft.net>
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Sun, 15 Apr 2018 20:09:33 -0500
+Return-Path: <ebiederm@xmission.com>
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
+ bits)) (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PWt40kfNzF1pY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 12:04:58 +1000 (AEST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Martin <Dave.Martin@arm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>, sparclinux <sparclinux@vger.kernel.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ linux-arch <linux-arch@vger.kernel.org>
+References: <CA+55aFxdg2bYHtbKXb4mT5UuP2GH_qjkc=WeZY-RYHWZFQ2Gng@mail.gmail.com>
+ <20180412172051.GK16141@n2100.armlinux.org.uk>
+ <CA+55aFwjZqd8J0=veki1g+quQg8amEG4NnMe-h7HFksn=F=x_Q@mail.gmail.com>
+ <20180413094211.GN16141@n2100.armlinux.org.uk>
+ <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
+ <20180413170827.GB16308@e103592.cambridge.arm.com>
+ <20180413175407.GO16141@n2100.armlinux.org.uk>
+ <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
+ <20180413184522.GD16308@e103592.cambridge.arm.com>
+ <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
+ <20180415131206.GR16141@n2100.armlinux.org.uk>
+ <87604sa2fu.fsf_-_@xmission.com>
+ <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
+Date: Sun, 15 Apr 2018 21:03:32 -0500
+In-Reply-To: <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
+ (Linus Torvalds's message of "Sun, 15 Apr 2018 11:16:04 -0700")
+Message-ID: <87tvsb29hn.fsf@xmission.com>
 MIME-Version: 1.0
-In-Reply-To: <20180415.205512.1546339550911332998.davem@davemloft.net>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6fc54993-ab6b-8b48-9854-379c549d3f2f@linux.vnet.ibm.com>
+Content-Type: text/plain
+Subject: Re: [RFC PATCH 0/3] Dealing with the aliases of SI_USER
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,25 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2018 07:55 PM, David Miller wrote:
-> From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> Date: Sun, 15 Apr 2018 18:53:36 -0500
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> (
 >
->> Due to a firmware bug, the hypervisor can send an interrupt to a
->> transmit or receive queue just prior to a partition migration, not
->> allowing the device enough time to handle it and send an EOI. When
->> the partition migrates, the interrupt is lost but an "EOI-pending"
->> flag for the interrupt line is still set in firmware. No further
->> interrupts will be sent until that flag is cleared, effectively
->> freezing that queue. To workaround this, the driver will disable the
->> hardware interrupt and send an H_EOI signal prior to re-enabling it.
->> This will flush the pending EOI and allow the driver to continue
->> operation.
+> On Sun, Apr 15, 2018 at 8:56 AM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
 >>
->> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> Hey Thomas, I see two copies of this patch posted.  Any special
-> reason for that?
+>> Would you consider the patchset below for -rc2?
 >
-> Thanks.
->
-Sorry, I misspelled one of the email addresses and mistakenly resent it.  Please ignore this one.
+> Ugh.
+
+The point of this series is to squash the potential for regressions even
+from the weird broken code that fills in fields for si_code 0 that do
+not match SI_USER.
+
+The copy_siginfo_to_user32 never handled that so we don't need to worry
+about that.  All of the signals that abuse si_code 0 go through
+force_sig_info so signalfd can not catch them.  Which means that only
+copy_siginfo_to_user needs to be worried about.
+
+Last time I was benchmarking I could not see a difference between
+copying the entire siginfo and only a small part so I don't see
+the point of optimizing now.
+
+For an actual cleanup I intend to go farther than you are proposing and
+convert everthing to the set of helper functions I have added to
+kernel/signal.c force_sig_fault, force_sig_mceerr, force_sig_bnderr,
+force_sig_pkuerr.
+
+When I am done there will be maybe 5 instances of clear_siginfo outside
+of those helper functions.  At which point I won't care if we remove
+clear_siginfo and just use memset.  That is a real improvement
+that looks something like: "105 files changed, 933 insertions(+), 1698 deletions(-)"
+That is my end goal with all of this.
+
+You complained to me about regressions and you are right with the
+current handling of FPE_FIXME TRAP_FIXME the code is not bug compatible
+with old versions of linux, and people have noticed.
+
+What this patchset represents is the bare minimum needed to convert
+copy_siginfo_to_user to a copy_to_user, and remove the possibility
+of regressions.
+
+To that end I need to ensure every struct siginfo in the entire
+kernel is memset to 0.  A structure initializer is absolutely
+not enough.  So I don't mind people thinking clear_siginfo is necessary.
+
+
+To that end clear_siginfo where it does not take the size of
+struct siginfo as a parameter is much less suceptible to typos,
+and allows me to ensure every instance of struct siginfo is fully
+initialized.
+
+I fully intend to remove practically every instance of struct siginfo
+from the architecture specific code, and use the aforementioned helpers.
+The trouble is that some of the architecture code need refactoring
+for that to happen.  Even your proposed init_siginfo can't be widely
+used as a common pattern is to fill in siginfo partially in the
+code with si_code and si_signo being filled in almost last.
+
+So in short.  I intend to remove most of these clear_siginfo calls when
+I remove the siginfos later.  This series is focused on making
+copy_siginfo_to_user simple enough we don't need to use siginfo_layout,
+and thus can be fully backwards compatibile with ourselves and we won't
+need to worry about regressions.  I have aimed to keep this simple
+enough we can merge this after -rc1 because we don't want regressions.
+
+Eric
+
+ps.  I intend to place this change first in my series wether or not it makes
+it into -rc2 so that I can be certain we remove any possible regressions
+in behavior on the buggy architectures.  Then I can take my time and
+ensure the non-trivial changes of refactoring etc are done carefully so
+I don't introduce other bugs.  I need that so I can sleep at night.
+
+pps.  I can look at some of your other suggestions but cleverness leads
+to regressions, and if you are going to complain at me harshly when I
+have been being careful and taking things seriously I am not
+particularly willing to take unnecessary chances.
