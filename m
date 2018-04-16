@@ -1,33 +1,32 @@
 Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40PmMZ1VMxzF1sg
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 21:27:54 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3GBNH5A113347
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 07:27:51 -0400
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hcqs5h080-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40PmMd1ywtzF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 21:27:57 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3GBPwXO099655
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 07:27:54 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hcstx36d7-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 07:27:51 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 07:27:53 -0400
 Received: from localhost
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Mon, 16 Apr 2018 07:27:49 -0400
+ Mon, 16 Apr 2018 07:27:53 -0400
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V1 02/11] powerpc/kvm: Switch kvm pmd allocator to custom
- allocator
-Date: Mon, 16 Apr 2018 16:57:15 +0530
+Subject: [PATCH V1 03/11] powerpc/mm: Use pmd_lockptr instead of opencoding it
+Date: Mon, 16 Apr 2018 16:57:16 +0530
 In-Reply-To: <20180416112724.9677-1-aneesh.kumar@linux.ibm.com>
 References: <20180416112724.9677-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180416112724.9677-4-aneesh.kumar@linux.ibm.com>
+Message-Id: <20180416112724.9677-5-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,108 +38,83 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-In the next set of patches, we will switch pmd allocator to use page fragments
-and the locking will be updated to split pmd ptlock. We want to avoid using
-fragments for partition-scoped table. Use slab cache similar to level 4 table
+In later patch we switch pmd_lock from mm->page_table_lock to split pmd ptlock.
+It avoid compilations issues, use pmd_lockptr helper.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 36 +++++++++++++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/pgtable-book3s64.c | 4 ++--
+ arch/powerpc/mm/pgtable-hash64.c   | 8 +++++---
+ arch/powerpc/mm/pgtable-radix.c    | 2 +-
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index a57eafec4dc2..ccdf3761eec0 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -200,6 +200,7 @@ void kvmppc_radix_set_pte_at(struct kvm *kvm, unsigned long addr,
- }
- 
- static struct kmem_cache *kvm_pte_cache;
-+static struct kmem_cache *kvm_pmd_cache;
- 
- static pte_t *kvmppc_pte_alloc(void)
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 35913b0b6d56..e1c304183172 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -37,7 +37,7 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+ 	int changed;
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(!pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
+-	assert_spin_locked(&vma->vm_mm->page_table_lock);
++	assert_spin_locked(pmd_lockptr(vma->vm_mm, pmdp));
+ #endif
+ 	changed = !pmd_same(*(pmdp), entry);
+ 	if (changed) {
+@@ -62,7 +62,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
  {
-@@ -217,6 +218,16 @@ static inline int pmd_is_leaf(pmd_t pmd)
- 	return !!(pmd_val(pmd) & _PAGE_PTE);
- }
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(pte_present(pmd_pte(*pmdp)) && !pte_protnone(pmd_pte(*pmdp)));
+-	assert_spin_locked(&mm->page_table_lock);
++	assert_spin_locked(pmd_lockptr(mm, pmdp));
+ 	WARN_ON(!(pmd_trans_huge(pmd) || pmd_devmap(pmd)));
+ #endif
+ 	trace_hugepage_set_pmd(addr, pmd_val(pmd));
+diff --git a/arch/powerpc/mm/pgtable-hash64.c b/arch/powerpc/mm/pgtable-hash64.c
+index 199bfda5f0d9..692bfc9e372c 100644
+--- a/arch/powerpc/mm/pgtable-hash64.c
++++ b/arch/powerpc/mm/pgtable-hash64.c
+@@ -193,7 +193,7 @@ unsigned long hash__pmd_hugepage_update(struct mm_struct *mm, unsigned long addr
  
-+static pmd_t *kvmppc_pmd_alloc(void)
-+{
-+	return kmem_cache_alloc(kvm_pmd_cache, GFP_KERNEL);
-+}
-+
-+static void kvmppc_pmd_free(pmd_t *pmdp)
-+{
-+	kmem_cache_free(kvm_pmd_cache, pmdp);
-+}
-+
- static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 			     unsigned int level, unsigned long mmu_seq)
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(!hash__pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
+-	assert_spin_locked(&mm->page_table_lock);
++	assert_spin_locked(pmd_lockptr(mm, pmdp));
+ #endif
+ 
+ 	__asm__ __volatile__(
+@@ -265,7 +265,8 @@ void hash__pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+ 				  pgtable_t pgtable)
  {
-@@ -239,7 +250,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 	if (pud && pud_present(*pud) && !pud_huge(*pud))
- 		pmd = pmd_offset(pud, gpa);
- 	else if (level <= 1)
--		new_pmd = pmd_alloc_one(kvm->mm, gpa);
-+		new_pmd = kvmppc_pmd_alloc();
- 
- 	if (level == 0 && !(pmd && pmd_present(*pmd) && !pmd_is_leaf(*pmd)))
- 		new_ptep = kvmppc_pte_alloc();
-@@ -382,7 +393,7 @@ static int kvmppc_create_pte(struct kvm *kvm, pte_t pte, unsigned long gpa,
- 	if (new_pud)
- 		pud_free(kvm->mm, new_pud);
- 	if (new_pmd)
--		pmd_free(kvm->mm, new_pmd);
-+		kvmppc_pmd_free(new_pmd);
- 	if (new_ptep)
- 		kvmppc_pte_free(new_ptep);
- 	return ret;
-@@ -758,7 +769,7 @@ void kvmppc_free_radix(struct kvm *kvm)
- 				kvmppc_pte_free(pte);
- 				pmd_clear(pmd);
- 			}
--			pmd_free(kvm->mm, pmd_offset(pud, 0));
-+			kvmppc_pmd_free(pmd_offset(pud, 0));
- 			pud_clear(pud);
- 		}
- 		pud_free(kvm->mm, pud_offset(pgd, 0));
-@@ -770,20 +781,35 @@ void kvmppc_free_radix(struct kvm *kvm)
- 
- static void pte_ctor(void *addr)
- {
--	memset(addr, 0, PTE_TABLE_SIZE);
-+	memset(addr, 0, RADIX_PTE_TABLE_SIZE);
-+}
+ 	pgtable_t *pgtable_slot;
+-	assert_spin_locked(&mm->page_table_lock);
 +
-+static void pmd_ctor(void *addr)
-+{
-+	memset(addr, 0, RADIX_PMD_TABLE_SIZE);
- }
++	assert_spin_locked(pmd_lockptr(mm, pmdp));
+ 	/*
+ 	 * we store the pgtable in the second half of PMD
+ 	 */
+@@ -285,7 +286,8 @@ pgtable_t hash__pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
+ 	pgtable_t pgtable;
+ 	pgtable_t *pgtable_slot;
  
- int kvmppc_radix_init(void)
- {
--	unsigned long size = sizeof(void *) << PTE_INDEX_SIZE;
-+	unsigned long size = sizeof(void *) << RADIX_PTE_INDEX_SIZE;
+-	assert_spin_locked(&mm->page_table_lock);
++	assert_spin_locked(pmd_lockptr(mm, pmdp));
++
+ 	pgtable_slot = (pgtable_t *)pmdp + PTRS_PER_PMD;
+ 	pgtable = *pgtable_slot;
+ 	/*
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index f1891e215e39..473415750cbf 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -975,7 +975,7 @@ unsigned long radix__pmd_hugepage_update(struct mm_struct *mm, unsigned long add
  
- 	kvm_pte_cache = kmem_cache_create("kvm-pte", size, size, 0, pte_ctor);
- 	if (!kvm_pte_cache)
- 		return -ENOMEM;
-+
-+	size = sizeof(void *) << RADIX_PMD_INDEX_SIZE;
-+
-+	kvm_pmd_cache = kmem_cache_create("kvm-pmd", size, size, 0, pmd_ctor);
-+	if (!kvm_pmd_cache) {
-+		kmem_cache_destroy(kvm_pte_cache);
-+		return -ENOMEM;
-+	}
-+
- 	return 0;
- }
+ #ifdef CONFIG_DEBUG_VM
+ 	WARN_ON(!radix__pmd_trans_huge(*pmdp) && !pmd_devmap(*pmdp));
+-	assert_spin_locked(&mm->page_table_lock);
++	assert_spin_locked(pmd_lockptr(mm, pmdp));
+ #endif
  
- void kvmppc_radix_exit(void)
- {
- 	kmem_cache_destroy(kvm_pte_cache);
-+	kmem_cache_destroy(kvm_pmd_cache);
- }
+ 	old = radix__pte_update(mm, addr, (pte_t *)pmdp, clr, set, 1);
 -- 
 2.14.3
