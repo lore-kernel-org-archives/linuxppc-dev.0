@@ -1,20 +1,25 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
+ [IPv6:2607:f8b0:400c:c08::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QKHs2ND4zF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:11:37 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org,
-	mpe@ellerman.id.au
-Cc: mhairgrove@nvidia.com, arbab@linux.ibm.com, bsingharora@gmail.com,
- Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH 2/2] powernv/npu: Add a debugfs setting to change ATSD
- threshold
-Date: Tue, 17 Apr 2018 19:11:29 +1000
-Message-Id: <20180417091129.23069-2-alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QKQ86kjwzF1RD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:17:04 +1000 (AEST)
+Received: by mail-ua0-x241.google.com with SMTP id d3so11667490uae.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 02:17:04 -0700 (PDT)
+MIME-Version: 1.0
 In-Reply-To: <20180417091129.23069-1-alistair@popple.id.au>
 References: <20180417091129.23069-1-alistair@popple.id.au>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Tue, 17 Apr 2018 19:17:00 +1000
+Message-ID: <CAKTCnz=nMDksZq_1pWXGqKFTQ8x5pO=Ojw=TQdPkT+ZqBwEGwA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powernv/npu: Do a PID GPU TLB flush when invalidating
+ a large address range
+To: Alistair Popple <alistair@popple.id.au>
+Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mark Hairgrove <mhairgrove@nvidia.com>, arbab@linux.ibm.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,61 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The threshold at which it becomes more efficient to coalesce a range of
-ATSDs into a single per-PID ATSD is currently not well understood due to a
-lack of real-world work loads. This patch adds a debugfs parameter allowing
-the threshold to be altered at runtime in order to aid future development
-and refinement of the value.
+On Tue, Apr 17, 2018 at 7:11 PM, Alistair Popple <alistair@popple.id.au> wrote:
+> The NPU has a limited number of address translation shootdown (ATSD)
+> registers and the GPU has limited bandwidth to process ATSDs. This can
+> result in contention of ATSD registers leading to soft lockups on some
+> threads, particularly when invalidating a large address range in
+> pnv_npu2_mn_invalidate_range().
+>
+> At some threshold it becomes more efficient to flush the entire GPU TLB for
+> the given MM context (PID) than individually flushing each address in the
+> range. This patch will result in ranges greater than 2MB being converted
+> from 32+ ATSDs into a single ATSD which will flush the TLB for the given
+> PID on each GPU.
+>
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> ---
+>  arch/powerpc/platforms/powernv/npu-dma.c | 23 +++++++++++++++++++----
+>  1 file changed, 19 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+> index 94801d8e7894..dc34662e9df9 100644
+> --- a/arch/powerpc/platforms/powernv/npu-dma.c
+> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
+> @@ -40,6 +40,13 @@
+>  DEFINE_SPINLOCK(npu_context_lock);
+>
+>  /*
+> + * When an address shootdown range exceeds this threshold we invalidate the
+> + * entire TLB on the GPU for the given PID rather than each specific address in
+> + * the range.
+> + */
+> +#define ATSD_THRESHOLD (2*1024*1024)
+> +
+> +/*
+>   * Other types of TCE cache invalidation are not functional in the
+>   * hardware.
+>   */
+> @@ -675,11 +682,19 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+>         struct npu_context *npu_context = mn_to_npu_context(mn);
+>         unsigned long address;
+>
+> -       for (address = start; address < end; address += PAGE_SIZE)
+> -               mmio_invalidate(npu_context, 1, address, false);
+> +       if (end - start > ATSD_THRESHOLD) {
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/platforms/powernv/npu-dma.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+I'm nitpicking, but (end - start) > ATSD_THRESHOLD is clearer
 
-diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-index dc34662e9df9..a765bf576c14 100644
---- a/arch/powerpc/platforms/powernv/npu-dma.c
-+++ b/arch/powerpc/platforms/powernv/npu-dma.c
-@@ -17,7 +17,9 @@
- #include <linux/pci.h>
- #include <linux/memblock.h>
- #include <linux/iommu.h>
-+#include <linux/debugfs.h>
- 
-+#include <asm/debugfs.h>
- #include <asm/tlb.h>
- #include <asm/powernv.h>
- #include <asm/reg.h>
-@@ -44,7 +46,8 @@ DEFINE_SPINLOCK(npu_context_lock);
-  * entire TLB on the GPU for the given PID rather than each specific address in
-  * the range.
-  */
--#define ATSD_THRESHOLD (2*1024*1024)
-+static uint64_t atsd_threshold = 2 * 1024 * 1024;
-+static struct dentry *atsd_threshold_dentry;
- 
- /*
-  * Other types of TCE cache invalidation are not functional in the
-@@ -682,7 +685,7 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
- 	struct npu_context *npu_context = mn_to_npu_context(mn);
- 	unsigned long address;
- 
--	if (end - start > ATSD_THRESHOLD) {
-+	if (end - start > atsd_threshold) {
- 		/*
- 		 * Just invalidate the entire PID if the address range is too
- 		 * large.
-@@ -956,6 +959,11 @@ int pnv_npu2_init(struct pnv_phb *phb)
- 	static int npu_index;
- 	uint64_t rc = 0;
- 
-+	if (!atsd_threshold_dentry) {
-+		atsd_threshold_dentry = debugfs_create_x64("atsd_threshold",
-+				   0600, powerpc_debugfs_root, &atsd_threshold);
-+	}
-+
- 	phb->npu.nmmu_flush =
- 		of_property_read_bool(phb->hose->dn, "ibm,nmmu-flush");
- 	for_each_child_of_node(phb->hose->dn, dn) {
--- 
-2.11.0
+> +               /*
+> +                * Just invalidate the entire PID if the address range is too
+> +                * large.
+> +                */
+> +               mmio_invalidate(npu_context, 0, 0, true);
+> +       } else {
+> +               for (address = start; address < end; address += PAGE_SIZE)
+> +                       mmio_invalidate(npu_context, 1, address, false);
+>
+> -       /* Do the flush only on the final addess == end */
+> -       mmio_invalidate(npu_context, 1, address, true);
+> +               /* Do the flush only on the final addess == end */
+> +               mmio_invalidate(npu_context, 1, address, true);
+> +       }
+>  }
+>
+
+Acked-by: Balbir Singh <bsingharora@gmail.com>
