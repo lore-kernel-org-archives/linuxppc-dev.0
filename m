@@ -1,26 +1,23 @@
 Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x244.google.com (mail-ua0-x244.google.com
- [IPv6:2607:f8b0:400c:c08::244])
+Received: from mail-pl0-x236.google.com (mail-pl0-x236.google.com
+ [IPv6:2607:f8b0:400e:c01::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QfvQ65KCzF1xg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 08:25:06 +1000 (AEST)
-Received: by mail-ua0-x244.google.com with SMTP id c3so13661598uae.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 15:25:06 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAKTCnz=nMDksZq_1pWXGqKFTQ8x5pO=Ojw=TQdPkT+ZqBwEGwA@mail.gmail.com>
-References: <20180417091129.23069-1-alistair@popple.id.au>
- <CAKTCnz=nMDksZq_1pWXGqKFTQ8x5pO=Ojw=TQdPkT+ZqBwEGwA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QgJS40nLzF1pY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 08:43:20 +1000 (AEST)
+Received: by mail-pl0-x236.google.com with SMTP id m7-v6so1240307plt.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 15:43:20 -0700 (PDT)
+Date: Wed, 18 Apr 2018 08:43:07 +1000
 From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 18 Apr 2018 08:25:03 +1000
-Message-ID: <CAKTCnz=XURfUE68aUd0dV+Mo7O76iJTggiwukLBgigi-F8eDNQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powernv/npu: Do a PID GPU TLB flush when invalidating
- a large address range
-To: Alistair Popple <alistair@popple.id.au>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mark Hairgrove <mhairgrove@nvidia.com>, arbab@linux.ibm.com
-Content-Type: text/plain; charset="UTF-8"
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V1 00/11] powerpc/mm/book3s64: Support for split pmd ptlock
+Message-ID: <20180418084308.79e28ede@gmail.com>
+In-Reply-To: <20180416112724.9677-1-aneesh.kumar@linux.ibm.com>
+References: <20180416112724.9677-1-aneesh.kumar@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 17, 2018 at 7:17 PM, Balbir Singh <bsingharora@gmail.com> wrote:
-> On Tue, Apr 17, 2018 at 7:11 PM, Alistair Popple <alistair@popple.id.au> wrote:
->> The NPU has a limited number of address translation shootdown (ATSD)
->> registers and the GPU has limited bandwidth to process ATSDs. This can
->> result in contention of ATSD registers leading to soft lockups on some
->> threads, particularly when invalidating a large address range in
->> pnv_npu2_mn_invalidate_range().
->>
->> At some threshold it becomes more efficient to flush the entire GPU TLB for
->> the given MM context (PID) than individually flushing each address in the
->> range. This patch will result in ranges greater than 2MB being converted
->> from 32+ ATSDs into a single ATSD which will flush the TLB for the given
->> PID on each GPU.
->>
->> Signed-off-by: Alistair Popple <alistair@popple.id.au>
->> +       }
->>  }
->>
+On Mon, 16 Apr 2018 16:57:12 +0530
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+
+> This patch series add split pmd pagetable lock for book3s64. nohash64 also should
+> be able to switch to this. I need to workout the code dependency. This series
+> also migh have broken the build on platforms otherthan book3s64. I am sending this early
+> to get feedback on whether we should continue with the approach.
+> 
+> We switch the pmd allocator to use something similar to what we already use for
+> level 4 pagetable allocation. We get an order 0 page and divide that to fragments
+> and hand over fragments when we get request for a pmd pagetable. The pmd lock is
+> now stashed in the struct page backing the allocated page.
+
+That's only for the THP case right?
+
+> 
+> The series helps in reducing lock contention on mm->page_table_lock.
 >
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-Tested-by: Balbir Singh <bsingharora@gmail.com>
+
+The numbers look good.
