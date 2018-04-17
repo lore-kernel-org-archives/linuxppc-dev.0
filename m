@@ -1,31 +1,22 @@
-Return-Path: <corbet@lwn.net>
-Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x22f.google.com (mail-pl0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c01::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Q0Wh2cmszF1yf
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 06:35:43 +1000 (AEST)
-Date: Mon, 16 Apr 2018 14:35:38 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Mike Rapoport <rppt@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andrey Ryabinin
- <aryabinin@virtuozzo.com>, Richard Henderson <rth@twiddle.net>, Ivan
- Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
- Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Ralf
- Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>, Michael
- Ellerman <mpe@ellerman.id.au>, Alexander Viro <viro@zeniv.linux.org.uk>,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- kasan-dev@googlegroups.com, linux-alpha@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH 00/32] docs/vm: convert to ReST format
-Message-ID: <20180416143538.40a40457@lwn.net>
-In-Reply-To: <20180415173655.GB31176@rapoport-lnx>
-References: <1521660168-14372-1-git-send-email-rppt@linux.vnet.ibm.com>
- <20180329154607.3d8bda75@lwn.net>
- <20180401063857.GA3357@rapoport-lnx>
- <20180413135551.0e6d1b12@lwn.net>
- <20180415173655.GB31176@rapoport-lnx>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Q5Rh6bqdzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:17:36 +1000 (AEST)
+Received: by mail-pl0-x22f.google.com with SMTP id t22-v6so2338924plo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 17:17:36 -0700 (PDT)
+Date: Tue, 17 Apr 2018 10:17:19 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: kvm-ppc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 5/5] KVM: PPC: Book3S HV: radix do not clear
+ partition scoped page table when page fault races with other vCPUs.
+Message-ID: <20180417101719.5bbd60f2@roar.ozlabs.ibm.com>
+In-Reply-To: <20180416043240.8796-6-npiggin@gmail.com>
+References: <20180416043240.8796-1-npiggin@gmail.com>
+ <20180416043240.8796-6-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,23 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 15 Apr 2018 20:36:56 +0300
-Mike Rapoport <rppt@linux.vnet.ibm.com> wrote:
+On Mon, 16 Apr 2018 14:32:40 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> I didn't mean we should keep it as unorganized jumble of stuff and I agree
-> that splitting the documentation by audience is better because developers
-> are already know how to find it :)
+> When running a SMP radix guest, KVM can get into page fault / tlbie
+> storms -- hundreds of thousands to the same address from different
+> threads -- due to partition scoped page faults invalidating the
+> page table entry if it was found to be already set up by a racing
+> CPU.
 > 
-> I just thought that putting the doc into the place should not be done
-> immediately after mechanical ReST conversion but rather after improving the
-> contents.
+> What can happen is that guest threads can hit page faults for the
+> same addresses, this can happen when KSM or THP takes out a commonly
+> used page. gRA zero (the interrupt vectors and important kernel text)
+> was a common one. Multiple CPUs will page fault and contend on the
+> same lock, when one CPU sets up the page table and releases the lock,
+> the next will find the new entry and invalidate it before installing
+> its own, which causes other page faults which invalidate that entry,
+> etc.
+> 
+> The solution to this is to avoid invalidating the entry or flushing
+> TLBs in case of a race. The pte may still need bits updated, but
+> those are to add R/C or relax access restrictions so no flush is
+> required.
+> 
+> This solves the page fault / tlbie storms.
 
-OK, this is fine.  I'll go ahead and apply the set, but then I'll be
-watching to see that the other improvements come :)
+Oh, I didn't notice "KVM: PPC: Book3S HV: Radix page fault handler
+optimizations" does much the same thing as this one and it's been
+merged upstream now.
 
-In applying the set, there was a significant set of conflicts with
-vm/hmm.rst; hopefully I've sorted those out properly.
+That also adds a partition scoped PWC flush that I'll add to
+powerpc/mm, so I'll rebase this series.
 
 Thanks,
-
-jon
+Nick
