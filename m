@@ -1,25 +1,21 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
- [IPv6:2607:f8b0:400c:c08::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QKQ86kjwzF1RD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:17:04 +1000 (AEST)
-Received: by mail-ua0-x241.google.com with SMTP id d3so11667490uae.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 02:17:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QKk1649GzF1vG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:30:49 +1000 (AEST)
+Date: Tue, 17 Apr 2018 19:30:44 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/misc: get rid of add_reloc_offset()
+Message-ID: <20180417093044.GA9105@fergus.ozlabs.ibm.com>
+References: <20180417075624.962AB6C038@po15720vm.idsi0.si.c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <20180417091129.23069-1-alistair@popple.id.au>
-References: <20180417091129.23069-1-alistair@popple.id.au>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Tue, 17 Apr 2018 19:17:00 +1000
-Message-ID: <CAKTCnz=nMDksZq_1pWXGqKFTQ8x5pO=Ojw=TQdPkT+ZqBwEGwA@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powernv/npu: Do a PID GPU TLB flush when invalidating
- a large address range
-To: Alistair Popple <alistair@popple.id.au>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mark Hairgrove <mhairgrove@nvidia.com>, arbab@linux.ibm.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180417075624.962AB6C038@po15720vm.idsi0.si.c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 17, 2018 at 7:11 PM, Alistair Popple <alistair@popple.id.au> wrote:
-> The NPU has a limited number of address translation shootdown (ATSD)
-> registers and the GPU has limited bandwidth to process ATSDs. This can
-> result in contention of ATSD registers leading to soft lockups on some
-> threads, particularly when invalidating a large address range in
-> pnv_npu2_mn_invalidate_range().
->
-> At some threshold it becomes more efficient to flush the entire GPU TLB for
-> the given MM context (PID) than individually flushing each address in the
-> range. This patch will result in ranges greater than 2MB being converted
-> from 32+ ATSDs into a single ATSD which will flush the TLB for the given
-> PID on each GPU.
->
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+On Tue, Apr 17, 2018 at 09:56:24AM +0200, Christophe Leroy wrote:
+> add_reloc_offset() is almost redundant with reloc_offset()
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > ---
->  arch/powerpc/platforms/powernv/npu-dma.c | 23 +++++++++++++++++++----
->  1 file changed, 19 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index 94801d8e7894..dc34662e9df9 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -40,6 +40,13 @@
->  DEFINE_SPINLOCK(npu_context_lock);
->
->  /*
-> + * When an address shootdown range exceeds this threshold we invalidate the
-> + * entire TLB on the GPU for the given PID rather than each specific address in
-> + * the range.
-> + */
-> +#define ATSD_THRESHOLD (2*1024*1024)
-> +
-> +/*
->   * Other types of TCE cache invalidation are not functional in the
->   * hardware.
->   */
-> @@ -675,11 +682,19 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
->         struct npu_context *npu_context = mn_to_npu_context(mn);
->         unsigned long address;
->
-> -       for (address = start; address < end; address += PAGE_SIZE)
-> -               mmio_invalidate(npu_context, 1, address, false);
-> +       if (end - start > ATSD_THRESHOLD) {
+>  arch/powerpc/include/asm/setup.h       |  3 +--
+>  arch/powerpc/kernel/misc.S             | 16 ----------------
+>  arch/powerpc/kernel/prom_init_check.sh |  2 +-
+>  3 files changed, 2 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+> index 27fa52ed6d00..115e0896ffa7 100644
+> --- a/arch/powerpc/include/asm/setup.h
+> +++ b/arch/powerpc/include/asm/setup.h
+> @@ -17,10 +17,9 @@ extern void note_scsi_host(struct device_node *, void *);
+>  
+>  /* Used in very early kernel initialization. */
+>  extern unsigned long reloc_offset(void);
+> -extern unsigned long add_reloc_offset(unsigned long);
+>  extern void reloc_got2(unsigned long);
+>  
+> -#define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
+> +#define PTRRELOC(x)	((typeof(x)) ((unsigned long)(x) + reloc_offset()))
 
-I'm nitpicking, but (end - start) > ATSD_THRESHOLD is clearer
+NAK.  This is how it used to be, and we changed it in order to prevent
+gcc from making incorrect assumptions.  If you use the form with the
+explicit addition, and x is the address of an array, gcc will assume
+that the result is within the bounds of the array (apparently the C
+standard says it can do that) and potentially generate incorrect
+code.  I recall that we had an actual case where gcc was generating
+incorrect code, though I don't recall the details, as this was some
+time before 2002.
 
-> +               /*
-> +                * Just invalidate the entire PID if the address range is too
-> +                * large.
-> +                */
-> +               mmio_invalidate(npu_context, 0, 0, true);
-> +       } else {
-> +               for (address = start; address < end; address += PAGE_SIZE)
-> +                       mmio_invalidate(npu_context, 1, address, false);
->
-> -       /* Do the flush only on the final addess == end */
-> -       mmio_invalidate(npu_context, 1, address, true);
-> +               /* Do the flush only on the final addess == end */
-> +               mmio_invalidate(npu_context, 1, address, true);
-> +       }
->  }
->
-
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+Paul.
