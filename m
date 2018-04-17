@@ -1,40 +1,17 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QDXc518hzF21J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 15:37:20 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3H5ZxcO078986
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 01:37:18 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hd7q3qbtj-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 01:37:17 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 17 Apr 2018 06:37:15 +0100
-Subject: Re: [PATCH 4/7] ocxl: Rename pnv_ocxl_spa_remove_pe to clarify it's
- action
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-References: <20180417020950.21446-1-alastair@au1.ibm.com>
- <20180417020950.21446-5-alastair@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 17 Apr 2018 15:37:09 +1000
-MIME-Version: 1.0
-In-Reply-To: <20180417020950.21446-5-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <3a9452b1-c22c-6a0a-b7b9-b77c3b98f6cb@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QHDd4fqhzF1tF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:38:40 +1000 (AEST)
+Message-Id: <a04660fd2b51246f8feeb49e49334fc943c1b9e8.1523950415.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH  1/7] powerpc/lib: move PPC32 specific functions out of
+ string.S
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 17 Apr 2018 09:38:35 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,22 +21,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17/04/18 12:09, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> The function removes the process element from NPU cache.
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+In preparation of optimisation patches, move PPC32 specific
+memcmp() and __clear_user() into string_32.S
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/lib/Makefile    |  5 +--
+ arch/powerpc/lib/string.S    | 61 -------------------------------------
+ arch/powerpc/lib/string_32.S | 72 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 75 insertions(+), 63 deletions(-)
+ create mode 100644 arch/powerpc/lib/string_32.S
 
-Hmm, personally I'd suggest pnv_ocxl_spa_clear_cache() because it's just 
-a wrapper around the OPAL call of a similar name.
-
-But I don't feel strongly about this at all, so:
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 653901042ad7..2c9b8c0adf22 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -26,13 +26,14 @@ obj-$(CONFIG_PPC_BOOK3S_64) += copyuser_power7.o copypage_power7.o \
+ 			       memcpy_power7.o
+ 
+ obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
+-	   string_64.o memcpy_64.o memcmp_64.o pmem.o
++	   memcpy_64.o memcmp_64.o pmem.o
+ 
+ obj64-$(CONFIG_SMP)	+= locks.o
+ obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+ obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+ 
+-obj-y			+= checksum_$(BITS).o checksum_wrappers.o
++obj-y			+= checksum_$(BITS).o checksum_wrappers.o \
++			   string_$(BITS).o
+ 
+ obj-y			+= sstep.o ldstfp.o quad.o
+ obj64-y			+= quad.o
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index a787776822d8..cbb90fdc672d 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -55,23 +55,6 @@ _GLOBAL(strncmp)
+ 	blr
+ EXPORT_SYMBOL(strncmp)
+ 
+-#ifdef CONFIG_PPC32
+-_GLOBAL(memcmp)
+-	PPC_LCMPI 0,r5,0
+-	beq-	2f
+-	mtctr	r5
+-	addi	r6,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r3,1(r6)
+-	lbzu	r0,1(r4)
+-	subf.	r3,r0,r3
+-	bdnzt	2,1b
+-	blr
+-2:	li	r3,0
+-	blr
+-EXPORT_SYMBOL(memcmp)
+-#endif
+-
+ _GLOBAL(memchr)
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
+@@ -85,47 +68,3 @@ _GLOBAL(memchr)
+ 2:	li	r3,0
+ 	blr
+ EXPORT_SYMBOL(memchr)
+-
+-#ifdef CONFIG_PPC32
+-_GLOBAL(__clear_user)
+-	addi	r6,r3,-4
+-	li	r3,0
+-	li	r5,0
+-	cmplwi	0,r4,4
+-	blt	7f
+-	/* clear a single word */
+-11:	stwu	r5,4(r6)
+-	beqlr
+-	/* clear word sized chunks */
+-	andi.	r0,r6,3
+-	add	r4,r0,r4
+-	subf	r6,r0,r6
+-	srwi	r0,r4,2
+-	andi.	r4,r4,3
+-	mtctr	r0
+-	bdz	7f
+-1:	stwu	r5,4(r6)
+-	bdnz	1b
+-	/* clear byte sized chunks */
+-7:	cmpwi	0,r4,0
+-	beqlr
+-	mtctr	r4
+-	addi	r6,r6,3
+-8:	stbu	r5,1(r6)
+-	bdnz	8b
+-	blr
+-90:	mr	r3,r4
+-	blr
+-91:	mfctr	r3
+-	slwi	r3,r3,2
+-	add	r3,r3,r4
+-	blr
+-92:	mfctr	r3
+-	blr
+-
+-	EX_TABLE(11b, 90b)
+-	EX_TABLE(1b, 91b)
+-	EX_TABLE(8b, 92b)
+-
+-EXPORT_SYMBOL(__clear_user)
+-#endif
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+new file mode 100644
+index 000000000000..2519f8bd09e3
+--- /dev/null
++++ b/arch/powerpc/lib/string_32.S
+@@ -0,0 +1,72 @@
++/*
++ * String handling functions for PowerPC32
++ *
++ * Copyright (C) 2018 CS Systemes d'Information
++ *
++ * Author: Christophe Leroy <christophe.leroy@c-s.fr>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++#include <asm/processor.h>
++#include <asm/errno.h>
++#include <asm/ppc_asm.h>
++#include <asm/export.h>
++
++	.text
++
++_GLOBAL(memcmp)
++	PPC_LCMPI 0,r5,0
++	beq-	2f
++	mtctr	r5
++	addi	r6,r3,-1
++	addi	r4,r4,-1
++1:	lbzu	r3,1(r6)
++	lbzu	r0,1(r4)
++	subf.	r3,r0,r3
++	bdnzt	2,1b
++	blr
++2:	li	r3,0
++	blr
++EXPORT_SYMBOL(memcmp)
++
++_GLOBAL(__clear_user)
++	addi	r6,r3,-4
++	li	r3,0
++	li	r5,0
++	cmplwi	0,r4,4
++	blt	7f
++	/* clear a single word */
++11:	stwu	r5,4(r6)
++	beqlr
++	/* clear word sized chunks */
++	andi.	r0,r6,3
++	add	r4,r0,r4
++	subf	r6,r0,r6
++	srwi	r0,r4,2
++	andi.	r4,r4,3
++	mtctr	r0
++	bdz	7f
++1:	stwu	r5,4(r6)
++	bdnz	1b
++	/* clear byte sized chunks */
++7:	cmpwi	0,r4,0
++	beqlr
++	mtctr	r4
++	addi	r6,r6,3
++8:	stbu	r5,1(r6)
++	bdnz	8b
++	blr
++90:	mr	r3,r4
++	blr
++91:	mfctr	r3
++	slwi	r3,r3,2
++	add	r3,r3,r4
++	blr
++92:	mfctr	r3
++	blr
++
++	EX_TABLE(11b, 90b)
++	EX_TABLE(1b, 91b)
++	EX_TABLE(8b, 92b)
++
++EXPORT_SYMBOL(__clear_user)
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.13.3
