@@ -1,24 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x22f.google.com (mail-pl0-x22f.google.com
- [IPv6:2607:f8b0:400e:c01::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Q5Rh6bqdzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:17:36 +1000 (AEST)
-Received: by mail-pl0-x22f.google.com with SMTP id t22-v6so2338924plo.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 17:17:36 -0700 (PDT)
-Date: Tue, 17 Apr 2018 10:17:19 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 5/5] KVM: PPC: Book3S HV: radix do not clear
- partition scoped page table when page fault races with other vCPUs.
-Message-ID: <20180417101719.5bbd60f2@roar.ozlabs.ibm.com>
-In-Reply-To: <20180416043240.8796-6-npiggin@gmail.com>
-References: <20180416043240.8796-1-npiggin@gmail.com>
- <20180416043240.8796-6-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Q7Tf1b7XzF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 11:49:26 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: maddy@linux.ibm.com
+Subject: [PATCH] powerpc/64s: Default l1d_size to 64K in RFI fallback flush
+Date: Tue, 17 Apr 2018 11:49:20 +1000
+Message-Id: <20180417014920.21450-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Apr 2018 14:32:40 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-> When running a SMP radix guest, KVM can get into page fault / tlbie
-> storms -- hundreds of thousands to the same address from different
-> threads -- due to partition scoped page faults invalidating the
-> page table entry if it was found to be already set up by a racing
-> CPU.
-> 
-> What can happen is that guest threads can hit page faults for the
-> same addresses, this can happen when KSM or THP takes out a commonly
-> used page. gRA zero (the interrupt vectors and important kernel text)
-> was a common one. Multiple CPUs will page fault and contend on the
-> same lock, when one CPU sets up the page table and releases the lock,
-> the next will find the new entry and invalidate it before installing
-> its own, which causes other page faults which invalidate that entry,
-> etc.
-> 
-> The solution to this is to avoid invalidating the entry or flushing
-> TLBs in case of a race. The pte may still need bits updated, but
-> those are to add R/C or relax access restrictions so no flush is
-> required.
-> 
-> This solves the page fault / tlbie storms.
+If there is no d-cache-size property in the device tree, l1d_size could
+be zero. We don't actually expect that to happen, it's only been seen
+on mambo (simulator) in some configurations.
 
-Oh, I didn't notice "KVM: PPC: Book3S HV: Radix page fault handler
-optimizations" does much the same thing as this one and it's been
-merged upstream now.
+A zero-size l1d_size leads to the loop in the asm wrapping around to
+2^64-1, and then walking off the end of the fallback area and
+eventually causing a page fault which is fatal.
 
-That also adds a partition scoped PWC flush that I'll add to
-powerpc/mm, so I'll rebase this series.
+Just default to 64K which is correct on some CPUs, and sane enough to
+not cause a crash on others.
 
-Thanks,
-Nick
+Fixes: aa8a5e0062ac9 ('powerpc/64s: Add support for RFI flush of L1-D cache')
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+[mpe: Rewrite comment and change log]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 44c30dd38067..b78f142a4148 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -890,6 +890,17 @@ static void __ref init_fallback_flush(void)
+ 		return;
+ 
+ 	l1d_size = ppc64_caches.l1d.size;
++
++	/*
++	 * If there is no d-cache-size property in the device tree, l1d_size
++	 * could be zero. That leads to the loop in the asm wrapping around to
++	 * 2^64-1, and then walking off the end of the fallback area and
++	 * eventually causing a page fault which is fatal. Just default to
++	 * something vaguely sane.
++	 */
++	if (!l1d_size)
++		l1d_size = (64 * 1024);
++
+ 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
+ 
+ 	/*
+-- 
+2.14.1
