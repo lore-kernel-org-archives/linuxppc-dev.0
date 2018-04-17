@@ -1,15 +1,35 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Q7Tf1b7XzF1RT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 11:49:26 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: maddy@linux.ibm.com
-Subject: [PATCH] powerpc/64s: Default l1d_size to 64K in RFI fallback flush
-Date: Tue, 17 Apr 2018 11:49:20 +1000
-Message-Id: <20180417014920.21450-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Q7ym3qwNzF1S9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 12:11:12 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3H2AnD6077610
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 22:11:10 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hd1wnnbsj-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Apr 2018 22:11:09 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Tue, 17 Apr 2018 03:11:07 +0100
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+Subject: [PATCH 0/7] ocxl: Implement Power9 as_notify/wait for OpenCAPI
+Date: Tue, 17 Apr 2018 12:09:43 +1000
+Message-Id: <20180417020950.21446-1-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,48 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+From: Alastair D'Silva <alastair@d-silva.org>
 
-If there is no d-cache-size property in the device tree, l1d_size could
-be zero. We don't actually expect that to happen, it's only been seen
-on mambo (simulator) in some configurations.
+The Power 9 as_notify/wait feature provides a lower latency way to
+signal a thread that work is complete. This series enables the use of
+this feature from OpenCAPI adapters, as well as addressing a potential
+starvation issue when allocating thread IDs.
 
-A zero-size l1d_size leads to the loop in the asm wrapping around to
-2^64-1, and then walking off the end of the fallback area and
-eventually causing a page fault which is fatal.
+Alastair D'Silva (7):
+  powerpc: Add TIDR CPU feature for Power9
+  powerpc: Use TIDR CPU feature to control TIDR allocation
+  powerpc: use task_pid_nr() for TID allocation
+  ocxl: Rename pnv_ocxl_spa_remove_pe to clarify it's action
+  ocxl: Expose the thread_id needed for wait on p9
+  ocxl: Add an IOCTL so userspace knows which platform the kernel
+    requires
+  ocxl: Document new OCXL IOCTLs
 
-Just default to 64K which is correct on some CPUs, and sane enough to
-not cause a crash on others.
+ Documentation/accelerators/ocxl.rst   | 10 ++++
+ arch/powerpc/include/asm/cputable.h   |  3 +-
+ arch/powerpc/include/asm/pnv-ocxl.h   |  2 +-
+ arch/powerpc/include/asm/switch_to.h  |  1 -
+ arch/powerpc/kernel/dt_cpu_ftrs.c     |  1 +
+ arch/powerpc/kernel/process.c         | 99 +----------------------------------
+ arch/powerpc/platforms/powernv/ocxl.c |  4 +-
+ drivers/misc/ocxl/context.c           |  5 +-
+ drivers/misc/ocxl/file.c              | 78 +++++++++++++++++++++++++++
+ drivers/misc/ocxl/link.c              | 38 +++++++++++++-
+ drivers/misc/ocxl/ocxl_internal.h     |  1 +
+ include/misc/ocxl.h                   |  9 ++++
+ include/uapi/misc/ocxl.h              | 14 +++++
+ 13 files changed, 161 insertions(+), 104 deletions(-)
 
-Fixes: aa8a5e0062ac9 ('powerpc/64s: Add support for RFI flush of L1-D cache')
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-[mpe: Rewrite comment and change log]
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 44c30dd38067..b78f142a4148 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -890,6 +890,17 @@ static void __ref init_fallback_flush(void)
- 		return;
- 
- 	l1d_size = ppc64_caches.l1d.size;
-+
-+	/*
-+	 * If there is no d-cache-size property in the device tree, l1d_size
-+	 * could be zero. That leads to the loop in the asm wrapping around to
-+	 * 2^64-1, and then walking off the end of the fallback area and
-+	 * eventually causing a page fault which is fatal. Just default to
-+	 * something vaguely sane.
-+	 */
-+	if (!l1d_size)
-+		l1d_size = (64 * 1024);
-+
- 	limit = min(ppc64_bolted_size(), ppc64_rma_size);
- 
- 	/*
 -- 
-2.14.1
+2.14.3
