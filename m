@@ -1,17 +1,32 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QQQK5VPhzF1Rl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:02:33 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/time: remove to_tm and use RTC_LIB
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Geoff Levand <geoff@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180417130228.819936C0B7@po15720vm.idsi0.si.c-s.fr>
-Date: Tue, 17 Apr 2018 15:02:28 +0200 (CEST)
+Return-Path: <Dave.Martin@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40QQtg4gNpzF1pP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:23:38 +1000 (AEST)
+Date: Tue, 17 Apr 2018 14:23:30 +0100
+From: Dave Martin <Dave.Martin@arm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-arch@vger.kernel.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [RFC PATCH 1/3] signal: Ensure every siginfo we send has all
+ bits initialized
+Message-ID: <20180417132328.GF16308@e103592.cambridge.arm.com>
+References: <20180413094211.GN16141@n2100.armlinux.org.uk>
+ <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
+ <20180413170827.GB16308@e103592.cambridge.arm.com>
+ <20180413175407.GO16141@n2100.armlinux.org.uk>
+ <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
+ <20180413184522.GD16308@e103592.cambridge.arm.com>
+ <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
+ <20180415131206.GR16141@n2100.armlinux.org.uk>
+ <87604sa2fu.fsf_-_@xmission.com> <87zi248nte.fsf_-_@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87zi248nte.fsf_-_@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,174 +36,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RTC_LIB includes a generic function to convert
-RTC data into struct rtc_time. Use it and remove to_tm().
+On Sun, Apr 15, 2018 at 10:57:33AM -0500, Eric W. Biederman wrote:
+> 
+> Call clear_siginfo to ensure every stack allocated siginfo is properly
+> initialized before being passed to the signal sending functions.
+> 
+> Note: It is not safe to depend on C initializers to initialize struct
+> siginfo on the stack because C is allowed to skip holes when
+> initializing a structure.
+> 
+> The initialization of struct siginfo in tracehook_report_syscall_exit
+> was moved from the helper user_single_step_siginfo into
+> tracehook_report_syscall_exit itself, to make it clear that the local
+> variable siginfo gets fully initialized.
+> 
+> In a few cases the scope of struct siginfo has been reduced to make it
+> clear that siginfo siginfo is not used on other paths in the function
+> in which it is declared.
+> 
+> Instances of using memset to initialize siginfo have been replaced
+> with calls clear_siginfo for clarity.
+> 
+> Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/Kconfig                    |  1 +
- arch/powerpc/include/asm/time.h         |  1 -
- arch/powerpc/kernel/rtas-proc.c         |  4 +--
- arch/powerpc/kernel/time.c              | 52 +--------------------------------
- arch/powerpc/platforms/8xx/m8xx_setup.c |  2 +-
- arch/powerpc/platforms/powermac/time.c  |  2 +-
- arch/powerpc/platforms/ps3/time.c       |  2 +-
- 7 files changed, 7 insertions(+), 57 deletions(-)
+[...]
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index edbbd2ea1298..e1fac49cf465 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -232,6 +232,7 @@ config PPC
- 	select OF_RESERVED_MEM
- 	select OLD_SIGACTION			if PPC32
- 	select OLD_SIGSUSPEND
-+	select RTC_LIB
- 	select SPARSE_IRQ
- 	select SYSCTL_EXCEPTION_TRACE
- 	select VIRT_TO_BUS			if !PPC64
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index db546c034905..0ad1cf2285b1 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -27,7 +27,6 @@ extern unsigned long tb_ticks_per_sec;
- extern struct clock_event_device decrementer_clockevent;
- 
- struct rtc_time;
--extern void to_tm(int tim, struct rtc_time * tm);
- extern void tick_broadcast_ipi_handler(void);
- 
- extern void generic_calibrate_decr(void);
-diff --git a/arch/powerpc/kernel/rtas-proc.c b/arch/powerpc/kernel/rtas-proc.c
-index fb070d8cad07..6de77f9434b0 100644
---- a/arch/powerpc/kernel/rtas-proc.c
-+++ b/arch/powerpc/kernel/rtas-proc.c
-@@ -314,7 +314,7 @@ static ssize_t ppc_rtas_poweron_write(struct file *file,
- 
- 	power_on_time = nowtime; /* save the time */
- 
--	to_tm(nowtime, &tm);
-+	rtc_time64_to_tm(nowtime, &tm);
- 
- 	error = rtas_call(rtas_token("set-time-for-power-on"), 7, 1, NULL, 
- 			tm.tm_year, tm.tm_mon, tm.tm_mday, 
-@@ -378,7 +378,7 @@ static ssize_t ppc_rtas_clock_write(struct file *file,
- 	if (error)
- 		return error;
- 
--	to_tm(nowtime, &tm);
-+	rtc_time64_to_tm(nowtime, &tm);
- 	error = rtas_call(rtas_token("set-time-of-day"), 7, 1, NULL, 
- 			tm.tm_year, tm.tm_mon, tm.tm_mday, 
- 			tm.tm_hour, tm.tm_min, tm.tm_sec, 0);
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 56869fd879ed..362673cc09f2 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -788,7 +788,7 @@ int update_persistent_clock(struct timespec now)
- 	if (!ppc_md.set_rtc_time)
- 		return -ENODEV;
- 
--	to_tm(now.tv_sec + 1 + timezone_offset, &tm);
-+	rtc_time64_to_tm(now.tv_sec + 1 + timezone_offset, &tm);
- 	tm.tm_year -= 1900;
- 	tm.tm_mon -= 1;
- 
-@@ -1141,56 +1141,6 @@ void __init time_init(void)
- #endif
- }
- 
--
--#define FEBRUARY	2
--#define	STARTOFTIME	1970
--#define SECDAY		86400L
--#define SECYR		(SECDAY * 365)
--#define	leapyear(year)		((year) % 4 == 0 && \
--				 ((year) % 100 != 0 || (year) % 400 == 0))
--#define	days_in_year(a) 	(leapyear(a) ? 366 : 365)
--#define	days_in_month(a) 	(month_days[(a) - 1])
--
--static int month_days[12] = {
--	31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
--};
--
--void to_tm(int tim, struct rtc_time * tm)
--{
--	register int    i;
--	register long   hms, day;
--
--	day = tim / SECDAY;
--	hms = tim % SECDAY;
--
--	/* Hours, minutes, seconds are easy */
--	tm->tm_hour = hms / 3600;
--	tm->tm_min = (hms % 3600) / 60;
--	tm->tm_sec = (hms % 3600) % 60;
--
--	/* Number of years in days */
--	for (i = STARTOFTIME; day >= days_in_year(i); i++)
--		day -= days_in_year(i);
--	tm->tm_year = i;
--
--	/* Number of months in days left */
--	if (leapyear(tm->tm_year))
--		days_in_month(FEBRUARY) = 29;
--	for (i = 1; day >= days_in_month(i); i++)
--		day -= days_in_month(i);
--	days_in_month(FEBRUARY) = 28;
--	tm->tm_mon = i;
--
--	/* Days are what is left over (+1) from all that. */
--	tm->tm_mday = day + 1;
--
--	/*
--	 * No-one uses the day of the week.
--	 */
--	tm->tm_wday = -1;
--}
--EXPORT_SYMBOL(to_tm);
--
- /*
-  * Divide a 128-bit dividend by a 32-bit divisor, leaving a 128 bit
-  * result.
-diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-index 2188d691a40f..0f9740185eb9 100644
---- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-+++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-@@ -192,7 +192,7 @@ void mpc8xx_get_rtc_time(struct rtc_time *tm)
- 
- 	/* Get time from the RTC. */
- 	data = in_be32(&sys_tmr->sit_rtc);
--	to_tm(data, tm);
-+	rtc_time64_to_tm(data, tm);
- 	tm->tm_year -= 1900;
- 	tm->tm_mon -= 1;
- 	immr_unmap(sys_tmr);
-diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
-index 274af6fa388e..6db8cdacbf3d 100644
---- a/arch/powerpc/platforms/powermac/time.c
-+++ b/arch/powerpc/platforms/powermac/time.c
-@@ -87,7 +87,7 @@ long __init pmac_time_init(void)
- #if defined(CONFIG_ADB_CUDA) || defined(CONFIG_ADB_PMU)
- static void to_rtc_time(unsigned long now, struct rtc_time *tm)
- {
--	to_tm(now, tm);
-+	rtc_time64_to_tm(now, tm);
- 	tm->tm_year -= 1900;
- 	tm->tm_mon -= 1;
- }
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index 11b45b58c81b..4455abf707ae 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -46,7 +46,7 @@ static void __maybe_unused _dump_time(int time, const char *func,
- {
- 	struct rtc_time tm;
- 
--	to_tm(time, &tm);
-+	rtc_time64_to_tm(time, &tm);
- 
- 	pr_debug("%s:%d time    %d\n", func, line, time);
- 	_dump_tm(&tm, func, line);
--- 
-2.13.3
+Hmmm
+
+memset()/clear_siginfo() may ensure that there are no uninitialised
+explicit fields except for those in inactive union members, but I'm not
+sure that this approach is guaranteed to sanitise the padding seen by
+userspace.
+
+Rationale below, though it's a bit theoretical...
+
+With this in mind, I tend agree with Linus that hiding memset() calls
+from the maintainer may be a bad idea unless they are also hidden from
+the compiler.  If the compiler sees the memset() it may be able to
+optimise it in ways that wouldn't be possible for some other random
+external function call, including optimising all or part of the call
+out.
+
+As a result, the breakdown into individual put_user()s etc. in
+copy_siginfo_to_user() may still be valuable even if all paths have the
+memset().
+
+
+(Rationale for an arch/arm example:)
+
+> diff --git a/arch/arm/vfp/vfpmodule.c b/arch/arm/vfp/vfpmodule.c
+> index 4c375e11ae95..adda3fc2dde8 100644
+> --- a/arch/arm/vfp/vfpmodule.c
+> +++ b/arch/arm/vfp/vfpmodule.c
+> @@ -218,8 +218,7 @@ static void vfp_raise_sigfpe(unsigned int sicode, struct pt_regs *regs)
+>  {
+>  	siginfo_t info;
+>  
+> -	memset(&info, 0, sizeof(info));
+> -
+> +	clear_siginfo(&info);
+>  	info.si_signo = SIGFPE;
+
+/* by c11 (n1570) 6.2.6.1 para 6 [1], all padding bytes in info now take
+   unspecified values */
+
+>  	info.si_code = sicode;
+>  	info.si_addr = (void __user *)(instruction_pointer(regs) - 4);
+
+/* by c11 (n1570) 6.2.6.1 para 7 [2], all bytes of the union info._sifields
+   other than than those corresponding to _sigfault take unspecified
+   values */
+
+So I don't see why the compiler needs to ensure that any of the affected
+bytes are zero: it could potentially skip a lot of the memset() as a
+result, in theory.
+
+I've not seen a compiler actually take advantage of that, but I'm now
+not sure what forbids it.
+
+
+If this can happen, I only see two watertight workarounds:
+
+1) Ensure that there is no implicit padding in any UAPI structure, e.g.
+aeb1f39d814b: ("arm64/ptrace: Avoid uninitialised struct padding in
+fpr_set()").  This would include tail-padding of any union member that
+is smaller than the containing union.
+
+It would be significantly more effort to ensure this for siginfo though.
+
+2) Poke all values directly into allocated or user memory directly
+via pointers to paddingless types; never assign to objects on the kernel
+stack if you care what ends up in the padding, e.g., what your
+copy_siginfo_to_user() does prior to this series.
+
+
+If I'm not barking up the wrong tree, memset() cannot generally be
+used to determine the value of padding bytes, but it may still be
+useful for forcing otherwise uninitialised members to sane initial
+values.
+
+This likely affects many more things than just siginfo.
+
+[...]
+
+Cheers
+---Dave
+
+[1] n1570 6.2.6.1.6: When a value is stored in an object of structure or
+union type, including in a member object, the bytes of the object
+representation that correspond to any padding bytes take unspecified
+values [...]
+
+[2] n1570 6.2.6.1.7: When a value is stored in a member of an object of
+union type, the bytes of the object representation that do not
+correspond to that member but do correspond to other members take
+unspecified values.
