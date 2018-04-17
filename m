@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QSRf6GFbzF1yf
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 00:33:50 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3HESvUm041087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:48 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hdj4ptnw7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QSRr6jDrzF20K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 00:34:00 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3HEVgNj108234
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:58 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hdjs2g42s-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:58 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 17 Apr 2018 15:33:45 +0100
+ Tue, 17 Apr 2018 15:33:55 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -36,11 +36,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  paulmck@linux.vnet.ibm.com, Tim Chen <tim.c.chen@linux.intel.com>,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: [PATCH v10 01/25] mm: introduce CONFIG_SPECULATIVE_PAGE_FAULT
-Date: Tue, 17 Apr 2018 16:33:07 +0200
+Subject: [PATCH v10 04/25] mm: prepare for FAULT_FLAG_SPECULATIVE
+Date: Tue, 17 Apr 2018 16:33:10 +0200
 In-Reply-To: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1523975611-15978-2-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1523975611-15978-5-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,48 +50,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This configuration variable will be used to build the code needed to
-handle speculative page fault.
+From: Peter Zijlstra <peterz@infradead.org>
 
-By default it is turned off, and activated depending on architecture
-support, SMP and MMU.
+When speculating faults (without holding mmap_sem) we need to validate
+that the vma against which we loaded pages is still valid when we're
+ready to install the new PTE.
 
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Suggested-by: David Rientjes <rientjes@google.com>
+Therefore, replace the pte_offset_map_lock() calls that (re)take the
+PTL with pte_map_lock() which can fail in case we find the VMA changed
+since we started the fault.
+
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
+[Port to 4.12 kernel]
+[Remove the comment about the fault_env structure which has been
+ implemented as the vm_fault structure in the kernel]
+[move pte_map_lock()'s definition upper in the file]
+[move the define of FAULT_FLAG_SPECULATIVE later in the series]
+[review error path in do_swap_page(), do_anonymous_page() and
+ wp_page_copy()]
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- mm/Kconfig | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ mm/memory.c | 87 ++++++++++++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 58 insertions(+), 29 deletions(-)
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index d5004d82a1d6..5484dca11199 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -752,3 +752,25 @@ config GUP_BENCHMARK
- 	  performance of get_user_pages_fast().
+diff --git a/mm/memory.c b/mm/memory.c
+index a1f990e33e38..4528bd584b7a 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2288,6 +2288,13 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
+ }
+ EXPORT_SYMBOL_GPL(apply_to_page_range);
  
- 	  See tools/testing/selftests/vm/gup_benchmark.c
++static inline bool pte_map_lock(struct vm_fault *vmf)
++{
++	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
++				       vmf->address, &vmf->ptl);
++	return true;
++}
 +
-+config ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-+       def_bool n
+ /*
+  * handle_pte_fault chooses page fault handler according to an entry which was
+  * read non-atomically.  Before making any commitment, on those architectures
+@@ -2477,25 +2484,26 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 	const unsigned long mmun_start = vmf->address & PAGE_MASK;
+ 	const unsigned long mmun_end = mmun_start + PAGE_SIZE;
+ 	struct mem_cgroup *memcg;
++	int ret = VM_FAULT_OOM;
+ 
+ 	if (unlikely(anon_vma_prepare(vma)))
+-		goto oom;
++		goto out;
+ 
+ 	if (is_zero_pfn(pte_pfn(vmf->orig_pte))) {
+ 		new_page = alloc_zeroed_user_highpage_movable(vma,
+ 							      vmf->address);
+ 		if (!new_page)
+-			goto oom;
++			goto out;
+ 	} else {
+ 		new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma,
+ 				vmf->address);
+ 		if (!new_page)
+-			goto oom;
++			goto out;
+ 		cow_user_page(new_page, old_page, vmf->address, vma);
+ 	}
+ 
+ 	if (mem_cgroup_try_charge(new_page, mm, GFP_KERNEL, &memcg, false))
+-		goto oom_free_new;
++		goto out_free_new;
+ 
+ 	__SetPageUptodate(new_page);
+ 
+@@ -2504,7 +2512,10 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 	/*
+ 	 * Re-check the pte - we dropped the lock
+ 	 */
+-	vmf->pte = pte_offset_map_lock(mm, vmf->pmd, vmf->address, &vmf->ptl);
++	if (!pte_map_lock(vmf)) {
++		ret = VM_FAULT_RETRY;
++		goto out_uncharge;
++	}
+ 	if (likely(pte_same(*vmf->pte, vmf->orig_pte))) {
+ 		if (old_page) {
+ 			if (!PageAnon(old_page)) {
+@@ -2591,12 +2602,14 @@ static int wp_page_copy(struct vm_fault *vmf)
+ 		put_page(old_page);
+ 	}
+ 	return page_copied ? VM_FAULT_WRITE : 0;
+-oom_free_new:
++out_uncharge:
++	mem_cgroup_cancel_charge(new_page, memcg, false);
++out_free_new:
+ 	put_page(new_page);
+-oom:
++out:
+ 	if (old_page)
+ 		put_page(old_page);
+-	return VM_FAULT_OOM;
++	return ret;
+ }
+ 
+ /**
+@@ -2617,8 +2630,8 @@ static int wp_page_copy(struct vm_fault *vmf)
+ int finish_mkwrite_fault(struct vm_fault *vmf)
+ {
+ 	WARN_ON_ONCE(!(vmf->vma->vm_flags & VM_SHARED));
+-	vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd, vmf->address,
+-				       &vmf->ptl);
++	if (!pte_map_lock(vmf))
++		return VM_FAULT_RETRY;
+ 	/*
+ 	 * We might have raced with another page fault while we released the
+ 	 * pte_offset_map_lock.
+@@ -2736,8 +2749,11 @@ static int do_wp_page(struct vm_fault *vmf)
+ 			get_page(vmf->page);
+ 			pte_unmap_unlock(vmf->pte, vmf->ptl);
+ 			lock_page(vmf->page);
+-			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
+-					vmf->address, &vmf->ptl);
++			if (!pte_map_lock(vmf)) {
++				unlock_page(vmf->page);
++				put_page(vmf->page);
++				return VM_FAULT_RETRY;
++			}
+ 			if (!pte_same(*vmf->pte, vmf->orig_pte)) {
+ 				unlock_page(vmf->page);
+ 				pte_unmap_unlock(vmf->pte, vmf->ptl);
+@@ -2944,11 +2960,15 @@ int do_swap_page(struct vm_fault *vmf)
+ 
+ 		if (!page) {
+ 			/*
+-			 * Back out if somebody else faulted in this pte
+-			 * while we released the pte lock.
++			 * Back out if the VMA has changed in our back during
++			 * a speculative page fault or if somebody else
++			 * faulted in this pte while we released the pte lock.
+ 			 */
+-			vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
+-					vmf->address, &vmf->ptl);
++			if (!pte_map_lock(vmf)) {
++				delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
++				ret = VM_FAULT_RETRY;
++				goto out;
++			}
+ 			if (likely(pte_same(*vmf->pte, vmf->orig_pte)))
+ 				ret = VM_FAULT_OOM;
+ 			delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+@@ -3001,10 +3021,13 @@ int do_swap_page(struct vm_fault *vmf)
+ 	}
+ 
+ 	/*
+-	 * Back out if somebody else already faulted in this pte.
++	 * Back out if the VMA has changed in our back during a speculative
++	 * page fault or if somebody else already faulted in this pte.
+ 	 */
+-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
+-			&vmf->ptl);
++	if (!pte_map_lock(vmf)) {
++		ret = VM_FAULT_RETRY;
++		goto out_cancel_cgroup;
++	}
+ 	if (unlikely(!pte_same(*vmf->pte, vmf->orig_pte)))
+ 		goto out_nomap;
+ 
+@@ -3082,8 +3105,9 @@ int do_swap_page(struct vm_fault *vmf)
+ out:
+ 	return ret;
+ out_nomap:
+-	mem_cgroup_cancel_charge(page, memcg, false);
+ 	pte_unmap_unlock(vmf->pte, vmf->ptl);
++out_cancel_cgroup:
++	mem_cgroup_cancel_charge(page, memcg, false);
+ out_page:
+ 	unlock_page(page);
+ out_release:
+@@ -3134,8 +3158,8 @@ static int do_anonymous_page(struct vm_fault *vmf)
+ 			!mm_forbids_zeropage(vma->vm_mm)) {
+ 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(vmf->address),
+ 						vma->vm_page_prot));
+-		vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd,
+-				vmf->address, &vmf->ptl);
++		if (!pte_map_lock(vmf))
++			return VM_FAULT_RETRY;
+ 		if (!pte_none(*vmf->pte))
+ 			goto unlock;
+ 		ret = check_stable_address_space(vma->vm_mm);
+@@ -3170,14 +3194,16 @@ static int do_anonymous_page(struct vm_fault *vmf)
+ 	if (vma->vm_flags & VM_WRITE)
+ 		entry = pte_mkwrite(pte_mkdirty(entry));
+ 
+-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
+-			&vmf->ptl);
+-	if (!pte_none(*vmf->pte))
++	if (!pte_map_lock(vmf)) {
++		ret = VM_FAULT_RETRY;
+ 		goto release;
++	}
++	if (!pte_none(*vmf->pte))
++		goto unlock_and_release;
+ 
+ 	ret = check_stable_address_space(vma->vm_mm);
+ 	if (ret)
+-		goto release;
++		goto unlock_and_release;
+ 
+ 	/* Deliver the page fault to userland, check inside PT lock */
+ 	if (userfaultfd_missing(vma)) {
+@@ -3199,10 +3225,12 @@ static int do_anonymous_page(struct vm_fault *vmf)
+ unlock:
+ 	pte_unmap_unlock(vmf->pte, vmf->ptl);
+ 	return ret;
++unlock_and_release:
++	pte_unmap_unlock(vmf->pte, vmf->ptl);
+ release:
+ 	mem_cgroup_cancel_charge(page, memcg, false);
+ 	put_page(page);
+-	goto unlock;
++	return ret;
+ oom_free_page:
+ 	put_page(page);
+ oom:
+@@ -3295,8 +3323,9 @@ static int pte_alloc_one_map(struct vm_fault *vmf)
+ 	 * pte_none() under vmf->ptl protection when we return to
+ 	 * alloc_set_pte().
+ 	 */
+-	vmf->pte = pte_offset_map_lock(vma->vm_mm, vmf->pmd, vmf->address,
+-			&vmf->ptl);
++	if (!pte_map_lock(vmf))
++		return VM_FAULT_RETRY;
 +
-+config SPECULATIVE_PAGE_FAULT
-+       bool "Speculative page faults"
-+       default y
-+       depends on ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-+       depends on MMU && SMP
-+       help
-+         Try to handle user space page faults without holding the mmap_sem.
-+
-+	 This should allow better concurrency for massively threaded process
-+	 since the page fault handler will not wait for other threads memory
-+	 layout change to be done, assuming that this change is done in another
-+	 part of the process's memory space. This type of page fault is named
-+	 speculative page fault.
-+
-+	 If the speculative page fault fails because of a concurrency is
-+	 detected or because underlying PMD or PTE tables are not yet
-+	 allocating, it is failing its processing and a classic page fault
-+	 is then tried.
+ 	return 0;
+ }
+ 
 -- 
 2.7.4
