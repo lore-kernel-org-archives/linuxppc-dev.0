@@ -1,35 +1,28 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from out02.mta.xmission.com (out02.mta.xmission.com [166.70.13.232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QbD2316RzF1sR
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 05:39:13 +1000 (AEST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Dave Martin <Dave.Martin@arm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-arch@vger.kernel.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>, sparclinux <sparclinux@vger.kernel.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-References: <20180413094211.GN16141@n2100.armlinux.org.uk>
- <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
- <20180413170827.GB16308@e103592.cambridge.arm.com>
- <20180413175407.GO16141@n2100.armlinux.org.uk>
- <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
- <20180413184522.GD16308@e103592.cambridge.arm.com>
- <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
- <20180415131206.GR16141@n2100.armlinux.org.uk>
- <87604sa2fu.fsf_-_@xmission.com> <87zi248nte.fsf_-_@xmission.com>
- <20180417132328.GF16308@e103592.cambridge.arm.com>
-Date: Tue, 17 Apr 2018 14:37:38 -0500
-In-Reply-To: <20180417132328.GF16308@e103592.cambridge.arm.com> (Dave Martin's
- message of "Tue, 17 Apr 2018 14:23:30 +0100")
-Message-ID: <87d0yxzksd.fsf@xmission.com>
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qk0-x22b.google.com (mail-qk0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c09::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QbKC0pN5zF1t4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 05:43:42 +1000 (AEST)
+Received: by mail-qk0-x22b.google.com with SMTP id d74so7152877qkg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 12:43:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: [RFC PATCH 1/3] signal: Ensure every siginfo we send has all bits
- initialized
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180417192038.GA22918@jordon-HP-15-Notebook-PC>
+References: <20180417192038.GA22918@jordon-HP-15-Notebook-PC>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 17 Apr 2018 21:43:39 +0200
+Message-ID: <CAK8P3a1TTEmcwK137k-rfZE45hD6k7tjEfN191cid_SB0JPNEQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: platform: cell: spufs: Change return type to
+ vm_fault_t
+To: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: Jeremy Kerr <jk@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Matthew Wilcox <willy@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,133 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dave Martin <Dave.Martin@arm.com> writes:
+On Tue, Apr 17, 2018 at 9:20 PM, Souptick Joarder <jrdr.linux@gmail.com> wrote:
+> Use new return type vm_fault_t for fault handler. For
+> now, this is just documenting that the function returns
+> a VM_FAULT value rather than an errno. Once all instances
+> are converted, vm_fault_t will become a distinct type.
+>
+> Reference id -> 1c8f422059ae ("mm: change return type to
+> vm_fault_t")
+>
+> Previously vm_insert_pfn() returns err but driver returns
+> VM_FAULT_NOPAGE as default. The new function vmf_insert_pfn()
+> will replace this inefficiency by returning correct VM_FAULT_*
+> type.
+>
+> vmf_handle_error is a inline wrapper function which
+> will convert error number to vm_fault_t type err.
+>
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
 
-> Hmmm
->
-> memset()/clear_siginfo() may ensure that there are no uninitialised
-> explicit fields except for those in inactive union members, but I'm not
-> sure that this approach is guaranteed to sanitise the padding seen by
-> userspace.
->
-> Rationale below, though it's a bit theoretical...
->
-> With this in mind, I tend agree with Linus that hiding memset() calls
-> from the maintainer may be a bad idea unless they are also hidden from
-> the compiler.  If the compiler sees the memset() it may be able to
-> optimise it in ways that wouldn't be possible for some other random
-> external function call, including optimising all or part of the call
-> out.
->
-> As a result, the breakdown into individual put_user()s etc. in
-> copy_siginfo_to_user() may still be valuable even if all paths have the
-> memset().
-
-The breakdown into individual put_user()s is known to be problematically
-slow, and is actually wrong.
-
-Even exclusing the SI_USER duplication in a small number of cases the
-fields filled out in siginfo by architecture code are not the fields
-that copy_siginfo_to_user is copying.  Which is much worse.  The code
-looks safe but is not.
-
-My intention is to leave 0 instances of clear_siginfo in the
-architecture specific code.  Ideally struct siginfo will be limited to
-kernel/signal.c but I am not certain I can quite get that far.
-The function do_coredump appears to have a legit need for siginfo.
-
-
-> (Rationale for an arch/arm example:)
->
->> diff --git a/arch/arm/vfp/vfpmodule.c b/arch/arm/vfp/vfpmodule.c
->> index 4c375e11ae95..adda3fc2dde8 100644
->> --- a/arch/arm/vfp/vfpmodule.c
->> +++ b/arch/arm/vfp/vfpmodule.c
->> @@ -218,8 +218,7 @@ static void vfp_raise_sigfpe(unsigned int sicode, struct pt_regs *regs)
->>  {
->>  	siginfo_t info;
->>  
->> -	memset(&info, 0, sizeof(info));
->> -
->> +	clear_siginfo(&info);
->>  	info.si_signo = SIGFPE;
->
-> /* by c11 (n1570) 6.2.6.1 para 6 [1], all padding bytes in info now take
->    unspecified values */
->
->>  	info.si_code = sicode;
->>  	info.si_addr = (void __user *)(instruction_pointer(regs) - 4);
->
-> /* by c11 (n1570) 6.2.6.1 para 7 [2], all bytes of the union info._sifields
->    other than than those corresponding to _sigfault take unspecified
->    values */
->
-> So I don't see why the compiler needs to ensure that any of the affected
-> bytes are zero: it could potentially skip a lot of the memset() as a
-> result, in theory.
->
-> I've not seen a compiler actually take advantage of that, but I'm now
-> not sure what forbids it.
-
-I took a quick look at gcc-4.9 which I have handy.
-
-The passes -f-no-strict-aliasing which helps, and gcc actually
-documents that if you access things through the union it will
-not take advantage of c11.
-
-gcc-4.9 Documents it this way:
-
-> -fstrict-aliasing'
->      Allow the compiler to assume the strictest aliasing rules
->      applicable to the language being compiled.  For C (and C++), this
->      activates optimizations based on the type of expressions.  In
->      particular, an object of one type is assumed never to reside at the
->      same address as an object of a different type, unless the types are
->      almost the same.  For example, an 'unsigned int' can alias an
->      'int', but not a 'void*' or a 'double'.  A character type may alias
->      any other type.
-> 
->      Pay special attention to code like this:
->           union a_union {
->             int i;
->             double d;
->           };
-> 
->           int f() {
->             union a_union t;
->             t.d = 3.0;
->             return t.i;
->           }
->      The practice of reading from a different union member than the one
->      most recently written to (called "type-punning") is common.  Even
->      with '-fstrict-aliasing', type-punning is allowed, provided the
->      memory is accessed through the union type.  So, the code above
->      works as expected.
-
-
-> If this can happen, I only see two watertight workarounds:
->
-> 1) Ensure that there is no implicit padding in any UAPI structure, e.g.
-> aeb1f39d814b: ("arm64/ptrace: Avoid uninitialised struct padding in
-> fpr_set()").  This would include tail-padding of any union member that
-> is smaller than the containing union.
->
-> It would be significantly more effort to ensure this for siginfo though.
->
-> 2) Poke all values directly into allocated or user memory directly
-> via pointers to paddingless types; never assign to objects on the kernel
-> stack if you care what ends up in the padding, e.g., what your
-> copy_siginfo_to_user() does prior to this series.
->
->
-> If I'm not barking up the wrong tree, memset() cannot generally be
-> used to determine the value of padding bytes, but it may still be
-> useful for forcing otherwise uninitialised members to sane initial
-> values.
->
-> This likely affects many more things than just siginfo.
-
-Unless gcc has changed it's stance on type-punning through unions
-or it's semantics with -fno-strict_aliasing we should be good.
-
-Eric
+Acked-by: Arnd Bergmann <arnd@arndb.de>
