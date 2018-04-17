@@ -1,16 +1,18 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alistair@popple.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QHd93h3zzF21F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:56:29 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/misc: get rid of add_reloc_offset()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180417075624.962AB6C038@po15720vm.idsi0.si.c-s.fr>
-Date: Tue, 17 Apr 2018 09:56:24 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QKHr61llzF1pY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:11:36 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org,
+	mpe@ellerman.id.au
+Cc: mhairgrove@nvidia.com, arbab@linux.ibm.com, bsingharora@gmail.com,
+ Alistair Popple <alistair@popple.id.au>
+Subject: [PATCH 1/2] powernv/npu: Do a PID GPU TLB flush when invalidating a
+ large address range
+Date: Tue, 17 Apr 2018 19:11:28 +1000
+Message-Id: <20180417091129.23069-1-alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,70 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-add_reloc_offset() is almost redundant with reloc_offset()
+The NPU has a limited number of address translation shootdown (ATSD)
+registers and the GPU has limited bandwidth to process ATSDs. This can
+result in contention of ATSD registers leading to soft lockups on some
+threads, particularly when invalidating a large address range in
+pnv_npu2_mn_invalidate_range().
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+At some threshold it becomes more efficient to flush the entire GPU TLB for
+the given MM context (PID) than individually flushing each address in the
+range. This patch will result in ranges greater than 2MB being converted
+from 32+ ATSDs into a single ATSD which will flush the TLB for the given
+PID on each GPU.
+
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/include/asm/setup.h       |  3 +--
- arch/powerpc/kernel/misc.S             | 16 ----------------
- arch/powerpc/kernel/prom_init_check.sh |  2 +-
- 3 files changed, 2 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/powernv/npu-dma.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 27fa52ed6d00..115e0896ffa7 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -17,10 +17,9 @@ extern void note_scsi_host(struct device_node *, void *);
+diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
+index 94801d8e7894..dc34662e9df9 100644
+--- a/arch/powerpc/platforms/powernv/npu-dma.c
++++ b/arch/powerpc/platforms/powernv/npu-dma.c
+@@ -40,6 +40,13 @@
+ DEFINE_SPINLOCK(npu_context_lock);
  
- /* Used in very early kernel initialization. */
- extern unsigned long reloc_offset(void);
--extern unsigned long add_reloc_offset(unsigned long);
- extern void reloc_got2(unsigned long);
+ /*
++ * When an address shootdown range exceeds this threshold we invalidate the
++ * entire TLB on the GPU for the given PID rather than each specific address in
++ * the range.
++ */
++#define ATSD_THRESHOLD (2*1024*1024)
++
++/*
+  * Other types of TCE cache invalidation are not functional in the
+  * hardware.
+  */
+@@ -675,11 +682,19 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
+ 	struct npu_context *npu_context = mn_to_npu_context(mn);
+ 	unsigned long address;
  
--#define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
-+#define PTRRELOC(x)	((typeof(x)) ((unsigned long)(x) + reloc_offset()))
+-	for (address = start; address < end; address += PAGE_SIZE)
+-		mmio_invalidate(npu_context, 1, address, false);
++	if (end - start > ATSD_THRESHOLD) {
++		/*
++		 * Just invalidate the entire PID if the address range is too
++		 * large.
++		 */
++		mmio_invalidate(npu_context, 0, 0, true);
++	} else {
++		for (address = start; address < end; address += PAGE_SIZE)
++			mmio_invalidate(npu_context, 1, address, false);
  
- void check_for_initrd(void);
- void mem_topology_setup(void);
-diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-index 384357cb8bc0..2711b10ebdb3 100644
---- a/arch/powerpc/kernel/misc.S
-+++ b/arch/powerpc/kernel/misc.S
-@@ -39,22 +39,6 @@ _GLOBAL(reloc_offset)
- 	.align	3
- 2:	PPC_LONG 1b
+-	/* Do the flush only on the final addess == end */
+-	mmio_invalidate(npu_context, 1, address, true);
++		/* Do the flush only on the final addess == end */
++		mmio_invalidate(npu_context, 1, address, true);
++	}
+ }
  
--/*
-- * add_reloc_offset(x) returns x + reloc_offset().
-- */
--_GLOBAL(add_reloc_offset)
--	mflr	r0
--	bl	1f
--1:	mflr	r5
--	PPC_LL	r4,(2f-1b)(r5)
--	subf	r5,r4,r5
--	add	r3,r3,r5
--	mtlr	r0
--	blr
--
--	.align	3
--2:	PPC_LONG 1b
--
- _GLOBAL(setjmp)
- 	mflr	r0
- 	PPC_STL	r0,0(r3)
-diff --git a/arch/powerpc/kernel/prom_init_check.sh b/arch/powerpc/kernel/prom_init_check.sh
-index acb6b9226352..ee9f63186b72 100644
---- a/arch/powerpc/kernel/prom_init_check.sh
-+++ b/arch/powerpc/kernel/prom_init_check.sh
-@@ -16,7 +16,7 @@
- # If you really need to reference something from prom_init.o add
- # it to the list below:
- 
--WHITELIST="add_reloc_offset __bss_start __bss_stop copy_and_flush
-+WHITELIST="__bss_start __bss_stop copy_and_flush
- _end enter_prom memcpy memset reloc_offset __secondary_hold
- __secondary_hold_acknowledge __secondary_hold_spinloop __start
- strcmp strcpy strlcpy strlen strncmp strstr kstrtobool logo_linux_clut224
+ static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
 -- 
-2.13.3
+2.11.0
