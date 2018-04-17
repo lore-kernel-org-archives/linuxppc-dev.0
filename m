@@ -2,17 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QHDj2cGnzDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:38:45 +1000 (AEST)
-Message-Id: <cb1d94ed485382a51c34a79f2886ea19821eef31.1523950415.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QHDm3tFNzF1tF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:38:47 +1000 (AEST)
+Message-Id: <68af0be6019ae1f9611fefbf16dcbbf544bfca21.1523950415.git.christophe.leroy@c-s.fr>
 In-Reply-To: <a04660fd2b51246f8feeb49e49334fc943c1b9e8.1523950415.git.christophe.leroy@c-s.fr>
 References: <a04660fd2b51246f8feeb49e49334fc943c1b9e8.1523950415.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH  4/7] powerpc/lib: inline memcmp() for small constant sizes
+Subject: [PATCH  5/7] powerpc/lib: optimise 32 bits __clear_user()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Apr 2018 09:38:41 +0200 (CEST)
+Date: Tue, 17 Apr 2018 09:38:43 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,102 +22,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In my 8xx configuration, I get 208 calls to memcmp()
-Within those 208 calls, about half of them have constant sizes,
-46 have a size of 8, 17 have a size of 16, only a few have a
-size over 16. Other fixed sizes are mostly 4, 6 and 10.
+Rewrite clear_user() on the same principle as memset(0), making use
+of dcbz to clear complete cache lines.
 
-This patch inlines calls to memcmp() when size
-is constant and lower than or equal to 16
+This code is a copy/paste of memset(), with some modifications
+in order to retrieve remaining number of bytes to be cleared,
+as it needs to be returned in case of error.
 
-In my 8xx configuration, this reduces the number of calls
-to memcmp() from 208 to 123
+On a MPC885, throughput is almost doubled:
 
-The following table shows the number of TB timeticks to perform
-a constant size memcmp() before and after the patch depending on
-the size
+Before:
+~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+1048576000 bytes (1000.0MB) copied, 18.990779 seconds, 52.7MB/s
 
-	Before	After	Improvement
-01:	 7577	 5682	25%
-02:	41668	 5682	86%
-03:	51137	13258	74%
-04:	45455	 5682	87%
-05:	58713	13258	77%
-06:	58712	13258	77%
-07:	68183	20834	70%
-08:	56819	15153	73%
-09:	70077	28411	60%
-10:	70077	28411	60%
-11:	79546	35986	55%
-12:	68182	28411	58%
-13:	81440	35986	55%
-14:	81440	39774	51%
-15:	94697	43562	54%
-16:	79546	37881	52%
+After:
+~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+1048576000 bytes (1000.0MB) copied, 9.611468 seconds, 104.0MB/s
+
+On a MPC8321, throughput is multiplied by 2.12:
+
+Before:
+root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+1048576000 bytes (1000.0MB) copied, 6.844352 seconds, 146.1MB/s
+
+After:
+root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+1048576000 bytes (1000.0MB) copied, 3.218854 seconds, 310.7MB/s
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/string.h | 37 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ arch/powerpc/lib/string_32.S | 85 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 60 insertions(+), 25 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index cf6f495134c3..196ac5d587fb 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -4,6 +4,8 @@
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+index 5b2a73fb07be..31fc92b0aae6 100644
+--- a/arch/powerpc/lib/string_32.S
++++ b/arch/powerpc/lib/string_32.S
+@@ -11,6 +11,7 @@
+ #include <asm/errno.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/export.h>
++#include <asm/cache.h>
  
- #ifdef __KERNEL__
+ 	.text
  
-+#include <linux/kernel.h>
-+
- #define __HAVE_ARCH_STRNCPY
- #define __HAVE_ARCH_STRNCMP
- #define __HAVE_ARCH_MEMSET
-@@ -28,10 +30,45 @@ extern void * memchr(const void *,int,__kernel_size_t);
- extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
+@@ -61,44 +62,78 @@ _GLOBAL(memcmp)
+ #endif
+ EXPORT_SYMBOL(memcmp)
  
- #ifndef CONFIG_FORTIFY_SOURCE
-+static inline int ___memcmp(const void *p,const void *q,__kernel_size_t size, int offset)
-+{
-+	int dif;
++CACHELINE_BYTES = L1_CACHE_BYTES
++LG_CACHELINE_BYTES = L1_CACHE_SHIFT
++CACHELINE_MASK = (L1_CACHE_BYTES-1)
 +
-+	BUILD_BUG_ON(!size || size > 8);
+ _GLOBAL(__clear_user)
+-	addi	r6,r3,-4
+-	li	r3,0
+-	li	r5,0
+-	cmplwi	0,r4,4
++/*
++ * Use dcbz on the complete cache lines in the destination
++ * to set them to zero.  This requires that the destination
++ * area is cacheable.
++ */
++	cmplwi	cr0, r4, 4
++	mr	r10, r3
++	li	r3, 0
+ 	blt	7f
+-	/* clear a single word */
+-11:	stwu	r5,4(r6)
 +
-+	p += offset, q += offset;
-+	if (size == 1)
-+		return *(u8*)p - *(u8*)q;
-+	if (size == 2)
-+		return be16_to_cpu(*(u16*)p) - be16_to_cpu(*(u16*)q);
-+	if (size == 3) {
-+		dif = be16_to_cpu(*(u16*)p) - be16_to_cpu(*(u16*)q);
-+		if (dif)
-+			return dif;
-+		return *(u8*)(p + 2) - *(u8*)(q + 2);
-+	}
-+	if (size == 8) {
-+		s64 tmp = be64_to_cpu(*(u64*)p) - be64_to_cpu(*(u64*)q);
-+		return tmp >> 32 ? : (int)tmp;
-+	}
++11:	stw	r3, 0(r10)
+ 	beqlr
+-	/* clear word sized chunks */
+-	andi.	r0,r6,3
+-	add	r4,r0,r4
+-	subf	r6,r0,r6
+-	srwi	r0,r4,2
+-	andi.	r4,r4,3
++	andi.	r0, r10, 3
++	add	r11, r0, r4
++	subf	r6, r0, r10
 +
-+	dif = be32_to_cpu(*(u32*)p) - be32_to_cpu(*(u32*)q);
-+	if (size == 4 || dif)
-+		return dif;
++	clrlwi	r7, r6, 32 - LG_CACHELINE_BYTES
++	add	r8, r7, r11
++	srwi	r9, r8, LG_CACHELINE_BYTES
++	addic.	r9, r9, -1	/* total number of complete cachelines */
++	ble	2f
++	xori	r0, r7, CACHELINE_MASK & ~3
++	srwi.	r0, r0, 2
++	beq	3f
++	mtctr	r0
++4:	stwu	r3, 4(r6)
++	bdnz	4b
++3:	mtctr	r9
++	li	r7, 4
++10:	dcbz	r7, r6
++	addi	r6, r6, CACHELINE_BYTES
++	bdnz	10b
++	clrlwi	r11, r8, 32 - LG_CACHELINE_BYTES
++	addi	r11, r11, 4
 +
-+	return ___memcmp(p, q, size - 4, 4);
-+}
++2:	srwi	r0 ,r11 ,2
+ 	mtctr	r0
+-	bdz	7f
+-1:	stwu	r5,4(r6)
++	bdz	6f
++1:	stwu	r3, 4(r6)
+ 	bdnz	1b
+-	/* clear byte sized chunks */
+-7:	cmpwi	0,r4,0
++6:	andi.	r11, r11, 3
+ 	beqlr
+-	mtctr	r4
+-	addi	r6,r6,3
+-8:	stbu	r5,1(r6)
++	mtctr	r11
++	addi	r6, r6, 3
++8:	stbu	r3, 1(r6)
+ 	bdnz	8b
+ 	blr
+-90:	mr	r3,r4
 +
- static inline int __memcmp(const void *p,const void *q,__kernel_size_t size)
- {
- 	if (unlikely(!size))
- 		return 0;
-+	if (__builtin_constant_p(size) && size <= 16) {
-+		int dif = ___memcmp(p, q, size < 8 ? size : 8, 0);
-+		if (size <= 8 || dif)
-+			return dif;
-+		return ___memcmp(p, q, size - 8, 8);
-+	}
- 	return memcmp(p, q, size);
- }
- #define memcmp __memcmp
++7:	cmpwi	cr0, r4, 0
++	beqlr
++	mtctr	r4
++	addi	r6, r10, -1
++9:	stbu	r3, 1(r6)
++	bdnz	9b
+ 	blr
+-91:	mfctr	r3
+-	slwi	r3,r3,2
+-	add	r3,r3,r4
++
++90:	mr	r3, r4
+ 	blr
+-92:	mfctr	r3
++91:	add	r3, r10, r4
++	subf	r3, r6, r3
+ 	blr
+ 
+ 	EX_TABLE(11b, 90b)
++	EX_TABLE(4b, 91b)
++	EX_TABLE(10b, 91b)
+ 	EX_TABLE(1b, 91b)
+-	EX_TABLE(8b, 92b)
++	EX_TABLE(8b, 91b)
++	EX_TABLE(9b, 91b)
+ 
+ EXPORT_SYMBOL(__clear_user)
 -- 
 2.13.3
