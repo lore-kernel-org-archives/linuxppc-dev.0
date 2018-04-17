@@ -1,30 +1,17 @@
-Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR03-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr50041.outbound.protection.outlook.com [40.107.5.41])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QLzL0ZcPzF20r
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 20:27:25 +1000 (AEST)
-From: Nipun Gupta <nipun.gupta@nxp.com>
-To: robin.murphy@arm.com, will.deacon@arm.com, mark.rutland@arm.com,
- catalin.marinas@arm.com
-Cc: hch@lst.de, gregkh@linuxfoundation.org, joro@8bytes.org,
- robh+dt@kernel.org, m.szyprowski@samsung.com, shawnguo@kernel.org,
- frowand.list@gmail.com, bhelgaas@google.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
- leoyang.li@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
-Subject: [PATCH 6/6 v2] arm64: dts: ls208xa: comply with the iommu map binding
- for fsl_mc
-Date: Tue, 17 Apr 2018 15:51:54 +0530
-Message-Id: <1523960514-25457-7-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1523960514-25457-1-git-send-email-nipun.gupta@nxp.com>
-References: <1520260166-29387-1-git-send-email-nipun.gupta@nxp.com>
- <1523960514-25457-1-git-send-email-nipun.gupta@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QMST21PbzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 20:49:13 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc: Allow selection of
+ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180417104909.22D416C07D@po15720vm.idsi0.si.c-s.fr>
+Date: Tue, 17 Apr 2018 12:49:09 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fsl-mc bus now support the iommu-map property. Comply to this binding for
-fsl_mc bus. This patch also updates the dts w.r.t. the DMA configuration.
+This option does dead code and data elimination with the linker by
+compiling with -ffunction-sections -fdata-sections and linking with
+--gc-sections.
 
-Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+By selecting this option on mpc885_ads_defconfig,
+vmlinux LOAD segment size gets reduced by 10%
+
+Program Header before the patch:
+    LOAD off    0x00010000 vaddr 0xc0000000 paddr 0x00000000 align 2**16
+         filesz 0x0036eda4 memsz 0x0038de04 flags rwx
+
+Program Header after the patch:
+    LOAD off    0x00010000 vaddr 0xc0000000 paddr 0x00000000 align 2**16
+         filesz 0x00316da4 memsz 0x00334268 flags rwx
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-index f3a40af..1b1c5eb 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-@@ -135,6 +135,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		ranges;
-+		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 8fe4353be5e3..e1fac49cf465 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -888,6 +888,14 @@ config PPC_MEM_KEYS
  
- 		clockgen: clocking@1300000 {
- 			compatible = "fsl,ls2080a-clockgen";
-@@ -357,6 +358,8 @@
- 			reg = <0x00000008 0x0c000000 0 0x40>,	 /* MC portal base */
- 			      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
- 			msi-parent = <&its>;
-+			iommu-map = <0 &smmu 0 0>;	/* This is fixed-up by u-boot */
-+			dma-coherent;
- 			#address-cells = <3>;
- 			#size-cells = <1>;
+ 	  If unsure, say y.
  
-@@ -460,6 +463,8 @@
- 			compatible = "arm,mmu-500";
- 			reg = <0 0x5000000 0 0x800000>;
- 			#global-interrupts = <12>;
-+			#iommu-cells = <1>;
-+			stream-match-mask = <0x7C00>;
- 			interrupts = <0 13 4>, /* global secure fault */
- 				     <0 14 4>, /* combined secure interrupt */
- 				     <0 15 4>, /* global non-secure fault */
-@@ -502,7 +507,6 @@
- 				     <0 204 4>, <0 205 4>,
- 				     <0 206 4>, <0 207 4>,
- 				     <0 208 4>, <0 209 4>;
--			mmu-masters = <&fsl_mc 0x300 0>;
- 		};
++config PPC_UNUSED_ELIMINATION
++	bool "Eliminate unused functions and data from vmlinux"
++	default n
++	select LD_DEAD_CODE_DATA_ELIMINATION
++	help
++	  Select this to do dead code and data elimination with the linker
++	  by compiling with -ffunction-sections -fdata-sections and linking
++	  with --gc-sections.
+ endmenu
  
- 		dspi: dspi@2100000 {
+ config ISA_DMA_API
 -- 
-1.9.1
+2.13.3
