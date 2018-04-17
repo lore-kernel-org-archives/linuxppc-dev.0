@@ -2,17 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QHDm3tFNzF1tF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:38:47 +1000 (AEST)
-Message-Id: <68af0be6019ae1f9611fefbf16dcbbf544bfca21.1523950415.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QHDn433ZzF213
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 17:38:49 +1000 (AEST)
+Message-Id: <79db4096efe199b5b0e489de6805405a4f20b918.1523950415.git.christophe.leroy@c-s.fr>
 In-Reply-To: <a04660fd2b51246f8feeb49e49334fc943c1b9e8.1523950415.git.christophe.leroy@c-s.fr>
 References: <a04660fd2b51246f8feeb49e49334fc943c1b9e8.1523950415.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH  5/7] powerpc/lib: optimise 32 bits __clear_user()
+Subject: [PATCH  6/7] powerpc/lib: inline more NUL size verifications
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 17 Apr 2018 09:38:43 +0200 (CEST)
+Date: Tue, 17 Apr 2018 09:38:45 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,153 +22,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rewrite clear_user() on the same principle as memset(0), making use
-of dcbz to clear complete cache lines.
+strncmp(), strncpy(), memchr() are often called with constant
+size.
 
-This code is a copy/paste of memset(), with some modifications
-in order to retrieve remaining number of bytes to be cleared,
-as it needs to be returned in case of error.
-
-On a MPC885, throughput is almost doubled:
-
-Before:
-~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 18.990779 seconds, 52.7MB/s
-
-After:
-~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 9.611468 seconds, 104.0MB/s
-
-On a MPC8321, throughput is multiplied by 2.12:
-
-Before:
-root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 6.844352 seconds, 146.1MB/s
-
-After:
-root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 3.218854 seconds, 310.7MB/s
+This patch gives GCC a chance to optimise NULL size verification out
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/lib/string_32.S | 85 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 60 insertions(+), 25 deletions(-)
+ arch/powerpc/include/asm/string.h | 24 ++++++++++++++++++++++++
+ arch/powerpc/lib/string.S         |  8 ++++++++
+ 2 files changed, 32 insertions(+)
 
-diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
-index 5b2a73fb07be..31fc92b0aae6 100644
---- a/arch/powerpc/lib/string_32.S
-+++ b/arch/powerpc/lib/string_32.S
-@@ -11,6 +11,7 @@
- #include <asm/errno.h>
- #include <asm/ppc_asm.h>
- #include <asm/export.h>
-+#include <asm/cache.h>
+diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
+index 196ac5d587fb..1465d5629ef2 100644
+--- a/arch/powerpc/include/asm/string.h
++++ b/arch/powerpc/include/asm/string.h
+@@ -30,6 +30,22 @@ extern void * memchr(const void *,int,__kernel_size_t);
+ extern void * memcpy_flushcache(void *,const void *,__kernel_size_t);
  
- 	.text
- 
-@@ -61,44 +62,78 @@ _GLOBAL(memcmp)
+ #ifndef CONFIG_FORTIFY_SOURCE
++static inline char *__strncpy(char *p, const char *q, __kernel_size_t size)
++{
++	if (unlikely(!size))
++		return p;
++	return strncpy(p, q, size);
++}
++#define strncpy __strncpy
++
++static inline int __strncmp(const char *p, const char *q, __kernel_size_t size)
++{
++	if (unlikely(!size))
++		return 0;
++	return strncmp(p, q, size);
++}
++#define strncmp __strncmp
++
+ static inline int ___memcmp(const void *p,const void *q,__kernel_size_t size, int offset)
+ {
+ 	int dif;
+@@ -72,6 +88,14 @@ static inline int __memcmp(const void *p,const void *q,__kernel_size_t size)
+ 	return memcmp(p, q, size);
+ }
+ #define memcmp __memcmp
++
++static inline void *__memchr(const void *p, int c, __kernel_size_t size)
++{
++	if (unlikely(!size))
++		return NULL;
++	return memchr(p, c, size);
++}
++#define memchr __memchr
  #endif
- EXPORT_SYMBOL(memcmp)
  
-+CACHELINE_BYTES = L1_CACHE_BYTES
-+LG_CACHELINE_BYTES = L1_CACHE_SHIFT
-+CACHELINE_MASK = (L1_CACHE_BYTES-1)
-+
- _GLOBAL(__clear_user)
--	addi	r6,r3,-4
--	li	r3,0
--	li	r5,0
--	cmplwi	0,r4,4
-+/*
-+ * Use dcbz on the complete cache lines in the destination
-+ * to set them to zero.  This requires that the destination
-+ * area is cacheable.
-+ */
-+	cmplwi	cr0, r4, 4
-+	mr	r10, r3
-+	li	r3, 0
- 	blt	7f
--	/* clear a single word */
--11:	stwu	r5,4(r6)
-+
-+11:	stw	r3, 0(r10)
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index cbb90fdc672d..89af53b08b4a 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -18,8 +18,10 @@
+ /* This clears out any unused part of the destination buffer,
+    just as the libc version does.  -- paulus */
+ _GLOBAL(strncpy)
++#ifdef CONFIG_FORTIFY_SOURCE
+ 	PPC_LCMPI 0,r5,0
  	beqlr
--	/* clear word sized chunks */
--	andi.	r0,r6,3
--	add	r4,r0,r4
--	subf	r6,r0,r6
--	srwi	r0,r4,2
--	andi.	r4,r4,3
-+	andi.	r0, r10, 3
-+	add	r11, r0, r4
-+	subf	r6, r0, r10
-+
-+	clrlwi	r7, r6, 32 - LG_CACHELINE_BYTES
-+	add	r8, r7, r11
-+	srwi	r9, r8, LG_CACHELINE_BYTES
-+	addic.	r9, r9, -1	/* total number of complete cachelines */
-+	ble	2f
-+	xori	r0, r7, CACHELINE_MASK & ~3
-+	srwi.	r0, r0, 2
-+	beq	3f
-+	mtctr	r0
-+4:	stwu	r3, 4(r6)
-+	bdnz	4b
-+3:	mtctr	r9
-+	li	r7, 4
-+10:	dcbz	r7, r6
-+	addi	r6, r6, CACHELINE_BYTES
-+	bdnz	10b
-+	clrlwi	r11, r8, 32 - LG_CACHELINE_BYTES
-+	addi	r11, r11, 4
-+
-+2:	srwi	r0 ,r11 ,2
- 	mtctr	r0
--	bdz	7f
--1:	stwu	r5,4(r6)
-+	bdz	6f
-+1:	stwu	r3, 4(r6)
- 	bdnz	1b
--	/* clear byte sized chunks */
--7:	cmpwi	0,r4,0
-+6:	andi.	r11, r11, 3
- 	beqlr
--	mtctr	r4
--	addi	r6,r6,3
--8:	stbu	r5,1(r6)
-+	mtctr	r11
-+	addi	r6, r6, 3
-+8:	stbu	r3, 1(r6)
- 	bdnz	8b
- 	blr
--90:	mr	r3,r4
-+
-+7:	cmpwi	cr0, r4, 0
-+	beqlr
-+	mtctr	r4
-+	addi	r6, r10, -1
-+9:	stbu	r3, 1(r6)
-+	bdnz	9b
- 	blr
--91:	mfctr	r3
--	slwi	r3,r3,2
--	add	r3,r3,r4
-+
-+90:	mr	r3, r4
- 	blr
--92:	mfctr	r3
-+91:	add	r3, r10, r4
-+	subf	r3, r6, r3
- 	blr
++#endif
+ 	mtctr	r5
+ 	addi	r6,r3,-1
+ 	addi	r4,r4,-1
+@@ -38,8 +40,10 @@ _GLOBAL(strncpy)
+ EXPORT_SYMBOL(strncpy)
  
- 	EX_TABLE(11b, 90b)
-+	EX_TABLE(4b, 91b)
-+	EX_TABLE(10b, 91b)
- 	EX_TABLE(1b, 91b)
--	EX_TABLE(8b, 92b)
-+	EX_TABLE(8b, 91b)
-+	EX_TABLE(9b, 91b)
+ _GLOBAL(strncmp)
++#ifdef CONFIG_FORTIFY_SOURCE
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
++#endif
+ 	mtctr	r5
+ 	addi	r5,r3,-1
+ 	addi	r4,r4,-1
+@@ -51,13 +55,17 @@ _GLOBAL(strncmp)
+ 	beqlr	1
+ 	bdnzt	eq,1b
+ 	blr
++#ifdef CONFIG_FORTIFY_SOURCE
+ 2:	li	r3,0
+ 	blr
++#endif
+ EXPORT_SYMBOL(strncmp)
  
- EXPORT_SYMBOL(__clear_user)
+ _GLOBAL(memchr)
++#ifdef CONFIG_FORTIFY_SOURCE
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
++#endif
+ 	mtctr	r5
+ 	addi	r3,r3,-1
+ 	.balign 16
 -- 
 2.13.3
