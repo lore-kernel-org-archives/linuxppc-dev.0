@@ -1,23 +1,23 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QSSW0YfmzF1yt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 00:34:34 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3HESsRS089006
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:34:33 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hdjb21use-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QSRl6SQpzF201
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 00:33:55 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3HEWVo2131505
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:52 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hdhtdupar-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:34:32 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 10:33:52 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 17 Apr 2018 15:34:30 +0100
+ Tue, 17 Apr 2018 15:33:48 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -36,11 +36,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  khandual@linux.vnet.ibm.com, npiggin@gmail.com, bsingharora@gmail.com,
  paulmck@linux.vnet.ibm.com, Tim Chen <tim.c.chen@linux.intel.com>,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: [PATCH v10 14/25] mm: introduce __lru_cache_add_active_or_unevictable
-Date: Tue, 17 Apr 2018 16:33:20 +0200
+Subject: [PATCH v10 02/25] x86/mm: define ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+Date: Tue, 17 Apr 2018 16:33:08 +0200
 In-Reply-To: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1523975611-15978-15-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1523975611-15978-3-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,100 +50,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The speculative page fault handler which is run without holding the
-mmap_sem is calling lru_cache_add_active_or_unevictable() but the vm_flags
-is not guaranteed to remain constant.
-Introducing __lru_cache_add_active_or_unevictable() which has the vma flags
-value parameter instead of the vma pointer.
+Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT which turns on the
+Speculative Page Fault handler when building for 64bit.
 
-Acked-by: David Rientjes <rientjes@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/linux/swap.h | 10 ++++++++--
- mm/memory.c          |  8 ++++----
- mm/swap.c            |  6 +++---
- 3 files changed, 15 insertions(+), 9 deletions(-)
+ arch/x86/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 1985940af479..a7dc37e0e405 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -338,8 +338,14 @@ extern void deactivate_file_page(struct page *page);
- extern void mark_page_lazyfree(struct page *page);
- extern void swap_setup(void);
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index d8983df5a2bc..ebdeb48e4a4a 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -30,6 +30,7 @@ config X86_64
+ 	select MODULES_USE_ELF_RELA
+ 	select X86_DEV_DMA_OPS
+ 	select ARCH_HAS_SYSCALL_WRAPPER
++	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
  
--extern void lru_cache_add_active_or_unevictable(struct page *page,
--						struct vm_area_struct *vma);
-+extern void __lru_cache_add_active_or_unevictable(struct page *page,
-+						unsigned long vma_flags);
-+
-+static inline void lru_cache_add_active_or_unevictable(struct page *page,
-+						struct vm_area_struct *vma)
-+{
-+	return __lru_cache_add_active_or_unevictable(page, vma->vm_flags);
-+}
- 
- /* linux/mm/vmscan.c */
- extern unsigned long zone_reclaimable_pages(struct zone *zone);
-diff --git a/mm/memory.c b/mm/memory.c
-index e28cbbae3f3d..47af9e97f02a 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2559,7 +2559,7 @@ static int wp_page_copy(struct vm_fault *vmf)
- 		ptep_clear_flush_notify(vma, vmf->address, vmf->pte);
- 		page_add_new_anon_rmap(new_page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(new_page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(new_page, vma);
-+		__lru_cache_add_active_or_unevictable(new_page, vmf->vma_flags);
- 		/*
- 		 * We call the notify macro here because, when using secondary
- 		 * mmu page tables (such as kvm shadow page tables), we want the
-@@ -3095,7 +3095,7 @@ int do_swap_page(struct vm_fault *vmf)
- 	if (unlikely(page != swapcache && swapcache)) {
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		do_page_add_anon_rmap(page, vma, vmf->address, exclusive);
- 		mem_cgroup_commit_charge(page, memcg, true, false);
-@@ -3246,7 +3246,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
- 	inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 	page_add_new_anon_rmap(page, vma, vmf->address, false);
- 	mem_cgroup_commit_charge(page, memcg, false, false);
--	lru_cache_add_active_or_unevictable(page, vma);
-+	__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- setpte:
- 	set_pte_at(vma->vm_mm, vmf->address, vmf->pte, entry);
- 
-@@ -3500,7 +3500,7 @@ int alloc_set_pte(struct vm_fault *vmf, struct mem_cgroup *memcg,
- 		inc_mm_counter_fast(vma->vm_mm, MM_ANONPAGES);
- 		page_add_new_anon_rmap(page, vma, vmf->address, false);
- 		mem_cgroup_commit_charge(page, memcg, false, false);
--		lru_cache_add_active_or_unevictable(page, vma);
-+		__lru_cache_add_active_or_unevictable(page, vmf->vma_flags);
- 	} else {
- 		inc_mm_counter_fast(vma->vm_mm, mm_counter_file(page));
- 		page_add_file_rmap(page, false);
-diff --git a/mm/swap.c b/mm/swap.c
-index 3dd518832096..f2f9c587246f 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -455,12 +455,12 @@ void lru_cache_add(struct page *page)
-  * directly back onto it's zone's unevictable list, it does NOT use a
-  * per cpu pagevec.
-  */
--void lru_cache_add_active_or_unevictable(struct page *page,
--					 struct vm_area_struct *vma)
-+void __lru_cache_add_active_or_unevictable(struct page *page,
-+					   unsigned long vma_flags)
- {
- 	VM_BUG_ON_PAGE(PageLRU(page), page);
- 
--	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
-+	if (likely((vma_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
- 		SetPageActive(page);
- 	else if (!TestSetPageMlocked(page)) {
- 		/*
+ #
+ # Arch settings
 -- 
 2.7.4
