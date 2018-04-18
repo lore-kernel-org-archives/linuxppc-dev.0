@@ -1,35 +1,39 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <alastair@au1.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QhqJ0mLQzF1yM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 09:51:39 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Qkb237K3zF1wJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 11:11:09 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3HNnRiJ057492
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:51:36 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hds1yc0up-1
+ w3I19Mc4023819
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 21:11:07 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hds1peexf-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 19:51:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 21:11:07 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Wed, 18 Apr 2018 00:51:34 +0100
-Subject: Re: [PATCH] misc: cxl: Change return type to vm_fault_t
-To: Souptick Joarder <jrdr.linux@gmail.com>, fbarrat@linux.vnet.ibm.com,
- arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- willy@infradead.org
-References: <20180417145354.GA31451@jordon-HP-15-Notebook-PC>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Wed, 18 Apr 2018 09:51:27 +1000
-MIME-Version: 1.0
-In-Reply-To: <20180417145354.GA31451@jordon-HP-15-Notebook-PC>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <384a35d1-30dd-55d1-4a19-d7c9dc99bdfb@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Wed, 18 Apr 2018 02:11:05 +0100
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+Subject: [PATCH v2 2/7] powerpc: Use TIDR CPU feature to control TIDR
+ allocation
+Date: Wed, 18 Apr 2018 11:08:05 +1000
+In-Reply-To: <20180418010810.30937-1-alastair@au1.ibm.com>
+References: <20180417020950.21446-1-alastair@au1.ibm.com>
+ <20180418010810.30937-1-alastair@au1.ibm.com>
+Message-Id: <20180418010810.30937-3-alastair@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +43,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/04/18 00:53, Souptick Joarder wrote:
-> Use new return type vm_fault_t for fault handler. For
-> now, this is just documenting that the function returns
-> a VM_FAULT value rather than an errno. Once all instances
-> are converted, vm_fault_t will become a distinct type.
-> 
-> Reference id -> 1c8f422059ae ("mm: change return type to
-> vm_fault_t")
-> 
-> previously cxl_mmap_fault returns VM_FAULT_NOPAGE as
-> default value irrespective of vm_insert_pfn() return
-> value. This bug is fixed with new vmf_insert_pfn()
-> which will return VM_FAULT_ type based on err.
-> 
-> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+From: Alastair D'Silva <alastair@d-silva.org>
 
-This looks good to me
+Switch the use of TIDR on it's CPU feature, rather than assuming it
+is available based on architecture.
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ arch/powerpc/kernel/process.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1237f13fed51..3b00da47699b 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1154,7 +1154,7 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ 			mtspr(SPRN_TAR, new_thread->tar);
+ 	}
+ 
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	if (cpu_has_feature(CPU_FTR_P9_TIDR) &&
+ 	    old_thread->tidr != new_thread->tidr)
+ 		mtspr(SPRN_TIDR, new_thread->tidr);
+ #endif
+@@ -1570,7 +1570,7 @@ void clear_thread_tidr(struct task_struct *t)
+ 	if (!t->thread.tidr)
+ 		return;
+ 
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
++	if (!cpu_has_feature(CPU_FTR_P9_TIDR)) {
+ 		WARN_ON_ONCE(1);
+ 		return;
+ 	}
+@@ -1593,7 +1593,7 @@ int set_thread_tidr(struct task_struct *t)
+ {
+ 	int rc;
+ 
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++	if (!cpu_has_feature(CPU_FTR_P9_TIDR))
+ 		return -EINVAL;
+ 
+ 	if (t != current)
 -- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+2.14.3
