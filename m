@@ -1,38 +1,47 @@
-Return-Path: <alastair@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QkbD4ZvVzF20c
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 11:11:20 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3I19YVv141048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 21:11:17 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hds21ecve-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QnNh4N2FzF1S0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 13:17:24 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3I3EeFx080920
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:17:21 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hds1padm1-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 21:11:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:17:20 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 18 Apr 2018 02:11:07 +0100
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de,
- andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH v2 7/7] ocxl: Document new OCXL IOCTLs
-Date: Wed, 18 Apr 2018 11:08:10 +1000
-In-Reply-To: <20180418010810.30937-1-alastair@au1.ibm.com>
-References: <20180417020950.21446-1-alastair@au1.ibm.com>
- <20180418010810.30937-1-alastair@au1.ibm.com>
-Message-Id: <20180418010810.30937-8-alastair@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 18 Apr 2018 04:17:18 +0100
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+To: Christoph Hellwig <hch@infradead.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
+ <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
+ <20180405175326-mutt-send-email-mst@kernel.org>
+ <1522940983.21446.205.camel@kernel.crashing.org>
+ <20180405213042-mutt-send-email-mst@kernel.org>
+ <1522963113.21446.211.camel@kernel.crashing.org>
+ <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
+ <20180406071634.GA31108@infradead.org>
+ <1523003838.21446.238.camel@kernel.crashing.org>
+ <20180415121157.GA17726@infradead.org>
+Cc: robh@kernel.org, "Michael S. Tsirkin" <mst@redhat.com>, aik@ozlabs.ru,
+ jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 18 Apr 2018 08:47:10 +0530
+MIME-Version: 1.0
+In-Reply-To: <20180415121157.GA17726@infradead.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <002f153f-452d-f64b-4fc7-7f3383b39162@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,34 +51,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+On 04/15/2018 05:41 PM, Christoph Hellwig wrote:
+> On Fri, Apr 06, 2018 at 06:37:18PM +1000, Benjamin Herrenschmidt wrote:
+>>>> implemented as DMA API which the virtio core understands. There is no
+>>>> need for an IOMMU to be involved for the device representation in this
+>>>> case IMHO.
+>>>
+>>> This whole virtio translation issue is a mess.  I think we need to
+>>> switch it to the dma API, and then quirk the legacy case to always
+>>> use the direct mapping inside the dma API.
+>>
+>> Fine with using a dma API always on the Linux side, but we do want to
+>> special case virtio still at the arch and qemu side to have a "direct
+>> mapping" mode. Not sure how (special flags on PCI devices) to avoid
+>> actually going through an emulated IOMMU on the qemu side, because that
+>> slows things down, esp. with vhost.
+>>
+>> IE, we can't I think just treat it the same as a physical device.
+> 
+> We should have treated it like a physical device from the start, but
+> that device has unfortunately sailed.
+> 
+> But yes, we'll need a per-device quirk that says 'don't attach an
+> iommu'.
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- Documentation/accelerators/ocxl.rst | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-index 7904adcc07fd..3b8d3b99795c 100644
---- a/Documentation/accelerators/ocxl.rst
-+++ b/Documentation/accelerators/ocxl.rst
-@@ -157,6 +157,17 @@ OCXL_IOCTL_GET_METADATA:
-   Obtains configuration information from the card, such at the size of
-   MMIO areas, the AFU version, and the PASID for the current context.
- 
-+OCXL_IOCTL_ENABLE_P9_WAIT:
-+
-+  Allows the AFU to wake a userspace thread executing 'wait'. Returns
-+  information to userspace to allow it to configure the AFU. Note that
-+  this is only available on Power 9.
-+
-+OCXL_IOCTL_GET_FEATURES:
-+
-+  Reports on which CPU features that affect OpenCAPI are usable from
-+  userspace.
-+
- mmap
- ----
- 
--- 
-2.14.3
+How about doing it per platform basis as suggested in this RFC through
+an arch specific callback. Because all the virtio devices in the given
+platform would require and exercise this option (to avail bounce buffer
+mechanism for secure guests as an example). So the flag basically is a
+platform specific one not a device specific one.
