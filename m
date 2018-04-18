@@ -1,26 +1,29 @@
 Return-Path: <jrdr.linux@gmail.com>
-Received: from mail-lf0-x236.google.com (mail-lf0-x236.google.com
- [IPv6:2a00:1450:4010:c07::236])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RBPJ3WdkzF1v3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 05:04:20 +1000 (AEST)
-Received: by mail-lf0-x236.google.com with SMTP id p142-v6so4189541lfd.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 12:04:20 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20180417204712.GB3603@bombadil.infradead.org>
-References: <20180417192038.GA22918@jordon-HP-15-Notebook-PC>
- <20180417204712.GB3603@bombadil.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RBjC5WJGzDr3t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 05:18:07 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id j11so1313846pgf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 12:18:07 -0700 (PDT)
+Date: Thu, 19 Apr 2018 00:49:58 +0530
 From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Thu, 19 Apr 2018 00:34:15 +0530
-Message-ID: <CAFqt6zbhHm7s=_N8QOh-+qcw=dbyx-qgq3ajp3OmGLGYANO0ww@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: platform: cell: spufs: Change return type to
- vm_fault_t
-To: Matthew Wilcox <willy@infradead.org>
-Cc: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+To: jhogan@kernel.org, ralf@linux-mips.org, paulus@ozlabs.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au,
+ borntraeger@de.ibm.com, frankja@linux.vnet.ibm.com,
+ david@redhat.com, cohuck@redhat.com, schwidefsky@de.ibm.com,
+ pbonzini@redhat.com, tglx@linutronix.de, mingo@redhat.com,
+ christoffer.dall@linaro.org, marc.zyngier@arm.com
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ willy@infradead.org
+Subject: [PATCH] kvm: Change return type to vm_fault_t
+Message-ID: <20180418191958.GA25806@jordon-HP-15-Notebook-PC>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +33,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 18, 2018 at 2:17 AM, Matthew Wilcox <willy@infradead.org> wrote:
-> On Wed, Apr 18, 2018 at 12:50:38AM +0530, Souptick Joarder wrote:
->> Use new return type vm_fault_t for fault handler. For
->> now, this is just documenting that the function returns
->> a VM_FAULT value rather than an errno. Once all instances
->> are converted, vm_fault_t will become a distinct type.
->>
->> Reference id -> 1c8f422059ae ("mm: change return type to
->> vm_fault_t")
->>
->> Previously vm_insert_pfn() returns err but driver returns
->> VM_FAULT_NOPAGE as default. The new function vmf_insert_pfn()
->> will replace this inefficiency by returning correct VM_FAULT_*
->> type.
->>
->> vmf_handle_error is a inline wrapper function which
->> will convert error number to vm_fault_t type err.
->
-> I think you sent the wrong version of this one ...
->
-> The commit message should mention that we're fixing a minor bug, that
-> the error from vm_insert_pfn() was being ignored and the effect of this
-> is likely to be only felt in OOM situations.
+Use new return type vm_fault_t for fault handler. For
+now, this is just documenting that the function returns
+a VM_FAULT value rather than an errno. Once all instances
+are converted, vm_fault_t will become a distinct type.
 
-Ok, I will add this.
->
->> @@ -256,11 +257,11 @@ static ssize_t spufs_attr_write(struct file *file, const char __user *buf,
->>               vma->vm_page_prot = pgprot_noncached_wc(vma->vm_page_prot);
->>               pfn = (ctx->spu->local_store_phys + offset) >> PAGE_SHIFT;
->>       }
->> -     vm_insert_pfn(vma, vmf->address, pfn);
->> +     ret = vmf_insert_pfn(vma, vmf->address, pfn);
->>
->>       spu_release(ctx);
->>
->> -     return VM_FAULT_NOPAGE;
->> +     return ret;
->>  }
->
-> I thought I said not to introduce vmf_handle_error(), because it's too
-> trivial and obfuscates what's actually going on.
->
->> -static int spufs_ps_fault(struct vm_fault *vmf,
->> +static inline vm_fault_t vmf_handle_error(int err)
->> +{
->> +     return VM_FAULT_NOPAGE;
->> +}
->> +
->
-> Re-reading spufs_ps_fault(), I wouldn't change anything inside it.  Just
-> change its return type to vm_fault_t and call it done.
+commit 1c8f422059ae ("mm: change return type to vm_fault_t")
 
-In that case, return value of spufs_wait() has to changed
-to VM_FAULT_ type and we end with changing all the
-references where spufs_wait() is called. I think we shouldn't
-go with that approach. That's the reason I introduce inline
-vmf_handle_error() and convert err to VM_FAULT_ type.
+Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
+---
+ arch/mips/kvm/mips.c       | 2 +-
+ arch/powerpc/kvm/powerpc.c | 2 +-
+ arch/s390/kvm/kvm-s390.c   | 2 +-
+ arch/x86/kvm/x86.c         | 2 +-
+ include/linux/kvm_host.h   | 2 +-
+ virt/kvm/arm/arm.c         | 2 +-
+ virt/kvm/kvm_main.c        | 2 +-
+ 7 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index 2549fdd..03e0e0f 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -1076,7 +1076,7 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
+ 	return -ENOIOCTLCMD;
+ }
+
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ {
+ 	return VM_FAULT_SIGBUS;
+ }
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 403e642..3099dee 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -1825,7 +1825,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 	return r;
+ }
+
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ {
+ 	return VM_FAULT_SIGBUS;
+ }
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index ba4c709..24af487 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -3941,7 +3941,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 	return r;
+ }
+
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ {
+ #ifdef CONFIG_KVM_S390_UCONTROL
+ 	if ((vmf->pgoff == KVM_S390_SIE_PAGE_OFFSET)
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index c8a0b54..95d8102 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3827,7 +3827,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 	return r;
+ }
+
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ {
+ 	return VM_FAULT_SIGBUS;
+ }
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index ac0062b..8eeb062 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -736,7 +736,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
+ 			unsigned int ioctl, unsigned long arg);
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg);
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf);
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf);
+
+ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext);
+
+diff --git a/virt/kvm/arm/arm.c b/virt/kvm/arm/arm.c
+index 86941f6..6c8cc31 100644
+--- a/virt/kvm/arm/arm.c
++++ b/virt/kvm/arm/arm.c
+@@ -163,7 +163,7 @@ int kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
+ 	return 0;
+ }
+
+-int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
++vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ {
+ 	return VM_FAULT_SIGBUS;
+ }
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 4501e65..45eb54b 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2341,7 +2341,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_on_spin);
+
+-static int kvm_vcpu_fault(struct vm_fault *vmf)
++static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
+ {
+ 	struct kvm_vcpu *vcpu = vmf->vma->vm_file->private_data;
+ 	struct page *page;
+--
+1.9.1
