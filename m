@@ -1,47 +1,23 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40QnNh4N2FzF1S0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 13:17:24 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3I3EeFx080920
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:17:21 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hds1padm1-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Apr 2018 23:17:20 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 18 Apr 2018 04:17:18 +0100
-Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
-To: Christoph Hellwig <hch@infradead.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20180405105631.9514-1-khandual@linux.vnet.ibm.com>
- <3e1b113b-79ca-b700-5be9-10c66d74aabe@linux.vnet.ibm.com>
- <20180405175326-mutt-send-email-mst@kernel.org>
- <1522940983.21446.205.camel@kernel.crashing.org>
- <20180405213042-mutt-send-email-mst@kernel.org>
- <1522963113.21446.211.camel@kernel.crashing.org>
- <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
- <20180406071634.GA31108@infradead.org>
- <1523003838.21446.238.camel@kernel.crashing.org>
- <20180415121157.GA17726@infradead.org>
-Cc: robh@kernel.org, "Michael S. Tsirkin" <mst@redhat.com>, aik@ozlabs.ru,
- jasowang@redhat.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, joe@perches.com,
- david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 18 Apr 2018 08:47:10 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40QrcK5SSbzF1s3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Apr 2018 15:42:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] powerpc/8xx: Build fix with Hugetlbfs enabled
+In-Reply-To: <20180416112724.9677-2-aneesh.kumar@linux.ibm.com>
+References: <20180416112724.9677-1-aneesh.kumar@linux.ibm.com>
+ <20180416112724.9677-2-aneesh.kumar@linux.ibm.com>
+Date: Wed, 18 Apr 2018 15:42:41 +1000
+Message-ID: <87in8poysu.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180415121157.GA17726@infradead.org>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <002f153f-452d-f64b-4fc7-7f3383b39162@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,32 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2018 05:41 PM, Christoph Hellwig wrote:
-> On Fri, Apr 06, 2018 at 06:37:18PM +1000, Benjamin Herrenschmidt wrote:
->>>> implemented as DMA API which the virtio core understands. There is no
->>>> need for an IOMMU to be involved for the device representation in this
->>>> case IMHO.
->>>
->>> This whole virtio translation issue is a mess.  I think we need to
->>> switch it to the dma API, and then quirk the legacy case to always
->>> use the direct mapping inside the dma API.
->>
->> Fine with using a dma API always on the Linux side, but we do want to
->> special case virtio still at the arch and qemu side to have a "direct
->> mapping" mode. Not sure how (special flags on PCI devices) to avoid
->> actually going through an emulated IOMMU on the qemu side, because that
->> slows things down, esp. with vhost.
->>
->> IE, we can't I think just treat it the same as a physical device.
-> 
-> We should have treated it like a physical device from the start, but
-> that device has unfortunately sailed.
-> 
-> But yes, we'll need a per-device quirk that says 'don't attach an
-> iommu'.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-How about doing it per platform basis as suggested in this RFC through
-an arch specific callback. Because all the virtio devices in the given
-platform would require and exercise this option (to avail bounce buffer
-mechanism for secure guests as an example). So the flag basically is a
-platform specific one not a device specific one.
+> 8xx use slice code when hugetlbfs is enabled. We missed a header include on
+> 8xx which resulted in the below build failure.
+>
+> config: mpc885_ads_defconfig + CONFIG_HUGETLBFS
+>
+>    CC      arch/powerpc/mm/slice.o
+> arch/powerpc/mm/slice.c: In function 'slice_get_unmapped_area':
+> arch/powerpc/mm/slice.c:655:2: error: implicit declaration of function 'need_extra_context' [-Werror=implicit-function-declaration]
+> arch/powerpc/mm/slice.c:656:3: error: implicit declaration of function 'alloc_extended_context' [-Werror=implicit-function-declaration]
+> cc1: all warnings being treated as errors
+> make[1]: *** [arch/powerpc/mm/slice.o] Error 1
+> make: *** [arch/powerpc/mm] Error 2
+>
+> on PPC64 the mmu_context.h was included via linux/pkeys.h
+>
+> CC: Christophe LEROY <christophe.leroy@c-s.fr>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/mm/slice.c | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index 9cd87d11fe4e..205fe557ca10 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -35,6 +35,7 @@
+>  #include <asm/mmu.h>
+>  #include <asm/copro.h>
+>  #include <asm/hugetlb.h>
+> +#include <asm/mmu_context.h>
+
+I already merged this, didn't I?
+
+cheers
