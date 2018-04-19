@@ -3,34 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNd3zkKzF22y
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNf2HTCzF1Rs
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:04:49 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3J74STU014476
+ w3J74ePW095836
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:47 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2henp8a0b3-1
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hekvn69dy-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:46 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:45 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 19 Apr 2018 08:04:44 +0100
+ Thu, 19 Apr 2018 08:04:35 +0100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
  Steven Rostedt <rostedt@goodmis.org>,
  Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Subject: [PATCH v5 04/10] powerpc64/ftrace: Delay enabling ftrace on secondary
- cpus
-Date: Thu, 19 Apr 2018 12:34:03 +0530
+Subject: [PATCH v5 01/10] powerpc64/ftrace: Add a field in paca to disable
+ ftrace in unsafe code paths
+Date: Thu, 19 Apr 2018 12:34:00 +0530
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <b31df0301885f024ba009badf324d532580ef336.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <47c79b5591208f332876fc548186b5b1e3b68e52.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,73 +40,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the boot cpu, though we enable paca->ftrace_enabled in early_setup()
-(via cpu_ready_for_interrupts()), we don't start tracing until much
-later since ftrace is not initialized yet and since we only support
-DYNAMIC_FTRACE on powerpc. However, it is possible that ftrace has been
-initialized by the time some of the secondary cpus start up. In this
-case, we will try to trace some of the early boot code which can cause
-problems.
+We have some C code that we call into from real mode where we cannot
+take any exceptions. Though the C functions themselves are mostly safe,
+if these functions are traced, there is a possibility that we may take
+an exception. For instance, in certain conditions, the ftrace code uses
+WARN(), which uses a 'trap' to do its job.
 
-To address this, move setting paca->ftrace_enabled from
-cpu_ready_for_interrupts() to early_setup() for the boot cpu, and towards
-the end of start_secondary() for secondary cpus.
+For such scenarios, introduce a new field in paca 'ftrace_enabled',
+which is checked on ftrace entry before continuing. This field can then
+be set to zero to disable/pause ftrace, and set to a non-zero value to
+resume ftrace.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/setup_64.c | 10 +++++++---
- arch/powerpc/kernel/smp.c      |  4 ++++
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/paca.h                |  1 +
+ arch/powerpc/kernel/asm-offsets.c              |  1 +
+ arch/powerpc/kernel/setup_64.c                 |  3 +++
+ arch/powerpc/kernel/trace/ftrace_64_mprofile.S | 14 ++++++++++++++
+ arch/powerpc/kernel/trace/ftrace_64_pg.S       |  4 ++++
+ 5 files changed, 23 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 4185f1c96125..163f13f31255 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -223,6 +223,7 @@ struct paca_struct {
+ 	u8 hmi_event_available;		/* HMI event is available */
+ 	u8 hmi_p9_special_emu;		/* HMI P9 special emulation */
+ #endif
++	u8 ftrace_enabled;		/* Hard disable ftrace */
+ 
+ 	/* Stuff for accurate time accounting */
+ 	struct cpu_accounting_data accounting;
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 6bee65f3cfd3..262c44a90ea1 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -180,6 +180,7 @@ int main(void)
+ 	OFFSET(PACAKMSR, paca_struct, kernel_msr);
+ 	OFFSET(PACAIRQSOFTMASK, paca_struct, irq_soft_mask);
+ 	OFFSET(PACAIRQHAPPENED, paca_struct, irq_happened);
++	OFFSET(PACA_FTRACE_ENABLED, paca_struct, ftrace_enabled);
+ #ifdef CONFIG_PPC_BOOK3S
+ 	OFFSET(PACACONTEXTID, paca_struct, mm_ctx_id);
+ #ifdef CONFIG_PPC_MM_SLICES
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 313136006d1c..7a7ce8ad455e 100644
+index b78f142a4148..313136006d1c 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -252,9 +252,6 @@ static void cpu_ready_for_interrupts(void)
+@@ -252,6 +252,9 @@ static void cpu_ready_for_interrupts(void)
  
  	/* Set IR and DR in PACA MSR */
  	get_paca()->kernel_msr = MSR_KERNEL;
--
--	/* We are now ok to enable ftrace */
--	get_paca()->ftrace_enabled = 1;
++
++	/* We are now ok to enable ftrace */
++	get_paca()->ftrace_enabled = 1;
  }
  
  unsigned long spr_default_dscr = 0;
-@@ -349,6 +346,13 @@ void __init early_setup(unsigned long dt_ptr)
- 	 */
- 	cpu_ready_for_interrupts();
- 
-+	/*
-+	 * We enable ftrace here, but since we only support DYNAMIC_FTRACE, it
-+	 * will only actually get enabled on the boot cpu much later once
-+	 * ftrace itself has been initialized.
-+	 */
-+	this_cpu_enable_ftrace();
+diff --git a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+index 3f3e81852422..ae1cbe783ab6 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
++++ b/arch/powerpc/kernel/trace/ftrace_64_mprofile.S
+@@ -47,6 +47,12 @@ _GLOBAL(ftrace_caller)
+ 	/* Save all gprs to pt_regs */
+ 	SAVE_GPR(0, r1)
+ 	SAVE_10GPRS(2, r1)
 +
- 	DBG(" <- early_setup()\n");
- 
- #ifdef CONFIG_PPC_EARLY_DEBUG_BOOTX
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e16ec7b3b427..c4f5dfb686ca 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -59,6 +59,7 @@
- #include <asm/kexec.h>
- #include <asm/asm-prototypes.h>
- #include <asm/cpu_has_feature.h>
-+#include <asm/ftrace.h>
- 
- #ifdef DEBUG
- #include <asm/udbg.h>
-@@ -1031,6 +1032,9 @@ void start_secondary(void *unused)
- 
- 	local_irq_enable();
- 
-+	/* We can enable ftrace for secondary cpus now */
-+	this_cpu_enable_ftrace();
++	/* Ok to continue? */
++	lbz	r3, PACA_FTRACE_ENABLED(r13)
++	cmpdi	r3, 0
++	beq	ftrace_no_trace
 +
- 	cpu_startup_entry(CPUHP_AP_ONLINE_IDLE);
+ 	SAVE_10GPRS(12, r1)
+ 	SAVE_10GPRS(22, r1)
  
- 	BUG();
+@@ -168,6 +174,14 @@ _GLOBAL(ftrace_graph_stub)
+ _GLOBAL(ftrace_stub)
+ 	blr
+ 
++ftrace_no_trace:
++	mflr	r3
++	mtctr	r3
++	REST_GPR(3, r1)
++	addi	r1, r1, SWITCH_FRAME_SIZE
++	mtlr	r0
++	bctr
++
+ #ifdef CONFIG_LIVEPATCH
+ 	/*
+ 	 * This function runs in the mcount context, between two functions. As
+diff --git a/arch/powerpc/kernel/trace/ftrace_64_pg.S b/arch/powerpc/kernel/trace/ftrace_64_pg.S
+index f095358da96e..b7ba51a0f3b6 100644
+--- a/arch/powerpc/kernel/trace/ftrace_64_pg.S
++++ b/arch/powerpc/kernel/trace/ftrace_64_pg.S
+@@ -16,6 +16,10 @@
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ _GLOBAL_TOC(ftrace_caller)
++	lbz	r3, PACA_FTRACE_ENABLED(r13)
++	cmpdi	r3, 0
++	beqlr
++
+ 	/* Taken from output of objdump from lib64/glibc */
+ 	mflr	r3
+ 	ld	r11, 0(r1)
 -- 
 2.17.0
