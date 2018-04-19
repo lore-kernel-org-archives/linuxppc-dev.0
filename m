@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Rhbn3bjnzF21Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Rhbw4SdKzF213
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:16 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,11 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 00/17] y2038: Convert IPC syscalls
-Date: Thu, 19 Apr 2018 16:37:20 +0200
-Message-Id: <20180419143737.606138-1-arnd@arndb.de>
+Subject: [PATCH v3 12/17] y2038: ipc: Use ktime_get_real_seconds consistently
+Date: Thu, 19 Apr 2018 16:37:32 +0200
+Message-Id: <20180419143737.606138-13-arnd@arndb.de>
+In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
+References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,176 +29,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an update of a series I posted a long time ago [1], updating
-the IPC subsystem to pass down 64-bit time stamps to user space.
+In some places, we still used get_seconds() instead of
+ktime_get_real_seconds(), and I'm changing the remaining ones now to
+all use ktime_get_real_seconds() so we use the full available range for
+timestamps instead of overflowing the 'unsigned long' return value in
+year 2106 on 32-bit kernels.
 
-In particular, for sys_msgctl, sys_semctl and sys_shmctl, I do not
-introduce a completely new set of replacement system calls, but instead
-extend the existing ones to return data in the reserved fields of the
-normal data structure.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ ipc/msg.c | 6 +++---
+ ipc/sem.c | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-This should be completely transparent to any existing user space, and
-only after the 32-bit time_t wraps, it will make a difference in the
-returned data.
-
-libc implementations will consequently have to provide their own data
-structures when they move to 64-bit time_t, and convert the structures
-in user space from the ones returned by the kernel.
-
-In contrast, mq_timedsend, mq_timedreceive and and semtimedop all do
-need to change because having a libc redefine the timespec type
-breaks the ABI, so with this series, there will be two separate entry
-points for 32-bit architectures.
-
-There are three cases here:
-
-- little-endian architectures (except powerpc and mips) can use
-  the normal layout and just cast the data structure to the user space
-  type that contains 64-bit numbers.
-
-- parisc and sparc can do the same thing with big-endian user space
-
-- little-endian powerpc and most big-endian architectures have
-  to flip the upper and lower 32-bit halves of the time_t value in memory,
-  but can otherwise keep using the normal layout
-
-- mips and big-endian xtensa need to be more careful because
-  they are not consistent in their definitions, and they have to provide
-  custom libc implementations for the system calls to use 64-bit time_t.
-
-Changes to v2 [2]:
-- added patches for mq_timedsend, mq_timedreceive and and semtimedop
-  system calls
-- add asm-generic/compat.h changes to prepare for actually using those
-  on 32-bit.
-- fix 'make headers_install' as reported by Heiko Carstens
-- fix MIPS build as reported by build bot
-- Cc everyone on all patches as originally intended, not just on the
-  cover letter.
-
-Changes to v1 [1]:
-- Rebased to the latest kernel (4.17-rc)
-- Dropped changes for removed architectures
-- Simplified the IPC code changes, based on prior work from
-  both Deepa and Eric
-- Fixed a few bugs that I found during rebasing, in parcular the
-  sparc version was incorrect.
-
-I haven't seen any objections to v1 and will send a pull request
-to Thomas Gleixner after Deepa's first patches are all merged there.
-There are a few more patches in my tree [3] now, I'm still testing
-those and should be able to send the next batch next week.
-
-    Arnd
-
-[1] https://lkml.org/lkml/2015/5/20/605
-[2] https://lwn.net/Articles/751676/
-[3] git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git y2038-next
-
-Arnd Bergmann (17):
-  y2038: asm-generic: Extend sysvipc data structures
-  y2038: alpha: Remove unneeded ipc uapi header files
-  y2038: ia64: Remove unneeded ipc uapi header files
-  y2038: s390: Remove unneeded ipc uapi header files
-  y2038: arm64: Extend sysvipc compat data structures
-  y2038: mips: Extend sysvipc data structures
-  y2038: x86: Extend sysvipc data structures
-  y2038: parisc: Extend sysvipc data structures
-  y2038: sparc: Extend sysvipc data structures
-  y2038: powerpc: Extend sysvipc data structures
-  y2038: xtensa: Extend sysvipc data structures
-  y2038: ipc: Use ktime_get_real_seconds consistently
-  y2038: ipc: Report long times to user space
-  y2038: ipc: Use __kernel_timespec
-  y2038: ipc: Enable COMPAT_32BIT_TIME
-  y2038: ipc: Redirect ipc(SEMTIMEDOP, ...) to compat_ksys_semtimedop
-  y2038: compat: Move common compat types to asm-generic/compat.h
-
-Cc: linux-api@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: libc-alpha@sourceware.org
-Cc: tglx@linutronix.de
-Cc: deepa.kernel@gmail.com
-Cc: viro@zeniv.linux.org.uk
-Cc: ebiederm@xmission.com
-Cc: albert.aribaud@3adev.fr
-Cc: linux-s390@vger.kernel.org
-Cc: schwidefsky@de.ibm.com
-Cc: x86@kernel.org
-Cc: catalin.marinas@arm.com
-Cc: will.deacon@arm.com
-Cc: linux-mips@linux-mips.org
-Cc: jhogan@kernel.org
-Cc: ralf@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
-
- arch/alpha/include/uapi/asm/Kbuild     |  4 ++
- arch/alpha/include/uapi/asm/ipcbuf.h   |  2 -
- arch/alpha/include/uapi/asm/msgbuf.h   | 28 -----------
- arch/alpha/include/uapi/asm/sembuf.h   | 23 ---------
- arch/alpha/include/uapi/asm/shmbuf.h   | 39 ---------------
- arch/arm64/include/asm/compat.h        | 52 +++++++-------------
- arch/ia64/include/uapi/asm/Kbuild      |  4 ++
- arch/ia64/include/uapi/asm/ipcbuf.h    |  2 -
- arch/ia64/include/uapi/asm/msgbuf.h    | 28 -----------
- arch/ia64/include/uapi/asm/sembuf.h    | 23 ---------
- arch/ia64/include/uapi/asm/shmbuf.h    | 39 ---------------
- arch/mips/include/asm/compat.h         | 58 +++++++++--------------
- arch/mips/include/uapi/asm/msgbuf.h    | 57 ++++++++++++++--------
- arch/mips/include/uapi/asm/sembuf.h    | 15 +++++-
- arch/mips/include/uapi/asm/shmbuf.h    | 23 ++++++++-
- arch/parisc/include/asm/compat.h       | 50 +++++++-------------
- arch/parisc/include/uapi/asm/msgbuf.h  | 33 +++++++------
- arch/parisc/include/uapi/asm/sembuf.h  | 16 +++----
- arch/parisc/include/uapi/asm/shmbuf.h  | 19 ++++----
- arch/powerpc/include/asm/compat.h      | 50 +++++++-------------
- arch/powerpc/include/uapi/asm/msgbuf.h | 18 +++----
- arch/powerpc/include/uapi/asm/sembuf.h | 14 +++---
- arch/powerpc/include/uapi/asm/shmbuf.h | 19 ++++----
- arch/s390/include/asm/compat.h         | 50 +++++++-------------
- arch/s390/include/uapi/asm/Kbuild      |  3 ++
- arch/s390/include/uapi/asm/msgbuf.h    | 38 ---------------
- arch/s390/include/uapi/asm/sembuf.h    | 30 ------------
- arch/s390/include/uapi/asm/shmbuf.h    | 49 -------------------
- arch/sparc/include/asm/compat.h        | 51 +++++++-------------
- arch/sparc/include/uapi/asm/msgbuf.h   | 22 ++++-----
- arch/sparc/include/uapi/asm/sembuf.h   | 16 +++----
- arch/sparc/include/uapi/asm/shmbuf.h   | 21 ++++-----
- arch/x86/include/asm/compat.h          | 51 +++++++-------------
- arch/x86/include/uapi/asm/Kbuild       |  5 +-
- arch/x86/include/uapi/asm/msgbuf.h     |  1 -
- arch/x86/include/uapi/asm/sembuf.h     | 11 ++++-
- arch/x86/include/uapi/asm/shmbuf.h     |  1 -
- arch/xtensa/include/uapi/asm/msgbuf.h  | 25 +++++-----
- arch/xtensa/include/uapi/asm/sembuf.h  | 17 ++++---
- arch/xtensa/include/uapi/asm/shmbuf.h  | 37 ++++-----------
- include/asm-generic/compat.h           | 24 +++++++++-
- include/linux/compat.h                 |  2 -
- include/linux/syscalls.h               |  6 +--
- include/uapi/asm-generic/msgbuf.h      | 17 ++++---
- include/uapi/asm-generic/sembuf.h      | 26 ++++++----
- include/uapi/asm-generic/shmbuf.h      | 17 ++++---
- ipc/mqueue.c                           | 86 +++++++++++++++++-----------------
- ipc/msg.c                              | 20 +++++---
- ipc/sem.c                              | 27 +++++++----
- ipc/shm.c                              | 14 ++++--
- ipc/syscall.c                          | 13 +++--
- ipc/util.h                             |  4 +-
- 52 files changed, 493 insertions(+), 807 deletions(-)
- delete mode 100644 arch/alpha/include/uapi/asm/ipcbuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/sembuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/shmbuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/ipcbuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/sembuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/shmbuf.h
- delete mode 100644 arch/s390/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/s390/include/uapi/asm/sembuf.h
- delete mode 100644 arch/s390/include/uapi/asm/shmbuf.h
- delete mode 100644 arch/x86/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/x86/include/uapi/asm/shmbuf.h
-
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 56fd1c73eedc..574f76c9a2ff 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -758,7 +758,7 @@ static inline int pipelined_send(struct msg_queue *msq, struct msg_msg *msg,
+ 				WRITE_ONCE(msr->r_msg, ERR_PTR(-E2BIG));
+ 			} else {
+ 				ipc_update_pid(&msq->q_lrpid, task_pid(msr->r_tsk));
+-				msq->q_rtime = get_seconds();
++				msq->q_rtime = ktime_get_real_seconds();
+ 
+ 				wake_q_add(wake_q, msr->r_tsk);
+ 				WRITE_ONCE(msr->r_msg, msg);
+@@ -859,7 +859,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
+ 	}
+ 
+ 	ipc_update_pid(&msq->q_lspid, task_tgid(current));
+-	msq->q_stime = get_seconds();
++	msq->q_stime = ktime_get_real_seconds();
+ 
+ 	if (!pipelined_send(msq, msg, &wake_q)) {
+ 		/* no one is waiting for this message, enqueue it */
+@@ -1087,7 +1087,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
+ 
+ 			list_del(&msg->m_list);
+ 			msq->q_qnum--;
+-			msq->q_rtime = get_seconds();
++			msq->q_rtime = ktime_get_real_seconds();
+ 			ipc_update_pid(&msq->q_lrpid, task_tgid(current));
+ 			msq->q_cbytes -= msg->m_ts;
+ 			atomic_sub(msg->m_ts, &ns->msg_bytes);
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 06be75d9217a..c6a8a971769d 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -104,7 +104,7 @@ struct sem {
+ 					/* that alter the semaphore */
+ 	struct list_head pending_const; /* pending single-sop operations */
+ 					/* that do not alter the semaphore*/
+-	time_t	sem_otime;	/* candidate for sem_otime */
++	time64_t	 sem_otime;	/* candidate for sem_otime */
+ } ____cacheline_aligned_in_smp;
+ 
+ /* One sem_array data structure for each set of semaphores in the system. */
+@@ -984,10 +984,10 @@ static int update_queue(struct sem_array *sma, int semnum, struct wake_q_head *w
+ static void set_semotime(struct sem_array *sma, struct sembuf *sops)
+ {
+ 	if (sops == NULL) {
+-		sma->sems[0].sem_otime = get_seconds();
++		sma->sems[0].sem_otime = ktime_get_real_seconds();
+ 	} else {
+ 		sma->sems[sops[0].sem_num].sem_otime =
+-							get_seconds();
++						ktime_get_real_seconds();
+ 	}
+ }
+ 
 -- 
 2.9.0
