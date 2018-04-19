@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Rfwy0bs8zF21H
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:29:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com,
-	paulus@samba.org
-Subject: [PATCH] powerpc/kvm: Fix lockups when running KVM guests on Power8
-Date: Thu, 19 Apr 2018 23:29:50 +1000
-Message-Id: <20180419132950.16752-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RgC41KqfzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:08 +1000 (AEST)
+In-Reply-To: <20180411033758.20794-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, sam.bobroff@au1.ibm.com,
+ Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Subject: Re: powerpc/eeh: Fix enabling bridge MMIO windows
+Message-Id: <40RgC33D1fz9s2B@ozlabs.org>
+Date: Thu, 19 Apr 2018 23:42:06 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,76 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When running KVM guests on Power8 we can see a lockup where one CPU
-stops responding. This often leads to a message such as:
+On Wed, 2018-04-11 at 03:37:58 UTC, Michael Neuling wrote:
+> On boot we save the configuration space of PCIe bridges. We do this so
+> when we get an EEH event and everything gets reset that we can restore
+> them.
+> 
+> Unfortunately we save this state before we've enabled the MMIO space
+> on the bridges. Hence if we have to reset the bridge when we come back
+> MMIO is not enabled and we end up taking an PE freeze when the driver
+> starts accessing again.
+> 
+> This patch forces the memory/MMIO and bus mastering on when restoring
+> bridges on EEH. Ideally we'd do this correctly by saving the
+> configuration space writes later, but that will have to come later in
+> a larger EEH rewrite. For now we have this simple fix.
+> 
+> The original bug can be triggered on a boston machine by doing:
+>   echo 0x8000000000000000 > /sys/kernel/debug/powerpc/PCI0001/err_injct_outbound
+> On boston, this PHB has a PCIe switch on it.  Without this patch,
+> you'll see two EEH events, 1 expected and 1 the failure we are fixing
+> here. The second EEH event causes the anything under the PHB to
+> disappear (i.e. the i40e eth).
+> 
+> With this patch, only 1 EEH event occurs and devices properly recover.
+> 
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Cc: stable@vger.kernel.org
+> Acked-by: Russell Currey <ruscur@russell.cc>
 
-  watchdog: CPU 136 detected hard LOCKUP on other CPUs 72
-  Task dump for CPU 72:
-  qemu-system-ppc R  running task    10560 20917  20908 0x00040004
+Applied to powerpc fixes, thanks.
 
-And then backtraces on other CPUs, such as:
+https://git.kernel.org/powerpc/c/13a83eac373c49c0a081cbcd137e79
 
-  Task dump for CPU 48:
-  ksmd            R  running task    10032  1519      2 0x00000804
-  Call Trace:
-    ...
-    --- interrupt: 901 at smp_call_function_many+0x3c8/0x460
-        LR = smp_call_function_many+0x37c/0x460
-    pmdp_invalidate+0x100/0x1b0
-    __split_huge_pmd+0x52c/0xdb0
-    try_to_unmap_one+0x764/0x8b0
-    rmap_walk_anon+0x15c/0x370
-    try_to_unmap+0xb4/0x170
-    split_huge_page_to_list+0x148/0xa30
-    try_to_merge_one_page+0xc8/0x990
-    try_to_merge_with_ksm_page+0x74/0xf0
-    ksm_scan_thread+0x10ec/0x1ac0
-    kthread+0x160/0x1a0
-    ret_from_kernel_thread+0x5c/0x78
-
-This is caused by commit 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync
-for KVM state when waking from idle"), which added a check in
-pnv_powersave_wakeup() to see if the kvm_hstate.hwthread_state is
-already set to KVM_HWTHREAD_IN_KERNEL, and if so to skip the store and
-test of kvm_hstate.hwthread_req.
-
-The problem is that the primary does not set KVM_HWTHREAD_IN_KVM when
-entering the guest, so it can then come out to cede with
-KVM_HWTHREAD_IN_KERNEL set. It can then go idle in kvm_do_nap after
-setting hwthread_req to 1, but because hwthread_state is still
-KVM_HWTHREAD_IN_KERNEL we will skip the test of hwthread_req when we
-wake up from idle and won't go to kvm_start_guest. From there the
-thread will return somewhere garbage and crash.
-
-Fix it by skipping the store of hwthread_state, but not the test of
-hwthread_req, when coming out of idle. It's OK to skip the sync in
-that case because hwthread_req will have been set on the same thread,
-so there is no synchronisation required.
-
-Fixes: 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync for KVM state when waking from idle")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/idle_book3s.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 79d005445c6c..e734f6e45abc 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -553,12 +553,12 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	lbz	r0,HSTATE_HWTHREAD_STATE(r13)
- 	cmpwi	r0,KVM_HWTHREAD_IN_KERNEL
--	beq	1f
-+	beq	0f
- 	li	r0,KVM_HWTHREAD_IN_KERNEL
- 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
- 	/* Order setting hwthread_state vs. testing hwthread_req */
- 	sync
--	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
-+0:	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
- 	cmpwi	r0,0
- 	beq	1f
- 	b	kvm_start_guest
--- 
-2.14.1
+cheers
