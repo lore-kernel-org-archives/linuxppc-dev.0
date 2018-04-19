@@ -1,32 +1,33 @@
 Return-Path: <Dave.Martin@arm.com>
 Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40RXCZ1QD2zF229
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 18:27:04 +1000 (AEST)
-Date: Thu, 19 Apr 2018 09:26:57 +0100
+ by lists.ozlabs.org (Postfix) with ESMTP id 40RYZp2pHSzF229
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 19:28:48 +1000 (AEST)
+Date: Thu, 19 Apr 2018 10:28:40 +0100
 From: Dave Martin <Dave.Martin@arm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-arch@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+ linux-arch <linux-arch@vger.kernel.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  "Dmitry V. Levin" <ldv@altlinux.org>,
  sparclinux <sparclinux@vger.kernel.org>,
  Russell King - ARM Linux <linux@armlinux.org.uk>,
  ppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [RFC PATCH 1/3] signal: Ensure every siginfo we send has all
- bits initialized
-Message-ID: <20180419082656.GK16308@e103592.cambridge.arm.com>
-References: <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
+Subject: Re: [RFC PATCH 0/3] Dealing with the aliases of SI_USER
+Message-ID: <20180419092840.GL16308@e103592.cambridge.arm.com>
+References: <20180413094211.GN16141@n2100.armlinux.org.uk>
+ <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
+ <20180413170827.GB16308@e103592.cambridge.arm.com>
+ <20180413175407.GO16141@n2100.armlinux.org.uk>
+ <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
  <20180413184522.GD16308@e103592.cambridge.arm.com>
  <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
  <20180415131206.GR16141@n2100.armlinux.org.uk>
- <87604sa2fu.fsf_-_@xmission.com> <87zi248nte.fsf_-_@xmission.com>
- <20180417132328.GF16308@e103592.cambridge.arm.com>
- <87d0yxzksd.fsf@xmission.com>
- <20180418124717.GI16308@e103592.cambridge.arm.com>
- <87h8o8y4q6.fsf@xmission.com>
+ <87604sa2fu.fsf_-_@xmission.com>
+ <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87h8o8y4q6.fsf@xmission.com>
+In-Reply-To: <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,84 +37,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 18, 2018 at 09:22:09AM -0500, Eric W. Biederman wrote:
-> Dave Martin <Dave.Martin@arm.com> writes:
-> 
-> > On Tue, Apr 17, 2018 at 02:37:38PM -0500, Eric W. Biederman wrote:
+On Sun, Apr 15, 2018 at 11:16:04AM -0700, Linus Torvalds wrote:
 
 [...]
 
-> >> My intention is to leave 0 instances of clear_siginfo in the
-> >> architecture specific code.  Ideally struct siginfo will be limited to
-> >> kernel/signal.c but I am not certain I can quite get that far.
-> >> The function do_coredump appears to have a legit need for siginfo.
-> >
-> > So, you mean we can't detect that the caller didn't initialise all the
-> > members, or initialised the wrong union member?
-> 
-> Correct.  Even when we smuggled the the union member in the upper bits
-> of si_code we got it wrong.  So an interface that helps out and does
-> more and is harder to misues looks desirable.
-> 
-> > What would be the alternative?  Have a separate interface for each SIL_
-> > type, with only kernel/signal.c translating that into the siginfo_t that
-> > userspace sees?
-> 
-> Yes.  It really isn't bad as architecture specific code only generates
-> faults.  In general faults only take a pointer.  I have already merged
-> the needed helpers into kernel/signal.c
+> The other thing we should do is to get rid of the stupid padding.
+> Right now "struct siginfo" is pointlessly padded to 128 bytes. That is
+> completely insane, when it's always just zero in the kernel.
 
-Good point.  I hadn't considered that only one class of signal comes
-from the arch code, but now that you point it out, it sounds right.
+Agreed, inside the kernel the padding achieves nothing.
 
-> > Either way, I don't see how we force the caller to initilise the whole
-> > structure.
+> So put that _pad[] thing inside #ifndef __KERNEL__, and make
+> copy_siginfo_to_user() write the padding zeroes when copying to user
+> space. The reason for the padding is "future expansion", so we do want
+> to tell the user space that it's maybe up to 128 bytes in size, but if
+> we don't fill it all, we shouldn't waste time and memory on clearing
+> the padding internally.
 > 
-> In general the plan is to convert the callers to call force_sig_fault,
-> and then there is no need to have siginfo in the architecture specific
-> code.  I have all of the necessary helpers are already merged into
-> kernel/signal.c
-
-Makes sense.
-
-I wonder if all the relevant siginfo data could be passed to
-force_sig_fault() (or whatever) as arguments.  Then the problem of
-uninitialised fields goes away.  Perhaps that's what you had in mind.
+> I'm certainly *hoping* nobody depends on the whole 128 bytes in
+> rt_sigqueueinfo(). In theory you can fill it all (as long as si_code
+> is negative), but the man-page only says "si_value", and the compat
+> function doesn't copy any more than that either, so any user that
+> tries to fill in more than si_value is already broken. In fact, it
+> might even be worth enforcing that in rt_sigqueueinfo(), just to see
+> if anybody plays any games..
 
 [...]
 
-> >> Unless gcc has changed it's stance on type-punning through unions
-> >> or it's semantics with -fno-strict_aliasing we should be good.
-> >
-> > In practice you're probably right.
-> >
-> > Today, gcc is pretty conservative in this area, and I haven't been able
-> > to convince clang to optimise away memset in this way either.
-> >
-> > My concern is that is this assumption turns out to be wrong it may be
-> > some time before anybody notices, because the leakage of kernel stack may
-> > be the only symptom.
-> >
-> > I'll try to nail down a compiler guy to see if we can get a promise on
-> > this at least with -fno-strict-aliasing.
-> >
-> >
-> > I wonder whether it's worth protecting ourselves with something like:
-> >
-> >
-> > static void clear_siginfo(siginfo_t *si)
-> > {
-> > 	asm ("" : "=m" (*si));
-> > 	memset(si, 0, sizeof(*si));
-> > 	asm ("" : "+m" (*si));
-> > }
-> >
-> > Probably needs to be thought about more widely though.  I guess it's out
-> > of scope for this series.
-> 
-> It is definitely a question worth asking.
+Digression:
 
-I may follow it up later if I find myself at a loose end...
+Since we don't traditionally zero the tail-padding in the user sigframe,
+is there a reliable way for userspace to detect newly-added fields in
+siginfo other than by having an explicit sigaction sa_flags flag to
+request them?  I imagine something like [1] below from the userspace
+perspective.
+
+On a separate thread, the issue of how to report syndrome information
+for SIGSEGV came up [2] (such as whether the faulting instruction was a
+read or a write).  This information is useful (and used) by things like
+userspace sanitisers and qemu.  Currently, reporting this to userspace
+relies on arch-specific cruft in the sigframe.
+
+We're committed to maintaining what's already in each arch sigframe,
+but it would be preferable to have a portable way of adding information
+to siginfo in a generic way.  si_code doesn't really work for that,
+since si_codes are mutually exclusive: I can't see a way of adding
+supplementary information using si_code.
+
+Anyway, that would be a separate RFC in the future (if ever).
 
 Cheers
 ---Dave
+
+
+[1]
+
+static volatile int have_extflags = 0;
+
+static void handler(int n, siginfo_t *si, void *uc)
+{
+	/* ... */
+
+	if (have_extflags) {
+		/* Check si->si_extflags */
+	} else {
+		/* fallback */
+	}
+
+	/* ... */
+}
+
+int main(void)
+{
+	/* ... */
+
+	struct sigaction sa;
+
+	/* ... */
+
+	sa.sa_flags = SA_SIGINFO | SA_SIGINFO_EXTFLAGS;
+	sa.sa_sigaction = handler;
+	if (!sigaction(SIGSEGV, &sa, NULL)) {
+		have_extflags = 1;
+	} else {
+		sa.sa_flags &= ~SA_SIGINFO_EXTFLAGS;
+		if (sigaction(SIGSEGV, &sa, NULL))
+			goto error;
+	}
+
+	/* ... */
+}
+
+[2] [RFC PATCH] arm64: fault: Don't leak data in ESR context for user fault on kernel VA
+http://lists.infradead.org/pipermail/linux-arm-kernel/2018-April/571428.html
