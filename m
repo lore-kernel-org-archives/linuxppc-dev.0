@@ -1,16 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RgCB0YwGzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:14 +1000 (AEST)
-In-Reply-To: <20180419132950.16752-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org, npiggin@gmail.com
-Subject: Re: powerpc/kvm: Fix lockups when running KVM guests on Power8
-Message-Id: <40RgC76JV0z9s3D@ozlabs.org>
-Date: Thu, 19 Apr 2018 23:42:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RhSN1TtYzF20x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:38:43 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: y2038@lists.linaro.org,
+	linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
+ linux-arch@vger.kernel.org, libc-alpha@sourceware.org, tglx@linutronix.de,
+ deepa.kernel@gmail.com, viro@zeniv.linux.org.uk, ebiederm@xmission.com,
+ albert.aribaud@3adev.fr, linux-s390@vger.kernel.org,
+ schwidefsky@de.ibm.com, x86@kernel.org, catalin.marinas@arm.com,
+ will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
+ ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+Subject: [PATCH v3 04/17] y2038: s390: Remove unneeded ipc uapi header files
+Date: Thu, 19 Apr 2018 16:37:24 +0200
+Message-Id: <20180419143737.606138-5-arnd@arndb.de>
+In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
+References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,58 +29,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-04-19 at 13:29:50 UTC, Michael Ellerman wrote:
-> When running KVM guests on Power8 we can see a lockup where one CPU
-> stops responding. This often leads to a message such as:
-> 
->   watchdog: CPU 136 detected hard LOCKUP on other CPUs 72
->   Task dump for CPU 72:
->   qemu-system-ppc R  running task    10560 20917  20908 0x00040004
-> 
-> And then backtraces on other CPUs, such as:
-> 
->   Task dump for CPU 48:
->   ksmd            R  running task    10032  1519      2 0x00000804
->   Call Trace:
->     ...
->     --- interrupt: 901 at smp_call_function_many+0x3c8/0x460
->         LR = smp_call_function_many+0x37c/0x460
->     pmdp_invalidate+0x100/0x1b0
->     __split_huge_pmd+0x52c/0xdb0
->     try_to_unmap_one+0x764/0x8b0
->     rmap_walk_anon+0x15c/0x370
->     try_to_unmap+0xb4/0x170
->     split_huge_page_to_list+0x148/0xa30
->     try_to_merge_one_page+0xc8/0x990
->     try_to_merge_with_ksm_page+0x74/0xf0
->     ksm_scan_thread+0x10ec/0x1ac0
->     kthread+0x160/0x1a0
->     ret_from_kernel_thread+0x5c/0x78
-> 
-> This is caused by commit 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync
-> for KVM state when waking from idle"), which added a check in
-> pnv_powersave_wakeup() to see if the kvm_hstate.hwthread_state is
-> already set to KVM_HWTHREAD_IN_KERNEL, and if so to skip the store and
-> test of kvm_hstate.hwthread_req.
-> 
-> The problem is that the primary does not set KVM_HWTHREAD_IN_KVM when
-> entering the guest, so it can then come out to cede with
-> KVM_HWTHREAD_IN_KERNEL set. It can then go idle in kvm_do_nap after
-> setting hwthread_req to 1, but because hwthread_state is still
-> KVM_HWTHREAD_IN_KERNEL we will skip the test of hwthread_req when we
-> wake up from idle and won't go to kvm_start_guest. From there the
-> thread will return somewhere garbage and crash.
-> 
-> Fix it by skipping the store of hwthread_state, but not the test of
-> hwthread_req, when coming out of idle. It's OK to skip the sync in
-> that case because hwthread_req will have been set on the same thread,
-> so there is no synchronisation required.
-> 
-> Fixes: 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync for KVM state when waking from idle")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+The s390 msgbuf/sembuf/shmbuf header files are all identical to the
+version from asm-generic.
 
-Applied to powerpc fixes.
+This patch removes the files and replaces them with 'generic-y'
+statements, to avoid having to modify each copy when we extend sysvipc
+to deal with 64-bit time_t in 32-bit user space.
 
-https://git.kernel.org/powerpc/c/56376c5864f8ff4ba7c78a80ae857e
+Note that unlike alpha and ia64, the ipcbuf.h header file is slightly
+different here, so I'm leaving the private copy.
 
-cheers
+To deal with 32-bit compat tasks, we also have to adapt the definitions
+of compat_{shm,sem,msg}id_ds to match the changes to the respective
+asm-generic files.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/s390/include/asm/compat.h      | 32 ++++++++++++------------
+ arch/s390/include/uapi/asm/Kbuild   |  3 +++
+ arch/s390/include/uapi/asm/msgbuf.h | 38 ----------------------------
+ arch/s390/include/uapi/asm/sembuf.h | 30 -----------------------
+ arch/s390/include/uapi/asm/shmbuf.h | 49 -------------------------------------
+ 5 files changed, 19 insertions(+), 133 deletions(-)
+ delete mode 100644 arch/s390/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/s390/include/uapi/asm/sembuf.h
+ delete mode 100644 arch/s390/include/uapi/asm/shmbuf.h
+
+diff --git a/arch/s390/include/asm/compat.h b/arch/s390/include/asm/compat.h
+index 501aaff85304..97db2fba546a 100644
+--- a/arch/s390/include/asm/compat.h
++++ b/arch/s390/include/asm/compat.h
+@@ -232,10 +232,10 @@ struct compat_ipc64_perm {
+ 
+ struct compat_semid64_ds {
+ 	struct compat_ipc64_perm sem_perm;
+-	compat_time_t  sem_otime;
+-	compat_ulong_t __pad1;
+-	compat_time_t  sem_ctime;
+-	compat_ulong_t __pad2;
++	compat_ulong_t sem_otime;
++	compat_ulong_t sem_otime_high;
++	compat_ulong_t sem_ctime;
++	compat_ulong_t sem_ctime_high;
+ 	compat_ulong_t sem_nsems;
+ 	compat_ulong_t __unused1;
+ 	compat_ulong_t __unused2;
+@@ -243,12 +243,12 @@ struct compat_semid64_ds {
+ 
+ struct compat_msqid64_ds {
+ 	struct compat_ipc64_perm msg_perm;
+-	compat_time_t   msg_stime;
+-	compat_ulong_t __pad1;
+-	compat_time_t   msg_rtime;
+-	compat_ulong_t __pad2;
+-	compat_time_t   msg_ctime;
+-	compat_ulong_t __pad3;
++	compat_ulong_t msg_stime;
++	compat_ulong_t msg_stime_high;
++	compat_ulong_t msg_rtime;
++	compat_ulong_t msg_rtime_high;
++	compat_ulong_t msg_ctime;
++	compat_ulong_t msg_ctime_high;
+ 	compat_ulong_t msg_cbytes;
+ 	compat_ulong_t msg_qnum;
+ 	compat_ulong_t msg_qbytes;
+@@ -261,12 +261,12 @@ struct compat_msqid64_ds {
+ struct compat_shmid64_ds {
+ 	struct compat_ipc64_perm shm_perm;
+ 	compat_size_t  shm_segsz;
+-	compat_time_t  shm_atime;
+-	compat_ulong_t __pad1;
+-	compat_time_t  shm_dtime;
+-	compat_ulong_t __pad2;
+-	compat_time_t  shm_ctime;
+-	compat_ulong_t __pad3;
++	compat_ulong_t shm_atime;
++	compat_ulong_t shm_atime_high;
++	compat_ulong_t shm_dtime;
++	compat_ulong_t shm_dtime_high;
++	compat_ulong_t shm_ctime;
++	compat_ulong_t shm_ctime_high;
+ 	compat_pid_t   shm_cpid;
+ 	compat_pid_t   shm_lpid;
+ 	compat_ulong_t shm_nattch;
+diff --git a/arch/s390/include/uapi/asm/Kbuild b/arch/s390/include/uapi/asm/Kbuild
+index faef3f7e8353..e364873e0d10 100644
+--- a/arch/s390/include/uapi/asm/Kbuild
++++ b/arch/s390/include/uapi/asm/Kbuild
+@@ -9,9 +9,12 @@ generic-y += errno.h
+ generic-y += fcntl.h
+ generic-y += ioctl.h
+ generic-y += mman.h
++generic-y += msgbuf.h
+ generic-y += param.h
+ generic-y += poll.h
+ generic-y += resource.h
++generic-y += sembuf.h
++generic-y += shmbuf.h
+ generic-y += sockios.h
+ generic-y += swab.h
+ generic-y += termbits.h
+diff --git a/arch/s390/include/uapi/asm/msgbuf.h b/arch/s390/include/uapi/asm/msgbuf.h
+deleted file mode 100644
+index 604f847cd68c..000000000000
+--- a/arch/s390/include/uapi/asm/msgbuf.h
++++ /dev/null
+@@ -1,38 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-#ifndef _S390_MSGBUF_H
+-#define _S390_MSGBUF_H
+-
+-/* 
+- * The msqid64_ds structure for S/390 architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct msqid64_ds {
+-	struct ipc64_perm msg_perm;
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-#ifndef __s390x__
+-	unsigned long	__unused1;
+-#endif /* ! __s390x__ */
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-#ifndef __s390x__
+-	unsigned long	__unused2;
+-#endif /* ! __s390x__ */
+-	__kernel_time_t msg_ctime;	/* last change time */
+-#ifndef __s390x__
+-	unsigned long	__unused3;
+-#endif /* ! __s390x__ */
+-	unsigned long  msg_cbytes;	/* current number of bytes on queue */
+-	unsigned long  msg_qnum;	/* number of messages in queue */
+-	unsigned long  msg_qbytes;	/* max number of bytes on queue */
+-	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
+-	__kernel_pid_t msg_lrpid;	/* last receive pid */
+-	unsigned long  __unused4;
+-	unsigned long  __unused5;
+-};
+-
+-#endif /* _S390_MSGBUF_H */
+diff --git a/arch/s390/include/uapi/asm/sembuf.h b/arch/s390/include/uapi/asm/sembuf.h
+deleted file mode 100644
+index 3e917697b668..000000000000
+--- a/arch/s390/include/uapi/asm/sembuf.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-#ifndef _S390_SEMBUF_H
+-#define _S390_SEMBUF_H
+-
+-/* 
+- * The semid64_ds structure for S/390 architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem (for !__s390x__)
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct semid64_ds {
+-	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-#ifndef __s390x__
+-	unsigned long	__unused1;
+-#endif /* ! __s390x__ */
+-	__kernel_time_t	sem_ctime;		/* last change time */
+-#ifndef __s390x__
+-	unsigned long	__unused2;
+-#endif /* ! __s390x__ */
+-	unsigned long	sem_nsems;		/* no. of semaphores in array */
+-	unsigned long	__unused3;
+-	unsigned long	__unused4;
+-};
+-
+-#endif /* _S390_SEMBUF_H */
+diff --git a/arch/s390/include/uapi/asm/shmbuf.h b/arch/s390/include/uapi/asm/shmbuf.h
+deleted file mode 100644
+index 9cdce8d7ce60..000000000000
+--- a/arch/s390/include/uapi/asm/shmbuf.h
++++ /dev/null
+@@ -1,49 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-#ifndef _S390_SHMBUF_H
+-#define _S390_SHMBUF_H
+-
+-/* 
+- * The shmid64_ds structure for S/390 architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem (for !__s390x__)
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct shmid64_ds {
+-	struct ipc64_perm	shm_perm;	/* operation perms */
+-	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-#ifndef __s390x__
+-	unsigned long		__unused1;
+-#endif /* ! __s390x__ */
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-#ifndef __s390x__
+-	unsigned long		__unused2;
+-#endif /* ! __s390x__ */
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-#ifndef __s390x__
+-	unsigned long		__unused3;
+-#endif /* ! __s390x__ */
+-	__kernel_pid_t		shm_cpid;	/* pid of creator */
+-	__kernel_pid_t		shm_lpid;	/* pid of last operator */
+-	unsigned long		shm_nattch;	/* no. of current attaches */
+-	unsigned long		__unused4;
+-	unsigned long		__unused5;
+-};
+-
+-struct shminfo64 {
+-	unsigned long	shmmax;
+-	unsigned long	shmmin;
+-	unsigned long	shmmni;
+-	unsigned long	shmseg;
+-	unsigned long	shmall;
+-	unsigned long	__unused1;
+-	unsigned long	__unused2;
+-	unsigned long	__unused3;
+-	unsigned long	__unused4;
+-};
+-
+-#endif /* _S390_SHMBUF_H */
+-- 
+2.9.0
