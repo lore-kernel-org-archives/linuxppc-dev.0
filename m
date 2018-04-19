@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RgC55dnCzDr5X
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:09 +1000 (AEST)
-In-Reply-To: <20180411051801.30194-1-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RgCB0YwGzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:14 +1000 (AEST)
+In-Reply-To: <20180419132950.16752-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc/xive: Fix trying to "push" an already active pool VP
-Message-Id: <40RgC50rVzz9s37@ozlabs.org>
-Date: Thu, 19 Apr 2018 23:42:08 +1000 (AEST)
+Cc: paulus@samba.org, npiggin@gmail.com
+Subject: Re: powerpc/kvm: Fix lockups when running KVM guests on Power8
+Message-Id: <40RgC76JV0z9s3D@ozlabs.org>
+Date: Thu, 19 Apr 2018 23:42:09 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-11 at 05:17:59 UTC, Benjamin Herrenschmidt wrote:
-> When setting up a CPU, we "push" (activate) a pool VP for it.
+On Thu, 2018-04-19 at 13:29:50 UTC, Michael Ellerman wrote:
+> When running KVM guests on Power8 we can see a lockup where one CPU
+> stops responding. This often leads to a message such as:
 > 
-> However it's an error to do so if it already has an active
-> pool VP.
+>   watchdog: CPU 136 detected hard LOCKUP on other CPUs 72
+>   Task dump for CPU 72:
+>   qemu-system-ppc R  running task    10560 20917  20908 0x00040004
 > 
-> This happens when doing soft CPU hotplug on powernv since we
-> don't tear down the CPU on unplug. The HW flags the error which
-> gets captured by the diagnostics.
+> And then backtraces on other CPUs, such as:
 > 
-> Fix this by making sure to "pull" out any already active pool
-> first.
+>   Task dump for CPU 48:
+>   ksmd            R  running task    10032  1519      2 0x00000804
+>   Call Trace:
+>     ...
+>     --- interrupt: 901 at smp_call_function_many+0x3c8/0x460
+>         LR = smp_call_function_many+0x37c/0x460
+>     pmdp_invalidate+0x100/0x1b0
+>     __split_huge_pmd+0x52c/0xdb0
+>     try_to_unmap_one+0x764/0x8b0
+>     rmap_walk_anon+0x15c/0x370
+>     try_to_unmap+0xb4/0x170
+>     split_huge_page_to_list+0x148/0xa30
+>     try_to_merge_one_page+0xc8/0x990
+>     try_to_merge_with_ksm_page+0x74/0xf0
+>     ksm_scan_thread+0x10ec/0x1ac0
+>     kthread+0x160/0x1a0
+>     ret_from_kernel_thread+0x5c/0x78
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> This is caused by commit 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync
+> for KVM state when waking from idle"), which added a check in
+> pnv_powersave_wakeup() to see if the kvm_hstate.hwthread_state is
+> already set to KVM_HWTHREAD_IN_KERNEL, and if so to skip the store and
+> test of kvm_hstate.hwthread_req.
+> 
+> The problem is that the primary does not set KVM_HWTHREAD_IN_KVM when
+> entering the guest, so it can then come out to cede with
+> KVM_HWTHREAD_IN_KERNEL set. It can then go idle in kvm_do_nap after
+> setting hwthread_req to 1, but because hwthread_state is still
+> KVM_HWTHREAD_IN_KERNEL we will skip the test of hwthread_req when we
+> wake up from idle and won't go to kvm_start_guest. From there the
+> thread will return somewhere garbage and crash.
+> 
+> Fix it by skipping the store of hwthread_state, but not the test of
+> hwthread_req, when coming out of idle. It's OK to skip the sync in
+> that case because hwthread_req will have been set on the same thread,
+> so there is no synchronisation required.
+> 
+> Fixes: 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync for KVM state when waking from idle")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Patch 1 applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/b32e56e5a87a1f9243db92bc7a5df0
+https://git.kernel.org/powerpc/c/56376c5864f8ff4ba7c78a80ae857e
 
 cheers
