@@ -1,41 +1,28 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x229.google.com (mail-qt0-x229.google.com
- [IPv6:2607:f8b0:400d:c0d::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <cohuck@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RjNZ251mzDrq2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 01:20:30 +1000 (AEST)
-Received: by mail-qt0-x229.google.com with SMTP id s2-v6so6144603qti.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 08:20:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RgWR5CtrzF1sZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:56:16 +1000 (AEST)
+Date: Thu, 19 Apr 2018 15:56:06 +0200
+From: Cornelia Huck <cohuck@redhat.com>
+To: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: jhogan@kernel.org, ralf@linux-mips.org, paulus@ozlabs.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, borntraeger@de.ibm.com,
+ frankja@linux.vnet.ibm.com, david@redhat.com, schwidefsky@de.ibm.com,
+ pbonzini@redhat.com, tglx@linutronix.de, mingo@redhat.com,
+ christoffer.dall@linaro.org, marc.zyngier@arm.com,
+ linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ willy@infradead.org
+Subject: Re: [PATCH] kvm: Change return type to vm_fault_t
+Message-ID: <20180419155606.45a85009.cohuck@redhat.com>
+In-Reply-To: <20180418191958.GA25806@jordon-HP-15-Notebook-PC>
+References: <20180418191958.GA25806@jordon-HP-15-Notebook-PC>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <87efjbnswr.fsf@xmission.com>
-References: <20180419143737.606138-1-arnd@arndb.de>
- <20180419143737.606138-2-arnd@arndb.de>
- <87efjbnswr.fsf@xmission.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 19 Apr 2018 17:20:26 +0200
-Message-ID: <CAK8P3a196QYoM1egagMuZw4WhiwRiO83Qpj0CxoCeVQBEaj-gw@mail.gmail.com>
-Subject: Re: [PATCH v3 01/17] y2038: asm-generic: Extend sysvipc data
- structures
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: y2038 Mailman List <y2038@lists.linaro.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux API <linux-api@vger.kernel.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- GNU C Library <libc-alpha@sourceware.org>,
- Thomas Gleixner <tglx@linutronix.de>, Deepa Dinamani <deepa.kernel@gmail.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Albert ARIBAUD <albert.aribaud@3adev.fr>,
- linux-s390 <linux-s390@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "the arch/x86 maintainers" <x86@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
- James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- sparclinux <sparclinux@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,63 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 19, 2018 at 4:59 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Arnd Bergmann <arnd@arndb.de> writes:
->>
->>  struct msqid64_ds {
->>       struct ipc64_perm msg_perm;
->> +#if __BITS_PER_LONG == 64
->>       __kernel_time_t msg_stime;      /* last msgsnd time */
->> -#if __BITS_PER_LONG != 64
->> -     unsigned long   __unused1;
->> -#endif
->>       __kernel_time_t msg_rtime;      /* last msgrcv time */
->> -#if __BITS_PER_LONG != 64
->> -     unsigned long   __unused2;
->> -#endif
->>       __kernel_time_t msg_ctime;      /* last change time */
->> -#if __BITS_PER_LONG != 64
->> -     unsigned long   __unused3;
->> +#else
->> +     unsigned long   msg_stime;      /* last msgsnd time */
->> +     unsigned long   msg_stime_high;
->> +     unsigned long   msg_rtime;      /* last msgrcv time */
->> +     unsigned long   msg_rtime_high;
->> +     unsigned long   msg_ctime;      /* last change time */
->> +     unsigned long   msg_ctime_high;
->>  #endif
->
-> I suspect you want to use __kernel_ulong_t here instead of a raw
-> unsigned long.  If nothing else it seems inconsistent to use typedefs
-> in one half of the structure and no typedefs in the other half.
+On Thu, 19 Apr 2018 00:49:58 +0530
+Souptick Joarder <jrdr.linux@gmail.com> wrote:
 
-Good catch, there is definitely something wrong here, but I think using
-__kernel_ulong_t for all members would also be wrong, as that
-still changes the layout on x32, which effectively is
+> Use new return type vm_fault_t for fault handler. For
+> now, this is just documenting that the function returns
+> a VM_FAULT value rather than an errno. Once all instances
+> are converted, vm_fault_t will become a distinct type.
+> 
+> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
+> 
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
+> ---
+>  arch/mips/kvm/mips.c       | 2 +-
+>  arch/powerpc/kvm/powerpc.c | 2 +-
+>  arch/s390/kvm/kvm-s390.c   | 2 +-
+>  arch/x86/kvm/x86.c         | 2 +-
+>  include/linux/kvm_host.h   | 2 +-
+>  virt/kvm/arm/arm.c         | 2 +-
+>  virt/kvm/kvm_main.c        | 2 +-
+>  7 files changed, 7 insertions(+), 7 deletions(-)
 
-struct msqid64_ds {
-     ipc64_perm msg_perm;
-     u64 msg_stime;
-     u32 __unused1;
-     /* 32 bit implict padding */
-     u64 msg_rtime;
-     u32 __unused2;
-     /* 32 bit implict padding */
-     u64 msg_ctime;
-     u32 __unused3;
-     /* 32 bit implict padding */
-     __kernel_pid_t          shm_cpid;       /* pid of creator */
-     __kernel_pid_t          shm_lpid;       /* pid of last operator */
-     ....
-};
-
-The choices here would be to either use a mix of
-__kernel_ulong_t and unsigned long, or taking the x32
-version back into arch/x86/include/uapi/asm/ so the
-generic version at least makes some sense.
-
-I can't use __kernel_time_t for the lower half on 32-bit
-since it really should be unsigned.
-
-        Arnd
+Reviewed-by: Cornelia Huck <cohuck@redhat.com>
