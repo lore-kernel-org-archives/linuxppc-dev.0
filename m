@@ -1,36 +1,35 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RVP10KrvzF21k
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:05:08 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3J74TD4158177
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:06 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2heknw6rvd-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RVPl0XzSzF22W
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:05:46 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3J75E21132302
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:44 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hemtdc7w5-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:03 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:42 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 19 Apr 2018 08:04:56 +0100
+ Thu, 19 Apr 2018 08:04:46 +0100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
  Steven Rostedt <rostedt@goodmis.org>,
  Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Subject: [PATCH v5 09/10] powerpc64/ftrace: Use the generic version of
- ftrace_replace_code()
-Date: Thu, 19 Apr 2018 12:34:08 +0530
+Subject: [PATCH v5 05/10] powerpc64/ftrace: Disable ftrace during hotplug
+Date: Thu, 19 Apr 2018 12:34:04 +0530
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <abeaf02e29852d838c36fa2fda3c29b117f0cdeb.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <8bbe9f7b3738d3bf61e8584b3c5c2baa4341e0c3.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,61 +39,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Our implementation matches that of the generic version, which also
-handles FTRACE_UPDATE_MODIFY_CALL. So, remove our implementation in
-favor of the generic version.
+Disable ftrace when a cpu is about to go offline. When the cpu is woken
+up, ftrace will get enabled in start_secondary().
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/trace/ftrace.c | 36 ------------------------------
- 1 file changed, 36 deletions(-)
+ arch/powerpc/kernel/smp.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 4741fe112f05..80667128db3d 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -485,42 +485,6 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
- 	return ret;
- }
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index c4f5dfb686ca..f615660cb3b8 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1131,6 +1131,8 @@ int __cpu_disable(void)
+ 	if (!smp_ops->cpu_disable)
+ 		return -ENOSYS;
  
--static int __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
--{
--	unsigned long ftrace_addr = (unsigned long)FTRACE_ADDR;
--	int ret;
--
--	ret = ftrace_update_record(rec, enable);
--
--	switch (ret) {
--	case FTRACE_UPDATE_IGNORE:
--		return 0;
--	case FTRACE_UPDATE_MAKE_CALL:
--		return ftrace_make_call(rec, ftrace_addr);
--	case FTRACE_UPDATE_MAKE_NOP:
--		return ftrace_make_nop(NULL, rec, ftrace_addr);
--	}
--
--	return 0;
--}
--
--void ftrace_replace_code(int enable)
--{
--	struct ftrace_rec_iter *iter;
--	struct dyn_ftrace *rec;
--	int ret;
--
--	for (iter = ftrace_rec_iter_start(); iter;
--	     iter = ftrace_rec_iter_next(iter)) {
--		rec = ftrace_rec_iter_record(iter);
--		ret = __ftrace_replace_code(rec, enable);
--		if (ret) {
--			ftrace_bug(ret, rec);
--			return;
--		}
--	}
--}
--
- /*
-  * Use the default ftrace_modify_all_code, but without
-  * stop_machine().
++	this_cpu_disable_ftrace();
++
+ 	err = smp_ops->cpu_disable();
+ 	if (err)
+ 		return err;
+@@ -1149,6 +1151,12 @@ void __cpu_die(unsigned int cpu)
+ 
+ void cpu_die(void)
+ {
++	/*
++	 * Disable on the down path. This will be re-enabled by
++	 * start_secondary() via start_secondary_resume() below
++	 */
++	this_cpu_disable_ftrace();
++
+ 	if (ppc_md.cpu_die)
+ 		ppc_md.cpu_die();
+ 
 -- 
 2.17.0
