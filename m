@@ -1,33 +1,16 @@
-Return-Path: <Dave.Martin@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40RYZp2pHSzF229
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 19:28:48 +1000 (AEST)
-Date: Thu, 19 Apr 2018 10:28:40 +0100
-From: Dave Martin <Dave.Martin@arm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
- linux-arch <linux-arch@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "Dmitry V. Levin" <ldv@altlinux.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- Russell King - ARM Linux <linux@armlinux.org.uk>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [RFC PATCH 0/3] Dealing with the aliases of SI_USER
-Message-ID: <20180419092840.GL16308@e103592.cambridge.arm.com>
-References: <20180413094211.GN16141@n2100.armlinux.org.uk>
- <CA+55aFwoThxqUeAZSsMhf--ODyhGkmOENH5R6=4+CuaopFx9eA@mail.gmail.com>
- <20180413170827.GB16308@e103592.cambridge.arm.com>
- <20180413175407.GO16141@n2100.armlinux.org.uk>
- <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
- <20180413184522.GD16308@e103592.cambridge.arm.com>
- <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
- <20180415131206.GR16141@n2100.armlinux.org.uk>
- <87604sa2fu.fsf_-_@xmission.com>
- <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFw1gmfFH1o+oWMo4TnU5hEczAOiY1g=eMxqYZmy9JqDYw@mail.gmail.com>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Rfwy0bs8zF21H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:29:54 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com,
+	paulus@samba.org
+Subject: [PATCH] powerpc/kvm: Fix lockups when running KVM guests on Power8
+Date: Thu, 19 Apr 2018 23:29:50 +1000
+Message-Id: <20180419132950.16752-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,96 +20,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 15, 2018 at 11:16:04AM -0700, Linus Torvalds wrote:
+When running KVM guests on Power8 we can see a lockup where one CPU
+stops responding. This often leads to a message such as:
 
-[...]
+  watchdog: CPU 136 detected hard LOCKUP on other CPUs 72
+  Task dump for CPU 72:
+  qemu-system-ppc R  running task    10560 20917  20908 0x00040004
 
-> The other thing we should do is to get rid of the stupid padding.
-> Right now "struct siginfo" is pointlessly padded to 128 bytes. That is
-> completely insane, when it's always just zero in the kernel.
+And then backtraces on other CPUs, such as:
 
-Agreed, inside the kernel the padding achieves nothing.
+  Task dump for CPU 48:
+  ksmd            R  running task    10032  1519      2 0x00000804
+  Call Trace:
+    ...
+    --- interrupt: 901 at smp_call_function_many+0x3c8/0x460
+        LR = smp_call_function_many+0x37c/0x460
+    pmdp_invalidate+0x100/0x1b0
+    __split_huge_pmd+0x52c/0xdb0
+    try_to_unmap_one+0x764/0x8b0
+    rmap_walk_anon+0x15c/0x370
+    try_to_unmap+0xb4/0x170
+    split_huge_page_to_list+0x148/0xa30
+    try_to_merge_one_page+0xc8/0x990
+    try_to_merge_with_ksm_page+0x74/0xf0
+    ksm_scan_thread+0x10ec/0x1ac0
+    kthread+0x160/0x1a0
+    ret_from_kernel_thread+0x5c/0x78
 
-> So put that _pad[] thing inside #ifndef __KERNEL__, and make
-> copy_siginfo_to_user() write the padding zeroes when copying to user
-> space. The reason for the padding is "future expansion", so we do want
-> to tell the user space that it's maybe up to 128 bytes in size, but if
-> we don't fill it all, we shouldn't waste time and memory on clearing
-> the padding internally.
-> 
-> I'm certainly *hoping* nobody depends on the whole 128 bytes in
-> rt_sigqueueinfo(). In theory you can fill it all (as long as si_code
-> is negative), but the man-page only says "si_value", and the compat
-> function doesn't copy any more than that either, so any user that
-> tries to fill in more than si_value is already broken. In fact, it
-> might even be worth enforcing that in rt_sigqueueinfo(), just to see
-> if anybody plays any games..
+This is caused by commit 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync
+for KVM state when waking from idle"), which added a check in
+pnv_powersave_wakeup() to see if the kvm_hstate.hwthread_state is
+already set to KVM_HWTHREAD_IN_KERNEL, and if so to skip the store and
+test of kvm_hstate.hwthread_req.
 
-[...]
+The problem is that the primary does not set KVM_HWTHREAD_IN_KVM when
+entering the guest, so it can then come out to cede with
+KVM_HWTHREAD_IN_KERNEL set. It can then go idle in kvm_do_nap after
+setting hwthread_req to 1, but because hwthread_state is still
+KVM_HWTHREAD_IN_KERNEL we will skip the test of hwthread_req when we
+wake up from idle and won't go to kvm_start_guest. From there the
+thread will return somewhere garbage and crash.
 
-Digression:
+Fix it by skipping the store of hwthread_state, but not the test of
+hwthread_req, when coming out of idle. It's OK to skip the sync in
+that case because hwthread_req will have been set on the same thread,
+so there is no synchronisation required.
 
-Since we don't traditionally zero the tail-padding in the user sigframe,
-is there a reliable way for userspace to detect newly-added fields in
-siginfo other than by having an explicit sigaction sa_flags flag to
-request them?  I imagine something like [1] below from the userspace
-perspective.
+Fixes: 8c1c7fb0b5ec ("powerpc/64s/idle: avoid sync for KVM state when waking from idle")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/idle_book3s.S | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-On a separate thread, the issue of how to report syndrome information
-for SIGSEGV came up [2] (such as whether the faulting instruction was a
-read or a write).  This information is useful (and used) by things like
-userspace sanitisers and qemu.  Currently, reporting this to userspace
-relies on arch-specific cruft in the sigframe.
-
-We're committed to maintaining what's already in each arch sigframe,
-but it would be preferable to have a portable way of adding information
-to siginfo in a generic way.  si_code doesn't really work for that,
-since si_codes are mutually exclusive: I can't see a way of adding
-supplementary information using si_code.
-
-Anyway, that would be a separate RFC in the future (if ever).
-
-Cheers
----Dave
-
-
-[1]
-
-static volatile int have_extflags = 0;
-
-static void handler(int n, siginfo_t *si, void *uc)
-{
-	/* ... */
-
-	if (have_extflags) {
-		/* Check si->si_extflags */
-	} else {
-		/* fallback */
-	}
-
-	/* ... */
-}
-
-int main(void)
-{
-	/* ... */
-
-	struct sigaction sa;
-
-	/* ... */
-
-	sa.sa_flags = SA_SIGINFO | SA_SIGINFO_EXTFLAGS;
-	sa.sa_sigaction = handler;
-	if (!sigaction(SIGSEGV, &sa, NULL)) {
-		have_extflags = 1;
-	} else {
-		sa.sa_flags &= ~SA_SIGINFO_EXTFLAGS;
-		if (sigaction(SIGSEGV, &sa, NULL))
-			goto error;
-	}
-
-	/* ... */
-}
-
-[2] [RFC PATCH] arm64: fault: Don't leak data in ESR context for user fault on kernel VA
-http://lists.infradead.org/pipermail/linux-arm-kernel/2018-April/571428.html
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index 79d005445c6c..e734f6e45abc 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -553,12 +553,12 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_ARCH_300)
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 	lbz	r0,HSTATE_HWTHREAD_STATE(r13)
+ 	cmpwi	r0,KVM_HWTHREAD_IN_KERNEL
+-	beq	1f
++	beq	0f
+ 	li	r0,KVM_HWTHREAD_IN_KERNEL
+ 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
+ 	/* Order setting hwthread_state vs. testing hwthread_req */
+ 	sync
+-	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
++0:	lbz	r0,HSTATE_HWTHREAD_REQ(r13)
+ 	cmpwi	r0,0
+ 	beq	1f
+ 	b	kvm_start_guest
+-- 
+2.14.1
