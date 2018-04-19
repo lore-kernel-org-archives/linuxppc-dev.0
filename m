@@ -1,35 +1,32 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RVPl0XzSzF22W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:05:46 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3J75E21132302
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:44 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hemtdc7w5-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:05:42 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 19 Apr 2018 08:04:46 +0100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Subject: [PATCH v5 05/10] powerpc64/ftrace: Disable ftrace during hotplug
-Date: Thu, 19 Apr 2018 12:34:04 +0530
-In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <8bbe9f7b3738d3bf61e8584b3c5c2baa4341e0c3.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <Dave.Martin@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40RXCZ1QD2zF229
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 18:27:04 +1000 (AEST)
+Date: Thu, 19 Apr 2018 09:26:57 +0100
+From: Dave Martin <Dave.Martin@arm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-arch@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "Dmitry V. Levin" <ldv@altlinux.org>,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [RFC PATCH 1/3] signal: Ensure every siginfo we send has all
+ bits initialized
+Message-ID: <20180419082656.GK16308@e103592.cambridge.arm.com>
+References: <CA+55aFyya6B9_aq8ZSrZT-S-BGbpbDgFvDff5z8upDirpcoiHA@mail.gmail.com>
+ <20180413184522.GD16308@e103592.cambridge.arm.com>
+ <CA+55aFwMUQbALx60b3JDrTcWVSBS7imS+zCYEMz8NOs=6rE6+A@mail.gmail.com>
+ <20180415131206.GR16141@n2100.armlinux.org.uk>
+ <87604sa2fu.fsf_-_@xmission.com> <87zi248nte.fsf_-_@xmission.com>
+ <20180417132328.GF16308@e103592.cambridge.arm.com>
+ <87d0yxzksd.fsf@xmission.com>
+ <20180418124717.GI16308@e103592.cambridge.arm.com>
+ <87h8o8y4q6.fsf@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87h8o8y4q6.fsf@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,39 +36,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Disable ftrace when a cpu is about to go offline. When the cpu is woken
-up, ftrace will get enabled in start_secondary().
+On Wed, Apr 18, 2018 at 09:22:09AM -0500, Eric W. Biederman wrote:
+> Dave Martin <Dave.Martin@arm.com> writes:
+> 
+> > On Tue, Apr 17, 2018 at 02:37:38PM -0500, Eric W. Biederman wrote:
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/smp.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+[...]
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index c4f5dfb686ca..f615660cb3b8 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -1131,6 +1131,8 @@ int __cpu_disable(void)
- 	if (!smp_ops->cpu_disable)
- 		return -ENOSYS;
- 
-+	this_cpu_disable_ftrace();
-+
- 	err = smp_ops->cpu_disable();
- 	if (err)
- 		return err;
-@@ -1149,6 +1151,12 @@ void __cpu_die(unsigned int cpu)
- 
- void cpu_die(void)
- {
-+	/*
-+	 * Disable on the down path. This will be re-enabled by
-+	 * start_secondary() via start_secondary_resume() below
-+	 */
-+	this_cpu_disable_ftrace();
-+
- 	if (ppc_md.cpu_die)
- 		ppc_md.cpu_die();
- 
--- 
-2.17.0
+> >> My intention is to leave 0 instances of clear_siginfo in the
+> >> architecture specific code.  Ideally struct siginfo will be limited to
+> >> kernel/signal.c but I am not certain I can quite get that far.
+> >> The function do_coredump appears to have a legit need for siginfo.
+> >
+> > So, you mean we can't detect that the caller didn't initialise all the
+> > members, or initialised the wrong union member?
+> 
+> Correct.  Even when we smuggled the the union member in the upper bits
+> of si_code we got it wrong.  So an interface that helps out and does
+> more and is harder to misues looks desirable.
+> 
+> > What would be the alternative?  Have a separate interface for each SIL_
+> > type, with only kernel/signal.c translating that into the siginfo_t that
+> > userspace sees?
+> 
+> Yes.  It really isn't bad as architecture specific code only generates
+> faults.  In general faults only take a pointer.  I have already merged
+> the needed helpers into kernel/signal.c
+
+Good point.  I hadn't considered that only one class of signal comes
+from the arch code, but now that you point it out, it sounds right.
+
+> > Either way, I don't see how we force the caller to initilise the whole
+> > structure.
+> 
+> In general the plan is to convert the callers to call force_sig_fault,
+> and then there is no need to have siginfo in the architecture specific
+> code.  I have all of the necessary helpers are already merged into
+> kernel/signal.c
+
+Makes sense.
+
+I wonder if all the relevant siginfo data could be passed to
+force_sig_fault() (or whatever) as arguments.  Then the problem of
+uninitialised fields goes away.  Perhaps that's what you had in mind.
+
+[...]
+
+> >> Unless gcc has changed it's stance on type-punning through unions
+> >> or it's semantics with -fno-strict_aliasing we should be good.
+> >
+> > In practice you're probably right.
+> >
+> > Today, gcc is pretty conservative in this area, and I haven't been able
+> > to convince clang to optimise away memset in this way either.
+> >
+> > My concern is that is this assumption turns out to be wrong it may be
+> > some time before anybody notices, because the leakage of kernel stack may
+> > be the only symptom.
+> >
+> > I'll try to nail down a compiler guy to see if we can get a promise on
+> > this at least with -fno-strict-aliasing.
+> >
+> >
+> > I wonder whether it's worth protecting ourselves with something like:
+> >
+> >
+> > static void clear_siginfo(siginfo_t *si)
+> > {
+> > 	asm ("" : "=m" (*si));
+> > 	memset(si, 0, sizeof(*si));
+> > 	asm ("" : "+m" (*si));
+> > }
+> >
+> > Probably needs to be thought about more widely though.  I guess it's out
+> > of scope for this series.
+> 
+> It is definitely a question worth asking.
+
+I may follow it up later if I find myself at a loose end...
+
+Cheers
+---Dave
