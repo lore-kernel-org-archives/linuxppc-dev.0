@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RgC41KqfzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:08 +1000 (AEST)
-In-Reply-To: <20180411033758.20794-1-mikey@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RgC55dnCzDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 23:42:09 +1000 (AEST)
+In-Reply-To: <20180411051801.30194-1-benh@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, sam.bobroff@au1.ibm.com,
- Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-Subject: Re: powerpc/eeh: Fix enabling bridge MMIO windows
-Message-Id: <40RgC33D1fz9s2B@ozlabs.org>
-Date: Thu, 19 Apr 2018 23:42:06 +1000 (AEST)
+Subject: Re: [1/3] powerpc/xive: Fix trying to "push" an already active pool VP
+Message-Id: <40RgC50rVzz9s37@ozlabs.org>
+Date: Thu, 19 Apr 2018 23:42:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +20,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-11 at 03:37:58 UTC, Michael Neuling wrote:
-> On boot we save the configuration space of PCIe bridges. We do this so
-> when we get an EEH event and everything gets reset that we can restore
-> them.
+On Wed, 2018-04-11 at 05:17:59 UTC, Benjamin Herrenschmidt wrote:
+> When setting up a CPU, we "push" (activate) a pool VP for it.
 > 
-> Unfortunately we save this state before we've enabled the MMIO space
-> on the bridges. Hence if we have to reset the bridge when we come back
-> MMIO is not enabled and we end up taking an PE freeze when the driver
-> starts accessing again.
+> However it's an error to do so if it already has an active
+> pool VP.
 > 
-> This patch forces the memory/MMIO and bus mastering on when restoring
-> bridges on EEH. Ideally we'd do this correctly by saving the
-> configuration space writes later, but that will have to come later in
-> a larger EEH rewrite. For now we have this simple fix.
+> This happens when doing soft CPU hotplug on powernv since we
+> don't tear down the CPU on unplug. The HW flags the error which
+> gets captured by the diagnostics.
 > 
-> The original bug can be triggered on a boston machine by doing:
->   echo 0x8000000000000000 > /sys/kernel/debug/powerpc/PCI0001/err_injct_outbound
-> On boston, this PHB has a PCIe switch on it.  Without this patch,
-> you'll see two EEH events, 1 expected and 1 the failure we are fixing
-> here. The second EEH event causes the anything under the PHB to
-> disappear (i.e. the i40e eth).
+> Fix this by making sure to "pull" out any already active pool
+> first.
 > 
-> With this patch, only 1 EEH event occurs and devices properly recover.
-> 
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Cc: stable@vger.kernel.org
-> Acked-by: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Applied to powerpc fixes, thanks.
+Patch 1 applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/13a83eac373c49c0a081cbcd137e79
+https://git.kernel.org/powerpc/c/b32e56e5a87a1f9243db92bc7a5df0
 
 cheers
