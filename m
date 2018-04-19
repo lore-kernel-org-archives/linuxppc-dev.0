@@ -3,34 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNm3G51zF1sZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:04:56 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNs24MxzF22V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:05:01 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3J74Mi7099429
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:53 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hendqar1g-1
+ w3J74Qhf120794
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:59 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hennp2231-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:58 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 19 Apr 2018 08:04:51 +0100
+ Thu, 19 Apr 2018 08:04:55 +0100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
  Steven Rostedt <rostedt@goodmis.org>,
  Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Subject: [PATCH v5 07/10] powerpc64/kexec: Hard disable ftrace before
- switching to the new kernel
-Date: Thu, 19 Apr 2018 12:34:06 +0530
+Subject: [PATCH v5 08/10] powerpc64/module: Tighten detection of mcount call
+ sites with -mprofile-kernel
+Date: Thu, 19 Apr 2018 12:34:07 +0530
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <3ab88a58dfc784303ffbd55669d85ba29b7cc47c.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <4e92dfaef3181bc1dae62af3cc88dfedaa39d47d.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,43 +40,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If function_graph tracer is enabled during kexec, we see the below
-exception in the simulator:
-	root@(none):/# kexec -e
-	kvm: exiting hardware virtualization
-	kexec_core: Starting new kernel
-	[   19.262020070,5] OPAL: Switch to big-endian OS
-	kexec: Starting switchover sequence.
-	Interrupt to 0xC000000000004380 from 0xC000000000004380
-	** Execution stopped: Continuous Interrupt, Instruction caused exception,  **
+For R_PPC64_REL24 relocations, we suppress emitting instructions for TOC
+load/restore in the relocation stub if the relocation is for _mcount()
+call when using -mprofile-kernel ABI.
 
-Now that we have a more effective way to completely disable ftrace on
-ppc64, let's also use that before switching to a new kernel during
-kexec.
+To detect this, we check if the preceding instructions are per the
+standard set of instructions emitted by gcc: either the two instruction
+sequence of 'mflr r0; std r0,16(r1)', or the more optimized variant of a
+single 'mflr r0'. This is not sufficient since nothing prevents users
+from hand coding sequences involving a 'mflr r0' followed by a 'bl'.
 
+For removing the toc save instruction from the stub, we additionally
+check if the symbol is "_mcount". Add the same check here as well.
+
+Also rename is_early_mcount_callsite() to is_mprofile_mcount_callsite()
+since that is what is being checked. The use of "early" is misleading
+since there is nothing involving this function that qualifies as early.
+
+Fixes: 153086644fd1f ("powerpc/ftrace: Add support for -mprofile-kernel ftrace ABI")
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/machine_kexec.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/kernel/module_64.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 2694d078741d..936c7e2d421e 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -98,12 +98,14 @@ void machine_kexec(struct kimage *image)
- 	int save_ftrace_enabled;
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index a2636c250b7b..8413be31d6a4 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -463,8 +463,11 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
+ }
  
- 	save_ftrace_enabled = __ftrace_enabled_save();
-+	this_cpu_disable_ftrace();
+ #ifdef CC_USING_MPROFILE_KERNEL
+-static bool is_early_mcount_callsite(u32 *instruction)
++static bool is_mprofile_mcount_callsite(const char *name, u32 *instruction)
+ {
++	if (strcmp("_mcount", name))
++		return false;
++
+ 	/*
+ 	 * Check if this is one of the -mprofile-kernel sequences.
+ 	 */
+@@ -496,8 +499,7 @@ static void squash_toc_save_inst(const char *name, unsigned long addr)
+ #else
+ static void squash_toc_save_inst(const char *name, unsigned long addr) { }
  
- 	if (ppc_md.machine_kexec)
- 		ppc_md.machine_kexec(image);
- 	else
- 		default_machine_kexec(image);
+-/* without -mprofile-kernel, mcount calls are never early */
+-static bool is_early_mcount_callsite(u32 *instruction)
++static bool is_mprofile_mcount_callsite(const char *name, u32 *instruction)
+ {
+ 	return false;
+ }
+@@ -505,11 +507,11 @@ static bool is_early_mcount_callsite(u32 *instruction)
  
-+	this_cpu_enable_ftrace();
- 	__ftrace_enabled_restore(save_ftrace_enabled);
+ /* We expect a noop next: if it is, replace it with instruction to
+    restore r2. */
+-static int restore_r2(u32 *instruction, struct module *me)
++static int restore_r2(const char *name, u32 *instruction, struct module *me)
+ {
+ 	u32 *prev_insn = instruction - 1;
  
- 	/* Fall back to normal restart if we're still alive. */
+-	if (is_early_mcount_callsite(prev_insn))
++	if (is_mprofile_mcount_callsite(name, prev_insn))
+ 		return 1;
+ 
+ 	/*
+@@ -650,7 +652,8 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 				value = stub_for_addr(sechdrs, value, me);
+ 				if (!value)
+ 					return -ENOENT;
+-				if (!restore_r2((u32 *)location + 1, me))
++				if (!restore_r2(strtab + sym->st_name,
++							(u32 *)location + 1, me))
+ 					return -ENOEXEC;
+ 
+ 				squash_toc_save_inst(strtab + sym->st_name, value);
 -- 
 2.17.0
