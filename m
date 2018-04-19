@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.74])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Rhbw4SdKzF213
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Rhc43L18zF21P
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:23 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 12/17] y2038: ipc: Use ktime_get_real_seconds consistently
-Date: Thu, 19 Apr 2018 16:37:32 +0200
-Message-Id: <20180419143737.606138-13-arnd@arndb.de>
+Subject: [PATCH v3 11/17] y2038: xtensa: Extend sysvipc data structures
+Date: Thu, 19 Apr 2018 16:37:31 +0200
+Message-Id: <20180419143737.606138-12-arnd@arndb.de>
 In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
 References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,74 +29,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In some places, we still used get_seconds() instead of
-ktime_get_real_seconds(), and I'm changing the remaining ones now to
-all use ktime_get_real_seconds() so we use the full available range for
-timestamps instead of overflowing the 'unsigned long' return value in
-year 2106 on 32-bit kernels.
+xtensa, uses a nonstandard variation of the generic sysvipc
+data structures, intended to have the padding moved around
+so it can deal with big-endian 32-bit user space that has
+64-bit time_t.
+
+xtensa tries hard to define the structures so they work
+in both big-endian and little-endian systems with padding
+on the right side.
+However, they only succeeded for for two of the three structures,
+and their struct shmid64_ds ended up being defined in two
+identical copies, and the big-endian one is wrong.
+
+This takes just take the same approach here that we have for
+the asm-generic headers and adds separate 32-bit fields for the
+upper halves of the timestamps, to let libc deal with the mess
+in user space.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- ipc/msg.c | 6 +++---
- ipc/sem.c | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/xtensa/include/uapi/asm/msgbuf.h | 25 ++++++++++++-----------
+ arch/xtensa/include/uapi/asm/sembuf.h | 17 ++++++++--------
+ arch/xtensa/include/uapi/asm/shmbuf.h | 37 ++++++++---------------------------
+ 3 files changed, 28 insertions(+), 51 deletions(-)
 
-diff --git a/ipc/msg.c b/ipc/msg.c
-index 56fd1c73eedc..574f76c9a2ff 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -758,7 +758,7 @@ static inline int pipelined_send(struct msg_queue *msq, struct msg_msg *msg,
- 				WRITE_ONCE(msr->r_msg, ERR_PTR(-E2BIG));
- 			} else {
- 				ipc_update_pid(&msq->q_lrpid, task_pid(msr->r_tsk));
--				msq->q_rtime = get_seconds();
-+				msq->q_rtime = ktime_get_real_seconds();
+diff --git a/arch/xtensa/include/uapi/asm/msgbuf.h b/arch/xtensa/include/uapi/asm/msgbuf.h
+index 36e2e103ca38..d6915e9f071c 100644
+--- a/arch/xtensa/include/uapi/asm/msgbuf.h
++++ b/arch/xtensa/include/uapi/asm/msgbuf.h
+@@ -7,7 +7,6 @@
+  * between kernel and user space.
+  *
+  * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+  * - 2 miscellaneous 32-bit values
+  *
+  * This file is subject to the terms and conditions of the GNU General
+@@ -21,19 +20,19 @@
+ struct msqid64_ds {
+ 	struct ipc64_perm msg_perm;
+ #ifdef __XTENSA_EB__
+-	unsigned int	__unused1;
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-	unsigned int	__unused2;
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-	unsigned int	__unused3;
+-	__kernel_time_t msg_ctime;	/* last change time */
++	unsigned long  msg_stime_high;
++	unsigned long  msg_stime;	/* last msgsnd time */
++	unsigned long  msg_rtime_high;
++	unsigned long  msg_rtime;	/* last msgrcv time */
++	unsigned long  msg_ctime_high;
++	unsigned long  msg_ctime;	/* last change time */
+ #elif defined(__XTENSA_EL__)
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-	unsigned int	__unused1;
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-	unsigned int	__unused2;
+-	__kernel_time_t msg_ctime;	/* last change time */
+-	unsigned int	__unused3;
++	unsigned long  msg_stime;	/* last msgsnd time */
++	unsigned long  msg_stime_high;
++	unsigned long  msg_rtime;	/* last msgrcv time */
++	unsigned long  msg_rtime_high;
++	unsigned long  msg_ctime;	/* last change time */
++	unsigned long  msg_ctime_high;
+ #else
+ # error processor byte order undefined!
+ #endif
+diff --git a/arch/xtensa/include/uapi/asm/sembuf.h b/arch/xtensa/include/uapi/asm/sembuf.h
+index f61b6331a10c..09f348d643f1 100644
+--- a/arch/xtensa/include/uapi/asm/sembuf.h
++++ b/arch/xtensa/include/uapi/asm/sembuf.h
+@@ -14,7 +14,6 @@
+  * between kernel and user space.
+  *
+  * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+  * - 2 miscellaneous 32-bit values
+  *
+  */
+@@ -27,15 +26,15 @@
+ struct semid64_ds {
+ 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
+ #ifdef __XTENSA_EL__
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-	unsigned long	__unused1;
+-	__kernel_time_t	sem_ctime;		/* last change time */
+-	unsigned long	__unused2;
++	unsigned long	sem_otime;		/* last semop time */
++	unsigned long	sem_otime_high;
++	unsigned long	sem_ctime;		/* last change time */
++	unsigned long	sem_ctime_high;
+ #else
+-	unsigned long	__unused1;
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-	unsigned long	__unused2;
+-	__kernel_time_t	sem_ctime;		/* last change time */
++	unsigned long	sem_otime_high;
++	unsigned long	sem_otime;		/* last semop time */
++	unsigned long	sem_ctime_high;
++	unsigned long	sem_ctime;		/* last change time */
+ #endif
+ 	unsigned long	sem_nsems;		/* no. of semaphores in array */
+ 	unsigned long	__unused3;
+diff --git a/arch/xtensa/include/uapi/asm/shmbuf.h b/arch/xtensa/include/uapi/asm/shmbuf.h
+index 26550bdc8430..554a57a6a90f 100644
+--- a/arch/xtensa/include/uapi/asm/shmbuf.h
++++ b/arch/xtensa/include/uapi/asm/shmbuf.h
+@@ -4,10 +4,10 @@
+  *
+  * The shmid64_ds structure for Xtensa architecture.
+  * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
++ * between kernel and user space, but the padding is on the wrong
++ * side for big-endian xtensa, for historic reasons.
+  *
+  * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+  * - 2 miscellaneous 32-bit values
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -20,42 +20,21 @@
+ #ifndef _XTENSA_SHMBUF_H
+ #define _XTENSA_SHMBUF_H
  
- 				wake_q_add(wake_q, msr->r_tsk);
- 				WRITE_ONCE(msr->r_msg, msg);
-@@ -859,7 +859,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
- 	}
+-#if defined (__XTENSA_EL__)
+ struct shmid64_ds {
+ 	struct ipc64_perm	shm_perm;	/* operation perms */
+ 	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-	unsigned long		__unused1;
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-	unsigned long		__unused2;
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-	unsigned long		__unused3;
++	unsigned long		shm_atime;	/* last attach time */
++	unsigned long		shm_atime_high;
++	unsigned long		shm_dtime;	/* last detach time */
++	unsigned long		shm_dtime_high;
++	unsigned long		shm_ctime;	/* last change time */
++	unsigned long		shm_ctime_high;
+ 	__kernel_pid_t		shm_cpid;	/* pid of creator */
+ 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
+ 	unsigned long		shm_nattch;	/* no. of current attaches */
+ 	unsigned long		__unused4;
+ 	unsigned long		__unused5;
+ };
+-#elif defined (__XTENSA_EB__)
+-struct shmid64_ds {
+-	struct ipc64_perm	shm_perm;	/* operation perms */
+-	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-	unsigned long		__unused1;
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-	unsigned long		__unused2;
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-	unsigned long		__unused3;
+-	__kernel_pid_t		shm_cpid;	/* pid of creator */
+-	__kernel_pid_t		shm_lpid;	/* pid of last operator */
+-	unsigned long		shm_nattch;	/* no. of current attaches */
+-	unsigned long		__unused4;
+-	unsigned long		__unused5;
+-};
+-#else
+-# error endian order not defined
+-#endif
+-
  
- 	ipc_update_pid(&msq->q_lspid, task_tgid(current));
--	msq->q_stime = get_seconds();
-+	msq->q_stime = ktime_get_real_seconds();
- 
- 	if (!pipelined_send(msq, msg, &wake_q)) {
- 		/* no one is waiting for this message, enqueue it */
-@@ -1087,7 +1087,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
- 
- 			list_del(&msg->m_list);
- 			msq->q_qnum--;
--			msq->q_rtime = get_seconds();
-+			msq->q_rtime = ktime_get_real_seconds();
- 			ipc_update_pid(&msq->q_lrpid, task_tgid(current));
- 			msq->q_cbytes -= msg->m_ts;
- 			atomic_sub(msg->m_ts, &ns->msg_bytes);
-diff --git a/ipc/sem.c b/ipc/sem.c
-index 06be75d9217a..c6a8a971769d 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -104,7 +104,7 @@ struct sem {
- 					/* that alter the semaphore */
- 	struct list_head pending_const; /* pending single-sop operations */
- 					/* that do not alter the semaphore*/
--	time_t	sem_otime;	/* candidate for sem_otime */
-+	time64_t	 sem_otime;	/* candidate for sem_otime */
- } ____cacheline_aligned_in_smp;
- 
- /* One sem_array data structure for each set of semaphores in the system. */
-@@ -984,10 +984,10 @@ static int update_queue(struct sem_array *sma, int semnum, struct wake_q_head *w
- static void set_semotime(struct sem_array *sma, struct sembuf *sops)
- {
- 	if (sops == NULL) {
--		sma->sems[0].sem_otime = get_seconds();
-+		sma->sems[0].sem_otime = ktime_get_real_seconds();
- 	} else {
- 		sma->sems[sops[0].sem_num].sem_otime =
--							get_seconds();
-+						ktime_get_real_seconds();
- 	}
- }
- 
+ struct shminfo64 {
+ 	unsigned long	shmmax;
 -- 
 2.9.0
