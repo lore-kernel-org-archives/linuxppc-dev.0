@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RhSh6S9ZzF21B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RhSk6MkpzF21W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:02 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 08/17] y2038: parisc: Extend sysvipc data structures
-Date: Thu, 19 Apr 2018 16:37:28 +0200
-Message-Id: <20180419143737.606138-9-arnd@arndb.de>
+Subject: [PATCH v3 13/17] y2038: ipc: Report long times to user space
+Date: Thu, 19 Apr 2018 16:37:33 +0200
+Message-Id: <20180419143737.606138-14-arnd@arndb.de>
 In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
 References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,208 +29,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-parisc, uses a nonstandard variation of the generic sysvipc
-data structures, intended to have the padding moved around
-so it can deal with big-endian 32-bit user space that has
-64-bit time_t.
+The shmid64_ds/semid64_ds/msqid64_ds data structures have been extended
+to contain extra fields for storing the upper bits of the time stamps,
+this patch does the other half of the job and and fills the new fields on
+32-bit architectures as well as 32-bit tasks running on a 64-bit kernel
+in compat mode.
 
-Unlike most architectures, parisc actually succeeded in
-defining this right for big-endian CPUs, but as everyone else
-got it wrong, we just use the same hack everywhere.
-
-This takes just take the same approach here that we have for
-the asm-generic headers and adds separate 32-bit fields for the
-upper halves of the timestamps, to let libc deal with the mess
-in user space.
+There should be no change for native 64-bit tasks.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/parisc/include/asm/compat.h      | 32 ++++++++++++++++----------------
- arch/parisc/include/uapi/asm/msgbuf.h | 33 ++++++++++++++++-----------------
- arch/parisc/include/uapi/asm/sembuf.h | 16 ++++++++--------
- arch/parisc/include/uapi/asm/shmbuf.h | 19 ++++++++-----------
- 4 files changed, 48 insertions(+), 52 deletions(-)
+ ipc/msg.c | 14 +++++++++++---
+ ipc/sem.c | 14 +++++++++++---
+ ipc/shm.c | 14 +++++++++++---
+ 3 files changed, 33 insertions(+), 9 deletions(-)
 
-diff --git a/arch/parisc/include/asm/compat.h b/arch/parisc/include/asm/compat.h
-index 0cdfec8857bd..ab8a54771507 100644
---- a/arch/parisc/include/asm/compat.h
-+++ b/arch/parisc/include/asm/compat.h
-@@ -138,10 +138,10 @@ struct compat_ipc64_perm {
- 
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	unsigned int __unused1;
--	compat_time_t sem_otime;
--	unsigned int __unused2;
--	compat_time_t sem_ctime;
-+	unsigned int sem_otime_high;
-+	unsigned int sem_otime;
-+	unsigned int sem_ctime_high;
-+	unsigned int sem_ctime;
- 	compat_ulong_t sem_nsems;
- 	compat_ulong_t __unused3;
- 	compat_ulong_t __unused4;
-@@ -149,12 +149,12 @@ struct compat_semid64_ds {
- 
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	unsigned int __unused1;
--	compat_time_t msg_stime;
--	unsigned int __unused2;
--	compat_time_t msg_rtime;
--	unsigned int __unused3;
--	compat_time_t msg_ctime;
-+	unsigned int msg_stime_high;
-+	unsigned int msg_stime;
-+	unsigned int msg_rtime_high;
-+	unsigned int msg_rtime;
-+	unsigned int msg_ctime_high;
-+	unsigned int msg_ctime;
- 	compat_ulong_t msg_cbytes;
- 	compat_ulong_t msg_qnum;
- 	compat_ulong_t msg_qbytes;
-@@ -166,12 +166,12 @@ struct compat_msqid64_ds {
- 
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
--	unsigned int __unused1;
--	compat_time_t shm_atime;
--	unsigned int __unused2;
--	compat_time_t shm_dtime;
--	unsigned int __unused3;
--	compat_time_t shm_ctime;
-+	unsigned int shm_atime_high;
-+	unsigned int shm_atime;
-+	unsigned int shm_dtime_high;
-+	unsigned int shm_dtime;
-+	unsigned int shm_ctime_high;
-+	unsigned int shm_ctime;
- 	unsigned int __unused4;
- 	compat_size_t shm_segsz;
- 	compat_pid_t shm_cpid;
-diff --git a/arch/parisc/include/uapi/asm/msgbuf.h b/arch/parisc/include/uapi/asm/msgbuf.h
-index b48b810e626b..6a2e9ab2ef8d 100644
---- a/arch/parisc/include/uapi/asm/msgbuf.h
-+++ b/arch/parisc/include/uapi/asm/msgbuf.h
-@@ -10,31 +10,30 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
- 
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--#if __BITS_PER_LONG != 64
--	unsigned int   __pad1;
--#endif
-+#if __BITS_PER_LONG == 64
- 	__kernel_time_t msg_stime;	/* last msgsnd time */
--#if __BITS_PER_LONG != 64
--	unsigned int   __pad2;
--#endif
- 	__kernel_time_t msg_rtime;	/* last msgrcv time */
--#if __BITS_PER_LONG != 64
--	unsigned int   __pad3;
--#endif
- 	__kernel_time_t msg_ctime;	/* last change time */
--	unsigned long msg_cbytes;	/* current number of bytes on queue */
--	unsigned long msg_qnum;		/* number of messages in queue */
--	unsigned long msg_qbytes;	/* max number of bytes on queue */
--	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
--	__kernel_pid_t msg_lrpid;	/* last receive pid */
--	unsigned long __unused1;
--	unsigned long __unused2;
-+#else
-+	unsigned long	msg_stime_high;
-+	unsigned long	msg_stime;	/* last msgsnd time */
-+	unsigned long	msg_rtime_high;
-+	unsigned long	msg_rtime;	/* last msgrcv time */
-+	unsigned long	msg_ctime_high;
-+	unsigned long	msg_ctime;	/* last change time */
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 574f76c9a2ff..3b6545302598 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -537,6 +537,11 @@ static int msgctl_stat(struct ipc_namespace *ns, int msqid,
+ 	p->msg_stime  = msq->q_stime;
+ 	p->msg_rtime  = msq->q_rtime;
+ 	p->msg_ctime  = msq->q_ctime;
++#ifndef CONFIG_64BIT
++	p->msg_stime_high = msq->q_stime >> 32;
++	p->msg_rtime_high = msq->q_rtime >> 32;
++	p->msg_ctime_high = msq->q_ctime >> 32;
 +#endif
-+	unsigned long	msg_cbytes;	/* current number of bytes on queue */
-+	unsigned long	msg_qnum;	/* number of messages in queue */
-+	unsigned long	msg_qbytes;	/* max number of bytes on queue */
-+	__kernel_pid_t	msg_lspid;	/* pid of last msgsnd */
-+	__kernel_pid_t	msg_lrpid;	/* last receive pid */
-+	unsigned long	__unused1;
-+	unsigned long	__unused2;
- };
+ 	p->msg_cbytes = msq->q_cbytes;
+ 	p->msg_qnum   = msq->q_qnum;
+ 	p->msg_qbytes = msq->q_qbytes;
+@@ -646,9 +651,12 @@ static int copy_compat_msqid_to_user(void __user *buf, struct msqid64_ds *in,
+ 		struct compat_msqid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.msg_perm, &in->msg_perm);
+-		v.msg_stime = in->msg_stime;
+-		v.msg_rtime = in->msg_rtime;
+-		v.msg_ctime = in->msg_ctime;
++		v.msg_stime	 = lower_32_bits(in->msg_stime);
++		v.msg_stime_high = upper_32_bits(in->msg_stime);
++		v.msg_rtime	 = lower_32_bits(in->msg_rtime);
++		v.msg_rtime_high = upper_32_bits(in->msg_rtime);
++		v.msg_ctime	 = lower_32_bits(in->msg_ctime);
++		v.msg_ctime_high = upper_32_bits(in->msg_ctime);
+ 		v.msg_cbytes = in->msg_cbytes;
+ 		v.msg_qnum = in->msg_qnum;
+ 		v.msg_qbytes = in->msg_qbytes;
+diff --git a/ipc/sem.c b/ipc/sem.c
+index c6a8a971769d..8935cd8cf166 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -1214,6 +1214,7 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
+ 			 int cmd, struct semid64_ds *semid64)
+ {
+ 	struct sem_array *sma;
++	time64_t semotime;
+ 	int id = 0;
+ 	int err;
  
- #endif /* _PARISC_MSGBUF_H */
-diff --git a/arch/parisc/include/uapi/asm/sembuf.h b/arch/parisc/include/uapi/asm/sembuf.h
-index 746c5d86a9b1..3c31163b1241 100644
---- a/arch/parisc/include/uapi/asm/sembuf.h
-+++ b/arch/parisc/include/uapi/asm/sembuf.h
-@@ -10,21 +10,21 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
+@@ -1257,8 +1258,13 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
+ 	}
  
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
--#if __BITS_PER_LONG != 64
--	unsigned int	__pad1;
--#endif
-+#if __BITS_PER_LONG == 64
- 	__kernel_time_t	sem_otime;		/* last semop time */
--#if __BITS_PER_LONG != 64
--	unsigned int	__pad2;
--#endif
- 	__kernel_time_t	sem_ctime;		/* last change time */
--	unsigned long 	sem_nsems;		/* no. of semaphores in array */
-+#else
-+	unsigned long	sem_otime_high;
-+	unsigned long	sem_otime;		/* last semop time */
-+	unsigned long	sem_ctime_high;
-+	unsigned long	sem_ctime;		/* last change time */
+ 	kernel_to_ipc64_perm(&sma->sem_perm, &semid64->sem_perm);
+-	semid64->sem_otime = get_semotime(sma);
++	semotime = get_semotime(sma);
++	semid64->sem_otime = semotime;
+ 	semid64->sem_ctime = sma->sem_ctime;
++#ifndef CONFIG_64BIT
++	semid64->sem_otime_high = semotime >> 32;
++	semid64->sem_ctime_high = sma->sem_ctime >> 32;
 +#endif
-+	unsigned long	sem_nsems;		/* no. of semaphores in array */
- 	unsigned long	__unused1;
- 	unsigned long	__unused2;
- };
-diff --git a/arch/parisc/include/uapi/asm/shmbuf.h b/arch/parisc/include/uapi/asm/shmbuf.h
-index cd4dbce55d0b..c89b3dd8db21 100644
---- a/arch/parisc/include/uapi/asm/shmbuf.h
-+++ b/arch/parisc/include/uapi/asm/shmbuf.h
-@@ -10,25 +10,22 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
+ 	semid64->sem_nsems = sma->sem_nsems;
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--#if __BITS_PER_LONG != 64
--	unsigned int		__pad1;
--#endif
-+#if __BITS_PER_LONG == 64
- 	__kernel_time_t		shm_atime;	/* last attach time */
--#if __BITS_PER_LONG != 64
--	unsigned int		__pad2;
--#endif
- 	__kernel_time_t		shm_dtime;	/* last detach time */
--#if __BITS_PER_LONG != 64
--	unsigned int		__pad3;
--#endif
- 	__kernel_time_t		shm_ctime;	/* last change time */
--#if __BITS_PER_LONG != 64
-+#else
-+	unsigned long		shm_atime_high;
-+	unsigned long		shm_atime;	/* last attach time */
-+	unsigned long		shm_dtime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
-+	unsigned long		shm_ctime_high;
-+	unsigned long		shm_ctime;	/* last change time */
- 	unsigned int		__pad4;
- #endif
- 	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
+ 	ipc_unlock_object(&sma->sem_perm);
+@@ -1704,8 +1710,10 @@ static int copy_compat_semid_to_user(void __user *buf, struct semid64_ds *in,
+ 		struct compat_semid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.sem_perm, &in->sem_perm);
+-		v.sem_otime = in->sem_otime;
+-		v.sem_ctime = in->sem_ctime;
++		v.sem_otime	 = lower_32_bits(in->sem_otime);
++		v.sem_otime_high = upper_32_bits(in->sem_otime);
++		v.sem_ctime	 = lower_32_bits(in->sem_ctime);
++		v.sem_ctime_high = upper_32_bits(in->sem_ctime);
+ 		v.sem_nsems = in->sem_nsems;
+ 		return copy_to_user(buf, &v, sizeof(v));
+ 	} else {
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 3cf48988d68c..0075990338f4 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -1002,6 +1002,11 @@ static int shmctl_stat(struct ipc_namespace *ns, int shmid,
+ 	tbuf->shm_atime	= shp->shm_atim;
+ 	tbuf->shm_dtime	= shp->shm_dtim;
+ 	tbuf->shm_ctime	= shp->shm_ctim;
++#ifndef CONFIG_64BIT
++	tbuf->shm_atime_high = shp->shm_atim >> 32;
++	tbuf->shm_dtime_high = shp->shm_dtim >> 32;
++	tbuf->shm_ctime_high = shp->shm_ctim >> 32;
++#endif
+ 	tbuf->shm_cpid	= pid_vnr(shp->shm_cprid);
+ 	tbuf->shm_lpid	= pid_vnr(shp->shm_lprid);
+ 	tbuf->shm_nattch = shp->shm_nattch;
+@@ -1233,9 +1238,12 @@ static int copy_compat_shmid_to_user(void __user *buf, struct shmid64_ds *in,
+ 		struct compat_shmid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.shm_perm, &in->shm_perm);
+-		v.shm_atime = in->shm_atime;
+-		v.shm_dtime = in->shm_dtime;
+-		v.shm_ctime = in->shm_ctime;
++		v.shm_atime	 = lower_32_bits(in->shm_atime);
++		v.shm_atime_high = upper_32_bits(in->shm_atime);
++		v.shm_dtime	 = lower_32_bits(in->shm_dtime);
++		v.shm_dtime_high = upper_32_bits(in->shm_dtime);
++		v.shm_ctime	 = lower_32_bits(in->shm_ctime);
++		v.shm_ctime_high = upper_32_bits(in->shm_ctime);
+ 		v.shm_segsz = in->shm_segsz;
+ 		v.shm_nattch = in->shm_nattch;
+ 		v.shm_cpid = in->shm_cpid;
 -- 
 2.9.0
