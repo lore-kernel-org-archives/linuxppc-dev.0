@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RhcD1vY0zF219
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RhcD5cqdzF21x
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:45:32 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 09/17] y2038: sparc: Extend sysvipc data structures
-Date: Thu, 19 Apr 2018 16:37:29 +0200
-Message-Id: <20180419143737.606138-10-arnd@arndb.de>
+Subject: [PATCH v3 15/17] y2038: ipc: Enable COMPAT_32BIT_TIME
+Date: Thu, 19 Apr 2018 16:37:35 +0200
+Message-Id: <20180419143737.606138-16-arnd@arndb.de>
 In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
 References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,211 +29,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sparc, uses a nonstandard variation of the generic sysvipc
-data structures, intended to have the padding moved around
-so it can deal with big-endian 32-bit user space that has
-64-bit time_t.
+Three ipc syscalls (mq_timedsend, mq_timedreceive and and semtimedop)
+take a timespec argument. After we move 32-bit architectures over to
+useing 64-bit time_t based syscalls, we need seperate entry points for
+the old 32-bit based interfaces.
 
-Unlike most architectures, sparc actually succeeded in
-defining this right for big-endian CPUs, but as everyone else
-got it wrong, we just use the same hack everywhere.
-
-This takes just take the same approach here that we have for
-the asm-generic headers and adds separate 32-bit fields for the
-upper halves of the timestamps, to let libc deal with the mess
-in user space.
+This changes the #ifdef guards for the existing 32-bit compat syscalls
+to check for CONFIG_COMPAT_32BIT_TIME instead, which will then be
+enabled on all existing 32-bit architectures.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/sparc/include/asm/compat.h      | 32 ++++++++++++++++----------------
- arch/sparc/include/uapi/asm/msgbuf.h | 22 +++++++++-------------
- arch/sparc/include/uapi/asm/sembuf.h | 16 +++++++---------
- arch/sparc/include/uapi/asm/shmbuf.h | 21 +++++++++------------
- 4 files changed, 41 insertions(+), 50 deletions(-)
+ ipc/mqueue.c | 80 +++++++++++++++++++++++++++++++-----------------------------
+ ipc/sem.c    |  3 ++-
+ ipc/util.h   |  2 +-
+ 3 files changed, 44 insertions(+), 41 deletions(-)
 
-diff --git a/arch/sparc/include/asm/compat.h b/arch/sparc/include/asm/compat.h
-index 1910c44521e3..4eb51d2dae98 100644
---- a/arch/sparc/include/asm/compat.h
-+++ b/arch/sparc/include/asm/compat.h
-@@ -192,10 +192,10 @@ struct compat_ipc64_perm {
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 9610afcfa2e5..c0d58f390c3b 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -1420,6 +1420,47 @@ COMPAT_SYSCALL_DEFINE4(mq_open, const char __user *, u_name,
+ 	return do_mq_open(u_name, oflag, mode, p);
+ }
  
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	unsigned int	__pad1;
--	compat_time_t	sem_otime;
--	unsigned int	__pad2;
--	compat_time_t	sem_ctime;
-+	unsigned int	sem_otime_high;
-+	unsigned int	sem_otime;
-+	unsigned int	sem_ctime_high;
-+	unsigned int	sem_ctime;
- 	u32		sem_nsems;
- 	u32		__unused1;
- 	u32		__unused2;
-@@ -203,12 +203,12 @@ struct compat_semid64_ds {
- 
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	unsigned int	__pad1;
--	compat_time_t	msg_stime;
--	unsigned int	__pad2;
--	compat_time_t	msg_rtime;
--	unsigned int	__pad3;
--	compat_time_t	msg_ctime;
-+	unsigned int	msg_stime_high;
-+	unsigned int	msg_stime;
-+	unsigned int	msg_rtime_high;
-+	unsigned int	msg_rtime;
-+	unsigned int	msg_ctime_high;
-+	unsigned int	msg_ctime;
- 	unsigned int	msg_cbytes;
- 	unsigned int	msg_qnum;
- 	unsigned int	msg_qbytes;
-@@ -220,12 +220,12 @@ struct compat_msqid64_ds {
- 
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
--	unsigned int	__pad1;
--	compat_time_t	shm_atime;
--	unsigned int	__pad2;
--	compat_time_t	shm_dtime;
--	unsigned int	__pad3;
--	compat_time_t	shm_ctime;
-+	unsigned int	shm_atime_high;
-+	unsigned int	shm_atime;
-+	unsigned int	shm_dtime_high;
-+	unsigned int	shm_dtime;
-+	unsigned int	shm_ctime_high;
-+	unsigned int	shm_ctime;
- 	compat_size_t	shm_segsz;
- 	compat_pid_t	shm_cpid;
- 	compat_pid_t	shm_lpid;
-diff --git a/arch/sparc/include/uapi/asm/msgbuf.h b/arch/sparc/include/uapi/asm/msgbuf.h
-index b601c4f4d956..ffc46c211d6d 100644
---- a/arch/sparc/include/uapi/asm/msgbuf.h
-+++ b/arch/sparc/include/uapi/asm/msgbuf.h
-@@ -8,25 +8,22 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
--
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
--
--
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t msg_stime;	/* last msgsnd time */
--	PADDING(__pad2)
- 	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	PADDING(__pad3)
- 	__kernel_time_t msg_ctime;	/* last change time */
-+#else
-+	unsigned long msg_stime_high;
-+	unsigned long msg_stime;	/* last msgsnd time */
-+	unsigned long msg_rtime_high;
-+	unsigned long msg_rtime;	/* last msgrcv time */
-+	unsigned long msg_ctime_high;
-+	unsigned long msg_ctime;	/* last change time */
++COMPAT_SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
++		       const struct compat_sigevent __user *, u_notification)
++{
++	struct sigevent n, *p = NULL;
++	if (u_notification) {
++		if (get_compat_sigevent(&n, u_notification))
++			return -EFAULT;
++		if (n.sigev_notify == SIGEV_THREAD)
++			n.sigev_value.sival_ptr = compat_ptr(n.sigev_value.sival_int);
++		p = &n;
++	}
++	return do_mq_notify(mqdes, p);
++}
++
++COMPAT_SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
++		       const struct compat_mq_attr __user *, u_mqstat,
++		       struct compat_mq_attr __user *, u_omqstat)
++{
++	int ret;
++	struct mq_attr mqstat, omqstat;
++	struct mq_attr *new = NULL, *old = NULL;
++
++	if (u_mqstat) {
++		new = &mqstat;
++		if (get_compat_mq_attr(new, u_mqstat))
++			return -EFAULT;
++	}
++	if (u_omqstat)
++		old = &omqstat;
++
++	ret = do_mq_getsetattr(mqdes, new, old);
++	if (ret || !old)
++		return ret;
++
++	if (put_compat_mq_attr(old, u_omqstat))
++		return -EFAULT;
++	return 0;
++}
 +#endif
- 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
- 	unsigned long  msg_qnum;	/* number of messages in queue */
- 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
-@@ -35,5 +32,4 @@ struct msqid64_ds {
- 	unsigned long  __unused1;
- 	unsigned long  __unused2;
- };
--#undef PADDING
- #endif /* _SPARC_MSGBUF_H */
-diff --git a/arch/sparc/include/uapi/asm/sembuf.h b/arch/sparc/include/uapi/asm/sembuf.h
-index f49b0ffa0ab8..f3d309c2e1cd 100644
---- a/arch/sparc/include/uapi/asm/sembuf.h
-+++ b/arch/sparc/include/uapi/asm/sembuf.h
-@@ -8,25 +8,23 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
++
++#ifdef CONFIG_COMPAT_32BIT_TIME
+ static int compat_prepare_timeout(const struct compat_timespec __user *p,
+ 				   struct timespec64 *ts)
+ {
+@@ -1459,45 +1500,6 @@ COMPAT_SYSCALL_DEFINE5(mq_timedreceive, mqd_t, mqdes,
+ 	}
+ 	return do_mq_timedreceive(mqdes, u_msg_ptr, msg_len, u_msg_prio, p);
+ }
+-
+-COMPAT_SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
+-		       const struct compat_sigevent __user *, u_notification)
+-{
+-	struct sigevent n, *p = NULL;
+-	if (u_notification) {
+-		if (get_compat_sigevent(&n, u_notification))
+-			return -EFAULT;
+-		if (n.sigev_notify == SIGEV_THREAD)
+-			n.sigev_value.sival_ptr = compat_ptr(n.sigev_value.sival_int);
+-		p = &n;
+-	}
+-	return do_mq_notify(mqdes, p);
+-}
+-
+-COMPAT_SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
+-		       const struct compat_mq_attr __user *, u_mqstat,
+-		       struct compat_mq_attr __user *, u_omqstat)
+-{
+-	int ret;
+-	struct mq_attr mqstat, omqstat;
+-	struct mq_attr *new = NULL, *old = NULL;
+-
+-	if (u_mqstat) {
+-		new = &mqstat;
+-		if (get_compat_mq_attr(new, u_mqstat))
+-			return -EFAULT;
+-	}
+-	if (u_omqstat)
+-		old = &omqstat;
+-
+-	ret = do_mq_getsetattr(mqdes, new, old);
+-	if (ret || !old)
+-		return ret;
+-
+-	if (put_compat_mq_attr(old, u_omqstat))
+-		return -EFAULT;
+-	return 0;
+-}
+ #endif
  
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t	sem_otime;		/* last semop time */
--	PADDING(__pad2)
- 	__kernel_time_t	sem_ctime;		/* last change time */
-+#else
-+	unsigned long	sem_otime_high;
-+	unsigned long	sem_otime;		/* last semop time */
-+	unsigned long	sem_ctime_high;
-+	unsigned long	sem_ctime;		/* last change time */
-+#endif
- 	unsigned long	sem_nsems;		/* no. of semaphores in array */
- 	unsigned long	__unused1;
- 	unsigned long	__unused2;
- };
--#undef PADDING
- 
- #endif /* _SPARC64_SEMBUF_H */
-diff --git a/arch/sparc/include/uapi/asm/shmbuf.h b/arch/sparc/include/uapi/asm/shmbuf.h
-index 286631db705c..06618b84822d 100644
---- a/arch/sparc/include/uapi/asm/shmbuf.h
-+++ b/arch/sparc/include/uapi/asm/shmbuf.h
-@@ -8,24 +8,23 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
+ static const struct inode_operations mqueue_dir_inode_operations = {
+diff --git a/ipc/sem.c b/ipc/sem.c
+index b951e25ba2db..cfd94d48a9aa 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -70,6 +70,7 @@
+  *   The worst-case behavior is nevertheless O(N^2) for N wakeups.
   */
  
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
--
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t		shm_atime;	/* last attach time */
--	PADDING(__pad2)
- 	__kernel_time_t		shm_dtime;	/* last detach time */
--	PADDING(__pad3)
- 	__kernel_time_t		shm_ctime;	/* last change time */
-+#else
-+	unsigned long		shm_atime_high;
-+	unsigned long		shm_atime;	/* last attach time */
-+	unsigned long		shm_dtime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
-+	unsigned long		shm_ctime_high;
-+	unsigned long		shm_ctime;	/* last change time */
-+#endif
- 	size_t			shm_segsz;	/* size of segment (bytes) */
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
-@@ -46,6 +45,4 @@ struct shminfo64 {
- 	unsigned long	__unused4;
- };
++#include <linux/compat.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/init.h>
+@@ -2193,7 +2194,7 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
+ 	return ksys_semtimedop(semid, tsops, nsops, timeout);
+ }
  
--#undef PADDING
--
- #endif /* _SPARC_SHMBUF_H */
+-#ifdef CONFIG_COMPAT
++#ifdef CONFIG_COMPAT_32BIT_TIME
+ long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
+ 			    unsigned int nsops,
+ 			    const struct compat_timespec __user *timeout)
+diff --git a/ipc/util.h b/ipc/util.h
+index 975c6de2df9d..0aba3230d007 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -265,10 +265,10 @@ long ksys_shmdt(char __user *shmaddr);
+ long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
+ 
+ /* for CONFIG_ARCH_WANT_OLD_COMPAT_IPC */
+-#ifdef CONFIG_COMPAT
+ long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
+ 			    unsigned int nsops,
+ 			    const struct compat_timespec __user *timeout);
++#ifdef CONFIG_COMPAT
+ long compat_ksys_semctl(int semid, int semnum, int cmd, int arg);
+ long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr);
+ long compat_ksys_msgrcv(int msqid, compat_uptr_t msgp, compat_ssize_t msgsz,
 -- 
 2.9.0
