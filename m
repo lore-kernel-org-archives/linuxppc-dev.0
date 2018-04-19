@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ruscur@russell.cc>
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RHyj0yZyzF21B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 09:15:08 +1000 (AEST)
-Message-ID: <1524093296.11062.358.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc64s: Print exception vector name alongside the
- trap number
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 19 Apr 2018 09:14:56 +1000
-In-Reply-To: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
-References: <20180418090205.30844-1-naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RLdQ5RqRzF20w
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 11:15:22 +1000 (AEST)
+Message-ID: <1524100514.2094.0.camel@russell.cc>
+Subject: Re: [PATCH] powerpc/eeh: Fix enabling bridge MMIO windows
+From: Russell Currey <ruscur@russell.cc>
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, Pridhiviraj
+ Paidipeddi <ppaidipe@linux.vnet.ibm.com>, sam.bobroff@au1.ibm.com
+Date: Thu, 19 Apr 2018 11:15:14 +1000
+In-Reply-To: <20180411033758.20794-1-mikey@neuling.org>
+References: <20180411033758.20794-1-mikey@neuling.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,63 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-18 at 14:32 +0530, Naveen N. Rao wrote:
+On Wed, 2018-04-11 at 13:37 +1000, Michael Neuling wrote:
+> On boot we save the configuration space of PCIe bridges. We do this
+> so
+> when we get an EEH event and everything gets reset that we can
+> restore
+> them.
 > 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +static char *print_trap(unsigned long trapno)
-> +{
-> +	trapno &= 0xff0;
-> +	switch (trapno) {
-> +		case 0x100:	return "SRESET";
-> +		case 0x200:	return "MCE";
-> +		case 0x300:	return "DSI";
-> +		case 0x380:	return "DSISLB";
-> +		case 0x400:	return "ISI";
-> +		case 0x480:	return "ISISLB";
+> Unfortunately we save this state before we've enabled the MMIO space
+> on the bridges. Hence if we have to reset the bridge when we come
+> back
+> MMIO is not enabled and we end up taking an PE freeze when the driver
+> starts accessing again.
+> 
+> This patch forces the memory/MMIO and bus mastering on when restoring
+> bridges on EEH. Ideally we'd do this correctly by saving the
+> configuration space writes later, but that will have to come later in
+> a larger EEH rewrite. For now we have this simple fix.
+> 
+> The original bug can be triggered on a boston machine by doing:
+>   echo 0x8000000000000000 >
+> /sys/kernel/debug/powerpc/PCI0001/err_injct_outbound
+> On boston, this PHB has a PCIe switch on it.  Without this patch,
+> you'll see two EEH events, 1 expected and 1 the failure we are fixing
+> here. The second EEH event causes the anything under the PHB to
+> disappear (i.e. the i40e eth).
+> 
+> With this patch, only 1 EEH event occurs and devices properly
+> recover.
+> 
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Cc: stable@vger.kernel.org
 
-380 and 480 should probably be "DSEG" and "ISEG" ... they may or may
-not involve the SLB.
-
-> +		case 0x500:	return "EXT";
-> +		case 0x600:	return "ALIGN";
-> +		case 0x700:	return "PCHECK";
-> +		case 0x800:	return "FP";
-> +		case 0x900:	return "DEC";
-> +		case 0x980:	return "HDEC";
-> +		case 0xa00:	return "DBELL";
-> +		case 0xc00:	return "SC";
-> +		case 0xd00:	return "SSTEP";
-> +		case 0xe00:	return "HDSI";
-> +		case 0xe20:	return "HISI";
-> +		case 0xe40:	return "HEMUL";
-> +		case 0xe60:	return "HMI";
-> +		case 0xe80:	return "HDBELL";
-> +		case 0xea0:	return "HVIRT";
-> +		case 0xf00:	return "PMI";
-> +		case 0xf20:	return "ALTIVEC";
-> +		case 0xf40:	return "VSX";
-> +		case 0xf60:	return "UNAVAIL";
-> +		case 0xf80:	return "HUNAVAIL";
-> +	}
-> +	return "UNKNOWN";
-> +}
-> +#endif
-> +
->  void show_regs(struct pt_regs * regs)
->  {
->  	int i, trap;
-> @@ -1422,8 +1458,14 @@ void show_regs(struct pt_regs * regs)
->  
->  	printk("NIP:  "REG" LR: "REG" CTR: "REG"\n",
->  	       regs->nip, regs->link, regs->ctr);
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +	printk("REGS: %px TRAP: %04lx (%s)  %s  (%s)\n",
-> +	       regs, regs->trap, print_trap(regs->trap), print_tainted(),
-> +	       init_utsname()->release);
-> +#else
->  	printk("REGS: %px TRAP: %04lx   %s  (%s)\n",
->  	       regs, regs->trap, print_tainted(), init_utsname()->release);
-> +#endif
->  	printk("MSR:  "REG" ", regs->msr);
->  	print_msr_bits(regs->msr);
->  	pr_cont("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
+Acked-by: Russell Currey <ruscur@russell.cc>
