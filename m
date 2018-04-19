@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RhTT6CXMzF21H
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RhTV2YHTzF21Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:41 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 10/17] y2038: powerpc: Extend sysvipc data structures
-Date: Thu, 19 Apr 2018 16:37:30 +0200
-Message-Id: <20180419143737.606138-11-arnd@arndb.de>
+Subject: [PATCH v3 14/17] y2038: ipc: Use __kernel_timespec
+Date: Thu, 19 Apr 2018 16:37:34 +0200
+Message-Id: <20180419143737.606138-15-arnd@arndb.de>
 In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
 References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,186 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc, uses a nonstandard variation of the generic sysvipc
-data structures, intended to have the padding moved around
-so it can deal with big-endian 32-bit user space that has
-64-bit time_t.
+This is a preparatation for changing over __kernel_timespec to 64-bit
+times, which involves assigning new system call numbers for mq_timedsend(),
+mq_timedreceive() and semtimedop() for compatibility with future y2038
+proof user space.
 
-powerpc has the same definition as parisc and sparc, but now also
-supports little-endian mode, which is now wrong because the
-padding is made for big-endian user space.
-
-This takes just take the same approach here that we have for
-the asm-generic headers and adds separate 32-bit fields for the
-upper halves of the timestamps, to let libc deal with the mess
-in user space.
+The existing ABIs will remain available through compat code.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/include/asm/compat.h      | 32 ++++++++++++++++----------------
- arch/powerpc/include/uapi/asm/msgbuf.h | 18 +++++++++---------
- arch/powerpc/include/uapi/asm/sembuf.h | 14 +++++++-------
- arch/powerpc/include/uapi/asm/shmbuf.h | 19 ++++++++-----------
- 4 files changed, 40 insertions(+), 43 deletions(-)
+ include/linux/syscalls.h | 6 +++---
+ ipc/mqueue.c             | 6 +++---
+ ipc/sem.c                | 4 ++--
+ ipc/util.h               | 2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index b4773c81f7d5..85c8af2bb272 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -162,10 +162,10 @@ struct compat_ipc64_perm {
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index c9a2a2601852..b92cb79d38c3 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -680,8 +680,8 @@ asmlinkage long sys_sysinfo(struct sysinfo __user *info);
+ /* ipc/mqueue.c */
+ asmlinkage long sys_mq_open(const char __user *name, int oflag, umode_t mode, struct mq_attr __user *attr);
+ asmlinkage long sys_mq_unlink(const char __user *name);
+-asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const struct timespec __user *abs_timeout);
+-asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct timespec __user *abs_timeout);
++asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const struct __kernel_timespec __user *abs_timeout);
++asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct __kernel_timespec __user *abs_timeout);
+ asmlinkage long sys_mq_notify(mqd_t mqdes, const struct sigevent __user *notification);
+ asmlinkage long sys_mq_getsetattr(mqd_t mqdes, const struct mq_attr __user *mqstat, struct mq_attr __user *omqstat);
  
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	unsigned int __unused1;
--	compat_time_t sem_otime;
--	unsigned int __unused2;
--	compat_time_t sem_ctime;
-+	unsigned int sem_otime_high;
-+	unsigned int sem_otime;
-+	unsigned int sem_ctime_high;
-+	unsigned int sem_ctime;
- 	compat_ulong_t sem_nsems;
- 	compat_ulong_t __unused3;
- 	compat_ulong_t __unused4;
-@@ -173,12 +173,12 @@ struct compat_semid64_ds {
+@@ -698,7 +698,7 @@ asmlinkage long sys_semget(key_t key, int nsems, int semflg);
+ asmlinkage long sys_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ asmlinkage long sys_semtimedop(int semid, struct sembuf __user *sops,
+ 				unsigned nsops,
+-				const struct timespec __user *timeout);
++				const struct __kernel_timespec __user *timeout);
+ asmlinkage long sys_semop(int semid, struct sembuf __user *sops,
+ 				unsigned nsops);
  
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	unsigned int __unused1;
--	compat_time_t msg_stime;
--	unsigned int __unused2;
--	compat_time_t msg_rtime;
--	unsigned int __unused3;
--	compat_time_t msg_ctime;
-+	unsigned int msg_stime_high;
-+	unsigned int msg_stime;
-+	unsigned int msg_rtime_high;
-+	unsigned int msg_rtime;
-+	unsigned int msg_ctime_high;
-+	unsigned int msg_ctime;
- 	compat_ulong_t msg_cbytes;
- 	compat_ulong_t msg_qnum;
- 	compat_ulong_t msg_qbytes;
-@@ -190,12 +190,12 @@ struct compat_msqid64_ds {
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index a808f29d4c5a..9610afcfa2e5 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -691,7 +691,7 @@ static void __do_notify(struct mqueue_inode_info *info)
+ 	wake_up(&info->wait_q);
+ }
  
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
--	unsigned int __unused1;
--	compat_time_t shm_atime;
--	unsigned int __unused2;
--	compat_time_t shm_dtime;
--	unsigned int __unused3;
--	compat_time_t shm_ctime;
-+	unsigned int shm_atime_high;
-+	unsigned int shm_atime;
-+	unsigned int shm_dtime_high;
-+	unsigned int shm_dtime;
-+	unsigned int shm_ctime_high;
-+	unsigned int shm_ctime;
- 	unsigned int __unused4;
- 	compat_size_t shm_segsz;
- 	compat_pid_t shm_cpid;
-diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
-index 65beb0942500..2b1b37797a47 100644
---- a/arch/powerpc/include/uapi/asm/msgbuf.h
-+++ b/arch/powerpc/include/uapi/asm/msgbuf.h
-@@ -10,18 +10,18 @@
+-static int prepare_timeout(const struct timespec __user *u_abs_timeout,
++static int prepare_timeout(const struct __kernel_timespec __user *u_abs_timeout,
+ 			   struct timespec64 *ts)
+ {
+ 	if (get_timespec64(ts, u_abs_timeout))
+@@ -1128,7 +1128,7 @@ static int do_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
  
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--#ifndef __powerpc64__
--	unsigned int	__unused1;
--#endif
-+#ifdef __powerpc64__
- 	__kernel_time_t msg_stime;	/* last msgsnd time */
--#ifndef __powerpc64__
--	unsigned int	__unused2;
--#endif
- 	__kernel_time_t msg_rtime;	/* last msgrcv time */
--#ifndef __powerpc64__
--	unsigned int	__unused3;
--#endif
- 	__kernel_time_t msg_ctime;	/* last change time */
-+#else
-+	unsigned long  msg_stime_high;
-+	unsigned long  msg_stime;	/* last msgsnd time */
-+	unsigned long  msg_rtime_high;
-+	unsigned long  msg_rtime;	/* last msgrcv time */
-+	unsigned long  msg_ctime_high;
-+	unsigned long  msg_ctime;	/* last change time */
-+#endif
- 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
- 	unsigned long  msg_qnum;	/* number of messages in queue */
- 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
-diff --git a/arch/powerpc/include/uapi/asm/sembuf.h b/arch/powerpc/include/uapi/asm/sembuf.h
-index 8f393d60f02d..3f60946f77e3 100644
---- a/arch/powerpc/include/uapi/asm/sembuf.h
-+++ b/arch/powerpc/include/uapi/asm/sembuf.h
-@@ -15,20 +15,20 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-- * - 2 miscellaneous 32-bit values
-+ * - 2 miscellaneous 32/64-bit values
-  */
+ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
+ 		size_t, msg_len, unsigned int, msg_prio,
+-		const struct timespec __user *, u_abs_timeout)
++		const struct __kernel_timespec __user *, u_abs_timeout)
+ {
+ 	struct timespec64 ts, *p = NULL;
+ 	if (u_abs_timeout) {
+@@ -1142,7 +1142,7 @@ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
  
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
- #ifndef __powerpc64__
--	unsigned long	__unused1;
--#endif
-+	unsigned long	sem_otime_high;
-+	unsigned long	sem_otime;	/* last semop time */
-+	unsigned long	sem_ctime_high;
-+	unsigned long	sem_ctime;	/* last change time */
-+#else
- 	__kernel_time_t	sem_otime;	/* last semop time */
--#ifndef __powerpc64__
--	unsigned long	__unused2;
--#endif
- 	__kernel_time_t	sem_ctime;	/* last change time */
-+#endif
- 	unsigned long	sem_nsems;	/* no. of semaphores in array */
- 	unsigned long	__unused3;
- 	unsigned long	__unused4;
-diff --git a/arch/powerpc/include/uapi/asm/shmbuf.h b/arch/powerpc/include/uapi/asm/shmbuf.h
-index deb1c3e503d3..b591c4d7e4c5 100644
---- a/arch/powerpc/include/uapi/asm/shmbuf.h
-+++ b/arch/powerpc/include/uapi/asm/shmbuf.h
-@@ -16,25 +16,22 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
+ SYSCALL_DEFINE5(mq_timedreceive, mqd_t, mqdes, char __user *, u_msg_ptr,
+ 		size_t, msg_len, unsigned int __user *, u_msg_prio,
+-		const struct timespec __user *, u_abs_timeout)
++		const struct __kernel_timespec __user *, u_abs_timeout)
+ {
+ 	struct timespec64 ts, *p = NULL;
+ 	if (u_abs_timeout) {
+diff --git a/ipc/sem.c b/ipc/sem.c
+index 8935cd8cf166..b951e25ba2db 100644
+--- a/ipc/sem.c
++++ b/ipc/sem.c
+@@ -2176,7 +2176,7 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
+ }
  
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--#ifndef __powerpc64__
--	unsigned long		__unused1;
--#endif
-+#ifdef __powerpc64__
- 	__kernel_time_t		shm_atime;	/* last attach time */
--#ifndef __powerpc64__
--	unsigned long		__unused2;
--#endif
- 	__kernel_time_t		shm_dtime;	/* last detach time */
--#ifndef __powerpc64__
--	unsigned long		__unused3;
--#endif
- 	__kernel_time_t		shm_ctime;	/* last change time */
--#ifndef __powerpc64__
-+#else
-+	unsigned long		shm_atime_high;
-+	unsigned long		shm_atime;	/* last attach time */
-+	unsigned long		shm_dtime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
-+	unsigned long		shm_ctime_high;
-+	unsigned long		shm_ctime;	/* last change time */
- 	unsigned long		__unused4;
- #endif
- 	size_t			shm_segsz;	/* size of segment (bytes) */
+ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+-		     unsigned int nsops, const struct timespec __user *timeout)
++		     unsigned int nsops, const struct __kernel_timespec __user *timeout)
+ {
+ 	if (timeout) {
+ 		struct timespec64 ts;
+@@ -2188,7 +2188,7 @@ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+ }
+ 
+ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
+-		unsigned int, nsops, const struct timespec __user *, timeout)
++		unsigned int, nsops, const struct __kernel_timespec __user *, timeout)
+ {
+ 	return ksys_semtimedop(semid, tsops, nsops, timeout);
+ }
+diff --git a/ipc/util.h b/ipc/util.h
+index acc5159e96d0..975c6de2df9d 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -251,7 +251,7 @@ static inline int compat_ipc_parse_version(int *cmd)
+ /* for __ARCH_WANT_SYS_IPC */
+ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+ 		     unsigned int nsops,
+-		     const struct timespec __user *timeout);
++		     const struct __kernel_timespec __user *timeout);
+ long ksys_semget(key_t key, int nsems, int semflg);
+ long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ long ksys_msgget(key_t key, int msgflg);
 -- 
 2.9.0
