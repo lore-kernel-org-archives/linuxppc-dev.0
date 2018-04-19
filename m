@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RhSk6MkpzF21W
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RhSm0ccczF20s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:39:03 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: Arnd Bergmann <arnd@arndb.de>, linux-api@vger.kernel.org,
  will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
  ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v3 13/17] y2038: ipc: Report long times to user space
-Date: Thu, 19 Apr 2018 16:37:33 +0200
-Message-Id: <20180419143737.606138-14-arnd@arndb.de>
+Subject: [PATCH v3 05/17] y2038: arm64: Extend sysvipc compat data structures
+Date: Thu, 19 Apr 2018 16:37:25 +0200
+Message-Id: <20180419143737.606138-6-arnd@arndb.de>
 In-Reply-To: <20180419143737.606138-1-arnd@arndb.de>
 References: <20180419143737.606138-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,124 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The shmid64_ds/semid64_ds/msqid64_ds data structures have been extended
-to contain extra fields for storing the upper bits of the time stamps,
-this patch does the other half of the job and and fills the new fields on
-32-bit architectures as well as 32-bit tasks running on a 64-bit kernel
-in compat mode.
+Both 32-bit amd 64-bit ARM use the asm-generic header files for their
+sysvipc data structures, so no special care is needed to make those
+work beyond y2038, with the one exception of compat mode: Since there
+is no asm-generic definition of the compat mode IPC structures, ARM64
+provides its own copy, and we make those match the changes in the native
+asm-generic header files.
 
-There should be no change for native 64-bit tasks.
+There is sufficient padding in these data structures to extend all
+timestamps to 64 bit, but on big-endian ARM kernels, the padding
+is in the wrong place, so the C library has to ensure it reassembles
+a 64-bit time_t correctly.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- ipc/msg.c | 14 +++++++++++---
- ipc/sem.c | 14 +++++++++++---
- ipc/shm.c | 14 +++++++++++---
- 3 files changed, 33 insertions(+), 9 deletions(-)
+ arch/arm64/include/asm/compat.h | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/ipc/msg.c b/ipc/msg.c
-index 574f76c9a2ff..3b6545302598 100644
---- a/ipc/msg.c
-+++ b/ipc/msg.c
-@@ -537,6 +537,11 @@ static int msgctl_stat(struct ipc_namespace *ns, int msqid,
- 	p->msg_stime  = msq->q_stime;
- 	p->msg_rtime  = msq->q_rtime;
- 	p->msg_ctime  = msq->q_ctime;
-+#ifndef CONFIG_64BIT
-+	p->msg_stime_high = msq->q_stime >> 32;
-+	p->msg_rtime_high = msq->q_rtime >> 32;
-+	p->msg_ctime_high = msq->q_ctime >> 32;
-+#endif
- 	p->msg_cbytes = msq->q_cbytes;
- 	p->msg_qnum   = msq->q_qnum;
- 	p->msg_qbytes = msq->q_qbytes;
-@@ -646,9 +651,12 @@ static int copy_compat_msqid_to_user(void __user *buf, struct msqid64_ds *in,
- 		struct compat_msqid64_ds v;
- 		memset(&v, 0, sizeof(v));
- 		to_compat_ipc64_perm(&v.msg_perm, &in->msg_perm);
--		v.msg_stime = in->msg_stime;
--		v.msg_rtime = in->msg_rtime;
--		v.msg_ctime = in->msg_ctime;
-+		v.msg_stime	 = lower_32_bits(in->msg_stime);
-+		v.msg_stime_high = upper_32_bits(in->msg_stime);
-+		v.msg_rtime	 = lower_32_bits(in->msg_rtime);
-+		v.msg_rtime_high = upper_32_bits(in->msg_rtime);
-+		v.msg_ctime	 = lower_32_bits(in->msg_ctime);
-+		v.msg_ctime_high = upper_32_bits(in->msg_ctime);
- 		v.msg_cbytes = in->msg_cbytes;
- 		v.msg_qnum = in->msg_qnum;
- 		v.msg_qbytes = in->msg_qbytes;
-diff --git a/ipc/sem.c b/ipc/sem.c
-index c6a8a971769d..8935cd8cf166 100644
---- a/ipc/sem.c
-+++ b/ipc/sem.c
-@@ -1214,6 +1214,7 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
- 			 int cmd, struct semid64_ds *semid64)
- {
- 	struct sem_array *sma;
-+	time64_t semotime;
- 	int id = 0;
- 	int err;
+diff --git a/arch/arm64/include/asm/compat.h b/arch/arm64/include/asm/compat.h
+index 0030f79808b3..1a037b94eba1 100644
+--- a/arch/arm64/include/asm/compat.h
++++ b/arch/arm64/include/asm/compat.h
+@@ -181,10 +181,10 @@ struct compat_ipc64_perm {
  
-@@ -1257,8 +1258,13 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
- 	}
+ struct compat_semid64_ds {
+ 	struct compat_ipc64_perm sem_perm;
+-	compat_time_t  sem_otime;
+-	compat_ulong_t __unused1;
+-	compat_time_t  sem_ctime;
+-	compat_ulong_t __unused2;
++	compat_ulong_t sem_otime;
++	compat_ulong_t sem_otime_high;
++	compat_ulong_t sem_ctime;
++	compat_ulong_t sem_ctime_high;
+ 	compat_ulong_t sem_nsems;
+ 	compat_ulong_t __unused3;
+ 	compat_ulong_t __unused4;
+@@ -192,12 +192,12 @@ struct compat_semid64_ds {
  
- 	kernel_to_ipc64_perm(&sma->sem_perm, &semid64->sem_perm);
--	semid64->sem_otime = get_semotime(sma);
-+	semotime = get_semotime(sma);
-+	semid64->sem_otime = semotime;
- 	semid64->sem_ctime = sma->sem_ctime;
-+#ifndef CONFIG_64BIT
-+	semid64->sem_otime_high = semotime >> 32;
-+	semid64->sem_ctime_high = sma->sem_ctime >> 32;
-+#endif
- 	semid64->sem_nsems = sma->sem_nsems;
- 
- 	ipc_unlock_object(&sma->sem_perm);
-@@ -1704,8 +1710,10 @@ static int copy_compat_semid_to_user(void __user *buf, struct semid64_ds *in,
- 		struct compat_semid64_ds v;
- 		memset(&v, 0, sizeof(v));
- 		to_compat_ipc64_perm(&v.sem_perm, &in->sem_perm);
--		v.sem_otime = in->sem_otime;
--		v.sem_ctime = in->sem_ctime;
-+		v.sem_otime	 = lower_32_bits(in->sem_otime);
-+		v.sem_otime_high = upper_32_bits(in->sem_otime);
-+		v.sem_ctime	 = lower_32_bits(in->sem_ctime);
-+		v.sem_ctime_high = upper_32_bits(in->sem_ctime);
- 		v.sem_nsems = in->sem_nsems;
- 		return copy_to_user(buf, &v, sizeof(v));
- 	} else {
-diff --git a/ipc/shm.c b/ipc/shm.c
-index 3cf48988d68c..0075990338f4 100644
---- a/ipc/shm.c
-+++ b/ipc/shm.c
-@@ -1002,6 +1002,11 @@ static int shmctl_stat(struct ipc_namespace *ns, int shmid,
- 	tbuf->shm_atime	= shp->shm_atim;
- 	tbuf->shm_dtime	= shp->shm_dtim;
- 	tbuf->shm_ctime	= shp->shm_ctim;
-+#ifndef CONFIG_64BIT
-+	tbuf->shm_atime_high = shp->shm_atim >> 32;
-+	tbuf->shm_dtime_high = shp->shm_dtim >> 32;
-+	tbuf->shm_ctime_high = shp->shm_ctim >> 32;
-+#endif
- 	tbuf->shm_cpid	= pid_vnr(shp->shm_cprid);
- 	tbuf->shm_lpid	= pid_vnr(shp->shm_lprid);
- 	tbuf->shm_nattch = shp->shm_nattch;
-@@ -1233,9 +1238,12 @@ static int copy_compat_shmid_to_user(void __user *buf, struct shmid64_ds *in,
- 		struct compat_shmid64_ds v;
- 		memset(&v, 0, sizeof(v));
- 		to_compat_ipc64_perm(&v.shm_perm, &in->shm_perm);
--		v.shm_atime = in->shm_atime;
--		v.shm_dtime = in->shm_dtime;
--		v.shm_ctime = in->shm_ctime;
-+		v.shm_atime	 = lower_32_bits(in->shm_atime);
-+		v.shm_atime_high = upper_32_bits(in->shm_atime);
-+		v.shm_dtime	 = lower_32_bits(in->shm_dtime);
-+		v.shm_dtime_high = upper_32_bits(in->shm_dtime);
-+		v.shm_ctime	 = lower_32_bits(in->shm_ctime);
-+		v.shm_ctime_high = upper_32_bits(in->shm_ctime);
- 		v.shm_segsz = in->shm_segsz;
- 		v.shm_nattch = in->shm_nattch;
- 		v.shm_cpid = in->shm_cpid;
+ struct compat_msqid64_ds {
+ 	struct compat_ipc64_perm msg_perm;
+-	compat_time_t  msg_stime;
+-	compat_ulong_t __unused1;
+-	compat_time_t  msg_rtime;
+-	compat_ulong_t __unused2;
+-	compat_time_t  msg_ctime;
+-	compat_ulong_t __unused3;
++	compat_ulong_t msg_stime;
++	compat_ulong_t msg_stime_high;
++	compat_ulong_t msg_rtime;
++	compat_ulong_t msg_rtime_high;
++	compat_ulong_t msg_ctime;
++	compat_ulong_t msg_ctime_high;
+ 	compat_ulong_t msg_cbytes;
+ 	compat_ulong_t msg_qnum;
+ 	compat_ulong_t msg_qbytes;
+@@ -210,12 +210,12 @@ struct compat_msqid64_ds {
+ struct compat_shmid64_ds {
+ 	struct compat_ipc64_perm shm_perm;
+ 	compat_size_t  shm_segsz;
+-	compat_time_t  shm_atime;
+-	compat_ulong_t __unused1;
+-	compat_time_t  shm_dtime;
+-	compat_ulong_t __unused2;
+-	compat_time_t  shm_ctime;
+-	compat_ulong_t __unused3;
++	compat_ulong_t shm_atime;
++	compat_ulong_t shm_atime_high;
++	compat_ulong_t shm_dtime;
++	compat_ulong_t shm_dtime_high;
++	compat_ulong_t shm_ctime;
++	compat_ulong_t shm_ctime_high;
+ 	compat_pid_t   shm_cpid;
+ 	compat_pid_t   shm_lpid;
+ 	compat_ulong_t shm_nattch;
 -- 
 2.9.0
