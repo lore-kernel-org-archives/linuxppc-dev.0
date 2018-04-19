@@ -1,36 +1,36 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNj4VH1zF222
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:04:53 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3J74Mev053213
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:51 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hennja245-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RVNm3G51zF1sZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 17:04:56 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3J74Mi7099429
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:53 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hendqar1g-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Apr 2018 03:04:53 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 19 Apr 2018 08:04:49 +0100
+ Thu, 19 Apr 2018 08:04:51 +0100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
  Steven Rostedt <rostedt@goodmis.org>,
  Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>
-Subject: [PATCH v5 06/10] powerpc64/ftrace: Disable ftrace during kvm
- entry/exit
-Date: Thu, 19 Apr 2018 12:34:05 +0530
+Subject: [PATCH v5 07/10] powerpc64/kexec: Hard disable ftrace before
+ switching to the new kernel
+Date: Thu, 19 Apr 2018 12:34:06 +0530
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <62b77045b205b008946b793fe31effb155b335be.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+Message-Id: <3ab88a58dfc784303ffbd55669d85ba29b7cc47c.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,57 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During guest entry/exit, we switch over to/from the guest MMU context
-and we cannot take exceptions in the hypervisor code.
+If function_graph tracer is enabled during kexec, we see the below
+exception in the simulator:
+	root@(none):/# kexec -e
+	kvm: exiting hardware virtualization
+	kexec_core: Starting new kernel
+	[   19.262020070,5] OPAL: Switch to big-endian OS
+	kexec: Starting switchover sequence.
+	Interrupt to 0xC000000000004380 from 0xC000000000004380
+	** Execution stopped: Continuous Interrupt, Instruction caused exception,  **
 
-Since ftrace may be enabled and since it can result in us taking a trap,
-disable ftrace by setting paca->ftrace_enabled to zero. There are two
-paths through which we enter/exit a guest:
-1. If we are the vcore runner, then we enter the guest via
-__kvmppc_vcore_entry() and we disable ftrace around this. This is always
-the case for Power9, and for the primary thread on Power8.
-2. If we are a secondary thread in Power8, then we would be in nap due
-to SMT being disabled. We are woken up by an IPI to enter the guest. In
-this scenario, we enter the guest through kvm_start_guest(). We disable
-ftrace at this point. In this scenario, ftrace would only get re-enabled
-on the secondary thread when SMT is re-enabled (via start_secondary()).
+Now that we have a more effective way to completely disable ftrace on
+ppc64, let's also use that before switching to a new kernel during
+kexec.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_hv.c            | 4 ++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 3 +++
- 2 files changed, 7 insertions(+)
+ arch/powerpc/kernel/machine_kexec.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 4d07fca5121c..f604cbd8fc34 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2911,8 +2911,12 @@ static noinline void kvmppc_run_core(struct kvmppc_vcore *vc)
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 2694d078741d..936c7e2d421e 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -98,12 +98,14 @@ void machine_kexec(struct kimage *image)
+ 	int save_ftrace_enabled;
  
- 	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
- 
+ 	save_ftrace_enabled = __ftrace_enabled_save();
 +	this_cpu_disable_ftrace();
-+
- 	trap = __kvmppc_vcore_entry();
+ 
+ 	if (ppc_md.machine_kexec)
+ 		ppc_md.machine_kexec(image);
+ 	else
+ 		default_machine_kexec(image);
  
 +	this_cpu_enable_ftrace();
-+
- 	srcu_read_unlock(&vc->kvm->srcu, srcu_idx);
+ 	__ftrace_enabled_restore(save_ftrace_enabled);
  
- 	trace_hardirqs_off();
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index bd63fa8a08b5..2c3cbe0067b2 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -342,6 +342,9 @@ kvm_start_guest:
- 
- 	ld	r2,PACATOC(r13)
- 
-+	li	r0,0
-+	stb	r0,PACA_FTRACE_ENABLED(r13)
-+
- 	li	r0,KVM_HWTHREAD_IN_KVM
- 	stb	r0,HSTATE_HWTHREAD_STATE(r13)
- 
+ 	/* Fall back to normal restart if we're still alive. */
 -- 
 2.17.0
