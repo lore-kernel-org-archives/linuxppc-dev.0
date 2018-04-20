@@ -1,32 +1,22 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <willy@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40SScD5hQWzF1yt
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2018 06:48:09 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3KKm68w015860
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 16:48:06 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hfnh0d2ah-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 16:48:05 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 20 Apr 2018 16:48:04 -0400
-Subject: [PATCH] pseries/memory-hotplug: Only update DT once per memory
- DLPAR request
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: jallen@linux.vnet.ibm.com
-Date: Fri, 20 Apr 2018 15:29:48 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40STf12G5szF1sR
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Apr 2018 07:34:49 +1000 (AEST)
+Date: Fri, 20 Apr 2018 14:34:35 -0700
+From: Matthew Wilcox <willy@infradead.org>
+To: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: jk@ozlabs.org, arnd@arndb.de, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc: platform: cell: spufs: Change return type to
+ vm_fault_t
+Message-ID: <20180420213435.GL10788@bombadil.infradead.org>
+References: <20180420173239.GA24560@jordon-HP-15-Notebook-PC>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152425618836.15614.7060070452480906952.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180420173239.GA24560@jordon-HP-15-Notebook-PC>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,155 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The updates to powerpc numa and memory hotplug code now use the
-in-kernel LMB array instead of the device tree. This change
-allows the pseries memory DLPAR code to only update the device
-tree once after successfully handling a DLPAR request.
+On Fri, Apr 20, 2018 at 11:02:39PM +0530, Souptick Joarder wrote:
+> Use new return type vm_fault_t for fault handler. For
+> now, this is just documenting that the function returns
+> a VM_FAULT value rather than an errno. Once all instances
+> are converted, vm_fault_t will become a distinct type.
+> 
+> Reference id -> 1c8f422059ae ("mm: change return type to
+> vm_fault_t")
+> 
+> We are fixing a minor bug, that the error from vm_insert_
+> pfn() was being ignored and the effect of this is likely
+> to be only felt in OOM situations.
+> 
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
 
-Prior to the in-kernel LMB array, the numa code looked up the
-affinity for memory being added in the device tree, the code
-now looks this up in the LMB array. This change means the
-memory hotplug code can just update the affinity for an LMB
-in the LMB array instead of updating the device tree.
-
-This also provides a savings in kernel memory. When updating the
-device tree old properties are never free'ed since there is no
-usecount on properties. This behavior leads to a new copy of the
-property being allocated every time a LMB is added or removed
-(i.e. a request to add 100 LMBs creates 100 new copies of the
-property). With this update only a single new property is created
-when a DLPAR request completes successfully.
-
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/drmem.h                |    5 ++
- arch/powerpc/platforms/pseries/hotplug-memory.c |   55 +++++++----------------
- 2 files changed, 21 insertions(+), 39 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index ce242b9ea8c6..7c1d8e74b25d 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -99,4 +99,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
- #endif
- 
-+static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
-+{
-+	lmb->aa_index = 0xffffffff;
-+}
-+
- #endif /* _ASM_POWERPC_LMB_H */
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index c1578f54c626..9a15d39995e5 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -163,7 +163,7 @@ static u32 find_aa_index(struct device_node *dr_node,
- 	return aa_index;
- }
- 
--static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
-+static int update_lmb_associativity_index(struct drmem_lmb *lmb)
- {
- 	struct device_node *parent, *lmb_node, *dr_node;
- 	struct property *ala_prop;
-@@ -203,43 +203,14 @@ static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
- 	aa_index = find_aa_index(dr_node, ala_prop, lmb_assoc);
- 
- 	dlpar_free_cc_nodes(lmb_node);
--	return aa_index;
--}
--
--static int dlpar_add_device_tree_lmb(struct drmem_lmb *lmb)
--{
--	int rc, aa_index;
--
--	lmb->flags |= DRCONF_MEM_ASSIGNED;
- 
--	aa_index = lookup_lmb_associativity_index(lmb);
- 	if (aa_index < 0) {
--		pr_err("Couldn't find associativity index for drc index %x\n",
--		       lmb->drc_index);
--		return aa_index;
-+		pr_err("Could not find LMB associativity\n");
-+		return -1;
- 	}
- 
- 	lmb->aa_index = aa_index;
--
--	rtas_hp_event = true;
--	rc = drmem_update_dt();
--	rtas_hp_event = false;
--
--	return rc;
--}
--
--static int dlpar_remove_device_tree_lmb(struct drmem_lmb *lmb)
--{
--	int rc;
--
--	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
--	lmb->aa_index = 0xffffffff;
--
--	rtas_hp_event = true;
--	rc = drmem_update_dt();
--	rtas_hp_event = false;
--
--	return rc;
-+	return 0;
- }
- 
- static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
-@@ -428,7 +399,9 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
- 	/* Update memory regions for memory remove */
- 	memblock_remove(lmb->base_addr, block_sz);
- 
--	dlpar_remove_device_tree_lmb(lmb);
-+	invalidate_lmb_associativity_index(lmb);
-+	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
-+
- 	return 0;
- }
- 
-@@ -688,10 +661,8 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
- 	if (lmb->flags & DRCONF_MEM_ASSIGNED)
- 		return -EINVAL;
- 
--	rc = dlpar_add_device_tree_lmb(lmb);
-+	rc = update_lmb_associativity_index(lmb);
- 	if (rc) {
--		pr_err("Couldn't update device tree for drc index %x\n",
--		       lmb->drc_index);
- 		dlpar_release_drc(lmb->drc_index);
- 		return rc;
- 	}
-@@ -704,14 +675,14 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
- 	/* Add the memory */
- 	rc = add_memory(nid, lmb->base_addr, block_sz);
- 	if (rc) {
--		dlpar_remove_device_tree_lmb(lmb);
-+		invalidate_lmb_associativity_index(lmb);
- 		return rc;
- 	}
- 
- 	rc = dlpar_online_lmb(lmb);
- 	if (rc) {
- 		remove_memory(nid, lmb->base_addr, block_sz);
--		dlpar_remove_device_tree_lmb(lmb);
-+		invalidate_lmb_associativity_index(lmb);
- 	} else {
- 		lmb->flags |= DRCONF_MEM_ASSIGNED;
- 	}
-@@ -958,6 +929,12 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- 		break;
- 	}
- 
-+	if (!rc) {
-+		rtas_hp_event = true;
-+		rc = drmem_update_dt();
-+		rtas_hp_event = false;
-+	}
-+
- 	unlock_device_hotplug();
- 	return rc;
- }
+Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
