@@ -1,24 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40SGj124XYzF22T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 23:21:40 +1000 (AEST)
-Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
- selected
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
- linux-kbuild@vger.kernel.org, Nicolas Pitre <nico@fluxnic.net>
-References: <20180420073414.23169-1-npiggin@gmail.com>
- <20180420073414.23169-5-npiggin@gmail.com>
- <5b495777-311b-ae81-6e07-6ae68f6da2b9@c-s.fr>
- <20180420203658.73100c8b@roar.ozlabs.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <a8dc55d9-e732-efab-6a9a-239a53aff96a@c-s.fr>
-Date: Fri, 20 Apr 2018 15:21:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40SGrz2RpTzDrq2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 23:28:35 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.vnet.ibm.com, mikey@neuling.org,
+ ruscur@russell.cc
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.17-3 tag
+Date: Fri, 20 Apr 2018 23:28:28 +1000
+Message-ID: <87k1t2j9c3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180420203658.73100c8b@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,103 +23,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
+Hi Linus,
 
-Le 20/04/2018 à 12:36, Nicholas Piggin a écrit :
-> On Fri, 20 Apr 2018 12:01:34 +0200
-> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
-> 
->> Le 20/04/2018 à 09:34, Nicholas Piggin a écrit :
->>> This requires further changes to linker script to KEEP some tables
->>> and wildcard compiler generated sections into the right place. This
->>> includes pp32 modifications from Christophe Leroy.
->>>
->>> When compiling powernv_defconfig with this option:
->>>
->>> text       data      bss       dec        filename
->>> 11827621   4810490   1341080   17979191   vmlinux
->>> 11752437   4598858   1338776   17690071   vmlinux.dcde
->>>
->>> Resulting kernel is almost 400kB smaller (and still boots).
->>>
->>> [ppc32 numbers here]
+Please pull some more powerpc fixes for 4.17:
 
-Here a few results, obtained with readelf -l vmlinux | grep LOAD
+The following changes since commit 60cc43fc888428bb2f18f08997432d426a243338:
 
-First val is filesz, second is memsz, for each config you get the size 
-before and after activation of LD_DCDE, and the difference between the two.
+  Linux 4.17-rc1 (2018-04-15 18:24:20 -0700)
 
-mpc83xx_defconfig:
-Before: 0x5ecfe0 0x60b69c
-After:  0x5d2fe0 0x5f04a4
-Diff:   0x01a000 0x01b4c8
+are available in the git repository at:
 
-mpc83xx_defconfig without CONFIG_MODULE:
-Before: 0x5c1040 0x5e0614
-After:  0x55f040 0x57d314
-Diff:   0x062000 0x063300
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.17-3
 
-mpc885_ads_defconfig:
-Before: 0x36eda4 0x38da04
-After:  0x316da4 0x333764
-Diff:   0x058000 0x05a2a0
+for you to fetch changes up to 56376c5864f8ff4ba7c78a80ae857eee3b1d23d8:
 
-Custom mpc885 config:
-Before: 0x719948 0x78bc34
-After:  0x6b9948 0x72a99c
-Diff:   0x060000 0x061298
+  powerpc/kvm: Fix lockups when running KVM guests on Power8 (2018-04-19 16:22:20 +1000)
 
-Custom mpc8321 config:
-Before: 0x70f714 0x7d766c
-After:  0x6af714 0x7763ec
-Diff:   0x060000 0x061280
+- ----------------------------------------------------------------
+powerpc fixes for 4.17 #3
 
+Fix an off-by-one bug in our alternative asm patching which leads to incorrectly
+patched code. This bug lay dormant for nearly 10 years but we finally hit it
+due to a recent change.
 
+Fix lockups when running KVM guests on Power8 due to a missing check when a
+thread that's running KVM comes out of idle.
 
->>>
->>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->>> ---
->>>    arch/powerpc/Kconfig              |  1 +
->>>    arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
->>>    2 files changed, 12 insertions(+), 11 deletions(-)
->>>
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index c32a181a7cbb..ee6dbe2efc8b 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -205,6 +205,7 @@ config PPC
->>>    	select HAVE_KPROBES
->>>    	select HAVE_KPROBES_ON_FTRACE
->>>    	select HAVE_KRETPROBES
->>> +	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
->>>    	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
->>>    	select HAVE_MEMBLOCK
->>>    	select HAVE_MEMBLOCK_NODE_MAP
->>> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
->>> index c8af90ff49f0..89381dc959ce 100644
->>> --- a/arch/powerpc/kernel/vmlinux.lds.S
->>> +++ b/arch/powerpc/kernel/vmlinux.lds.S
->>> @@ -89,7 +89,7 @@ SECTIONS
->>>    	 */
->>>    	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
->>>    #ifdef CONFIG_LD_HEAD_STUB_CATCH
->>> -		*(.linker_stub_catch);
->>> +		KEEP(*(.linker_stub_catch));
->>>    		. = . ;
->>>    #endif
->>>    
->>> @@ -98,7 +98,7 @@ SECTIONS
->>>    		ALIGN_FUNCTION();
->>>    #endif
->>>    		/* careful! __ftr_alt_* sections need to be close to .text */
->>> -		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
->>> +		*(.text.hot .text .text.[0-9a-zA-Z_]* .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
->>
->> Why not use TEXT_MAIN here instead of .text .text.[0-9a-zA-Z_]* ?
-> 
-> It's from my early patch before we added those in the generic linker
-> script. Yes your version looks nicer.
-> 
-> Thanks,
-> Nick
-> 
+Fix an out-of-spec behaviour in the XIVE code (P9 interrupt controller).
+
+Fix EEH handling of bridge MMIO windows.
+
+Prevent crashes in our RFI fallback flush handler if firmware didn't tell us the
+size of the L1 cache (only seen on simulators).
+
+Thanks to:
+  Benjamin Herrenschmidt, Madhavan Srinivasan, Michael Neuling.
+
+- ----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc/xive: Fix trying to "push" an already active pool VP
+
+Madhavan Srinivasan (1):
+      powerpc/64s: Default l1d_size to 64K in RFI fallback flush
+
+Michael Ellerman (2):
+      powerpc/lib: Fix off-by-one in alternate feature patching
+      powerpc/kvm: Fix lockups when running KVM guests on Power8
+
+Michael Neuling (1):
+      powerpc/eeh: Fix enabling bridge MMIO windows
+
+ arch/powerpc/kernel/eeh_pe.c      |  3 ++-
+ arch/powerpc/kernel/idle_book3s.S |  4 ++--
+ arch/powerpc/kernel/setup_64.c    | 11 +++++++++++
+ arch/powerpc/lib/feature-fixups.c |  2 +-
+ arch/powerpc/sysdev/xive/native.c |  4 ++++
+ 5 files changed, 20 insertions(+), 4 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJa2er8AAoJEFHr6jzI4aWAnc4P/2uaDmQ4NN9ETvsn11Ii6y9B
+umuQ/TnFmS8piP9LrLyh5A0DNEheEizLf44qJDaXfgnJtV2+ZgKeW8kyzpdOYH1F
+B6+Rq25gZ2ItBrKv8vrcfGyBFplVfSfg3KO/NC2tBoB/COCKA2lj6lxo1CvZ8BLq
+Ov05mm2grmQ20XJgFQjAiK+GT6JKsra5Vc8WcpX3xj4DOP9yXvJpm5Ui+1RpqK0U
+ZuKHocSKUQdIvQBuPcrqU6IVHN51lQLtvb//s3TUpMRS7sb7/y4VHBou93FsT8LZ
+rjNKM4104u79ZN7SERRF17bqdY0fgmqHeAB1U8lxP8QvYo14z5ix99d9KjunDHt2
+IRI25AhgHo4dfdcFr7sl3fg+85/Njwj4T7a2KPGw0FW4dIwPklodYzxnlVpbBQMB
+92J8fKC6G0UsVza2KLySuGY1AO1FvAXw+84JfeqpBsShpH7op2QSa7GjxgF7YeXz
+w0guFuUKBOlmiyuuTaq7HPGNVZBqmyAIpTaTKmv/L7pnaOY/fL14y4zPyKDav9VN
+E6wLxqh0b1kOMaOzZelps8Isrd/5LCx9wmv6TnZCjGazoy6GtV0NTt4Nl8l0wjJW
+uvDm8h6MOnwLG282OyKBJee79vBxKUey3cl41Y5DCkqJDmymnqTCCn/lF24zJ3nf
+qpYttmW/n2nfdR/VSEZM
+=UKi3
+-----END PGP SIGNATURE-----
