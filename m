@@ -1,9 +1,9 @@
 Return-Path: <ebiederm@xmission.com>
-Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
+Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RyWH1jK3zDrJw
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 11:12:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RyWH1p24zF1sY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 11:12:11 +1000 (AEST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
@@ -12,11 +12,12 @@ Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
  Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org
-Date: Thu, 19 Apr 2018 20:04:08 -0500
-Message-Id: <20180420010408.24438-17-ebiederm@xmission.com>
+Date: Thu, 19 Apr 2018 20:04:04 -0500
+Message-Id: <20180420010408.24438-13-ebiederm@xmission.com>
 In-Reply-To: <878t9ilmhv.fsf@xmission.com>
 References: <878t9ilmhv.fsf@xmission.com>
-Subject: [REVIEW][PATCH 17/17] signal/powerpc: Replace TRAP_FIXME with TRAP_UNK
+Subject: [REVIEW][PATCH 13/17] signal/powerpc: Replace FPE_FIXME with
+ FPE_FLTUNK
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using an si_code of 0 that aliases with SI_USER is clearly the wrong
-thing todo, and causes problems in interesting ways.
+Using an si_code of 0 that aliases with SI_USER is clearly the
+wrong thing todo, and causes problems in interesting ways.
 
-For use in unknown_exception the recently defined TRAP_UNK
-semantically is a perfect fit.  For use in RunModeException it looks
-like something more specific than TRAP_UNK could be used.  No one has
-bothered to find a better fit than the broken si_code of 0 in all of
-these years and I don't see an obvious better fit so TRAP_UNK is
-switching RunModeException to return TRAP_UNK is clearly an
-improvement.
-
-Recent history suggests no actually cares about crazy corner
-cases of the kernel behavior like this so I don't expect any
-regressions from changing this.  However if something does
-happen this change is easy to revert.
-
-Though I wonder if SIGKILL might not be a better fit.
+The newly defined FPE_FLTUNK semantically appears to fit the
+bill so use it instead.
 
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Kumar Gala <kumar.gala@freescale.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc:  linuxppc-dev@lists.ozlabs.org
 Fixes: 9bad068c24d7 ("[PATCH] ppc32: support for e500 and 85xx")
 Fixes: 0ed70f6105ef ("PPC32: Provide proper siginfo information on various exceptions.")
 History Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/powerpc/include/uapi/asm/siginfo.h | 8 --------
- arch/powerpc/kernel/traps.c             | 4 ++--
- 2 files changed, 2 insertions(+), 10 deletions(-)
+ arch/powerpc/include/uapi/asm/siginfo.h | 7 -------
+ arch/powerpc/kernel/traps.c             | 6 +++---
+ 2 files changed, 3 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/include/uapi/asm/siginfo.h b/arch/powerpc/include/uapi/asm/siginfo.h
-index 0437afc9ef3c..1d51d9b88221 100644
+index 9f142451a01f..0437afc9ef3c 100644
 --- a/arch/powerpc/include/uapi/asm/siginfo.h
 +++ b/arch/powerpc/include/uapi/asm/siginfo.h
-@@ -15,12 +15,4 @@
+@@ -15,13 +15,6 @@
  
  #include <asm-generic/siginfo.h>
  
 -/*
-- * SIGTRAP si_codes
+- * SIGFPE si_codes
 - */
 -#ifdef __KERNEL__
--#define TRAP_FIXME	0	/* Broken dup of SI_USER */
+-#define FPE_FIXME	0	/* Broken dup of SI_USER */
 -#endif /* __KERNEL__ */
 -
--
- #endif	/* _ASM_POWERPC_SIGINFO_H */
+ /*
+  * SIGTRAP si_codes
+  */
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index fdf9400beec8..0e17dcb48720 100644
+index 087855caf6a9..fdf9400beec8 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -969,7 +969,7 @@ void unknown_exception(struct pt_regs *regs)
- 	printk("Bad trap at PC: %lx, SR: %lx, vector=%lx\n",
- 	       regs->nip, regs->msr, regs->trap);
+@@ -1031,7 +1031,7 @@ static void emulate_single_step(struct pt_regs *regs)
  
--	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
-+	_exception(SIGTRAP, regs, TRAP_UNK, 0);
- 
- 	exception_exit(prev_state);
- }
-@@ -991,7 +991,7 @@ void instruction_breakpoint_exception(struct pt_regs *regs)
- 
- void RunModeException(struct pt_regs *regs)
+ static inline int __parse_fpscr(unsigned long fpscr)
  {
--	_exception(SIGTRAP, regs, TRAP_FIXME, 0);
-+	_exception(SIGTRAP, regs, TRAP_UNK, 0);
- }
+-	int ret = FPE_FIXME;
++	int ret = FPE_FLTUNK;
  
- void single_step_exception(struct pt_regs *regs)
+ 	/* Invalid operation */
+ 	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
+@@ -1972,7 +1972,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	extern int do_spe_mathemu(struct pt_regs *regs);
+ 	unsigned long spefscr;
+ 	int fpexc_mode;
+-	int code = FPE_FIXME;
++	int code = FPE_FLTUNK;
+ 	int err;
+ 
+ 	flush_spe_to_thread(current);
+@@ -2041,7 +2041,7 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
+ 		printk(KERN_ERR "unrecognized spe instruction "
+ 		       "in %s at %lx\n", current->comm, regs->nip);
+ 	} else {
+-		_exception(SIGFPE, regs, FPE_FIXME, regs->nip);
++		_exception(SIGFPE, regs, FPE_FLTUNK, regs->nip);
+ 		return;
+ 	}
+ }
 -- 
 2.14.1
