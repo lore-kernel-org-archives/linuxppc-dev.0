@@ -1,23 +1,20 @@
 Return-Path: <ebiederm@xmission.com>
-Received: from out03.mta.xmission.com (out03.mta.xmission.com [166.70.13.233])
+Received: from out01.mta.xmission.com (out01.mta.xmission.com [166.70.13.231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128
  bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40RyWH1p24zF1sY
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40RyWH2HX3zF1x2
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 11:12:11 +1000 (AEST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
- "Eric W. Biederman" <ebiederm@xmission.com>,
- Paul Mackerras <paulus@samba.org>, Kumar Gala <kumar.gala@freescale.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Eric W. Biederman" <ebiederm@xmission.com>, linux-alpha@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Thu, 19 Apr 2018 20:04:04 -0500
-Message-Id: <20180420010408.24438-13-ebiederm@xmission.com>
+Date: Thu, 19 Apr 2018 20:04:06 -0500
+Message-Id: <20180420010408.24438-15-ebiederm@xmission.com>
 In-Reply-To: <878t9ilmhv.fsf@xmission.com>
 References: <878t9ilmhv.fsf@xmission.com>
-Subject: [REVIEW][PATCH 13/17] signal/powerpc: Replace FPE_FIXME with
- FPE_FLTUNK
+Subject: [REVIEW][PATCH 15/17] signal: Add TRAP_UNK si_code for undiagnosted
+ trap exceptions
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,74 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using an si_code of 0 that aliases with SI_USER is clearly the
-wrong thing todo, and causes problems in interesting ways.
+Both powerpc and alpha have cases where they wronly set si_code to 0
+in combination with SIGTRAP and don't mean SI_USER.
 
-The newly defined FPE_FLTUNK semantically appears to fit the
-bill so use it instead.
+About half the time this is because the architecture can not report
+accurately what kind of trap exception triggered the trap exception.
+The other half the time it looks like no one has bothered to
+figure out an appropriate si_code.
 
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Kumar Gala <kumar.gala@freescale.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc:  linuxppc-dev@lists.ozlabs.org
-Fixes: 9bad068c24d7 ("[PATCH] ppc32: support for e500 and 85xx")
-Fixes: 0ed70f6105ef ("PPC32: Provide proper siginfo information on various exceptions.")
-History Tree: https://git.kernel.org/pub/scm/linux/kernel/git/tglx/history.git
+For the cases where the architecture does not have enough information
+or is too lazy to figure out exactly what kind of trap exception
+it is define TRAP_UNK.
+
+Cc: linux-api@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-alpha@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
- arch/powerpc/include/uapi/asm/siginfo.h | 7 -------
- arch/powerpc/kernel/traps.c             | 6 +++---
- 2 files changed, 3 insertions(+), 10 deletions(-)
+ arch/x86/kernel/signal_compat.c    | 2 +-
+ include/uapi/asm-generic/siginfo.h | 3 ++-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/uapi/asm/siginfo.h b/arch/powerpc/include/uapi/asm/siginfo.h
-index 9f142451a01f..0437afc9ef3c 100644
---- a/arch/powerpc/include/uapi/asm/siginfo.h
-+++ b/arch/powerpc/include/uapi/asm/siginfo.h
-@@ -15,13 +15,6 @@
+diff --git a/arch/x86/kernel/signal_compat.c b/arch/x86/kernel/signal_compat.c
+index 14c057f29979..9ccbf0576cd0 100644
+--- a/arch/x86/kernel/signal_compat.c
++++ b/arch/x86/kernel/signal_compat.c
+@@ -29,7 +29,7 @@ static inline void signal_compat_build_tests(void)
+ 	BUILD_BUG_ON(NSIGFPE  != 15);
+ 	BUILD_BUG_ON(NSIGSEGV != 7);
+ 	BUILD_BUG_ON(NSIGBUS  != 5);
+-	BUILD_BUG_ON(NSIGTRAP != 4);
++	BUILD_BUG_ON(NSIGTRAP != 5);
+ 	BUILD_BUG_ON(NSIGCHLD != 6);
+ 	BUILD_BUG_ON(NSIGSYS  != 1);
  
- #include <asm-generic/siginfo.h>
+diff --git a/include/uapi/asm-generic/siginfo.h b/include/uapi/asm-generic/siginfo.h
+index 558b902f18d4..80e2a7227205 100644
+--- a/include/uapi/asm-generic/siginfo.h
++++ b/include/uapi/asm-generic/siginfo.h
+@@ -249,7 +249,8 @@ typedef struct siginfo {
+ #define TRAP_TRACE	2	/* process trace trap */
+ #define TRAP_BRANCH     3	/* process taken branch trap */
+ #define TRAP_HWBKPT     4	/* hardware breakpoint/watchpoint */
+-#define NSIGTRAP	4
++#define TRAP_UNK	5	/* undiagnosed trap */
++#define NSIGTRAP	5
  
--/*
-- * SIGFPE si_codes
-- */
--#ifdef __KERNEL__
--#define FPE_FIXME	0	/* Broken dup of SI_USER */
--#endif /* __KERNEL__ */
--
  /*
-  * SIGTRAP si_codes
-  */
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 087855caf6a9..fdf9400beec8 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1031,7 +1031,7 @@ static void emulate_single_step(struct pt_regs *regs)
- 
- static inline int __parse_fpscr(unsigned long fpscr)
- {
--	int ret = FPE_FIXME;
-+	int ret = FPE_FLTUNK;
- 
- 	/* Invalid operation */
- 	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
-@@ -1972,7 +1972,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
- 	extern int do_spe_mathemu(struct pt_regs *regs);
- 	unsigned long spefscr;
- 	int fpexc_mode;
--	int code = FPE_FIXME;
-+	int code = FPE_FLTUNK;
- 	int err;
- 
- 	flush_spe_to_thread(current);
-@@ -2041,7 +2041,7 @@ void SPEFloatingPointRoundException(struct pt_regs *regs)
- 		printk(KERN_ERR "unrecognized spe instruction "
- 		       "in %s at %lx\n", current->comm, regs->nip);
- 	} else {
--		_exception(SIGFPE, regs, FPE_FIXME, regs->nip);
-+		_exception(SIGFPE, regs, FPE_FLTUNK, regs->nip);
- 		return;
- 	}
- }
+  * There is an additional set of SIGTRAP si_codes used by ptrace
 -- 
 2.14.1
