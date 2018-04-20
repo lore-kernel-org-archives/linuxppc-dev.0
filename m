@@ -1,23 +1,43 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40S70m4V3czF22N
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 17:34:48 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id q9so3890448pff.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 00:34:48 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
- linux-kbuild@vger.kernel.org, Christophe Leroy <christophe.leroy@c-s.fr>,
- Nicolas Pitre <nico@fluxnic.net>
-Subject: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
- selected
-Date: Fri, 20 Apr 2018 17:34:14 +1000
-Message-Id: <20180420073414.23169-5-npiggin@gmail.com>
-In-Reply-To: <20180420073414.23169-1-npiggin@gmail.com>
-References: <20180420073414.23169-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40S7RN62WWzF25M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 17:54:21 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3K7nNQi040419
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 03:54:18 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hfb98am3h-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 03:54:18 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Fri, 20 Apr 2018 08:54:16 +0100
+Date: Fri, 20 Apr 2018 09:54:07 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: y2038@lists.linaro.org, linux-kernel@vger.kernel.org,
+ linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
+ libc-alpha@sourceware.org, tglx@linutronix.de, deepa.kernel@gmail.com,
+ viro@zeniv.linux.org.uk, ebiederm@xmission.com,
+ albert.aribaud@3adev.fr, linux-s390@vger.kernel.org,
+ schwidefsky@de.ibm.com, x86@kernel.org, catalin.marinas@arm.com,
+ will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
+ ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH v3 04/17] y2038: s390: Remove unneeded ipc uapi header
+ files
+References: <20180419143737.606138-1-arnd@arndb.de>
+ <20180419143737.606138-5-arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180419143737.606138-5-arnd@arndb.de>
+Message-Id: <20180420075407.GA7119@osiris>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,130 +47,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This requires further changes to linker script to KEEP some tables
-and wildcard compiler generated sections into the right place. This
-includes pp32 modifications from Christophe Leroy.
+On Thu, Apr 19, 2018 at 04:37:24PM +0200, Arnd Bergmann wrote:
+> The s390 msgbuf/sembuf/shmbuf header files are all identical to the
+> version from asm-generic.
+> 
+> This patch removes the files and replaces them with 'generic-y'
+> statements, to avoid having to modify each copy when we extend sysvipc
+> to deal with 64-bit time_t in 32-bit user space.
+> 
+> Note that unlike alpha and ia64, the ipcbuf.h header file is slightly
+> different here, so I'm leaving the private copy.
+> 
+> To deal with 32-bit compat tasks, we also have to adapt the definitions
+> of compat_{shm,sem,msg}id_ds to match the changes to the respective
+> asm-generic files.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/s390/include/asm/compat.h      | 32 ++++++++++++------------
+>  arch/s390/include/uapi/asm/Kbuild   |  3 +++
+>  arch/s390/include/uapi/asm/msgbuf.h | 38 ----------------------------
+>  arch/s390/include/uapi/asm/sembuf.h | 30 -----------------------
+>  arch/s390/include/uapi/asm/shmbuf.h | 49 -------------------------------------
+>  5 files changed, 19 insertions(+), 133 deletions(-)
+>  delete mode 100644 arch/s390/include/uapi/asm/msgbuf.h
+>  delete mode 100644 arch/s390/include/uapi/asm/sembuf.h
+>  delete mode 100644 arch/s390/include/uapi/asm/shmbuf.h
 
-When compiling powernv_defconfig with this option:
+FWIW,
 
-text       data      bss       dec        filename
-11827621   4810490   1341080   17979191   vmlinux
-11752437   4598858   1338776   17690071   vmlinux.dcde
-
-Resulting kernel is almost 400kB smaller (and still boots).
-
-[ppc32 numbers here]
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Kconfig              |  1 +
- arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
- 2 files changed, 12 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index c32a181a7cbb..ee6dbe2efc8b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -205,6 +205,7 @@ config PPC
- 	select HAVE_KPROBES
- 	select HAVE_KPROBES_ON_FTRACE
- 	select HAVE_KRETPROBES
-+	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
- 	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
- 	select HAVE_MEMBLOCK
- 	select HAVE_MEMBLOCK_NODE_MAP
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index c8af90ff49f0..89381dc959ce 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -89,7 +89,7 @@ SECTIONS
- 	 */
- 	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
- #ifdef CONFIG_LD_HEAD_STUB_CATCH
--		*(.linker_stub_catch);
-+		KEEP(*(.linker_stub_catch));
- 		. = . ;
- #endif
- 
-@@ -98,7 +98,7 @@ SECTIONS
- 		ALIGN_FUNCTION();
- #endif
- 		/* careful! __ftr_alt_* sections need to be close to .text */
--		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
-+		*(.text.hot .text .text.[0-9a-zA-Z_]* .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
- 		SCHED_TEXT
- 		CPUIDLE_TEXT
- 		LOCK_TEXT
-@@ -170,10 +170,10 @@ SECTIONS
- 	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
- 		INIT_DATA
- 		__vtop_table_begin = .;
--		*(.vtop_fixup);
-+		KEEP(*(.vtop_fixup));
- 		__vtop_table_end = .;
- 		__ptov_table_begin = .;
--		*(.ptov_fixup);
-+		KEEP(*(.ptov_fixup));
- 		__ptov_table_end = .;
- 	}
- 
-@@ -194,26 +194,26 @@ SECTIONS
- 	. = ALIGN(8);
- 	__ftr_fixup : AT(ADDR(__ftr_fixup) - LOAD_OFFSET) {
- 		__start___ftr_fixup = .;
--		*(__ftr_fixup)
-+		KEEP(*(__ftr_fixup))
- 		__stop___ftr_fixup = .;
- 	}
- 	. = ALIGN(8);
- 	__mmu_ftr_fixup : AT(ADDR(__mmu_ftr_fixup) - LOAD_OFFSET) {
- 		__start___mmu_ftr_fixup = .;
--		*(__mmu_ftr_fixup)
-+		KEEP(*(__mmu_ftr_fixup))
- 		__stop___mmu_ftr_fixup = .;
- 	}
- 	. = ALIGN(8);
- 	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
- 		__start___lwsync_fixup = .;
--		*(__lwsync_fixup)
-+		KEEP(*(__lwsync_fixup))
- 		__stop___lwsync_fixup = .;
- 	}
- #ifdef CONFIG_PPC64
- 	. = ALIGN(8);
- 	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
- 		__start___fw_ftr_fixup = .;
--		*(__fw_ftr_fixup)
-+		KEEP(*(__fw_ftr_fixup))
- 		__stop___fw_ftr_fixup = .;
- 	}
- #endif
-@@ -226,7 +226,7 @@ SECTIONS
- 	. = ALIGN(8);
- 	.machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
- 		__machine_desc_start = . ;
--		*(.machine.desc)
-+		KEEP(*(.machine.desc))
- 		__machine_desc_end = . ;
- 	}
- #ifdef CONFIG_RELOCATABLE
-@@ -274,7 +274,7 @@ SECTIONS
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
- 		DATA_DATA
- 		*(.data.rel*)
--		*(.sdata)
-+		*(SDATA_MAIN)
- 		*(.sdata2)
- 		*(.got.plt) *(.got)
- 		*(.plt)
-@@ -289,7 +289,7 @@ SECTIONS
- 
- 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
- 		__start_opd = .;
--		*(.opd)
-+		KEEP(*(.opd))
- 		__end_opd = .;
- 	}
- 
--- 
-2.17.0
+Acked-by: Heiko Carstens <heiko.carstens@de.ibm.com>
