@@ -1,19 +1,45 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail01.adl6.internode.on.net (ipmail01.adl6.internode.on.net
- [150.101.137.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 40S23g4PKmzF24w
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 13:51:59 +1000 (AEST)
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, mhairgrove@nvidia.com, arbab@linux.ibm.com
-Subject: Re: [PATCH 1/2] powernv/npu: Do a PID GPU TLB flush when invalidating
- a large address range
-Date: Fri, 20 Apr 2018 13:51:58 +1000
-Message-ID: <3716532.LRmDtzLHtY@new-mexico>
-In-Reply-To: <20180417091129.23069-1-alistair@popple.id.au>
-References: <20180417091129.23069-1-alistair@popple.id.au>
+Return-Path: <srs0=h10r=hj=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40S3g94t1czF214
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 15:04:21 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40S3g94PQCz8tKg
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 15:04:21 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40S3g86v6hz9s5H
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2018 15:04:20 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3K546g7112090
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2018 01:04:18 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hf8g2aack-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2018 01:04:17 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 20 Apr 2018 06:04:16 +0100
+Subject: [PATCH v4 0/7] powerpc/fadump: Improvements and fixes for
+ firmware-assisted dump.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ananth Narayan <ananth@in.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 20 Apr 2018 10:34:10 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <152420062000.31037.770773018944092449.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +49,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry, forgot to include:
+One of the primary issues with Firmware Assisted Dump (fadump) on Power
+is that it needs a large amount of memory to be reserved. This reserved
+memory is used for saving the contents of old crashed kernel's memory before
+fadump capture kernel uses old kernel's memory area to boot. However, This
+reserved memory area stays unused until system crash and isn't available
+for production kernel to use.
 
-Fixes: 1ab66d1fbada ("powerpc/powernv: Introduce address translation services for Nvlink2")
+Instead of setting aside a significant chunk of memory that nobody can use,
+take advantage Linux kernel's Contiguous Memory Allocator (CMA) feature,
+to reserve a significant chunk of memory that the kernel is prevented from
+using , but applications are free to use it.
 
-Thanks
+Patch 1 moves the metadata region to the start of the reserved area for easy
+handling/detection of metadata region in second kernel.
+Patch 4 implements the usage of CMA region to allow production kernel to
+use that memory for applications usage, making fadump reservationless.
+Patch 3, 6 and 7 fixes various fadump issues and bugs.
 
-On Tuesday, 17 April 2018 7:11:28 PM AEST Alistair Popple wrote:
-> The NPU has a limited number of address translation shootdown (ATSD)
-> registers and the GPU has limited bandwidth to process ATSDs. This can
-> result in contention of ATSD registers leading to soft lockups on some
-> threads, particularly when invalidating a large address range in
-> pnv_npu2_mn_invalidate_range().
-> 
-> At some threshold it becomes more efficient to flush the entire GPU TLB for
-> the given MM context (PID) than individually flushing each address in the
-> range. This patch will result in ranges greater than 2MB being converted
-> from 32+ ATSDs into a single ATSD which will flush the TLB for the given
-> PID on each GPU.
-> 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
->  arch/powerpc/platforms/powernv/npu-dma.c | 23 +++++++++++++++++++----
->  1 file changed, 19 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/npu-dma.c b/arch/powerpc/platforms/powernv/npu-dma.c
-> index 94801d8e7894..dc34662e9df9 100644
-> --- a/arch/powerpc/platforms/powernv/npu-dma.c
-> +++ b/arch/powerpc/platforms/powernv/npu-dma.c
-> @@ -40,6 +40,13 @@
->  DEFINE_SPINLOCK(npu_context_lock);
->  
->  /*
-> + * When an address shootdown range exceeds this threshold we invalidate the
-> + * entire TLB on the GPU for the given PID rather than each specific address in
-> + * the range.
-> + */
-> +#define ATSD_THRESHOLD (2*1024*1024)
-> +
-> +/*
->   * Other types of TCE cache invalidation are not functional in the
->   * hardware.
->   */
-> @@ -675,11 +682,19 @@ static void pnv_npu2_mn_invalidate_range(struct mmu_notifier *mn,
->  	struct npu_context *npu_context = mn_to_npu_context(mn);
->  	unsigned long address;
->  
-> -	for (address = start; address < end; address += PAGE_SIZE)
-> -		mmio_invalidate(npu_context, 1, address, false);
-> +	if (end - start > ATSD_THRESHOLD) {
-> +		/*
-> +		 * Just invalidate the entire PID if the address range is too
-> +		 * large.
-> +		 */
-> +		mmio_invalidate(npu_context, 0, 0, true);
-> +	} else {
-> +		for (address = start; address < end; address += PAGE_SIZE)
-> +			mmio_invalidate(npu_context, 1, address, false);
->  
-> -	/* Do the flush only on the final addess == end */
-> -	mmio_invalidate(npu_context, 1, address, true);
-> +		/* Do the flush only on the final addess == end */
-> +		mmio_invalidate(npu_context, 1, address, true);
-> +	}
->  }
->  
->  static const struct mmu_notifier_ops nv_nmmu_notifier_ops = {
-> 
+Changes in V4:
+- patch 1: Make fadump compatible irrespective of kernel versions.
+- patch 4: moved out of the series and been posted seperatly at
+  http://patchwork.ozlabs.org/patch/896716/
+- Documentation update about CMA reservation.
+
+Changes in V3:
+- patch 1 & 2: move metadata region and documentation update.
+- patch 7: Un-register the faudmp on kexec path
+
+---
+
+Mahesh Salgaonkar (7):
+      powerpc/fadump: Move the metadata region to start of the reserved area.
+      powerpc/fadump: Update documentation to reflect the metadata region movement.
+      powerpc/fadump: un-register fadump on kexec path.
+      powerpc/fadump: Reservationless firmware assisted dump
+      powerpc/fadump: Update documentation to reflect CMA reservation.
+      powerpc/fadump: throw proper error message on fadump registration failure.
+      powerpc/fadump: Do not allow hot-remove memory from fadump reserved area.
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |   43 ++-
+ arch/powerpc/include/asm/fadump.h                |   11 +
+ arch/powerpc/kernel/fadump.c                     |  343 +++++++++++++++++++---
+ arch/powerpc/platforms/pseries/hotplug-memory.c  |    7 
+ 4 files changed, 343 insertions(+), 61 deletions(-)
+
+--
+Signature
