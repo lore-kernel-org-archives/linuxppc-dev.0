@@ -1,38 +1,41 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40S5c0755szF24P
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 16:31:44 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40S6nw54M4zF1x2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 17:25:24 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3K6VXOh130224
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 02:31:42 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hf84k6h6s-1
+ w3K7OEKZ067967
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 03:25:22 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hfarwtueq-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 02:31:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 03:25:21 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 20 Apr 2018 07:31:39 +0100
-Date: Fri, 20 Apr 2018 12:01:32 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 06/10] powerpc64/ftrace: Disable ftrace during kvm
- entry/exit
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
- Paul Mackerras <paulus@ozlabs.org>, Satheesh Rajendran
- <sathnaga@linux.vnet.ibm.com>
-References: <cover.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
- <62b77045b205b008946b793fe31effb155b335be.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
- <20180419112216.173f8fd6@gandalf.local.home>
-In-Reply-To: <20180419112216.173f8fd6@gandalf.local.home>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 20 Apr 2018 08:25:20 +0100
+Subject: Re: [PATCH v2 6/7] ocxl: Add an IOCTL so userspace knows what CPU
+ features are available
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+References: <20180417020950.21446-1-alastair@au1.ibm.com>
+ <20180418010810.30937-1-alastair@au1.ibm.com>
+ <20180418010810.30937-7-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Fri, 20 Apr 2018 17:25:13 +1000
 MIME-Version: 1.0
+In-Reply-To: <20180418010810.30937-7-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1524205479.jsi67f85uy.naveen@linux.ibm.com>
+Message-Id: <c846eecc-6044-c50a-35e9-a79d803a509c@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Steven Rostedt wrote:
-> On Thu, 19 Apr 2018 12:34:05 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
->=20
->> 2. If we are a secondary thread in Power8, then we would be in nap due
->> to SMT being disabled. We are woken up by an IPI to enter the guest. In
->> this scenario, we enter the guest through kvm_start_guest(). We disable
->> ftrace at this point. In this scenario, ftrace would only get re-enabled
->> on the secondary thread when SMT is re-enabled (via start_secondary()).
->>=20
-> 	trace_hardirqs_off();
->> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/=
-book3s_hv_rmhandlers.S
->> index bd63fa8a08b5..2c3cbe0067b2 100644
->> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->> @@ -342,6 +342,9 @@ kvm_start_guest:
->> =20
->>  	ld	r2,PACATOC(r13)
->> =20
->=20
-> You may want to add a comment here about where ftrace gets re-enabled.
+On 18/04/18 11:08, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> In order for a userspace AFU driver to call the Power9 specific
+> OCXL_IOCTL_ENABLE_P9_WAIT, it needs to verify that it can actually
+> make that call.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-Sure. That would be:
+Looks good to me
 
-/*
- * If this is the primary thread, ftrace will get re-enabled when we
- * go back to the hypervisor in kvmppc_run_core(). For secondary threads=20
- * on Power8, ftrace will get enabled when SMT is re-enabled through the=20
- * start_secondary() cpu bringup path.
- */
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-- Naveen
+> ---
+>   Documentation/accelerators/ocxl.rst |  1 -
+>   drivers/misc/ocxl/file.c            | 25 +++++++++++++++++++++++++
+>   include/uapi/misc/ocxl.h            |  4 ++++
+>   3 files changed, 29 insertions(+), 1 deletion(-)
+> 
+> diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
+> index ddcc58d01cfb..7904adcc07fd 100644
+> --- a/Documentation/accelerators/ocxl.rst
+> +++ b/Documentation/accelerators/ocxl.rst
+> @@ -157,7 +157,6 @@ OCXL_IOCTL_GET_METADATA:
+>     Obtains configuration information from the card, such at the size of
+>     MMIO areas, the AFU version, and the PASID for the current context.
+>   
+> -
 
-=
+This is stray
+
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
