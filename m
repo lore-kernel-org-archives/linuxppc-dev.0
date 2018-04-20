@@ -1,31 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40SGMG65PbzF24X
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 23:06:17 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>
-Cc: ebiederm@xmission.com, y2038 Mailman List <y2038@lists.linaro.org>,
- linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
- linux-arch@vger.kernel.org, libc-alpha@sourceware.org,
- Deepa Dinamani <deepa.kernel@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
- Albert ARIBAUD <albert.aribaud@3adev.fr>, linux-s390@vger.kernel.org,
- schwidefsky@de.ibm.com, Catalin Marinas <catalin.marinas@arm.com>,
- will.deacon@arm.com, linux-mips@linux-mips.org, jhogan@kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, Ben Hutchings <ben@decadent.org.uk>,
- Jeffrey Walton <noloader@gmail.com>, Daniel Schepler <dschepler@gmail.com>,
- "H . J . Lu" <hjl.tools@gmail.com>, Adam Borowski <kilobyte@angband.pl>,
- tg@mirbsd.de, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Arnd Bergmann <arnd@arndb.de>, stable@vger.kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: ipc: fix x32 version of shmid64_ds and msqid64_ds
-Date: Fri, 20 Apr 2018 15:03:29 +0200
-Message-Id: <20180420130346.3178914-1-arnd@arndb.de>
-In-Reply-To: <CAK8P3a3qAoR1afmTTK1CAp1L81dzwtBL+SKj=QMqD=dBr_8oRQ@mail.gmail.com>
-References: <CAK8P3a3qAoR1afmTTK1CAp1L81dzwtBL+SKj=QMqD=dBr_8oRQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40SGj124XYzF22T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Apr 2018 23:21:40 +1000 (AEST)
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arch@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, Nicolas Pitre <nico@fluxnic.net>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <5b495777-311b-ae81-6e07-6ae68f6da2b9@c-s.fr>
+ <20180420203658.73100c8b@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <a8dc55d9-e732-efab-6a9a-239a53aff96a@c-s.fr>
+Date: Fri, 20 Apr 2018 15:21:35 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180420203658.73100c8b@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,120 +28,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A bugfix broke the x32 shmid64_ds and msqid64_ds data structure layout
-(as seen from user space)  a few years ago: Originally, __BITS_PER_LONG
-was defined as 64 on x32, so we did not have padding after the 64-bit
-__kernel_time_t fields, After __BITS_PER_LONG got changed to 32,
-applications would observe extra padding.
 
-In other parts of the uapi headers we seem to have a mix of those
-expecting either 32 or 64 on x32 applications, so we can't easily revert
-the path that broke these two structures.
 
-Instead, this patch decouples x32 from the other architectures and moves
-it back into arch specific headers, partially reverting the even older
-commit 73a2d096fdf2 ("x86: remove all now-duplicate header files").
+Le 20/04/2018 à 12:36, Nicholas Piggin a écrit :
+> On Fri, 20 Apr 2018 12:01:34 +0200
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+> 
+>> Le 20/04/2018 à 09:34, Nicholas Piggin a écrit :
+>>> This requires further changes to linker script to KEEP some tables
+>>> and wildcard compiler generated sections into the right place. This
+>>> includes pp32 modifications from Christophe Leroy.
+>>>
+>>> When compiling powernv_defconfig with this option:
+>>>
+>>> text       data      bss       dec        filename
+>>> 11827621   4810490   1341080   17979191   vmlinux
+>>> 11752437   4598858   1338776   17690071   vmlinux.dcde
+>>>
+>>> Resulting kernel is almost 400kB smaller (and still boots).
+>>>
+>>> [ppc32 numbers here]
 
-It's not clear whether this ever made any difference, since at least
-glibc carries its own (correct) copy of both of these header files,
-so possibly no application has ever observed the definitions here.
+Here a few results, obtained with readelf -l vmlinux | grep LOAD
 
-There are other UAPI interfaces that depend on __BITS_PER_LONG and
-that might suffer from the same problem on x32, but I have not tried to
-analyse them in enough detail to be sure. If anyone still cares about x32,
-that may be a useful thing to do.
+First val is filesz, second is memsz, for each config you get the size 
+before and after activation of LD_DCDE, and the difference between the two.
 
-Fixes: f4b4aae18288 ("x86/headers/uapi: Fix __BITS_PER_LONG value for x32 builds")
-Cc: stable@vger.kernel.org
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-This came out of the y2038 ipc syscall series but can be applied
-and backported independently.
----
- arch/x86/include/uapi/asm/msgbuf.h | 29 +++++++++++++++++++++++++++
- arch/x86/include/uapi/asm/shmbuf.h | 40 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 69 insertions(+)
+mpc83xx_defconfig:
+Before: 0x5ecfe0 0x60b69c
+After:  0x5d2fe0 0x5f04a4
+Diff:   0x01a000 0x01b4c8
 
-diff --git a/arch/x86/include/uapi/asm/msgbuf.h b/arch/x86/include/uapi/asm/msgbuf.h
-index 809134c644a6..5f1604961e6d 100644
---- a/arch/x86/include/uapi/asm/msgbuf.h
-+++ b/arch/x86/include/uapi/asm/msgbuf.h
-@@ -1 +1,30 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+#ifndef __ASM_X64_MSGBUF_H
-+#define __ASM_X64_MSGBUF_H
-+
-+#if !defined(__x86_64__) || !defined(__ilp32__)
- #include <asm-generic/msgbuf.h>
-+#else
-+/*
-+ * The msqid64_ds structure for x86 architecture with x32 ABI.
-+ *
-+ * On x86-32 and x86-64 we can just use the generic definition, but
-+ * x32 uses the same binary layout as x86_64, which is differnet
-+ * from other 32-bit architectures.
-+ */
-+
-+struct msqid64_ds {
-+	struct ipc64_perm msg_perm;
-+	__kernel_time_t msg_stime;	/* last msgsnd time */
-+	__kernel_time_t msg_rtime;	/* last msgrcv time */
-+	__kernel_time_t msg_ctime;	/* last change time */
-+	__kernel_ulong_t msg_cbytes;	/* current number of bytes on queue */
-+	__kernel_ulong_t msg_qnum;	/* number of messages in queue */
-+	__kernel_ulong_t msg_qbytes;	/* max number of bytes on queue */
-+	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
-+	__kernel_pid_t msg_lrpid;	/* last receive pid */
-+	__kernel_ulong_t __unused4;
-+	__kernel_ulong_t __unused5;
-+};
-+
-+#endif /* __ASM_GENERIC_MSGBUF_H */
-diff --git a/arch/x86/include/uapi/asm/shmbuf.h b/arch/x86/include/uapi/asm/shmbuf.h
-index 83c05fc2de38..cdd7eec878fa 100644
---- a/arch/x86/include/uapi/asm/shmbuf.h
-+++ b/arch/x86/include/uapi/asm/shmbuf.h
-@@ -1 +1,41 @@
-+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-+#ifndef __ASM_X86_SHMBUF_H
-+#define __ASM_X86_SHMBUF_H
-+
-+#if !defined(__x86_64__) || !defined(__ilp32__)
- #include <asm-generic/shmbuf.h>
-+#else
-+/*
-+ * The shmid64_ds structure for x86 architecture with x32 ABI.
-+ *
-+ * On x86-32 and x86-64 we can just use the generic definition, but
-+ * x32 uses the same binary layout as x86_64, which is differnet
-+ * from other 32-bit architectures.
-+ */
-+
-+struct shmid64_ds {
-+	struct ipc64_perm	shm_perm;	/* operation perms */
-+	size_t			shm_segsz;	/* size of segment (bytes) */
-+	__kernel_time_t		shm_atime;	/* last attach time */
-+	__kernel_time_t		shm_dtime;	/* last detach time */
-+	__kernel_time_t		shm_ctime;	/* last change time */
-+	__kernel_pid_t		shm_cpid;	/* pid of creator */
-+	__kernel_pid_t		shm_lpid;	/* pid of last operator */
-+	__kernel_ulong_t	shm_nattch;	/* no. of current attaches */
-+	__kernel_ulong_t	__unused4;
-+	__kernel_ulong_t	__unused5;
-+};
-+
-+struct shminfo64 {
-+	__kernel_ulong_t	shmmax;
-+	__kernel_ulong_t	shmmin;
-+	__kernel_ulong_t	shmmni;
-+	__kernel_ulong_t	shmseg;
-+	__kernel_ulong_t	shmall;
-+	__kernel_ulong_t	__unused1;
-+	__kernel_ulong_t	__unused2;
-+	__kernel_ulong_t	__unused3;
-+	__kernel_ulong_t	__unused4;
-+};
-+
-+#endif /* __ASM_X86_SHMBUF_H */
--- 
-2.9.0
+mpc83xx_defconfig without CONFIG_MODULE:
+Before: 0x5c1040 0x5e0614
+After:  0x55f040 0x57d314
+Diff:   0x062000 0x063300
+
+mpc885_ads_defconfig:
+Before: 0x36eda4 0x38da04
+After:  0x316da4 0x333764
+Diff:   0x058000 0x05a2a0
+
+Custom mpc885 config:
+Before: 0x719948 0x78bc34
+After:  0x6b9948 0x72a99c
+Diff:   0x060000 0x061298
+
+Custom mpc8321 config:
+Before: 0x70f714 0x7d766c
+After:  0x6af714 0x7763ec
+Diff:   0x060000 0x061280
+
+
+
+>>>
+>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>> ---
+>>>    arch/powerpc/Kconfig              |  1 +
+>>>    arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
+>>>    2 files changed, 12 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index c32a181a7cbb..ee6dbe2efc8b 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -205,6 +205,7 @@ config PPC
+>>>    	select HAVE_KPROBES
+>>>    	select HAVE_KPROBES_ON_FTRACE
+>>>    	select HAVE_KRETPROBES
+>>> +	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
+>>>    	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
+>>>    	select HAVE_MEMBLOCK
+>>>    	select HAVE_MEMBLOCK_NODE_MAP
+>>> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+>>> index c8af90ff49f0..89381dc959ce 100644
+>>> --- a/arch/powerpc/kernel/vmlinux.lds.S
+>>> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+>>> @@ -89,7 +89,7 @@ SECTIONS
+>>>    	 */
+>>>    	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
+>>>    #ifdef CONFIG_LD_HEAD_STUB_CATCH
+>>> -		*(.linker_stub_catch);
+>>> +		KEEP(*(.linker_stub_catch));
+>>>    		. = . ;
+>>>    #endif
+>>>    
+>>> @@ -98,7 +98,7 @@ SECTIONS
+>>>    		ALIGN_FUNCTION();
+>>>    #endif
+>>>    		/* careful! __ftr_alt_* sections need to be close to .text */
+>>> -		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
+>>> +		*(.text.hot .text .text.[0-9a-zA-Z_]* .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
+>>
+>> Why not use TEXT_MAIN here instead of .text .text.[0-9a-zA-Z_]* ?
+> 
+> It's from my early patch before we added those in the generic linker
+> script. Yes your version looks nicer.
+> 
+> Thanks,
+> Nick
+> 
