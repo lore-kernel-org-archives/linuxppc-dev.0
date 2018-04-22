@@ -1,20 +1,47 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40TZGx09vYzDr3t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 02:07:01 +1000 (AEST)
-Date: Sun, 22 Apr 2018 21:41:11 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/6] tree-wide: simplify getting .drvdata
-Message-ID: <20180422161111.GY6014@localhost>
-References: <20180422091415.7587-1-wsa+renesas@sang-engineering.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Tgqk3LHpzF1pP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 06:17:22 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id s70so14071664qks.13
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 13:17:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180422091415.7587-1-wsa+renesas@sang-engineering.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <CAMe9rOrTzgDmCF+A7nYdGR6BHZBuK5SMnJxeRxBFQW00VmdXvg@mail.gmail.com>
+References: <CAK8P3a3qAoR1afmTTK1CAp1L81dzwtBL+SKj=QMqD=dBr_8oRQ@mail.gmail.com>
+ <20180420130346.3178914-1-arnd@arndb.de>
+ <CAH8yC8mnfNnG86kgjnfwiZJ0=qN+w=5PVcLcxddaJdDtYbSanA@mail.gmail.com>
+ <CAK8P3a0nL4B+t6BMRhr36RrZ_jDgwnY1BviNPD+cFzsUGeppmA@mail.gmail.com>
+ <CAMe9rOrTzgDmCF+A7nYdGR6BHZBuK5SMnJxeRxBFQW00VmdXvg@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Sun, 22 Apr 2018 22:17:18 +0200
+Message-ID: <CAK8P3a2=nfW1YSJoTf_cj5DVSMVfzWYaYqG486FHD3vPw3YZfQ@mail.gmail.com>
+Subject: Re: [PATCH] x86: ipc: fix x32 version of shmid64_ds and msqid64_ds
+To: "H.J. Lu" <hjl.tools@gmail.com>
+Cc: Jeffrey Walton <noloader@gmail.com>,
+ "the arch/x86 maintainers" <x86@kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ LKML <linux-kernel@vger.kernel.org>, Linux API <linux-api@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ GNU C Library <libc-alpha@sourceware.org>,
+ Deepa Dinamani <deepa.kernel@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>,
+ Albert ARIBAUD <albert.aribaud@3adev.fr>,
+ linux-s390 <linux-s390@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ "open list:RALINK MIPS ARCHITECTURE" <linux-mips@linux-mips.org>,
+ James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ sparclinux <sparclinux@vger.kernel.org>, Ben Hutchings <ben@decadent.org.uk>,
+ Daniel Schepler <dschepler@gmail.com>, Adam Borowski <kilobyte@angband.pl>,
+ John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+ "# 3.4.x" <stable@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +51,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 22, 2018 at 11:14:08AM +0200, Wolfram Sang wrote:
-> I got tired of fixing this in Renesas drivers manually, so I took the big
-> hammer. Remove this cumbersome code pattern which got copy-pasted too much
-> already:
-> 
-> -	struct platform_device *pdev = to_platform_device(dev);
-> -	struct ep93xx_keypad *keypad = platform_get_drvdata(pdev);
-> +	struct ep93xx_keypad *keypad = dev_get_drvdata(dev);
-> 
-> I send this out as one patch per directory per subsystem. I think they should
-> be applied individually. If you prefer a broken out series per subsystem, I can
-> provide this as well. Just mail me.
+On Sun, Apr 22, 2018 at 2:38 PM, H.J. Lu <hjl.tools@gmail.com> wrote:
+> On Fri, Apr 20, 2018 at 7:38 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> On Fri, Apr 20, 2018 at 3:53 PM, Jeffrey Walton <noloader@gmail.com> wrote:
+>
+> Glibc has correct header files for system calls.  I have a very old
+> program to check if Linux kernel header files are correct for user
+> space:
+>
+> https://github.com/hjl-tools/linux-header
+>
+> It needs update to check uapi.
 
-Applied all, thanks
+Simply running 'make' on a regular distro shows this output:
 
--- 
-~Vinod
+--- kernel.x32.out 2018-04-22 22:10:16.053432423 +0200
++++ glibc.x32.out 2018-04-22 22:10:16.073432838 +0200
+@@ -10,9 +10,9 @@ size of daddr_t: 4
+ size of __ipc_pid_t: 4
+ size of struct ipc_perm: 48
+ size of mqd_t: 4
+-size of struct msqid_ds: 144
++size of struct msqid_ds: 120
+ size of struct semid_ds: 104
+-size of struct shmid_ds: 136
++size of struct shmid_ds: 112
+ size of struct shminfo: 72
+ size of struct timeval: 16
+ size of struct timespec: 16
+@@ -22,8 +22,8 @@ size of struct mq_attr: 64
+ size of struct rlimit: 16
+ size of struct rusage: 144
+ size of struct stat: 144
+-size of struct statfs: 64
+-size of struct statfs64: 88
++size of struct statfs: 120
++size of struct statfs64: 120
+ size of struct timex: 208
+ size of struct msginfo: 32
+ size of struct msgbuf: 16
+
+This seems plausible, the statfs structure clearly has the same problem
+as msqid_ds/shmid_ds based on its usage of '__statfs_word' which is
+now defined as '__u32' rather than '__kernel_long_t'.
+
+It should be trivial to override __statfs_word from
+arch/x86/include/uapi/asm/statfs.h
+
+I've checked the other uses of __BITS_PER_LONG in the uapi
+headers now, and all the others are either not relevant for x32
+(either definition is fine) or it has to be __BITS_PER_LONG=32.
+
+        Arnd
