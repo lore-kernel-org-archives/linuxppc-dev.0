@@ -1,25 +1,23 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Return-Path: <hjl.tools@gmail.com>
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Tgqk3LHpzF1pP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 06:17:22 +1000 (AEST)
-Received: by mail-qk0-x242.google.com with SMTP id s70so14071664qks.13
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 13:17:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40TTfj2SCTzF245
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 22:38:49 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id d3-v6so14696674qth.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 05:38:49 -0700 (PDT)
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <CAMe9rOrTzgDmCF+A7nYdGR6BHZBuK5SMnJxeRxBFQW00VmdXvg@mail.gmail.com>
+In-Reply-To: <CAK8P3a0nL4B+t6BMRhr36RrZ_jDgwnY1BviNPD+cFzsUGeppmA@mail.gmail.com>
 References: <CAK8P3a3qAoR1afmTTK1CAp1L81dzwtBL+SKj=QMqD=dBr_8oRQ@mail.gmail.com>
  <20180420130346.3178914-1-arnd@arndb.de>
  <CAH8yC8mnfNnG86kgjnfwiZJ0=qN+w=5PVcLcxddaJdDtYbSanA@mail.gmail.com>
  <CAK8P3a0nL4B+t6BMRhr36RrZ_jDgwnY1BviNPD+cFzsUGeppmA@mail.gmail.com>
- <CAMe9rOrTzgDmCF+A7nYdGR6BHZBuK5SMnJxeRxBFQW00VmdXvg@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Sun, 22 Apr 2018 22:17:18 +0200
-Message-ID: <CAK8P3a2=nfW1YSJoTf_cj5DVSMVfzWYaYqG486FHD3vPw3YZfQ@mail.gmail.com>
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Sun, 22 Apr 2018 05:38:45 -0700
+Message-ID: <CAMe9rOrTzgDmCF+A7nYdGR6BHZBuK5SMnJxeRxBFQW00VmdXvg@mail.gmail.com>
 Subject: Re: [PATCH] x86: ipc: fix x32 version of shmid64_ds and msqid64_ds
-To: "H.J. Lu" <hjl.tools@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
 Cc: Jeffrey Walton <noloader@gmail.com>,
  "the arch/x86 maintainers" <x86@kernel.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
@@ -39,6 +37,7 @@ Cc: Jeffrey Walton <noloader@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  sparclinux <sparclinux@vger.kernel.org>, Ben Hutchings <ben@decadent.org.uk>,
  Daniel Schepler <dschepler@gmail.com>, Adam Borowski <kilobyte@angband.pl>,
+ Thorsten Glaser <tg@mirbsd.de>,
  John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
  "# 3.4.x" <stable@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -51,55 +50,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Apr 22, 2018 at 2:38 PM, H.J. Lu <hjl.tools@gmail.com> wrote:
-> On Fri, Apr 20, 2018 at 7:38 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->> On Fri, Apr 20, 2018 at 3:53 PM, Jeffrey Walton <noloader@gmail.com> wrote:
+On Fri, Apr 20, 2018 at 7:38 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Fri, Apr 20, 2018 at 3:53 PM, Jeffrey Walton <noloader@gmail.com> wrote:
+>>> +#if !defined(__x86_64__) || !defined(__ilp32__)
+>>>  #include <asm-generic/msgbuf.h>
+>>> +#else
+>>
+>> I understand there's some progress having Clang compile the kernel.
+>> Clang treats __ILP32__ and friends differently than GCC. I believe
+>> ILP32 shows up just about everywhere there are 32-bit ints, longs and
+>> pointers. You might find it on Aarch64 or you might find it on MIPS64
+>> when using Clang.
+>>
+>> I think that means this may be a little suspicious:
+>>
+>>     > +#if !defined(__x86_64__) || !defined(__ilp32__)
+>>
+>> I kind of felt LLVM was wandering away from the x32 ABI, but the LLVM
+>> devs insisted they were within their purview. Also see
+>> https://lists.llvm.org/pipermail/cfe-dev/2015-December/046300.html.
+>>
+>> Sorry about the top-post. I just wanted to pick out that one piece.
 >
-> Glibc has correct header files for system calls.  I have a very old
-> program to check if Linux kernel header files are correct for user
-> space:
+> It seems I made a typo and it needs to be __ILP32__ rather than
+> __ilp32__ (corrected that locally, will resend once we have resolved
+> this).
 >
-> https://github.com/hjl-tools/linux-header
+> Aside from that, the #if check seems to be correct to me: this
+> is an x86-specific header, so it won't ever be seen on other
+> architectures. On x86-32, __x86_64__ isn't set, so we don't care
+> about whether __ilp32__ is set or not, and on x86-64 (lp64),
+> __ilp32__ is never set, so we still get the asm-generic header.
 >
-> It needs update to check uapi.
 
-Simply running 'make' on a regular distro shows this output:
+Glibc has correct header files for system calls.  I have a very old
+program to check if Linux kernel header files are correct for user
+space:
 
---- kernel.x32.out 2018-04-22 22:10:16.053432423 +0200
-+++ glibc.x32.out 2018-04-22 22:10:16.073432838 +0200
-@@ -10,9 +10,9 @@ size of daddr_t: 4
- size of __ipc_pid_t: 4
- size of struct ipc_perm: 48
- size of mqd_t: 4
--size of struct msqid_ds: 144
-+size of struct msqid_ds: 120
- size of struct semid_ds: 104
--size of struct shmid_ds: 136
-+size of struct shmid_ds: 112
- size of struct shminfo: 72
- size of struct timeval: 16
- size of struct timespec: 16
-@@ -22,8 +22,8 @@ size of struct mq_attr: 64
- size of struct rlimit: 16
- size of struct rusage: 144
- size of struct stat: 144
--size of struct statfs: 64
--size of struct statfs64: 88
-+size of struct statfs: 120
-+size of struct statfs64: 120
- size of struct timex: 208
- size of struct msginfo: 32
- size of struct msgbuf: 16
+https://github.com/hjl-tools/linux-header
 
-This seems plausible, the statfs structure clearly has the same problem
-as msqid_ds/shmid_ds based on its usage of '__statfs_word' which is
-now defined as '__u32' rather than '__kernel_long_t'.
+It needs update to check uapi.
 
-It should be trivial to override __statfs_word from
-arch/x86/include/uapi/asm/statfs.h
-
-I've checked the other uses of __BITS_PER_LONG in the uapi
-headers now, and all the others are either not relevant for x32
-(either definition is fine) or it has to be __BITS_PER_LONG=32.
-
-        Arnd
+-- 
+H.J.
