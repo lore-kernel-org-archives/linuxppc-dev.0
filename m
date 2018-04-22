@@ -1,27 +1,18 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40TK5m16SMzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 16:13:01 +1000 (AEST)
-Date: Sun, 22 Apr 2018 11:47:33 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org,
- kernel-janitors@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@microchip.com>,
- Dan Williams <dan.j.williams@intel.com>,
+Return-Path: <wsa+renesas@sang-engineering.com>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40TP6m1XWdzF214
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Apr 2018 19:14:21 +1000 (AEST)
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: dmaengine@vger.kernel.org
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>,
  Li Yang <leoyang.li@nxp.com>, Zhang Wei <zw@zh-kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- linux-arm-kernel@lists.infradead.org, dmaengine@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 07/61] dma: simplify getting .drvdata
-Message-ID: <20180422061733.GU6014@localhost>
-References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
- <20180419140641.27926-8-wsa+renesas@sang-engineering.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180419140641.27926-8-wsa+renesas@sang-engineering.com>
+ Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/6] dmaengine: fsldma: simplify getting .drvdata
+Date: Sun, 22 Apr 2018 11:14:11 +0200
+Message-Id: <20180422091415.7587-4-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20180422091415.7587-1-wsa+renesas@sang-engineering.com>
+References: <20180422091415.7587-1-wsa+renesas@sang-engineering.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,12 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 19, 2018 at 04:05:37PM +0200, Wolfram Sang wrote:
-> We should get drvdata from struct device directly. Going via
-> platform_device is an unneeded step back and forth.
+We should get drvdata from struct device directly. Going via
+platform_device is an unneeded step back and forth.
 
-Do you mind splitting this per driver please, that makes it easy to manage
-for me :)
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
 
+Build tested only. buildbot is happy. Please apply to your tree directly.
+
+ drivers/dma/fsldma.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 3eaece888e75..1117b5123a6f 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -1328,8 +1328,7 @@ static int fsldma_of_remove(struct platform_device *op)
+ #ifdef CONFIG_PM
+ static int fsldma_suspend_late(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fsldma_device *fdev = platform_get_drvdata(pdev);
++	struct fsldma_device *fdev = dev_get_drvdata(dev);
+ 	struct fsldma_chan *chan;
+ 	int i;
+ 
+@@ -1360,8 +1359,7 @@ static int fsldma_suspend_late(struct device *dev)
+ 
+ static int fsldma_resume_early(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fsldma_device *fdev = platform_get_drvdata(pdev);
++	struct fsldma_device *fdev = dev_get_drvdata(dev);
+ 	struct fsldma_chan *chan;
+ 	u32 mode;
+ 	int i;
 -- 
-~Vinod
+2.11.0
