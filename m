@@ -1,26 +1,28 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40VFb731KRzDqyL
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 04:38:26 +1000 (AEST)
-Subject: Re: [PATCH v1 1/1] misc: IBM Virtual Management Channel Driver
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, gregkh@linuxfoundation.org, arnd@arndb.de
-Cc: corbet@lwn.net, seroyer@linux.vnet.ibm.com, mrochs@linux.vnet.ibm.com,
- adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- davem@davemloft.net, linus.walleij@linaro.org, akpm@linux-foundation.org,
- mikey@neuling.org, pombredanne@nexb.com, tlfalcon@linux.vnet.ibm.com,
- msuchanek@suse.de, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1524494812-60150-1-git-send-email-bryantly@linux.vnet.ibm.com>
- <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <c07b14b7-8f34-2ba5-536f-85896ff21661@infradead.org>
-Date: Mon, 23 Apr 2018 11:38:18 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VGmt20YlzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 05:31:58 +1000 (AEST)
+Received: by mail-oi0-x243.google.com with SMTP id a6-v6so6355485oia.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 12:31:57 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <a21ced59-8cf6-b8e0-2305-fb9d040dfc5c@infradead.org>
+References: <20180408194424.8719-1-malat@debian.org>
+ <a21ced59-8cf6-b8e0-2305-fb9d040dfc5c@infradead.org>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 23 Apr 2018 21:31:34 +0200
+Message-ID: <CA+7wUsz6m14gCd79NKzKbad1e+1P_=t1-B4na7g5ob16ORQ_8g@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/mm/radix: add missing braces for single statement
+ block
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, Joe Perches <joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,105 +32,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/18 07:46, Bryant G. Ly wrote:
-> This driver is a logical device which provides an
-> interface between the hypervisor and a management
-> partition.
-> 
-> This driver is to be used for the POWER Virtual
-> Management Channel Virtual Adapter on the PowerVM
-> platform. It provides both request/response and
-> async message support through the /dev/ibmvmc node.
-> 
-> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> Reviewed-by: Steven Royer <seroyer@linux.vnet.ibm.com>
-> Reviewed-by: Adam Reznechek <adreznec@linux.vnet.ibm.com>
-> Tested-by: Taylor Jakobson <tjakobs@us.ibm.com>
-> Tested-by: Brad Warrum <bwarrum@us.ibm.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  Documentation/ioctl/ioctl-number.txt  |    1 +
->  Documentation/misc-devices/ibmvmc.txt |  161 +++
->  MAINTAINERS                           |    6 +
->  arch/powerpc/include/asm/hvcall.h     |    1 +
->  drivers/misc/Kconfig                  |   14 +
->  drivers/misc/Makefile                 |    1 +
->  drivers/misc/ibmvmc.c                 | 2415 +++++++++++++++++++++++++++++++++
->  drivers/misc/ibmvmc.h                 |  209 +++
->  8 files changed, 2808 insertions(+)
->  create mode 100644 Documentation/misc-devices/ibmvmc.txt
->  create mode 100644 drivers/misc/ibmvmc.c
->  create mode 100644 drivers/misc/ibmvmc.h
+On Sun, Apr 8, 2018 at 10:34 PM, Randy Dunlap <rdunlap@infradead.org> wrote=
+:
+> On 04/08/2018 12:44 PM, Mathieu Malaterre wrote:
+>> In commit 7a22d6321c3d ("powerpc/mm/radix: Update command line parsing f=
+or
+>> disable_radix") an `if` statement was added for a possible empty body
+>> (prom_debug).
+>>
+>> Fix the following warning, treated as error with W=3D1:
+>>
+>>   arch/powerpc/kernel/prom_init.c:656:46: error: suggest braces around e=
+mpty body in an =E2=80=98if=E2=80=99 statement [-Werror=3Dempty-body]
+>>
+>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>> ---
+>>  arch/powerpc/kernel/prom_init.c | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_=
+init.c
+>> index 5ae153b97d0a..f0e802495530 100644
+>> --- a/arch/powerpc/kernel/prom_init.c
+>> +++ b/arch/powerpc/kernel/prom_init.c
+>> @@ -652,8 +652,9 @@ static void __init early_cmdline_parse(void)
+>>               } else
+>>                       prom_radix_disable =3D true;
+>>       }
+>> -     if (prom_radix_disable)
+>> +     if (prom_radix_disable) {
+>>               prom_debug("Radix disabled from cmdline\n");
+>
+> Looks like the macro for #prom_debug() should be fixed instead.
 
-> diff --git a/Documentation/misc-devices/ibmvmc.txt b/Documentation/misc-devices/ibmvmc.txt
-> new file mode 100644
-> index 0000000..bae1064
-> --- /dev/null
-> +++ b/Documentation/misc-devices/ibmvmc.txt
-> @@ -0,0 +1,161 @@
-> +Kernel Driver ibmvmc
-> +====================
-> +
-> +Authors:
-> +	Dave Engebretsen <engebret@us.ibm.com>
-> +	Adam Reznechek <adreznec@linux.vnet.ibm.com>
-> +	Steven Royer <seroyer@linux.vnet.ibm.com>
-> +	Bryant G. Ly <bryantly@linux.vnet.ibm.com>
-> +
-> +Description
-> +===========
-> +
+Well if I try instead:
 
-...
+@@ -101,9 +101,9 @@ int of_workarounds;
+ } while (0)
 
-> +
-> +Virtual Management Channel (VMC)
-> +A logical device, called the virtual management channel (VMC), is defined
-> +for communicating between the Novalink application and the hypervisor.
-> +This device, similar to a VSCSI server device, is presented to a designated
-> +management partition as a virtual device and is only presented when the
-> +system is not HMC managed.
-> +This communication device borrows aspects from both VSCSI and ILLAN devices
-> +and is implemented using the CRQ and the RDMA interfaces. A three-way
-> +handshake is defined that must take place to establish that both the
-> +hypervisor and management partition sides of the channel are running prior
-> +to sending/receiving any of the protocol messages.
-> +This driver also utilizes Transport Event CRQs. CRQ messages that are sent
-
-                                                 Drop           "that" ?
-otherwise the sentence construction is ... odd.
-
-> +when the hypervisor detects one of the peer partitions has abnormally
-> +terminated, or one side has called H_FREE_CRQ to close their CRQ.
-> +Two new classes of CRQ messages are introduced for the VMC device. VMC
-> +Administrative messages are used for each partition using the VMC to
-> +communicate capabilities to their partner. HMC Interface messages are used
-> +for the actual flow of HMC messages between the management partition and
-> +the hypervisor. As most HMC messages far exceed the size of a CRQ bugger,
-
-what is a bugger?
-[reads more]
-oh, buffer?
-
-> +a virtual DMA (RMDA) of the HMC message data is done prior to each HMC
-> +Interface CRQ message. Only the management partition drives RDMA
-> +operations; hypervisors never directly causes the movement of message data.
-> +
-> +Example Management Partition VMC Driver Interface
-> +=================================================
-
-...
+ #ifdef DEBUG_PROM
+-#define prom_debug(x...) prom_printf(x)
++#define prom_debug(x...) do { prom_printf(x); } while (0)
+ #else
+-#define prom_debug(x...)
++#define prom_debug(x...) do { } while (0)
+ #endif
 
 
-Looks pretty good.  In general (IMO), it could use more white space (like blank
-lines after section names.)
+the checkpatch script returns:
 
-If you fix those small items (buggers) above, you can add:
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+WARNING: Single statement macros should not use a do {} while (0) loop
+#33: FILE: arch/powerpc/kernel/prom_init.c:104:
++#define prom_debug(x...) do { prom_printf(x); } while (0)
 
-thanks,
--- 
-~Randy
+
+So I suspect we cannot do much better than my original patch unfortunately.
+
+>> +     }
+>>  }
+>>
+>>  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+>>
+>
+>
+> --
+> ~Randy
