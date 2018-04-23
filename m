@@ -1,26 +1,25 @@
 Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qt0-x22f.google.com (mail-qt0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c0d::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40V03R07zkzF24L
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 18:28:34 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id s2-v6so16722040qti.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 01:28:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40V08M0lJczDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 18:32:50 +1000 (AEST)
+Received: by mail-qt0-x22f.google.com with SMTP id h2-v6so4650466qtp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 01:32:50 -0700 (PDT)
 MIME-Version: 1.0
 Sender: arndbergmann@gmail.com
-In-Reply-To: <20180423081114.1813726-3-arnd@arndb.de>
+In-Reply-To: <20180423081114.1813726-2-arnd@arndb.de>
 References: <20180423081114.1813726-1-arnd@arndb.de>
- <20180423081114.1813726-3-arnd@arndb.de>
+ <20180423081114.1813726-2-arnd@arndb.de>
 From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 23 Apr 2018 10:28:31 +0200
-Message-ID: <CAK8P3a30fo0mviQMgg3OXivbVCkC9vBp2R7NfuLKq=si_O0X_w@mail.gmail.com>
-Subject: Re: [PATCH 3/5] powerpc: use time64_t in read_persistent_clock
+Date: Mon, 23 Apr 2018 10:32:47 +0200
+Message-ID: <CAK8P3a1V6QfUE8rZKyUUOmBfNC181mHJF8KiQi1GD=JJ4JfEOA@mail.gmail.com>
+Subject: Re: [PATCH 2/5] powerpc: rtas: clean up time handling
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Vitaly Bordug <vitb@kernel.crashing.org>, Geoff Levand <geoff@infradead.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,20 +33,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mon, Apr 23, 2018 at 10:10 AM, Arnd Bergmann <arnd@arndb.de> wrote:
 
-> @@ -170,7 +170,6 @@ unsigned long __init maple_get_boot_time(void)
->         request_resource(&ioport_resource, &rtc_iores);
+> @@ -307,17 +307,17 @@ static ssize_t ppc_rtas_poweron_write(struct file *file,
+>                 const char __user *buf, size_t count, loff_t *ppos)
+>  {
+>         struct rtc_time tm;
+> -       unsigned long nowtime;
+> +       time64_t nowtime;
+>         int error = parse_number(buf, count, &nowtime);
+>         if (error)
+>                 return error;
 >
->         maple_get_rtc_time(&tm);
-> -       return mktime(tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday,
-> -                     tm.tm_hour, tm.tm_min, tm.tm_sec);
-> +       return rtc_tm_to_time66(&tm);
->  }
+>         power_on_time = nowtime; /* save the time */
+>
+> -       to_tm(nowtime, &tm);
+> +       rtc_time64_to_tm(nowtime, 0, &tm);
+>
 
-No, it's not rtc_tm_to_time66 ;(
+Here was the other obvious typo: I had originally changed this to
+'time64_to_tm()', which has slightly different calling conventions to
+'rtc_time64_to_tm()', and messed it up when I changed it back
+after it turned out I needed to select RTC_LIB anyway.
 
-I did some build testing over the weekend to make sure I find all the stupid
-bugs, but then sent out the version without the two fixes. Please ignore all
-five patches, will follow up with v2 that fixes this one and another equally
-trivial bug.
+v2 coming.
 
-       Arnd
+        Arnd
