@@ -1,38 +1,50 @@
 Return-Path: <srs0=im6g=hm=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40TvQJ5RMpzF1Rl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 14:59:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40TvnY22PFzDr5X
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 15:16:17 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40TvQJ55yYz8syK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 14:59:36 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40TvnY1QCvz8svR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 15:16:17 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40TvQJ1NJWz9s16
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 14:59:35 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 40TvnX4hKvz9s19
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 15:16:16 +1000 (AEST)
 Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3N4x8N4086705
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 00:59:34 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hh44ng93v-1
+ w3N5Dns1132790
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 01:16:14 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hh44ngxkp-1
  (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 00:59:33 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 01:16:13 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 23 Apr 2018 05:59:32 +0100
-Subject: [PATCH] powerpc/mce: Fix a bug where mce loops on memory UE.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Mon, 23 Apr 2018 10:29:27 +0530
+ Mon, 23 Apr 2018 06:16:11 +0100
+Subject: Re: [PATCH v4 1/7] powerpc/fadump: Move the metadata region to start
+ of the reserved area.
+To: Nicholas Piggin <nicholas.piggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Ananth Narayan
+ <ananth@in.ibm.com>, kernelfans@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <152420062000.31037.770773018944092449.stgit@jupiter.in.ibm.com>
+ <152420065839.31037.9373191008433546810.stgit@jupiter.in.ibm.com>
+ <20180422115816.701d0837@roar.ozlabs.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Mon, 23 Apr 2018 10:46:06 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152445952887.3244.567606806755236868.stgit@jupiter.in.ibm.com>
+In-Reply-To: <20180422115816.701d0837@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f2bbcdfd-65be-0a50-7d24-b66f101437b7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,96 +54,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 04/22/2018 07:28 AM, Nicholas Piggin wrote:
+> On Fri, 20 Apr 2018 10:34:18 +0530
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Currently the metadata region that holds crash info structure and ELF core
+>> header is placed towards the end of reserved memory area. This patch places
+>> it at the beginning of the reserved memory area. It also introduces
+>> additional dump section called metadata section to communicate location
+>> of metadata region to 2nd kernel. This patch also maintains the
+>> compatibility between production/capture kernels irrespective of their
+>> kernel versions. Both combination older/newer and newer/older works fine.
+> 
+> Trying to look at the patches it might help me if you document reasons
+> for why this change is made changelog, even if it may be obvious to
+> someone who knows the code better.
 
-The current code extracts the physical address for UE errors and then
-hooks it up into memory failure infrastructure. On successful extraction
-of physical address it wrongly sets "handled = 1" which means this UE error
-has been recovered. Since MCE handler gets return value as handled = 1, it
-assumes that error has been recovered and goes back to same NIP. This causes
-MCE interrupt again and again in a loop leading to hard lockup.
+Yeah, I should have mentioned that this patch provides the foundation
+for CMA patch 4. With CMA reservation we now allocate metadata region
+using cma_alloc() which always allocates metadata region at the start of
+CMA reserved region. Earlier in v1, I had this change included along
+with CMA reservation patch. But then to make things simpler for review I
+did a logical split of movement of metadata region and CMA reservation
+patch separately. I think I should order patch 1, 2 and 4 in a sequence
+and Move patch3 to patch 1.
 
-Also, initialize phys_addr to ULONG_MAX so that we don't end up queuing
-undesired page to hwpoison.
+> 
+> I thought you could include the documentation change in this patch as
+> well, but maybe that's a matter of preference.
 
-Without this patch we see:
-[ 1476.541984] Severe Machine check interrupt [Recovered]
-[ 1476.541985]   NIP: [000000001002588c] PID: 7109 Comm: find
-[ 1476.541986]   Initiator: CPU
-[ 1476.541987]   Error type: UE [Load/Store]
-[ 1476.541988]     Effective address: 00007fffd2755940
-[ 1476.541989]     Physical address:  000020181a080000
-[...]
-[ 1476.542003] Severe Machine check interrupt [Recovered]
-[ 1476.542004]   NIP: [000000001002588c] PID: 7109 Comm: find
-[ 1476.542005]   Initiator: CPU
-[ 1476.542006]   Error type: UE [Load/Store]
-[ 1476.542006]     Effective address: 00007fffd2755940
-[ 1476.542007]     Physical address:  000020181a080000
-[ 1476.542010] Severe Machine check interrupt [Recovered]
-[ 1476.542012]   NIP: [000000001002588c] PID: 7109 Comm: find
-[ 1476.542013]   Initiator: CPU
-[ 1476.542014]   Error type: UE [Load/Store]
-[ 1476.542015]     Effective address: 00007fffd2755940
-[ 1476.542016]     Physical address:  000020181a080000
-[ 1476.542448] Memory failure: 0x20181a08: recovery action for dirty LRU page: Recovered
-[ 1476.542452] Memory failure: 0x20181a08: already hardware poisoned
-[ 1476.542453] Memory failure: 0x20181a08: already hardware poisoned
-[ 1476.542454] Memory failure: 0x20181a08: already hardware poisoned
-[ 1476.542455] Memory failure: 0x20181a08: already hardware poisoned
-[ 1476.542456] Memory failure: 0x20181a08: already hardware poisoned
-[ 1476.542457] Memory failure: 0x20181a08: already hardware poisoned
-[...]
-[ 1490.972174] Watchdog CPU:38 Hard LOCKUP
+Yeah that's how I prefer it :-), but that just me. But if it helps in
+review I can fold it into 1.
 
-After this patch we see:
-
-[  325.384336] Severe Machine check interrupt [Not recovered]
-[  325.384338]   NIP: [00007fffaae585f4] PID: 7168 Comm: find
-[  325.384339]   Initiator: CPU
-[  325.384341]   Error type: UE [Load/Store]
-[  325.384343]     Effective address: 00007fffaafe28ac
-[  325.384345]     Physical address:  00002017c0bd0000
-[  325.384350] find[7168]: unhandled signal 7 at 00007fffaae585f4 nip 00007fffaae585f4 lr 00007fffaae585e0 code 4
-[  325.388574] Memory failure: 0x2017c0bd: recovery action for dirty LRU page: Recovered
-
-Fixes: 01eaac2b0591 ("powerpc/mce: Hookup ierror (instruction) UE errors")
-Fixes: ba41e1e1ccb9 ("powerpc/mce: Hookup derror (load/store) UE errors")
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/mce_power.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index fe6fc63251fe..63b58ae5d601 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -441,7 +441,6 @@ static int mce_handle_ierror(struct pt_regs *regs,
- 					if (pfn != ULONG_MAX) {
- 						*phys_addr =
- 							(pfn << PAGE_SHIFT);
--						handled = 1;
- 					}
- 				}
- 			}
-@@ -532,9 +531,8 @@ static int mce_handle_derror(struct pt_regs *regs,
- 			 * kernel/exception-64s.h
- 			 */
- 			if (get_paca()->in_mce < MAX_MCE_DEPTH)
--				if (!mce_find_instr_ea_and_pfn(regs, addr,
--								phys_addr))
--					handled = 1;
-+				mce_find_instr_ea_and_pfn(regs, addr,
-+								phys_addr);
- 		}
- 		found = 1;
- 	}
-@@ -572,7 +570,7 @@ static long mce_handle_error(struct pt_regs *regs,
- 		const struct mce_ierror_table itable[])
- {
- 	struct mce_error_info mce_err = { 0 };
--	uint64_t addr, phys_addr;
-+	uint64_t addr, phys_addr = ULONG_MAX;
- 	uint64_t srr1 = regs->msr;
- 	long handled;
- 
+Thanks,
+-Mahesh.
