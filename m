@@ -1,21 +1,38 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
+Return-Path: <srs0=im6g=hm=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40TvQJ5RMpzF1Rl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 14:59:36 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40TvQJ55yYz8syK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 14:59:36 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40TpPp2FwZzDr5X
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 11:13:47 +1000 (AEST)
-Date: Sun, 22 Apr 2018 21:13:41 -0400 (EDT)
-Message-Id: <20180422.211341.912127868555832199.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, nfont@linux.vnet.ibm.com,
- jallen@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net] ibmvnic: Clean actual number of RX or TX pools
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1524252332-10272-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1524252332-10272-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id 40TvQJ1NJWz9s16
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 14:59:35 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3N4x8N4086705
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 00:59:34 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hh44ng93v-1
+ (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 00:59:33 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 23 Apr 2018 05:59:32 +0100
+Subject: [PATCH] powerpc/mce: Fix a bug where mce loops on memory UE.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: Mon, 23 Apr 2018 10:29:27 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <152445952887.3244.567606806755236868.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,14 +42,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Fri, 20 Apr 2018 14:25:32 -0500
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-> Avoid using value stored in the login response buffer when
-> cleaning TX and RX buffer pools since these could be inconsistent
-> depending on the device state. Instead use the field in the driver's
-> private data that tracks the number of active pools.
-> 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+The current code extracts the physical address for UE errors and then
+hooks it up into memory failure infrastructure. On successful extraction
+of physical address it wrongly sets "handled = 1" which means this UE error
+has been recovered. Since MCE handler gets return value as handled = 1, it
+assumes that error has been recovered and goes back to same NIP. This causes
+MCE interrupt again and again in a loop leading to hard lockup.
 
-Applied.
+Also, initialize phys_addr to ULONG_MAX so that we don't end up queuing
+undesired page to hwpoison.
+
+Without this patch we see:
+[ 1476.541984] Severe Machine check interrupt [Recovered]
+[ 1476.541985]   NIP: [000000001002588c] PID: 7109 Comm: find
+[ 1476.541986]   Initiator: CPU
+[ 1476.541987]   Error type: UE [Load/Store]
+[ 1476.541988]     Effective address: 00007fffd2755940
+[ 1476.541989]     Physical address:  000020181a080000
+[...]
+[ 1476.542003] Severe Machine check interrupt [Recovered]
+[ 1476.542004]   NIP: [000000001002588c] PID: 7109 Comm: find
+[ 1476.542005]   Initiator: CPU
+[ 1476.542006]   Error type: UE [Load/Store]
+[ 1476.542006]     Effective address: 00007fffd2755940
+[ 1476.542007]     Physical address:  000020181a080000
+[ 1476.542010] Severe Machine check interrupt [Recovered]
+[ 1476.542012]   NIP: [000000001002588c] PID: 7109 Comm: find
+[ 1476.542013]   Initiator: CPU
+[ 1476.542014]   Error type: UE [Load/Store]
+[ 1476.542015]     Effective address: 00007fffd2755940
+[ 1476.542016]     Physical address:  000020181a080000
+[ 1476.542448] Memory failure: 0x20181a08: recovery action for dirty LRU page: Recovered
+[ 1476.542452] Memory failure: 0x20181a08: already hardware poisoned
+[ 1476.542453] Memory failure: 0x20181a08: already hardware poisoned
+[ 1476.542454] Memory failure: 0x20181a08: already hardware poisoned
+[ 1476.542455] Memory failure: 0x20181a08: already hardware poisoned
+[ 1476.542456] Memory failure: 0x20181a08: already hardware poisoned
+[ 1476.542457] Memory failure: 0x20181a08: already hardware poisoned
+[...]
+[ 1490.972174] Watchdog CPU:38 Hard LOCKUP
+
+After this patch we see:
+
+[  325.384336] Severe Machine check interrupt [Not recovered]
+[  325.384338]   NIP: [00007fffaae585f4] PID: 7168 Comm: find
+[  325.384339]   Initiator: CPU
+[  325.384341]   Error type: UE [Load/Store]
+[  325.384343]     Effective address: 00007fffaafe28ac
+[  325.384345]     Physical address:  00002017c0bd0000
+[  325.384350] find[7168]: unhandled signal 7 at 00007fffaae585f4 nip 00007fffaae585f4 lr 00007fffaae585e0 code 4
+[  325.388574] Memory failure: 0x2017c0bd: recovery action for dirty LRU page: Recovered
+
+Fixes: 01eaac2b0591 ("powerpc/mce: Hookup ierror (instruction) UE errors")
+Fixes: ba41e1e1ccb9 ("powerpc/mce: Hookup derror (load/store) UE errors")
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/mce_power.c |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+index fe6fc63251fe..63b58ae5d601 100644
+--- a/arch/powerpc/kernel/mce_power.c
++++ b/arch/powerpc/kernel/mce_power.c
+@@ -441,7 +441,6 @@ static int mce_handle_ierror(struct pt_regs *regs,
+ 					if (pfn != ULONG_MAX) {
+ 						*phys_addr =
+ 							(pfn << PAGE_SHIFT);
+-						handled = 1;
+ 					}
+ 				}
+ 			}
+@@ -532,9 +531,8 @@ static int mce_handle_derror(struct pt_regs *regs,
+ 			 * kernel/exception-64s.h
+ 			 */
+ 			if (get_paca()->in_mce < MAX_MCE_DEPTH)
+-				if (!mce_find_instr_ea_and_pfn(regs, addr,
+-								phys_addr))
+-					handled = 1;
++				mce_find_instr_ea_and_pfn(regs, addr,
++								phys_addr);
+ 		}
+ 		found = 1;
+ 	}
+@@ -572,7 +570,7 @@ static long mce_handle_error(struct pt_regs *regs,
+ 		const struct mce_ierror_table itable[])
+ {
+ 	struct mce_error_info mce_err = { 0 };
+-	uint64_t addr, phys_addr;
++	uint64_t addr, phys_addr = ULONG_MAX;
+ 	uint64_t srr1 = regs->msr;
+ 	long handled;
+ 
