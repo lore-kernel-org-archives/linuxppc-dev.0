@@ -1,42 +1,31 @@
-Return-Path: <srs0=im6g=hm=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ot0-x229.google.com (mail-ot0-x229.google.com
+ [IPv6:2607:f8b0:4003:c0f::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40V2sL2WXhzF22Z
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 20:35:02 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40V2sL1g59z8vVC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 20:35:02 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40V2sK4bvCz9rxp
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 20:35:01 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3NAYwSh180248
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 06:34:59 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hhahe1a4t-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2018 06:34:57 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 23 Apr 2018 11:34:01 +0100
-Subject: Re: [PATCH] powerpc/mce: Fix a bug where mce loops on memory UE.
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
-References: <152445952887.3244.567606806755236868.stgit@jupiter.in.ibm.com>
- <CAKTCnznTiS2kQThYrCALGGKb8DfAu-diYzrCbOzwO2vd7Cfw9Q@mail.gmail.com>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 23 Apr 2018 16:03:56 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40V3SN0qk4zDqyL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 21:01:55 +1000 (AEST)
+Received: by mail-ot0-x229.google.com with SMTP id m22-v6so16674059otf.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 04:01:55 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnznTiS2kQThYrCALGGKb8DfAu-diYzrCbOzwO2vd7Cfw9Q@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <cb831682-8cc6-4cd7-9778-52e5f4ad5af0@linux.vnet.ibm.com>
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <738aa4d6-9313-f484-0510-e965f2881869@c-s.fr>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <CA+7wUswuyn+YgNe732rQAzVmgDBohTMEqwsd76nQ_CH5h7Y5WA@mail.gmail.com>
+ <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+ <CA+7wUsyWu3eweWjwfFoS5FD5yb3OxjLV4-XyErcNA4fJGPCf8Q@mail.gmail.com>
+ <738aa4d6-9313-f484-0510-e965f2881869@c-s.fr>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 23 Apr 2018 13:01:31 +0200
+Message-ID: <CA+7wUszDBFQRV78stj_MArnZYFp3ug6UoxH+Y__SWC=fGH2g8A@mail.gmail.com>
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
+ linux-kbuild@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Nicolas Pitre <nico@fluxnic.net>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,83 +35,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/2018 12:21 PM, Balbir Singh wrote:
-> On Mon, Apr 23, 2018 at 2:59 PM, Mahesh J Salgaonkar
-> <mahesh@linux.vnet.ibm.com> wrote:
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Christophe,
+
+On Sat, Apr 21, 2018 at 9:16 AM, christophe leroy
+<christophe.leroy@c-s.fr> wrote:
+>
+>
+> Le 20/04/2018 =C3=A0 22:08, Mathieu Malaterre a =C3=A9crit :
 >>
->> The current code extracts the physical address for UE errors and then
->> hooks it up into memory failure infrastructure. On successful extraction
->> of physical address it wrongly sets "handled = 1" which means this UE error
->> has been recovered. Since MCE handler gets return value as handled = 1, it
->> assumes that error has been recovered and goes back to same NIP. This causes
->> MCE interrupt again and again in a loop leading to hard lockup.
+>> On Fri, Apr 20, 2018 at 12:41 PM, Nicholas Piggin <npiggin@gmail.com>
+>> wrote:
+>>>
+>>> On Fri, 20 Apr 2018 12:00:49 +0200
+>>> Mathieu Malaterre <malat@debian.org> wrote:
+>>>
+>>>> On Fri, Apr 20, 2018 at 9:34 AM, Nicholas Piggin <npiggin@gmail.com>
+>>>> wrote:
+>>>>>
+>>>>> This requires further changes to linker script to KEEP some tables
+>>>>> and wildcard compiler generated sections into the right place. This
+>>>>> includes pp32 modifications from Christophe Leroy.
+>>>>>
+>>>>> When compiling powernv_defconfig with this option:
+>>>>>
+>>>>> text       data      bss       dec        filename
+>>>>> 11827621   4810490   1341080   17979191   vmlinux
+>>>>> 11752437   4598858   1338776   17690071   vmlinux.dcde
+>>>>>
+>>>>> Resulting kernel is almost 400kB smaller (and still boots).
+>>>>>
+>>>>> [ppc32 numbers here]
+>>>>
+>>>>
+>>>> ^^^
+>>>>
+>>>> Do you want somebody else to provide those numbers ?
+>>>
+>>>
+>>> If you have a booting kernel, yes some more numbers would be good.
 >>
->> Also, initialize phys_addr to ULONG_MAX so that we don't end up queuing
->> undesired page to hwpoison.
 >>
->> Without this patch we see:
->> [ 1476.541984] Severe Machine check interrupt [Recovered]
->> [ 1476.541985]   NIP: [000000001002588c] PID: 7109 Comm: find
->> [ 1476.541986]   Initiator: CPU
->> [ 1476.541987]   Error type: UE [Load/Store]
->> [ 1476.541988]     Effective address: 00007fffd2755940
->> [ 1476.541989]     Physical address:  000020181a080000
->> [...]
->> [ 1476.542003] Severe Machine check interrupt [Recovered]
->> [ 1476.542004]   NIP: [000000001002588c] PID: 7109 Comm: find
->> [ 1476.542005]   Initiator: CPU
->> [ 1476.542006]   Error type: UE [Load/Store]
->> [ 1476.542006]     Effective address: 00007fffd2755940
->> [ 1476.542007]     Physical address:  000020181a080000
->> [ 1476.542010] Severe Machine check interrupt [Recovered]
->> [ 1476.542012]   NIP: [000000001002588c] PID: 7109 Comm: find
->> [ 1476.542013]   Initiator: CPU
->> [ 1476.542014]   Error type: UE [Load/Store]
->> [ 1476.542015]     Effective address: 00007fffd2755940
->> [ 1476.542016]     Physical address:  000020181a080000
->> [ 1476.542448] Memory failure: 0x20181a08: recovery action for dirty LRU page: Recovered
->> [ 1476.542452] Memory failure: 0x20181a08: already hardware poisoned
->> [ 1476.542453] Memory failure: 0x20181a08: already hardware poisoned
->> [ 1476.542454] Memory failure: 0x20181a08: already hardware poisoned
->> [ 1476.542455] Memory failure: 0x20181a08: already hardware poisoned
->> [ 1476.542456] Memory failure: 0x20181a08: already hardware poisoned
->> [ 1476.542457] Memory failure: 0x20181a08: already hardware poisoned
->> [...]
->> [ 1490.972174] Watchdog CPU:38 Hard LOCKUP
+>> I've used /boot/config-4.15.0-2-powerpc from my current debian
+>> package. Rebuild master with and without option, boot ok, load/unload
+>> module ok.
 >>
->> After this patch we see:
+>> $ size nick/vmlinux.with*
+>>     text    data     bss     dec     hex filename
+>> 7386425 2364370 1425432 11176227 aa8923 nick/vmlinux.with
+>> 7461457 2475122 1428064 11364643 ad6923 nick/vmlinux.without
 >>
->> [  325.384336] Severe Machine check interrupt [Not recovered]
-> 
-> How did you test for this? 
+>> This is not clear why with option the size of kernel is slightly bigger:
+>
+>
+> The file contains also debug symbols, which might differ.
+> Only the LOAD part of the file is interesting, that's the part you get wh=
+en
+> doing ppc-linux-objcopy vmlinux vmlinux.bin -O binary
+>
+> You can see it with readelf -l vmlinux
 
-By injecting cache SUE using L2 FIR register (0x1001080c).
+Here is what I see:
 
-> If the error was recovered, shouldn't the
-> process have gotten
-> a SIGBUS and we should have prevented further access as a part of the handling
-> (memory_failure()). Do we just need a MF_MUST_KILL in the flags?
+$ diff -u <(readelf -l nick/vmlinux.with) <(readelf -l nick/vmlinux.without=
+)
+--- /proc/self/fd/11 2018-04-23 12:59:52.413101612 +0200
++++ /proc/self/fd/12 2018-04-23 12:59:52.417101567 +0200
+@@ -5,9 +5,9 @@
 
-We hook it up to memory_failure() through a work queue and by the time
-work queue kicks in, the application continues to restart and hit same
-NIP again and again. Every MCE again hooks the same address to memory
-failure work queue and throws multiple recovered MCE messages for same
-address. Once the memory_failure() hwpoisons the page, application gets
-SIGBUS and then we are fine.
+ Program Headers:
+   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+-  LOAD           0x010000 0xc0000000 0x00000000 0x950f34 0xaad018 RWE 0x10=
+000
+-  NOTE           0x867640 0xc0857640 0x00857640 0x00024 0x00024     0x4
+-  NOTE           0x867664 0xc0857664 0x00857664 0x0000c 0x0000c     0x1
++  LOAD           0x010000 0xc0000000 0x00000000 0x97ef34 0xadba68 RWE 0x10=
+000
++  NOTE           0x87f640 0xc086f640 0x0086f640 0x00024 0x00024     0x4
++  NOTE           0x87f664 0xc086f664 0x0086f664 0x0000c 0x0000c     0x1
 
-But in case of UE in kernel space, if early machine_check handler
-"machine_check_early()" returns as recovered then
-machine_check_handle_early() queues up the MCE event and continues from
-NIP assuming it is safe causing a MCE loop. So, for UE in kernel we end
-up in hard lockup.
+  Section to Segment mapping:
+   Segment Sections...
 
-> Why shouldn't we treat it as handled if we isolate the page?
 
-Yes we should, but I think not until the page is actually hwpoisioned OR
-until we send SIGBUS to process.
-
-> 
-> Thanks,
-> Balbir Singh.
-> 
+> Christophe
+>
+>>
+>> $ du -sk nick/vmlinux.with*
+>> 124488 nick/vmlinux.with
+>> 124004 nick/vmlinux.without
+>>
+>>
+>>> Thanks,
+>>> Nick
+>
+>
+> ---
+> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
+=C3=A9rifi=C3=A9e par le
+> logiciel antivirus Avast.
+> https://www.avast.com/antivirus
+>
