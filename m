@@ -1,24 +1,29 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wr0-x241.google.com (mail-wr0-x241.google.com
- [IPv6:2a00:1450:400c:c0c::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40VH4g3pkSzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 05:45:39 +1000 (AEST)
-Received: by mail-wr0-x241.google.com with SMTP id p5-v6so16648687wre.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 12:45:39 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/wii: Make hlwd_pic_init function static
-Date: Mon, 23 Apr 2018 21:45:32 +0200
-Message-Id: <20180423194533.23487-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VHFW204QzDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 05:53:18 +1000 (AEST)
+Date: Mon, 23 Apr 2018 21:53:10 +0200
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, arnd@arndb.de, corbet@lwn.net,
+ seroyer@linux.vnet.ibm.com, mrochs@linux.vnet.ibm.com,
+ adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
+ davem@davemloft.net, linus.walleij@linaro.org,
+ akpm@linux-foundation.org, mikey@neuling.org, pombredanne@nexb.com,
+ tlfalcon@linux.vnet.ibm.com, msuchanek@suse.de,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v1 1/1] misc: IBM Virtual Management Channel Driver
+Message-ID: <20180423195310.GA10693@kroah.com>
+References: <1524494812-60150-1-git-send-email-bryantly@linux.vnet.ibm.com>
+ <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
+ <c07b14b7-8f34-2ba5-536f-85896ff21661@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <c07b14b7-8f34-2ba5-536f-85896ff21661@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,28 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The function hlwd_pic_init can be made static, so do it. Fix the following
-warning treated as error (W=1):
+On Mon, Apr 23, 2018 at 11:38:18AM -0700, Randy Dunlap wrote:
+> On 04/23/18 07:46, Bryant G. Ly wrote:
+> > This driver is a logical device which provides an
+> > interface between the hypervisor and a management
+> > partition.
+> > 
+> > This driver is to be used for the POWER Virtual
+> > Management Channel Virtual Adapter on the PowerVM
+> > platform. It provides both request/response and
+> > async message support through the /dev/ibmvmc node.
+> > 
+> > Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> > Reviewed-by: Steven Royer <seroyer@linux.vnet.ibm.com>
+> > Reviewed-by: Adam Reznechek <adreznec@linux.vnet.ibm.com>
+> > Tested-by: Taylor Jakobson <tjakobs@us.ibm.com>
+> > Tested-by: Brad Warrum <bwarrum@us.ibm.com>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Arnd Bergmann <arnd@arndb.de>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> >  Documentation/ioctl/ioctl-number.txt  |    1 +
+> >  Documentation/misc-devices/ibmvmc.txt |  161 +++
+> >  MAINTAINERS                           |    6 +
+> >  arch/powerpc/include/asm/hvcall.h     |    1 +
+> >  drivers/misc/Kconfig                  |   14 +
+> >  drivers/misc/Makefile                 |    1 +
+> >  drivers/misc/ibmvmc.c                 | 2415 +++++++++++++++++++++++++++++++++
+> >  drivers/misc/ibmvmc.h                 |  209 +++
+> >  8 files changed, 2808 insertions(+)
+> >  create mode 100644 Documentation/misc-devices/ibmvmc.txt
+> >  create mode 100644 drivers/misc/ibmvmc.c
+> >  create mode 100644 drivers/misc/ibmvmc.h
+> 
+> > diff --git a/Documentation/misc-devices/ibmvmc.txt b/Documentation/misc-devices/ibmvmc.txt
+> > new file mode 100644
+> > index 0000000..bae1064
+> > --- /dev/null
+> > +++ b/Documentation/misc-devices/ibmvmc.txt
 
-../arch/powerpc/platforms/embedded6xx/hlwd-pic.c:158:20: error: no previous prototype for ‘hlwd_pic_init’ [-Werror=missing-prototypes]
+Aren't we doing new documentation in .rst format instead of .txt?
 
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+thanks,
 
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index 89c54de88b7a..e3e3af73e9d8 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -155,7 +155,7 @@ static void __hlwd_quiesce(void __iomem *io_base)
- 	out_be32(io_base + HW_BROADWAY_ICR, 0xffffffff);
- }
- 
--struct irq_domain *hlwd_pic_init(struct device_node *np)
-+static struct irq_domain *hlwd_pic_init(struct device_node *np)
- {
- 	struct irq_domain *irq_domain;
- 	struct resource res;
--- 
-2.11.0
+greg k-h
