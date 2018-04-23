@@ -1,52 +1,26 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <rdunlap@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40V8zP6GmCzF1Rs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 01:10:41 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3NF98LE078624
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 11:10:39 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hhgxa3896-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 11:10:38 -0400
-Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 23 Apr 2018 16:10:33 +0100
-Subject: Re: [PATCH v10 01/25] mm: introduce CONFIG_SPECULATIVE_PAGE_FAULT
-To: Minchan Kim <minchan@kernel.org>
-Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>, David Rientjes <rientjes@google.com>,
- Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-2-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180423055809.GA114098@rodete-desktop-imager.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 23 Apr 2018 17:10:15 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VFb731KRzDqyL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 04:38:26 +1000 (AEST)
+Subject: Re: [PATCH v1 1/1] misc: IBM Virtual Management Channel Driver
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, gregkh@linuxfoundation.org, arnd@arndb.de
+Cc: corbet@lwn.net, seroyer@linux.vnet.ibm.com, mrochs@linux.vnet.ibm.com,
+ adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
+ davem@davemloft.net, linus.walleij@linaro.org, akpm@linux-foundation.org,
+ mikey@neuling.org, pombredanne@nexb.com, tlfalcon@linux.vnet.ibm.com,
+ msuchanek@suse.de, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1524494812-60150-1-git-send-email-bryantly@linux.vnet.ibm.com>
+ <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <c07b14b7-8f34-2ba5-536f-85896ff21661@infradead.org>
+Date: Mon, 23 Apr 2018 11:38:18 -0700
 MIME-Version: 1.0
-In-Reply-To: <20180423055809.GA114098@rodete-desktop-imager.corp.google.com>
+In-Reply-To: <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <10b5f8da-9c53-f833-1212-7a1eb215d534@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,70 +30,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/04/2018 07:58, Minchan Kim wrote:
-> Hi Laurent,
+On 04/23/18 07:46, Bryant G. Ly wrote:
+> This driver is a logical device which provides an
+> interface between the hypervisor and a management
+> partition.
 > 
-> I guess it's good timing to review. Guess LSF/MM goes so might change
-> a lot since then. :) Anyway, I grap a time to review.
-
-Hi,
-
-Thanks a lot for reviewing this series.
-
-> On Tue, Apr 17, 2018 at 04:33:07PM +0200, Laurent Dufour wrote:
->> This configuration variable will be used to build the code needed to
->> handle speculative page fault.
->>
->> By default it is turned off, and activated depending on architecture
->> support, SMP and MMU.
+> This driver is to be used for the POWER Virtual
+> Management Channel Virtual Adapter on the PowerVM
+> platform. It provides both request/response and
+> async message support through the /dev/ibmvmc node.
 > 
-> Can we have description in here why it depends on architecture?
+> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> Reviewed-by: Steven Royer <seroyer@linux.vnet.ibm.com>
+> Reviewed-by: Adam Reznechek <adreznec@linux.vnet.ibm.com>
+> Tested-by: Taylor Jakobson <tjakobs@us.ibm.com>
+> Tested-by: Brad Warrum <bwarrum@us.ibm.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  Documentation/ioctl/ioctl-number.txt  |    1 +
+>  Documentation/misc-devices/ibmvmc.txt |  161 +++
+>  MAINTAINERS                           |    6 +
+>  arch/powerpc/include/asm/hvcall.h     |    1 +
+>  drivers/misc/Kconfig                  |   14 +
+>  drivers/misc/Makefile                 |    1 +
+>  drivers/misc/ibmvmc.c                 | 2415 +++++++++++++++++++++++++++++++++
+>  drivers/misc/ibmvmc.h                 |  209 +++
+>  8 files changed, 2808 insertions(+)
+>  create mode 100644 Documentation/misc-devices/ibmvmc.txt
+>  create mode 100644 drivers/misc/ibmvmc.c
+>  create mode 100644 drivers/misc/ibmvmc.h
 
-The reason is that the per architecture page fault code must handle the
-speculative page fault. It is done in this series for x86 and ppc64.
+> diff --git a/Documentation/misc-devices/ibmvmc.txt b/Documentation/misc-devices/ibmvmc.txt
+> new file mode 100644
+> index 0000000..bae1064
+> --- /dev/null
+> +++ b/Documentation/misc-devices/ibmvmc.txt
+> @@ -0,0 +1,161 @@
+> +Kernel Driver ibmvmc
+> +====================
+> +
+> +Authors:
+> +	Dave Engebretsen <engebret@us.ibm.com>
+> +	Adam Reznechek <adreznec@linux.vnet.ibm.com>
+> +	Steven Royer <seroyer@linux.vnet.ibm.com>
+> +	Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+> +
+> +Description
+> +===========
+> +
 
-I'll make it explicit here.
+...
 
-> 
->>
->> Suggested-by: Thomas Gleixner <tglx@linutronix.de>
->> Suggested-by: David Rientjes <rientjes@google.com>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  mm/Kconfig | 22 ++++++++++++++++++++++
->>  1 file changed, 22 insertions(+)
->>
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index d5004d82a1d6..5484dca11199 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -752,3 +752,25 @@ config GUP_BENCHMARK
->>  	  performance of get_user_pages_fast().
->>  
->>  	  See tools/testing/selftests/vm/gup_benchmark.c
->> +
->> +config ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
->> +       def_bool n
->> +
->> +config SPECULATIVE_PAGE_FAULT
->> +       bool "Speculative page faults"
->> +       default y
->> +       depends on ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
->> +       depends on MMU && SMP
->> +       help
->> +         Try to handle user space page faults without holding the mmap_sem.
->> +
->> +	 This should allow better concurrency for massively threaded process
->> +	 since the page fault handler will not wait for other threads memory
->> +	 layout change to be done, assuming that this change is done in another
->> +	 part of the process's memory space. This type of page fault is named
->> +	 speculative page fault.
->> +
->> +	 If the speculative page fault fails because of a concurrency is
->> +	 detected or because underlying PMD or PTE tables are not yet
->> +	 allocating, it is failing its processing and a classic page fault
->> +	 is then tried.
->> -- 
->> 2.7.4
->>
-> 
+> +
+> +Virtual Management Channel (VMC)
+> +A logical device, called the virtual management channel (VMC), is defined
+> +for communicating between the Novalink application and the hypervisor.
+> +This device, similar to a VSCSI server device, is presented to a designated
+> +management partition as a virtual device and is only presented when the
+> +system is not HMC managed.
+> +This communication device borrows aspects from both VSCSI and ILLAN devices
+> +and is implemented using the CRQ and the RDMA interfaces. A three-way
+> +handshake is defined that must take place to establish that both the
+> +hypervisor and management partition sides of the channel are running prior
+> +to sending/receiving any of the protocol messages.
+> +This driver also utilizes Transport Event CRQs. CRQ messages that are sent
+
+                                                 Drop           "that" ?
+otherwise the sentence construction is ... odd.
+
+> +when the hypervisor detects one of the peer partitions has abnormally
+> +terminated, or one side has called H_FREE_CRQ to close their CRQ.
+> +Two new classes of CRQ messages are introduced for the VMC device. VMC
+> +Administrative messages are used for each partition using the VMC to
+> +communicate capabilities to their partner. HMC Interface messages are used
+> +for the actual flow of HMC messages between the management partition and
+> +the hypervisor. As most HMC messages far exceed the size of a CRQ bugger,
+
+what is a bugger?
+[reads more]
+oh, buffer?
+
+> +a virtual DMA (RMDA) of the HMC message data is done prior to each HMC
+> +Interface CRQ message. Only the management partition drives RDMA
+> +operations; hypervisors never directly causes the movement of message data.
+> +
+> +Example Management Partition VMC Driver Interface
+> +=================================================
+
+...
+
+
+Looks pretty good.  In general (IMO), it could use more white space (like blank
+lines after section names.)
+
+If you fix those small items (buggers) above, you can add:
+Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
+
+thanks,
+-- 
+~Randy
