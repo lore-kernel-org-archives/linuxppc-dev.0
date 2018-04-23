@@ -3,21 +3,26 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40VK2W1LHwzDqRk
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 07:13:51 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/mm/radix: use do/while(0) trick for single
- statement block
-To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20180408194424.8719-1-malat@debian.org>
- <20180423193638.10535-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VK6k3PCLzDqyL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 07:17:34 +1000 (AEST)
+Subject: Re: [PATCH v1 1/1] misc: IBM Virtual Management Channel Driver
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, arnd@arndb.de, corbet@lwn.net,
+ seroyer@linux.vnet.ibm.com, mrochs@linux.vnet.ibm.com,
+ adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
+ davem@davemloft.net, linus.walleij@linaro.org, akpm@linux-foundation.org,
+ mikey@neuling.org, pombredanne@nexb.com, tlfalcon@linux.vnet.ibm.com,
+ msuchanek@suse.de, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1524494812-60150-1-git-send-email-bryantly@linux.vnet.ibm.com>
+ <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
+ <c07b14b7-8f34-2ba5-536f-85896ff21661@infradead.org>
+ <20180423195310.GA10693@kroah.com>
 From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <3aa2afca-5d9a-60a2-78d7-9504cf05f78c@infradead.org>
-Date: Mon, 23 Apr 2018 14:13:44 -0700
+Message-ID: <4142fd3b-05eb-d934-bcd3-f8f564e24fa7@infradead.org>
+Date: Mon, 23 Apr 2018 14:17:28 -0700
 MIME-Version: 1.0
-In-Reply-To: <20180423193638.10535-1-malat@debian.org>
+In-Reply-To: <20180423195310.GA10693@kroah.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,43 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/18 12:36, Mathieu Malaterre wrote:
-> In commit 7a22d6321c3d ("powerpc/mm/radix: Update command line parsing for
-> disable_radix") an `if` statement was added for a possible empty body
-> (prom_debug).
+On 04/23/18 12:53, Greg KH wrote:
+> On Mon, Apr 23, 2018 at 11:38:18AM -0700, Randy Dunlap wrote:
+>> On 04/23/18 07:46, Bryant G. Ly wrote:
+>>> This driver is a logical device which provides an
+>>> interface between the hypervisor and a management
+>>> partition.
+>>>
+>>> This driver is to be used for the POWER Virtual
+>>> Management Channel Virtual Adapter on the PowerVM
+>>> platform. It provides both request/response and
+>>> async message support through the /dev/ibmvmc node.
+>>>
+>>> Signed-off-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+>>> Reviewed-by: Steven Royer <seroyer@linux.vnet.ibm.com>
+>>> Reviewed-by: Adam Reznechek <adreznec@linux.vnet.ibm.com>
+>>> Tested-by: Taylor Jakobson <tjakobs@us.ibm.com>
+>>> Tested-by: Brad Warrum <bwarrum@us.ibm.com>
+>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>> Cc: Arnd Bergmann <arnd@arndb.de>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> ---
+>>>  Documentation/ioctl/ioctl-number.txt  |    1 +
+>>>  Documentation/misc-devices/ibmvmc.txt |  161 +++
+>>>  MAINTAINERS                           |    6 +
+>>>  arch/powerpc/include/asm/hvcall.h     |    1 +
+>>>  drivers/misc/Kconfig                  |   14 +
+>>>  drivers/misc/Makefile                 |    1 +
+>>>  drivers/misc/ibmvmc.c                 | 2415 +++++++++++++++++++++++++++++++++
+>>>  drivers/misc/ibmvmc.h                 |  209 +++
+>>>  8 files changed, 2808 insertions(+)
+>>>  create mode 100644 Documentation/misc-devices/ibmvmc.txt
+>>>  create mode 100644 drivers/misc/ibmvmc.c
+>>>  create mode 100644 drivers/misc/ibmvmc.h
+>>
+>>> diff --git a/Documentation/misc-devices/ibmvmc.txt b/Documentation/misc-devices/ibmvmc.txt
+>>> new file mode 100644
+>>> index 0000000..bae1064
+>>> --- /dev/null
+>>> +++ b/Documentation/misc-devices/ibmvmc.txt
 > 
-> Fix the following warning, treated as error with W=1:
-> 
->   arch/powerpc/kernel/prom_init.c:656:46: error: suggest braces around empty body in an ‘if’ statement [-Werror=empty-body]
-> 
-> Suggested-by: Randy Dunlap <rdunlap@infradead.org>
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Aren't we doing new documentation in .rst format instead of .txt?
 
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
+I am not aware that .rst format is a *requirement* for new documentation.
 
-Thanks.
-
-> ---
-> v2: update macro directly
-> 
->  arch/powerpc/kernel/prom_init.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 5ae153b97d0a..7edf3aa5bc6d 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -103,7 +103,7 @@ int of_workarounds;
->  #ifdef DEBUG_PROM
->  #define prom_debug(x...)	prom_printf(x)
->  #else
-> -#define prom_debug(x...)
-> +#define prom_debug(x...)	do { } while (0)
->  #endif
->  
->  
-> 
-
+??
 
 -- 
 ~Randy
