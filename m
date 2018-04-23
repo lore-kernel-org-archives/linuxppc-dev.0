@@ -1,40 +1,43 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <minchan.kim@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40TyS65zGxzF24R
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 17:16:22 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3N7FNUS105736
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 03:16:20 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hhagdh8gr-1
- (version=TLSv1.2 cipher=AES256-SHA256 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 03:16:19 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 23 Apr 2018 08:16:16 +0100
-Subject: Re: [PATCH v2 5/7] ocxl: Expose the thread_id needed for wait on p9
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-References: <20180417020950.21446-1-alastair@au1.ibm.com>
- <20180418010810.30937-1-alastair@au1.ibm.com>
- <20180418010810.30937-6-alastair@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 23 Apr 2018 17:16:09 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40TyXB44GmzDqws
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 17:19:54 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id h69so8509193pfe.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2018 00:19:54 -0700 (PDT)
+Sender: Minchan Kim <minchan.kim@gmail.com>
+Date: Mon, 23 Apr 2018 16:19:41 +0900
+From: Minchan Kim <minchan@kernel.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
+ kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
+ jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ paulmck@linux.vnet.ibm.com, Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v10 09/25] mm: protect VMA modifications using VMA
+ sequence count
+Message-ID: <20180423071941.GD114098@rodete-desktop-imager.corp.google.com>
+References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523975611-15978-10-git-send-email-ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180418010810.30937-6-alastair@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <fd17c03b-f131-67e0-a343-5456e75d6b59@au1.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1523975611-15978-10-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,255 +47,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/04/18 11:08, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Tue, Apr 17, 2018 at 04:33:15PM +0200, Laurent Dufour wrote:
+> The VMA sequence count has been introduced to allow fast detection of
+> VMA modification when running a page fault handler without holding
+> the mmap_sem.
 > 
-> In order to successfully issue as_notify, an AFU needs to know the TID
-> to notify, which in turn means that this information should be
-> available in userspace so it can be communicated to the AFU.
+> This patch provides protection against the VMA modification done in :
+> 	- madvise()
+> 	- mpol_rebind_policy()
+> 	- vma_replace_policy()
+> 	- change_prot_numa()
+> 	- mlock(), munlock()
+> 	- mprotect()
+> 	- mmap_region()
+> 	- collapse_huge_page()
+> 	- userfaultd registering services
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-
-nitpicks below
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
+> In addition, VMA fields which will be read during the speculative fault
+> path needs to be written using WRITE_ONCE to prevent write to be split
+> and intermediate values to be pushed to other CPUs.
+> 
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 > ---
->   drivers/misc/ocxl/context.c       |  5 +++-
->   drivers/misc/ocxl/file.c          | 53 +++++++++++++++++++++++++++++++++++++++
->   drivers/misc/ocxl/link.c          | 36 ++++++++++++++++++++++++++
->   drivers/misc/ocxl/ocxl_internal.h |  1 +
->   include/misc/ocxl.h               |  9 +++++++
->   include/uapi/misc/ocxl.h          | 10 ++++++++
->   6 files changed, 113 insertions(+), 1 deletion(-)
+>  fs/proc/task_mmu.c |  5 ++++-
+>  fs/userfaultfd.c   | 17 +++++++++++++----
+>  mm/khugepaged.c    |  3 +++
+>  mm/madvise.c       |  6 +++++-
+>  mm/mempolicy.c     | 51 ++++++++++++++++++++++++++++++++++-----------------
+>  mm/mlock.c         | 13 ++++++++-----
+>  mm/mmap.c          | 22 +++++++++++++---------
+>  mm/mprotect.c      |  4 +++-
+>  mm/swap_state.c    |  8 ++++++--
+>  9 files changed, 89 insertions(+), 40 deletions(-)
 > 
-> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-> index 909e8807824a..95f74623113e 100644
-> --- a/drivers/misc/ocxl/context.c
-> +++ b/drivers/misc/ocxl/context.c
-> @@ -34,6 +34,8 @@ int ocxl_context_init(struct ocxl_context *ctx, struct ocxl_afu *afu,
->   	mutex_init(&ctx->xsl_error_lock);
->   	mutex_init(&ctx->irq_lock);
->   	idr_init(&ctx->irq_idr);
-> +	ctx->tidr = 0;
-> +
->   	/*
->   	 * Keep a reference on the AFU to make sure it's valid for the
->   	 * duration of the life of the context
-> @@ -65,6 +67,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
->   {
->   	int rc;
->   
-> +	// Locks both status & tidr
->   	mutex_lock(&ctx->status_mutex);
->   	if (ctx->status != OPENED) {
->   		rc = -EIO;
-> @@ -72,7 +75,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
->   	}
->   
->   	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid,
-> -			current->mm->context.id, 0, amr, current->mm,
-> +			current->mm->context.id, ctx->tidr, amr, current->mm,
->   			xsl_fault_error, ctx);
->   	if (rc)
->   		goto out;
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index 038509e5d031..eb409a469f21 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -5,6 +5,8 @@
->   #include <linux/sched/signal.h>
->   #include <linux/uaccess.h>
->   #include <uapi/misc/ocxl.h>
-> +#include <asm/reg.h>
-> +#include <asm/switch_to.h>
->   #include "ocxl_internal.h"
->   
->   
-> @@ -123,11 +125,55 @@ static long afu_ioctl_get_metadata(struct ocxl_context *ctx,
->   	return 0;
->   }
->   
-> +#ifdef CONFIG_PPC64
-> +static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
-> +		struct ocxl_ioctl_p9_wait __user *uarg)
-> +{
-> +	struct ocxl_ioctl_p9_wait arg;
-> +
-> +	memset(&arg, 0, sizeof(arg));
-> +
-> +	if (cpu_has_feature(CPU_FTR_P9_TIDR)) {
-> +		enum ocxl_context_status status;
-> +
-> +		// Locks both status & tidr
-> +		mutex_lock(&ctx->status_mutex);
-> +		if (!ctx->tidr) {
-> +			if (set_thread_tidr(current))
-> +				return -ENOENT;
-> +
-> +			ctx->tidr = current->thread.tidr;
-> +		}
-> +
-> +		status = ctx->status;
-> +		mutex_unlock(&ctx->status_mutex);
-> +
-> +		if (status == ATTACHED) {
-> +			int rc;
-> +			struct link *link = ctx->afu->fn->link;
+> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> index c486ad4b43f0..aeb417f28839 100644
+> --- a/fs/proc/task_mmu.c
+> +++ b/fs/proc/task_mmu.c
+> @@ -1136,8 +1136,11 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
+>  					goto out_mm;
+>  				}
+>  				for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> -					vma->vm_flags &= ~VM_SOFTDIRTY;
+> +					vm_write_begin(vma);
+> +					WRITE_ONCE(vma->vm_flags,
+> +						   vma->vm_flags & ~VM_SOFTDIRTY);
+>  					vma_set_page_prot(vma);
+> +					vm_write_end(vma);
 
-Declarations at the top
+trivial:
 
-> +
-> +			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
-> +			if (rc)
-> +				return rc;
-> +		}
-> +
-> +		arg.thread_id = ctx->tidr;
-> +	} else
-> +		return -ENOENT;
-> +
-> +	if (copy_to_user(uarg, &arg, sizeof(arg)))
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
->   #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :			\
->   			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
->   			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :		\
->   			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :	\
->   			x == OCXL_IOCTL_GET_METADATA ? "GET_METADATA" :	\
-> +			x == OCXL_IOCTL_ENABLE_P9_WAIT ? "ENABLE_P9_WAIT" :	\
->   			"UNKNOWN")
->   
->   static long afu_ioctl(struct file *file, unsigned int cmd,
-> @@ -186,6 +232,13 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   				(struct ocxl_ioctl_metadata __user *) args);
->   		break;
->   
-> +#ifdef CONFIG_PPC64
-> +	case OCXL_IOCTL_ENABLE_P9_WAIT:
-> +		rc = afu_ioctl_enable_p9_wait(ctx,
-> +				(struct ocxl_ioctl_p9_wait __user *) args);
-> +		break;
-> +#endif
-> +
->   	default:
->   		rc = -EINVAL;
->   	}
-> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-> index 656e8610eec2..88876ae8f330 100644
-> --- a/drivers/misc/ocxl/link.c
-> +++ b/drivers/misc/ocxl/link.c
-> @@ -544,6 +544,42 @@ int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
->   }
->   EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
->   
-> +int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid)
-> +{
-> +	struct link *link = (struct link *) link_handle;
-> +	struct spa *spa = link->spa;
-> +	struct ocxl_process_element *pe;
-> +	int pe_handle, rc;
-> +
-> +	if (pasid > SPA_PASID_MAX)
-> +		return -EINVAL;
-> +
-> +	pe_handle = pasid & SPA_PE_MASK;
-> +	pe = spa->spa_mem + pe_handle;
-> +
-> +	mutex_lock(&spa->spa_lock);
-> +
-> +	pe->tid = tid;
-> +
-> +	/*
-> +	 * The barrier makes sure the PE is updated
-> +	 * before we clear the NPU context cache below, so that the
-> +	 * old PE cannot be reloaded erroneously.
-> +	 */
-> +	mb();
-> +
-> +	/*
-> +	 * hook to platform code
-> +	 * On powerpc, the entry needs to be cleared from the context
-> +	 * cache of the NPU.
-> +	 */
-> +	rc = pnv_ocxl_spa_remove_pe_from_cache(link->platform_data, pe_handle);
-> +	WARN_ON(rc);
-> +
-> +	mutex_unlock(&spa->spa_lock);
-> +	return rc;
-> +}
-> +
->   int ocxl_link_remove_pe(void *link_handle, int pasid)
->   {
->   	struct link *link = (struct link *) link_handle;
-> diff --git a/drivers/misc/ocxl/ocxl_internal.h b/drivers/misc/ocxl/ocxl_internal.h
-> index 5d421824afd9..6c6d4e61888e 100644
-> --- a/drivers/misc/ocxl/ocxl_internal.h
-> +++ b/drivers/misc/ocxl/ocxl_internal.h
-> @@ -77,6 +77,7 @@ struct ocxl_context {
->   	struct ocxl_xsl_error xsl_error;
->   	struct mutex irq_lock;
->   	struct idr irq_idr;
-> +	__u16 tidr; // Thread ID used for P9 wait implementation
+I think It's tricky to maintain that VMA fields to be read during SPF should be
+(READ|WRITE_ONCE). I think we need some accessor to read/write them rather than
+raw accessing like like vma_set_page_prot. Maybe spf prefix would be helpful. 
 
-What's the difference between u16 and __u16...
+	vma_spf_set_value(vma, vm_flags, val);
 
->   };
->   
->   struct ocxl_process_element {
-> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
-> index 51ccf76db293..9ff6ddc28e22 100644
-> --- a/include/misc/ocxl.h
-> +++ b/include/misc/ocxl.h
-> @@ -188,6 +188,15 @@ extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
->   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->   		void *xsl_err_data);
->   
-> +/**
-> + * Update values within a Process Element
-> + *
-> + * link_handle: the link handle associated with the process element
-> + * pasid: the PASID for the AFU context
-> + * tid: the new thread id for the process element
-> + */
-> +extern int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
-> +
->   /*
->    * Remove a Process Element from the Shared Process Area for a link
->    */
-> diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
-> index 0af83d80fb3e..8d2748e69c84 100644
-> --- a/include/uapi/misc/ocxl.h
-> +++ b/include/uapi/misc/ocxl.h
-> @@ -48,6 +48,15 @@ struct ocxl_ioctl_metadata {
->   	__u64 reserved[13]; // Total of 16*u64
->   };
->   
-> +struct ocxl_ioctl_p9_wait {
-> +	__u16 thread_id; // The thread ID required to wake this thread
-> +	__u16 reserved1;
-> +	__u32 reserved2;
-> +	__u64 reserved3[3];
-> +};
-> +
-> +};
-> +
->   struct ocxl_ioctl_irq_fd {
->   	__u64 irq_offset;
->   	__s32 eventfd;
-> @@ -62,5 +71,6 @@ struct ocxl_ioctl_irq_fd {
->   #define OCXL_IOCTL_IRQ_FREE	_IOW(OCXL_MAGIC, 0x12, __u64)
->   #define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct ocxl_ioctl_irq_fd)
->   #define OCXL_IOCTL_GET_METADATA _IOR(OCXL_MAGIC, 0x14, struct ocxl_ioctl_metadata)
-> +#define OCXL_IOCTL_ENABLE_P9_WAIT	_IOR(OCXL_MAGIC, 0x15, struct ocxl_ioctl_p9_wait)
->   
->   #endif /* _UAPI_MISC_OCXL_H */
+We also add some markers in vm_area_struct's fileds to indicate that
+people shouldn't access those fields directly.
+
+Just a thought.
+
+
+>  				}
+>  				downgrade_write(&mm->mmap_sem);
+
+
+> diff --git a/mm/swap_state.c b/mm/swap_state.c
+> index fe079756bb18..8a8a402ed59f 100644
+> --- a/mm/swap_state.c
+> +++ b/mm/swap_state.c
+> @@ -575,6 +575,10 @@ static unsigned long swapin_nr_pages(unsigned long offset)
+>   * the readahead.
+>   *
+>   * Caller must hold down_read on the vma->vm_mm if vmf->vma is not NULL.
+> + * This is needed to ensure the VMA will not be freed in our back. In the case
+> + * of the speculative page fault handler, this cannot happen, even if we don't
+> + * hold the mmap_sem. Callees are assumed to take care of reading VMA's fields
+
+I guess reader would be curious on *why* is safe with SPF.
+Comment about the why could be helpful for reviewer.
+
+> + * using READ_ONCE() to read consistent values.
+>   */
+>  struct page *swap_cluster_readahead(swp_entry_t entry, gfp_t gfp_mask,
+>  				struct vm_fault *vmf)
+> @@ -668,9 +672,9 @@ static inline void swap_ra_clamp_pfn(struct vm_area_struct *vma,
+>  				     unsigned long *start,
+>  				     unsigned long *end)
+>  {
+> -	*start = max3(lpfn, PFN_DOWN(vma->vm_start),
+> +	*start = max3(lpfn, PFN_DOWN(READ_ONCE(vma->vm_start)),
+>  		      PFN_DOWN(faddr & PMD_MASK));
+> -	*end = min3(rpfn, PFN_DOWN(vma->vm_end),
+> +	*end = min3(rpfn, PFN_DOWN(READ_ONCE(vma->vm_end)),
+>  		    PFN_DOWN((faddr & PMD_MASK) + PMD_SIZE));
+>  }
+>  
+> -- 
+> 2.7.4
 > 
-
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
