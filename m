@@ -2,17 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40VVPj6ZpqzF1pY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 14:16:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VVPk4lT7zF1sY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 14:16:10 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: npiggin@gmail.com,
 	msuchanek@suse.de,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6] powerpc/64s: Enable barrier_nospec based on firmware
- settings
-Date: Tue, 24 Apr 2018 14:15:57 +1000
-Message-Id: <20180424041559.32410-4-mpe@ellerman.id.au>
+Subject: [PATCH 5/6] powerpc: Use barrier_nospec in copy_from_user()
+Date: Tue, 24 Apr 2018 14:15:58 +1000
+Message-Id: <20180424041559.32410-5-mpe@ellerman.id.au>
 In-Reply-To: <20180424041559.32410-1-mpe@ellerman.id.au>
 References: <20180424041559.32410-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,135 +23,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Michal Suchanek <msuchanek@suse.de>
+Based on the x86 commit doing the same.
 
-Check what firmware told us and enable/disable the barrier_nospec as
-appropriate.
+See commit 304ec1b05031 ("x86/uaccess: Use __uaccess_begin_nospec()
+and uaccess_try_nospec") and b3bbfb3fb5d2 ("x86: Introduce
+__uaccess_begin_nospec() and uaccess_try_nospec") for more detail.
 
-We err on the side of enabling the barrier, as it's no-op on older
-systems, see the comment for more detail.
+In all cases we are ordering the load from the potentially
+user-controlled pointer vs a previous branch based on an access_ok()
+check or similar.
 
+Base on a patch from Michal Suchanek.
+
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/setup.h       |  1 +
- arch/powerpc/kernel/security.c         | 60 ++++++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c |  1 +
- arch/powerpc/platforms/pseries/setup.c |  1 +
- 4 files changed, 63 insertions(+)
+ arch/powerpc/include/asm/uaccess.h | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 4335cddc1cf2..aeb175e8a525 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -52,6 +52,7 @@ enum l1d_flush_type {
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index a62ee663b2c8..6dc3d2eeea4a 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -252,6 +252,7 @@ do {								\
+ 	__chk_user_ptr(ptr);					\
+ 	if (!is_kernel_addr((unsigned long)__gu_addr))		\
+ 		might_fault();					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -263,8 +264,10 @@ do {								\
+ 	unsigned long  __gu_val = 0;					\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);		\
+ 	might_fault();							\
+-	if (access_ok(VERIFY_READ, __gu_addr, (size)))			\
++	if (access_ok(VERIFY_READ, __gu_addr, (size))) {		\
++		barrier_nospec();					\
+ 		__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
++	}								\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;				\
+ 	__gu_err;							\
+ })
+@@ -275,6 +278,7 @@ do {								\
+ 	unsigned long __gu_val;					\
+ 	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
+ 	__chk_user_ptr(ptr);					\
++	barrier_nospec();					\
+ 	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
+ 	__gu_err;						\
+@@ -302,15 +306,19 @@ static inline unsigned long raw_copy_from_user(void *to,
  
- void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
-+void setup_barrier_nospec(void);
- void do_barrier_nospec_fixups(bool enable);
+ 		switch (n) {
+ 		case 1:
++			barrier_nospec();
+ 			__get_user_size(*(u8 *)to, from, 1, ret);
+ 			break;
+ 		case 2:
++			barrier_nospec();
+ 			__get_user_size(*(u16 *)to, from, 2, ret);
+ 			break;
+ 		case 4:
++			barrier_nospec();
+ 			__get_user_size(*(u32 *)to, from, 4, ret);
+ 			break;
+ 		case 8:
++			barrier_nospec();
+ 			__get_user_size(*(u64 *)to, from, 8, ret);
+ 			break;
+ 		}
+@@ -318,6 +326,7 @@ static inline unsigned long raw_copy_from_user(void *to,
+ 			return 0;
+ 	}
  
- #ifdef CONFIG_PPC_BOOK3S_64
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index b963eae0b0a0..d1b9639e5e24 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -8,6 +8,7 @@
- #include <linux/device.h>
- #include <linux/seq_buf.h>
- 
-+#include <asm/debugfs.h>
- #include <asm/security_features.h>
- #include <asm/setup.h>
- 
-@@ -22,6 +23,65 @@ static void enable_barrier_nospec(bool enable)
- 	do_barrier_nospec_fixups(enable);
++	barrier_nospec();
+ 	return __copy_tofrom_user((__force void __user *)to, from, n);
  }
  
-+void setup_barrier_nospec(void)
-+{
-+	bool enable;
-+
-+	/*
-+	 * It would make sense to check SEC_FTR_SPEC_BAR_ORI31 below as well.
-+	 * But there's a good reason not to. The two flags we check below are
-+	 * both are enabled by default in the kernel, so if the hcall is not
-+	 * functional they will be enabled.
-+	 * On a system where the host firmware has been updated (so the ori
-+	 * functions as a barrier), but on which the hypervisor (KVM/Qemu) has
-+	 * not been updated, we would like to enable the barrier. Dropping the
-+	 * check for SEC_FTR_SPEC_BAR_ORI31 achieves that. The only downside is
-+	 * we potentially enable the barrier on systems where the host firmware
-+	 * is not updated, but that's harmless as it's a no-op.
-+	 */
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
-+		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
-+
-+	enable_barrier_nospec(enable);
-+}
-+
-+#ifdef CONFIG_DEBUG_FS
-+static int barrier_nospec_set(void *data, u64 val)
-+{
-+	switch (val) {
-+	case 0:
-+	case 1:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (!!val == !!barrier_nospec_enabled)
-+		return 0;
-+
-+	enable_barrier_nospec(!!val);
-+
-+	return 0;
-+}
-+
-+static int barrier_nospec_get(void *data, u64 *val)
-+{
-+	*val = barrier_nospec_enabled ? 1 : 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_barrier_nospec,
-+			barrier_nospec_get, barrier_nospec_set, "%llu\n");
-+
-+static __init int barrier_nospec_debugfs_init(void)
-+{
-+	debugfs_create_file("barrier_nospec", 0600, powerpc_debugfs_root, NULL,
-+			    &fops_barrier_nospec);
-+	return 0;
-+}
-+device_initcall(barrier_nospec_debugfs_init);
-+#endif /* CONFIG_DEBUG_FS */
-+
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	bool thread_priv;
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index ef8c9ce53a61..e2ca5f77a55f 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -124,6 +124,7 @@ static void pnv_setup_rfi_flush(void)
- 		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
- 
- 	setup_rfi_flush(type, enable);
-+	setup_barrier_nospec();
- }
- 
- static void __init pnv_setup_arch(void)
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index b55ad4286dc7..63b1f0d10ef0 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -534,6 +534,7 @@ void pseries_setup_rfi_flush(void)
- 		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
- 
- 	setup_rfi_flush(types, enable);
-+	setup_barrier_nospec();
- }
- 
- #ifdef CONFIG_PCI_IOV
 -- 
 2.14.1
