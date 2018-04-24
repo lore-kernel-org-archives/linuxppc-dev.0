@@ -1,27 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40VtTJ4bSszF24D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 05:20:35 +1000 (AEST)
-Subject: Re: [PATCH v4 03/19] powerpc: Mark variable `l` as unused, remove
- `path`
-To: Mathieu Malaterre <malat@debian.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <20180322202007.23088-4-malat@debian.org>
- <20180405202648.2836-1-malat@debian.org>
- <20180406173335.Horde.Qgml03BtHOxSl6SzIPgQLA9@messagerie.si.c-s.fr>
- <CA+7wUswhZHNabB6kAcX8Cu8zMai15RzGn9euwdKau8kY48i-CA@mail.gmail.com>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <ff779a22-0bbb-4885-5678-1371d749bc88@c-s.fr>
-Date: Tue, 24 Apr 2018 21:20:29 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40VxR12RkVzF24D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 07:33:45 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3OLWqu6073602
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 17:33:43 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hj7kfdpdr-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 17:33:42 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 24 Apr 2018 15:33:42 -0600
+Subject: Re: [RFC v2 1/3] hotplug/mobility: Apply assoc updates for Post
+ Migration Topo
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+References: <54713533-2d91-60f0-5901-02b41a2b948d@linux.vnet.ibm.com>
+ <c2207993-e618-9192-b79e-c5519afdff1b@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Tue, 24 Apr 2018 16:33:37 -0500
 MIME-Version: 1.0
-In-Reply-To: <CA+7wUswhZHNabB6kAcX8Cu8zMai15RzGn9euwdKau8kY48i-CA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <c2207993-e618-9192-b79e-c5519afdff1b@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <2b3e4948-a21b-423b-fa74-f4ae3ebd5978@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,160 +41,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+See comments below:
 
-
-Le 06/04/2018 à 20:32, Mathieu Malaterre a écrit :
-> On Fri, Apr 6, 2018 at 5:33 PM, LEROY Christophe
-> <christophe.leroy@c-s.fr> wrote:
->> Mathieu Malaterre <malat@debian.org> a écrit :
+On 04/24/2018 11:56 AM, Nathan Fontenot wrote:
+> On 02/26/2018 02:52 PM, Michael Bringmann wrote:
+>> hotplug/mobility: Recognize more changes to the associativity of
+>> memory blocks described by the 'ibm,dynamic-memory' and 'cpu'
+>> properties when processing the topology of LPARS in Post Migration
+>> events.  Previous efforts only recognized whether a memory block's
+>> assignment had changed in the property.  Changes here include:
 >>
->>> Add gcc attribute unused for `l` variable, replace `path` variable
->>> directly
->>> with prom_scratch. Fix warnings treated as errors with W=1:
->>>
->>>    arch/powerpc/kernel/prom_init.c:607:6: error: variable ‘l’ set but not
->>> used [-Werror=unused-but-set-variable]
->>>    arch/powerpc/kernel/prom_init.c:1388:8: error: variable ‘path’ set but
->>> not used [-Werror=unused-but-set-variable]
->>>
->>> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
->>> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->>> ---
->>> v4: redo v3 since path variable can be avoided
->>> v3: really move path within ifdef DEBUG_PROM
->>> v2: move path within ifdef DEBUG_PROM
->>>
->>>   arch/powerpc/kernel/prom_init.c | 11 +++++------
->>>   1 file changed, 5 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/prom_init.c
->>> b/arch/powerpc/kernel/prom_init.c
->>> index f8a9a50ff9b5..4b223a9470be 100644
->>> --- a/arch/powerpc/kernel/prom_init.c
->>> +++ b/arch/powerpc/kernel/prom_init.c
->>> @@ -604,7 +604,7 @@ static void __init early_cmdline_parse(void)
->>>          const char *opt;
->>>
->>>          char *p;
->>> -       int l = 0;
->>> +       int l __maybe_unused = 0;
->>
->>
->> Instead of hiding the problem with __maybe_unused, I think we could replace
->> the
->> #ifdef CONFIG_CMDLINE
->> by a
->> if (IS_ENABLED(CONFIG_CMDLINE_BOOL))
->>
->> This is recommanded by Linux codying style
+>> * Checking the aa_index values of the old/new properties and 'readd'
+>>   any block for which the setting has changed.
+>> * Checking for changes in cpu associativity and making 'readd' calls
+>>   when differences are observed.
 > 
-> Neat. I was not aware of this trick. Does not work in this case though:
+> As part of the post-migration updates do you need to hold a lock
+> so that we don't attempt to process any of the cpu/memory changes
+> while the device tree is being updated?
 > 
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-> index 7925f64fefde..19634739b279 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -604,17 +604,16 @@ static void __init early_cmdline_parse(void)
->          const char *opt;
-> 
->          char *p;
-> -       int l __maybe_unused = 0;
-> +       int l = 0;
-> 
->          prom_cmd_line[0] = 0;
->          p = prom_cmd_line;
->          if ((long)prom.chosen > 0)
->                  l = prom_getprop(prom.chosen, "bootargs", p,
-> COMMAND_LINE_SIZE-1);
-> -#ifdef CONFIG_CMDLINE
-> -       if (l <= 0 || p[0] == '\0') /* dbl check */
-> -               strlcpy(prom_cmd_line,
-> -                       CONFIG_CMDLINE, sizeof(prom_cmd_line));
-> -#endif /* CONFIG_CMDLINE */
-> +       if (IS_ENABLED(CONFIG_CMDLINE_BOOL))
-> +               if (l <= 0 || p[0] == '\0') /* dbl check */
-> +                       strlcpy(prom_cmd_line,
-> +                               CONFIG_CMDLINE, sizeof(prom_cmd_line));
->          prom_printf("command line: %s\n", prom_cmd_line);
-> 
->   #ifdef CONFIG_PPC64
-> 
-> 
-> leads to:
-> 
->    CC      arch/powerpc/kernel/prom_init.o
-> ../arch/powerpc/kernel/prom_init.c: In function ‘early_cmdline_parse’:
-> ../arch/powerpc/kernel/prom_init.c:616:5: error: ‘CONFIG_CMDLINE’
-> undeclared (first use in this function)
->       CONFIG_CMDLINE, sizeof(prom_cmd_line));
->       ^~~~~~~~~~~~~~
-> ../arch/powerpc/kernel/prom_init.c:616:5: note: each undeclared
-> identifier is reported only once for each function it appears in
-> ../scripts/Makefile.build:312: recipe for target
-> 'arch/powerpc/kernel/prom_init.o' failed
-> make[6]: *** [arch/powerpc/kernel/prom_init.o] Error 1
+> You may be able to grab the device hotplug lock for this.
 
-And what about something like :
+The CPU Re-add process reuses the dlpar_cpu_remove / dlpar_cpu_add
+code for POWERPC.  These functions end up invoking device_online() /
+device_offline() which in turn end up invoking the 'cpus_write_lock/unlock'
+around every kernel change to the CPU structures.  It was modeled
+on the Memory Re-add process as we discussed a while back, which
+also uses device_online and a corresponding write lock for each
+LMB processed.
 
-
-+       if (l <= 0 || p[0] == '\0') { /* dbl check */
-  #ifdef CONFIG_CMDLINE
--       if (l <= 0 || p[0] == '\0') /* dbl check */
-                 strlcpy(prom_cmd_line,
-                         CONFIG_CMDLINE, sizeof(prom_cmd_line));
-  #endif /* CONFIG_CMDLINE */
-+}
-          prom_printf("command line: %s\n", prom_cmd_line);
-
-Christophe
-
+Do you see a need for a coarser granularity of locking around
+all or a group of the cpu/memory changes?  The data structures
+that the kernel outside of powerpc uses for CPUs and LMBs seem
+to be quite well isolated from the device-tree properties.
 
 > 
+>>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>> ---
+>> Changes in RFC:
+>>   -- Simplify code to update CPU nodes during mobility checks.
+>>      Remove functions to generate extra HP_ELOG messages in favor
+>>      of direct function calls to dlpar_cpu_readd_by_index.
+>>   -- Move check for "cpu" node type from pseries_update_cpu to
+>>      pseries_smp_notifier in 'hotplug-cpu.c'
+>>   -- Remove functions 'pseries_memory_readd_by_index' and
+>>      'pseries_cpu_readd_by_index' as no longer needed outside of
+>>      'mobility.c'.
+>> ---
+>>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |   69 +++++++++++++++++++++++
+>>  arch/powerpc/platforms/pseries/hotplug-memory.c |    6 ++
+>>  2 files changed, 75 insertions(+)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> index a7d14aa7..91ef22a 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>> @@ -636,6 +636,27 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>>  	return rc;
+>>  }
+>>
+>> +static int dlpar_cpu_readd_by_index(u32 drc_index)
+>> +{
+>> +	int rc = 0;
+>> +
+>> +	pr_info("Attempting to update CPU, drc index %x\n", drc_index);
 > 
->> Christophe
->>
->>
->>>
->>>          prom_cmd_line[0] = 0;
->>>          p = prom_cmd_line;
->>> @@ -1386,7 +1386,7 @@ static void __init reserve_mem(u64 base, u64 size)
->>>   static void __init prom_init_mem(void)
->>>   {
->>>          phandle node;
->>> -       char *path, type[64];
->>> +       char type[64];
->>>          unsigned int plen;
->>>          cell_t *p, *endp;
->>>          __be32 val;
->>> @@ -1407,7 +1407,6 @@ static void __init prom_init_mem(void)
->>>          prom_debug("root_size_cells: %x\n", rsc);
->>>
->>>          prom_debug("scanning memory:\n");
->>> -       path = prom_scratch;
->>>
->>>          for (node = 0; prom_next_node(&node); ) {
->>>                  type[0] = 0;
->>> @@ -1432,9 +1431,9 @@ static void __init prom_init_mem(void)
->>>                  endp = p + (plen / sizeof(cell_t));
->>>
->>>   #ifdef DEBUG_PROM
->>> -               memset(path, 0, PROM_SCRATCH_SIZE);
->>> -               call_prom("package-to-path", 3, 1, node, path,
->>> PROM_SCRATCH_SIZE-1);
->>> -               prom_debug("  node %s :\n", path);
->>> +               memset(prom_scratch, 0, PROM_SCRATCH_SIZE);
->>> +               call_prom("package-to-path", 3, 1, node, prom_scratch,
->>> PROM_SCRATCH_SIZE - 1);
->>> +               prom_debug("  node %s :\n", prom_scratch);
->>>   #endif /* DEBUG_PROM */
->>>
->>>                  while ((endp - p) >= (rac + rsc)) {
->>> --
->>> 2.11.0
->>
->>
->>
+> Should make this say we are re-adding the CPU, it's a bit more specific as
+> to what is really happening.
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+Okay.  I will update the notice from dlpar_memory_readd_by_index, as well.
+> 
+>> +
+>> +	if (dlpar_cpu_remove_by_index(drc_index))
+>> +		rc = -EINVAL;
+>> +	else if (dlpar_cpu_add(drc_index))
+>> +		rc = -EINVAL;
+>> +
+>> +	if (rc)
+>> +		pr_info("Failed to update cpu at drc_index %lx\n",
+>> +				(unsigned long int)drc_index);
+>> +	else
+>> +		pr_info("CPU at drc_index %lx was updated\n",
+>> +				(unsigned long int)drc_index);
+>> +
+>> +	return rc;
+>> +}
+>> +
+>>  static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+>>  {
+>>  	struct device_node *dn;
+>> @@ -826,6 +847,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>>  		else
+>>  			rc = -EINVAL;
+>>  		break;
+>> +	case PSERIES_HP_ELOG_ACTION_READD:
+>> +		rc = dlpar_cpu_readd_by_index(drc_index);
+>> +		break;
+>>  	default:
+>>  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+>>  		rc = -EINVAL;
+>> @@ -876,12 +900,53 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>>
+>>  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+>>
+>> +static int pseries_update_cpu(struct of_reconfig_data *pr)
+>> +{
+>> +	u32 old_entries, new_entries;
+>> +	__be32 *p, *old_assoc, *new_assoc;
+>> +	int rc = 0;
+>> +
+>> +	/* So far, we only handle the 'ibm,associativity' property,
+>> +	 * here.
+>> +	 * The first int of the property is the number of domains
+>> +	 * described.  This is followed by an array of level values.
+>> +	 */
+>> +	p = (__be32 *) pr->old_prop->value;
+>> +	if (!p)
+>> +		return -EINVAL;
+>> +	old_entries = be32_to_cpu(*p++);
+>> +	old_assoc = p;
+>> +
+>> +	p = (__be32 *)pr->prop->value;
+>> +	if (!p)
+>> +		return -EINVAL;
+>> +	new_entries = be32_to_cpu(*p++);
+>> +	new_assoc = p;
+>> +
+>> +	if (old_entries == new_entries) {
+>> +		int sz = old_entries * sizeof(int);
+>> +
+>> +		if (!memcmp(old_assoc, new_assoc, sz))
+>> +			rc = dlpar_cpu_readd_by_index(
+>> +					be32_to_cpu(pr->dn->phandle));
+>> +
+>> +	} else {
+>> +		rc = dlpar_cpu_readd_by_index(
+>> +					be32_to_cpu(pr->dn->phandle));
+>> +	}
+>> +
+>> +	return rc;
+>> +}
+> 
+> Do we need to do the full compare of the new vs. the old affinity property?
+> 
+> I would think we would only get an updated property if the property changes.
+> We don't care what changes in the property at this point, only that it changed.
+> You could just call dlpar_cpu_readd_by_index() directly.
+
+Okay.
+
+> 
+> -Nathan
+
+Thanks.
+Michael
+
+> 
+>> +
+>>  static int pseries_smp_notifier(struct notifier_block *nb,
+>>  				unsigned long action, void *data)
+>>  {
+>>  	struct of_reconfig_data *rd = data;
+>>  	int err = 0;
+>>
+>> +	if (strcmp(rd->dn->type, "cpu"))
+>> +		return notifier_from_errno(err);
+>> +
+>>  	switch (action) {
+>>  	case OF_RECONFIG_ATTACH_NODE:
+>>  		err = pseries_add_processor(rd->dn);
+>> @@ -889,6 +954,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+>>  	case OF_RECONFIG_DETACH_NODE:
+>>  		pseries_remove_processor(rd->dn);
+>>  		break;
+>> +	case OF_RECONFIG_UPDATE_PROPERTY:
+>> +		if (!strcmp(rd->prop->name, "ibm,associativity"))
+>> +			err = pseries_update_cpu(rd);
+>> +		break;
+>>  	}
+>>  	return notifier_from_errno(err);
+>>  }
+>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> index c1578f5..2341eae 100644
+>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>> @@ -1040,6 +1040,12 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+>>  					  memblock_size);
+>>  			rc = (rc < 0) ? -EINVAL : 0;
+>>  			break;
+>> +		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
+>> +					be32_to_cpu(new_drmem[i].aa_index)) &&
+>> +				(be32_to_cpu(new_drmem[i].flags) &
+>> +					DRCONF_MEM_ASSIGNED)) {
+>> +			rc = dlpar_memory_readd_by_index(
+>> +				be32_to_cpu(new_drmem[i].drc_index))>  		}
+>>  	}
+>>  	return rc;
+>>
+> 
+
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
