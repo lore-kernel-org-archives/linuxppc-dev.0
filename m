@@ -1,33 +1,26 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WDkW3YbSzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 19:03:14 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3P8wgo9053203
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 05:03:12 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hjm4nq9ne-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 05:03:11 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 25 Apr 2018 10:03:09 +0100
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, npiggin@gmail.com
-Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- svaidy@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, <stable@vger.kernel.org>
-Subject: [PATCH V2] cpufreq: powernv: Fix the hardlockup by synchronus
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WF2W2LnhzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 19:17:05 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id z9so14675854pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 02:17:05 -0700 (PDT)
+Date: Wed, 25 Apr 2018 14:47:01 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, npiggin@gmail.com, linux-pm@vger.kernel.org,
+ ppaidipe@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, svaidy@linux.vnet.ibm.com,
+ stable@vger.kernel.org
+Subject: Re: [PATCH V2] cpufreq: powernv: Fix the hardlockup by synchronus
  smp_call in timer interrupt
-Date: Wed, 25 Apr 2018 14:32:48 +0530
-Message-Id: <1524646968-526-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-ID: <20180425091701.kxxslgalw3sdpiym@vireshk-i7>
+References: <1524646968-526-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1524646968-526-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,90 +30,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gpstate_timer_handler() uses synchronous smp_call to set the pstate
-on the requested core. This causes the below hard lockup:
+On 25-04-18, 14:32, Shilpasri G Bhat wrote:
+> gpstate_timer_handler() uses synchronous smp_call to set the pstate
+> on the requested core. This causes the below hard lockup:
+> 
+> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+> LR = arch_send_call_function_ipi_mask+0x120/0x130
+> [c000003fe566ba50] [c00000000004876c]
+> arch_send_call_function_ipi_mask+0x4c/0x130
+> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+> 
+> One way to avoid this is removing the smp-call. We can ensure that the timer
+> always runs on one of the policy-cpus. If the timer gets migrated to a
+> cpu outside the policy then re-queue it back on the policy->cpus. This way
+> we can get rid of the smp-call which was being used to set the pstate
+> on the policy->cpus.
+> 
+> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+> Cc: <stable@vger.kernel.org>        [4.8+]
+> Reported-by: Nicholas Piggin <npiggin@gmail.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> ---
+> Changes from V1:
+> - Remove smp_call in the pstate handler.
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
+>  1 file changed, 20 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 71f8682..dc8ffb5 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -679,6 +679,25 @@ void gpstate_timer_handler(struct timer_list *t)
+>  
+>  	if (!spin_trylock(&gpstates->gpstate_lock))
+>  		return;
+> +	/*
+> +	 * If the timer has migrated to the different cpu then bring
+> +	 * it back to one of the policy->cpus
+> +	 */
+> +	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
+> +		/*
+> +		 * Timer should be deleted if policy is inactive.
+> +		 * If policy is active then re-queue on one of the
+> +		 * policy->cpus.
+> +		 */
 
-[c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
-[c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
-[c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
-[c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
-[c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
-[c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
-[c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
-[c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
-[c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
-[c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
--- interrupt: 901 at doorbell_global_ipi+0x34/0x50
-LR = arch_send_call_function_ipi_mask+0x120/0x130
-[c000003fe566ba50] [c00000000004876c]
-arch_send_call_function_ipi_mask+0x4c/0x130
-[c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
-[c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
-[c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
-[c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
-[c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
-[c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
-[c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+This looks racy. Shouldn't you guarantee that the timer is already
+removed in a synchronous way before de-activating the policy ?
 
-One way to avoid this is removing the smp-call. We can ensure that the timer
-always runs on one of the policy-cpus. If the timer gets migrated to a
-cpu outside the policy then re-queue it back on the policy->cpus. This way
-we can get rid of the smp-call which was being used to set the pstate
-on the policy->cpus.
+> +		if (!cpumask_empty(policy->cpus)) {
+> +			gpstates->timer.expires = jiffies +
+> +						msecs_to_jiffies(1);
+> +			add_timer_on(&gpstates->timer,
+> +					cpumask_first(policy->cpus));
+> +		}
+> +		spin_unlock(&gpstates->gpstate_lock);
+> +		return;
+> +	}
+>  
+>  	/*
+>  	 * If PMCR was last updated was using fast_swtich then
+> @@ -718,10 +737,8 @@ void gpstate_timer_handler(struct timer_list *t)
+>  	if (gpstate_idx != gpstates->last_lpstate_idx)
+>  		queue_gpstate_timer(gpstates);
+>  
+> +	set_pstate(&freq_data);
+>  	spin_unlock(&gpstates->gpstate_lock);
+> -
+> -	/* Timer may get migrated to a different cpu on cpu hot unplug */
+> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>  }
+>  
+>  /*
+> -- 
+> 1.8.3.1
 
-Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
-Cc: <stable@vger.kernel.org>        [4.8+]
-Reported-by: Nicholas Piggin <npiggin@gmail.com>
-Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-Changes from V1:
-- Remove smp_call in the pstate handler.
-
- drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 71f8682..dc8ffb5 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -679,6 +679,25 @@ void gpstate_timer_handler(struct timer_list *t)
- 
- 	if (!spin_trylock(&gpstates->gpstate_lock))
- 		return;
-+	/*
-+	 * If the timer has migrated to the different cpu then bring
-+	 * it back to one of the policy->cpus
-+	 */
-+	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
-+		/*
-+		 * Timer should be deleted if policy is inactive.
-+		 * If policy is active then re-queue on one of the
-+		 * policy->cpus.
-+		 */
-+		if (!cpumask_empty(policy->cpus)) {
-+			gpstates->timer.expires = jiffies +
-+						msecs_to_jiffies(1);
-+			add_timer_on(&gpstates->timer,
-+					cpumask_first(policy->cpus));
-+		}
-+		spin_unlock(&gpstates->gpstate_lock);
-+		return;
-+	}
- 
- 	/*
- 	 * If PMCR was last updated was using fast_swtich then
-@@ -718,10 +737,8 @@ void gpstate_timer_handler(struct timer_list *t)
- 	if (gpstate_idx != gpstates->last_lpstate_idx)
- 		queue_gpstate_timer(gpstates);
- 
-+	set_pstate(&freq_data);
- 	spin_unlock(&gpstates->gpstate_lock);
--
--	/* Timer may get migrated to a different cpu on cpu hot unplug */
--	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
- }
- 
- /*
 -- 
-1.8.3.1
+viresh
