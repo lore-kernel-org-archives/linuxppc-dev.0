@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNxt0W8RzF24X
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNxv1QXbzF24R
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:38 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 04/16] y2038: ia64: Remove unneeded ipc uapi header files
-Date: Wed, 25 Apr 2018 17:05:54 +0200
-Message-Id: <20180425150606.954771-4-arnd@arndb.de>
+Subject: [PATCH v4 10/16] y2038: powerpc: Extend sysvipc data structures
+Date: Wed, 25 Apr 2018 17:06:00 +0200
+Message-Id: <20180425150606.954771-10-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,156 +29,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ia64 ipcbuf/msgbuf/sembuf/shmbuf header files are all identical
-to the version from asm-generic.
+powerpc, uses a nonstandard variation of the generic sysvipc
+data structures, intended to have the padding moved around
+so it can deal with big-endian 32-bit user space that has
+64-bit time_t.
 
-This patch removes the files and replaces them with 'generic-y'
-statements as part of the y2038 changes. While ia64 no longer has
-a compat mode and doesn't need the file any more, it seem nicer
-to clean this up anyway.
+powerpc has the same definition as parisc and sparc, but now also
+supports little-endian mode, which is now wrong because the
+padding is made for big-endian user space.
+
+This takes just take the same approach here that we have for
+the asm-generic headers and adds separate 32-bit fields for the
+upper halves of the timestamps, to let libc deal with the mess
+in user space.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/ia64/include/uapi/asm/Kbuild   |  4 ++++
- arch/ia64/include/uapi/asm/ipcbuf.h |  2 --
- arch/ia64/include/uapi/asm/msgbuf.h | 28 --------------------------
- arch/ia64/include/uapi/asm/sembuf.h | 23 ----------------------
- arch/ia64/include/uapi/asm/shmbuf.h | 39 -------------------------------------
- 5 files changed, 4 insertions(+), 92 deletions(-)
- delete mode 100644 arch/ia64/include/uapi/asm/ipcbuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/sembuf.h
- delete mode 100644 arch/ia64/include/uapi/asm/shmbuf.h
+ arch/powerpc/include/asm/compat.h      | 32 ++++++++++++++++----------------
+ arch/powerpc/include/uapi/asm/msgbuf.h | 18 +++++++++---------
+ arch/powerpc/include/uapi/asm/sembuf.h | 14 +++++++-------
+ arch/powerpc/include/uapi/asm/shmbuf.h | 19 ++++++++-----------
+ 4 files changed, 40 insertions(+), 43 deletions(-)
 
-diff --git a/arch/ia64/include/uapi/asm/Kbuild b/arch/ia64/include/uapi/asm/Kbuild
-index c0527cfc48f0..3982e673e967 100644
---- a/arch/ia64/include/uapi/asm/Kbuild
-+++ b/arch/ia64/include/uapi/asm/Kbuild
-@@ -2,5 +2,9 @@
- include include/uapi/asm-generic/Kbuild.asm
+diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
+index b4773c81f7d5..85c8af2bb272 100644
+--- a/arch/powerpc/include/asm/compat.h
++++ b/arch/powerpc/include/asm/compat.h
+@@ -162,10 +162,10 @@ struct compat_ipc64_perm {
  
- generic-y += bpf_perf_event.h
-+generic-y += ipcbuf.h
- generic-y += kvm_para.h
-+generic-y += msgbuf.h
- generic-y += poll.h
-+generic-y += sembuf.h
-+generic-y += shmbuf.h
-diff --git a/arch/ia64/include/uapi/asm/ipcbuf.h b/arch/ia64/include/uapi/asm/ipcbuf.h
-deleted file mode 100644
-index 90d6445a14df..000000000000
---- a/arch/ia64/include/uapi/asm/ipcbuf.h
-+++ /dev/null
-@@ -1,2 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#include <asm-generic/ipcbuf.h>
-diff --git a/arch/ia64/include/uapi/asm/msgbuf.h b/arch/ia64/include/uapi/asm/msgbuf.h
-deleted file mode 100644
-index aa25df92d9dc..000000000000
---- a/arch/ia64/include/uapi/asm/msgbuf.h
-+++ /dev/null
-@@ -1,28 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ASM_IA64_MSGBUF_H
--#define _ASM_IA64_MSGBUF_H
--
--/*
-- * The msqid64_ds structure for IA-64 architecture.
-- * Note extra padding because this structure is passed back and forth
-- * between kernel and user space.
-- *
-- * Pad space is left for:
-- * - 2 miscellaneous 64-bit values
-- */
--
--struct msqid64_ds {
--	struct ipc64_perm msg_perm;
--	__kernel_time_t msg_stime;	/* last msgsnd time */
--	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	__kernel_time_t msg_ctime;	/* last change time */
--	unsigned long  msg_cbytes;	/* current number of bytes on queue */
--	unsigned long  msg_qnum;	/* number of messages in queue */
--	unsigned long  msg_qbytes;	/* max number of bytes on queue */
--	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
--	__kernel_pid_t msg_lrpid;	/* last receive pid */
--	unsigned long  __unused1;
--	unsigned long  __unused2;
--};
--
--#endif /* _ASM_IA64_MSGBUF_H */
-diff --git a/arch/ia64/include/uapi/asm/sembuf.h b/arch/ia64/include/uapi/asm/sembuf.h
-deleted file mode 100644
-index 6ed058760afc..000000000000
---- a/arch/ia64/include/uapi/asm/sembuf.h
-+++ /dev/null
-@@ -1,23 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ASM_IA64_SEMBUF_H
--#define _ASM_IA64_SEMBUF_H
--
--/*
-- * The semid64_ds structure for IA-64 architecture.
-- * Note extra padding because this structure is passed back and forth
-- * between kernel and user space.
-- *
-- * Pad space is left for:
-- * - 2 miscellaneous 64-bit values
-- */
--
--struct semid64_ds {
--	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
--	__kernel_time_t	sem_otime;		/* last semop time */
--	__kernel_time_t	sem_ctime;		/* last change time */
--	unsigned long	sem_nsems;		/* no. of semaphores in array */
+ struct compat_semid64_ds {
+ 	struct compat_ipc64_perm sem_perm;
+-	unsigned int __unused1;
+-	compat_time_t sem_otime;
+-	unsigned int __unused2;
+-	compat_time_t sem_ctime;
++	unsigned int sem_otime_high;
++	unsigned int sem_otime;
++	unsigned int sem_ctime_high;
++	unsigned int sem_ctime;
+ 	compat_ulong_t sem_nsems;
+ 	compat_ulong_t __unused3;
+ 	compat_ulong_t __unused4;
+@@ -173,12 +173,12 @@ struct compat_semid64_ds {
+ 
+ struct compat_msqid64_ds {
+ 	struct compat_ipc64_perm msg_perm;
+-	unsigned int __unused1;
+-	compat_time_t msg_stime;
+-	unsigned int __unused2;
+-	compat_time_t msg_rtime;
+-	unsigned int __unused3;
+-	compat_time_t msg_ctime;
++	unsigned int msg_stime_high;
++	unsigned int msg_stime;
++	unsigned int msg_rtime_high;
++	unsigned int msg_rtime;
++	unsigned int msg_ctime_high;
++	unsigned int msg_ctime;
+ 	compat_ulong_t msg_cbytes;
+ 	compat_ulong_t msg_qnum;
+ 	compat_ulong_t msg_qbytes;
+@@ -190,12 +190,12 @@ struct compat_msqid64_ds {
+ 
+ struct compat_shmid64_ds {
+ 	struct compat_ipc64_perm shm_perm;
+-	unsigned int __unused1;
+-	compat_time_t shm_atime;
+-	unsigned int __unused2;
+-	compat_time_t shm_dtime;
+-	unsigned int __unused3;
+-	compat_time_t shm_ctime;
++	unsigned int shm_atime_high;
++	unsigned int shm_atime;
++	unsigned int shm_dtime_high;
++	unsigned int shm_dtime;
++	unsigned int shm_ctime_high;
++	unsigned int shm_ctime;
+ 	unsigned int __unused4;
+ 	compat_size_t shm_segsz;
+ 	compat_pid_t shm_cpid;
+diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
+index 65beb0942500..2b1b37797a47 100644
+--- a/arch/powerpc/include/uapi/asm/msgbuf.h
++++ b/arch/powerpc/include/uapi/asm/msgbuf.h
+@@ -10,18 +10,18 @@
+ 
+ struct msqid64_ds {
+ 	struct ipc64_perm msg_perm;
+-#ifndef __powerpc64__
+-	unsigned int	__unused1;
+-#endif
++#ifdef __powerpc64__
+ 	__kernel_time_t msg_stime;	/* last msgsnd time */
+-#ifndef __powerpc64__
+-	unsigned int	__unused2;
+-#endif
+ 	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-#ifndef __powerpc64__
+-	unsigned int	__unused3;
+-#endif
+ 	__kernel_time_t msg_ctime;	/* last change time */
++#else
++	unsigned long  msg_stime_high;
++	unsigned long  msg_stime;	/* last msgsnd time */
++	unsigned long  msg_rtime_high;
++	unsigned long  msg_rtime;	/* last msgrcv time */
++	unsigned long  msg_ctime_high;
++	unsigned long  msg_ctime;	/* last change time */
++#endif
+ 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
+ 	unsigned long  msg_qnum;	/* number of messages in queue */
+ 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
+diff --git a/arch/powerpc/include/uapi/asm/sembuf.h b/arch/powerpc/include/uapi/asm/sembuf.h
+index 8f393d60f02d..3f60946f77e3 100644
+--- a/arch/powerpc/include/uapi/asm/sembuf.h
++++ b/arch/powerpc/include/uapi/asm/sembuf.h
+@@ -15,20 +15,20 @@
+  * between kernel and user space.
+  *
+  * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+- * - 2 miscellaneous 32-bit values
++ * - 2 miscellaneous 32/64-bit values
+  */
+ 
+ struct semid64_ds {
+ 	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
+ #ifndef __powerpc64__
 -	unsigned long	__unused1;
+-#endif
++	unsigned long	sem_otime_high;
++	unsigned long	sem_otime;	/* last semop time */
++	unsigned long	sem_ctime_high;
++	unsigned long	sem_ctime;	/* last change time */
++#else
+ 	__kernel_time_t	sem_otime;	/* last semop time */
+-#ifndef __powerpc64__
 -	unsigned long	__unused2;
--};
--
--#endif /* _ASM_IA64_SEMBUF_H */
-diff --git a/arch/ia64/include/uapi/asm/shmbuf.h b/arch/ia64/include/uapi/asm/shmbuf.h
-deleted file mode 100644
-index 6ef57cb70dee..000000000000
---- a/arch/ia64/include/uapi/asm/shmbuf.h
-+++ /dev/null
-@@ -1,39 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ASM_IA64_SHMBUF_H
--#define _ASM_IA64_SHMBUF_H
--
--/*
-- * The shmid64_ds structure for IA-64 architecture.
-- * Note extra padding because this structure is passed back and forth
-- * between kernel and user space.
-- *
-- * Pad space is left for:
-- * - 2 miscellaneous 64-bit values
-- */
--
--struct shmid64_ds {
--	struct ipc64_perm	shm_perm;	/* operation perms */
--	size_t			shm_segsz;	/* size of segment (bytes) */
--	__kernel_time_t		shm_atime;	/* last attach time */
--	__kernel_time_t		shm_dtime;	/* last detach time */
--	__kernel_time_t		shm_ctime;	/* last change time */
--	__kernel_pid_t		shm_cpid;	/* pid of creator */
--	__kernel_pid_t		shm_lpid;	/* pid of last operator */
--	unsigned long		shm_nattch;	/* no. of current attaches */
+-#endif
+ 	__kernel_time_t	sem_ctime;	/* last change time */
++#endif
+ 	unsigned long	sem_nsems;	/* no. of semaphores in array */
+ 	unsigned long	__unused3;
+ 	unsigned long	__unused4;
+diff --git a/arch/powerpc/include/uapi/asm/shmbuf.h b/arch/powerpc/include/uapi/asm/shmbuf.h
+index deb1c3e503d3..b591c4d7e4c5 100644
+--- a/arch/powerpc/include/uapi/asm/shmbuf.h
++++ b/arch/powerpc/include/uapi/asm/shmbuf.h
+@@ -16,25 +16,22 @@
+  * between kernel and user space.
+  *
+  * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+  * - 2 miscellaneous 32-bit values
+  */
+ 
+ struct shmid64_ds {
+ 	struct ipc64_perm	shm_perm;	/* operation perms */
+-#ifndef __powerpc64__
 -	unsigned long		__unused1;
+-#endif
++#ifdef __powerpc64__
+ 	__kernel_time_t		shm_atime;	/* last attach time */
+-#ifndef __powerpc64__
 -	unsigned long		__unused2;
--};
--
--struct shminfo64 {
--	unsigned long	shmmax;
--	unsigned long	shmmin;
--	unsigned long	shmmni;
--	unsigned long	shmseg;
--	unsigned long	shmall;
--	unsigned long	__unused1;
--	unsigned long	__unused2;
--	unsigned long	__unused3;
--	unsigned long	__unused4;
--};
--
--#endif /* _ASM_IA64_SHMBUF_H */
+-#endif
+ 	__kernel_time_t		shm_dtime;	/* last detach time */
+-#ifndef __powerpc64__
+-	unsigned long		__unused3;
+-#endif
+ 	__kernel_time_t		shm_ctime;	/* last change time */
+-#ifndef __powerpc64__
++#else
++	unsigned long		shm_atime_high;
++	unsigned long		shm_atime;	/* last attach time */
++	unsigned long		shm_dtime_high;
++	unsigned long		shm_dtime;	/* last detach time */
++	unsigned long		shm_ctime_high;
++	unsigned long		shm_ctime;	/* last change time */
+ 	unsigned long		__unused4;
+ #endif
+ 	size_t			shm_segsz;	/* size of segment (bytes) */
 -- 
 2.9.0
