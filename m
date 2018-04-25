@@ -1,44 +1,19 @@
-Return-Path: <sukadev@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Vwyl1VFpzF24D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 07:12:43 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3OLARV8016012
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 17:12:40 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hj8gd210d-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 17:12:40 -0400
-Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.ibm.com>;
- Tue, 24 Apr 2018 15:12:39 -0600
-Date: Tue, 24 Apr 2018 14:12:32 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.ibm.com>
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Cc: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- mikey@neuling.org, vaibhav@linux.vnet.ibm.com,
- aneesh.kumar@linux.vnet.ibm.com, malat@debian.org,
- felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 3/7] powerpc: use task_pid_nr() for TID allocation
-References: <20180417020950.21446-1-alastair@au1.ibm.com>
- <20180418010810.30937-1-alastair@au1.ibm.com>
- <20180418010810.30937-4-alastair@au1.ibm.com>
- <b088d063-058a-2557-812c-6d5659f9d67b@au1.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b088d063-058a-2557-812c-6d5659f9d67b@au1.ibm.com>
-Message-Id: <20180424211231.GA25392@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40W3l44pHQzF24L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 12:18:07 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id e9so12219585pgr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2018 19:18:07 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc: Fix smp_send_stop NMI IPI handling
+Date: Wed, 25 Apr 2018 12:17:53 +1000
+Message-Id: <20180425021753.26275-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,43 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Donnellan [andrew.donnellan@au1.ibm.com] wrote:
-> [+ Sukadev, Christophe]
-> 
-> On 18/04/18 11:08, Alastair D'Silva wrote:
-> > From: Alastair D'Silva <alastair@d-silva.org>
-> > 
-> > The current implementation of TID allocation, using a global IDR, may
-> > result in an errant process starving the system of available TIDs.
-> > Instead, use task_pid_nr(), as mentioned by the original author. The
-> > scenario described which prevented it's use is not applicable, as
-> > set_thread_tidr can only be called after the task struct has been
-> > populated.
-> > 
-> > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> 
-> So it's too late in the evening for me to completely get my head around
-> what's going on here enough to give my Reviewed-by:, but my current thinking
-> is:
-> 
-> - In the first version of the patch to add TIDR support
-> (https://patchwork.ozlabs.org/patch/799494/), it was originally proposed to
-> call assign_thread_id() (as it was then called) from copy_thread()
-> 
-> - The comment block documents the reason why we can't use task_pid_nr() but
-> assumes that we're trying to assign a TIDR from within copy_thread()
-> 
-> - The final patch that was accepted
-> (https://patchwork.ozlabs.org/patch/835552/,
-> ec233ede4c8654894610ea54f4dae7adc954ac62) instead sets the TIDR to 0 from
-> copy_thread(), so the original reasoning regarding not using task_pid_nr()
-> within copy_thread() is no longer applicable.
-> 
-> Sukadev: does this sound right?
+The NMI IPI handler for a receiving CPU increments nmi_ipi_busy_count
+over the handler function call, which causes later smp_send_nmi_ipi()
+callers to spin until the call is finished.
 
-Yes. Like with PIDR, was trying to assign TIDR initially to all threads.
-But since only a subset of threads need/use TIDR, we can assign the
-value later (when set_thread_tidr() is called). So we should be able to
-use task_pid_nr() then.
+The smp_send_stop function never returns, so the busy count is never
+decremeted, which can cause the system to hang in some cases. For
+example panic() will call smp_send_stop early on, then later in the
+reboot path, pnv_restart will call smp_send_stop again, which hangs.
 
-Sukadev
+Fix this by adding a special case to the smp_send_stop handler to
+decrement the busy count, because it will never return.
+
+Fixes: 6bed3237624e3 ("powerpc: use NMI IPI for smp_send_stop")
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/kernel/smp.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index e16ec7b3b427..250fccf04c6e 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -567,10 +567,19 @@ void crash_send_ipi(void (*crash_ipi_callback)(struct pt_regs *))
+ 
+ #ifdef CONFIG_NMI_IPI
+ static void stop_this_cpu(struct pt_regs *regs)
++{
++	/*
++	 * This is a special case because it never returns, so the NMI IPI
++	 * handling would never mark it as done, which makes any later
++	 * smp_send_nmi_ipi() call spin forever. Mark it done now.
++	 */
++	nmi_ipi_lock();
++	nmi_ipi_busy_count--;
++	nmi_ipi_unlock();
+ #else
+ static void stop_this_cpu(void *dummy)
+-#endif
+ {
++#endif
+ 	/* Remove this CPU */
+ 	set_cpu_online(smp_processor_id(), false);
+ 
+-- 
+2.17.0
