@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpV1jgCzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpc0YCRzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:19 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 01/16] y2038: asm-generic: Extend sysvipc data structures
-Date: Wed, 25 Apr 2018 17:05:51 +0200
-Message-Id: <20180425150606.954771-1-arnd@arndb.de>
+Subject: [PATCH v4 08/16] y2038: parisc: Extend sysvipc data structures
+Date: Wed, 25 Apr 2018 17:05:58 +0200
+Message-Id: <20180425150606.954771-8-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,41 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Most architectures now use the asm-generic copy of the sysvipc data
-structures (msqid64_ds, semid64_ds, shmid64_ds), which use 32-bit
-__kernel_time_t on 32-bit architectures but have padding behind them to
-allow extending the type to 64-bit.
+parisc, uses a nonstandard variation of the generic sysvipc
+data structures, intended to have the padding moved around
+so it can deal with big-endian 32-bit user space that has
+64-bit time_t.
 
-Unfortunately, that fails on all big-endian architectures, which have the
-padding on the wrong side. As so many of them get it wrong, we decided to
-not bother even trying to fix it up when we introduced the asm-generic
-copy. Instead we always use the padding word now to provide the upper
-32 bits of the seconds value, regardless of the endianess.
+Unlike most architectures, parisc actually succeeded in
+defining this right for big-endian CPUs, but as everyone else
+got it wrong, we just use the same hack everywhere.
 
-A libc implementation on a typical big-endian system can deal with
-this by providing its own copy of the structure definition to user
-space, and swapping the two 32-bit words before returning from the
-semctl/shmctl/msgctl system calls.
-
-Note that msqid64_ds and shmid64_ds were broken on x32 since commit
-f4b4aae18288 ("x86/headers/uapi: Fix __BITS_PER_LONG value for x32
-builds"). I have sent a separate fix for that, but as we no longer
-have to worry about x32 here, I no longer worry about x32 here and
-use 'unsigned long' instead of __kernel_ulong_t.
+This takes just take the same approach here that we have for
+the asm-generic headers and adds separate 32-bit fields for the
+upper halves of the timestamps, to let libc deal with the mess
+in user space.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/uapi/asm-generic/msgbuf.h | 27 +++++++++++++-------------
- include/uapi/asm-generic/sembuf.h | 26 +++++++++++++++----------
- include/uapi/asm-generic/shmbuf.h | 41 +++++++++++++++++++--------------------
- 3 files changed, 49 insertions(+), 45 deletions(-)
+ arch/parisc/include/asm/compat.h      | 32 ++++++++++++++++----------------
+ arch/parisc/include/uapi/asm/msgbuf.h | 33 ++++++++++++++++-----------------
+ arch/parisc/include/uapi/asm/sembuf.h | 16 ++++++++--------
+ arch/parisc/include/uapi/asm/shmbuf.h | 19 ++++++++-----------
+ 4 files changed, 48 insertions(+), 52 deletions(-)
 
-diff --git a/include/uapi/asm-generic/msgbuf.h b/include/uapi/asm-generic/msgbuf.h
-index fb306ebdb36f..9fe4881557cb 100644
---- a/include/uapi/asm-generic/msgbuf.h
-+++ b/include/uapi/asm-generic/msgbuf.h
-@@ -18,31 +18,30 @@
-  * On big-endian systems, the padding is in the wrong place.
+diff --git a/arch/parisc/include/asm/compat.h b/arch/parisc/include/asm/compat.h
+index 0cdfec8857bd..ab8a54771507 100644
+--- a/arch/parisc/include/asm/compat.h
++++ b/arch/parisc/include/asm/compat.h
+@@ -138,10 +138,10 @@ struct compat_ipc64_perm {
+ 
+ struct compat_semid64_ds {
+ 	struct compat_ipc64_perm sem_perm;
+-	unsigned int __unused1;
+-	compat_time_t sem_otime;
+-	unsigned int __unused2;
+-	compat_time_t sem_ctime;
++	unsigned int sem_otime_high;
++	unsigned int sem_otime;
++	unsigned int sem_ctime_high;
++	unsigned int sem_ctime;
+ 	compat_ulong_t sem_nsems;
+ 	compat_ulong_t __unused3;
+ 	compat_ulong_t __unused4;
+@@ -149,12 +149,12 @@ struct compat_semid64_ds {
+ 
+ struct compat_msqid64_ds {
+ 	struct compat_ipc64_perm msg_perm;
+-	unsigned int __unused1;
+-	compat_time_t msg_stime;
+-	unsigned int __unused2;
+-	compat_time_t msg_rtime;
+-	unsigned int __unused3;
+-	compat_time_t msg_ctime;
++	unsigned int msg_stime_high;
++	unsigned int msg_stime;
++	unsigned int msg_rtime_high;
++	unsigned int msg_rtime;
++	unsigned int msg_ctime_high;
++	unsigned int msg_ctime;
+ 	compat_ulong_t msg_cbytes;
+ 	compat_ulong_t msg_qnum;
+ 	compat_ulong_t msg_qbytes;
+@@ -166,12 +166,12 @@ struct compat_msqid64_ds {
+ 
+ struct compat_shmid64_ds {
+ 	struct compat_ipc64_perm shm_perm;
+-	unsigned int __unused1;
+-	compat_time_t shm_atime;
+-	unsigned int __unused2;
+-	compat_time_t shm_dtime;
+-	unsigned int __unused3;
+-	compat_time_t shm_ctime;
++	unsigned int shm_atime_high;
++	unsigned int shm_atime;
++	unsigned int shm_dtime_high;
++	unsigned int shm_dtime;
++	unsigned int shm_ctime_high;
++	unsigned int shm_ctime;
+ 	unsigned int __unused4;
+ 	compat_size_t shm_segsz;
+ 	compat_pid_t shm_cpid;
+diff --git a/arch/parisc/include/uapi/asm/msgbuf.h b/arch/parisc/include/uapi/asm/msgbuf.h
+index b48b810e626b..6a2e9ab2ef8d 100644
+--- a/arch/parisc/include/uapi/asm/msgbuf.h
++++ b/arch/parisc/include/uapi/asm/msgbuf.h
+@@ -10,31 +10,30 @@
+  * between kernel and user space.
   *
   * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
@@ -72,91 +122,84 @@ index fb306ebdb36f..9fe4881557cb 100644
  
  struct msqid64_ds {
  	struct ipc64_perm msg_perm;
+-#if __BITS_PER_LONG != 64
+-	unsigned int   __pad1;
+-#endif
 +#if __BITS_PER_LONG == 64
  	__kernel_time_t msg_stime;	/* last msgsnd time */
 -#if __BITS_PER_LONG != 64
--	unsigned long	__unused1;
+-	unsigned int   __pad2;
 -#endif
  	__kernel_time_t msg_rtime;	/* last msgrcv time */
 -#if __BITS_PER_LONG != 64
--	unsigned long	__unused2;
+-	unsigned int   __pad3;
 -#endif
  	__kernel_time_t msg_ctime;	/* last change time */
--#if __BITS_PER_LONG != 64
--	unsigned long	__unused3;
+-	unsigned long msg_cbytes;	/* current number of bytes on queue */
+-	unsigned long msg_qnum;		/* number of messages in queue */
+-	unsigned long msg_qbytes;	/* max number of bytes on queue */
+-	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
+-	__kernel_pid_t msg_lrpid;	/* last receive pid */
+-	unsigned long __unused1;
+-	unsigned long __unused2;
 +#else
-+	unsigned long	msg_stime;	/* last msgsnd time */
 +	unsigned long	msg_stime_high;
-+	unsigned long	msg_rtime;	/* last msgrcv time */
++	unsigned long	msg_stime;	/* last msgsnd time */
 +	unsigned long	msg_rtime_high;
-+	unsigned long	msg_ctime;	/* last change time */
++	unsigned long	msg_rtime;	/* last msgrcv time */
 +	unsigned long	msg_ctime_high;
- #endif
--	__kernel_ulong_t msg_cbytes;	/* current number of bytes on queue */
--	__kernel_ulong_t msg_qnum;	/* number of messages in queue */
--	__kernel_ulong_t msg_qbytes;	/* max number of bytes on queue */
++	unsigned long	msg_ctime;	/* last change time */
++#endif
 +	unsigned long	msg_cbytes;	/* current number of bytes on queue */
 +	unsigned long	msg_qnum;	/* number of messages in queue */
-+	unsigned long	 msg_qbytes;	/* max number of bytes on queue */
- 	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
- 	__kernel_pid_t msg_lrpid;	/* last receive pid */
--	__kernel_ulong_t __unused4;
--	__kernel_ulong_t __unused5;
-+	unsigned long	 __unused4;
-+	unsigned long	 __unused5;
++	unsigned long	msg_qbytes;	/* max number of bytes on queue */
++	__kernel_pid_t	msg_lspid;	/* pid of last msgsnd */
++	__kernel_pid_t	msg_lrpid;	/* last receive pid */
++	unsigned long	__unused1;
++	unsigned long	__unused2;
  };
  
- #endif /* __ASM_GENERIC_MSGBUF_H */
-diff --git a/include/uapi/asm-generic/sembuf.h b/include/uapi/asm-generic/sembuf.h
-index cbf9cfe977d6..0bae010f1b64 100644
---- a/include/uapi/asm-generic/sembuf.h
-+++ b/include/uapi/asm-generic/sembuf.h
-@@ -13,23 +13,29 @@
-  * everyone just ended up making identical copies without specific
-  * optimizations, so we may just as well all use the same one.
+ #endif /* _PARISC_MSGBUF_H */
+diff --git a/arch/parisc/include/uapi/asm/sembuf.h b/arch/parisc/include/uapi/asm/sembuf.h
+index 746c5d86a9b1..3c31163b1241 100644
+--- a/arch/parisc/include/uapi/asm/sembuf.h
++++ b/arch/parisc/include/uapi/asm/sembuf.h
+@@ -10,21 +10,21 @@
+  * between kernel and user space.
   *
-- * 64 bit architectures typically define a 64 bit __kernel_time_t,
-+ * 64 bit architectures use a 64-bit __kernel_time_t here, while
-+ * 32 bit architectures have a pair of unsigned long values.
-  * so they do not need the first two padding words.
-- * On big-endian systems, the padding is in the wrong place.
-  *
-- * Pad space is left for:
+  * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
-- * - 2 miscellaneous 32-bit values
-+ * On big-endian systems, the padding is in the wrong place for
-+ * historic reasons, so user space has to reconstruct a time_t
-+ * value using
-+ *
-+ * user_semid_ds.sem_otime = kernel_semid64_ds.sem_otime +
-+ *		((long long)kernel_semid64_ds.sem_otime_high << 32)
-+ *
-+ * Pad space is left for 2 miscellaneous 32-bit values
+  * - 2 miscellaneous 32-bit values
   */
+ 
  struct semid64_ds {
- 	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
-+#if __BITS_PER_LONG == 64
- 	__kernel_time_t	sem_otime;	/* last semop time */
+ 	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
 -#if __BITS_PER_LONG != 64
--	unsigned long	__unused1;
+-	unsigned int	__pad1;
 -#endif
- 	__kernel_time_t	sem_ctime;	/* last change time */
++#if __BITS_PER_LONG == 64
+ 	__kernel_time_t	sem_otime;		/* last semop time */
 -#if __BITS_PER_LONG != 64
--	unsigned long	__unused2;
+-	unsigned int	__pad2;
+-#endif
+ 	__kernel_time_t	sem_ctime;		/* last change time */
+-	unsigned long 	sem_nsems;		/* no. of semaphores in array */
 +#else
-+	unsigned long	sem_otime;	/* last semop time */
 +	unsigned long	sem_otime_high;
-+	unsigned long	sem_ctime;	/* last change time */
++	unsigned long	sem_otime;		/* last semop time */
 +	unsigned long	sem_ctime_high;
- #endif
- 	unsigned long	sem_nsems;	/* no. of semaphores in array */
- 	unsigned long	__unused3;
-diff --git a/include/uapi/asm-generic/shmbuf.h b/include/uapi/asm-generic/shmbuf.h
-index 2b6c3bb97f97..e504422fc501 100644
---- a/include/uapi/asm-generic/shmbuf.h
-+++ b/include/uapi/asm-generic/shmbuf.h
-@@ -19,42 +19,41 @@
-  *
++	unsigned long	sem_ctime;		/* last change time */
++#endif
++	unsigned long	sem_nsems;		/* no. of semaphores in array */
+ 	unsigned long	__unused1;
+ 	unsigned long	__unused2;
+ };
+diff --git a/arch/parisc/include/uapi/asm/shmbuf.h b/arch/parisc/include/uapi/asm/shmbuf.h
+index cd4dbce55d0b..c89b3dd8db21 100644
+--- a/arch/parisc/include/uapi/asm/shmbuf.h
++++ b/arch/parisc/include/uapi/asm/shmbuf.h
+@@ -10,25 +10,22 @@
+  * between kernel and user space.
   *
   * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
@@ -165,58 +208,29 @@ index 2b6c3bb97f97..e504422fc501 100644
  
  struct shmid64_ds {
  	struct ipc64_perm	shm_perm;	/* operation perms */
- 	size_t			shm_segsz;	/* size of segment (bytes) */
+-#if __BITS_PER_LONG != 64
+-	unsigned int		__pad1;
+-#endif
 +#if __BITS_PER_LONG == 64
  	__kernel_time_t		shm_atime;	/* last attach time */
 -#if __BITS_PER_LONG != 64
--	unsigned long		__unused1;
+-	unsigned int		__pad2;
 -#endif
  	__kernel_time_t		shm_dtime;	/* last detach time */
 -#if __BITS_PER_LONG != 64
--	unsigned long		__unused2;
+-	unsigned int		__pad3;
 -#endif
  	__kernel_time_t		shm_ctime;	/* last change time */
 -#if __BITS_PER_LONG != 64
--	unsigned long		__unused3;
 +#else
-+	unsigned long		shm_atime;	/* last attach time */
 +	unsigned long		shm_atime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
++	unsigned long		shm_atime;	/* last attach time */
 +	unsigned long		shm_dtime_high;
-+	unsigned long		shm_ctime;	/* last change time */
++	unsigned long		shm_dtime;	/* last detach time */
 +	unsigned long		shm_ctime_high;
++	unsigned long		shm_ctime;	/* last change time */
+ 	unsigned int		__pad4;
  #endif
- 	__kernel_pid_t		shm_cpid;	/* pid of creator */
- 	__kernel_pid_t		shm_lpid;	/* pid of last operator */
--	__kernel_ulong_t	shm_nattch;	/* no. of current attaches */
--	__kernel_ulong_t	__unused4;
--	__kernel_ulong_t	__unused5;
-+	unsigned long		shm_nattch;	/* no. of current attaches */
-+	unsigned long		__unused4;
-+	unsigned long		__unused5;
- };
- 
- struct shminfo64 {
--	__kernel_ulong_t	shmmax;
--	__kernel_ulong_t	shmmin;
--	__kernel_ulong_t	shmmni;
--	__kernel_ulong_t	shmseg;
--	__kernel_ulong_t	shmall;
--	__kernel_ulong_t	__unused1;
--	__kernel_ulong_t	__unused2;
--	__kernel_ulong_t	__unused3;
--	__kernel_ulong_t	__unused4;
-+	unsigned long		shmmax;
-+	unsigned long		shmmin;
-+	unsigned long		shmmni;
-+	unsigned long		shmseg;
-+	unsigned long		shmall;
-+	unsigned long		__unused1;
-+	unsigned long		__unused2;
-+	unsigned long		__unused3;
-+	unsigned long		__unused4;
- };
- 
- #endif /* __ASM_GENERIC_SHMBUF_H */
+ 	__kernel_size_t		shm_segsz;	/* size of segment (bytes) */
 -- 
 2.9.0
