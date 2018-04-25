@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNxv1QXbzF24R
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNxz55NxzF24b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:42 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,10 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 10/16] y2038: powerpc: Extend sysvipc data structures
-Date: Wed, 25 Apr 2018 17:06:00 +0200
-Message-Id: <20180425150606.954771-10-arnd@arndb.de>
+Subject: [PATCH v4 16/16] y2038: ipc: Redirect ipc(SEMTIMEDOP,
+ ...) to compat_ksys_semtimedop
+Date: Wed, 25 Apr 2018 17:06:06 +0200
+Message-Id: <20180425150606.954771-16-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,186 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc, uses a nonstandard variation of the generic sysvipc
-data structures, intended to have the padding moved around
-so it can deal with big-endian 32-bit user space that has
-64-bit time_t.
+32-bit architectures implementing 64BIT_TIME and COMPAT_32BIT_TIME
+need to have the traditional semtimedop() behavior with 32-bit timestamps
+for sys_ipc() by calling compat_ksys_semtimedop(), while those that
+are not yet converted need to keep using ksys_semtimedop() like
+64-bit architectures do.
 
-powerpc has the same definition as parisc and sparc, but now also
-supports little-endian mode, which is now wrong because the
-padding is made for big-endian user space.
+Note that I chose to not implement a new SEMTIMEDOP64 function that
+corresponds to the new sys_semtimedop() with 64-bit timeouts. The reason
+here is that sys_ipc() should no longer be used for new system calls,
+and libc should just call the semtimedop syscall directly.
 
-This takes just take the same approach here that we have for
-the asm-generic headers and adds separate 32-bit fields for the
-upper halves of the timestamps, to let libc deal with the mess
-in user space.
+One open question remain to whether we want to completely avoid the
+sys_ipc() system call for architectures that do not yet have all the
+individual calls as they get converted to 64-bit time_t. Doing that
+would require adding several extra system calls on m68k, mips, powerpc,
+s390, sh, sparc, and x86-32.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/include/asm/compat.h      | 32 ++++++++++++++++----------------
- arch/powerpc/include/uapi/asm/msgbuf.h | 18 +++++++++---------
- arch/powerpc/include/uapi/asm/sembuf.h | 14 +++++++-------
- arch/powerpc/include/uapi/asm/shmbuf.h | 19 ++++++++-----------
- 4 files changed, 40 insertions(+), 43 deletions(-)
+ ipc/syscall.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index b4773c81f7d5..85c8af2bb272 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -162,10 +162,10 @@ struct compat_ipc64_perm {
+diff --git a/ipc/syscall.c b/ipc/syscall.c
+index 77a883ef2eca..65d405f1ba0c 100644
+--- a/ipc/syscall.c
++++ b/ipc/syscall.c
+@@ -30,9 +30,14 @@ SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, unsigned long, second,
+ 		return ksys_semtimedop(first, (struct sembuf __user *)ptr,
+ 				       second, NULL);
+ 	case SEMTIMEDOP:
+-		return ksys_semtimedop(first, (struct sembuf __user *)ptr,
+-				       second,
+-				       (const struct timespec __user *)fifth);
++		if (IS_ENABLED(CONFIG_64BIT) || !IS_ENABLED(CONFIG_64BIT_TIME))
++			return ksys_semtimedop(first, ptr, second,
++			        (const struct __kernel_timespec __user *)fifth);
++		else if (IS_ENABLED(CONFIG_COMPAT_32BIT_TIME))
++			return compat_ksys_semtimedop(first, ptr, second,
++			        (const struct compat_timespec __user *)fifth);
++		else
++			return -ENOSYS;
  
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	unsigned int __unused1;
--	compat_time_t sem_otime;
--	unsigned int __unused2;
--	compat_time_t sem_ctime;
-+	unsigned int sem_otime_high;
-+	unsigned int sem_otime;
-+	unsigned int sem_ctime_high;
-+	unsigned int sem_ctime;
- 	compat_ulong_t sem_nsems;
- 	compat_ulong_t __unused3;
- 	compat_ulong_t __unused4;
-@@ -173,12 +173,12 @@ struct compat_semid64_ds {
- 
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	unsigned int __unused1;
--	compat_time_t msg_stime;
--	unsigned int __unused2;
--	compat_time_t msg_rtime;
--	unsigned int __unused3;
--	compat_time_t msg_ctime;
-+	unsigned int msg_stime_high;
-+	unsigned int msg_stime;
-+	unsigned int msg_rtime_high;
-+	unsigned int msg_rtime;
-+	unsigned int msg_ctime_high;
-+	unsigned int msg_ctime;
- 	compat_ulong_t msg_cbytes;
- 	compat_ulong_t msg_qnum;
- 	compat_ulong_t msg_qbytes;
-@@ -190,12 +190,12 @@ struct compat_msqid64_ds {
- 
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
--	unsigned int __unused1;
--	compat_time_t shm_atime;
--	unsigned int __unused2;
--	compat_time_t shm_dtime;
--	unsigned int __unused3;
--	compat_time_t shm_ctime;
-+	unsigned int shm_atime_high;
-+	unsigned int shm_atime;
-+	unsigned int shm_dtime_high;
-+	unsigned int shm_dtime;
-+	unsigned int shm_ctime_high;
-+	unsigned int shm_ctime;
- 	unsigned int __unused4;
- 	compat_size_t shm_segsz;
- 	compat_pid_t shm_cpid;
-diff --git a/arch/powerpc/include/uapi/asm/msgbuf.h b/arch/powerpc/include/uapi/asm/msgbuf.h
-index 65beb0942500..2b1b37797a47 100644
---- a/arch/powerpc/include/uapi/asm/msgbuf.h
-+++ b/arch/powerpc/include/uapi/asm/msgbuf.h
-@@ -10,18 +10,18 @@
- 
- struct msqid64_ds {
- 	struct ipc64_perm msg_perm;
--#ifndef __powerpc64__
--	unsigned int	__unused1;
--#endif
-+#ifdef __powerpc64__
- 	__kernel_time_t msg_stime;	/* last msgsnd time */
--#ifndef __powerpc64__
--	unsigned int	__unused2;
--#endif
- 	__kernel_time_t msg_rtime;	/* last msgrcv time */
--#ifndef __powerpc64__
--	unsigned int	__unused3;
--#endif
- 	__kernel_time_t msg_ctime;	/* last change time */
-+#else
-+	unsigned long  msg_stime_high;
-+	unsigned long  msg_stime;	/* last msgsnd time */
-+	unsigned long  msg_rtime_high;
-+	unsigned long  msg_rtime;	/* last msgrcv time */
-+	unsigned long  msg_ctime_high;
-+	unsigned long  msg_ctime;	/* last change time */
-+#endif
- 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
- 	unsigned long  msg_qnum;	/* number of messages in queue */
- 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
-diff --git a/arch/powerpc/include/uapi/asm/sembuf.h b/arch/powerpc/include/uapi/asm/sembuf.h
-index 8f393d60f02d..3f60946f77e3 100644
---- a/arch/powerpc/include/uapi/asm/sembuf.h
-+++ b/arch/powerpc/include/uapi/asm/sembuf.h
-@@ -15,20 +15,20 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-- * - 2 miscellaneous 32-bit values
-+ * - 2 miscellaneous 32/64-bit values
-  */
- 
- struct semid64_ds {
- 	struct ipc64_perm sem_perm;	/* permissions .. see ipc.h */
- #ifndef __powerpc64__
--	unsigned long	__unused1;
--#endif
-+	unsigned long	sem_otime_high;
-+	unsigned long	sem_otime;	/* last semop time */
-+	unsigned long	sem_ctime_high;
-+	unsigned long	sem_ctime;	/* last change time */
-+#else
- 	__kernel_time_t	sem_otime;	/* last semop time */
--#ifndef __powerpc64__
--	unsigned long	__unused2;
--#endif
- 	__kernel_time_t	sem_ctime;	/* last change time */
-+#endif
- 	unsigned long	sem_nsems;	/* no. of semaphores in array */
- 	unsigned long	__unused3;
- 	unsigned long	__unused4;
-diff --git a/arch/powerpc/include/uapi/asm/shmbuf.h b/arch/powerpc/include/uapi/asm/shmbuf.h
-index deb1c3e503d3..b591c4d7e4c5 100644
---- a/arch/powerpc/include/uapi/asm/shmbuf.h
-+++ b/arch/powerpc/include/uapi/asm/shmbuf.h
-@@ -16,25 +16,22 @@
-  * between kernel and user space.
-  *
-  * Pad space is left for:
-- * - 64-bit time_t to solve y2038 problem
-  * - 2 miscellaneous 32-bit values
-  */
- 
- struct shmid64_ds {
- 	struct ipc64_perm	shm_perm;	/* operation perms */
--#ifndef __powerpc64__
--	unsigned long		__unused1;
--#endif
-+#ifdef __powerpc64__
- 	__kernel_time_t		shm_atime;	/* last attach time */
--#ifndef __powerpc64__
--	unsigned long		__unused2;
--#endif
- 	__kernel_time_t		shm_dtime;	/* last detach time */
--#ifndef __powerpc64__
--	unsigned long		__unused3;
--#endif
- 	__kernel_time_t		shm_ctime;	/* last change time */
--#ifndef __powerpc64__
-+#else
-+	unsigned long		shm_atime_high;
-+	unsigned long		shm_atime;	/* last attach time */
-+	unsigned long		shm_dtime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
-+	unsigned long		shm_ctime_high;
-+	unsigned long		shm_ctime;	/* last change time */
- 	unsigned long		__unused4;
- #endif
- 	size_t			shm_segsz;	/* size of segment (bytes) */
+ 	case SEMGET:
+ 		return ksys_semget(first, second, third);
+@@ -130,6 +135,8 @@ COMPAT_SYSCALL_DEFINE6(ipc, u32, call, int, first, int, second,
+ 		/* struct sembuf is the same on 32 and 64bit :)) */
+ 		return ksys_semtimedop(first, compat_ptr(ptr), second, NULL);
+ 	case SEMTIMEDOP:
++		if (!IS_ENABLED(CONFIG_COMPAT_32BIT_TIME))
++			return -ENOSYS;
+ 		return compat_ksys_semtimedop(first, compat_ptr(ptr), second,
+ 						compat_ptr(fifth));
+ 	case SEMGET:
 -- 
 2.9.0
