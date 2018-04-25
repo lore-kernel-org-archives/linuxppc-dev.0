@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WJXw2CNxzF24T
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 21:55:12 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id l27so15007980pfk.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 04:55:12 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WJXx1r2YzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 21:55:13 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id f189so5905402pfa.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 04:55:13 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: kvm-ppc@vger.kernel.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH 03/11] KVM: PPC: Fix a mmio_host_swabbed uninitialized usage
- issue when VMX store
-Date: Wed, 25 Apr 2018 19:54:36 +0800
-Message-Id: <1524657284-16706-4-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH 04/11] KVM: PPC: fix incorrect element_size for stxsiwx in
+ analyse_instr
+Date: Wed, 25 Apr 2018 19:54:37 +0800
+Message-Id: <1524657284-16706-5-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,49 +28,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-When KVM emulates VMX store, it will invoke kvmppc_get_vmx_data() to
-retrieve VMX reg val. kvmppc_get_vmx_data() will check mmio_host_swabbed
-to decide which double word of vr[] to be used. But the
-mmio_host_swabbed can be uninitiazed during VMX store procedure:
+stwsiwx will place contents of word element 1 of VSR into word
+storage of EA. So the element size of stwsiwx should be 4.
 
-kvmppc_emulate_loadstore
-	\- kvmppc_handle_store128_by2x64
-		\- kvmppc_get_vmx_data
-
-This patch corrects this by using kvmppc_need_byteswap() to choose
-double word of vr[] and initialized mmio_host_swabbed to avoid invisble
-trouble.
+This patch correct the size from 8 to 4.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/emulate_loadstore.c | 1 +
- arch/powerpc/kvm/powerpc.c           | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/lib/sstep.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-index a382e15..b8a3aef 100644
---- a/arch/powerpc/kvm/emulate_loadstore.c
-+++ b/arch/powerpc/kvm/emulate_loadstore.c
-@@ -111,6 +111,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 	vcpu->arch.mmio_sp64_extend = 0;
- 	vcpu->arch.mmio_sign_extend = 0;
- 	vcpu->arch.mmio_vmx_copy_nums = 0;
-+	vcpu->arch.mmio_host_swabbed = 0;
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 34d68f1..151d484 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -2178,7 +2178,7 @@ int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+ 		case 140:	/* stxsiwx */
+ 			op->reg = rd | ((instr & 1) << 5);
+ 			op->type = MKOP(STORE_VSX, 0, 4);
+-			op->element_size = 8;
++			op->element_size = 4;
+ 			break;
  
- 	switch (get_op(inst)) {
- 	case 31:
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 4e38764..bef27b1 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1374,7 +1374,7 @@ static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
- 	if (di > 1)
- 		return -1;
- 
--	if (vcpu->arch.mmio_host_swabbed)
-+	if (kvmppc_need_byteswap(vcpu))
- 		di = 1 - di;
- 
- 	w0 = vrs.u[di * 2];
+ 		case 268:	/* lxvx */
 -- 
 1.8.3.1
