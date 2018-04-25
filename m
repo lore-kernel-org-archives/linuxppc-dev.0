@@ -1,34 +1,33 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-it0-x232.google.com (mail-it0-x232.google.com
- [IPv6:2607:f8b0:4001:c0b::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WCzh2s95zDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 18:29:32 +1000 (AEST)
-Received: by mail-it0-x232.google.com with SMTP id 144-v6so4298351iti.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 01:29:32 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
-References: <1524494812-60150-1-git-send-email-bryantly@linux.vnet.ibm.com>
- <1524494812-60150-2-git-send-email-bryantly@linux.vnet.ibm.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 25 Apr 2018 10:29:29 +0200
-Message-ID: <CACRpkdZH4kheSf_G=i-r=0yZN04W_4bJ1Q7ZXPw=62NrV+LCnQ@mail.gmail.com>
-Subject: Re: [PATCH v1 1/1] misc: IBM Virtual Management Channel Driver
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, christoffer.dall@arm.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Greg KH <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>,
- Jonathan Corbet <corbet@lwn.net>, seroyer@linux.vnet.ibm.com,
- mrochs@linux.vnet.ibm.com,
- adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
- "David S. Miller" <davem@davemloft.net>,
- Andrew Morton <akpm@linux-foundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, mikey@neuling.org,
- Philippe Ombredanne <pombredanne@nexb.com>, tlfalcon@linux.vnet.ibm.com,
- msuchanek@suse.de, linux-doc@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WDkW3YbSzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 19:03:14 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3P8wgo9053203
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 05:03:12 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hjm4nq9ne-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 05:03:11 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Wed, 25 Apr 2018 10:03:09 +0100
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, npiggin@gmail.com
+Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ svaidy@linux.vnet.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, <stable@vger.kernel.org>
+Subject: [PATCH V2] cpufreq: powernv: Fix the hardlockup by synchronus
+ smp_call in timer interrupt
+Date: Wed, 25 Apr 2018 14:32:48 +0530
+Message-Id: <1524646968-526-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,179 +37,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I don't know why I'm included in review of this driver, but why
-not :) it is good to include people.
+gpstate_timer_handler() uses synchronous smp_call to set the pstate
+on the requested core. This causes the below hard lockup:
 
-Thanks for your patch! It looks exciting and complicated,
-I like that kind of stuff.
+[c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+[c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+[c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+[c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+[c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+[c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+[c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+[c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+[c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+[c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+-- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+LR = arch_send_call_function_ipi_mask+0x120/0x130
+[c000003fe566ba50] [c00000000004876c]
+arch_send_call_function_ipi_mask+0x4c/0x130
+[c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+[c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+[c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+[c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+[c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+[c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+[c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
 
-On Mon, Apr 23, 2018 at 4:46 PM, Bryant G. Ly
-<bryantly@linux.vnet.ibm.com> wrote:
+One way to avoid this is removing the smp-call. We can ensure that the timer
+always runs on one of the policy-cpus. If the timer gets migrated to a
+cpu outside the policy then re-queue it back on the policy->cpus. This way
+we can get rid of the smp-call which was being used to set the pstate
+on the policy->cpus.
 
-> This driver is a logical device which provides an
-> interface between the hypervisor and a management
-> partition.
+Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+Cc: <stable@vger.kernel.org>        [4.8+]
+Reported-by: Nicholas Piggin <npiggin@gmail.com>
+Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+Changes from V1:
+- Remove smp_call in the pstate handler.
 
-Please indicate what this management partition is to
-be used for, i.e. the intended use case.
+ drivers/cpufreq/powernv-cpufreq.c | 23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
-> This driver is to be used for the POWER Virtual
-> Management Channel Virtual Adapter on the PowerVM
-> platform.
-
-Is that virtualization on the PowerPC platform?
-
-> It provides both request/response and
-> async message support through the /dev/ibmvmc node.
-
-Is that a character or block device?
-I guess block, but it's nice to have some specifics
-in the commit message.
-
-> diff --git a/Documentation/misc-devices/ibmvmc.txt b/Documentation/misc-d=
-evices/ibmvmc.txt
-
-The document suffers a bit from internal lingo, so it's be great
-if you improve it a bit with a style that will be welcoming for newcomers
-who have no idea what you are talking about.
-
-I will point out some items below.
-
-> +Description
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +The Virtual Management Channel (VMC) is a logical device which provides =
-an
-> +interface between the hypervisor and a management partition.
-
-What kind of interface? A bitstream? Message passing interface?
-Marshalling of structs? Some specifics would be great.
-
-> This
-> +management partition is intended to provide an alternative to HMC-based
-> +system management.
-
-Please expand the acronym HMC for the newcomer so we do not need
-to look it up, or it looks like the document is only for people who already
-know everything about virtualization specifics.
-
-> In the management partition, a Novalink application
-> +exists
-
-Is Novalink some kind of product name? In that case, can it be
-instead described with some neutral technology name and state
-Novalink as an examplf of this type of technology?
-
-> which enables a system administrator to configure the system=E2=80=99s
-> +partitioning characteristics
-
-Exemplify "partitioning characteristics", with a sentence in this
-vein: "partitioning characteristics such as FOO, BAR and BAZ".
-
-> via a command line interface (CLI) or
-> +Representational State Transfer Application (REST).
-
-I understand what CLI is but what is a representational state
-transfer application? Is that a fancy name for a GUI application
-doing the same thing as a CLI program would do?
-
-> You can also manage the
-> +server by using PowerVC
-
-There was PowerVM now there is PowerVC. What are those things
-really? PowerVM I guess is virtual machine on PowerPC? What is
-PowerVC? Virtual client (guest) in the PowerVM?
-
-This kind of lingo makes the document a hard read for me.
-
-> or other OpenStack solution.
-
-I heard about OpenStack. I have a vague idea about what it is,
-do you mean "other virtualization concepts"?
-
-> Support for
-> +conventional HMC management of the system may still be provided on a
-> +system; however, when an HMC is attached to the system, the VMC
-> +interface is disabled by the hypervisor.
-
-The VMC acronym is expanded below, instead expand it at first
-instance. The same for HMC (hypervisor management channel I guess?
-it is never really explained.)
-
-> +NovaLink runs on a Linux logical partition on a POWER8 or newer processo=
-r-
-> +based server that is virtualized by PowerVM.
-
-So this information needs to be in the top of the document.
-
-> System configuration,
-> +maintenance, and control functions which traditionally require an HMC ca=
-n
-> +be implemented in the Novalink using a combination of HMC to hypervisor
-> +interfaces and existing operating system methods. This tool provides
-
-What tool? It is unclear what tool we are referring to here.
-A command line tool? A technology? etc.
-
-> a
-> +subset of the functions implemented by the HMC and enables basic partiti=
-on
-> +configuration. The set of HMC to hypervisor messages
-
-This makes me think that probably the "h" in HMC stands for "hypervisor"
-so now I start to puzzle things together. But it's nicer if you just expand
-the acronym the first time you use it.
-
-> supported by the
-> +Novalink component
-
-I still haven't figured out what that is, in practice.
-
-> are passed to the hypervisor over a VMC interface, which
-> +is defined below.
-
-Maybe some illustration of how HMC, Novalink and VMC work
-together would be appropriate?
-
-> +Virtual Management Channel (VMC)
-> +A logical device, called the virtual management channel (VMC), is define=
-d
-> +for communicating between the Novalink application and the hypervisor.
-
-
-So is "Novalink" some specific application, as in a proprietary
-piece of software or something?
-
-I'm still confused.
-
-> +This device, similar to a VSCSI server device,
-
-What is that acronym now, I get completely confused.
-
-> is presented to a designated
-> +management partition as a virtual device and is only presented when the
-> +system is not HMC managed.
-> +This communication device borrows aspects from both VSCSI and ILLAN devi=
-ces
-
-Now there is ILLAN too.
-
-> +and is implemented using the CRQ and the RDMA interfaces.
-
-CRQ and RDMA. The RDMA I heard about, I wonder what CRQ is.
-
-At this point the document is referring to so much external a priori
-knowledge that I don't have that I don't understand anything at all.
-
-So if this document is meant as an introduction to the technology
-for newcomers, it's not working at all, unfortunately.
-
-If some specific domain knowledge is needed to read and
-understand the document, you need to state these prerequisites
-at the beginning of the document.
-
-Something like: "if you don't know a lot about virtualization already,
-then don't even bother trying to read this document".
-
-Yours,
-Linus Walleij
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 71f8682..dc8ffb5 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -679,6 +679,25 @@ void gpstate_timer_handler(struct timer_list *t)
+ 
+ 	if (!spin_trylock(&gpstates->gpstate_lock))
+ 		return;
++	/*
++	 * If the timer has migrated to the different cpu then bring
++	 * it back to one of the policy->cpus
++	 */
++	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
++		/*
++		 * Timer should be deleted if policy is inactive.
++		 * If policy is active then re-queue on one of the
++		 * policy->cpus.
++		 */
++		if (!cpumask_empty(policy->cpus)) {
++			gpstates->timer.expires = jiffies +
++						msecs_to_jiffies(1);
++			add_timer_on(&gpstates->timer,
++					cpumask_first(policy->cpus));
++		}
++		spin_unlock(&gpstates->gpstate_lock);
++		return;
++	}
+ 
+ 	/*
+ 	 * If PMCR was last updated was using fast_swtich then
+@@ -718,10 +737,8 @@ void gpstate_timer_handler(struct timer_list *t)
+ 	if (gpstate_idx != gpstates->last_lpstate_idx)
+ 		queue_gpstate_timer(gpstates);
+ 
++	set_pstate(&freq_data);
+ 	spin_unlock(&gpstates->gpstate_lock);
+-
+-	/* Timer may get migrated to a different cpu on cpu hot unplug */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+ }
+ 
+ /*
+-- 
+1.8.3.1
