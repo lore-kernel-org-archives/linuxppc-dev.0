@@ -1,32 +1,27 @@
-Return-Path: <felix@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WHX05WpZzF24R
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 21:09:20 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3PB9FWJ111941
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 07:09:16 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hjm8gkw1p-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 07:09:15 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.ibm.com>;
- Wed, 25 Apr 2018 12:09:03 +0100
-From: Philippe Bergheaud <felix@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com, benh@au1.ibm.com,
- Philippe Bergheaud <felix@linux.ibm.com>
-Subject: [PATCH v3 2/2] cxl: Report the tunneled operations status
-Date: Wed, 25 Apr 2018 13:08:34 +0200
-In-Reply-To: <20180425110834.16048-1-felix@linux.ibm.com>
-References: <20180425110834.16048-1-felix@linux.ibm.com>
-Message-Id: <20180425110834.16048-2-felix@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WHvr42jCzDrDT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 21:26:32 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id g14so14952227pfh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 04:26:32 -0700 (PDT)
+Date: Wed, 25 Apr 2018 21:26:13 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ ppaidipe@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
+ <stable@vger.kernel.org>
+Subject: Re: [PATCH V3] cpufreq: powernv: Fix the hardlockup by synchronus
+ smp_call in timer interrupt
+Message-ID: <20180425212613.1fc2c468@roar.ozlabs.ibm.com>
+In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,78 +31,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Failure to synchronize the tunneled operations does not prevent
-the initialization of the cxl card. This patch reports the tunneled
-operations status via /sys.
+On Wed, 25 Apr 2018 16:29:31 +0530
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Philippe Bergheaud <felix@linux.ibm.com>
----
-v3: Added this patch to report the tunneled operations status.
----
- drivers/misc/cxl/cxl.h   |  1 +
- drivers/misc/cxl/pci.c   |  7 ++++++-
- drivers/misc/cxl/sysfs.c | 10 ++++++++++
- 3 files changed, 17 insertions(+), 1 deletion(-)
+> gpstate_timer_handler() uses synchronous smp_call to set the pstate
+> on the requested core. This causes the below hard lockup:
+> 
+> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
+> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
+> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
+> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
+> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
+> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
+> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
+> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
+> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
+> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
+> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
+> LR = arch_send_call_function_ipi_mask+0x120/0x130
+> [c000003fe566ba50] [c00000000004876c]
+> arch_send_call_function_ipi_mask+0x4c/0x130
+> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
+> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
+> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
+> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
+> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
+> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
+> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+> 
+> One way to avoid this is removing the smp-call. We can ensure that the timer
+> always runs on one of the policy-cpus. If the timer gets migrated to a
+> cpu outside the policy then re-queue it back on the policy->cpus. This way
+> we can get rid of the smp-call which was being used to set the pstate
+> on the policy->cpus.
+> 
+> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
+> Cc: <stable@vger.kernel.org>        [4.8+]
+> Reported-by: Nicholas Piggin <npiggin@gmail.com>
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index a4c9c8297a6d..918d4fb742d1 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -717,6 +717,7 @@ struct cxl {
- 	bool perst_select_user;
- 	bool perst_same_image;
- 	bool psl_timebase_synced;
-+	bool tunneled_ops_supported;
- 
- 	/*
- 	 * number of contexts mapped on to this card. Possible values are:
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 355c789406f7..008f50a0c465 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -1742,9 +1742,14 @@ static int cxl_configure_adapter(struct cxl *adapter, struct pci_dev *dev)
- 	/* Required for devices using CAPP DMA mode, harmless for others */
- 	pci_set_master(dev);
- 
--	if (cxl_is_power9())
-+	adapter->tunneled_ops_supported = false;
-+
-+	if (cxl_is_power9()) {
- 		if (pnv_pci_set_tunnel_bar(dev, 0x00020000E0000000ull, 1))
- 			dev_info(&dev->dev, "Tunneled operations unsupported\n");
-+		else
-+			adapter->tunneled_ops_supported = true;
-+	}
- 
- 	if ((rc = pnv_phb_to_cxl_mode(dev, adapter->native->sl_ops->capi_mode)))
- 		goto err;
-diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
-index 95285b7f636f..4b5a4c5d3c01 100644
---- a/drivers/misc/cxl/sysfs.c
-+++ b/drivers/misc/cxl/sysfs.c
-@@ -78,6 +78,15 @@ static ssize_t psl_timebase_synced_show(struct device *device,
- 	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->psl_timebase_synced);
- }
- 
-+static ssize_t tunneled_ops_supported_show(struct device *device,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct cxl *adapter = to_cxl_adapter(device);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%i\n", adapter->tunneled_ops_supported);
-+}
-+
- static ssize_t reset_adapter_store(struct device *device,
- 				   struct device_attribute *attr,
- 				   const char *buf, size_t count)
-@@ -183,6 +192,7 @@ static struct device_attribute adapter_attrs[] = {
- 	__ATTR_RO(base_image),
- 	__ATTR_RO(image_loaded),
- 	__ATTR_RO(psl_timebase_synced),
-+	__ATTR_RO(tunneled_ops_supported),
- 	__ATTR_RW(load_image_on_perst),
- 	__ATTR_RW(perst_reloads_same_image),
- 	__ATTR(reset, S_IWUSR, NULL, reset_adapter_store),
--- 
-2.16.3
+Thanks, this looks good to me. I don't know the code though, so
+
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
+
+> ---
+> Changes from V2:
+> - Remove the check for active policy while requeing the migrated timer
+> Changes from V1:
+> - Remove smp_call in the pstate handler.
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 71f8682..e368e1f 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -679,6 +679,16 @@ void gpstate_timer_handler(struct timer_list *t)
+>  
+>  	if (!spin_trylock(&gpstates->gpstate_lock))
+>  		return;
+
+I still think it would be good to do something about the trylock failure.
+It may be rare, but if it happens it could stop the timer and lead to
+some rare unpredictable behaviour? Not for this patch, but while you're
+looking at the code it would be good to consider it. Just queueing up
+another timer seems like it should be enough.
+
+> +	/*
+> +	 * If the timer has migrated to the different cpu then bring
+> +	 * it back to one of the policy->cpus
+> +	 */
+> +	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
+> +		gpstates->timer.expires = jiffies + msecs_to_jiffies(1);
+> +		add_timer_on(&gpstates->timer, cpumask_first(policy->cpus));
+> +		spin_unlock(&gpstates->gpstate_lock);
+> +		return;
+> +	}
+
+Really small nitpick, but you could use cpumask_any there.
+
+Thanks,
+Nick
+
+
+>  
+>  	/*
+>  	 * If PMCR was last updated was using fast_swtich then
+> @@ -718,10 +728,8 @@ void gpstate_timer_handler(struct timer_list *t)
+>  	if (gpstate_idx != gpstates->last_lpstate_idx)
+>  		queue_gpstate_timer(gpstates);
+>  
+> +	set_pstate(&freq_data);
+>  	spin_unlock(&gpstates->gpstate_lock);
+> -
+> -	/* Timer may get migrated to a different cpu on cpu hot unplug */
+> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>  }
