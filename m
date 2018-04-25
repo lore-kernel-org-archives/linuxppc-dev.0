@@ -1,25 +1,36 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bryantly@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WP6860MfzF24h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:20:48 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: y2038@lists.linaro.org,
-	linux-kernel@vger.kernel.org
-Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
- libc-alpha@sourceware.org, tglx@linutronix.de, deepa.kernel@gmail.com,
- viro@zeniv.linux.org.uk, ebiederm@xmission.com, albert.aribaud@3adev.fr,
- linux-s390@vger.kernel.org, schwidefsky@de.ibm.com, x86@kernel.org,
- catalin.marinas@arm.com, will.deacon@arm.com, linux-mips@linux-mips.org,
- jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
- Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 06/16] y2038: arm64: Extend sysvipc compat data structures
-Date: Wed, 25 Apr 2018 17:05:56 +0200
-Message-Id: <20180425150606.954771-6-arnd@arndb.de>
-In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
-References: <20180425132242.1500539-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WYMr03pVzF24Y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 07:33:11 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3PLTSt4011262
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 17:33:08 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hjwy912wh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 17:33:07 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.vnet.ibm.com>;
+ Wed, 25 Apr 2018 17:33:06 -0400
+From: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, mpe@ellerman.id.au, gregkh@linuxfoundation.org,
+ arnd@arndb.de
+Cc: corbet@lwn.net, seroyer@linux.vnet.ibm.com, mrochs@linux.vnet.ibm.com,
+ adreznec@linux.vnet.ibm.com, fbarrat@linux.vnet.ibm.com,
+ davem@davemloft.net, linus.walleij@linaro.org,
+ akpm@linux-foundation.org, rdunlap@infradead.org, mikey@neuling.org,
+ pombredanne@nexb.com, tlfalcon@linux.vnet.ibm.com, msuchanek@suse.de,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ tomburks@linux.vnet.ibm.com, "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/1] misc: IBM Virtual Management Channel Driver (VMC)
+Date: Wed, 25 Apr 2018 16:32:56 -0500
+Message-Id: <1524691977-1456-1-git-send-email-bryantly@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Both 32-bit amd 64-bit ARM use the asm-generic header files for their
-sysvipc data structures, so no special care is needed to make those
-work beyond y2038, with the one exception of compat mode: Since there
-is no asm-generic definition of the compat mode IPC structures, ARM64
-provides its own copy, and we make those match the changes in the native
-asm-generic header files.
+Steven Royer had previously attempted to upstream this
+driver two years ago, but never got the chance to address
+the concerns from Greg Kroah-Hartman.
 
-There is sufficient padding in these data structures to extend all
-timestamps to 64 bit, but on big-endian ARM kernels, the padding
-is in the wrong place, so the C library has to ensure it reassembles
-a 64-bit time_t correctly.
+The thread with the initial upstream is:
+https://lkml.org/lkml/2016/2/16/918
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/arm64/include/asm/compat.h | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+I have addressed the following:
 
-diff --git a/arch/arm64/include/asm/compat.h b/arch/arm64/include/asm/compat.h
-index 0030f79808b3..1a037b94eba1 100644
---- a/arch/arm64/include/asm/compat.h
-+++ b/arch/arm64/include/asm/compat.h
-@@ -181,10 +181,10 @@ struct compat_ipc64_perm {
- 
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	compat_time_t  sem_otime;
--	compat_ulong_t __unused1;
--	compat_time_t  sem_ctime;
--	compat_ulong_t __unused2;
-+	compat_ulong_t sem_otime;
-+	compat_ulong_t sem_otime_high;
-+	compat_ulong_t sem_ctime;
-+	compat_ulong_t sem_ctime_high;
- 	compat_ulong_t sem_nsems;
- 	compat_ulong_t __unused3;
- 	compat_ulong_t __unused4;
-@@ -192,12 +192,12 @@ struct compat_semid64_ds {
- 
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	compat_time_t  msg_stime;
--	compat_ulong_t __unused1;
--	compat_time_t  msg_rtime;
--	compat_ulong_t __unused2;
--	compat_time_t  msg_ctime;
--	compat_ulong_t __unused3;
-+	compat_ulong_t msg_stime;
-+	compat_ulong_t msg_stime_high;
-+	compat_ulong_t msg_rtime;
-+	compat_ulong_t msg_rtime_high;
-+	compat_ulong_t msg_ctime;
-+	compat_ulong_t msg_ctime_high;
- 	compat_ulong_t msg_cbytes;
- 	compat_ulong_t msg_qnum;
- 	compat_ulong_t msg_qbytes;
-@@ -210,12 +210,12 @@ struct compat_msqid64_ds {
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
- 	compat_size_t  shm_segsz;
--	compat_time_t  shm_atime;
--	compat_ulong_t __unused1;
--	compat_time_t  shm_dtime;
--	compat_ulong_t __unused2;
--	compat_time_t  shm_ctime;
--	compat_ulong_t __unused3;
-+	compat_ulong_t shm_atime;
-+	compat_ulong_t shm_atime_high;
-+	compat_ulong_t shm_dtime;
-+	compat_ulong_t shm_dtime_high;
-+	compat_ulong_t shm_ctime;
-+	compat_ulong_t shm_ctime_high;
- 	compat_pid_t   shm_cpid;
- 	compat_pid_t   shm_lpid;
- 	compat_ulong_t shm_nattch;
+Version 1:
+- Documentation
+- Use of dev_dbg instead of pr_dbg
+- Change to misc class
+- Fixed memory barrier usages
+- Addressed styling, checkpatch, renaming of functions
+- General fixes to the driver to make it more inline with
+  existing upstream drivers.
+
+Version 2:
+- Changed Documentation from .rst to .txt and addressed
+  small changes in documentation per request from Randy.
+- Clarified Documentation based upon Linus Walleij's
+  comments
+- Fixed kbuild warning in regards to unititialized use of
+  rc
+
+Bryant G. Ly (1):
+  misc: IBM Virtual Management Channel Driver (VMC)
+
+ Documentation/ioctl/ioctl-number.txt  |    1 +
+ Documentation/misc-devices/ibmvmc.rst |  226 +++
+ MAINTAINERS                           |    6 +
+ arch/powerpc/include/asm/hvcall.h     |    1 +
+ drivers/misc/Kconfig                  |   14 +
+ drivers/misc/Makefile                 |    1 +
+ drivers/misc/ibmvmc.c                 | 2418 +++++++++++++++++++++++++++++++++
+ drivers/misc/ibmvmc.h                 |  209 +++
+ 8 files changed, 2876 insertions(+)
+ create mode 100644 Documentation/misc-devices/ibmvmc.rst
+ create mode 100644 drivers/misc/ibmvmc.c
+ create mode 100644 drivers/misc/ibmvmc.h
+
 -- 
-2.9.0
+2.7.2
