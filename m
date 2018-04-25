@@ -1,8 +1,8 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.134])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNy03w2szDrDT
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNy16QlHzF24R
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:44 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 15/16] y2038: ipc: Enable COMPAT_32BIT_TIME
-Date: Wed, 25 Apr 2018 17:06:05 +0200
-Message-Id: <20180425150606.954771-15-arnd@arndb.de>
+Subject: [PATCH v4 14/16] y2038: ipc: Use __kernel_timespec
+Date: Wed, 25 Apr 2018 17:06:04 +0200
+Message-Id: <20180425150606.954771-14-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,156 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Three ipc syscalls (mq_timedsend, mq_timedreceive and and semtimedop)
-take a timespec argument. After we move 32-bit architectures over to
-useing 64-bit time_t based syscalls, we need seperate entry points for
-the old 32-bit based interfaces.
+This is a preparatation for changing over __kernel_timespec to 64-bit
+times, which involves assigning new system call numbers for mq_timedsend(),
+mq_timedreceive() and semtimedop() for compatibility with future y2038
+proof user space.
 
-This changes the #ifdef guards for the existing 32-bit compat syscalls
-to check for CONFIG_COMPAT_32BIT_TIME instead, which will then be
-enabled on all existing 32-bit architectures.
+The existing ABIs will remain available through compat code.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- ipc/mqueue.c | 80 +++++++++++++++++++++++++++++++-----------------------------
- ipc/sem.c    |  3 ++-
- ipc/util.h   |  2 +-
- 3 files changed, 44 insertions(+), 41 deletions(-)
+ include/linux/syscalls.h | 6 +++---
+ ipc/mqueue.c             | 6 +++---
+ ipc/sem.c                | 4 ++--
+ ipc/util.h               | 2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index c9a2a2601852..b92cb79d38c3 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -680,8 +680,8 @@ asmlinkage long sys_sysinfo(struct sysinfo __user *info);
+ /* ipc/mqueue.c */
+ asmlinkage long sys_mq_open(const char __user *name, int oflag, umode_t mode, struct mq_attr __user *attr);
+ asmlinkage long sys_mq_unlink(const char __user *name);
+-asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const struct timespec __user *abs_timeout);
+-asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct timespec __user *abs_timeout);
++asmlinkage long sys_mq_timedsend(mqd_t mqdes, const char __user *msg_ptr, size_t msg_len, unsigned int msg_prio, const struct __kernel_timespec __user *abs_timeout);
++asmlinkage long sys_mq_timedreceive(mqd_t mqdes, char __user *msg_ptr, size_t msg_len, unsigned int __user *msg_prio, const struct __kernel_timespec __user *abs_timeout);
+ asmlinkage long sys_mq_notify(mqd_t mqdes, const struct sigevent __user *notification);
+ asmlinkage long sys_mq_getsetattr(mqd_t mqdes, const struct mq_attr __user *mqstat, struct mq_attr __user *omqstat);
+ 
+@@ -698,7 +698,7 @@ asmlinkage long sys_semget(key_t key, int nsems, int semflg);
+ asmlinkage long sys_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ asmlinkage long sys_semtimedop(int semid, struct sembuf __user *sops,
+ 				unsigned nsops,
+-				const struct timespec __user *timeout);
++				const struct __kernel_timespec __user *timeout);
+ asmlinkage long sys_semop(int semid, struct sembuf __user *sops,
+ 				unsigned nsops);
+ 
 diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 9610afcfa2e5..c0d58f390c3b 100644
+index a808f29d4c5a..9610afcfa2e5 100644
 --- a/ipc/mqueue.c
 +++ b/ipc/mqueue.c
-@@ -1420,6 +1420,47 @@ COMPAT_SYSCALL_DEFINE4(mq_open, const char __user *, u_name,
- 	return do_mq_open(u_name, oflag, mode, p);
+@@ -691,7 +691,7 @@ static void __do_notify(struct mqueue_inode_info *info)
+ 	wake_up(&info->wait_q);
  }
  
-+COMPAT_SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
-+		       const struct compat_sigevent __user *, u_notification)
-+{
-+	struct sigevent n, *p = NULL;
-+	if (u_notification) {
-+		if (get_compat_sigevent(&n, u_notification))
-+			return -EFAULT;
-+		if (n.sigev_notify == SIGEV_THREAD)
-+			n.sigev_value.sival_ptr = compat_ptr(n.sigev_value.sival_int);
-+		p = &n;
-+	}
-+	return do_mq_notify(mqdes, p);
-+}
-+
-+COMPAT_SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
-+		       const struct compat_mq_attr __user *, u_mqstat,
-+		       struct compat_mq_attr __user *, u_omqstat)
-+{
-+	int ret;
-+	struct mq_attr mqstat, omqstat;
-+	struct mq_attr *new = NULL, *old = NULL;
-+
-+	if (u_mqstat) {
-+		new = &mqstat;
-+		if (get_compat_mq_attr(new, u_mqstat))
-+			return -EFAULT;
-+	}
-+	if (u_omqstat)
-+		old = &omqstat;
-+
-+	ret = do_mq_getsetattr(mqdes, new, old);
-+	if (ret || !old)
-+		return ret;
-+
-+	if (put_compat_mq_attr(old, u_omqstat))
-+		return -EFAULT;
-+	return 0;
-+}
-+#endif
-+
-+#ifdef CONFIG_COMPAT_32BIT_TIME
- static int compat_prepare_timeout(const struct compat_timespec __user *p,
- 				   struct timespec64 *ts)
+-static int prepare_timeout(const struct timespec __user *u_abs_timeout,
++static int prepare_timeout(const struct __kernel_timespec __user *u_abs_timeout,
+ 			   struct timespec64 *ts)
  {
-@@ -1459,45 +1500,6 @@ COMPAT_SYSCALL_DEFINE5(mq_timedreceive, mqd_t, mqdes,
- 	}
- 	return do_mq_timedreceive(mqdes, u_msg_ptr, msg_len, u_msg_prio, p);
- }
--
--COMPAT_SYSCALL_DEFINE2(mq_notify, mqd_t, mqdes,
--		       const struct compat_sigevent __user *, u_notification)
--{
--	struct sigevent n, *p = NULL;
--	if (u_notification) {
--		if (get_compat_sigevent(&n, u_notification))
--			return -EFAULT;
--		if (n.sigev_notify == SIGEV_THREAD)
--			n.sigev_value.sival_ptr = compat_ptr(n.sigev_value.sival_int);
--		p = &n;
--	}
--	return do_mq_notify(mqdes, p);
--}
--
--COMPAT_SYSCALL_DEFINE3(mq_getsetattr, mqd_t, mqdes,
--		       const struct compat_mq_attr __user *, u_mqstat,
--		       struct compat_mq_attr __user *, u_omqstat)
--{
--	int ret;
--	struct mq_attr mqstat, omqstat;
--	struct mq_attr *new = NULL, *old = NULL;
--
--	if (u_mqstat) {
--		new = &mqstat;
--		if (get_compat_mq_attr(new, u_mqstat))
--			return -EFAULT;
--	}
--	if (u_omqstat)
--		old = &omqstat;
--
--	ret = do_mq_getsetattr(mqdes, new, old);
--	if (ret || !old)
--		return ret;
--
--	if (put_compat_mq_attr(old, u_omqstat))
--		return -EFAULT;
--	return 0;
--}
- #endif
+ 	if (get_timespec64(ts, u_abs_timeout))
+@@ -1128,7 +1128,7 @@ static int do_mq_timedreceive(mqd_t mqdes, char __user *u_msg_ptr,
  
- static const struct inode_operations mqueue_dir_inode_operations = {
+ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
+ 		size_t, msg_len, unsigned int, msg_prio,
+-		const struct timespec __user *, u_abs_timeout)
++		const struct __kernel_timespec __user *, u_abs_timeout)
+ {
+ 	struct timespec64 ts, *p = NULL;
+ 	if (u_abs_timeout) {
+@@ -1142,7 +1142,7 @@ SYSCALL_DEFINE5(mq_timedsend, mqd_t, mqdes, const char __user *, u_msg_ptr,
+ 
+ SYSCALL_DEFINE5(mq_timedreceive, mqd_t, mqdes, char __user *, u_msg_ptr,
+ 		size_t, msg_len, unsigned int __user *, u_msg_prio,
+-		const struct timespec __user *, u_abs_timeout)
++		const struct __kernel_timespec __user *, u_abs_timeout)
+ {
+ 	struct timespec64 ts, *p = NULL;
+ 	if (u_abs_timeout) {
 diff --git a/ipc/sem.c b/ipc/sem.c
-index b951e25ba2db..cfd94d48a9aa 100644
+index 8935cd8cf166..b951e25ba2db 100644
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
-@@ -70,6 +70,7 @@
-  *   The worst-case behavior is nevertheless O(N^2) for N wakeups.
-  */
- 
-+#include <linux/compat.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/init.h>
-@@ -2193,7 +2194,7 @@ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
- 	return ksys_semtimedop(semid, tsops, nsops, timeout);
+@@ -2176,7 +2176,7 @@ static long do_semtimedop(int semid, struct sembuf __user *tsops,
  }
  
--#ifdef CONFIG_COMPAT
-+#ifdef CONFIG_COMPAT_32BIT_TIME
- long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
- 			    unsigned int nsops,
- 			    const struct compat_timespec __user *timeout)
+ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+-		     unsigned int nsops, const struct timespec __user *timeout)
++		     unsigned int nsops, const struct __kernel_timespec __user *timeout)
+ {
+ 	if (timeout) {
+ 		struct timespec64 ts;
+@@ -2188,7 +2188,7 @@ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+ }
+ 
+ SYSCALL_DEFINE4(semtimedop, int, semid, struct sembuf __user *, tsops,
+-		unsigned int, nsops, const struct timespec __user *, timeout)
++		unsigned int, nsops, const struct __kernel_timespec __user *, timeout)
+ {
+ 	return ksys_semtimedop(semid, tsops, nsops, timeout);
+ }
 diff --git a/ipc/util.h b/ipc/util.h
-index 975c6de2df9d..0aba3230d007 100644
+index acc5159e96d0..975c6de2df9d 100644
 --- a/ipc/util.h
 +++ b/ipc/util.h
-@@ -265,10 +265,10 @@ long ksys_shmdt(char __user *shmaddr);
- long ksys_shmctl(int shmid, int cmd, struct shmid_ds __user *buf);
- 
- /* for CONFIG_ARCH_WANT_OLD_COMPAT_IPC */
--#ifdef CONFIG_COMPAT
- long compat_ksys_semtimedop(int semid, struct sembuf __user *tsems,
- 			    unsigned int nsops,
- 			    const struct compat_timespec __user *timeout);
-+#ifdef CONFIG_COMPAT
- long compat_ksys_semctl(int semid, int semnum, int cmd, int arg);
- long compat_ksys_msgctl(int msqid, int cmd, void __user *uptr);
- long compat_ksys_msgrcv(int msqid, compat_uptr_t msgp, compat_ssize_t msgsz,
+@@ -251,7 +251,7 @@ static inline int compat_ipc_parse_version(int *cmd)
+ /* for __ARCH_WANT_SYS_IPC */
+ long ksys_semtimedop(int semid, struct sembuf __user *tsops,
+ 		     unsigned int nsops,
+-		     const struct timespec __user *timeout);
++		     const struct __kernel_timespec __user *timeout);
+ long ksys_semget(key_t key, int nsems, int semflg);
+ long ksys_semctl(int semid, int semnum, int cmd, unsigned long arg);
+ long ksys_msgget(key_t key, int msgflg);
 -- 
 2.9.0
