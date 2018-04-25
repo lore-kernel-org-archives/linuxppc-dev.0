@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpr0Hx8zF24X
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpy628PzF24L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:38 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 12/16] y2038: ipc: Use ktime_get_real_seconds consistently
-Date: Wed, 25 Apr 2018 17:06:02 +0200
-Message-Id: <20180425150606.954771-12-arnd@arndb.de>
+Subject: [PATCH v4 13/16] y2038: ipc: Report long times to user space
+Date: Wed, 25 Apr 2018 17:06:03 +0200
+Message-Id: <20180425150606.954771-13-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,74 +29,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In some places, we still used get_seconds() instead of
-ktime_get_real_seconds(), and I'm changing the remaining ones now to
-all use ktime_get_real_seconds() so we use the full available range for
-timestamps instead of overflowing the 'unsigned long' return value in
-year 2106 on 32-bit kernels.
+The shmid64_ds/semid64_ds/msqid64_ds data structures have been extended
+to contain extra fields for storing the upper bits of the time stamps,
+this patch does the other half of the job and and fills the new fields on
+32-bit architectures as well as 32-bit tasks running on a 64-bit kernel
+in compat mode.
+
+There should be no change for native 64-bit tasks.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- ipc/msg.c | 6 +++---
- ipc/sem.c | 6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ ipc/msg.c | 14 +++++++++++---
+ ipc/sem.c | 14 +++++++++++---
+ ipc/shm.c | 14 +++++++++++---
+ 3 files changed, 33 insertions(+), 9 deletions(-)
 
 diff --git a/ipc/msg.c b/ipc/msg.c
-index 56fd1c73eedc..574f76c9a2ff 100644
+index 574f76c9a2ff..3b6545302598 100644
 --- a/ipc/msg.c
 +++ b/ipc/msg.c
-@@ -758,7 +758,7 @@ static inline int pipelined_send(struct msg_queue *msq, struct msg_msg *msg,
- 				WRITE_ONCE(msr->r_msg, ERR_PTR(-E2BIG));
- 			} else {
- 				ipc_update_pid(&msq->q_lrpid, task_pid(msr->r_tsk));
--				msq->q_rtime = get_seconds();
-+				msq->q_rtime = ktime_get_real_seconds();
- 
- 				wake_q_add(wake_q, msr->r_tsk);
- 				WRITE_ONCE(msr->r_msg, msg);
-@@ -859,7 +859,7 @@ static long do_msgsnd(int msqid, long mtype, void __user *mtext,
- 	}
- 
- 	ipc_update_pid(&msq->q_lspid, task_tgid(current));
--	msq->q_stime = get_seconds();
-+	msq->q_stime = ktime_get_real_seconds();
- 
- 	if (!pipelined_send(msq, msg, &wake_q)) {
- 		/* no one is waiting for this message, enqueue it */
-@@ -1087,7 +1087,7 @@ static long do_msgrcv(int msqid, void __user *buf, size_t bufsz, long msgtyp, in
- 
- 			list_del(&msg->m_list);
- 			msq->q_qnum--;
--			msq->q_rtime = get_seconds();
-+			msq->q_rtime = ktime_get_real_seconds();
- 			ipc_update_pid(&msq->q_lrpid, task_tgid(current));
- 			msq->q_cbytes -= msg->m_ts;
- 			atomic_sub(msg->m_ts, &ns->msg_bytes);
+@@ -537,6 +537,11 @@ static int msgctl_stat(struct ipc_namespace *ns, int msqid,
+ 	p->msg_stime  = msq->q_stime;
+ 	p->msg_rtime  = msq->q_rtime;
+ 	p->msg_ctime  = msq->q_ctime;
++#ifndef CONFIG_64BIT
++	p->msg_stime_high = msq->q_stime >> 32;
++	p->msg_rtime_high = msq->q_rtime >> 32;
++	p->msg_ctime_high = msq->q_ctime >> 32;
++#endif
+ 	p->msg_cbytes = msq->q_cbytes;
+ 	p->msg_qnum   = msq->q_qnum;
+ 	p->msg_qbytes = msq->q_qbytes;
+@@ -646,9 +651,12 @@ static int copy_compat_msqid_to_user(void __user *buf, struct msqid64_ds *in,
+ 		struct compat_msqid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.msg_perm, &in->msg_perm);
+-		v.msg_stime = in->msg_stime;
+-		v.msg_rtime = in->msg_rtime;
+-		v.msg_ctime = in->msg_ctime;
++		v.msg_stime	 = lower_32_bits(in->msg_stime);
++		v.msg_stime_high = upper_32_bits(in->msg_stime);
++		v.msg_rtime	 = lower_32_bits(in->msg_rtime);
++		v.msg_rtime_high = upper_32_bits(in->msg_rtime);
++		v.msg_ctime	 = lower_32_bits(in->msg_ctime);
++		v.msg_ctime_high = upper_32_bits(in->msg_ctime);
+ 		v.msg_cbytes = in->msg_cbytes;
+ 		v.msg_qnum = in->msg_qnum;
+ 		v.msg_qbytes = in->msg_qbytes;
 diff --git a/ipc/sem.c b/ipc/sem.c
-index 06be75d9217a..c6a8a971769d 100644
+index c6a8a971769d..8935cd8cf166 100644
 --- a/ipc/sem.c
 +++ b/ipc/sem.c
-@@ -104,7 +104,7 @@ struct sem {
- 					/* that alter the semaphore */
- 	struct list_head pending_const; /* pending single-sop operations */
- 					/* that do not alter the semaphore*/
--	time_t	sem_otime;	/* candidate for sem_otime */
-+	time64_t	 sem_otime;	/* candidate for sem_otime */
- } ____cacheline_aligned_in_smp;
- 
- /* One sem_array data structure for each set of semaphores in the system. */
-@@ -984,10 +984,10 @@ static int update_queue(struct sem_array *sma, int semnum, struct wake_q_head *w
- static void set_semotime(struct sem_array *sma, struct sembuf *sops)
+@@ -1214,6 +1214,7 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
+ 			 int cmd, struct semid64_ds *semid64)
  {
- 	if (sops == NULL) {
--		sma->sems[0].sem_otime = get_seconds();
-+		sma->sems[0].sem_otime = ktime_get_real_seconds();
- 	} else {
- 		sma->sems[sops[0].sem_num].sem_otime =
--							get_seconds();
-+						ktime_get_real_seconds();
- 	}
- }
+ 	struct sem_array *sma;
++	time64_t semotime;
+ 	int id = 0;
+ 	int err;
  
+@@ -1257,8 +1258,13 @@ static int semctl_stat(struct ipc_namespace *ns, int semid,
+ 	}
+ 
+ 	kernel_to_ipc64_perm(&sma->sem_perm, &semid64->sem_perm);
+-	semid64->sem_otime = get_semotime(sma);
++	semotime = get_semotime(sma);
++	semid64->sem_otime = semotime;
+ 	semid64->sem_ctime = sma->sem_ctime;
++#ifndef CONFIG_64BIT
++	semid64->sem_otime_high = semotime >> 32;
++	semid64->sem_ctime_high = sma->sem_ctime >> 32;
++#endif
+ 	semid64->sem_nsems = sma->sem_nsems;
+ 
+ 	ipc_unlock_object(&sma->sem_perm);
+@@ -1704,8 +1710,10 @@ static int copy_compat_semid_to_user(void __user *buf, struct semid64_ds *in,
+ 		struct compat_semid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.sem_perm, &in->sem_perm);
+-		v.sem_otime = in->sem_otime;
+-		v.sem_ctime = in->sem_ctime;
++		v.sem_otime	 = lower_32_bits(in->sem_otime);
++		v.sem_otime_high = upper_32_bits(in->sem_otime);
++		v.sem_ctime	 = lower_32_bits(in->sem_ctime);
++		v.sem_ctime_high = upper_32_bits(in->sem_ctime);
+ 		v.sem_nsems = in->sem_nsems;
+ 		return copy_to_user(buf, &v, sizeof(v));
+ 	} else {
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 3cf48988d68c..0075990338f4 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -1002,6 +1002,11 @@ static int shmctl_stat(struct ipc_namespace *ns, int shmid,
+ 	tbuf->shm_atime	= shp->shm_atim;
+ 	tbuf->shm_dtime	= shp->shm_dtim;
+ 	tbuf->shm_ctime	= shp->shm_ctim;
++#ifndef CONFIG_64BIT
++	tbuf->shm_atime_high = shp->shm_atim >> 32;
++	tbuf->shm_dtime_high = shp->shm_dtim >> 32;
++	tbuf->shm_ctime_high = shp->shm_ctim >> 32;
++#endif
+ 	tbuf->shm_cpid	= pid_vnr(shp->shm_cprid);
+ 	tbuf->shm_lpid	= pid_vnr(shp->shm_lprid);
+ 	tbuf->shm_nattch = shp->shm_nattch;
+@@ -1233,9 +1238,12 @@ static int copy_compat_shmid_to_user(void __user *buf, struct shmid64_ds *in,
+ 		struct compat_shmid64_ds v;
+ 		memset(&v, 0, sizeof(v));
+ 		to_compat_ipc64_perm(&v.shm_perm, &in->shm_perm);
+-		v.shm_atime = in->shm_atime;
+-		v.shm_dtime = in->shm_dtime;
+-		v.shm_ctime = in->shm_ctime;
++		v.shm_atime	 = lower_32_bits(in->shm_atime);
++		v.shm_atime_high = upper_32_bits(in->shm_atime);
++		v.shm_dtime	 = lower_32_bits(in->shm_dtime);
++		v.shm_dtime_high = upper_32_bits(in->shm_dtime);
++		v.shm_ctime	 = lower_32_bits(in->shm_ctime);
++		v.shm_ctime_high = upper_32_bits(in->shm_ctime);
+ 		v.shm_segsz = in->shm_segsz;
+ 		v.shm_nattch = in->shm_nattch;
+ 		v.shm_cpid = in->shm_cpid;
 -- 
 2.9.0
