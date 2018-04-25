@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNqg2JNMzF24h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:08:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNxt0W8RzF24X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:13:37 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 03/16] y2038: alpha: Remove unneeded ipc uapi header files
-Date: Wed, 25 Apr 2018 17:05:53 +0200
-Message-Id: <20180425150606.954771-3-arnd@arndb.de>
+Subject: [PATCH v4 04/16] y2038: ia64: Remove unneeded ipc uapi header files
+Date: Wed, 25 Apr 2018 17:05:54 +0200
+Message-Id: <20180425150606.954771-4-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,60 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The alpha ipcbuf/msgbuf/sembuf/shmbuf header files are all identical
+The ia64 ipcbuf/msgbuf/sembuf/shmbuf header files are all identical
 to the version from asm-generic.
 
 This patch removes the files and replaces them with 'generic-y'
-statements as part of the y2038 series. Since there is no 32-bit
-syscall support for alpha, we don't need the other changes, but
-it's good to have clean this up anyway.
+statements as part of the y2038 changes. While ia64 no longer has
+a compat mode and doesn't need the file any more, it seem nicer
+to clean this up anyway.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/alpha/include/uapi/asm/Kbuild   |  4 ++++
- arch/alpha/include/uapi/asm/ipcbuf.h |  2 --
- arch/alpha/include/uapi/asm/msgbuf.h | 28 --------------------------
- arch/alpha/include/uapi/asm/sembuf.h | 23 ---------------------
- arch/alpha/include/uapi/asm/shmbuf.h | 39 ------------------------------------
+ arch/ia64/include/uapi/asm/Kbuild   |  4 ++++
+ arch/ia64/include/uapi/asm/ipcbuf.h |  2 --
+ arch/ia64/include/uapi/asm/msgbuf.h | 28 --------------------------
+ arch/ia64/include/uapi/asm/sembuf.h | 23 ----------------------
+ arch/ia64/include/uapi/asm/shmbuf.h | 39 -------------------------------------
  5 files changed, 4 insertions(+), 92 deletions(-)
- delete mode 100644 arch/alpha/include/uapi/asm/ipcbuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/msgbuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/sembuf.h
- delete mode 100644 arch/alpha/include/uapi/asm/shmbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/ipcbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/msgbuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/sembuf.h
+ delete mode 100644 arch/ia64/include/uapi/asm/shmbuf.h
 
-diff --git a/arch/alpha/include/uapi/asm/Kbuild b/arch/alpha/include/uapi/asm/Kbuild
-index 9afaba5e5503..1a5b75310cf4 100644
---- a/arch/alpha/include/uapi/asm/Kbuild
-+++ b/arch/alpha/include/uapi/asm/Kbuild
-@@ -2,4 +2,8 @@
+diff --git a/arch/ia64/include/uapi/asm/Kbuild b/arch/ia64/include/uapi/asm/Kbuild
+index c0527cfc48f0..3982e673e967 100644
+--- a/arch/ia64/include/uapi/asm/Kbuild
++++ b/arch/ia64/include/uapi/asm/Kbuild
+@@ -2,5 +2,9 @@
  include include/uapi/asm-generic/Kbuild.asm
  
  generic-y += bpf_perf_event.h
 +generic-y += ipcbuf.h
+ generic-y += kvm_para.h
 +generic-y += msgbuf.h
  generic-y += poll.h
 +generic-y += sembuf.h
 +generic-y += shmbuf.h
-diff --git a/arch/alpha/include/uapi/asm/ipcbuf.h b/arch/alpha/include/uapi/asm/ipcbuf.h
+diff --git a/arch/ia64/include/uapi/asm/ipcbuf.h b/arch/ia64/include/uapi/asm/ipcbuf.h
 deleted file mode 100644
 index 90d6445a14df..000000000000
---- a/arch/alpha/include/uapi/asm/ipcbuf.h
+--- a/arch/ia64/include/uapi/asm/ipcbuf.h
 +++ /dev/null
 @@ -1,2 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 -#include <asm-generic/ipcbuf.h>
-diff --git a/arch/alpha/include/uapi/asm/msgbuf.h b/arch/alpha/include/uapi/asm/msgbuf.h
+diff --git a/arch/ia64/include/uapi/asm/msgbuf.h b/arch/ia64/include/uapi/asm/msgbuf.h
 deleted file mode 100644
-index 8c5d4d8c1b16..000000000000
---- a/arch/alpha/include/uapi/asm/msgbuf.h
+index aa25df92d9dc..000000000000
+--- a/arch/ia64/include/uapi/asm/msgbuf.h
 +++ /dev/null
 @@ -1,28 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ALPHA_MSGBUF_H
--#define _ALPHA_MSGBUF_H
+-#ifndef _ASM_IA64_MSGBUF_H
+-#define _ASM_IA64_MSGBUF_H
 -
--/* 
-- * The msqid64_ds structure for alpha architecture.
+-/*
+- * The msqid64_ds structure for IA-64 architecture.
 - * Note extra padding because this structure is passed back and forth
 - * between kernel and user space.
 - *
@@ -104,19 +105,19 @@ index 8c5d4d8c1b16..000000000000
 -	unsigned long  __unused2;
 -};
 -
--#endif /* _ALPHA_MSGBUF_H */
-diff --git a/arch/alpha/include/uapi/asm/sembuf.h b/arch/alpha/include/uapi/asm/sembuf.h
+-#endif /* _ASM_IA64_MSGBUF_H */
+diff --git a/arch/ia64/include/uapi/asm/sembuf.h b/arch/ia64/include/uapi/asm/sembuf.h
 deleted file mode 100644
-index f28ffa668b2f..000000000000
---- a/arch/alpha/include/uapi/asm/sembuf.h
+index 6ed058760afc..000000000000
+--- a/arch/ia64/include/uapi/asm/sembuf.h
 +++ /dev/null
 @@ -1,23 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ALPHA_SEMBUF_H
--#define _ALPHA_SEMBUF_H
+-#ifndef _ASM_IA64_SEMBUF_H
+-#define _ASM_IA64_SEMBUF_H
 -
--/* 
-- * The semid64_ds structure for alpha architecture.
+-/*
+- * The semid64_ds structure for IA-64 architecture.
 - * Note extra padding because this structure is passed back and forth
 - * between kernel and user space.
 - *
@@ -133,19 +134,19 @@ index f28ffa668b2f..000000000000
 -	unsigned long	__unused2;
 -};
 -
--#endif /* _ALPHA_SEMBUF_H */
-diff --git a/arch/alpha/include/uapi/asm/shmbuf.h b/arch/alpha/include/uapi/asm/shmbuf.h
+-#endif /* _ASM_IA64_SEMBUF_H */
+diff --git a/arch/ia64/include/uapi/asm/shmbuf.h b/arch/ia64/include/uapi/asm/shmbuf.h
 deleted file mode 100644
-index 7e041ca2eb40..000000000000
---- a/arch/alpha/include/uapi/asm/shmbuf.h
+index 6ef57cb70dee..000000000000
+--- a/arch/ia64/include/uapi/asm/shmbuf.h
 +++ /dev/null
 @@ -1,39 +0,0 @@
 -/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
--#ifndef _ALPHA_SHMBUF_H
--#define _ALPHA_SHMBUF_H
+-#ifndef _ASM_IA64_SHMBUF_H
+-#define _ASM_IA64_SHMBUF_H
 -
--/* 
-- * The shmid64_ds structure for alpha architecture.
+-/*
+- * The shmid64_ds structure for IA-64 architecture.
 - * Note extra padding because this structure is passed back and forth
 - * between kernel and user space.
 - *
@@ -178,6 +179,6 @@ index 7e041ca2eb40..000000000000
 -	unsigned long	__unused4;
 -};
 -
--#endif /* _ALPHA_SHMBUF_H */
+-#endif /* _ASM_IA64_SHMBUF_H */
 -- 
 2.9.0
