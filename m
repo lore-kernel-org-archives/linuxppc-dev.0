@@ -2,8 +2,8 @@ Return-Path: <arnd@arndb.de>
 Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpc4XCHzF24L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WNpj5BQ6zF24s
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:07:25 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: y2038@lists.linaro.org,
 	linux-kernel@vger.kernel.org
@@ -15,9 +15,9 @@ Cc: linux-api@vger.kernel.org, linux-arch@vger.kernel.org,
  jhogan@kernel.org, ralf@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org, zackw@panix.com, noloader@gmail.com,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH v4 09/16] y2038: sparc: Extend sysvipc data structures
-Date: Wed, 25 Apr 2018 17:05:59 +0200
-Message-Id: <20180425150606.954771-9-arnd@arndb.de>
+Subject: [PATCH v4 11/16] y2038: xtensa: Extend sysvipc data structures
+Date: Wed, 25 Apr 2018 17:06:01 +0200
+Message-Id: <20180425150606.954771-11-arnd@arndb.de>
 In-Reply-To: <20180425132242.1500539-1-arnd@arndb.de>
 References: <20180425132242.1500539-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,14 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sparc, uses a nonstandard variation of the generic sysvipc
+xtensa, uses a nonstandard variation of the generic sysvipc
 data structures, intended to have the padding moved around
 so it can deal with big-endian 32-bit user space that has
 64-bit time_t.
 
-Unlike most architectures, sparc actually succeeded in
-defining this right for big-endian CPUs, but as everyone else
-got it wrong, we just use the same hack everywhere.
+xtensa tries hard to define the structures so they work
+in both big-endian and little-endian systems with padding
+on the right side.
+However, they only succeeded for for two of the three structures,
+and their struct shmid64_ds ended up being defined in two
+identical copies, and the big-endian one is wrong.
 
 This takes just take the same approach here that we have for
 the asm-generic headers and adds separate 32-bit fields for the
@@ -45,195 +48,156 @@ in user space.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/sparc/include/asm/compat.h      | 32 ++++++++++++++++----------------
- arch/sparc/include/uapi/asm/msgbuf.h | 22 +++++++++-------------
- arch/sparc/include/uapi/asm/sembuf.h | 16 +++++++---------
- arch/sparc/include/uapi/asm/shmbuf.h | 21 +++++++++------------
- 4 files changed, 41 insertions(+), 50 deletions(-)
+ arch/xtensa/include/uapi/asm/msgbuf.h | 25 ++++++++++++-----------
+ arch/xtensa/include/uapi/asm/sembuf.h | 17 ++++++++--------
+ arch/xtensa/include/uapi/asm/shmbuf.h | 37 ++++++++---------------------------
+ 3 files changed, 28 insertions(+), 51 deletions(-)
 
-diff --git a/arch/sparc/include/asm/compat.h b/arch/sparc/include/asm/compat.h
-index 1910c44521e3..4eb51d2dae98 100644
---- a/arch/sparc/include/asm/compat.h
-+++ b/arch/sparc/include/asm/compat.h
-@@ -192,10 +192,10 @@ struct compat_ipc64_perm {
- 
- struct compat_semid64_ds {
- 	struct compat_ipc64_perm sem_perm;
--	unsigned int	__pad1;
--	compat_time_t	sem_otime;
--	unsigned int	__pad2;
--	compat_time_t	sem_ctime;
-+	unsigned int	sem_otime_high;
-+	unsigned int	sem_otime;
-+	unsigned int	sem_ctime_high;
-+	unsigned int	sem_ctime;
- 	u32		sem_nsems;
- 	u32		__unused1;
- 	u32		__unused2;
-@@ -203,12 +203,12 @@ struct compat_semid64_ds {
- 
- struct compat_msqid64_ds {
- 	struct compat_ipc64_perm msg_perm;
--	unsigned int	__pad1;
--	compat_time_t	msg_stime;
--	unsigned int	__pad2;
--	compat_time_t	msg_rtime;
--	unsigned int	__pad3;
--	compat_time_t	msg_ctime;
-+	unsigned int	msg_stime_high;
-+	unsigned int	msg_stime;
-+	unsigned int	msg_rtime_high;
-+	unsigned int	msg_rtime;
-+	unsigned int	msg_ctime_high;
-+	unsigned int	msg_ctime;
- 	unsigned int	msg_cbytes;
- 	unsigned int	msg_qnum;
- 	unsigned int	msg_qbytes;
-@@ -220,12 +220,12 @@ struct compat_msqid64_ds {
- 
- struct compat_shmid64_ds {
- 	struct compat_ipc64_perm shm_perm;
--	unsigned int	__pad1;
--	compat_time_t	shm_atime;
--	unsigned int	__pad2;
--	compat_time_t	shm_dtime;
--	unsigned int	__pad3;
--	compat_time_t	shm_ctime;
-+	unsigned int	shm_atime_high;
-+	unsigned int	shm_atime;
-+	unsigned int	shm_dtime_high;
-+	unsigned int	shm_dtime;
-+	unsigned int	shm_ctime_high;
-+	unsigned int	shm_ctime;
- 	compat_size_t	shm_segsz;
- 	compat_pid_t	shm_cpid;
- 	compat_pid_t	shm_lpid;
-diff --git a/arch/sparc/include/uapi/asm/msgbuf.h b/arch/sparc/include/uapi/asm/msgbuf.h
-index b601c4f4d956..ffc46c211d6d 100644
---- a/arch/sparc/include/uapi/asm/msgbuf.h
-+++ b/arch/sparc/include/uapi/asm/msgbuf.h
-@@ -8,25 +8,22 @@
+diff --git a/arch/xtensa/include/uapi/asm/msgbuf.h b/arch/xtensa/include/uapi/asm/msgbuf.h
+index 36e2e103ca38..d6915e9f071c 100644
+--- a/arch/xtensa/include/uapi/asm/msgbuf.h
++++ b/arch/xtensa/include/uapi/asm/msgbuf.h
+@@ -7,7 +7,6 @@
   * between kernel and user space.
   *
   * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
   * - 2 miscellaneous 32-bit values
-  */
--
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
--
--
+  *
+  * This file is subject to the terms and conditions of the GNU General
+@@ -21,19 +20,19 @@
  struct msqid64_ds {
  	struct ipc64_perm msg_perm;
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t msg_stime;	/* last msgsnd time */
--	PADDING(__pad2)
- 	__kernel_time_t msg_rtime;	/* last msgrcv time */
--	PADDING(__pad3)
- 	__kernel_time_t msg_ctime;	/* last change time */
-+#else
-+	unsigned long msg_stime_high;
-+	unsigned long msg_stime;	/* last msgsnd time */
-+	unsigned long msg_rtime_high;
-+	unsigned long msg_rtime;	/* last msgrcv time */
-+	unsigned long msg_ctime_high;
-+	unsigned long msg_ctime;	/* last change time */
-+#endif
- 	unsigned long  msg_cbytes;	/* current number of bytes on queue */
- 	unsigned long  msg_qnum;	/* number of messages in queue */
- 	unsigned long  msg_qbytes;	/* max number of bytes on queue */
-@@ -35,5 +32,4 @@ struct msqid64_ds {
- 	unsigned long  __unused1;
- 	unsigned long  __unused2;
- };
--#undef PADDING
- #endif /* _SPARC_MSGBUF_H */
-diff --git a/arch/sparc/include/uapi/asm/sembuf.h b/arch/sparc/include/uapi/asm/sembuf.h
-index f49b0ffa0ab8..f3d309c2e1cd 100644
---- a/arch/sparc/include/uapi/asm/sembuf.h
-+++ b/arch/sparc/include/uapi/asm/sembuf.h
-@@ -8,25 +8,23 @@
+ #ifdef __XTENSA_EB__
+-	unsigned int	__unused1;
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-	unsigned int	__unused2;
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-	unsigned int	__unused3;
+-	__kernel_time_t msg_ctime;	/* last change time */
++	unsigned long  msg_stime_high;
++	unsigned long  msg_stime;	/* last msgsnd time */
++	unsigned long  msg_rtime_high;
++	unsigned long  msg_rtime;	/* last msgrcv time */
++	unsigned long  msg_ctime_high;
++	unsigned long  msg_ctime;	/* last change time */
+ #elif defined(__XTENSA_EL__)
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-	unsigned int	__unused1;
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-	unsigned int	__unused2;
+-	__kernel_time_t msg_ctime;	/* last change time */
+-	unsigned int	__unused3;
++	unsigned long  msg_stime;	/* last msgsnd time */
++	unsigned long  msg_stime_high;
++	unsigned long  msg_rtime;	/* last msgrcv time */
++	unsigned long  msg_rtime_high;
++	unsigned long  msg_ctime;	/* last change time */
++	unsigned long  msg_ctime_high;
+ #else
+ # error processor byte order undefined!
+ #endif
+diff --git a/arch/xtensa/include/uapi/asm/sembuf.h b/arch/xtensa/include/uapi/asm/sembuf.h
+index f61b6331a10c..09f348d643f1 100644
+--- a/arch/xtensa/include/uapi/asm/sembuf.h
++++ b/arch/xtensa/include/uapi/asm/sembuf.h
+@@ -14,7 +14,6 @@
   * between kernel and user space.
   *
   * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
   * - 2 miscellaneous 32-bit values
+  *
   */
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
- 
+@@ -27,15 +26,15 @@
  struct semid64_ds {
  	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t	sem_otime;		/* last semop time */
--	PADDING(__pad2)
- 	__kernel_time_t	sem_ctime;		/* last change time */
-+#else
+ #ifdef __XTENSA_EL__
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-	unsigned long	__unused1;
+-	__kernel_time_t	sem_ctime;		/* last change time */
+-	unsigned long	__unused2;
++	unsigned long	sem_otime;		/* last semop time */
++	unsigned long	sem_otime_high;
++	unsigned long	sem_ctime;		/* last change time */
++	unsigned long	sem_ctime_high;
+ #else
+-	unsigned long	__unused1;
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-	unsigned long	__unused2;
+-	__kernel_time_t	sem_ctime;		/* last change time */
 +	unsigned long	sem_otime_high;
 +	unsigned long	sem_otime;		/* last semop time */
 +	unsigned long	sem_ctime_high;
 +	unsigned long	sem_ctime;		/* last change time */
-+#endif
+ #endif
  	unsigned long	sem_nsems;		/* no. of semaphores in array */
- 	unsigned long	__unused1;
- 	unsigned long	__unused2;
- };
--#undef PADDING
- 
- #endif /* _SPARC64_SEMBUF_H */
-diff --git a/arch/sparc/include/uapi/asm/shmbuf.h b/arch/sparc/include/uapi/asm/shmbuf.h
-index 286631db705c..06618b84822d 100644
---- a/arch/sparc/include/uapi/asm/shmbuf.h
-+++ b/arch/sparc/include/uapi/asm/shmbuf.h
-@@ -8,24 +8,23 @@
-  * between kernel and user space.
+ 	unsigned long	__unused3;
+diff --git a/arch/xtensa/include/uapi/asm/shmbuf.h b/arch/xtensa/include/uapi/asm/shmbuf.h
+index 26550bdc8430..554a57a6a90f 100644
+--- a/arch/xtensa/include/uapi/asm/shmbuf.h
++++ b/arch/xtensa/include/uapi/asm/shmbuf.h
+@@ -4,10 +4,10 @@
+  *
+  * The shmid64_ds structure for Xtensa architecture.
+  * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
++ * between kernel and user space, but the padding is on the wrong
++ * side for big-endian xtensa, for historic reasons.
   *
   * Pad space is left for:
 - * - 64-bit time_t to solve y2038 problem
   * - 2 miscellaneous 32-bit values
-  */
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -20,42 +20,21 @@
+ #ifndef _XTENSA_SHMBUF_H
+ #define _XTENSA_SHMBUF_H
  
--#if defined(__sparc__) && defined(__arch64__)
--# define PADDING(x)
--#else
--# define PADDING(x) unsigned int x;
--#endif
--
+-#if defined (__XTENSA_EL__)
  struct shmid64_ds {
  	struct ipc64_perm	shm_perm;	/* operation perms */
--	PADDING(__pad1)
-+#if defined(__sparc__) && defined(__arch64__)
- 	__kernel_time_t		shm_atime;	/* last attach time */
--	PADDING(__pad2)
- 	__kernel_time_t		shm_dtime;	/* last detach time */
--	PADDING(__pad3)
- 	__kernel_time_t		shm_ctime;	/* last change time */
-+#else
-+	unsigned long		shm_atime_high;
-+	unsigned long		shm_atime;	/* last attach time */
-+	unsigned long		shm_dtime_high;
-+	unsigned long		shm_dtime;	/* last detach time */
-+	unsigned long		shm_ctime_high;
-+	unsigned long		shm_ctime;	/* last change time */
-+#endif
  	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-	unsigned long		__unused1;
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-	unsigned long		__unused2;
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-	unsigned long		__unused3;
++	unsigned long		shm_atime;	/* last attach time */
++	unsigned long		shm_atime_high;
++	unsigned long		shm_dtime;	/* last detach time */
++	unsigned long		shm_dtime_high;
++	unsigned long		shm_ctime;	/* last change time */
++	unsigned long		shm_ctime_high;
  	__kernel_pid_t		shm_cpid;	/* pid of creator */
  	__kernel_pid_t		shm_lpid;	/* pid of last operator */
-@@ -46,6 +45,4 @@ struct shminfo64 {
- 	unsigned long	__unused4;
+ 	unsigned long		shm_nattch;	/* no. of current attaches */
+ 	unsigned long		__unused4;
+ 	unsigned long		__unused5;
  };
- 
--#undef PADDING
+-#elif defined (__XTENSA_EB__)
+-struct shmid64_ds {
+-	struct ipc64_perm	shm_perm;	/* operation perms */
+-	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-	unsigned long		__unused1;
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-	unsigned long		__unused2;
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-	unsigned long		__unused3;
+-	__kernel_pid_t		shm_cpid;	/* pid of creator */
+-	__kernel_pid_t		shm_lpid;	/* pid of last operator */
+-	unsigned long		shm_nattch;	/* no. of current attaches */
+-	unsigned long		__unused4;
+-	unsigned long		__unused5;
+-};
+-#else
+-# error endian order not defined
+-#endif
 -
- #endif /* _SPARC_SHMBUF_H */
+ 
+ struct shminfo64 {
+ 	unsigned long	shmmax;
 -- 
 2.9.0
