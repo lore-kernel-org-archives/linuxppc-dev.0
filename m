@@ -1,23 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=rtz9=hp=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WyZW3QgHzF24d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 23:28:50 +1000 (AEST)
-Subject: Re: OOM killer invoked while still one forth of mem is available
-To: Michal Hocko <mhocko@kernel.org>
-Cc: David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <df1a8c14-bda3-6271-d403-24b88a254b2c@c-s.fr>
- <alpine.DEB.2.21.1804251253240.151692@chino.kir.corp.google.com>
- <296ea83c-2c00-f1d2-3f62-d8ab8b8fb73c@c-s.fr>
- <20180426131154.GQ17484@dhcp22.suse.cz>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <2706829f-6207-89f7-46e6-d32244305ccb@c-s.fr>
-Date: Thu, 26 Apr 2018 15:28:46 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Wyrf183BzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 23:41:06 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40Wyrd5jXYz8t2S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 23:41:05 +1000 (AEST)
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40Wyrd10jhz9s02
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 23:41:05 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id f15so18415821pfn.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 06:41:04 -0700 (PDT)
+Date: Thu, 26 Apr 2018 23:40:49 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Ananth Narayan <ananth@in.ibm.com>, Hari
+ Bathini <hbathini@linux.vnet.ibm.com>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 1/4] powerpc/fadump: un-register fadump on kexec path.
+Message-ID: <20180426234049.3f7909df@roar.ozlabs.ibm.com>
+In-Reply-To: <d064a5aa-9568-b83b-3154-c719721de17e@linux.vnet.ibm.com>
+References: <152474278043.5697.2553982145593952228.stgit@jupiter.in.ibm.com>
+ <152474292369.5697.4957552670306451723.stgit@jupiter.in.ibm.com>
+ <20180426225757.2a8552e0@roar.ozlabs.ibm.com>
+ <d064a5aa-9568-b83b-3154-c719721de17e@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180426131154.GQ17484@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +41,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 26 Apr 2018 18:35:10 +0530
+Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-
-Le 26/04/2018 à 15:11, Michal Hocko a écrit :
-> On Thu 26-04-18 08:10:30, Christophe LEROY wrote:
->>
->>
->> Le 25/04/2018 à 21:57, David Rientjes a écrit :
->>> On Tue, 24 Apr 2018, christophe leroy wrote:
->>>
->>>> Hi
->>>>
->>>> Allthough there is still about one forth of memory available (7976kB
->>>> among 32MB), oom-killer is invoked and makes a victim.
->>>>
->>>> What could be the reason and how could it be solved ?
->>>>
->>>> [   54.400754] S99watchdogd-ap invoked oom-killer:
->>>> gfp_mask=0x27000c0(GFP_KERNEL_ACCOUNT|__GFP_NOTRACK), nodemask=0,
->>>> order=1, oom_score_adj=0
->>>> [   54.400815] CPU: 0 PID: 777 Comm: S99watchdogd-ap Not tainted
->>>> 4.9.85-local-knld-998 #5
->>>> [   54.400830] Call Trace:
->>>> [   54.400910] [c1ca5d10] [c0327d28] dump_header.isra.4+0x54/0x17c
->>>> (unreliable)
->>>> [   54.400998] [c1ca5d50] [c0079d88] oom_kill_process+0xc4/0x414
->>>> [   54.401067] [c1ca5d90] [c007a5c8] out_of_memory+0x35c/0x37c
->>>> [   54.401220] [c1ca5dc0] [c007d68c] __alloc_pages_nodemask+0x8ec/0x9a8
->>>> [   54.401318] [c1ca5e70] [c00169d4] copy_process.isra.9.part.10+0xdc/0x10d0
->>>> [   54.401398] [c1ca5f00] [c0017b30] _do_fork+0xcc/0x2a8
->>>> [   54.401473] [c1ca5f40] [c000a660] ret_from_syscall+0x0/0x38
->>>
->>> Looks like this is because the allocation is order-1, likely the
->>> allocation of a struct task_struct for a new process on fork.
->>
->> I'm not sure I understand what you mean. The allocation is order 1, yes,
->> does it explains why OOM killer is invoked ?
+> On 04/26/2018 06:28 PM, Nicholas Piggin wrote:
+> > On Thu, 26 Apr 2018 17:12:03 +0530
+> > Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> >   
+> >> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> >>
+> >> otherwise the fadump registration in new kexec-ed kernel complains that
+> >> fadump is already registered. This makes new kernel to continue using
+> >> fadump registered by previous kernel which may lead to invalid vmcore
+> >> generation. Hence this patch fixes this issue by un-registering fadump
+> >> in fadump_cleanup() which is called during kexec path so that new kernel
+> >> can register fadump with new valid values.  
+> > 
+> > I assume this series is for 4.17, but it might be good to get this one
+> > into the 4.16 fixes branch? Should it go to stable kernels?  
 > 
-> Well, not really
-> [   54.437414] DMA: 460*4kB (UH) 201*8kB (UH) 121*16kB (UH) 43*32kB (UH) 10*64kB (U) 4*128kB (UH) 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB 0*8192kB = 7912kB`
-> 
-> You should have enough order-1+ pages to proceed.
-> 
+> You are right. Should I send it out as separate patch ?
 
-So, order is 1 so order - 1 is 0, what's wrong then ? Do the (UH) and 
-(U) means anything special ? Otherwise, just above it says 'free:1994', 
-so with 1994 pages free I should have enough to proceed, shouldn't I ?
+Yes I think so.
 
-Am I missing something ?
-
-Christophe
+Thanks,
+Nick
