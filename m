@@ -1,17 +1,31 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Wn6s0RztzF24b
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 16:22:45 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Wnj00sHvzF24b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 16:48:51 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3Q6kAAV081966
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 02:48:49 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hk9sv036w-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 02:48:48 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Thu, 26 Apr 2018 00:48:48 -0600
+Subject: [PATCH] powerpc: paste - Mask XERSO bit in CR
+From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	oohall@gmail.com,
-	mikey@neuling.org
-Subject: [PATCH] powerpc: Add NVDIMM to powernv_defconfig
-Date: Thu, 26 Apr 2018 16:22:31 +1000
-Message-Id: <20180426062231.19128-1-mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 25 Apr 2018 23:48:39 -0700
+Mime-Version: 1.0
+Message-Id: <1524725319.26204.4.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,29 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables greater testing NVDIMMs as it becomes more
-prevalent. This is also the minimal required to enable persistent
-memory in mambo.
+    
+NX can set 3rd bit in CR register for XER[SO] (Summation overflow)
+which is not used for paste return value. So. mask this bit to get
+proper return status.
+    
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-This adds 100KB to the kernel text and 170KB to the vmlinux
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/configs/powernv_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index 9e92aa6a52..0f94b7dc11 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -238,6 +238,8 @@ CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_GENERIC=y
- CONFIG_VIRTIO_PCI=m
- CONFIG_VIRTIO_BALLOON=m
-+CONFIG_LIBNVDIMM=y
-+# CONFIG_ND_BLK is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT2_FS_XATTR=y
- CONFIG_EXT2_FS_POSIX_ACL=y
--- 
-2.14.1
+diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+index c9a5036..82392e3 100644
+--- a/arch/powerpc/platforms/powernv/copy-paste.h
++++ b/arch/powerpc/platforms/powernv/copy-paste.h
+@@ -9,7 +9,8 @@
+ #include <asm/ppc-opcode.h>
+ 
+ #define CR0_SHIFT	28
+-#define CR0_MASK	0xF
++#define CR0_MASK	0xE /* 3rd bit undefined or set for XER[SO] */
++
+ /*
+  * Copy/paste instructions:
+  *
