@@ -1,21 +1,33 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x22e.google.com (mail-pg0-x22e.google.com
- [IPv6:2607:f8b0:400e:c05::22e])
+Return-Path: <srs0=rtz9=hp=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WxvP3gQ0zF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 22:58:25 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40WxvP1sS7z8t2S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 22:58:25 +1000 (AEST)
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WxqB3d1wzF24d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 22:54:45 +1000 (AEST)
-Received: by mail-pg0-x22e.google.com with SMTP id a13so11415543pgu.4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 05:54:45 -0700 (PDT)
-Date: Thu, 26 Apr 2018 22:54:28 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 40WxvN22KHz9s06
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 22:58:23 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id o76so13589206pfi.5
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 05:58:23 -0700 (PDT)
+Date: Thu, 26 Apr 2018 22:58:09 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: Fix smp_send_stop NMI IPI handling
-Message-ID: <20180426225428.4d46fad9@roar.ozlabs.ibm.com>
-In-Reply-To: <877eou5kfm.fsf@concordia.ellerman.id.au>
-References: <20180425113512.20595-1-npiggin@gmail.com>
- <877eou5kfm.fsf@concordia.ellerman.id.au>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Srikar Dronamraju
+ <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Ananth Narayan <ananth@in.ibm.com>, Hari
+ Bathini <hbathini@linux.vnet.ibm.com>, Nathan Fontenot
+ <nfont@linux.vnet.ibm.com>, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 1/4] powerpc/fadump: un-register fadump on kexec path.
+Message-ID: <20180426225757.2a8552e0@roar.ozlabs.ibm.com>
+In-Reply-To: <152474292369.5697.4957552670306451723.stgit@jupiter.in.ibm.com>
+References: <152474278043.5697.2553982145593952228.stgit@jupiter.in.ibm.com>
+ <152474292369.5697.4957552670306451723.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,43 +39,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 26 Apr 2018 20:30:37 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Thu, 26 Apr 2018 17:12:03 +0530
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> > The NMI IPI handler for a receiving CPU increments nmi_ipi_busy_count
-> > over the handler function call, which causes later smp_send_nmi_ipi()
-> > callers to spin until the call is finished.
-> >
-> > The smp_send_stop function never returns, so the busy count is never
-> > decremeted, which can cause the system to hang in some cases. For
-> > example panic() will call smp_send_stop early on, then later in the
-> > reboot path, pnv_restart will call smp_send_stop again, which hangs.
-> >
-> > Fix this by adding a special case to the smp_send_stop handler to
-> > decrement the busy count, because it will never return.
-> >
-> > Fixes: 6bed3237624e3 ("powerpc: use NMI IPI for smp_send_stop")
-> > Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> > Changes since v1:
-> > - Reduce #ifdef spaghetti suggested by mpe  
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Sorry I missed this.
-> 
-> But then saw it in the patchwork listing, which is why I sent my version
-> as v3. Which I also merged. Sorry for the confusion.
-> 
-> I'm pretty sure my version is equivalent to this, except for the way the
-> #ifdefs are arranged.
-> 
-> The end result of this is nicer than my version, so I'd take a cleanup
-> patch to get us to this final state.
+> otherwise the fadump registration in new kexec-ed kernel complains that
+> fadump is already registered. This makes new kernel to continue using
+> fadump registered by previous kernel which may lead to invalid vmcore
+> generation. Hence this patch fixes this issue by un-registering fadump
+> in fadump_cleanup() which is called during kexec path so that new kernel
+> can register fadump with new valid values.
 
-That's okay. We end up needing to fix the !NMI case as well, with
-"powerpc: Fix deadlock with multiple calls to smp_send_stop", so I
-can rediff that and send it up.
+I assume this series is for 4.17, but it might be good to get this one
+into the 4.16 fixes branch? Should it go to stable kernels?
 
-Thanks,
-Nick
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/fadump.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 8ceabef40d3d..07e8396d472b 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -1180,6 +1180,9 @@ void fadump_cleanup(void)
+>  		init_fadump_mem_struct(&fdm,
+>  			be64_to_cpu(fdm_active->cpu_state_data.destination_address));
+>  		fadump_invalidate_dump(&fdm);
+> +	} else if (fw_dump.dump_registered) {
+> +		/* Un-register Firmware-assisted dump if it was registered. */
+> +		fadump_unregister_dump(&fdm);
+>  	}
+>  }
+>  
+> 
