@@ -1,25 +1,29 @@
-Return-Path: <zi.yan@sent.com>
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=obji=hp=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40X06b5vCnzF24q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 00:38:15 +1000 (AEST)
-From: Zi Yan <zi.yan@sent.com>
-To: linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org
-Cc: Zi Yan <zi.yan@cs.rutgers.edu>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 6/9] powerpc: mm: migrate: add pmd swap entry to support
- thp migration.
-Date: Thu, 26 Apr 2018 10:28:01 -0400
-Message-Id: <20180426142804.180152-7-zi.yan@sent.com>
-In-Reply-To: <20180426142804.180152-1-zi.yan@sent.com>
-References: <20180426142804.180152-1-zi.yan@sent.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40X20W20yVzF24q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 02:03:07 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40X20V52zxz8tGX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 02:03:06 +1000 (AEST)
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40X20V16TRz9s0R
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2018 02:03:03 +1000 (AEST)
+Date: Thu, 26 Apr 2018 18:02:58 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
+Subject: Re: [PATCH 4/6] powerpc/64s: Enable barrier_nospec based on
+ firmware settings
+Message-ID: <20180426180258.04e6bee6@kitsune.suse.cz>
+In-Reply-To: <20180424041559.32410-4-mpe@ellerman.id.au>
+References: <20180424041559.32410-1-mpe@ellerman.id.au>
+ <20180424041559.32410-4-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,104 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Zi Yan <zi.yan@cs.rutgers.edu>
+Hello,
 
-pmd swap soft dirty support is added, too.
+On Tue, 24 Apr 2018 14:15:57 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Signed-off-by: Zi Yan <zi.yan@cs.rutgers.edu>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Ram Pai <linuxram@us.ibm.com>
-Cc: Balbir Singh <bsingharora@gmail.com>
-Cc: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mm@kvack.org
----
- arch/powerpc/include/asm/book3s/32/pgtable.h |  2 ++
- arch/powerpc/include/asm/book3s/64/pgtable.h | 17 +++++++++++++++++
- arch/powerpc/include/asm/nohash/32/pgtable.h |  2 ++
- arch/powerpc/include/asm/nohash/64/pgtable.h |  2 ++
- 4 files changed, 23 insertions(+)
+> From: Michal Suchanek <msuchanek@suse.de>
+> 
+> Check what firmware told us and enable/disable the barrier_nospec as
+> appropriate.
+> 
+> We err on the side of enabling the barrier, as it's no-op on older
+> systems, see the comment for more detail.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/setup.h       |  1 +
+>  arch/powerpc/kernel/security.c         | 60
+> ++++++++++++++++++++++++++++++++++
+> arch/powerpc/platforms/powernv/setup.c |  1 +
+> arch/powerpc/platforms/pseries/setup.c |  1 + 4 files changed, 63
+> insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/setup.h
+> b/arch/powerpc/include/asm/setup.h index 4335cddc1cf2..aeb175e8a525
+> 100644 --- a/arch/powerpc/include/asm/setup.h
+> +++ b/arch/powerpc/include/asm/setup.h
+> @@ -52,6 +52,7 @@ enum l1d_flush_type {
+>  
+>  void setup_rfi_flush(enum l1d_flush_type, bool enable);
+>  void do_rfi_flush_fixups(enum l1d_flush_type types);
+> +void setup_barrier_nospec(void);
+>  void do_barrier_nospec_fixups(bool enable);
+>  
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> diff --git a/arch/powerpc/kernel/security.c
+> b/arch/powerpc/kernel/security.c index b963eae0b0a0..d1b9639e5e24
+> 100644 --- a/arch/powerpc/kernel/security.c
+> +++ b/arch/powerpc/kernel/security.c
+> @@ -8,6 +8,7 @@
+>  #include <linux/device.h>
+>  #include <linux/seq_buf.h>
+>  
+> +#include <asm/debugfs.h>
+>  #include <asm/security_features.h>
+>  #include <asm/setup.h>
+>  
+> @@ -22,6 +23,65 @@ static void enable_barrier_nospec(bool enable)
+>  	do_barrier_nospec_fixups(enable);
+>  }
+>  
+> +void setup_barrier_nospec(void)
+> +{
+> +	bool enable;
+> +
+> +	/*
+> +	 * It would make sense to check SEC_FTR_SPEC_BAR_ORI31 below
+> as well.
+> +	 * But there's a good reason not to. The two flags we check
+> below are
+> +	 * both are enabled by default in the kernel, so if the
+> hcall is not
+> +	 * functional they will be enabled.
+> +	 * On a system where the host firmware has been updated (so
+> the ori
+> +	 * functions as a barrier), but on which the hypervisor
+> (KVM/Qemu) has
+> +	 * not been updated, we would like to enable the barrier.
+> Dropping the
+> +	 * check for SEC_FTR_SPEC_BAR_ORI31 achieves that. The only
+> downside is
+> +	 * we potentially enable the barrier on systems where the
+> host firmware
+> +	 * is not updated, but that's harmless as it's a no-op.
+> +	 */
+> +	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
+> +		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
+> +
+> +	enable_barrier_nospec(enable);
+> +}
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index c615abdce119..866b67a8abf0 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -294,7 +294,9 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
- #define __swp_offset(entry)		((entry).val >> 5)
- #define __swp_entry(type, offset)	((swp_entry_t) { (type) | ((offset) << 5) })
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
-+#define __pmd_to_swp_entry(pmd)		((swp_entry_t) { pmd_val(pmd) >> 3 })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
-+#define __swp_entry_to_pmd(x)		((pmd_t) { (x).val << 3 })
- 
- int map_kernel_page(unsigned long va, phys_addr_t pa, int flags);
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index a6b9f1d74600..6b3c6492071d 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -726,7 +726,9 @@ static inline bool pte_user(pte_t pte)
-  * Clear bits not found in swap entries here.
-  */
- #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
-+#define __pmd_to_swp_entry(pmd)	((swp_entry_t) { pmd_val((pmd)) & ~_PAGE_PTE })
- #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
-+#define __swp_entry_to_pmd(x)	__pmd((x).val | _PAGE_PTE)
- 
- #ifdef CONFIG_MEM_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
-@@ -749,6 +751,21 @@ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
- {
- 	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
- }
-+
-+static inline pmd_t pmd_swp_mksoft_dirty(pmd_t pmd)
-+{
-+	return __pmd(pmd_val(pmd) | _PAGE_SWP_SOFT_DIRTY);
-+}
-+
-+static inline bool pmd_swp_soft_dirty(pmd_t pmd)
-+{
-+	return !!(pmd_raw(pmd) & cpu_to_be64(_PAGE_SWP_SOFT_DIRTY));
-+}
-+
-+static inline pmd_t pmd_swp_clear_soft_dirty(pmd_t pmd)
-+{
-+	return __pmd(pmd_val(pmd) & ~_PAGE_SWP_SOFT_DIRTY);
-+}
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
- static inline bool check_pte_access(unsigned long access, unsigned long ptev)
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 03bbd1149530..f6b0534a02d4 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -337,7 +337,9 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
- #define __swp_offset(entry)		((entry).val >> 5)
- #define __swp_entry(type, offset)	((swp_entry_t) { (type) | ((offset) << 5) })
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val(pte) >> 3 })
-+#define __pmd_to_swp_entry(pmd)		((swp_entry_t) { pmd_val(pte) >> 3 })
- #define __swp_entry_to_pte(x)		((pte_t) { (x).val << 3 })
-+#define __swp_entry_to_pmd(x)		((pmd_t) { (x).val << 3 })
- 
- int map_kernel_page(unsigned long va, phys_addr_t pa, int flags);
- 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 5c5f75d005ad..5790763c07df 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -342,7 +342,9 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
- 					| ((offset) << PTE_RPN_SHIFT) })
- 
- #define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
-+#define __pmd_to_swp_entry(pmd)		((swp_entry_t) { pmd_val((pmd)) })
- #define __swp_entry_to_pte(x)		__pte((x).val)
-+#define __swp_entry_to_pmd(x)		__pmd((x).val)
- 
- extern int map_kernel_page(unsigned long ea, unsigned long pa,
- 			   unsigned long flags);
--- 
-2.17.0
+I am missing the option for the barrier to be disabled by a kernel
+commandline argument here.
+
+It does make sense to add a kernel parameter that is checked on boot to
+be compatible with other platforms that implement one.
+
+Thanks
+
+Michal
