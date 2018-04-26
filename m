@@ -1,29 +1,38 @@
-Return-Path: <srs0=obji=hp=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40X29M0v5jzF24s
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 02:10:47 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40X29L6chnz8vpS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 02:10:46 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40X29L08QZz9s06
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2018 02:10:46 +1000 (AEST)
-Date: Thu, 26 Apr 2018 18:10:42 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, npiggin@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/6] powerpc/64s: Add support for ori barrier_nospec
- patching
-Message-ID: <20180426181042.38971664@kitsune.suse.cz>
-In-Reply-To: <20180424041559.32410-2-mpe@ellerman.id.au>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180424041559.32410-2-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40X5JT15BdzF24j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 04:32:08 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3QITlnG144717
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 14:32:04 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hkm0kgapm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 14:32:03 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Thu, 26 Apr 2018 14:32:03 -0400
+Subject: Re: [RFC v2 1/3] hotplug/mobility: Apply assoc updates for Post
+ Migration Topo
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+References: <54713533-2d91-60f0-5901-02b41a2b948d@linux.vnet.ibm.com>
+ <c2207993-e618-9192-b79e-c5519afdff1b@linux.vnet.ibm.com>
+ <2b3e4948-a21b-423b-fa74-f4ae3ebd5978@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Thu, 26 Apr 2018 13:31:59 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <2b3e4948-a21b-423b-fa74-f4ae3ebd5978@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4ac7df0f-354a-8079-66df-cd118522ca61@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,182 +42,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On Tue, 24 Apr 2018 14:15:55 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> From: Michal Suchanek <msuchanek@suse.de>
+On 04/24/2018 04:33 PM, Michael Bringmann wrote:
+> See comments below:
 > 
-> Based on the RFI patching. This is required to be able to disable the
-> speculation barrier.
+> On 04/24/2018 11:56 AM, Nathan Fontenot wrote:
+>> On 02/26/2018 02:52 PM, Michael Bringmann wrote:
+>>> hotplug/mobility: Recognize more changes to the associativity of
+>>> memory blocks described by the 'ibm,dynamic-memory' and 'cpu'
+>>> properties when processing the topology of LPARS in Post Migration
+>>> events.  Previous efforts only recognized whether a memory block's
+>>> assignment had changed in the property.  Changes here include:
+>>>
+>>> * Checking the aa_index values of the old/new properties and 'readd'
+>>>   any block for which the setting has changed.
+>>> * Checking for changes in cpu associativity and making 'readd' calls
+>>>   when differences are observed.
+>>
+>> As part of the post-migration updates do you need to hold a lock
+>> so that we don't attempt to process any of the cpu/memory changes
+>> while the device tree is being updated?
+>>
+>> You may be able to grab the device hotplug lock for this.
+> 
+> The CPU Re-add process reuses the dlpar_cpu_remove / dlpar_cpu_add
+> code for POWERPC.  These functions end up invoking device_online() /
+> device_offline() which in turn end up invoking the 'cpus_write_lock/unlock'
+> around every kernel change to the CPU structures.  It was modeled
+> on the Memory Re-add process as we discussed a while back, which
+> also uses device_online and a corresponding write lock for each
+> LMB processed.
+> 
+> Do you see a need for a coarser granularity of locking around
+> all or a group of the cpu/memory changes?  The data structures
+> that the kernel outside of powerpc uses for CPUs and LMBs seem
+> to be quite well isolated from the device-tree properties.
 
-why do you not patch the nospec barrier which is included as part of
-the RFI flush code?
-
-I think when debugging the code it would make more sense if RFI is
-patched by RFI patcher and nospec by nospec patcher.
-
-A separate question is if the RFI flush would break without the nospec
-barrier.
-
-Thanks
-
-Michal
-
+My thinking was for memory and CPU updates, the idea being that all
+updates are queued up until after the post-LPM device tree updates happens.
+Grabbing the device_hotplug lock while updating the device tree would
+prevent any of the queued CPU/memory updates from happening.
 
 > 
-> Only one barrier type is supported and it does nothing when the
-> firmware does not enable it. Also re-patching modules is not supported
-> So the only meaningful thing that can be done is patching out the
-> speculation barrier at boot when the user says it is not wanted.
+>>
+>>>
+>>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>>> ---
+>>> Changes in RFC:
+>>>   -- Simplify code to update CPU nodes during mobility checks.
+>>>      Remove functions to generate extra HP_ELOG messages in favor
+>>>      of direct function calls to dlpar_cpu_readd_by_index.
+>>>   -- Move check for "cpu" node type from pseries_update_cpu to
+>>>      pseries_smp_notifier in 'hotplug-cpu.c'
+>>>   -- Remove functions 'pseries_memory_readd_by_index' and
+>>>      'pseries_cpu_readd_by_index' as no longer needed outside of
+>>>      'mobility.c'.
+>>> ---
+>>>  arch/powerpc/platforms/pseries/hotplug-cpu.c    |   69 +++++++++++++++++++++++
+>>>  arch/powerpc/platforms/pseries/hotplug-memory.c |    6 ++
+>>>  2 files changed, 75 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> index a7d14aa7..91ef22a 100644
+>>> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+>>> @@ -636,6 +636,27 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>>>  	return rc;
+>>>  }
+>>>
+>>> +static int dlpar_cpu_readd_by_index(u32 drc_index)
+>>> +{
+>>> +	int rc = 0;
+>>> +
+>>> +	pr_info("Attempting to update CPU, drc index %x\n", drc_index);
+>>
+>> Should make this say we are re-adding the CPU, it's a bit more specific as
+>> to what is really happening.
 > 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/barrier.h        |  2 +-
->  arch/powerpc/include/asm/feature-fixups.h |  9 +++++++++
->  arch/powerpc/include/asm/setup.h          |  1 +
->  arch/powerpc/kernel/security.c            |  9 +++++++++
->  arch/powerpc/kernel/vmlinux.lds.S         |  7 +++++++
->  arch/powerpc/lib/feature-fixups.c         | 27
-> +++++++++++++++++++++++++++ 6 files changed, 54 insertions(+), 1
-> deletion(-)
+> Okay.  I will update the notice from dlpar_memory_readd_by_index, as well.
+
+Looks like your current message mirrors what the memory readd routine has,
+let's just keep the message as is.
+
+-Nathan
+
+>>
+>>> +
+>>> +	if (dlpar_cpu_remove_by_index(drc_index))
+>>> +		rc = -EINVAL;
+>>> +	else if (dlpar_cpu_add(drc_index))
+>>> +		rc = -EINVAL;
+>>> +
+>>> +	if (rc)
+>>> +		pr_info("Failed to update cpu at drc_index %lx\n",
+>>> +				(unsigned long int)drc_index);
+>>> +	else
+>>> +		pr_info("CPU at drc_index %lx was updated\n",
+>>> +				(unsigned long int)drc_index);
+>>> +
+>>> +	return rc;
+>>> +}
+>>> +
+>>>  static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+>>>  {
+>>>  	struct device_node *dn;
+>>> @@ -826,6 +847,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>>>  		else
+>>>  			rc = -EINVAL;
+>>>  		break;
+>>> +	case PSERIES_HP_ELOG_ACTION_READD:
+>>> +		rc = dlpar_cpu_readd_by_index(drc_index);
+>>> +		break;
+>>>  	default:
+>>>  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+>>>  		rc = -EINVAL;
+>>> @@ -876,12 +900,53 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>>>
+>>>  #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+>>>
+>>> +static int pseries_update_cpu(struct of_reconfig_data *pr)
+>>> +{
+>>> +	u32 old_entries, new_entries;
+>>> +	__be32 *p, *old_assoc, *new_assoc;
+>>> +	int rc = 0;
+>>> +
+>>> +	/* So far, we only handle the 'ibm,associativity' property,
+>>> +	 * here.
+>>> +	 * The first int of the property is the number of domains
+>>> +	 * described.  This is followed by an array of level values.
+>>> +	 */
+>>> +	p = (__be32 *) pr->old_prop->value;
+>>> +	if (!p)
+>>> +		return -EINVAL;
+>>> +	old_entries = be32_to_cpu(*p++);
+>>> +	old_assoc = p;
+>>> +
+>>> +	p = (__be32 *)pr->prop->value;
+>>> +	if (!p)
+>>> +		return -EINVAL;
+>>> +	new_entries = be32_to_cpu(*p++);
+>>> +	new_assoc = p;
+>>> +
+>>> +	if (old_entries == new_entries) {
+>>> +		int sz = old_entries * sizeof(int);
+>>> +
+>>> +		if (!memcmp(old_assoc, new_assoc, sz))
+>>> +			rc = dlpar_cpu_readd_by_index(
+>>> +					be32_to_cpu(pr->dn->phandle));
+>>> +
+>>> +	} else {
+>>> +		rc = dlpar_cpu_readd_by_index(
+>>> +					be32_to_cpu(pr->dn->phandle));
+>>> +	}
+>>> +
+>>> +	return rc;
+>>> +}
+>>
+>> Do we need to do the full compare of the new vs. the old affinity property?
+>>
+>> I would think we would only get an updated property if the property changes.
+>> We don't care what changes in the property at this point, only that it changed.
+>> You could just call dlpar_cpu_readd_by_index() directly.
 > 
-> diff --git a/arch/powerpc/include/asm/barrier.h
-> b/arch/powerpc/include/asm/barrier.h index e582d2c88092..f67b3f6e36be
-> 100644 --- a/arch/powerpc/include/asm/barrier.h
-> +++ b/arch/powerpc/include/asm/barrier.h
-> @@ -81,7 +81,7 @@ do
-> {
-> \
->   * Prevent execution of subsequent instructions until preceding
-> branches have
->   * been fully resolved and are no longer executing speculatively.
->   */
-> -#define barrier_nospec_asm ori 31,31,0
-> +#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; nop
->  
->  // This also acts as a compiler barrier due to the memory clobber.
->  #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) :::
-> "memory") diff --git a/arch/powerpc/include/asm/feature-fixups.h
-> b/arch/powerpc/include/asm/feature-fixups.h index
-> 1e82eb3caabd..86ac59e75f36 100644 ---
-> a/arch/powerpc/include/asm/feature-fixups.h +++
-> b/arch/powerpc/include/asm/feature-fixups.h @@ -195,11 +195,20 @@
-> label##3:					       	\
-> FTR_ENTRY_OFFSET 951b-952b;			\ .popsection;
->  
-> +#define NOSPEC_BARRIER_FIXUP_SECTION			\
-> +953:							\
-> +	.pushsection __barrier_nospec_fixup,"a";	\
-> +	.align 2;					\
-> +954:							\
-> +	FTR_ENTRY_OFFSET 953b-954b;			\
-> +	.popsection;
-> +
->  
->  #ifndef __ASSEMBLY__
->  #include <linux/types.h>
->  
->  extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
-> +extern long __start___barrier_nospec_fixup,
-> __stop___barrier_nospec_fixup; 
->  void apply_feature_fixups(void);
->  void setup_feature_keys(void);
-> diff --git a/arch/powerpc/include/asm/setup.h
-> b/arch/powerpc/include/asm/setup.h index 27fa52ed6d00..afc7280cce3b
-> 100644 --- a/arch/powerpc/include/asm/setup.h
-> +++ b/arch/powerpc/include/asm/setup.h
-> @@ -52,6 +52,7 @@ enum l1d_flush_type {
->  
->  void setup_rfi_flush(enum l1d_flush_type, bool enable);
->  void do_rfi_flush_fixups(enum l1d_flush_type types);
-> +void do_barrier_nospec_fixups(bool enable);
->  
->  #endif /* !__ASSEMBLY__ */
->  
-> diff --git a/arch/powerpc/kernel/security.c
-> b/arch/powerpc/kernel/security.c index bab5a27ea805..b963eae0b0a0
-> 100644 --- a/arch/powerpc/kernel/security.c
-> +++ b/arch/powerpc/kernel/security.c
-> @@ -9,10 +9,19 @@
->  #include <linux/seq_buf.h>
->  
->  #include <asm/security_features.h>
-> +#include <asm/setup.h>
->  
->  
->  unsigned long powerpc_security_features __read_mostly =
-> SEC_FTR_DEFAULT; 
-> +static bool barrier_nospec_enabled;
-> +
-> +static void enable_barrier_nospec(bool enable)
-> +{
-> +	barrier_nospec_enabled = enable;
-> +	do_barrier_nospec_fixups(enable);
-> +}
-> +
->  ssize_t cpu_show_meltdown(struct device *dev, struct
-> device_attribute *attr, char *buf) {
->  	bool thread_priv;
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S
-> b/arch/powerpc/kernel/vmlinux.lds.S index c8af90ff49f0..ff73f498568c
-> 100644 --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -139,6 +139,13 @@ SECTIONS
->  		*(__rfi_flush_fixup)
->  		__stop___rfi_flush_fixup = .;
->  	}
-> +
-> +	. = ALIGN(8);
-> +	__spec_barrier_fixup : AT(ADDR(__spec_barrier_fixup) -
-> LOAD_OFFSET) {
-> +		__start___barrier_nospec_fixup = .;
-> +		*(__barrier_nospec_fixup)
-> +		__stop___barrier_nospec_fixup = .;
-> +	}
->  #endif
->  
->  	EXCEPTION_TABLE(0)
-> diff --git a/arch/powerpc/lib/feature-fixups.c
-> b/arch/powerpc/lib/feature-fixups.c index 288fe4f0db4e..093c1d2ea5fd
-> 100644 --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -162,6 +162,33 @@ void do_rfi_flush_fixups(enum l1d_flush_type
-> types) (types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
->  						: "unknown");
->  }
-> +
-> +void do_barrier_nospec_fixups(bool enable)
-> +{
-> +	unsigned int instr, *dest;
-> +	long *start, *end;
-> +	int i;
-> +
-> +	start = PTRRELOC(&__start___barrier_nospec_fixup),
-> +	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-> +
-> +	instr = 0x60000000; /* nop */
-> +
-> +	if (enable) {
-> +		pr_info("barrier-nospec: using ORI speculation
-> barrier\n");
-> +		instr = 0x63ff0000; /* ori 31,31,0 speculation
-> barrier */
-> +	}
-> +
-> +	for (i = 0; start < end; start++, i++) {
-> +		dest = (void *)start + *start;
-> +
-> +		pr_devel("patching dest %lx\n", (unsigned long)dest);
-> +		patch_instruction(dest, instr);
-> +	}
-> +
-> +	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n",
-> i); +}
-> +
->  #endif /* CONFIG_PPC_BOOK3S_64 */
->  
->  void do_lwsync_fixups(unsigned long value, void *fixup_start, void
-> *fixup_end)
+> Okay.
+> 
+>>
+>> -Nathan
+> 
+> Thanks.
+> Michael
+> 
+>>
+>>> +
+>>>  static int pseries_smp_notifier(struct notifier_block *nb,
+>>>  				unsigned long action, void *data)
+>>>  {
+>>>  	struct of_reconfig_data *rd = data;
+>>>  	int err = 0;
+>>>
+>>> +	if (strcmp(rd->dn->type, "cpu"))
+>>> +		return notifier_from_errno(err);
+>>> +
+>>>  	switch (action) {
+>>>  	case OF_RECONFIG_ATTACH_NODE:
+>>>  		err = pseries_add_processor(rd->dn);
+>>> @@ -889,6 +954,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+>>>  	case OF_RECONFIG_DETACH_NODE:
+>>>  		pseries_remove_processor(rd->dn);
+>>>  		break;
+>>> +	case OF_RECONFIG_UPDATE_PROPERTY:
+>>> +		if (!strcmp(rd->prop->name, "ibm,associativity"))
+>>> +			err = pseries_update_cpu(rd);
+>>> +		break;
+>>>  	}
+>>>  	return notifier_from_errno(err);
+>>>  }
+>>> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> index c1578f5..2341eae 100644
+>>> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+>>> @@ -1040,6 +1040,12 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+>>>  					  memblock_size);
+>>>  			rc = (rc < 0) ? -EINVAL : 0;
+>>>  			break;
+>>> +		} else if ((be32_to_cpu(old_drmem[i].aa_index) !=
+>>> +					be32_to_cpu(new_drmem[i].aa_index)) &&
+>>> +				(be32_to_cpu(new_drmem[i].flags) &
+>>> +					DRCONF_MEM_ASSIGNED)) {
+>>> +			rc = dlpar_memory_readd_by_index(
+>>> +				be32_to_cpu(new_drmem[i].drc_index))>  		}
+>>>  	}
+>>>  	return rc;
+>>>
+>>
+> 
