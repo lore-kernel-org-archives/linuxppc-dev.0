@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WtRl6c7qzF24d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 20:22:43 +1000 (AEST)
-In-Reply-To: <20180410114933.24581-3-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WtRm6Bw9zF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 20:22:44 +1000 (AEST)
+In-Reply-To: <20180426101902.22886-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-rtc@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [2/3] powerpc/powernv: Fix OPAL RTC driver OPAL_BUSY loops
-Message-Id: <40WtRl5jlDz9s0R@ozlabs.org>
-Date: Thu, 26 Apr 2018 20:22:43 +1000 (AEST)
+Cc: npiggin@gmail.com
+Subject: Re: [v3] powerpc: Fix smp_send_stop NMI IPI handling
+Message-Id: <40WtRm4wzjz9s0p@ozlabs.org>
+Date: Thu, 26 Apr 2018 20:22:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,23 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-04-10 at 11:49:32 UTC, Nicholas Piggin wrote:
-> The OPAL RTC driver does not sleep in case it gets OPAL_BUSY or
-> OPAL_BUSY_EVENT from firmware, which causes large scheduling
-> latencies, up to 50 seconds have been observed here when RTC stops
-> responding (BMC reboot can do it).
+On Thu, 2018-04-26 at 10:19:02 UTC, Michael Ellerman wrote:
+> From: Nicholas Piggin <npiggin@gmail.com>
 > 
-> Fix this by converting it to the standard form OPAL_BUSY loop that
-> sleeps.
+> The NMI IPI handler for a receiving CPU increments nmi_ipi_busy_count
+> over the handler function call, which causes later smp_send_nmi_ipi()
+> callers to spin until the call is finished.
 > 
-> Fixes 628daa8d5abfd ("powerpc/powernv: Add RTC and NVRAM support plus RTAS fallbacks"
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linux-rtc@vger.kernel.org
+> The stop_this_cpu() function never returns, so the busy count is never
+> decremeted, which can cause the system to hang in some cases. For
+> example panic() will call smp_send_stop() early on which calls
+> stop_this_cpu() on other CPUs, then later in the reboot path,
+> pnv_restart() will call smp_send_stop() again, which hangs.
+> 
+> Fix this by adding a special case to the stop_this_cpu() handler to
+> decrement the busy count, because it will never return.
+> 
+> Now that the NMI/non-NMI versions of stop_this_cpu() are different,
+> split them out into separate functions rather than doing #ifdef tricks
+> to share the body between the two functions.
+> 
+> Fixes: 6bed3237624e3 ("powerpc: use NMI IPI for smp_send_stop")
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+> [mpe: Split out the functions, tweak change log a bit]
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/682e6b4da5cbe8e9a53f979a58c2a9
+https://git.kernel.org/powerpc/c/ac61c1156623455c46701654abd8c9
 
 cheers
