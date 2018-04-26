@@ -1,20 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Wtcv1PSDzF24d
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 20:30:39 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: Fix smp_send_stop NMI IPI handling
-In-Reply-To: <20180425113512.20595-1-npiggin@gmail.com>
-References: <20180425113512.20595-1-npiggin@gmail.com>
-Date: Thu, 26 Apr 2018 20:30:37 +1000
-Message-ID: <877eou5kfm.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Wtl34p0nzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 20:35:59 +1000 (AEST)
+Subject: Re: [PATCH v2 9/9] powerpc/hugetlb: Enable hugetlb migration for ppc64
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <1494926612-23928-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1494926612-23928-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <69b4fae5-d413-4866-7ce4-3873d3c6590f@c-s.fr>
+Date: Thu, 26 Apr 2018 12:35:55 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <1494926612-23928-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
-> The NMI IPI handler for a receiving CPU increments nmi_ipi_busy_count
-> over the handler function call, which causes later smp_send_nmi_ipi()
-> callers to spin until the call is finished.
->
-> The smp_send_stop function never returns, so the busy count is never
-> decremeted, which can cause the system to hang in some cases. For
-> example panic() will call smp_send_stop early on, then later in the
-> reboot path, pnv_restart will call smp_send_stop again, which hangs.
->
-> Fix this by adding a special case to the smp_send_stop handler to
-> decrement the busy count, because it will never return.
->
-> Fixes: 6bed3237624e3 ("powerpc: use NMI IPI for smp_send_stop")
-> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+
+Le 16/05/2017 à 11:23, Aneesh Kumar K.V a écrit :
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
-> Changes since v1:
-> - Reduce #ifdef spaghetti suggested by mpe
+>   arch/powerpc/platforms/Kconfig.cputype | 5 +++++
+>   1 file changed, 5 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 80175000042d..8acc4f27d101 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -351,6 +351,11 @@ config PPC_RADIX_MMU
+>   	  is only implemented by IBM Power9 CPUs, if you don't have one of them
+>   	  you can probably disable this.
+>   
+> +config ARCH_ENABLE_HUGEPAGE_MIGRATION
+> +	def_bool y
+> +	depends on PPC_BOOK3S_64 && HUGETLB_PAGE && MIGRATION
+> +
+> +
 
-Sorry I missed this.
+Is there a reason why you redefine ARCH_ENABLE_HUGEPAGE_MIGRATION 
+instead of doing a 'select' as it is already defined in mm/Kconfig ?
 
-But then saw it in the patchwork listing, which is why I sent my version
-as v3. Which I also merged. Sorry for the confusion.
+Christophe
 
-I'm pretty sure my version is equivalent to this, except for the way the
-#ifdefs are arranged.
-
-The end result of this is nicer than my version, so I'd take a cleanup
-patch to get us to this final state.
-
-cheers
+>   config PPC_MMU_NOHASH
+>   	def_bool y
+>   	depends on !PPC_STD_MMU
+> 
