@@ -1,47 +1,16 @@
-Return-Path: <srs0=trvj=hp=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40WwCy0L0mzF25G
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 21:42:38 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40WwCx6g3Bz8tF7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 21:42:37 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40WwCw65fgz9rxs
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 21:42:36 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3QBfLAe019861
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 07:42:35 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hkcdycn3u-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2018 07:42:34 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 26 Apr 2018 12:42:32 +0100
-Subject: [PATCH v5 4/4] powerpc/fadump: Do not allow hot-remove memory from
- fadump reserved area.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, kernelfans@gmail.com,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Ananth Narayan <ananth@in.ibm.com>
-Date: Thu, 26 Apr 2018 17:12:27 +0530
-In-Reply-To: <152474278043.5697.2553982145593952228.stgit@jupiter.in.ibm.com>
-References: <152474278043.5697.2553982145593952228.stgit@jupiter.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152474294696.5697.4339227091619453067.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40WxXQ1LWbzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 22:41:56 +1000 (AEST)
+From: laurentiu.tudor@nxp.com
+To: kvm-ppc@vger.kernel.org
+Cc: agraf@suse.de, linuxppc-dev@lists.ozlabs.org,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Subject: [PATCH] powerpc/kvm/booke: fix altivec related build break
+Date: Thu, 26 Apr 2018 15:33:19 +0300
+Message-Id: <20180426123319.10843-1-laurentiu.tudor@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,81 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
-For fadump to work successfully there should not be any holes in reserved
-memory ranges where kernel has asked firmware to move the content of old
-kernel memory in event of crash. Now that fadump uses CMA for reserved
-area, this memory area is now not protected from hot-remove operations
-unless it is cma allocated. Hence, fadump service can fail to re-register
-after the hot-remove operation, if hot-removed memory belongs to fadump
-reserved region. To avoid this make sure that memory from fadump reserved
-area is not hot-removable if fadump is registered.
+Add missing "altivec unavailable" interrupt injection helper
+thus fixing the linker error below:
 
-However, if user still wants to remove that memory, he can do so by
-manually stopping fadump service before hot-remove operation.
+arch/powerpc/kvm/emulate_loadstore.o: In function `kvmppc_check_altivec_disabled':
+arch/powerpc/kvm/emulate_loadstore.c: undefined reference to `.kvmppc_core_queue_vec_unavail'
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Fixes: 09f984961c137c4b ("KVM: PPC: Book3S: Add MMIO emulation for VMX instructions")
+Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 ---
- arch/powerpc/include/asm/fadump.h               |    2 +-
- arch/powerpc/kernel/fadump.c                    |   10 ++++++++--
- arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++--
- 3 files changed, 14 insertions(+), 5 deletions(-)
+ arch/powerpc/kvm/booke.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index 0bf0d3b37c6e..1771134b514d 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -207,7 +207,7 @@ struct fad_crash_memory_ranges {
- 	unsigned long long	size;
- };
- 
--extern int is_fadump_boot_memory_area(u64 addr, ulong size);
-+extern int is_fadump_memory_area(u64 addr, ulong size);
- extern int early_init_dt_scan_fw_dump(unsigned long node,
- 		const char *uname, int depth, void *data);
- extern int fadump_reserve_mem(void);
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 16dec2e8bc88..91e10cb82613 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -173,13 +173,19 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 
- /*
-  * If fadump is registered, check if the memory provided
-- * falls within boot memory area.
-+ * falls within boot memory area and reserved memory area.
-  */
--int is_fadump_boot_memory_area(u64 addr, ulong size)
-+int is_fadump_memory_area(u64 addr, ulong size)
- {
-+	u64 d_start = fw_dump.reserve_dump_area_start;
-+	u64 d_end = d_start + fw_dump.reserve_dump_area_size;
-+
- 	if (!fw_dump.dump_registered)
- 		return 0;
- 
-+	if (((addr + size) > d_start) && (addr <= d_end))
-+		return 1;
-+
- 	return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index 6038e2e7aee0..876d4f294fdd 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -305,6 +305,13 @@ void kvmppc_core_queue_fpunavail(struct kvm_vcpu *vcpu)
+ 	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_FP_UNAVAIL);
  }
  
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index c1578f54c626..e4c658cda3a7 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -389,8 +389,11 @@ static bool lmb_is_removable(struct drmem_lmb *lmb)
- 	phys_addr = lmb->base_addr;
- 
- #ifdef CONFIG_FA_DUMP
--	/* Don't hot-remove memory that falls in fadump boot memory area */
--	if (is_fadump_boot_memory_area(phys_addr, block_sz))
-+	/*
-+	 * Don't hot-remove memory that falls in fadump boot memory area
-+	 * and memory that is reserved for capturing old kernel memory.
-+	 */
-+	if (is_fadump_memory_area(phys_addr, block_sz))
- 		return false;
- #endif
- 
++#ifdef CONFIG_ALTIVEC
++void kvmppc_core_queue_vec_unavail(struct kvm_vcpu *vcpu)
++{
++	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_ALTIVEC_UNAVAIL);
++}
++#endif
++
+ void kvmppc_core_queue_dec(struct kvm_vcpu *vcpu)
+ {
+ 	kvmppc_booke_queue_irqprio(vcpu, BOOKE_IRQPRIO_DECREMENTER);
+-- 
+2.17.0
