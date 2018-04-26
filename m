@@ -1,27 +1,38 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Wlc13sq1zF24Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 15:14:24 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id o76so12551384pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2018 22:14:24 -0700 (PDT)
-Date: Thu, 26 Apr 2018 10:44:18 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Wm0g5v4HzF24b
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 15:32:19 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w3Q5Ukeh123863
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:32:17 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hk5x4nm1m-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2018 01:32:16 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Thu, 26 Apr 2018 06:32:14 +0100
+Date: Thu, 26 Apr 2018 11:02:03 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, npiggin@gmail.com, benh@kernel.crashing.org,
- mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, npiggin@gmail.com,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- ppaidipe@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- stable@vger.kernel.org
+ ppaidipe@linux.vnet.ibm.com, stable@vger.kernel.org
 Subject: Re: [PATCH V3] cpufreq: powernv: Fix the hardlockup by synchronus
  smp_call in timer interrupt
-Message-ID: <20180426051418.vpwugncvivub43ej@vireshk-i7>
+Reply-To: svaidy@linux.vnet.ibm.com
 References: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Message-Id: <20180426053203.GA13662@drishya.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,7 +42,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25-04-18, 16:29, Shilpasri G Bhat wrote:
+* Shilpa Bhat <shilpa.bhat@linux.vnet.ibm.com> [2018-04-25 16:29:31]:
+
 > gpstate_timer_handler() uses synchronous smp_call to set the pstate
 > on the requested core. This causes the below hard lockup:
 > 
@@ -73,8 +85,42 @@ On 25-04-18, 16:29, Shilpasri G Bhat wrote:
 > - Remove the check for active policy while requeing the migrated timer
 > Changes from V1:
 > - Remove smp_call in the pstate handler.
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 71f8682..e368e1f 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -679,6 +679,16 @@ void gpstate_timer_handler(struct timer_list *t)
+> 
+>  	if (!spin_trylock(&gpstates->gpstate_lock))
+>  		return;
+> +	/*
+> +	 * If the timer has migrated to the different cpu then bring
+> +	 * it back to one of the policy->cpus
+> +	 */
+> +	if (!cpumask_test_cpu(raw_smp_processor_id(), policy->cpus)) {
+> +		gpstates->timer.expires = jiffies + msecs_to_jiffies(1);
+> +		add_timer_on(&gpstates->timer, cpumask_first(policy->cpus));
+> +		spin_unlock(&gpstates->gpstate_lock);
+> +		return;
+> +	}
+> 
+>  	/*
+>  	 * If PMCR was last updated was using fast_swtich then
+> @@ -718,10 +728,8 @@ void gpstate_timer_handler(struct timer_list *t)
+>  	if (gpstate_idx != gpstates->last_lpstate_idx)
+>  		queue_gpstate_timer(gpstates);
+> 
+> +	set_pstate(&freq_data);
+>  	spin_unlock(&gpstates->gpstate_lock);
+> -
+> -	/* Timer may get migrated to a different cpu on cpu hot unplug */
+> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>  }
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fix looks good. 
 
--- 
-viresh
+Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
