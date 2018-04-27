@@ -1,35 +1,26 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XQx53rPzzF24D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 17:46:33 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w3R7iu8F127502
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 03:46:27 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hkvkjqac5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 03:46:27 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Fri, 27 Apr 2018 03:46:26 -0400
-Date: Fri, 27 Apr 2018 00:46:17 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XRr93Hg5zF24D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 18:27:20 +1000 (AEST)
+Date: Fri, 27 Apr 2018 10:27:15 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ David Rientjes <rientjes@google.com>
+Subject: Re: OOM killer invoked while still one forth of mem is available
+Message-ID: <20180427082715.GD17484@dhcp22.suse.cz>
+References: <df1a8c14-bda3-6271-d403-24b88a254b2c@c-s.fr>
+ <alpine.DEB.2.21.1804251253240.151692@chino.kir.corp.google.com>
+ <296ea83c-2c00-f1d2-3f62-d8ab8b8fb73c@c-s.fr>
+ <20180426131154.GQ17484@dhcp22.suse.cz>
+ <2706829f-6207-89f7-46e6-d32244305ccb@c-s.fr>
+ <20180426190514.GU17484@dhcp22.suse.cz>
+ <20180426222917.Horde.cu42u5sTkcbGdcY0VUmclQ1@messagerie.si.c-s.fr>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-CC: linuxppc-dev@lists.ozlabs.org,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: paste - Mask XERSO bit in CR
-References: <1524725319.26204.4.camel@hbabu-laptop>
- <871sf15fl4.fsf@concordia.ellerman.id.au>
-In-Reply-To: <871sf15fl4.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Message-Id: <5AE2D549.9010105@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20180426222917.Horde.cu42u5sTkcbGdcY0VUmclQ1@messagerie.si.c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,58 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/26/2018 11:27 PM, Michael Ellerman wrote:
-> Haren Myneni <haren@linux.vnet.ibm.com> writes:
->>     
->> NX can set 3rd bit in CR register for XER[SO] (Summation overflow)
->> which is not used for paste return value. So. mask this bit to get
->> proper return status.
+On Thu 26-04-18 22:29:17, LEROY Christophe wrote:
+> Michal Hocko <mhocko@kernel.org> a écrit :
+[...]
+> > Yes, show_migration_types. But I do not see why unmovable pageblocks
+> > should block the allocation. This is a GFP_KERNEL allocation request
+> > essentially - thus unmovable itself. This smells like a bug. We are way
+> > above reserves which could block the allocation.
 > 
-> This sounds like a bug fix, but I can't tell from the change log.
-> 
-> What happens if we don't merge this patch? Is it bad?
-> 
-> Should I add:
-> 
->   Fixes: 2392c8c8c045 ("powerpc/powernv/vas: Define copy/paste interfaces")
->   Cc: stable@vger.kernel.org # v4.14+
+> Any suggestion on how to investigate that bug ? Anything to trace ?
 
-Thanks for your review. 
-
-Yes, it is a bug, We should ignore XER[SO] from the return status which is nothing to with NX. Otherwise, successful paste instruction will be returned as failure when this bit is set. Not easy to reproduce. We did not see this bug on P9 NX 842 so far, but noticed this issue few times when testing user space NX gzip with 32 threads and 1 million requests per thread. We added similar fix on P8 (with icswx) and can happen on P9 NX842. 
-
-P8 fix - 6333ed8f26cf crypto: nx-842 - Mask XERS0 bit in return value
-
-paste (powerISA V3.0b page#855): 
-
-CR0 Description
-0b000||XERSO Data transfer failed due to a
-sequence error or a conflict with
-tlbie or some implementation-
-specific problem.
-0b001||XERSO Data transfer successful
-
-I will resend patch with more description.
-
-Thanks
-Haren
-
-> 
-> 
-> cheers
-> 
->> diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
->> index c9a5036..82392e3 100644
->> --- a/arch/powerpc/platforms/powernv/copy-paste.h
->> +++ b/arch/powerpc/platforms/powernv/copy-paste.h
->> @@ -9,7 +9,8 @@
->>  #include <asm/ppc-opcode.h>
->>  
->>  #define CR0_SHIFT	28
->> -#define CR0_MASK	0xF
->> +#define CR0_MASK	0xE /* 3rd bit undefined or set for XER[SO] */
->> +
->>  /*
->>   * Copy/paste instructions:
->>   *
-> 
+try to enable allocator and vmscan tracepoints. Maybe it will tell
+something.
+-- 
+Michal Hocko
+SUSE Labs
