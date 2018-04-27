@@ -3,8 +3,8 @@ Received: from EUR01-VE1-obe.outbound.protection.outlook.com
  (mail-ve1eur01on0075.outbound.protection.outlook.com [104.47.1.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XVWX4jp8zF257
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 20:28:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XVWZ4kb5zF24j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 20:28:10 +1000 (AEST)
 From: Nipun Gupta <nipun.gupta@nxp.com>
 To: robin.murphy@arm.com, will.deacon@arm.com, mark.rutland@arm.com,
  catalin.marinas@arm.com
@@ -16,9 +16,10 @@ Cc: hch@lst.de, gregkh@linuxfoundation.org, joro@8bytes.org,
  linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
  bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
  leoyang.li@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
-Subject: [PATCH 4/6 v3] iommu: arm-smmu: Add support for the fsl-mc bus
-Date: Fri, 27 Apr 2018 15:57:04 +0530
-Message-Id: <1524824826-29473-5-git-send-email-nipun.gupta@nxp.com>
+Subject: [PATCH 5/6 v3] bus: fsl-mc: supoprt dma configure for devices on
+ fsl-mc bus
+Date: Fri, 27 Apr 2018 15:57:05 +0530
+Message-Id: <1524824826-29473-6-git-send-email-nipun.gupta@nxp.com>
 In-Reply-To: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
 References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
 MIME-Version: 1.0
@@ -32,119 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement bus specific support for the fsl-mc bus including
-registering arm_smmu_ops and bus specific device add operations.
-
 Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
 ---
- drivers/iommu/arm-smmu.c |  7 +++++++
- drivers/iommu/iommu.c    | 21 +++++++++++++++++++++
- include/linux/fsl/mc.h   |  8 ++++++++
- include/linux/iommu.h    |  2 ++
- 4 files changed, 38 insertions(+)
+ drivers/bus/fsl-mc/fsl-mc-bus.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index 69e7c60..e1d5090 100644
---- a/drivers/iommu/arm-smmu.c
-+++ b/drivers/iommu/arm-smmu.c
-@@ -52,6 +52,7 @@
- #include <linux/spinlock.h>
- 
- #include <linux/amba/bus.h>
-+#include <linux/fsl/mc.h>
- 
- #include "io-pgtable.h"
- #include "arm-smmu-regs.h"
-@@ -1459,6 +1460,8 @@ static struct iommu_group *arm_smmu_device_group(struct device *dev)
- 
- 	if (dev_is_pci(dev))
- 		group = pci_device_group(dev);
-+	else if (dev_is_fsl_mc(dev))
-+		group = fsl_mc_device_group(dev);
- 	else
- 		group = generic_device_group(dev);
- 
-@@ -2037,6 +2040,10 @@ static void arm_smmu_bus_init(void)
- 		bus_set_iommu(&pci_bus_type, &arm_smmu_ops);
- 	}
- #endif
-+#ifdef CONFIG_FSL_MC_BUS
-+	if (!iommu_present(&fsl_mc_bus_type))
-+		bus_set_iommu(&fsl_mc_bus_type, &arm_smmu_ops);
-+#endif
+diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+index 5d8266c..624828b 100644
+--- a/drivers/bus/fsl-mc/fsl-mc-bus.c
++++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+@@ -127,6 +127,16 @@ static int fsl_mc_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	return 0;
  }
  
- static int arm_smmu_device_probe(struct platform_device *pdev)
-diff --git a/drivers/iommu/iommu.c b/drivers/iommu/iommu.c
-index d2aa2320..6d4ce35 100644
---- a/drivers/iommu/iommu.c
-+++ b/drivers/iommu/iommu.c
-@@ -32,6 +32,7 @@
- #include <linux/pci.h>
- #include <linux/bitops.h>
- #include <linux/property.h>
-+#include <linux/fsl/mc.h>
- #include <trace/events/iommu.h>
- 
- static struct kset *iommu_group_kset;
-@@ -987,6 +988,26 @@ struct iommu_group *pci_device_group(struct device *dev)
- 	return iommu_group_alloc();
- }
- 
-+/* Get the IOMMU group for device on fsl-mc bus */
-+struct iommu_group *fsl_mc_device_group(struct device *dev)
++static int fsl_mc_dma_configure(struct device *dev)
 +{
-+	struct device *cont_dev = fsl_mc_cont_dev(dev);
-+	struct iommu_group *group;
++	struct device *dma_dev = dev;
 +
-+	/* Container device is responsible for creating the iommu group */
-+	if (fsl_mc_is_cont_dev(dev)) {
-+		group = iommu_group_alloc();
-+		if (IS_ERR(group))
-+			return NULL;
-+	} else {
-+		get_device(cont_dev);
-+		group = iommu_group_get(cont_dev);
-+		put_device(cont_dev);
-+	}
++	while (dev_is_fsl_mc(dma_dev))
++		dma_dev = dma_dev->parent;
 +
-+	return group;
++	return of_dma_configure(dev, dma_dev->of_node, 0);
 +}
 +
- /**
-  * iommu_group_get_for_dev - Find or create the IOMMU group for a device
-  * @dev: target device
-diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
-index f27cb14..dddaca1 100644
---- a/include/linux/fsl/mc.h
-+++ b/include/linux/fsl/mc.h
-@@ -351,6 +351,14 @@ struct fsl_mc_io {
- #define dev_is_fsl_mc(_dev) (0)
- #endif
+ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
+ 			     char *buf)
+ {
+@@ -148,6 +158,7 @@ struct bus_type fsl_mc_bus_type = {
+ 	.name = "fsl-mc",
+ 	.match = fsl_mc_bus_match,
+ 	.uevent = fsl_mc_bus_uevent,
++	.dma_configure  = fsl_mc_dma_configure,
+ 	.dev_groups = fsl_mc_dev_groups,
+ };
+ EXPORT_SYMBOL_GPL(fsl_mc_bus_type);
+@@ -616,6 +627,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+ 		mc_dev->icid = parent_mc_dev->icid;
+ 		mc_dev->dma_mask = FSL_MC_DEFAULT_DMA_MASK;
+ 		mc_dev->dev.dma_mask = &mc_dev->dma_mask;
++		mc_dev->dev.coherent_dma_mask = mc_dev->dma_mask;
+ 		dev_set_msi_domain(&mc_dev->dev,
+ 				   dev_get_msi_domain(&parent_mc_dev->dev));
+ 	}
+@@ -633,10 +645,6 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+ 			goto error_cleanup_dev;
+ 	}
  
-+/* Macro to check if a device is a container device */
-+#define fsl_mc_is_cont_dev(_dev) (to_fsl_mc_device(_dev)->flags & \
-+	FSL_MC_IS_DPRC)
-+
-+/* Macro to get the container device of a MC device */
-+#define fsl_mc_cont_dev(_dev) (fsl_mc_is_cont_dev(_dev) ? \
-+	(_dev) : (_dev)->parent)
-+
- /*
-  * module_fsl_mc_driver() - Helper macro for drivers that don't do
-  * anything special in module init/exit.  This eliminates a lot of
-diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index 19938ee..2981200 100644
---- a/include/linux/iommu.h
-+++ b/include/linux/iommu.h
-@@ -389,6 +389,8 @@ static inline size_t iommu_map_sg(struct iommu_domain *domain,
- extern struct iommu_group *pci_device_group(struct device *dev);
- /* Generic device grouping function */
- extern struct iommu_group *generic_device_group(struct device *dev);
-+/* FSL-MC device grouping function */
-+struct iommu_group *fsl_mc_device_group(struct device *dev);
- 
- /**
-  * struct iommu_fwspec - per-device IOMMU instance data
+-	/* Objects are coherent, unless 'no shareability' flag set. */
+-	if (!(obj_desc->flags & FSL_MC_OBJ_FLAG_NO_MEM_SHAREABILITY))
+-		arch_setup_dma_ops(&mc_dev->dev, 0, 0, NULL, true);
+-
+ 	/*
+ 	 * The device-specific probe callback will get invoked by device_add()
+ 	 */
 -- 
 1.9.1
