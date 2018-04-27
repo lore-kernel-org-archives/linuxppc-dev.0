@@ -2,8 +2,8 @@ Return-Path: <SRS0=4/0d=HQ=linuxfoundation.org=gregkh@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XbQZ1QBCzF24D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2018 00:09:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XbVl6bcyzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2018 00:12:47 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -11,12 +11,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, Jens Axboe <axboe@kernel.dk>,
  Stan Johnson <userm57@yahoo.com>, Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH 4.14 72/80] block/swim: Rename macros to avoid inconsistent
+Subject: [PATCH 4.16 69/81] block/swim: Rename macros to avoid inconsistent
  inverted logic
-Date: Fri, 27 Apr 2018 15:59:05 +0200
-Message-Id: <20180427135736.636590672@linuxfoundation.org>
-In-Reply-To: <20180427135732.928644313@linuxfoundation.org>
-References: <20180427135732.928644313@linuxfoundation.org>
+Date: Fri, 27 Apr 2018 15:59:11 +0200
+Message-Id: <20180427135747.323596278@linuxfoundation.org>
+In-Reply-To: <20180427135743.216853156@linuxfoundation.org>
+References: <20180427135743.216853156@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +28,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+4.16-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
