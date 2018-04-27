@@ -1,26 +1,26 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0075.outbound.protection.outlook.com [104.47.1.75])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XRr93Hg5zF24D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 18:27:20 +1000 (AEST)
-Date: Fri, 27 Apr 2018 10:27:15 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- David Rientjes <rientjes@google.com>
-Subject: Re: OOM killer invoked while still one forth of mem is available
-Message-ID: <20180427082715.GD17484@dhcp22.suse.cz>
-References: <df1a8c14-bda3-6271-d403-24b88a254b2c@c-s.fr>
- <alpine.DEB.2.21.1804251253240.151692@chino.kir.corp.google.com>
- <296ea83c-2c00-f1d2-3f62-d8ab8b8fb73c@c-s.fr>
- <20180426131154.GQ17484@dhcp22.suse.cz>
- <2706829f-6207-89f7-46e6-d32244305ccb@c-s.fr>
- <20180426190514.GU17484@dhcp22.suse.cz>
- <20180426222917.Horde.cu42u5sTkcbGdcY0VUmclQ1@messagerie.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XVWN2MchzF24K
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 20:27:56 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: robin.murphy@arm.com, will.deacon@arm.com, mark.rutland@arm.com,
+ catalin.marinas@arm.com
+Cc: hch@lst.de, gregkh@linuxfoundation.org, joro@8bytes.org,
+ robh+dt@kernel.org, m.szyprowski@samsung.com, shawnguo@kernel.org,
+ frowand.list@gmail.com, bhelgaas@google.com,
+ iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
+ leoyang.li@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
+Subject: [PATCH 0/6 v3] Support for fsl-mc bus and its devices in SMMU
+Date: Fri, 27 Apr 2018 15:57:00 +0530
+Message-Id: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180426222917.Horde.cu42u5sTkcbGdcY0VUmclQ1@messagerie.si.c-s.fr>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 26-04-18 22:29:17, LEROY Christophe wrote:
-> Michal Hocko <mhocko@kernel.org> a écrit :
-[...]
-> > Yes, show_migration_types. But I do not see why unmovable pageblocks
-> > should block the allocation. This is a GFP_KERNEL allocation request
-> > essentially - thus unmovable itself. This smells like a bug. We are way
-> > above reserves which could block the allocation.
-> 
-> Any suggestion on how to investigate that bug ? Anything to trace ?
+This patchset defines IOMMU DT binding for fsl-mc bus and adds
+support in SMMU for fsl-mc bus.
 
-try to enable allocator and vmscan tracepoints. Maybe it will tell
-something.
+This patch series is dependent on patset:
+https://patchwork.kernel.org/patch/10317337/
+
+These patches
+  - Define property 'iommu-map' for fsl-mc bus (patch 1)
+  - Integrates the fsl-mc bus with the SMMU using this
+    IOMMU binding (patch 2,3,4)
+  - Adds the dma configuration support for fsl-mc bus (patch 5)
+  - Updates the fsl-mc device node with iommu/dma related changes (patch6)
+
+Changes in v2:
+  - use iommu-map property for fsl-mc bus
+  - rebase over patchset https://patchwork.kernel.org/patch/10317337/
+    and make corresponding changes for dma configuration of devices on
+    fsl-mc bus
+
+Changes in v3:
+  - move of_map_rid in drivers/of/address.c
+
+Nipun Gupta (6):
+  Docs: dt: add fsl-mc iommu-map device-tree binding
+  iommu: of: make of_pci_map_rid() available for other devices too
+  iommu: support iommu configuration for fsl-mc devices
+  iommu: arm-smmu: Add support for the fsl-mc bus
+  bus: fsl-mc: supoprt dma configure for devices on fsl-mc bus
+  arm64: dts: ls208xa: comply with the iommu map binding for fsl_mc
+
+ .../devicetree/bindings/misc/fsl,qoriq-mc.txt      |  39 ++++++++
+ arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi     |   6 +-
+ drivers/bus/fsl-mc/fsl-mc-bus.c                    |  16 +++-
+ drivers/iommu/arm-smmu.c                           |   7 ++
+ drivers/iommu/iommu.c                              |  21 +++++
+ drivers/iommu/of_iommu.c                           |  26 +++++-
+ drivers/of/address.c                               | 102 +++++++++++++++++++++
+ drivers/of/irq.c                                   |   7 +-
+ drivers/pci/of.c                                   | 101 --------------------
+ include/linux/fsl/mc.h                             |   8 ++
+ include/linux/iommu.h                              |   2 +
+ include/linux/of_address.h                         |  11 +++
+ include/linux/of_pci.h                             |  10 --
+ 13 files changed, 234 insertions(+), 122 deletions(-)
+
 -- 
-Michal Hocko
-SUSE Labs
+1.9.1
