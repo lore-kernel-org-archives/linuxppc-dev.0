@@ -2,19 +2,23 @@ Return-Path: <SRS0=4/0d=HQ=linuxfoundation.org=gregkh@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XY1q1XNkzF24j
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 22:21:03 +1000 (AEST)
-Subject: Patch "block/swim: Rename macros to avoid inconsistent inverted
- logic" has been added to the 4.16-stable tree
-To: axboe@kernel.dk, benh@kernel.crashing.org, fthain@telegraphics.com.au,
- gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, lvivier@redhat.com,
- userm57@yahoo.com
-Cc: <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Fri, 27 Apr 2018 14:20:12 +0200
-Message-ID: <152483161255238@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XbQZ1QBCzF24D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2018 00:09:09 +1000 (AEST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
+ Laurent Vivier <lvivier@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Jens Axboe <axboe@kernel.dk>,
+ Stan Johnson <userm57@yahoo.com>, Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH 4.14 72/80] block/swim: Rename macros to avoid inconsistent
+ inverted logic
+Date: Fri, 27 Apr 2018 15:59:05 +0200
+Message-Id: <20180427135736.636590672@linuxfoundation.org>
+In-Reply-To: <20180427135732.928644313@linuxfoundation.org>
+References: <20180427135732.928644313@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +28,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
-This is a note to let you know that I've just added the patch titled
-
-    block/swim: Rename macros to avoid inconsistent inverted logic
-
-to the 4.16-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-
-The filename of the patch is:
-     block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
-and it can be found in the queue-4.16 subdirectory.
-
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
-
-
->From 56a1c5ee54f69dd767fb61d301883dc919ddc259 Mon Sep 17 00:00:00 2001
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Wed, 11 Apr 2018 20:50:14 -0400
-Subject: block/swim: Rename macros to avoid inconsistent inverted logic
+------------------
 
 From: Finn Thain <fthain@telegraphics.com.au>
 
@@ -135,15 +122,3 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
  /* Definitions of values used in writing and formatting */
  #define DATA_ESCAPE	0x99
-
-
-Patches currently in stable-queue which might be from fthain@telegraphics.com.au are
-
-queue-4.16/block-swim-don-t-log-an-error-message-for-an-invalid-ioctl.patch
-queue-4.16/block-swim-fix-io-error-at-end-of-medium.patch
-queue-4.16/m68k-mac-don-t-remap-swim-mmio-region.patch
-queue-4.16/block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
-queue-4.16/block-swim-select-appropriate-drive-on-device-open.patch
-queue-4.16/block-swim-fix-array-bounds-check.patch
-queue-4.16/block-swim-check-drive-type.patch
-queue-4.16/block-swim-remove-extra-put_disk-call-from-error-path.patch
