@@ -2,17 +2,17 @@ Return-Path: <SRS0=4/0d=HQ=linuxfoundation.org=gregkh@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XY103QJkzF24D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 22:20:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XY1q1XNkzF24j
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 22:21:03 +1000 (AEST)
 Subject: Patch "block/swim: Rename macros to avoid inconsistent inverted
- logic" has been added to the 4.14-stable tree
+ logic" has been added to the 4.16-stable tree
 To: axboe@kernel.dk, benh@kernel.crashing.org, fthain@telegraphics.com.au,
  gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, lvivier@redhat.com,
  userm57@yahoo.com
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Fri, 27 Apr 2018 14:19:50 +0200
-Message-ID: <15248315908739@kroah.com>
+Date: Fri, 27 Apr 2018 14:20:12 +0200
+Message-ID: <152483161255238@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,12 +29,12 @@ This is a note to let you know that I've just added the patch titled
 
     block/swim: Rename macros to avoid inconsistent inverted logic
 
-to the 4.14-stable tree which can be found at:
+to the 4.16-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
-and it can be found in the queue-4.14 subdirectory.
+and it can be found in the queue-4.16 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
@@ -139,11 +139,11 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from fthain@telegraphics.com.au are
 
-queue-4.14/block-swim-don-t-log-an-error-message-for-an-invalid-ioctl.patch
-queue-4.14/block-swim-fix-io-error-at-end-of-medium.patch
-queue-4.14/m68k-mac-don-t-remap-swim-mmio-region.patch
-queue-4.14/block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
-queue-4.14/block-swim-select-appropriate-drive-on-device-open.patch
-queue-4.14/block-swim-fix-array-bounds-check.patch
-queue-4.14/block-swim-check-drive-type.patch
-queue-4.14/block-swim-remove-extra-put_disk-call-from-error-path.patch
+queue-4.16/block-swim-don-t-log-an-error-message-for-an-invalid-ioctl.patch
+queue-4.16/block-swim-fix-io-error-at-end-of-medium.patch
+queue-4.16/m68k-mac-don-t-remap-swim-mmio-region.patch
+queue-4.16/block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
+queue-4.16/block-swim-select-appropriate-drive-on-device-open.patch
+queue-4.16/block-swim-fix-array-bounds-check.patch
+queue-4.16/block-swim-check-drive-type.patch
+queue-4.16/block-swim-remove-extra-put_disk-call-from-error-path.patch
