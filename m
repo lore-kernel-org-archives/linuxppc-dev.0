@@ -1,29 +1,20 @@
-Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0079.outbound.protection.outlook.com [104.47.0.79])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <SRS0=4/0d=HQ=linuxfoundation.org=gregkh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40XVWl6yGqzF25Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 20:28:19 +1000 (AEST)
-From: Nipun Gupta <nipun.gupta@nxp.com>
-To: robin.murphy@arm.com, will.deacon@arm.com, mark.rutland@arm.com,
- catalin.marinas@arm.com
-Cc: hch@lst.de, gregkh@linuxfoundation.org, joro@8bytes.org,
- robh+dt@kernel.org, m.szyprowski@samsung.com, shawnguo@kernel.org,
- frowand.list@gmail.com, bhelgaas@google.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
- leoyang.li@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
-Subject: [PATCH 6/6 v3] arm64: dts: ls208xa: comply with the iommu map binding
- for fsl_mc
-Date: Fri, 27 Apr 2018 15:57:06 +0530
-Message-Id: <1524824826-29473-7-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
-References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40XY103QJkzF24D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2018 22:20:13 +1000 (AEST)
+Subject: Patch "block/swim: Rename macros to avoid inconsistent inverted
+ logic" has been added to the 4.14-stable tree
+To: axboe@kernel.dk, benh@kernel.crashing.org, fthain@telegraphics.com.au,
+ gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org, lvivier@redhat.com,
+ userm57@yahoo.com
+Cc: <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Fri, 27 Apr 2018 14:19:50 +0200
+Message-ID: <15248315908739@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +24,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fsl-mc bus support the new iommu-map property. Comply to this binding
-for fsl_mc bus.
 
-Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+This is a note to let you know that I've just added the patch titled
+
+    block/swim: Rename macros to avoid inconsistent inverted logic
+
+to the 4.14-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
+and it can be found in the queue-4.14 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+>From 56a1c5ee54f69dd767fb61d301883dc919ddc259 Mon Sep 17 00:00:00 2001
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Wed, 11 Apr 2018 20:50:14 -0400
+Subject: block/swim: Rename macros to avoid inconsistent inverted logic
+
+From: Finn Thain <fthain@telegraphics.com.au>
+
+commit 56a1c5ee54f69dd767fb61d301883dc919ddc259 upstream.
+
+The Sony drive status bits use active-low logic. The swim_readbit()
+function converts that to 'C' logic for readability. Hence, the
+sense of the names of the status bit macros should not be inverted.
+
+Mostly they are correct. However, the TWOMEG_DRIVE, MFM_MODE and
+TWOMEG_MEDIA macros have inverted sense (like MkLinux). Fix this
+inconsistency and make the following patches less confusing.
+
+The same problem affects swim3.c so fix that too.
+
+No functional change.
+
+The FDHD drive status bits are documented in sonydriv.cpp from MAME
+and in swimiii.h from MkLinux.
+
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Jens Axboe <axboe@kernel.dk>
+Cc: stable@vger.kernel.org # v4.14+
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Acked-by: Laurent Vivier <lvivier@redhat.com>
+Signed-off-by: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
 ---
- arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/block/swim.c  |    8 ++++----
+ drivers/block/swim3.c |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-index 137ef4d..6010505 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-@@ -184,6 +184,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		ranges;
-+		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
+--- a/drivers/block/swim.c
++++ b/drivers/block/swim.c
+@@ -110,7 +110,7 @@ struct iwm {
+ /* Select values for swim_select and swim_readbit */
  
- 		clockgen: clocking@1300000 {
- 			compatible = "fsl,ls2080a-clockgen";
-@@ -357,6 +358,8 @@
- 			reg = <0x00000008 0x0c000000 0 0x40>,	 /* MC portal base */
- 			      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
- 			msi-parent = <&its>;
-+			iommu-map = <0 &smmu 0 0>;	/* This is fixed-up by u-boot */
-+			dma-coherent;
- 			#address-cells = <3>;
- 			#size-cells = <1>;
+ #define READ_DATA_0	0x074
+-#define TWOMEG_DRIVE	0x075
++#define ONEMEG_DRIVE	0x075
+ #define SINGLE_SIDED	0x076
+ #define DRIVE_PRESENT	0x077
+ #define DISK_IN		0x170
+@@ -118,9 +118,9 @@ struct iwm {
+ #define TRACK_ZERO	0x172
+ #define TACHO		0x173
+ #define READ_DATA_1	0x174
+-#define MFM_MODE	0x175
++#define GCR_MODE	0x175
+ #define SEEK_COMPLETE	0x176
+-#define ONEMEG_MEDIA	0x177
++#define TWOMEG_MEDIA	0x177
  
-@@ -460,6 +463,8 @@
- 			compatible = "arm,mmu-500";
- 			reg = <0 0x5000000 0 0x800000>;
- 			#global-interrupts = <12>;
-+			#iommu-cells = <1>;
-+			stream-match-mask = <0x7C00>;
- 			interrupts = <0 13 4>, /* global secure fault */
- 				     <0 14 4>, /* combined secure interrupt */
- 				     <0 15 4>, /* global non-secure fault */
-@@ -502,7 +507,6 @@
- 				     <0 204 4>, <0 205 4>,
- 				     <0 206 4>, <0 207 4>,
- 				     <0 208 4>, <0 209 4>;
--			mmu-masters = <&fsl_mc 0x300 0>;
- 		};
+ /* Bits in handshake register */
  
- 		dspi: dspi@2100000 {
--- 
-1.9.1
+@@ -612,7 +612,7 @@ static void setup_medium(struct floppy_s
+ 		struct floppy_struct *g;
+ 		fs->disk_in = 1;
+ 		fs->write_protected = swim_readbit(base, WRITE_PROT);
+-		fs->type = swim_readbit(base, ONEMEG_MEDIA);
++		fs->type = swim_readbit(base, TWOMEG_MEDIA);
+ 
+ 		if (swim_track00(base))
+ 			printk(KERN_ERR
+--- a/drivers/block/swim3.c
++++ b/drivers/block/swim3.c
+@@ -148,7 +148,7 @@ struct swim3 {
+ #define MOTOR_ON	2
+ #define RELAX		3	/* also eject in progress */
+ #define READ_DATA_0	4
+-#define TWOMEG_DRIVE	5
++#define ONEMEG_DRIVE	5
+ #define SINGLE_SIDED	6	/* drive or diskette is 4MB type? */
+ #define DRIVE_PRESENT	7
+ #define DISK_IN		8
+@@ -156,9 +156,9 @@ struct swim3 {
+ #define TRACK_ZERO	10
+ #define TACHO		11
+ #define READ_DATA_1	12
+-#define MFM_MODE	13
++#define GCR_MODE	13
+ #define SEEK_COMPLETE	14
+-#define ONEMEG_MEDIA	15
++#define TWOMEG_MEDIA	15
+ 
+ /* Definitions of values used in writing and formatting */
+ #define DATA_ESCAPE	0x99
+
+
+Patches currently in stable-queue which might be from fthain@telegraphics.com.au are
+
+queue-4.14/block-swim-don-t-log-an-error-message-for-an-invalid-ioctl.patch
+queue-4.14/block-swim-fix-io-error-at-end-of-medium.patch
+queue-4.14/m68k-mac-don-t-remap-swim-mmio-region.patch
+queue-4.14/block-swim-rename-macros-to-avoid-inconsistent-inverted-logic.patch
+queue-4.14/block-swim-select-appropriate-drive-on-device-open.patch
+queue-4.14/block-swim-fix-array-bounds-check.patch
+queue-4.14/block-swim-check-drive-type.patch
+queue-4.14/block-swim-remove-extra-put_disk-call-from-error-path.patch
