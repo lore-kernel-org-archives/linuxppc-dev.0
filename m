@@ -2,20 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Y7SX1YNGzDqGZ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2018 21:12:44 +1000 (AEST)
-In-Reply-To: <1524653971-4919-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- viresh.kumar@linaro.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Y7SY0xRZzDqGZ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2018 21:12:45 +1000 (AEST)
+In-Reply-To: <20180426123319.10843-1-laurentiu.tudor@nxp.com>
+To: laurentiu.tudor@nxp.com, kvm-ppc@vger.kernel.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-pm@vger.kernel.org, ppaidipe@linux.vnet.ibm.com,
- linux-kernel@vger.kernel.org, npiggin@gmail.com, stable@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [V3] cpufreq: powernv: Fix the hardlockup by synchronus smp_call
- in timer interrupt
-Message-Id: <40Y7SX0BHHz9s0x@ozlabs.org>
-Date: Sat, 28 Apr 2018 21:12:43 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
+ Laurentiu Tudor <laurentiu.tudor@nxp.com>
+Subject: Re: powerpc/kvm/booke: fix altivec related build break
+Message-Id: <40Y7SY04mQz9s15@ozlabs.org>
+Date: Sat, 28 Apr 2018 21:12:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-25 at 10:59:31 UTC, Shilpasri G Bhat wrote:
-> gpstate_timer_handler() uses synchronous smp_call to set the pstate
-> on the requested core. This causes the below hard lockup:
+On Thu, 2018-04-26 at 12:33:19 UTC, laurentiu.tudor@nxp.com wrote:
+> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 > 
-> [c000003fe566b320] [c0000000001d5340] smp_call_function_single+0x110/0x180 (unreliable)
-> [c000003fe566b390] [c0000000001d55e0] smp_call_function_any+0x180/0x250
-> [c000003fe566b3f0] [c000000000acd3e8] gpstate_timer_handler+0x1e8/0x580
-> [c000003fe566b4a0] [c0000000001b46b0] call_timer_fn+0x50/0x1c0
-> [c000003fe566b520] [c0000000001b4958] expire_timers+0x138/0x1f0
-> [c000003fe566b590] [c0000000001b4bf8] run_timer_softirq+0x1e8/0x270
-> [c000003fe566b630] [c000000000d0d6c8] __do_softirq+0x158/0x3e4
-> [c000003fe566b710] [c000000000114be8] irq_exit+0xe8/0x120
-> [c000003fe566b730] [c000000000024d0c] timer_interrupt+0x9c/0xe0
-> [c000003fe566b760] [c000000000009014] decrementer_common+0x114/0x120
-> -- interrupt: 901 at doorbell_global_ipi+0x34/0x50
-> LR = arch_send_call_function_ipi_mask+0x120/0x130
-> [c000003fe566ba50] [c00000000004876c]
-> arch_send_call_function_ipi_mask+0x4c/0x130
-> [c000003fe566ba90] [c0000000001d59f0] smp_call_function_many+0x340/0x450
-> [c000003fe566bb00] [c000000000075f18] pmdp_invalidate+0x98/0xe0
-> [c000003fe566bb30] [c0000000003a1120] change_huge_pmd+0xe0/0x270
-> [c000003fe566bba0] [c000000000349278] change_protection_range+0xb88/0xe40
-> [c000003fe566bcf0] [c0000000003496c0] mprotect_fixup+0x140/0x340
-> [c000003fe566bdb0] [c000000000349a74] SyS_mprotect+0x1b4/0x350
-> [c000003fe566be30] [c00000000000b184] system_call+0x58/0x6c
+> Add missing "altivec unavailable" interrupt injection helper
+> thus fixing the linker error below:
 > 
-> One way to avoid this is removing the smp-call. We can ensure that the timer
-> always runs on one of the policy-cpus. If the timer gets migrated to a
-> cpu outside the policy then re-queue it back on the policy->cpus. This way
-> we can get rid of the smp-call which was being used to set the pstate
-> on the policy->cpus.
+> arch/powerpc/kvm/emulate_loadstore.o: In function `kvmppc_check_altivec_disabled':
+> arch/powerpc/kvm/emulate_loadstore.c: undefined reference to `.kvmppc_core_queue_vec_unavail'
 > 
-> Fixes: 7bc54b652f13 (timers, cpufreq/powernv: Initialize the gpstate timer as pinned)
-> Cc: <stable@vger.kernel.org>        [4.8+]
-> Reported-by: Nicholas Piggin <npiggin@gmail.com>
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Acked-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Fixes: 09f984961c137c4b ("KVM: PPC: Book3S: Add MMIO emulation for VMX instructions")
+> Signed-off-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/c0f7f5b6c69107ca92909512533e70
+https://git.kernel.org/powerpc/c/b2d7ecbe355698010a6b7a15eb179e
 
 cheers
