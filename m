@@ -1,39 +1,36 @@
-Return-Path: <punitagrawal@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mathieu.desnoyers@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZYTD65zczF2Q5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 04:48:16 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id f1-v6so12123083qtj.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 11:48:16 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1523975611-15978-18-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-18-git-send-email-ldufour@linux.vnet.ibm.com>
-From: Punit Agrawal <punitagrawal@gmail.com>
-Date: Mon, 30 Apr 2018 19:47:53 +0100
-Message-ID: <CAD4BONeTCmSZgzThatyY66xVx1a9nCgNO+LCory0h9ZpBkn_+w@mail.gmail.com>
-Subject: Re: [PATCH v10 17/25] mm: protect mm_rb tree with a rwlock
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au,
- paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZfkC4TNBzF2QG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 08:44:50 +1000 (AEST)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Peter Zijlstra <peterz@infradead.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
+ Dave Watson <davejwatson@fb.com>
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+ Paul Turner <pjt@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H . Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
+ Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
+ Ben Maurer <bmaurer@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
  Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ Joel Fernandes <joelaf@google.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 07/14] powerpc: Add support for restartable sequences
+Date: Mon, 30 Apr 2018 18:44:26 -0400
+Message-Id: <20180430224433.17407-8-mathieu.desnoyers@efficios.com>
+In-Reply-To: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
+References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,101 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+From: Boqun Feng <boqun.feng@gmail.com>
 
-One nitpick below.
+Call the rseq_handle_notify_resume() function on return to userspace if
+TIF_NOTIFY_RESUME thread flag is set.
 
-On Tue, Apr 17, 2018 at 3:33 PM, Laurent Dufour
-<ldufour@linux.vnet.ibm.com> wrote:
-> This change is inspired by the Peter's proposal patch [1] which was
-> protecting the VMA using SRCU. Unfortunately, SRCU is not scaling well in
-> that particular case, and it is introducing major performance degradation
-> due to excessive scheduling operations.
->
-> To allow access to the mm_rb tree without grabbing the mmap_sem, this patch
-> is protecting it access using a rwlock.  As the mm_rb tree is a O(log n)
-> search it is safe to protect it using such a lock.  The VMA cache is not
-> protected by the new rwlock and it should not be used without holding the
-> mmap_sem.
->
-> To allow the picked VMA structure to be used once the rwlock is released, a
-> use count is added to the VMA structure. When the VMA is allocated it is
-> set to 1.  Each time the VMA is picked with the rwlock held its use count
-> is incremented. Each time the VMA is released it is decremented. When the
-> use count hits zero, this means that the VMA is no more used and should be
-> freed.
->
-> This patch is preparing for 2 kind of VMA access :
->  - as usual, under the control of the mmap_sem,
->  - without holding the mmap_sem for the speculative page fault handler.
->
-> Access done under the control the mmap_sem doesn't require to grab the
-> rwlock to protect read access to the mm_rb tree, but access in write must
-> be done under the protection of the rwlock too. This affects inserting and
-> removing of elements in the RB tree.
->
-> The patch is introducing 2 new functions:
->  - vma_get() to find a VMA based on an address by holding the new rwlock.
->  - vma_put() to release the VMA when its no more used.
-> These services are designed to be used when access are made to the RB tree
-> without holding the mmap_sem.
->
-> When a VMA is removed from the RB tree, its vma->vm_rb field is cleared and
-> we rely on the WMB done when releasing the rwlock to serialize the write
-> with the RMB done in a later patch to check for the VMA's validity.
->
-> When free_vma is called, the file associated with the VMA is closed
-> immediately, but the policy and the file structure remained in used until
-> the VMA's use count reach 0, which may happens later when exiting an
-> in progress speculative page fault.
->
-> [1] https://patchwork.kernel.org/patch/5108281/
->
-> Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
-> Cc: Matthew Wilcox <willy@infradead.org>
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  include/linux/mm.h       |   1 +
->  include/linux/mm_types.h |   4 ++
->  kernel/fork.c            |   3 ++
->  mm/init-mm.c             |   3 ++
->  mm/internal.h            |   6 +++
->  mm/mmap.c                | 115 +++++++++++++++++++++++++++++++++++------------
->  6 files changed, 104 insertions(+), 28 deletions(-)
->
+Perform fixup on the pre-signal when a signal is delivered on top of a
+restartable sequence critical section.
 
-[...]
+Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/Kconfig         | 1 +
+ arch/powerpc/kernel/signal.c | 3 +++
+ 2 files changed, 4 insertions(+)
 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 5601f1ef8bb9..a82950960f2e 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -160,6 +160,27 @@ void unlink_file_vma(struct vm_area_struct *vma)
->         }
->  }
->
-> +static void __free_vma(struct vm_area_struct *vma)
-> +{
-> +       if (vma->vm_file)
-> +               fput(vma->vm_file);
-> +       mpol_put(vma_policy(vma));
-> +       kmem_cache_free(vm_area_cachep, vma);
-> +}
-> +
-> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +void put_vma(struct vm_area_struct *vma)
-> +{
-> +       if (atomic_dec_and_test(&vma->vm_ref_count))
-> +               __free_vma(vma);
-> +}
-> +#else
-> +static inline void put_vma(struct vm_area_struct *vma)
-> +{
-> +       return __free_vma(vma);
-
-Please drop the "return".
-
-Thanks,
-Punit
-
-[...]
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c32a181a7cbb..ed21a777e8c6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -223,6 +223,7 @@ config PPC
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_IRQ_TIME_ACCOUNTING
++	select HAVE_RSEQ
+ 	select IRQ_DOMAIN
+ 	select IRQ_FORCED_THREADING
+ 	select MODULES_USE_ELF_RELA
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 61db86ecd318..d3bb3aaaf5ac 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -133,6 +133,8 @@ static void do_signal(struct task_struct *tsk)
+ 	/* Re-enable the breakpoints for the signal stack */
+ 	thread_change_pc(tsk, tsk->thread.regs);
+ 
++	rseq_signal_deliver(tsk->thread.regs);
++
+ 	if (is32) {
+         	if (ksig.ka.sa.sa_flags & SA_SIGINFO)
+ 			ret = handle_rt_signal32(&ksig, oldset, tsk);
+@@ -164,6 +166,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+ 	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
+ 		clear_thread_flag(TIF_NOTIFY_RESUME);
+ 		tracehook_notify_resume(regs);
++		rseq_handle_notify_resume(regs);
+ 	}
+ 
+ 	user_enter();
+-- 
+2.11.0
