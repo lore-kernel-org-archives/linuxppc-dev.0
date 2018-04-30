@@ -1,22 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKf2VF4zF2QG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:22 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id v63so6924588pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKk4BnQzF2QG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:26 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id c10so6919405pfi.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:26 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 03/15] powerpc/powernv: opal-kmsg standardise OPAL_BUSY
- handling
-Date: Tue,  1 May 2018 00:55:46 +1000
-Message-Id: <20180430145558.4308-4-npiggin@gmail.com>
+Subject: [PATCH 04/15] powerpc/powernv: opal-kmsg use flush fallback from
+ console code
+Date: Tue,  1 May 2018 00:55:47 +1000
+Message-Id: <20180430145558.4308-5-npiggin@gmail.com>
 In-Reply-To: <20180430145558.4308-1-npiggin@gmail.com>
 References: <20180430145558.4308-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,65 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OPAL_CONSOLE_FLUSH is documented as being able to return OPAL_BUSY,
-so implement the standard OPAL_BUSY handling for it.
+Use the more refined and tested event polling loop from opal_put_chars
+as the fallback console flush in the opal-kmsg path. This loop is used
+by the console driver today, whereas the opal-kmsg fallback is not
+likely to have been used for years.
+
+Use WARN_ONCE rather than a printk when the fallback is invoked to
+prepare for moving the console flush into a common function.
 
 Reviewed-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/powernv/opal-kmsg.c | 24 ++++++++++++++--------
- 1 file changed, 16 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/opal-kmsg.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
-index 6f1214d4de92..f8f41ccce75f 100644
+index f8f41ccce75f..fd2bbf4fd6dc 100644
 --- a/arch/powerpc/platforms/powernv/opal-kmsg.c
 +++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
-@@ -12,6 +12,7 @@
-  */
+@@ -51,20 +51,17 @@ static void force_opal_console_flush(struct kmsg_dumper *dumper,
+ 		} while (rc == OPAL_PARTIAL); /* More to flush */
  
- #include <linux/kmsg_dump.h>
-+#include <linux/delay.h>
- 
- #include <asm/opal.h>
- #include <asm/opal-api.h>
-@@ -26,8 +27,7 @@
- static void force_opal_console_flush(struct kmsg_dumper *dumper,
- 				     enum kmsg_dump_reason reason)
- {
--	int i;
--	int64_t ret;
-+	s64 rc;
- 
- 	/*
- 	 * Outside of a panic context the pollers will continue to run,
-@@ -37,14 +37,22 @@ static void force_opal_console_flush(struct kmsg_dumper *dumper,
- 		return;
- 
- 	if (opal_check_token(OPAL_CONSOLE_FLUSH)) {
--		ret = opal_console_flush(0);
-+		do  {
-+			rc = OPAL_BUSY;
-+			while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+				rc = opal_console_flush(0);
-+				if (rc == OPAL_BUSY_EVENT) {
-+					mdelay(OPAL_BUSY_DELAY_MS);
-+					opal_poll_events(NULL);
-+				} else if (rc == OPAL_BUSY) {
-+					mdelay(OPAL_BUSY_DELAY_MS);
-+				}
-+			}
-+		} while (rc == OPAL_PARTIAL); /* More to flush */
- 
--		if (ret == OPAL_UNSUPPORTED || ret == OPAL_PARAMETER)
--			return;
--
--		/* Incrementally flush until there's nothing left */
--		while (opal_console_flush(0) != OPAL_SUCCESS);
  	} else {
-+		int i;
-+
+-		int i;
++		__be64 evt;
+ 
++		WARN_ONCE(1, "opal: OPAL_CONSOLE_FLUSH missing.\n");
  		/*
  		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
  		 * the console can still be flushed by calling the polling
+-		 * function enough times to flush the buffer.  We don't know
+-		 * how much output still needs to be flushed, but we can be
+-		 * generous since the kernel is in panic and doesn't need
+-		 * to do much else.
++		 * function while it has OPAL_EVENT_CONSOLE_OUTPUT events.
+ 		 */
+-		printk(KERN_NOTICE "opal: OPAL_CONSOLE_FLUSH missing.\n");
+-		for (i = 0; i < 1024; i++) {
+-			opal_poll_events(NULL);
+-		}
++		do {
++			opal_poll_events(&evt);
++		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
+ 	}
+ }
+ 
 -- 
 2.17.0
