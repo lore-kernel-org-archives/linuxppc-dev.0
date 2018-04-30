@@ -3,19 +3,20 @@ Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
  [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSLN37gRzF2QD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:57:00 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id l2-v6so6473241pgc.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:57:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSLS2QDhzF2QD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:57:04 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id k11-v6so5365009pgo.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:57:04 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 13/15] tty: hvc: hvc_write may sleep
-Date: Tue,  1 May 2018 00:55:56 +1000
-Message-Id: <20180430145558.4308-14-npiggin@gmail.com>
+Subject: [PATCH 14/15] tty: hvc: introduce the hv_ops.flush operation for hvc
+ drivers
+Date: Tue,  1 May 2018 00:55:57 +1000
+Message-Id: <20180430145558.4308-15-npiggin@gmail.com>
 In-Reply-To: <20180430145558.4308-1-npiggin@gmail.com>
 References: <20180430145558.4308-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,64 +28,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rework the hvc_write loop to drop and re-take the spinlock on each
-iteration, add a cond_resched. Don't bother with an initial hvc_push
-initially, which makes the logic simpler -- just do a hvc_push on
-each time around the loop.
+Use .flush to wait for drivers to flush their console outside of
+the spinlock, to reduce lock/irq latencies.
+
+Flush the hvc console driver after each write, which can help
+messages make it out to the console after a crash.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- drivers/tty/hvc/hvc_console.c | 36 ++++++++++++++++++++---------------
- 1 file changed, 21 insertions(+), 15 deletions(-)
+ drivers/tty/hvc/hvc_console.c | 35 +++++++++++++++++++++++++++++++++--
+ drivers/tty/hvc/hvc_console.h |  1 +
+ 2 files changed, 34 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 2abfc0b15fbb..6131d5084c42 100644
+index 6131d5084c42..5414c4a87bea 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -493,23 +493,29 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
- 	if (hp->port.count <= 0)
- 		return -EIO;
+@@ -110,6 +110,29 @@ static struct hvc_struct *hvc_get_by_index(int index)
+ 	return hp;
+ }
  
--	spin_lock_irqsave(&hp->lock, flags);
-+	while (count > 0) {
-+		spin_lock_irqsave(&hp->lock, flags);
- 
--	/* Push pending writes */
--	if (hp->n_outbuf > 0)
--		hvc_push(hp);
--
--	while (count > 0 && (rsize = hp->outbuf_size - hp->n_outbuf) > 0) {
--		if (rsize > count)
--			rsize = count;
--		memcpy(hp->outbuf + hp->n_outbuf, buf, rsize);
--		count -= rsize;
--		buf += rsize;
--		hp->n_outbuf += rsize;
--		written += rsize;
--		hvc_push(hp);
-+		rsize = hp->outbuf_size - hp->n_outbuf;
++static int __hvc_flush(const struct hv_ops *ops, uint32_t vtermno, bool wait)
++{
++	if (wait)
++		might_sleep();
 +
-+		if (rsize) {
-+			if (rsize > count)
-+				rsize = count;
-+			memcpy(hp->outbuf + hp->n_outbuf, buf, rsize);
-+			count -= rsize;
-+			buf += rsize;
-+			hp->n_outbuf += rsize;
-+			written += rsize;
-+		}
++	if (ops->flush)
++		return ops->flush(vtermno, wait);
++	return 0;
++}
 +
-+		if (hp->n_outbuf > 0)
-+			hvc_push(hp);
++static int hvc_console_flush(const struct hv_ops *ops, uint32_t vtermno)
++{
++	return __hvc_flush(ops, vtermno, false);
++}
 +
-+		spin_unlock_irqrestore(&hp->lock, flags);
++/*
++ * Wait for the console to flush before writing more to it. This sleeps.
++ */
++static int hvc_flush(struct hvc_struct *hp)
++{
++	return __hvc_flush(hp->ops, hp->vtermno, true);
++}
 +
-+		if (count)
-+			cond_resched();
+ /*
+  * Initial console vtermnos for console API usage prior to full console
+  * initialization.  Any vty adapter outside this range will not have usable
+@@ -155,8 +178,12 @@ static void hvc_console_print(struct console *co, const char *b,
+ 			if (r <= 0) {
+ 				/* throw away characters on error
+ 				 * but spin in case of -EAGAIN */
+-				if (r != -EAGAIN)
++				if (r != -EAGAIN) {
+ 					i = 0;
++				} else {
++					hvc_console_flush(cons_ops[index],
++						      vtermnos[index]);
++				}
+ 			} else if (r > 0) {
+ 				i -= r;
+ 				if (i > 0)
+@@ -164,6 +191,7 @@ static void hvc_console_print(struct console *co, const char *b,
+ 			}
+ 		}
  	}
--	spin_unlock_irqrestore(&hp->lock, flags);
++	hvc_console_flush(cons_ops[index], vtermnos[index]);
+ }
+ 
+ static struct tty_driver *hvc_console_device(struct console *c, int *index)
+@@ -513,8 +541,11 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
+ 
+ 		spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-		if (count)
++		if (count) {
++			if (hp->n_outbuf > 0)
++				hvc_flush(hp);
+ 			cond_resched();
++		}
+ 	}
  
  	/*
- 	 * Racy, but harmless, kick thread if there is still pending data.
+diff --git a/drivers/tty/hvc/hvc_console.h b/drivers/tty/hvc/hvc_console.h
+index ea63090e013f..e9319954c832 100644
+--- a/drivers/tty/hvc/hvc_console.h
++++ b/drivers/tty/hvc/hvc_console.h
+@@ -54,6 +54,7 @@ struct hvc_struct {
+ struct hv_ops {
+ 	int (*get_chars)(uint32_t vtermno, char *buf, int count);
+ 	int (*put_chars)(uint32_t vtermno, const char *buf, int count);
++	int (*flush)(uint32_t vtermno, bool wait);
+ 
+ 	/* Callbacks for notification. Called in open, close and hangup */
+ 	int (*notifier_add)(struct hvc_struct *hp, int irq);
 -- 
 2.17.0
