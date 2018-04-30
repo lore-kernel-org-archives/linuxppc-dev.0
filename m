@@ -1,21 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKp0N51zF2QH
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:30 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id f189so6927324pfa.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKt25tlzF2QC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:34 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id z9so6924616pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:34 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 05/15] powerpc/powernv: Implement and use opal_flush_console
-Date: Tue,  1 May 2018 00:55:48 +1000
-Message-Id: <20180430145558.4308-6-npiggin@gmail.com>
+Subject: [PATCH 06/15] powerpc/powernv: Remove OPALv1 support from opal
+ console driver
+Date: Tue,  1 May 2018 00:55:49 +1000
+Message-Id: <20180430145558.4308-7-npiggin@gmail.com>
 In-Reply-To: <20180430145558.4308-1-npiggin@gmail.com>
 References: <20180430145558.4308-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,174 +28,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A new console flushing firmware API was introduced to replace event
-polling loops, and implemented in opal-kmsg with affddff69c55e
-("powerpc/powernv: Add a kmsg_dumper that flushes console output on
-panic"), to flush the console in the panic path.
+opal_put_chars deals with partial writes because in OPALv1,
+opal_console_write_buffer_space did not work correctly. That firmware
+is not supported.
 
-The OPAL console driver has other situations where interrupts are off
-and it needs to flush the console synchronously. These still use a
-polling loop.
+This reworks the opal_put_chars code to no longer deal with partial
+writes by turning them into full writes. Partial write handling is still
+supported in terms of what gets returned to the caller, but it may not
+go to the console atomically. A warning message is printed in this
+case.
 
-So move the opal-kmsg flush code to opal_flush_console, and use the
-new function in opal-kmsg and opal_put_chars.
+This allows console flushing to be moved out of the opal_write_lock
+spinlock. That could cause the lock to be held for long periods if the
+console is busy (especially if it was being spammed by firmware),
+which is dangerous because the lock is taken by xmon to debug the
+system. Flushing outside the lock improves the situation a bit.
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reviewed-by: Russell Currey <ruscur@russell.cc>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/opal.h            |  1 +
- arch/powerpc/platforms/powernv/opal-kmsg.c | 35 ++----------------
- arch/powerpc/platforms/powernv/opal.c      | 42 +++++++++++++++++++---
- 3 files changed, 42 insertions(+), 36 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c | 86 +++++++++++++--------------
+ 1 file changed, 40 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 03e1a920491e..bbff49fab0e5 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -303,6 +303,7 @@ extern void opal_configure_cores(void);
- 
- extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
- extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
-+extern int opal_flush_console(uint32_t vtermno);
- 
- extern void hvc_opal_init_early(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
-index fd2bbf4fd6dc..55691950d981 100644
---- a/arch/powerpc/platforms/powernv/opal-kmsg.c
-+++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
-@@ -12,7 +12,6 @@
-  */
- 
- #include <linux/kmsg_dump.h>
--#include <linux/delay.h>
- 
- #include <asm/opal.h>
- #include <asm/opal-api.h>
-@@ -24,11 +23,9 @@
-  * may not be completely printed.  This function does not actually dump the
-  * message, it just ensures that OPAL completely flushes the console buffer.
-  */
--static void force_opal_console_flush(struct kmsg_dumper *dumper,
-+static void kmsg_dump_opal_console_flush(struct kmsg_dumper *dumper,
- 				     enum kmsg_dump_reason reason)
- {
--	s64 rc;
--
- 	/*
- 	 * Outside of a panic context the pollers will continue to run,
- 	 * so we don't need to do any special flushing.
-@@ -36,37 +33,11 @@ static void force_opal_console_flush(struct kmsg_dumper *dumper,
- 	if (reason != KMSG_DUMP_PANIC)
- 		return;
- 
--	if (opal_check_token(OPAL_CONSOLE_FLUSH)) {
--		do  {
--			rc = OPAL_BUSY;
--			while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
--				rc = opal_console_flush(0);
--				if (rc == OPAL_BUSY_EVENT) {
--					mdelay(OPAL_BUSY_DELAY_MS);
--					opal_poll_events(NULL);
--				} else if (rc == OPAL_BUSY) {
--					mdelay(OPAL_BUSY_DELAY_MS);
--				}
--			}
--		} while (rc == OPAL_PARTIAL); /* More to flush */
--
--	} else {
--		__be64 evt;
--
--		WARN_ONCE(1, "opal: OPAL_CONSOLE_FLUSH missing.\n");
--		/*
--		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
--		 * the console can still be flushed by calling the polling
--		 * function while it has OPAL_EVENT_CONSOLE_OUTPUT events.
--		 */
--		do {
--			opal_poll_events(&evt);
--		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
--	}
-+	opal_flush_console(0);
- }
- 
- static struct kmsg_dumper opal_kmsg_dumper = {
--	.dump = force_opal_console_flush
-+	.dump = kmsg_dump_opal_console_flush
- };
- 
- void __init opal_kmsg_init(void)
 diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 6b621d47ac29..6640fccbf30c 100644
+index 6640fccbf30c..0ddb63226695 100644
 --- a/arch/powerpc/platforms/powernv/opal.c
 +++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -350,7 +350,6 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 	__be64 olen;
- 	s64 len, rc;
+@@ -346,10 +346,10 @@ int opal_get_chars(uint32_t vtermno, char *buf, int count)
+ 
+ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ {
+-	int written = 0;
+-	__be64 olen;
+-	s64 len, rc;
  	unsigned long flags;
--	__be64 evt;
++	int written;
++	__be64 olen;
++	s64 rc;
  
  	if (!opal.entry)
  		return -ENODEV;
-@@ -371,7 +370,7 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+@@ -357,62 +357,56 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ 	/* We want put_chars to be atomic to avoid mangling of hvsi
+ 	 * packets. To do that, we first test for room and return
+ 	 * -EAGAIN if there isn't enough.
+-	 *
+-	 * Unfortunately, opal_console_write_buffer_space() doesn't
+-	 * appear to work on opal v1, so we just assume there is
+-	 * enough room and be done with it
+ 	 */
+ 	spin_lock_irqsave(&opal_write_lock, flags);
+ 	rc = opal_console_write_buffer_space(vtermno, &olen);
+-	len = be64_to_cpu(olen);
+-	if (rc || len < total_len) {
+-		spin_unlock_irqrestore(&opal_write_lock, flags);
++	if (rc || be64_to_cpu(olen) < total_len) {
  		/* Closed -> drop characters */
  		if (rc)
- 			return total_len;
--		opal_poll_events(NULL);
-+		opal_flush_console(vtermno);
- 		return -EAGAIN;
+-			return total_len;
+-		opal_flush_console(vtermno);
+-		return -EAGAIN;
++			written = total_len;
++		else
++			written = -EAGAIN;
++		goto out;
  	}
  
-@@ -410,12 +409,47 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
- 		 * things a bit later to limit that to synchronous path
- 		 * such as the kernel console and xmon/udbg
- 		 */
-+		opal_flush_console(vtermno);
+-	/* We still try to handle partial completions, though they
+-	 * should no longer happen.
+-	 */
+-
+-	while (total_len > 0) {
+-		olen = cpu_to_be64(total_len);
+-
+-		rc = OPAL_BUSY;
+-		while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+-			rc = opal_console_write(vtermno, &olen, data);
+-			if (rc == OPAL_BUSY_EVENT) {
+-				mdelay(OPAL_BUSY_DELAY_MS);
+-				opal_poll_events(NULL);
+-			} else if (rc == OPAL_BUSY) {
+-				mdelay(OPAL_BUSY_DELAY_MS);
+-			}
+-		}
+-
+-		len = be64_to_cpu(olen);
+-
+-		/* Closed or other error drop */
+-		if (rc != OPAL_SUCCESS) {
+-			written += total_len; /* drop remaining chars */
+-			break;
++	/* Should not get a partial write here because space is available. */
++	olen = cpu_to_be64(total_len);
++	rc = opal_console_write(vtermno, &olen, data);
++	if (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
++		if (rc == OPAL_BUSY_EVENT) {
++			mdelay(OPAL_BUSY_DELAY_MS);
++			opal_poll_events(NULL);
++		} else if (rc == OPAL_BUSY_EVENT) {
++			mdelay(OPAL_BUSY_DELAY_MS);
+ 		}
++		written = -EAGAIN;
++		goto out;
 +	}
-+	spin_unlock_irqrestore(&opal_write_lock, flags);
-+
-+	return written;
-+}
-+
-+int opal_flush_console(uint32_t vtermno)
-+{
-+	s64 rc;
-+
-+	if (!opal_check_token(OPAL_CONSOLE_FLUSH)) {
-+		__be64 evt;
-+
-+		WARN_ONCE(1, "opal: OPAL_CONSOLE_FLUSH missing.\n");
-+		/*
-+		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
-+		 * the console can still be flushed by calling the polling
-+		 * function while it has OPAL_EVENT_CONSOLE_OUTPUT events.
-+		 */
- 		do {
- 			opal_poll_events(&evt);
- 		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
-+
-+		return OPAL_SUCCESS;
+ 
+-		total_len -= len;
+-		data += len;
+-		written += len;
++	/* Closed or other error drop */
++	if (rc != OPAL_SUCCESS) {
++		written = opal_error_code(rc);
++		goto out;
++	}
+ 
+-		/* This is a bit nasty but we need that for the console to
+-		 * flush when there aren't any interrupts. We will clean
+-		 * things a bit later to limit that to synchronous path
+-		 * such as the kernel console and xmon/udbg
+-		 */
+-		opal_flush_console(vtermno);
++	written = be64_to_cpu(olen);
++	if (written < total_len) {
++		/* Should not happen */
++		pr_warn("atomic console write returned partial len=%d written=%d\n", total_len, written);
++		if (!written)
++			written = -EAGAIN;
  	}
--	spin_unlock_irqrestore(&opal_write_lock, flags);
--	return written;
 +
-+	do  {
-+		rc = OPAL_BUSY;
-+		while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
-+			rc = opal_console_flush(vtermno);
-+			if (rc == OPAL_BUSY_EVENT) {
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+				opal_poll_events(NULL);
-+			} else if (rc == OPAL_BUSY) {
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+			}
-+		}
-+	} while (rc == OPAL_PARTIAL); /* More to flush */
++out:
+ 	spin_unlock_irqrestore(&opal_write_lock, flags);
+ 
++	/* This is a bit nasty but we need that for the console to
++	 * flush when there aren't any interrupts. We will clean
++	 * things a bit later to limit that to synchronous path
++	 * such as the kernel console and xmon/udbg
++	 */
++	opal_flush_console(vtermno);
 +
-+	return opal_error_code(rc);
+ 	return written;
  }
  
- static int opal_recover_mce(struct pt_regs *regs,
 -- 
 2.17.0
