@@ -3,19 +3,19 @@ Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
  [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSLK2PLHzF2QB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:57 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 82-v6so6470492pge.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSLN37gRzF2QD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:57:00 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id l2-v6so6473241pgc.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:57:00 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 12/15] tty: hvc: hvc_poll may sleep
-Date: Tue,  1 May 2018 00:55:55 +1000
-Message-Id: <20180430145558.4308-13-npiggin@gmail.com>
+Subject: [PATCH 13/15] tty: hvc: hvc_write may sleep
+Date: Tue,  1 May 2018 00:55:56 +1000
+Message-Id: <20180430145558.4308-14-npiggin@gmail.com>
 In-Reply-To: <20180430145558.4308-1-npiggin@gmail.com>
 References: <20180430145558.4308-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,61 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce points where hvc_poll drops the lock, enables interrupts,
-and reschedules.
+Rework the hvc_write loop to drop and re-take the spinlock on each
+iteration, add a cond_resched. Don't bother with an initial hvc_push
+initially, which makes the logic simpler -- just do a hvc_push on
+each time around the loop.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- drivers/tty/hvc/hvc_console.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ drivers/tty/hvc/hvc_console.c | 36 ++++++++++++++++++++---------------
+ 1 file changed, 21 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 745ac220fce8..2abfc0b15fbb 100644
+index 2abfc0b15fbb..6131d5084c42 100644
 --- a/drivers/tty/hvc/hvc_console.c
 +++ b/drivers/tty/hvc/hvc_console.c
-@@ -589,7 +589,7 @@ static u32 timeout = MIN_TIMEOUT;
- #define HVC_POLL_READ	0x00000001
- #define HVC_POLL_WRITE	0x00000002
+@@ -493,23 +493,29 @@ static int hvc_write(struct tty_struct *tty, const unsigned char *buf, int count
+ 	if (hp->port.count <= 0)
+ 		return -EIO;
  
--int hvc_poll(struct hvc_struct *hp)
-+static int __hvc_poll(struct hvc_struct *hp, bool may_sleep)
- {
- 	struct tty_struct *tty;
- 	int i, n, count, poll_mask = 0;
-@@ -611,6 +611,12 @@ int hvc_poll(struct hvc_struct *hp)
- 		timeout = (written_total) ? 0 : MIN_TIMEOUT;
- 	}
- 
-+	if (may_sleep) {
-+		spin_unlock_irqrestore(&hp->lock, flags);
-+		cond_resched();
+-	spin_lock_irqsave(&hp->lock, flags);
++	while (count > 0) {
 +		spin_lock_irqsave(&hp->lock, flags);
-+	}
-+
- 	/* No tty attached, just skip */
- 	tty = tty_port_tty_get(&hp->port);
- 	if (tty == NULL)
-@@ -698,6 +704,11 @@ int hvc_poll(struct hvc_struct *hp)
  
- 	return poll_mask;
- }
+-	/* Push pending writes */
+-	if (hp->n_outbuf > 0)
+-		hvc_push(hp);
+-
+-	while (count > 0 && (rsize = hp->outbuf_size - hp->n_outbuf) > 0) {
+-		if (rsize > count)
+-			rsize = count;
+-		memcpy(hp->outbuf + hp->n_outbuf, buf, rsize);
+-		count -= rsize;
+-		buf += rsize;
+-		hp->n_outbuf += rsize;
+-		written += rsize;
+-		hvc_push(hp);
++		rsize = hp->outbuf_size - hp->n_outbuf;
 +
-+int hvc_poll(struct hvc_struct *hp)
-+{
-+	return __hvc_poll(hp, false);
-+}
- EXPORT_SYMBOL_GPL(hvc_poll);
++		if (rsize) {
++			if (rsize > count)
++				rsize = count;
++			memcpy(hp->outbuf + hp->n_outbuf, buf, rsize);
++			count -= rsize;
++			buf += rsize;
++			hp->n_outbuf += rsize;
++			written += rsize;
++		}
++
++		if (hp->n_outbuf > 0)
++			hvc_push(hp);
++
++		spin_unlock_irqrestore(&hp->lock, flags);
++
++		if (count)
++			cond_resched();
+ 	}
+-	spin_unlock_irqrestore(&hp->lock, flags);
  
- /**
-@@ -736,7 +747,8 @@ static int khvcd(void *unused)
- 		if (!cpus_are_in_xmon()) {
- 			mutex_lock(&hvc_structs_mutex);
- 			list_for_each_entry(hp, &hvc_structs, next) {
--				poll_mask |= hvc_poll(hp);
-+				poll_mask |= __hvc_poll(hp, true);
-+				cond_resched();
- 			}
- 			mutex_unlock(&hvc_structs_mutex);
- 		} else
+ 	/*
+ 	 * Racy, but harmless, kick thread if there is still pending data.
 -- 
 2.17.0
