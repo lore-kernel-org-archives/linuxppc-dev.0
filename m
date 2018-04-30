@@ -1,30 +1,22 @@
-Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0059.outbound.protection.outlook.com [104.47.0.59])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZF4F0RrWzF26P
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 16:29:00 +1000 (AEST)
-From: Nipun Gupta <nipun.gupta@nxp.com>
-To: robin.murphy@arm.com, will.deacon@arm.com, robh+dt@kernel.org,
- robh@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com,
- gregkh@linuxfoundation.org
-Cc: hch@lst.de, joro@8bytes.org, m.szyprowski@samsung.com, shawnguo@kernel.org,
- frowand.list@gmail.com, bhelgaas@google.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
- leoyang.li@nxp.com, Nipun Gupta <nipun.gupta@nxp.com>
-Subject: [PATCH v4 6/6] arm64: dts: ls208xa: comply with the iommu map binding
- for fsl_mc
-Date: Mon, 30 Apr 2018 11:57:21 +0530
-Message-Id: <1525069641-8523-7-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1525069641-8523-1-git-send-email-nipun.gupta@nxp.com>
-References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
- <1525069641-8523-1-git-send-email-nipun.gupta@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZHsV0TXwzF25k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 18:34:53 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id z9so6204059pfe.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 01:34:53 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
+To: anton@ozlabs.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, npiggin@gmail.com, benh@kernel.crashing.org,
+ alistair@popple.id.au, arbab@linux.vnet.ibm.com,
+ Balbir Singh <bsingharora@gmail.com>, Michael Neuling <mikey@neuling.org>
+Subject: [PATCH] Revert "powerpc/powernv: Increase memory block size to 1GB on
+ radix"
+Date: Mon, 30 Apr 2018 18:34:32 +1000
+Message-Id: <20180430083432.21546-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,51 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-fsl-mc bus support the new iommu-map property. Comply to this binding
-for fsl_mc bus.
+This reverts commit 53ecde0b9126ff140abe3aefd7f0ec64d6fa36b0.
 
-Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+The commit above changed the memblock size to 1GiB, which did some
+nice things like create fewer TLB entries for mapping memory at
+the time of hotplug. The downside is that it changes the granularity
+at which memory can be hot-plugged and hot-unplugged. The implication
+is that if we had less than a 1GiB to hot-plug/hot-unplug that
+would not be possible.
+
+The reason we had this fix was to resolve an issue where we did not
+split mappings on hot-unplug, leaving a TLB entry that spanned the
+region that was unplugged. This is now fixed by 4dd5f8a99e79 which
+splits the page table, removing the MMU mappings for the hot-unplugged
+region correctly.
+
+This trade-offs performance as we increase the number of TLB's to
+map 1GiB of memory, mapped in via hot-plug, but gives us the ability
+to handle smaller memory sizes.
+
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/setup.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-index 137ef4d..6010505 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-@@ -184,6 +184,7 @@
- 		#address-cells = <2>;
- 		#size-cells = <2>;
- 		ranges;
-+		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index ef8c9ce53a61..fa63d3fff14c 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -356,15 +356,7 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+ static unsigned long pnv_memory_block_size(void)
+ {
+-	/*
+-	 * We map the kernel linear region with 1GB large pages on radix. For
+-	 * memory hot unplug to work our memory block size must be at least
+-	 * this size.
+-	 */
+-	if (radix_enabled())
+-		return 1UL * 1024 * 1024 * 1024;
+-	else
+-		return 256UL * 1024 * 1024;
++	return 256UL * 1024 * 1024;
+ }
+ #endif
  
- 		clockgen: clocking@1300000 {
- 			compatible = "fsl,ls2080a-clockgen";
-@@ -357,6 +358,8 @@
- 			reg = <0x00000008 0x0c000000 0 0x40>,	 /* MC portal base */
- 			      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
- 			msi-parent = <&its>;
-+			iommu-map = <0 &smmu 0 0>;	/* This is fixed-up by u-boot */
-+			dma-coherent;
- 			#address-cells = <3>;
- 			#size-cells = <1>;
- 
-@@ -460,6 +463,8 @@
- 			compatible = "arm,mmu-500";
- 			reg = <0 0x5000000 0 0x800000>;
- 			#global-interrupts = <12>;
-+			#iommu-cells = <1>;
-+			stream-match-mask = <0x7C00>;
- 			interrupts = <0 13 4>, /* global secure fault */
- 				     <0 14 4>, /* combined secure interrupt */
- 				     <0 15 4>, /* global non-secure fault */
-@@ -502,7 +507,6 @@
- 				     <0 204 4>, <0 205 4>,
- 				     <0 206 4>, <0 207 4>,
- 				     <0 208 4>, <0 209 4>;
--			mmu-masters = <&fsl_mc 0x300 0>;
- 		};
- 
- 		dspi: dspi@2100000 {
 -- 
-1.9.1
+2.13.6
