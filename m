@@ -1,22 +1,38 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0049.outbound.protection.outlook.com [104.47.2.49])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40Z6JV0NLqzF266
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 11:24:09 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id p10-v6so5262010pgn.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2018 18:24:09 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 2/2] powerpc/kbuild: move -mprofile-kernel check to Kconfig
-Date: Mon, 30 Apr 2018 11:23:51 +1000
-Message-Id: <20180430012351.28814-3-npiggin@gmail.com>
-In-Reply-To: <20180430012351.28814-1-npiggin@gmail.com>
-References: <20180430012351.28814-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40Z92k3ThrzF25k
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 13:27:23 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: Rob Herring <robh@kernel.org>
+CC: "robin.murphy@arm.com" <robin.murphy@arm.com>, "will.deacon@arm.com"
+ <will.deacon@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "catalin.marinas@arm.com" <catalin.marinas@arm.com>, "hch@lst.de"
+ <hch@lst.de>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "joro@8bytes.org" <joro@8bytes.org>, "m.szyprowski@samsung.com"
+ <m.szyprowski@samsung.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "frowand.list@gmail.com" <frowand.list@gmail.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Laurentiu Tudor
+ <laurentiu.tudor@nxp.com>, Leo Li <leoyang.li@nxp.com>
+Subject: RE: [PATCH 2/6 v3] iommu: of: make of_pci_map_rid() available for
+ other devices too
+Date: Mon, 30 Apr 2018 03:27:16 +0000
+Message-ID: <DB6PR0401MB2424DEAB9AE3C3A78ED348C5E6820@DB6PR0401MB2424.eurprd04.prod.outlook.com>
+References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
+ <1524824826-29473-3-git-send-email-nipun.gupta@nxp.com>
+ <20180427171537.lvzygghnuolk6cnh@rob-hp-laptop>
+In-Reply-To: <20180427171537.lvzygghnuolk6cnh@rob-hp-laptop>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,87 +42,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This eliminates the workaround that requires disabling
--mprofile-kernel by default in Kconfig.
----
- arch/powerpc/Kconfig                            | 16 +---------------
- arch/powerpc/Makefile                           | 14 ++------------
- arch/powerpc/tools/gcc-check-mprofile-kernel.sh |  4 ++--
- 3 files changed, 5 insertions(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 512fcc177c87..af527f894f9b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -460,23 +460,9 @@ config LD_HEAD_STUB_CATCH
- 
- 	  If unsure, say "N".
- 
--config DISABLE_MPROFILE_KERNEL
--	bool "Disable use of mprofile-kernel for kernel tracing"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
--	default y
--	help
--	  Selecting this options disables use of the mprofile-kernel ABI for
--	  kernel tracing. That will cause options such as live patching
--	  (CONFIG_LIVEPATCH) which depend on CONFIG_DYNAMIC_FTRACE_WITH_REGS to
--	  be disabled also.
--
--	  If you have a toolchain which supports mprofile-kernel, then you can
--	  disable this. Otherwise leave it enabled. If you're not sure, say
--	  "Y".
--
- config MPROFILE_KERNEL
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
--	def_bool !DISABLE_MPROFILE_KERNEL
-+	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
- 
- config IOMMU_HELPER
- 	def_bool PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 046b5dde9ff5..efab4d66043b 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -158,18 +158,8 @@ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
- 
- ifdef CONFIG_MPROFILE_KERNEL
--    ifeq ($(shell $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
--        CC_FLAGS_FTRACE := -pg -mprofile-kernel
--        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
--    else
--        # If the user asked for mprofile-kernel but the toolchain doesn't
--        # support it, emit a warning and deliberately break the build later
--        # with mprofile-kernel-not-supported. We would prefer to make this an
--        # error right here, but then the user would never be able to run
--        # oldconfig to change their configuration.
--        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
--        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
--    endif
-+	CC_FLAGS_FTRACE := -pg -mprofile-kernel
-+	KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
- endif
- 
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
-diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-index 061f8035bdbe..ec4486a9c4a3 100755
---- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-+++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-@@ -10,13 +10,13 @@ set -o pipefail
- # Test whether the compile option -mprofile-kernel exists and generates
- # profiling code (ie. a call to _mcount()).
- echo "int func() { return 0; }" | \
--    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    $* -m64 -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-     grep -q "_mcount"
- 
- # Test whether the notrace attribute correctly suppresses calls to _mcount().
- 
- echo -e "#include <linux/compiler.h>\nnotrace int func() { return 0; }" | \
--    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    $* -m64 -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-     grep -q "_mcount" && \
-     exit 1
- 
--- 
-2.17.0
+
+> -----Original Message-----
+> From: Rob Herring [mailto:robh@kernel.org]
+> Sent: Friday, April 27, 2018 10:46 PM
+> To: Nipun Gupta <nipun.gupta@nxp.com>
+> Cc: robin.murphy@arm.com; will.deacon@arm.com; mark.rutland@arm.com;
+> catalin.marinas@arm.com; hch@lst.de; gregkh@linuxfoundation.org;
+> joro@8bytes.org; m.szyprowski@samsung.com; shawnguo@kernel.org;
+> frowand.list@gmail.com; bhelgaas@google.com; iommu@lists.linux-
+> foundation.org; linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org; linu=
+x-
+> pci@vger.kernel.org; Bharat Bhushan <bharat.bhushan@nxp.com>;
+> stuyoder@gmail.com; Laurentiu Tudor <laurentiu.tudor@nxp.com>; Leo Li
+> <leoyang.li@nxp.com>
+> Subject: Re: [PATCH 2/6 v3] iommu: of: make of_pci_map_rid() available fo=
+r
+> other devices too
+>=20
+> On Fri, Apr 27, 2018 at 03:57:02PM +0530, Nipun Gupta wrote:
+> > iommu-map property is also used by devices with fsl-mc. This
+> > patch moves the of_pci_map_rid to generic location, so that it
+> > can be used by other busses too.
+> >
+> > 'of_pci_map_rid' is renamed here to 'of_map_rid' and there is no
+> > functional change done in the API.
+> >
+> > Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+> > ---
+> >  drivers/iommu/of_iommu.c   |   6 +--
+> >  drivers/of/address.c       | 102
+> +++++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/of/irq.c           |   7 ++--
+> >  drivers/pci/of.c           | 101 -------------------------------------=
+-------
+> >  include/linux/of_address.h |  11 +++++
+> >  include/linux/of_pci.h     |  10 -----
+> >  6 files changed, 120 insertions(+), 117 deletions(-)
+>=20
+> of/address.c isn't really the best fit either, though I don't have a
+> better suggestion.
+>=20
+> I'm guessing this breaks on Sparc which doesn't build of/address.c.
+> I guess move it to base.c and of.h if that is the case.
+
+Sure, that makes sense. Thank you for the suggestion !!
+I'll spin off new version with this change.
+
+Regards,
+Nipun
+
+>=20
+> Rob
