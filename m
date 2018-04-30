@@ -1,21 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKS35kVzF2Q5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:11 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id j11so6919717pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZSKW19GzzF2Q5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 00:56:15 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id k11-v6so5363591pgo.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 07:56:14 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 00/15] hvc and powerpc opal console latency reduction
-Date: Tue,  1 May 2018 00:55:43 +1000
-Message-Id: <20180430145558.4308-1-npiggin@gmail.com>
+Subject: [PATCH 01/15] powerpc/powernv: opal_put_chars partial write fix
+Date: Tue,  1 May 2018 00:55:44 +1000
+Message-Id: <20180430145558.4308-2-npiggin@gmail.com>
+In-Reply-To: <20180430145558.4308-1-npiggin@gmail.com>
+References: <20180430145558.4308-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm seeing scattered reports of hard lockups triggering in the OPAL
-console code. I haven't got a full latency trace -- they are difficult
-to reproduce and sometimes just show up in dmesg of a bug report when
-the system is having other issues. But it does seem like there are
-some improvements that can be made to the hvc console and powerpc
-opal driver.
+The intention here is to consume and discard the remaining buffer
+upon error. This works if there has not been a previous partial write.
+If there has been, then total_len is no longer total number of bytes
+to copy. total_len is always "bytes left to copy", so it should be
+added to written bytes.
 
-I'm not sure how this series should be merged yet, but we can cross
-that if/when it comes. Possibly all can go via the tty tree with
-acks from powerpc maintainers.
+This code may not be exercised any more if partial writes will not be
+hit, but this is a small bugfix before a larger change.
 
-Comments appreciated.
+Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/platforms/powernv/opal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
-Nick
-
---
-Nicholas Piggin (15):
-  powerpc/powernv: opal_put_chars partial write fix
-  powerpc/powernv: Fix OPAL console driver OPAL_BUSY loops
-  powerpc/powernv: opal-kmsg standardise OPAL_BUSY handling
-  powerpc/powernv: opal-kmsg use flush fallback from console code
-  powerpc/powernv: Implement and use opal_flush_console
-  powerpc/powernv: Remove OPALv1 support from opal console driver
-  powerpc/powernv: move opal console flushing to udbg
-  powerpc/powernv: implement opal_put_chars_atomic
-  tty: hvc: remove unexplained "just in case" spin delay
-  tty: hvc: use mutex instead of spinlock for hvc_structs lock
-  tty: hvc: hvc_poll break hv read loop
-  tty: hvc: hvc_poll may sleep
-  tty: hvc: hvc_write may sleep
-  tty: hvc: introduce the hv_ops.flush operation for hvc drivers
-  powerpc/powernv: provide a console flush operation for opal hvc driver
-
- arch/powerpc/include/asm/opal.h            |   3 +
- arch/powerpc/platforms/powernv/opal-kmsg.c |  30 +---
- arch/powerpc/platforms/powernv/opal.c      | 176 +++++++++++++------
- drivers/tty/hvc/hvc_console.c              | 194 +++++++++++++--------
- drivers/tty/hvc/hvc_console.h              |   1 +
- drivers/tty/hvc/hvc_opal.c                 |  33 ++--
- 6 files changed, 276 insertions(+), 161 deletions(-)
-
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 48fbb41af5d1..e695b836fd49 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -388,7 +388,7 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
+ 		/* Closed or other error drop */
+ 		if (rc != OPAL_SUCCESS && rc != OPAL_BUSY &&
+ 		    rc != OPAL_BUSY_EVENT) {
+-			written = total_len;
++			written += total_len;
+ 			break;
+ 		}
+ 		if (rc == OPAL_SUCCESS) {
 -- 
 2.17.0
