@@ -1,23 +1,23 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZQrR2S8lzF2Pp
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 23:49:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZQrS6rZPzF2Pp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 23:49:28 +1000 (AEST)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Joel Stanley <joel@jms.id.au>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Robin H. Johnson" <robbat2@gentoo.org>,
  Benjamin Gilbert <benjamin.gilbert@coreos.com>,
- "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc: wii_defconfig: Enable GPIO-related options
-Date: Mon, 30 Apr 2018 15:42:47 +0200
-Message-Id: <20180430134252.17345-2-j.neuschaefer@gmx.net>
-In-Reply-To: <20180430134252.17345-1-j.neuschaefer@gmx.net>
-References: <20180430134252.17345-1-j.neuschaefer@gmx.net>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] powerpc: wii_defconfig: Disable Ethernet driver support
+ code
+Date: Mon, 30 Apr 2018 15:42:46 +0200
+Message-Id: <20180430134252.17345-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,51 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that there's a GPIO driver for the Wii, let's enable the following
-drivers:
+The Wii doesn't have built-in Ethernet and USB Ethernet adapters are in
+a different menu. Disable CONFIG_ETHERNET to save some space in support
+code for Ethernet drivers.
 
-- the GPIO driver itself
-- gpio-keys
-- gpio-poweroff
-- gpio-leds and a few LED triggers
+add/remove: 0/0 grow/shrink: 0/1 up/down: 0/-367 (-367)
+Function                                     old     new   delta
+kernel_config_data                         13691   13324    -367
+Total: Before=8341718, After=8341351, chg -0.00%
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
- arch/powerpc/configs/wii_defconfig | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/configs/wii_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/arch/powerpc/configs/wii_defconfig b/arch/powerpc/configs/wii_defconfig
-index 3167b9d7f3e5..40a3b5c09765 100644
+index 0b0f78823a1b..3167b9d7f3e5 100644
 --- a/arch/powerpc/configs/wii_defconfig
 +++ b/arch/powerpc/configs/wii_defconfig
-@@ -58,6 +58,7 @@ CONFIG_INPUT_FF_MEMLESS=m
- CONFIG_INPUT_JOYDEV=y
- CONFIG_INPUT_EVDEV=y
- # CONFIG_KEYBOARD_ATKBD is not set
-+CONFIG_KEYBOARD_GPIO=y
- # CONFIG_MOUSE_PS2 is not set
- CONFIG_INPUT_JOYSTICK=y
- CONFIG_INPUT_MISC=y
-@@ -72,6 +73,9 @@ CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_GPIO=y
- CONFIG_GPIOLIB=y
- CONFIG_GPIO_SYSFS=y
-+CONFIG_GPIO_HLWD=y
-+CONFIG_POWER_RESET=y
-+CONFIG_POWER_RESET_GPIO=y
- # CONFIG_HWMON is not set
- CONFIG_SSB_DEBUG=y
- CONFIG_FB=y
-@@ -89,6 +93,10 @@ CONFIG_HID_APPLE=m
- CONFIG_HID_WACOM=m
- CONFIG_MMC=y
- CONFIG_MMC_SDHCI=y
-+CONFIG_LEDS_CLASS=y
-+CONFIG_LEDS_GPIO=y
-+CONFIG_LEDS_TRIGGER_HEARTBEAT=y
-+CONFIG_LEDS_TRIGGER_PANIC=y
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_GENERIC=y
- CONFIG_EXT2_FS=y
+@@ -49,6 +49,7 @@ CONFIG_BLK_DEV_RAM_COUNT=2
+ CONFIG_SCSI=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_NETDEVICES=y
++# CONFIG_ETHERNET is not set
+ CONFIG_B43=y
+ CONFIG_B43_SDIO=y
+ # CONFIG_B43_PHY_LP is not set
 -- 
 2.17.0
