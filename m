@@ -1,20 +1,15 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZmKr5r0mzDqyL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 12:57:36 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id i194-v6so7579280pgd.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 19:57:36 -0700 (PDT)
-From: Balbir Singh <bsingharora@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, anton@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
- Michael Neuling <mikey@neuling.org>
-Subject: [resend] Revert "powerpc/powernv: Increase memory block size to 1GB
- on radix"
-Date: Tue,  1 May 2018 12:57:25 +1000
-Message-Id: <20180501025725.7441-1-bsingharora@gmail.com>
+Return-Path: <npiggin@gmail.com>
+Date: Tue, 1 May 2018 13:47:23 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: skiboot@lists.ozlabs.org, stewart@linux.vnet.ibm.com
+Subject: Re: [Skiboot] [PATCH 1/2] SLW: Remove stop1_lite and stop0 stop states
+Message-ID: <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
+In-Reply-To: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +19,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This commit was a stop-gap to prevent crashes on hotunplug, caused by
-the mismatch between the 1G mappings used for the linear mapping and the
-memory block size. Those issues are now resolved because we split the
-linear mapping at hotunplug time if necessary, as implemented in commit
-4dd5f8a99e79 ("powerpc/mm/radix: Split linear mapping on hot-unplug").
+On Mon, 30 Apr 2018 14:42:08 +0530
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
+> Powersaving for stop0_lite and stop1_lite is observed to be quite similar
+> and both states resume without state loss. Using context_switch test [1]
+> we observe that stop0_lite has slightly lower latency, hence removing
+> stop1_lite.
+> 
+> [1] linux/tools/testing/selftests/powerpc/benchmarks/context_switch.c
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-Resend with a newer commit message grabbed from an email sent by mpe.
+I'm okay for removing stop1_lite and stop2_lite -- SMT switching
+is very latency critical. If we decide to actually start saving
+real power then SMT should already have been switched.
 
- arch/powerpc/platforms/powernv/setup.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+So I would put stop1_lite and stop2_lite removal in the same patch.
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index ef8c9ce53a61..fa63d3fff14c 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -356,15 +356,7 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
- static unsigned long pnv_memory_block_size(void)
- {
--	/*
--	 * We map the kernel linear region with 1GB large pages on radix. For
--	 * memory hot unplug to work our memory block size must be at least
--	 * this size.
--	 */
--	if (radix_enabled())
--		return 1UL * 1024 * 1024 * 1024;
--	else
--		return 256UL * 1024 * 1024;
-+	return 256UL * 1024 * 1024;
- }
- #endif
- 
--- 
-2.13.6
+Then what do we have? stop0_lite, stop0, stop1 for our fast idle
+states.
+
+I would be against removing stop0 if that is our fastest way to
+release SMT resources, even if there is only a small advantage. Why
+not remove stop1 instead?
+
+We also need to better evaluate stop0_lite. How much advantage does
+that have over snooze?
+
+Thanks,
+Nick
+
+
+> ---
+>  hw/slw.c | 30 ------------------------------
+>  1 file changed, 30 deletions(-)
+> 
+> diff --git a/hw/slw.c b/hw/slw.c
+> index 3f9abaa..edfc783 100644
+> --- a/hw/slw.c
+> +++ b/hw/slw.c
+> @@ -521,36 +521,6 @@ static struct cpu_idle_states power9_cpu_idle_states[] = {
+>  				 | OPAL_PM_PSSCR_TR(3),
+>  		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
+>  	{
+> -		.name = "stop0",
+> -		.latency_ns = 2000,
+> -		.residency_ns = 20000,
+> -		.flags = 0*OPAL_PM_DEC_STOP \
+> -		       | 0*OPAL_PM_TIMEBASE_STOP  \
+> -		       | 1*OPAL_PM_LOSE_USER_CONTEXT \
+> -		       | 0*OPAL_PM_LOSE_HYP_CONTEXT \
+> -		       | 0*OPAL_PM_LOSE_FULL_CONTEXT \
+> -		       | 1*OPAL_PM_STOP_INST_FAST,
+> -		.pm_ctrl_reg_val = OPAL_PM_PSSCR_RL(0) \
+> -				 | OPAL_PM_PSSCR_MTL(3) \
+> -				 | OPAL_PM_PSSCR_TR(3) \
+> -				 | OPAL_PM_PSSCR_ESL \
+> -				 | OPAL_PM_PSSCR_EC,
+> -		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
+> -	{
+> -		.name = "stop1_lite", /* Enter stop1 with no state loss */
+> -		.latency_ns = 4900,
+> -		.residency_ns = 49000,
+> -		.flags = 0*OPAL_PM_DEC_STOP \
+> -		       | 0*OPAL_PM_TIMEBASE_STOP  \
+> -		       | 0*OPAL_PM_LOSE_USER_CONTEXT \
+> -		       | 0*OPAL_PM_LOSE_HYP_CONTEXT \
+> -		       | 0*OPAL_PM_LOSE_FULL_CONTEXT \
+> -		       | 1*OPAL_PM_STOP_INST_FAST,
+> -		.pm_ctrl_reg_val = OPAL_PM_PSSCR_RL(1) \
+> -				 | OPAL_PM_PSSCR_MTL(3) \
+> -				 | OPAL_PM_PSSCR_TR(3),
+> -		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
+> -	{
+>  		.name = "stop1",
+>  		.latency_ns = 5000,
+>  		.residency_ns = 50000,
