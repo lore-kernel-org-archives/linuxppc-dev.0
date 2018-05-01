@@ -1,18 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZlYJ58VjzDqyL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 12:22:28 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id o76so8194023pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 19:22:28 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZmKr5r0mzDqyL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 12:57:36 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id i194-v6so7579280pgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2018 19:57:36 -0700 (PDT)
+From: Balbir Singh <bsingharora@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/watchdog: provide more data in watchdog messages
-Date: Tue,  1 May 2018 12:22:16 +1000
-Message-Id: <20180501022216.1420-1-npiggin@gmail.com>
+Cc: mpe@ellerman.id.au, anton@ozlabs.org, Balbir Singh <bsingharora@gmail.com>,
+ Michael Neuling <mikey@neuling.org>
+Subject: [resend] Revert "powerpc/powernv: Increase memory block size to 1GB
+ on radix"
+Date: Tue,  1 May 2018 12:57:25 +1000
+Message-Id: <20180501025725.7441-1-bsingharora@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,143 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide timebase and timebase of last heartbeat in watchdog lockup
-messages. Also provide a stack trace of when a CPU becomes un-stuck,
-which can be useful -- it could be where irqs are re-enabled, so it
-may be the end of the critical section which is responsible for the
-latency.
+This commit was a stop-gap to prevent crashes on hotunplug, caused by
+the mismatch between the 1G mappings used for the linear mapping and the
+memory block size. Those issues are now resolved because we split the
+linear mapping at hotunplug time if necessary, as implemented in commit
+4dd5f8a99e79 ("powerpc/mm/radix: Split linear mapping on hot-unplug").
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
-A lockup + unstuck event now looks like this (with irqtrace enabled):
+Resend with a newer commit message grabbed from an email sent by mpe.
 
-watchdog: CPU 1 self-detected hard LOCKUP @ udelay+0x40/0x60
-watchdog: CPU 1 TB:82611697355, last heartbeat TB:75431975757
-Modules linked in:
-irq event stamp: 2250184
-hardirqs last  enabled at (2250183): [<c000000000bb9158>] _raw_spin_unlock_irqrestore+0x58/0xd0
-hardirqs last disabled at (2250184): [<c00000000000e76c>] kernel_init+0x7c/0x1b0
-softirqs last  enabled at (2243178): [<c000000000bba5d8>] __do_softirq+0x4d8/0x6f8
-softirqs last disabled at (2243159): [<c0000000000f4138>] irq_exit+0x108/0x1a0
-CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.17.0-rc3-00003-g7e2de68fdf39 #319
-NIP:  c000000000026d40 LR: c00000000000e77c CTR: 0000000000000000
-REGS: c000000fffcebd80 TRAP: 0900   Not tainted  (4.17.0-rc3-00003-g7e2de68fdf39)
-MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 44000824  XER: 20040000
-CFAR: c000000000026d4c SOFTE: 1
-GPR00: c00000000000e77c c000000006a07dc0 c000000001306000 00000002625a0000
-GPR04: c00000000000e76c 0000000000000038 8f5c28f5c28f5c29 c000000ff0e18cb0
-GPR08: c0000000011a6000 00000001802d8dcf 00000011bbdcdf4c 7bc4830ddfa301bf
-GPR12: 0000000000000000 c000000fffffe300 c00000000000e6f8 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR24: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-GPR28: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-NIP [c000000000026d40] udelay+0x40/0x60
-LR [c00000000000e77c] kernel_init+0x8c/0x1b0
-Call Trace:
-[c000000006a07dc0] [c00000000000e76c] kernel_init+0x7c/0x1b0 (unreliable)
-[c000000006a07e30] [c00000000000b9b0] ret_from_kernel_thread+0x5c/0xac
-Instruction dump:
-3d22ffe9 e929d400 7c6349d2 7c210b78 7d4c42a6 7d2c42a6 7d2a4850 7fa34840
-409d0020 60000000 60000000 60000000 <7d2c42a6> 7d2a4850 7fa34840 419dfff4
-time 86406258554
-watchdog: CPU 1 became unstuck TB:86406275034
-irq event stamp: 2250201
-hardirqs last  enabled at (2250200): [<c000000000bb9218>] _raw_spin_unlock_irq+0x48/0x80
-hardirqs last disabled at (2250201): [<c000000000189ff8>] vprintk_emit+0x98/0x5c0
-softirqs last  enabled at (2243178): [<c000000000bba5d8>] __do_softirq+0x4d8/0x6f8
-softirqs last disabled at (2250191): [<c0000000000f4138>] irq_exit+0x108/0x1a0
-CPU: 1 PID: 1 Comm: swapper/0 Not tainted 4.17.0-rc3-00003-g7e2de68fdf39 #319
-NIP:  c00000000000abdc LR: c0000000000186b8 CTR: 000000003003e65c
-REGS: c000000006a07b10 TRAP: 0901   Not tainted  (4.17.0-rc3-00003-g7e2de68fdf39)
-MSR:  9000000002009033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 48000824  XER: 00000000
-CFAR: c000000000026d4c SOFTE: 0
-GPR00: c000000000018660 c000000006a07d90 c000000001306000 0000000000000900
-GPR04: 0000000000000001 0000000000000038 8f5c28f5c28f5c29 c000000ff0e17970
-GPR08: c000000001348d98 00000002002d8dee 00000011bbdcdf4c 7bc4830ddfa301bf
-GPR12: 0000000000000000 c000000fffffe300
-NIP [c00000000000abdc] replay_interrupt_return+0x0/0x4
-LR [c0000000000186b8] arch_local_irq_restore+0xd8/0xf0
-Call Trace:
-[c000000006a07d90] [c000000000018660] arch_local_irq_restore+0x80/0xf0 (unreliable)
-[c000000006a07dc0] [c00000000000e7ac] kernel_init+0xbc/0x1b0
-[c000000006a07e30] [c00000000000b9b0] ret_from_kernel_thread+0x5c/0xac
-Instruction dump:
-7d200026 618c8000 2c030900 4182e518 2c030500 4182f140 2c030f00 4182f278
-2c030a00 4182ff9c 2c030e60 4182eea8 <4e800020> 7c781b78 480003a5 480003bd
+ arch/powerpc/platforms/powernv/setup.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-
- arch/powerpc/kernel/watchdog.c | 26 +++++++++++++++++++++-----
- 1 file changed, 21 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 6256dc3b0087..8a0f7d97f8d9 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -111,7 +111,11 @@ static inline void wd_smp_unlock(unsigned long *flags)
- 
- static void wd_lockup_ipi(struct pt_regs *regs)
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index ef8c9ce53a61..fa63d3fff14c 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -356,15 +356,7 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+ static unsigned long pnv_memory_block_size(void)
  {
--	pr_emerg("CPU %d Hard LOCKUP\n", raw_smp_processor_id());
-+	int cpu = raw_smp_processor_id();
-+
-+	pr_emerg("CPU %d Hard LOCKUP\n", cpu);
-+	pr_emerg("CPU %d TB:%lld, last heartbeat TB:%lld\n",
-+		 cpu, get_tb(), per_cpu(wd_timer_tb, cpu));
- 	print_modules();
- 	print_irqtrace_events(current);
- 	if (regs)
-@@ -154,6 +158,8 @@ static void watchdog_smp_panic(int cpu, u64 tb)
+-	/*
+-	 * We map the kernel linear region with 1GB large pages on radix. For
+-	 * memory hot unplug to work our memory block size must be at least
+-	 * this size.
+-	 */
+-	if (radix_enabled())
+-		return 1UL * 1024 * 1024 * 1024;
+-	else
+-		return 256UL * 1024 * 1024;
++	return 256UL * 1024 * 1024;
+ }
+ #endif
  
- 	pr_emerg("CPU %d detected hard LOCKUP on other CPUs %*pbl\n",
- 		 cpu, cpumask_pr_args(&wd_smp_cpus_pending));
-+	pr_emerg("CPU %d TB:%lld, last SMP heartbeat TB:%lld\n",
-+		 cpu, tb, wd_smp_last_reset_tb);
- 
- 	if (!sysctl_hardlockup_all_cpu_backtrace) {
- 		/*
-@@ -194,10 +200,19 @@ static void wd_smp_clear_cpu_pending(int cpu, u64 tb)
- {
- 	if (!cpumask_test_cpu(cpu, &wd_smp_cpus_pending)) {
- 		if (unlikely(cpumask_test_cpu(cpu, &wd_smp_cpus_stuck))) {
-+			struct pt_regs *regs = get_irq_regs();
- 			unsigned long flags;
- 
--			pr_emerg("CPU %d became unstuck\n", cpu);
- 			wd_smp_lock(&flags);
-+
-+			pr_emerg("CPU %d became unstuck TB:%lld\n",
-+				 cpu, tb);
-+			print_irqtrace_events(current);
-+			if (regs)
-+				show_regs(regs);
-+			else
-+				dump_stack();
-+
- 			cpumask_clear_cpu(cpu, &wd_smp_cpus_stuck);
- 			wd_smp_unlock(&flags);
- 		}
-@@ -245,8 +260,6 @@ void soft_nmi_interrupt(struct pt_regs *regs)
- 
- 	tb = get_tb();
- 	if (tb - per_cpu(wd_timer_tb, cpu) >= wd_panic_timeout_tb) {
--		per_cpu(wd_timer_tb, cpu) = tb;
--
- 		wd_smp_lock(&flags);
- 		if (cpumask_test_cpu(cpu, &wd_smp_cpus_stuck)) {
- 			wd_smp_unlock(&flags);
-@@ -254,7 +267,10 @@ void soft_nmi_interrupt(struct pt_regs *regs)
- 		}
- 		set_cpu_stuck(cpu, tb);
- 
--		pr_emerg("CPU %d self-detected hard LOCKUP @ %pS\n", cpu, (void *)regs->nip);
-+		pr_emerg("CPU %d self-detected hard LOCKUP @ %pS\n",
-+			 cpu, (void *)regs->nip);
-+		pr_emerg("CPU %d TB:%lld, last heartbeat TB:%lld\n",
-+			 cpu, get_tb(), per_cpu(wd_timer_tb, cpu));
- 		print_modules();
- 		print_irqtrace_events(current);
- 		show_regs(regs);
 -- 
-2.17.0
+2.13.6
