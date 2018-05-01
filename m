@@ -1,44 +1,48 @@
-Return-Path: <minchan.kim@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40b24Y390hzF2QQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 23:17:00 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id f189so9102098pfa.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 May 2018 06:17:00 -0700 (PDT)
-Sender: Minchan Kim <minchan.kim@gmail.com>
-Date: Tue, 1 May 2018 22:16:46 +0900
-From: Minchan Kim <minchan@kernel.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, sergey.senozhatsky.work@gmail.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com,
- paulmck@linux.vnet.ibm.com, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v10 08/25] mm: VMA sequence count
-Message-ID: <20180501131646.GB118722@rodete-laptop-imager.corp.google.com>
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-9-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180423064259.GC114098@rodete-desktop-imager.corp.google.com>
- <06b996b0-b831-3d39-8a99-792abfb6a4d1@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40b6SG62T4zF2R7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 02:34:22 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w41GTmVr031579
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 May 2018 12:34:19 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hpuakh8bc-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 May 2018 12:34:18 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 1 May 2018 17:34:16 +0100
+Date: Tue, 1 May 2018 09:34:07 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>, robh@kernel.org,
+ aik@ozlabs.ru, jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org,
+ Christoph Hellwig <hch@infradead.org>, joe@perches.com,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au
+Subject: Re: [RFC] virtio: Use DMA MAP API for devices without an IOMMU
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20180405175326-mutt-send-email-mst@kernel.org>
+ <1522940983.21446.205.camel@kernel.crashing.org>
+ <20180405213042-mutt-send-email-mst@kernel.org>
+ <1522963113.21446.211.camel@kernel.crashing.org>
+ <70cb433f-a8f7-5199-3c96-a760c7624804@linux.vnet.ibm.com>
+ <20180406071634.GA31108@infradead.org>
+ <1523003838.21446.238.camel@kernel.crashing.org>
+ <20180415121157.GA17726@infradead.org>
+ <002f153f-452d-f64b-4fc7-7f3383b39162@linux.vnet.ibm.com>
+ <20180418191722-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <06b996b0-b831-3d39-8a99-792abfb6a4d1@linux.vnet.ibm.com>
+In-Reply-To: <20180418191722-mutt-send-email-mst@kernel.org>
+Message-Id: <20180501163407.GA6450@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,166 +52,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 30, 2018 at 05:14:27PM +0200, Laurent Dufour wrote:
-> 
-> 
-> On 23/04/2018 08:42, Minchan Kim wrote:
-> > On Tue, Apr 17, 2018 at 04:33:14PM +0200, Laurent Dufour wrote:
-> >> From: Peter Zijlstra <peterz@infradead.org>
-> >>
-> >> Wrap the VMA modifications (vma_adjust/unmap_page_range) with sequence
-> >> counts such that we can easily test if a VMA is changed.
+On Wed, Apr 18, 2018 at 07:20:10PM +0300, Michael S. Tsirkin wrote:
+> On Wed, Apr 18, 2018 at 08:47:10AM +0530, Anshuman Khandual wrote:
+> > On 04/15/2018 05:41 PM, Christoph Hellwig wrote:
+> > > On Fri, Apr 06, 2018 at 06:37:18PM +1000, Benjamin Herrenschmidt wrote:
+> > >>>> implemented as DMA API which the virtio core understands. There is no
+> > >>>> need for an IOMMU to be involved for the device representation in this
+> > >>>> case IMHO.
+> > >>>
+> > >>> This whole virtio translation issue is a mess.  I think we need to
+> > >>> switch it to the dma API, and then quirk the legacy case to always
+> > >>> use the direct mapping inside the dma API.
+> > >>
+> > >> Fine with using a dma API always on the Linux side, but we do want to
+> > >> special case virtio still at the arch and qemu side to have a "direct
+> > >> mapping" mode. Not sure how (special flags on PCI devices) to avoid
+> > >> actually going through an emulated IOMMU on the qemu side, because that
+> > >> slows things down, esp. with vhost.
+> > >>
+> > >> IE, we can't I think just treat it the same as a physical device.
+> > > 
+> > > We should have treated it like a physical device from the start, but
+> > > that device has unfortunately sailed.
+> > > 
+> > > But yes, we'll need a per-device quirk that says 'don't attach an
+> > > iommu'.
 > > 
-> > So, seqcount is to protect modifying all attributes of vma?
+> > How about doing it per platform basis as suggested in this RFC through
+> > an arch specific callback. Because all the virtio devices in the given
+> > platform would require and exercise this option (to avail bounce buffer
+> > mechanism for secure guests as an example). So the flag basically is a
+> > platform specific one not a device specific one.
 > 
-> The seqcount is used to protect fields that will be used during the speculative
-> page fault like boundaries, protections.
+> That's not the case. A single platform can have a mix of virtio and
+> non-virtio devices. Same applies even within virtio, e.g. the balloon
+> device always bypasses an iommu.  Further, QEMU supports out of process
+> devices some of which might bypass the IOMMU.
 
-a VMA is changed, it was rather vague to me at this point.
-If you could specify detail fields or some example what seqcount aim for,
-it would help to review.
+Given that each virtio device has to behave differently depending on 
+(a) what it does?  (balloon, block, net etc ) 
+(b) what platform it is on?  (pseries, x86, ....)
+(c) what environment it is on?  (secure, insecure...)
 
+I think, we should let the virtio device decide what it wants, instead
+of forcing it to NOT use dma_ops when VIRTIO_F_IOMMU_PLATFORM is NOT
+enabled.
+
+Currently, virtio generic code, has an assumption that a device must NOT
+use dma operations if the hypervisor has NOT enabled VIRTIO_F_IOMMU_PLATFORM.
+This assumption is baked into vring_use_dma_api(); though there is a
+special exception for xen_domain().
+
+This assumption is restricting us from using the dma_ops abstraction for
+virtio devices on secure VM. BTW: VIRTIO_F_IOMMU_PLATFORM may or may not
+be set on this platform.
+
+On our secure VM, virtio devices; by default, do not share pages with
+hypervisor. In other words, hypervisor cannot access the secure VM
+pages. The secure VM with the help of the hardware enables some pages
+to be shared with the hypervisor.  Secure VM then uses these pages to
+bounce virtio data with the hypervisor.
+
+One elegant way to impliment this functionality is to abstract it
+under our special dma_ops and wire it to the virtio devices.
+
+However the restriction imposed by the generic virtio code, contrains us
+from doing so.
+
+If we can enrich vring_use_dma_api() to take multiple factors into
+consideration and not just VIRTIO_F_IOMMU_PLATFORM; perferrably by
+consulting a arch-dependent function, we could seemlessly integrate
+into the existing virtio infrastructure.
+
+RP
 > 
-> >>
-> >> The unmap_page_range() one allows us to make assumptions about
-> >> page-tables; when we find the seqcount hasn't changed we can assume
-> >> page-tables are still valid.
-> > 
-> > Hmm, seqcount covers page-table, too.
-> > Please describe what the seqcount want to protect.
-> 
-> The calls to vm_write_begin/end() in unmap_page_range() are used to detect when
-> a VMA is being unmap and thus that new page fault should not be satisfied for
-> this VMA. This is protecting the VMA unmapping operation, not the page tables
-> themselves.
+> -- 
+> MST
 
-Thanks for the detail. yes, please include this phrase instead of "page-table
-are still valid". It makes me confused.
-
-> 
-> >>
-> >> The flip side is that we cannot distinguish between a vma_adjust() and
-> >> the unmap_page_range() -- where with the former we could have
-> >> re-checked the vma bounds against the address.
-> >>
-> >> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> >>
-> >> [Port to 4.12 kernel]
-> >> [Build depends on CONFIG_SPECULATIVE_PAGE_FAULT]
-> >> [Introduce vm_write_* inline function depending on
-> >>  CONFIG_SPECULATIVE_PAGE_FAULT]
-> >> [Fix lock dependency between mapping->i_mmap_rwsem and vma->vm_sequence by
-> >>  using vm_raw_write* functions]
-> >> [Fix a lock dependency warning in mmap_region() when entering the error
-> >>  path]
-> >> [move sequence initialisation INIT_VMA()]
-> >> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> >> ---
-> >>  include/linux/mm.h       | 44 ++++++++++++++++++++++++++++++++++++++++++++
-> >>  include/linux/mm_types.h |  3 +++
-> >>  mm/memory.c              |  2 ++
-> >>  mm/mmap.c                | 31 +++++++++++++++++++++++++++++++
-> >>  4 files changed, 80 insertions(+)
-> >>
-> >> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> >> index efc1248b82bd..988daf7030c9 100644
-> >> --- a/include/linux/mm.h
-> >> +++ b/include/linux/mm.h
-> >> @@ -1264,6 +1264,9 @@ struct zap_details {
-> >>  static inline void INIT_VMA(struct vm_area_struct *vma)
-> >>  {
-> >>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
-> >> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> >> +	seqcount_init(&vma->vm_sequence);
-> >> +#endif
-> >>  }
-> >>  
-> >>  struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
-> >> @@ -1386,6 +1389,47 @@ static inline void unmap_shared_mapping_range(struct address_space *mapping,
-> >>  	unmap_mapping_range(mapping, holebegin, holelen, 0);
-> >>  }
-> >>  
-> >> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> >> +static inline void vm_write_begin(struct vm_area_struct *vma)
-> >> +{
-> >> +	write_seqcount_begin(&vma->vm_sequence);
-> >> +}
-> >> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
-> >> +					 int subclass)
-> >> +{
-> >> +	write_seqcount_begin_nested(&vma->vm_sequence, subclass);
-> >> +}
-> >> +static inline void vm_write_end(struct vm_area_struct *vma)
-> >> +{
-> >> +	write_seqcount_end(&vma->vm_sequence);
-> >> +}
-> >> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
-> >> +{
-> >> +	raw_write_seqcount_begin(&vma->vm_sequence);
-> >> +}
-> >> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
-> >> +{
-> >> +	raw_write_seqcount_end(&vma->vm_sequence);
-> >> +}
-> >> +#else
-> >> +static inline void vm_write_begin(struct vm_area_struct *vma)
-> >> +{
-> >> +}
-> >> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
-> >> +					 int subclass)
-> >> +{
-> >> +}
-> >> +static inline void vm_write_end(struct vm_area_struct *vma)
-> >> +{
-> >> +}
-> >> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
-> >> +{
-> >> +}
-> >> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
-> >> +{
-> >> +}
-> >> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
-> >> +
-> >>  extern int access_process_vm(struct task_struct *tsk, unsigned long addr,
-> >>  		void *buf, int len, unsigned int gup_flags);
-> >>  extern int access_remote_vm(struct mm_struct *mm, unsigned long addr,
-> >> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-> >> index 21612347d311..db5e9d630e7a 100644
-> >> --- a/include/linux/mm_types.h
-> >> +++ b/include/linux/mm_types.h
-> >> @@ -335,6 +335,9 @@ struct vm_area_struct {
-> >>  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
-> >>  #endif
-> >>  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
-> >> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> >> +	seqcount_t vm_sequence;
-> >> +#endif
-> >>  } __randomize_layout;
-> >>  
-> >>  struct core_thread {
-> >> diff --git a/mm/memory.c b/mm/memory.c
-> >> index f86efcb8e268..f7fed053df80 100644
-> >> --- a/mm/memory.c
-> >> +++ b/mm/memory.c
-> >> @@ -1503,6 +1503,7 @@ void unmap_page_range(struct mmu_gather *tlb,
-> >>  	unsigned long next;
-> >>  
-> >>  	BUG_ON(addr >= end);
-> > 
-> > The comment about saying it aims for page-table stability will help.
-> 
-> A comment may be added mentioning that we use the seqcount to indicate that the
-> VMA is modified, being unmapped. But there is not a real page table protection,
-> and I think this may be confusing to talk about page table stability here.
-
-Okay, so here you mean seqcount is not protecting VMA's fields but vma unmap
-operation like you mentioned above. I was confused like below description.
-
-"The unmap_page_range() one allows us to make assumptions about
-page-tables; when we find the seqcount hasn't changed we can assume
-page-tables are still valid"
-
-Instead of using page-tables's validness in descriptoin, it would be better
-to use scenario you mentioned about VMA unmap operation and page fault race.
-
-Thanks.
+-- 
+Ram Pai
