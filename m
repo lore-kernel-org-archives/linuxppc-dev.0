@@ -1,26 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ZyXb6wgCzF2Pn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 20:37:35 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id z9so8864021pfe.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 May 2018 03:37:35 -0700 (PDT)
-Date: Tue, 1 May 2018 20:37:21 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Jiri Slaby  <jslaby@suse.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/15] powerpc/powernv: implement opal_put_chars_atomic
-Message-ID: <20180501203721.7b60fcd8@roar.ozlabs.ibm.com>
-In-Reply-To: <1525168138.2325.100.camel@kernel.crashing.org>
-References: <20180430145558.4308-1-npiggin@gmail.com>
- <20180430145558.4308-9-npiggin@gmail.com>
- <1525168138.2325.100.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ZzHJ6T24zF2QP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2018 21:11:08 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
+Subject: Re: [PATCH 4/6] powerpc/64s: Enable barrier_nospec based on firmware
+ settings
+In-Reply-To: <20180426180258.04e6bee6@kitsune.suse.cz>
+References: <20180424041559.32410-1-mpe@ellerman.id.au>
+ <20180424041559.32410-4-mpe@ellerman.id.au>
+ <20180426180258.04e6bee6@kitsune.suse.cz>
+Date: Tue, 01 May 2018 21:11:06 +1000
+Message-ID: <87vac7r5px.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,164 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 01 May 2018 19:48:58 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Michal Such=C3=A1nek <msuchanek@suse.de> writes:
+> Hello,
+>
+> On Tue, 24 Apr 2018 14:15:57 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> From: Michal Suchanek <msuchanek@suse.de>
+>>=20
+>> Check what firmware told us and enable/disable the barrier_nospec as
+>> appropriate.
+>>=20
+>> We err on the side of enabling the barrier, as it's no-op on older
+>> systems, see the comment for more detail.
+>>=20
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+...
+>
+> I am missing the option for the barrier to be disabled by a kernel
+> commandline argument here.
+>
+> It does make sense to add a kernel parameter that is checked on boot to
+> be compatible with other platforms that implement one.
 
-> On Tue, 2018-05-01 at 00:55 +1000, Nicholas Piggin wrote:
-> > The RAW console does not need writes to be atomic, so relax
-> > opal_put_chars to be able to do partial writes, and implement an
-> > _atomic variant which does not take a spinlock. This API is used
-> > in xmon, so the less locking that is used, the better chance there
-> > is that a crash can be debugged.  
-> 
-> Same comment I already had :-) "atomic" in Linux tends to mean
-> something else (ie, atomic context), so I'd rather have something
-> like opal_put_chars_sync() or such...
+No other platforms have an option to disable variant 1 mitigations, so
+there isn't an existing parameter we can use.
 
-Oh yeah, I didn't ignore you, just... I thought atomic was okay.
-atomic *also* tends to mean happens atomically. I think the in
-atomic context meaning actually tends to be inatomic.
+Which is not to say we can't add one, but I wasn't sure if it was really
+worth it.
 
-Sync I actually thought could be more easily confused with
-synchronous vs asynchronous here.
+But I guess we should add one, I might do it as a follow-up patch.
 
-> 
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/include/asm/opal.h       |  1 +
-> >  arch/powerpc/platforms/powernv/opal.c | 37 +++++++++++++++++++--------
-> >  drivers/tty/hvc/hvc_opal.c            | 18 +++++++++----
-> >  3 files changed, 41 insertions(+), 15 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> > index bbff49fab0e5..5d7072411561 100644
-> > --- a/arch/powerpc/include/asm/opal.h
-> > +++ b/arch/powerpc/include/asm/opal.h
-> > @@ -303,6 +303,7 @@ extern void opal_configure_cores(void);
-> >  
-> >  extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
-> >  extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
-> > +extern int opal_put_chars_atomic(uint32_t vtermno, const char *buf, int total_len);
-> >  extern int opal_flush_console(uint32_t vtermno);
-> >  
-> >  extern void hvc_opal_init_early(void);
-> > diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> > index 55d4b1983110..bcdb90ada938 100644
-> > --- a/arch/powerpc/platforms/powernv/opal.c
-> > +++ b/arch/powerpc/platforms/powernv/opal.c
-> > @@ -344,9 +344,9 @@ int opal_get_chars(uint32_t vtermno, char *buf, int count)
-> >  	return 0;
-> >  }
-> >  
-> > -int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
-> > +static int __opal_put_chars(uint32_t vtermno, const char *data, int total_len, bool atomic)
-> >  {
-> > -	unsigned long flags;
-> > +	unsigned long flags = 0 /* shut up gcc */;
-> >  	int written;
-> >  	__be64 olen;
-> >  	s64 rc;
-> > @@ -354,11 +354,8 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
-> >  	if (!opal.entry)
-> >  		return -ENODEV;
-> >  
-> > -	/* We want put_chars to be atomic to avoid mangling of hvsi
-> > -	 * packets. To do that, we first test for room and return
-> > -	 * -EAGAIN if there isn't enough.
-> > -	 */
-> > -	spin_lock_irqsave(&opal_write_lock, flags);
-> > +	if (atomic)
-> > +		spin_lock_irqsave(&opal_write_lock, flags);
-> >  	rc = opal_console_write_buffer_space(vtermno, &olen);
-> >  	if (rc || be64_to_cpu(olen) < total_len) {
-> >  		/* Closed -> drop characters */
-> > @@ -391,14 +388,18 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
-> >  
-> >  	written = be64_to_cpu(olen);
-> >  	if (written < total_len) {
-> > -		/* Should not happen */
-> > -		pr_warn("atomic console write returned partial len=%d written=%d\n", total_len, written);
-> > +		if (atomic) {
-> > +			/* Should not happen */
-> > +			pr_warn("atomic console write returned partial "
-> > +				"len=%d written=%d\n", total_len, written);
-> > +		}
-> >  		if (!written)
-> >  			written = -EAGAIN;
-> >  	}
-> >  
-> >  out:
-> > -	spin_unlock_irqrestore(&opal_write_lock, flags);
-> > +	if (atomic)
-> > +		spin_unlock_irqrestore(&opal_write_lock, flags);
-> >  
-> >  	/* In the -EAGAIN case, callers loop, so we have to flush the console
-> >  	 * here in case they have interrupts off (and we don't want to wait
-> > @@ -412,6 +413,22 @@ int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
-> >  	return written;
-> >  }
-> >  
-> > +int opal_put_chars(uint32_t vtermno, const char *data, int total_len)
-> > +{
-> > +	return __opal_put_chars(vtermno, data, total_len, false);
-> > +}
-> > +
-> > +/*
-> > + * opal_put_chars_atomic will not perform partial-writes. Data will be
-> > + * atomically written to the terminal or not at all. This is not strictly
-> > + * true at the moment because console space can race with OPAL's console
-> > + * writes.
-> > + */
-> > +int opal_put_chars_atomic(uint32_t vtermno, const char *data, int total_len)
-> > +{
-> > +	return __opal_put_chars(vtermno, data, total_len, true);
-> > +}
-> > +
-> >  int opal_flush_console(uint32_t vtermno)
-> >  {
-> >  	s64 rc;
-> > diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-> > index af122ad7f06d..0a72f98ee082 100644
-> > --- a/drivers/tty/hvc/hvc_opal.c
-> > +++ b/drivers/tty/hvc/hvc_opal.c
-> > @@ -183,9 +183,15 @@ static int hvc_opal_probe(struct platform_device *dev)
-> >  			return -ENOMEM;
-> >  		pv->proto = proto;
-> >  		hvc_opal_privs[termno] = pv;
-> > -		if (proto == HV_PROTOCOL_HVSI)
-> > -			hvsilib_init(&pv->hvsi, opal_get_chars, opal_put_chars,
-> > +		if (proto == HV_PROTOCOL_HVSI) {
-> > +			/*
-> > +			 * We want put_chars to be atomic to avoid mangling of
-> > +			 * hvsi packets.
-> > +			 */
-> > +			hvsilib_init(&pv->hvsi,
-> > +				     opal_get_chars, opal_put_chars_atomic,
-> >  				     termno, 0);
-> > +		}
-> >  
-> >  		/* Instanciate now to establish a mapping index==vtermno */
-> >  		hvc_instantiate(termno, termno, ops);
-> > @@ -376,8 +382,9 @@ void __init hvc_opal_init_early(void)
-> >  	else if (of_device_is_compatible(stdout_node,"ibm,opal-console-hvsi")) {
-> >  		hvc_opal_boot_priv.proto = HV_PROTOCOL_HVSI;
-> >  		ops = &hvc_opal_hvsi_ops;
-> > -		hvsilib_init(&hvc_opal_boot_priv.hvsi, opal_get_chars,
-> > -			     opal_put_chars, index, 1);
-> > +		hvsilib_init(&hvc_opal_boot_priv.hvsi,
-> > +			     opal_get_chars, opal_put_chars_atomic,
-> > +			     index, 1);
-> >  		/* HVSI, perform the handshake now */
-> >  		hvsilib_establish(&hvc_opal_boot_priv.hvsi);
-> >  		pr_devel("hvc_opal: Found HVSI console\n");
-> > @@ -409,7 +416,8 @@ void __init udbg_init_debug_opal_hvsi(void)
-> >  	hvc_opal_privs[index] = &hvc_opal_boot_priv;
-> >  	hvc_opal_boot_termno = index;
-> >  	udbg_init_opal_common();
-> > -	hvsilib_init(&hvc_opal_boot_priv.hvsi, opal_get_chars, opal_put_chars,
-> > +	hvsilib_init(&hvc_opal_boot_priv.hvsi,
-> > +		     opal_get_chars, opal_put_chars_atomic,
-> >  		     index, 1);
-> >  	hvsilib_establish(&hvc_opal_boot_priv.hvsi);
-> >  }  
+cheers
