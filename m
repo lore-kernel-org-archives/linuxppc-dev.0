@@ -3,49 +3,49 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bT6Z6J9mzF2S3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:35:18 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bT6r03S4zF2S1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:35:31 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w426Z2kg050436
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 May 2018 02:35:16 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hq4s5eh9u-1
+ w426ZD9r048920
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 May 2018 02:35:29 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hq37j1fj2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2018 02:35:16 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2018 02:35:29 -0400
 Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Wed, 2 May 2018 07:35:14 +0100
-Received: from d06av23.portsmouth.uk.ibm.com (d06av23.portsmouth.uk.ibm.com
- [9.149.105.59])
+ Wed, 2 May 2018 07:35:27 +0100
+Received: from d06av22.portsmouth.uk.ibm.com (d06av22.portsmouth.uk.ibm.com
+ [9.149.105.58])
  by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w426ZBaG6226400
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 May 2018 06:35:11 GMT
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 90402A404D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:00 +0100 (BST)
-Received: from d06av23.portsmouth.uk.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 46A49A4055
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:00 +0100 (BST)
+ w426ZOGp8454578
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 May 2018 06:35:24 GMT
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id D3D234C044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:34 +0100 (BST)
+Received: from d06av22.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7FBB54C050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:34 +0100 (BST)
 Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
- by d06av23.portsmouth.uk.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:00 +0100 (BST)
+ by d06av22.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 07:27:34 +0100 (BST)
 Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
  (using TLSv1.2 with cipher AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id AC05CA01B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:35:09 +1000 (AEST)
-Date: Wed, 2 May 2018 16:35:08 +1000
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id D9B4DA01B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:35:22 +1000 (AEST)
+Date: Wed, 2 May 2018 16:35:21 +1000
 From: Sam Bobroff <sbobroff@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 02/13] powerpc/eeh: Add final message for successful recovery
+Subject: [PATCH 03/13] powerpc/eeh: Fix use-after-release of EEH driver
 References: <cover.1525242772.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <cover.1525242772.git.sbobroff@linux.ibm.com>
-Message-Id: <e2cc8562dcce1d8bc38084bc45414c048b5a441d.1525242772.git.sbobroff@linux.ibm.com>
+Message-Id: <e50359f9211fcdc342401806ab65aa092c63e7b9.1525242772.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,25 +55,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a single log line at the end of successful EEH recovery, so that
-it's clear that event processing has finished.
+Correct two cases where eeh_pcid_get() is used to reference the driver's
+module but the reference is dropped before the driver pointer is used.
+
+In eeh_rmv_device() also refactor a little so that only two calls to
+eeh_pcid_put() are needed, rather than three and the reference isn't
+taken at all if it wasn't needed.
 
 Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 ---
- arch/powerpc/kernel/eeh_driver.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/kernel/eeh_driver.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 56a60b9eb397..07e0a42035ce 100644
+index 07e0a42035ce..54333f6c9d67 100644
 --- a/arch/powerpc/kernel/eeh_driver.c
 +++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -910,6 +910,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
- 	pr_info("EEH: Notify device driver to resume\n");
- 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+@@ -458,9 +458,11 @@ static void *eeh_add_virt_device(void *data, void *userdata)
  
-+	pr_info("EEH: Recovery successful.\n");
- 	goto final;
+ 	driver = eeh_pcid_get(dev);
+ 	if (driver) {
+-		eeh_pcid_put(dev);
+-		if (driver->err_handler)
++		if (driver->err_handler) {
++			eeh_pcid_put(dev);
+ 			return NULL;
++		}
++		eeh_pcid_put(dev);
+ 	}
  
- hard_fail:
+ #ifdef CONFIG_PCI_IOV
+@@ -497,17 +499,19 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	if (eeh_dev_removed(edev))
+ 		return NULL;
+ 
+-	driver = eeh_pcid_get(dev);
+-	if (driver) {
+-		eeh_pcid_put(dev);
+-		if (removed &&
+-		    eeh_pe_passed(edev->pe))
+-			return NULL;
+-		if (removed &&
+-		    driver->err_handler &&
+-		    driver->err_handler->error_detected &&
+-		    driver->err_handler->slot_reset)
++	if (removed) {
++		if (eeh_pe_passed(edev->pe))
+ 			return NULL;
++		driver = eeh_pcid_get(dev);
++		if (driver) {
++			if (driver->err_handler &&
++			    driver->err_handler->error_detected &&
++			    driver->err_handler->slot_reset) {
++				eeh_pcid_put(dev);
++				return NULL;
++			}
++			eeh_pcid_put(dev);
++		}
+ 	}
+ 
+ 	/* Remove it from PCI subsystem */
 -- 
 2.16.1.74.g9b0b1f47b
