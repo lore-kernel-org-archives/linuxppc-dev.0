@@ -1,31 +1,31 @@
-Return-Path: <srs0=udou=hv=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bbvy3SzpzF2S2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 21:41:34 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40bbvy2cZ0z8svQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 21:41:34 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40bbvx4HCNz9s0W
- for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2018 21:41:33 +1000 (AEST)
-Date: Wed, 2 May 2018 13:41:28 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
-Subject: Re: [PATCH 4/6] powerpc/64s: Enable barrier_nospec based on
- firmware settings
-Message-ID: <20180502134128.4a31b0fc@kitsune.suse.cz>
-In-Reply-To: <87vac7r5px.fsf@concordia.ellerman.id.au>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180424041559.32410-4-mpe@ellerman.id.au>
- <20180426180258.04e6bee6@kitsune.suse.cz>
- <87vac7r5px.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bcsq1nc4zF2SK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 22:24:46 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id l2-v6so10514945pgc.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2018 05:24:46 -0700 (PDT)
+Date: Wed, 2 May 2018 22:24:30 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch@vger.kernel.org, Nicolas Pitre <nico@fluxnic.net>,
+ linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+Message-ID: <20180502222430.2a1cced4@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+7wUsy1KaWc0LJNXieNTtQcfoQyg-kFp10nGoTzVe7CdXYOyg@mail.gmail.com>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <CA+7wUswuyn+YgNe732rQAzVmgDBohTMEqwsd76nQ_CH5h7Y5WA@mail.gmail.com>
+ <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+ <CA+7wUsyWu3eweWjwfFoS5FD5yb3OxjLV4-XyErcNA4fJGPCf8Q@mail.gmail.com>
+ <20180421124838.5facd0f7@roar.ozlabs.ibm.com>
+ <CA+7wUsy1KaWc0LJNXieNTtQcfoQyg-kFp10nGoTzVe7CdXYOyg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +35,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 01 May 2018 21:11:06 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Wed, 2 May 2018 11:17:52 +0200
+Mathieu Malaterre <malat@debian.org> wrote:
 
-> Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> > Hello,
+> Nick,
+> 
+> On Sat, Apr 21, 2018 at 4:48 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> > On Fri, 20 Apr 2018 22:08:27 +0200
+> > Mathieu Malaterre <malat@debian.org> wrote:
+> >  
+> >> On Fri, Apr 20, 2018 at 12:41 PM, Nicholas Piggin <npiggin@gmail.com> wrote:  
+> >> > On Fri, 20 Apr 2018 12:00:49 +0200
+> >> > Mathieu Malaterre <malat@debian.org> wrote:
+> >> >  
+> >> >> On Fri, Apr 20, 2018 at 9:34 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
+> >> >> > This requires further changes to linker script to KEEP some tables
+> >> >> > and wildcard compiler generated sections into the right place. This
+> >> >> > includes pp32 modifications from Christophe Leroy.
+> >> >> >
+> >> >> > When compiling powernv_defconfig with this option:
+> >> >> >
+> >> >> > text       data      bss       dec        filename
+> >> >> > 11827621   4810490   1341080   17979191   vmlinux
+> >> >> > 11752437   4598858   1338776   17690071   vmlinux.dcde
+> >> >> >
+> >> >> > Resulting kernel is almost 400kB smaller (and still boots).
+> >> >> >
+> >> >> > [ppc32 numbers here]  
+> >> >>
+> >> >> ^^^
+> >> >>
+> >> >> Do you want somebody else to provide those numbers ?  
+> >> >
+> >> > If you have a booting kernel, yes some more numbers would be good.  
+> >>
+> >> I've used /boot/config-4.15.0-2-powerpc from my current debian
+> >> package. Rebuild master with and without option, boot ok, load/unload
+> >> module ok.
+> >>
+> >> $ size nick/vmlinux.with*
+> >>    text    data     bss     dec     hex filename
+> >> 7386425 2364370 1425432 11176227 aa8923 nick/vmlinux.with
+> >> 7461457 2475122 1428064 11364643 ad6923 nick/vmlinux.without
+> >>
+> >> This is not clear why with option the size of kernel is slightly bigger:
+> >>
+> >> $ du -sk nick/vmlinux.with*
+> >> 124488 nick/vmlinux.with
+> >> 124004 nick/vmlinux.without  
 > >
-> > On Tue, 24 Apr 2018 14:15:57 +1000
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > =20
-> >> From: Michal Suchanek <msuchanek@suse.de>
-> >>=20
-> >> Check what firmware told us and enable/disable the barrier_nospec
-> >> as appropriate.
-> >>=20
-> >> We err on the side of enabling the barrier, as it's no-op on older
-> >> systems, see the comment for more detail.
-> >>=20
-> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au> =20
-> ...
+> > Not sure. readelf -S vmlinux may show something.
 > >
-> > I am missing the option for the barrier to be disabled by a kernel
-> > commandline argument here.
+> > To really get lots of detail, you can add to the top level Makefile:
 > >
-> > It does make sense to add a kernel parameter that is checked on
-> > boot to be compatible with other platforms that implement one. =20
->=20
-> No other platforms have an option to disable variant 1 mitigations, so
-> there isn't an existing parameter we can use.
+> > LDFLAGS_vmlinux += -M  
+> 
+> Here is what I did:
+> 
+> $ git diff
+> diff --git a/Makefile b/Makefile
+> index 619a85ad716b..1a2e3d142a59 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -4,6 +4,7 @@ PATCHLEVEL = 17
+>  SUBLEVEL = 0
+>  EXTRAVERSION = -rc3
+>  NAME = Fearless Coyote
+> +LDFLAGS_vmlinux += -M
 
-Right, I was looking at an older implementation which turned off both
-v1 and v2 with same parameter. In current kernel the v1 mitigation is
-not turned off at all.
->=20
-> Which is not to say we can't add one, but I wasn't sure if it was
-> really worth it.
+That'll get overwritten further down. Put it down with another line
+that starts with LDFLAGS_vmlinux +=
 
-The current thinking is that most performance relevant cases are
-covered with array_nospec which has little overhead. The less code we
-have for this the better ;-)
-
-Thanks
-
-Michal
+Thanks,
+Nick
