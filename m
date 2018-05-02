@@ -1,16 +1,26 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 40bScZ5mrjzF2RQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:12:46 +1000 (AEST)
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bSw55gMKzF2RR
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:26:11 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id 186-v6so15707965itu.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 May 2018 23:26:11 -0700 (PDT)
+Subject: Re: [PATCH kernel 2/2] KVM: PPC: Allow backing bigger guest IOMMU
+ pages with smaller physical pages
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
+References: <20180502040723.20545-1-aik@ozlabs.ru>
+ <20180502040723.20545-3-aik@ozlabs.ru>
+ <20180502155323.30c41ce4@balbir.ozlabs.ibm.com>
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel] powerpc/ioda: Use ibm,
- supported-tce-sizes for IOMMU page size mask
-Date: Wed,  2 May 2018 16:12:39 +1000
-Message-Id: <20180502061239.36398-1-aik@ozlabs.ru>
+Message-ID: <c04cd729-fd88-ed46-cfcb-93324bb243f3@ozlabs.ru>
+Date: Wed, 2 May 2018 16:26:04 +1000
+MIME-Version: 1.0
+In-Reply-To: <20180502155323.30c41ce4@balbir.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,58 +30,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment we assume that IODA2 and newer PHBs can always do 4K/64K/16M
-IOMMU pages, however this is not the case for POWER9 and now skiboot
-advertises the supported sizes via the device so we use that instead
-of hard coding the mask.
+On 2/5/18 3:53 pm, Balbir Singh wrote:
+> On Wed,  2 May 2018 14:07:23 +1000
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+>> At the moment we only support in the host the IOMMU page sizes which
+>> the guest is aware of, which is 4KB/64KB/16MB. However P9 does not support
+>> 16MB IOMMU pages, 2MB and 1GB pages are supported instead. We can still
+>> emulate bigger guest pages (for example 16MB) with smaller host pages
+>> (4KB/64KB/2MB).
+>>
+>> This allows the physical IOMMU pages to use a page size smaller or equal
+>> than the guest visible IOMMU page size.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/kvm/book3s_64_vio.c    | 66 +++++++++++++++++++++++++++++--------
+>>  arch/powerpc/kvm/book3s_64_vio_hv.c | 52 +++++++++++++++++++++++++----
+>>  2 files changed, 98 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+>> index 041e54d..e10d6a3 100644
+>> --- a/arch/powerpc/kvm/book3s_64_vio.c
+>> +++ b/arch/powerpc/kvm/book3s_64_vio.c
+>> @@ -176,14 +176,12 @@ extern long kvm_spapr_tce_attach_iommu_group(struct kvm *kvm, int tablefd,
+>>  
+>>  		if (!tbltmp)
+>>  			continue;
+>> -		/*
+>> -		 * Make sure hardware table parameters are exactly the same;
+>> -		 * this is used in the TCE handlers where boundary checks
+>> -		 * use only the first attached table.
+>> -		 */
+>> -		if ((tbltmp->it_page_shift == stt->page_shift) &&
+>> -				(tbltmp->it_offset == stt->offset) &&
+>> -				(tbltmp->it_size == stt->size)) {
+>> +		/* Make sure hardware table parameters are compatible */
+>> +		if ((tbltmp->it_page_shift <= stt->page_shift) &&
+>> +				(tbltmp->it_offset << tbltmp->it_page_shift ==
+>> +				 stt->offset << stt->page_shift) &&
+>> +				(tbltmp->it_size << tbltmp->it_page_shift ==
+>> +				 stt->size << stt->page_shift)) {
+> 
+> Very difficult to parse
+> 
+> How about -
+> 
+> subpages_shift = (stt->page_shift - tbl->it_page_shift)
+> 
+> and then
+> 
+> matches_offset = !(tbltmp->it_offset - (stt->it_offset << subpages_shift));
+> matches_size = !(tbltmp->it_size - (stt->it_size << subpages_shift));
+> 
+> The condition then is just 
+> 
+> 		if ((tbltmp->it_page_shift == stt->page_shift) &&
+> 				matches_offset && matches_size) {
 
-This falls back to the default mask if no "ibm,supported-tce-sizes"
-is provided. This removes 16MB from the defaults as it is not supported
-everywhere; the downside of this is that hugepages backed POWER8 guests
-will fall back to 64K IOMMU pages until skiboot is updated.
+This is harder to parse. My variant is bulky but straight forward otherwise.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3f9c69d..e02a8a9 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2910,6 +2910,24 @@ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
- 			tbl->it_indirect_levels);
- }
- 
-+static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
-+{
-+	struct pci_controller *hose = phb->hose;
-+	struct device_node *dn = hose->dn;
-+	int i, len = 0;
-+	const __be32 *r;
-+	unsigned long mask = 0;
-+
-+	r = of_get_property(dn, "ibm,supported-tce-sizes", &len);
-+	if (!r || !len)
-+		return SZ_4K | SZ_64K;
-+
-+	for (i = 0; i < len / sizeof(*r); ++i)
-+		mask |= 1ULL << be32_to_cpu(r[i]);
-+
-+	return mask;
-+}
-+
- static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 				       struct pnv_ioda_pe *pe)
- {
-@@ -2934,7 +2952,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	pe->table_group.max_dynamic_windows_supported =
- 			IOMMU_TABLE_GROUP_MAX_TABLES;
- 	pe->table_group.max_levels = POWERNV_IOMMU_MAX_LEVELS;
--	pe->table_group.pgsizes = SZ_4K | SZ_64K | SZ_16M;
-+	pe->table_group.pgsizes = pnv_ioda_parse_tce_sizes(phb);
- #ifdef CONFIG_IOMMU_API
- 	pe->table_group.ops = &pnv_pci_ioda2_ops;
- #endif
+> 
+> 
+> 
+>>  			/*
+>>  			 * Reference the table to avoid races with
+>>  			 * add/remove DMA windows.
+>> @@ -396,7 +394,7 @@ static long kvmppc_tce_iommu_mapped_dec(struct kvm *kvm,
+>>  	return H_SUCCESS;
+>>  }
+>>  
+>> -static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
+>> +static long kvmppc_tce_iommu_do_unmap(struct kvm *kvm,
+>>  		struct iommu_table *tbl, unsigned long entry)
+>>  {
+>>  	enum dma_data_direction dir = DMA_NONE;
+>> @@ -416,7 +414,25 @@ static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
+>>  	return ret;
+>>  }
+>>  
+>> -long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+>> +static long kvmppc_tce_iommu_unmap(struct kvm *kvm,
+>> +		struct kvmppc_spapr_tce_table *stt, struct iommu_table *tbl,
+>> +		unsigned long entry)
+>> +{
+>> +	unsigned long ret = H_SUCCESS;
+>> +	unsigned long subpages = 1ULL << (stt->page_shift - tbl->it_page_shift);
+>> +	unsigned long io_entry = entry * subpages;
+> 
+> How do we know this multiplication does not overflow?
+
+Entry, page_shift come from the userspace and checked in appropriate
+ioctl/hcall handlers.
+
+> 
+>> +	unsigned long subpg;
+> 
+> Why not just i?
+
+I can imagine pages so huge so backing them with 4K will overflow 32bit
+anyway. It is very (very) unlikely but it is 64bit arch anyway and there is
+no much point in not-long types anyway.
+
+
+>> +
+>> +	for (subpg = 0; subpg < subpages; ++subpg) {
+>> +		ret = kvmppc_tce_iommu_do_unmap(kvm, tbl, io_entry + subpg);
+>> +		if (ret != H_SUCCESS)
+>> +			break;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+>>  		unsigned long entry, unsigned long ua,
+>>  		enum dma_data_direction dir)
+>>  {
+>> @@ -453,6 +469,28 @@ long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+>>  	return 0;
+>>  }
+>>  
+>> +static long kvmppc_tce_iommu_map(struct kvm *kvm,
+>> +		struct kvmppc_spapr_tce_table *stt, struct iommu_table *tbl,
+>> +		unsigned long entry, unsigned long ua,
+>> +		enum dma_data_direction dir)
+>> +{
+>> +	unsigned long ret = H_SUCCESS;
+>> +	unsigned long subpages = 1ULL << (stt->page_shift - tbl->it_page_shift);
+>> +	unsigned long io_entry = entry * subpages;
+>> +	unsigned long subpg, pgoff;
+>> +
+>> +	for (subpg = 0, pgoff = 0; subpg < subpages;
+>> +			++subpg, pgoff += IOMMU_PAGE_SIZE(tbl)) {
+>> +
+>> +		ret = kvmppc_tce_iommu_do_map(kvm, tbl,
+>> +				io_entry + subpg, ua + pgoff, dir);
+>> +		if (ret != H_SUCCESS)
+>> +			break;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  		      unsigned long ioba, unsigned long tce)
+>>  {
+>> @@ -491,10 +529,10 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  
+>>  	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>>  		if (dir == DMA_NONE)
+>> -			ret = kvmppc_tce_iommu_unmap(vcpu->kvm,
+>> +			ret = kvmppc_tce_iommu_unmap(vcpu->kvm, stt,
+>>  					stit->tbl, entry);
+>>  		else
+>> -			ret = kvmppc_tce_iommu_map(vcpu->kvm, stit->tbl,
+>> +			ret = kvmppc_tce_iommu_map(vcpu->kvm, stt, stit->tbl,
+>>  					entry, ua, dir);
+>>  
+>>  		if (ret == H_SUCCESS)
+>> @@ -570,7 +608,7 @@ long kvmppc_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>>  			return H_PARAMETER;
+>>  
+>>  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>> -			ret = kvmppc_tce_iommu_map(vcpu->kvm,
+>> +			ret = kvmppc_tce_iommu_map(vcpu->kvm, stt,
+>>  					stit->tbl, entry + i, ua,
+>>  					iommu_tce_direction(tce));
+>>  
+>> @@ -618,7 +656,7 @@ long kvmppc_h_stuff_tce(struct kvm_vcpu *vcpu,
+>>  		unsigned long entry = ioba >> stt->page_shift;
+>>  
+>>  		for (i = 0; i < npages; ++i) {
+>> -			ret = kvmppc_tce_iommu_unmap(vcpu->kvm,
+>> +			ret = kvmppc_tce_iommu_unmap(vcpu->kvm, stt,
+>>  					stit->tbl, entry + i);
+>>  
+>>  			if (ret == H_SUCCESS)
+>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> index e220fab..258e786 100644
+>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> @@ -221,7 +221,7 @@ static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+>>  	return H_SUCCESS;
+>>  }
+>>  
+>> -static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+>> +static long kvmppc_rm_tce_iommu_do_unmap(struct kvm *kvm,
+>>  		struct iommu_table *tbl, unsigned long entry)
+>>  {
+>>  	enum dma_data_direction dir = DMA_NONE;
+>> @@ -245,7 +245,25 @@ static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+>>  	return ret;
+>>  }
+>>  
+>> -static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+>> +static long kvmppc_rm_tce_iommu_unmap(struct kvm *kvm,
+>> +		struct kvmppc_spapr_tce_table *stt, struct iommu_table *tbl,
+>> +		unsigned long entry)
+>> +{
+>> +	unsigned long ret = H_SUCCESS;
+>> +	unsigned long subpages = 1ULL << (stt->page_shift - tbl->it_page_shift);
+>> +	unsigned long io_entry = entry * subpages;
+>> +	unsigned long subpg;
+>> +
+>> +	for (subpg = 0; subpg < subpages; ++subpg) {
+>> +		ret = kvmppc_rm_tce_iommu_do_unmap(kvm, tbl, io_entry + subpg);
+>> +		if (ret != H_SUCCESS)
+>> +			break;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+>>  		unsigned long entry, unsigned long ua,
+>>  		enum dma_data_direction dir)
+>>  {
+>> @@ -290,6 +308,28 @@ static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+>>  	return 0;
+>>  }
+>>  
+>> +static long kvmppc_rm_tce_iommu_map(struct kvm *kvm,
+>> +		struct kvmppc_spapr_tce_table *stt, struct iommu_table *tbl,
+>> +		unsigned long entry, unsigned long ua,
+>> +		enum dma_data_direction dir)
+>> +{
+>> +	unsigned long ret = H_SUCCESS;
+>> +	unsigned long subpages = 1ULL << (stt->page_shift - tbl->it_page_shift);
+>> +	unsigned long io_entry = entry * subpages;
+>> +	unsigned long subpg, pgoff;
+>> +
+>> +	for (subpg = 0, pgoff = 0; subpg < subpages;
+>> +			++subpg, pgoff += IOMMU_PAGE_SIZE(tbl)) {
+>> +
+>> +		ret = kvmppc_rm_tce_iommu_do_map(kvm, tbl,
+>> +				io_entry + subpg, ua + pgoff, dir);
+>> +		if (ret != H_SUCCESS)
+>> +			break;
+>> +	}
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  		unsigned long ioba, unsigned long tce)
+>>  {
+>> @@ -327,10 +367,10 @@ long kvmppc_rm_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  
+>>  	list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>>  		if (dir == DMA_NONE)
+>> -			ret = kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+>> +			ret = kvmppc_rm_tce_iommu_unmap(vcpu->kvm, stt,
+>>  					stit->tbl, entry);
+>>  		else
+>> -			ret = kvmppc_rm_tce_iommu_map(vcpu->kvm,
+>> +			ret = kvmppc_rm_tce_iommu_map(vcpu->kvm, stt,
+>>  					stit->tbl, entry, ua, dir);
+>>  
+>>  		if (ret == H_SUCCESS)
+>> @@ -477,7 +517,7 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+>>  			return H_PARAMETER;
+>>  
+>>  		list_for_each_entry_lockless(stit, &stt->iommu_tables, next) {
+>> -			ret = kvmppc_rm_tce_iommu_map(vcpu->kvm,
+>> +			ret = kvmppc_rm_tce_iommu_map(vcpu->kvm, stt,
+>>  					stit->tbl, entry + i, ua,
+>>  					iommu_tce_direction(tce));
+>>  
+>> @@ -529,7 +569,7 @@ long kvmppc_rm_h_stuff_tce(struct kvm_vcpu *vcpu,
+>>  		unsigned long entry = ioba >> stt->page_shift;
+>>  
+>>  		for (i = 0; i < npages; ++i) {
+>> -			ret = kvmppc_rm_tce_iommu_unmap(vcpu->kvm,
+>> +			ret = kvmppc_rm_tce_iommu_unmap(vcpu->kvm, stt,
+>>  					stit->tbl, entry + i);
+>>  
+>>  			if (ret == H_SUCCESS)
+> 
+
+
 -- 
-2.11.0
+Alexey
