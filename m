@@ -1,36 +1,42 @@
-Return-Path: <punit.agrawal@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40bjRg0mtSzF2TC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 01:50:54 +1000 (AEST)
-From: Punit Agrawal <punit.agrawal@arm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: <akpm@linux-foundation.org>, <mhocko@kernel.org>, <peterz@infradead.org>,
- <kirill@shutemov.name>, <ak@linux.intel.com>, <dave@stgolabs.net>,
- <jack@suse.cz>, Matthew Wilcox <willy@infradead.org>,
- <benh@kernel.crashing.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- <hpa@zytor.com>, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, <kemi.wang@intel.com>,
- <sergey.senozhatsky.work@gmail.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>, <linux-kernel@vger.kernel.org>,
- <linux-mm@kvack.org>, <haren@linux.vnet.ibm.com>,
- <khandual@linux.vnet.ibm.com>, <npiggin@gmail.com>, <bsingharora@gmail.com>,
- <paulmck@linux.vnet.ibm.com>, Tim Chen <tim.c.che
- n@linux.intel.com>,  <linuxppc-dev@lists.ozlabs.org>,  <x86@kernel.org>
-Subject: Re: [PATCH v10 00/25] Speculative page faults
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <87bmdynnv4.fsf@e105922-lin.cambridge.arm.com>
- <eef94f4f-800e-9994-d926-a71b80552ebc@linux.vnet.ibm.com>
-Date: Wed, 02 May 2018 16:50:49 +0100
-In-Reply-To: <eef94f4f-800e-9994-d926-a71b80552ebc@linux.vnet.ibm.com>
- (Laurent Dufour's message of "Wed, 2 May 2018 16:45:19 +0200")
-Message-ID: <87vac6m4yu.fsf@e105922-lin.cambridge.arm.com>
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bvqr09mLzF2T8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 09:39:03 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w42NcxeE065438
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 May 2018 19:39:01 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hqmmnd5fv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2018 19:39:00 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Thu, 3 May 2018 00:38:56 +0100
+Date: Wed, 2 May 2018 16:38:48 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Florian Weimer <fweimer@redhat.com>, Dave Hansen <dave.hansen@intel.com>,
+ Linux-MM <linux-mm@kvack.org>, Linux API <linux-api@vger.kernel.org>,
+ linux-x86_64@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20180502132751.05B9F401F3041@oldenburg.str.redhat.com>
+ <248faadb-e484-806f-1485-c34a72a9ca0b@intel.com>
+ <822a28c9-5405-68c2-11bf-0c282887466d@redhat.com>
+ <20180502211254.GA5863@ram.oc3035372033.ibm.com>
+ <CALCETrUfO=vXg5rT-n=y8pLktcq5+ORvgpsOXCHG4GaugB3k2A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALCETrUfO=vXg5rT-n=y8pLktcq5+ORvgpsOXCHG4GaugB3k2A@mail.gmail.com>
+Message-Id: <20180502233848.GB5863@ram.oc3035372033.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,79 +46,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+On Wed, May 02, 2018 at 09:18:11PM +0000, Andy Lutomirski wrote:
+> On Wed, May 2, 2018 at 2:13 PM Ram Pai <linuxram@us.ibm.com> wrote:
+> 
+> 
+> > > Ram, would you please comment?
+> 
+> > on POWER the pkey behavior will remain the same at entry or at exit from
+> > the signal handler.  For eg:  if a key is read-disabled on entry into
+> > the signal handler, and gets read-enabled in the signal handler, than it
+> > will continue to be read-enabled on return from the signal handler.
+> 
+> > In other words, changes to key permissions persist across signal
+> > boundaries.
+> 
+> I don't know about POWER's ISA, but this is crappy behavior.  If a thread
+> temporarily grants itself access to a restrictive memory key and then gets
+> a signal, the signal handler should *not* have access to that key.
 
-Thanks for your reply.
+This is a new requirement that I was not aware off. Its not documented
+anywhere AFAICT.  Regardless of how the ISA behaves, its still a kernel
+behavior that needs to be clearly defined.
 
-Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
-
-> On 02/05/2018 16:17, Punit Agrawal wrote:
->> Hi Laurent,
->> 
->> One query below -
->> 
->> Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
->> 
->> [...]
->> 
->>>
->>> Ebizzy:
->>> -------
->>> The test is counting the number of records per second it can manage, the
->>> higher is the best. I run it like this 'ebizzy -mTRp'. To get consistent
->>> result I repeated the test 100 times and measure the average result. The
->>> number is the record processes per second, the higher is the best.
->>>
->>>   		BASE		SPF		delta	
->>> 16 CPUs x86 VM	12405.52	91104.52	634.39%
->>> 80 CPUs P8 node 37880.01	76201.05	101.16%
->> 
->> How do you measure the number of records processed? Is there a specific
->> version of ebizzy that reports this? I couldn't find a way to get this
->> information with the ebizzy that's included in ltp.
->
-> I'm using the original one : http://ebizzy.sourceforge.net/
-
-Turns out I missed the records processed in the verbose output enabled
-by "-vvv". Sorry for the noise.
-
-[...]
-
->> 
->> A trial run showed increased fault handling when SPF is enabled on an
->> 8-core ARM64 system running 4.17-rc3. I am using a port of your x86
->> patch to enable spf on arm64.
->> 
->> SPF
->> ---
->> 
->> Performance counter stats for './ebizzy -vvvmTRp':
->> 
->>          1,322,736      faults                                                      
->>          1,299,241      software/config=11/                                         
->> 
->>       10.005348034 seconds time elapsed
->> 
->> No SPF
->> -----
->> 
->>  Performance counter stats for './ebizzy -vvvmTRp':
->> 
->>            708,916      faults
->>                  0      software/config=11/
->> 
->>       10.005807432 seconds time elapsed
->
-> Thanks for sharing these good numbers !
-
-
-A quick run showed 71041 (no-spf) vs 122306 (spf) records/s (~72%
-improvement).
-
-I'd like to do some runs on a slightly larger system (if I can get my
-hands on one) to see how the patches behave. I'll also have a closer
-look at your series - the previous comments were just somethings I
-observed as part of trying the functionality on arm64.
-
-Thanks,
-Punit
+-- 
+Ram Pai
