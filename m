@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bf6s0fJ9zF2T9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 23:21:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bf6v3QDyzF2T9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 23:21:11 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: viro@zeniv.linux.org.uk,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 4/6] powerpc/syscalls: Add COMPAT_SPU_NEW() macro
-Date: Wed,  2 May 2018 23:20:49 +1000
-Message-Id: <20180502132051.28861-4-mpe@ellerman.id.au>
+Subject: [PATCH 5/6] powerpc/syscalls: kill ppc32_select()
+Date: Wed,  2 May 2018 23:20:50 +1000
+Message-Id: <20180502132051.28861-5-mpe@ellerman.id.au>
 In-Reply-To: <20180502132051.28861-1-mpe@ellerman.id.au>
 References: <20180502132051.28861-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,64 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the select system call is wired up with the SYSX_SPU()
-macro. The SYSX_SPU() is not handled by systbl_chk.c, which means the
-syscall number for select is not checked.
+From: Al Viro <viro@zeniv.linux.org.uk>
 
-That hides the fact that the syscall number for select is actually
-__NR__newselect not __NR_select.
+it had always been pointless - compat_sys_select() sign-extends
+the first argument just fine on its own.
 
-In a following patch we'd like to drop ppc32_select() which means
-select will become a regular COMPAT_SYS_SPU() syscall. But
-COMPAT_SYS_SPU() can't deal with the fact that the syscall number is
-actually __NR__newselect. We also can't just redefine __NR_select
-because that's still used for the old select call.
-
-So add a new COMPAT_NEW_SPU() that does the same thing as
-COMPAT_SYS_SPU() except it encodes that we're using the new number.
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+[mpe: Use COMPAT_SPU_NEW() to keep systbl_chk.sh happy]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/systbl.S                | 1 +
- arch/powerpc/kernel/systbl_chk.c            | 1 +
- arch/powerpc/platforms/cell/spu_callbacks.c | 1 +
- 3 files changed, 3 insertions(+)
+ arch/powerpc/include/asm/systbl.h | 2 +-
+ arch/powerpc/kernel/sys_ppc32.c   | 9 ---------
+ 2 files changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
-index c7d5216d91d7..919a32746ede 100644
---- a/arch/powerpc/kernel/systbl.S
-+++ b/arch/powerpc/kernel/systbl.S
-@@ -35,6 +35,7 @@
- #endif
- #define SYSCALL_SPU(func)	SYSCALL(func)
- #define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
-+#define COMPAT_SPU_NEW(func)	COMPAT_SYS(func)
- #define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index b91701c0711a..cdf528089a63 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -147,7 +147,7 @@ SYSCALL_SPU(setfsuid)
+ SYSCALL_SPU(setfsgid)
+ SYSCALL_SPU(llseek)
+ COMPAT_SYS_SPU(getdents)
+-SYSX_SPU(sys_select,ppc32_select,sys_select)
++COMPAT_SPU_NEW(select)
+ SYSCALL_SPU(flock)
+ SYSCALL_SPU(msync)
+ COMPAT_SYS_SPU(readv)
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index c11c73373691..bdf58ba1a94b 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -52,15 +52,6 @@
+ #include <asm/syscalls.h>
+ #include <asm/switch_to.h>
  
- .section .rodata,"a"
-diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
-index 28476e811644..4653258722ac 100644
---- a/arch/powerpc/kernel/systbl_chk.c
-+++ b/arch/powerpc/kernel/systbl_chk.c
-@@ -31,6 +31,7 @@
- 
- #define SYSCALL_SPU(func)	SYSCALL(func)
- #define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
-+#define COMPAT_SPU_NEW(func)	COMPAT_SYS(_new##func)
- #define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
- 
- /* Just insert a marker for ni_syscalls */
-diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
-index d5bb8c8d769a..8ae86200ef6c 100644
---- a/arch/powerpc/platforms/cell/spu_callbacks.c
-+++ b/arch/powerpc/platforms/cell/spu_callbacks.c
-@@ -44,6 +44,7 @@ static void *spu_syscall_table[] = {
- 
- #define SYSCALL_SPU(func)	sys_##func,
- #define COMPAT_SYS_SPU(func)	sys_##func,
-+#define COMPAT_SPU_NEW(func)	sys_##func,
- #define SYSX_SPU(f, f3264, f32)	f,
- 
- #include <asm/systbl.h>
+-
+-asmlinkage long ppc32_select(u32 n, compat_ulong_t __user *inp,
+-		compat_ulong_t __user *outp, compat_ulong_t __user *exp,
+-		compat_uptr_t tvp_x)
+-{
+-	/* sign extend n */
+-	return compat_sys_select((int)n, inp, outp, exp, compat_ptr(tvp_x));
+-}
+-
+ unsigned long compat_sys_mmap2(unsigned long addr, size_t len,
+ 			  unsigned long prot, unsigned long flags,
+ 			  unsigned long fd, unsigned long pgoff)
 -- 
 2.14.1
