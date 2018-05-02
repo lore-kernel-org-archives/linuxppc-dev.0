@@ -1,23 +1,23 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0074.outbound.protection.outlook.com [104.47.0.74])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bWnN0RP5zF2SD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 18:35:35 +1000 (AEST)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, "kvm-ppc@vger.kernel.org"
- <kvm-ppc@vger.kernel.org>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Alexander
- Graf <agraf@suse.de>
-Subject: Re: [PATCH] powerpc/kvm/booke: fix altivec related build break
-Date: Wed, 2 May 2018 08:35:28 +0000
-Message-ID: <5AE9784E.7020304@nxp.com>
-References: <20180426123319.10843-1-laurentiu.tudor@nxp.com>
- <874ljx5g6q.fsf@concordia.ellerman.id.au>
-In-Reply-To: <874ljx5g6q.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bWsP64V6zF2SY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 18:39:05 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m21-v6so10110933pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2018 01:39:05 -0700 (PDT)
+Date: Wed, 2 May 2018 18:38:46 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/watchdog: provide more data in watchdog messages
+Message-ID: <20180502183846.73287b06@roar.ozlabs.ibm.com>
+In-Reply-To: <dcda2a1bb4dc3b2c6066186cffbb356d2ff61ec8.camel@gmail.com>
+References: <20180501022216.1420-1-npiggin@gmail.com>
+ <dcda2a1bb4dc3b2c6066186cffbb356d2ff61ec8.camel@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Tue, 01 May 2018 23:07:28 +1000
+Balbir Singh <bsingharora@gmail.com> wrote:
 
-On 04/27/2018 09:14 AM, Michael Ellerman wrote:
-> laurentiu.tudor@nxp.com writes:
->> From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
->>
->> Add missing "altivec unavailable" interrupt injection helper
->> thus fixing the linker error below:
->>
->> arch/powerpc/kvm/emulate_loadstore.o: In function `kvmppc_check_altivec_=
-disabled':
->> arch/powerpc/kvm/emulate_loadstore.c: undefined reference to `.kvmppc_co=
-re_queue_vec_unavail'
->>
->> Fixes: 09f984961c137c4b ("KVM: PPC: Book3S: Add MMIO emulation for VMX i=
-nstructions")
->
-> What config are you using to hit this? I'd like to add it to my
-> auto-builder to catch it in future.
->
+> On Tue, 2018-05-01 at 12:22 +1000, Nicholas Piggin wrote:
+> > Provide timebase and timebase of last heartbeat in watchdog lockup
+> > messages. Also provide a stack trace of when a CPU becomes un-stuck,
+> > which can be useful -- it could be where irqs are re-enabled, so it
+> > may be the end of the critical section which is responsible for the
+> > latency.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> > 
+> > A lockup + unstuck event now looks like this (with irqtrace enabled):
+> > 
+> > watchdog: CPU 1 self-detected hard LOCKUP @ udelay+0x40/0x60
+> > watchdog: CPU 1 TB:82611697355, last heartbeat TB:75431975757  
+> 
+> Can we divide TB with tb_ticks_per_sec, TB itself is not very useful, the
+> delta maybe, but it needs more work on behalf of the person looking
+> at the output.
 
-Start with the corenet64_smp_defconfig and enable CONFIG_KVM_E500MC=20
-option found in "Virtualization -> KVM support for PowerPC=20
-E500MC/E5500/E6500 processors".
+I kind of prefer being able to examine register values and compare
+directly with these logs, e.g., in mambo or xmon.
 
-P.S. Sorry for the late reply. I took advantage of labor day and=20
-arranged a mini-vacation. :-)
+But maybe end user prefers something friendlier. What about like
 
----
-Best Regards, Laurentiu=
+watchdog: CPU 1 self-detected hard LOCKUP @ udelay+0x40/0x60
+watchdog: CPU 1 no heartbeat for 14.02s (TB:82611697355, last TB:75431975757)  
+
+?
+
+> > @@ -245,8 +260,6 @@ void soft_nmi_interrupt(struct pt_regs *regs)
+> >  
+> >  	tb = get_tb();
+> >  	if (tb - per_cpu(wd_timer_tb, cpu) >= wd_panic_timeout_tb) {
+> > -		per_cpu(wd_timer_tb, cpu) = tb;
+> > -  
+> 
+> Is this related to the print improvements? It looks like you don't want
+> to reset the tb, but I would split it out
+
+
+Yeah there isn't any real reason to reset it since we get marked as
+stuck which prevents further messages, and it clobbrs our last heartbeat
+value. I'll put it into its own change.
+
+Thanks,
+Nick
