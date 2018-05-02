@@ -1,24 +1,16 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bSHf3yLgzF2RN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 15:58:05 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id m21-v6so9829791pgv.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 May 2018 22:58:05 -0700 (PDT)
-Date: Wed, 2 May 2018 15:57:57 +1000
-From: Balbir Singh <bsingharora@gmail.com>
-To: rashmica <rashmica.g@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Michael Neuling <mikey@neuling.org>
-Subject: Re: [resend] Revert "powerpc/powernv: Increase memory block size to
- 1GB on radix"
-Message-ID: <20180502155757.1a80b51e@balbir.ozlabs.ibm.com>
-In-Reply-To: <58c3feb3-390c-2461-2bca-5b71f8dd14df@gmail.com>
-References: <20180501025725.7441-1-bsingharora@gmail.com>
- <58c3feb3-390c-2461-2bca-5b71f8dd14df@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40bScZ5mrjzF2RQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 16:12:46 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Russell Currey <ruscur@russell.cc>
+Subject: [PATCH kernel] powerpc/ioda: Use ibm,
+ supported-tce-sizes for IOMMU page size mask
+Date: Wed,  2 May 2018 16:12:39 +1000
+Message-Id: <20180502061239.36398-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2 May 2018 15:10:33 +1000
-rashmica <rashmica.g@gmail.com> wrote:
+At the moment we assume that IODA2 and newer PHBs can always do 4K/64K/16M
+IOMMU pages, however this is not the case for POWER9 and now skiboot
+advertises the supported sizes via the device so we use that instead
+of hard coding the mask.
 
-> Tested hot-unplugging dimm device on radix guest on p9 host with KVM.
-> 
-> 
-> On 01/05/18 12:57, Balbir Singh wrote:
-> > This commit was a stop-gap to prevent crashes on hotunplug, caused by
-> > the mismatch between the 1G mappings used for the linear mapping and the
-> > memory block size. Those issues are now resolved because we split the
-> > linear mapping at hotunplug time if necessary, as implemented in commit
-> > 4dd5f8a99e79 ("powerpc/mm/radix: Split linear mapping on hot-unplug").
-> >
-> > Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>  
-> Tested-by: Rashmica Gupta <rashmica.g@gmail.com>
+This falls back to the default mask if no "ibm,supported-tce-sizes"
+is provided. This removes 16MB from the defaults as it is not supported
+everywhere; the downside of this is that hugepages backed POWER8 guests
+will fall back to 64K IOMMU pages until skiboot is updated.
 
-I tested the following:
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-a. memtrace  - enable a region smaller than 1G, which split the mappings
-as expected.
-b. Checked linear mapping is 1G and not impacted by the revert
-c. I can hotplug sizes less than 1G via the probe method
-
-Tested-by: Balbir Singh <bsingharora@gmail.com>
-
-> > ---
-> >
-> > Resend with a newer commit message grabbed from an email sent by mpe.
-> >
-> >  arch/powerpc/platforms/powernv/setup.c | 10 +---------
-> >  1 file changed, 1 insertion(+), 9 deletions(-)
-> >
-> > diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> > index ef8c9ce53a61..fa63d3fff14c 100644
-> > --- a/arch/powerpc/platforms/powernv/setup.c
-> > +++ b/arch/powerpc/platforms/powernv/setup.c
-> > @@ -356,15 +356,7 @@ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
-> >  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
-> >  static unsigned long pnv_memory_block_size(void)
-> >  {
-> > -	/*
-> > -	 * We map the kernel linear region with 1GB large pages on radix. For
-> > -	 * memory hot unplug to work our memory block size must be at least
-> > -	 * this size.
-> > -	 */
-> > -	if (radix_enabled())
-> > -		return 1UL * 1024 * 1024 * 1024;
-> > -	else
-> > -		return 256UL * 1024 * 1024;
-> > +	return 256UL * 1024 * 1024;
-> >  }
-> >  #endif
-> >    
-> 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3f9c69d..e02a8a9 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2910,6 +2910,24 @@ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
+ 			tbl->it_indirect_levels);
+ }
+ 
++static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
++{
++	struct pci_controller *hose = phb->hose;
++	struct device_node *dn = hose->dn;
++	int i, len = 0;
++	const __be32 *r;
++	unsigned long mask = 0;
++
++	r = of_get_property(dn, "ibm,supported-tce-sizes", &len);
++	if (!r || !len)
++		return SZ_4K | SZ_64K;
++
++	for (i = 0; i < len / sizeof(*r); ++i)
++		mask |= 1ULL << be32_to_cpu(r[i]);
++
++	return mask;
++}
++
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 				       struct pnv_ioda_pe *pe)
+ {
+@@ -2934,7 +2952,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	pe->table_group.max_dynamic_windows_supported =
+ 			IOMMU_TABLE_GROUP_MAX_TABLES;
+ 	pe->table_group.max_levels = POWERNV_IOMMU_MAX_LEVELS;
+-	pe->table_group.pgsizes = SZ_4K | SZ_64K | SZ_16M;
++	pe->table_group.pgsizes = pnv_ioda_parse_tce_sizes(phb);
+ #ifdef CONFIG_IOMMU_API
+ 	pe->table_group.ops = &pnv_pci_ioda2_ops;
+ #endif
+-- 
+2.11.0
