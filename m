@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40bf6p4sBPzF2T4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 23:21:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40bf6r0kl5zF2T5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 May 2018 23:21:08 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: viro@zeniv.linux.org.uk,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/6] powerpc/syscalls: signal_{32,
- 64} - switch to SYSCALL_DEFINE
-Date: Wed,  2 May 2018 23:20:47 +1000
-Message-Id: <20180502132051.28861-2-mpe@ellerman.id.au>
+Subject: [PATCH 3/6] powerpc/syscalls: switch rtas(2) to SYSCALL_DEFINE
+Date: Wed,  2 May 2018 23:20:48 +1000
+Message-Id: <20180502132051.28861-3-mpe@ellerman.id.au>
 In-Reply-To: <20180502132051.28861-1-mpe@ellerman.id.au>
 References: <20180502132051.28861-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,203 +25,113 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Al Viro <viro@zeniv.linux.org.uk>
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-[mpe: Fix sys_debug_setcontext() prototype to return long]
+[mpe: Update sys_ni.c for s/ppc_rtas/sys_rtas/]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/asm-prototypes.h | 14 ++++-------
- arch/powerpc/kernel/signal.h              |  6 ++---
- arch/powerpc/kernel/signal_32.c           | 40 ++++++++++++++++++-------------
- arch/powerpc/kernel/signal_64.c           | 15 ++++--------
- 4 files changed, 35 insertions(+), 40 deletions(-)
+ arch/powerpc/include/asm/syscalls.h         | 2 +-
+ arch/powerpc/include/asm/systbl.h           | 2 +-
+ arch/powerpc/kernel/rtas.c                  | 3 ++-
+ arch/powerpc/kernel/systbl.S                | 1 -
+ arch/powerpc/kernel/systbl_chk.c            | 1 -
+ arch/powerpc/platforms/cell/spu_callbacks.c | 1 -
+ kernel/sys_ni.c                             | 2 +-
+ 7 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
-index d9713ad62e3c..e06eb219204e 100644
---- a/arch/powerpc/include/asm/asm-prototypes.h
-+++ b/arch/powerpc/include/asm/asm-prototypes.h
-@@ -81,18 +81,12 @@ void machine_check_exception(struct pt_regs *regs);
- void emulation_assist_interrupt(struct pt_regs *regs);
+diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
+index 1b90a3516a35..398171fdcd9f 100644
+--- a/arch/powerpc/include/asm/syscalls.h
++++ b/arch/powerpc/include/asm/syscalls.h
+@@ -16,7 +16,7 @@ asmlinkage long sys_mmap2(unsigned long addr, size_t len,
+ 		unsigned long prot, unsigned long flags,
+ 		unsigned long fd, unsigned long pgoff);
+ asmlinkage long ppc64_personality(unsigned long personality);
+-asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
++asmlinkage long sys_rtas(struct rtas_args __user *uargs);
  
- /* signals, syscalls and interrupts */
--#ifdef CONFIG_PPC64
--int sys_swapcontext(struct ucontext __user *old_ctx,
--		    struct ucontext __user *new_ctx,
--		    long ctx_size, long r6, long r7, long r8, struct pt_regs *regs);
--#else
- long sys_swapcontext(struct ucontext __user *old_ctx,
- 		    struct ucontext __user *new_ctx,
--		    int ctx_size, int r6, int r7, int r8, struct pt_regs *regs);
--int sys_debug_setcontext(struct ucontext __user *ctx,
--			 int ndbg, struct sig_dbg_op __user *dbg,
--			 int r6, int r7, int r8,
--			 struct pt_regs *regs);
-+		    long ctx_size);
-+#ifdef CONFIG_PPC32
-+long sys_debug_setcontext(struct ucontext __user *ctx,
-+			  int ndbg, struct sig_dbg_op __user *dbg);
- int
- ppc_select(int n, fd_set __user *inp, fd_set __user *outp, fd_set __user *exp, struct timeval __user *tvp);
- unsigned long __init early_init(unsigned long dt_ptr);
-diff --git a/arch/powerpc/kernel/signal.h b/arch/powerpc/kernel/signal.h
-index a6467f843acf..800433685888 100644
---- a/arch/powerpc/kernel/signal.h
-+++ b/arch/powerpc/kernel/signal.h
-@@ -49,10 +49,8 @@ extern int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 
- #else /* CONFIG_PPC64 */
- 
--extern long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		     struct pt_regs *regs);
--extern long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		       struct pt_regs *regs);
-+extern long sys_rt_sigreturn(void);
-+extern long sys_sigreturn(void);
- 
- static inline int handle_rt_signal64(struct ksignal *ksig, sigset_t *set,
- 				     struct task_struct *tsk)
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 492f03451877..9cf8a03d3bc7 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -26,8 +26,8 @@
- #include <linux/elf.h>
- #include <linux/ptrace.h>
- #include <linux/ratelimit.h>
--#ifdef CONFIG_PPC64
- #include <linux/syscalls.h>
-+#ifdef CONFIG_PPC64
- #include <linux/compat.h>
- #else
- #include <linux/wait.h>
-@@ -57,10 +57,6 @@
- 
- 
- #ifdef CONFIG_PPC64
--#define sys_rt_sigreturn	compat_sys_rt_sigreturn
--#define sys_swapcontext	compat_sys_swapcontext
--#define sys_sigreturn	compat_sys_sigreturn
--
- #define old_sigaction	old_sigaction32
- #define sigcontext	sigcontext32
- #define mcontext	mcontext32
-@@ -1041,10 +1037,15 @@ static int do_setcontext_tm(struct ucontext __user *ucp,
- }
- #endif
- 
--long sys_swapcontext(struct ucontext __user *old_ctx,
--		     struct ucontext __user *new_ctx,
--		     int ctx_size, int r6, int r7, int r8, struct pt_regs *regs)
-+#ifdef CONFIG_PPC64
-+COMPAT_SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
-+		       struct ucontext __user *, new_ctx, int, ctx_size)
-+#else
-+SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
-+		       struct ucontext __user *, new_ctx, long, ctx_size)
-+#endif
- {
-+	struct pt_regs *regs = current_pt_regs();
- 	unsigned char tmp __maybe_unused;
- 	int ctx_has_vsx_region = 0;
- 
-@@ -1132,10 +1133,14 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- 	return 0;
- }
- 
--long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		     struct pt_regs *regs)
-+#ifdef CONFIG_PPC64
-+COMPAT_SYSCALL_DEFINE0(rt_sigreturn)
-+#else
-+SYSCALL_DEFINE0(rt_sigreturn)
-+#endif
- {
- 	struct rt_sigframe __user *rt_sf;
-+	struct pt_regs *regs = current_pt_regs();
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	struct ucontext __user *uc_transact;
- 	unsigned long msr_hi;
-@@ -1224,11 +1229,10 @@ long sys_rt_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
- }
- 
- #ifdef CONFIG_PPC32
--int sys_debug_setcontext(struct ucontext __user *ctx,
--			 int ndbg, struct sig_dbg_op __user *dbg,
--			 int r6, int r7, int r8,
--			 struct pt_regs *regs)
-+SYSCALL_DEFINE3(debug_setcontext, struct ucontext __user *, ctx,
-+			 int, ndbg, struct sig_dbg_op __user *, dbg)
- {
-+	struct pt_regs *regs = current_pt_regs();
- 	struct sig_dbg_op op;
- 	int i;
- 	unsigned char tmp __maybe_unused;
-@@ -1419,9 +1423,13 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset,
- /*
-  * Do a signal return; undo the signal stack.
-  */
--long sys_sigreturn(int r3, int r4, int r5, int r6, int r7, int r8,
--		       struct pt_regs *regs)
-+#ifdef CONFIG_PPC64
-+COMPAT_SYSCALL_DEFINE0(sigreturn)
-+#else
-+SYSCALL_DEFINE0(sigreturn)
-+#endif
- {
-+	struct pt_regs *regs = current_pt_regs();
- 	struct sigframe __user *sf;
- 	struct sigcontext __user *sc;
- 	struct sigcontext sigctx;
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 720117690822..83d51bf586c7 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -24,6 +24,7 @@
- #include <linux/elf.h>
- #include <linux/ptrace.h>
- #include <linux/ratelimit.h>
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_SYSCALLS_H */
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index d61f9c96d916..b91701c0711a 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -260,7 +260,7 @@ COMPAT_SYS_SPU(utimes)
+ COMPAT_SYS_SPU(statfs64)
+ COMPAT_SYS_SPU(fstatfs64)
+ SYSX(sys_ni_syscall,ppc_fadvise64_64,ppc_fadvise64_64)
+-PPC_SYS_SPU(rtas)
++SYSCALL_SPU(rtas)
+ OLDSYS(debug_setcontext)
+ SYSCALL(ni_syscall)
+ COMPAT_SYS(migrate_pages)
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 3f1c4fcbe0aa..8afd146bc9c7 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -26,6 +26,7 @@
+ #include <linux/memblock.h>
+ #include <linux/slab.h>
+ #include <linux/reboot.h>
 +#include <linux/syscalls.h>
  
- #include <asm/sigcontext.h>
- #include <asm/ucontext.h>
-@@ -624,17 +625,14 @@ static long setup_trampoline(unsigned int syscall, unsigned int __user *tramp)
- /*
-  * Handle {get,set,swap}_context operations
-  */
--int sys_swapcontext(struct ucontext __user *old_ctx,
--		    struct ucontext __user *new_ctx,
--		    long ctx_size, long r6, long r7, long r8, struct pt_regs *regs)
-+SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
-+		struct ucontext __user *, new_ctx, long, ctx_size)
- {
- 	unsigned char tmp;
- 	sigset_t set;
- 	unsigned long new_msr = 0;
- 	int ctx_has_vsx_region = 0;
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -1050,7 +1051,7 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ }
  
--	BUG_ON(regs != current->thread.regs);
--
- 	if (new_ctx &&
- 	    get_user(new_msr, &new_ctx->uc_mcontext.gp_regs[PT_MSR]))
- 		return -EFAULT;
-@@ -698,18 +696,15 @@ int sys_swapcontext(struct ucontext __user *old_ctx,
-  * Do a signal return; undo the signal stack.
-  */
- 
--int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
--		     unsigned long r6, unsigned long r7, unsigned long r8,
--		     struct pt_regs *regs)
-+SYSCALL_DEFINE0(rt_sigreturn)
+ /* We assume to be passed big endian arguments */
+-asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
++SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
  {
-+	struct pt_regs *regs = current_pt_regs();
- 	struct ucontext __user *uc = (struct ucontext __user *)regs->gpr[1];
- 	sigset_t set;
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	unsigned long msr;
+ 	struct rtas_args args;
+ 	unsigned long flags;
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+index 7ccb7f81f8db..c7d5216d91d7 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.S
+@@ -35,7 +35,6 @@
  #endif
+ #define SYSCALL_SPU(func)	SYSCALL(func)
+ #define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
+-#define PPC_SYS_SPU(func)	PPC_SYS(func)
+ #define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
  
--	BUG_ON(current->thread.regs != regs);
--
- 	/* Always make any pending restarted system calls return -EINTR */
- 	current->restart_block.fn = do_no_restart_syscall;
+ .section .rodata,"a"
+diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
+index 55323a620cfe..28476e811644 100644
+--- a/arch/powerpc/kernel/systbl_chk.c
++++ b/arch/powerpc/kernel/systbl_chk.c
+@@ -31,7 +31,6 @@
  
+ #define SYSCALL_SPU(func)	SYSCALL(func)
+ #define COMPAT_SYS_SPU(func)	COMPAT_SYS(func)
+-#define PPC_SYS_SPU(func)	PPC_SYS(func)
+ #define SYSX_SPU(f, f3264, f32)	SYSX(f, f3264, f32)
+ 
+ /* Just insert a marker for ni_syscalls */
+diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
+index a494028b2cdf..d5bb8c8d769a 100644
+--- a/arch/powerpc/platforms/cell/spu_callbacks.c
++++ b/arch/powerpc/platforms/cell/spu_callbacks.c
+@@ -44,7 +44,6 @@ static void *spu_syscall_table[] = {
+ 
+ #define SYSCALL_SPU(func)	sys_##func,
+ #define COMPAT_SYS_SPU(func)	sys_##func,
+-#define PPC_SYS_SPU(func)	ppc_##func,
+ #define SYSX_SPU(f, f3264, f32)	f,
+ 
+ #include <asm/systbl.h>
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 9791364925dc..3751a511e2b8 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -365,7 +365,7 @@ COND_SYSCALL(s390_pci_mmio_write);
+ COND_SYSCALL_COMPAT(s390_ipc);
+ 
+ /* powerpc */
+-cond_syscall(ppc_rtas);
++COND_SYSCALL(rtas);
+ COND_SYSCALL(spu_run);
+ COND_SYSCALL(spu_create);
+ COND_SYSCALL(subpage_prot);
 -- 
 2.14.1
