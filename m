@@ -1,24 +1,25 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40c8m11hlVzF2VH
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 19:21:36 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id w129so8799473pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 02:21:36 -0700 (PDT)
-Date: Thu, 3 May 2018 17:21:31 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40c8rJ0RKqzF2SM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 19:25:20 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id a14so14244991pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 02:25:19 -0700 (PDT)
+Date: Thu, 3 May 2018 17:25:15 +0800
 From: Simon Guo <wei.guo.simon@gmail.com>
 To: Paul Mackerras <paulus@ozlabs.org>
 Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 08/11] KVM: PPC: add giveup_ext() hook for PPC KVM ops
-Message-ID: <20180503092131.GH6755@simonLocalRHEL7.x64>
+Subject: Re: [PATCH 09/11] KVM: PPC: reconstruct LOAD_FP/STORE_FP instruction
+ mmio emulation with analyse_intr() input
+Message-ID: <20180503092515.GI6755@simonLocalRHEL7.x64>
 References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
- <1524657284-16706-9-git-send-email-wei.guo.simon@gmail.com>
- <20180503060817.GI6795@fergus.ozlabs.ibm.com>
+ <1524657284-16706-10-git-send-email-wei.guo.simon@gmail.com>
+ <20180503061049.GJ6795@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180503060817.GI6795@fergus.ozlabs.ibm.com>
+In-Reply-To: <20180503061049.GJ6795@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,86 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2018 at 04:08:17PM +1000, Paul Mackerras wrote:
-> On Wed, Apr 25, 2018 at 07:54:41PM +0800, wei.guo.simon@gmail.com wrote:
+On Thu, May 03, 2018 at 04:10:49PM +1000, Paul Mackerras wrote:
+> On Wed, Apr 25, 2018 at 07:54:42PM +0800, wei.guo.simon@gmail.com wrote:
 > > From: Simon Guo <wei.guo.simon@gmail.com>
 > > 
-> > Currently HV will save math regs(FP/VEC/VSX) when trap into host. But
-> > PR KVM will only save math regs when qemu task switch out of CPU.
+> > This patch reconstructs LOAD_FP/STORE_FP instruction MMIO emulation with
+> > analyse_intr() input. It utilizes the FPCONV/UPDATE properties exported by
+> > analyse_instr() and invokes kvmppc_handle_load(s)/kvmppc_handle_store()
+> > accordingly.
 > > 
-> > To emulate FP/VEC/VSX load, PR KVM need to flush math regs firstly and
-> > then be able to update saved VCPU FPR/VEC/VSX area reasonably.
+> > The FP regs need to be flushed so that the right FP reg vals can be read
+> > from vcpu->arch.fpr.
+> 
+> This only applies for store instructions; it would be clearer if you
+> said that explicitly.
+I will correct this message.
+
+> 
 > > 
-> > This patch adds the giveup_ext() to KVM ops (an empty one for HV KVM)
-> > and kvmppc_complete_mmio_load() can invoke that hook to flush math
-> > regs accordingly.
-> > 
-> > Math regs flush is also necessary for STORE, which will be covered
-> > in later patch within this patch series.
-> > 
+> > Suggested-by: Paul Mackerras <paulus@ozlabs.org>
 > > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> I don't see where you have provided a function for Book E.
-> 
-> I would suggest you only set the function pointer to non-NULL when the
-> function is actually needed, i.e. for PR KVM.
-Got it.
-
-> 
-> It seems to me that this means that emulation of FP/VMX/VSX loads is
-> currently broken for PR KVM for the case where kvm_io_bus_read() is
-> able to supply the data, and the emulation of FP/VMX/VSX stores is
-> broken for PR KVM for all cases.  Do you agree?
-> 
-Yes. I think so.
-
-> > diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> > index 5b875ba..7eb5507 100644
-> > --- a/arch/powerpc/kvm/book3s_hv.c
-> > +++ b/arch/powerpc/kvm/book3s_hv.c
-> > @@ -2084,6 +2084,10 @@ static int kvmhv_set_smt_mode(struct kvm *kvm, unsigned long smt_mode,
-> >  	return err;
-> >  }
-> >  
-> > +static void kvmhv_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
-> > +{
-> > +}
-> > +
-> >  static void unpin_vpa(struct kvm *kvm, struct kvmppc_vpa *vpa)
-> >  {
-> >  	if (vpa->pinned_addr)
-> > @@ -4398,6 +4402,7 @@ static int kvmhv_configure_mmu(struct kvm *kvm, struct kvm_ppc_mmuv3_cfg *cfg)
-> >  	.configure_mmu = kvmhv_configure_mmu,
-> >  	.get_rmmu_info = kvmhv_get_rmmu_info,
-> >  	.set_smt_mode = kvmhv_set_smt_mode,
-> > +	.giveup_ext = kvmhv_giveup_ext,
-> >  };
-> >  
-> >  static int kvm_init_subcore_bitmap(void)
-> 
-> I think HV KVM could leave this pointer as NULL, and then...
-ok.
-
-> 
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index 17f0315..e724601 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -1061,6 +1061,9 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
-> >  		kvmppc_set_gpr(vcpu, vcpu->arch.io_gpr, gpr);
-> >  		break;
-> >  	case KVM_MMIO_REG_FPR:
-> > +		if (!is_kvmppc_hv_enabled(vcpu->kvm))
-> > +			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_FP);
-> > +
-> 
-> This could become
-> 		if (vcpu->kvm->arch.kvm_ops->giveup_ext)
-> 			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_FP);
-> 
-> and you wouldn't need to fix Book E explicitly.
-Yes
-
+> Same comment about updating RA as for the other patches.  Otherwise
+> this looks fine.
 > 
 > Paul.
 
