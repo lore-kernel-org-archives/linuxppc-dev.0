@@ -2,20 +2,20 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40c4sm4P2pzF2Tl
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 16:26:20 +1000 (AEST)
-Date: Thu, 3 May 2018 16:17:15 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40c4sn11cQzF2Tk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 16:26:21 +1000 (AEST)
+Date: Thu, 3 May 2018 15:46:01 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: wei.guo.simon@gmail.com
 Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 10/11] KVM: PPC: reconstruct LOAD_VMX/STORE_VMX
- instruction mmio emulation with analyse_intr() input
-Message-ID: <20180503061715.GK6795@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH 02/11] KVM: PPC: mov nip/ctr/lr/xer registers to pt_regs
+ in kvm_vcpu_arch
+Message-ID: <20180503054600.GC6795@fergus.ozlabs.ibm.com>
 References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
- <1524657284-16706-11-git-send-email-wei.guo.simon@gmail.com>
+ <1524657284-16706-3-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1524657284-16706-11-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1524657284-16706-3-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,145 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 25, 2018 at 07:54:43PM +0800, wei.guo.simon@gmail.com wrote:
+On Wed, Apr 25, 2018 at 07:54:35PM +0800, wei.guo.simon@gmail.com wrote:
 > From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> This patch reconstructs LOAD_VMX/STORE_VMX instruction MMIO emulation with
-> analyse_intr() input. When emulating the store, the VMX reg will need to
-> be flushed so that the right reg val can be retrieved before writing to
-> IO MEM.
+> This patch moves nip/ctr/lr/xer registers from scattered places in
+> kvm_vcpu_arch to pt_regs structure.
 > 
-> Suggested-by: Paul Mackerras <paulus@ozlabs.org>
+> cr register is "unsigned long" in pt_regs and u32 in vcpu->arch.
+> It will need more consideration and may move in later patches.
+> 
 > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 
-This looks fine for lvx and stvx, but now we are also doing something
-for the vector element loads and stores (lvebx, stvebx, lvehx, stvehx,
-etc.) without having the logic to insert or extract the correct
-element in the vector register image.  We need either to generate an
-error for the element load/store instructions, or handle them
-correctly.
+Mostly looks fine; some nits below.
 
-> diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-> index 2dbdf9a..0bfee2f 100644
-> --- a/arch/powerpc/kvm/emulate_loadstore.c
-> +++ b/arch/powerpc/kvm/emulate_loadstore.c
-> @@ -160,6 +160,27 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
->  					KVM_MMIO_REG_FPR|op.reg, size, 1);
->  			break;
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index e8a78a5..731f7d4 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -431,14 +431,14 @@ int main(void)
+>  #ifdef CONFIG_ALTIVEC
+>  	OFFSET(VCPU_VRS, kvm_vcpu, arch.vr.vr);
 >  #endif
-> +#ifdef CONFIG_ALTIVEC
-> +		case LOAD_VMX:
-> +			if (kvmppc_check_altivec_disabled(vcpu))
-> +				return EMULATE_DONE;
-> +
-> +			/* VMX access will need to be size aligned */
-
-This comment isn't quite right; it isn't that the address needs to be
-size-aligned, it's that the hardware forcibly aligns it.  So I would
-say something like /* Hardware enforces alignment of VMX accesses */.
-
-> +			vcpu->arch.vaddr_accessed &= ~((unsigned long)size - 1);
-> +			vcpu->arch.paddr_accessed &= ~((unsigned long)size - 1);
-> +
-> +			if (size == 16) {
-> +				vcpu->arch.mmio_vmx_copy_nums = 2;
-> +				emulated = kvmppc_handle_load128_by2x64(run,
-> +						vcpu, KVM_MMIO_REG_VMX|op.reg,
-> +						1);
-> +			} else if (size <= 8)
-> +				emulated = kvmppc_handle_load(run, vcpu,
-> +						KVM_MMIO_REG_VMX|op.reg,
-> +						size, 1);
-> +
-> +			break;
-> +#endif
->  		case STORE:
->  			if (op.type & UPDATE) {
->  				vcpu->arch.mmio_ra = op.update_reg;
-> @@ -197,6 +218,36 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
->  					VCPU_FPR(vcpu, op.reg), size, 1);
->  			break;
+> -	OFFSET(VCPU_XER, kvm_vcpu, arch.xer);
+> -	OFFSET(VCPU_CTR, kvm_vcpu, arch.ctr);
+> -	OFFSET(VCPU_LR, kvm_vcpu, arch.lr);
+> +	OFFSET(VCPU_XER, kvm_vcpu, arch.regs.xer);
+> +	OFFSET(VCPU_CTR, kvm_vcpu, arch.regs.ctr);
+> +	OFFSET(VCPU_LR, kvm_vcpu, arch.regs.link);
+>  #ifdef CONFIG_PPC_BOOK3S
+>  	OFFSET(VCPU_TAR, kvm_vcpu, arch.tar);
 >  #endif
-> +#ifdef CONFIG_ALTIVEC
-> +		case STORE_VMX:
-> +			if (kvmppc_check_altivec_disabled(vcpu))
-> +				return EMULATE_DONE;
-> +
-> +			/* VMX access will need to be size aligned */
-> +			vcpu->arch.vaddr_accessed &= ~((unsigned long)size - 1);
-> +			vcpu->arch.paddr_accessed &= ~((unsigned long)size - 1);
-> +
-> +			/* if it is PR KVM, the FP/VEC/VSX registers need to
-> +			 * be flushed so that kvmppc_handle_store() can read
-> +			 * actual VMX vals from vcpu->arch.
-> +			 */
-> +			if (!is_kvmppc_hv_enabled(vcpu->kvm))
+> -	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
+> -	OFFSET(VCPU_PC, kvm_vcpu, arch.nip);
 
-As before, I suggest just testing that the function pointer isn't
-NULL.
+This should be arch.pc; arch.nip doesn't exist.
 
-> +				vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu,
-> +						MSR_VEC);
-> +
-> +			if (size == 16) {
-> +				vcpu->arch.mmio_vmx_copy_nums = 2;
-> +				emulated = kvmppc_handle_store128_by2x64(run,
-> +						vcpu, op.reg, 1);
-> +			} else if (size <= 8) {
-> +				u64 val;
-> +
-> +				kvmppc_get_vmx_data(vcpu, op.reg, &val);
-> +				emulated = kvmppc_handle_store(run, vcpu,
-> +						val, size, 1);
-> +			}
-> +			break;
-> +#endif
->  		case CACHEOP:
->  			/* Do nothing. The guest is performing dcbi because
->  			 * hardware DMA is not snooped by the dcache, but
-> @@ -354,28 +405,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
->  			break;
->  #endif /* CONFIG_VSX */
+> +	OFFSET(VCPU_CR, kvm_vcpu, arch.regs.ccr);
+
+I thought the patch description said you weren't moving CR at this
+stage?
+
+> +	OFFSET(VCPU_PC, kvm_vcpu, arch.regs.nip);
+>  #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>  	OFFSET(VCPU_MSR, kvm_vcpu, arch.shregs.msr);
+>  	OFFSET(VCPU_SRR0, kvm_vcpu, arch.shregs.srr0);
+> @@ -693,11 +693,11 @@ int main(void)
+>  #endif /* CONFIG_PPC_BOOK3S_64 */
 >  
-> -#ifdef CONFIG_ALTIVEC
-> -		case OP_31_XOP_LVX:
-> -			if (kvmppc_check_altivec_disabled(vcpu))
-> -				return EMULATE_DONE;
-> -			vcpu->arch.vaddr_accessed &= ~0xFULL;
-> -			vcpu->arch.paddr_accessed &= ~0xFULL;
-> -			vcpu->arch.mmio_vmx_copy_nums = 2;
-> -			emulated = kvmppc_handle_load128_by2x64(run, vcpu,
-> -					KVM_MMIO_REG_VMX|rt, 1);
-> -			break;
-> -
-> -		case OP_31_XOP_STVX:
-> -			if (kvmppc_check_altivec_disabled(vcpu))
-> -				return EMULATE_DONE;
-> -			vcpu->arch.vaddr_accessed &= ~0xFULL;
-> -			vcpu->arch.paddr_accessed &= ~0xFULL;
-> -			vcpu->arch.mmio_vmx_copy_nums = 2;
-> -			emulated = kvmppc_handle_store128_by2x64(run, vcpu,
-> -					rs, 1);
-> -			break;
-> -#endif /* CONFIG_ALTIVEC */
-> -
->  		default:
->  			emulated = EMULATE_FAIL;
->  			break;
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index e724601..000182e 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -1408,7 +1408,7 @@ int kvmppc_handle_load128_by2x64(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  	return emulated;
->  }
->  
-> -static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
-> +int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
->  {
->  	vector128 vrs = VCPU_VSX_VR(vcpu, rs);
->  	u32 di;
-> -- 
-> 1.8.3.1
+>  #else /* CONFIG_PPC_BOOK3S */
+> -	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
+> -	OFFSET(VCPU_XER, kvm_vcpu, arch.xer);
+> -	OFFSET(VCPU_LR, kvm_vcpu, arch.lr);
+> -	OFFSET(VCPU_CTR, kvm_vcpu, arch.ctr);
+> -	OFFSET(VCPU_PC, kvm_vcpu, arch.pc);
+> +	OFFSET(VCPU_CR, kvm_vcpu, arch.regs.ccr);
+
+Once again VCPU_CR should not be changed.
+
+> +	OFFSET(VCPU_XER, kvm_vcpu, arch.regs.xer);
+> +	OFFSET(VCPU_LR, kvm_vcpu, arch.regs.link);
+> +	OFFSET(VCPU_CTR, kvm_vcpu, arch.regs.ctr);
+> +	OFFSET(VCPU_PC, kvm_vcpu, arch.regs.nip);
+>  	OFFSET(VCPU_SPRG9, kvm_vcpu, arch.sprg9);
+>  	OFFSET(VCPU_LAST_INST, kvm_vcpu, arch.last_inst);
+>  	OFFSET(VCPU_FAULT_DEAR, kvm_vcpu, arch.fault_dear);
 
 Paul.
