@@ -1,21 +1,54 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cGW444KNzF2TJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 23:40:41 +1000 (AEST)
-Date: Thu, 3 May 2018 10:40:37 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] perf tools: allow overriding MAX_NR_CPUS at compile time
-Message-ID: <20180503134037.GB8442@kernel.org>
-References: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cHyc2lDzzF2W8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 00:46:16 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w43EjkBX011732
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 May 2018 10:46:11 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hr42a1c1g-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 10:45:57 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 3 May 2018 15:45:17 +0100
+Subject: Re: [PATCH v10 08/25] mm: VMA sequence count
+To: Minchan Kim <minchan@kernel.org>
+Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
+ kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
+ jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>, David Rientjes <rientjes@google.com>,
+ Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523975611-15978-9-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180423064259.GC114098@rodete-desktop-imager.corp.google.com>
+ <06b996b0-b831-3d39-8a99-792abfb6a4d1@linux.vnet.ibm.com>
+ <20180501131646.GB118722@rodete-laptop-imager.corp.google.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Thu, 3 May 2018 16:45:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
+In-Reply-To: <20180501131646.GB118722@rodete-laptop-imager.corp.google.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <ec576e05-acfc-1e97-b3c4-1f46093de9ca@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,74 +58,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Fri, Sep 22, 2017 at 01:20:43PM +0200, Christophe Leroy escreveu:
-> After update of kernel, perf tool doesn't run anymore on my
-> 32MB RAM powerpc board, but still runs on a 128MB RAM board:
+On 01/05/2018 15:16, Minchan Kim wrote:
+> On Mon, Apr 30, 2018 at 05:14:27PM +0200, Laurent Dufour wrote:
+>>
+>>
+>> On 23/04/2018 08:42, Minchan Kim wrote:
+>>> On Tue, Apr 17, 2018 at 04:33:14PM +0200, Laurent Dufour wrote:
+>>>> From: Peter Zijlstra <peterz@infradead.org>
+>>>>
+>>>> Wrap the VMA modifications (vma_adjust/unmap_page_range) with sequence
+>>>> counts such that we can easily test if a VMA is changed.
+>>>
+>>> So, seqcount is to protect modifying all attributes of vma?
+>>
+>> The seqcount is used to protect fields that will be used during the speculative
+>> page fault like boundaries, protections.
+> 
+> a VMA is changed, it was rather vague to me at this point.
+> If you could specify detail fields or some example what seqcount aim for,
+> it would help to review.
 
-Cleaning up my inbox, found this one, simple enough, still applies,
-applied.
+Got it, I'll try to make it more explicit in the commit message, mentioning
+which fields are used in the speculative path and to be protected using the VMA
+sequence counter.
+> 
+>>
+>>>>
+>>>> The unmap_page_range() one allows us to make assumptions about
+>>>> page-tables; when we find the seqcount hasn't changed we can assume
+>>>> page-tables are still valid.
+>>>
+>>> Hmm, seqcount covers page-table, too.
+>>> Please describe what the seqcount want to protect.
+>>
+>> The calls to vm_write_begin/end() in unmap_page_range() are used to detect when
+>> a VMA is being unmap and thus that new page fault should not be satisfied for
+>> this VMA. This is protecting the VMA unmapping operation, not the page tables
+>> themselves.
+> 
+> Thanks for the detail. yes, please include this phrase instead of "page-table
+> are still valid". It makes me confused.
 
-These all needs to be dynamicly allocated, but still, with this one can
-get a functioning tool, apply it.
+Sure, will do.
 
-- Arnaldo
- 
-> ~# strace perf
-> execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
-> --- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
-> +++ killed by SIGSEGV +++
-> Segmentation fault
 > 
-> objdump -x shows that .bss section has a huge size of 24Mbytes:
+>>
+>>>>
+>>>> The flip side is that we cannot distinguish between a vma_adjust() and
+>>>> the unmap_page_range() -- where with the former we could have
+>>>> re-checked the vma bounds against the address.
+>>>>
+>>>> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+>>>>
+>>>> [Port to 4.12 kernel]
+>>>> [Build depends on CONFIG_SPECULATIVE_PAGE_FAULT]
+>>>> [Introduce vm_write_* inline function depending on
+>>>>  CONFIG_SPECULATIVE_PAGE_FAULT]
+>>>> [Fix lock dependency between mapping->i_mmap_rwsem and vma->vm_sequence by
+>>>>  using vm_raw_write* functions]
+>>>> [Fix a lock dependency warning in mmap_region() when entering the error
+>>>>  path]
+>>>> [move sequence initialisation INIT_VMA()]
+>>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>>>> ---
+>>>>  include/linux/mm.h       | 44 ++++++++++++++++++++++++++++++++++++++++++++
+>>>>  include/linux/mm_types.h |  3 +++
+>>>>  mm/memory.c              |  2 ++
+>>>>  mm/mmap.c                | 31 +++++++++++++++++++++++++++++++
+>>>>  4 files changed, 80 insertions(+)
+>>>>
+>>>> diff --git a/include/linux/mm.h b/include/linux/mm.h
+>>>> index efc1248b82bd..988daf7030c9 100644
+>>>> --- a/include/linux/mm.h
+>>>> +++ b/include/linux/mm.h
+>>>> @@ -1264,6 +1264,9 @@ struct zap_details {
+>>>>  static inline void INIT_VMA(struct vm_area_struct *vma)
+>>>>  {
+>>>>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
+>>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>>>> +	seqcount_init(&vma->vm_sequence);
+>>>> +#endif
+>>>>  }
+>>>>  
+>>>>  struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
+>>>> @@ -1386,6 +1389,47 @@ static inline void unmap_shared_mapping_range(struct address_space *mapping,
+>>>>  	unmap_mapping_range(mapping, holebegin, holelen, 0);
+>>>>  }
+>>>>  
+>>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>>>> +static inline void vm_write_begin(struct vm_area_struct *vma)
+>>>> +{
+>>>> +	write_seqcount_begin(&vma->vm_sequence);
+>>>> +}
+>>>> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
+>>>> +					 int subclass)
+>>>> +{
+>>>> +	write_seqcount_begin_nested(&vma->vm_sequence, subclass);
+>>>> +}
+>>>> +static inline void vm_write_end(struct vm_area_struct *vma)
+>>>> +{
+>>>> +	write_seqcount_end(&vma->vm_sequence);
+>>>> +}
+>>>> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
+>>>> +{
+>>>> +	raw_write_seqcount_begin(&vma->vm_sequence);
+>>>> +}
+>>>> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
+>>>> +{
+>>>> +	raw_write_seqcount_end(&vma->vm_sequence);
+>>>> +}
+>>>> +#else
+>>>> +static inline void vm_write_begin(struct vm_area_struct *vma)
+>>>> +{
+>>>> +}
+>>>> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
+>>>> +					 int subclass)
+>>>> +{
+>>>> +}
+>>>> +static inline void vm_write_end(struct vm_area_struct *vma)
+>>>> +{
+>>>> +}
+>>>> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
+>>>> +{
+>>>> +}
+>>>> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
+>>>> +{
+>>>> +}
+>>>> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+>>>> +
+>>>>  extern int access_process_vm(struct task_struct *tsk, unsigned long addr,
+>>>>  		void *buf, int len, unsigned int gup_flags);
+>>>>  extern int access_remote_vm(struct mm_struct *mm, unsigned long addr,
+>>>> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+>>>> index 21612347d311..db5e9d630e7a 100644
+>>>> --- a/include/linux/mm_types.h
+>>>> +++ b/include/linux/mm_types.h
+>>>> @@ -335,6 +335,9 @@ struct vm_area_struct {
+>>>>  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
+>>>>  #endif
+>>>>  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
+>>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+>>>> +	seqcount_t vm_sequence;
+>>>> +#endif
+>>>>  } __randomize_layout;
+>>>>  
+>>>>  struct core_thread {
+>>>> diff --git a/mm/memory.c b/mm/memory.c
+>>>> index f86efcb8e268..f7fed053df80 100644
+>>>> --- a/mm/memory.c
+>>>> +++ b/mm/memory.c
+>>>> @@ -1503,6 +1503,7 @@ void unmap_page_range(struct mmu_gather *tlb,
+>>>>  	unsigned long next;
+>>>>  
+>>>>  	BUG_ON(addr >= end);
+>>>
+>>> The comment about saying it aims for page-table stability will help.
+>>
+>> A comment may be added mentioning that we use the seqcount to indicate that the
+>> VMA is modified, being unmapped. But there is not a real page table protection,
+>> and I think this may be confusing to talk about page table stability here.
 > 
->  27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+> Okay, so here you mean seqcount is not protecting VMA's fields but vma unmap
+> operation like you mentioned above. I was confused like below description.
 > 
-> With especially the following objects having quite big size
+> "The unmap_page_range() one allows us to make assumptions about
+> page-tables; when we find the seqcount hasn't changed we can assume
+> page-tables are still valid"
 > 
-> 10205f80 l     O .bss	00140000              runtime_cycles_stats
-> 10345f80 l     O .bss	00140000              runtime_stalled_cycles_front_stats
-> 10485f80 l     O .bss	00140000              runtime_stalled_cycles_back_stats
-> 105c5f80 l     O .bss	00140000              runtime_branches_stats
-> 10705f80 l     O .bss	00140000              runtime_cacherefs_stats
-> 10845f80 l     O .bss	00140000              runtime_l1_dcache_stats
-> 10985f80 l     O .bss	00140000              runtime_l1_icache_stats
-> 10ac5f80 l     O .bss	00140000              runtime_ll_cache_stats
-> 10c05f80 l     O .bss	00140000              runtime_itlb_cache_stats
-> 10d45f80 l     O .bss	00140000              runtime_dtlb_cache_stats
-> 10e85f80 l     O .bss	00140000              runtime_cycles_in_tx_stats
-> 10fc5f80 l     O .bss	00140000              runtime_transaction_stats
-> 11105f80 l     O .bss	00140000              runtime_elision_stats
-> 11245f80 l     O .bss	00140000              runtime_topdown_total_slots
-> 11385f80 l     O .bss	00140000              runtime_topdown_slots_retired
-> 114c5f80 l     O .bss	00140000              runtime_topdown_slots_issued
-> 11605f80 l     O .bss	00140000              runtime_topdown_fetch_bubbles
-> 11745f80 l     O .bss	00140000              runtime_topdown_recovery_bubbles
-> 
-> This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
-> to 1024"), because many tables are sized with MAX_NR_CPUS
-> 
-> This patch gives the opportunity to redefine MAX_NR_CPUS via
-> 
-> make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  tools/perf/perf.h | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-> index dc442ba21bf6..a9db563da0a9 100644
-> --- a/tools/perf/perf.h
-> +++ b/tools/perf/perf.h
-> @@ -23,7 +23,9 @@ static inline unsigned long long rdclock(void)
->  	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
->  }
->  
-> +#ifndef MAX_NR_CPUS
->  #define MAX_NR_CPUS			1024
-> +#endif
->  
->  extern const char *input_name;
->  extern bool perf_host, perf_guest;
-> -- 
-> 2.13.3
+> Instead of using page-tables's validness in descriptoin, it would be better
+> to use scenario you mentioned about VMA unmap operation and page fault race.
+
+Ok will do that.
+Thanks.
