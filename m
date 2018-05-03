@@ -3,23 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cHyc2lDzzF2W8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 00:46:16 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w43EjkBX011732
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 May 2018 10:46:11 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hr42a1c1g-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cJFw4Jd0zF2WF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 00:59:32 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w43Epim1129191
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 May 2018 10:59:28 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hr3jt3ewy-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 10:45:57 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 10:59:27 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 3 May 2018 15:45:17 +0100
-Subject: Re: [PATCH v10 08/25] mm: VMA sequence count
-To: Minchan Kim <minchan@kernel.org>
+ Thu, 3 May 2018 15:59:25 +0100
+Subject: Re: [PATCH v10 24/25] x86/mm: add speculative pagefault handling
+To: Punit Agrawal <punitagrawal@gmail.com>
 Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
  jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
@@ -39,16 +39,14 @@ Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
 References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-9-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180423064259.GC114098@rodete-desktop-imager.corp.google.com>
- <06b996b0-b831-3d39-8a99-792abfb6a4d1@linux.vnet.ibm.com>
- <20180501131646.GB118722@rodete-laptop-imager.corp.google.com>
+ <1523975611-15978-25-git-send-email-ldufour@linux.vnet.ibm.com>
+ <CAD4BONd5DZiKkGPGaYqEcVb+YubVDy43MNNQ8_yztDHWpf0Y7w@mail.gmail.com>
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 3 May 2018 16:45:08 +0200
+Date: Thu, 3 May 2018 16:59:14 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180501131646.GB118722@rodete-laptop-imager.corp.google.com>
+In-Reply-To: <CAD4BONd5DZiKkGPGaYqEcVb+YubVDy43MNNQ8_yztDHWpf0Y7w@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <ec576e05-acfc-1e97-b3c4-1f46093de9ca@linux.vnet.ibm.com>
+Message-Id: <fb143123-d54e-b08d-1bd8-07767c86c7d0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,175 +56,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/05/2018 15:16, Minchan Kim wrote:
-> On Mon, Apr 30, 2018 at 05:14:27PM +0200, Laurent Dufour wrote:
->>
->>
->> On 23/04/2018 08:42, Minchan Kim wrote:
->>> On Tue, Apr 17, 2018 at 04:33:14PM +0200, Laurent Dufour wrote:
->>>> From: Peter Zijlstra <peterz@infradead.org>
->>>>
->>>> Wrap the VMA modifications (vma_adjust/unmap_page_range) with sequence
->>>> counts such that we can easily test if a VMA is changed.
->>>
->>> So, seqcount is to protect modifying all attributes of vma?
->>
->> The seqcount is used to protect fields that will be used during the speculative
->> page fault like boundaries, protections.
+On 30/04/2018 20:43, Punit Agrawal wrote:
+> Hi Laurent,
 > 
-> a VMA is changed, it was rather vague to me at this point.
-> If you could specify detail fields or some example what seqcount aim for,
-> it would help to review.
+> I am looking to add support for speculative page fault handling to
+> arm64 (effectively porting this patch) and had a few questions.
+> Apologies if I've missed an obvious explanation for my queries. I'm
+> jumping in bit late to the discussion.
 
-Got it, I'll try to make it more explicit in the commit message, mentioning
-which fields are used in the speculative path and to be protected using the VMA
-sequence counter.
-> 
->>
->>>>
->>>> The unmap_page_range() one allows us to make assumptions about
->>>> page-tables; when we find the seqcount hasn't changed we can assume
->>>> page-tables are still valid.
->>>
->>> Hmm, seqcount covers page-table, too.
->>> Please describe what the seqcount want to protect.
->>
->> The calls to vm_write_begin/end() in unmap_page_range() are used to detect when
->> a VMA is being unmap and thus that new page fault should not be satisfied for
->> this VMA. This is protecting the VMA unmapping operation, not the page tables
->> themselves.
-> 
-> Thanks for the detail. yes, please include this phrase instead of "page-table
-> are still valid". It makes me confused.
+Hi Punit,
 
-Sure, will do.
+Thanks for giving this series a review.
+I don't have arm64 hardware to play with, but I'll be happy to add arm64
+patches to my series and to try to maintain them.
 
 > 
+> On Tue, Apr 17, 2018 at 3:33 PM, Laurent Dufour
+> <ldufour@linux.vnet.ibm.com> wrote:
+>> From: Peter Zijlstra <peterz@infradead.org>
 >>
->>>>
->>>> The flip side is that we cannot distinguish between a vma_adjust() and
->>>> the unmap_page_range() -- where with the former we could have
->>>> re-checked the vma bounds against the address.
->>>>
->>>> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
->>>>
->>>> [Port to 4.12 kernel]
->>>> [Build depends on CONFIG_SPECULATIVE_PAGE_FAULT]
->>>> [Introduce vm_write_* inline function depending on
->>>>  CONFIG_SPECULATIVE_PAGE_FAULT]
->>>> [Fix lock dependency between mapping->i_mmap_rwsem and vma->vm_sequence by
->>>>  using vm_raw_write* functions]
->>>> [Fix a lock dependency warning in mmap_region() when entering the error
->>>>  path]
->>>> [move sequence initialisation INIT_VMA()]
->>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->>>> ---
->>>>  include/linux/mm.h       | 44 ++++++++++++++++++++++++++++++++++++++++++++
->>>>  include/linux/mm_types.h |  3 +++
->>>>  mm/memory.c              |  2 ++
->>>>  mm/mmap.c                | 31 +++++++++++++++++++++++++++++++
->>>>  4 files changed, 80 insertions(+)
->>>>
->>>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>>> index efc1248b82bd..988daf7030c9 100644
->>>> --- a/include/linux/mm.h
->>>> +++ b/include/linux/mm.h
->>>> @@ -1264,6 +1264,9 @@ struct zap_details {
->>>>  static inline void INIT_VMA(struct vm_area_struct *vma)
->>>>  {
->>>>  	INIT_LIST_HEAD(&vma->anon_vma_chain);
->>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->>>> +	seqcount_init(&vma->vm_sequence);
->>>> +#endif
->>>>  }
->>>>  
->>>>  struct page *_vm_normal_page(struct vm_area_struct *vma, unsigned long addr,
->>>> @@ -1386,6 +1389,47 @@ static inline void unmap_shared_mapping_range(struct address_space *mapping,
->>>>  	unmap_mapping_range(mapping, holebegin, holelen, 0);
->>>>  }
->>>>  
->>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->>>> +static inline void vm_write_begin(struct vm_area_struct *vma)
->>>> +{
->>>> +	write_seqcount_begin(&vma->vm_sequence);
->>>> +}
->>>> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
->>>> +					 int subclass)
->>>> +{
->>>> +	write_seqcount_begin_nested(&vma->vm_sequence, subclass);
->>>> +}
->>>> +static inline void vm_write_end(struct vm_area_struct *vma)
->>>> +{
->>>> +	write_seqcount_end(&vma->vm_sequence);
->>>> +}
->>>> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
->>>> +{
->>>> +	raw_write_seqcount_begin(&vma->vm_sequence);
->>>> +}
->>>> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
->>>> +{
->>>> +	raw_write_seqcount_end(&vma->vm_sequence);
->>>> +}
->>>> +#else
->>>> +static inline void vm_write_begin(struct vm_area_struct *vma)
->>>> +{
->>>> +}
->>>> +static inline void vm_write_begin_nested(struct vm_area_struct *vma,
->>>> +					 int subclass)
->>>> +{
->>>> +}
->>>> +static inline void vm_write_end(struct vm_area_struct *vma)
->>>> +{
->>>> +}
->>>> +static inline void vm_raw_write_begin(struct vm_area_struct *vma)
->>>> +{
->>>> +}
->>>> +static inline void vm_raw_write_end(struct vm_area_struct *vma)
->>>> +{
->>>> +}
->>>> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
->>>> +
->>>>  extern int access_process_vm(struct task_struct *tsk, unsigned long addr,
->>>>  		void *buf, int len, unsigned int gup_flags);
->>>>  extern int access_remote_vm(struct mm_struct *mm, unsigned long addr,
->>>> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
->>>> index 21612347d311..db5e9d630e7a 100644
->>>> --- a/include/linux/mm_types.h
->>>> +++ b/include/linux/mm_types.h
->>>> @@ -335,6 +335,9 @@ struct vm_area_struct {
->>>>  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
->>>>  #endif
->>>>  	struct vm_userfaultfd_ctx vm_userfaultfd_ctx;
->>>> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
->>>> +	seqcount_t vm_sequence;
->>>> +#endif
->>>>  } __randomize_layout;
->>>>  
->>>>  struct core_thread {
->>>> diff --git a/mm/memory.c b/mm/memory.c
->>>> index f86efcb8e268..f7fed053df80 100644
->>>> --- a/mm/memory.c
->>>> +++ b/mm/memory.c
->>>> @@ -1503,6 +1503,7 @@ void unmap_page_range(struct mmu_gather *tlb,
->>>>  	unsigned long next;
->>>>  
->>>>  	BUG_ON(addr >= end);
->>>
->>> The comment about saying it aims for page-table stability will help.
+>> Try a speculative fault before acquiring mmap_sem, if it returns with
+>> VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
+>> traditional fault.
 >>
->> A comment may be added mentioning that we use the seqcount to indicate that the
->> VMA is modified, being unmapped. But there is not a real page table protection,
->> and I think this may be confusing to talk about page table stability here.
+>> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+>>
+>> [Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
+>>  handle_speculative_fault()]
+>> [Retry with usual fault path in the case VM_ERROR is returned by
+>>  handle_speculative_fault(). This allows signal to be delivered]
+>> [Don't build SPF call if !CONFIG_SPECULATIVE_PAGE_FAULT]
+>> [Try speculative fault path only for multi threaded processes]
+>> [Try reuse to the VMA fetch during the speculative path in case of retry]
+>> [Call reuse_spf_or_find_vma()]
+>> [Handle memory protection key fault]
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/x86/mm/fault.c | 42 ++++++++++++++++++++++++++++++++++++++----
+>>  1 file changed, 38 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+>> index 73bd8c95ac71..59f778386df5 100644
+>> --- a/arch/x86/mm/fault.c
+>> +++ b/arch/x86/mm/fault.c
+>> @@ -1220,7 +1220,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>>         struct mm_struct *mm;
+>>         int fault, major = 0;
+>>         unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
+>> -       u32 pkey;
+>> +       u32 pkey, *pt_pkey = &pkey;
+>>
+>>         tsk = current;
+>>         mm = tsk->mm;
+>> @@ -1310,6 +1310,30 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>>                 flags |= FAULT_FLAG_INSTRUCTION;
+>>
+>>         /*
+>> +        * Do not try speculative page fault for kernel's pages and if
+>> +        * the fault was due to protection keys since it can't be resolved.
+>> +        */
+>> +       if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT) &&
+>> +           !(error_code & X86_PF_PK)) {
 > 
-> Okay, so here you mean seqcount is not protecting VMA's fields but vma unmap
-> operation like you mentioned above. I was confused like below description.
-> 
-> "The unmap_page_range() one allows us to make assumptions about
-> page-tables; when we find the seqcount hasn't changed we can assume
-> page-tables are still valid"
-> 
-> Instead of using page-tables's validness in descriptoin, it would be better
-> to use scenario you mentioned about VMA unmap operation and page fault race.
+> You can simplify this condition by dropping the IS_ENABLED() check as
+> you already provide an alternate implementation of
+> handle_speculative_fault() when CONFIG_SPECULATIVE_PAGE_FAULT is not
+> defined.
 
-Ok will do that.
-Thanks.
+Yes you're right, I completely forgot about that define of
+handle_speculative_fault() when CONFIG_SPECULATIVE_PAGE_FAULT is not set, that
+will definitively makes that part of code more readable.
+
+> 
+>> +               fault = handle_speculative_fault(mm, address, flags, &vma);
+>> +               if (fault != VM_FAULT_RETRY) {
+>> +                       perf_sw_event(PERF_COUNT_SW_SPF, 1, regs, address);
+>> +                       /*
+>> +                        * Do not advertise for the pkey value since we don't
+>> +                        * know it.
+>> +                        * This is not a matter as we checked for X86_PF_PK
+>> +                        * earlier, so we should not handle pkey fault here,
+>> +                        * but to be sure that mm_fault_error() callees will
+>> +                        * not try to use it, we invalidate the pointer.
+>> +                        */
+>> +                       pt_pkey = NULL;
+>> +                       goto done;
+>> +               }
+>> +       } else {
+>> +               vma = NULL;
+>> +       }
+> 
+> The else part can be dropped if vma is initialised to NULL when it is
+> declared at the top of the function.
+Sure.
+
+> 
+>> +
+>> +       /*
+>>          * When running in the kernel we expect faults to occur only to
+>>          * addresses in user space.  All other faults represent errors in
+>>          * the kernel and should generate an OOPS.  Unfortunately, in the
+>> @@ -1342,7 +1366,8 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>>                 might_sleep();
+>>         }
+>>
+>> -       vma = find_vma(mm, address);
+>> +       if (!vma || !can_reuse_spf_vma(vma, address))
+>> +               vma = find_vma(mm, address);
+> 
+> Is there a measurable benefit from reusing the vma?
+> 
+> Dropping the vma reference unconditionally after speculative page
+> fault handling gets rid of the implicit state when "vma != NULL"
+> (increased ref-count). I found it a bit confusing to follow.
+
+I do agree, this is quite confusing. My initial goal was to be able to reuse
+the VMA in the case a protection key error was detected, but it's not really
+necessary on x86 since we know at the beginning of the fault operation that
+protection key are in the loop. This is not the case on ppc64 but I couldn't
+find a way to easily rely on the speculatively fetched VMA neither, so for
+protection keys, this didn't help.
+
+Regarding the measurable benefit of reusing the fetched vma, I did further
+tests using will-it-scale/page_fault2_threads test, and I'm no more really
+convince that this worth the added complexity. I think I'll drop the patch "mm:
+speculative page fault handler return VMA" of the series, and thus remove the
+call to can_reuse_spf_vma().
+
+Thanks,
+Laurent.
+
+> 
+>>         if (unlikely(!vma)) {
+>>                 bad_area(regs, error_code, address);
+>>                 return;
+>> @@ -1409,8 +1434,15 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
+>>                 if (flags & FAULT_FLAG_ALLOW_RETRY) {
+>>                         flags &= ~FAULT_FLAG_ALLOW_RETRY;
+>>                         flags |= FAULT_FLAG_TRIED;
+>> -                       if (!fatal_signal_pending(tsk))
+>> +                       if (!fatal_signal_pending(tsk)) {
+>> +                               /*
+>> +                                * Do not try to reuse this vma and fetch it
+>> +                                * again since we will release the mmap_sem.
+>> +                                */
+>> +                               if (IS_ENABLED(CONFIG_SPECULATIVE_PAGE_FAULT))
+>> +                                       vma = NULL;
+> 
+> Regardless of the above comment, can the vma be reset here unconditionally?
+> 
+> Thanks,
+> Punit
+> 
