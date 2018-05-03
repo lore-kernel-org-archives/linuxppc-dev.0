@@ -1,17 +1,25 @@
-Return-Path: <npiggin@gmail.com>
-Date: Thu, 3 May 2018 19:28:52 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com,
- skiboot@lists.ozlabs.org
-Subject: Re: [Skiboot] [PATCH 1/2] SLW: Remove stop1_lite and stop0 stop states
-Message-ID: <20180503192852.13a42712@roar.ozlabs.ibm.com>
-In-Reply-To: <20180503090647.xsfw3p7mq2pwd2rw@aksadiga.ibm>
-References: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
- <20180503090647.xsfw3p7mq2pwd2rw@aksadiga.ibm>
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40c9Dp6bVPzF2VC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 19:43:06 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id a22so165605pfn.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 02:43:06 -0700 (PDT)
+Date: Thu, 3 May 2018 17:43:01 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 10/11] KVM: PPC: reconstruct LOAD_VMX/STORE_VMX
+ instruction mmio emulation with analyse_intr() input
+Message-ID: <20180503094301.GJ6755@simonLocalRHEL7.x64>
+References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
+ <1524657284-16706-11-git-send-email-wei.guo.simon@gmail.com>
+ <20180503061715.GK6795@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180503061715.GK6795@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,66 +29,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 3 May 2018 14:36:47 +0530
-Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
-
-> On Tue, May 01, 2018 at 01:47:23PM +1000, Nicholas Piggin wrote:
-> > On Mon, 30 Apr 2018 14:42:08 +0530
-> > Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
-> >   
-> > > Powersaving for stop0_lite and stop1_lite is observed to be quite similar
-> > > and both states resume without state loss. Using context_switch test [1]
-> > > we observe that stop0_lite has slightly lower latency, hence removing
-> > > stop1_lite.
-> > > 
-> > > [1] linux/tools/testing/selftests/powerpc/benchmarks/context_switch.c
-> > > 
-> > > Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>  
+On Thu, May 03, 2018 at 04:17:15PM +1000, Paul Mackerras wrote:
+> On Wed, Apr 25, 2018 at 07:54:43PM +0800, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
 > > 
-> > I'm okay for removing stop1_lite and stop2_lite -- SMT switching
-> > is very latency critical. If we decide to actually start saving
-> > real power then SMT should already have been switched.
+> > This patch reconstructs LOAD_VMX/STORE_VMX instruction MMIO emulation with
+> > analyse_intr() input. When emulating the store, the VMX reg will need to
+> > be flushed so that the right reg val can be retrieved before writing to
+> > IO MEM.
 > > 
-> > So I would put stop1_lite and stop2_lite removal in the same patch.  
+> > Suggested-by: Paul Mackerras <paulus@ozlabs.org>
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> I can do this.
-> 
-> > 
-> > Then what do we have? stop0_lite, stop0, stop1 for our fast idle
-> > states.  
-> 
-> Currently we were looking at  stop0_lite , stop1 as the fast idle states
-> because stop0 and stop1 have similar latency and powersaving.
-> Having so many low latency states does not make sense.
-> 
-> > 
-> > I would be against removing stop0 if that is our fastest way to
-> > release SMT resources, even if there is only a small advantage. Why
-> > not remove stop1 instead?
-> >  
-> SMT-folding comes into picture only when we have at least one thread
-> running in the core. stop0 and stop1 has exactly same power-saving and
-> both will release SMT resources if at least one thread in the core is
-> running.
-
-Right, but you don't know that other threads are running or will remain
-running when you enter stop. If not, then latency is higher for stop1,
-no? So we need to be using stop0.
+> This looks fine for lvx and stvx, but now we are also doing something
+> for the vector element loads and stores (lvebx, stvebx, lvehx, stvehx,
+> etc.) without having the logic to insert or extract the correct
+> element in the vector register image.  We need either to generate an
+> error for the element load/store instructions, or handle them
+> correctly.
+Yes. I will consider that.
 
 > 
-> As soon as all threads are idle core enters stop0/stop1, where stop1
-> does a bit more powersaving than stop0.
+> > diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
+> > index 2dbdf9a..0bfee2f 100644
+> > --- a/arch/powerpc/kvm/emulate_loadstore.c
+> > +++ b/arch/powerpc/kvm/emulate_loadstore.c
+> > @@ -160,6 +160,27 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+> >  					KVM_MMIO_REG_FPR|op.reg, size, 1);
+> >  			break;
+> >  #endif
+> > +#ifdef CONFIG_ALTIVEC
+> > +		case LOAD_VMX:
+> > +			if (kvmppc_check_altivec_disabled(vcpu))
+> > +				return EMULATE_DONE;
+> > +
+> > +			/* VMX access will need to be size aligned */
 > 
-> > We also need to better evaluate stop0_lite. How much advantage does
-> > that have over snooze?  
+> This comment isn't quite right; it isn't that the address needs to be
+> size-aligned, it's that the hardware forcibly aligns it.  So I would
+> say something like /* Hardware enforces alignment of VMX accesses */.
 > 
-> I evaluated snooze and stop0_lite, there is an additional ipi latency of
-> a few microseconds in case of stop0_lite. So snooze cannot still be
-> replaced by stop0_lite.
+I will update that.
 
-I meant the other way around. Replace stop0_lite with snooze.
-
-So we would have snooze, stop0, stop2, and stop4 and/or 5.
+> > +			vcpu->arch.vaddr_accessed &= ~((unsigned long)size - 1);
+> > +			vcpu->arch.paddr_accessed &= ~((unsigned long)size - 1);
+> > +
+> > +			if (size == 16) {
+> > +				vcpu->arch.mmio_vmx_copy_nums = 2;
+> > +				emulated = kvmppc_handle_load128_by2x64(run,
+> > +						vcpu, KVM_MMIO_REG_VMX|op.reg,
+> > +						1);
+> > +			} else if (size <= 8)
+> > +				emulated = kvmppc_handle_load(run, vcpu,
+> > +						KVM_MMIO_REG_VMX|op.reg,
+> > +						size, 1);
+> > +
+> > +			break;
+> > +#endif
+> >  		case STORE:
+> >  			if (op.type & UPDATE) {
+> >  				vcpu->arch.mmio_ra = op.update_reg;
+> > @@ -197,6 +218,36 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+> >  					VCPU_FPR(vcpu, op.reg), size, 1);
+> >  			break;
+> >  #endif
+> > +#ifdef CONFIG_ALTIVEC
+> > +		case STORE_VMX:
+> > +			if (kvmppc_check_altivec_disabled(vcpu))
+> > +				return EMULATE_DONE;
+> > +
+> > +			/* VMX access will need to be size aligned */
+> > +			vcpu->arch.vaddr_accessed &= ~((unsigned long)size - 1);
+> > +			vcpu->arch.paddr_accessed &= ~((unsigned long)size - 1);
+> > +
+> > +			/* if it is PR KVM, the FP/VEC/VSX registers need to
+> > +			 * be flushed so that kvmppc_handle_store() can read
+> > +			 * actual VMX vals from vcpu->arch.
+> > +			 */
+> > +			if (!is_kvmppc_hv_enabled(vcpu->kvm))
+> 
+> As before, I suggest just testing that the function pointer isn't
+> NULL.
+Got it.
 
 Thanks,
-Nick
+- Simon
