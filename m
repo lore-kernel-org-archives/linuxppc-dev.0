@@ -2,20 +2,20 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40c4sn2CcYzF2Tl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40c4sn3RF0zF2Tm
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 16:26:21 +1000 (AEST)
-Date: Thu, 3 May 2018 15:34:01 +1000
+Date: Thu, 3 May 2018 15:48:26 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: wei.guo.simon@gmail.com
 Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 01/11] KVM: PPC: add pt_regs into kvm_vcpu_arch and move
- vcpu->arch.gpr[] into it
-Message-ID: <20180503053401.GB6795@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH 03/11] KVM: PPC: Fix a mmio_host_swabbed uninitialized
+ usage issue when VMX store
+Message-ID: <20180503054826.GD6795@fergus.ozlabs.ibm.com>
 References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
- <1524657284-16706-2-git-send-email-wei.guo.simon@gmail.com>
+ <1524657284-16706-4-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1524657284-16706-2-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1524657284-16706-4-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,23 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 25, 2018 at 07:54:34PM +0800, wei.guo.simon@gmail.com wrote:
+On Wed, Apr 25, 2018 at 07:54:36PM +0800, wei.guo.simon@gmail.com wrote:
 > From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> Current regs are scattered at kvm_vcpu_arch structure and it will
-> be more neat to organize them into pt_regs structure.
+> When KVM emulates VMX store, it will invoke kvmppc_get_vmx_data() to
+> retrieve VMX reg val. kvmppc_get_vmx_data() will check mmio_host_swabbed
+> to decide which double word of vr[] to be used. But the
+> mmio_host_swabbed can be uninitiazed during VMX store procedure:
 > 
-> Also it will enable reconstruct MMIO emulation code with
+> kvmppc_emulate_loadstore
+> 	\- kvmppc_handle_store128_by2x64
+> 		\- kvmppc_get_vmx_data
+> 
+> This patch corrects this by using kvmppc_need_byteswap() to choose
+> double word of vr[] and initialized mmio_host_swabbed to avoid invisble
+> trouble.
+> 
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 
-"reimplement" would be clearer than "reconstruct" here, I think.
-
-> @@ -438,7 +438,7 @@ int main(void)
->  	OFFSET(VCPU_TAR, kvm_vcpu, arch.tar);
->  #endif
->  	OFFSET(VCPU_CR, kvm_vcpu, arch.cr);
-> -	OFFSET(VCPU_PC, kvm_vcpu, arch.pc);
-> +	OFFSET(VCPU_PC, kvm_vcpu, arch.nip);
-
-This hunk shouldn't be in this patch.
+The patch is correct, but I think the patch description needs to say
+that vcpu->arch.mmio_host_swabbed is not meant to be used at all for
+emulation of store instructions, and this patch makes that true for
+VMX stores.
 
 Paul.
