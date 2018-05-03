@@ -1,28 +1,19 @@
-Return-Path: <srs0=gbwx=hw=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cFxp6CYNzF257
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 23:15:26 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40cFxp3KNfz8wRT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 23:15:26 +1000 (AEST)
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40cFxm1brYz9s7c
- for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2018 23:15:23 +1000 (AEST)
-Date: Thu, 3 May 2018 15:15:18 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
-Subject: Re: [PATCH 3/6] powerpc/64s: Patch barrier_nospec in modules
-Message-ID: <20180503151518.00a2ede0@kitsune.suse.cz>
-In-Reply-To: <20180424041559.32410-3-mpe@ellerman.id.au>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180424041559.32410-3-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cGCR6y6YzF2S9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 23:27:15 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 13/13] powerpc/eeh: Refactor report functions
+In-Reply-To: <313ced0e1c4f5140566846bb41f1c42c26c96a0b.1525242772.git.sbobroff@linux.ibm.com>
+References: <cover.1525242772.git.sbobroff@linux.ibm.com>
+ <313ced0e1c4f5140566846bb41f1c42c26c96a0b.1525242772.git.sbobroff@linux.ibm.com>
+Date: Thu, 03 May 2018 23:27:12 +1000
+Message-ID: <87efisamz3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,113 +23,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Apr 2018 14:15:56 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> From: Michal Suchanek <msuchanek@suse.de>
-> 
-> Note that unlike RFI which is patched only in kernel the nospec state
-> reflects settings at the time the module was loaded.
-> 
-> Iterating all modules and re-patching every time the settings change
-> is not implemented.
-> 
-> Based on lwsync patching.
-> 
-> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/setup.h  |  6 ++++++
->  arch/powerpc/kernel/module.c      |  6 ++++++
->  arch/powerpc/lib/feature-fixups.c | 16 +++++++++++++---
->  3 files changed, 25 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/setup.h
-> b/arch/powerpc/include/asm/setup.h index afc7280cce3b..4335cddc1cf2
-> 100644 --- a/arch/powerpc/include/asm/setup.h
-> +++ b/arch/powerpc/include/asm/setup.h
-> @@ -54,6 +54,12 @@ void setup_rfi_flush(enum l1d_flush_type, bool
-> enable); void do_rfi_flush_fixups(enum l1d_flush_type types);
->  void do_barrier_nospec_fixups(bool enable);
+Sam Bobroff <sbobroff@linux.ibm.com> writes:
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index eb4feee81ff4..1c4336dcf9f5 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -54,6 +54,25 @@ static int eeh_result_priority(enum pci_ers_result result)
+>  	}
+>  };
 >  
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +void do_barrier_nospec_fixups_range(bool enable, void *start, void
-> *end); +#else
-> +static inline void do_barrier_nospec_fixups_range(bool enable, void
-> *start, void *end) { }; +#endif
+> +const char *pci_ers_result_name(enum pci_ers_result r)
+> +{
+> +	switch (r) {
+> +	case PCI_ERS_RESULT_NONE: return "none";
+> +	case PCI_ERS_RESULT_CAN_RECOVER: return "can recover";
+> +	case PCI_ERS_RESULT_NEED_RESET: return "need reset";
+> +	case PCI_ERS_RESULT_DISCONNECT: return "disconnect";
+> +	case PCI_ERS_RESULT_RECOVERED: return "recovered";
+> +	case PCI_ERS_RESULT_NO_AER_DRIVER: return "no AER driver";
+> +	default:
+> +		WARN_ONCE(1, "Unknown result type");
+> +		return "unknown";
+> +	}
+> +};
 > +
->  #endif /* !__ASSEMBLY__ */
->  
->  #endif	/* _ASM_POWERPC_SETUP_H */
-> diff --git a/arch/powerpc/kernel/module.c
-> b/arch/powerpc/kernel/module.c index 3f7ba0f5bf29..a72698cd3dd0 100644
-> --- a/arch/powerpc/kernel/module.c
-> +++ b/arch/powerpc/kernel/module.c
-> @@ -72,6 +72,12 @@ int module_finalize(const Elf_Ehdr *hdr,
->  		do_feature_fixups(powerpc_firmware_features,
->  				  (void *)sect->sh_addr,
->  				  (void *)sect->sh_addr +
-> sect->sh_size); +
-> +	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
-> +	if (sect != NULL)
-> +		do_barrier_nospec_fixups_range(true,
+> +#define eeh_infoline(EDEV, FMT, ...) \
+> +pr_info("EEH: PE#%x (PCI %s): " pr_fmt(FMT) "\n", EDEV->pe_config_addr, \
+> +((EDEV->pdev) ? dev_name(&EDEV->pdev->dev) : "NONE"), ##__VA_ARGS__)
 
-This saves a global but always patches modules with the ORI
-flush. The patching also produces a log message which can be confusing
-to the user. Even when barrier is disabled "barrier-nospec: using ORI
-speculation barrier" is logged when modules are loaded.
+Ooof, I guess.
 
-For consistency when debugging the settings I would suggest to keep the
-export.
+It would be nicer as a function.
 
-It is also no longer consistent with the commit message.
+"infoline" annoys me for some reason, "eeh_info" ?
 
-Thanks
-
-Michal
-
-> +				  (void *)sect->sh_addr,
-> +				  (void *)sect->sh_addr +
-> sect->sh_size); #endif
->  
->  	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
-> diff --git a/arch/powerpc/lib/feature-fixups.c
-> b/arch/powerpc/lib/feature-fixups.c index 093c1d2ea5fd..3b37529f82f8
-> 100644 --- a/arch/powerpc/lib/feature-fixups.c
-> +++ b/arch/powerpc/lib/feature-fixups.c
-> @@ -163,14 +163,14 @@ void do_rfi_flush_fixups(enum l1d_flush_type
-> types) : "unknown");
+> @@ -223,123 +242,118 @@ static void eeh_set_irq_state(struct eeh_pe *root, bool enable)
+>  				}
 >  }
 >  
-> -void do_barrier_nospec_fixups(bool enable)
-> +void do_barrier_nospec_fixups_range(bool enable, void *fixup_start,
-> void *fixup_end) {
->  	unsigned int instr, *dest;
->  	long *start, *end;
->  	int i;
->  
-> -	start = PTRRELOC(&__start___barrier_nospec_fixup),
-> -	end = PTRRELOC(&__stop___barrier_nospec_fixup);
-> +	start = fixup_start;
-> +	end = fixup_end;
->  
->  	instr = 0x60000000; /* nop */
->  
-> @@ -189,6 +189,16 @@ void do_barrier_nospec_fixups(bool enable)
->  	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n",
-> i); }
->  
-> +void do_barrier_nospec_fixups(bool enable)
+> +static void eeh_pe_report(const char *name, struct eeh_pe *root,
+> +			  enum pci_ers_result (*fn)(struct eeh_dev *,
+> +						    struct pci_driver *),
+> +			  enum pci_ers_result *result)
 > +{
-> +	void *start, *end;
+> +	struct eeh_pe *pe;
+> +	struct eeh_dev *edev, *tmp;
+> +	enum pci_ers_result new_result;
 > +
-> +	start = PTRRELOC(&__start___barrier_nospec_fixup),
-> +	end = PTRRELOC(&__stop___barrier_nospec_fixup);
+> +	pr_info("EEH: Beginning: '%s'\n", name);
+> +	eeh_for_each_pe(root, pe) {
+> +		eeh_pe_for_each_dev(pe, edev, tmp) {
+
+This should be in a separate function.
+
+> +			device_lock(&edev->pdev->dev);
+> +			if (eeh_edev_actionable(edev)) {
+> +				struct pci_driver *driver;
 > +
-> +	do_barrier_nospec_fixups_range(enable, start, end);
-> +}
+> +				driver = eeh_pcid_get(edev->pdev);
 > +
->  #endif /* CONFIG_PPC_BOOK3S_64 */
->  
->  void do_lwsync_fixups(unsigned long value, void *fixup_start, void
-> *fixup_end)
+> +				if (!driver)
+> +					eeh_infoline(edev, "no driver");
+> +				else if (!driver->err_handler)
+> +					eeh_infoline(edev,
+> +						     "driver not EEH aware");
+> +				else if (edev->mode & EEH_DEV_NO_HANDLER)
+> +					eeh_infoline(edev,
+> +						     "driver bound too late");
+> +				else {
+> +					new_result = fn(edev, driver);
+> +					eeh_infoline(edev,
+> +						"%s driver reports: '%s'",
+> +						driver->name,
+> +						pci_ers_result_name(new_result));
+> +					if (result)
+> +						*result = merge_result(*result,
+> +								       new_result);
+> +				}
+> +				if (driver)
+> +					eeh_pcid_put(edev->pdev);
+> +			} else {
+> +				eeh_infoline(edev, "not actionable (%d,%d,%d)",
+> +					     !!edev->pdev,
+> +					     !eeh_dev_removed(edev),
+> +					     !eeh_pe_passed(edev->pe));
+> +			}
+> +			device_unlock(&edev->pdev->dev);
+
+^^^
+
+
+cheers
