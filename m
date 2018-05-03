@@ -1,35 +1,25 @@
-Return-Path: <akshay.adiga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40c8RH3gRGzF2W4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 19:07:07 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4395Jbp042382
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 May 2018 05:07:04 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hquv3rrw1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 05:07:04 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Thu, 3 May 2018 10:07:02 +0100
-Date: Thu, 3 May 2018 14:36:47 +0530
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, stewart@linux.vnet.ibm.com,
- skiboot@lists.ozlabs.org
-Subject: Re: [Skiboot] [PATCH 1/2] SLW: Remove stop1_lite and stop0 stop states
-References: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40c8RY0QPYzF2VQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2018 19:07:20 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id j5so14197885pfh.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 May 2018 02:07:20 -0700 (PDT)
+Date: Thu, 3 May 2018 17:07:16 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 07/11] KVM: PPC: reconstruct non-SIMD LOAD/STORE
+ instruction mmio emulation with analyse_intr() input
+Message-ID: <20180503090716.GG6755@simonLocalRHEL7.x64>
+References: <1524657284-16706-1-git-send-email-wei.guo.simon@gmail.com>
+ <1524657284-16706-8-git-send-email-wei.guo.simon@gmail.com>
+ <20180503060346.GH6795@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
-Message-Id: <20180503090647.xsfw3p7mq2pwd2rw@aksadiga.ibm>
+In-Reply-To: <20180503060346.GH6795@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,103 +29,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 01, 2018 at 01:47:23PM +1000, Nicholas Piggin wrote:
-> On Mon, 30 Apr 2018 14:42:08 +0530
-> Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> wrote:
-> 
-> > Powersaving for stop0_lite and stop1_lite is observed to be quite similar
-> > and both states resume without state loss. Using context_switch test [1]
-> > we observe that stop0_lite has slightly lower latency, hence removing
-> > stop1_lite.
+On Thu, May 03, 2018 at 04:03:46PM +1000, Paul Mackerras wrote:
+> On Wed, Apr 25, 2018 at 07:54:40PM +0800, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
 > > 
-> > [1] linux/tools/testing/selftests/powerpc/benchmarks/context_switch.c
+> > This patch reconstructs non-SIMD LOAD/STORE instruction MMIO emulation
+> > with analyse_intr() input. It utilizes the BYTEREV/UPDATE/SIGNEXT
+> > properties exported by analyse_instr() and invokes
+> > kvmppc_handle_load(s)/kvmppc_handle_store() accordingly.
 > > 
-> > Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> > It also move CACHEOP type handling into the skeleton.
+> > 
+> > instruction_type within sstep.h is renamed to avoid conflict with
+> > kvm_ppc.h.
 > 
-> I'm okay for removing stop1_lite and stop2_lite -- SMT switching
-> is very latency critical. If we decide to actually start saving
-> real power then SMT should already have been switched.
+> I'd prefer to change the one in kvm_ppc.h, especially since that one
+> isn't exactly about the type of instruction, but more about the type
+> of interrupt led to us trying to fetch the instruction.
 > 
-> So I would put stop1_lite and stop2_lite removal in the same patch.
+Agreed.
 
-I can do this.
-
-> 
-> Then what do we have? stop0_lite, stop0, stop1 for our fast idle
-> states.
-
-Currently we were looking at  stop0_lite , stop1 as the fast idle states
-because stop0 and stop1 have similar latency and powersaving.
-Having so many low latency states does not make sense.
-
-> 
-> I would be against removing stop0 if that is our fastest way to
-> release SMT resources, even if there is only a small advantage. Why
-> not remove stop1 instead?
->
-SMT-folding comes into picture only when we have at least one thread
-running in the core. stop0 and stop1 has exactly same power-saving and
-both will release SMT resources if at least one thread in the core is
-running.
-
-As soon as all threads are idle core enters stop0/stop1, where stop1
-does a bit more powersaving than stop0.
-
-> We also need to better evaluate stop0_lite. How much advantage does
-> that have over snooze?
-
-I evaluated snooze and stop0_lite, there is an additional ipi latency of
-a few microseconds in case of stop0_lite. So snooze cannot still be
-replaced by stop0_lite.
-
-> 
-> Thanks,
-> Nick
-> 
-> 
+> > Suggested-by: Paul Mackerras <paulus@ozlabs.org>
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 > > ---
-> >  hw/slw.c | 30 ------------------------------
-> >  1 file changed, 30 deletions(-)
+> >  arch/powerpc/include/asm/sstep.h     |   2 +-
+> >  arch/powerpc/kvm/emulate_loadstore.c | 282 +++++++----------------------------
+> >  2 files changed, 51 insertions(+), 233 deletions(-)
 > > 
-> > diff --git a/hw/slw.c b/hw/slw.c
-> > index 3f9abaa..edfc783 100644
-> > --- a/hw/slw.c
-> > +++ b/hw/slw.c
-> > @@ -521,36 +521,6 @@ static struct cpu_idle_states power9_cpu_idle_states[] = {
-> >  				 | OPAL_PM_PSSCR_TR(3),
-> >  		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
-> >  	{
-> > -		.name = "stop0",
-> > -		.latency_ns = 2000,
-> > -		.residency_ns = 20000,
-> > -		.flags = 0*OPAL_PM_DEC_STOP \
-> > -		       | 0*OPAL_PM_TIMEBASE_STOP  \
-> > -		       | 1*OPAL_PM_LOSE_USER_CONTEXT \
-> > -		       | 0*OPAL_PM_LOSE_HYP_CONTEXT \
-> > -		       | 0*OPAL_PM_LOSE_FULL_CONTEXT \
-> > -		       | 1*OPAL_PM_STOP_INST_FAST,
-> > -		.pm_ctrl_reg_val = OPAL_PM_PSSCR_RL(0) \
-> > -				 | OPAL_PM_PSSCR_MTL(3) \
-> > -				 | OPAL_PM_PSSCR_TR(3) \
-> > -				 | OPAL_PM_PSSCR_ESL \
-> > -				 | OPAL_PM_PSSCR_EC,
-> > -		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
-> > -	{
-> > -		.name = "stop1_lite", /* Enter stop1 with no state loss */
-> > -		.latency_ns = 4900,
-> > -		.residency_ns = 49000,
-> > -		.flags = 0*OPAL_PM_DEC_STOP \
-> > -		       | 0*OPAL_PM_TIMEBASE_STOP  \
-> > -		       | 0*OPAL_PM_LOSE_USER_CONTEXT \
-> > -		       | 0*OPAL_PM_LOSE_HYP_CONTEXT \
-> > -		       | 0*OPAL_PM_LOSE_FULL_CONTEXT \
-> > -		       | 1*OPAL_PM_STOP_INST_FAST,
-> > -		.pm_ctrl_reg_val = OPAL_PM_PSSCR_RL(1) \
-> > -				 | OPAL_PM_PSSCR_MTL(3) \
-> > -				 | OPAL_PM_PSSCR_TR(3),
-> > -		.pm_ctrl_reg_mask = OPAL_PM_PSSCR_MASK },
-> > -	{
-> >  		.name = "stop1",
-> >  		.latency_ns = 5000,
-> >  		.residency_ns = 50000,
+> > diff --git a/arch/powerpc/include/asm/sstep.h b/arch/powerpc/include/asm/sstep.h
+> > index ab9d849..0a1a312 100644
+> > --- a/arch/powerpc/include/asm/sstep.h
+> > +++ b/arch/powerpc/include/asm/sstep.h
+> > @@ -23,7 +23,7 @@
+> >  #define IS_RFID(instr)		(((instr) & 0xfc0007fe) == 0x4c000024)
+> >  #define IS_RFI(instr)		(((instr) & 0xfc0007fe) == 0x4c000064)
+> >  
+> > -enum instruction_type {
+> > +enum analyse_instruction_type {
+> >  	COMPUTE,		/* arith/logical/CR op, etc. */
+> >  	LOAD,			/* load and store types need to be contiguous */
+> >  	LOAD_MULTI,
+> > diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
+> > index 90b9692..aaaf872 100644
+> > --- a/arch/powerpc/kvm/emulate_loadstore.c
+> > +++ b/arch/powerpc/kvm/emulate_loadstore.c
+> > @@ -31,9 +31,12 @@
+> >  #include <asm/kvm_ppc.h>
+> >  #include <asm/disassemble.h>
+> >  #include <asm/ppc-opcode.h>
+> > +#include <asm/sstep.h>
+> >  #include "timing.h"
+> >  #include "trace.h"
+> >  
+> > +int analyse_instr(struct instruction_op *op, const struct pt_regs *regs,
+> > +		  unsigned int instr);
 > 
+> You shouldn't need this prototype here, since there's one in sstep.h.
+> 
+Yes.
+
+> >  #ifdef CONFIG_PPC_FPU
+> >  static bool kvmppc_check_fp_disabled(struct kvm_vcpu *vcpu)
+> >  {
+> > @@ -84,8 +87,9 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+> >  	struct kvm_run *run = vcpu->run;
+> >  	u32 inst;
+> >  	int ra, rs, rt;
+> > -	enum emulation_result emulated;
+> > +	enum emulation_result emulated = EMULATE_FAIL;
+> >  	int advance = 1;
+> > +	struct instruction_op op;
+> >  
+> >  	/* this default type might be overwritten by subcategories */
+> >  	kvmppc_set_exit_type(vcpu, EMULATED_INST_EXITS);
+> > @@ -114,144 +118,64 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+> >  	vcpu->arch.mmio_update_ra = 0;
+> >  	vcpu->arch.mmio_host_swabbed = 0;
+> >  
+> > -	switch (get_op(inst)) {
+> > -	case 31:
+> > -		switch (get_xop(inst)) {
+> > -		case OP_31_XOP_LWZX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 4, 1);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_LWZUX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 4, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_LBZX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 1, 1);
+> > -			break;
+> > +	emulated = EMULATE_FAIL;
+> > +	vcpu->arch.regs.msr = vcpu->arch.shared->msr;
+> > +	vcpu->arch.regs.ccr = vcpu->arch.cr;
+> > +	if (analyse_instr(&op, &vcpu->arch.regs, inst) == 0) {
+> > +		int type = op.type & INSTR_TYPE_MASK;
+> > +		int size = GETSIZE(op.type);
+> >  
+> > -		case OP_31_XOP_LBZUX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 1, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > +		switch (type) {
+> > +		case LOAD:  {
+> > +			int instr_byte_swap = op.type & BYTEREV;
+> >  
+> > -		case OP_31_XOP_STDX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 8, 1);
+> > -			break;
+> > +			if (op.type & UPDATE) {
+> > +				vcpu->arch.mmio_ra = op.update_reg;
+> > +				vcpu->arch.mmio_update_ra = 1;
+> > +			}
+> 
+> Any reason we can't just update RA here immediately?
+> 
+> >  
+> > -		case OP_31_XOP_STDUX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 8, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STWX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 4, 1);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STWUX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 4, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STBX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 1, 1);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STBUX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 1, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_LHAX:
+> > -			emulated = kvmppc_handle_loads(run, vcpu, rt, 2, 1);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_LHAUX:
+> > -			emulated = kvmppc_handle_loads(run, vcpu, rt, 2, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > +			if (op.type & SIGNEXT)
+> > +				emulated = kvmppc_handle_loads(run, vcpu,
+> > +						op.reg, size, !instr_byte_swap);
+> > +			else
+> > +				emulated = kvmppc_handle_load(run, vcpu,
+> > +						op.reg, size, !instr_byte_swap);
+> >  
+> > -		case OP_31_XOP_LHZX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 2, 1);
+> >  			break;
+> > -
+> > -		case OP_31_XOP_LHZUX:
+> > -			emulated = kvmppc_handle_load(run, vcpu, rt, 2, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STHX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 2, 1);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_STHUX:
+> > -			emulated = kvmppc_handle_store(run, vcpu,
+> > -					kvmppc_get_gpr(vcpu, rs), 2, 1);
+> > -			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
+> > -			break;
+> > -
+> > -		case OP_31_XOP_DCBST:
+> > -		case OP_31_XOP_DCBF:
+> > -		case OP_31_XOP_DCBI:
+> > +		}
+> > +		case STORE:
+> > +			if (op.type & UPDATE) {
+> > +				vcpu->arch.mmio_ra = op.update_reg;
+> > +				vcpu->arch.mmio_update_ra = 1;
+> > +			}
+> 
+> Same comment again about updating RA.
+> 
+> > +
+> > +			/* if need byte reverse, op.val has been reverted by
+> 
+> "reversed" rather than "reverted".  "Reverted" means put back to a
+> former state.
+I will correct that.
+
+> 
+> Paul.
+
+Thanks,
+- Simon
