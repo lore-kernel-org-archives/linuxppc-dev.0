@@ -1,24 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cs1d6w95zDqw8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:35:49 +1000 (AEST)
-Subject: Re: [PATCH 1/3] powerpc/nohash: remove hash related code from nohash
- headers.
-To: Michael Ellerman <mpe@ellerman.id.au>, kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <02633d43f29e1ba01865cd334216dc8efb8b4b11.1524587425.git.christophe.leroy@c-s.fr>
- <201804270438.utPklxgP%fengguang.wu@intel.com>
- <878t8z8yah.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <7b5e3ac5-57d8-d846-247b-422858c01016@c-s.fr>
-Date: Fri, 4 May 2018 14:35:45 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40csFJ03y8zDsQ6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:45:55 +1000 (AEST)
+Date: Fri, 4 May 2018 14:38:34 +0200
+From: Torsten Duwe <duwe@lst.de>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
+Subject: [PATCH v3] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-ID: <20180504123834.GA16581@lst.de>
+References: <20180305164928.GA17953@lst.de>
+ <20180308162616.yhbymodggnfzpskx@treble>
+ <20180309174718.2700b29e@blackhole.lan>
+ <20180312153536.7avozx64ku4lvd3e@treble>
 MIME-Version: 1.0
-In-Reply-To: <878t8z8yah.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180312153536.7avozx64ku4lvd3e@treble>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,98 +28,210 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 04/05/2018 à 13:17, Michael Ellerman a écrit :
-> kbuild test robot <lkp@intel.com> writes:
-> 
->> Hi Christophe,
->>
->> Thank you for the patch! Yet something to improve:
->>
->> [auto build test ERROR on powerpc/next]
->> [also build test ERROR on v4.17-rc2 next-20180426]
->> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->>
->> url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-nohash-remove-hash-related-code-from-nohash-headers/20180425-182026
->> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
->> config: powerpc-ppc64e_defconfig (attached as .config)
->> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->> reproduce:
->>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>          chmod +x ~/bin/make.cross
->>          # save the attached .config to linux build tree
->>          make.cross ARCH=powerpc
->>
->> All errors (new ones prefixed by >>):
->>
->>     In file included from arch/powerpc/include/asm/nohash/pgtable.h:6:0,
->>                      from arch/powerpc/include/asm/pgtable.h:19,
->>                      from include/linux/memremap.h:8,
->>                      from include/linux/mm.h:27,
->>                      from include/linux/mman.h:5,
->>                      from arch/powerpc/kernel/asm-offsets.c:22:
->>     arch/powerpc/include/asm/nohash/64/pgtable.h: In function '__ptep_test_and_clear_young':
->>>> arch/powerpc/include/asm/nohash/64/pgtable.h:214:6: error: implicit declaration of function 'pte_young'; did you mean 'pte_pud'? [-Werror=implicit-function-declaration]
->>       if (pte_young(*ptep))
->>           ^~~~~~~~~
->>           pte_pud
-> 
-> Urk.
-> 
-> There's a circular dependency here.
-> 
-> I fixed it with the patch below, which seems to be the least worst
-> solution. Possibly we can clean things up further in future.
 
-Oops, I just sent you a new version of the patch not using pte_young() 
-anymore. I'll let you decide what to do.
+The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
 
-Christophe
+[...] There are several rules that must be adhered to in order to ensure
+reliable and consistent call chain backtracing:
 
-> 
-> cheers
-> 
-> diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> index 140f8e74b478..987a658b18e1 100644
-> --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-> @@ -267,6 +267,11 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
->   	pte_update(ptep, clr, set);
->   }
->   
-> +static inline int pte_young(pte_t pte)
-> +{
-> +	return pte_val(pte) & _PAGE_ACCESSED;
-> +}
-> +
->   #define __HAVE_ARCH_PTE_SAME
->   #define pte_same(A,B)	((pte_val(A) ^ pte_val(B)) == 0)
->   
-> diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-> index e8de7cb4d3fb..6ac8381f4c7a 100644
-> --- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-> @@ -204,6 +204,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
->   	return old;
->   }
->   
-> +static inline int pte_young(pte_t pte)
-> +{
-> +	return pte_val(pte) & _PAGE_ACCESSED;
-> +}
-> +
->   static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
->   					      unsigned long addr, pte_t *ptep)
->   {
-> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-> index 077472640b35..2160be2e4339 100644
-> --- a/arch/powerpc/include/asm/nohash/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-> @@ -17,7 +17,6 @@ static inline int pte_write(pte_t pte)
->   }
->   static inline int pte_read(pte_t pte)		{ return 1; }
->   static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
-> -static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
->   static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
->   static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
->   static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
-> 
+* Before a function calls any other function, it shall establish its
+  own stack frame, whose size shall be a multiple of 16 bytes.
+
+ – In instances where a function’s prologue creates a stack frame, the
+   back-chain word of the stack frame shall be updated atomically with
+   the value of the stack pointer (r1) when a back chain is implemented.
+   (This must be supported as default by all ELF V2 ABI-compliant
+   environments.)
+[...]
+ – The function shall save the link register that contains its return
+   address in the LR save doubleword of its caller’s stack frame before
+   calling another function.
+
+To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+This patch may be unneccessarily limited to ppc64le, but OTOH the only
+user of this flag so far is livepatching, which is only implemented on
+PPCs with 64-LE, a.k.a. ELF ABI v2.
+
+Feel free to add other ppc variants, but so far only ppc64le got tested.
+
+This change also implements save_stack_trace_tsk_reliable() for ppc64le
+that checks for the above conditions, where possible.
+
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+Signed-off-by: Nicolai Stange <nstange@suse.de>
+
+---
+v3:
+ * big bunch of fixes, credits go to Nicolai Stange:
+   - get the correct return address from the graph tracer,
+     should it be active.
+     IMO this should be moved into to generic code, but I'll
+     leave it like this for now, to get things going.
+   - bail out on a kretprobe
+   - also stop at an exception frame
+   - accomodate for the different stack layout of the idle task
+   - use an even more beautiful test: __kernel_text_address()
+
+v2:
+ * implemented save_stack_trace_tsk_reliable(), with a bunch of sanity
+   checks. The test for a kernel code pointer is much nicer now, and
+   the exit condition is exact (when compared to last week's follow-up)
+
+---
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c32a181a7cbb..54f1daf4f9e5 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -220,6 +220,7 @@ config PPC
+ 	select HAVE_PERF_USER_STACK_DUMP
+ 	select HAVE_RCU_TABLE_FREE		if SMP
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
++	select HAVE_RELIABLE_STACKTRACE		if PPC64 && CPU_LITTLE_ENDIAN
+ 	select HAVE_SYSCALL_TRACEPOINTS
+ 	select HAVE_VIRT_CPU_ACCOUNTING
+ 	select HAVE_IRQ_TIME_ACCOUNTING
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index d534ed901538..3d62ecb2587b 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -2,7 +2,7 @@
+  * Stack trace utility
+  *
+  * Copyright 2008 Christoph Hellwig, IBM Corp.
+- *
++ * Copyright 2018 SUSE Linux GmbH
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -11,11 +11,16 @@
+  */
+ 
+ #include <linux/export.h>
++#include <linux/kallsyms.h>
++#include <linux/module.h>
+ #include <linux/sched.h>
+ #include <linux/sched/debug.h>
++#include <linux/sched/task_stack.h>
+ #include <linux/stacktrace.h>
+ #include <asm/ptrace.h>
+ #include <asm/processor.h>
++#include <linux/ftrace.h>
++#include <asm/kprobes.h>
+ 
+ /*
+  * Save stack-backtrace addresses into a stack_trace buffer.
+@@ -76,3 +81,114 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+ 	save_context_stack(trace, regs->gpr[1], current, 0);
+ }
+ EXPORT_SYMBOL_GPL(save_stack_trace_regs);
++
++#ifdef CONFIG_HAVE_RELIABLE_STACKTRACE
++int
++save_stack_trace_tsk_reliable(struct task_struct *tsk,
++				struct stack_trace *trace)
++{
++	unsigned long sp;
++	unsigned long stack_page = (unsigned long)task_stack_page(tsk);
++	unsigned long stack_end;
++	int graph_idx = 0;
++
++	/* The last frame (unwinding first) may not yet have saved
++	 * its LR onto the stack.
++	 */
++	int firstframe = 1;
++
++	if (tsk == current)
++		sp = current_stack_pointer();
++	else
++		sp = tsk->thread.ksp;
++
++	stack_end = stack_page + THREAD_SIZE;
++	if (!is_idle_task(tsk)) {
++		/*
++		 * For user tasks, this is the SP value loaded on
++		 * kernel entry, see "PACAKSAVE(r13)" in _switch() and
++		 * system_call_common()/EXCEPTION_PROLOG_COMMON().
++		 *
++		 * Likewise for non-swapper kernel threads,
++		 * this also happens to be the top of the stack
++		 * as setup by copy_thread().
++		 *
++		 * Note that stack backlinks are not properly setup by
++		 * copy_thread() and thus, a forked task() will have
++		 * an unreliable stack trace until it's been
++		 * _switch()'ed to for the first time.
++		 */
++		stack_end -= STACK_FRAME_OVERHEAD + sizeof(struct pt_regs);
++	} else {
++		/*
++		 * idle tasks have a custom stack layout,
++		 * c.f. cpu_idle_thread_init().
++		 */
++		stack_end -= STACK_FRAME_OVERHEAD;
++	}
++
++	if (sp < stack_page + sizeof(struct thread_struct) ||
++	    sp > stack_end - STACK_FRAME_MIN_SIZE) {
++		return 1;
++	}
++
++	for (;;) {
++		unsigned long *stack = (unsigned long *) sp;
++		unsigned long newsp, ip;
++
++		/* sanity check: ABI requires SP to be aligned 16 bytes. */
++		if (sp & 0xF)
++			return 1;
++
++		/* Mark stacktraces with exception frames as unreliable. */
++		if (sp <= stack_end - STACK_INT_FRAME_SIZE &&
++		    stack[STACK_FRAME_MARKER] == STACK_FRAME_REGS_MARKER) {
++			return 1;
++		}
++
++		newsp = stack[0];
++		/* Stack grows downwards; unwinder may only go up. */
++		if (newsp <= sp)
++			return 1;
++
++		if (newsp != stack_end &&
++		    newsp > stack_end - STACK_FRAME_MIN_SIZE) {
++			return 1; /* invalid backlink, too far up. */
++		}
++
++		/* Examine the saved LR: it must point into kernel code. */
++		ip = stack[STACK_FRAME_LR_SAVE];
++		if (!firstframe && !__kernel_text_address(ip))
++			return 1;
++		firstframe = 0;
++
++		/*
++		 * FIXME: IMHO these tests do not belong in
++		 * arch-dependent code, they are generic.
++		 */
++		ip = ftrace_graph_ret_addr(tsk, &graph_idx, ip, NULL);
++
++		/*
++		 * Mark stacktraces with kretprobed functions on them
++		 * as unreliable.
++		 */
++		if (ip == (unsigned long)kretprobe_trampoline)
++			return 1;
++
++		if (!trace->skip)
++			trace->entries[trace->nr_entries++] = ip;
++		else
++			trace->skip--;
++
++		if (newsp == stack_end)
++			break;
++
++		if (trace->nr_entries >= trace->max_entries)
++			return -E2BIG;
++
++		sp = newsp;
++	}
++	return 0;
++}
++EXPORT_SYMBOL_GPL(save_stack_trace_tsk_reliable);
++#endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
