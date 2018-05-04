@@ -1,22 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40czKk3pVMzDrLk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:10 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id e9so13935507pfi.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40czKn4lYxzDr4X
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:13 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id a14so17948666pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:13 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [PATCH 07/11] powerpc: generic clockevents broadcast receiver call
- tick_receive_broadcast
-Date: Sat,  5 May 2018 03:19:31 +1000
-Message-Id: <20180504171935.25410-8-npiggin@gmail.com>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 08/11] powerpc: allow soft-NMI watchdog to cover timer
+ interrupts with large decrementers
+Date: Sat,  5 May 2018 03:19:32 +1000
+Message-Id: <20180504171935.25410-9-npiggin@gmail.com>
 In-Reply-To: <20180504171935.25410-1-npiggin@gmail.com>
 References: <20180504171935.25410-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,194 +26,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The broadcast tick recipient can call tick_receive_broadcast rather
-than re-running the full timer interrupt.
+Large decrementers (e.g., POWER9) can take a very long time to wrap,
+so when the timer iterrupt handler sets the decrementer to max so as
+to avoid taking another decrementer interrupt when hard enabling
+interrupts before running timers, it effectively disables the soft
+NMI coverage for timer interrupts.
 
-It does not have to check for the next event time, because the sender
-already determined the timer has expired. It does not have to test
-irq_work_pending, because that's a direct decrementer interrupt and
-does not go through the clock events subsystem. And it does not have
-to read PURR because that was removed with the previous patch.
+Fix this by using the traditional 31-bit value instead, which wraps
+after a few seconds. masked interrupt code does the same thing, and
+in normal operation neither of these paths would ever wrap even the
+31 bit value.
 
-This results in no code size change, but both the decrementer and
-broadcast path lengths are reduced.
+Note: the SMP watchdog should catch timer interrupt lockups, but it
+is preferable for the local soft-NMI to catch them, mainly to avoid
+the IPI.
 
-Cc: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/hw_irq.h |  1 +
- arch/powerpc/include/asm/time.h   |  1 -
- arch/powerpc/kernel/smp.c         |  4 +-
- arch/powerpc/kernel/time.c        | 84 ++++++++++++++-----------------
- 4 files changed, 42 insertions(+), 48 deletions(-)
+ arch/powerpc/kernel/time.c | 19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index fbc2d83808aa..46fe8307fc43 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -55,6 +55,7 @@ extern void replay_system_reset(void);
- extern void __replay_interrupt(unsigned int vector);
- 
- extern void timer_interrupt(struct pt_regs *);
-+extern void timer_broadcast_interrupt(void);
- extern void performance_monitor_exception(struct pt_regs *regs);
- extern void WatchdogException(struct pt_regs *regs);
- extern void unknown_exception(struct pt_regs *regs);
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index c965c79765c4..69b89f941252 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -28,7 +28,6 @@ extern struct clock_event_device decrementer_clockevent;
- 
- struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
--extern void tick_broadcast_ipi_handler(void);
- 
- extern void generic_calibrate_decr(void);
- extern void hdec_interrupt(struct pt_regs *regs);
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 9ca7148b5881..5441a47701b1 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -157,7 +157,7 @@ static irqreturn_t reschedule_action(int irq, void *data)
- 
- static irqreturn_t tick_broadcast_ipi_action(int irq, void *data)
- {
--	tick_broadcast_ipi_handler();
-+	timer_broadcast_interrupt();
- 	return IRQ_HANDLED;
- }
- 
-@@ -278,7 +278,7 @@ irqreturn_t smp_ipi_demux_relaxed(void)
- 		if (all & IPI_MESSAGE(PPC_MSG_RESCHEDULE))
- 			scheduler_ipi();
- 		if (all & IPI_MESSAGE(PPC_MSG_TICK_BROADCAST))
--			tick_broadcast_ipi_handler();
-+			timer_broadcast_interrupt();
- #ifdef CONFIG_NMI_IPI
- 		if (all & IPI_MESSAGE(PPC_MSG_NMI_IPI))
- 			nmi_ipi_action(0, NULL);
 diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 1fe6a24357e7..ad876906f847 100644
+index ad876906f847..5862a3611795 100644
 --- a/arch/powerpc/kernel/time.c
 +++ b/arch/powerpc/kernel/time.c
-@@ -567,47 +567,16 @@ void arch_irq_work_raise(void)
+@@ -578,22 +578,29 @@ void timer_interrupt(struct pt_regs *regs)
+ 	struct pt_regs *old_regs;
+ 	u64 now;
  
- #endif /* CONFIG_IRQ_WORK */
+-	/* Ensure a positive value is written to the decrementer, or else
+-	 * some CPUs will continue to take decrementer exceptions.
+-	 */
+-	set_dec(decrementer_max);
+-
+ 	/* Some implementations of hotplug will get timer interrupts while
+ 	 * offline, just ignore these and we also need to set
+ 	 * decrementers_next_tb as MAX to make sure __check_irq_replay
+ 	 * don't replay timer interrupt when return, otherwise we'll trap
+ 	 * here infinitely :(
+ 	 */
+-	if (!cpu_online(smp_processor_id())) {
++	if (unlikely(!cpu_online(smp_processor_id()))) {
+ 		*next_tb = ~(u64)0;
++		set_dec(decrementer_max);
+ 		return;
+ 	}
  
--static void __timer_interrupt(void)
--{
--	struct pt_regs *regs = get_irq_regs();
--	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
--	struct clock_event_device *evt = this_cpu_ptr(&decrementers);
--	u64 now;
--
--	trace_timer_interrupt_entry(regs);
--
--	if (test_irq_work_pending()) {
--		clear_irq_work_pending();
--		irq_work_run();
--	}
--
--	now = get_tb_or_rtc();
--	if (now >= *next_tb) {
--		*next_tb = ~(u64)0;
--		if (evt->event_handler)
--			evt->event_handler(evt);
--		__this_cpu_inc(irq_stat.timer_irqs_event);
--	} else {
--		now = *next_tb - now;
--		if (now <= decrementer_max)
--			set_dec(now);
--		/* We may have raced with new irq work */
--		if (test_irq_work_pending())
--			set_dec(1);
--		__this_cpu_inc(irq_stat.timer_irqs_others);
--	}
--
--	trace_timer_interrupt_exit(regs);
--}
--
- /*
-  * timer_interrupt - gets called when the decrementer overflows,
-  * with interrupts disabled.
-  */
--void timer_interrupt(struct pt_regs * regs)
-+void timer_interrupt(struct pt_regs *regs)
- {
--	struct pt_regs *old_regs;
-+	struct clock_event_device *evt = this_cpu_ptr(&decrementers);
- 	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
-+	struct pt_regs *old_regs;
-+	u64 now;
- 
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continue to take decrementer exceptions.
-@@ -638,13 +607,47 @@ void timer_interrupt(struct pt_regs * regs)
- 
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
-+	trace_timer_interrupt_entry(regs);
++	/* Ensure a positive value is written to the decrementer, or else
++	 * some CPUs will continue to take decrementer exceptions. When the
++	 * PPC_WATCHDOG (decrementer based) is configured, keep this at most
++	 * 31 bits, which is about 4 seconds on most systems, which gives
++	 * the watchdog a chance of catching timer interrupt hard lockups.
++	 */
++	if (IS_ENABLED(CONFIG_PPC_WATCHDOG))
++		set_dec(0x7fffffff);
++	else
++		set_dec(decrementer_max);
 +
-+	if (test_irq_work_pending()) {
-+		clear_irq_work_pending();
-+		irq_work_run();
-+	}
-+
-+	now = get_tb_or_rtc();
-+	if (now >= *next_tb) {
-+		*next_tb = ~(u64)0;
-+		if (evt->event_handler)
-+			evt->event_handler(evt);
-+		__this_cpu_inc(irq_stat.timer_irqs_event);
-+	} else {
-+		now = *next_tb - now;
-+		if (now <= decrementer_max)
-+			set_dec(now);
-+		/* We may have raced with new irq work */
-+		if (test_irq_work_pending())
-+			set_dec(1);
-+		__this_cpu_inc(irq_stat.timer_irqs_others);
-+	}
- 
--	__timer_interrupt();
-+	trace_timer_interrupt_exit(regs);
- 	irq_exit();
- 	set_irq_regs(old_regs);
- }
- EXPORT_SYMBOL(timer_interrupt);
- 
-+void timer_broadcast_interrupt(void)
-+{
-+	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
-+	struct pt_regs *regs = get_irq_regs();
-+
-+	trace_timer_interrupt_entry(regs);
-+	*next_tb = ~(u64)0;
-+	tick_receive_broadcast();
-+	__this_cpu_inc(irq_stat.timer_irqs_event);
-+	trace_timer_interrupt_exit(regs);
-+}
-+
- /*
-  * Hypervisor decrementer interrupts shouldn't occur but are sometimes
-  * left pending on exit from a KVM guest.  We don't need to do anything
-@@ -992,15 +995,6 @@ static int decrementer_shutdown(struct clock_event_device *dev)
- 	return 0;
- }
- 
--/* Interrupt handler for the timer broadcast IPI */
--void tick_broadcast_ipi_handler(void)
--{
--	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
--
--	*next_tb = get_tb_or_rtc();
--	__timer_interrupt();
--}
--
- static void register_decrementer_clockevent(int cpu)
- {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
+ 	/* Conditionally hard-enable interrupts now that the DEC has been
+ 	 * bumped to its maximum value
+ 	 */
 -- 
 2.17.0
