@@ -1,24 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <clg@kaod.org>
+Received: from 15.mo5.mail-out.ovh.net (15.mo5.mail-out.ovh.net
+ [178.33.107.29])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cqHt1VywzDqjP
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 21:18:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: kbuild test robot <lkp@intel.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: kbuild-all@01.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc/nohash: remove hash related code from nohash
- headers.
-In-Reply-To: <201804270438.utPklxgP%fengguang.wu@intel.com>
-References: <02633d43f29e1ba01865cd334216dc8efb8b4b11.1524587425.git.christophe.leroy@c-s.fr>
- <201804270438.utPklxgP%fengguang.wu@intel.com>
-Date: Fri, 04 May 2018 21:17:58 +1000
-Message-ID: <878t8z8yah.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cr0d2bcWzDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 21:49:52 +1000 (AEST)
+Received: from player714.ha.ovh.net (unknown [10.109.120.51])
+ by mo5.mail-out.ovh.net (Postfix) with ESMTP id 825871A862E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 13:49:49 +0200 (CEST)
+Subject: Re: [PATCH 4/4] powerpc/xive: prepare all hcalls to support long busy
+ delays
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <20180403071548.19829-1-clg@kaod.org>
+ <20180403071548.19829-5-clg@kaod.org>
+ <87d0yb8zye.fsf@concordia.ellerman.id.au>
+From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
+Message-ID: <2a986f3b-ba79-02ac-7a8a-298371f971ef@kaod.org>
+Date: Fri, 4 May 2018 13:49:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87d0yb8zye.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,90 +29,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kbuild test robot <lkp@intel.com> writes:
+On 05/04/2018 12:42 PM, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
+> 
+>> This is not the case for the moment, but future releases of pHyp might
+>> need to introduce some synchronisation routines under the hood which
+>> would make the XIVE hcalls longer to complete.
+>>
+>> As this was done for H_INT_RESET, let's wrap the other hcalls in a
+>> loop catching the H_LONG_BUSY_* codes.
+> 
+> Are we sure it's safe to msleep() in all these paths?
 
-> Hi Christophe,
->
-> Thank you for the patch! Yet something to improve:
->
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.17-rc2 next-20180426]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-nohash-remove-hash-related-code-from-nohash-headers/20180425-182026
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-ppc64e_defconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=powerpc 
->
-> All errors (new ones prefixed by >>):
->
->    In file included from arch/powerpc/include/asm/nohash/pgtable.h:6:0,
->                     from arch/powerpc/include/asm/pgtable.h:19,
->                     from include/linux/memremap.h:8,
->                     from include/linux/mm.h:27,
->                     from include/linux/mman.h:5,
->                     from arch/powerpc/kernel/asm-offsets.c:22:
->    arch/powerpc/include/asm/nohash/64/pgtable.h: In function '__ptep_test_and_clear_young':
->>> arch/powerpc/include/asm/nohash/64/pgtable.h:214:6: error: implicit declaration of function 'pte_young'; did you mean 'pte_pud'? [-Werror=implicit-function-declaration]
->      if (pte_young(*ptep))
->          ^~~~~~~~~
->          pte_pud
+Hmm. No. we could be under lock as these are called at the bottom of 
+the stack of the irq layer. Should we use mdelay() then ?  
 
-Urk.
+What about the rtas_busy_delay() in rtas.c ? I was wondering why we 
+were using msleep() there also.
 
-There's a circular dependency here.
+Thanks,
 
-I fixed it with the patch below, which seems to be the least worst
-solution. Possibly we can clean things up further in future.
+C.
 
-cheers
-
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 140f8e74b478..987a658b18e1 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -267,6 +267,11 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
- 	pte_update(ptep, clr, set);
- }
- 
-+static inline int pte_young(pte_t pte)
-+{
-+	return pte_val(pte) & _PAGE_ACCESSED;
-+}
-+
- #define __HAVE_ARCH_PTE_SAME
- #define pte_same(A,B)	((pte_val(A) ^ pte_val(B)) == 0)
- 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index e8de7cb4d3fb..6ac8381f4c7a 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -204,6 +204,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
- 	return old;
- }
- 
-+static inline int pte_young(pte_t pte)
-+{
-+	return pte_val(pte) & _PAGE_ACCESSED;
-+}
-+
- static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
- 					      unsigned long addr, pte_t *ptep)
- {
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 077472640b35..2160be2e4339 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -17,7 +17,6 @@ static inline int pte_write(pte_t pte)
- }
- static inline int pte_read(pte_t pte)		{ return 1; }
- static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
--static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
- static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
- static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
- static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+> cheers
+> 
+>> diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+>> index 7113f5d87952..97ea0a67a173 100644
+>> --- a/arch/powerpc/sysdev/xive/spapr.c
+>> +++ b/arch/powerpc/sysdev/xive/spapr.c
+>> @@ -165,7 +165,10 @@ static long plpar_int_get_source_info(unsigned long flags,
+>>  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+>>  	long rc;
+>>  
+>> -	rc = plpar_hcall(H_INT_GET_SOURCE_INFO, retbuf, flags, lisn);
+>> +	do {
+>> +		rc = plpar_hcall(H_INT_GET_SOURCE_INFO, retbuf, flags, lisn);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_GET_SOURCE_INFO lisn=%ld failed %ld\n", lisn, rc);
+>>  		return rc;
+>> @@ -198,8 +201,11 @@ static long plpar_int_set_source_config(unsigned long flags,
+>>  		flags, lisn, target, prio, sw_irq);
+>>  
+>>  
+>> -	rc = plpar_hcall_norets(H_INT_SET_SOURCE_CONFIG, flags, lisn,
+>> -				target, prio, sw_irq);
+>> +	do {
+>> +		rc = plpar_hcall_norets(H_INT_SET_SOURCE_CONFIG, flags, lisn,
+>> +					target, prio, sw_irq);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_SET_SOURCE_CONFIG lisn=%ld target=%lx prio=%lx failed %ld\n",
+>>  		       lisn, target, prio, rc);
+>> @@ -218,7 +224,11 @@ static long plpar_int_get_queue_info(unsigned long flags,
+>>  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+>>  	long rc;
+>>  
+>> -	rc = plpar_hcall(H_INT_GET_QUEUE_INFO, retbuf, flags, target, priority);
+>> +	do {
+>> +		rc = plpar_hcall(H_INT_GET_QUEUE_INFO, retbuf, flags, target,
+>> +				 priority);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_GET_QUEUE_INFO cpu=%ld prio=%ld failed %ld\n",
+>>  		       target, priority, rc);
+>> @@ -247,8 +257,11 @@ static long plpar_int_set_queue_config(unsigned long flags,
+>>  	pr_devel("H_INT_SET_QUEUE_CONFIG flags=%lx target=%lx priority=%lx qpage=%lx qsize=%lx\n",
+>>  		flags,  target, priority, qpage, qsize);
+>>  
+>> -	rc = plpar_hcall_norets(H_INT_SET_QUEUE_CONFIG, flags, target,
+>> -				priority, qpage, qsize);
+>> +	do {
+>> +		rc = plpar_hcall_norets(H_INT_SET_QUEUE_CONFIG, flags, target,
+>> +					priority, qpage, qsize);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_SET_QUEUE_CONFIG cpu=%ld prio=%ld qpage=%lx returned %ld\n",
+>>  		       target, priority, qpage, rc);
+>> @@ -262,7 +275,10 @@ static long plpar_int_sync(unsigned long flags, unsigned long lisn)
+>>  {
+>>  	long rc;
+>>  
+>> -	rc = plpar_hcall_norets(H_INT_SYNC, flags, lisn);
+>> +	do {
+>> +		rc = plpar_hcall_norets(H_INT_SYNC, flags, lisn);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_SYNC lisn=%ld returned %ld\n", lisn, rc);
+>>  		return  rc;
+>> @@ -285,7 +301,11 @@ static long plpar_int_esb(unsigned long flags,
+>>  	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
+>>  		flags,  lisn, offset, in_data);
+>>  
+>> -	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
+>> +	do {
+>> +		rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset,
+>> +				 in_data);
+>> +	} while (plpar_busy_delay(rc));
+>> +
+>>  	if (rc) {
+>>  		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
+>>  		       lisn, offset, rc);
+>> -- 
+>> 2.13.6
