@@ -1,26 +1,19 @@
-Return-Path: <clg@kaod.org>
-Received: from 8.mo68.mail-out.ovh.net (8.mo68.mail-out.ovh.net
- [46.105.74.219])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40crZq2hxxzDqKX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:16:01 +1000 (AEST)
-Received: from player714.ha.ovh.net (unknown [10.109.122.24])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id D865FE1AC4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 13:36:46 +0200 (CEST)
-Subject: Re: [PATCH 1/4] powerpc/64/kexec: fix race in kexec when XIVE is
- shutdowned
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20180403071548.19829-1-clg@kaod.org>
- <20180403071548.19829-2-clg@kaod.org>
- <87fu378zz0.fsf@concordia.ellerman.id.au>
- <df63e1d5-0f08-5b20-d70b-b9feea7df537@kaod.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <eac5c56d-6d05-92ba-6dcb-57e5a5ee05af@kaod.org>
-Date: Fri, 4 May 2018 13:36:44 +0200
-MIME-Version: 1.0
-In-Reply-To: <df63e1d5-0f08-5b20-d70b-b9feea7df537@kaod.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40crzV2syfzDqkh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:33:58 +1000 (AEST)
+Message-Id: <7332568467307f9fc79eeef47507909ddc423c4b.1525435203.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1525435203.git.christophe.leroy@c-s.fr>
+References: <cover.1525435203.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH  02/17] powerpc/nohash: remove _PAGE_BUSY
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri,  4 May 2018 14:33:54 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/04/2018 01:13 PM, Cédric Le Goater wrote:
-> On 05/04/2018 12:41 PM, Michael Ellerman wrote:
->> Cédric Le Goater <clg@kaod.org> writes:
->>
->>> The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
->>> secondary CPUs before the kexec_cpu_down() operation is called on
->>> secondaries. This can raise conflicts and provoque errors in the XIVE
->>> hcalls when XIVE is shutdowned with H_INT_RESET on the primary CPU.
->>>
->>> To synchronize the kexec_cpu_down() operations and make sure the
->>> secondaries have completed their task before the primary starts doing
->>> the same, let's move the primary kexec_cpu_down() after the
->>> KEXEC_STATE_REAL_MODE barrier.
->>
->> This sounds reasonable, I'm sure you've tested it. I'm just a bit
->> worried that it could potentially break on other platforms because it
->> changes the sequence of operations.
-> 
-> yes. We are adding a last barrier to be exact making the full sequence 
-> a little slower.
-> 
->> Looking we only have kexec_cpu_down() implemented for pseries, powernv,
->> ps3 and 85xx.
->>
->> We can easily test the first two. > ps3 doesn't do much so hopefully that's safe.
->>
->> mpc85xx_smp_kexec_cpu_down() does very little on 32-bit, and on 64-bit
->> it seems to already wait for at least one other CPU to get into
->> KEXEC_STATE_REAL_MODE, so that's probably safe too.
->>
->> So I guess I'm OK to merge this, and we'll fix any fallout. It would be
->> good for the change log to call out the change though, and that we think
->> it's a sensible change for all platforms.
-> 
-> OK. 
+_PAGE_BUSY is always 0, remove it
 
-Ah and can you please fix the 'shutdowned' spelling ? it has been bugging me
-since I sent the patch :) thx
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 10 +++-------
+ arch/powerpc/include/asm/nohash/pte-book3e.h |  5 -----
+ 2 files changed, 3 insertions(+), 12 deletions(-)
 
-C.
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index 4f6f5a27bfb5..c3559d7a94fb 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -186,14 +186,12 @@ static inline unsigned long pte_update(struct mm_struct *mm,
+ 
+ 	__asm__ __volatile__(
+ 	"1:	ldarx	%0,0,%3		# pte_update\n\
+-	andi.	%1,%0,%6\n\
+-	bne-	1b \n\
+ 	andc	%1,%0,%4 \n\
+-	or	%1,%1,%7\n\
++	or	%1,%1,%6\n\
+ 	stdcx.	%1,0,%3 \n\
+ 	bne-	1b"
+ 	: "=&r" (old), "=&r" (tmp), "=m" (*ptep)
+-	: "r" (ptep), "r" (clr), "m" (*ptep), "i" (_PAGE_BUSY), "r" (set)
++	: "r" (ptep), "r" (clr), "m" (*ptep), "r" (set)
+ 	: "cc" );
+ #else
+ 	unsigned long old = pte_val(*ptep);
+@@ -290,13 +288,11 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+ 
+ 	__asm__ __volatile__(
+ 	"1:	ldarx	%0,0,%4\n\
+-		andi.	%1,%0,%6\n\
+-		bne-	1b \n\
+ 		or	%0,%3,%0\n\
+ 		stdcx.	%0,0,%4\n\
+ 		bne-	1b"
+ 	:"=&r" (old), "=&r" (tmp), "=m" (*ptep)
+-	:"r" (bits), "r" (ptep), "m" (*ptep), "i" (_PAGE_BUSY)
++	:"r" (bits), "r" (ptep), "m" (*ptep)
+ 	:"cc");
+ #else
+ 	unsigned long old = pte_val(*ptep);
+diff --git a/arch/powerpc/include/asm/nohash/pte-book3e.h b/arch/powerpc/include/asm/nohash/pte-book3e.h
+index 9ff51b4c0cac..12730b81cd98 100644
+--- a/arch/powerpc/include/asm/nohash/pte-book3e.h
++++ b/arch/powerpc/include/asm/nohash/pte-book3e.h
+@@ -57,13 +57,8 @@
+ #define _PAGE_USER		(_PAGE_BAP_UR | _PAGE_BAP_SR) /* Can be read */
+ #define _PAGE_PRIVILEGED	(_PAGE_BAP_SR)
+ 
+-#define _PAGE_BUSY	0
+-
+ #define _PAGE_SPECIAL	_PAGE_SW0
+ 
+-/* Flags to be preserved on PTE modifications */
+-#define _PAGE_HPTEFLAGS	_PAGE_BUSY
+-
+ /* Base page size */
+ #ifdef CONFIG_PPC_64K_PAGES
+ #define _PAGE_PSIZE	_PAGE_PSIZE_64K
+-- 
+2.13.3
