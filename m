@@ -1,17 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ccJ912KYzF0PW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 13:02:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cgH22XCTzF1Q0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 15:16:46 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 11/13] powerpc/eeh: Introduce eeh_set_irq_state()
-In-Reply-To: <facebfcf7726c381957cc5fac0fc9510ac27c472.1525242772.git.sbobroff@linux.ibm.com>
-References: <cover.1525242772.git.sbobroff@linux.ibm.com>
- <facebfcf7726c381957cc5fac0fc9510ac27c472.1525242772.git.sbobroff@linux.ibm.com>
-Date: Fri, 04 May 2018 13:02:32 +1000
-Message-ID: <87vac486nr.fsf@concordia.ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 04/15] powerpc/powernv: opal-kmsg use flush fallback from
+ console code
+In-Reply-To: <20180430145558.4308-5-npiggin@gmail.com>
+References: <20180430145558.4308-1-npiggin@gmail.com>
+ <20180430145558.4308-5-npiggin@gmail.com>
+Date: Fri, 04 May 2018 15:16:37 +1000
+Message-ID: <87muxg80ga.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,51 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sam Bobroff <sbobroff@linux.ibm.com> writes:
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index f63a01d336ee..b3edd0df04b8 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -210,6 +206,23 @@ static void eeh_set_channel_state(struct eeh_pe *root, enum pci_channel_state s)
->  				edev->pdev->error_state = s;
->  }
->  
-> +static void eeh_set_irq_state(struct eeh_pe *root, bool enable)
-> +{
-> +	struct eeh_pe *pe;
-> +	struct eeh_dev *edev, *tmp;
-> +
-> +	eeh_for_each_pe(root, pe)
-> +		eeh_pe_for_each_dev(pe, edev, tmp)
-> +			if (eeh_edev_actionable(edev))
-> +				if (eeh_pcid_get(edev->pdev)) {
-> +					if (enable)
-> +						eeh_enable_irq(edev);
-> +					else
-> +						eeh_disable_irq(edev);
-> +					eeh_pcid_put(edev->pdev);
-> +				}
+> Use the more refined and tested event polling loop from opal_put_chars
+> as the fallback console flush in the opal-kmsg path. This loop is used
+> by the console driver today, whereas the opal-kmsg fallback is not
+> likely to have been used for years.
+>
+> Use WARN_ONCE rather than a printk when the fallback is invoked to
+> prepare for moving the console flush into a common function.
 
-Yikes.
-
-What about?
-
-	eeh_for_each_pe(root, pe) {
-		eeh_pe_for_each_dev(pe, edev, tmp) {
-			if (!eeh_edev_actionable(edev))
-				continue;
-
-			if (!eeh_pcid_get(edev->pdev))
-				continue;
-
-			if (enable)
-				eeh_enable_irq(edev);
-			else
-				eeh_disable_irq(edev);
-
-			eeh_pcid_put(edev->pdev);
-		}
-	}
+Do we want to add a WARN in that path? If we're panicking things might
+get worse if we WARN (which takes a trap).
 
 cheers
