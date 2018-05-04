@@ -1,41 +1,28 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40d5FH0ScrzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 07:46:42 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w44LkSwf134380
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 May 2018 17:46:40 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hrtagmw89-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 17:46:37 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 4 May 2018 22:45:17 +0100
-Date: Fri, 4 May 2018 14:45:07 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40d5Xk2n95zDr4K
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 08:00:06 +1000 (AEST)
+Received: by mail-qk0-x243.google.com with SMTP id b39so17800391qkb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 15:00:06 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>, fweimer@redhat.com,
- Andrew Morton <akpm@linux-foundation.org>, mhocko@kernel.org,
- Ulrich.Weigand@de.ibm.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
- <20180504232647.3412f563@naga.suse.cz>
- <edd3d544-9fa8-5a79-4325-818ee5d7dfb0@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <edd3d544-9fa8-5a79-4325-818ee5d7dfb0@intel.com>
-Message-Id: <20180504214507.GA5871@ram.oc3035372033.ibm.com>
+To: mpe@ellerman.id.au,
+	mingo@redhat.com,
+	akpm@linux-foundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
+ khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
+ corbet@lwn.net, arnd@arndb.de
+Subject: [PATCH v13 0/3] mm, x86,
+ powerpc: Enhancements to Memory Protection Keys.
+Date: Fri,  4 May 2018 14:59:40 -0700
+Message-Id: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,16 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 04, 2018 at 02:31:10PM -0700, Dave Hansen wrote:
-> On 05/04/2018 02:26 PM, Michal Suchánek wrote:
-> > If it is not ok to change permissions of pkey 0 is it ok to free it?
-> 
-> It's pretty much never OK to free it on x86 or ppc.  But, we're not
-> going to put code in to keep userspace from shooting itself in the foot,
-> at least on x86.
+This patch series provides arch-neutral enhancements to
+enable memory-keys on new architecutes, and the corresponding
+changes in x86 and powerpc specific code to support that.
 
-and on powerpc aswell.
+a) Provides ability to support upto 32 keys.  PowerPC
+        can handle 32 keys and hence needs this.
+
+b) Arch-neutral code; and not the arch-specific code,
+   determines the format of the string, that displays the key
+   for each vma in smaps.
+
+History:
+-------
+version 14:
+	(1) made VM_PKEY_BIT4 unusable on x86, #defined it to 0
+		-- comment by Dave Hansen
+	(2) due to some reason this patch series continue to
+	      break some or the other build. The last series
+	      passed everything but created a merge
+	      conflict followed by build failure for
+	      Michael Ellermen. :(
+
+version v13:
+	(1) fixed a git bisect error. :(
+
+version v12:
+	(1) fixed compilation errors seen with various x86
+	    configs.
+version v11:
+	(1) code that displays key in smaps is not any more
+	    defined under CONFIG_ARCH_HAS_PKEYS.
+		- Comment by Eric W. Biederman and Michal Hocko
+	(2) merged two patches that implemented (1).
+		- comment by Michal Hocko
+
+version prior to v11:
+	(1) used one additional bit from VM_HIGH_ARCH_*
+		to support 32 keys.
+		- Suggestion by Dave Hansen.
+	(2) powerpc specific changes to support memory keys.
 
 
--- 
-Ram Pai
+Ram Pai (3):
+  mm, powerpc, x86: define VM_PKEY_BITx bits if CONFIG_ARCH_HAS_PKEYS
+    is enabled
+  mm, powerpc, x86: introduce an additional vma bit for powerpc pkey
+  mm, x86, powerpc: display pkey in smaps only if arch supports pkeys
+
+ arch/powerpc/include/asm/mmu_context.h |    5 -----
+ arch/powerpc/include/asm/pkeys.h       |    2 ++
+ arch/x86/include/asm/mmu_context.h     |    5 -----
+ arch/x86/include/asm/pkeys.h           |    1 +
+ arch/x86/kernel/fpu/xstate.c           |    5 +++++
+ arch/x86/kernel/setup.c                |    8 --------
+ fs/proc/task_mmu.c                     |   16 +++++++++-------
+ include/linux/mm.h                     |   15 +++++++++++----
+ include/linux/pkeys.h                  |    7 ++++++-
+ 9 files changed, 34 insertions(+), 30 deletions(-)
