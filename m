@@ -1,30 +1,22 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40d5Xw0z33zDr4K
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 08:00:15 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id p186so17811300qkd.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 15:00:15 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au,
-	mingo@redhat.com,
-	akpm@linux-foundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
- corbet@lwn.net, arnd@arndb.de
-Subject: [PATCH v11 3/3] mm, x86,
- powerpc: display pkey in smaps only if arch supports pkeys
-Date: Fri,  4 May 2018 14:59:43 -0700
-Message-Id: <1525471183-21277-4-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
-References: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40d6Bs2hV8zDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 08:29:41 +1000 (AEST)
+Message-ID: <90144e7d99aca5c620b1e79a5152f150d76210cc.camel@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] powerpc/xive: prepare all hcalls to support long
+ busy delays
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, =?ISO-8859-1?Q?C=E9dric?= Le
+ Goater <clg@kaod.org>, linuxppc-dev@lists.ozlabs.org
+Date: Sat, 05 May 2018 08:29:04 +1000
+In-Reply-To: <87d0yb8zye.fsf@concordia.ellerman.id.au>
+References: <20180403071548.19829-1-clg@kaod.org>
+ <20180403071548.19829-5-clg@kaod.org>
+ <87d0yb8zye.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,189 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently the  architecture  specific code is expected to
-display  the  protection  keys  in  smap  for a given vma.
-This can lead to redundant code and possibly to divergent
-formats in which the key gets displayed.
+On Fri, 2018-05-04 at 20:42 +1000, Michael Ellerman wrote:
+> Cédric Le Goater <clg@kaod.org> writes:
+> 
+> > This is not the case for the moment, but future releases of pHyp might
+> > need to introduce some synchronisation routines under the hood which
+> > would make the XIVE hcalls longer to complete.
+> > 
+> > As this was done for H_INT_RESET, let's wrap the other hcalls in a
+> > loop catching the H_LONG_BUSY_* codes.
+> 
+> Are we sure it's safe to msleep() in all these paths?
 
-This  patch  changes  the implementation. It displays the
-pkey only if the architecture support pkeys, i.e
-arch_pkeys_enabled() returns true.  This patch
-provides x86 implementation for arch_pkeys_enabled().
+Probably not. We can have the IRQ descriptor lock. We might need to
+mdelay.
 
-x86 arch_show_smap() function is not needed anymore.
-Deleting it.
+There's a Kconfig option (forgot which one) that will add checks for
+attempts to sleep inside locks, you should run with that.
 
-cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Andrew Morton <akpm@linux-foundation.org>
-Reviewed-by: Dave Hansen <dave.hansen@intel.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
-(fixed compilation errors for x86 configs)
-Acked-by: Michal Hocko <mhocko@suse.com>
-Reviewed-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/powerpc/include/asm/mmu_context.h |    5 -----
- arch/x86/include/asm/mmu_context.h     |    5 -----
- arch/x86/include/asm/pkeys.h           |    1 +
- arch/x86/kernel/fpu/xstate.c           |    5 +++++
- arch/x86/kernel/setup.c                |    8 --------
- fs/proc/task_mmu.c                     |   11 ++++++-----
- include/linux/pkeys.h                  |    7 ++++++-
- 7 files changed, 18 insertions(+), 24 deletions(-)
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 1835ca1..896efa5 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -250,11 +250,6 @@ static inline bool arch_vma_access_permitted(struct vm_area_struct *vma,
- #define thread_pkey_regs_restore(new_thread, old_thread)
- #define thread_pkey_regs_init(thread)
- 
--static inline int vma_pkey(struct vm_area_struct *vma)
--{
--	return 0;
--}
--
- static inline u64 pte_to_hpte_pkey_bits(u64 pteflags)
- {
- 	return 0x0UL;
-diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
-index 57e3785..3d748bd 100644
---- a/arch/x86/include/asm/mmu_context.h
-+++ b/arch/x86/include/asm/mmu_context.h
-@@ -296,11 +296,6 @@ static inline int vma_pkey(struct vm_area_struct *vma)
- 
- 	return (vma->vm_flags & vma_pkey_mask) >> VM_PKEY_SHIFT;
- }
--#else
--static inline int vma_pkey(struct vm_area_struct *vma)
--{
--	return 0;
--}
- #endif
- 
- /*
-diff --git a/arch/x86/include/asm/pkeys.h b/arch/x86/include/asm/pkeys.h
-index a0ba1ff..f6c287b 100644
---- a/arch/x86/include/asm/pkeys.h
-+++ b/arch/x86/include/asm/pkeys.h
-@@ -6,6 +6,7 @@
- 
- extern int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 		unsigned long init_val);
-+extern bool arch_pkeys_enabled(void);
- 
- /*
-  * Try to dedicate one of the protection keys to be used as an
-diff --git a/arch/x86/kernel/fpu/xstate.c b/arch/x86/kernel/fpu/xstate.c
-index 87a57b7..4f566e9 100644
---- a/arch/x86/kernel/fpu/xstate.c
-+++ b/arch/x86/kernel/fpu/xstate.c
-@@ -945,6 +945,11 @@ int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 
- 	return 0;
- }
-+
-+bool arch_pkeys_enabled(void)
-+{
-+	return boot_cpu_has(X86_FEATURE_OSPKE);
-+}
- #endif /* ! CONFIG_ARCH_HAS_PKEYS */
- 
- /*
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 6285697..960dbab 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -1306,11 +1306,3 @@ static int __init register_kernel_offset_dumper(void)
- 	return 0;
- }
- __initcall(register_kernel_offset_dumper);
--
--void arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
--{
--	if (!boot_cpu_has(X86_FEATURE_OSPKE))
--		return;
--
--	seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
--}
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 3ddddc7..9ce0097 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -18,10 +18,12 @@
- #include <linux/page_idle.h>
- #include <linux/shmem_fs.h>
- #include <linux/uaccess.h>
-+#include <linux/pkeys.h>
- 
- #include <asm/elf.h>
- #include <asm/tlb.h>
- #include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
- #include "internal.h"
- 
- #define SEQ_PUT_DEC(str, val) \
-@@ -728,12 +730,9 @@ static int smaps_hugetlb_range(pte_t *pte, unsigned long hmask,
- }
- #endif /* HUGETLB_PAGE */
- 
--void __weak arch_show_smap(struct seq_file *m, struct vm_area_struct *vma)
--{
--}
--
- #define SEQ_PUT_DEC(str, val) \
- 		seq_put_decimal_ull_width(m, str, (val) >> 10, 8)
-+
- static int show_smap(struct seq_file *m, void *v, int is_pid)
- {
- 	struct proc_maps_private *priv = m->private;
-@@ -836,9 +835,11 @@ static int show_smap(struct seq_file *m, void *v, int is_pid)
- 		seq_puts(m, " kB\n");
- 	}
- 	if (!rollup_mode) {
--		arch_show_smap(m, vma);
-+		if (arch_pkeys_enabled())
-+			seq_printf(m, "ProtectionKey:  %8u\n", vma_pkey(vma));
- 		show_smap_vma_flags(m, vma);
- 	}
-+
- 	m_cache_vma(m, vma);
- 	return ret;
- }
-diff --git a/include/linux/pkeys.h b/include/linux/pkeys.h
-index 0794ca7..49dff15 100644
---- a/include/linux/pkeys.h
-+++ b/include/linux/pkeys.h
-@@ -3,7 +3,6 @@
- #define _LINUX_PKEYS_H
- 
- #include <linux/mm_types.h>
--#include <asm/mmu_context.h>
- 
- #ifdef CONFIG_ARCH_HAS_PKEYS
- #include <asm/pkeys.h>
-@@ -13,6 +12,7 @@
- #define arch_override_mprotect_pkey(vma, prot, pkey) (0)
- #define PKEY_DEDICATED_EXECUTE_ONLY 0
- #define ARCH_VM_PKEY_FLAGS 0
-+#define vma_pkey(vma) 0
- 
- static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- {
-@@ -35,6 +35,11 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- 	return 0;
- }
- 
-+static inline bool arch_pkeys_enabled(void)
-+{
-+	return false;
-+}
-+
- static inline void copy_init_pkru_to_fpregs(void)
- {
- }
--- 
-1.7.1
+> 
+> cheers
+> 
+> > diff --git a/arch/powerpc/sysdev/xive/spapr.c b/arch/powerpc/sysdev/xive/spapr.c
+> > index 7113f5d87952..97ea0a67a173 100644
+> > --- a/arch/powerpc/sysdev/xive/spapr.c
+> > +++ b/arch/powerpc/sysdev/xive/spapr.c
+> > @@ -165,7 +165,10 @@ static long plpar_int_get_source_info(unsigned long flags,
+> >  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+> >  	long rc;
+> >  
+> > -	rc = plpar_hcall(H_INT_GET_SOURCE_INFO, retbuf, flags, lisn);
+> > +	do {
+> > +		rc = plpar_hcall(H_INT_GET_SOURCE_INFO, retbuf, flags, lisn);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_GET_SOURCE_INFO lisn=%ld failed %ld\n", lisn, rc);
+> >  		return rc;
+> > @@ -198,8 +201,11 @@ static long plpar_int_set_source_config(unsigned long flags,
+> >  		flags, lisn, target, prio, sw_irq);
+> >  
+> >  
+> > -	rc = plpar_hcall_norets(H_INT_SET_SOURCE_CONFIG, flags, lisn,
+> > -				target, prio, sw_irq);
+> > +	do {
+> > +		rc = plpar_hcall_norets(H_INT_SET_SOURCE_CONFIG, flags, lisn,
+> > +					target, prio, sw_irq);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_SET_SOURCE_CONFIG lisn=%ld target=%lx prio=%lx failed %ld\n",
+> >  		       lisn, target, prio, rc);
+> > @@ -218,7 +224,11 @@ static long plpar_int_get_queue_info(unsigned long flags,
+> >  	unsigned long retbuf[PLPAR_HCALL_BUFSIZE];
+> >  	long rc;
+> >  
+> > -	rc = plpar_hcall(H_INT_GET_QUEUE_INFO, retbuf, flags, target, priority);
+> > +	do {
+> > +		rc = plpar_hcall(H_INT_GET_QUEUE_INFO, retbuf, flags, target,
+> > +				 priority);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_GET_QUEUE_INFO cpu=%ld prio=%ld failed %ld\n",
+> >  		       target, priority, rc);
+> > @@ -247,8 +257,11 @@ static long plpar_int_set_queue_config(unsigned long flags,
+> >  	pr_devel("H_INT_SET_QUEUE_CONFIG flags=%lx target=%lx priority=%lx qpage=%lx qsize=%lx\n",
+> >  		flags,  target, priority, qpage, qsize);
+> >  
+> > -	rc = plpar_hcall_norets(H_INT_SET_QUEUE_CONFIG, flags, target,
+> > -				priority, qpage, qsize);
+> > +	do {
+> > +		rc = plpar_hcall_norets(H_INT_SET_QUEUE_CONFIG, flags, target,
+> > +					priority, qpage, qsize);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_SET_QUEUE_CONFIG cpu=%ld prio=%ld qpage=%lx returned %ld\n",
+> >  		       target, priority, qpage, rc);
+> > @@ -262,7 +275,10 @@ static long plpar_int_sync(unsigned long flags, unsigned long lisn)
+> >  {
+> >  	long rc;
+> >  
+> > -	rc = plpar_hcall_norets(H_INT_SYNC, flags, lisn);
+> > +	do {
+> > +		rc = plpar_hcall_norets(H_INT_SYNC, flags, lisn);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_SYNC lisn=%ld returned %ld\n", lisn, rc);
+> >  		return  rc;
+> > @@ -285,7 +301,11 @@ static long plpar_int_esb(unsigned long flags,
+> >  	pr_devel("H_INT_ESB flags=%lx lisn=%lx offset=%lx in=%lx\n",
+> >  		flags,  lisn, offset, in_data);
+> >  
+> > -	rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset, in_data);
+> > +	do {
+> > +		rc = plpar_hcall(H_INT_ESB, retbuf, flags, lisn, offset,
+> > +				 in_data);
+> > +	} while (plpar_busy_delay(rc));
+> > +
+> >  	if (rc) {
+> >  		pr_err("H_INT_ESB lisn=%ld offset=%ld returned %ld\n",
+> >  		       lisn, offset, rc);
+> > -- 
+> > 2.13.6
