@@ -1,24 +1,24 @@
-Return-Path: <clg@kaod.org>
-Received: from 1.mo7.mail-out.ovh.net (1.mo7.mail-out.ovh.net [178.33.45.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256
- bits)) (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cqCK37VmzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 21:14:01 +1000 (AEST)
-Received: from player714.ha.ovh.net (unknown [10.109.122.53])
- by mo7.mail-out.ovh.net (Postfix) with ESMTP id B2580A59F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 13:13:56 +0200 (CEST)
-Subject: Re: [PATCH 1/4] powerpc/64/kexec: fix race in kexec when XIVE is
- shutdowned
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <20180403071548.19829-1-clg@kaod.org>
- <20180403071548.19829-2-clg@kaod.org>
- <87fu378zz0.fsf@concordia.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <df63e1d5-0f08-5b20-d70b-b9feea7df537@kaod.org>
-Date: Fri, 4 May 2018 13:13:53 +0200
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cqHt1VywzDqjP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 21:18:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: kbuild test robot <lkp@intel.com>,
+ Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: kbuild-all@01.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc/nohash: remove hash related code from nohash
+ headers.
+In-Reply-To: <201804270438.utPklxgP%fengguang.wu@intel.com>
+References: <02633d43f29e1ba01865cd334216dc8efb8b4b11.1524587425.git.christophe.leroy@c-s.fr>
+ <201804270438.utPklxgP%fengguang.wu@intel.com>
+Date: Fri, 04 May 2018 21:17:58 +1000
+Message-ID: <878t8z8yah.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <87fu378zz0.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +28,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/04/2018 12:41 PM, Michael Ellerman wrote:
-> Cédric Le Goater <clg@kaod.org> writes:
-> 
->> The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
->> secondary CPUs before the kexec_cpu_down() operation is called on
->> secondaries. This can raise conflicts and provoque errors in the XIVE
->> hcalls when XIVE is shutdowned with H_INT_RESET on the primary CPU.
->>
->> To synchronize the kexec_cpu_down() operations and make sure the
->> secondaries have completed their task before the primary starts doing
->> the same, let's move the primary kexec_cpu_down() after the
->> KEXEC_STATE_REAL_MODE barrier.
-> 
-> This sounds reasonable, I'm sure you've tested it. I'm just a bit
-> worried that it could potentially break on other platforms because it
-> changes the sequence of operations.
+kbuild test robot <lkp@intel.com> writes:
 
-yes. We are adding a last barrier to be exact making the full sequence 
-a little slower.
+> Hi Christophe,
+>
+> Thank you for the patch! Yet something to improve:
+>
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on v4.17-rc2 next-20180426]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-nohash-remove-hash-related-code-from-nohash-headers/20180425-182026
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc-ppc64e_defconfig (attached as .config)
+> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=powerpc 
+>
+> All errors (new ones prefixed by >>):
+>
+>    In file included from arch/powerpc/include/asm/nohash/pgtable.h:6:0,
+>                     from arch/powerpc/include/asm/pgtable.h:19,
+>                     from include/linux/memremap.h:8,
+>                     from include/linux/mm.h:27,
+>                     from include/linux/mman.h:5,
+>                     from arch/powerpc/kernel/asm-offsets.c:22:
+>    arch/powerpc/include/asm/nohash/64/pgtable.h: In function '__ptep_test_and_clear_young':
+>>> arch/powerpc/include/asm/nohash/64/pgtable.h:214:6: error: implicit declaration of function 'pte_young'; did you mean 'pte_pud'? [-Werror=implicit-function-declaration]
+>      if (pte_young(*ptep))
+>          ^~~~~~~~~
+>          pte_pud
 
-> Looking we only have kexec_cpu_down() implemented for pseries, powernv,
-> ps3 and 85xx.
-> 
-> We can easily test the first two. > ps3 doesn't do much so hopefully that's safe.
-> 
-> mpc85xx_smp_kexec_cpu_down() does very little on 32-bit, and on 64-bit
-> it seems to already wait for at least one other CPU to get into
-> KEXEC_STATE_REAL_MODE, so that's probably safe too.
-> 
-> So I guess I'm OK to merge this, and we'll fix any fallout. It would be
-> good for the change log to call out the change though, and that we think
-> it's a sensible change for all platforms.
+Urk.
 
-OK. 
+There's a circular dependency here.
 
-Thanks,
+I fixed it with the patch below, which seems to be the least worst
+solution. Possibly we can clean things up further in future.
 
-C. 
+cheers
 
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 140f8e74b478..987a658b18e1 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -267,6 +267,11 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+ 	pte_update(ptep, clr, set);
+ }
  
-> cheers
-> 
->> Signed-off-by: Cédric Le Goater <clg@kaod.org>
->> ---
->>  arch/powerpc/kernel/machine_kexec_64.c | 8 ++++----
->>  1 file changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
->> index 49d34d7271e7..212ecb8e829c 100644
->> --- a/arch/powerpc/kernel/machine_kexec_64.c
->> +++ b/arch/powerpc/kernel/machine_kexec_64.c
->> @@ -230,16 +230,16 @@ static void kexec_prepare_cpus(void)
->>  	/* we are sure every CPU has IRQs off at this point */
->>  	kexec_all_irq_disabled = 1;
->>  
->> -	/* after we tell the others to go down */
->> -	if (ppc_md.kexec_cpu_down)
->> -		ppc_md.kexec_cpu_down(0, 0);
->> -
->>  	/*
->>  	 * Before removing MMU mappings make sure all CPUs have entered real
->>  	 * mode:
->>  	 */
->>  	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
->>  
->> +	/* after we tell the others to go down */
->> +	if (ppc_md.kexec_cpu_down)
->> +		ppc_md.kexec_cpu_down(0, 0);
->> +
->>  	put_cpu();
->>  }
->>  
->> -- 
->> 2.13.6
++static inline int pte_young(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_ACCESSED;
++}
++
+ #define __HAVE_ARCH_PTE_SAME
+ #define pte_same(A,B)	((pte_val(A) ^ pte_val(B)) == 0)
+ 
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index e8de7cb4d3fb..6ac8381f4c7a 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -204,6 +204,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
+ 	return old;
+ }
+ 
++static inline int pte_young(pte_t pte)
++{
++	return pte_val(pte) & _PAGE_ACCESSED;
++}
++
+ static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+ 					      unsigned long addr, pte_t *ptep)
+ {
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 077472640b35..2160be2e4339 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -17,7 +17,6 @@ static inline int pte_write(pte_t pte)
+ }
+ static inline int pte_read(pte_t pte)		{ return 1; }
+ static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+-static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+ static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+ static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
