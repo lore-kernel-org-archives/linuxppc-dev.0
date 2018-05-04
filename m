@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
+Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
+ [IPv6:2607:f8b0:400d:c0d::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40d5Xn0J3vzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 08:00:09 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id h19so17805841qkj.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 15:00:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40d5Xs0FWQzDr4X
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 08:00:12 +1000 (AEST)
+Received: by mail-qt0-x241.google.com with SMTP id h2-v6so29351567qtp.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 15:00:12 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au,
@@ -19,10 +19,10 @@ Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
  bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
  corbet@lwn.net, arnd@arndb.de
-Subject: [PATCH v13 1/3] mm, powerpc,
- x86: define VM_PKEY_BITx bits if CONFIG_ARCH_HAS_PKEYS is enabled
-Date: Fri,  4 May 2018 14:59:41 -0700
-Message-Id: <1525471183-21277-2-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v13 3/3] mm, powerpc,
+ x86: introduce an additional vma bit for powerpc pkey
+Date: Fri,  4 May 2018 14:59:42 -0700
+Message-Id: <1525471183-21277-3-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
 References: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,81 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VM_PKEY_BITx are defined only if CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-is enabled. Powerpc also needs these bits. Hence lets define the
-VM_PKEY_BITx bits for any architecture that enables
-CONFIG_ARCH_HAS_PKEYS.
+Only 4bits are allocated in the vma flags to hold 16 keys. This is
+sufficient on x86. PowerPC supports 32 keys, which needs 5bits.
+Allocate an  additional bit.
 
+cc: Dave Hansen <dave.hansen@intel.com>
 cc: Michael Ellermen <mpe@ellerman.id.au>
 cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 cc: Andrew Morton <akpm@linux-foundation.org>
-Reviewed-by: Dave Hansen <dave.hansen@intel.com>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 Reviewed-by: Ingo Molnar <mingo@kernel.org>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/include/asm/pkeys.h |    2 ++
- fs/proc/task_mmu.c               |    4 ++--
- include/linux/mm.h               |    9 +++++----
- 3 files changed, 9 insertions(+), 6 deletions(-)
+ fs/proc/task_mmu.c |    1 +
+ include/linux/mm.h |    8 +++++++-
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 3a9b82b..425b181 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -26,6 +26,8 @@
- # define VM_PKEY_BIT2	VM_HIGH_ARCH_2
- # define VM_PKEY_BIT3	VM_HIGH_ARCH_3
- # define VM_PKEY_BIT4	VM_HIGH_ARCH_4
-+#elif !defined(VM_PKEY_BIT4)
-+# define VM_PKEY_BIT4	VM_HIGH_ARCH_4
- #endif
- 
- #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
 diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 65ae546..0c9e392 100644
+index 0c9e392..3ddddc7 100644
 --- a/fs/proc/task_mmu.c
 +++ b/fs/proc/task_mmu.c
-@@ -673,13 +673,13 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
- 		[ilog2(VM_MERGEABLE)]	= "mg",
- 		[ilog2(VM_UFFD_MISSING)]= "um",
- 		[ilog2(VM_UFFD_WP)]	= "uw",
--#ifdef CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS
-+#ifdef CONFIG_ARCH_HAS_PKEYS
- 		/* These come out via ProtectionKey: */
- 		[ilog2(VM_PKEY_BIT0)]	= "",
+@@ -679,6 +679,7 @@ static void show_smap_vma_flags(struct seq_file *m, struct vm_area_struct *vma)
  		[ilog2(VM_PKEY_BIT1)]	= "",
  		[ilog2(VM_PKEY_BIT2)]	= "",
  		[ilog2(VM_PKEY_BIT3)]	= "",
--#endif
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
++		[ilog2(VM_PKEY_BIT4)]	= "",
+ #endif /* CONFIG_ARCH_HAS_PKEYS */
  	};
  	size_t i;
- 
 diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 1ac1f06..c6a6f24 100644
+index c6a6f24..cca67d1 100644
 --- a/include/linux/mm.h
 +++ b/include/linux/mm.h
-@@ -228,15 +228,16 @@ extern int overcommit_kbytes_handler(struct ctl_table *, int, void __user *,
- #define VM_HIGH_ARCH_4	BIT(VM_HIGH_ARCH_BIT_4)
- #endif /* CONFIG_ARCH_USES_HIGH_VMA_FLAGS */
+@@ -230,10 +230,16 @@ extern int overcommit_kbytes_handler(struct ctl_table *, int, void __user *,
  
--#if defined(CONFIG_X86)
--# define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
--#if defined (CONFIG_X86_INTEL_MEMORY_PROTECTION_KEYS)
-+#ifdef CONFIG_ARCH_HAS_PKEYS
+ #ifdef CONFIG_ARCH_HAS_PKEYS
  # define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
- # define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 4-bit value */
+-# define VM_PKEY_BIT0	VM_HIGH_ARCH_0	/* A protection key is a 4-bit value */
++/* Protection key is a 4-bit value on x86 and 5-bit value on ppc64   */
++# define VM_PKEY_BIT0	VM_HIGH_ARCH_0
  # define VM_PKEY_BIT1	VM_HIGH_ARCH_1
  # define VM_PKEY_BIT2	VM_HIGH_ARCH_2
  # define VM_PKEY_BIT3	VM_HIGH_ARCH_3
--#endif
-+#endif /* CONFIG_ARCH_HAS_PKEYS */
-+
-+#if defined(CONFIG_X86)
-+# define VM_PAT		VM_ARCH_1	/* PAT reserves whole VMA at once (x86) */
- #elif defined(CONFIG_PPC)
- # define VM_SAO		VM_ARCH_1	/* Strong Access Ordering (powerpc) */
- #elif defined(CONFIG_PARISC)
++#if defined(CONFIG_PPC)
++# define VM_PKEY_BIT4	VM_HIGH_ARCH_4
++#else 
++# define VM_PKEY_BIT4	0
++#endif
+ #endif /* CONFIG_ARCH_HAS_PKEYS */
+ 
+ #if defined(CONFIG_X86)
 -- 
 1.7.1
