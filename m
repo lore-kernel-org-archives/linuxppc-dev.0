@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cs001MdxzDqlS
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cs00750XzDr4q
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:34:24 +1000 (AEST)
-Message-Id: <53ce8d34af104a51941555bd933093a190013679.1525435203.git.christophe.leroy@c-s.fr>
+Message-Id: <0586af3c1bf8e4f8b4121645d047dbb7ada7fba8.1525435203.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1525435203.git.christophe.leroy@c-s.fr>
 References: <cover.1525435203.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH  14/17] powerpc/8xx: reunify TLB handler routines
+Subject: [PATCH  15/17] powerpc/8xx: Free up SPRN_SPRG_SCRATCH2
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  4 May 2018 14:34:18 +0200 (CEST)
+Date: Fri,  4 May 2018 14:34:20 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,152 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Each handler must not exceed 64 instructions to fit into the main
-exception area.
-Following the significant size reduction of TLB handler routines,
-the side handlers can be brought back close to the main part.
+We can now use SPRN_M_TW in the DAR Fixup code, freeing
+SPRN_SPRG_SCRATCH2
 
-In the worst case:
-Main part of ITLB handler is 45 insn, side part is 9 insn ==> total 54
-Main part of DTLB handler is 37 insn, side part is 23 insn ==> total 60
+Then SPRN_SPRG_SCRATCH2 may be used for something else in the future.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 108 ++++++++++++++++++++---------------------
- 1 file changed, 52 insertions(+), 56 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 4855d5a36f70..c98a4ebb5a4d 100644
+index c98a4ebb5a4d..8e96b526f109 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -388,6 +388,23 @@ _ENTRY(itlb_miss_perf)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
+@@ -624,7 +624,7 @@ InstructionBreakpoint:
+  /* define if you don't want to use self modifying code */
+ #define NO_SELF_MODIFYING_CODE
+ FixupDAR:/* Entry point for dcbx workaround. */
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
++	mtspr	SPRN_M_TW, r10
+ 	/* fetch instruction from memory. */
+ 	mfspr	r10, SPRN_SRR0
+ 	mtspr	SPRN_MD_EPN, r10
+@@ -668,7 +668,7 @@ _ENTRY(FixupDAR_cmp)
+ 	beq+	142f
+ 	cmpwi	cr0, r10, 1964	/* Is icbi? */
+ 	beq+	142f
+-141:	mfspr	r10,SPRN_SPRG_SCRATCH2
++141:	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed	/* Nope, go back to normal TLB processing */
  
-+#ifndef CONFIG_PIN_TLB_TEXT
-+ITLBMissLinear:
-+	mtcr	r11
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MI_PS8MEG | MI_SVALID
-+	mtspr	SPRN_MI_TWC, r11
-+	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
-+	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT
-+	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
-+
-+_ENTRY(itlb_miss_exit_2)
-+	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+#endif
-+
- 	. = 0x1200
- DataStoreTLBMiss:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
-@@ -463,6 +480,41 @@ _ENTRY(dtlb_miss_perf)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
+ 200:
+@@ -703,7 +703,7 @@ modified_instr:
+ 	bne+	143f
+ 	subf	r10,r0,r10	/* r10=r10-r0, only if reg RA is r0 */
+ 143:	mtdar	r10		/* store faulting EA in DAR */
+-	mfspr	r10,SPRN_SPRG_SCRATCH2
++	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed	/* Go back to normal TLB handling */
+ #else
+ 	mfctr	r10
+@@ -757,7 +757,7 @@ modified_instr:
+ 	mfdar	r11
+ 	mtctr	r11			/* restore ctr reg from DAR */
+ 	mtdar	r10			/* save fault EA to DAR */
+-	mfspr	r10,SPRN_SPRG_SCRATCH2
++	mfspr	r10,SPRN_M_TW
+ 	b	DARFixed		/* Go back to normal TLB handling */
  
-+DTLBMissIMMR:
-+	mtcr	r11
-+	/* Set 512k byte guarded page and mark it valid */
-+	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
-+	mtspr	SPRN_MD_TWC, r10
-+	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
-+	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT | _PAGE_NO_CACHE
-+	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+_ENTRY(dtlb_miss_exit_2)
-+	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+
-+DTLBMissLinear:
-+	mtcr	r11
-+	/* Set 8M byte page and mark it valid */
-+	li	r11, MD_PS8MEG | MD_SVALID
-+	mtspr	SPRN_MD_TWC, r11
-+	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+			  _PAGE_PRESENT
-+	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
-+
-+	li	r11, RPN_PATTERN
-+	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+_ENTRY(dtlb_miss_exit_3)
-+	mfspr	r10, SPRN_SPRG_SCRATCH0
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
-+	rfi
-+
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-  * to many reasons, such as executing guarded memory or illegal instruction
-  * addresses.  There is nothing to do but handle a big time error fault.
-@@ -565,62 +617,6 @@ InstructionBreakpoint:
- 
- 	. = 0x2000
- 
--/*
-- * Bottom part of DataStoreTLBMiss handlers for IMMR area and linear RAM.
-- * not enough space in the DataStoreTLBMiss area.
-- */
--DTLBMissIMMR:
--	mtcr	r11
--	/* Set 512k byte guarded page and mark it valid */
--	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
--	mtspr	SPRN_MD_TWC, r10
--	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
--	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
--			  _PAGE_PRESENT | _PAGE_NO_CACHE
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
--
--	li	r11, RPN_PATTERN
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--_ENTRY(dtlb_miss_exit_2)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--
--DTLBMissLinear:
--	mtcr	r11
--	/* Set 8M byte page and mark it valid */
--	li	r11, MD_PS8MEG | MD_SVALID
--	mtspr	SPRN_MD_TWC, r11
--	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
--			  _PAGE_PRESENT
--	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
--
--	li	r11, RPN_PATTERN
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
--_ENTRY(dtlb_miss_exit_3)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--
--#ifndef CONFIG_PIN_TLB_TEXT
--ITLBMissLinear:
--	mtcr	r11
--	/* Set 8M byte page and mark it valid */
--	li	r11, MI_PS8MEG | MI_SVALID
--	mtspr	SPRN_MI_TWC, r11
--	rlwinm	r10, r10, 20, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
--			  _PAGE_PRESENT
--	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
--
--_ENTRY(itlb_miss_exit_2)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
--	rfi
--#endif
--
- /* This is the procedure to calculate the data EA for buggy dcbx,dcbi instructions
-  * by decoding the registers used by the dcbx instruction and adding them.
-  * DAR is set to the calculated address.
+ 	/* special handling for r10,r11 since these are modified already */
 -- 
 2.13.3
