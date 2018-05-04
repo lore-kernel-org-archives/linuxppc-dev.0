@@ -1,24 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cYXz3x8lzF1P7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 10:58:27 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, npiggin@gmail.com
-Subject: Re: [PATCH 4/6] powerpc/64s: Enable barrier_nospec based on firmware
- settings
-In-Reply-To: <20180502134128.4a31b0fc@kitsune.suse.cz>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180424041559.32410-4-mpe@ellerman.id.au>
- <20180426180258.04e6bee6@kitsune.suse.cz>
- <87vac7r5px.fsf@concordia.ellerman.id.au>
- <20180502134128.4a31b0fc@kitsune.suse.cz>
-Date: Fri, 04 May 2018 10:58:26 +1000
-Message-ID: <87bmdw9qz1.fsf@concordia.ellerman.id.au>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [Skiboot] [PATCH 1/2] SLW: Remove stop1_lite and stop0 stop states
+In-Reply-To: <87lgd13vjo.fsf@linux.vnet.ibm.com>
+References: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
+ <20180503090647.xsfw3p7mq2pwd2rw@aksadiga.ibm>
+ <20180503192852.13a42712@roar.ozlabs.ibm.com>
+ <87lgd13vjo.fsf@linux.vnet.ibm.com>
+Date: Fri, 04 May 2018 11:02:38 +1000
+Message-ID: <877eok9qs1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> On Tue, 01 May 2018 21:11:06 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Michal Such=C3=A1nek <msuchanek@suse.de> writes:
->> > On Tue, 24 Apr 2018 14:15:57 +1000
->> > Michael Ellerman <mpe@ellerman.id.au> wrote:
->> >=20=20
->> >> From: Michal Suchanek <msuchanek@suse.de>
->> >>=20
->> >> Check what firmware told us and enable/disable the barrier_nospec
->> >> as appropriate.
->> >>=20
->> >> We err on the side of enabling the barrier, as it's no-op on older
->> >> systems, see the comment for more detail.
->> >>=20
->> >> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>=20=20
->> ...
->> >
->> > I am missing the option for the barrier to be disabled by a kernel
->> > commandline argument here.
->> >
->> > It does make sense to add a kernel parameter that is checked on
->> > boot to be compatible with other platforms that implement one.=20=20
->>=20
->> No other platforms have an option to disable variant 1 mitigations, so
->> there isn't an existing parameter we can use.
+Stewart Smith <stewart@linux.vnet.ibm.com> writes:
+...
 >
-> Right, I was looking at an older implementation which turned off both
-> v1 and v2 with same parameter. In current kernel the v1 mitigation is
-> not turned off at all.
-
-Ah OK.
-
->> Which is not to say we can't add one, but I wasn't sure if it was
->> really worth it.
+> Slightly stupid question: should we be disabling these here or should
+> Linux be better and deciding what states to use?
 >
-> The current thinking is that most performance relevant cases are
-> covered with array_nospec which has little overhead. The less code we
-> have for this the better ;-)
+> I'm inclined to say this is a Linux problem as it should make the
+> decision of what hardware feature to used based on the ones OPAL says
+> *can* be used.
 
-Amen to that :)
+Yeah I agree.
+
+Firmware shouldn't be implementing the policy around what states to use,
+it should tell the operating system (which might be Linux) what states
+are available and what their features are.
+
+The exception to that would be that we have unfixable crash bugs in
+existing kernels, in that case firmware might have to filter out states
+that are known to cause those.
 
 cheers
