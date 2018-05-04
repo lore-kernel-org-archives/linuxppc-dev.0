@@ -1,18 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cc8M6ZvNzF0PW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 12:55:47 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [Skiboot] [PATCH 1/2] SLW: Remove stop1_lite and stop0 stop states
-In-Reply-To: <87lgd13vjo.fsf@linux.vnet.ibm.com>
-References: <1525079529-2284-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20180501134723.5d00ddf0@roar.ozlabs.ibm.com>
- <20180503090647.xsfw3p7mq2pwd2rw@aksadiga.ibm>
- <20180503192852.13a42712@roar.ozlabs.ibm.com>
- <87lgd13vjo.fsf@linux.vnet.ibm.com>
-Date: Fri, 04 May 2018 11:02:38 +1000
-Message-ID: <877eok9qs1.fsf@concordia.ellerman.id.au>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 02/13] powerpc/eeh: Add final message for successful
+ recovery
+In-Reply-To: <e2cc8562dcce1d8bc38084bc45414c048b5a441d.1525242772.git.sbobroff@linux.ibm.com>
+References: <cover.1525242772.git.sbobroff@linux.ibm.com>
+ <e2cc8562dcce1d8bc38084bc45414c048b5a441d.1525242772.git.sbobroff@linux.ibm.com>
+Date: Fri, 04 May 2018 12:55:42 +1000
+Message-ID: <874ljo9ljl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,24 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stewart Smith <stewart@linux.vnet.ibm.com> writes:
-...
+Sam Bobroff <sbobroff@linux.ibm.com> writes:
+
+> Add a single log line at the end of successful EEH recovery, so that
+> it's clear that event processing has finished.
 >
-> Slightly stupid question: should we be disabling these here or should
-> Linux be better and deciding what states to use?
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/eeh_driver.c | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> I'm inclined to say this is a Linux problem as it should make the
-> decision of what hardware feature to used based on the ones OPAL says
-> *can* be used.
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index 56a60b9eb397..07e0a42035ce 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -910,6 +910,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
+>  	pr_info("EEH: Notify device driver to resume\n");
+>  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+>  
+> +	pr_info("EEH: Recovery successful.\n");
 
-Yeah I agree.
+Is it possible for recovery for multiple devices to be interleaved?
 
-Firmware shouldn't be implementing the policy around what states to use,
-it should tell the operating system (which might be Linux) what states
-are available and what their features are.
-
-The exception to that would be that we have unfixable crash bugs in
-existing kernels, in that case firmware might have to filter out states
-that are known to cause those.
+Should that message include the device?
 
 cheers
