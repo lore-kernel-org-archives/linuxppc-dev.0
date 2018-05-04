@@ -1,19 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40czKg1qpBzDqvV
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:07 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id v63so17919043pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40czKk3pVMzDrLk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:10 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id e9so13935507pfi.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:10 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 06/11] powerpc/pseries: lparcfg calculate PURR on demand
-Date: Sat,  5 May 2018 03:19:30 +1000
-Message-Id: <20180504171935.25410-7-npiggin@gmail.com>
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: [PATCH 07/11] powerpc: generic clockevents broadcast receiver call
+ tick_receive_broadcast
+Date: Sat,  5 May 2018 03:19:31 +1000
+Message-Id: <20180504171935.25410-8-npiggin@gmail.com>
 In-Reply-To: <20180504171935.25410-1-npiggin@gmail.com>
 References: <20180504171935.25410-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,129 +28,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For SPLPAR, lparcfg provides a sum of PURR registers for all CPUs.
-Currently this is done by reading PURR in context switch and timer
-interrupt, and storing that into a per-CPU variable. These are summed
-to provide the value.
+The broadcast tick recipient can call tick_receive_broadcast rather
+than re-running the full timer interrupt.
 
-This does not work with all timer schemes (e.g., NO_HZ_FULL), and it
-is sub-optimal for performance because it reads the PURR register on
-every context switch, although that's been difficult to distinguish
-from noise in the contxt_switch microbenchmark.
+It does not have to check for the next event time, because the sender
+already determined the timer has expired. It does not have to test
+irq_work_pending, because that's a direct decrementer interrupt and
+does not go through the clock events subsystem. And it does not have
+to read PURR because that was removed with the previous patch.
 
-This patch implements the sum by calling a function on each CPU, to
-read and add PURR values of each CPU.
+This results in no code size change, but both the decrementer and
+broadcast path lengths are reduced.
 
+Cc: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/time.h          |  8 --------
- arch/powerpc/kernel/process.c            | 14 --------------
- arch/powerpc/kernel/time.c               |  8 --------
- arch/powerpc/platforms/pseries/lparcfg.c | 18 ++++++++++--------
- 4 files changed, 10 insertions(+), 38 deletions(-)
+ arch/powerpc/include/asm/hw_irq.h |  1 +
+ arch/powerpc/include/asm/time.h   |  1 -
+ arch/powerpc/kernel/smp.c         |  4 +-
+ arch/powerpc/kernel/time.c        | 84 ++++++++++++++-----------------
+ 4 files changed, 42 insertions(+), 48 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index fbc2d83808aa..46fe8307fc43 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -55,6 +55,7 @@ extern void replay_system_reset(void);
+ extern void __replay_interrupt(unsigned int vector);
+ 
+ extern void timer_interrupt(struct pt_regs *);
++extern void timer_broadcast_interrupt(void);
+ extern void performance_monitor_exception(struct pt_regs *regs);
+ extern void WatchdogException(struct pt_regs *regs);
+ extern void unknown_exception(struct pt_regs *regs);
 diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index db546c034905..c965c79765c4 100644
+index c965c79765c4..69b89f941252 100644
 --- a/arch/powerpc/include/asm/time.h
 +++ b/arch/powerpc/include/asm/time.h
-@@ -196,14 +196,6 @@ extern u64 mulhdu(u64, u64);
- extern void div128_by_32(u64 dividend_high, u64 dividend_low,
- 			 unsigned divisor, struct div_result *dr);
+@@ -28,7 +28,6 @@ extern struct clock_event_device decrementer_clockevent;
  
--/* Used to store Processor Utilization register (purr) values */
--
--struct cpu_usage {
--        u64 current_tb;  /* Holds the current purr register values */
--};
--
--DECLARE_PER_CPU(struct cpu_usage, cpu_usage_array);
--
- extern void secondary_cpu_time_init(void);
- extern void __init time_init(void);
+ struct rtc_time;
+ extern void to_tm(int tim, struct rtc_time * tm);
+-extern void tick_broadcast_ipi_handler(void);
  
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index ff7344d996e3..e6ff36923d84 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -845,10 +845,6 @@ bool ppc_breakpoint_available(void)
- }
- EXPORT_SYMBOL_GPL(ppc_breakpoint_available);
+ extern void generic_calibrate_decr(void);
+ extern void hdec_interrupt(struct pt_regs *regs);
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 9ca7148b5881..5441a47701b1 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -157,7 +157,7 @@ static irqreturn_t reschedule_action(int irq, void *data)
  
--#ifdef CONFIG_PPC64
--DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
--#endif
--
- static inline bool hw_brk_match(struct arch_hw_breakpoint *a,
- 			      struct arch_hw_breakpoint *b)
+ static irqreturn_t tick_broadcast_ipi_action(int irq, void *data)
  {
-@@ -1181,16 +1177,6 @@ struct task_struct *__switch_to(struct task_struct *prev,
+-	tick_broadcast_ipi_handler();
++	timer_broadcast_interrupt();
+ 	return IRQ_HANDLED;
+ }
  
- 	WARN_ON(!irqs_disabled());
- 
--#ifdef CONFIG_PPC64
--	/*
--	 * Collect processor utilization data per process
--	 */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
--		cu->current_tb = mfspr(SPRN_PURR);
--	}
--#endif /* CONFIG_PPC64 */
--
- #ifdef CONFIG_PPC_BOOK3S_64
- 	batch = this_cpu_ptr(&ppc64_tlb_batch);
- 	if (batch->active) {
+@@ -278,7 +278,7 @@ irqreturn_t smp_ipi_demux_relaxed(void)
+ 		if (all & IPI_MESSAGE(PPC_MSG_RESCHEDULE))
+ 			scheduler_ipi();
+ 		if (all & IPI_MESSAGE(PPC_MSG_TICK_BROADCAST))
+-			tick_broadcast_ipi_handler();
++			timer_broadcast_interrupt();
+ #ifdef CONFIG_NMI_IPI
+ 		if (all & IPI_MESSAGE(PPC_MSG_NMI_IPI))
+ 			nmi_ipi_action(0, NULL);
 diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index e7e8611e8863..1fe6a24357e7 100644
+index 1fe6a24357e7..ad876906f847 100644
 --- a/arch/powerpc/kernel/time.c
 +++ b/arch/powerpc/kernel/time.c
-@@ -597,14 +597,6 @@ static void __timer_interrupt(void)
- 		__this_cpu_inc(irq_stat.timer_irqs_others);
- 	}
+@@ -567,47 +567,16 @@ void arch_irq_work_raise(void)
  
--#ifdef CONFIG_PPC64
--	/* collect purr register values often, for accurate calculations */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
--		cu->current_tb = mfspr(SPRN_PURR);
--	}
--#endif
+ #endif /* CONFIG_IRQ_WORK */
+ 
+-static void __timer_interrupt(void)
+-{
+-	struct pt_regs *regs = get_irq_regs();
+-	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+-	struct clock_event_device *evt = this_cpu_ptr(&decrementers);
+-	u64 now;
 -
- 	trace_timer_interrupt_exit(regs);
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/lparcfg.c b/arch/powerpc/platforms/pseries/lparcfg.c
-index c508c938dc71..7c872dc01bdb 100644
---- a/arch/powerpc/platforms/pseries/lparcfg.c
-+++ b/arch/powerpc/platforms/pseries/lparcfg.c
-@@ -52,18 +52,20 @@
-  * Track sum of all purrs across all processors. This is used to further
-  * calculate usage values by different applications
+-	trace_timer_interrupt_entry(regs);
+-
+-	if (test_irq_work_pending()) {
+-		clear_irq_work_pending();
+-		irq_work_run();
+-	}
+-
+-	now = get_tb_or_rtc();
+-	if (now >= *next_tb) {
+-		*next_tb = ~(u64)0;
+-		if (evt->event_handler)
+-			evt->event_handler(evt);
+-		__this_cpu_inc(irq_stat.timer_irqs_event);
+-	} else {
+-		now = *next_tb - now;
+-		if (now <= decrementer_max)
+-			set_dec(now);
+-		/* We may have raced with new irq work */
+-		if (test_irq_work_pending())
+-			set_dec(1);
+-		__this_cpu_inc(irq_stat.timer_irqs_others);
+-	}
+-
+-	trace_timer_interrupt_exit(regs);
+-}
+-
+ /*
+  * timer_interrupt - gets called when the decrementer overflows,
+  * with interrupts disabled.
   */
-+static void cpu_get_purr(void *arg)
-+{
-+	atomic64_t *sum = arg;
+-void timer_interrupt(struct pt_regs * regs)
++void timer_interrupt(struct pt_regs *regs)
+ {
+-	struct pt_regs *old_regs;
++	struct clock_event_device *evt = this_cpu_ptr(&decrementers);
+ 	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
++	struct pt_regs *old_regs;
++	u64 now;
+ 
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continue to take decrementer exceptions.
+@@ -638,13 +607,47 @@ void timer_interrupt(struct pt_regs * regs)
+ 
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
++	trace_timer_interrupt_entry(regs);
 +
-+	atomic64_add(mfspr(SPRN_PURR), sum);
++	if (test_irq_work_pending()) {
++		clear_irq_work_pending();
++		irq_work_run();
++	}
++
++	now = get_tb_or_rtc();
++	if (now >= *next_tb) {
++		*next_tb = ~(u64)0;
++		if (evt->event_handler)
++			evt->event_handler(evt);
++		__this_cpu_inc(irq_stat.timer_irqs_event);
++	} else {
++		now = *next_tb - now;
++		if (now <= decrementer_max)
++			set_dec(now);
++		/* We may have raced with new irq work */
++		if (test_irq_work_pending())
++			set_dec(1);
++		__this_cpu_inc(irq_stat.timer_irqs_others);
++	}
+ 
+-	__timer_interrupt();
++	trace_timer_interrupt_exit(regs);
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
+ }
+ EXPORT_SYMBOL(timer_interrupt);
+ 
++void timer_broadcast_interrupt(void)
++{
++	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
++	struct pt_regs *regs = get_irq_regs();
++
++	trace_timer_interrupt_entry(regs);
++	*next_tb = ~(u64)0;
++	tick_receive_broadcast();
++	__this_cpu_inc(irq_stat.timer_irqs_event);
++	trace_timer_interrupt_exit(regs);
 +}
 +
- static unsigned long get_purr(void)
- {
--	unsigned long sum_purr = 0;
--	int cpu;
-+	atomic64_t purr = ATOMIC64_INIT(0);
- 
--	for_each_possible_cpu(cpu) {
--		struct cpu_usage *cu;
-+	on_each_cpu(cpu_get_purr, &purr, 1);
- 
--		cu = &per_cpu(cpu_usage_array, cpu);
--		sum_purr += cu->current_tb;
--	}
--	return sum_purr;
-+	return atomic64_read(&purr);
+ /*
+  * Hypervisor decrementer interrupts shouldn't occur but are sometimes
+  * left pending on exit from a KVM guest.  We don't need to do anything
+@@ -992,15 +995,6 @@ static int decrementer_shutdown(struct clock_event_device *dev)
+ 	return 0;
  }
  
- /*
+-/* Interrupt handler for the timer broadcast IPI */
+-void tick_broadcast_ipi_handler(void)
+-{
+-	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
+-
+-	*next_tb = get_tb_or_rtc();
+-	__timer_interrupt();
+-}
+-
+ static void register_decrementer_clockevent(int cpu)
+ {
+ 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
 -- 
 2.17.0
