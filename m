@@ -2,18 +2,23 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cs051KC3zDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:34:28 +1000 (AEST)
-Message-Id: <8955044d4d18afa0fc413d9401669156c990a243.1525435203.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1525435203.git.christophe.leroy@c-s.fr>
-References: <cover.1525435203.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH BAD 17/17] powerpc/mm: Use pte_fragment_alloc() on 8xx
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  4 May 2018 14:34:24 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cs1d6w95zDqw8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 22:35:49 +1000 (AEST)
+Subject: Re: [PATCH 1/3] powerpc/nohash: remove hash related code from nohash
+ headers.
+To: Michael Ellerman <mpe@ellerman.id.au>, kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <02633d43f29e1ba01865cd334216dc8efb8b4b11.1524587425.git.christophe.leroy@c-s.fr>
+ <201804270438.utPklxgP%fengguang.wu@intel.com>
+ <878t8z8yah.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7b5e3ac5-57d8-d846-247b-422858c01016@c-s.fr>
+Date: Fri, 4 May 2018 14:35:45 +0200
+MIME-Version: 1.0
+In-Reply-To: <878t8z8yah.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,208 +28,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DO NOT APPLY THAT ONE, IT BUGS. But comments are welcome.
+Le 04/05/2018 à 13:17, Michael Ellerman a écrit :
+> kbuild test robot <lkp@intel.com> writes:
+> 
+>> Hi Christophe,
+>>
+>> Thank you for the patch! Yet something to improve:
+>>
+>> [auto build test ERROR on powerpc/next]
+>> [also build test ERROR on v4.17-rc2 next-20180426]
+>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>>
+>> url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-nohash-remove-hash-related-code-from-nohash-headers/20180425-182026
+>> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+>> config: powerpc-ppc64e_defconfig (attached as .config)
+>> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+>> reproduce:
+>>          wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>          chmod +x ~/bin/make.cross
+>>          # save the attached .config to linux build tree
+>>          make.cross ARCH=powerpc
+>>
+>> All errors (new ones prefixed by >>):
+>>
+>>     In file included from arch/powerpc/include/asm/nohash/pgtable.h:6:0,
+>>                      from arch/powerpc/include/asm/pgtable.h:19,
+>>                      from include/linux/memremap.h:8,
+>>                      from include/linux/mm.h:27,
+>>                      from include/linux/mman.h:5,
+>>                      from arch/powerpc/kernel/asm-offsets.c:22:
+>>     arch/powerpc/include/asm/nohash/64/pgtable.h: In function '__ptep_test_and_clear_young':
+>>>> arch/powerpc/include/asm/nohash/64/pgtable.h:214:6: error: implicit declaration of function 'pte_young'; did you mean 'pte_pud'? [-Werror=implicit-function-declaration]
+>>       if (pte_young(*ptep))
+>>           ^~~~~~~~~
+>>           pte_pud
+> 
+> Urk.
+> 
+> There's a circular dependency here.
+> 
+> I fixed it with the patch below, which seems to be the least worst
+> solution. Possibly we can clean things up further in future.
 
+Oops, I just sent you a new version of the patch not using pte_young() 
+anymore. I'll let you decide what to do.
 
-In 16k pages mode, the 8xx still need only 4k for the page table.
+Christophe
 
-This patch makes use of the pte_fragment functions in order
-to avoid wasting memory space
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/mmu-8xx.h           |  4 ++++
- arch/powerpc/include/asm/nohash/32/pgalloc.h | 29 +++++++++++++++++++++++++++-
- arch/powerpc/include/asm/nohash/32/pgtable.h |  5 ++++-
- arch/powerpc/mm/mmu_context_nohash.c         |  4 ++++
- arch/powerpc/mm/pgtable.c                    | 10 +++++++++-
- arch/powerpc/mm/pgtable_32.c                 | 12 ++++++++++++
- arch/powerpc/platforms/Kconfig.cputype       |  1 +
- 7 files changed, 62 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 193f53116c7a..4f4cb754afd8 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -190,6 +190,10 @@ typedef struct {
- 	struct slice_mask mask_8m;
- # endif
- #endif
-+#ifdef CONFIG_NEED_PTE_FRAG
-+	/* for 4K PTE fragment support */
-+	void *pte_frag;
-+#endif
- } mm_context_t;
- 
- #define PHYS_IMMR_BASE (mfspr(SPRN_IMMR) & 0xfff80000)
-diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-index 1c6461e7c6aa..1e3b8f580499 100644
---- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
-@@ -93,6 +93,32 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmdp,
- 	((unlikely(pmd_none(*(pmd))) && __pte_alloc_kernel_g(pmd, address))? \
- 		NULL: pte_offset_kernel(pmd, address))
- 
-+#ifdef CONFIG_NEED_PTE_FRAG
-+extern pte_t *pte_fragment_alloc(struct mm_struct *, unsigned long, int);
-+extern void pte_fragment_free(unsigned long *, int);
-+
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	return (pte_t *)pte_fragment_alloc(mm, address, 1);
-+}
-+
-+static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
-+				      unsigned long address)
-+{
-+	return (pgtable_t)pte_fragment_alloc(mm, address, 0);
-+}
-+
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	pte_fragment_free((unsigned long *)pte, 1);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
-+{
-+	pte_fragment_free((unsigned long *)ptepage, 0);
-+}
-+#else
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long addr);
- extern pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long addr);
- 
-@@ -106,11 +132,12 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
- 	pgtable_page_dtor(ptepage);
- 	__free_page(ptepage);
- }
-+#endif
- 
- static inline void pgtable_free(void *table, unsigned index_size)
- {
- 	if (!index_size) {
--		free_page((unsigned long)table);
-+		pte_free_kernel(NULL, table);
- 	} else {
- 		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
- 		kmem_cache_free(PGT_CACHE(index_size), table);
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 3efd616bbc80..e2a22c8dc7f6 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -20,6 +20,9 @@ extern int icache_44x_need_flush;
- 
- #if defined(CONFIG_PPC_8xx) && defined(CONFIG_PPC_16K_PAGES)
- #define PTE_INDEX_SIZE  (PTE_SHIFT - 2)
-+#define PTE_FRAG_NR		4
-+#define PTE_FRAG_SIZE_SHIFT	12
-+#define PTE_FRAG_SIZE		(1UL << PTE_FRAG_SIZE_SHIFT)
- #else
- #define PTE_INDEX_SIZE	PTE_SHIFT
- #endif
-@@ -303,7 +306,7 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
-  */
- #ifndef CONFIG_BOOKE
- #define pmd_page_vaddr(pmd)	\
--	((unsigned long) __va(pmd_val(pmd) & PAGE_MASK))
-+	((unsigned long) __va(pmd_val(pmd) & ~(PTE_TABLE_SIZE - 1)))
- #define pmd_page(pmd)		\
- 	pfn_to_page(pmd_val(pmd) >> PAGE_SHIFT)
- #else
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index e09228a9ad00..8b0ab33673e5 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -390,6 +390,9 @@ int init_new_context(struct task_struct *t, struct mm_struct *mm)
- #endif
- 	mm->context.id = MMU_NO_CONTEXT;
- 	mm->context.active = 0;
-+#ifdef CONFIG_NEED_PTE_FRAG
-+	mm->context.pte_frag = NULL;
-+#endif
- 	return 0;
- }
- 
-@@ -418,6 +421,7 @@ void destroy_context(struct mm_struct *mm)
- 		nr_free_contexts++;
- 	}
- 	raw_spin_unlock_irqrestore(&context_lock, flags);
-+	destroy_pagetable_page(mm);
- }
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 2d34755ed727..96cc5aa73331 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -23,6 +23,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/gfp.h>
-+#include <linux/memblock.h>
- #include <linux/mm.h>
- #include <linux/percpu.h>
- #include <linux/hardirq.h>
-@@ -320,10 +321,17 @@ static pte_t *__alloc_for_cache(struct mm_struct *mm, int kernel)
- 	return (pte_t *)ret;
- }
- 
--pte_t *pte_fragment_alloc(struct mm_struct *mm, unsigned long vmaddr, int kernel)
-+__ref pte_t *pte_fragment_alloc(struct mm_struct *mm, unsigned long vmaddr, int kernel)
- {
- 	pte_t *pte;
- 
-+	if (kernel && !slab_is_available()) {
-+		pte = __va(memblock_alloc(PTE_FRAG_SIZE, PTE_FRAG_SIZE));
-+		if (pte)
-+			memset(pte, 0, PTE_FRAG_SIZE);
-+
-+		return pte;
-+	}
- 	pte = get_from_cache(mm);
- 	if (pte)
- 		return pte;
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 3aa0c78db95d..5c8737cf2945 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -40,6 +40,17 @@
- 
- extern char etext[], _stext[], _sinittext[], _einittext[];
- 
-+#ifdef CONFIG_NEED_PTE_FRAG
-+void pte_fragment_free(unsigned long *table, int kernel)
-+{
-+	struct page *page = virt_to_page(table);
-+	if (put_page_testzero(page)) {
-+		if (!kernel)
-+			pgtable_page_dtor(page);
-+		free_unref_page(page);
-+	}
-+}
-+#else
- __ref pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
- 	pte_t *pte;
-@@ -69,6 +80,7 @@ pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
- 	}
- 	return ptepage;
- }
-+#endif
- 
- #ifdef CONFIG_PPC_GUARDED_PAGE_IN_PMD
- int __pte_alloc_kernel_g(pmd_t *pmd, unsigned long address)
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 7172b04c91b5..eff6210ad3c0 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -340,6 +340,7 @@ config PPC_MM_SLICES
- config NEED_PTE_FRAG
- 	bool
- 	default y if PPC_BOOK3S_64 && PPC_64K_PAGES
-+	default y if PPC_8xx && PPC_16K_PAGES
- 	default n
- 
- config PPC_HAVE_PMU_SUPPORT
--- 
-2.13.3
+> 
+> cheers
+> 
+> diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+> index 140f8e74b478..987a658b18e1 100644
+> --- a/arch/powerpc/include/asm/nohash/32/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+> @@ -267,6 +267,11 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
+>   	pte_update(ptep, clr, set);
+>   }
+>   
+> +static inline int pte_young(pte_t pte)
+> +{
+> +	return pte_val(pte) & _PAGE_ACCESSED;
+> +}
+> +
+>   #define __HAVE_ARCH_PTE_SAME
+>   #define pte_same(A,B)	((pte_val(A) ^ pte_val(B)) == 0)
+>   
+> diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+> index e8de7cb4d3fb..6ac8381f4c7a 100644
+> --- a/arch/powerpc/include/asm/nohash/64/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+> @@ -204,6 +204,11 @@ static inline unsigned long pte_update(struct mm_struct *mm,
+>   	return old;
+>   }
+>   
+> +static inline int pte_young(pte_t pte)
+> +{
+> +	return pte_val(pte) & _PAGE_ACCESSED;
+> +}
+> +
+>   static inline int __ptep_test_and_clear_young(struct mm_struct *mm,
+>   					      unsigned long addr, pte_t *ptep)
+>   {
+> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+> index 077472640b35..2160be2e4339 100644
+> --- a/arch/powerpc/include/asm/nohash/pgtable.h
+> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
+> @@ -17,7 +17,6 @@ static inline int pte_write(pte_t pte)
+>   }
+>   static inline int pte_read(pte_t pte)		{ return 1; }
+>   static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
+> -static inline int pte_young(pte_t pte)		{ return pte_val(pte) & _PAGE_ACCESSED; }
+>   static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
+>   static inline int pte_none(pte_t pte)		{ return (pte_val(pte) & ~_PTE_NONE_MASK) == 0; }
+>   static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PAGE_PROT_BITS); }
+> 
