@@ -1,22 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Return-Path: <raj.khem@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40czKy2bFwzDr4K
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:22 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id v63so17919551pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:22 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40d23z5CgYzDr4K
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 05:23:24 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id g20-v6so9379260pgv.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 12:23:24 -0700 (PDT)
+From: Khem Raj <raj.khem@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
+Cc: Khem Raj <raj.khem@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 11/11] powerpc/time: account broadcast timer event interrupts
- separately
-Date: Sat,  5 May 2018 03:19:35 +1000
-Message-Id: <20180504171935.25410-12-npiggin@gmail.com>
-In-Reply-To: <20180504171935.25410-1-npiggin@gmail.com>
-References: <20180504171935.25410-1-npiggin@gmail.com>
+Subject: [PATCH 1/2] powerpc: Disable attribute-alias warnings from gcc8
+Date: Fri,  4 May 2018 12:23:12 -0700
+Message-Id: <20180504192313.18625-1-raj.khem@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are not local timer interrupts but IPIs. It's good to be able
-to see how timer offloading is behaving, so split these out into
-their own category.
+Fixes
+alias between functions of incompatible types warnings
+which are new with gcc8
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Khem Raj <raj.khem@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/hardirq.h | 1 +
- arch/powerpc/kernel/irq.c          | 6 ++++++
- arch/powerpc/kernel/time.c         | 5 +----
- 3 files changed, 8 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/hardirq.h b/arch/powerpc/include/asm/hardirq.h
-index 5986d473722b..20b01897ea5d 100644
---- a/arch/powerpc/include/asm/hardirq.h
-+++ b/arch/powerpc/include/asm/hardirq.h
-@@ -8,6 +8,7 @@
- typedef struct {
- 	unsigned int __softirq_pending;
- 	unsigned int timer_irqs_event;
-+	unsigned int broadcast_irqs_event;
- 	unsigned int timer_irqs_others;
- 	unsigned int pmu_irqs;
- 	unsigned int mce_exceptions;
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 6569b5ffff93..627db34bb79d 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -518,6 +518,11 @@ int arch_show_interrupts(struct seq_file *p, int prec)
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs_event);
-         seq_printf(p, "  Local timer interrupts for timer event device\n");
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 2b4c40b255e4..7ac5a68ad6b1 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -3,7 +3,8 @@
+ # Makefile for the linux kernel.
+ #
  
-+	seq_printf(p, "%*s: ", prec, "BCT");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", per_cpu(irq_stat, j).broadcast_irqs_event);
-+	seq_printf(p, "  Broadcast timer interrupts for timer event device\n");
-+
- 	seq_printf(p, "%*s: ", prec, "LOC");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", per_cpu(irq_stat, j).timer_irqs_others);
-@@ -577,6 +582,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- {
- 	u64 sum = per_cpu(irq_stat, cpu).timer_irqs_event;
+-CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"'
++CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' $(call cc-disable-warning, attribute-alias)
++CFLAGS_syscalls.o	+= $(call cc-disable-warning, attribute-alias)
  
-+	sum += per_cpu(irq_stat, cpu).broadcast_irqs_event;
- 	sum += per_cpu(irq_stat, cpu).pmu_irqs;
- 	sum += per_cpu(irq_stat, cpu).mce_exceptions;
- 	sum += per_cpu(irq_stat, cpu).spurious_irqs;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 23921f7b6e67..ed6b2abdde15 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -647,13 +647,10 @@ EXPORT_SYMBOL(timer_interrupt);
- void timer_broadcast_interrupt(void)
- {
- 	u64 *next_tb = this_cpu_ptr(&decrementers_next_tb);
--	struct pt_regs *regs = get_irq_regs();
- 
--	trace_timer_interrupt_entry(regs);
- 	*next_tb = ~(u64)0;
- 	tick_receive_broadcast();
--	__this_cpu_inc(irq_stat.timer_irqs_event);
--	trace_timer_interrupt_exit(regs);
-+	__this_cpu_inc(irq_stat.broadcast_irqs_event);
- }
- #endif
+ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
  
 -- 
 2.17.0
