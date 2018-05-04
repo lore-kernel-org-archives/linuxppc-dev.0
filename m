@@ -1,24 +1,22 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40d2493MKzzDrLj
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 05:23:34 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id a202so17501742qkg.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 12:23:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40d2nv0RZ8zDr4K
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 05:56:18 +1000 (AEST)
+Received: by mail-qk0-x243.google.com with SMTP id a202so17578432qkg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 12:56:18 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org, paulus@samba.org,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
- fweimer@redhat.com, msuchanek@suse.com, Ulrich.Weigand@de.ibm.com,
- Thomas Gleixner <tglx@linutronix.de>, Dave Hansen <dave.hansen@intel.com>,
- Ingo Molnar <mingo@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Date: Fri,  4 May 2018 12:22:58 -0700
-Message-Id: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
+ msuchanek@suse.com, Ulrich.Weigand@de.ibm.com
+Subject: [PATCH v2] powerpc: do not allow userspace to modify execute-only pkey
+Date: Fri,  4 May 2018 12:56:00 -0700
+Message-Id: <1525463760-32333-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,145 +26,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Applications need the ability to associate an address-range with some
-key and latter revert to its initial default key. Pkey-0 comes close to
-providing this function but falls short, because the current
-implementation disallows applications to explicitly associate pkey-0 to
-the address range.
+When mprotect(....,PROT_EXEC) is called, the kernel allocates a
+execute-only pkey and associates the pkey with the given address space.
+The permission of this key should not be modifiable from userspace.
+However a bug in the current implementation lets the permissions on the
+key modifiable from userspace.
 
-Lets make pkey-0 less special and treat it almost like any other key.
-Thus it can be explicitly associated with any address range, and can be
-freed. This gives the application more flexibility and power.  The
-ability to free pkey-0 must be used responsibily, since pkey-0 is
-associated with almost all address-range by default.
+Whenever a key is allocated through mm_pkey_alloc(), the kernel programs
+the UAMOR register to allow userspace to change permissions on the key.
+This is fine for keys explicitly allocated through the
+sys_pkey_alloc(). But for execute-only pkey, it must be disallowed.
+Restructured the code to fix the bug.
 
-Even with this change pkey-0 continues to be slightly more special
-from the following point of view.
-(a) it is implicitly allocated.
-(b) it is the default key assigned to any address-range.
-(c) its permissions cannot be modified by userspace.
-
-NOTE: (c) is specific to powerpc only. pkey-0 is associated by default
-with all pages including kernel pages, and pkeys are also active in
-kernel mode. If any permission is denied on pkey-0, the kernel running
-in the context of the application will be unable to operate.
-
-Tested on powerpc.
-
-cc: Thomas Gleixner <tglx@linutronix.de>
-cc: Dave Hansen <dave.hansen@intel.com>
+cc: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
 cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Ingo Molnar <mingo@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>
+
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
 History:
 
-	v3: . Corrected a comment in arch_set_user_pkey_access().
-	    . Clarified the header, to capture the notion that
-	      pkey-0 permissions cannot be modified by userspace on powerpc.
-		-- comment from Thiago
+	v2: Thiago noticed a bug -- __execute_only_pkey() will always fail
+	    since it calls is_pkey_enabled() which always returns false
+	    for execute_only key. is_pkey_enabled() returns false
+	    because UAMOR bit for the execute_only key is and never be set.
+	    Fixed it.
 
-	v2: . mm_pkey_is_allocated() continued to treat pkey-0 special.
-	            fixed it.
 
- arch/powerpc/include/asm/pkeys.h |   22 ++++++++++++++++++----
- arch/powerpc/mm/pkeys.c          |   26 +++++++++++++++-----------
- 2 files changed, 33 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/pkeys.h |   24 ++++------------
+ arch/powerpc/mm/pkeys.c          |   57 ++++++++++++++++++++++++++++++-------
+ 2 files changed, 52 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 0409c80..31a6976 100644
+index 31a6976..3a9b82b 100644
 --- a/arch/powerpc/include/asm/pkeys.h
 +++ b/arch/powerpc/include/asm/pkeys.h
-@@ -101,10 +101,14 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
- 
- static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- {
--	/* A reserved key is never considered as 'explicitly allocated' */
--	return ((pkey < arch_max_pkey()) &&
--		!__mm_pkey_is_reserved(pkey) &&
--		__mm_pkey_is_allocated(mm, pkey));
-+	if (pkey < 0 || pkey >= arch_max_pkey())
-+		return false;
-+
-+	/* Reserved keys are never allocated. */
-+	if (__mm_pkey_is_reserved(pkey))
-+		return false;
-+
-+	return __mm_pkey_is_allocated(mm, pkey);
- }
+@@ -113,6 +113,8 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
  
  extern void __arch_activate_pkey(int pkey);
-@@ -200,6 +204,16 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ extern void __arch_deactivate_pkey(int pkey);
++extern int __mm_pkey_alloc(struct mm_struct *mm);
++
+ /*
+  * Returns a positive, 5-bit key on success, or -1 on failure.
+  * Relies on the mmap_sem to protect against concurrency in mm_pkey_alloc() and
+@@ -120,29 +122,14 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+  */
+ static inline int mm_pkey_alloc(struct mm_struct *mm)
  {
- 	if (static_branch_likely(&pkey_disabled))
- 		return -EINVAL;
-+
-+	/*
-+	 * userspace should not change pkey-0 permissions.
-+	 * pkey-0 is associated with every page in the kernel.
-+	 * If userspace denies any permission on pkey-0, the
-+	 * kernel cannot operate.
-+	 */
-+	if (!pkey)
-+		return init_val ? -EINVAL : 0;
-+
- 	return __arch_set_user_pkey_access(tsk, pkey, init_val);
- }
+-	/*
+-	 * Note: this is the one and only place we make sure that the pkey is
+-	 * valid as far as the hardware is concerned. The rest of the kernel
+-	 * trusts that only good, valid pkeys come out of here.
+-	 */
+-	u32 all_pkeys_mask = (u32)(~(0x0));
+ 	int ret;
  
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return -1;
+ 
++	ret = __mm_pkey_alloc(mm);
+ 	/*
+-	 * Are we out of pkeys? We must handle this specially because ffz()
+-	 * behavior is undefined if there are no zeros.
+-	 */
+-	if (mm_pkey_allocation_map(mm) == all_pkeys_mask)
+-		return -1;
+-
+-	ret = ffz((u32)mm_pkey_allocation_map(mm));
+-	__mm_pkey_allocated(mm, ret);
+-
+-	/*
+-	 * Enable the key in the hardware
++	 * Enable userspace to modify the key permissions.
+ 	 */
+ 	if (ret > 0)
+ 		__arch_activate_pkey(ret);
+@@ -158,7 +145,8 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
+ 		return -EINVAL;
+ 
+ 	/*
+-	 * Disable the key in the hardware
++	 * Reset the key and disable userspace
++	 * from modifying the key permissions.
+ 	 */
+ 	__arch_deactivate_pkey(pkey);
+ 	__mm_pkey_free(mm, pkey);
 diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 0eafdf0..d6873b4 100644
+index d6873b4..e81d59e 100644
 --- a/arch/powerpc/mm/pkeys.c
 +++ b/arch/powerpc/mm/pkeys.c
-@@ -119,16 +119,21 @@ int pkey_initialize(void)
- #else
- 	os_reserved = 0;
- #endif
-+	/* Bits are in LE format. */
- 	initial_allocation_mask = ~0x0;
+@@ -190,6 +190,9 @@ static inline void write_uamor(u64 value)
+ 	mtspr(SPRN_UAMOR, value);
+ }
+ 
++/*
++ * return true if userspace can modify the pkey permissions.
++ */
+ static bool is_pkey_enabled(int pkey)
+ {
+ 	u64 uamor = read_uamor();
+@@ -228,7 +231,10 @@ static void pkey_status_change(int pkey, bool enable)
+ 	init_amr(pkey, 0x0);
+ 	init_iamr(pkey, 0x0);
+ 
+-	/* Enable/disable key */
++	/*
++	 * Enable/disable userspace to/from modifying the permissions
++	 * on the key
++	 */
+ 	old_uamor = read_uamor();
+ 	if (enable)
+ 		old_uamor |= (0x3ul << pkeyshift(pkey));
+@@ -247,19 +253,35 @@ void __arch_deactivate_pkey(int pkey)
+ 	pkey_status_change(pkey, false);
+ }
+ 
+-/*
+- * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
+- * specified in @init_val.
+- */
+-int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
++int __mm_pkey_alloc(struct mm_struct *mm)
++{
++	/*
++	 * Note: this is the one and only place we make sure that the pkey is
++	 * valid as far as the hardware is concerned. The rest of the kernel
++	 * trusts that only good, valid pkeys come out of here.
++	 */
++	u32 all_pkeys_mask = (u32)(~(0x0));
++	int ret;
 +
-+	/* register mask is in BE format */
- 	pkey_amr_uamor_mask = ~0x0ul;
- 	pkey_iamr_mask = ~0x0ul;
--	/*
--	 * key 0, 1 are reserved.
--	 * key 0 is the default key, which allows read/write/execute.
--	 * key 1 is recommended not to be used. PowerISA(3.0) page 1015,
--	 * programming note.
--	 */
--	for (i = 2; i < (pkeys_total - os_reserved); i++) {
++	/*
++	 * Are we out of pkeys? We must handle this specially because ffz()
++	 * behavior is undefined if there are no zeros.
++	 */
++	if (mm_pkey_allocation_map(mm) == all_pkeys_mask)
++		return -1;
 +
-+	for (i = 0; i < (pkeys_total - os_reserved); i++) {
-+		/*
-+		 * key 1 is recommended not to be used.
-+		 * PowerISA(3.0) page 1015,
-+		 */
-+		if (i == 1)
-+			continue;
++	ret = ffz((u32)mm_pkey_allocation_map(mm));
++	__mm_pkey_allocated(mm, ret);
 +
- 		initial_allocation_mask &= ~(0x1 << i);
- 		pkey_amr_uamor_mask &= ~(0x3ul << pkeyshift(i));
- 		pkey_iamr_mask &= ~(0x1ul << pkeyshift(i));
-@@ -142,7 +147,9 @@ void pkey_mm_init(struct mm_struct *mm)
++	return ret;
++}
++
++static int set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 				unsigned long init_val)
+ {
+ 	u64 new_amr_bits = 0x0ul;
+ 	u64 new_iamr_bits = 0x0ul;
+ 
+-	if (!is_pkey_enabled(pkey))
+-		return -EINVAL;
+-
+ 	if (init_val & PKEY_DISABLE_EXECUTE) {
+ 		if (!pkey_execute_disable_supported)
+ 			return -EINVAL;
+@@ -277,6 +299,19 @@ int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
+ 	return 0;
+ }
+ 
++/*
++ * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
++ * specified in @init_val.
++ */
++int __arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
++				unsigned long init_val)
++{
++	if (!is_pkey_enabled(pkey))
++		return -EINVAL;
++
++	return set_user_pkey_access(tsk, pkey, init_val);
++}
++
+ void thread_pkey_regs_save(struct thread_struct *thread)
  {
  	if (static_branch_likely(&pkey_disabled))
- 		return;
--	mm_pkey_allocation_map(mm) = initial_allocation_mask;
-+
-+	/* allocate key-0 by default */
-+	mm_pkey_allocation_map(mm) = initial_allocation_mask | 0x1;
- 	/* -1 means unallocated or invalid */
- 	mm->context.execute_only_pkey = -1;
- }
-@@ -407,9 +414,6 @@ static bool pkey_access_permitted(int pkey, bool write, bool execute)
- 	int pkey_shift;
- 	u64 amr;
- 
--	if (!pkey)
--		return true;
--
- 	if (!is_pkey_enabled(pkey))
- 		return true;
- 
+@@ -336,7 +371,7 @@ int __execute_only_pkey(struct mm_struct *mm)
+ 	/* Do we need to assign a pkey for mm's execute-only maps? */
+ 	if (execute_only_pkey == -1) {
+ 		/* Go allocate one to use, which might fail */
+-		execute_only_pkey = mm_pkey_alloc(mm);
++		execute_only_pkey = __mm_pkey_alloc(mm);
+ 		if (execute_only_pkey < 0)
+ 			return -1;
+ 		need_to_set_mm_pkey = true;
+@@ -355,7 +390,7 @@ int __execute_only_pkey(struct mm_struct *mm)
+ 	 * Set up AMR so that it denies access for everything other than
+ 	 * execution.
+ 	 */
+-	ret = __arch_set_user_pkey_access(current, execute_only_pkey,
++	ret = set_user_pkey_access(current, execute_only_pkey,
+ 					  PKEY_DISABLE_ACCESS |
+ 					  PKEY_DISABLE_WRITE);
+ 	/*
 -- 
 1.7.1
