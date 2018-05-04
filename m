@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40czKY3HYvzDqlR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:01 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id m21-v6so15863055pgv.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40czKb6vFCzDqnn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 May 2018 03:20:03 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id 82-v6so15851887pge.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 10:20:03 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 04/11] powerpc/64s: micro-optimise __hard_irq_enable() for
- mtmsrd L=1 support
-Date: Sat,  5 May 2018 03:19:28 +1000
-Message-Id: <20180504171935.25410-5-npiggin@gmail.com>
+Subject: [PATCH 05/11] powerpc/64: remove start_tb and accum_tb from
+ thread_struct
+Date: Sat,  5 May 2018 03:19:29 +1000
+Message-Id: <20180504171935.25410-6-npiggin@gmail.com>
 In-Reply-To: <20180504171935.25410-1-npiggin@gmail.com>
 References: <20180504171935.25410-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,32 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Book3S minimum supported ISA version now requires mtmsrd L=1. This
-instruction does not require bits other than RI and EE to be supplied,
-so __hard_irq_enable() and __hard_irq_disable() does not have to read
-the kernel_msr from paca.
-
-Interrupt entry code already relies on L=1 support.
+These fields are only written to.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/hw_irq.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/processor.h | 4 ----
+ arch/powerpc/kernel/process.c        | 6 +-----
+ 2 files changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 8004d7887ff6..fbc2d83808aa 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -228,8 +228,8 @@ static inline bool arch_irqs_disabled(void)
- #define __hard_irq_enable()	asm volatile("wrteei 1" : : : "memory")
- #define __hard_irq_disable()	asm volatile("wrteei 0" : : : "memory")
- #else
--#define __hard_irq_enable()	__mtmsrd(local_paca->kernel_msr | MSR_EE, 1)
--#define __hard_irq_disable()	__mtmsrd(local_paca->kernel_msr, 1)
-+#define __hard_irq_enable()	__mtmsrd(MSR_EE|MSR_RI, 1)
-+#define __hard_irq_disable()	__mtmsrd(MSR_RI, 1)
- #endif
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index c4b36a494a63..eff269adfa71 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -264,10 +264,6 @@ struct thread_struct {
+ 	struct thread_fp_state	*fp_save_area;
+ 	int		fpexc_mode;	/* floating-point exception mode */
+ 	unsigned int	align_ctl;	/* alignment handling control */
+-#ifdef CONFIG_PPC64
+-	unsigned long	start_tb;	/* Start purr when proc switched in */
+-	unsigned long	accum_tb;	/* Total accumulated purr for process */
+-#endif
+ #ifdef CONFIG_HAVE_HW_BREAKPOINT
+ 	struct perf_event *ptrace_bps[HBP_NUM];
+ 	/*
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1237f13fed51..ff7344d996e3 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1187,11 +1187,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 	 */
+ 	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+ 		struct cpu_usage *cu = this_cpu_ptr(&cpu_usage_array);
+-		long unsigned start_tb, current_tb;
+-		start_tb = old_thread->start_tb;
+-		cu->current_tb = current_tb = mfspr(SPRN_PURR);
+-		old_thread->accum_tb += (current_tb - start_tb);
+-		new_thread->start_tb = current_tb;
++		cu->current_tb = mfspr(SPRN_PURR);
+ 	}
+ #endif /* CONFIG_PPC64 */
  
- #define hard_irq_disable()	do {					\
 -- 
 2.17.0
