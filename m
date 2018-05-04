@@ -1,21 +1,23 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x232.google.com (mail-oi0-x232.google.com
- [IPv6:2607:f8b0:4003:c06::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40cnNR4HnmzDqhm
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 19:51:50 +1000 (AEST)
-Received: by mail-oi0-x232.google.com with SMTP id 11-v6so18603967ois.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 May 2018 02:51:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40cpTz32j6zDqhm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 May 2018 20:41:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?utf-8?Q?C=C3=A9dr?=
+ =?utf-8?Q?ic?= Le Goater <clg@kaod.org>
+Subject: Re: [PATCH 1/4] powerpc/64/kexec: fix race in kexec when XIVE is
+ shutdowned
+In-Reply-To: <20180403071548.19829-2-clg@kaod.org>
+References: <20180403071548.19829-1-clg@kaod.org>
+ <20180403071548.19829-2-clg@kaod.org>
+Date: Fri, 04 May 2018 20:41:39 +1000
+Message-ID: <87fu378zz0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 4 May 2018 11:51:27 +0200
-Message-ID: <CA+7wUsxwRi3tLRR_+-=h_y2Xj_RfJS58E0vpa8K1KPtRAQpr_g@mail.gmail.com>
-Subject: seccomp_bpf.c:2880:global.get_metadata:Expected 0 (0) == seccomp(1,
- 2, &prog) (4294967295)
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +27,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi there,
+C=C3=A9dric Le Goater <clg@kaod.org> writes:
 
-Quick question (I have not investigate root cause): is support for
-seccomp complete on ppc32 ?
+> The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
+> secondary CPUs before the kexec_cpu_down() operation is called on
+> secondaries. This can raise conflicts and provoque errors in the XIVE
+> hcalls when XIVE is shutdowned with H_INT_RESET on the primary CPU.
+>
+> To synchronize the kexec_cpu_down() operations and make sure the
+> secondaries have completed their task before the primary starts doing
+> the same, let's move the primary kexec_cpu_down() after the
+> KEXEC_STATE_REAL_MODE barrier.
 
-$ make KBUILD_OUTPUT=/tmp/kselftest TARGETS=seccomp kselftest
-...
-seccomp_bpf.c:1804:TRACE_syscall.ptrace_syscall_dropped:Expected 1 (1)
-== syscall(286) (4294967295)
-TRACE_syscall.ptrace_syscall_dropped: Test failed at step #13
-[     FAIL ] TRACE_syscall.ptrace_syscall_dropped
-...
-[ RUN      ] global.get_metadata
-seccomp_bpf.c:2880:global.get_metadata:Expected 0 (0) == seccomp(1, 2,
-&prog) (4294967295)
-seccomp_bpf.c:2892:global.get_metadata:Expected 1 (1) ==
-read(pipefd[0], &buf, 1) (0)
-global.get_metadata: Test terminated by assertion
-[     FAIL ] global.get_metadata
+This sounds reasonable, I'm sure you've tested it. I'm just a bit
+worried that it could potentially break on other platforms because it
+changes the sequence of operations.
 
+Looking we only have kexec_cpu_down() implemented for pseries, powernv,
+ps3 and 85xx.
 
-Thanks
+We can easily test the first two. ps3 doesn't do much so hopefully
+that's safe.
+
+mpc85xx_smp_kexec_cpu_down() does very little on 32-bit, and on 64-bit
+it seems to already wait for at least one other CPU to get into
+KEXEC_STATE_REAL_MODE, so that's probably safe too.
+
+So I guess I'm OK to merge this, and we'll fix any fallout. It would be
+good for the change log to call out the change though, and that we think
+it's a sensible change for all platforms.
+
+cheers
+
+> Signed-off-by: C=C3=A9dric Le Goater <clg@kaod.org>
+> ---
+>  arch/powerpc/kernel/machine_kexec_64.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel=
+/machine_kexec_64.c
+> index 49d34d7271e7..212ecb8e829c 100644
+> --- a/arch/powerpc/kernel/machine_kexec_64.c
+> +++ b/arch/powerpc/kernel/machine_kexec_64.c
+> @@ -230,16 +230,16 @@ static void kexec_prepare_cpus(void)
+>  	/* we are sure every CPU has IRQs off at this point */
+>  	kexec_all_irq_disabled =3D 1;
+>=20=20
+> -	/* after we tell the others to go down */
+> -	if (ppc_md.kexec_cpu_down)
+> -		ppc_md.kexec_cpu_down(0, 0);
+> -
+>  	/*
+>  	 * Before removing MMU mappings make sure all CPUs have entered real
+>  	 * mode:
+>  	 */
+>  	kexec_prepare_cpus_wait(KEXEC_STATE_REAL_MODE);
+>=20=20
+> +	/* after we tell the others to go down */
+> +	if (ppc_md.kexec_cpu_down)
+> +		ppc_md.kexec_cpu_down(0, 0);
+> +
+>  	put_cpu();
+>  }
+>=20=20
+> --=20
+> 2.13.6
