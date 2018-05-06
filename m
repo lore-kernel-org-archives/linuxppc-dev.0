@@ -1,22 +1,19 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40dyK61bj1zDrnm
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 May 2018 17:38:01 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id f189so20471693pfa.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 00:38:01 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 06/10] powerpc/mm/radix: implement LPID based TLB flushes to
- be used by KVM
-Date: Sun,  6 May 2018 17:37:27 +1000
-Message-Id: <20180506073731.13097-7-npiggin@gmail.com>
-In-Reply-To: <20180506073731.13097-1-npiggin@gmail.com>
-References: <20180506073731.13097-1-npiggin@gmail.com>
+Return-Path: <wsa+renesas@sang-engineering.com>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40f3L85S0HzF0QC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 May 2018 21:24:14 +1000 (AEST)
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: trivial@kernel.org
+Cc: linux-renesas-soc@vger.kernel.org,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/9] powerpc/watchdog: fix typo 'can by' to 'can be'
+Date: Sun,  6 May 2018 13:23:46 +0200
+Message-Id: <20180506112404.24872-3-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20180506112404.24872-1-wsa+renesas@sang-engineering.com>
+References: <20180506112404.24872-1-wsa+renesas@sang-engineering.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,286 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement a local TLB flush for invalidating an LPID with variants for
-process or partition scope. And a global TLB flush for invalidating
-a partition scoped page of an LPID.
-
-These will be used by KVM in subsequent patches.
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- .../include/asm/book3s/64/tlbflush-radix.h    |   7 +
- arch/powerpc/mm/tlb-radix.c                   | 207 ++++++++++++++++++
- 2 files changed, 214 insertions(+)
+ arch/powerpc/kernel/watchdog.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index 19b45ba6caf9..ef5c3f2994c9 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -51,4 +51,11 @@ extern void radix__flush_tlb_all(void);
- extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
- 					unsigned long address);
- 
-+extern void radix__flush_tlb_lpid_page(unsigned int lpid,
-+					unsigned long addr,
-+					unsigned long page_size);
-+extern void radix__flush_pwc_lpid(unsigned int lpid);
-+extern void radix__local_flush_tlb_lpid(unsigned int lpid);
-+extern void radix__local_flush_tlb_lpid_guest(unsigned int lpid);
-+
- #endif
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index a5d7309c2d05..5ac3206c51cc 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -118,6 +118,53 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
-+static inline void __tlbiel_lpid(unsigned long lpid, int set,
-+				unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rb |= set << PPC_BITLSHIFT(51);
-+	rs = 0;  /* LPID comes from LPIDR */
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);
-+}
-+
-+static inline void __tlbie_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rs = lpid;
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-+}
-+
-+static inline void __tlbiel_lpid_guest(unsigned long lpid, int set,
-+				unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rb |= set << PPC_BITLSHIFT(51);
-+	rs = 0;  /* LPID comes from LPIDR */
-+	prs = 1; /* process scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);
-+}
-+
-+
- static inline void __tlbiel_va(unsigned long va, unsigned long pid,
- 			       unsigned long ap, unsigned long ric)
- {
-@@ -150,6 +197,22 @@ static inline void __tlbie_va(unsigned long va, unsigned long pid,
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
-+static inline void __tlbie_lpid_va(unsigned long va, unsigned long lpid,
-+			      unsigned long ap, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = va & ~(PPC_BITMASK(52, 63));
-+	rb |= ap << PPC_BITLSHIFT(58);
-+	rs = lpid;
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-+}
-+
- static inline void fixup_tlbie(void)
- {
- 	unsigned long pid = 0;
-@@ -161,6 +224,16 @@ static inline void fixup_tlbie(void)
- 	}
- }
- 
-+static inline void fixup_tlbie_lpid(unsigned long lpid)
-+{
-+	unsigned long va = ((1UL << 52) - 1);
-+
-+	if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG)) {
-+		asm volatile("ptesync": : :"memory");
-+		__tlbie_lpid_va(va, lpid, mmu_get_ap(MMU_PAGE_64K), RIC_FLUSH_TLB);
-+	}
-+}
-+
- /*
-  * We use 128 set in radix mode and 256 set in hpt mode.
-  */
-@@ -214,6 +287,86 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
- 
-+static inline void _tlbiel_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	int set;
-+
-+	VM_BUG_ON(mfspr(SPRN_LPID) != lpid);
-+
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Flush the first set of the TLB, and if we're doing a RIC_FLUSH_ALL,
-+	 * also flush the entire Page Walk Cache.
-+	 */
-+	__tlbiel_lpid(lpid, 0, ric);
-+
-+	/* For PWC, only one flush is needed */
-+	if (ric == RIC_FLUSH_PWC) {
-+		asm volatile("ptesync": : :"memory");
-+		return;
-+	}
-+
-+	/* For the remaining sets, just flush the TLB */
-+	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
-+		__tlbiel_lpid(lpid, set, RIC_FLUSH_TLB);
-+
-+	asm volatile("ptesync": : :"memory");
-+	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
-+}
-+
-+static inline void _tlbie_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Workaround the fact that the "ric" argument to __tlbie_pid
-+	 * must be a compile-time contraint to match the "i" constraint
-+	 * in the asm statement.
-+	 */
-+	switch (ric) {
-+	case RIC_FLUSH_TLB:
-+		__tlbie_lpid(lpid, RIC_FLUSH_TLB);
-+		break;
-+	case RIC_FLUSH_PWC:
-+		__tlbie_lpid(lpid, RIC_FLUSH_PWC);
-+		break;
-+	case RIC_FLUSH_ALL:
-+	default:
-+		__tlbie_lpid(lpid, RIC_FLUSH_ALL);
-+	}
-+	fixup_tlbie_lpid(lpid);
-+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+}
-+
-+static inline void _tlbiel_lpid_guest(unsigned long lpid, unsigned long ric)
-+{
-+	int set;
-+
-+	VM_BUG_ON(mfspr(SPRN_LPID) != lpid);
-+
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Flush the first set of the TLB, and if we're doing a RIC_FLUSH_ALL,
-+	 * also flush the entire Page Walk Cache.
-+	 */
-+	__tlbiel_lpid_guest(lpid, 0, ric);
-+
-+	/* For PWC, only one flush is needed */
-+	if (ric == RIC_FLUSH_PWC) {
-+		asm volatile("ptesync": : :"memory");
-+		return;
-+	}
-+
-+	/* For the remaining sets, just flush the TLB */
-+	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
-+		__tlbiel_lpid_guest(lpid, set, RIC_FLUSH_TLB);
-+
-+	asm volatile("ptesync": : :"memory");
-+}
-+
-+
- static inline void __tlbiel_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
- 				    unsigned long psize)
-@@ -268,6 +421,17 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
- 
-+static inline void _tlbie_lpid_va(unsigned long va, unsigned long lpid,
-+			      unsigned long psize, unsigned long ric)
-+{
-+	unsigned long ap = mmu_get_ap(psize);
-+
-+	asm volatile("ptesync": : :"memory");
-+	__tlbie_lpid_va(va, lpid, ap, ric);
-+	fixup_tlbie_lpid(lpid);
-+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+}
-+
- static inline void _tlbie_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
- 				    unsigned long psize, bool also_pwc)
-@@ -534,6 +698,49 @@ static int radix_get_mmu_psize(int page_size)
- 	return psize;
- }
- 
-+/*
-+ * Flush partition scoped LPID address translation for all CPUs.
-+ */
-+void radix__flush_tlb_lpid_page(unsigned int lpid,
-+					unsigned long addr,
-+					unsigned long page_size)
-+{
-+	int psize = radix_get_mmu_psize(page_size);
-+
-+	_tlbie_lpid_va(addr, lpid, psize, RIC_FLUSH_TLB);
-+}
-+EXPORT_SYMBOL_GPL(radix__flush_tlb_lpid_page);
-+
-+/*
-+ * Flush partition scoped PWC from LPID for all CPUs.
-+ */
-+void radix__flush_pwc_lpid(unsigned int lpid)
-+{
-+	_tlbie_lpid(lpid, RIC_FLUSH_PWC);
-+}
-+EXPORT_SYMBOL_GPL(radix__flush_pwc_lpid);
-+
-+/*
-+ * Flush partition scoped translations from LPID (=LPIDR)
-+ */
-+void radix__local_flush_tlb_lpid(unsigned int lpid)
-+{
-+	_tlbiel_lpid(lpid, RIC_FLUSH_ALL);
-+}
-+EXPORT_SYMBOL_GPL(radix__local_flush_tlb_lpid);
-+
-+/*
-+ * Flush process scoped translations from LPID (=LPIDR).
-+ * Important difference, the guest normally manages its own translations,
-+ * but some cases e.g., vCPU CPU migration require KVM to flush.
-+ */
-+void radix__local_flush_tlb_lpid_guest(unsigned int lpid)
-+{
-+	_tlbiel_lpid_guest(lpid, RIC_FLUSH_ALL);
-+}
-+EXPORT_SYMBOL_GPL(radix__local_flush_tlb_lpid_guest);
-+
-+
- static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
- 				  unsigned long end, int psize);
- 
+diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
+index 6256dc3b0087d2..591f7c3af4ffcd 100644
+--- a/arch/powerpc/kernel/watchdog.c
++++ b/arch/powerpc/kernel/watchdog.c
+@@ -64,7 +64,7 @@
+  * means the CPU(s) with their bit still set in the pending mask have had
+  * their heartbeat stop, and action is taken.
+  *
+- * Some platforms implement true NMI IPIs, which can by used by the SMP
++ * Some platforms implement true NMI IPIs, which can be used by the SMP
+  * watchdog to detect an unresponsive CPU and pull it out of its stuck
+  * state with the NMI IPI, to get crash/debug data from it. This way the
+  * SMP watchdog can detect hardware interrupts off lockups.
 -- 
-2.17.0
+2.11.0
