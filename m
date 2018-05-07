@@ -1,22 +1,22 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.22])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.19])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40flDN6mz4zF1SC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 00:21:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40flDX6N31zF1RC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 00:21:48 +1000 (AEST)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Joel Stanley <joel@jms.id.au>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Robin H. Johnson" <robbat2@gentoo.org>,
  Benjamin Gilbert <benjamin.gilbert@coreos.com>,
+ "Robin H. Johnson" <robbat2@gentoo.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  linux-kernel@vger.kernel.org
-Subject: [PATCH v2 4/4] powerpc: wii_defconfig: Disable BCMA support
-Date: Mon,  7 May 2018 16:20:19 +0200
-Message-Id: <20180507142019.32669-5-j.neuschaefer@gmx.net>
+Subject: [PATCH v2 3/4] powerpc: wii_defconfig: Enable Wii SDHCI driver
+Date: Mon,  7 May 2018 16:20:18 +0200
+Message-Id: <20180507142019.32669-4-j.neuschaefer@gmx.net>
 In-Reply-To: <20180507142019.32669-1-j.neuschaefer@gmx.net>
 References: <20180507142019.32669-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -30,30 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The B43 driver only needs CONFIG_SSB to support the WLAN card found in
-the Wii. Configure it accordingly, and disable BCMA bus support to save
-a bit of space.
+This allows access to the SD card and the BCM4318 Wifi module.
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
 
+Note that until some fixes in the interrupt controller drivers used on
+the Wii, the SDHCI controllers will not be usable.
+
 v2:
 - Patch added to the series
 ---
- arch/powerpc/configs/wii_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/powerpc/configs/wii_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/arch/powerpc/configs/wii_defconfig b/arch/powerpc/configs/wii_defconfig
-index a674dd420f0f..10940533da71 100644
+index c5933a38e5ad..a674dd420f0f 100644
 --- a/arch/powerpc/configs/wii_defconfig
 +++ b/arch/powerpc/configs/wii_defconfig
-@@ -51,6 +51,7 @@ CONFIG_BLK_DEV_SD=y
- CONFIG_NETDEVICES=y
- # CONFIG_ETHERNET is not set
- CONFIG_B43=y
-+CONFIG_B43_BUSES_SSB=y
- CONFIG_B43_SDIO=y
- # CONFIG_B43_PHY_LP is not set
- CONFIG_B43_DEBUG=y
+@@ -93,6 +93,8 @@ CONFIG_HID_APPLE=m
+ CONFIG_HID_WACOM=m
+ CONFIG_MMC=y
+ CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_PLTFM=y
++CONFIG_MMC_SDHCI_OF_HLWD=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=y
+ CONFIG_LEDS_GPIO=y
 -- 
 2.17.0
