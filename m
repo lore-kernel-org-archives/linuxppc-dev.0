@@ -1,28 +1,15 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fgF36cg7zF1Rp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 21:21:57 +1000 (AEST)
-Date: Mon, 7 May 2018 13:21:49 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: fweimer@redhat.com, Thomas Gleixner <tglx@linutronix.de>,
- Ulrich.Weigand@de.ibm.com, mhocko@kernel.org, Dave Hansen
- <dave.hansen@intel.com>, paulus@samba.org, aneesh.kumar@linux.vnet.ibm.com,
- bauerman@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Message-ID: <20180507132149.3fc1dcc5@kitsune.suse.cz>
-In-Reply-To: <20180506201043.GE5617@ram.oc3035372033.ibm.com>
-References: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
- <20180504232647.3412f563@naga.suse.cz>
- <edd3d544-9fa8-5a79-4325-818ee5d7dfb0@intel.com>
- <20180504214507.GA5871@ram.oc3035372033.ibm.com>
- <20180505143956.139f4828@naga.suse.cz>
- <20180506201043.GE5617@ram.oc3035372033.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fjVm31zQzF1Q2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 23:03:59 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: anton@samba.org
+Subject: [PATCH] powerpc/pseries: hcall_exit tracepoint retval should be signed
+Date: Mon,  7 May 2018 23:03:55 +1000
+Message-Id: <20180507130355.25115-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,68 +19,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 6 May 2018 13:10:43 -0700
-Ram Pai <linuxram@us.ibm.com> wrote:
+The hcall_exit() tracepoint has retval defined as unsigned long. That
+leads to humours results like:
 
-> On Sat, May 05, 2018 at 02:39:56PM +0200, Michal Such=C3=A1nek wrote:
-> > On Fri, 4 May 2018 14:45:07 -0700
-> > Ram Pai <linuxram@us.ibm.com> wrote:
-> >  =20
-> > > On Fri, May 04, 2018 at 02:31:10PM -0700, Dave Hansen wrote: =20
-> > > > On 05/04/2018 02:26 PM, Michal Such=C3=A1nek wrote:   =20
-> > > > > If it is not ok to change permissions of pkey 0 is it ok to
-> > > > > free it?   =20
-> > > >=20
-> > > > It's pretty much never OK to free it on x86 or ppc.  But, we're
-> > > > not going to put code in to keep userspace from shooting itself
-> > > > in the foot, at least on x86.   =20
-> > >=20
-> > > and on powerpc aswell. =20
-> >=20
-> > But once it's free it can be re-allocated. So you are moving the
-> > special-casing from free code to code dealing with allocation. =20
->=20
-> Actually if an application frees key-0, it has potentially opened up a
-> can-of-worms. It could step on anything that explodes.=20
->=20
-> Its choice between imposing policies on an application v/s freeing it
-> up to choose its own policy. I think the kernel should impose some
-> form of mild-policy. But others think there should be none.
+  bash-3686  [009] d..2   854.134094: hcall_entry: opcode=24
+  bash-3686  [009] d..2   854.134095: hcall_exit: opcode=24 retval=18446744073709551609
 
-It is a problem of the application when it frees a key it still needs.
-I am not for or against allowing that. The problem is with the
-interface change once the key is freed.
+It's normal for some hcalls to return negative values, displaying them
+as unsigned isn't very helpful. So change it to signed.
 
->=20
-> >=20
-> > If you want something like allocate_exec_only_pkey then the function
-> > (either in kernel or in userspace) needs to make sure it is not
-> > getting/requesting key 0 on powerpc. =20
->=20
-> Yes. makes sense. I will put in some checks towards that.
+  bash-3711  [001] d..2   471.691008: hcall_entry: opcode=24
+  bash-3711  [001] d..2   471.691008: hcall_exit: opcode=24 retval=-7
 
-Suppose an application is adapted to take advantage of freeing key
-0, perhaps to revoke access to any code and data used at runtime
-initialization which is not longer needed.=20
+Which can be more easily compared to H_NOT_FOUND in hvcall.h
 
-As I understand it with the proposed change any address range not
-associated with non-default key becomes inaccessible and key 0 becomes
-available for allocation again. This is fine on x86 where key 0 is
-fully functional.=20
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/asm-prototypes.h    | 3 +--
+ arch/powerpc/include/asm/trace.h             | 7 +++----
+ arch/powerpc/platforms/pseries/hvCall_inst.c | 2 +-
+ arch/powerpc/platforms/pseries/lpar.c        | 3 +--
+ 4 files changed, 6 insertions(+), 9 deletions(-)
 
-However, on powerpc the application now has key 0 available and it is
-not fully a fully functional key. So the application now needs to check
-that the key it is allocating is not key 0. Otherwise further key
-operations may unexpectedly fail.
-
-To prevent this I would suggest
-
-a) do not allow allocating key 0. If it is freed it becomes reserved
-
-b) never expose key 0 to applications. Allocate key 2 as the default
-key and present the key numbers with an offset to userspace so key 2
-appears as key 0 to user applications.
-
-Thanks
-
-Michal
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index d9713ad62e3c..068760d61e7e 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -36,8 +36,7 @@ void kexec_copy_flush(struct kimage *image);
+ /* pseries hcall tracing */
+ extern struct static_key hcall_tracepoint_key;
+ void __trace_hcall_entry(unsigned long opcode, unsigned long *args);
+-void __trace_hcall_exit(long opcode, unsigned long retval,
+-			unsigned long *retbuf);
++void __trace_hcall_exit(long opcode, long retval, unsigned long *retbuf);
+ /* OPAL tracing */
+ #ifdef HAVE_JUMP_LABEL
+ extern struct static_key opal_tracepoint_key;
+diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
+index 33f3b479138b..d018e8602694 100644
+--- a/arch/powerpc/include/asm/trace.h
++++ b/arch/powerpc/include/asm/trace.h
+@@ -81,8 +81,7 @@ TRACE_EVENT_FN_COND(hcall_entry,
+ 
+ TRACE_EVENT_FN_COND(hcall_exit,
+ 
+-	TP_PROTO(unsigned long opcode, unsigned long retval,
+-		unsigned long *retbuf),
++	TP_PROTO(unsigned long opcode, long retval, unsigned long *retbuf),
+ 
+ 	TP_ARGS(opcode, retval, retbuf),
+ 
+@@ -90,7 +89,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
+ 
+ 	TP_STRUCT__entry(
+ 		__field(unsigned long, opcode)
+-		__field(unsigned long, retval)
++		__field(long, retval)
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -98,7 +97,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
+ 		__entry->retval = retval;
+ 	),
+ 
+-	TP_printk("opcode=%lu retval=%lu", __entry->opcode, __entry->retval),
++	TP_printk("opcode=%lu retval=%ld", __entry->opcode, __entry->retval),
+ 
+ 	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
+ );
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index 89b7ce807e70..6da320c786cd 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -125,7 +125,7 @@ static void probe_hcall_entry(void *ignored, unsigned long opcode, unsigned long
+ 	h->purr_start = mfspr(SPRN_PURR);
+ }
+ 
+-static void probe_hcall_exit(void *ignored, unsigned long opcode, unsigned long retval,
++static void probe_hcall_exit(void *ignored, unsigned long opcode, long retval,
+ 			     unsigned long *retbuf)
+ {
+ 	struct hcall_stats *h;
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index adb996ed51e1..5a392e40f3d2 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -902,8 +902,7 @@ void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
+ 	local_irq_restore(flags);
+ }
+ 
+-void __trace_hcall_exit(long opcode, unsigned long retval,
+-			unsigned long *retbuf)
++void __trace_hcall_exit(long opcode, long retval, unsigned long *retbuf)
+ {
+ 	unsigned long flags;
+ 	unsigned int *depth;
+-- 
+2.14.1
