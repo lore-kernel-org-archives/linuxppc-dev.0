@@ -1,20 +1,19 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fXYg1dDXzF14y
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 16:20:55 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id w129so16607021pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 23:20:55 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fXYj5YYvzF151
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 16:20:57 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id f20so13237588pfn.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 23:20:57 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: kvm-ppc@vger.kernel.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 07/10] KVM: PPC: reimplement LOAD_FP/STORE_FP instruction
- mmio emulation with analyse_intr() input
-Date: Mon,  7 May 2018 14:20:13 +0800
-Message-Id: <1525674016-6703-8-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 06/10] KVM: PPC: add giveup_ext() hook for PPC KVM ops
+Date: Mon,  7 May 2018 14:20:12 +0800
+Message-Id: <1525674016-6703-7-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,249 +27,86 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch reimplements LOAD_FP/STORE_FP instruction MMIO emulation with
-analyse_intr() input. It utilizes the FPCONV/UPDATE properties exported by
-analyse_instr() and invokes kvmppc_handle_load(s)/kvmppc_handle_store()
-accordingly.
+Currently HV will save math regs(FP/VEC/VSX) when trap into host. But
+PR KVM will only save math regs when qemu task switch out of CPU, or
+when returning from qemu code.
 
-For FP store MMIO emulation, the FP regs need to be flushed firstly so
-that the right FP reg vals can be read from vcpu->arch.fpr, which will
-be stored into MMIO data.
+To emulate FP/VEC/VSX mmio load, PR KVM need to make sure that math
+regs were flushed firstly and then be able to update saved VCPU
+FPR/VEC/VSX area reasonably.
 
-Suggested-by: Paul Mackerras <paulus@ozlabs.org>
+This patch adds giveup_ext() field  to KVM ops and PR KVM has non-NULL
+giveup_ext() ops. kvmppc_complete_mmio_load() can invoke that hook
+(when not NULL) to flush math regs accordingly, before updating saved
+register vals.
+
+Math regs flush is also necessary for STORE, which will be covered
+in later patch within this patch series.
+
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/emulate_loadstore.c | 197 +++++++----------------------------
- 1 file changed, 40 insertions(+), 157 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h | 1 +
+ arch/powerpc/kvm/book3s_pr.c       | 1 +
+ arch/powerpc/kvm/powerpc.c         | 9 +++++++++
+ 3 files changed, 11 insertions(+)
 
-diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-index 2a91845..5a6571c 100644
---- a/arch/powerpc/kvm/emulate_loadstore.c
-+++ b/arch/powerpc/kvm/emulate_loadstore.c
-@@ -138,6 +138,22 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 139cdf0..1f087c4 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -324,6 +324,7 @@ struct kvmppc_ops {
+ 	int (*get_rmmu_info)(struct kvm *kvm, struct kvm_ppc_rmmu_info *info);
+ 	int (*set_smt_mode)(struct kvm *kvm, unsigned long mode,
+ 			    unsigned long flags);
++	void (*giveup_ext)(struct kvm_vcpu *vcpu, ulong msr);
+ };
  
- 			break;
- 		}
-+#ifdef CONFIG_PPC_FPU
-+		case LOAD_FP:
-+			if (kvmppc_check_fp_disabled(vcpu))
-+				return EMULATE_DONE;
-+
-+			if (op.type & FPCONV)
-+				vcpu->arch.mmio_sp64_extend = 1;
-+
-+			emulated = kvmppc_handle_load(run, vcpu,
-+					KVM_MMIO_REG_FPR|op.reg, size, 1);
-+
-+			if ((op.type & UPDATE) && (emulated != EMULATE_FAIL))
-+				kvmppc_set_gpr(vcpu, op.update_reg, op.ea);
-+
-+			break;
-+#endif
- 		case STORE:
- 			/* if need byte reverse, op.val has been reversed by
- 			 * analyse_instr().
-@@ -149,6 +165,30 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 				kvmppc_set_gpr(vcpu, op.update_reg, op.ea);
+ extern struct kvmppc_ops *kvmppc_hv_ops;
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 67061d3..be26636 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -1782,6 +1782,7 @@ static long kvm_arch_vm_ioctl_pr(struct file *filp,
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	.hcall_implemented = kvmppc_hcall_impl_pr,
+ #endif
++	.giveup_ext = kvmppc_giveup_ext,
+ };
  
- 			break;
-+#ifdef CONFIG_PPC_FPU
-+		case STORE_FP:
-+			if (kvmppc_check_fp_disabled(vcpu))
-+				return EMULATE_DONE;
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 45daf3b..8ce9e7b 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -1061,6 +1061,9 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
+ 		kvmppc_set_gpr(vcpu, vcpu->arch.io_gpr, gpr);
+ 		break;
+ 	case KVM_MMIO_REG_FPR:
++		if (vcpu->kvm->arch.kvm_ops->giveup_ext)
++			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_FP);
 +
-+			/* The FP registers need to be flushed so that
-+			 * kvmppc_handle_store() can read actual FP vals
-+			 * from vcpu->arch.
-+			 */
-+			if (vcpu->kvm->arch.kvm_ops->giveup_ext)
-+				vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu,
-+						MSR_FP);
-+
-+			if (op.type & FPCONV)
-+				vcpu->arch.mmio_sp64_extend = 1;
-+
-+			emulated = kvmppc_handle_store(run, vcpu,
-+					VCPU_FPR(vcpu, op.reg), size, 1);
-+
-+			if ((op.type & UPDATE) && (emulated != EMULATE_FAIL))
-+				kvmppc_set_gpr(vcpu, op.update_reg, op.ea);
-+
-+			break;
-+#endif
- 		case CACHEOP:
- 			/* Do nothing. The guest is performing dcbi because
- 			 * hardware DMA is not snooped by the dcache, but
-@@ -170,93 +210,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 	switch (get_op(inst)) {
- 	case 31:
- 		switch (get_xop(inst)) {
--#ifdef CONFIG_PPC_FPU
--		case OP_31_XOP_LFSX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_load(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 4, 1);
--			break;
--
--		case OP_31_XOP_LFSUX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_load(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 4, 1);
--			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--			break;
--
--		case OP_31_XOP_LFDX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_load(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 8, 1);
--			break;
--
--		case OP_31_XOP_LFDUX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_load(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 8, 1);
--			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--			break;
--
--		case OP_31_XOP_LFIWAX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_loads(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 4, 1);
--			break;
--
--		case OP_31_XOP_LFIWZX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_load(run, vcpu,
--				KVM_MMIO_REG_FPR|rt, 4, 1);
--			break;
--
--		case OP_31_XOP_STFSX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_store(run, vcpu,
--				VCPU_FPR(vcpu, rs), 4, 1);
--			break;
--
--		case OP_31_XOP_STFSUX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_store(run, vcpu,
--				VCPU_FPR(vcpu, rs), 4, 1);
--			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--			break;
--
--		case OP_31_XOP_STFDX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_store(run, vcpu,
--				VCPU_FPR(vcpu, rs), 8, 1);
--			break;
--
--		case OP_31_XOP_STFDUX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_store(run, vcpu,
--				VCPU_FPR(vcpu, rs), 8, 1);
--			kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--			break;
--
--		case OP_31_XOP_STFIWX:
--			if (kvmppc_check_fp_disabled(vcpu))
--				return EMULATE_DONE;
--			emulated = kvmppc_handle_store(run, vcpu,
--				VCPU_FPR(vcpu, rs), 4, 1);
--			break;
--#endif
--
+ 		VCPU_FPR(vcpu, vcpu->arch.io_gpr & KVM_MMIO_REG_MASK) = gpr;
+ 		break;
+ #ifdef CONFIG_PPC_BOOK3S
+@@ -1074,6 +1077,9 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
+ #endif
  #ifdef CONFIG_VSX
- 		case OP_31_XOP_LXSDX:
- 			if (kvmppc_check_vsx_disabled(vcpu))
-@@ -421,76 +374,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 		}
+ 	case KVM_MMIO_REG_VSX:
++		if (vcpu->kvm->arch.kvm_ops->giveup_ext)
++			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_VSX);
++
+ 		if (vcpu->arch.mmio_vsx_copy_type == KVMPPC_VSX_COPY_DWORD)
+ 			kvmppc_set_vsr_dword(vcpu, gpr);
+ 		else if (vcpu->arch.mmio_vsx_copy_type == KVMPPC_VSX_COPY_WORD)
+@@ -1088,6 +1094,9 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
+ #endif
+ #ifdef CONFIG_ALTIVEC
+ 	case KVM_MMIO_REG_VMX:
++		if (vcpu->kvm->arch.kvm_ops->giveup_ext)
++			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_VEC);
++
+ 		kvmppc_set_vmx_dword(vcpu, gpr);
  		break;
- 
--#ifdef CONFIG_PPC_FPU
--	case OP_STFS:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		vcpu->arch.mmio_sp64_extend = 1;
--		emulated = kvmppc_handle_store(run, vcpu,
--			VCPU_FPR(vcpu, rs),
--			4, 1);
--		break;
--
--	case OP_STFSU:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		vcpu->arch.mmio_sp64_extend = 1;
--		emulated = kvmppc_handle_store(run, vcpu,
--			VCPU_FPR(vcpu, rs),
--			4, 1);
--		kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--		break;
--
--	case OP_STFD:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		emulated = kvmppc_handle_store(run, vcpu,
--			VCPU_FPR(vcpu, rs),
--	                               8, 1);
--		break;
--
--	case OP_STFDU:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		emulated = kvmppc_handle_store(run, vcpu,
--			VCPU_FPR(vcpu, rs),
--	                               8, 1);
--		kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--		break;
--
--	case OP_LFS:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		vcpu->arch.mmio_sp64_extend = 1;
--		emulated = kvmppc_handle_load(run, vcpu,
--			KVM_MMIO_REG_FPR|rt, 4, 1);
--		break;
--
--	case OP_LFSU:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		vcpu->arch.mmio_sp64_extend = 1;
--		emulated = kvmppc_handle_load(run, vcpu,
--			KVM_MMIO_REG_FPR|rt, 4, 1);
--		kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--		break;
--
--	case OP_LFD:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		emulated = kvmppc_handle_load(run, vcpu,
--			KVM_MMIO_REG_FPR|rt, 8, 1);
--		break;
--
--	case OP_LFDU:
--		if (kvmppc_check_fp_disabled(vcpu))
--			return EMULATE_DONE;
--		emulated = kvmppc_handle_load(run, vcpu,
--			KVM_MMIO_REG_FPR|rt, 8, 1);
--		kvmppc_set_gpr(vcpu, ra, vcpu->arch.vaddr_accessed);
--		break;
--#endif
--
- 	default:
- 		emulated = EMULATE_FAIL;
- 		break;
+ #endif
 -- 
 1.8.3.1
