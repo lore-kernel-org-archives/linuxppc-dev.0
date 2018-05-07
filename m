@@ -1,25 +1,24 @@
 Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40frPJ2MJtzF1S3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 04:14:44 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40frQ72S47zF1mb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 04:15:27 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w47I9ipm000927
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 14:14:41 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2htsmfdwck-1
+ w47I9IdN143573
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 14:15:25 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2htqp2ku6e-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 14:14:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 14:15:24 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 7 May 2018 19:14:39 +0100
-Subject: Re: [PATCH v2 6/7] ocxl: Add an IOCTL so userspace knows what CPU
- features are available
+ Mon, 7 May 2018 19:15:22 +0100
+Subject: Re: [PATCH v2 7/7] ocxl: Document new OCXL IOCTLs
 To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
@@ -30,13 +29,13 @@ Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
 References: <20180417020950.21446-1-alastair@au1.ibm.com>
  <20180418010810.30937-1-alastair@au1.ibm.com>
- <20180418010810.30937-7-alastair@au1.ibm.com>
+ <20180418010810.30937-8-alastair@au1.ibm.com>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 7 May 2018 20:14:32 +0200
+Date: Mon, 7 May 2018 20:15:14 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180418010810.30937-7-alastair@au1.ibm.com>
+In-Reply-To: <20180418010810.30937-8-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <eec7dceb-0b25-8644-7f32-3700c3c4ed46@linux.ibm.com>
+Message-Id: <6c363687-531a-db76-2e94-382205dd89f0@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,106 +50,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Le 18/04/2018 à 03:08, Alastair D'Silva a écrit :
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> In order for a userspace AFU driver to call the Power9 specific
-> OCXL_IOCTL_ENABLE_P9_WAIT, it needs to verify that it can actually
-> make that call.
-> 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 > ---
->   Documentation/accelerators/ocxl.rst |  1 -
->   drivers/misc/ocxl/file.c            | 25 +++++++++++++++++++++++++
->   include/uapi/misc/ocxl.h            |  4 ++++
->   3 files changed, 29 insertions(+), 1 deletion(-)
+
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+   Fred
+
+
+>   Documentation/accelerators/ocxl.rst | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
 > 
 > diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-> index ddcc58d01cfb..7904adcc07fd 100644
+> index 7904adcc07fd..3b8d3b99795c 100644
 > --- a/Documentation/accelerators/ocxl.rst
 > +++ b/Documentation/accelerators/ocxl.rst
-> @@ -157,7 +157,6 @@ OCXL_IOCTL_GET_METADATA:
+> @@ -157,6 +157,17 @@ OCXL_IOCTL_GET_METADATA:
 >     Obtains configuration information from the card, such at the size of
 >     MMIO areas, the AFU version, and the PASID for the current context.
 > 
-> -
-
-
-Intended?
-
-Other than that,
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
-
+> +OCXL_IOCTL_ENABLE_P9_WAIT:
+> +
+> +  Allows the AFU to wake a userspace thread executing 'wait'. Returns
+> +  information to userspace to allow it to configure the AFU. Note that
+> +  this is only available on Power 9.
+> +
+> +OCXL_IOCTL_GET_FEATURES:
+> +
+> +  Reports on which CPU features that affect OpenCAPI are usable from
+> +  userspace.
+> +
 >   mmap
 >   ----
-> 
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index eb409a469f21..33ae46ce0a8a 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -168,12 +168,32 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
->   }
->   #endif
-> 
-> +
-> +static long afu_ioctl_get_features(struct ocxl_context *ctx,
-> +		struct ocxl_ioctl_features __user *uarg)
-> +{
-> +	struct ocxl_ioctl_features arg;
-> +
-> +	memset(&arg, 0, sizeof(arg));
-> +
-> +#ifdef CONFIG_PPC64
-> +	if (cpu_has_feature(CPU_FTR_P9_TIDR))
-> +		arg.flags[0] |= OCXL_IOCTL_FEATURES_FLAGS0_P9_WAIT;
-> +#endif
-> +
-> +	if (copy_to_user(uarg, &arg, sizeof(arg)))
-> +		return -EFAULT;
-> +
-> +	return 0;
-> +}
-> +
->   #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :			\
->   			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
->   			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :		\
->   			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :	\
->   			x == OCXL_IOCTL_GET_METADATA ? "GET_METADATA" :	\
->   			x == OCXL_IOCTL_ENABLE_P9_WAIT ? "ENABLE_P9_WAIT" :	\
-> +			x == OCXL_IOCTL_GET_FEATURES ? "GET_FEATURES" :	\
->   			"UNKNOWN")
-> 
->   static long afu_ioctl(struct file *file, unsigned int cmd,
-> @@ -239,6 +259,11 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->   		break;
->   #endif
-> 
-> +	case OCXL_IOCTL_GET_FEATURES:
-> +		rc = afu_ioctl_get_features(ctx,
-> +				(struct ocxl_ioctl_features __user *) args);
-> +		break;
-> +
->   	default:
->   		rc = -EINVAL;
->   	}
-> diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h
-> index 8d2748e69c84..bb80f294b429 100644
-> --- a/include/uapi/misc/ocxl.h
-> +++ b/include/uapi/misc/ocxl.h
-> @@ -55,6 +55,9 @@ struct ocxl_ioctl_p9_wait {
->   	__u64 reserved3[3];
->   };
-> 
-> +#define OCXL_IOCTL_FEATURES_FLAGS0_P9_WAIT	0x01
-> +struct ocxl_ioctl_features {
-> +	__u64 flags[4];
->   };
-> 
->   struct ocxl_ioctl_irq_fd {
-> @@ -72,5 +75,6 @@ struct ocxl_ioctl_irq_fd {
->   #define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct ocxl_ioctl_irq_fd)
->   #define OCXL_IOCTL_GET_METADATA _IOR(OCXL_MAGIC, 0x14, struct ocxl_ioctl_metadata)
->   #define OCXL_IOCTL_ENABLE_P9_WAIT	_IOR(OCXL_MAGIC, 0x15, struct ocxl_ioctl_p9_wait)
-> +#define OCXL_IOCTL_GET_FEATURES _IOR(OCXL_MAGIC, 0x16, struct ocxl_ioctl_platform)
-> 
->   #endif /* _UAPI_MISC_OCXL_H */
 > 
