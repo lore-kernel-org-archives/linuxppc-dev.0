@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fXYQ38CFzF157
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 16:20:42 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id n9-v6so19495547pgq.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 23:20:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fXYX65YXzF151
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 16:20:48 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id x9so2873566pfm.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 23:20:48 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: kvm-ppc@vger.kernel.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v2 03/10] KVM: PPC: Fix a mmio_host_swabbed uninitialized
- usage issue when VMX store
-Date: Mon,  7 May 2018 14:20:09 +0800
-Message-Id: <1525674016-6703-4-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v2 04/10] KVM: PPC: add KVMPPC_VSX_COPY_WORD_LOAD_DUMP type
+ support for mmio emulation
+Date: Mon,  7 May 2018 14:20:10 +0800
+Message-Id: <1525674016-6703-5-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,50 +28,68 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-When KVM emulates VMX store, it will invoke kvmppc_get_vmx_data() to
-retrieve VMX reg val. kvmppc_get_vmx_data() will check mmio_host_swabbed
-to decide which double word of vr[] to be used. But the
-mmio_host_swabbed can be uninitiazed during VMX store procedure:
-
-kvmppc_emulate_loadstore
-	\- kvmppc_handle_store128_by2x64
-		\- kvmppc_get_vmx_data
-
-So vcpu->arch.mmio_host_swabbed is not meant to be used at all for
-emulation of store instructions, and this patch makes that true for
-VMX stores. This patch also initializes mmio_host_swabbed to avoid
-invisble trouble.
+Some VSX instruction like lxvwsx will splat word into VSR. This patch
+adds VSX copy type KVMPPC_VSX_COPY_WORD_LOAD_DUMP to support this.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/emulate_loadstore.c | 1 +
- arch/powerpc/kvm/powerpc.c           | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_host.h |  1 +
+ arch/powerpc/kvm/powerpc.c          | 23 +++++++++++++++++++++++
+ 2 files changed, 24 insertions(+)
 
-diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-index a382e15..b8a3aef 100644
---- a/arch/powerpc/kvm/emulate_loadstore.c
-+++ b/arch/powerpc/kvm/emulate_loadstore.c
-@@ -111,6 +111,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 	vcpu->arch.mmio_sp64_extend = 0;
- 	vcpu->arch.mmio_sign_extend = 0;
- 	vcpu->arch.mmio_vmx_copy_nums = 0;
-+	vcpu->arch.mmio_host_swabbed = 0;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 2d87768..3fb5e8d 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -454,6 +454,7 @@ struct mmio_hpte_cache {
+ #define KVMPPC_VSX_COPY_WORD		1
+ #define KVMPPC_VSX_COPY_DWORD		2
+ #define KVMPPC_VSX_COPY_DWORD_LOAD_DUMP	3
++#define KVMPPC_VSX_COPY_WORD_LOAD_DUMP	4
  
- 	switch (get_op(inst)) {
- 	case 31:
+ struct openpic;
+ 
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 4e38764..bef27b1 100644
+index bef27b1..45daf3b 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -1374,7 +1374,7 @@ static inline int kvmppc_get_vmx_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
- 	if (di > 1)
- 		return -1;
+@@ -907,6 +907,26 @@ static inline void kvmppc_set_vsr_dword_dump(struct kvm_vcpu *vcpu,
+ 	}
+ }
  
--	if (vcpu->arch.mmio_host_swabbed)
-+	if (kvmppc_need_byteswap(vcpu))
- 		di = 1 - di;
- 
- 	w0 = vrs.u[di * 2];
++static inline void kvmppc_set_vsr_word_dump(struct kvm_vcpu *vcpu,
++	u32 gpr)
++{
++	union kvmppc_one_reg val;
++	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
++
++	if (vcpu->arch.mmio_vsx_tx_sx_enabled) {
++		val.vsx32val[0] = gpr;
++		val.vsx32val[1] = gpr;
++		val.vsx32val[2] = gpr;
++		val.vsx32val[3] = gpr;
++		VCPU_VSX_VR(vcpu, index) = val.vval;
++	} else {
++		val.vsx32val[0] = gpr;
++		val.vsx32val[1] = gpr;
++		VCPU_VSX_FPR(vcpu, index, 0) = val.vsxval[0];
++		VCPU_VSX_FPR(vcpu, index, 1) = val.vsxval[0];
++	}
++}
++
+ static inline void kvmppc_set_vsr_word(struct kvm_vcpu *vcpu,
+ 	u32 gpr32)
+ {
+@@ -1061,6 +1081,9 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
+ 		else if (vcpu->arch.mmio_vsx_copy_type ==
+ 				KVMPPC_VSX_COPY_DWORD_LOAD_DUMP)
+ 			kvmppc_set_vsr_dword_dump(vcpu, gpr);
++		else if (vcpu->arch.mmio_vsx_copy_type ==
++				KVMPPC_VSX_COPY_WORD_LOAD_DUMP)
++			kvmppc_set_vsr_word_dump(vcpu, gpr);
+ 		break;
+ #endif
+ #ifdef CONFIG_ALTIVEC
 -- 
 1.8.3.1
