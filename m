@@ -1,28 +1,26 @@
-Return-Path: <clg@kaod.org>
-Received: from 18.mo5.mail-out.ovh.net (18.mo5.mail-out.ovh.net [178.33.45.10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fZ8z2TjvzF15J
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 17:33:06 +1000 (AEST)
-Received: from player714.ha.ovh.net (unknown [10.109.120.51])
- by mo5.mail-out.ovh.net (Postfix) with ESMTP id 500971A9043
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 09:33:01 +0200 (CEST)
-Subject: Re: [PATCH 4/4] powerpc/xive: prepare all hcalls to support long busy
- delays
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20180403071548.19829-1-clg@kaod.org>
- <20180403071548.19829-5-clg@kaod.org>
- <87d0yb8zye.fsf@concordia.ellerman.id.au>
- <90144e7d99aca5c620b1e79a5152f150d76210cc.camel@kernel.crashing.org>
- <8736z48afq.fsf@concordia.ellerman.id.au>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <e6352dc6-e3ab-2a6b-585b-754733d8b876@kaod.org>
-Date: Mon, 7 May 2018 09:32:57 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fcyL2yZNzF14n
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 19:39:06 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id w129so16997879pfd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 02:39:06 -0700 (PDT)
+Date: Mon, 7 May 2018 19:38:49 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Balbir Singh
+ <bsingharora@gmail.com>
+Subject: Re: [PATCH 06/10] powerpc/mm/radix: implement LPID based TLB
+ flushes to be used by KVM
+Message-ID: <20180507193849.43d701ef@roar.ozlabs.ibm.com>
+In-Reply-To: <20180507051526.GE9440@fergus.ozlabs.ibm.com>
+References: <20180506073731.13097-1-npiggin@gmail.com>
+ <20180506073731.13097-7-npiggin@gmail.com>
+ <20180507051526.GE9440@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <8736z48afq.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +30,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/07/2018 04:30 AM, Michael Ellerman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> On Fri, 2018-05-04 at 20:42 +1000, Michael Ellerman wrote:
->>> Cédric Le Goater <clg@kaod.org> writes:
->>>
->>>> This is not the case for the moment, but future releases of pHyp might
->>>> need to introduce some synchronisation routines under the hood which
->>>> would make the XIVE hcalls longer to complete.
->>>>
->>>> As this was done for H_INT_RESET, let's wrap the other hcalls in a
->>>> loop catching the H_LONG_BUSY_* codes.
->>>
->>> Are we sure it's safe to msleep() in all these paths?
->>
->> Probably not. We can have the IRQ descriptor lock. We might need to
->> mdelay.
->>
->> There's a Kconfig option (forgot which one) that will add checks for
->> attempts to sleep inside locks, you should run with that.
+On Mon, 7 May 2018 15:15:26 +1000
+Paul Mackerras <paulus@ozlabs.org> wrote:
+
+> On Sun, May 06, 2018 at 05:37:27PM +1000, Nicholas Piggin wrote:
+> > Implement a local TLB flush for invalidating an LPID with variants for
+> > process or partition scope. And a global TLB flush for invalidating
+> > a partition scoped page of an LPID.
+> > 
+> > These will be used by KVM in subsequent patches.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  .../include/asm/book3s/64/tlbflush-radix.h    |   7 +
+> >  arch/powerpc/mm/tlb-radix.c                   | 207 ++++++++++++++++++
+> >  2 files changed, 214 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > index 19b45ba6caf9..ef5c3f2994c9 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> > @@ -51,4 +51,11 @@ extern void radix__flush_tlb_all(void);
+> >  extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+> >  					unsigned long address);
+> >  
+> > +extern void radix__flush_tlb_lpid_page(unsigned int lpid,
+> > +					unsigned long addr,
+> > +					unsigned long page_size);
+> > +extern void radix__flush_pwc_lpid(unsigned int lpid);
+> > +extern void radix__local_flush_tlb_lpid(unsigned int lpid);
+> > +extern void radix__local_flush_tlb_lpid_guest(unsigned int lpid);
+> > +
+> >  #endif
+> > diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> > index a5d7309c2d05..5ac3206c51cc 100644
+> > --- a/arch/powerpc/mm/tlb-radix.c
+> > +++ b/arch/powerpc/mm/tlb-radix.c
+> > @@ -118,6 +118,53 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
+> >  	trace_tlbie(0, 0, rb, rs, ric, prs, r);
+> >  }
+> >  
+> > +static inline void __tlbiel_lpid(unsigned long lpid, int set,
+> > +				unsigned long ric)
+> > +{
+> > +	unsigned long rb,rs,prs,r;
+> > +
+> > +	rb = PPC_BIT(52); /* IS = 2 */
+> > +	rb |= set << PPC_BITLSHIFT(51);
+> > +	rs = 0;  /* LPID comes from LPIDR */
+> > +	prs = 0; /* partition scoped */
+> > +	r = 1;   /* radix format */
+> > +
+> > +	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+> > +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+> > +	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);  
 > 
-> CONFIG_DEBUG_ATOMIC_SLEEP
+> Do we really want 128 trace entries every time
+> radix__local_flush_tlb_lpid() or radix__local_flush_tlb_lpid_guest()
+> is called?  That seems like overkill to me.  Could we move the
+> trace_tlbie calls here and in __tlbiel_lpid_guest() into the callers
+> instead?
 
-[  435.757986] kexec_core: Starting new kernel
-[  435.778162] BUG: scheduling while atomic: kexec/1633/0x00000003
+Yeah well that's how the powerpc:tlbie tracepoints are defined. I can
+see possible benefit to feeding the trace directly to a model or
+simulator, but it does make other things harder.
 
-That proved to be useful. Thanks.
+I have a patch around that changes all those tracepoints around to
+match the Linux semantics rather than the instructions... If people
+would prefer that I can send it (cc'ed Balbir).
 
-I will resend the full series changing msleep() to mdelay() and fixing
-a bit the changelog.
+But for this patch we should just match the existing tracepoints.
 
-Cheers,
-
-C.
+Thanks,
+Nick
