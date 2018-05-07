@@ -1,21 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fRk36Dm0zF13r
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 12:42:51 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 1/6] powerpc/syscalls: Switch trivial cases to
- SYSCALL_DEFINE
-In-Reply-To: <1525446080.ih4a1c8i42.naveen@linux.ibm.com>
-References: <20180502132051.28861-1-mpe@ellerman.id.au>
- <1525446080.ih4a1c8i42.naveen@linux.ibm.com>
-Date: Mon, 07 May 2018 12:42:50 +1000
-Message-ID: <87y3gw6v9x.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fW6C33NbzF14g
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 15:15:31 +1000 (AEST)
+Date: Mon, 7 May 2018 15:15:26 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 06/10] powerpc/mm/radix: implement LPID based TLB flushes
+ to be used by KVM
+Message-ID: <20180507051526.GE9440@fergus.ozlabs.ibm.com>
+References: <20180506073731.13097-1-npiggin@gmail.com>
+ <20180506073731.13097-7-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180506073731.13097-7-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-
-> Michael Ellerman wrote:
->> From: Al Viro <viro@zeniv.linux.org.uk>
->> 
->> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
->> ---
->>  arch/powerpc/kernel/pci_32.c               | 6 +++---
->>  arch/powerpc/kernel/pci_64.c               | 4 ++--
->>  arch/powerpc/mm/subpage-prot.c             | 4 +++-
->>  arch/powerpc/platforms/cell/spu_syscalls.c | 3 ++-
->>  4 files changed, 10 insertions(+), 7 deletions(-)
->> 
->
-> I suppose we can also do this for switch_endian?
-
-Yeah. It'd nice to have an automated test that every syscall is
-available via FTRACE_SYSCALLS, I just haven't got around to writing one.
-
-cheers
-
-> diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-> index 466216506eb2..290265f2700c 100644
-> --- a/arch/powerpc/kernel/syscalls.c
-> +++ b/arch/powerpc/kernel/syscalls.c
-> @@ -123,7 +123,7 @@ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
->  				 (u64)len_high << 32 | len_low, advice);
+On Sun, May 06, 2018 at 05:37:27PM +1000, Nicholas Piggin wrote:
+> Implement a local TLB flush for invalidating an LPID with variants for
+> process or partition scope. And a global TLB flush for invalidating
+> a partition scoped page of an LPID.
+> 
+> These will be used by KVM in subsequent patches.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  .../include/asm/book3s/64/tlbflush-radix.h    |   7 +
+>  arch/powerpc/mm/tlb-radix.c                   | 207 ++++++++++++++++++
+>  2 files changed, 214 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> index 19b45ba6caf9..ef5c3f2994c9 100644
+> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+> @@ -51,4 +51,11 @@ extern void radix__flush_tlb_all(void);
+>  extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+>  					unsigned long address);
+>  
+> +extern void radix__flush_tlb_lpid_page(unsigned int lpid,
+> +					unsigned long addr,
+> +					unsigned long page_size);
+> +extern void radix__flush_pwc_lpid(unsigned int lpid);
+> +extern void radix__local_flush_tlb_lpid(unsigned int lpid);
+> +extern void radix__local_flush_tlb_lpid_guest(unsigned int lpid);
+> +
+>  #endif
+> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+> index a5d7309c2d05..5ac3206c51cc 100644
+> --- a/arch/powerpc/mm/tlb-radix.c
+> +++ b/arch/powerpc/mm/tlb-radix.c
+> @@ -118,6 +118,53 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
+>  	trace_tlbie(0, 0, rb, rs, ric, prs, r);
 >  }
 >  
-> -long sys_switch_endian(void)
-> +SYSCALL_DEFINE0(switch_endian)
->  {
->  	struct thread_info *ti;
->
->
-> - Naveen
+> +static inline void __tlbiel_lpid(unsigned long lpid, int set,
+> +				unsigned long ric)
+> +{
+> +	unsigned long rb,rs,prs,r;
+> +
+> +	rb = PPC_BIT(52); /* IS = 2 */
+> +	rb |= set << PPC_BITLSHIFT(51);
+> +	rs = 0;  /* LPID comes from LPIDR */
+> +	prs = 0; /* partition scoped */
+> +	r = 1;   /* radix format */
+> +
+> +	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
+> +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
+> +	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);
+
+Do we really want 128 trace entries every time
+radix__local_flush_tlb_lpid() or radix__local_flush_tlb_lpid_guest()
+is called?  That seems like overkill to me.  Could we move the
+trace_tlbie calls here and in __tlbiel_lpid_guest() into the callers
+instead?
+
+Paul.
