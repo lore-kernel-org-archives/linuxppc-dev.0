@@ -2,22 +2,21 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ffCh4sqZzF14r
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 20:35:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ffDm71gFzF1cZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 20:36:40 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jiri Slaby <jslaby@suse.com>
-Subject: Re: [PATCH 08/15] powerpc/powernv: implement opal_put_chars_atomic
-In-Reply-To: <20180501203721.7b60fcd8@roar.ozlabs.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Jiri Slaby <jslaby@suse.com>,
+ linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 04/15] powerpc/powernv: opal-kmsg use flush fallback from
+ console code
+In-Reply-To: <20180504153717.4806d9c4@roar.ozlabs.ibm.com>
 References: <20180430145558.4308-1-npiggin@gmail.com>
- <20180430145558.4308-9-npiggin@gmail.com>
- <1525168138.2325.100.camel@kernel.crashing.org>
- <20180501203721.7b60fcd8@roar.ozlabs.ibm.com>
-Date: Mon, 07 May 2018 20:35:42 +1000
-Message-ID: <87zi1bbvnl.fsf@concordia.ellerman.id.au>
+ <20180430145558.4308-5-npiggin@gmail.com>
+ <87muxg80ga.fsf@concordia.ellerman.id.au>
+ <20180504153717.4806d9c4@roar.ozlabs.ibm.com>
+Date: Mon, 07 May 2018 20:36:39 +1000
+Message-ID: <87wowfbvm0.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,33 +29,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Nicholas Piggin <npiggin@gmail.com> writes:
-
-> On Tue, 01 May 2018 19:48:58 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
->> On Tue, 2018-05-01 at 00:55 +1000, Nicholas Piggin wrote:
->> > The RAW console does not need writes to be atomic, so relax
->> > opal_put_chars to be able to do partial writes, and implement an
->> > _atomic variant which does not take a spinlock. This API is used
->> > in xmon, so the less locking that is used, the better chance there
->> > is that a crash can be debugged.  
+> On Fri, 04 May 2018 15:16:37 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> > Use the more refined and tested event polling loop from opal_put_chars
+>> > as the fallback console flush in the opal-kmsg path. This loop is used
+>> > by the console driver today, whereas the opal-kmsg fallback is not
+>> > likely to have been used for years.
+>> >
+>> > Use WARN_ONCE rather than a printk when the fallback is invoked to
+>> > prepare for moving the console flush into a common function.  
 >> 
->> Same comment I already had :-) "atomic" in Linux tends to mean
->> something else (ie, atomic context), so I'd rather have something
->> like opal_put_chars_sync() or such...
+>> Do we want to add a WARN in that path? If we're panicking things might
+>> get worse if we WARN (which takes a trap).
 >
-> Oh yeah, I didn't ignore you, just... I thought atomic was okay.
-> atomic *also* tends to mean happens atomically. I think the in
-> atomic context meaning actually tends to be inatomic.
->
-> Sync I actually thought could be more easily confused with
-> synchronous vs asynchronous here.
+> True, probably a good idea not to... oh there's a printk_once so
+> that'll work nicely.
 
-I think we probably want opal_put_chars() to stay as it is.
+Cool.
 
-And then add a variant for the call (just xmon?) that want lock free
-behaviour.
-
-opal_put_chars_unlocked() or something?
+I have this series in a tree so you can send me an incremental diff if
+it's reasonably small.
 
 cheers
