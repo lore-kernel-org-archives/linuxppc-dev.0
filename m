@@ -1,43 +1,33 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fH1t5x4tzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 06:10:58 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w46K91C4028188
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 6 May 2018 16:10:55 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hst0hnpnn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 16:10:54 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 6 May 2018 21:10:52 +0100
-Date: Sun, 6 May 2018 13:10:43 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc: Dave Hansen <dave.hansen@intel.com>, fweimer@redhat.com,
- Ingo Molnar <mingo@kernel.org>, mhocko@kernel.org,
- Ulrich.Weigand@de.ibm.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
- <20180504232647.3412f563@naga.suse.cz>
- <edd3d544-9fa8-5a79-4325-818ee5d7dfb0@intel.com>
- <20180504214507.GA5871@ram.oc3035372033.ibm.com>
- <20180505143956.139f4828@naga.suse.cz>
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from condef-03.nifty.com (condef-03.nifty.com [202.248.20.68])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40fPVX0B3tzDrK4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 11:02:43 +1000 (AEST)
+Received: from conssluserg-03.nifty.com ([10.126.8.82])by condef-03.nifty.com
+ with ESMTP id w470m0vG012115
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 09:48:00 +0900
+Received: from mail-vk0-f50.google.com (mail-vk0-f50.google.com
+ [209.85.213.50]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w470lOVM020352
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 09:47:25 +0900
+Received: by mail-vk0-f50.google.com with SMTP id x66-v6so11898243vka.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 17:47:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180505143956.139f4828@naga.suse.cz>
-Message-Id: <20180506201043.GE5617@ram.oc3035372033.ibm.com>
+In-Reply-To: <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <CA+7wUswuyn+YgNe732rQAzVmgDBohTMEqwsd76nQ_CH5h7Y5WA@mail.gmail.com>
+ <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 7 May 2018 09:46:43 +0900
+Message-ID: <CAK7LNASvOwam=AhN11sUKvBbtJbBzQULqs8kRV2KRS45jbSLcQ@mail.gmail.com>
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Nicolas Pitre <nico@fluxnic.net>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,46 +37,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 05, 2018 at 02:39:56PM +0200, Michal Suchánek wrote:
-> On Fri, 4 May 2018 14:45:07 -0700
-> Ram Pai <linuxram@us.ibm.com> wrote:
-> 
-> > On Fri, May 04, 2018 at 02:31:10PM -0700, Dave Hansen wrote:
-> > > On 05/04/2018 02:26 PM, Michal Suchánek wrote:  
-> > > > If it is not ok to change permissions of pkey 0 is it ok to free
-> > > > it?  
-> > > 
-> > > It's pretty much never OK to free it on x86 or ppc.  But, we're not
-> > > going to put code in to keep userspace from shooting itself in the
-> > > foot, at least on x86.  
-> > 
-> > and on powerpc aswell.
-> 
-> But once it's free it can be re-allocated. So you are moving the
-> special-casing from free code to code dealing with allocation.
+Hi Nicholas,
 
-Actually if an application frees key-0, it has potentially opened up a
-can-of-worms. It could step on anything that explodes. 
-
-Its choice between imposing policies on an application v/s freeing it up
-to choose its own policy. I think the kernel should impose some form of
-mild-policy. But others think there should be none.
-
-> 
-> If you want something like allocate_exec_only_pkey then the function
-> (either in kernel or in userspace) needs to make sure it is not
-> getting/requesting key 0 on powerpc.
-
-Yes. makes sense. I will put in some checks towards that.
+2018-04-20 19:41 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> On Fri, 20 Apr 2018 12:00:49 +0200
+> Mathieu Malaterre <malat@debian.org> wrote:
+>
+>> On Fri, Apr 20, 2018 at 9:34 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> > This requires further changes to linker script to KEEP some tables
+>> > and wildcard compiler generated sections into the right place. This
+>> > includes pp32 modifications from Christophe Leroy.
+>> >
+>> > When compiling powernv_defconfig with this option:
+>> >
+>> > text       data      bss       dec        filename
+>> > 11827621   4810490   1341080   17979191   vmlinux
+>> > 11752437   4598858   1338776   17690071   vmlinux.dcde
+>> >
+>> > Resulting kernel is almost 400kB smaller (and still boots).
+>> >
+>> > [ppc32 numbers here]
+>>
+>> ^^^
+>>
+>> Do you want somebody else to provide those numbers ?
+>
+> If you have a booting kernel, yes some more numbers would be good.
+>
+> Thanks,
+> Nick
 
 
-Thanks,
-RP
 
-> 
-> Thanks
-> 
-> Michal
+I applied this series because I want it to be more tested in linux-next.
+
+
+Some requests:
+
+ - Could you provide information to replace '[ppc32 numbers here]'?
+   (or just remove it)
+
+ - V2 is welcome if you have code improvement.
+   (I thought so from your comments)
+
+Thanks.
+
 
 -- 
-Ram Pai
+Best Regards
+Masahiro Yamada
