@@ -1,29 +1,37 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
- [210.131.2.80])
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fWLf2MNrzF14r
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 15:26:17 +1000 (AEST)
-Received: from mail-ua0-f177.google.com (mail-ua0-f177.google.com
- [209.85.217.177]) (authenticated)
- by conssluserg-01.nifty.com with ESMTP id w475PrcS024349
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 14:25:54 +0900
-Received: by mail-ua0-f177.google.com with SMTP id y8so17591849ual.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 May 2018 22:25:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fWQC36hGzDrpY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 15:29:23 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w475TJxN124145
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 01:29:20 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2htejhbk9j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 01:29:20 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Mon, 7 May 2018 06:29:16 +0100
+Date: Mon, 7 May 2018 15:29:11 +1000
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 02/13] powerpc/eeh: Add final message for successful
+ recovery
+References: <cover.1525242772.git.sbobroff@linux.ibm.com>
+ <e2cc8562dcce1d8bc38084bc45414c048b5a441d.1525242772.git.sbobroff@linux.ibm.com>
+ <874ljo9ljl.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180430012351.28814-2-npiggin@gmail.com>
-References: <20180430012351.28814-1-npiggin@gmail.com>
- <20180430012351.28814-2-npiggin@gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 7 May 2018 14:25:12 +0900
-Message-ID: <CAK7LNAT3nowJ=CCE0OARdADyvuXOH+zFyQBBg3HOgp+W=ezT0g@mail.gmail.com>
-Subject: Re: [RFC PATCH 1/2] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="raC6veAxrt5nqIoY"
+In-Reply-To: <874ljo9ljl.fsf@concordia.ellerman.id.au>
+Message-Id: <20180507052910.GC18123@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,131 +41,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi.
 
+--raC6veAxrt5nqIoY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-2018-04-30 10:23 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
-> The powerpc toolchain can compile combinations of 32/64 bit and
-> big/little endian, so it's convenient to consider, e.g.,
->
->   CC -m64 -mbig-endian
->
-> To be the C compiler for the purpose of invoking it to build
-> target artifacts.
+On Fri, May 04, 2018 at 12:55:42PM +1000, Michael Ellerman wrote:
+> Sam Bobroff <sbobroff@linux.ibm.com> writes:
+>=20
+> > Add a single log line at the end of successful EEH recovery, so that
+> > it's clear that event processing has finished.
+> >
+> > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> > ---
+> >  arch/powerpc/kernel/eeh_driver.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh=
+_driver.c
+> > index 56a60b9eb397..07e0a42035ce 100644
+> > --- a/arch/powerpc/kernel/eeh_driver.c
+> > +++ b/arch/powerpc/kernel/eeh_driver.c
+> > @@ -910,6 +910,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
+> >  	pr_info("EEH: Notify device driver to resume\n");
+> >  	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+> > =20
+> > +	pr_info("EEH: Recovery successful.\n");
+>=20
+> Is it possible for recovery for multiple devices to be interleaved?
+>=20
+> Should that message include the device?
 
-Right, but this is not possible in the new Kconfig scheme
-because CPU_BIG/LITTLE_ENDIAN can be turned on/off
-from Kconfig menus.
+No, all the calls are serialized. They're only called from
+eeh_event_handler() which is in the main loop of a kernel thread (see
+eeh_event_init()).
 
+> cheers
+>=20
 
-> Rather than override, use kbuild defined variables to pass these
-> flags around. Importantly, they must be passed to things like
-> cc-option, so the usual cflags-y is not sufficient. This multitude
-> of inconsistently named variables is a mess, but it's marginally
-> better than overriding the toolchain because it matches what other
-> architectures do.
->
-> This allows powerpc builds to work with the new kconfig macro
-> language branch. XXX: not exactly sure why it fails in the first
-> place.
+--raC6veAxrt5nqIoY
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-Without this patch, 'scripts/kconfig/conf  --syncconfig Kconfig'
-continues eternally.
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlrv5CYACgkQMX8w6AQl
+/iLr8ggAl1YIuJlg2v5BFWgkgH0MKmcHxPJlm0XLe19wonolYwe5jSx0uB5jJf10
+eGns1hioRCDyMimfR5GAEU/1CbR+EhOO/UQLBmXeRpACawyajFO52uGgmmsSvAQ3
+XdrIonU5u8GIeQWOkZt2qWHQwzThjGMY3XWCcdWdSp8z1OV3h4W+++6MW3FbB3nS
+0Mbnmj3LovfQvSN3Ry6uaBdPYogMGr+V+ar+Bm2NQmsMrN/hYRo9rpqm/YmNNK6O
+HsJilzL3y72gsdOLZY9ZVoNMK0DwXPkABNkMzvS3y0jbm9ZNsO6HMV9LONvg4IVt
+DS0HohqbtLoiczeNmPxZ1pdY0hlUeQ==
+=oQXh
+-----END PGP SIGNATURE-----
 
-This is because the change of environment variable $(CC) will
-trigger syncconfig.
-
-So, this patch is the right thing to do.
-
-
-
-> XXX: 32-bit builds with 64-bit toolchain gain some additional options
-> like -funit-at-a-time from cc-option. Unclear why that is. Build
-> appears to be correct otherwise.
-> ---
->  arch/powerpc/Makefile | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 95813df90801..046b5dde9ff5 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -74,13 +74,15 @@ endif
->  endif
->
->  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-> -override LD    += -EL
-> +KBUILD_CPPFLAGS        += -mlittle-endian
-
-
-IMHO, I personally prefer
-
-KBUILD_CFLAGS        += -mlittle-endian
-KBUILD_AFLAGS        += -mlittle-endian
-
-like the current arch/powerpc/Makefile add the flag
-to cflags-y / aflags-y separately.
-
-
-Only the difference would be whether -mlittle-endian
-is passed to pre-processing the linker script, though.
-
-
-
-
-> +LDFLAGS                += -EL
->  LDEMULATION    := lppc
->  GNUTARGET      := powerpcle
->  MULTIPLEWORD   := -mno-multiple
->  KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
->  else
-> -override LD    += -EB
-> +KBUILD_CPPFLAGS += $(call cc-option,-mbig-endian)
-> +LDFLAGS                += -EB
->  LDEMULATION    := ppc
->  GNUTARGET      := powerpc
->  MULTIPLEWORD   := -mmultiple
-> @@ -93,8 +95,6 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)               += $(call cc-option,-mabi=elfv1)
->  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mabi=elfv2
->  endif
->
-> -cflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mlittle-endian
-> -cflags-$(CONFIG_CPU_BIG_ENDIAN)                += $(call cc-option,-mbig-endian)
->  ifneq ($(cc-name),clang)
->    cflags-$(CONFIG_CPU_LITTLE_ENDIAN)   += -mno-strict-align
->  endif
-> @@ -103,9 +103,9 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)             += $(call cc-option,-mbig-endian)
->  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mlittle-endian
->
->  ifeq ($(HAS_BIARCH),y)
-> -override AS    += -a$(BITS)
-> -override LD    += -m elf$(BITS)$(LDEMULATION)
-> -override CC    += -m$(BITS)
-> +KBUILD_CPPFLAGS        += -m$(BITS)
-
-
-Do you mean this?
-
-KBUILD_CFLAGS        += -m$(BITS)
-
-
-> +KBUILD_AFLAGS  += -m$(BITS) -Wl,-a$(BITS)
-
-
-Both KBUILD_CPPFLAGS and KBUILD_AFLAGS are added
-to orig_a_flags in scripts/Makefile.lib
-
-So, -m$(BITS) will be doubled for *.S files.
-
-
-> +LDFLAGS                += -m elf$(BITS)$(LDEMULATION)
->  KBUILD_ARFLAGS += --target=elf$(BITS)-$(GNUTARGET)
->  endif
->
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+--raC6veAxrt5nqIoY--
