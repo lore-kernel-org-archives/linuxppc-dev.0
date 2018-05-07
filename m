@@ -3,22 +3,23 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fqZd5qHgzF1S1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 03:37:45 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fqc96d7mzF1fm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 03:39:05 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w47HYUQ3096466
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 13:37:43 -0400
+ w47HZAWw000846
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 13:39:03 -0400
 Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2htr6j8y7k-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2htqcpu0fa-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 13:37:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 13:39:02 -0400
 Received: from localhost
  by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 7 May 2018 18:37:41 +0100
-Subject: Re: [PATCH v2 3/7] powerpc: use task_pid_nr() for TID allocation
+ Mon, 7 May 2018 18:39:01 +0100
+Subject: Re: [PATCH v2 4/7] ocxl: Rename pnv_ocxl_spa_remove_pe to clarify
+ it's action
 To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
@@ -29,13 +30,13 @@ Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
 References: <20180417020950.21446-1-alastair@au1.ibm.com>
  <20180418010810.30937-1-alastair@au1.ibm.com>
- <20180418010810.30937-4-alastair@au1.ibm.com>
+ <20180418010810.30937-5-alastair@au1.ibm.com>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 7 May 2018 19:37:33 +0200
+Date: Mon, 7 May 2018 19:38:52 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180418010810.30937-4-alastair@au1.ibm.com>
+In-Reply-To: <20180418010810.30937-5-alastair@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <b8aa28c4-9171-cb7f-9a43-22f2f15657b0@linux.ibm.com>
+Message-Id: <80b45171-3708-d252-8f57-310f23eb18cd@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,177 +51,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Le 18/04/2018 à 03:08, Alastair D'Silva a écrit :
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> The current implementation of TID allocation, using a global IDR, may
-> result in an errant process starving the system of available TIDs.
-> Instead, use task_pid_nr(), as mentioned by the original author. The
-> scenario described which prevented it's use is not applicable, as
-> set_thread_tidr can only be called after the task struct has been
-> populated.
-
-
-Here is how I understand what's going to happen if 2 threads are using 
-the same TIDR value, which is possible with this patch (if unlikely):
-
-1. waking up the wrong thread is not really a problem, as threads have 
-to handle spurious wake up from the 'wait' instruction anyway, and must 
-be using some other condition to know when to loop around the 'wait' 
-instruction.
-
-2. missing the right thread: if the wrong thread is on a CPU, and a 
-wake_host_thread/as_notify is sent, the core will see a matching thread 
-and will accept the command. The (open)capi adapter won't send an 
-interrupt. The wrong thread is awaken, which is not a problem as 
-discussed above. As the right thread to notify is not running, no harm 
-is done either: as soon as the thread runs, it's supposed to check its 
-condition (which will be met) or call 'wait', but 'wait' immediately 
-returns when called the first time after a thread is scheduled.
-
-So I believe we are ok. But I think it requires a huge comment with the 
-above (at the minimum) :-)
-
-With a comment:
-Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-   Fred
-
-
-
+> The function removes the process element from NPU cache.
+> 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 > ---
->   arch/powerpc/include/asm/switch_to.h |  1 -
->   arch/powerpc/kernel/process.c        | 97 +-----------------------------------
->   2 files changed, 1 insertion(+), 97 deletions(-)
+
+Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+
+
+>   arch/powerpc/include/asm/pnv-ocxl.h   | 2 +-
+>   arch/powerpc/platforms/powernv/ocxl.c | 4 ++--
+>   drivers/misc/ocxl/link.c              | 2 +-
+>   3 files changed, 4 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-> index be8c9fa23983..5b03d8a82409 100644
-> --- a/arch/powerpc/include/asm/switch_to.h
-> +++ b/arch/powerpc/include/asm/switch_to.h
-> @@ -94,6 +94,5 @@ static inline void clear_task_ebb(struct task_struct *t)
->   extern int set_thread_uses_vas(void);
+> diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
+> index f6945d3bc971..208b5503f4ed 100644
+> --- a/arch/powerpc/include/asm/pnv-ocxl.h
+> +++ b/arch/powerpc/include/asm/pnv-ocxl.h
+> @@ -28,7 +28,7 @@ extern int pnv_ocxl_map_xsl_regs(struct pci_dev *dev, void __iomem **dsisr,
+>   extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
+>   			void **platform_data);
+>   extern void pnv_ocxl_spa_release(void *platform_data);
+> -extern int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle);
+> +extern int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
 > 
->   extern int set_thread_tidr(struct task_struct *t);
-> -extern void clear_thread_tidr(struct task_struct *t);
-> 
->   #endif /* _ASM_POWERPC_SWITCH_TO_H */
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index 3b00da47699b..87f047fd2762 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1496,103 +1496,12 @@ int set_thread_uses_vas(void)
+>   extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
+>   extern void pnv_ocxl_free_xive_irq(u32 irq);
+> diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
+> index fa9b53af3c7b..8c65aacda9c8 100644
+> --- a/arch/powerpc/platforms/powernv/ocxl.c
+> +++ b/arch/powerpc/platforms/powernv/ocxl.c
+> @@ -475,7 +475,7 @@ void pnv_ocxl_spa_release(void *platform_data)
 >   }
+>   EXPORT_SYMBOL_GPL(pnv_ocxl_spa_release);
 > 
->   #ifdef CONFIG_PPC64
-> -static DEFINE_SPINLOCK(vas_thread_id_lock);
-> -static DEFINE_IDA(vas_thread_ida);
-> -
-> -/*
-> - * We need to assign a unique thread id to each thread in a process.
-> - *
-> - * This thread id, referred to as TIDR, and separate from the Linux's tgid,
-> - * is intended to be used to direct an ASB_Notify from the hardware to the
-> - * thread, when a suitable event occurs in the system.
-> - *
-> - * One such event is a "paste" instruction in the context of Fast Thread
-> - * Wakeup (aka Core-to-core wake up in the Virtual Accelerator Switchboard
-> - * (VAS) in POWER9.
-> - *
-> - * To get a unique TIDR per process we could simply reuse task_pid_nr() but
-> - * the problem is that task_pid_nr() is not yet available copy_thread() is
-> - * called. Fixing that would require changing more intrusive arch-neutral
-> - * code in code path in copy_process()?.
-> - *
-> - * Further, to assign unique TIDRs within each process, we need an atomic
-> - * field (or an IDR) in task_struct, which again intrudes into the arch-
-> - * neutral code. So try to assign globally unique TIDRs for now.
-> - *
-> - * NOTE: TIDR 0 indicates that the thread does not need a TIDR value.
-> - *	 For now, only threads that expect to be notified by the VAS
-> - *	 hardware need a TIDR value and we assign values > 0 for those.
-> - */
-> -#define MAX_THREAD_CONTEXT	((1 << 16) - 1)
-> -static int assign_thread_tidr(void)
-> -{
-> -	int index;
-> -	int err;
-> -	unsigned long flags;
-> -
-> -again:
-> -	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
-> -		return -ENOMEM;
-> -
-> -	spin_lock_irqsave(&vas_thread_id_lock, flags);
-> -	err = ida_get_new_above(&vas_thread_ida, 1, &index);
-> -	spin_unlock_irqrestore(&vas_thread_id_lock, flags);
-> -
-> -	if (err == -EAGAIN)
-> -		goto again;
-> -	else if (err)
-> -		return err;
-> -
-> -	if (index > MAX_THREAD_CONTEXT) {
-> -		spin_lock_irqsave(&vas_thread_id_lock, flags);
-> -		ida_remove(&vas_thread_ida, index);
-> -		spin_unlock_irqrestore(&vas_thread_id_lock, flags);
-> -		return -ENOMEM;
-> -	}
-> -
-> -	return index;
-> -}
-> -
-> -static void free_thread_tidr(int id)
-> -{
-> -	unsigned long flags;
-> -
-> -	spin_lock_irqsave(&vas_thread_id_lock, flags);
-> -	ida_remove(&vas_thread_ida, id);
-> -	spin_unlock_irqrestore(&vas_thread_id_lock, flags);
-> -}
-> -
-> -/*
-> - * Clear any TIDR value assigned to this thread.
-> - */
-> -void clear_thread_tidr(struct task_struct *t)
-> -{
-> -	if (!t->thread.tidr)
-> -		return;
-> -
-> -	if (!cpu_has_feature(CPU_FTR_P9_TIDR)) {
-> -		WARN_ON_ONCE(1);
-> -		return;
-> -	}
-> -
-> -	mtspr(SPRN_TIDR, 0);
-> -	free_thread_tidr(t->thread.tidr);
-> -	t->thread.tidr = 0;
-> -}
-> -
-> -void arch_release_task_struct(struct task_struct *t)
-> -{
-> -	clear_thread_tidr(t);
-> -}
-> -
->   /*
->    * Assign a unique TIDR (thread id) for task @t and set it in the thread
->    * structure. For now, we only support setting TIDR for 'current' task.
->    */
->   int set_thread_tidr(struct task_struct *t)
+> -int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
+> +int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
 >   {
-> -	int rc;
-> -
->   	if (!cpu_has_feature(CPU_FTR_P9_TIDR))
->   		return -EINVAL;
+>   	struct spa_data *data = (struct spa_data *) platform_data;
+>   	int rc;
+> @@ -483,7 +483,7 @@ int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
+>   	rc = opal_npu_spa_clear_cache(data->phb_opal_id, data->bdfn, pe_handle);
+>   	return rc;
+>   }
+> -EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe);
+> +EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe_from_cache);
 > 
-> @@ -1602,11 +1511,7 @@ int set_thread_tidr(struct task_struct *t)
->   	if (t->thread.tidr)
->   		return 0;
+>   int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr)
+>   {
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index f30790582dc0..656e8610eec2 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -599,7 +599,7 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
+>   	 * On powerpc, the entry needs to be cleared from the context
+>   	 * cache of the NPU.
+>   	 */
+> -	rc = pnv_ocxl_spa_remove_pe(link->platform_data, pe_handle);
+> +	rc = pnv_ocxl_spa_remove_pe_from_cache(link->platform_data, pe_handle);
+>   	WARN_ON(rc);
 > 
-> -	rc = assign_thread_tidr();
-> -	if (rc < 0)
-> -		return rc;
-> -
-> -	t->thread.tidr = rc;
-> +	t->thread.tidr = (u16)task_pid_nr(t);
->   	mtspr(SPRN_TIDR, t->thread.tidr);
-> 
->   	return 0;
+>   	pe_data = radix_tree_delete(&spa->pe_tree, pe_handle);
 > 
