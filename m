@@ -1,26 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fcyL2yZNzF14n
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 19:39:06 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id w129so16997879pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 02:39:06 -0700 (PDT)
-Date: Mon, 7 May 2018 19:38:49 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Paul Mackerras <paulus@ozlabs.org>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Balbir Singh
- <bsingharora@gmail.com>
-Subject: Re: [PATCH 06/10] powerpc/mm/radix: implement LPID based TLB
- flushes to be used by KVM
-Message-ID: <20180507193849.43d701ef@roar.ozlabs.ibm.com>
-In-Reply-To: <20180507051526.GE9440@fergus.ozlabs.ibm.com>
-References: <20180506073731.13097-1-npiggin@gmail.com>
- <20180506073731.13097-7-npiggin@gmail.com>
- <20180507051526.GE9440@fergus.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fd7y2BhxzF151
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 19:47:23 +1000 (AEST)
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+To: Ram Pai <linuxram@us.ibm.com>, Andy Lutomirski <luto@amacapital.net>
+Cc: Dave Hansen <dave.hansen@intel.com>, Linux-MM <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>, linux-x86_64@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180502132751.05B9F401F3041@oldenburg.str.redhat.com>
+ <248faadb-e484-806f-1485-c34a72a9ca0b@intel.com>
+ <822a28c9-5405-68c2-11bf-0c282887466d@redhat.com>
+ <20180502211254.GA5863@ram.oc3035372033.ibm.com>
+ <CALCETrUfO=vXg5rT-n=y8pLktcq5+ORvgpsOXCHG4GaugB3k2A@mail.gmail.com>
+ <20180502233848.GB5863@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <0bd6584e-f520-9e2d-8adb-f79d3d7e9340@redhat.com>
+Date: Mon, 7 May 2018 11:47:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180502233848.GB5863@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 7 May 2018 15:15:26 +1000
-Paul Mackerras <paulus@ozlabs.org> wrote:
+On 05/03/2018 01:38 AM, Ram Pai wrote:
+> This is a new requirement that I was not aware off. Its not documented
+> anywhere AFAICT.
 
-> On Sun, May 06, 2018 at 05:37:27PM +1000, Nicholas Piggin wrote:
-> > Implement a local TLB flush for invalidating an LPID with variants for
-> > process or partition scope. And a global TLB flush for invalidating
-> > a partition scoped page of an LPID.
-> > 
-> > These will be used by KVM in subsequent patches.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  .../include/asm/book3s/64/tlbflush-radix.h    |   7 +
-> >  arch/powerpc/mm/tlb-radix.c                   | 207 ++++++++++++++++++
-> >  2 files changed, 214 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > index 19b45ba6caf9..ef5c3f2994c9 100644
-> > --- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-> > @@ -51,4 +51,11 @@ extern void radix__flush_tlb_all(void);
-> >  extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
-> >  					unsigned long address);
-> >  
-> > +extern void radix__flush_tlb_lpid_page(unsigned int lpid,
-> > +					unsigned long addr,
-> > +					unsigned long page_size);
-> > +extern void radix__flush_pwc_lpid(unsigned int lpid);
-> > +extern void radix__local_flush_tlb_lpid(unsigned int lpid);
-> > +extern void radix__local_flush_tlb_lpid_guest(unsigned int lpid);
-> > +
-> >  #endif
-> > diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> > index a5d7309c2d05..5ac3206c51cc 100644
-> > --- a/arch/powerpc/mm/tlb-radix.c
-> > +++ b/arch/powerpc/mm/tlb-radix.c
-> > @@ -118,6 +118,53 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
-> >  	trace_tlbie(0, 0, rb, rs, ric, prs, r);
-> >  }
-> >  
-> > +static inline void __tlbiel_lpid(unsigned long lpid, int set,
-> > +				unsigned long ric)
-> > +{
-> > +	unsigned long rb,rs,prs,r;
-> > +
-> > +	rb = PPC_BIT(52); /* IS = 2 */
-> > +	rb |= set << PPC_BITLSHIFT(51);
-> > +	rs = 0;  /* LPID comes from LPIDR */
-> > +	prs = 0; /* partition scoped */
-> > +	r = 1;   /* radix format */
-> > +
-> > +	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-> > +		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-> > +	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);  
-> 
-> Do we really want 128 trace entries every time
-> radix__local_flush_tlb_lpid() or radix__local_flush_tlb_lpid_guest()
-> is called?  That seems like overkill to me.  Could we move the
-> trace_tlbie calls here and in __tlbiel_lpid_guest() into the callers
-> instead?
+Correct.  All inheritance behavior was deliberately left unspecified.
 
-Yeah well that's how the powerpc:tlbie tracepoints are defined. I can
-see possible benefit to feeding the trace directly to a model or
-simulator, but it does make other things harder.
+I'm surprised about the reluctance to fix the x86 behavior.  Are there 
+any applications at all for the current semantics?
 
-I have a patch around that changes all those tracepoints around to
-match the Linux semantics rather than the instructions... If people
-would prefer that I can send it (cc'ed Balbir).
-
-But for this patch we should just match the existing tracepoints.
+I guess I can implement this particular glibc hardening on POWER only 
+for now.
 
 Thanks,
-Nick
+Florian
