@@ -1,24 +1,28 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x236.google.com (mail-pg0-x236.google.com
+ [IPv6:2607:f8b0:400e:c05::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fdCX2yYhzF151
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 19:50:31 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id m21-v6so19842545pgv.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 02:50:31 -0700 (PDT)
-Date: Mon, 7 May 2018 19:50:18 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40fdGw29rdzF151
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2018 19:53:28 +1000 (AEST)
+Received: by mail-pg0-x236.google.com with SMTP id i29-v6so19825407pgn.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 02:53:28 -0700 (PDT)
+Date: Mon, 7 May 2018 19:53:14 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC PATCH 1/2] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-Message-ID: <20180507195018.1ec8a8ea@roar.ozlabs.ibm.com>
-In-Reply-To: <CAK7LNAT3nowJ=CCE0OARdADyvuXOH+zFyQBBg3HOgp+W=ezT0g@mail.gmail.com>
-References: <20180430012351.28814-1-npiggin@gmail.com>
- <20180430012351.28814-2-npiggin@gmail.com>
- <CAK7LNAT3nowJ=CCE0OARdADyvuXOH+zFyQBBg3HOgp+W=ezT0g@mail.gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, linux-arch <linux-arch@vger.kernel.org>,
+ Nicolas Pitre <nico@fluxnic.net>, Linux Kbuild mailing list
+ <linux-kbuild@vger.kernel.org>
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+Message-ID: <20180507195314.6711f3b8@roar.ozlabs.ibm.com>
+In-Reply-To: <CAK7LNASvOwam=AhN11sUKvBbtJbBzQULqs8kRV2KRS45jbSLcQ@mail.gmail.com>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <CA+7wUswuyn+YgNe732rQAzVmgDBohTMEqwsd76nQ_CH5h7Y5WA@mail.gmail.com>
+ <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+ <CAK7LNASvOwam=AhN11sUKvBbtJbBzQULqs8kRV2KRS45jbSLcQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,137 +34,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 7 May 2018 14:25:12 +0900
+On Mon, 7 May 2018 09:46:43 +0900
 Masahiro Yamada <yamada.masahiro@socionext.com> wrote:
 
-> Hi.
+> Hi Nicholas,
 > 
-> 
-> 2018-04-30 10:23 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
-> > The powerpc toolchain can compile combinations of 32/64 bit and
-> > big/little endian, so it's convenient to consider, e.g.,
+> 2018-04-20 19:41 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> > On Fri, 20 Apr 2018 12:00:49 +0200
+> > Mathieu Malaterre <malat@debian.org> wrote:
+> >  
+> >> On Fri, Apr 20, 2018 at 9:34 AM, Nicholas Piggin <npiggin@gmail.com> wrote:  
+> >> > This requires further changes to linker script to KEEP some tables
+> >> > and wildcard compiler generated sections into the right place. This
+> >> > includes pp32 modifications from Christophe Leroy.
+> >> >
+> >> > When compiling powernv_defconfig with this option:
+> >> >
+> >> > text       data      bss       dec        filename
+> >> > 11827621   4810490   1341080   17979191   vmlinux
+> >> > 11752437   4598858   1338776   17690071   vmlinux.dcde
+> >> >
+> >> > Resulting kernel is almost 400kB smaller (and still boots).
+> >> >
+> >> > [ppc32 numbers here]  
+> >>
+> >> ^^^
+> >>
+> >> Do you want somebody else to provide those numbers ?  
 > >
-> >   CC -m64 -mbig-endian
+> > If you have a booting kernel, yes some more numbers would be good.
 > >
-> > To be the C compiler for the purpose of invoking it to build
-> > target artifacts.  
-> 
-> Right, but this is not possible in the new Kconfig scheme
-> because CPU_BIG/LITTLE_ENDIAN can be turned on/off
-> from Kconfig menus.
+> > Thanks,
+> > Nick  
 > 
 > 
-> > Rather than override, use kbuild defined variables to pass these
-> > flags around. Importantly, they must be passed to things like
-> > cc-option, so the usual cflags-y is not sufficient. This multitude
-> > of inconsistently named variables is a mess, but it's marginally
-> > better than overriding the toolchain because it matches what other
-> > architectures do.
-> >
-> > This allows powerpc builds to work with the new kconfig macro
-> > language branch. XXX: not exactly sure why it fails in the first
-> > place.  
 > 
-> 
-> Without this patch, 'scripts/kconfig/conf  --syncconfig Kconfig'
-> continues eternally.
-> 
-> This is because the change of environment variable $(CC) will
-> trigger syncconfig.
-> 
-> So, this patch is the right thing to do.
+> I applied this series because I want it to be more tested in linux-next.
 
-Thanks for looking, yes I like it better. I'm still having some
-trouble with 32-bit cross compilation with 64-bit toolchain. I'm
-trying to work through this, may need some help though.
-
-> > XXX: 32-bit builds with 64-bit toolchain gain some additional options
-> > like -funit-at-a-time from cc-option. Unclear why that is. Build
-> > appears to be correct otherwise.
-> > ---
-> >  arch/powerpc/Makefile | 14 +++++++-------
-> >  1 file changed, 7 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index 95813df90801..046b5dde9ff5 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -74,13 +74,15 @@ endif
-> >  endif
-> >
-> >  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-> > -override LD    += -EL
-> > +KBUILD_CPPFLAGS        += -mlittle-endian  
-> 
-> 
-> IMHO, I personally prefer
-> 
-> KBUILD_CFLAGS        += -mlittle-endian
-> KBUILD_AFLAGS        += -mlittle-endian
-> 
-> like the current arch/powerpc/Makefile add the flag
-> to cflags-y / aflags-y separately.
-
-The problem I found is that we need this option to be invoked
-with 'cc-option'. I know this is probably not the right way to
-go about it though, but arm64 seems to have the same hack.
-
-Any suggestions for how to solve that? Should the cc-option
-take KBUILD_CFLAGS as well?
+Thank you.
 
 
-> Only the difference would be whether -mlittle-endian
-> is passed to pre-processing the linker script, though.
+> Some requests:
 > 
-> 
-> 
-> 
-> > +LDFLAGS                += -EL
-> >  LDEMULATION    := lppc
-> >  GNUTARGET      := powerpcle
-> >  MULTIPLEWORD   := -mno-multiple
-> >  KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
-> >  else
-> > -override LD    += -EB
-> > +KBUILD_CPPFLAGS += $(call cc-option,-mbig-endian)
-> > +LDFLAGS                += -EB
-> >  LDEMULATION    := ppc
-> >  GNUTARGET      := powerpc
-> >  MULTIPLEWORD   := -mmultiple
-> > @@ -93,8 +95,6 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)               += $(call cc-option,-mabi=elfv1)
-> >  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mabi=elfv2
-> >  endif
-> >
-> > -cflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mlittle-endian
-> > -cflags-$(CONFIG_CPU_BIG_ENDIAN)                += $(call cc-option,-mbig-endian)
-> >  ifneq ($(cc-name),clang)
-> >    cflags-$(CONFIG_CPU_LITTLE_ENDIAN)   += -mno-strict-align
-> >  endif
-> > @@ -103,9 +103,9 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)             += $(call cc-option,-mbig-endian)
-> >  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)     += -mlittle-endian
-> >
-> >  ifeq ($(HAS_BIARCH),y)
-> > -override AS    += -a$(BITS)
-> > -override LD    += -m elf$(BITS)$(LDEMULATION)
-> > -override CC    += -m$(BITS)
-> > +KBUILD_CPPFLAGS        += -m$(BITS)  
-> 
-> 
-> Do you mean this?
-> 
-> KBUILD_CFLAGS        += -m$(BITS)
+>  - Could you provide information to replace '[ppc32 numbers here]'?
+>    (or just remove it)
 
-IIRC it was the same cc-option problem.
+Yes there were some numbers reported, I can give you an updated
+changelog.
 
-> > +KBUILD_AFLAGS  += -m$(BITS) -Wl,-a$(BITS)  
-> 
-> 
-> Both KBUILD_CPPFLAGS and KBUILD_AFLAGS are added
-> to orig_a_flags in scripts/Makefile.lib
-> 
-> So, -m$(BITS) will be doubled for *.S files.
+>  - V2 is welcome if you have code improvement.
+>    (I thought so from your comments)
 
-Yes, I haven't got things quite right yet.
+I'll see where it ended up and send you updated patches if necessary.
 
 Thanks,
 Nick
