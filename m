@@ -1,36 +1,41 @@
-Return-Path: <sbobroff@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <luto@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40g1gs6kjtzF1nM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 11:12:57 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4819Au4044447
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 21:12:55 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2htv035b6u-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 21:12:55 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Tue, 8 May 2018 02:12:53 +0100
-Date: Tue, 8 May 2018 11:12:48 +1000
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 11/13] powerpc/eeh: Introduce eeh_set_irq_state()
-References: <cover.1525242772.git.sbobroff@linux.ibm.com>
- <facebfcf7726c381957cc5fac0fc9510ac27c472.1525242772.git.sbobroff@linux.ibm.com>
- <87vac486nr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40g3q30Q8HzF1jq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 12:49:15 +1000 (AEST)
+Received: from mail-wm0-f43.google.com (mail-wm0-f43.google.com [74.125.82.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 56A4F21747
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 02:49:13 +0000 (UTC)
+Received: by mail-wm0-f43.google.com with SMTP id l1-v6so18723386wmb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 19:49:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="JP+T4n/bALQSJXh8"
-In-Reply-To: <87vac486nr.fsf@concordia.ellerman.id.au>
-Message-Id: <20180508011247.GB11802@tungsten.ozlabs.ibm.com>
+References: <20180502132751.05B9F401F3041@oldenburg.str.redhat.com>
+ <248faadb-e484-806f-1485-c34a72a9ca0b@intel.com>
+ <822a28c9-5405-68c2-11bf-0c282887466d@redhat.com>
+ <57459C6F-C8BA-4E2D-99BA-64F35C11FC05@amacapital.net>
+ <6286ba0a-7e09-b4ec-e31f-bd091f5940ff@redhat.com>
+ <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
+ <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
+ <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
+ <20180503021058.GA5670@ram.oc3035372033.ibm.com>
+ <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
+ <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
+In-Reply-To: <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
+From: Andy Lutomirski <luto@kernel.org>
+Date: Tue, 08 May 2018 02:49:01 +0000
+Message-ID: <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Andrew Lutomirski <luto@kernel.org>, linuxram@us.ibm.com,
+ Dave Hansen <dave.hansen@intel.com>, Linux-MM <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>, linux-x86_64@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,81 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, May 7, 2018 at 2:48 AM Florian Weimer <fweimer@redhat.com> wrote:
 
---JP+T4n/bALQSJXh8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On 05/03/2018 06:05 AM, Andy Lutomirski wrote:
+> > On Wed, May 2, 2018 at 7:11 PM Ram Pai <linuxram@us.ibm.com> wrote:
+> >
+> >> On Wed, May 02, 2018 at 09:23:49PM +0000, Andy Lutomirski wrote:
+> >>>
+> >>>> If I recall correctly, the POWER maintainer did express a strong
+> > desire
+> >>>> back then for (what is, I believe) their current semantics, which my
+> >>>> PKEY_ALLOC_SIGNALINHERIT patch implements for x86, too.
+> >>>
+> >>> Ram, I really really don't like the POWER semantics.  Can you give
+some
+> >>> justification for them?  Does POWER at least have an atomic way for
+> >>> userspace to modify just the key it wants to modify or, even better,
+> >>> special load and store instructions to use alternate keys?
+> >
+> >> I wouldn't call it POWER semantics. The way I implemented it on power
+> >> lead to the semantics, given that nothing was explicitly stated
+> >> about how the semantics should work within a signal handler.
+> >
+> > I think that this is further evidence that we should introduce a new
+> > pkey_alloc() mode and deprecate the old.  To the extent possible, this
+> > thing should work the same way on x86 and POWER.
 
-On Fri, May 04, 2018 at 01:02:32PM +1000, Michael Ellerman wrote:
-> Sam Bobroff <sbobroff@linux.ibm.com> writes:
->=20
-> > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh=
-_driver.c
-> > index f63a01d336ee..b3edd0df04b8 100644
-> > --- a/arch/powerpc/kernel/eeh_driver.c
-> > +++ b/arch/powerpc/kernel/eeh_driver.c
-> > @@ -210,6 +206,23 @@ static void eeh_set_channel_state(struct eeh_pe *r=
-oot, enum pci_channel_state s)
-> >  				edev->pdev->error_state =3D s;
-> >  }
-> > =20
-> > +static void eeh_set_irq_state(struct eeh_pe *root, bool enable)
-> > +{
-> > +	struct eeh_pe *pe;
-> > +	struct eeh_dev *edev, *tmp;
-> > +
-> > +	eeh_for_each_pe(root, pe)
-> > +		eeh_pe_for_each_dev(pe, edev, tmp)
-> > +			if (eeh_edev_actionable(edev))
-> > +				if (eeh_pcid_get(edev->pdev)) {
-> > +					if (enable)
-> > +						eeh_enable_irq(edev);
-> > +					else
-> > +						eeh_disable_irq(edev);
-> > +					eeh_pcid_put(edev->pdev);
-> > +				}
->=20
-> Yikes.
->=20
-> What about?
->=20
-> 	eeh_for_each_pe(root, pe) {
-> 		eeh_pe_for_each_dev(pe, edev, tmp) {
-> 			if (!eeh_edev_actionable(edev))
-> 				continue;
->=20
-> 			if (!eeh_pcid_get(edev->pdev))
-> 				continue;
->=20
-> 			if (enable)
-> 				eeh_enable_irq(edev);
-> 			else
-> 				eeh_disable_irq(edev);
->=20
-> 			eeh_pcid_put(edev->pdev);
-> 		}
-> 	}
->=20
-> cheers
+> Do you propose to change POWER or to change x86?
 
-Sure, will do.
+Sorry for being slow to reply.  I propose to introduce a new
+PKEY_ALLOC_something variant on x86 and POWER and to make the behavior
+match on both.  It should at least update the values loaded when a signal
+is delivered and it should probably also update it for new threads.
 
-Cheers,
+For glibc, for example, I assume that you want signals to be delivered with
+write access disabled to the GOT.  Otherwise you would fail to protect
+against exploits that occur in signal context.  Glibc controls thread
+creation, so the initial state on thread startup doesn't really matter, but
+there will be more users than just glibc.
 
---JP+T4n/bALQSJXh8
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlrw+Y8ACgkQMX8w6AQl
-/iIS7wf/dAiMByBjMLkul2WeQ89v7y6EFuvEtbG0jSevsWsGOK+B0XcycLBP+oli
-c/SINQ+FfnqRHh/a/o+d2mqLIG3MZ6xXx659ZyBIJYAZEfWOyOml0W7AapdyJDBc
-PkyUr4Dqn2TW9jRBf9jhxeI4jqC4cu2PJ8Cv6LeFtZgIU/Tap3fAGLNUODsKeBxL
-appX/7epjXgh42XIAKaOF4mNYr4294dSdjU7JCMs0qfdgsdQl4fArth//gMeOrXw
-yl8qTMcnvIUB/pOmVuocj4aXlXgKVHG+GnLkn7WQqmL2rhhBH4u5bkXHDSGV/h6Q
-R3PBkXGUzSWDOi8VYc3aIsL0a0RIuw==
-=olqR
------END PGP SIGNATURE-----
-
---JP+T4n/bALQSJXh8--
+--Andy
