@@ -1,20 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMbm5dVBzF156
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:40:36 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Khem Raj <raj.khem@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Khem Raj <raj.khem@gmail.com>
-Subject: Re: [PATCH 2/2] powerpc/ptrace: Disable array-bounds warning with gcc8
-In-Reply-To: <20180504192313.18625-2-raj.khem@gmail.com>
-References: <20180504192313.18625-1-raj.khem@gmail.com>
- <20180504192313.18625-2-raj.khem@gmail.com>
-Date: Wed, 09 May 2018 00:40:35 +1000
-Message-ID: <87y3guyzvg.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsZ263YzF14y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:34 +1000 (AEST)
+In-Reply-To: <20171211032913.31253-1-paul.gortmaker@windriver.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH-next] powerpc: remove retired sbc834x support
+Message-Id: <40gMsZ193jz9s27@ozlabs.org>
+Date: Wed,  9 May 2018 00:52:34 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Khem Raj <raj.khem@gmail.com> writes:
+On Mon, 2017-12-11 at 03:29:13 UTC, Paul Gortmaker wrote:
+> I no longer have a functional version of this board for even the most
+> basic sanity boot testing, and they have not been available for purchase
+> for quite some years now.
+> 
+> There is no point in adding a burden to testing coverage that does
+> walk all the possible defconfigs, so with all the above in mind, it
+> makes sense to remove it.  Of course it will remain in the git history
+> for anyone who happens to stumble on one and wants to tinker with it.
+> 
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-> This masks the new gcc8 warning
->
-> regset.h:270:4: error: 'memcpy' offset [-527, -529] is out
-> of the bounds [0, 16] of object 'vrsave' with type 'union <anonymous>'
+Applied to powerpc next, thanks.
 
-Why would we want to mask the warning rather than fix it?
+https://git.kernel.org/powerpc/c/3bc6cf5a86e5e506250c03dfcdf971
 
 cheers
-
-> Signed-off-by: Khem Raj <raj.khem@gmail.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/Makefile | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index 7ac5a68ad6b1..ab159a34704a 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -4,6 +4,7 @@
->  #
->  
->  CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' $(call cc-disable-warning, attribute-alias)
-> +CFLAGS_ptrace.o		+= $(call cc-disable-warning, array-bounds)
->  CFLAGS_syscalls.o	+= $(call cc-disable-warning, attribute-alias)
->  
->  subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
-> -- 
-> 2.17.0
