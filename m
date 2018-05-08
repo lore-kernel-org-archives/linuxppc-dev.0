@@ -1,16 +1,21 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsc03DCzF14y
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsc3VKQzF14y
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:36 +1000 (AEST)
-In-Reply-To: <20180327042906.32461-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <152336766167.8374.13811759102783227353.stgit@hbathini.in.ibm.com>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: naveen.n.rao@linux.vnet.ibm.com, rostedt@goodmis.org
-Subject: Re: powerpc: Only support DYNAMIC_FTRACE not static
-Message-Id: <40gMsb2xC7z9s2k@ozlabs.org>
-Date: Wed,  9 May 2018 00:52:35 +1000 (AEST)
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [v2,
+ 1/2] powerpc/fadump: exclude memory holes while reserving memory in
+ second kernel
+Message-Id: <40gMsc1MHWz9s0W@ozlabs.org>
+Date: Wed,  9 May 2018 00:52:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-03-27 at 04:29:06 UTC, Michael Ellerman wrote:
-> We've had dynamic ftrace support for over 9 years since Steve first
-> wrote it, all the distros use dynamic, and static is basically
-> untested these days, so drop support for static ftrace.
+On Tue, 2018-04-10 at 13:41:16 UTC, Hari Bathini wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+> The second kernel, during early boot after the crash, reserves rest of
+> the memory above boot memory size to make sure it does not touch any of the
+> dump memory area. It uses memblock_reserve() that reserves the specified
+> memory region irrespective of memory holes present within that region.
+> There are chances where previous kernel would have hot removed some of
+> its memory leaving memory holes behind. In such cases fadump kernel reports
+> incorrect number of reserved pages through arch_reserved_kernel_pages()
+> hook causing kernel to hang or panic.
+> 
+> Fix this by excluding memory holes while reserving rest of the memory
+> above boot memory size during second kernel boot after crash.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0c0c52306f4792a41d8a86e7c5d30c
+https://git.kernel.org/powerpc/c/b71a693d3db3abd1ddf7d29be967a1
 
 cheers
