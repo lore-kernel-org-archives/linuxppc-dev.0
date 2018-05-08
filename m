@@ -2,19 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsc3VKQzF14y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:36 +1000 (AEST)
-In-Reply-To: <152336766167.8374.13811759102783227353.stgit@hbathini.in.ibm.com>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsd2Xj3zF152
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:37 +1000 (AEST)
+In-Reply-To: <47c79b5591208f332876fc548186b5b1e3b68e52.1524121038.git.naveen.n.rao@linux.vnet.ibm.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [v2,
- 1/2] powerpc/fadump: exclude memory holes while reserving memory in
- second kernel
-Message-Id: <40gMsc1MHWz9s0W@ozlabs.org>
+Cc: Satheesh Rajendran <sathnaga@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [v5,
+ 01/10] powerpc64/ftrace: Add a field in paca to disable ftrace in
+ unsafe code paths
+Message-Id: <40gMsd0tycz9s4Z@ozlabs.org>
 Date: Wed,  9 May 2018 00:52:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,26 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-04-10 at 13:41:16 UTC, Hari Bathini wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, 2018-04-19 at 07:04:00 UTC, "Naveen N. Rao" wrote:
+> We have some C code that we call into from real mode where we cannot
+> take any exceptions. Though the C functions themselves are mostly safe,
+> if these functions are traced, there is a possibility that we may take
+> an exception. For instance, in certain conditions, the ftrace code uses
+> WARN(), which uses a 'trap' to do its job.
 > 
-> The second kernel, during early boot after the crash, reserves rest of
-> the memory above boot memory size to make sure it does not touch any of the
-> dump memory area. It uses memblock_reserve() that reserves the specified
-> memory region irrespective of memory holes present within that region.
-> There are chances where previous kernel would have hot removed some of
-> its memory leaving memory holes behind. In such cases fadump kernel reports
-> incorrect number of reserved pages through arch_reserved_kernel_pages()
-> hook causing kernel to hang or panic.
+> For such scenarios, introduce a new field in paca 'ftrace_enabled',
+> which is checked on ftrace entry before continuing. This field can then
+> be set to zero to disable/pause ftrace, and set to a non-zero value to
+> resume ftrace.
 > 
-> Fix this by excluding memory holes while reserving rest of the memory
-> above boot memory size during second kernel boot after crash.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/b71a693d3db3abd1ddf7d29be967a1
+https://git.kernel.org/powerpc/c/ea678ac627e01daf5b4f1da24bf1d0
 
 cheers
