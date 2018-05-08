@@ -2,18 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsZ263YzF14y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:34 +1000 (AEST)
-In-Reply-To: <20171211032913.31253-1-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsc03DCzF14y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:36 +1000 (AEST)
+In-Reply-To: <20180327042906.32461-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH-next] powerpc: remove retired sbc834x support
-Message-Id: <40gMsZ193jz9s27@ozlabs.org>
-Date: Wed,  9 May 2018 00:52:34 +1000 (AEST)
+Cc: naveen.n.rao@linux.vnet.ibm.com, rostedt@goodmis.org
+Subject: Re: powerpc: Only support DYNAMIC_FTRACE not static
+Message-Id: <40gMsb2xC7z9s2k@ozlabs.org>
+Date: Wed,  9 May 2018 00:52:35 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-12-11 at 03:29:13 UTC, Paul Gortmaker wrote:
-> I no longer have a functional version of this board for even the most
-> basic sanity boot testing, and they have not been available for purchase
-> for quite some years now.
+On Tue, 2018-03-27 at 04:29:06 UTC, Michael Ellerman wrote:
+> We've had dynamic ftrace support for over 9 years since Steve first
+> wrote it, all the distros use dynamic, and static is basically
+> untested these days, so drop support for static ftrace.
 > 
-> There is no point in adding a burden to testing coverage that does
-> walk all the possible defconfigs, so with all the above in mind, it
-> makes sense to remove it.  Of course it will remain in the git history
-> for anyone who happens to stumble on one and wants to tinker with it.
-> 
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/3bc6cf5a86e5e506250c03dfcdf971
+https://git.kernel.org/powerpc/c/0c0c52306f4792a41d8a86e7c5d30c
 
 cheers
