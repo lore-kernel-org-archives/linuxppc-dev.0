@@ -1,35 +1,20 @@
-Return-Path: <punit.agrawal@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 40gGpb27xdzF1Rv
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 21:04:38 +1000 (AEST)
-From: Punit Agrawal <punit.agrawal@arm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net, jack@suse.cz,
- Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.
- ozlabs.org,  x86@kernel.org
-Subject: Re: [PATCH v10 02/25] x86/mm: define
- ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-3-git-send-email-ldufour@linux.vnet.ibm.com>
-Date: Tue, 08 May 2018 12:04:32 +0100
-In-Reply-To: <1523975611-15978-3-git-send-email-ldufour@linux.vnet.ibm.com>
- (Laurent Dufour's message of "Tue, 17 Apr 2018 16:33:08 +0200")
-Message-ID: <87sh72jtmn.fsf@e105922-lin.cambridge.arm.com>
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gHzT6ZGbzF24c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 21:57:25 +1000 (AEST)
+Date: Tue, 8 May 2018 21:57:25 +1000
+From: Anton Blanchard <anton@ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: hcall_exit tracepoint retval should be
+ signed
+Message-ID: <20180508215725.7ec117c1@kryten>
+In-Reply-To: <20180507130355.25115-1-mpe@ellerman.id.au>
+References: <20180507130355.25115-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +24,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Laurent,
+Hi Michael,
 
-Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
+> The hcall_exit() tracepoint has retval defined as unsigned long. That
+> leads to humours results like:
+> 
+>   bash-3686  [009] d..2   854.134094: hcall_entry: opcode=24
+>   bash-3686  [009] d..2   854.134095: hcall_exit: opcode=24
+> retval=18446744073709551609
+> 
+> It's normal for some hcalls to return negative values, displaying them
+> as unsigned isn't very helpful. So change it to signed.
+> 
+>   bash-3711  [001] d..2   471.691008: hcall_entry: opcode=24
+>   bash-3711  [001] d..2   471.691008: hcall_exit: opcode=24 retval=-7
+> 
+> Which can be more easily compared to H_NOT_FOUND in hvcall.h
 
-> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT which turns on the
-> Speculative Page Fault handler when building for 64bit.
->
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Much nicer.
+
+Acked-by: Anton Blanchard <anton@samba.org>
+
+Anton
+
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
->  arch/x86/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index d8983df5a2bc..ebdeb48e4a4a 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -30,6 +30,7 @@ config X86_64
->  	select MODULES_USE_ELF_RELA
->  	select X86_DEV_DMA_OPS
->  	select ARCH_HAS_SYSCALL_WRAPPER
-> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
-
-I'd suggest merging this patch with the one making changes to the
-architectural fault handler towards the end of the series.
-
-The Kconfig change is closely tied to the architectural support for SPF
-and makes sense to be in a single patch.
-
-If there's a good reason to keep them as separate patches, please move
-the architecture Kconfig changes after the patch adding fault handler
-changes.
-
-It's better to enable the feature once the core infrastructure is merged
-rather than at the beginning of the series to avoid potential bad
-fallout from incomplete functionality during bisection.
-
-All the comments here definitely hold for the arm64 patches that you
-plan to include with the next update.
-
-Thanks,
-Punit
-
+>  arch/powerpc/include/asm/asm-prototypes.h    | 3 +--
+>  arch/powerpc/include/asm/trace.h             | 7 +++----
+>  arch/powerpc/platforms/pseries/hvCall_inst.c | 2 +-
+>  arch/powerpc/platforms/pseries/lpar.c        | 3 +--
+>  4 files changed, 6 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/asm-prototypes.h
+> b/arch/powerpc/include/asm/asm-prototypes.h index
+> d9713ad62e3c..068760d61e7e 100644 ---
+> a/arch/powerpc/include/asm/asm-prototypes.h +++
+> b/arch/powerpc/include/asm/asm-prototypes.h @@ -36,8 +36,7 @@ void
+> kexec_copy_flush(struct kimage *image); /* pseries hcall tracing */
+>  extern struct static_key hcall_tracepoint_key;
+>  void __trace_hcall_entry(unsigned long opcode, unsigned long *args);
+> -void __trace_hcall_exit(long opcode, unsigned long retval,
+> -			unsigned long *retbuf);
+> +void __trace_hcall_exit(long opcode, long retval, unsigned long
+> *retbuf); /* OPAL tracing */
+>  #ifdef HAVE_JUMP_LABEL
+>  extern struct static_key opal_tracepoint_key;
+> diff --git a/arch/powerpc/include/asm/trace.h
+> b/arch/powerpc/include/asm/trace.h index 33f3b479138b..d018e8602694
+> 100644 --- a/arch/powerpc/include/asm/trace.h
+> +++ b/arch/powerpc/include/asm/trace.h
+> @@ -81,8 +81,7 @@ TRACE_EVENT_FN_COND(hcall_entry,
 >  
->  #
->  # Arch settings
+>  TRACE_EVENT_FN_COND(hcall_exit,
+>  
+> -	TP_PROTO(unsigned long opcode, unsigned long retval,
+> -		unsigned long *retbuf),
+> +	TP_PROTO(unsigned long opcode, long retval, unsigned long
+> *retbuf), 
+>  	TP_ARGS(opcode, retval, retbuf),
+>  
+> @@ -90,7 +89,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
+>  
+>  	TP_STRUCT__entry(
+>  		__field(unsigned long, opcode)
+> -		__field(unsigned long, retval)
+> +		__field(long, retval)
+>  	),
+>  
+>  	TP_fast_assign(
+> @@ -98,7 +97,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
+>  		__entry->retval = retval;
+>  	),
+>  
+> -	TP_printk("opcode=%lu retval=%lu", __entry->opcode,
+> __entry->retval),
+> +	TP_printk("opcode=%lu retval=%ld", __entry->opcode,
+> __entry->retval), 
+>  	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
+>  );
+> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c
+> b/arch/powerpc/platforms/pseries/hvCall_inst.c index
+> 89b7ce807e70..6da320c786cd 100644 ---
+> a/arch/powerpc/platforms/pseries/hvCall_inst.c +++
+> b/arch/powerpc/platforms/pseries/hvCall_inst.c @@ -125,7 +125,7 @@
+> static void probe_hcall_entry(void *ignored, unsigned long opcode,
+> unsigned long h->purr_start = mfspr(SPRN_PURR); }
+>  
+> -static void probe_hcall_exit(void *ignored, unsigned long opcode,
+> unsigned long retval, +static void probe_hcall_exit(void *ignored,
+> unsigned long opcode, long retval, unsigned long *retbuf)
+>  {
+>  	struct hcall_stats *h;
+> diff --git a/arch/powerpc/platforms/pseries/lpar.c
+> b/arch/powerpc/platforms/pseries/lpar.c index
+> adb996ed51e1..5a392e40f3d2 100644 ---
+> a/arch/powerpc/platforms/pseries/lpar.c +++
+> b/arch/powerpc/platforms/pseries/lpar.c @@ -902,8 +902,7 @@ void
+> __trace_hcall_entry(unsigned long opcode, unsigned long *args)
+> local_irq_restore(flags); }
+>  
+> -void __trace_hcall_exit(long opcode, unsigned long retval,
+> -			unsigned long *retbuf)
+> +void __trace_hcall_exit(long opcode, long retval, unsigned long
+> *retbuf) {
+>  	unsigned long flags;
+>  	unsigned int *depth;
