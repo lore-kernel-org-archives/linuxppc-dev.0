@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsg4G77zF15H
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:39 +1000 (AEST)
-In-Reply-To: <152481017041.9024.9087742951572073802.stgit@jupiter.in.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsj0VGtzF15H
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:41 +1000 (AEST)
+In-Reply-To: <20180501025725.7441-1-bsingharora@gmail.com>
+To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/fadump: Unregister fadump on kexec down path.
-Message-Id: <40gMsf4slPz9s4s@ozlabs.org>
-Date: Wed,  9 May 2018 00:52:38 +1000 (AEST)
+Cc: Michael Neuling <mikey@neuling.org>
+Subject: Re: [resend] Revert "powerpc/powernv: Increase memory block size to
+ 1GB on radix"
+Message-Id: <40gMsg5h2dz9s35@ozlabs.org>
+Date: Wed,  9 May 2018 00:52:39 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-04-27 at 06:23:18 UTC, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Tue, 2018-05-01 at 02:57:25 UTC, Balbir Singh wrote:
+> This commit was a stop-gap to prevent crashes on hotunplug, caused by
+> the mismatch between the 1G mappings used for the linear mapping and the
+> memory block size. Those issues are now resolved because we split the
+> linear mapping at hotunplug time if necessary, as implemented in commit
+> 4dd5f8a99e79 ("powerpc/mm/radix: Split linear mapping on hot-unplug").
 > 
-> Unregister fadump on kexec down path otherwise the fadump registration in
-> new kexec-ed kernel complains that fadump is already registered. This
-> makes new kernel to continue using fadump registered by previous kernel
-> which may lead to invalid vmcore generation. Hence this patch fixes this
-> issue by un-registering fadump in fadump_cleanup() which is called during
-> kexec path so that new kernel can register fadump with new valid values.
-> 
-> Fixes: b500afff11f6 ("fadump: Invalidate registration and release reserved memory for general use.")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> Tested-by: Rashmica Gupta <rashmica.g@gmail.com>
+> Tested-by: Balbir Singh <bsingharora@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/722cde76d68e8cc4f3de42e71c82fd
+https://git.kernel.org/powerpc/c/7acf50e4efa60270edcb95107f660f
 
 cheers
