@@ -1,24 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMZF024FzF14r
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:39:17 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMbm5dVBzF156
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:40:36 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>, mingo@redhat.com, akpm@linux-foundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, x86@kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- dave.hansen@intel.com, benh@kernel.crashing.org, paulus@samba.org,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, ebiederm@xmission.com, linuxram@us.ibm.com,
- corbet@lwn.net, arnd@arndb.de
-Subject: Re: [PATCH v13 0/3] mm, x86,
- powerpc: Enhancements to Memory Protection Keys.
-In-Reply-To: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
-References: <1525471183-21277-1-git-send-email-linuxram@us.ibm.com>
-Date: Wed, 09 May 2018 00:39:14 +1000
-Message-ID: <8736z21ab1.fsf@concordia.ellerman.id.au>
+To: Khem Raj <raj.khem@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Khem Raj <raj.khem@gmail.com>
+Subject: Re: [PATCH 2/2] powerpc/ptrace: Disable array-bounds warning with gcc8
+In-Reply-To: <20180504192313.18625-2-raj.khem@gmail.com>
+References: <20180504192313.18625-1-raj.khem@gmail.com>
+ <20180504192313.18625-2-raj.khem@gmail.com>
+Date: Wed, 09 May 2018 00:40:35 +1000
+Message-ID: <87y3guyzvg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,36 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
+Khem Raj <raj.khem@gmail.com> writes:
 
-> This patch series provides arch-neutral enhancements to
-> enable memory-keys on new architecutes, and the corresponding
-> changes in x86 and powerpc specific code to support that.
+> This masks the new gcc8 warning
 >
-> a) Provides ability to support upto 32 keys.  PowerPC
->         can handle 32 keys and hence needs this.
->
-> b) Arch-neutral code; and not the arch-specific code,
->    determines the format of the string, that displays the key
->    for each vma in smaps.
->
-> History:
-> -------
-> version 14:
+> regset.h:270:4: error: 'memcpy' offset [-527, -529] is out
+> of the bounds [0, 16] of object 'vrsave' with type 'union <anonymous>'
 
-This doesn't match the patch subjects, which is a little confusing :)
-
-> 	(1) made VM_PKEY_BIT4 unusable on x86, #defined it to 0
-> 		-- comment by Dave Hansen
-> 	(2) due to some reason this patch series continue to
-> 	      break some or the other build. The last series
-> 	      passed everything but created a merge
-> 	      conflict followed by build failure for
-> 	      Michael Ellermen. :(
-
-I have a fix, it involved some cleanup of headers prior to the smaps
-change.
-
-Will post it.
+Why would we want to mask the warning rather than fix it?
 
 cheers
+
+> Signed-off-by: Khem Raj <raj.khem@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/Makefile | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 7ac5a68ad6b1..ab159a34704a 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -4,6 +4,7 @@
+>  #
+>  
+>  CFLAGS_ptrace.o		+= -DUTS_MACHINE='"$(UTS_MACHINE)"' $(call cc-disable-warning, attribute-alias)
+> +CFLAGS_ptrace.o		+= $(call cc-disable-warning, array-bounds)
+>  CFLAGS_syscalls.o	+= $(call cc-disable-warning, attribute-alias)
+>  
+>  subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
+> -- 
+> 2.17.0
