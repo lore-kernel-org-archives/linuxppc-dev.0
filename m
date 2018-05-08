@@ -1,29 +1,32 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40g4y34fdmzF152
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 13:40:27 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id a13-v6so20554770pgu.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 20:40:27 -0700 (PDT)
-Date: Tue, 8 May 2018 13:40:13 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40g59m3jQ2zF1n3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 13:50:36 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id a13-v6so20564420pgu.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 20:50:36 -0700 (PDT)
+Date: Tue, 8 May 2018 13:50:19 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Jiri Slaby <jslaby@suse.com>,
- linux-kernel@vger.kernel.org, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 04/15] powerpc/powernv: opal-kmsg use flush fallback
- from console code
-Message-ID: <20180508134013.472b7981@roar.ozlabs.ibm.com>
-In-Reply-To: <87wowfbvm0.fsf@concordia.ellerman.id.au>
-References: <20180430145558.4308-1-npiggin@gmail.com>
- <20180430145558.4308-5-npiggin@gmail.com>
- <87muxg80ga.fsf@concordia.ellerman.id.au>
- <20180504153717.4806d9c4@roar.ozlabs.ibm.com>
- <87wowfbvm0.fsf@concordia.ellerman.id.au>
+To: "Alastair D'Silva" <alastair@au1.ibm.com>
+Cc: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com, corbet@lwn.net
+Subject: Re: [PATCH v2 6/7] ocxl: Add an IOCTL so userspace knows what CPU
+ features are available
+Message-ID: <20180508135019.3e08d57a@roar.ozlabs.ibm.com>
+In-Reply-To: <1525740115.7796.46.camel@au1.ibm.com>
+References: <20180417020950.21446-1-alastair@au1.ibm.com>
+ <20180418010810.30937-1-alastair@au1.ibm.com>
+ <20180418010810.30937-7-alastair@au1.ibm.com>
+ <eec7dceb-0b25-8644-7f32-3700c3c4ed46@linux.ibm.com>
+ <1525740115.7796.46.camel@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 07 May 2018 20:36:39 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Tue, 08 May 2018 10:41:55 +1000
+"Alastair D'Silva" <alastair@au1.ibm.com> wrote:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> > On Fri, 04 May 2018 15:16:37 +1000
-> > Michael Ellerman <mpe@ellerman.id.au> wrote:  
-> >> Nicholas Piggin <npiggin@gmail.com> writes:  
-> >> > Use the more refined and tested event polling loop from opal_put_chars
-> >> > as the fallback console flush in the opal-kmsg path. This loop is used
-> >> > by the console driver today, whereas the opal-kmsg fallback is not
-> >> > likely to have been used for years.
-> >> >
-> >> > Use WARN_ONCE rather than a printk when the fallback is invoked to
-> >> > prepare for moving the console flush into a common function.    
-> >> 
-> >> Do we want to add a WARN in that path? If we're panicking things might
-> >> get worse if we WARN (which takes a trap).  
-> >
-> > True, probably a good idea not to... oh there's a printk_once so
-> > that'll work nicely.  
+> On Mon, 2018-05-07 at 20:14 +0200, Frederic Barrat wrote:
+> > 
+> > Le 18/04/2018 à 03:08, Alastair D'Silva a écrit :  
+> > > From: Alastair D'Silva <alastair@d-silva.org>
+> > > 
+> > > In order for a userspace AFU driver to call the Power9 specific
+> > > OCXL_IOCTL_ENABLE_P9_WAIT, it needs to verify that it can actually
+> > > make that call.
+> > > 
+> > > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> > > ---
+> > >   Documentation/accelerators/ocxl.rst |  1 -
+> > >   drivers/misc/ocxl/file.c            | 25
+> > > +++++++++++++++++++++++++
+> > >   include/uapi/misc/ocxl.h            |  4 ++++
+> > >   3 files changed, 29 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/Documentation/accelerators/ocxl.rst
+> > > b/Documentation/accelerators/ocxl.rst
+> > > index ddcc58d01cfb..7904adcc07fd 100644
+> > > --- a/Documentation/accelerators/ocxl.rst
+> > > +++ b/Documentation/accelerators/ocxl.rst
+> > > @@ -157,7 +157,6 @@ OCXL_IOCTL_GET_METADATA:
+> > >     Obtains configuration information from the card, such at the
+> > > size of
+> > >     MMIO areas, the AFU version, and the PASID for the current
+> > > context.
+> > > 
+> > > -  
+> > 
+> > 
+> > Intended?
+> > 
+> > Other than that,
+> > Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> >   
 > 
-> Cool.
+> Nope, I'll fix that, thanks.
 > 
-> I have this series in a tree so you can send me an incremental diff if
-> it's reasonably small.
 
-It's a one liner (also moved location of message back to where it was
-originally).
-
-The next patch will clash because it moves this over into opal.c, so
-you'd have to fix that by hand.
+Just to be clear, this is for OCXL features. I would just make that
+explicit in the title (s/CPU/OCXL).
 
 Thanks,
 Nick
-
----
- arch/powerpc/platforms/powernv/opal-kmsg.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/powernv/opal-kmsg.c b/arch/powerpc/platforms/powernv/opal-kmsg.c
-index fd2bbf4fd6dc..c610ef3541aa 100644
---- a/arch/powerpc/platforms/powernv/opal-kmsg.c
-+++ b/arch/powerpc/platforms/powernv/opal-kmsg.c
-@@ -53,12 +53,12 @@ static void force_opal_console_flush(struct kmsg_dumper *dumper,
- 	} else {
- 		__be64 evt;
- 
--		WARN_ONCE(1, "opal: OPAL_CONSOLE_FLUSH missing.\n");
- 		/*
- 		 * If OPAL_CONSOLE_FLUSH is not implemented in the firmware,
- 		 * the console can still be flushed by calling the polling
- 		 * function while it has OPAL_EVENT_CONSOLE_OUTPUT events.
- 		 */
-+		printk_once(KERN_NOTICE "opal: OPAL_CONSOLE_FLUSH missing.\n");
- 		do {
- 			opal_poll_events(&evt);
- 		} while (be64_to_cpu(evt) & OPAL_EVENT_CONSOLE_OUTPUT);
--- 
-2.17.0
