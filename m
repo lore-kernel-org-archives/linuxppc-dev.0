@@ -1,20 +1,34 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gHzT6ZGbzF24c
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 21:57:25 +1000 (AEST)
-Date: Tue, 8 May 2018 21:57:25 +1000
-From: Anton Blanchard <anton@ozlabs.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: hcall_exit tracepoint retval should be
- signed
-Message-ID: <20180508215725.7ec117c1@kryten>
-In-Reply-To: <20180507130355.25115-1-mpe@ellerman.id.au>
-References: <20180507130355.25115-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gJxj1v2DzF1x3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 22:40:55 +1000 (AEST)
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+To: Andy Lutomirski <luto@kernel.org>
+Cc: linuxram@us.ibm.com, Dave Hansen <dave.hansen@intel.com>,
+ Linux-MM <linux-mm@kvack.org>, Linux API <linux-api@vger.kernel.org>,
+ linux-x86_64@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
+ X86 ML <x86@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20180502132751.05B9F401F3041@oldenburg.str.redhat.com>
+ <248faadb-e484-806f-1485-c34a72a9ca0b@intel.com>
+ <822a28c9-5405-68c2-11bf-0c282887466d@redhat.com>
+ <57459C6F-C8BA-4E2D-99BA-64F35C11FC05@amacapital.net>
+ <6286ba0a-7e09-b4ec-e31f-bd091f5940ff@redhat.com>
+ <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
+ <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
+ <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
+ <20180503021058.GA5670@ram.oc3035372033.ibm.com>
+ <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
+ <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
+ <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <314e1a48-db94-9b37-8793-a95a2082c9e2@redhat.com>
+Date: Tue, 8 May 2018 14:40:46 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,108 +38,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-> The hcall_exit() tracepoint has retval defined as unsigned long. That
-> leads to humours results like:
+On 05/08/2018 04:49 AM, Andy Lutomirski wrote:
+> On Mon, May 7, 2018 at 2:48 AM Florian Weimer <fweimer@redhat.com> wrote:
 > 
->   bash-3686  [009] d..2   854.134094: hcall_entry: opcode=24
->   bash-3686  [009] d..2   854.134095: hcall_exit: opcode=24
-> retval=18446744073709551609
+>> On 05/03/2018 06:05 AM, Andy Lutomirski wrote:
+>>> On Wed, May 2, 2018 at 7:11 PM Ram Pai <linuxram@us.ibm.com> wrote:
+>>>
+>>>> On Wed, May 02, 2018 at 09:23:49PM +0000, Andy Lutomirski wrote:
+>>>>>
+>>>>>> If I recall correctly, the POWER maintainer did express a strong
+>>> desire
+>>>>>> back then for (what is, I believe) their current semantics, which my
+>>>>>> PKEY_ALLOC_SIGNALINHERIT patch implements for x86, too.
+>>>>>
+>>>>> Ram, I really really don't like the POWER semantics.  Can you give
+> some
+>>>>> justification for them?  Does POWER at least have an atomic way for
+>>>>> userspace to modify just the key it wants to modify or, even better,
+>>>>> special load and store instructions to use alternate keys?
+>>>
+>>>> I wouldn't call it POWER semantics. The way I implemented it on power
+>>>> lead to the semantics, given that nothing was explicitly stated
+>>>> about how the semantics should work within a signal handler.
+>>>
+>>> I think that this is further evidence that we should introduce a new
+>>> pkey_alloc() mode and deprecate the old.  To the extent possible, this
+>>> thing should work the same way on x86 and POWER.
 > 
-> It's normal for some hcalls to return negative values, displaying them
-> as unsigned isn't very helpful. So change it to signed.
+>> Do you propose to change POWER or to change x86?
 > 
->   bash-3711  [001] d..2   471.691008: hcall_entry: opcode=24
->   bash-3711  [001] d..2   471.691008: hcall_exit: opcode=24 retval=-7
-> 
-> Which can be more easily compared to H_NOT_FOUND in hvcall.h
+> Sorry for being slow to reply.  I propose to introduce a new
+> PKEY_ALLOC_something variant on x86 and POWER and to make the behavior
+> match on both.
 
-Much nicer.
+So basically implement PKEY_ALLOC_SETSIGNAL for POWER, and keep the 
+existing (different) behavior without the flag?
 
-Acked-by: Anton Blanchard <anton@samba.org>
+Ram, would you be okay with that?  Could you give me a hand if 
+necessary?  (I assume we have silicon in-house because it's a 
+long-standing feature of the POWER platform which was simply dormant on 
+Linux until now.)
 
-Anton
+> It should at least update the values loaded when a signal
+> is delivered and it should probably also update it for new threads.
 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/asm-prototypes.h    | 3 +--
->  arch/powerpc/include/asm/trace.h             | 7 +++----
->  arch/powerpc/platforms/pseries/hvCall_inst.c | 2 +-
->  arch/powerpc/platforms/pseries/lpar.c        | 3 +--
->  4 files changed, 6 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/asm-prototypes.h
-> b/arch/powerpc/include/asm/asm-prototypes.h index
-> d9713ad62e3c..068760d61e7e 100644 ---
-> a/arch/powerpc/include/asm/asm-prototypes.h +++
-> b/arch/powerpc/include/asm/asm-prototypes.h @@ -36,8 +36,7 @@ void
-> kexec_copy_flush(struct kimage *image); /* pseries hcall tracing */
->  extern struct static_key hcall_tracepoint_key;
->  void __trace_hcall_entry(unsigned long opcode, unsigned long *args);
-> -void __trace_hcall_exit(long opcode, unsigned long retval,
-> -			unsigned long *retbuf);
-> +void __trace_hcall_exit(long opcode, long retval, unsigned long
-> *retbuf); /* OPAL tracing */
->  #ifdef HAVE_JUMP_LABEL
->  extern struct static_key opal_tracepoint_key;
-> diff --git a/arch/powerpc/include/asm/trace.h
-> b/arch/powerpc/include/asm/trace.h index 33f3b479138b..d018e8602694
-> 100644 --- a/arch/powerpc/include/asm/trace.h
-> +++ b/arch/powerpc/include/asm/trace.h
-> @@ -81,8 +81,7 @@ TRACE_EVENT_FN_COND(hcall_entry,
->  
->  TRACE_EVENT_FN_COND(hcall_exit,
->  
-> -	TP_PROTO(unsigned long opcode, unsigned long retval,
-> -		unsigned long *retbuf),
-> +	TP_PROTO(unsigned long opcode, long retval, unsigned long
-> *retbuf), 
->  	TP_ARGS(opcode, retval, retbuf),
->  
-> @@ -90,7 +89,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
->  
->  	TP_STRUCT__entry(
->  		__field(unsigned long, opcode)
-> -		__field(unsigned long, retval)
-> +		__field(long, retval)
->  	),
->  
->  	TP_fast_assign(
-> @@ -98,7 +97,7 @@ TRACE_EVENT_FN_COND(hcall_exit,
->  		__entry->retval = retval;
->  	),
->  
-> -	TP_printk("opcode=%lu retval=%lu", __entry->opcode,
-> __entry->retval),
-> +	TP_printk("opcode=%lu retval=%ld", __entry->opcode,
-> __entry->retval), 
->  	hcall_tracepoint_regfunc, hcall_tracepoint_unregfunc
->  );
-> diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c
-> b/arch/powerpc/platforms/pseries/hvCall_inst.c index
-> 89b7ce807e70..6da320c786cd 100644 ---
-> a/arch/powerpc/platforms/pseries/hvCall_inst.c +++
-> b/arch/powerpc/platforms/pseries/hvCall_inst.c @@ -125,7 +125,7 @@
-> static void probe_hcall_entry(void *ignored, unsigned long opcode,
-> unsigned long h->purr_start = mfspr(SPRN_PURR); }
->  
-> -static void probe_hcall_exit(void *ignored, unsigned long opcode,
-> unsigned long retval, +static void probe_hcall_exit(void *ignored,
-> unsigned long opcode, long retval, unsigned long *retbuf)
->  {
->  	struct hcall_stats *h;
-> diff --git a/arch/powerpc/platforms/pseries/lpar.c
-> b/arch/powerpc/platforms/pseries/lpar.c index
-> adb996ed51e1..5a392e40f3d2 100644 ---
-> a/arch/powerpc/platforms/pseries/lpar.c +++
-> b/arch/powerpc/platforms/pseries/lpar.c @@ -902,8 +902,7 @@ void
-> __trace_hcall_entry(unsigned long opcode, unsigned long *args)
-> local_irq_restore(flags); }
->  
-> -void __trace_hcall_exit(long opcode, unsigned long retval,
-> -			unsigned long *retbuf)
-> +void __trace_hcall_exit(long opcode, long retval, unsigned long
-> *retbuf) {
->  	unsigned long flags;
->  	unsigned int *depth;
+I think we should keep inheritance for new threads and fork.  pkey_alloc 
+only has a single access rights argument, which makes it hard to reuse 
+this interface if there are two (three) separate sets of access rights.
+
+Is there precedent for process state reverting on fork, besides 
+MADV_WIPEONFORK?  My gut feeling is that we should avoid that.
+
+> For glibc, for example, I assume that you want signals to be delivered with
+> write access disabled to the GOT.  Otherwise you would fail to protect
+> against exploits that occur in signal context.  Glibc controls thread
+> creation, so the initial state on thread startup doesn't really matter, but
+> there will be more users than just glibc.
+
+glibc does not control thread, or more precisely, subprocess creation. 
+Otherwise we wouldn't have face that many issues with our PID cache. 8-/
+
+Thanks,
+Florian
