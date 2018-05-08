@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsj0VGtzF15H
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:41 +1000 (AEST)
-In-Reply-To: <20180501025725.7441-1-bsingharora@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gMsk5VQ8zF157
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 00:52:42 +1000 (AEST)
+In-Reply-To: <20180502112948.1747-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, rostedt@goodmis.org,
+ mingo@redhat.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>
-Subject: Re: [resend] Revert "powerpc/powernv: Increase memory block size to
- 1GB on radix"
-Message-Id: <40gMsg5h2dz9s35@ozlabs.org>
-Date: Wed,  9 May 2018 00:52:39 +1000 (AEST)
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: tracing: Remove PPC32 wart from config TRACING_SUPPORT
+Message-Id: <40gMsj6lvLz9s0W@ozlabs.org>
+Date: Wed,  9 May 2018 00:52:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,20 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-01 at 02:57:25 UTC, Balbir Singh wrote:
-> This commit was a stop-gap to prevent crashes on hotunplug, caused by
-> the mismatch between the 1G mappings used for the linear mapping and the
-> memory block size. Those issues are now resolved because we split the
-> linear mapping at hotunplug time if necessary, as implemented in commit
-> 4dd5f8a99e79 ("powerpc/mm/radix: Split linear mapping on hot-unplug").
+On Wed, 2018-05-02 at 11:29:48 UTC, Michael Ellerman wrote:
+> config TRACING_SUPPORT has an exception for PPC32, because PPC32
+> didn't have irqflags tracing support.
 > 
-> Signed-off-by: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> Tested-by: Rashmica Gupta <rashmica.g@gmail.com>
-> Tested-by: Balbir Singh <bsingharora@gmail.com>
+> But that hasn't been true since commit 5d38902c4838 ("powerpc: Add
+> irqtrace support for 32-bit powerpc") (Jun 2009).
+> 
+> So remove the exception for PPC32 and the comment.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/7acf50e4efa60270edcb95107f660f
+https://git.kernel.org/powerpc/c/0ea5ee035133aeb549883ddc604a65
 
 cheers
