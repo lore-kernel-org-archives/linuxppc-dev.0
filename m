@@ -1,25 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40fw6G1VhqzF1dn
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 07:01:57 +1000 (AEST)
-Message-ID: <d747ecedad20fa9e72cb622094b335bb999a5831.camel@kernel.crashing.org>
-Subject: Re: [PATCH] cxl: disable the lazy approach for irqs in POWERVM
- environment.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: christophe lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, vaibhav@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com
-Date: Tue, 08 May 2018 07:01:47 +1000
-In-Reply-To: <62dca845-827f-dd31-5cff-6eed3e5a5d86@linux.vnet.ibm.com>
-References: <1521736674-13128-1-git-send-email-clombard@linux.vnet.ibm.com>
- <1521771288.16434.326.camel@au1.ibm.com>
- <fd18ea29-18f9-ae02-4e26-535ee189f739@linux.vnet.ibm.com>
- <1521879295.16434.377.camel@kernel.crashing.org>
- <62dca845-827f-dd31-5cff-6eed3e5a5d86@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40g0yV2lBFzF1f3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2018 10:40:33 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w480csJp096838
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2018 20:40:31 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2htw750x9u-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2018 20:40:30 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Tue, 8 May 2018 01:40:28 +0100
+Subject: Re: [PATCH v2 3/7] powerpc: use task_pid_nr() for TID allocation
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com, corbet@lwn.net
+Date: Tue, 08 May 2018 10:40:21 +1000
+In-Reply-To: <b8aa28c4-9171-cb7f-9a43-22f2f15657b0@linux.ibm.com>
+References: <20180417020950.21446-1-alastair@au1.ibm.com>
+ <20180418010810.30937-1-alastair@au1.ibm.com>
+ <20180418010810.30937-4-alastair@au1.ibm.com>
+ <b8aa28c4-9171-cb7f-9a43-22f2f15657b0@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Message-Id: <1525740021.7796.45.camel@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,64 +45,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-05-07 at 18:02 +0200, christophe lombard wrote:
+On Mon, 2018-05-07 at 19:37 +0200, Frederic Barrat wrote:
 > 
-> To answer to your questions, here is the timeline in the cxl driver
+> Le 18/04/2018 à 03:08, Alastair D'Silva a écrit :
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> > 
+> > The current implementation of TID allocation, using a global IDR,
+> > may
+> > result in an errant process starving the system of available TIDs.
+> > Instead, use task_pid_nr(), as mentioned by the original author.
+> > The
+> > scenario described which prevented it's use is not applicable, as
+> > set_thread_tidr can only be called after the task struct has been
+> > populated.
 > 
->    1. call disable_irq()
 > 
->    2. call plpar_hcall9() to attach a process element
-> 	During this phase, phyp (as described in CAPI PAPR document) 	
-> 	disables the virtual interrupts provided in the process-element-
-> 	struct.
-> 	Then the partition must use ibm,set-xive to enable the virtual
-> 	interrupt source after H_ATTACH_CA_PROCESS completes
-> 	successfully.
+> Here is how I understand what's going to happen if 2 threads are
+> using 
+> the same TIDR value, which is possible with this patch (if unlikely):
+> 
+> 1. waking up the wrong thread is not really a problem, as threads
+> have 
+> to handle spurious wake up from the 'wait' instruction anyway, and
+> must 
+> be using some other condition to know when to loop around the 'wait' 
+> instruction.
+> 
+> 2. missing the right thread: if the wrong thread is on a CPU, and a 
+> wake_host_thread/as_notify is sent, the core will see a matching
+> thread 
+> and will accept the command. The (open)capi adapter won't send an 
+> interrupt. The wrong thread is awaken, which is not a problem as 
+> discussed above. As the right thread to notify is not running, no
+> harm 
+> is done either: as soon as the thread runs, it's supposed to check
+> its 
+> condition (which will be met) or call 'wait', but 'wait' immediately 
+> returns when called the first time after a thread is scheduled.
+> 
+> So I believe we are ok. But I think it requires a huge comment with
+> the 
+> above (at the minimum) :-)
+> 
+> With a comment:
+> Reviewed-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> 
+>    Fred
+> 
 
-Ok, this is the breakage. This PAPR API is badly defined, nothing other
-than the existing interrupt management PAPR calls should affect the
-enable/disable state of the interrupt The fact that attaching a process
-element does is a broken design.
+Good point, I'll add this in the next revision.
 
->    3. call enable_irq()
-> 	Before the following patch (genirq: Avoid unnecessary low level
-> 	irq function calls) be pushed in mainline, the unmask api
-> 	(= ics_rtas_unmask_irq()) was called by default and everything
-> 	was ok.
-> 
-> 	With this patch, the unmask api is now called only if 		
-> 	IRQD_IRQ_MASKED is set and in our case, it's never done and the
-> 	irqs remain masked.
-> 
-> 
->    So, there is a disconnect between the 'HW' (phyp) state of the
->    interrupt and the IRQD_IRQ_MASKED flag.
-> 
->    In the timeline of the cxl driver, the IRQD_IRQ_MASKED flag is never
->    set.
->    This flag was not used in enable_irq(), before that the patch "genirq:
->    Avoid ..." was pushed. So ics_rtas_unmask_irq() was called and
->    everything was ok.
-> 
-> Thanks
-> 
-> > > 
-> > > 
-> > > 
-> > > > > Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> > > > > ---
-> > > > >    drivers/misc/cxl/guest.c | 1 +
-> > > > >    1 file changed, 1 insertion(+)
-> > > > > 
-> > > > > diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> > > > > index f58b4b6c..dc476e1 100644
-> > > > > --- a/drivers/misc/cxl/guest.c
-> > > > > +++ b/drivers/misc/cxl/guest.c
-> > > > > @@ -389,6 +389,7 @@ static void disable_afu_irqs(struct cxl_context *ctx)
-> > > > >    		hwirq = ctx->irqs.offset[r];
-> > > > >    		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
-> > > > >    			virq = irq_find_mapping(NULL, hwirq);
-> > > > > +			irq_set_status_flags(virq, IRQ_DISABLE_UNLAZY);
-> > > > >    			disable_irq(virq);
-> > > > >    		}
-> > > > >    	}
+
+-- 
+Alastair D'Silva
+Open Source Developer
+Linux Technology Centre, IBM Australiamob: 0423 762 819
