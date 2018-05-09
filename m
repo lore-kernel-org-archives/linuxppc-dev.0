@@ -1,47 +1,28 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jpoimboe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gSv61SLGzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 04:39:12 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w48IalQ0126353
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 May 2018 14:39:06 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hue9dt079-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2018 14:39:06 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 8 May 2018 19:39:04 +0100
-Date: Tue, 8 May 2018 11:38:53 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc: fweimer@redhat.com, Dave Hansen <dave.hansen@intel.com>,
- Ingo Molnar <mingo@kernel.org>, mhocko@kernel.org,
- Ulrich.Weigand@de.ibm.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
- <20180504232647.3412f563@naga.suse.cz>
- <edd3d544-9fa8-5a79-4325-818ee5d7dfb0@intel.com>
- <20180504214507.GA5871@ram.oc3035372033.ibm.com>
- <20180505143956.139f4828@naga.suse.cz>
- <20180506201043.GE5617@ram.oc3035372033.ibm.com>
- <20180507132149.3fc1dcc5@kitsune.suse.cz>
- <20180508163801.GC5474@ram.oc3035372033.ibm.com>
- <20180508190336.361a508b@naga.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gcLB5mygzF13T
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 10:14:42 +1000 (AEST)
+Date: Tue, 8 May 2018 19:14:32 -0500
+From: Josh Poimboeuf <jpoimboe@redhat.com>
+To: Torsten Duwe <duwe@lst.de>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
+Subject: Re: [PATCH v3] ppc64le livepatch: implement reliable stacktrace for
+ newer consistency models
+Message-ID: <20180509001432.5nd55ictwf5yi7sm@treble>
+References: <20180305164928.GA17953@lst.de>
+ <20180308162616.yhbymodggnfzpskx@treble>
+ <20180309174718.2700b29e@blackhole.lan>
+ <20180312153536.7avozx64ku4lvd3e@treble>
+ <20180504123834.GA16581@lst.de>
+ <20180507154208.jo4s43olrf5a3hw4@treble>
+ <20180508103832.085378b9@blackhole.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20180508190336.361a508b@naga.suse.cz>
-Message-Id: <20180508183853.GA5802@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180508103832.085378b9@blackhole.lan>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,14 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 08, 2018 at 07:03:36PM +0200, Michal Suchánek wrote:
+On Tue, May 08, 2018 at 10:38:32AM +0200, Torsten Duwe wrote:
+> On Mon, 7 May 2018 10:42:08 -0500
+> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
 > 
-> How is the application denied setting the permissions on key 0 if it
-> can program the register directly?
+> > The subject doesn't actively describe what the patch does, maybe
+> > change it to something like:
+> > 
+> >   powerpc: Add support for HAVE_RELIABLE_STACKTRACE
+> > 
+> > or maybe
+> > 
+> >   powerpc: Add support for livepatch consistency model
+> 
+> Maybe $SUBJECT? You're absolutely right, the old subject was just a
+> leftover of my original attempt to just set the flag, before Miroslav
+> corrected me. I just kept on copying it without a second thought. Thanks
+> for noting.
 
-There is a UAMOR register. The userspace can change the permissions of a
-given key; by modifying the bits in AMOR register, only if the kernel
-has set the corresponding bit in the UAMOR register.  For key-0 the
-kernel does not set the corresponding UAMOR bit.
+Generally we refer to it as "the consistency model".  So I would
+propose a minor edit:
 
-RP
+  ppc64le/livepatch: Implement reliable stack tracing for the consistency model
+
+> > Otherwise it looks great to me.
+> > 
+> > Acked-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> > 
+> Thanks.
+> 
+> 	Torsten
+> 
+
+-- 
+Josh
