@@ -1,26 +1,33 @@
-Return-Path: <bsingharora@gmail.com>
-Received: from mail-vk0-x241.google.com (mail-vk0-x241.google.com
- [IPv6:2607:f8b0:400c:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gqGR43TfzF2MT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 18:27:11 +1000 (AEST)
-Received: by mail-vk0-x241.google.com with SMTP id m144-v6so21326096vke.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 01:27:11 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20180509174356.361abdba@roar.ozlabs.ibm.com>
-References: <20180509065152.14213-1-npiggin@gmail.com>
- <20180509065152.14213-2-npiggin@gmail.com>
- <CAKTCnzmeTiSK8naAz32PAcCdq3Nu3tb02DY4Kn0V+pG593tgOg@mail.gmail.com>
- <20180509174356.361abdba@roar.ozlabs.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Date: Wed, 9 May 2018 18:27:07 +1000
-Message-ID: <CAKTCnznPYt-8SdP81vnpev5c5Cu9a95RoSCP7WaF+LxnrZv2Ng@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/64s/radix: do not flush TLB when relaxing
- access
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Alistair Popple <alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gqN61dG3zF2Mg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 18:32:05 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w498TRoE036565
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 May 2018 04:32:03 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2huv4fuxnt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 04:32:03 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Wed, 9 May 2018 09:32:01 +0100
+Subject: Re: [PATCH] powerpc/64s/radix: reset mm_cpumask for single thread
+ process when possible
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Reply-To: benh@au1.ibm.com
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 09 May 2018 18:31:55 +1000
+In-Reply-To: <20180509065613.14762-1-npiggin@gmail.com>
+References: <20180509065613.14762-1-npiggin@gmail.com>
+Mime-Version: 1.0
+Message-Id: <0c3d18301bc3eb86da197ecefb22aec5c6f70a57.camel@au1.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,54 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 9, 2018 at 5:43 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> On Wed, 9 May 2018 17:07:47 +1000
-> Balbir Singh <bsingharora@gmail.com> wrote:
->
->> On Wed, May 9, 2018 at 4:51 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
->> > Radix flushes the TLB when updating ptes to increase permissiveness
->> > of protection (increase access authority). Book3S does not require
->> > TLB flushing in this case, and it is not done on hash. This patch
->> > avoids the flush for radix.
->> >
->> > From Power ISA v3.0B, p.1090:
->> >
->> >     Setting a Reference or Change Bit or Upgrading Access Authority
->> >     (PTE Subject to Atomic Hardware Updates)
->> >
->> >     If the only change being made to a valid PTE that is subject to
->> >     atomic hardware updates is to set the Reference or Change bit to 1
->> >     or to add access authorities, a simpler sequence suffices because
->> >     the translation hardware will refetch the PTE if an access is
->> >     attempted for which the only problems were reference and/or change
->> >     bits needing to be set or insufficient access authority.
->> >
->> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> > ---
->> >  arch/powerpc/mm/pgtable-book3s64.c | 1 -
->> >  arch/powerpc/mm/pgtable.c          | 3 ++-
->> >  2 files changed, 2 insertions(+), 2 deletions(-)
->> >
->> > diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
->> > index 518518fb7c45..6e991eaccab4 100644
->> > --- a/arch/powerpc/mm/pgtable-book3s64.c
->> > +++ b/arch/powerpc/mm/pgtable-book3s64.c
->> > @@ -40,7 +40,6 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
->> >         if (changed) {
->> >                 __ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp),
->> >                                         pmd_pte(entry), address);
->> > -               flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
->>
->> The comment states that this can be used for missing execution
->> permissions as well. I am not convinced we can skip a flush in those
->> cases
->
-> Why not? Execute is part of the access authority. And they're already no
-> ops on hash. What am I missing?
+On Wed, 2018-05-09 at 16:56 +1000, Nicholas Piggin wrote:
+> When a single-threaded process has a non-local mm_cpumask and requires
+> a full PID tlbie invalidation, use that as an opportunity to reset the
+> cpumask back to the current CPU we're running on.
+> 
+> No other thread can concurrently switch to this mm, because it must
+> have had a reference on mm_users before it could use_mm. mm_users can
+> be asynchronously incremented e.g., by mmget_not_zero, but those users
+> must not be doing use_mm.
 
-I have not reviewed the hash code, but if relaxing access means
-allowing the code to provide execute permission, won't this result in
-spurious faults? A simple test might be to run a JIT workload and see
-if the number of faults go up with and without the patch?
+What do you mean ? I don't fully understand how this isn't racy with
+another thread being created, switching to that mm, and then having its
+bit cleared by us ? Also why not use_mm ? what prevents it ?
 
-Balbir
+Cheers,
+Ben.
