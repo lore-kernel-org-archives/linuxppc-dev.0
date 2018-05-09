@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gxKj63l5zF2NP
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 23:00:25 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id j20so11288712pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 06:00:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gxKn3bQkzF2NP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 23:00:29 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id k11-v6so21535824pgo.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 06:00:29 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Masahiro Yamada <yamada.masahiro@socionext.com>
 Cc: Nicholas Piggin <npiggin@gmail.com>, linux-arch@vger.kernel.org,
  linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 3/4] kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
- selectable if enabled
-Date: Wed,  9 May 2018 23:00:00 +1000
-Message-Id: <20180509130001.24276-4-npiggin@gmail.com>
+Subject: [PATCH v2 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+Date: Wed,  9 May 2018 23:00:01 +1000
+Message-Id: <20180509130001.24276-5-npiggin@gmail.com>
 In-Reply-To: <20180509130001.24276-1-npiggin@gmail.com>
 References: <20180509130001.24276-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,79 +26,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Architectures that are capable can select
-HAVE_LD_DEAD_CODE_DATA_ELIMINATION to enable selection of that
-option (as an EXPERT kernel option).
+This requires further changes to linker script to KEEP some tables
+and wildcard compiler generated sections into the right place. This
+includes pp32 modifications from Christophe Leroy.
 
+When compiling powernv_defconfig with this option, the resulting
+kernel is almost 400kB smaller (and still boots):
+
+    text      data       bss        dec   filename
+11827621   4810490   1341080   17979191   vmlinux
+11752437   4598858   1338776   17690071   vmlinux.dcde
+
+Mathieu's numbers for custom Mac Mini G4 config has almost 200kB
+saving. It also had some increase in vmlinux size for as-yet
+unknown reasons.
+
+    text      data       bss        dec   filename
+ 7461457   2475122   1428064   11364643   vmlinux
+ 7386425   2364370   1425432   11176227   vmlinux.dcde
+
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> [8xx]
+Tested-by: Mathieu Malaterre <malat@debian.org> [32-bit powermac]
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/Kconfig | 15 ---------------
- init/Kconfig | 27 +++++++++++++++++++++++++++
- 2 files changed, 27 insertions(+), 15 deletions(-)
+ arch/powerpc/Kconfig              |  1 +
+ arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
+ 2 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 8e0d665c8d53..3234b73d4626 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -596,21 +596,6 @@ config CC_STACKPROTECTOR_AUTO
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c32a181a7cbb..ee6dbe2efc8b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -205,6 +205,7 @@ config PPC
+ 	select HAVE_KPROBES
+ 	select HAVE_KPROBES_ON_FTRACE
+ 	select HAVE_KRETPROBES
++	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
+ 	select HAVE_LIVEPATCH			if HAVE_DYNAMIC_FTRACE_WITH_REGS
+ 	select HAVE_MEMBLOCK
+ 	select HAVE_MEMBLOCK_NODE_MAP
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index c8af90ff49f0..52a93cdd04bc 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -89,7 +89,7 @@ SECTIONS
+ 	 */
+ 	.text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
+ #ifdef CONFIG_LD_HEAD_STUB_CATCH
+-		*(.linker_stub_catch);
++		KEEP(*(.linker_stub_catch));
+ 		. = . ;
+ #endif
  
- endchoice
+@@ -98,7 +98,7 @@ SECTIONS
+ 		ALIGN_FUNCTION();
+ #endif
+ 		/* careful! __ftr_alt_* sections need to be close to .text */
+-		*(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
++		*(.text.hot TEXT_MAIN .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
+ 		SCHED_TEXT
+ 		CPUIDLE_TEXT
+ 		LOCK_TEXT
+@@ -170,10 +170,10 @@ SECTIONS
+ 	.init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
+ 		INIT_DATA
+ 		__vtop_table_begin = .;
+-		*(.vtop_fixup);
++		KEEP(*(.vtop_fixup));
+ 		__vtop_table_end = .;
+ 		__ptov_table_begin = .;
+-		*(.ptov_fixup);
++		KEEP(*(.ptov_fixup));
+ 		__ptov_table_end = .;
+ 	}
  
--config LD_DEAD_CODE_DATA_ELIMINATION
--	bool
--	help
--	  Select this if the architecture wants to do dead code and
--	  data elimination with the linker by compiling with
--	  -ffunction-sections -fdata-sections and linking with
--	  --gc-sections.
--
--	  This requires that the arch annotates or otherwise protects
--	  its external entry points from being discarded. Linker scripts
--	  must also merge .text.*, .data.*, and .bss.* correctly into
--	  output sections. Care must be taken not to pull in unrelated
--	  sections (e.g., '.text.init'). Typically '.' in section names
--	  is used to distinguish them from label names / C identifiers.
--
- config HAVE_ARCH_WITHIN_STACK_FRAMES
- 	bool
- 	help
-diff --git a/init/Kconfig b/init/Kconfig
-index f013afc74b11..1706d963766b 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1038,6 +1038,33 @@ config CC_OPTIMIZE_FOR_SIZE
+@@ -194,26 +194,26 @@ SECTIONS
+ 	. = ALIGN(8);
+ 	__ftr_fixup : AT(ADDR(__ftr_fixup) - LOAD_OFFSET) {
+ 		__start___ftr_fixup = .;
+-		*(__ftr_fixup)
++		KEEP(*(__ftr_fixup))
+ 		__stop___ftr_fixup = .;
+ 	}
+ 	. = ALIGN(8);
+ 	__mmu_ftr_fixup : AT(ADDR(__mmu_ftr_fixup) - LOAD_OFFSET) {
+ 		__start___mmu_ftr_fixup = .;
+-		*(__mmu_ftr_fixup)
++		KEEP(*(__mmu_ftr_fixup))
+ 		__stop___mmu_ftr_fixup = .;
+ 	}
+ 	. = ALIGN(8);
+ 	__lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
+ 		__start___lwsync_fixup = .;
+-		*(__lwsync_fixup)
++		KEEP(*(__lwsync_fixup))
+ 		__stop___lwsync_fixup = .;
+ 	}
+ #ifdef CONFIG_PPC64
+ 	. = ALIGN(8);
+ 	__fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
+ 		__start___fw_ftr_fixup = .;
+-		*(__fw_ftr_fixup)
++		KEEP(*(__fw_ftr_fixup))
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+@@ -226,7 +226,7 @@ SECTIONS
+ 	. = ALIGN(8);
+ 	.machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
+ 		__machine_desc_start = . ;
+-		*(.machine.desc)
++		KEEP(*(.machine.desc))
+ 		__machine_desc_end = . ;
+ 	}
+ #ifdef CONFIG_RELOCATABLE
+@@ -274,7 +274,7 @@ SECTIONS
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+ 		DATA_DATA
+ 		*(.data.rel*)
+-		*(.sdata)
++		*(SDATA_MAIN)
+ 		*(.sdata2)
+ 		*(.got.plt) *(.got)
+ 		*(.plt)
+@@ -289,7 +289,7 @@ SECTIONS
  
- endchoice
- 
-+config HAVE_LD_DEAD_CODE_DATA_ELIMINATION
-+	bool
-+	help
-+	  This requires that the arch annotates or otherwise protects
-+	  its external entry points from being discarded. Linker scripts
-+	  must also merge .text.*, .data.*, and .bss.* correctly into
-+	  output sections. Care must be taken not to pull in unrelated
-+	  sections (e.g., '.text.init'). Typically '.' in section names
-+	  is used to distinguish them from label names / C identifiers.
-+
-+config LD_DEAD_CODE_DATA_ELIMINATION
-+	bool "Dead code and data elimination (EXPERIMENTAL)"
-+	depends on HAVE_LD_DEAD_CODE_DATA_ELIMINATION
-+	depends on EXPERT
-+	help
-+	  Select this if the architecture wants to do dead code and
-+	  data elimination with the linker by compiling with
-+	  -ffunction-sections -fdata-sections, and linking with
-+	  --gc-sections.
-+
-+	  This can reduce on disk and in-memory size of the kernel
-+	  code and static data, particularly for small configs and
-+	  on small systems. This has the possibility of introducing
-+	  silently broken kernel if the required annotations are not
-+	  present. This option is not well tested yet, so use at your
-+	  own risk.
-+
- config SYSCTL
- 	bool
+ 	.opd : AT(ADDR(.opd) - LOAD_OFFSET) {
+ 		__start_opd = .;
+-		*(.opd)
++		KEEP(*(.opd))
+ 		__end_opd = .;
+ 	}
  
 -- 
 2.17.0
