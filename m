@@ -1,22 +1,39 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gg7h0fgRzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 12:20:47 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id f189so24841204pfa.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2018 19:20:47 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 5/9] powerpc/mm/radix: implement LPID based TLB flushes to
- be used by KVM
-Date: Wed,  9 May 2018 12:20:18 +1000
-Message-Id: <20180509022022.21226-6-npiggin@gmail.com>
-In-Reply-To: <20180509022022.21226-1-npiggin@gmail.com>
-References: <20180509022022.21226-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40glSs2JVQzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 15:35:55 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w495YUpJ004461
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 May 2018 01:35:53 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hutnurp31-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 01:35:53 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Wed, 9 May 2018 06:35:50 +0100
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+Subject: [PATCH v4 0/7] ocxl: Implement Power9 as_notify/wait for OpenCAPI
+Date: Wed,  9 May 2018 15:34:59 +1000
+In-Reply-To: <20180509004212.4506-1-alastair@au1.ibm.com>
+References: <20180509004212.4506-1-alastair@au1.ibm.com>
+Message-Id: <20180509053506.9754-1-alastair@au1.ibm.com>
+Content-Type: text/plain
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,286 +43,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement a local TLB flush for invalidating an LPID with variants for
-process or partition scope. And a global TLB flush for invalidating
-a partition scoped page of an LPID.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-These will be used by KVM in subsequent patches.
+The Power 9 as_notify/wait feature provides a lower latency way to
+signal a thread that work is complete. This series enables the use of
+this feature from OpenCAPI adapters, as well as addressing a potential
+starvation issue when allocating thread IDs.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- .../include/asm/book3s/64/tlbflush-radix.h    |   7 +
- arch/powerpc/mm/tlb-radix.c                   | 207 ++++++++++++++++++
- 2 files changed, 214 insertions(+)
+Changelog:
+v4:
+  Remove the "unique" statement from the set_thread_tidr function and
+    move the text explaining why it is safe from the commit message
+    to the function description
+v3:
+  Fix references to POWER9
+  Remove stray whitespace edit from docs
+  Add more details to commit message for "use task_pid_nr()"
+  Retitle patch 6 to indicate OCXL rather than CPU features
+v2:
+  Rename get_platform IOCTL to get_features
+  Move stray edit from patch 1 to patch 3
 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-index 19b45ba6caf9..ef5c3f2994c9 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
-@@ -51,4 +51,11 @@ extern void radix__flush_tlb_all(void);
- extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
- 					unsigned long address);
- 
-+extern void radix__flush_tlb_lpid_page(unsigned int lpid,
-+					unsigned long addr,
-+					unsigned long page_size);
-+extern void radix__flush_pwc_lpid(unsigned int lpid);
-+extern void radix__local_flush_tlb_lpid(unsigned int lpid);
-+extern void radix__local_flush_tlb_lpid_guest(unsigned int lpid);
-+
- #endif
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index a5d7309c2d05..5ac3206c51cc 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -118,6 +118,53 @@ static inline void __tlbie_pid(unsigned long pid, unsigned long ric)
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
-+static inline void __tlbiel_lpid(unsigned long lpid, int set,
-+				unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rb |= set << PPC_BITLSHIFT(51);
-+	rs = 0;  /* LPID comes from LPIDR */
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);
-+}
-+
-+static inline void __tlbie_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rs = lpid;
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-+}
-+
-+static inline void __tlbiel_lpid_guest(unsigned long lpid, int set,
-+				unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = PPC_BIT(52); /* IS = 2 */
-+	rb |= set << PPC_BITLSHIFT(51);
-+	rs = 0;  /* LPID comes from LPIDR */
-+	prs = 1; /* process scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIEL(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 1, rb, rs, ric, prs, r);
-+}
-+
-+
- static inline void __tlbiel_va(unsigned long va, unsigned long pid,
- 			       unsigned long ap, unsigned long ric)
- {
-@@ -150,6 +197,22 @@ static inline void __tlbie_va(unsigned long va, unsigned long pid,
- 	trace_tlbie(0, 0, rb, rs, ric, prs, r);
- }
- 
-+static inline void __tlbie_lpid_va(unsigned long va, unsigned long lpid,
-+			      unsigned long ap, unsigned long ric)
-+{
-+	unsigned long rb,rs,prs,r;
-+
-+	rb = va & ~(PPC_BITMASK(52, 63));
-+	rb |= ap << PPC_BITLSHIFT(58);
-+	rs = lpid;
-+	prs = 0; /* partition scoped */
-+	r = 1;   /* radix format */
-+
-+	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
-+		     : : "r"(rb), "i"(r), "i"(prs), "i"(ric), "r"(rs) : "memory");
-+	trace_tlbie(lpid, 0, rb, rs, ric, prs, r);
-+}
-+
- static inline void fixup_tlbie(void)
- {
- 	unsigned long pid = 0;
-@@ -161,6 +224,16 @@ static inline void fixup_tlbie(void)
- 	}
- }
- 
-+static inline void fixup_tlbie_lpid(unsigned long lpid)
-+{
-+	unsigned long va = ((1UL << 52) - 1);
-+
-+	if (cpu_has_feature(CPU_FTR_P9_TLBIE_BUG)) {
-+		asm volatile("ptesync": : :"memory");
-+		__tlbie_lpid_va(va, lpid, mmu_get_ap(MMU_PAGE_64K), RIC_FLUSH_TLB);
-+	}
-+}
-+
- /*
-  * We use 128 set in radix mode and 256 set in hpt mode.
-  */
-@@ -214,6 +287,86 @@ static inline void _tlbie_pid(unsigned long pid, unsigned long ric)
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
- 
-+static inline void _tlbiel_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	int set;
-+
-+	VM_BUG_ON(mfspr(SPRN_LPID) != lpid);
-+
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Flush the first set of the TLB, and if we're doing a RIC_FLUSH_ALL,
-+	 * also flush the entire Page Walk Cache.
-+	 */
-+	__tlbiel_lpid(lpid, 0, ric);
-+
-+	/* For PWC, only one flush is needed */
-+	if (ric == RIC_FLUSH_PWC) {
-+		asm volatile("ptesync": : :"memory");
-+		return;
-+	}
-+
-+	/* For the remaining sets, just flush the TLB */
-+	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
-+		__tlbiel_lpid(lpid, set, RIC_FLUSH_TLB);
-+
-+	asm volatile("ptesync": : :"memory");
-+	asm volatile(PPC_INVALIDATE_ERAT "; isync" : : :"memory");
-+}
-+
-+static inline void _tlbie_lpid(unsigned long lpid, unsigned long ric)
-+{
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Workaround the fact that the "ric" argument to __tlbie_pid
-+	 * must be a compile-time contraint to match the "i" constraint
-+	 * in the asm statement.
-+	 */
-+	switch (ric) {
-+	case RIC_FLUSH_TLB:
-+		__tlbie_lpid(lpid, RIC_FLUSH_TLB);
-+		break;
-+	case RIC_FLUSH_PWC:
-+		__tlbie_lpid(lpid, RIC_FLUSH_PWC);
-+		break;
-+	case RIC_FLUSH_ALL:
-+	default:
-+		__tlbie_lpid(lpid, RIC_FLUSH_ALL);
-+	}
-+	fixup_tlbie_lpid(lpid);
-+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+}
-+
-+static inline void _tlbiel_lpid_guest(unsigned long lpid, unsigned long ric)
-+{
-+	int set;
-+
-+	VM_BUG_ON(mfspr(SPRN_LPID) != lpid);
-+
-+	asm volatile("ptesync": : :"memory");
-+
-+	/*
-+	 * Flush the first set of the TLB, and if we're doing a RIC_FLUSH_ALL,
-+	 * also flush the entire Page Walk Cache.
-+	 */
-+	__tlbiel_lpid_guest(lpid, 0, ric);
-+
-+	/* For PWC, only one flush is needed */
-+	if (ric == RIC_FLUSH_PWC) {
-+		asm volatile("ptesync": : :"memory");
-+		return;
-+	}
-+
-+	/* For the remaining sets, just flush the TLB */
-+	for (set = 1; set < POWER9_TLB_SETS_RADIX ; set++)
-+		__tlbiel_lpid_guest(lpid, set, RIC_FLUSH_TLB);
-+
-+	asm volatile("ptesync": : :"memory");
-+}
-+
-+
- static inline void __tlbiel_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
- 				    unsigned long psize)
-@@ -268,6 +421,17 @@ static inline void _tlbie_va(unsigned long va, unsigned long pid,
- 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
- }
- 
-+static inline void _tlbie_lpid_va(unsigned long va, unsigned long lpid,
-+			      unsigned long psize, unsigned long ric)
-+{
-+	unsigned long ap = mmu_get_ap(psize);
-+
-+	asm volatile("ptesync": : :"memory");
-+	__tlbie_lpid_va(va, lpid, ap, ric);
-+	fixup_tlbie_lpid(lpid);
-+	asm volatile("eieio; tlbsync; ptesync": : :"memory");
-+}
-+
- static inline void _tlbie_va_range(unsigned long start, unsigned long end,
- 				    unsigned long pid, unsigned long page_size,
- 				    unsigned long psize, bool also_pwc)
-@@ -534,6 +698,49 @@ static int radix_get_mmu_psize(int page_size)
- 	return psize;
- }
- 
-+/*
-+ * Flush partition scoped LPID address translation for all CPUs.
-+ */
-+void radix__flush_tlb_lpid_page(unsigned int lpid,
-+					unsigned long addr,
-+					unsigned long page_size)
-+{
-+	int psize = radix_get_mmu_psize(page_size);
-+
-+	_tlbie_lpid_va(addr, lpid, psize, RIC_FLUSH_TLB);
-+}
-+EXPORT_SYMBOL_GPL(radix__flush_tlb_lpid_page);
-+
-+/*
-+ * Flush partition scoped PWC from LPID for all CPUs.
-+ */
-+void radix__flush_pwc_lpid(unsigned int lpid)
-+{
-+	_tlbie_lpid(lpid, RIC_FLUSH_PWC);
-+}
-+EXPORT_SYMBOL_GPL(radix__flush_pwc_lpid);
-+
-+/*
-+ * Flush partition scoped translations from LPID (=LPIDR)
-+ */
-+void radix__local_flush_tlb_lpid(unsigned int lpid)
-+{
-+	_tlbiel_lpid(lpid, RIC_FLUSH_ALL);
-+}
-+EXPORT_SYMBOL_GPL(radix__local_flush_tlb_lpid);
-+
-+/*
-+ * Flush process scoped translations from LPID (=LPIDR).
-+ * Important difference, the guest normally manages its own translations,
-+ * but some cases e.g., vCPU CPU migration require KVM to flush.
-+ */
-+void radix__local_flush_tlb_lpid_guest(unsigned int lpid)
-+{
-+	_tlbiel_lpid_guest(lpid, RIC_FLUSH_ALL);
-+}
-+EXPORT_SYMBOL_GPL(radix__local_flush_tlb_lpid_guest);
-+
-+
- static void radix__flush_tlb_pwc_range_psize(struct mm_struct *mm, unsigned long start,
- 				  unsigned long end, int psize);
- 
+Alastair D'Silva (7):
+  powerpc: Add TIDR CPU feature for POWER9
+  powerpc: Use TIDR CPU feature to control TIDR allocation
+  powerpc: use task_pid_nr() for TID allocation
+  ocxl: Rename pnv_ocxl_spa_remove_pe to clarify it's action
+  ocxl: Expose the thread_id needed for wait on POWER9
+  ocxl: Add an IOCTL so userspace knows what OCXL features are available
+  ocxl: Document new OCXL IOCTLs
+
+ Documentation/accelerators/ocxl.rst   |  11 ++++
+ arch/powerpc/include/asm/cputable.h   |   3 +-
+ arch/powerpc/include/asm/pnv-ocxl.h   |   2 +-
+ arch/powerpc/include/asm/switch_to.h  |   1 -
+ arch/powerpc/kernel/dt_cpu_ftrs.c     |   1 +
+ arch/powerpc/kernel/process.c         | 101 +---------------------------------
+ arch/powerpc/platforms/powernv/ocxl.c |   4 +-
+ drivers/misc/ocxl/context.c           |   5 +-
+ drivers/misc/ocxl/file.c              |  78 ++++++++++++++++++++++++++
+ drivers/misc/ocxl/link.c              |  38 ++++++++++++-
+ drivers/misc/ocxl/ocxl_internal.h     |   1 +
+ include/misc/ocxl.h                   |   9 +++
+ include/uapi/misc/ocxl.h              |  14 +++++
+ 13 files changed, 163 insertions(+), 105 deletions(-)
+
 -- 
-2.17.0
+2.14.3
