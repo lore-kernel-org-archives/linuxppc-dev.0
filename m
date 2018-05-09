@@ -1,26 +1,35 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40h1DX74FszF2N1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 01:56:12 +1000 (AEST)
-Date: Wed, 9 May 2018 17:56:09 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Ram Pai <linuxram@us.ibm.com>, fweimer@redhat.com, msuchanek@suse.com,
- Thomas Gleixner <tglx@linutronix.de>, mhocko@kernel.org,
- Ulrich.Weigand@de.ibm.com, paulus@samba.org,
- aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com, Andrew Morton
- <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
- <mingo@kernel.org>
-Subject: Re: [PATCH v3] powerpc, pkey: make protection key 0 less special
-Message-ID: <20180509175609.0adb6e57@kitsune.suse.cz>
-In-Reply-To: <5e7ed7d9-3fbc-7d60-9c69-bdcef6025167@intel.com>
-References: <1525461778-26265-1-git-send-email-linuxram@us.ibm.com>
- <20180509174335.0faab9fc@kitsune.suse.cz>
- <5e7ed7d9-3fbc-7d60-9c69-bdcef6025167@intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40h1c36xrHzF2NR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 02:13:06 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w49G8vfK011356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 May 2018 12:13:01 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hv3ptj4ut-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 12:13:01 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 9 May 2018 12:13:00 -0400
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [RFC v3 0/3] powerpc/hotplug: Fix affinity assoc for LPAR migration
+Date: Wed, 9 May 2018 11:12:55 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Message-Id: <5763b190-6b8a-eccb-663a-7d35363c81c8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 May 2018 08:46:08 -0700
-Dave Hansen <dave.hansen@intel.com> wrote:
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks and CPUs.  The
+patches in this set execute when a system is coming up fresh upon a
+migration target.  They are intended to,
 
-> On 05/09/2018 08:43 AM, Michal Such=C3=A1nek wrote:
-> > It seems it is somehow assumed this is key 0 but I did not find it
-> > documented anywhere nor did I notice an interface for determining
-> > the default key. =20
->=20
-> Does the manpage not count as documentation?  :)
->=20
-> "pkey 0 is used as the default key"
->=20
-> https://manpages.debian.org/stretch/manpages/pkeys.7.en.html
+* Recognize changes to the associativity of memory and CPUs recorded
+  in internal data structures when compared to the latest copies in
+  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2,
+  cpus),
+* Recognize changes to the associativity mapping (e.g. ibm,
+  associativity-lookup-arrays), locate all assigned memory blocks
+  corresponding to each changed row, and readd all such blocks.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of the CPUs and memory.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of CPUs and memory blocks mostly entails acting as
+  if they have been newly hot-added into the target system.
 
-I happened to be reading Documentation/x86/protection-keys.txt which is
-much more terse. The man page is certainly clearer.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-Thanks
-
-Michal
+Michael Bringmann (3):
+  powerpc migration/drmem: Modify DRMEM code to export more features
+  powerpc migration/cpu: Associativity & cpu changes
+  powerpc migration/memory: Associativity & memory updates
+---
+Changes in RFC:
+  -- Restructure and rearrange content of patches to co-locate
+     similar or related modifications.
+  -- Rename pseries_update_drconf_cpu to pseries_update_cpu
+  -- Simplify code to update CPU nodes during mobility checks.
+     Remove functions to generate extra HP_ELOG messages in favor
+     of direct function calls to dlpar_cpu_readd_by_index, or
+     dlpar_memory_readd_by_index.
+  -- Revise code order in dlpar_cpu_readd_by_index() to present
+     more appropriate error codes from underlying layers of the
+     implementation.
+  -- Add hotplug device lock around all property updates
+  -- Schedule all CPU and memory changes due to device-tree updates /
+     LPAR mobility as workqueue operations
+  -- Export DRMEM accessor functions to parse 'ibm,dynamic-memory-v2'
+  -- Export DRMEM functions to provide user copies of LMB array
+  -- Compress code using DRMEM accessor functions.
+  -- Split topology timer crash fix into new patch.
+  -- Modify DRMEM code to replace usages of dt_root_addr_cells, and
+     dt_mem_next_cell, as these are only available at first boot.
+  -- Correct a bug in DRC index selection for queued operation.
