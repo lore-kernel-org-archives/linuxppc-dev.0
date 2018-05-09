@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gcz70XQYzF22m
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 10:43:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gcz73fcQzF22V
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 10:43:15 +1000 (AEST)
 Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w490dVAV031248
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 May 2018 20:43:12 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2huk3n1618-1
+ w490dUbB031127
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 May 2018 20:43:13 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2huk3n161d-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2018 20:43:12 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Wed, 9 May 2018 01:43:10 +0100
+ Wed, 9 May 2018 01:43:11 +0100
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
@@ -27,13 +27,11 @@ Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  gregkh@linuxfoundation.org, arnd@arndb.de,
  andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
  corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH v3 4/7] ocxl: Rename pnv_ocxl_spa_remove_pe to clarify it's
- action
-Date: Wed,  9 May 2018 10:42:09 +1000
-In-Reply-To: <20180509004212.4506-1-alastair@au1.ibm.com>
+Subject: [PATCH v3 0/7] ocxl: Implement Power9 as_notify/wait for OpenCAPI
+Date: Wed,  9 May 2018 10:42:05 +1000
+In-Reply-To: <20180417020950.21446-1-alastair@au1.ibm.com>
 References: <20180417020950.21446-1-alastair@au1.ibm.com>
- <20180509004212.4506-1-alastair@au1.ibm.com>
-Message-Id: <20180509004212.4506-5-alastair@au1.ibm.com>
+Message-Id: <20180509004212.4506-1-alastair@au1.ibm.com>
 Content-Type: text/plain
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,62 +45,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-The function removes the process element from NPU cache.
+The Power 9 as_notify/wait feature provides a lower latency way to
+signal a thread that work is complete. This series enables the use of
+this feature from OpenCAPI adapters, as well as addressing a potential
+starvation issue when allocating thread IDs.
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
----
- arch/powerpc/include/asm/pnv-ocxl.h   | 2 +-
- arch/powerpc/platforms/powernv/ocxl.c | 4 ++--
- drivers/misc/ocxl/link.c              | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+Changelog:
+v3:
+  Fix references to POWER9
+  Remove stray whitespace edit from docs
+  Add more details to commit message for "use task_pid_nr()"
+  Retitle patch 6 to indicate OCXL rather than CPU features
+v2:
+  Rename get_platform IOCTL to get_features
+  Move stray edit from patch 1 to patch 3
 
-diff --git a/arch/powerpc/include/asm/pnv-ocxl.h b/arch/powerpc/include/asm/pnv-ocxl.h
-index f6945d3bc971..208b5503f4ed 100644
---- a/arch/powerpc/include/asm/pnv-ocxl.h
-+++ b/arch/powerpc/include/asm/pnv-ocxl.h
-@@ -28,7 +28,7 @@ extern int pnv_ocxl_map_xsl_regs(struct pci_dev *dev, void __iomem **dsisr,
- extern int pnv_ocxl_spa_setup(struct pci_dev *dev, void *spa_mem, int PE_mask,
- 			void **platform_data);
- extern void pnv_ocxl_spa_release(void *platform_data);
--extern int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle);
-+extern int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle);
- 
- extern int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr);
- extern void pnv_ocxl_free_xive_irq(u32 irq);
-diff --git a/arch/powerpc/platforms/powernv/ocxl.c b/arch/powerpc/platforms/powernv/ocxl.c
-index fa9b53af3c7b..8c65aacda9c8 100644
---- a/arch/powerpc/platforms/powernv/ocxl.c
-+++ b/arch/powerpc/platforms/powernv/ocxl.c
-@@ -475,7 +475,7 @@ void pnv_ocxl_spa_release(void *platform_data)
- }
- EXPORT_SYMBOL_GPL(pnv_ocxl_spa_release);
- 
--int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
-+int pnv_ocxl_spa_remove_pe_from_cache(void *platform_data, int pe_handle)
- {
- 	struct spa_data *data = (struct spa_data *) platform_data;
- 	int rc;
-@@ -483,7 +483,7 @@ int pnv_ocxl_spa_remove_pe(void *platform_data, int pe_handle)
- 	rc = opal_npu_spa_clear_cache(data->phb_opal_id, data->bdfn, pe_handle);
- 	return rc;
- }
--EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe);
-+EXPORT_SYMBOL_GPL(pnv_ocxl_spa_remove_pe_from_cache);
- 
- int pnv_ocxl_alloc_xive_irq(u32 *irq, u64 *trigger_addr)
- {
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index f30790582dc0..656e8610eec2 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -599,7 +599,7 @@ int ocxl_link_remove_pe(void *link_handle, int pasid)
- 	 * On powerpc, the entry needs to be cleared from the context
- 	 * cache of the NPU.
- 	 */
--	rc = pnv_ocxl_spa_remove_pe(link->platform_data, pe_handle);
-+	rc = pnv_ocxl_spa_remove_pe_from_cache(link->platform_data, pe_handle);
- 	WARN_ON(rc);
- 
- 	pe_data = radix_tree_delete(&spa->pe_tree, pe_handle);
+Alastair D'Silva (7):
+  powerpc: Add TIDR CPU feature for POWER9
+  powerpc: Use TIDR CPU feature to control TIDR allocation
+  powerpc: use task_pid_nr() for TID allocation
+  ocxl: Rename pnv_ocxl_spa_remove_pe to clarify it's action
+  ocxl: Expose the thread_id needed for wait on POWER9
+  ocxl: Add an IOCTL so userspace knows what OCXL features are available
+  ocxl: Document new OCXL IOCTLs
+
+ Documentation/accelerators/ocxl.rst   |  11 ++++
+ arch/powerpc/include/asm/cputable.h   |   3 +-
+ arch/powerpc/include/asm/pnv-ocxl.h   |   2 +-
+ arch/powerpc/include/asm/switch_to.h  |   1 -
+ arch/powerpc/kernel/dt_cpu_ftrs.c     |   1 +
+ arch/powerpc/kernel/process.c         | 101 +---------------------------------
+ arch/powerpc/platforms/powernv/ocxl.c |   4 +-
+ drivers/misc/ocxl/context.c           |   5 +-
+ drivers/misc/ocxl/file.c              |  78 ++++++++++++++++++++++++++
+ drivers/misc/ocxl/link.c              |  38 ++++++++++++-
+ drivers/misc/ocxl/ocxl_internal.h     |   1 +
+ include/misc/ocxl.h                   |   9 +++
+ include/uapi/misc/ocxl.h              |  14 +++++
+ 13 files changed, 163 insertions(+), 105 deletions(-)
+
 -- 
 2.14.3
