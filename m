@@ -1,42 +1,29 @@
-Return-Path: <srs0=4elm=h4=linux.ibm.com=ravi.bangoria@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gs2X2J04zF2MG
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 19:47:00 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40gs2X1ck8z8svQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 19:47:00 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40gs2W40lDz9s3D
- for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2018 19:46:59 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w499kk5b111119
- for <linuxppc-dev@ozlabs.org>; Wed, 9 May 2018 05:46:57 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2huusc0g0p-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 09 May 2018 05:46:54 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
- Wed, 9 May 2018 10:46:12 +0100
-Subject: Re: [PATCH] powerpc/pseries: hcall_exit tracepoint retval should be
- signed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gt2C27vhzF276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 20:31:47 +1000 (AEST)
+Date: Wed, 9 May 2018 12:35:13 +0200
+From: Torsten Duwe <duwe@lst.de>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-References: <20180507130355.25115-1-mpe@ellerman.id.au>
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Date: Wed, 9 May 2018 15:16:09 +0530
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>, live-patching@vger.kernel.org
+Subject: Re: [PATCH v3] ppc64le livepatch: implement reliable stacktrace
+ for newer consistency models
+Message-ID: <20180509103513.GA24464@lst.de>
+References: <20180305164928.GA17953@lst.de>
+ <20180308162616.yhbymodggnfzpskx@treble>
+ <20180309174718.2700b29e@blackhole.lan>
+ <20180312153536.7avozx64ku4lvd3e@treble> <20180504123834.GA16581@lst.de>
+ <20180507154208.jo4s43olrf5a3hw4@treble>
+ <20180508103832.085378b9@blackhole.lan>
+ <20180509001432.5nd55ictwf5yi7sm@treble>
+ <87sh71zjuy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180507130355.25115-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <ae859b3b-6de9-dcc0-7976-deaec9f23bdd@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87sh71zjuy.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,24 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, May 09, 2018 at 11:41:09AM +1000, Michael Ellerman wrote:
+> Josh Poimboeuf <jpoimboe@redhat.com> writes:
+> 
+> > Generally we refer to it as "the consistency model".
+[...]
+> 
+> We use "powerpc" as the prefix.
+> 
+> So I've used:
+> 
+>   powerpc/livepatch: Implement reliable stack tracing for the consistency model
 
+Perfect. Thanks!
 
-On 05/07/2018 06:33 PM, Michael Ellerman wrote:
-> The hcall_exit() tracepoint has retval defined as unsigned long. That
-> leads to humours results like:
->
->   bash-3686  [009] d..2   854.134094: hcall_entry: opcode=24
->   bash-3686  [009] d..2   854.134095: hcall_exit: opcode=24 retval=18446744073709551609
->
-> It's normal for some hcalls to return negative values, displaying them
-> as unsigned isn't very helpful. So change it to signed.
->
->   bash-3711  [001] d..2   471.691008: hcall_entry: opcode=24
->   bash-3711  [001] d..2   471.691008: hcall_exit: opcode=24 retval=-7
->
-> Which can be more easily compared to H_NOT_FOUND in hvcall.h
-
-Tested-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-
-Thank,
-Ravi
+	Torsten
