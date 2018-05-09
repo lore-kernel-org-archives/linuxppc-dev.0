@@ -1,26 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pl0-x22c.google.com (mail-pl0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c01::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gvXj4RDLzF13h
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 21:39:49 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id w129so20074870pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 04:39:49 -0700 (PDT)
-Date: Wed, 9 May 2018 21:39:34 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gvrF5WzRzF2N5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 21:53:17 +1000 (AEST)
+Received: by mail-pl0-x22c.google.com with SMTP id c19-v6so1352210pls.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 04:53:17 -0700 (PDT)
+Date: Wed, 9 May 2018 21:53:03 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 1/2] powerpc/64s/radix: do not flush TLB when relaxing
- access
-Message-ID: <20180509213934.4957acb8@roar.ozlabs.ibm.com>
-In-Reply-To: <CAKTCnznPYt-8SdP81vnpev5c5Cu9a95RoSCP7WaF+LxnrZv2Ng@mail.gmail.com>
-References: <20180509065152.14213-1-npiggin@gmail.com>
- <20180509065152.14213-2-npiggin@gmail.com>
- <CAKTCnzmeTiSK8naAz32PAcCdq3Nu3tb02DY4Kn0V+pG593tgOg@mail.gmail.com>
- <20180509174356.361abdba@roar.ozlabs.ibm.com>
- <CAKTCnznPYt-8SdP81vnpev5c5Cu9a95RoSCP7WaF+LxnrZv2Ng@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/64s/radix: reset mm_cpumask for single thread
+ process when possible
+Message-ID: <20180509215303.53bda3ef@roar.ozlabs.ibm.com>
+In-Reply-To: <0c3d18301bc3eb86da197ecefb22aec5c6f70a57.camel@au1.ibm.com>
+References: <20180509065613.14762-1-npiggin@gmail.com>
+ <0c3d18301bc3eb86da197ecefb22aec5c6f70a57.camel@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,78 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 May 2018 18:27:07 +1000
-Balbir Singh <bsingharora@gmail.com> wrote:
+On Wed, 09 May 2018 18:31:55 +1000
+Benjamin Herrenschmidt <benh@au1.ibm.com> wrote:
 
-> On Wed, May 9, 2018 at 5:43 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> > On Wed, 9 May 2018 17:07:47 +1000
-> > Balbir Singh <bsingharora@gmail.com> wrote:
-> >  
-> >> On Wed, May 9, 2018 at 4:51 PM, Nicholas Piggin <npiggin@gmail.com> wrote:  
-> >> > Radix flushes the TLB when updating ptes to increase permissiveness
-> >> > of protection (increase access authority). Book3S does not require
-> >> > TLB flushing in this case, and it is not done on hash. This patch
-> >> > avoids the flush for radix.
-> >> >
-> >> > From Power ISA v3.0B, p.1090:
-> >> >
-> >> >     Setting a Reference or Change Bit or Upgrading Access Authority
-> >> >     (PTE Subject to Atomic Hardware Updates)
-> >> >
-> >> >     If the only change being made to a valid PTE that is subject to
-> >> >     atomic hardware updates is to set the Reference or Change bit to 1
-> >> >     or to add access authorities, a simpler sequence suffices because
-> >> >     the translation hardware will refetch the PTE if an access is
-> >> >     attempted for which the only problems were reference and/or change
-> >> >     bits needing to be set or insufficient access authority.
-> >> >
-> >> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >> > ---
-> >> >  arch/powerpc/mm/pgtable-book3s64.c | 1 -
-> >> >  arch/powerpc/mm/pgtable.c          | 3 ++-
-> >> >  2 files changed, 2 insertions(+), 2 deletions(-)
-> >> >
-> >> > diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-> >> > index 518518fb7c45..6e991eaccab4 100644
-> >> > --- a/arch/powerpc/mm/pgtable-book3s64.c
-> >> > +++ b/arch/powerpc/mm/pgtable-book3s64.c
-> >> > @@ -40,7 +40,6 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
-> >> >         if (changed) {
-> >> >                 __ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp),
-> >> >                                         pmd_pte(entry), address);
-> >> > -               flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);  
-> >>
-> >> The comment states that this can be used for missing execution
-> >> permissions as well. I am not convinced we can skip a flush in those
-> >> cases  
-> >
-> > Why not? Execute is part of the access authority. And they're already no
-> > ops on hash. What am I missing?  
+> On Wed, 2018-05-09 at 16:56 +1000, Nicholas Piggin wrote:
+> > When a single-threaded process has a non-local mm_cpumask and requires
+> > a full PID tlbie invalidation, use that as an opportunity to reset the
+> > cpumask back to the current CPU we're running on.
+> > 
+> > No other thread can concurrently switch to this mm, because it must
+> > have had a reference on mm_users before it could use_mm. mm_users can
+> > be asynchronously incremented e.g., by mmget_not_zero, but those users
+> > must not be doing use_mm.  
 > 
-> I have not reviewed the hash code, but if relaxing access means
-> allowing the code to provide execute permission,
+> What do you mean ? I don't fully understand how this isn't racy with
+> another thread being created, switching to that mm, and then having its
+> bit cleared by us ?
 
-Yes, adding RWX or RC bits would qualify at least.
+We are the single thread, so nothing else can call clone on our mm.
 
-> won't this result in
-> spurious faults?
+> Also why not use_mm ? what prevents it ?
 
-Well it gets called as part of page faults, which means the MMU will
-already reload the pte when the access is retried, as per the ISA.
+I'm not sure if it has an assertion (it probably should), but existing
+convention. Such things would be broken there are already other
+architectures doing similar things with TLB flushing for example, alpha,
+ia64, mips, sh... sparc does something very similar resetting its cpumask
+by the look.
 
-A few paths actually don't call it from page fault paths, but the
-cost of a superfluous fault occasionally versus always doing a tlbie
-makes this the wrong thing to do. x86 and hash are the same, they
-don't flush here. Hash mode should behave basically the same way in
-terms of what it stores in the TLB and whether it would take more
-faults. Radix is the newcomer so it should match hash without some
-reason not to.
-
-> A simple test might be to run a JIT workload and see
-> if the number of faults go up with and without the patch?
-
-What pattern of accesses are you worried about? Why is execute
-different from write, for example?
+I grepped mmget_not_zero callers too, couldn't see any obvious use_mm
+cases.
 
 Thanks,
 Nick
