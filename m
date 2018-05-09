@@ -3,17 +3,17 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gyfw6VPfzF2P3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 00:00:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gyg41CVFzF2PP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 00:00:32 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
 Cc: "Ed L. Cashin" <ed.cashin@acm.org>, Geoff Levand <geoff@infradead.org>,
  Maxim Levitsky <maximlevitsky@gmail.com>, linux-block@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH 4/7] mtd_blkdevs: handle highmem pages
-Date: Wed,  9 May 2018 15:59:45 +0200
-Message-Id: <20180509135948.20329-5-hch@lst.de>
+Subject: [PATCH 5/7] aoe: handle highmem pages
+Date: Wed,  9 May 2018 15:59:46 +0200
+Message-Id: <20180509135948.20329-6-hch@lst.de>
 In-Reply-To: <20180509135948.20329-1-hch@lst.de>
 References: <20180509135948.20329-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,66 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just kmap the single payload page before passing it on to the FTL.
+Use kmap_atomic when copying out of a bio_vec.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/mtd/mtd_blkdevs.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/block/aoe/aoeblk.c | 1 -
+ drivers/block/aoe/aoecmd.c | 3 ++-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
-index 16ae4ae8e8f9..29c0bfd74e8a 100644
---- a/drivers/mtd/mtd_blkdevs.c
-+++ b/drivers/mtd/mtd_blkdevs.c
-@@ -82,7 +82,6 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index 6797e6c23c8a..027b876370bc 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -388,7 +388,6 @@ aoeblk_gdalloc(void *vp)
+ 			d->aoemajor, d->aoeminor);
+ 		goto err_mempool;
+ 	}
+-	blk_queue_bounce_limit(q, BLK_BOUNCE_HIGH);
  
- 	block = blk_rq_pos(req) << 9 >> tr->blkshift;
- 	nsect = blk_rq_cur_bytes(req) >> tr->blkshift;
--	buf = bio_data(req->bio);
+ 	spin_lock_irqsave(&d->lock, flags);
+ 	WARN_ON(!(d->flags & DEVFL_GD_NOW));
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 540bb60cd071..096882e54095 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -1032,8 +1032,9 @@ bvcpy(struct sk_buff *skb, struct bio *bio, struct bvec_iter iter, long cnt)
+ 	iter.bi_size = cnt;
  
- 	if (req_op(req) == REQ_OP_FLUSH) {
- 		if (tr->flush(dev))
-@@ -100,9 +99,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
- 			return BLK_STS_IOERR;
- 		return BLK_STS_OK;
- 	case REQ_OP_READ:
--		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
--			if (tr->readsect(dev, block, buf))
-+		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
-+		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
-+			if (tr->readsect(dev, block, buf)) {
-+				kunmap(bio_page(req->bio));
- 				return BLK_STS_IOERR;
-+			}
-+		}
-+		kunmap(bio_page(req->bio));
- 		rq_flush_dcache_pages(req);
- 		return BLK_STS_OK;
- 	case REQ_OP_WRITE:
-@@ -110,9 +114,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
- 			return BLK_STS_IOERR;
- 
- 		rq_flush_dcache_pages(req);
--		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
--			if (tr->writesect(dev, block, buf))
-+		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
-+		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
-+			if (tr->writesect(dev, block, buf)) {
-+				kunmap(bio_page(req->bio));
- 				return BLK_STS_IOERR;
-+			}
-+		}
-+		kunmap(bio_page(req->bio));
- 		return BLK_STS_OK;
- 	default:
- 		return BLK_STS_IOERR;
-@@ -418,7 +427,6 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
- 	new->rq->queuedata = new;
- 	blk_queue_logical_block_size(new->rq, tr->blksize);
- 
--	blk_queue_bounce_limit(new->rq, BLK_BOUNCE_HIGH);
- 	blk_queue_flag_set(QUEUE_FLAG_NONROT, new->rq);
- 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, new->rq);
- 
+ 	__bio_for_each_segment(bv, bio, iter, iter) {
+-		char *p = page_address(bv.bv_page) + bv.bv_offset;
++		char *p = kmap_atomic(bv.bv_page) + bv.bv_offset;
+ 		skb_copy_bits(skb, soff, p, bv.bv_len);
++		kunmap_atomic(p);
+ 		soff += bv.bv_len;
+ 	}
+ }
 -- 
 2.17.0
