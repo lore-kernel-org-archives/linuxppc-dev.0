@@ -3,17 +3,17 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gyft1XJWzF2PN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 00:00:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gyfw6VPfzF2P3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 00:00:24 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: Jens Axboe <axboe@kernel.dk>
 Cc: "Ed L. Cashin" <ed.cashin@acm.org>, Geoff Levand <geoff@infradead.org>,
  Maxim Levitsky <maximlevitsky@gmail.com>, linux-block@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH 3/7] memstick: don't call blk_queue_bounce_limit
-Date: Wed,  9 May 2018 15:59:44 +0200
-Message-Id: <20180509135948.20329-4-hch@lst.de>
+Subject: [PATCH 4/7] mtd_blkdevs: handle highmem pages
+Date: Wed,  9 May 2018 15:59:45 +0200
+Message-Id: <20180509135948.20329-5-hch@lst.de>
 In-Reply-To: <20180509135948.20329-1-hch@lst.de>
 References: <20180509135948.20329-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,65 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All in-tree host drivers set up a proper dma mask and use the dma-mapping
-helpers.  This means they will be able to deal with any address that we
-are throwing at them.
+Just kmap the single payload page before passing it on to the FTL.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/memstick/core/ms_block.c    | 5 -----
- drivers/memstick/core/mspro_block.c | 5 -----
- 2 files changed, 10 deletions(-)
+ drivers/mtd/mtd_blkdevs.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/memstick/core/ms_block.c b/drivers/memstick/core/ms_block.c
-index 57b13dfbd21e..b2d025f42d14 100644
---- a/drivers/memstick/core/ms_block.c
-+++ b/drivers/memstick/core/ms_block.c
-@@ -2096,12 +2096,8 @@ static int msb_init_disk(struct memstick_dev *card)
- 	struct msb_data *msb = memstick_get_drvdata(card);
- 	struct memstick_host *host = card->host;
- 	int rc;
--	u64 limit = BLK_BOUNCE_HIGH;
- 	unsigned long capacity;
+diff --git a/drivers/mtd/mtd_blkdevs.c b/drivers/mtd/mtd_blkdevs.c
+index 16ae4ae8e8f9..29c0bfd74e8a 100644
+--- a/drivers/mtd/mtd_blkdevs.c
++++ b/drivers/mtd/mtd_blkdevs.c
+@@ -82,7 +82,6 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
  
--	if (host->dev.dma_mask && *(host->dev.dma_mask))
--		limit = *(host->dev.dma_mask);
--
- 	mutex_lock(&msb_disk_lock);
- 	msb->disk_id = idr_alloc(&msb_disk_idr, card, 0, 256, GFP_KERNEL);
- 	mutex_unlock(&msb_disk_lock);
-@@ -2123,7 +2119,6 @@ static int msb_init_disk(struct memstick_dev *card)
+ 	block = blk_rq_pos(req) << 9 >> tr->blkshift;
+ 	nsect = blk_rq_cur_bytes(req) >> tr->blkshift;
+-	buf = bio_data(req->bio);
  
- 	msb->queue->queuedata = card;
+ 	if (req_op(req) == REQ_OP_FLUSH) {
+ 		if (tr->flush(dev))
+@@ -100,9 +99,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 			return BLK_STS_IOERR;
+ 		return BLK_STS_OK;
+ 	case REQ_OP_READ:
+-		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+-			if (tr->readsect(dev, block, buf))
++		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
++		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
++			if (tr->readsect(dev, block, buf)) {
++				kunmap(bio_page(req->bio));
+ 				return BLK_STS_IOERR;
++			}
++		}
++		kunmap(bio_page(req->bio));
+ 		rq_flush_dcache_pages(req);
+ 		return BLK_STS_OK;
+ 	case REQ_OP_WRITE:
+@@ -110,9 +114,14 @@ static blk_status_t do_blktrans_request(struct mtd_blktrans_ops *tr,
+ 			return BLK_STS_IOERR;
  
--	blk_queue_bounce_limit(msb->queue, limit);
- 	blk_queue_max_hw_sectors(msb->queue, MS_BLOCK_MAX_PAGES);
- 	blk_queue_max_segments(msb->queue, MS_BLOCK_MAX_SEGS);
- 	blk_queue_max_segment_size(msb->queue,
-diff --git a/drivers/memstick/core/mspro_block.c b/drivers/memstick/core/mspro_block.c
-index 8897962781bb..a2fadc605750 100644
---- a/drivers/memstick/core/mspro_block.c
-+++ b/drivers/memstick/core/mspro_block.c
-@@ -1175,12 +1175,8 @@ static int mspro_block_init_disk(struct memstick_dev *card)
- 	struct mspro_sys_info *sys_info = NULL;
- 	struct mspro_sys_attr *s_attr = NULL;
- 	int rc, disk_id;
--	u64 limit = BLK_BOUNCE_HIGH;
- 	unsigned long capacity;
+ 		rq_flush_dcache_pages(req);
+-		for (; nsect > 0; nsect--, block++, buf += tr->blksize)
+-			if (tr->writesect(dev, block, buf))
++		buf = kmap(bio_page(req->bio)) + bio_offset(req->bio);
++		for (; nsect > 0; nsect--, block++, buf += tr->blksize) {
++			if (tr->writesect(dev, block, buf)) {
++				kunmap(bio_page(req->bio));
+ 				return BLK_STS_IOERR;
++			}
++		}
++		kunmap(bio_page(req->bio));
+ 		return BLK_STS_OK;
+ 	default:
+ 		return BLK_STS_IOERR;
+@@ -418,7 +427,6 @@ int add_mtd_blktrans_dev(struct mtd_blktrans_dev *new)
+ 	new->rq->queuedata = new;
+ 	blk_queue_logical_block_size(new->rq, tr->blksize);
  
--	if (host->dev.dma_mask && *(host->dev.dma_mask))
--		limit = *(host->dev.dma_mask);
--
- 	for (rc = 0; msb->attr_group.attrs[rc]; ++rc) {
- 		s_attr = mspro_from_sysfs_attr(msb->attr_group.attrs[rc]);
+-	blk_queue_bounce_limit(new->rq, BLK_BOUNCE_HIGH);
+ 	blk_queue_flag_set(QUEUE_FLAG_NONROT, new->rq);
+ 	blk_queue_flag_clear(QUEUE_FLAG_ADD_RANDOM, new->rq);
  
-@@ -1219,7 +1215,6 @@ static int mspro_block_init_disk(struct memstick_dev *card)
- 
- 	msb->queue->queuedata = card;
- 
--	blk_queue_bounce_limit(msb->queue, limit);
- 	blk_queue_max_hw_sectors(msb->queue, MSPRO_BLOCK_MAX_PAGES);
- 	blk_queue_max_segments(msb->queue, MSPRO_BLOCK_MAX_SEGS);
- 	blk_queue_max_segment_size(msb->queue,
 -- 
 2.17.0
