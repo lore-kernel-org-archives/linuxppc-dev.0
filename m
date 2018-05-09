@@ -1,19 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gn8l423QzF2D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 16:52:07 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id w129so19731120pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2018 23:52:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gn8p51k4zF2Mr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 16:52:10 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id m21-v6so22247112pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2018 23:52:10 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Alistair Popple <alistair@popple.id.au>
-Subject: [PATCH 1/2] powerpc/64s/radix: do not flush TLB when relaxing access
-Date: Wed,  9 May 2018 16:51:51 +1000
-Message-Id: <20180509065152.14213-2-npiggin@gmail.com>
+Subject: [PATCH 2/2] powerpc/64s/radix: do not flush TLB on spurious fault
+Date: Wed,  9 May 2018 16:51:52 +1000
+Message-Id: <20180509065152.14213-3-npiggin@gmail.com>
 In-Reply-To: <20180509065152.14213-1-npiggin@gmail.com>
 References: <20180509065152.14213-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,10 +25,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Radix flushes the TLB when updating ptes to increase permissiveness
-of protection (increase access authority). Book3S does not require
-TLB flushing in this case, and it is not done on hash. This patch
-avoids the flush for radix.
+In the case of a spurious fault (which can happen due to a race with
+another thread that changes the page table), the default Linux mm code
+calls flush_tlb_page for that address. This is not required because
+the pte will be re-fetched. Hash does not wire this up to a hardware
+TLB flush for this reason. This patch avoids the flush for radix.
 
 >From Power ISA v3.0B, p.1090:
 
@@ -36,43 +37,34 @@ avoids the flush for radix.
     (PTE Subject to Atomic Hardware Updates)
 
     If the only change being made to a valid PTE that is subject to
-    atomic hardware updates is to set the Reference or Change bit to 1
-    or to add access authorities, a simpler sequence suffices because
-    the translation hardware will refetch the PTE if an access is
-    attempted for which the only problems were reference and/or change
-    bits needing to be set or insufficient access authority.
+    atomic hardware updates is to set the Refer- ence or Change bit to
+    1 or to add access authorities, a simpler sequence suffices
+    because the translation hardware will refetch the PTE if an access
+    is attempted for which the only problems were reference and/or
+    change bits needing to be set or insufficient access authority.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/pgtable-book3s64.c | 1 -
- arch/powerpc/mm/pgtable.c          | 3 ++-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/tlbflush.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 518518fb7c45..6e991eaccab4 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -40,7 +40,6 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 	if (changed) {
- 		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp),
- 					pmd_pte(entry), address);
--		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
- 	}
- 	return changed;
- }
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index 9f361ae571e9..5b07a626df5b 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -224,7 +224,8 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 		if (!is_vm_hugetlb_page(vma))
- 			assert_pte_locked(vma->vm_mm, address);
- 		__ptep_set_access_flags(vma->vm_mm, ptep, entry, address);
--		flush_tlb_page(vma, address);
-+		if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64))
-+			flush_tlb_page(vma, address);
- 	}
- 	return changed;
- }
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index 0cac17253513..9c43431e01c5 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -137,6 +137,13 @@ static inline void flush_all_mm(struct mm_struct *mm)
+ #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
+ #define flush_all_mm(mm)		local_flush_all_mm(mm)
+ #endif /* CONFIG_SMP */
++
++#define flush_tlb_fix_spurious_fault flush_tlb_fix_spurious_fault
++static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
++						unsigned long address)
++{
++}
++
+ /*
+  * flush the page walk cache for the address
+  */
 -- 
 2.17.0
