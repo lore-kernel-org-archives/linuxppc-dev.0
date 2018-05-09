@@ -1,26 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40gfFz348kzDrDT
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 11:41:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40gfbs2H2PzF24d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2018 11:56:41 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Josh Poimboeuf <jpoimboe@redhat.com>, Torsten Duwe <duwe@lst.de>
-Cc: Jiri Kosina <jkosina@suse.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- live-patching@vger.kernel.org
-Subject: Re: [PATCH v3] ppc64le livepatch: implement reliable stacktrace for
- newer consistency models
-In-Reply-To: <20180509001432.5nd55ictwf5yi7sm@treble>
-References: <20180305164928.GA17953@lst.de>
- <20180308162616.yhbymodggnfzpskx@treble>
- <20180309174718.2700b29e@blackhole.lan>
- <20180312153536.7avozx64ku4lvd3e@treble> <20180504123834.GA16581@lst.de>
- <20180507154208.jo4s43olrf5a3hw4@treble>
- <20180508103832.085378b9@blackhole.lan>
- <20180509001432.5nd55ictwf5yi7sm@treble>
-Date: Wed, 09 May 2018 11:41:09 +1000
-Message-ID: <87sh71zjuy.fsf@concordia.ellerman.id.au>
+To: Dave Hansen <dave.hansen@intel.com>, linuxram@us.ibm.com
+Cc: mingo@redhat.com, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/8] x86/pkeys: Move vma_pkey() into asm/pkeys.h
+In-Reply-To: <f9240079-2ff2-9d3f-ba15-fefe65c67779@intel.com>
+References: <20180508145948.9492-1-mpe@ellerman.id.au>
+ <20180508145948.9492-6-mpe@ellerman.id.au>
+ <f9240079-2ff2-9d3f-ba15-fefe65c67779@intel.com>
+Date: Wed, 09 May 2018 11:56:39 +1000
+Message-ID: <87o9hpzj54.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,36 +26,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Josh Poimboeuf <jpoimboe@redhat.com> writes:
+Dave Hansen <dave.hansen@intel.com> writes:
 
-> On Tue, May 08, 2018 at 10:38:32AM +0200, Torsten Duwe wrote:
->> On Mon, 7 May 2018 10:42:08 -0500
->> Josh Poimboeuf <jpoimboe@redhat.com> wrote:
->> 
->> > The subject doesn't actively describe what the patch does, maybe
->> > change it to something like:
->> > 
->> >   powerpc: Add support for HAVE_RELIABLE_STACKTRACE
->> > 
->> > or maybe
->> > 
->> >   powerpc: Add support for livepatch consistency model
->> 
->> Maybe $SUBJECT? You're absolutely right, the old subject was just a
->> leftover of my original attempt to just set the flag, before Miroslav
->> corrected me. I just kept on copying it without a second thought. Thanks
->> for noting.
+> On 05/08/2018 07:59 AM, Michael Ellerman wrote:
+>> Move the last remaining pkey helper, vma_pkey() into asm/pkeys.h
 >
-> Generally we refer to it as "the consistency model".  So I would
-> propose a minor edit:
->
->   ppc64le/livepatch: Implement reliable stack tracing for the consistency model
+> Fine with me, as long as it compiles. :)
 
-We use "powerpc" as the prefix.
+Yeah fair point :)
 
-So I've used:
-
-  powerpc/livepatch: Implement reliable stack tracing for the consistency model
-
+It survived the kbuild robot, so fingers crossed. I'll let it sit in
+linux-next for a while too.
 
 cheers
+
+
+From: kbuild test robot <lkp@intel.com> (Today 04:11)
+Subject: [powerpc:topic/pkey] BUILD SUCCESS 1a03cd3b474084aaa967f646379495a14716632d
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 09 May 2018 02:11:24 +0800
+
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git  topic/pkey
+branch HEAD: 1a03cd3b474084aaa967f646379495a14716632d  mm/pkeys, x86, powerpc: Display pkey in smaps if arch supports pkeys
+
+elapsed time: 194m
+
+configs tested: 113
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+i386                               tinyconfig
+i386                   randconfig-x010-201818
+i386                   randconfig-x011-201818
+i386                   randconfig-x012-201818
+i386                   randconfig-x013-201818
+i386                   randconfig-x014-201818
+i386                   randconfig-x015-201818
+i386                   randconfig-x016-201818
+i386                   randconfig-x017-201818
+i386                   randconfig-x018-201818
+i386                   randconfig-x019-201818
+microblaze                      mmu_defconfig
+microblaze                    nommu_defconfig
+i386                     randconfig-i1-201818
+i386                     randconfig-i0-201818
+alpha                               defconfig
+parisc                            allnoconfig
+parisc                         b180_defconfig
+parisc                        c3000_defconfig
+parisc                              defconfig
+x86_64                 randconfig-x010-201818
+x86_64                 randconfig-x011-201818
+x86_64                 randconfig-x012-201818
+x86_64                 randconfig-x013-201818
+x86_64                 randconfig-x014-201818
+x86_64                 randconfig-x015-201818
+x86_64                 randconfig-x016-201818
+x86_64                 randconfig-x017-201818
+x86_64                 randconfig-x018-201818
+x86_64                 randconfig-x019-201818
+x86_64                                  kexec
+x86_64                              federa-25
+x86_64                                   rhel
+x86_64                               rhel-7.2
+i386                     randconfig-a0-201818
+i386                     randconfig-a1-201818
+x86_64                 randconfig-s0-05090041
+x86_64                 randconfig-s1-05090041
+x86_64                 randconfig-s2-05090041
+openrisc                    or1ksim_defconfig
+um                             i386_defconfig
+um                           x86_64_defconfig
+x86_64                             acpi-redef
+x86_64                           allyesdebian
+x86_64                                nfsroot
+m68k                           sun3_defconfig
+m68k                          multi_defconfig
+m68k                       m5475evb_defconfig
+i386                     randconfig-s1-201818
+i386                     randconfig-s0-201818
+x86_64                 randconfig-s3-05090001
+x86_64                 randconfig-s4-05090001
+x86_64                 randconfig-s5-05090001
+x86_64                   randconfig-i0-201818
+i386                   randconfig-b0-05090042
+x86_64                 randconfig-u0-05090045
+c6x                        evmc6678_defconfig
+h8300                    h8300h-sim_defconfig
+nios2                         10m50_defconfig
+xtensa                       common_defconfig
+xtensa                          iss_defconfig
+i386                             allmodconfig
+i386                   randconfig-x008-201818
+i386                   randconfig-x006-201818
+i386                   randconfig-x000-201818
+i386                   randconfig-x004-201818
+i386                   randconfig-x009-201818
+i386                   randconfig-x003-201818
+i386                   randconfig-x001-201818
+i386                   randconfig-x002-201818
+i386                   randconfig-x005-201818
+i386                   randconfig-x007-201818
+arm                         at91_dt_defconfig
+arm                               allnoconfig
+arm                           efm32_defconfig
+arm64                               defconfig
+arm                        multi_v5_defconfig
+arm                           sunxi_defconfig
+arm64                             allnoconfig
+arm                          exynos_defconfig
+arm                        shmobile_defconfig
+arm                        multi_v7_defconfig
+i386                   randconfig-x073-201818
+i386                   randconfig-x075-201818
+i386                   randconfig-x079-201818
+i386                   randconfig-x071-201818
+i386                   randconfig-x076-201818
+i386                   randconfig-x074-201818
+i386                   randconfig-x078-201818
+i386                   randconfig-x077-201818
+i386                   randconfig-x070-201818
+i386                   randconfig-x072-201818
+x86_64                 randconfig-x002-201818
+x86_64                 randconfig-x006-201818
+x86_64                 randconfig-x005-201818
+x86_64                 randconfig-x001-201818
+x86_64                 randconfig-x009-201818
+x86_64                 randconfig-x004-201818
+x86_64                 randconfig-x003-201818
+x86_64                 randconfig-x007-201818
+x86_64                 randconfig-x000-201818
+x86_64                 randconfig-x008-201818
+ia64                             alldefconfig
+ia64                              allnoconfig
+ia64                                defconfig
+i386                              allnoconfig
+i386                                defconfig
+i386                             alldefconfig
+mips                                   jz4740
+mips                      malta_kvm_defconfig
+mips                              allnoconfig
+mips                      fuloong2e_defconfig
+mips                                     txx9
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
