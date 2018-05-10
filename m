@@ -1,23 +1,26 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jrdr.linux@gmail.com>
+Received: from mail-lf0-x241.google.com (mail-lf0-x241.google.com
+ [IPv6:2a00:1450:4010:c07::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hbmp0JZpzF2C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:52:41 +1000 (AEST)
-Date: Thu, 10 May 2018 09:52:35 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kbuild@vger.kernel.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/5] powerpc/kbuild: set default generic machine type
- for 32-bit compile
-Message-ID: <20180510145235.GP17342@gate.crashing.org>
-References: <20180510051659.15356-1-npiggin@gmail.com>
- <20180510051659.15356-2-npiggin@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180510051659.15356-2-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hc3Z3MtGzF2DG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 01:05:30 +1000 (AEST)
+Received: by mail-lf0-x241.google.com with SMTP id r2-v6so3457007lff.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 08:05:29 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180420213435.GL10788@bombadil.infradead.org>
+References: <20180420173239.GA24560@jordon-HP-15-Notebook-PC>
+ <20180420213435.GL10788@bombadil.infradead.org>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Thu, 10 May 2018 20:35:25 +0530
+Message-ID: <CAFqt6zY_X9obyM-ebLCWh7dL0bTMfXLP2U9QnkszbeJ2UZt8ww@mail.gmail.com>
+Subject: Re: [PATCH v2] powerpc: platform: cell: spufs: Change return type to
+ vm_fault_t
+To: Matthew Wilcox <willy@infradead.org>
+Cc: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
+ benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2018 at 03:16:55PM +1000, Nicholas Piggin wrote:
-> The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
-> kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
-> powerpc machine type and scheduling model. 32-bit platforms and CPUs
-> can override this with -mcpu= options that come later on the command
-> line.
+On Sat, Apr 21, 2018 at 3:04 AM, Matthew Wilcox <willy@infradead.org> wrote:
+> On Fri, Apr 20, 2018 at 11:02:39PM +0530, Souptick Joarder wrote:
+>> Use new return type vm_fault_t for fault handler. For
+>> now, this is just documenting that the function returns
+>> a VM_FAULT value rather than an errno. Once all instances
+>> are converted, vm_fault_t will become a distinct type.
+>>
+>> Reference id -> 1c8f422059ae ("mm: change return type to
+>> vm_fault_t")
+>>
+>> We are fixing a minor bug, that the error from vm_insert_
+>> pfn() was being ignored and the effect of this is likely
+>> to be only felt in OOM situations.
+>>
+>> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+>
+> Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
 
-So it turns out your compiler was configured with --with-cpu=power8;
-it's not that GCC defaults are bad, but who built your compiler
-overrode the defaults.
-
-If the problem only happens in .S files, it might be better to put
-.machine directives in those.  But your patch should work too, yes.
-
-
-Segher
+Any further comment on this patch ?
