@@ -1,19 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hFPK43lZzF2RZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 11:04:36 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id p9-v6so190646pgc.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 18:04:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hFPM2XS6zF2RZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 11:04:39 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id z70-v6so196415pgz.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 18:04:39 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/pmu/fsl: fix is_nmi test for irq mask change
-Date: Thu, 10 May 2018 11:04:23 +1000
-Message-Id: <20180510010424.16854-1-npiggin@gmail.com>
+Subject: [PATCH 2/2] powerpc/64: change softe to irqmask in show_regs and xmon
+Date: Thu, 10 May 2018 11:04:24 +1000
+Message-Id: <20180510010424.16854-2-npiggin@gmail.com>
+In-Reply-To: <20180510010424.16854-1-npiggin@gmail.com>
+References: <20180510010424.16854-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When soft enabled was changed to irq disabled mask, this test missed
-being converted (although the equivalent book3s test was converted).
+When the soft enabled flag was changed to a soft disable mask, xmon
+and register dump code was not updated to reflect that, which is
+confusing ('SOFTE: 1' previously meant interrupts were soft enabled,
+currently it means the opposite, the general interrupt type has been
+disabled).
 
-The PMU drivers consider it an NMI when they take a PMI while general
-interrupts are disabled. This change restores that behaviour.
+Fix this by using the name irqmask, and printing it in hex.
 
-Fixes: 01417c6cc7 ("powerpc/64: Change soft_enabled from flag to bitmask")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/perf/core-fsl-emb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/process.c | 2 +-
+ arch/powerpc/xmon/xmon.c      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
-index 85f1d18e5fd3..ba485844d506 100644
---- a/arch/powerpc/perf/core-fsl-emb.c
-+++ b/arch/powerpc/perf/core-fsl-emb.c
-@@ -42,7 +42,7 @@ static DEFINE_MUTEX(pmc_reserve_mutex);
- static inline int perf_intr_is_nmi(struct pt_regs *regs)
- {
- #ifdef __powerpc64__
--	return !regs->softe;
-+	return (regs->softe & IRQS_DISABLED);
- #else
- 	return 0;
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1237f13fed51..52b1c379d618 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1437,7 +1437,7 @@ void show_regs(struct pt_regs * regs)
+ 		pr_cont("DAR: "REG" DSISR: %08lx ", regs->dar, regs->dsisr);
  #endif
+ #ifdef CONFIG_PPC64
+-	pr_cont("SOFTE: %ld ", regs->softe);
++	pr_cont("IRQMASK: %lx ", regs->softe);
+ #endif
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	if (MSR_TM_ACTIVE(regs->msr))
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index a0842f1ff72c..05f648a55fa3 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -1636,7 +1636,7 @@ static void excprint(struct pt_regs *fp)
+ 
+ 	printf("  current = 0x%lx\n", current);
+ #ifdef CONFIG_PPC64
+-	printf("  paca    = 0x%lx\t softe: %d\t irq_happened: 0x%02x\n",
++	printf("  paca    = 0x%lx\t irqmask: 0x%02x\t irq_happened: 0x%02x\n",
+ 	       local_paca, local_paca->irq_soft_mask, local_paca->irq_happened);
+ #endif
+ 	if (current) {
 -- 
 2.17.0
