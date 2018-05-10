@@ -1,24 +1,24 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hYXS0gKhzF2Cp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:11:51 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id u6-v6so1283432pls.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 06:11:51 -0700 (PDT)
-Date: Thu, 10 May 2018 23:11:37 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hYqZ577BzF15F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:24:57 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id l2-v6so971706pgc.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 06:24:57 -0700 (PDT)
+Date: Thu, 10 May 2018 23:24:40 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: linux-kbuild@vger.kernel.org, Masahiro Yamada
  <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 4/5] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-Message-ID: <20180510231137.2a042713@roar.ozlabs.ibm.com>
-In-Reply-To: <878t8rzmr7.fsf@concordia.ellerman.id.au>
+Subject: Re: [PATCH v2 1/5] powerpc/kbuild: set default generic machine type
+ for 32-bit compile
+Message-ID: <20180510232440.7374071f@roar.ozlabs.ibm.com>
+In-Reply-To: <20180510131002.GN17342@gate.crashing.org>
 References: <20180510051659.15356-1-npiggin@gmail.com>
- <20180510051659.15356-5-npiggin@gmail.com>
- <878t8rzmr7.fsf@concordia.ellerman.id.au>
+ <20180510051659.15356-2-npiggin@gmail.com>
+ <20180510131002.GN17342@gate.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,64 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2018 23:03:08 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Thu, 10 May 2018 08:10:03 -0500
+Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
+> On Thu, May 10, 2018 at 03:16:55PM +1000, Nicholas Piggin wrote:
+> > The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
+> > kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
+> > powerpc machine type and scheduling model. 32-bit platforms and CPUs
+> > can override this with -mcpu= options that come later on the command
+> > line.
+> > 
+> > This fixes a lot of build failures due to incompatible assembly when
+> > compiling 32-bit kernel with 64-bit toolchain.  
 > 
-> > The powerpc toolchain can compile combinations of 32/64 bit and
-> > big/little endian, so it's convenient to consider, e.g.,
-> >
-> >   `CC -m64 -mbig-endian`
-> >
-> > To be the C compiler for the purpose of invoking it to build target
-> > artifacts. So overriding the the CC variable to include thse flags
-> > works for this purpose.
-> >
-> > Unfortunately that is not compatible with the way the proposed new
-> > Kconfig macro language will work.
-> >
-> > After previous patches in this series, these flags can be carefully
-> > passed in using flags instead.
-> >
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arch/powerpc/Makefile   | 16 +++++++++-------
-> >  scripts/recordmcount.pl |  8 ++++++++  
-> 
-> We should probably at least Cc Rostedt on the recordmcount.pl change.
+> So what ISA is set for gas without this patch?  With what GCC version?
 
-Sure I'll send another iteration after some more time for reviews and
-cc him on it.
+I'm not sure, how do I find that out?
 
-> 
-> > diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> > index 191eb949d52c..919711dd9d6c 100755
-> > --- a/scripts/recordmcount.pl
-> > +++ b/scripts/recordmcount.pl
-> > @@ -274,6 +274,14 @@ if ($arch eq "x86_64") {  
-> 
-> Despite what the above says you're patching the powerpc entry AFAICS, so
-> I guess that's pretty harmless.
+> And, why is that wrong?
 
-Yeah I didn't think it was worth a separate patch.
+Some 32-bit platforms and CPU types do not provide -mcpu, so I assume
+for 32-bit toolchains that must result in the "powerpc" machine. With
+64-bit toolchains 
 
-> 
-> >      if ($bits == 64) {
-> >  	$type = ".quad";
-> >      }
-> > +    $ld .= " -EB ";
-> > +    if ($endian eq "big") {
-> > +	    $cc .= " -mbig-endian ";
-> > +	    $ld .= " -EB ";  
-> 
-> Don't we end up with two "-EB"s for the big endian case?
-> 
-> Or do I understand perl even less than I thought I did?
+arch/powerpc/mm/hash_low_32.S:353: Error: missing operand
 
-No I was testing things and that's leaked into the commit. Good eye. I
-think it worked for le because the next -EL will override the first -EB,
-but I'll take that out.
+Which is,
+
+        tlbie   r4
+
+Is that v2.06?
 
 Thanks,
 Nick
