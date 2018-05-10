@@ -1,22 +1,28 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hM142SRFzF2Sc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 15:17:27 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id c19-v6so603738pls.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 22:17:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hM325dbKzF2Sv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 15:19:10 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id bi12-v6so601533plb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 22:19:10 -0700 (PDT)
+Received: from roar.ozlabs.ibm.com (59-102-70-78.tpgi.com.au. [59.102.70.78])
+ by smtp.gmail.com with ESMTPSA id
+ t80-v6sm8221pfg.0.2018.05.09.22.19.06
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 09 May 2018 22:19:07 -0700 (PDT)
+Date: Thu, 10 May 2018 15:18:58 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 5/5] powerpc/kbuild: move -mprofile-kernel check to Kconfig
-Date: Thu, 10 May 2018 15:16:59 +1000
-Message-Id: <20180510051659.15356-6-npiggin@gmail.com>
-In-Reply-To: <20180510051659.15356-1-npiggin@gmail.com>
-References: <20180510051659.15356-1-npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/kbuild: set generic machine type for compile
+ with 64-bit toolchain
+Message-ID: <20180510151858.571d9f56@roar.ozlabs.ibm.com>
+In-Reply-To: <20180510002637.3069-1-npiggin@gmail.com>
+References: <20180510002637.3069-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,91 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This eliminates the workaround that requires disabling
--mprofile-kernel by default in Kconfig.
+On Thu, 10 May 2018 10:26:37 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-[ Note: this depends on https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git kconfig-shell-v3 ]
+> The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
+> kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
+> powerpc machine type and scheduling model. 32-bit platforms and CPUs
+> can override this with -mcpu= options that come later on the command
+> line.
+> 
+> This fixes a lot of build failures due to incompatible assembly when
+> compiling 32-bit kernel with 64-bit toolchain.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Kconfig                            | 16 +---------------
- arch/powerpc/Makefile                           | 14 ++------------
- arch/powerpc/tools/gcc-check-mprofile-kernel.sh |  4 ++--
- 3 files changed, 5 insertions(+), 29 deletions(-)
+Actually ignore this patch, it had a few other problems. I'll send a new
+version out.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 512fcc177c87..af527f894f9b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -460,23 +460,9 @@ config LD_HEAD_STUB_CATCH
- 
- 	  If unsure, say "N".
- 
--config DISABLE_MPROFILE_KERNEL
--	bool "Disable use of mprofile-kernel for kernel tracing"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
--	default y
--	help
--	  Selecting this options disables use of the mprofile-kernel ABI for
--	  kernel tracing. That will cause options such as live patching
--	  (CONFIG_LIVEPATCH) which depend on CONFIG_DYNAMIC_FTRACE_WITH_REGS to
--	  be disabled also.
--
--	  If you have a toolchain which supports mprofile-kernel, then you can
--	  disable this. Otherwise leave it enabled. If you're not sure, say
--	  "Y".
--
- config MPROFILE_KERNEL
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
--	def_bool !DISABLE_MPROFILE_KERNEL
-+	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
- 
- config IOMMU_HELPER
- 	def_bool PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 5f3ec8029e50..9f69b1599c61 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -156,18 +156,8 @@ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
- 
- ifdef CONFIG_MPROFILE_KERNEL
--    ifeq ($(shell $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
--        CC_FLAGS_FTRACE := -pg -mprofile-kernel
--        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
--    else
--        # If the user asked for mprofile-kernel but the toolchain doesn't
--        # support it, emit a warning and deliberately break the build later
--        # with mprofile-kernel-not-supported. We would prefer to make this an
--        # error right here, but then the user would never be able to run
--        # oldconfig to change their configuration.
--        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
--        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
--    endif
-+	CC_FLAGS_FTRACE := -pg -mprofile-kernel
-+	KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
- endif
- 
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
-diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-index 061f8035bdbe..ec4486a9c4a3 100755
---- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-+++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-@@ -10,13 +10,13 @@ set -o pipefail
- # Test whether the compile option -mprofile-kernel exists and generates
- # profiling code (ie. a call to _mcount()).
- echo "int func() { return 0; }" | \
--    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    $* -m64 -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-     grep -q "_mcount"
- 
- # Test whether the notrace attribute correctly suppresses calls to _mcount().
- 
- echo -e "#include <linux/compiler.h>\nnotrace int func() { return 0; }" | \
--    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-+    $* -m64 -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
-     grep -q "_mcount" && \
-     exit 1
- 
--- 
-2.17.0
+Thanks,
+Nick
