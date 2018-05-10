@@ -1,22 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hYLT4FtkzF2C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:03:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hYTb2f7mzF2Br
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:09:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>, linux-kbuild@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v2 4/5] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-In-Reply-To: <20180510051659.15356-5-npiggin@gmail.com>
-References: <20180510051659.15356-1-npiggin@gmail.com>
- <20180510051659.15356-5-npiggin@gmail.com>
-Date: Thu, 10 May 2018 23:03:08 +1000
-Message-ID: <878t8rzmr7.fsf@concordia.ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: rashmica.g@gmail.com,
+	anton@samba.org
+Subject: [PATCH] powerpc/powernv: Fix memtrace build when NUMA=n
+Date: Thu, 10 May 2018 23:09:13 +1000
+Message-Id: <20180510130913.23931-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Currently memtrace doesn't build if NUMA=n:
 
-> The powerpc toolchain can compile combinations of 32/64 bit and
-> big/little endian, so it's convenient to consider, e.g.,
->
->   `CC -m64 -mbig-endian`
->
-> To be the C compiler for the purpose of invoking it to build target
-> artifacts. So overriding the the CC variable to include thse flags
-> works for this purpose.
->
-> Unfortunately that is not compatible with the way the proposed new
-> Kconfig macro language will work.
->
-> After previous patches in this series, these flags can be carefully
-> passed in using flags instead.
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Makefile   | 16 +++++++++-------
->  scripts/recordmcount.pl |  8 ++++++++
+  In function ‘memtrace_alloc_node’:
+  arch/powerpc/platforms/powernv/memtrace.c:134:6:
+  error: the address of ‘contig_page_data’ will always evaluate as ‘true’
+    if (!NODE_DATA(nid) || !node_spanned_pages(nid))
+        ^
 
-We should probably at least Cc Rostedt on the recordmcount.pl change.
+This is because for NUMA=n NODE_DATA(nid) points to an always
+allocated structure, contig_page_data.
 
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 191eb949d52c..919711dd9d6c 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -274,6 +274,14 @@ if ($arch eq "x86_64") {
+But even in the NUMA=y case memtrace_alloc_node() is only called for
+online nodes, and we should always have a NODE_DATA() allocated for an
+online node. So remove the (hopefully) overly paranoid check, which
+also means we can build when NUMA=n.
 
-Despite what the above says you're patching the powerpc entry AFAICS, so
-I guess that's pretty harmless.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/memtrace.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->      if ($bits == 64) {
->  	$type = ".quad";
->      }
-> +    $ld .= " -EB ";
-> +    if ($endian eq "big") {
-> +	    $cc .= " -mbig-endian ";
-> +	    $ld .= " -EB ";
-
-Don't we end up with two "-EB"s for the big endian case?
-
-Or do I understand perl even less than I thought I did?
-
-> +    } else {
-> +	    $cc .= " -mlittle-endian ";
-> +	    $ld .= " -EL ";
-> +    }
->  
->  } elsif ($arch eq "arm") {
->      $alignment = 2;
-
-cheers
+diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
+index fc222a0c2ac4..b99283df8584 100644
+--- a/arch/powerpc/platforms/powernv/memtrace.c
++++ b/arch/powerpc/platforms/powernv/memtrace.c
+@@ -131,7 +131,7 @@ static u64 memtrace_alloc_node(u32 nid, u64 size)
+ 	u64 start_pfn, end_pfn, nr_pages;
+ 	u64 base_pfn;
+ 
+-	if (!NODE_DATA(nid) || !node_spanned_pages(nid))
++	if (!node_spanned_pages(nid))
+ 		return 0;
+ 
+ 	start_pfn = node_start_pfn(nid);
+-- 
+2.14.1
