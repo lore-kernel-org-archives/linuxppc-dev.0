@@ -1,44 +1,40 @@
-Return-Path: <srs0=xom8=h5=us.ibm.com=linuxram@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vinayakm.list@gmail.com>
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hl826dzdzF24d
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 06:24:50 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40hl825t5bz8t4k
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 06:24:50 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40hl821rTlz9s19
- for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2018 06:24:49 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4AKOCcO110833
- for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2018 16:24:47 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hvum6ur67-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2018 16:24:47 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 10 May 2018 21:24:45 +0100
-Date: Thu, 10 May 2018 13:24:36 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: mingo@redhat.com, linuxppc-dev@ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, dave.hansen@intel.com
-Subject: Re: [PATCH 9/8] powerpc/pkeys: Drop private VM_PKEY definitions
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180508145948.9492-9-mpe@ellerman.id.au>
- <20180510135422.6585-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hdc00QyKzF2Bv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:15:08 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id a8-v6so4756077wmg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 09:15:08 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180510135422.6585-1-mpe@ellerman.id.au>
-Message-Id: <20180510202435.GB6257@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1523975611-15978-7-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523975611-15978-7-git-send-email-ldufour@linux.vnet.ibm.com>
+From: vinayak menon <vinayakm.list@gmail.com>
+Date: Thu, 10 May 2018 21:45:05 +0530
+Message-ID: <CAOaiJ-n6P-hjBEkiR4+MyFYunocPgzAYkG1wALDcmi7ROe4-ag@mail.gmail.com>
+Subject: Re: [PATCH v10 06/25] mm: make pte_unmap_same compatible with SPF
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>, kirill@shutemov.name, ak@linux.intel.com,
+ dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ Vinayak Menon <vinmenon@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,57 +44,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Agree. Was going to send that the moment the other patches
-landed upstream. Glad I dont have to do it :-)
-
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
-
-
-
-On Thu, May 10, 2018 at 11:54:22PM +1000, Michael Ellerman wrote:
-> Now that we've updated the generic headers to support 5 PKEY bits for
-> powerpc we don't need our own #defines in arch code.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On Tue, Apr 17, 2018 at 8:03 PM, Laurent Dufour
+<ldufour@linux.vnet.ibm.com> wrote:
+> pte_unmap_same() is making the assumption that the page table are still
+> around because the mmap_sem is held.
+> This is no more the case when running a speculative page fault and
+> additional check must be made to ensure that the final page table are still
+> there.
+>
+> This is now done by calling pte_spinlock() to check for the VMA's
+> consistency while locking for the page tables.
+>
+> This is requiring passing a vm_fault structure to pte_unmap_same() which is
+> containing all the needed parameters.
+>
+> As pte_spinlock() may fail in the case of a speculative page fault, if the
+> VMA has been touched in our back, pte_unmap_same() should now return 3
+> cases :
+>         1. pte are the same (0)
+>         2. pte are different (VM_FAULT_PTNOTSAME)
+>         3. a VMA's changes has been detected (VM_FAULT_RETRY)
+>
+> The case 2 is handled by the introduction of a new VM_FAULT flag named
+> VM_FAULT_PTNOTSAME which is then trapped in cow_user_page().
+> If VM_FAULT_RETRY is returned, it is passed up to the callers to retry the
+> page fault while holding the mmap_sem.
+>
+> Acked-by: David Rientjes <rientjes@google.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/pkeys.h | 15 ---------------
->  1 file changed, 15 deletions(-)
-> 
-> One additional patch to finish cleaning things up.
-> 
-> I've added this to my branch.
-> 
-> cheers
-> 
-> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-> index 18ef59a9886d..5ba80cffb505 100644
-> --- a/arch/powerpc/include/asm/pkeys.h
-> +++ b/arch/powerpc/include/asm/pkeys.h
-> @@ -15,21 +15,6 @@ DECLARE_STATIC_KEY_TRUE(pkey_disabled);
->  extern int pkeys_total; /* total pkeys as per device tree */
->  extern u32 initial_allocation_mask; /* bits set for reserved keys */
-> 
-> -/*
-> - * Define these here temporarily so we're not dependent on patching linux/mm.h.
-> - * Once it's updated we can drop these.
-> - */
-> -#ifndef VM_PKEY_BIT0
-> -# define VM_PKEY_SHIFT	VM_HIGH_ARCH_BIT_0
-> -# define VM_PKEY_BIT0	VM_HIGH_ARCH_0
-> -# define VM_PKEY_BIT1	VM_HIGH_ARCH_1
-> -# define VM_PKEY_BIT2	VM_HIGH_ARCH_2
-> -# define VM_PKEY_BIT3	VM_HIGH_ARCH_3
-> -# define VM_PKEY_BIT4	VM_HIGH_ARCH_4
-> -#elif !defined(VM_PKEY_BIT4)
-> -# define VM_PKEY_BIT4	VM_HIGH_ARCH_4
-> -#endif
-> -
->  #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
->  			    VM_PKEY_BIT3 | VM_PKEY_BIT4)
-> 
-> -- 
-> 2.14.1
+>  include/linux/mm.h |  1 +
+>  mm/memory.c        | 39 ++++++++++++++++++++++++++++-----------
+>  2 files changed, 29 insertions(+), 11 deletions(-)
+>
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 4d1aff80669c..714da99d77a3 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1208,6 +1208,7 @@ static inline void clear_page_pfmemalloc(struct page *page)
+>  #define VM_FAULT_NEEDDSYNC  0x2000     /* ->fault did not modify page tables
+>                                          * and needs fsync() to complete (for
+>                                          * synchronous page faults in DAX) */
+> +#define VM_FAULT_PTNOTSAME 0x4000      /* Page table entries have changed */
 
--- 
-Ram Pai
+
+This has to be added to VM_FAULT_RESULT_TRACE ?
