@@ -1,19 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hDYl5ZNgzF2RP
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 10:26:51 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id g20-v6so165146pgv.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 17:26:51 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/kbuild: set generic machine type for compile with
- 64-bit toolchain
-Date: Thu, 10 May 2018 10:26:37 +1000
-Message-Id: <20180510002637.3069-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hDyl3NhjzF2RB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 10:45:03 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, "Linux Kernel
+ Mailing List" <linux-kernel@vger.kernel.org>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: linux-next: manual merge of the powerpc tree with the
+ powerpc-fixes tree
+In-Reply-To: <20180510101703.57ffb774@canb.auug.org.au>
+References: <20180510101703.57ffb774@canb.auug.org.au>
+Date: Thu, 10 May 2018 10:45:02 +1000
+Message-ID: <87d0y4z6cx.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
-kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
-powerpc machine type and scheduling model. 32-bit platforms and CPUs
-can override this with -mcpu= options that come later on the command
-line.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-This fixes a lot of build failures due to incompatible assembly when
-compiling 32-bit kernel with 64-bit toolchain.
+> Hi all,
+>
+> Today's linux-next merge of the powerpc tree got a conflict in:
+>
+>   arch/powerpc/include/asm/ftrace.h
+>
+> between commit:
+>
+>   edf6a2dfe388 ("powerpc/trace/syscalls: Update syscall name matching logic to account for ppc_ prefix")
+>
+> from the powerpc-fixes tree and commit:
+>
+>   c3e59d778403 ("powerpc64/ftrace: Rearrange #ifdef sections in ftrace.h")
+>
+> from the powerpc tree.
+>
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
+>
+> Michael, I think the version in your merge branch is not quite right ...
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/Makefile | 6 ++++++
- 1 file changed, 6 insertions(+)
+Yep.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 95813df90801..aa6464c81a9f 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -24,6 +24,12 @@ ifeq ($(HAS_BIARCH),y)
- ifeq ($(CROSS32_COMPILE),)
- CROSS32CC	:= $(CC) -m32
- KBUILD_ARFLAGS	+= --target=elf32-powerpc
-+
-+# These options will be overridden by any -mcpu option that comes
-+# later on the command line, but they are needed to set a sane
-+# 32-bit cpu target for the 64-bit cross compiler.
-+KBUILD_CFLAGS		+= -mcpu=powerpc
-+KBUILD_AFLAGS		+= -mcpu=powerpc
- endif
- endif
- 
--- 
-2.17.0
+Don't do merges after midnight kids.
+
+I've pushed a fixed version, which I think matches yours.
+
+I'll resolve it in my next when I merge my fixes & next later in the
+cycle.
+
+cheers
