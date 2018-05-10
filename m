@@ -1,19 +1,28 @@
-Return-Path: <colin.king@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112])
- by lists.ozlabs.org (Postfix) with ESMTP id 40hd8Q4FL0zDsQ6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 01:54:46 +1000 (AEST)
-From: Colin King <colin.king@canonical.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
-Cc: kernel-janitors@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] macintosh/windfarm: fix spelling mistake: "ttarged" ->
- "ttarget"
-Date: Thu, 10 May 2018 16:54:39 +0100
-Message-Id: <20180510155439.16582-1-colin.king@canonical.com>
+Return-Path: <pbonzini@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hfCX6rZTzF2Dv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:42:29 +1000 (AEST)
+Subject: Re: [PATCH] kvm: Change return type to vm_fault_t
+To: Souptick Joarder <jrdr.linux@gmail.com>, jhogan@kernel.org,
+ ralf@linux-mips.org, paulus@ozlabs.org, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, borntraeger@de.ibm.com, frankja@linux.vnet.ibm.com,
+ david@redhat.com, cohuck@redhat.com, schwidefsky@de.ibm.com,
+ tglx@linutronix.de, mingo@redhat.com, christoffer.dall@linaro.org,
+ marc.zyngier@arm.com
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ willy@infradead.org
+References: <20180418191958.GA25806@jordon-HP-15-Notebook-PC>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Message-ID: <4fb6e990-080b-0612-3fcd-f2082185f8ff@redhat.com>
+Date: Thu, 10 May 2018 18:42:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20180418191958.GA25806@jordon-HP-15-Notebook-PC>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +32,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Colin Ian King <colin.king@canonical.com>
+On 18/04/2018 21:19, Souptick Joarder wrote:
+> Use new return type vm_fault_t for fault handler. For
+> now, this is just documenting that the function returns
+> a VM_FAULT value rather than an errno. Once all instances
+> are converted, vm_fault_t will become a distinct type.
+> 
+> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
+> 
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> Reviewed-by: Matthew Wilcox <mawilcox@microsoft.com>
+> ---
+>  arch/mips/kvm/mips.c       | 2 +-
+>  arch/powerpc/kvm/powerpc.c | 2 +-
+>  arch/s390/kvm/kvm-s390.c   | 2 +-
+>  arch/x86/kvm/x86.c         | 2 +-
+>  include/linux/kvm_host.h   | 2 +-
+>  virt/kvm/arm/arm.c         | 2 +-
+>  virt/kvm/kvm_main.c        | 2 +-
+>  7 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+> index 2549fdd..03e0e0f 100644
+> --- a/arch/mips/kvm/mips.c
+> +++ b/arch/mips/kvm/mips.c
+> @@ -1076,7 +1076,7 @@ int kvm_arch_vcpu_ioctl_set_fpu(struct kvm_vcpu *vcpu, struct kvm_fpu *fpu)
+>  	return -ENOIOCTLCMD;
+>  }
+> 
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>  {
+>  	return VM_FAULT_SIGBUS;
+>  }
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 403e642..3099dee 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -1825,7 +1825,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+>  	return r;
+>  }
+> 
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>  {
+>  	return VM_FAULT_SIGBUS;
+>  }
+> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> index ba4c709..24af487 100644
+> --- a/arch/s390/kvm/kvm-s390.c
+> +++ b/arch/s390/kvm/kvm-s390.c
+> @@ -3941,7 +3941,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+>  	return r;
+>  }
+> 
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>  {
+>  #ifdef CONFIG_KVM_S390_UCONTROL
+>  	if ((vmf->pgoff == KVM_S390_SIE_PAGE_OFFSET)
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index c8a0b54..95d8102 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -3827,7 +3827,7 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+>  	return r;
+>  }
+> 
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>  {
+>  	return VM_FAULT_SIGBUS;
+>  }
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index ac0062b..8eeb062 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -736,7 +736,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
+>  			unsigned int ioctl, unsigned long arg);
+>  long kvm_arch_vcpu_ioctl(struct file *filp,
+>  			 unsigned int ioctl, unsigned long arg);
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf);
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf);
+> 
+>  int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext);
+> 
+> diff --git a/virt/kvm/arm/arm.c b/virt/kvm/arm/arm.c
+> index 86941f6..6c8cc31 100644
+> --- a/virt/kvm/arm/arm.c
+> +++ b/virt/kvm/arm/arm.c
+> @@ -163,7 +163,7 @@ int kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu)
+>  	return 0;
+>  }
+> 
+> -int kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+> +vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>  {
+>  	return VM_FAULT_SIGBUS;
+>  }
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 4501e65..45eb54b 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -2341,7 +2341,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
+>  }
+>  EXPORT_SYMBOL_GPL(kvm_vcpu_on_spin);
+> 
+> -static int kvm_vcpu_fault(struct vm_fault *vmf)
+> +static vm_fault_t kvm_vcpu_fault(struct vm_fault *vmf)
+>  {
+>  	struct kvm_vcpu *vcpu = vmf->vma->vm_file->private_data;
+>  	struct page *page;
+> --
+> 1.9.1
+> 
 
-Trivial fix to spelling mistake in debug messages of a structure
-field name
+Applied, thanks.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/macintosh/windfarm_pm121.c | 2 +-
- drivers/macintosh/windfarm_pm81.c  | 2 +-
- drivers/macintosh/windfarm_pm91.c  | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/macintosh/windfarm_pm121.c b/drivers/macintosh/windfarm_pm121.c
-index 4d72d8f58cb6..97634e030991 100644
---- a/drivers/macintosh/windfarm_pm121.c
-+++ b/drivers/macintosh/windfarm_pm121.c
-@@ -710,7 +710,7 @@ static void pm121_create_cpu_fans(void)
- 	wf_cpu_pid_init(&pm121_cpu_state->pid, &pid_param);
- 
- 	pr_debug("pm121: CPU Fan control initialized.\n");
--	pr_debug("       ttarged=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM,\n",
-+	pr_debug("       ttarget=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM,\n",
- 		 FIX32TOPRINT(pid_param.ttarget), FIX32TOPRINT(pid_param.tmax),
- 		 pid_param.min, pid_param.max);
- 
-diff --git a/drivers/macintosh/windfarm_pm81.c b/drivers/macintosh/windfarm_pm81.c
-index d9ea45581b9e..346c91744442 100644
---- a/drivers/macintosh/windfarm_pm81.c
-+++ b/drivers/macintosh/windfarm_pm81.c
-@@ -455,7 +455,7 @@ static void wf_smu_create_cpu_fans(void)
- 	wf_cpu_pid_init(&wf_smu_cpu_fans->pid, &pid_param);
- 
- 	DBG("wf: CPU Fan control initialized.\n");
--	DBG("    ttarged=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM\n",
-+	DBG("    ttarget=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM\n",
- 	    FIX32TOPRINT(pid_param.ttarget), FIX32TOPRINT(pid_param.tmax),
- 	    pid_param.min, pid_param.max);
- 
-diff --git a/drivers/macintosh/windfarm_pm91.c b/drivers/macintosh/windfarm_pm91.c
-index 7fd73dcb2b0a..a8a47c62a74b 100644
---- a/drivers/macintosh/windfarm_pm91.c
-+++ b/drivers/macintosh/windfarm_pm91.c
-@@ -200,7 +200,7 @@ static void wf_smu_create_cpu_fans(void)
- 	wf_cpu_pid_init(&wf_smu_cpu_fans->pid, &pid_param);
- 
- 	DBG("wf: CPU Fan control initialized.\n");
--	DBG("    ttarged=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM\n",
-+	DBG("    ttarget=%d.%03d, tmax=%d.%03d, min=%d RPM, max=%d RPM\n",
- 	    FIX32TOPRINT(pid_param.ttarget), FIX32TOPRINT(pid_param.tmax),
- 	    pid_param.min, pid_param.max);
- 
--- 
-2.17.0
+Paolo
