@@ -1,18 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hYTb2f7mzF2Br
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:09:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: rashmica.g@gmail.com,
-	anton@samba.org
-Subject: [PATCH] powerpc/powernv: Fix memtrace build when NUMA=n
-Date: Thu, 10 May 2018 23:09:13 +1000
-Message-Id: <20180510130913.23931-1-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hYVs0Xw8zF2C7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 23:10:25 +1000 (AEST)
+Date: Thu, 10 May 2018 08:10:03 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/5] powerpc/kbuild: set default generic machine type
+ for 32-bit compile
+Message-ID: <20180510131002.GN17342@gate.crashing.org>
+References: <20180510051659.15356-1-npiggin@gmail.com>
+ <20180510051659.15356-2-npiggin@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180510051659.15356-2-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently memtrace doesn't build if NUMA=n:
+On Thu, May 10, 2018 at 03:16:55PM +1000, Nicholas Piggin wrote:
+> The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
+> kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
+> powerpc machine type and scheduling model. 32-bit platforms and CPUs
+> can override this with -mcpu= options that come later on the command
+> line.
+> 
+> This fixes a lot of build failures due to incompatible assembly when
+> compiling 32-bit kernel with 64-bit toolchain.
 
-  In function ‘memtrace_alloc_node’:
-  arch/powerpc/platforms/powernv/memtrace.c:134:6:
-  error: the address of ‘contig_page_data’ will always evaluate as ‘true’
-    if (!NODE_DATA(nid) || !node_spanned_pages(nid))
-        ^
+So what ISA is set for gas without this patch?  With what GCC version?
+And, why is that wrong?
 
-This is because for NUMA=n NODE_DATA(nid) points to an always
-allocated structure, contig_page_data.
 
-But even in the NUMA=y case memtrace_alloc_node() is only called for
-online nodes, and we should always have a NODE_DATA() allocated for an
-online node. So remove the (hopefully) overly paranoid check, which
-also means we can build when NUMA=n.
+Segher
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/memtrace.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index fc222a0c2ac4..b99283df8584 100644
---- a/arch/powerpc/platforms/powernv/memtrace.c
-+++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -131,7 +131,7 @@ static u64 memtrace_alloc_node(u32 nid, u64 size)
- 	u64 start_pfn, end_pfn, nr_pages;
- 	u64 base_pfn;
- 
--	if (!NODE_DATA(nid) || !node_spanned_pages(nid))
-+	if (!node_spanned_pages(nid))
- 		return 0;
- 
- 	start_pfn = node_start_pfn(nid);
--- 
-2.14.1
+> +ifdef CONFIG_PPC32
+> +# These options will be overridden by any -mcpu option that comes
+> +# later on the command line, but they are needed to set a sane
+> +# 32-bit cpu target for the 64-bit cross compiler.
+> +KBUILD_CFLAGS		+= -mcpu=powerpc
+> +KBUILD_AFLAGS		+= -mcpu=powerpc
+> +endif
