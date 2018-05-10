@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hKR10RFzzF2RN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 14:06:21 +1000 (AEST)
-In-Reply-To: <20180509145818.17254-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mwb@linux.vnet.ibm.com
-Subject: Re: powerpc/pseries: Fix CONFIG_NUMA=n build
-Message-Id: <40hKR06KKqz9s4Z@ozlabs.org>
-Date: Thu, 10 May 2018 14:06:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hM0m6SFkzF2SQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 15:17:12 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id o76-v6so492393pfi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 22:17:12 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linux-kbuild@vger.kernel.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/5] kbuild and powerpc patches for new Kconfig language
+Date: Thu, 10 May 2018 15:16:54 +1000
+Message-Id: <20180510051659.15356-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,22 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-09 at 14:58:18 UTC, Michael Ellerman wrote:
-> The build is failing with CONFIG_NUMA=n and some compiler versions:
-> 
->   arch/powerpc/platforms/pseries/hotplug-cpu.o: In function `dlpar_online_cpu':
->   hotplug-cpu.c:(.text+0x12c): undefined reference to `timed_topology_update'
->   arch/powerpc/platforms/pseries/hotplug-cpu.o: In function `dlpar_cpu_remove':
->   hotplug-cpu.c:(.text+0x400): undefined reference to `timed_topology_update'
-> 
-> Fix it by moving the empty version of timed_topology_update() into the
-> existing #ifdef block, which has the right guard of SPLPAR && NUMA.
-> 
-> Fixes: cee5405da402 ("powerpc/hotplug: Improve responsiveness of hotplug change")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+I came back to these patches and I think I have solved the remaining
+problems -- it now builds with 64-bit big and little endian (using a
+le toolchain), and also 32-bit big using 64le toolchain. There might
+be some build failures still left, but it seems to be in much better
+shape now.
 
-Applied to powerpc fixes.
+Reviews would be welcome. I don't quite know how it should be merged,
+maybe via the kbuild tree after acks from powerpc maintainer. We can
+decide that after it gets more testing and review.
 
-https://git.kernel.org/powerpc/c/6c0a8f6b5a45ac892a763b6299bd3c
+Thanks,
+Nick
 
-cheers
+Nicholas Piggin (5):
+  powerpc/kbuild: set default generic machine type for 32-bit compile
+  powerpc/kbuild: remove CROSS32 defines from top level powerpc Makefile
+  kbuild: call cc-option with the current set of KBUILD_CFLAGS
+  powerpc/kbuild: Use flags variables rather than overriding LD/CC/AS
+  powerpc/kbuild: move -mprofile-kernel check to Kconfig
+
+ arch/powerpc/Kconfig                          | 16 +------
+ arch/powerpc/Makefile                         | 46 +++++++------------
+ arch/powerpc/boot/Makefile                    | 16 +++++--
+ arch/powerpc/kernel/vdso32/Makefile           | 15 ++++--
+ .../tools/gcc-check-mprofile-kernel.sh        |  4 +-
+ scripts/Kbuild.include                        |  8 ++--
+ scripts/recordmcount.pl                       |  8 ++++
+ 7 files changed, 54 insertions(+), 59 deletions(-)
+
+-- 
+2.17.0
