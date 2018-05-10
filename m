@@ -2,15 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlb0FWgzF2CH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:35 +1000 (AEST)
-In-Reply-To: <20180430103150.21757-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hZld1ccgzF2CH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:37 +1000 (AEST)
+In-Reply-To: <20180504123834.GA16581@lst.de>
+To: Torsten Duwe <duwe@lst.de>, Josh Poimboeuf <jpoimboe@redhat.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v3] powerpc/config: powernv_defconfig updates
-Message-Id: <40hZlZ2zhWz9s0W@ozlabs.org>
-Date: Fri, 11 May 2018 00:06:33 +1000 (AEST)
+Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v3] On ppc64le we HAVE_RELIABLE_STACKTRACE
+Message-Id: <40hZlc4mBGz9s1B@ozlabs.org>
+Date: Fri, 11 May 2018 00:06:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,46 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-04-30 at 10:31:50 UTC, Nicholas Piggin wrote:
-> For consideration:
+On Fri, 2018-05-04 at 12:38:34 UTC, Torsten Duwe wrote:
+> The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
 > 
-> * Add NVDIMM support - Enables greater testing, mambo device.
-> * Add IPv6 support built in + additional modules - Because it's 2018 maan.
-> * Add DEFERRED_STRUCT_PAGE_INIT - Let's see what breaks.
-> * Add PPC_MEMTRACE - Small powernv debugfs driver for getting hardware traces.
-> * Add MEMORY_FAILURE - Machine check exceptions can now drive memory failure.
-> * Turn on FANOTIFY - This is the current filesystem notification feature.
-> * Turn on SCOM_DEBUGFS - Handy for hardware/firmware debugging, security risk?
-> * Turn on async SCSI scanning - Let's see what breaks.
-> * Add MLX5 driver as a module - Popular demand.
-> * Add CRYPTO_CRCT10DIF_VPMSUM - POWER8 T10DIF acceleration.
+> [...] There are several rules that must be adhered to in order to ensure
+> reliable and consistent call chain backtracing:
 > 
-> * Make a bunch of USB hid drivers modules.
-> * Make SCSI SG, SR, and FC modules - FC is huge.
-> * Make video drivers except AST GPU modules - Also huge.
-> * Make PCI serial driver a module - Uncommon.
-> * Make more things modules, NFS FS, RAM disk, netconsole, MS-DOS fs.
+> * Before a function calls any other function, it shall establish its
+>   own stack frame, whose size shall be a multiple of 16 bytes.
 > 
-> * Get rid of /dev/port - Not used.
-> * Remove PPS and PTP subsystms - Unusual.
-> * Remove legacy BSD ttys - Long dead.
-> * Remove IDE - Deprecated and replaced with ATA.
-> * Remove WIRELESS - Until we get POWER9 laptops.
-> * Remove RAW - Long deprecated in favour of direct IO.
-> * Remove floppy, parport, and PS2 input devices - not supported.
-> * Remove virtio drivers, ballooning - We're host only.
-> * Remove PPP - Sorry Paulus.
+>  – In instances where a function’s prologue creates a stack frame, the
+>    back-chain word of the stack frame shall be updated atomically with
+>    the value of the stack pointer (r1) when a back chain is implemented.
+>    (This must be supported as default by all ELF V2 ABI-compliant
+>    environments.)
+> [...]
+>  – The function shall save the link register that contains its return
+>    address in the LR save doubleword of its caller’s stack frame before
+>    calling another function.
 > 
-> This results in a significantly smaller vmlinux:
+> To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
+> This patch may be unneccessarily limited to ppc64le, but OTOH the only
+> user of this flag so far is livepatching, which is only implemented on
+> PPCs with 64-LE, a.k.a. ELF ABI v2.
 > 
->     text      data       bss        dec   filename
-> 13143383   5277944   1317856   19739183   vanilla
-> 12263281   4852074   1341720   18457075   patched
+> Feel free to add other ppc variants, but so far only ppc64le got tested.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> This change also implements save_stack_trace_tsk_reliable() for ppc64le
+> that checks for the above conditions, where possible.
+> 
+> Signed-off-by: Torsten Duwe <duwe@suse.de>
+> Signed-off-by: Nicolai Stange <nstange@suse.de>
+> Acked-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9a018fb1e14704fef39db05730599f
+https://git.kernel.org/powerpc/c/df78d3f6148092d33a9a24c7a9cfac
 
 cheers
