@@ -2,15 +2,21 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlm17kCzF2CH
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlm17lDzF2Ch
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:44 +1000 (AEST)
-In-Reply-To: <20180507130355.25115-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <20180507142019.32669-2-j.neuschaefer@gmx.net>
+To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: anton@samba.org
-Subject: Re: powerpc/pseries: hcall_exit tracepoint retval should be signed
-Message-Id: <40hZlj2K0dz9s1b@ozlabs.org>
-Date: Fri, 11 May 2018 00:06:40 +1000 (AEST)
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Benjamin Gilbert <benjamin.gilbert@coreos.com>,
+ =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>
+Subject: Re: [v2,
+ 1/4] powerpc: wii_defconfig: Disable Ethernet driver support code
+Message-Id: <40hZll2TTNz9s1p@ozlabs.org>
+Date: Fri, 11 May 2018 00:06:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-05-07 at 13:03:55 UTC, Michael Ellerman wrote:
-> The hcall_exit() tracepoint has retval defined as unsigned long. That
-> leads to humours results like:
+On Mon, 2018-05-07 at 14:20:16 UTC, =?utf-8?q?Jonathan_Neusch=C3=A4fer?= wrote:
+> The Wii doesn't have built-in Ethernet and USB Ethernet adapters are in
+> a different menu. Disable CONFIG_ETHERNET to save some space in support
+> code for Ethernet drivers.
 > 
->   bash-3686  [009] d..2   854.134094: hcall_entry: opcode=24
->   bash-3686  [009] d..2   854.134095: hcall_exit: opcode=24 retval=18446744073709551609
+> Note that this patch doesn't disable any Ethernet drivers, because they
+> are not enabled by default.
 > 
-> It's normal for some hcalls to return negative values, displaying them
-> as unsigned isn't very helpful. So change it to signed.
-> 
->   bash-3711  [001] d..2   471.691008: hcall_entry: opcode=24
->   bash-3711  [001] d..2   471.691008: hcall_exit: opcode=24 retval=-7
-> 
-> Which can be more easily compared to H_NOT_FOUND in hvcall.h
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8f2133cc0e1f9718f3e2d39b7587f4
+https://git.kernel.org/powerpc/c/a84813f5bf2948c2a2947b0d684562
 
 cheers
