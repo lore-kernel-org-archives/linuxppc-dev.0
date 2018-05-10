@@ -1,22 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlm17lDzF2Ch
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:44 +1000 (AEST)
-In-Reply-To: <20180507142019.32669-2-j.neuschaefer@gmx.net>
-To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlw5f7TzF2Ch
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:52 +1000 (AEST)
+In-Reply-To: <20180508070517.947-2-clg@kaod.org>
+To: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>,
  linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Benjamin Gilbert <benjamin.gilbert@coreos.com>,
- =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- "Robin H. Johnson" <robbat2@gentoo.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>
+Cc: =?utf-8?q?C=C3=A9dric_Le_Goater?= <clg@kaod.org>
 Subject: Re: [v2,
- 1/4] powerpc: wii_defconfig: Disable Ethernet driver support code
-Message-Id: <40hZll2TTNz9s1p@ozlabs.org>
-Date: Fri, 11 May 2018 00:06:42 +1000 (AEST)
+ 1/4] powerpc/64/kexec: fix race in kexec when XIVE is shutdown
+Message-Id: <40hZlp6plSz9s1B@ozlabs.org>
+Date: Fri, 11 May 2018 00:06:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-05-07 at 14:20:16 UTC, =?utf-8?q?Jonathan_Neusch=C3=A4fer?= wrote:
-> The Wii doesn't have built-in Ethernet and USB Ethernet adapters are in
-> a different menu. Disable CONFIG_ETHERNET to save some space in support
-> code for Ethernet drivers.
+On Tue, 2018-05-08 at 07:05:14 UTC, =?utf-8?q?C=C3=A9dric_Le_Goater?= wrote:
+> The kexec_state KEXEC_STATE_IRQS_OFF barrier is reached by all
+> secondary CPUs before the kexec_cpu_down() operation is called on
+> secondaries. This can raise conflicts and provoque errors in the XIVE
+> hcalls when XIVE is shutdown with H_INT_RESET on the primary CPU.
 > 
-> Note that this patch doesn't disable any Ethernet drivers, because they
-> are not enabled by default.
+> To synchronize the kexec_cpu_down() operations and make sure the
+> secondaries have completed their task before the primary starts doing
+> the same, let's move the primary kexec_cpu_down() after the
+> KEXEC_STATE_REAL_MODE barrier.
 > 
-> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> This change of the ending sequence of kexec is mostly useful on the
+> pseries platform but it impacts also the powernv, ps3 and 85xx
+> platforms. powernv can be easily tested and fixed but some caution is
+> required for the other two.
+> 
+> Signed-off-by: Cédric Le Goater <clg@kaod.org>
 
 Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a84813f5bf2948c2a2947b0d684562
+https://git.kernel.org/powerpc/c/d2b04b0c78881ef1c051cc3a4a2c61
 
 cheers
