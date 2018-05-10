@@ -1,32 +1,25 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hb8Z4CJkzF2Mg
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:24:45 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4AENi2X048984
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 10:24:40 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hvmedh8yb-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 10:24:35 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 10 May 2018 15:24:22 +0100
-Subject: Re: [PATCH 1/2] powerpc/pmu/fsl: fix is_nmi test for irq mask change
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <20180510010424.16854-1-npiggin@gmail.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Thu, 10 May 2018 19:54:18 +0530
-MIME-Version: 1.0
-In-Reply-To: <20180510010424.16854-1-npiggin@gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <6bada32c-6b5e-1886-6353-9a554304381f@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hbGW1J28zF2Db
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:29:54 +1000 (AEST)
+Date: Thu, 10 May 2018 09:29:48 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 1/5] powerpc/kbuild: set default generic machine type
+ for 32-bit compile
+Message-ID: <20180510142947.GO17342@gate.crashing.org>
+References: <20180510051659.15356-1-npiggin@gmail.com>
+ <20180510051659.15356-2-npiggin@gmail.com>
+ <20180510131002.GN17342@gate.crashing.org>
+ <20180510232440.7374071f@roar.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180510232440.7374071f@roar.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, May 10, 2018 at 11:24:40PM +1000, Nicholas Piggin wrote:
+> On Thu, 10 May 2018 08:10:03 -0500
+> Segher Boessenkool <segher@kernel.crashing.org> wrote:
+> > On Thu, May 10, 2018 at 03:16:55PM +1000, Nicholas Piggin wrote:
+> > > The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
+> > > kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
+> > > powerpc machine type and scheduling model. 32-bit platforms and CPUs
+> > > can override this with -mcpu= options that come later on the command
+> > > line.
+> > > 
+> > > This fixes a lot of build failures due to incompatible assembly when
+> > > compiling 32-bit kernel with 64-bit toolchain.  
+> > 
+> > So what ISA is set for gas without this patch?  With what GCC version?
+> 
+> I'm not sure, how do I find that out?
+
+gcc --version
+gcc -v <rest of command>, look at the command line options passed to as
+make something.s, look at what .machine is set (if any).
 
 
-On Thursday 10 May 2018 06:34 AM, Nicholas Piggin wrote:
-> When soft enabled was changed to irq disabled mask, this test missed
-> being converted (although the equivalent book3s test was converted).
->
-> The PMU drivers consider it an NMI when they take a PMI while general
-> interrupts are disabled. This change restores that behaviour.
-Looks fine to me.
-Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> > And, why is that wrong?
+> 
+> Some 32-bit platforms and CPU types do not provide -mcpu, so I assume
+> for 32-bit toolchains that must result in the "powerpc" machine. With
 
-> Fixes: 01417c6cc7 ("powerpc/64: Change soft_enabled from flag to bitmask")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->   arch/powerpc/perf/core-fsl-emb.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
-> index 85f1d18e5fd3..ba485844d506 100644
-> --- a/arch/powerpc/perf/core-fsl-emb.c
-> +++ b/arch/powerpc/perf/core-fsl-emb.c
-> @@ -42,7 +42,7 @@ static DEFINE_MUTEX(pmc_reserve_mutex);
->   static inline int perf_intr_is_nmi(struct pt_regs *regs)
->   {
->   #ifdef __powerpc64__
-> -	return !regs->softe;
-> +	return (regs->softe & IRQS_DISABLED);
->   #else
->   	return 0;
->   #endif
+It results in whatever is the default for that toolchain.  Depends on
+many things.
+
+> 64-bit toolchains 
+> 
+> arch/powerpc/mm/hash_low_32.S:353: Error: missing operand
+> 
+> Which is,
+> 
+>         tlbie   r4
+> 
+> Is that v2.06?
+
+The original ISA did not have the L field, 2.xx does, for any xx even I think.
+
+
+Segher
