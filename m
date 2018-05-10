@@ -1,28 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
+ [210.131.2.90])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hM325dbKzF2Sv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 15:19:10 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id bi12-v6so601533plb.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 22:19:10 -0700 (PDT)
-Received: from roar.ozlabs.ibm.com (59-102-70-78.tpgi.com.au. [59.102.70.78])
- by smtp.gmail.com with ESMTPSA id
- t80-v6sm8221pfg.0.2018.05.09.22.19.06
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
- Wed, 09 May 2018 22:19:07 -0700 (PDT)
-Date: Thu, 10 May 2018 15:18:58 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/kbuild: set generic machine type for compile
- with 64-bit toolchain
-Message-ID: <20180510151858.571d9f56@roar.ozlabs.ibm.com>
-In-Reply-To: <20180510002637.3069-1-npiggin@gmail.com>
-References: <20180510002637.3069-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hMJf09fkzF2TT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 15:30:56 +1000 (AEST)
+Received: from mail-vk0-f49.google.com (mail-vk0-f49.google.com
+ [209.85.213.49]) (authenticated)
+ by conssluserg-05.nifty.com with ESMTP id w4A5UUIJ008644
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2018 14:30:30 +0900
+Received: by mail-vk0-f49.google.com with SMTP id i185-v6so506008vkg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2018 22:30:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180510051659.15356-4-npiggin@gmail.com>
+References: <20180510051659.15356-1-npiggin@gmail.com>
+ <20180510051659.15356-4-npiggin@gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Thu, 10 May 2018 14:29:49 +0900
+Message-ID: <CAK7LNATnJ_xi7nFLA5-MeP=86bK19Z9-L=muCW8LKoDYBpDHGA@mail.gmail.com>
+Subject: Re: [PATCH v2 3/5] kbuild: call cc-option with the current set of
+ KBUILD_CFLAGS
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +33,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 10 May 2018 10:26:37 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+2018-05-10 14:16 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> In some cases, the options that gcc will accept depend on options it
+> has already been given. For example -m32 / -m64 and -mbig-endian /
+> -mlittle-endian can have this affect.
 
-> The 64-bit toolchain uses the wrong ISA variant for compiling 32-bit
-> kernels, eve with -m32. Set -mcpu=powerpc which is the generic 32-bit
-> powerpc machine type and scheduling model. 32-bit platforms and CPUs
-> can override this with -mcpu= options that come later on the command
-> line.
-> 
-> This fixes a lot of build failures due to incompatible assembly when
-> compiling 32-bit kernel with 64-bit toolchain.
+Is cc-option not working for you?
 
-Actually ignore this patch, it had a few other problems. I'll send a new
-version out.
 
-Thanks,
-Nick
+> Passing in KBUILD_CFLAGS to cc-option allows an architecture to
+> set such basic machine types at the beginning, rather than override
+> CC itself.
+
+KBUILD_CFLAGS is passed to cc-option already
+because CC_OPTION_CFLAGS includes it:
+
+CC_OPTION_CFLAGS = $(filter-out $(GCC_PLUGINS_CFLAGS),$(KBUILD_CFLAGS))
+
+
+
+This patch drops KBUILD_CPPFLAGS,
+and adds KBUILD_CFLAGS twice, doesn't it?
+
+
+
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  scripts/Kbuild.include | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+> index 9f7eb10079cc..66869bb815d2 100644
+> --- a/scripts/Kbuild.include
+> +++ b/scripts/Kbuild.include
+> @@ -121,7 +121,7 @@ CC_OPTION_CFLAGS = $(filter-out $(GCC_PLUGINS_CFLAGS),$(KBUILD_CFLAGS))
+>  # Usage: cflags-y += $(call cc-option,-march=winchip-c6,-march=i586)
+>
+>  cc-option = $(call __cc-option, $(CC),\
+> -       $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS),$(1),$(2))
+> +       $(KBUILD_CFLAGS) $(CC_OPTION_CFLAGS),$(1),$(2))
+>
+>  # hostcc-option
+>  # Usage: cflags-y += $(call hostcc-option,-march=winchip-c6,-march=i586)
+> @@ -131,12 +131,12 @@ hostcc-option = $(call __cc-option, $(HOSTCC),\
+>  # cc-option-yn
+>  # Usage: flag := $(call cc-option-yn,-march=winchip-c6)
+>  cc-option-yn = $(call try-run,\
+> -       $(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) $(1) -c -x c /dev/null -o "$$TMP",y,n)
+> +       $(CC) -Werror $(KBUILD_CFLAGS) $(CC_OPTION_CFLAGS) $(1) -c -x c /dev/null -o "$$TMP",y,n)
+>
+>  # cc-disable-warning
+>  # Usage: cflags-y += $(call cc-disable-warning,unused-but-set-variable)
+>  cc-disable-warning = $(call try-run,\
+> -       $(CC) -Werror $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -W$(strip $(1)) -c -x c /dev/null -o "$$TMP",-Wno-$(strip $(1)))
+> +       $(CC) -Werror $(KBUILD_CFLAGS) $(CC_OPTION_CFLAGS) -W$(strip $(1)) -c -x c /dev/null -o "$$TMP",-Wno-$(strip $(1)))
+>
+>  # cc-name
+>  # Expands to either gcc or clang
+> @@ -160,7 +160,7 @@ cc-if-fullversion = $(shell [ $(cc-fullversion) $(1) $(2) ] && echo $(3) || echo
+>  # cc-ldoption
+>  # Usage: ldflags += $(call cc-ldoption, -Wl$(comma)--hash-style=both)
+>  cc-ldoption = $(call try-run,\
+> -       $(CC) $(1) $(KBUILD_CPPFLAGS) $(CC_OPTION_CFLAGS) -nostdlib -x c /dev/null -o "$$TMP",$(1),$(2))
+> +       $(CC) $(1) $(KBUILD_CFLAGS) $(CC_OPTION_CFLAGS) -nostdlib -x c /dev/null -o "$$TMP",$(1),$(2))
+>
+>  # ld-option
+>  # Usage: LDFLAGS += $(call ld-option, -X)
+> --
+> 2.17.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
