@@ -1,9 +1,9 @@
 Return-Path: <j.neuschaefer@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hnFh4myLzF29t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 07:59:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hnFx5TMRzF2B6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 08:00:05 +1000 (AEST)
 From: =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org,
@@ -13,9 +13,10 @@ Cc: linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Mathieu Malaterre <malat@debian.org>,
  =?UTF-8?q?Jonathan=20Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Subject: [PATCH 1/2] powerpc: flipper-pic: Don't match all IRQ domains
-Date: Thu, 10 May 2018 23:59:18 +0200
-Message-Id: <20180510215919.27808-2-j.neuschaefer@gmx.net>
+Subject: [PATCH 2/2] powerpc: hlwd-pic: Prevent interrupts from being handled
+ by Starlet
+Date: Thu, 10 May 2018 23:59:19 +0200
+Message-Id: <20180510215919.27808-3-j.neuschaefer@gmx.net>
 In-Reply-To: <20180510215919.27808-1-j.neuschaefer@gmx.net>
 References: <20180510215919.27808-1-j.neuschaefer@gmx.net>
 MIME-Version: 1.0
@@ -29,41 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On the Wii, there is a secondary IRQ controller (hlwd-pic), so
-flipper-pic's match operation should not be hardcoded to return 1.
-In fact, the default matching logic is sufficient, and we can completely
-omit flipper_pic_match.
+The interrupt controller inside the Wii's Hollywood chip is connected to
+two masters, the "Broadway" PowerPC and the "Starlet" ARM926, each with
+their own interrupt status and mask registers.
+
+When booting the Wii with mini[1], interrupts from the SD card
+controller (IRQ 7) are handled by the ARM, because mini provides SD
+access over IPC. Linux however can't currently use or disable this IPC
+service, so both sides try to handle IRQ 7 without coordination.
+
+Let's instead make sure that all interrupts that are unmasked on the PPC
+side are masked on the ARM side; this will also make sure that Linux can
+properly talk to the SD card controller (and potentially other devices).
+
+If access to a device through IPC is desired in the future, interrupts
+from that device should not be handled by Linux directly.
+
+[1]: https://github.com/lewurm/mini
 
 Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 ---
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Note: This shouldn't break Linux on the GameCube, but I've only tested
-on the Wii. Some confirmation that I didn't break interrupt handling on
-the GC would be nice. (If someone still runs mainline on the GC.)
----
- arch/powerpc/platforms/embedded6xx/flipper-pic.c | 8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-index 7206f3f573d4..db0be007fd06 100644
---- a/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-@@ -108,16 +108,8 @@ static int flipper_pic_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
+diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+index e3e3af73e9d8..8112b39879d6 100644
+--- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
++++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+@@ -35,6 +35,8 @@
+  */
+ #define HW_BROADWAY_ICR		0x00
+ #define HW_BROADWAY_IMR		0x04
++#define HW_STARLET_ICR		0x08
++#define HW_STARLET_IMR		0x0c
  
--static int flipper_pic_match(struct irq_domain *h, struct device_node *np,
--			     enum irq_domain_bus_token bus_token)
--{
--	return 1;
--}
--
--
- static const struct irq_domain_ops flipper_irq_domain_ops = {
- 	.map = flipper_pic_map,
--	.match = flipper_pic_match,
- };
  
  /*
+@@ -74,6 +76,9 @@ static void hlwd_pic_unmask(struct irq_data *d)
+ 	void __iomem *io_base = irq_data_get_irq_chip_data(d);
+ 
+ 	setbits32(io_base + HW_BROADWAY_IMR, 1 << irq);
++
++	/* Make sure the ARM (aka. Starlet) doesn't handle this interrupt. */
++	clrbits32(io_base + HW_STARLET_IMR, 1 << irq);
+ }
+ 
+ 
 -- 
 2.17.0
