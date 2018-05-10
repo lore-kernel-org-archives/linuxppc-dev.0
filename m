@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hZld1ccgzF2CH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:37 +1000 (AEST)
-In-Reply-To: <20180504123834.GA16581@lst.de>
-To: Torsten Duwe <duwe@lst.de>, Josh Poimboeuf <jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hZlg5xz0zF2CH
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 00:06:39 +1000 (AEST)
+In-Reply-To: <20180505072600.13270-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
- Jiri Kosina <jkosina@suse.cz>, live-patching@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v3] On ppc64le we HAVE_RELIABLE_STACKTRACE
-Message-Id: <40hZlc4mBGz9s1B@ozlabs.org>
-Date: Fri, 11 May 2018 00:06:36 +1000 (AEST)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v2,
+ 1/2] powerpc/watchdog: don't update the watchdog timestamp if a
+ lockup is detected
+Message-Id: <40hZlf3p8pz9s0W@ozlabs.org>
+Date: Fri, 11 May 2018 00:06:37 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-05-04 at 12:38:34 UTC, Torsten Duwe wrote:
-> The "Power Architecture 64-Bit ELF V2 ABI" says in section 2.3.2.3:
+On Sat, 2018-05-05 at 07:25:59 UTC, Nicholas Piggin wrote:
+> The watchdog heartbeat timestamp is updated when the local heartbeat
+> timer fires (or touch_nmi_watchdog() is called).
 > 
-> [...] There are several rules that must be adhered to in order to ensure
-> reliable and consistent call chain backtracing:
+> This is an interesting data point, so don't overwrite it when the
+> soft-NMI interrupt detects a hard lockup. That code came from a pre-
+> merge version to prevent hard lockup messages flood, but that's taken
+> care of with the stuck CPU logic now, so there is no reason to
+> update the heartbeat timestamp here.
 > 
-> * Before a function calls any other function, it shall establish its
->   own stack frame, whose size shall be a multiple of 16 bytes.
-> 
->  – In instances where a function’s prologue creates a stack frame, the
->    back-chain word of the stack frame shall be updated atomically with
->    the value of the stack pointer (r1) when a back chain is implemented.
->    (This must be supported as default by all ELF V2 ABI-compliant
->    environments.)
-> [...]
->  – The function shall save the link register that contains its return
->    address in the LR save doubleword of its caller’s stack frame before
->    calling another function.
-> 
-> To me this sounds like the equivalent of HAVE_RELIABLE_STACKTRACE.
-> This patch may be unneccessarily limited to ppc64le, but OTOH the only
-> user of this flag so far is livepatching, which is only implemented on
-> PPCs with 64-LE, a.k.a. ELF ABI v2.
-> 
-> Feel free to add other ppc variants, but so far only ppc64le got tested.
-> 
-> This change also implements save_stack_trace_tsk_reliable() for ppc64le
-> that checks for the above conditions, where possible.
-> 
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
-> Signed-off-by: Nicolai Stange <nstange@suse.de>
-> Acked-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/df78d3f6148092d33a9a24c7a9cfac
+https://git.kernel.org/powerpc/c/5a951c4e7e8df5d6df52bace1b4ff3
 
 cheers
