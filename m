@@ -1,40 +1,35 @@
 Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40j4Xx2d2dzF2H1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 19:29:05 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40j5n33ZCPzF2Dp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 20:24:38 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4B9Susb137417
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 05:29:02 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hw7bm38kj-1
+ w4BAO1VR041056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 06:24:36 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hw556tkmc-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 05:29:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 06:24:35 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Fri, 11 May 2018 10:29:00 +0100
-Subject: Re: [PATCH v5 7/7] ocxl: Document new OCXL IOCTLs
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de,
- andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-References: <20180511061303.10728-1-alastair@au1.ibm.com>
- <20180511061303.10728-8-alastair@au1.ibm.com>
+ Fri, 11 May 2018 11:24:33 +0100
+Subject: Re: [PATCH] misc: cxl: Change return type to vm_fault_t
+To: Souptick Joarder <jrdr.linux@gmail.com>, fbarrat@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ willy@infradead.org
+References: <20180417145354.GA31451@jordon-HP-15-Notebook-PC>
 From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Fri, 11 May 2018 11:28:52 +0200
+Date: Fri, 11 May 2018 12:24:29 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180511061303.10728-8-alastair@au1.ibm.com>
+In-Reply-To: <20180417145354.GA31451@jordon-HP-15-Notebook-PC>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <c8c4156f-88fb-b528-58e8-bf9ba991136a@linux.ibm.com>
+Message-Id: <efed6e3d-b40b-9a96-4e7a-f5409c03c54f@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,38 +41,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 11/05/2018 à 08:13, Alastair D'Silva a écrit :
-> From: Alastair D'Silva <alastair@d-silva.org>
+Le 17/04/2018 à 16:53, Souptick Joarder a écrit :
+> Use new return type vm_fault_t for fault handler. For
+> now, this is just documenting that the function returns
+> a VM_FAULT value rather than an errno. Once all instances
+> are converted, vm_fault_t will become a distinct type.
 > 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+> Reference id -> 1c8f422059ae ("mm: change return type to
+> vm_fault_t")
+> 
+> previously cxl_mmap_fault returns VM_FAULT_NOPAGE as
+> default value irrespective of vm_insert_pfn() return
+> value. This bug is fixed with new vmf_insert_pfn()
+> which will return VM_FAULT_ type based on err.
+> 
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
 > ---
+
+It looks ok, and it passed some basic testing.
 
 Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
 
+   Fred
 
->   Documentation/accelerators/ocxl.rst | 11 +++++++++++
->   1 file changed, 11 insertions(+)
+
+>   drivers/misc/cxl/context.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
 > 
-> diff --git a/Documentation/accelerators/ocxl.rst b/Documentation/accelerators/ocxl.rst
-> index ddcc58d01cfb..14cefc020e2d 100644
-> --- a/Documentation/accelerators/ocxl.rst
-> +++ b/Documentation/accelerators/ocxl.rst
-> @@ -157,6 +157,17 @@ OCXL_IOCTL_GET_METADATA:
->     Obtains configuration information from the card, such at the size of
->     MMIO areas, the AFU version, and the PASID for the current context.
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 7ff315a..c6ec872 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -128,11 +128,12 @@ void cxl_context_set_mapping(struct cxl_context *ctx,
+>   	mutex_unlock(&ctx->mapping_lock);
+>   }
 > 
-> +OCXL_IOCTL_ENABLE_P9_WAIT:
-> +
-> +  Allows the AFU to wake a userspace thread executing 'wait'. Returns
-> +  information to userspace to allow it to configure the AFU. Note that
-> +  this is only available on POWER9.
-> +
-> +OCXL_IOCTL_GET_FEATURES:
-> +
-> +  Reports on which CPU features that affect OpenCAPI are usable from
-> +  userspace.
-> +
+> -static int cxl_mmap_fault(struct vm_fault *vmf)
+> +static vm_fault_t cxl_mmap_fault(struct vm_fault *vmf)
+>   {
+>   	struct vm_area_struct *vma = vmf->vma;
+>   	struct cxl_context *ctx = vma->vm_file->private_data;
+>   	u64 area, offset;
+> +	vm_fault_t ret;
 > 
->   mmap
->   ----
+>   	offset = vmf->pgoff << PAGE_SHIFT;
+> 
+> @@ -169,11 +170,11 @@ static int cxl_mmap_fault(struct vm_fault *vmf)
+>   		return VM_FAULT_SIGBUS;
+>   	}
+> 
+> -	vm_insert_pfn(vma, vmf->address, (area + offset) >> PAGE_SHIFT);
+> +	ret = vmf_insert_pfn(vma, vmf->address, (area + offset) >> PAGE_SHIFT);
+> 
+>   	mutex_unlock(&ctx->status_mutex);
+> 
+> -	return VM_FAULT_NOPAGE;
+> +	return ret;
+>   }
+> 
+>   static const struct vm_operations_struct cxl_mmap_vmops = {
+> --
+> 1.9.1
 > 
