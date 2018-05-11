@@ -1,43 +1,39 @@
-Return-Path: <fbarrat@linux.ibm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40j6fN1KFvzF14t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 21:03:56 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40j6yM1fQWzF2Fm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 21:17:46 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4BAxPch111773
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 07:03:53 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hw70a7k5y-1
+ w4BBACDb070000
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 07:17:45 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hw7b3qabt-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 07:03:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 07:17:44 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Fri, 11 May 2018 12:03:49 +0100
-Subject: Re: [PATCH v5 5/7] ocxl: Expose the thread_id needed for wait on
- POWER9
-To: "Alastair D'Silva" <alastair@d-silva.org>,
- "'Alastair D'Silva'" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de,
- andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com, corbet@lwn.net
-References: <20180511061303.10728-1-alastair@au1.ibm.com>
- <20180511061303.10728-6-alastair@au1.ibm.com>
- <9656b063-eafd-a882-c678-a1c4d504cd54@linux.ibm.com>
- <02a401d3e90f$cdb0be90$69123bb0$@d-silva.org>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Fri, 11 May 2018 13:03:41 +0200
-MIME-Version: 1.0
-In-Reply-To: <02a401d3e90f$cdb0be90$69123bb0$@d-silva.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <dac86d19-d537-1b28-09ad-72c8b7c260a6@linux.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 11 May 2018 07:17:43 -0400
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc: Enable ASYM_SMT on interleaved big-core systems
+Date: Fri, 11 May 2018 16:47:24 +0530
+In-Reply-To: <1526037444-22876-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1526037444-22876-1-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1526037444-22876-3-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,297 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
+Each of the SMT4 cores forming a fused-core are more or less
+independent units. Thus when multiple tasks are scheduled to run on
+the fused core, we get the best performance when the tasks are spread
+across the pair of SMT4 cores.
 
-Le 11/05/2018 à 12:06, Alastair D'Silva a écrit :
-> 
->> -----Original Message-----
->> From: Frederic Barrat <fbarrat@linux.ibm.com>
->> Sent: Friday, 11 May 2018 7:25 PM
->> To: Alastair D'Silva <alastair@au1.ibm.com>; linuxppc-dev@lists.ozlabs.org
->> Cc: linux-kernel@vger.kernel.org; linux-doc@vger.kernel.org;
->> mikey@neuling.org; vaibhav@linux.vnet.ibm.com;
->> aneesh.kumar@linux.vnet.ibm.com; malat@debian.org;
->> felix@linux.vnet.ibm.com; pombredanne@nexb.com;
->> sukadev@linux.vnet.ibm.com; npiggin@gmail.com;
->> gregkh@linuxfoundation.org; arnd@arndb.de;
->> andrew.donnellan@au1.ibm.com; fbarrat@linux.vnet.ibm.com;
->> corbet@lwn.net; Alastair D'Silva <alastair@d-silva.org>
->> Subject: Re: [PATCH v5 5/7] ocxl: Expose the thread_id needed for wait on
->> POWER9
->>
->>
->>
->> Le 11/05/2018 à 08:13, Alastair D'Silva a écrit :
->>> From: Alastair D'Silva <alastair@d-silva.org>
->>>
->>> In order to successfully issue as_notify, an AFU needs to know the TID
->>> to notify, which in turn means that this information should be
->>> available in userspace so it can be communicated to the AFU.
->>>
->>> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
->>> ---
->>
->> Ok, so we keep the limitation of having only one thread per context able to
->> call 'wait', even though we don't have to worry about depleting the pool of
->> TIDs any more. I think that's acceptable, though we don't really have a reason
->> to justify it any more. Any reason you want to keep it that way?
->>
-> 
-> No strong reason, just trying to minimise the amount of changes. We can always expand the scope later, if we have a use-case for it.
+Since the threads in the pair of SMT4 cores of an interleaved big-core
+are numbered {0,2,4,6} and {1,3,5,7} respectively, enable ASYM_SMT on
+such interleaved big-cores that will bias the load-balancing of tasks
+on smaller numbered threads, which will automatically result in
+spreading the tasks uniformly across the associated pair of SMT4
+cores.
 
-ok. Agreed, it's not worth holding up this series, we can send a follow 
-up patch.
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/smp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-   Fred
-
-
->>     Fred
->>
->>
->>>    drivers/misc/ocxl/context.c       |  5 ++-
->>>    drivers/misc/ocxl/file.c          | 53 +++++++++++++++++++++++++++++++
->>>    drivers/misc/ocxl/link.c          | 36 +++++++++++++++++++++
->>>    drivers/misc/ocxl/ocxl_internal.h |  1 +
->>>    include/misc/ocxl.h               |  9 ++++++
->>>    include/uapi/misc/ocxl.h          |  8 +++++
->>>    6 files changed, 111 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
->>> index 909e8807824a..95f74623113e 100644
->>> --- a/drivers/misc/ocxl/context.c
->>> +++ b/drivers/misc/ocxl/context.c
->>> @@ -34,6 +34,8 @@ int ocxl_context_init(struct ocxl_context *ctx, struct
->> ocxl_afu *afu,
->>>    	mutex_init(&ctx->xsl_error_lock);
->>>    	mutex_init(&ctx->irq_lock);
->>>    	idr_init(&ctx->irq_idr);
->>> +	ctx->tidr = 0;
->>> +
->>>    	/*
->>>    	 * Keep a reference on the AFU to make sure it's valid for the
->>>    	 * duration of the life of the context @@ -65,6 +67,7 @@ int
->>> ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
->>>    {
->>>    	int rc;
->>>
->>> +	// Locks both status & tidr
->>>    	mutex_lock(&ctx->status_mutex);
->>>    	if (ctx->status != OPENED) {
->>>    		rc = -EIO;
->>> @@ -72,7 +75,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64
->> amr)
->>>    	}
->>>
->>>    	rc = ocxl_link_add_pe(ctx->afu->fn->link, ctx->pasid,
->>> -			current->mm->context.id, 0, amr, current->mm,
->>> +			current->mm->context.id, ctx->tidr, amr, current-
->>> mm,
->>>    			xsl_fault_error, ctx);
->>>    	if (rc)
->>>    		goto out;
->>> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c index
->>> 038509e5d031..eb409a469f21 100644
->>> --- a/drivers/misc/ocxl/file.c
->>> +++ b/drivers/misc/ocxl/file.c
->>> @@ -5,6 +5,8 @@
->>>    #include <linux/sched/signal.h>
->>>    #include <linux/uaccess.h>
->>>    #include <uapi/misc/ocxl.h>
->>> +#include <asm/reg.h>
->>> +#include <asm/switch_to.h>
->>>    #include "ocxl_internal.h"
->>>
->>>
->>> @@ -123,11 +125,55 @@ static long afu_ioctl_get_metadata(struct
->> ocxl_context *ctx,
->>>    	return 0;
->>>    }
->>>
->>> +#ifdef CONFIG_PPC64
->>> +static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
->>> +		struct ocxl_ioctl_p9_wait __user *uarg) {
->>> +	struct ocxl_ioctl_p9_wait arg;
->>> +
->>> +	memset(&arg, 0, sizeof(arg));
->>> +
->>> +	if (cpu_has_feature(CPU_FTR_P9_TIDR)) {
->>> +		enum ocxl_context_status status;
->>> +
->>> +		// Locks both status & tidr
->>> +		mutex_lock(&ctx->status_mutex);
->>> +		if (!ctx->tidr) {
->>> +			if (set_thread_tidr(current))
->>> +				return -ENOENT;
->>> +
->>> +			ctx->tidr = current->thread.tidr;
->>> +		}
->>> +
->>> +		status = ctx->status;
->>> +		mutex_unlock(&ctx->status_mutex);
->>> +
->>> +		if (status == ATTACHED) {
->>> +			int rc;
->>> +			struct link *link = ctx->afu->fn->link;
->>> +
->>> +			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
->>> +			if (rc)
->>> +				return rc;
->>> +		}
->>> +
->>> +		arg.thread_id = ctx->tidr;
->>> +	} else
->>> +		return -ENOENT;
->>> +
->>> +	if (copy_to_user(uarg, &arg, sizeof(arg)))
->>> +		return -EFAULT;
->>> +
->>> +	return 0;
->>> +}
->>> +#endif
->>> +
->>>    #define CMD_STR(x) (x == OCXL_IOCTL_ATTACH ? "ATTACH" :
->> 		\
->>>    			x == OCXL_IOCTL_IRQ_ALLOC ? "IRQ_ALLOC" :	\
->>>    			x == OCXL_IOCTL_IRQ_FREE ? "IRQ_FREE" :
->> 	\
->>>    			x == OCXL_IOCTL_IRQ_SET_FD ? "IRQ_SET_FD" :
->> 	\
->>>    			x == OCXL_IOCTL_GET_METADATA ?
->> "GET_METADATA" :	\
->>> +			x == OCXL_IOCTL_ENABLE_P9_WAIT ?
->> "ENABLE_P9_WAIT" :	\
->>>    			"UNKNOWN")
->>>
->>>    static long afu_ioctl(struct file *file, unsigned int cmd, @@ -186,6
->>> +232,13 @@ static long afu_ioctl(struct file *file, unsigned int cmd,
->>>    				(struct ocxl_ioctl_metadata __user *) args);
->>>    		break;
->>>
->>> +#ifdef CONFIG_PPC64
->>> +	case OCXL_IOCTL_ENABLE_P9_WAIT:
->>> +		rc = afu_ioctl_enable_p9_wait(ctx,
->>> +				(struct ocxl_ioctl_p9_wait __user *) args);
->>> +		break;
->>> +#endif
->>> +
->>>    	default:
->>>    		rc = -EINVAL;
->>>    	}
->>> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c index
->>> 656e8610eec2..88876ae8f330 100644
->>> --- a/drivers/misc/ocxl/link.c
->>> +++ b/drivers/misc/ocxl/link.c
->>> @@ -544,6 +544,42 @@ int ocxl_link_add_pe(void *link_handle, int pasid,
->> u32 pidr, u32 tidr,
->>>    }
->>>    EXPORT_SYMBOL_GPL(ocxl_link_add_pe);
->>>
->>> +int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid) {
->>> +	struct link *link = (struct link *) link_handle;
->>> +	struct spa *spa = link->spa;
->>> +	struct ocxl_process_element *pe;
->>> +	int pe_handle, rc;
->>> +
->>> +	if (pasid > SPA_PASID_MAX)
->>> +		return -EINVAL;
->>> +
->>> +	pe_handle = pasid & SPA_PE_MASK;
->>> +	pe = spa->spa_mem + pe_handle;
->>> +
->>> +	mutex_lock(&spa->spa_lock);
->>> +
->>> +	pe->tid = tid;
->>> +
->>> +	/*
->>> +	 * The barrier makes sure the PE is updated
->>> +	 * before we clear the NPU context cache below, so that the
->>> +	 * old PE cannot be reloaded erroneously.
->>> +	 */
->>> +	mb();
->>> +
->>> +	/*
->>> +	 * hook to platform code
->>> +	 * On powerpc, the entry needs to be cleared from the context
->>> +	 * cache of the NPU.
->>> +	 */
->>> +	rc = pnv_ocxl_spa_remove_pe_from_cache(link->platform_data,
->> pe_handle);
->>> +	WARN_ON(rc);
->>> +
->>> +	mutex_unlock(&spa->spa_lock);
->>> +	return rc;
->>> +}
->>> +
->>>    int ocxl_link_remove_pe(void *link_handle, int pasid)
->>>    {
->>>    	struct link *link = (struct link *) link_handle; diff --git
->>> a/drivers/misc/ocxl/ocxl_internal.h
->>> b/drivers/misc/ocxl/ocxl_internal.h
->>> index 5d421824afd9..a32f2151029f 100644
->>> --- a/drivers/misc/ocxl/ocxl_internal.h
->>> +++ b/drivers/misc/ocxl/ocxl_internal.h
->>> @@ -77,6 +77,7 @@ struct ocxl_context {
->>>    	struct ocxl_xsl_error xsl_error;
->>>    	struct mutex irq_lock;
->>>    	struct idr irq_idr;
->>> +	u16 tidr; // Thread ID used for P9 wait implementation
->>>    };
->>>
->>>    struct ocxl_process_element {
->>> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h index
->>> 51ccf76db293..9ff6ddc28e22 100644
->>> --- a/include/misc/ocxl.h
->>> +++ b/include/misc/ocxl.h
->>> @@ -188,6 +188,15 @@ extern int ocxl_link_add_pe(void *link_handle, int
->> pasid, u32 pidr, u32 tidr,
->>>    		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
->>>    		void *xsl_err_data);
->>>
->>> +/**
->>> + * Update values within a Process Element
->>> + *
->>> + * link_handle: the link handle associated with the process element
->>> + * pasid: the PASID for the AFU context
->>> + * tid: the new thread id for the process element  */ extern int
->>> +ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
->>> +
->>>    /*
->>>     * Remove a Process Element from the Shared Process Area for a link
->>>     */
->>> diff --git a/include/uapi/misc/ocxl.h b/include/uapi/misc/ocxl.h index
->>> 0af83d80fb3e..561e6f0dfcb7 100644
->>> --- a/include/uapi/misc/ocxl.h
->>> +++ b/include/uapi/misc/ocxl.h
->>> @@ -48,6 +48,13 @@ struct ocxl_ioctl_metadata {
->>>    	__u64 reserved[13]; // Total of 16*u64
->>>    };
->>>
->>> +struct ocxl_ioctl_p9_wait {
->>> +	__u16 thread_id; // The thread ID required to wake this thread
->>> +	__u16 reserved1;
->>> +	__u32 reserved2;
->>> +	__u64 reserved3[3];
->>> +};
->>> +
->>>    struct ocxl_ioctl_irq_fd {
->>>    	__u64 irq_offset;
->>>    	__s32 eventfd;
->>> @@ -62,5 +69,6 @@ struct ocxl_ioctl_irq_fd {
->>>    #define OCXL_IOCTL_IRQ_FREE	_IOW(OCXL_MAGIC, 0x12, __u64)
->>>    #define OCXL_IOCTL_IRQ_SET_FD	_IOW(OCXL_MAGIC, 0x13, struct
->> ocxl_ioctl_irq_fd)
->>>    #define OCXL_IOCTL_GET_METADATA _IOR(OCXL_MAGIC, 0x14, struct
->>> ocxl_ioctl_metadata)
->>> +#define OCXL_IOCTL_ENABLE_P9_WAIT	_IOR(OCXL_MAGIC, 0x15,
->> struct ocxl_ioctl_p9_wait)
->>>
->>>    #endif /* _UAPI_MISC_OCXL_H */
->>>
->>
->>
->> ---
->> This email has been checked for viruses by AVG.
->> http://www.avg.com
-> 
-> 
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 9ca7148..0153f01 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1082,7 +1082,7 @@ static int powerpc_smt_flags(void)
+ {
+ 	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+ 
+-	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
++	if (cpu_has_feature(CPU_FTR_ASYM_SMT) || has_interleaved_big_core) {
+ 		printk_once(KERN_INFO "Enabling Asymmetric SMT scheduling\n");
+ 		flags |= SD_ASYM_PACKING;
+ 	}
+-- 
+1.9.4
