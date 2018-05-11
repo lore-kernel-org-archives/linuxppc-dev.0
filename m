@@ -1,23 +1,23 @@
 Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40jKLC23SDzF2rb
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 05:05:39 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40jKLP5SWvzF2rn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 05:05:49 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4BIx3sB004408
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:05:36 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hwdjt8tqe-1
+ w4BIx10d031189
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:05:47 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hwfceuwk2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:05:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:05:46 -0400
 Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Fri, 11 May 2018 15:05:34 -0400
+ Fri, 11 May 2018 15:05:46 -0400
 From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
@@ -27,11 +27,11 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
  Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
  Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 3/7] cxlflash: Acquire semaphore before invoking ioctl services
-Date: Fri, 11 May 2018 14:05:22 -0500
+Subject: [PATCH 4/7] cxlflash: Use local mutex for AFU serialization
+Date: Fri, 11 May 2018 14:05:37 -0500
 In-Reply-To: <1526065440-38806-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 References: <1526065440-38806-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1526065522-38933-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+Message-Id: <1526065537-38969-1-git-send-email-ukrishn@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +41,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a superpipe process that makes use of virtual LUNs is terminated or
-killed abruptly, there is a possibility that the cxlflash driver could
-hang and deprive other operations on the adapter.
+From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
 
-The release fop registered to be invoked on a context close, detaches
-every LUN associated with the context. The underlying service to detach
-the LUN assumes it has been called with the read semaphore held, and
-releases the semaphore before any operation that could be time consuming.
+AFUs can only process a single AFU command at a time. This is enforced
+with a global mutex situated within the AFU send routine. As this mutex
+has a global scope, it has the potential to unnecessarily block commands
+destined for other AFUs.
 
-When invoked without holding the read semaphore, an opportunity is created
-for the semaphore's count to become negative when it is temporarily
-released during one of these potential lengthy operations. This negative
-count results in subsequent acquisition attempts taking forever, leading
-to the hang.
+Instead of using a global mutex, transition the mutex to be per-AFU. This
+will allow commands to only be blocked by siblings of the same AFU.
 
-To support the current design point of holding the semaphore on the
-ioctl() paths, the release fop should acquire it before invoking any
-ioctl services.
-
+Signed-off-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
 Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
 ---
- drivers/scsi/cxlflash/superpipe.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/scsi/cxlflash/common.h | 1 +
+ drivers/scsi/cxlflash/main.c   | 6 +++---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index 04a3bf9..5ba6e62 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -988,6 +988,10 @@ static int cxlflash_disk_detach(struct scsi_device *sdev,
-  * theoretically never occur), every call into this routine results
-  * in a complete freeing of a context.
-  *
-+ * Detaching the LUN is typically an ioctl() operation and the underlying
-+ * code assumes that ioctl_rwsem has been acquired as a reader. To support
-+ * that design point, the semaphore is acquired and released around detach.
-+ *
-  * Return: 0 on success
-  */
- static int cxlflash_cxl_release(struct inode *inode, struct file *file)
-@@ -1026,9 +1030,11 @@ static int cxlflash_cxl_release(struct inode *inode, struct file *file)
+diff --git a/drivers/scsi/cxlflash/common.h b/drivers/scsi/cxlflash/common.h
+index 3556b1d..dfcbecb 100644
+--- a/drivers/scsi/cxlflash/common.h
++++ b/drivers/scsi/cxlflash/common.h
+@@ -240,6 +240,7 @@ struct afu {
+ 	struct cxlflash_afu_map __iomem *afu_map;	/* entire MMIO map */
  
- 	dev_dbg(dev, "%s: close for ctxid=%d\n", __func__, ctxid);
+ 	atomic_t cmds_active;	/* Number of currently active AFU commands */
++	struct mutex sync_active;	/* Mutex to serialize AFU commands */
+ 	u64 hb;
+ 	u32 internal_lun;	/* User-desired LUN mode for this AFU */
  
-+	down_read(&cfg->ioctl_rwsem);
- 	detach.context_id = ctxi->ctxid;
- 	list_for_each_entry_safe(lun_access, t, &ctxi->luns, list)
- 		_cxlflash_disk_detach(lun_access->sdev, ctxi, &detach);
-+	up_read(&cfg->ioctl_rwsem);
- out_release:
- 	cfg->ops->fd_release(inode, file);
+diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
+index cf0b407..c91e912 100644
+--- a/drivers/scsi/cxlflash/main.c
++++ b/drivers/scsi/cxlflash/main.c
+@@ -2126,6 +2126,7 @@ static int init_afu(struct cxlflash_cfg *cfg)
+ 
+ 	cfg->ops->perst_reloads_same_image(cfg->afu_cookie, true);
+ 
++	mutex_init(&afu->sync_active);
+ 	afu->num_hwqs = afu->desired_hwqs;
+ 	for (i = 0; i < afu->num_hwqs; i++) {
+ 		rc = init_mc(cfg, i);
+@@ -2309,7 +2310,6 @@ static int send_afu_cmd(struct afu *afu, struct sisl_ioarcb *rcb)
+ 	char *buf = NULL;
+ 	int rc = 0;
+ 	int nretry = 0;
+-	static DEFINE_MUTEX(sync_active);
+ 
+ 	if (cfg->state != STATE_NORMAL) {
+ 		dev_dbg(dev, "%s: Sync not required state=%u\n",
+@@ -2317,7 +2317,7 @@ static int send_afu_cmd(struct afu *afu, struct sisl_ioarcb *rcb)
+ 		return 0;
+ 	}
+ 
+-	mutex_lock(&sync_active);
++	mutex_lock(&afu->sync_active);
+ 	atomic_inc(&afu->cmds_active);
+ 	buf = kmalloc(sizeof(*cmd) + __alignof__(*cmd) - 1, GFP_KERNEL);
+ 	if (unlikely(!buf)) {
+@@ -2372,7 +2372,7 @@ static int send_afu_cmd(struct afu *afu, struct sisl_ioarcb *rcb)
+ 		*rcb->ioasa = cmd->sa;
  out:
+ 	atomic_dec(&afu->cmds_active);
+-	mutex_unlock(&sync_active);
++	mutex_unlock(&afu->sync_active);
+ 	kfree(buf);
+ 	dev_dbg(dev, "%s: returning rc=%d\n", __func__, rc);
+ 	return rc;
 -- 
 2.1.0
