@@ -1,16 +1,19 @@
-Return-Path: <ruscur@russell.cc>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40j2fH1QyZzF2Fd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 18:03:32 +1000 (AEST)
-From: Russell Currey <ruscur@russell.cc>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>
-Subject: [PATCH] powerpc/xive: Remove (almost) unused macros
-Date: Fri, 11 May 2018 18:03:13 +1000
-Message-Id: <20180511080313.29815-1-ruscur@russell.cc>
+Return-Path: <gilad@benyossef.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40j2h20p7jzF2GG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 18:05:05 +1000 (AEST)
+From: Gilad Ben-Yossef <gilad@benyossef.com>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Cc: Ofir Drang <ofir.drang@arm.com>, linux-next <linux-next@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-crypto@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] crypto: reorder paes test lexicographically
+Date: Fri, 11 May 2018 09:04:06 +0100
+Message-Id: <1526025847-13134-1-git-send-email-gilad@benyossef.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +23,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The GETFIELD and SETFIELD macros in xive-regs.h aren't used except for a
-single instance of GETFIELD, so replace that and remove them.
+Due to a snafu "paes" testmgr tests were not ordered
+lexicographically, which led to boot time warnings.
+Reorder the tests as needed.
 
-These macros are also defined in vas.h, so either those should be
-eventually replaced or the macros moved into bitops.h.
-
-Signed-off-by: Russell Currey <ruscur@russell.cc>
+Fixes: a794d8d ("crypto: ccree - enable support for hardware keys")
+Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Signed-off-by: Gilad Ben-Yossef <gilad@benyossef.com>
 ---
- arch/powerpc/include/asm/xive-regs.h | 6 ------
- arch/powerpc/sysdev/xive/native.c    | 2 +-
- 2 files changed, 1 insertion(+), 7 deletions(-)
+ crypto/testmgr.c | 44 ++++++++++++++++++++++----------------------
+ 1 file changed, 22 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/xive-regs.h b/arch/powerpc/include/asm/xive-regs.h
-index fa4288822b68..6de989f8defd 100644
---- a/arch/powerpc/include/asm/xive-regs.h
-+++ b/arch/powerpc/include/asm/xive-regs.h
-@@ -123,10 +123,4 @@
- #define TM_QW3_NSR_I		PPC_BIT8(2)
- #define TM_QW3_NSR_GRP_LVL	PPC_BIT8(3,7)
- 
--/* Utilities to manipulate these (originaly from OPAL) */
--#define MASK_TO_LSH(m)		(__builtin_ffsl(m) - 1)
--#define GETFIELD(m, v)		(((v) & (m)) >> MASK_TO_LSH(m))
--#define SETFIELD(m, v, val)				\
--	(((v) & ~(m)) |	((((typeof(v))(val)) << MASK_TO_LSH(m)) & (m)))
--
- #endif /* _ASM_POWERPC_XIVE_REGS_H */
-diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index b48454be5b98..3b471c0193ca 100644
---- a/arch/powerpc/sysdev/xive/native.c
-+++ b/arch/powerpc/sysdev/xive/native.c
-@@ -341,7 +341,7 @@ static void xive_native_update_pending(struct xive_cpu *xc)
- 	 * of the hypervisor interrupt (if any)
- 	 */
- 	cppr = ack & 0xff;
--	he = GETFIELD(TM_QW3_NSR_HE, (ack >> 8));
-+	he = ((ack >> 8) & TM_QW3_NSR_HE) >> (ffs(TM_QW3_NSR_HE) - 1);
- 	switch(he) {
- 	case TM_QW3_NSR_HE_NONE: /* Nothing to see here */
- 		break;
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index c31da0f..b1b8ebb 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -3012,13 +3012,6 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
+-		/* Same as ecb(aes) except the key is stored in
+-		 * hardware secure memory which we reference by index
+-		 */
+-		.alg = "ecb(paes)",
+-		.test = alg_test_null,
+-		.fips_allowed = 1,
+-	}, {
+ 		.alg = "ecb(khazad)",
+ 		.test = alg_test_skcipher,
+ 		.suite = {
+@@ -3028,6 +3021,13 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		/* Same as ecb(aes) except the key is stored in
++		 * hardware secure memory which we reference by index
++		 */
++		.alg = "ecb(paes)",
++		.test = alg_test_null,
++		.fips_allowed = 1,
++	}, {
+ 		.alg = "ecb(seed)",
+ 		.test = alg_test_skcipher,
+ 		.suite = {
+@@ -3610,21 +3610,6 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
+-		/* Same as xts(aes) except the key is stored in
+-		 * hardware secure memory which we reference by index
+-		 */
+-		.alg = "xts(paes)",
+-		.test = alg_test_null,
+-		.fips_allowed = 1,
+-	}, {
+-		.alg = "xts4096(paes)",
+-		.test = alg_test_null,
+-		.fips_allowed = 1,
+-	}, {
+-		.alg = "xts512(paes)",
+-		.test = alg_test_null,
+-		.fips_allowed = 1,
+-	}, {
+ 		.alg = "xts(camellia)",
+ 		.test = alg_test_skcipher,
+ 		.suite = {
+@@ -3643,6 +3628,13 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		/* Same as xts(aes) except the key is stored in
++		 * hardware secure memory which we reference by index
++		 */
++		.alg = "xts(paes)",
++		.test = alg_test_null,
++		.fips_allowed = 1,
++	}, {
+ 		.alg = "xts(serpent)",
+ 		.test = alg_test_skcipher,
+ 		.suite = {
+@@ -3679,6 +3671,14 @@ static const struct alg_test_desc alg_test_descs[] = {
+ 			}
+ 		}
+ 	}, {
++		.alg = "xts4096(paes)",
++		.test = alg_test_null,
++		.fips_allowed = 1,
++	}, {
++		.alg = "xts512(paes)",
++		.test = alg_test_null,
++		.fips_allowed = 1,
++	}, {
+ 		.alg = "zlib-deflate",
+ 		.test = alg_test_comp,
+ 		.fips_allowed = 1,
 -- 
-2.17.0
+2.7.4
