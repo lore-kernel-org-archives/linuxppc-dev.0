@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40j0F2400xzF1f5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40j0F25pK8zF27s
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 16:15:02 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4B699a9114665
+ w4B69F9e022037
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:15:00 -0400
 Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hw41vv01h-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hw17jhqb5-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:15:00 -0400
 Received: from localhost
  by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
- Fri, 11 May 2018 07:14:58 +0100
+ Fri, 11 May 2018 07:14:57 +0100
 From: "Alastair D'Silva" <alastair@au1.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
@@ -27,11 +27,11 @@ Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
  gregkh@linuxfoundation.org, arnd@arndb.de,
  andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
  corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-Subject: [PATCH v5 3/7] powerpc: use task_pid_nr() for TID allocation
-Date: Fri, 11 May 2018 16:12:59 +1000
+Subject: [PATCH v5 1/7] powerpc: Add TIDR CPU feature for POWER9
+Date: Fri, 11 May 2018 16:12:57 +1000
 In-Reply-To: <20180511061303.10728-1-alastair@au1.ibm.com>
 References: <20180511061303.10728-1-alastair@au1.ibm.com>
-Message-Id: <20180511061303.10728-4-alastair@au1.ibm.com>
+Message-Id: <20180511061303.10728-2-alastair@au1.ibm.com>
 Content-Type: text/plain
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -45,180 +45,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Alastair D'Silva <alastair@d-silva.org>
 
-The current implementation of TID allocation, using a global IDR, may
-result in an errant process starving the system of available TIDs.
-Instead, use task_pid_nr(), as mentioned by the original author. The
-scenario described which prevented it's use is not applicable, as
-set_thread_tidr can only be called after the task struct has been
-populated.
-
-In the unlikely event that 2 threads share the TID and are waiting,
-all potential outcomes have been determined safe.
+This patch adds a CPU feature bit to show whether the CPU has
+the TIDR register available, enabling as_notify/wait in userspace.
 
 Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/include/asm/switch_to.h |   1 -
- arch/powerpc/kernel/process.c        | 122 ++++++---------------------
- 2 files changed, 28 insertions(+), 95 deletions(-)
+ arch/powerpc/include/asm/cputable.h | 3 ++-
+ arch/powerpc/kernel/dt_cpu_ftrs.c   | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index be8c9fa23983..5b03d8a82409 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -94,6 +94,5 @@ static inline void clear_task_ebb(struct task_struct *t)
- extern int set_thread_uses_vas(void);
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 66fcab13c8b4..9c0a3083571b 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -215,6 +215,7 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
+ #define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
+ #define CPU_FTR_P9_TLBIE_BUG		LONG_ASM_CONST(0x0000400000000000)
++#define CPU_FTR_P9_TIDR			LONG_ASM_CONST(0x0000800000000000)
  
- extern int set_thread_tidr(struct task_struct *t);
--extern void clear_thread_tidr(struct task_struct *t);
+ #ifndef __ASSEMBLY__
  
- #endif /* _ASM_POWERPC_SWITCH_TO_H */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3b00da47699b..c5b8e53acbae 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1496,103 +1496,41 @@ int set_thread_uses_vas(void)
- }
+@@ -462,7 +463,7 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+ 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
+ 	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_PKEY | \
+-	    CPU_FTR_P9_TLBIE_BUG)
++	    CPU_FTR_P9_TLBIE_BUG | CPU_FTR_P9_TIDR)
+ #define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
+ 			     (~CPU_FTR_SAO))
+ #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 8ab51f6ca03a..415555e5b69f 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -716,6 +716,7 @@ static __init void cpufeatures_cpu_quirks(void)
+ 	if ((version & 0xffff0000) == 0x004e0000) {
+ 		cur_cpu_spec->cpu_features &= ~(CPU_FTR_DAWR);
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TLBIE_BUG;
++		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TIDR;
+ 	}
  
- #ifdef CONFIG_PPC64
--static DEFINE_SPINLOCK(vas_thread_id_lock);
--static DEFINE_IDA(vas_thread_ida);
--
--/*
-- * We need to assign a unique thread id to each thread in a process.
-+/**
-+ * Assign a TIDR (thread ID) for task @t and set it in the thread
-+ * structure. For now, we only support setting TIDR for 'current' task.
-  *
-- * This thread id, referred to as TIDR, and separate from the Linux's tgid,
-- * is intended to be used to direct an ASB_Notify from the hardware to the
-- * thread, when a suitable event occurs in the system.
-+ * Since the TID value is a truncated form of it PID, it is possible
-+ * (but unlikely) for 2 threads to have the same TID. In the unlikely event
-+ * that 2 threads share the same TID and are waiting, one of the following
-+ * cases will happen:
-  *
-- * One such event is a "paste" instruction in the context of Fast Thread
-- * Wakeup (aka Core-to-core wake up in the Virtual Accelerator Switchboard
-- * (VAS) in POWER9.
-+ * 1. The correct thread is running, the wrong thread is not
-+ * In this situation, the correct thread is woken and proceeds to pass it's
-+ * condition check.
-  *
-- * To get a unique TIDR per process we could simply reuse task_pid_nr() but
-- * the problem is that task_pid_nr() is not yet available copy_thread() is
-- * called. Fixing that would require changing more intrusive arch-neutral
-- * code in code path in copy_process()?.
-+ * 2. Neither threads are running
-+ * In this situation, neither thread will be woken. When scheduled, the waiting
-+ * threads will execute either a wait, which will return immediately, followed
-+ * by a condition check, which will pass for the correct thread and fail
-+ * for the wrong thread, or they will execute the condition check immediately.
-  *
-- * Further, to assign unique TIDRs within each process, we need an atomic
-- * field (or an IDR) in task_struct, which again intrudes into the arch-
-- * neutral code. So try to assign globally unique TIDRs for now.
-+ * 3. The wrong thread is running, the correct thread is not
-+ * The wrong thread will be woken, but will fail it's condition check and
-+ * re-execute wait. The correct thread, when scheduled, will execute either
-+ * it's condition check (which will pass), or wait, which returns immediately
-+ * when called the first time after the thread is scheduled, followed by it's
-+ * condition check (which will pass).
-  *
-- * NOTE: TIDR 0 indicates that the thread does not need a TIDR value.
-- *	 For now, only threads that expect to be notified by the VAS
-- *	 hardware need a TIDR value and we assign values > 0 for those.
-- */
--#define MAX_THREAD_CONTEXT	((1 << 16) - 1)
--static int assign_thread_tidr(void)
--{
--	int index;
--	int err;
--	unsigned long flags;
--
--again:
--	if (!ida_pre_get(&vas_thread_ida, GFP_KERNEL))
--		return -ENOMEM;
--
--	spin_lock_irqsave(&vas_thread_id_lock, flags);
--	err = ida_get_new_above(&vas_thread_ida, 1, &index);
--	spin_unlock_irqrestore(&vas_thread_id_lock, flags);
--
--	if (err == -EAGAIN)
--		goto again;
--	else if (err)
--		return err;
--
--	if (index > MAX_THREAD_CONTEXT) {
--		spin_lock_irqsave(&vas_thread_id_lock, flags);
--		ida_remove(&vas_thread_ida, index);
--		spin_unlock_irqrestore(&vas_thread_id_lock, flags);
--		return -ENOMEM;
--	}
--
--	return index;
--}
--
--static void free_thread_tidr(int id)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&vas_thread_id_lock, flags);
--	ida_remove(&vas_thread_ida, id);
--	spin_unlock_irqrestore(&vas_thread_id_lock, flags);
--}
--
--/*
-- * Clear any TIDR value assigned to this thread.
-- */
--void clear_thread_tidr(struct task_struct *t)
--{
--	if (!t->thread.tidr)
--		return;
--
--	if (!cpu_has_feature(CPU_FTR_P9_TIDR)) {
--		WARN_ON_ONCE(1);
--		return;
--	}
--
--	mtspr(SPRN_TIDR, 0);
--	free_thread_tidr(t->thread.tidr);
--	t->thread.tidr = 0;
--}
--
--void arch_release_task_struct(struct task_struct *t)
--{
--	clear_thread_tidr(t);
--}
--
--/*
-- * Assign a unique TIDR (thread id) for task @t and set it in the thread
-- * structure. For now, we only support setting TIDR for 'current' task.
-+ * 4. Both threads are running
-+ * Both threads will be woken. The wrong thread will fail it's condition check
-+ * and execute another wait, while the correct thread will pass it's condition
-+ * check.
-+ *
-+ * @t: the task to set the thread ID for
-  */
- int set_thread_tidr(struct task_struct *t)
- {
--	int rc;
--
- 	if (!cpu_has_feature(CPU_FTR_P9_TIDR))
- 		return -EINVAL;
- 
-@@ -1602,11 +1540,7 @@ int set_thread_tidr(struct task_struct *t)
- 	if (t->thread.tidr)
- 		return 0;
- 
--	rc = assign_thread_tidr();
--	if (rc < 0)
--		return rc;
--
--	t->thread.tidr = rc;
-+	t->thread.tidr = (u16)task_pid_nr(t);
- 	mtspr(SPRN_TIDR, t->thread.tidr);
- 
- 	return 0;
+ 	/*
 -- 
 2.17.0
