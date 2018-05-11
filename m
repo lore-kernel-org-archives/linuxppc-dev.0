@@ -1,10 +1,10 @@
 Return-Path: <yinbo.zhu@nxp.com>
-Received: from NAM03-CO1-obe.outbound.protection.outlook.com
- (mail-co1nam03on0113.outbound.protection.outlook.com [104.47.40.113])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0110.outbound.protection.outlook.com [104.47.37.110])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hwlC2QVszF2Cp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 13:37:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hwlJ4ZmjzF2Cp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 13:37:32 +1000 (AEST)
 From: Yinbo Zhu <yinbo.zhu@nxp.com>
 To: <yinbo.zhu@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland
  <mark.rutland@arm.com>, "Catalin Marinas )" <catalin.marinas@arm.com>, "Will
@@ -27,9 +27,10 @@ CC: <xiaobo.xie@nxp.com>, <ran.wang_1@nxp.com>, Daniel Lezcano
  <linux-arm-kernel@lists.infradead.org>, "open list:FREESCALE SOC DRIVERS"
  <linuxppc-dev@lists.ozlabs.org>, Tang Yuantian <Yuantian.Tang@nxp.com>,
  <ying.zhang22455@nxp.com>
-Subject: [PATCH 6/9] soc: fsl: fix the compilation issue
-Date: Fri, 11 May 2018 11:35:27 +0800
-Message-ID: <20180511033530.7931-6-yinbo.zhu@nxp.com>
+Subject: [PATCH 7/9] arm64: dts: ls1043a: Add the identify of the platform to
+ support to set rcpm bit
+Date: Fri, 11 May 2018 11:35:28 +0800
+Message-ID: <20180511033530.7931-7-yinbo.zhu@nxp.com>
 In-Reply-To: <20180511033530.7931-1-yinbo.zhu@nxp.com>
 References: <20180511033530.7931-1-yinbo.zhu@nxp.com>
 MIME-Version: 1.0
@@ -45,22 +46,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Zhang Ying-22455 <ying.zhang22455@nxp.com>
 
+Add the identify of the platform to support set the rcpm with
+big-endian or little-endian.
+
 Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
 ---
- drivers/soc/fsl/layerscape/ftm_alarm.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/soc/fsl/layerscape/ftm_alarm.c b/drivers/soc/fsl/layerscape/ftm_alarm.c
-index 811dcfa..c22ef49 100644
---- a/drivers/soc/fsl/layerscape/ftm_alarm.c
-+++ b/drivers/soc/fsl/layerscape/ftm_alarm.c
-@@ -19,6 +19,7 @@
- #include <linux/of.h>
- #include <linux/of_device.h>
- #include <linux/libata.h>
-+#include <linux/module.h>
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+index ffea97a..754ce0d 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+@@ -679,7 +679,7 @@
+ 		};
  
- #define FTM_SC			0x00
- #define FTM_SC_CLK_SHIFT	3
+ 		ftm0: ftm0@29d0000 {
+-			compatible = "fsl,ftm-alarm";
++			compatible = "fsl,ls1043a-ftm";
+ 			reg = <0x0 0x29d0000 0x0 0x10000>,
+ 			      <0x0 0x1ee2140 0x0 0x4>;
+ 			reg-names = "ftm", "FlexTimer1";
 -- 
 1.7.1
