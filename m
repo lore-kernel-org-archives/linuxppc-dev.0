@@ -1,10 +1,10 @@
 Return-Path: <yinbo.zhu@nxp.com>
-Received: from NAM01-SN1-obe.outbound.protection.outlook.com
- (mail-sn1nam01on0136.outbound.protection.outlook.com [104.47.32.136])
+Received: from NAM02-CY1-obe.outbound.protection.outlook.com
+ (mail-cys01nam02on0114.outbound.protection.outlook.com [104.47.37.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hwkg0pm7zF2Cp
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 13:36:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40hwkp4cMDzF2Cn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 13:37:06 +1000 (AEST)
 From: Yinbo Zhu <yinbo.zhu@nxp.com>
 To: <yinbo.zhu@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland
  <mark.rutland@arm.com>, "Catalin Marinas )" <catalin.marinas@arm.com>, "Will
@@ -26,10 +26,12 @@ CC: <xiaobo.xie@nxp.com>, <ran.wang_1@nxp.com>, Daniel Lezcano
  TREE BINDINGS" <devicetree@vger.kernel.org>,
  <linux-arm-kernel@lists.infradead.org>, "open list:FREESCALE SOC DRIVERS"
  <linuxppc-dev@lists.ozlabs.org>, Tang Yuantian <Yuantian.Tang@nxp.com>,
- <ying.zhang22455@nxp.com>, Yuantian Tang <andy.tang@nxp.com>
-Subject: [PATCH 1/9] armv8: pm: add rcpm module support
-Date: Fri, 11 May 2018 11:35:22 +0800
-Message-ID: <20180511033530.7931-1-yinbo.zhu@nxp.com>
+ <ying.zhang22455@nxp.com>
+Subject: [PATCH 3/9] soc: fsl: set rcpm bit for FTM
+Date: Fri, 11 May 2018 11:35:24 +0800
+Message-ID: <20180511033530.7931-3-yinbo.zhu@nxp.com>
+In-Reply-To: <20180511033530.7931-1-yinbo.zhu@nxp.com>
+References: <20180511033530.7931-1-yinbo.zhu@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,190 +43,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yuantian Tang <andy.tang@nxp.com>
+From: Zhang Ying-22455 <ying.zhang22455@nxp.com>
 
-The Run Control and Power Management (RCPM) module communicates
-with embedded cores, coherency modules, and other device platform
-module to provide run control and power management functionality
+Set RCPM for FTM when using FTM as wakeup source. Because the RCPM
+module of each platform has different big-end and little-end mode,
+there need to set RCPM depending on the platform.
 
-Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
+Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
 Signed-off-by: Yinbo Zhu <yinbo.zhu@nxp.com>
 ---
- drivers/soc/fsl/Makefile |    1 +
- drivers/soc/fsl/rcpm.c   |  153 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 154 insertions(+), 0 deletions(-)
- create mode 100644 drivers/soc/fsl/rcpm.c
+ .../devicetree/bindings/timer/fsl,ftm-timer.txt    |    7 ++
+ drivers/soc/fsl/layerscape/ftm_alarm.c             |   92 ++++++++++++++++++-
+ 2 files changed, 94 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-index 629dab8..68fcd71 100644
---- a/drivers/soc/fsl/Makefile
-+++ b/drivers/soc/fsl/Makefile
-@@ -5,6 +5,7 @@
- obj-$(CONFIG_FSL_DPAA)                 += qbman/
- obj-$(CONFIG_QUICC_ENGINE)		+= qe/
- obj-$(CONFIG_CPM)			+= qe/
-+obj-$(CONFIG_SUSPEND)            	+= rcpm.o
- obj-$(CONFIG_FSL_GUTS)			+= guts.o
- obj-$(CONFIG_FSL_LS2_CONSOLE)		+= ls2-console/
- obj-$(CONFIG_LS_SOC_DRIVERS)		+= layerscape/
-diff --git a/drivers/soc/fsl/rcpm.c b/drivers/soc/fsl/rcpm.c
-new file mode 100644
-index 0000000..ff0477b
---- /dev/null
-+++ b/drivers/soc/fsl/rcpm.c
-@@ -0,0 +1,153 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2016 NXP
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#define pr_fmt(fmt) "RCPM: %s: " fmt, __func__
-+
-+#include <linux/kernel.h>
-+#include <linux/io.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_address.h>
-+#include <linux/suspend.h>
-+
-+/* RCPM register offset */
-+#define RCPM_IPPDEXPCR0			0x140
-+
-+#define RCPM_WAKEUP_CELL_SIZE	2
-+
-+struct rcpm_config {
-+	int ipp_num;
-+	int ippdexpcr_offset;
-+	u32 ippdexpcr[2];
-+	void *rcpm_reg_base;
+diff --git a/Documentation/devicetree/bindings/timer/fsl,ftm-timer.txt b/Documentation/devicetree/bindings/timer/fsl,ftm-timer.txt
+index aa8c402..15ead58 100644
+--- a/Documentation/devicetree/bindings/timer/fsl,ftm-timer.txt
++++ b/Documentation/devicetree/bindings/timer/fsl,ftm-timer.txt
+@@ -3,6 +3,13 @@ Freescale FlexTimer Module (FTM) Timer
+ Required properties:
+ 
+ - compatible : should be "fsl,ftm-timer"
++ Possible compatibles for ARM:
++     "fsl,ls1012a-ftm"
++     "fsl,ls1021a-ftm"
++     "fsl,ls1043a-ftm"
++     "fsl,ls1046a-ftm"
++     "fsl,ls1088a-ftm"
++     "fsl,ls208xa-ftm"
+ - reg : Specifies base physical address and size of the register sets for the
+   clock event device and clock source device.
+ - interrupts : Should be the clock event device interrupt.
+diff --git a/drivers/soc/fsl/layerscape/ftm_alarm.c b/drivers/soc/fsl/layerscape/ftm_alarm.c
+index 6f9882f..811dcfa 100644
+--- a/drivers/soc/fsl/layerscape/ftm_alarm.c
++++ b/drivers/soc/fsl/layerscape/ftm_alarm.c
+@@ -16,6 +16,9 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/platform_device.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/libata.h>
+ 
+ #define FTM_SC			0x00
+ #define FTM_SC_CLK_SHIFT	3
+@@ -40,6 +43,59 @@
+ static u32 alarm_freq;
+ static bool big_endian;
+ 
++enum pmu_endian_type {
++	BIG_ENDIAN,
++	LITTLE_ENDIAN,
 +};
 +
-+static struct rcpm_config *rcpm;
++struct rcpm_cfg {
++	enum pmu_endian_type big_endian; /* Big/Little endian of PMU module */
 +
-+static inline void rcpm_reg_write(u32 offset, u32 value)
-+{
-+	iowrite32be(value, rcpm->rcpm_reg_base + offset);
-+}
-+
-+static inline u32 rcpm_reg_read(u32 offset)
-+{
-+	return ioread32be(rcpm->rcpm_reg_base + offset);
-+}
-+
-+static void rcpm_wakeup_fixup(struct device *dev, void *data)
-+{
-+	struct device_node *node = dev ? dev->of_node : NULL;
-+	u32 value[RCPM_WAKEUP_CELL_SIZE];
-+	int ret, i;
-+
-+	if (!dev || !node || !device_may_wakeup(dev))
-+		return;
-+
-+	/*
-+	 * Get the values in the "rcpm-wakeup" property.
-+	 * Three values are:
-+	 * The first is a pointer to the RCPM node.
-+	 * The second is the value of the ippdexpcr0 register.
-+	 * The third is the value of the ippdexpcr1 register.
-+	 */
-+	ret = of_property_read_u32_array(node, "fsl,rcpm-wakeup",
-+					 value, RCPM_WAKEUP_CELL_SIZE);
-+	if (ret)
-+		return;
-+
-+	pr_debug("wakeup source: the device %s\n", node->full_name);
-+
-+	for (i = 0; i < rcpm->ipp_num; i++)
-+		rcpm->ippdexpcr[i] |= value[i + 1];
-+}
-+
-+static int rcpm_suspend_prepare(void)
-+{
-+	int i;
-+
-+	WARN_ON(!rcpm);
-+
-+	for (i = 0; i < rcpm->ipp_num; i++)
-+		rcpm->ippdexpcr[i] = 0;
-+
-+	dpm_for_each_dev(NULL, rcpm_wakeup_fixup);
-+
-+	for (i = 0; i < rcpm->ipp_num; i++) {
-+		rcpm_reg_write(rcpm->ippdexpcr_offset + 4 * i,
-+			       rcpm->ippdexpcr[i]);
-+		pr_debug("ippdexpcr%d = 0x%x\n", i, rcpm->ippdexpcr[i]);
-+	}
-+
-+	return 0;
-+}
-+
-+static int rcpm_suspend_notifier_call(struct notifier_block *bl,
-+				      unsigned long state,
-+				      void *unused)
-+{
-+	switch (state) {
-+	case PM_SUSPEND_PREPARE:
-+		rcpm_suspend_prepare();
-+		break;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct rcpm_config rcpm_default_config = {
-+	.ipp_num = 1,
-+	.ippdexpcr_offset = RCPM_IPPDEXPCR0,
++	/* FlexTimer1 is not powerdown during device LPM20 */
++	u32 flextimer_set_bit;
 +};
 +
-+static const struct of_device_id rcpm_matches[] = {
-+	{
-+		.compatible = "fsl,qoriq-rcpm-2.1",
-+		.data = &rcpm_default_config,
-+	},
-+	{}
++static struct rcpm_cfg ls1012a_rcpm_cfg = {
++	.big_endian = BIG_ENDIAN,
++	.flextimer_set_bit = 0x20000,
 +};
 +
-+static struct notifier_block rcpm_suspend_notifier = {
-+	.notifier_call = rcpm_suspend_notifier_call,
++static struct rcpm_cfg ls1021a_rcpm_cfg = {
++	.big_endian = BIG_ENDIAN,
++	.flextimer_set_bit = 0x20000,
 +};
 +
-+static int __init layerscape_rcpm_init(void)
-+{
-+	const struct of_device_id *match;
-+	struct device_node *np;
++static struct rcpm_cfg ls1043a_rcpm_cfg = {
++	.big_endian = BIG_ENDIAN,
++	.flextimer_set_bit = 0x20000,
++};
 +
-+	np = of_find_matching_node_and_match(NULL, rcpm_matches, &match);
-+	if (!np) {
-+		pr_err("Can't find the RCPM node.\n");
-+		return -EINVAL;
-+	}
++static struct rcpm_cfg ls1046a_rcpm_cfg = {
++	.big_endian = BIG_ENDIAN,
++	.flextimer_set_bit = 0x20000,
++};
 +
-+	if (match->data)
-+		rcpm = (struct rcpm_config *)match->data;
-+	else
-+		return -EINVAL;
++static struct rcpm_cfg ls1088a_rcpm_cfg = {
++	.big_endian = LITTLE_ENDIAN,
++	.flextimer_set_bit = 0x4000,
++};
 +
-+	rcpm->rcpm_reg_base = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!rcpm->rcpm_reg_base)
++static struct rcpm_cfg ls208xa_rcpm_cfg = {
++	.big_endian = LITTLE_ENDIAN,
++	.flextimer_set_bit = 0x4000,
++};
++
++static const struct of_device_id ippdexpcr_of_match[] = {
++	{ .compatible = "fsl,ls1012a-ftm", .data = &ls1012a_rcpm_cfg},
++	{ .compatible = "fsl,ls1021a-ftm", .data = &ls1021a_rcpm_cfg},
++	{ .compatible = "fsl,ls1043a-ftm", .data = &ls1043a_rcpm_cfg},
++	{ .compatible = "fsl,ls1046a-ftm", .data = &ls1046a_rcpm_cfg},
++	{ .compatible = "fsl,ls1088a-ftm", .data = &ls1088a_rcpm_cfg},
++	{ .compatible = "fsl,ls208xa-ftm", .data = &ls208xa_rcpm_cfg},
++	{},
++};
++MODULE_DEVICE_TABLE(of, ippdexpcr_of_match);
++
+ static inline u32 ftm_readl(void __iomem *addr)
+ {
+ 	if (big_endian)
+@@ -214,7 +270,10 @@ static int ftm_alarm_probe(struct platform_device *pdev)
+ 	struct resource *r;
+ 	int irq;
+ 	int ret;
+-	u32 ippdexpcr;
++	struct rcpm_cfg *rcpm_cfg;
++	u32 ippdexpcr, flextimer;
++	const struct of_device_id *of_id;
++	enum pmu_endian_type endian;
+ 
+ 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!r)
+@@ -224,14 +283,32 @@ static int ftm_alarm_probe(struct platform_device *pdev)
+ 	if (IS_ERR(ftm1_base))
+ 		return PTR_ERR(ftm1_base);
+ 
++	of_id = of_match_node(ippdexpcr_of_match, np);
++	if (!of_id)
++		return -ENODEV;
++
++	rcpm_cfg = devm_kzalloc(&pdev->dev, sizeof(*rcpm_cfg), GFP_KERNEL);
++	if (!rcpm_cfg)
 +		return -ENOMEM;
 +
-+	register_pm_notifier(&rcpm_suspend_notifier);
++	rcpm_cfg = (struct rcpm_cfg *)of_id->data;
++	endian = rcpm_cfg->big_endian;
++	flextimer = rcpm_cfg->flextimer_set_bit;
 +
-+	pr_info("The RCPM driver initialized.\n");
-+
-+	return 0;
-+}
-+
-+subsys_initcall(layerscape_rcpm_init);
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "FlexTimer1");
+ 	if (r) {
+ 		rcpm_ftm_addr = devm_ioremap_resource(&pdev->dev, r);
+ 		if (IS_ERR(rcpm_ftm_addr))
+ 			return PTR_ERR(rcpm_ftm_addr);
+-		ippdexpcr = ioread32be(rcpm_ftm_addr);
+-		ippdexpcr |= 0x20000;
+-		iowrite32be(ippdexpcr, rcpm_ftm_addr);
++		if (endian == BIG_ENDIAN)
++			ippdexpcr = ioread32be(rcpm_ftm_addr);
++		else
++			ippdexpcr = ioread32(rcpm_ftm_addr);
++		ippdexpcr |= flextimer;
++		if (endian == BIG_ENDIAN)
++			iowrite32be(ippdexpcr, rcpm_ftm_addr);
++		else
++			iowrite32(ippdexpcr, rcpm_ftm_addr);
+ 	}
+ 
+ 	irq = irq_of_parse_and_map(np, 0);
+@@ -265,7 +342,12 @@ static int ftm_alarm_probe(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id ftm_alarm_match[] = {
+-	{ .compatible = "fsl,ftm-alarm", },
++	{ .compatible = "fsl,ls1012a-ftm", },
++	{ .compatible = "fsl,ls1021a-ftm", },
++	{ .compatible = "fsl,ls1043a-ftm", },
++	{ .compatible = "fsl,ls1046a-ftm", },
++	{ .compatible = "fsl,ls1088a-ftm", },
++	{ .compatible = "fsl,ls208xa-ftm", },
+ 	{ .compatible = "fsl,ftm-timer", },
+ 	{ },
+ };
 -- 
 1.7.1
