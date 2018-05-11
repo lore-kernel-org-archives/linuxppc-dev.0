@@ -1,22 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40hzxY35f6zF2DX
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 16:01:37 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH  05/17] powerpc: move io mapping functions into ioremap.c
-In-Reply-To: <b6f1dc10a4e2be3674fb9999d5b176a5ce9787e6.1525435203.git.christophe.leroy@c-s.fr>
-References: <cover.1525435203.git.christophe.leroy@c-s.fr>
- <b6f1dc10a4e2be3674fb9999d5b176a5ce9787e6.1525435203.git.christophe.leroy@c-s.fr>
-Date: Fri, 11 May 2018 16:01:36 +1000
-Message-ID: <87y3gqrarj.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40j0F23rWWzF155
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 16:15:02 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4B699Pc114654
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:14:59 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hw41vv00w-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 02:14:59 -0400
+Received: from localhost
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Fri, 11 May 2018 07:14:56 +0100
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de,
+ andrew.donnellan@au1.ibm.com, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+Subject: [PATCH v5 2/7] powerpc: Use TIDR CPU feature to control TIDR
+ allocation
+Date: Fri, 11 May 2018 16:12:58 +1000
+In-Reply-To: <20180511061303.10728-1-alastair@au1.ibm.com>
+References: <20180511061303.10728-1-alastair@au1.ibm.com>
+Message-Id: <20180511061303.10728-3-alastair@au1.ibm.com>
+Content-Type: text/plain
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +44,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+From: Alastair D'Silva <alastair@d-silva.org>
 
-> diff --git a/arch/powerpc/mm/ioremap.c b/arch/powerpc/mm/ioremap.c
-> new file mode 100644
-> index 000000000000..5d2645193568
-> --- /dev/null
-> +++ b/arch/powerpc/mm/ioremap.c
-> @@ -0,0 +1,350 @@
-> +/*
-> + * This file contains the routines for mapping IO areas
-> + *
-> + *  Derived from arch/powerpc/mm/pgtable_32.c and
-> + *  arch/powerpc/mm/pgtable_64.c
-> + *
-> + * SPDX-License-Identifier: GPL-2.0
+Switch the use of TIDR on it's CPU feature, rather than assuming it
+is available based on architecture.
 
-This goes at the top of the file as:
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ arch/powerpc/kernel/process.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-// SPDX-License-Identifier: GPL-2.0
-
-See:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/D=
-ocumentation/process/license-rules.rst?#n56
-
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/types.h>
-> +#include <linux/mm.h>
-> +#include <linux/vmalloc.h>
-> +#include <linux/init.h>
-> +#include <linux/highmem.h>
-> +#include <linux/memblock.h>
-> +#include <linux/slab.h>
-> +
-> +#include <asm/pgtable.h>
-> +#include <asm/pgalloc.h>
-> +#include <asm/fixmap.h>
-> +#include <asm/io.h>
-> +#include <asm/setup.h>
-> +#include <asm/sections.h>
-
-I needed:
-
-+#include <asm/machdep.h>
-
-To fix:
-
-../arch/powerpc/mm/ioremap.c: In function =E2=80=98ioremap_wc=E2=80=99:
-../arch/powerpc/mm/ioremap.c:290:6: error: =E2=80=98ppc_md=E2=80=99 undecla=
-red (first use in this function)
-  if (ppc_md.ioremap)
-      ^~~~~~
-
-cheers
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1237f13fed51..3b00da47699b 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1154,7 +1154,7 @@ static inline void restore_sprs(struct thread_struct *old_thread,
+ 			mtspr(SPRN_TAR, new_thread->tar);
+ 	}
+ 
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) &&
++	if (cpu_has_feature(CPU_FTR_P9_TIDR) &&
+ 	    old_thread->tidr != new_thread->tidr)
+ 		mtspr(SPRN_TIDR, new_thread->tidr);
+ #endif
+@@ -1570,7 +1570,7 @@ void clear_thread_tidr(struct task_struct *t)
+ 	if (!t->thread.tidr)
+ 		return;
+ 
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300)) {
++	if (!cpu_has_feature(CPU_FTR_P9_TIDR)) {
+ 		WARN_ON_ONCE(1);
+ 		return;
+ 	}
+@@ -1593,7 +1593,7 @@ int set_thread_tidr(struct task_struct *t)
+ {
+ 	int rc;
+ 
+-	if (!cpu_has_feature(CPU_FTR_ARCH_300))
++	if (!cpu_has_feature(CPU_FTR_P9_TIDR))
+ 		return -EINVAL;
+ 
+ 	if (t != current)
+-- 
+2.17.0
