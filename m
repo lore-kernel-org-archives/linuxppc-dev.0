@@ -1,18 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40jB8V37WMzF2TY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 23:41:46 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- naveen.n.rao@linux.vnet.ibm.com
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.17-5 tag
-Date: Fri, 11 May 2018 23:41:43 +1000
-Message-ID: <87k1saqpgo.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40jBC75c9tzF2Tm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 23:43:57 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4BDf3M3048352
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 09:43:50 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hw95b07bt-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 09:43:50 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Fri, 11 May 2018 14:43:48 +0100
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: anju@linux.vnet.ibm.com, mpe@ellerman.id.au, maddy@linux.vnet.ibm.com,
+ ppaidipe@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/perf: Fix memory allocation for core-imc based on
+ num_possible_cpus()
+Date: Fri, 11 May 2018 19:13:42 +0530
+Message-Id: <1526046222-17842-1-git-send-email-anju@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+Currently memory is allocated for core-imc based on cpu_present_mask, which has
+bit 'cpu' set iff cpu is populated. We use  (cpu number / threads per core)
+as as array index to access the memory.
+So in a system with guarded cores, since allocation happens based on
+cpu_present_mask, (cpu number / threads per core) bounds the index and leads
+to memory overflow.
 
-Hi Linus,
+The issue is exposed in a guard test.
+The guard test will make some CPU's as un-available to the system during boot
+time as well as at runtime. So when the cpu is unavailable to the system during
+boot time, the memory allocation happens depending on the number of available
+cpus. And when we access the memory using (cpu number / threads per core) as the
+index the system crashes due to memory overflow.
 
-Please pull some more powerpc fixes for 4.17:
+Allocating memory for core-imc based on cpu_possible_mask, which has
+bit 'cpu' set iff cpu is populatable, will fix this issue.
 
-The following changes since commit b2d7ecbe355698010a6b7a15eb179e09eb3d6a34:
+Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/imc-pmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  powerpc/kvm/booke: Fix altivec related build break (2018-04-27 16:36:03 +1000)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.17-5
-
-for you to fetch changes up to 6c0a8f6b5a45ac892a763b6299bd3c5324fc5e02:
-
-  powerpc/pseries: Fix CONFIG_NUMA=n build (2018-05-08 14:59:56 +1000)
-
-- ----------------------------------------------------------------
-powerpc fixes for 4.17 #5
-
-One fix for an actual regression, the change to the SYSCALL_DEFINE wrapper broke
-FTRACE_SYSCALLS for us due to a name mismatch. There's also another commit to
-the same code to make sure we match all our syscalls with various prefixes.
-
-And then just one minor build fix, and the removal of an unused variable that
-was removed and then snuck back in due to some rebasing.
-
-Thanks to:
-  Naveen N. Rao.
-
-- ----------------------------------------------------------------
-Michael Ellerman (2):
-      powerpc/64: Remove unused paca->soft_enabled
-      powerpc/pseries: Fix CONFIG_NUMA=n build
-
-Naveen N. Rao (2):
-      powerpc/trace/syscalls: Update syscall name matching logic
-      powerpc/trace/syscalls: Update syscall name matching logic to account for ppc_ prefix
-
- arch/powerpc/include/asm/ftrace.h   | 29 +++++++++++++++++++++--------
- arch/powerpc/include/asm/paca.h     |  1 -
- arch/powerpc/include/asm/topology.h | 13 +++++--------
- 3 files changed, 26 insertions(+), 17 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJa9Z2YAAoJEFHr6jzI4aWAS/IQAJwlHONhDnkjycj5hWQbmYuU
-tRBckKHixyiB5r9trAhpiO7H78dod880qORM/Qvx4f/2fhs+2kNOAD5BJlAwfjg2
-0OgJJWMXE6i5IPFzALwWn8rmUHWRaimYaOW+oGh+ieN0nup80OFQwZMLB28CUdGX
-b4Nu0c+1jtc9TO5R4zbaDysCVA9xbQjEv0WffwrV5PFDoDm7cxy8cp/RqU1xwZwi
-ar07SPM6eu+cUx9NqMpKG75wO2lh2KuqBSYqH3wxlxSSpygLSutdy/hQRZqqQJKF
-sNFmb239OIDayTH38Ht2GADl7W+qbJSLmdpqhNvmu3xgnprEd6Ipf3M5hmkSksb/
-/0ppzvGfFNOleBRMIOawTgRa7er+AsDZUuC65JZuEkGv1eNXMcALWy8/UCQ3gyQV
-jlxL8JoWoTW8AqDgJvb50GDCDxvZpZNGebARWc57A2OkvhHTLG+DqYE/oVHKCyZM
-wkCnHHsBOsS+0p/qOPIHuwvu1l03EsuY/K1D1tkWrqAjJX5MTIA9rn4R9zMZnDPb
-9UXxPymYazMaJ5yKzbMZmsLNjntu9ltQi8aS1l1FwTrubYzdohagjdg3unOMwcHv
-UAHPK609fhOncfylPNWlqaG4CjWRNyqBB6zGSSmj8v7Pg65VxhrgNac5ES8RbbN2
-GZUrjS71LSRFiwqYK4+j
-=nibe
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+index d7532e7..75fb23c 100644
+--- a/arch/powerpc/perf/imc-pmu.c
++++ b/arch/powerpc/perf/imc-pmu.c
+@@ -1146,7 +1146,7 @@ static int init_nest_pmu_ref(void)
+ 
+ static void cleanup_all_core_imc_memory(void)
+ {
+-	int i, nr_cores = DIV_ROUND_UP(num_present_cpus(), threads_per_core);
++	int i, nr_cores = DIV_ROUND_UP(num_possible_cpus(), threads_per_core);
+ 	struct imc_mem_info *ptr = core_imc_pmu->mem_info;
+ 	int size = core_imc_pmu->counter_mem_size;
+ 
+@@ -1264,7 +1264,7 @@ static int imc_mem_init(struct imc_pmu *pmu_ptr, struct device_node *parent,
+ 		if (!pmu_ptr->pmu.name)
+ 			return -ENOMEM;
+ 
+-		nr_cores = DIV_ROUND_UP(num_present_cpus(), threads_per_core);
++		nr_cores = DIV_ROUND_UP(num_possible_cpus(), threads_per_core);
+ 		pmu_ptr->mem_info = kcalloc(nr_cores, sizeof(struct imc_mem_info),
+ 								GFP_KERNEL);
+ 
+-- 
+2.7.4
