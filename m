@@ -1,37 +1,25 @@
-Return-Path: <ukrishn@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-pl0-x22e.google.com (mail-pl0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c01::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40jKMB2mzDzF2rR
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 05:06:30 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4BIx0tj028858
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:06:27 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hwdr9gj2y-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 15:06:26 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ukrishn@linux.vnet.ibm.com>;
- Fri, 11 May 2018 13:06:25 -0600
-From: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-To: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: [PATCH 7/7] cxlflash: Isolate external module dependencies
-Date: Fri, 11 May 2018 14:06:19 -0500
-In-Reply-To: <1526065440-38806-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-References: <1526065440-38806-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <1526065579-39079-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40jN460xlVzF2K3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 07:08:36 +1000 (AEST)
+Received: by mail-pl0-x22e.google.com with SMTP id w19-v6so1312691plq.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2018 14:08:36 -0700 (PDT)
+Subject: Re: make a few block drivers highmem safe
+To: Christoph Hellwig <hch@lst.de>
+Cc: "Ed L. Cashin" <ed.cashin@acm.org>, Geoff Levand <geoff@infradead.org>,
+ Maxim Levitsky <maximlevitsky@gmail.com>, linux-block@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org,
+ sparclinux@vger.kernel.org
+References: <20180509135948.20329-1-hch@lst.de>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <e5f3ffef-4fa3-50d3-4fbe-d67ba2a85bd8@kernel.dk>
+Date: Fri, 11 May 2018 15:08:26 -0600
+MIME-Version: 1.0
+In-Reply-To: <20180509135948.20329-1-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,129 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Depending on the underlying transport, cxlflash has a dependency on either
-the CXL or OCXL drivers, which are enabled via their Kconfig option.
-Instead of having a module wide dependency on these config options, it is
-better to isolate the object modules that are dependent on the CXL and OCXL
-drivers and adjust the module dependencies accordingly.
+On 5/9/18 7:59 AM, Christoph Hellwig wrote:
+> Hi all,
+> 
+> this series converts a few random block drivers to be highmem safe,
+> in preparation of eventually getting rid of the block layer bounce
+> buffering support.
 
-This commit isolates the object files that are dependent on CXL and/or
-OCXL. The cxl/ocxl fops used in the core driver are tucked under an ifdef
-to avoid compilation errors.
+Applied, thanks.
 
-Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
----
- drivers/scsi/cxlflash/Kconfig     | 2 +-
- drivers/scsi/cxlflash/Makefile    | 4 +++-
- drivers/scsi/cxlflash/lunmgt.c    | 4 +++-
- drivers/scsi/cxlflash/main.c      | 2 --
- drivers/scsi/cxlflash/main.h      | 5 +++++
- drivers/scsi/cxlflash/superpipe.c | 3 ++-
- drivers/scsi/cxlflash/vlun.c      | 3 ++-
- 7 files changed, 16 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/scsi/cxlflash/Kconfig b/drivers/scsi/cxlflash/Kconfig
-index e2a3a1b..f1b17e3 100644
---- a/drivers/scsi/cxlflash/Kconfig
-+++ b/drivers/scsi/cxlflash/Kconfig
-@@ -4,7 +4,7 @@
- 
- config CXLFLASH
- 	tristate "Support for IBM CAPI Flash"
--	depends on PCI && SCSI && CXL && OCXL && EEH
-+	depends on PCI && SCSI && (CXL || OCXL) && EEH
- 	select IRQ_POLL
- 	default m
- 	help
-diff --git a/drivers/scsi/cxlflash/Makefile b/drivers/scsi/cxlflash/Makefile
-index 5124c68..283377d 100644
---- a/drivers/scsi/cxlflash/Makefile
-+++ b/drivers/scsi/cxlflash/Makefile
-@@ -1,2 +1,4 @@
- obj-$(CONFIG_CXLFLASH) += cxlflash.o
--cxlflash-y += main.o superpipe.o lunmgt.o vlun.o cxl_hw.o ocxl_hw.o
-+cxlflash-y += main.o superpipe.o lunmgt.o vlun.o
-+cxlflash-$(CONFIG_CXL) += cxl_hw.o
-+cxlflash-$(CONFIG_OCXL) += ocxl_hw.o
-diff --git a/drivers/scsi/cxlflash/lunmgt.c b/drivers/scsi/cxlflash/lunmgt.c
-index 4d232e2..edea125 100644
---- a/drivers/scsi/cxlflash/lunmgt.c
-+++ b/drivers/scsi/cxlflash/lunmgt.c
-@@ -12,9 +12,11 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--#include <misc/cxl.h>
- #include <asm/unaligned.h>
- 
-+#include <linux/interrupt.h>
-+#include <linux/pci.h>
-+
- #include <scsi/scsi_host.h>
- #include <uapi/scsi/cxlflash_ioctl.h>
- 
-diff --git a/drivers/scsi/cxlflash/main.c b/drivers/scsi/cxlflash/main.c
-index cd7dcc5..6637116 100644
---- a/drivers/scsi/cxlflash/main.c
-+++ b/drivers/scsi/cxlflash/main.c
-@@ -19,8 +19,6 @@
- 
- #include <asm/unaligned.h>
- 
--#include <misc/cxl.h>
--
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi_host.h>
- #include <uapi/scsi/cxlflash_ioctl.h>
-diff --git a/drivers/scsi/cxlflash/main.h b/drivers/scsi/cxlflash/main.h
-index ed4908e..2a39778 100644
---- a/drivers/scsi/cxlflash/main.h
-+++ b/drivers/scsi/cxlflash/main.h
-@@ -107,10 +107,15 @@ cxlflash_assign_ops(struct dev_dependent_vals *ddv)
- {
- 	const struct cxlflash_backend_ops *ops = NULL;
- 
-+#ifdef CONFIG_OCXL
- 	if (ddv->flags & CXLFLASH_OCXL_DEV)
- 		ops = &cxlflash_ocxl_ops;
-+#endif
-+
-+#ifdef CONFIG_CXL
- 	if (!(ddv->flags & CXLFLASH_OCXL_DEV))
- 		ops = &cxlflash_cxl_ops;
-+#endif
- 
- 	return ops;
- }
-diff --git a/drivers/scsi/cxlflash/superpipe.c b/drivers/scsi/cxlflash/superpipe.c
-index 5ba6e62..e489d89 100644
---- a/drivers/scsi/cxlflash/superpipe.c
-+++ b/drivers/scsi/cxlflash/superpipe.c
-@@ -14,8 +14,9 @@
- 
- #include <linux/delay.h>
- #include <linux/file.h>
-+#include <linux/interrupt.h>
-+#include <linux/pci.h>
- #include <linux/syscalls.h>
--#include <misc/cxl.h>
- #include <asm/unaligned.h>
- 
- #include <scsi/scsi.h>
-diff --git a/drivers/scsi/cxlflash/vlun.c b/drivers/scsi/cxlflash/vlun.c
-index 5deef57..66e445a 100644
---- a/drivers/scsi/cxlflash/vlun.c
-+++ b/drivers/scsi/cxlflash/vlun.c
-@@ -12,8 +12,9 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#include <linux/interrupt.h>
-+#include <linux/pci.h>
- #include <linux/syscalls.h>
--#include <misc/cxl.h>
- #include <asm/unaligned.h>
- #include <asm/bitsperlong.h>
- 
 -- 
-2.1.0
+Jens Axboe
