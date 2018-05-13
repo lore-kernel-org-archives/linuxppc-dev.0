@@ -1,25 +1,18 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
- [IPv6:2607:f8b0:4003:c06::243])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
+ [IPv6:2607:f8b0:400e:c05::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40jsz82Rh1zF3Kq
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 02:36:04 +1000 (AEST)
-Received: by mail-oi0-x243.google.com with SMTP id k17-v6so7312220oih.5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 09:36:03 -0700 (PDT)
-MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CA+7wUszjeXyYYExUmAVMh774HGD-5-CP5GKo5dSS6g32Dg1JcQ@mail.gmail.com>
-References: <20180512033525.18762-1-npiggin@gmail.com>
- <CA+7wUszjeXyYYExUmAVMh774HGD-5-CP5GKo5dSS6g32Dg1JcQ@mail.gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Sat, 12 May 2018 18:35:41 +0200
-Message-ID: <CA+7wUsyRzLxid5Agd5L70ZAPpv7QjWx9qiJpxi5J_M+=pJy9ng@mail.gmail.com>
-Subject: Re: [PATCH] selftests/powerpc: fix exec benchmark
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40k9cx4ZmpzF3Rc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 14:21:20 +1000 (AEST)
+Received: by mail-pg0-x244.google.com with SMTP id x145-v6so4046589pgx.11
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 21:21:20 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 0/3] powerpc/64s/radix pte manipulation optimisations
+Date: Sun, 13 May 2018 14:21:03 +1000
+Message-Id: <20180513042106.15470-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 12, 2018 at 10:54 AM, Mathieu Malaterre <malat@debian.org> wrote:
-> Nick,
->
-> On Sat, May 12, 2018 at 5:35 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
->> The exec_target binary could segfault calling _exit(2) because r13
->> is not set up properly (and libc looks at that when performing a
->> syscall). Call SYS_exit using syscall(2) which doesn't seem to
->> have this problem.
->>
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> ---
->>  tools/testing/selftests/powerpc/benchmarks/exec_target.c | 7 +++++--
->>  1 file changed, 5 insertions(+), 2 deletions(-)
->>
->> diff --git a/tools/testing/selftests/powerpc/benchmarks/exec_target.c b/tools/testing/selftests/powerpc/benchmarks/exec_target.c
->> index 3c9c144192be..c14b0fc1edde 100644
->> --- a/tools/testing/selftests/powerpc/benchmarks/exec_target.c
->> +++ b/tools/testing/selftests/powerpc/benchmarks/exec_target.c
->> @@ -6,8 +6,11 @@
->>   * Copyright 2018, Anton Blanchard, IBM Corp.
->>   */
->>
->> -void _exit(int);
->> +#define _GNU_SOURCE
->> +#include <unistd.h>
->> +#include <sys/syscall.h>
->> +
->>  void _start(void)
->>  {
->> -       _exit(0);
->> +       syscall(SYS_exit, 0);
->>  }
->> --
->> 2.17.0
->>
->
-> Could you please apply the same patch to :
->
-> ./tools/testing/selftests/size/get_size.c
->
-> It segfault on ppc32 with default cross compiler from Debian.
+Here's a few patches which I'm sure will cause a lot of concern, but
+I think now is the time to have it out and really start optimising
+these things as far as we can. Radix MMU has been stable for quite
+some time, and distros have made releases with the more conservative
+flushes and barriers and updates etc.
 
-Nevermind, I did not tested and this seems not to be sufficient to
-make the executable run properly.
+If we decide not to do any of these things, we can document why not
+so it becomes easier to revisit.
+
+With these patches, plus the TLB flush reduction patches earlier,
+plus a few generic mm patches that I haven't posted yet, fork/exec
+benchmark from selftests increases performance by 11%.
+
+A test which mprotects 16GB of memory to readonly, then reads a byte
+from each page, then protects read/write and updates a byte from each
+page, then repeats, is more tha 2x faster. Mostly due to reduced TLB
+flushing, barriers, and atomics from these two patch sets.
+
+Nicholas Piggin (3):
+  powerpc/64s/radix: make ptep_get_and_clear_full non-atomic for the
+    full case
+  powerpc/64s/radix: avoid ptesync after set_pte and
+    ptep_set_access_flags
+  powerpc/64s/radix: optimise pte_update
+
+ arch/powerpc/include/asm/book3s/64/radix.h | 37 +++++++++-------------
+ arch/powerpc/mm/mmu_context.c              |  6 ++--
+ arch/powerpc/mm/tlb-radix.c                | 11 ++++++-
+ 3 files changed, 29 insertions(+), 25 deletions(-)
+
+-- 
+2.17.0
