@@ -3,30 +3,29 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kzYz4B1dzF3X1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:35 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kzZ02k4HzF3X1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:32 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4EBnN4T043550
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:33 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hy6je0v5y-1
+ w4EBnLIF005740
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:27 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hy9q50mm9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:27 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Mon, 14 May 2018 12:51:30 +0100
+ Mon, 14 May 2018 12:51:25 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@fb.com, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  naveen.n.rao@linux.vnet.ibm.com
-Subject: [RFC][PATCH bpf v3 4/5] tools: bpf: sync bpf uapi header
-Date: Mon, 14 May 2018 17:21:17 +0530
-In-Reply-To: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
-References: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20180514115118.8149-4-sandipan@linux.vnet.ibm.com>
+Subject: [RFC][PATCH bpf v3 1/5] bpf: allow 64-bit offsets for bpf function
+ calls
+Date: Mon, 14 May 2018 17:21:14 +0530
+Message-Id: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,27 +35,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Syncing the bpf.h uapi header with tools so that struct
-bpf_prog_info has the new fields for storing the kernel
-symbol addresses for the JITed functions in a program.
+The imm field of a bpf instruction is a signed 32-bit integer.
+For JIT bpf-to-bpf function calls, it stores the offset of the
+start address of the callee's JITed image from __bpf_call_base.
+
+For some architectures, such as powerpc64, this offset may be
+as large as 64 bits and cannot be accomodated in the imm field
+without truncation.
+
+We resolve this by:
+
+[1] Additionally using the auxillary data of each function to
+    keep a list of start addresses of the JITed images for all
+    functions determined by the verifier.
+
+[2] Retaining the subprog id inside the off field of the call
+    instructions and using it to index into the list mentioned
+    above and lookup the callee's address.
+
+To make sure that the existing JIT compilers continue to work
+without requiring changes, we keep the imm field as it is.
 
 Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
- tools/include/uapi/linux/bpf.h | 2 ++
- 1 file changed, 2 insertions(+)
+v3: Rephrase commit message to explain solution in a point-
+    wise manner.
 
-diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
-index 83a95ae388dd..98857dc3469a 100644
---- a/tools/include/uapi/linux/bpf.h
-+++ b/tools/include/uapi/linux/bpf.h
-@@ -2107,6 +2107,8 @@ struct bpf_prog_info {
- 	__u32 xlated_prog_len;
- 	__aligned_u64 jited_prog_insns;
- 	__aligned_u64 xlated_prog_insns;
-+	__aligned_u64 jited_funcs;
-+	__u32 nr_jited_funcs;
- 	__u64 load_time;	/* ns since boottime */
- 	__u32 created_by_uid;
- 	__u32 nr_map_ids;
+v2: Make aux->func point to the list of functions determined
+    by the verifier rather than allocating a separate callee
+    list for each function.
+---
+ kernel/bpf/verifier.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index d5e1a6c4165d..aa76879f4fd1 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -5373,11 +5373,24 @@ static int jit_subprogs(struct bpf_verifier_env *env)
+ 			    insn->src_reg != BPF_PSEUDO_CALL)
+ 				continue;
+ 			subprog = insn->off;
+-			insn->off = 0;
+ 			insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
+ 				func[subprog]->bpf_func -
+ 				__bpf_call_base;
+ 		}
++
++		/* we use the aux data to keep a list of the start addresses
++		 * of the JITed images for each function in the program
++		 *
++		 * for some architectures, such as powerpc64, the imm field
++		 * might not be large enough to hold the offset of the start
++		 * address of the callee's JITed image from __bpf_call_base
++		 *
++		 * in such cases, we can lookup the start address of a callee
++		 * by using its subprog id, available from the off field of
++		 * the call instruction, as an index for this list
++		 */
++		func[i]->aux->func = func;
++		func[i]->aux->func_cnt = env->subprog_cnt + 1;
+ 	}
+ 	for (i = 0; i < env->subprog_cnt; i++) {
+ 		old_bpf_func = func[i]->bpf_func;
 -- 
 2.14.3
