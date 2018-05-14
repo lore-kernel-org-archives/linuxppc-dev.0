@@ -1,19 +1,37 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <laurentiu.tudor@nxp.com>
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20089.outbound.protection.outlook.com [40.107.2.89])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l1925BKlzF276
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 23:03:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: kernel-hardening@lists.openwall.com, thgarnie@google.com,
- keescook@chromium.org
-Subject: [PATCH 2/2] powerpc: Check address limit on user-mode return
- (TIF_FSCHECK)
-Date: Mon, 14 May 2018 23:03:16 +1000
-Message-Id: <20180514130316.23855-2-mpe@ellerman.id.au>
-In-Reply-To: <20180514130316.23855-1-mpe@ellerman.id.au>
-References: <20180514130316.23855-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40l1z35dRCzF38W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 23:39:56 +1000 (AEST)
+From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
+To: Nipun Gupta <nipun.gupta@nxp.com>, "robin.murphy@arm.com"
+ <robin.murphy@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>
+CC: "hch@lst.de" <hch@lst.de>, "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "joro@8bytes.org" <joro@8bytes.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "m.szyprowski@samsung.com"
+ <m.szyprowski@samsung.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
+ "frowand.list@gmail.com" <frowand.list@gmail.com>, "bhelgaas@google.com"
+ <bhelgaas@google.com>, "iommu@lists.linux-foundation.org"
+ <iommu@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
+Subject: Re: [PATCH 5/6 v3] bus: fsl-mc: supoprt dma configure for devices on
+ fsl-mc bus
+Date: Mon, 14 May 2018 13:39:50 +0000
+Message-ID: <5AF9916E.8000504@nxp.com>
+References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
+ <1524824826-29473-6-git-send-email-nipun.gupta@nxp.com>
+In-Reply-To: <1524824826-29473-6-git-send-email-nipun.gupta@nxp.com>
+Content-Type: text/plain; charset="Windows-1252"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,155 +41,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-set_fs() sets the addr_limit, which is used in access_ok() to
-determine if an address is a user or kernel address.
+Hi Nipun,
 
-Some code paths use set_fs() to temporarily elevate the addr_limit so
-that kernel code can read/write kernel memory as if it were user
-memory. That is fine as long as the code can't ever return to
-userspace with the addr_limit still elevated.
+On 04/27/2018 01:27 PM, Nipun Gupta wrote:
+> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+> ---
+>   drivers/bus/fsl-mc/fsl-mc-bus.c | 16 ++++++++++++----
+>   1 file changed, 12 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-=
+bus.c
+> index 5d8266c..624828b 100644
+> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
+> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> @@ -127,6 +127,16 @@ static int fsl_mc_bus_uevent(struct device *dev, str=
+uct kobj_uevent_env *env)
+>   	return 0;
+>   }
+>
+> +static int fsl_mc_dma_configure(struct device *dev)
+> +{
+> +	struct device *dma_dev =3D dev;
+> +
+> +	while (dev_is_fsl_mc(dma_dev))
+> +		dma_dev =3D dma_dev->parent;
+> +
+> +	return of_dma_configure(dev, dma_dev->of_node, 0);
+> +}
+> +
+>   static ssize_t modalias_show(struct device *dev, struct device_attribut=
+e *attr,
+>   			     char *buf)
+>   {
+> @@ -148,6 +158,7 @@ struct bus_type fsl_mc_bus_type =3D {
+>   	.name =3D "fsl-mc",
+>   	.match =3D fsl_mc_bus_match,
+>   	.uevent =3D fsl_mc_bus_uevent,
+> +	.dma_configure  =3D fsl_mc_dma_configure,
+>   	.dev_groups =3D fsl_mc_dev_groups,
+>   };
+>   EXPORT_SYMBOL_GPL(fsl_mc_bus_type);
+> @@ -616,6 +627,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_des=
+c,
+>   		mc_dev->icid =3D parent_mc_dev->icid;
+>   		mc_dev->dma_mask =3D FSL_MC_DEFAULT_DMA_MASK;
+>   		mc_dev->dev.dma_mask =3D &mc_dev->dma_mask;
+> +		mc_dev->dev.coherent_dma_mask =3D mc_dev->dma_mask;
 
-If that did happen, then userspace can read/write kernel memory as if
-it were user memory, eg. just with write(2). In case it's not clear,
-that is very bad. It has also happened in the past due to bugs.
+This change seems a bit unrelated to the patch subject. I wonder if it=20
+makes sense to split it it in a distinct patch.
 
-Commit 5ea0727b163c ("x86/syscalls: Check address limit on user-mode
-return") added a mechanism to check the addr_limit value before
-returning to userspace. Any call to set_fs() sets a thread flag,
-TIF_FSCHECK, and if we see that on the return to userspace we go out
-of line to check that the addr_limit value is not elevated.
-
-For further info see the above commit, as well as:
-  https://lwn.net/Articles/722267/
-  https://bugs.chromium.org/p/project-zero/issues/detail?id=990
-
-Verified to work on 64-bit Book3S using a POC that objdumps the system
-call handler, and a modified lkdtm_CORRUPT_USER_DS() that doesn't kill
-the caller.
-
-Before:
-  $ sudo ./test-tif-fscheck
-  ...
-  0000000000000000 <.data>:
-         0:       e1 f7 8a 79     rldicl. r10,r12,30,63
-         4:       80 03 82 40     bne     0x384
-         8:       00 40 8a 71     andi.   r10,r12,16384
-         c:       78 0b 2a 7c     mr      r10,r1
-        10:       10 fd 21 38     addi    r1,r1,-752
-        14:       08 00 c2 41     beq-    0x1c
-        18:       58 09 2d e8     ld      r1,2392(r13)
-        1c:       00 00 41 f9     std     r10,0(r1)
-        20:       70 01 61 f9     std     r11,368(r1)
-        24:       78 01 81 f9     std     r12,376(r1)
-        28:       70 00 01 f8     std     r0,112(r1)
-        2c:       78 00 41 f9     std     r10,120(r1)
-        30:       20 00 82 41     beq     0x50
-        34:       a6 42 4c 7d     mftb    r10
-
-After:
-
-  $ sudo ./test-tif-fscheck
-  Killed
-
-And in dmesg:
-  Invalid address limit on user-mode return
-  WARNING: CPU: 1 PID: 3689 at ../include/linux/syscalls.h:260 do_notify_resume+0x140/0x170
-  ...
-  NIP [c00000000001ee50] do_notify_resume+0x140/0x170
-  LR [c00000000001ee4c] do_notify_resume+0x13c/0x170
-  Call Trace:
-    do_notify_resume+0x13c/0x170 (unreliable)
-    ret_from_except_lite+0x70/0x74
-
-Performance overhead is essentially zero in the usual case, because
-the bit is checked as part of the existing _TIF_USER_WORK_MASK check.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/thread_info.h | 8 +++++---
- arch/powerpc/include/asm/uaccess.h     | 8 +++++++-
- arch/powerpc/kernel/signal.c           | 4 ++++
- 3 files changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 5964145db03d..f308dfeb2746 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -79,8 +79,7 @@ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src
- #define TIF_SYSCALL_TRACE	0	/* syscall trace active */
- #define TIF_SIGPENDING		1	/* signal pending */
- #define TIF_NEED_RESCHED	2	/* rescheduling necessary */
--#define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
--					   TIF_NEED_RESCHED */
-+#define TIF_FSCHECK		3	/* Check FS is USER_DS on return */
- #define TIF_32BIT		4	/* 32 bit binary */
- #define TIF_RESTORE_TM		5	/* need to restore TM FP/VEC/VSX */
- #define TIF_PATCH_PENDING	6	/* pending live patching update */
-@@ -99,6 +98,7 @@ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src
- #if defined(CONFIG_PPC64)
- #define TIF_ELF2ABI		18	/* function descriptors must die! */
- #endif
-+#define TIF_POLLING_NRFLAG	19	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -118,13 +118,15 @@ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
- #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
- #define _TIF_NOHZ		(1<<TIF_NOHZ)
-+#define _TIF_FSCHECK		(1<<TIF_FSCHECK)
- #define _TIF_SYSCALL_DOTRACE	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
- 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
- 				 _TIF_NOHZ)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
- 				 _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
--				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
-+				 _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
-+				 _TIF_FSCHECK)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index a91cea15187b..abba80f8ff04 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -31,7 +31,13 @@
- 
- #define get_ds()	(KERNEL_DS)
- #define get_fs()	(current->thread.addr_limit)
--#define set_fs(val)	(current->thread.addr_limit = (val))
-+
-+static inline void set_fs(mm_segment_t fs)
-+{
-+	current->thread.addr_limit = fs;
-+	/* On user-mode return check addr_limit (fs) is correct */
-+	set_thread_flag(TIF_FSCHECK);
-+}
- 
- #define segment_eq(a, b)	((a).seg == (b).seg)
- 
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index 61db86ecd318..fb932f1202c7 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -15,6 +15,7 @@
- #include <linux/key.h>
- #include <linux/context_tracking.h>
- #include <linux/livepatch.h>
-+#include <linux/syscalls.h>
- #include <asm/hw_breakpoint.h>
- #include <linux/uaccess.h>
- #include <asm/unistd.h>
-@@ -150,6 +151,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
- {
- 	user_exit();
- 
-+	/* Check valid addr_limit, TIF check is done there */
-+	addr_limit_user_check();
-+
- 	if (thread_info_flags & _TIF_UPROBE)
- 		uprobe_notify_resume(regs);
- 
--- 
-2.14.1
+Best Regards, Laurentiu=
