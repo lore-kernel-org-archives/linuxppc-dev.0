@@ -1,27 +1,22 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kqwV6mB0zF3WG
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 16:07:06 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id k5-v6so9658048oiw.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 23:07:06 -0700 (PDT)
-MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <20180509130001.24276-5-npiggin@gmail.com>
-References: <20180509130001.24276-1-npiggin@gmail.com>
- <20180509130001.24276-5-npiggin@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Mon, 14 May 2018 08:06:43 +0200
-Message-ID: <CA+7wUswRCMQX3qrqCZYj73TDG4P1x_w6DTN-RNM0OQYQX=gm4A@mail.gmail.com>
-Subject: Re: [PATCH v2 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
- selected
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, linux-arch@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kr4f2XCMzF2ZX
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 16:14:09 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id bi12-v6so6718997plb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 23:14:09 -0700 (PDT)
+Received: from mylaptop.nay.redhat.com ([209.132.188.80])
+ by smtp.gmail.com with ESMTPSA id r5-v6sm12795252pgp.81.2018.05.13.23.14.06
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Sun, 13 May 2018 23:14:07 -0700 (PDT)
+From: Pingfan Liu <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/cpu: nr_cpu_ids should be aligned on threads_per_core
+Date: Mon, 14 May 2018 14:13:58 +0800
+Message-Id: <1526278438-10519-1-git-send-email-kernelfans@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,143 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 9, 2018 at 3:00 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
-> This requires further changes to linker script to KEEP some tables
-> and wildcard compiler generated sections into the right place. This
-> includes pp32 modifications from Christophe Leroy.
->
-> When compiling powernv_defconfig with this option, the resulting
-> kernel is almost 400kB smaller (and still boots):
->
->     text      data       bss        dec   filename
-> 11827621   4810490   1341080   17979191   vmlinux
-> 11752437   4598858   1338776   17690071   vmlinux.dcde
->
-> Mathieu's numbers for custom Mac Mini G4 config has almost 200kB
+With p8 subcore mode, if nr_cpus is not aligned on threads_per_core,
+then we will hit the following panic:
+  [    0.310006] Unpacking initramfs...
+  [    1.105015] Freeing initrd memory: 35968K
+  [    1.105466] rtas_flash: no firmware flash support
+  [    1.105688] Unable to handle kernel paging request for data at address 0x00001035
+  [    1.105768] Faulting instruction address: 0xc000000000099bb8
+  [    1.105837] Oops: Kernel access of bad area, sig: 11 [#1]
+  [    1.105890] LE SMP NR_CPUS=2048 NUMA PowerNV
+  [    1.105947] Modules linked in:
+  [    1.105992] CPU: 8 PID: 11 Comm: migration/8 Not tainted 4.17.0-rc4+ #26
+  [    1.106059] NIP:  c000000000099bb8 LR: c0000000000ac554 CTR: c000000000099b70
+  [    1.106139] REGS: c000000ff649f860 TRAP: 0380   Not tainted  (4.17.0-rc4+)
+  [    1.106205] MSR:  9000000000001033 <SF,HV,ME,IR,DR,RI,LE>  CR: 28004022  XER: 00000000
+  [    1.106293] CFAR: c0000000000ac550 SOFTE: 3
+  [    1.106293] GPR00: c0000000000ac554 c000000ff649fae0 c0000000012e6d00 0000000000000060
+  [    1.106293] GPR04: 0000000000000001 c0000000000ac914 9000000000001033 c000003fffffff80
+  [    1.106293] GPR08: 0000000000000000 0000000000000001 0000000000000000 9000000000001003
+  [    1.106293] GPR12: c000000000099b70 c000000001700000 c000000000141c28 c000000ffa201180
+  [    1.106293] GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+  [    1.106293] GPR20: 0000000000000000 0000000000000000 0000000000000001 c000000fffd13840
+  [    1.106293] GPR24: c000000fffd13838 0000000000000000 0000000000000001 0000000000000010
+  [    1.106293] GPR28: 0000000000000008 0000000000000001 c000000001370548 000000000000000c
+  [    1.106984] NIP [c000000000099bb8] icp_native_cause_ipi+0x48/0x70
+  [    1.107053] LR [c0000000000ac554] pnv_cause_ipi+0x54/0x80
+  [    1.107106] Call Trace:
+  [    1.107137] [c000000ff649fae0] [c0000000000478b4] doorbell_try_core_ipi+0x74/0x90 (unreliable)
+  [    1.107232] [c000000ff649fb10] [c0000000000ac554] pnv_cause_ipi+0x54/0x80
+  [    1.107301] [c000000ff649fb40] [c00000000004ccfc] smp_muxed_ipi_message_pass+0x6c/0x90
+  [    1.107384] [c000000ff649fb80] [c0000000000acbe8] cpu_do_split+0x2b8/0x2f0
+  [    1.107453] [c000000ff649fbf0] [c0000000000acdb8] cpu_update_split_mode+0x68/0x204
+  [    1.107536] [c000000ff649fc40] [c000000000204ab8] multi_cpu_stop+0x1c8/0x200
+  [    1.107617] [c000000ff649fca0] [c000000000204eb4] cpu_stopper_thread+0x114/0x1f0
+  [    1.107699] [c000000ff649fd60] [c000000000148650] smpboot_thread_fn+0x290/0x2a0
+  [    1.107780] [c000000ff649fdc0] [c000000000141d84] kthread+0x164/0x1b0
+  [    1.107850] [c000000ff649fe30] [c00000000000b628] ret_from_kernel_thread+0x5c/0xb4
+  [    1.107929] Instruction dump:
+  [    1.107971] 7c7f1b78 60000000 60000000 3d420004 394ab070 7be31f24 39200001 e90a0000
+  [    1.108058] 3d42001b 394a2650 7d08182a 7d4a182a <99281035> 39000004 7c0004ac 990a000c
+  [    1.108150] ---[ end trace 83dad19c162dc306 ]---
+  [    1.110137]
+  [    2.110227] Kernel panic - not syncing: Fatal exception
 
-Technically this is an oldconfig from debian original config file
-(debian official powerpc kernel package)... tested on a mac mini g4.
+This is caused by that during subcore_init, it IPIs all cpu inside the core, but due to the limitation
+imposed by nr_cpus, there are no mem allocated for percpu cpu_sibling_map.
+To avoid a complicated fix, this patch just forces the nr_cpu_ids to be aligned on thread_per_code
+at the cost of a bit more memory.
 
-> saving. It also had some increase in vmlinux size for as-yet
-> unknown reasons.
->
->     text      data       bss        dec   filename
->  7461457   2475122   1428064   11364643   vmlinux
->  7386425   2364370   1425432   11176227   vmlinux.dcde
->
-> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> [8xx]
-> Tested-by: Mathieu Malaterre <malat@debian.org> [32-bit powermac]
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/Kconfig              |  1 +
->  arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
->  2 files changed, 12 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index c32a181a7cbb..ee6dbe2efc8b 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -205,6 +205,7 @@ config PPC
->         select HAVE_KPROBES
->         select HAVE_KPROBES_ON_FTRACE
->         select HAVE_KRETPROBES
-> +       select HAVE_LD_DEAD_CODE_DATA_ELIMINATION
->         select HAVE_LIVEPATCH                   if HAVE_DYNAMIC_FTRACE_WITH_REGS
->         select HAVE_MEMBLOCK
->         select HAVE_MEMBLOCK_NODE_MAP
-> diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-> index c8af90ff49f0..52a93cdd04bc 100644
-> --- a/arch/powerpc/kernel/vmlinux.lds.S
-> +++ b/arch/powerpc/kernel/vmlinux.lds.S
-> @@ -89,7 +89,7 @@ SECTIONS
->          */
->         .text BLOCK(0) : AT(ADDR(.text) - LOAD_OFFSET) {
->  #ifdef CONFIG_LD_HEAD_STUB_CATCH
-> -               *(.linker_stub_catch);
-> +               KEEP(*(.linker_stub_catch));
->                 . = . ;
->  #endif
->
-> @@ -98,7 +98,7 @@ SECTIONS
->                 ALIGN_FUNCTION();
->  #endif
->                 /* careful! __ftr_alt_* sections need to be close to .text */
-> -               *(.text.hot .text .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
-> +               *(.text.hot TEXT_MAIN .text.fixup .text.unlikely .fixup __ftr_alt_* .ref.text);
->                 SCHED_TEXT
->                 CPUIDLE_TEXT
->                 LOCK_TEXT
-> @@ -170,10 +170,10 @@ SECTIONS
->         .init.data : AT(ADDR(.init.data) - LOAD_OFFSET) {
->                 INIT_DATA
->                 __vtop_table_begin = .;
-> -               *(.vtop_fixup);
-> +               KEEP(*(.vtop_fixup));
->                 __vtop_table_end = .;
->                 __ptov_table_begin = .;
-> -               *(.ptov_fixup);
-> +               KEEP(*(.ptov_fixup));
->                 __ptov_table_end = .;
->         }
->
-> @@ -194,26 +194,26 @@ SECTIONS
->         . = ALIGN(8);
->         __ftr_fixup : AT(ADDR(__ftr_fixup) - LOAD_OFFSET) {
->                 __start___ftr_fixup = .;
-> -               *(__ftr_fixup)
-> +               KEEP(*(__ftr_fixup))
->                 __stop___ftr_fixup = .;
->         }
->         . = ALIGN(8);
->         __mmu_ftr_fixup : AT(ADDR(__mmu_ftr_fixup) - LOAD_OFFSET) {
->                 __start___mmu_ftr_fixup = .;
-> -               *(__mmu_ftr_fixup)
-> +               KEEP(*(__mmu_ftr_fixup))
->                 __stop___mmu_ftr_fixup = .;
->         }
->         . = ALIGN(8);
->         __lwsync_fixup : AT(ADDR(__lwsync_fixup) - LOAD_OFFSET) {
->                 __start___lwsync_fixup = .;
-> -               *(__lwsync_fixup)
-> +               KEEP(*(__lwsync_fixup))
->                 __stop___lwsync_fixup = .;
->         }
->  #ifdef CONFIG_PPC64
->         . = ALIGN(8);
->         __fw_ftr_fixup : AT(ADDR(__fw_ftr_fixup) - LOAD_OFFSET) {
->                 __start___fw_ftr_fixup = .;
-> -               *(__fw_ftr_fixup)
-> +               KEEP(*(__fw_ftr_fixup))
->                 __stop___fw_ftr_fixup = .;
->         }
->  #endif
-> @@ -226,7 +226,7 @@ SECTIONS
->         . = ALIGN(8);
->         .machine.desc : AT(ADDR(.machine.desc) - LOAD_OFFSET) {
->                 __machine_desc_start = . ;
-> -               *(.machine.desc)
-> +               KEEP(*(.machine.desc))
->                 __machine_desc_end = . ;
->         }
->  #ifdef CONFIG_RELOCATABLE
-> @@ -274,7 +274,7 @@ SECTIONS
->         .data : AT(ADDR(.data) - LOAD_OFFSET) {
->                 DATA_DATA
->                 *(.data.rel*)
-> -               *(.sdata)
-> +               *(SDATA_MAIN)
->                 *(.sdata2)
->                 *(.got.plt) *(.got)
->                 *(.plt)
-> @@ -289,7 +289,7 @@ SECTIONS
->
->         .opd : AT(ADDR(.opd) - LOAD_OFFSET) {
->                 __start_opd = .;
-> -               *(.opd)
-> +               KEEP(*(.opd))
->                 __end_opd = .;
->         }
->
-> --
-> 2.17.0
->
+Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+---
+ arch/powerpc/kernel/prom.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 9dbed48..358adb4 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -315,6 +315,7 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	int len;
+ 	int found = -1;
+ 	int found_thread = 0;
++	unsigned int nr_cpus_aligned;
+ 
+ 	/* We are scanning "cpu" nodes only */
+ 	if (type == NULL || strcmp(type, "cpu") != 0)
+@@ -361,7 +362,13 @@ static int __init early_init_dt_scan_cpus(unsigned long node,
+ 	/* Not the boot CPU */
+ 	if (found < 0)
+ 		return 0;
+-
++	/* to work around p8 subcore mode */
++	nr_cpus_aligned = _ALIGN_UP(nr_cpu_ids, nthreads);
++	if (nr_cpus_aligned != nr_cpu_ids) {
++		pr_info("nr_cpus is forced to align up on threads_per_core,"
++			"from %u to %u\n", nr_cpu_ids, nr_cpus_aligned);
++		nr_cpu_ids = nr_cpus_aligned;
++	}
+ 	DBG("boot cpu: logical %d physical %d\n", found,
+ 	    be32_to_cpu(intserv[found_thread]));
+ 	boot_cpuid = found;
+-- 
+2.7.4
