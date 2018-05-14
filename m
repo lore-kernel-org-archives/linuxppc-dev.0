@@ -1,23 +1,42 @@
-Return-Path: <SRS0=ZNcr=IB=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-pg0-x22e.google.com (mail-pg0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l4NL01glzF1nZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 01:28:30 +1000 (AEST)
-Date: Mon, 14 May 2018 11:28:26 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Masahiro
- Yamada <yamada.masahiro@socionext.com>, Segher Boessenkool
- <segher@kernel.crashing.org>
-Subject: Re: [PATCH v3 3/4] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-Message-ID: <20180514112826.1b820335@gandalf.local.home>
-In-Reply-To: <20180514035228.21316-4-npiggin@gmail.com>
-References: <20180514035228.21316-1-npiggin@gmail.com>
- <20180514035228.21316-4-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40l4TY2yPNzF34Z
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 01:33:00 +1000 (AEST)
+Received: by mail-pg0-x22e.google.com with SMTP id v7-v6so2854790pgs.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 08:33:00 -0700 (PDT)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+From: Andy Lutomirski <luto@amacapital.net>
+In-Reply-To: <008010c1-20a1-c307-25ac-8a69d672d031@redhat.com>
+Date: Mon, 14 May 2018 08:32:54 -0700
+Cc: Andy Lutomirski <luto@kernel.org>, linuxram@us.ibm.com,
+ Dave Hansen <dave.hansen@intel.com>, Linux-MM <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>, linux-x86_64@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Message-Id: <E77C6E12-EF2A-435A-AAD4-1554459606F1@amacapital.net>
+References: <20180502132751.05B9F401F3041@oldenburg.str.redhat.com>
+ <248faadb-e484-806f-1485-c34a72a9ca0b@intel.com>
+ <822a28c9-5405-68c2-11bf-0c282887466d@redhat.com>
+ <57459C6F-C8BA-4E2D-99BA-64F35C11FC05@amacapital.net>
+ <6286ba0a-7e09-b4ec-e31f-bd091f5940ff@redhat.com>
+ <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
+ <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
+ <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
+ <20180503021058.GA5670@ram.oc3035372033.ibm.com>
+ <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
+ <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
+ <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
+ <314e1a48-db94-9b37-8793-a95a2082c9e2@redhat.com>
+ <CALCETrUGjN8mhOaLqGcau-pPKm9TQW8k05hZrh52prRNdC5yQQ@mail.gmail.com>
+ <008010c1-20a1-c307-25ac-8a69d672d031@redhat.com>
+To: Florian Weimer <fweimer@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,104 +46,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 14 May 2018 13:52:27 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
 
-> The powerpc toolchain can compile combinations of 32/64 bit and
-> big/little endian, so it's convenient to consider, e.g.,
-> 
->   `CC -m64 -mbig-endian`
-> 
-> To be the C compiler for the purpose of invoking it to build target
-> artifacts. So overriding the the CC variable to include thse flags
 
-                             the                          these
 
-> works for this purpose.
-> 
-> Unfortunately that is not compatible with the way the proposed new
-> Kconfig macro language will work.
-> 
-> After previous patches in this series, these flags can be carefully
-> passed in using flags instead.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> Since v2:
-> - removed extra -EB in the recordmcount script (thanks mpe)
-> 
->  arch/powerpc/Makefile   | 16 +++++++++-------
->  scripts/recordmcount.pl |  7 +++++++
->  2 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 167b26a0780c..6faf1d6ad9dd 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -75,13 +75,15 @@ endif
->  endif
->  
->  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-> -override LD	+= -EL
-> +KBUILD_CFLAGS	+= -mlittle-endian
-> +LDFLAGS		+= -EL
->  LDEMULATION	:= lppc
->  GNUTARGET	:= powerpcle
->  MULTIPLEWORD	:= -mno-multiple
->  KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
->  else
-> -override LD	+= -EB
-> +KBUILD_CFLAGS += $(call cc-option,-mbig-endian)
-> +LDFLAGS		+= -EB
->  LDEMULATION	:= ppc
->  GNUTARGET	:= powerpc
->  MULTIPLEWORD	:= -mmultiple
-> @@ -94,19 +96,19 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
->  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
->  endif
->  
-> -cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
-> -cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
->  ifneq ($(cc-name),clang)
->    cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
->  endif
->  
-> +cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
-> +cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
->  aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
->  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
->  
->  ifeq ($(HAS_BIARCH),y)
-> -override AS	+= -a$(BITS)
-> -override LD	+= -m elf$(BITS)$(LDEMULATION)
-> -override CC	+= -m$(BITS)
-> +KBUILD_CFLAGS	+= -m$(BITS)
-> +KBUILD_AFLAGS	+= -m$(BITS) -Wl,-a$(BITS)
-> +LDFLAGS		+= -m elf$(BITS)$(LDEMULATION)
->  KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
->  endif
->  
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 191eb949d52c..3c67304a7425 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -274,6 +274,13 @@ if ($arch eq "x86_64") {
->      if ($bits == 64) {
->  	$type = ".quad";
->      }
-> +    if ($endian eq "big") {
-> +	    $cc .= " -mbig-endian ";
-> +	    $ld .= " -EB ";
-> +    } else {
-> +	    $cc .= " -mlittle-endian ";
-> +	    $ld .= " -EL ";
-> +    }
+> On May 14, 2018, at 5:01 AM, Florian Weimer <fweimer@redhat.com> wrote:
+>=20
+>> One thing we could do, though: the current initual state on process
+>> creation is all access blocked on all keys.  We could change it so that
+>> half the keys are fully blocked and half are read-only.  Then we could ad=
+d
+>> a PKEY_ALLOC_STRICT or similar that allocates a key with the correct
+>> initial state*and*  does the setsignal thing.  If there are no keys left
+>> with the correct initial state, then it fails.
+>=20
+> The initial PKRU value can currently be configured by the system administr=
+ator.  I fear this approach has too many moving parts to be viable.
+>=20
+>=20
 
-Have you tried building all current archs with function tracing enabled
-to make sure this doesn't break any of them? I can do it if you want.
-
--- Steve
-
->  
->  } elsif ($arch eq "arm") {
->      $alignment = 2;
+Honestly, I think we should drop that option. I don=E2=80=99t see how we can=
+ expect an administrator to do this usefully.=
