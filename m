@@ -1,22 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l5530ytbzF3QW
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 02:00:22 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id n9-v6so5669293pgq.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 09:00:22 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH 2/2] powerpc/powernv: Fix NVRAM sleep in invalid context when
- crashing
-Date: Tue, 15 May 2018 01:59:47 +1000
-Message-Id: <20180514155947.22753-3-npiggin@gmail.com>
-In-Reply-To: <20180514155947.22753-1-npiggin@gmail.com>
-References: <20180514155947.22753-1-npiggin@gmail.com>
+Return-Path: <joe@perches.com>
+Message-ID: <c83bb5ddf36b419c4c01e20384c7b532c9a48cd4.camel@perches.com>
+Subject: Re: [PATCH 00/21] i2c: make use of i2c_8bit_addr_from_msg
+From: Joe Perches <joe@perches.com>
+To: Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org
+Cc: Brendan Higgins <brendanhiggins@google.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Joel Stanley <joel@jms.id.au>, Andrew Jeffery
+ <andrew@aj.id.au>, Guenter Roeck <linux@roeck-us.net>, Uwe
+ =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>, Wolfram Sang
+ <wsa+renesas@sang-engineering.com>,  Peter Korsgaard <jacmet@sunsite.dk>,
+ Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>,
+ Linus Walleij <linus.walleij@linaro.org>, linux-i2c@vger.kernel.org,
+ openbmc@lists.ozlabs.org,  linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org,  linuxppc-dev@lists.ozlabs.org,
+ linux-arm-msm@vger.kernel.org,  linux-soc@vger.kernel.org
+Date: Mon, 14 May 2018 09:11:57 -0700
+In-Reply-To: <20180514145330.4857-1-peda@axentia.se>
+References: <20180514145330.4857-1-peda@axentia.se>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similarly to opal_event_shutdown, opal_nvram_write can be called in
-the crash path with irqs disabled. Special case the delay to avoid
-sleeping in invalid context.
+On Mon, 2018-05-14 at 16:53 +0200, Peter Rosin wrote:
+> Hi!
+> 
+> The nice little inline i2c_8bit_addr_from_msg is not getting
+> enough use. This series improves the situation and drops a
+> bunch of lines in the process.
 
-Cc: stable@vger.kernel.org # v3.2
-Fixes: 3b8070335f ("powerpc/powernv: Fix OPAL NVRAM driver OPAL_BUSY loops")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/platforms/powernv/opal-nvram.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+Perhaps the inline should test for I2C_M_REV_DIR_ADDR
+as there is at least one use like
 
-diff --git a/arch/powerpc/platforms/powernv/opal-nvram.c b/arch/powerpc/platforms/powernv/opal-nvram.c
-index 1bceb95f422d..5584247f5029 100644
---- a/arch/powerpc/platforms/powernv/opal-nvram.c
-+++ b/arch/powerpc/platforms/powernv/opal-nvram.c
-@@ -44,6 +44,10 @@ static ssize_t opal_nvram_read(char *buf, size_t count, loff_t *index)
- 	return count;
- }
- 
-+/*
-+ * This can be called in the panic path with interrupts off, so use
-+ * mdelay in that case.
-+ */
- static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
- {
- 	s64 rc = OPAL_BUSY;
-@@ -58,10 +62,16 @@ static ssize_t opal_nvram_write(char *buf, size_t count, loff_t *index)
- 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
- 		rc = opal_write_nvram(__pa(buf), count, off);
- 		if (rc == OPAL_BUSY_EVENT) {
--			msleep(OPAL_BUSY_DELAY_MS);
-+			if (in_interrupt() || irqs_disabled())
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+			else
-+				msleep(OPAL_BUSY_DELAY_MS);
- 			opal_poll_events(NULL);
- 		} else if (rc == OPAL_BUSY) {
--			msleep(OPAL_BUSY_DELAY_MS);
-+			if (in_interrupt() || irqs_disabled())
-+				mdelay(OPAL_BUSY_DELAY_MS);
-+			else
-+				msleep(OPAL_BUSY_DELAY_MS);
- 		}
- 	}
- 
--- 
-2.17.0
+-               addr = msg->addr << 1;
+-               if (flags & I2C_M_RD)
+-                       addr |= 1;
++               addr = i2c_8bit_addr_from_msg(msg);
+                if (flags & I2C_M_REV_DIR_ADDR)
+                        addr ^= 1;
+
+which look odd
+
+Do any of these changes now no longer need
+the temporary flags variable?
