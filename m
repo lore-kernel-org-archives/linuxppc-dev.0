@@ -1,53 +1,23 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <SRS0=ZNcr=IB=goodmis.org=rostedt@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l4Jc4xy4zF3Yw
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 01:25:20 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4EFJUBG099387
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 11:25:16 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hyc9mjj5w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 11:25:16 -0400
-Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 14 May 2018 16:25:13 +0100
-Subject: Re: [PATCH v10 09/25] mm: protect VMA modifications using VMA
- sequence count
-To: Minchan Kim <minchan@kernel.org>
-Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- sergey.senozhatsky.work@gmail.com, Daniel Jordan
- <daniel.m.jordan@oracle.com>, David Rientjes <rientjes@google.com>,
- Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-10-git-send-email-ldufour@linux.vnet.ibm.com>
- <20180423071941.GD114098@rodete-desktop-imager.corp.google.com>
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 14 May 2018 17:25:02 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40l4NL01glzF1nZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 01:28:30 +1000 (AEST)
+Date: Mon, 14 May 2018 11:28:26 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Masahiro
+ Yamada <yamada.masahiro@socionext.com>, Segher Boessenkool
+ <segher@kernel.crashing.org>
+Subject: Re: [PATCH v3 3/4] powerpc/kbuild: Use flags variables rather than
+ overriding LD/CC/AS
+Message-ID: <20180514112826.1b820335@gandalf.local.home>
+In-Reply-To: <20180514035228.21316-4-npiggin@gmail.com>
+References: <20180514035228.21316-1-npiggin@gmail.com>
+ <20180514035228.21316-4-npiggin@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180423071941.GD114098@rodete-desktop-imager.corp.google.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <3f655c5b-bc0d-1766-d0a0-5645a8bf27ab@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,116 +27,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/04/2018 09:19, Minchan Kim wrote:
-> On Tue, Apr 17, 2018 at 04:33:15PM +0200, Laurent Dufour wrote:
->> The VMA sequence count has been introduced to allow fast detection of
->> VMA modification when running a page fault handler without holding
->> the mmap_sem.
->>
->> This patch provides protection against the VMA modification done in :
->> 	- madvise()
->> 	- mpol_rebind_policy()
->> 	- vma_replace_policy()
->> 	- change_prot_numa()
->> 	- mlock(), munlock()
->> 	- mprotect()
->> 	- mmap_region()
->> 	- collapse_huge_page()
->> 	- userfaultd registering services
->>
->> In addition, VMA fields which will be read during the speculative fault
->> path needs to be written using WRITE_ONCE to prevent write to be split
->> and intermediate values to be pushed to other CPUs.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->> ---
->>  fs/proc/task_mmu.c |  5 ++++-
->>  fs/userfaultfd.c   | 17 +++++++++++++----
->>  mm/khugepaged.c    |  3 +++
->>  mm/madvise.c       |  6 +++++-
->>  mm/mempolicy.c     | 51 ++++++++++++++++++++++++++++++++++-----------------
->>  mm/mlock.c         | 13 ++++++++-----
->>  mm/mmap.c          | 22 +++++++++++++---------
->>  mm/mprotect.c      |  4 +++-
->>  mm/swap_state.c    |  8 ++++++--
->>  9 files changed, 89 insertions(+), 40 deletions(-)
->>
->> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
->> index c486ad4b43f0..aeb417f28839 100644
->> --- a/fs/proc/task_mmu.c
->> +++ b/fs/proc/task_mmu.c
->> @@ -1136,8 +1136,11 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
->>  					goto out_mm;
->>  				}
->>  				for (vma = mm->mmap; vma; vma = vma->vm_next) {
->> -					vma->vm_flags &= ~VM_SOFTDIRTY;
->> +					vm_write_begin(vma);
->> +					WRITE_ONCE(vma->vm_flags,
->> +						   vma->vm_flags & ~VM_SOFTDIRTY);
->>  					vma_set_page_prot(vma);
->> +					vm_write_end(vma);
-> 
-> trivial:
-> 
-> I think It's tricky to maintain that VMA fields to be read during SPF should be
-> (READ|WRITE_ONCE). I think we need some accessor to read/write them rather than
-> raw accessing like like vma_set_page_prot. Maybe spf prefix would be helpful. 
-> 
-> 	vma_spf_set_value(vma, vm_flags, val);
-> 
-> We also add some markers in vm_area_struct's fileds to indicate that
-> people shouldn't access those fields directly.
-> 
-> Just a thought.
+On Mon, 14 May 2018 13:52:27 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-At the beginning I was liking that idea but...
+> The powerpc toolchain can compile combinations of 32/64 bit and
+> big/little endian, so it's convenient to consider, e.g.,
+> 
+>   `CC -m64 -mbig-endian`
+> 
+> To be the C compiler for the purpose of invoking it to build target
+> artifacts. So overriding the the CC variable to include thse flags
 
-I'm not sure this will change a lot the code, most of the time the
-vm_write_begin()/end() are surrounding part of code larger than one VMA
-structure's field change. For this particular case and few others this will be
-applicable but that's not the majority.
+                             the                          these
 
-Thanks,
-Laurent.
+> works for this purpose.
+> 
+> Unfortunately that is not compatible with the way the proposed new
+> Kconfig macro language will work.
+> 
+> After previous patches in this series, these flags can be carefully
+> passed in using flags instead.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+> Since v2:
+> - removed extra -EB in the recordmcount script (thanks mpe)
+> 
+>  arch/powerpc/Makefile   | 16 +++++++++-------
+>  scripts/recordmcount.pl |  7 +++++++
+>  2 files changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 167b26a0780c..6faf1d6ad9dd 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -75,13 +75,15 @@ endif
+>  endif
+>  
+>  ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+> -override LD	+= -EL
+> +KBUILD_CFLAGS	+= -mlittle-endian
+> +LDFLAGS		+= -EL
+>  LDEMULATION	:= lppc
+>  GNUTARGET	:= powerpcle
+>  MULTIPLEWORD	:= -mno-multiple
+>  KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
+>  else
+> -override LD	+= -EB
+> +KBUILD_CFLAGS += $(call cc-option,-mbig-endian)
+> +LDFLAGS		+= -EB
+>  LDEMULATION	:= ppc
+>  GNUTARGET	:= powerpc
+>  MULTIPLEWORD	:= -mmultiple
+> @@ -94,19 +96,19 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+>  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
+>  endif
+>  
+> -cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+> -cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
+>  ifneq ($(cc-name),clang)
+>    cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
+>  endif
+>  
+> +cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
+> +cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+>  aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
+>  aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+>  
+>  ifeq ($(HAS_BIARCH),y)
+> -override AS	+= -a$(BITS)
+> -override LD	+= -m elf$(BITS)$(LDEMULATION)
+> -override CC	+= -m$(BITS)
+> +KBUILD_CFLAGS	+= -m$(BITS)
+> +KBUILD_AFLAGS	+= -m$(BITS) -Wl,-a$(BITS)
+> +LDFLAGS		+= -m elf$(BITS)$(LDEMULATION)
+>  KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
+>  endif
+>  
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 191eb949d52c..3c67304a7425 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -274,6 +274,13 @@ if ($arch eq "x86_64") {
+>      if ($bits == 64) {
+>  	$type = ".quad";
+>      }
+> +    if ($endian eq "big") {
+> +	    $cc .= " -mbig-endian ";
+> +	    $ld .= " -EB ";
+> +    } else {
+> +	    $cc .= " -mlittle-endian ";
+> +	    $ld .= " -EL ";
+> +    }
 
-> 
-> 
->>  				}
->>  				downgrade_write(&mm->mmap_sem);
-> 
-> 
->> diff --git a/mm/swap_state.c b/mm/swap_state.c
->> index fe079756bb18..8a8a402ed59f 100644
->> --- a/mm/swap_state.c
->> +++ b/mm/swap_state.c
->> @@ -575,6 +575,10 @@ static unsigned long swapin_nr_pages(unsigned long offset)
->>   * the readahead.
->>   *
->>   * Caller must hold down_read on the vma->vm_mm if vmf->vma is not NULL.
->> + * This is needed to ensure the VMA will not be freed in our back. In the case
->> + * of the speculative page fault handler, this cannot happen, even if we don't
->> + * hold the mmap_sem. Callees are assumed to take care of reading VMA's fields
-> 
-> I guess reader would be curious on *why* is safe with SPF.
-> Comment about the why could be helpful for reviewer.
-> 
->> + * using READ_ONCE() to read consistent values.
->>   */
->>  struct page *swap_cluster_readahead(swp_entry_t entry, gfp_t gfp_mask,
->>  				struct vm_fault *vmf)
->> @@ -668,9 +672,9 @@ static inline void swap_ra_clamp_pfn(struct vm_area_struct *vma,
->>  				     unsigned long *start,
->>  				     unsigned long *end)
->>  {
->> -	*start = max3(lpfn, PFN_DOWN(vma->vm_start),
->> +	*start = max3(lpfn, PFN_DOWN(READ_ONCE(vma->vm_start)),
->>  		      PFN_DOWN(faddr & PMD_MASK));
->> -	*end = min3(rpfn, PFN_DOWN(vma->vm_end),
->> +	*end = min3(rpfn, PFN_DOWN(READ_ONCE(vma->vm_end)),
->>  		    PFN_DOWN((faddr & PMD_MASK) + PMD_SIZE));
->>  }
->>  
->> -- 
->> 2.7.4
->>
-> 
+Have you tried building all current archs with function tracing enabled
+to make sure this doesn't break any of them? I can do it if you want.
+
+-- Steve
+
+>  
+>  } elsif ($arch eq "arm") {
+>      $alignment = 2;
