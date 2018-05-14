@@ -1,16 +1,30 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 40kwdY3xlYzF2lK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 19:39:28 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>,
- Michael Ellerman <mpe@ellerman.id.au>, Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel v3] powerpc/ioda: Use ibm,
- supported-tce-sizes for IOMMU page size mask
-Date: Mon, 14 May 2018 19:39:22 +1000
-Message-Id: <20180514093922.27179-1-aik@ozlabs.ru>
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kxsv5zVBzF3Rx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 20:35:15 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id w3-v6so5299987pgv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 03:35:15 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH 2/3] hwmon: (ibmpowernv): Add support to read 64 bit
+ sensors
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-hwmon@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org,
+ jdelvare@suse.com, stewart@linux.vnet.ibm.com
+References: <1525688738-9185-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1525688738-9185-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180509172926.GA20996@roeck-us.net>
+ <87y3gmpv8t.fsf@concordia.ellerman.id.au>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <6bcd8e6b-2f95-2ddd-ed6e-50815e46948b@roeck-us.net>
+Date: Mon, 14 May 2018 03:35:09 -0700
+MIME-Version: 1.0
+In-Reply-To: <87y3gmpv8t.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,70 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment we assume that IODA2 and newer PHBs can always do 4K/64K/16M
-IOMMU pages, however this is not the case for POWER9 and now skiboot
-advertises the supported sizes via the device so we use that instead
-of hard coding the mask.
+On 05/14/2018 12:11 AM, Michael Ellerman wrote:
+> Guenter Roeck <linux@roeck-us.net> writes:
+> 
+>> On Mon, May 07, 2018 at 03:55:37PM +0530, Shilpasri G Bhat wrote:
+>>> The firmware has supported for reading sensor values of size u32.
+>>> This patch adds support to use newer firmware functions which allows
+>>> to read the sensors of size u64.
+>>>
+>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>
+>> Acked-by: Guenter Roeck <linux@roeck-us.net>
+>>
+>> I won't apply for the time being since it depends on patch 1/3 which is
+>> outside hwmon.
+> 
+> Do you mind if I take the series via the powerpc tree?
+> 
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v3:
-* use modern device tree accessors
+Fine with me.
 
-v2:
-* added quirk for POWER8 to advertise 16M if skiboot has not provided info
----
- arch/powerpc/platforms/powernv/pci-ioda.c | 30 +++++++++++++++++++++++++++++-
- 1 file changed, 29 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3f9c69d..9731098 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2910,6 +2910,34 @@ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
- 			tbl->it_indirect_levels);
- }
- 
-+static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
-+{
-+	struct pci_controller *hose = phb->hose;
-+	struct device_node *dn = hose->dn;
-+	unsigned long mask = 0;
-+	int i, rc, count;
-+	u32 val;
-+
-+	count = of_property_count_u32_elems(dn, "ibm,supported-tce-sizes");
-+	if (count <= 0) {
-+		mask = SZ_4K | SZ_64K;
-+		/* Add 16M for POWER8 by default */
-+		if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
-+				!cpu_has_feature(CPU_FTR_ARCH_300))
-+			mask |= SZ_16M;
-+		return mask;
-+	}
-+
-+	for (i = 0; i < count; i++) {
-+		rc = of_property_read_u32_index(dn, "ibm,supported-tce-sizes",
-+						i, &val);
-+		if (rc == 0)
-+			mask |= 1ULL << val;
-+	}
-+
-+	return mask;
-+}
-+
- static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 				       struct pnv_ioda_pe *pe)
- {
-@@ -2934,7 +2962,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	pe->table_group.max_dynamic_windows_supported =
- 			IOMMU_TABLE_GROUP_MAX_TABLES;
- 	pe->table_group.max_levels = POWERNV_IOMMU_MAX_LEVELS;
--	pe->table_group.pgsizes = SZ_4K | SZ_64K | SZ_16M;
-+	pe->table_group.pgsizes = pnv_ioda_parse_tce_sizes(phb);
- #ifdef CONFIG_IOMMU_API
- 	pe->table_group.ops = &pnv_pci_ioda2_ops;
- #endif
--- 
-2.11.0
+Guenter
