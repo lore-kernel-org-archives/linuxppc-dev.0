@@ -1,37 +1,53 @@
-Return-Path: <laurentiu.tudor@nxp.com>
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20089.outbound.protection.outlook.com [40.107.2.89])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l1z35dRCzF38W
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 23:39:56 +1000 (AEST)
-From: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-To: Nipun Gupta <nipun.gupta@nxp.com>, "robin.murphy@arm.com"
- <robin.murphy@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
- "mark.rutland@arm.com" <mark.rutland@arm.com>, "catalin.marinas@arm.com"
- <catalin.marinas@arm.com>
-CC: "hch@lst.de" <hch@lst.de>, "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>, "joro@8bytes.org" <joro@8bytes.org>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>, "m.szyprowski@samsung.com"
- <m.szyprowski@samsung.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>,
- "frowand.list@gmail.com" <frowand.list@gmail.com>, "bhelgaas@google.com"
- <bhelgaas@google.com>, "iommu@lists.linux-foundation.org"
- <iommu@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
- "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
-Subject: Re: [PATCH 5/6 v3] bus: fsl-mc: supoprt dma configure for devices on
- fsl-mc bus
-Date: Mon, 14 May 2018 13:39:50 +0000
-Message-ID: <5AF9916E.8000504@nxp.com>
-References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
- <1524824826-29473-6-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1524824826-29473-6-git-send-email-nipun.gupta@nxp.com>
-Content-Type: text/plain; charset="Windows-1252"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40l3TS3D1CzF3cv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 00:47:56 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4EEiJIT099914
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 10:47:53 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hyc9mgrnf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 10:47:53 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 14 May 2018 15:47:50 +0100
+Subject: Re: [PATCH v10 02/25] x86/mm: define
+ ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+To: Punit Agrawal <punit.agrawal@arm.com>, akpm@linux-foundation.org
+Cc: mhocko@kernel.org, peterz@infradead.org, kirill@shutemov.name,
+ ak@linux.intel.com, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan
+ <daniel.m.jordan@oracle.com>, David Rientjes <rientjes@google.com>,
+ Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523975611-15978-3-git-send-email-ldufour@linux.vnet.ibm.com>
+ <87sh72jtmn.fsf@e105922-lin.cambridge.arm.com>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 14 May 2018 16:47:39 +0200
 MIME-Version: 1.0
+In-Reply-To: <87sh72jtmn.fsf@e105922-lin.cambridge.arm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c289a58f-8afa-34c7-2624-c7bd2f6fcf48@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +57,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nipun,
+On 08/05/2018 13:04, Punit Agrawal wrote:
+> Hi Laurent,
+> 
+> Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
+> 
+>> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT which turns on the
+>> Speculative Page Fault handler when building for 64bit.
+>>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/x86/Kconfig | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> index d8983df5a2bc..ebdeb48e4a4a 100644
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -30,6 +30,7 @@ config X86_64
+>>  	select MODULES_USE_ELF_RELA
+>>  	select X86_DEV_DMA_OPS
+>>  	select ARCH_HAS_SYSCALL_WRAPPER
+>> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+> 
+> I'd suggest merging this patch with the one making changes to the
+> architectural fault handler towards the end of the series.
+> 
+> The Kconfig change is closely tied to the architectural support for SPF
+> and makes sense to be in a single patch.
+> 
+> If there's a good reason to keep them as separate patches, please move
+> the architecture Kconfig changes after the patch adding fault handler
+> changes.
+> 
+> It's better to enable the feature once the core infrastructure is merged
+> rather than at the beginning of the series to avoid potential bad
+> fallout from incomplete functionality during bisection.
 
-On 04/27/2018 01:27 PM, Nipun Gupta wrote:
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> ---
->   drivers/bus/fsl-mc/fsl-mc-bus.c | 16 ++++++++++++----
->   1 file changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-=
-bus.c
-> index 5d8266c..624828b 100644
-> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> @@ -127,6 +127,16 @@ static int fsl_mc_bus_uevent(struct device *dev, str=
-uct kobj_uevent_env *env)
->   	return 0;
->   }
->
-> +static int fsl_mc_dma_configure(struct device *dev)
-> +{
-> +	struct device *dma_dev =3D dev;
-> +
-> +	while (dev_is_fsl_mc(dma_dev))
-> +		dma_dev =3D dma_dev->parent;
-> +
-> +	return of_dma_configure(dev, dma_dev->of_node, 0);
-> +}
-> +
->   static ssize_t modalias_show(struct device *dev, struct device_attribut=
-e *attr,
->   			     char *buf)
->   {
-> @@ -148,6 +158,7 @@ struct bus_type fsl_mc_bus_type =3D {
->   	.name =3D "fsl-mc",
->   	.match =3D fsl_mc_bus_match,
->   	.uevent =3D fsl_mc_bus_uevent,
-> +	.dma_configure  =3D fsl_mc_dma_configure,
->   	.dev_groups =3D fsl_mc_dev_groups,
->   };
->   EXPORT_SYMBOL_GPL(fsl_mc_bus_type);
-> @@ -616,6 +627,7 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_des=
-c,
->   		mc_dev->icid =3D parent_mc_dev->icid;
->   		mc_dev->dma_mask =3D FSL_MC_DEFAULT_DMA_MASK;
->   		mc_dev->dev.dma_mask =3D &mc_dev->dma_mask;
-> +		mc_dev->dev.coherent_dma_mask =3D mc_dev->dma_mask;
+Indeed bisection was the reason why Andrew asked me to push the configuration
+enablement on top of the series (https://lkml.org/lkml/2017/10/10/1229).
 
-This change seems a bit unrelated to the patch subject. I wonder if it=20
-makes sense to split it it in a distinct patch.
+I also think it would be better to have the architecture enablement in on patch
+but that would mean that the code will not be build when bisecting without the
+latest patch adding the per architecture code.
 
----
-Best Regards, Laurentiu=
+I'm fine with the both options.
+
+Andrew, what do you think would be the best here ?
+
+Thanks,
+Laurent.
+
+> 
+> All the comments here definitely hold for the arm64 patches that you
+> plan to include with the next update.
+> 
+> Thanks,
+> Punit
+> 
+>>  
+>>  #
+>>  # Arch settings
+> 
