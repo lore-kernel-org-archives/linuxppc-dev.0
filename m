@@ -1,27 +1,33 @@
-Return-Path: <peda@axentia.se>
-Subject: Re: [PATCH 00/21] i2c: make use of i2c_8bit_addr_from_msg
-To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org
-Cc: Brendan Higgins <brendanhiggins@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
- Guenter Roeck <linux@roeck-us.net>,
- =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Wolfram Sang <wsa+renesas@sang-engineering.com>,
- Peter Korsgaard <jacmet@sunsite.dk>, Andy Gross <andy.gross@linaro.org>,
- David Brown <david.brown@linaro.org>,
- Linus Walleij <linus.walleij@linaro.org>, linux-i2c@vger.kernel.org,
- openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-aspeed@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-References: <20180514145330.4857-1-peda@axentia.se>
- <c83bb5ddf36b419c4c01e20384c7b532c9a48cd4.camel@perches.com>
-From: Peter Rosin <peda@axentia.se>
-Message-ID: <29558f7d-1b80-8c6b-cd26-58cab6bc3ee1@axentia.se>
-Date: Mon, 14 May 2018 19:01:23 +0200
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ot0-x242.google.com (mail-ot0-x242.google.com
+ [IPv6:2607:f8b0:4003:c0f::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40l9Jz2xfxzF3hL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 05:10:58 +1000 (AEST)
+Received: by mail-ot0-x242.google.com with SMTP id l22-v6so15585140otj.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 12:10:58 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <c83bb5ddf36b419c4c01e20384c7b532c9a48cd4.camel@perches.com>
-Content-Type: text/plain; charset=utf-8
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180502222430.2a1cced4@roar.ozlabs.ibm.com>
+References: <20180420073414.23169-1-npiggin@gmail.com>
+ <20180420073414.23169-5-npiggin@gmail.com>
+ <CA+7wUswuyn+YgNe732rQAzVmgDBohTMEqwsd76nQ_CH5h7Y5WA@mail.gmail.com>
+ <20180420204104.6e22b136@roar.ozlabs.ibm.com>
+ <CA+7wUsyWu3eweWjwfFoS5FD5yb3OxjLV4-XyErcNA4fJGPCf8Q@mail.gmail.com>
+ <20180421124838.5facd0f7@roar.ozlabs.ibm.com>
+ <CA+7wUsy1KaWc0LJNXieNTtQcfoQyg-kFp10nGoTzVe7CdXYOyg@mail.gmail.com>
+ <20180502222430.2a1cced4@roar.ozlabs.ibm.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 14 May 2018 21:10:35 +0200
+Message-ID: <CA+7wUszfXLeyLDG2PUUsLb6F54HQwjNPypVAxZYKZ+VwJR=zDA@mail.gmail.com>
+Subject: Re: [PATCH 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-arch@vger.kernel.org,
+ Nicolas Pitre <nico@fluxnic.net>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,40 +37,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018-05-14 18:11, Joe Perches wrote:
-> On Mon, 2018-05-14 at 16:53 +0200, Peter Rosin wrote:
->> Hi!
+On Wed, May 2, 2018 at 2:24 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+> On Wed, 2 May 2018 11:17:52 +0200
+> Mathieu Malaterre <malat@debian.org> wrote:
+>
+>> Nick,
 >>
->> The nice little inline i2c_8bit_addr_from_msg is not getting
->> enough use. This series improves the situation and drops a
->> bunch of lines in the process.
-> 
-> Perhaps the inline should test for I2C_M_REV_DIR_ADDR
-> as there is at least one use like
-> 
-> -               addr = msg->addr << 1;
-> -               if (flags & I2C_M_RD)
-> -                       addr |= 1;
-> +               addr = i2c_8bit_addr_from_msg(msg);
->                 if (flags & I2C_M_REV_DIR_ADDR)
->                         addr ^= 1;
-> 
-> which look odd
+>> On Sat, Apr 21, 2018 at 4:48 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> > On Fri, 20 Apr 2018 22:08:27 +0200
+>> > Mathieu Malaterre <malat@debian.org> wrote:
+>> >
+>> >> On Fri, Apr 20, 2018 at 12:41 PM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> >> > On Fri, 20 Apr 2018 12:00:49 +0200
+>> >> > Mathieu Malaterre <malat@debian.org> wrote:
+>> >> >
+>> >> >> On Fri, Apr 20, 2018 at 9:34 AM, Nicholas Piggin <npiggin@gmail.com> wrote:
+>> >> >> > This requires further changes to linker script to KEEP some tables
+>> >> >> > and wildcard compiler generated sections into the right place. This
+>> >> >> > includes pp32 modifications from Christophe Leroy.
+>> >> >> >
+>> >> >> > When compiling powernv_defconfig with this option:
+>> >> >> >
+>> >> >> > text       data      bss       dec        filename
+>> >> >> > 11827621   4810490   1341080   17979191   vmlinux
+>> >> >> > 11752437   4598858   1338776   17690071   vmlinux.dcde
+>> >> >> >
+>> >> >> > Resulting kernel is almost 400kB smaller (and still boots).
+>> >> >> >
+>> >> >> > [ppc32 numbers here]
+>> >> >>
+>> >> >> ^^^
+>> >> >>
+>> >> >> Do you want somebody else to provide those numbers ?
+>> >> >
+>> >> > If you have a booting kernel, yes some more numbers would be good.
+>> >>
+>> >> I've used /boot/config-4.15.0-2-powerpc from my current debian
+>> >> package. Rebuild master with and without option, boot ok, load/unload
+>> >> module ok.
+>> >>
+>> >> $ size nick/vmlinux.with*
+>> >>    text    data     bss     dec     hex filename
+>> >> 7386425 2364370 1425432 11176227 aa8923 nick/vmlinux.with
+>> >> 7461457 2475122 1428064 11364643 ad6923 nick/vmlinux.without
+>> >>
+>> >> This is not clear why with option the size of kernel is slightly bigger:
+>> >>
+>> >> $ du -sk nick/vmlinux.with*
+>> >> 124488 nick/vmlinux.with
+>> >> 124004 nick/vmlinux.without
+>> >
+>> > Not sure. readelf -S vmlinux may show something.
+>> >
+>> > To really get lots of detail, you can add to the top level Makefile:
+>> >
+>> > LDFLAGS_vmlinux += -M
+>>
+>> Here is what I did:
+>>
+>> $ git diff
+>> diff --git a/Makefile b/Makefile
+>> index 619a85ad716b..1a2e3d142a59 100644
+>> --- a/Makefile
+>> +++ b/Makefile
+>> @@ -4,6 +4,7 @@ PATCHLEVEL = 17
+>>  SUBLEVEL = 0
+>>  EXTRAVERSION = -rc3
+>>  NAME = Fearless Coyote
+>> +LDFLAGS_vmlinux += -M
+>
+> That'll get overwritten further down. Put it down with another line
+> that starts with LDFLAGS_vmlinux +=
 
-I say no, because the driver has to also indicate support with
-I2C_FUNC_PROTOCOL_MANGLING and I don't see a sane way to check
-that part of the contract. But what do I know. Seems orthogonal.
+Sorry about that, I was not paying attention :(
 
-> Do any of these changes now no longer need
-> the temporary flags variable?
+Anyway I cannot make sense of the output with -M.
 
-Right, I thought I had made any obvious further simplification made
-possible by these changes, but I overlooked that one. The flags
-variable is certainly over-engineered in i2c-algo-pcf.c and would
-be a good candidate for removal. But that's only patch 3/21.
+Here is a quick summary if needed (with option / without option).
 
-I'll wait for a bit with an update, and Wolfram can adjust this on
-the way in if he feels like it.
+$ ./scripts/bloat-o-meter nick/vmlinux.without nick/vmlinux.with | head
+add/remove: 0/647 grow/shrink: 852/1846 up/down: 11276/-95033 (-83757)
+Function                                     old     new   delta
+SiSInitPtr                                  2212    2600    +388
+xmon_core.isra                              7540    7900    +360
+ata_attach_transport                         840    1032    +192
+via_pmu_interrupt                           2828    3004    +176
+matroxfb_init                               3000    3156    +156
+fbcon_scroll                                3092    3248    +156
+__do_adjtimex                               1716    1868    +152
+fbcon_event_notify                          2044    2184    +140
+$ ./scripts/bloat-o-meter nick/vmlinux.without nick/vmlinux.with | tail
+aty_set_pll18818                             540       -    -540
+sel_ib_pkey_sid                              556       -    -556
+pci_dev_acs_enabled                          608       -    -608
+aa_label_find_merge                          752       -    -752
+drmem_update_dt                              796       -    -796
+powerpc_macros                              1176       -   -1176
+ima_restore_measurement_list                1224       -   -1224
+rtas_os_term_buf                            2048       -   -2048
+vle_opcodes                                 8200       -   -8200
+Total: Before=9927171, After=9843414, chg -0.84%
 
-Cheers,
-Peter
+
+> Thanks,
+> Nick
