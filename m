@@ -3,30 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kzZ03FxBzF3X9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:33 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4EBnLjA036025
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:30 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2hy98m9vu0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kzZ02pV3zF3X8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:32 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4EBnOlI116171
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:29 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hy9jb12g4-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:30 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:29 -0400
 Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Mon, 14 May 2018 12:51:28 +0100
+ Mon, 14 May 2018 12:51:27 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@fb.com, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  naveen.n.rao@linux.vnet.ibm.com
-Subject: [RFC][PATCH bpf v3 3/5] bpf: get JITed function addresses via syscall
-Date: Mon, 14 May 2018 17:21:16 +0530
+Subject: [RFC][PATCH bpf v3 2/5] bpf: powerpc64: add JIT support for
+ multi-function programs
+Date: Mon, 14 May 2018 17:21:15 +0530
 In-Reply-To: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
 References: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20180514115118.8149-3-sandipan@linux.vnet.ibm.com>
+Message-Id: <20180514115118.8149-2-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,112 +37,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds new two new fields to struct bpf_prog_info. For
-multi-function programs, these fields can be used to pass
-a list of kernel symbol addresses for all functions in a
-given program and to userspace using the bpf system call
-with the BPF_OBJ_GET_INFO_BY_FD command.
+This adds support for bpf-to-bpf function calls in the powerpc64
+JIT compiler. The JIT compiler converts the bpf call instructions
+to native branch instructions. After a round of the usual passes,
+the start addresses of the JITed images for the callee functions
+are known. Finally, to fixup the branch target addresses, we need
+to perform an extra pass.
 
-When bpf_jit_kallsyms is enabled, we can get the address
-of the corresponding kernel symbol for a callee function
-and resolve the symbol's name. The address is determined
-by adding the value of the call instruction's imm field
-to __bpf_call_base. This offset gets assigned to the imm
-field by the verifier.
+Because of the address range in which JITed images are allocated
+on powerpc64, the offsets of the start addresses of these images
+from __bpf_call_base are as large as 64 bits. So, for a function
+call, we cannot use the imm field of the instruction to determine
+the callee's address. Instead, we use the alternative method of
+getting it from the list of function addresses in the auxillary
+data of the caller by using the off field as an index.
 
-For some architectures, such as powerpc64, the imm field
-is not large enough to hold this offset.
-
-We resolve this by:
-
-[1] Assigning the subprog id to the imm field of a call
-    instruction in the verifier instead of the offset of
-    the callee's symbol's address from __bpf_call_base.
-
-[2] Determining the address of a callee's corresponding
-    symbol by using the imm field as an index for the
-    list of function addresses now available from the
-    program info.
-
-Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
 Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
- include/uapi/linux/bpf.h |  2 ++
- kernel/bpf/syscall.c     | 18 ++++++++++++++++++
- kernel/bpf/verifier.c    |  7 +------
- 3 files changed, 21 insertions(+), 6 deletions(-)
+v3: Mention briefly about why the offsets are large.
 
-diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
-index 93d5a4eeec2a..b9c9c7690337 100644
---- a/include/uapi/linux/bpf.h
-+++ b/include/uapi/linux/bpf.h
-@@ -2108,6 +2108,8 @@ struct bpf_prog_info {
- 	__u32 xlated_prog_len;
- 	__aligned_u64 jited_prog_insns;
- 	__aligned_u64 xlated_prog_insns;
-+	__aligned_u64 jited_funcs;
-+	__u32 nr_jited_funcs;
- 	__u64 load_time;	/* ns since boottime */
- 	__u32 created_by_uid;
- 	__u32 nr_map_ids;
-diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-index 9b87198deea2..600da849233d 100644
---- a/kernel/bpf/syscall.c
-+++ b/kernel/bpf/syscall.c
-@@ -1924,6 +1924,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 	if (!capable(CAP_SYS_ADMIN)) {
- 		info.jited_prog_len = 0;
- 		info.xlated_prog_len = 0;
-+		info.nr_jited_funcs = 0;
- 		goto done;
- 	}
+v2: Use the off field of the instruction as an index for
+    aux->func to determine the start address of a callee
+    function.
+---
+ arch/powerpc/net/bpf_jit_comp64.c | 79 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 69 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 1bdb1aff0619..25939892d8f7 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -256,7 +256,7 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+ /* Assemble the body code between the prologue & epilogue */
+ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			      struct codegen_context *ctx,
+-			      u32 *addrs)
++			      u32 *addrs, bool extra_pass)
+ {
+ 	const struct bpf_insn *insn = fp->insnsi;
+ 	int flen = fp->len;
+@@ -712,11 +712,23 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			break;
  
-@@ -1972,6 +1973,23 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 		}
- 	}
- 
-+	ulen = info.nr_jited_funcs;
-+	info.nr_jited_funcs = prog->aux->func_cnt;
-+	if (info.nr_jited_funcs && ulen) {
-+		u64 __user *user_jited_funcs = u64_to_user_ptr(info.jited_funcs);
-+		u32 i;
+ 		/*
+-		 * Call kernel helper
++		 * Call kernel helper or bpf function
+ 		 */
+ 		case BPF_JMP | BPF_CALL:
+ 			ctx->seen |= SEEN_FUNC;
+-			func = (u8 *) __bpf_call_base + imm;
 +
-+		/* copy the start addresses of the JITed images for all
-+		 * functions
-+		 */
-+		ulen = min_t(u32, info.nr_jited_funcs, ulen);
-+		for (i = 0; i < ulen; i++) {
-+			if (put_user((u64) prog->aux->func[i]->bpf_func & PAGE_MASK,
-+					&user_jited_funcs[i]))
-+				return -EFAULT;
++			/* bpf function call */
++			if (insn[i].src_reg == BPF_PSEUDO_CALL && extra_pass)
++				if (fp->aux->func && off < fp->aux->func_cnt)
++					/* use the subprog id from the off
++					 * field to lookup the callee address
++					 */
++					func = (u8 *) fp->aux->func[off]->bpf_func;
++				else
++					return -EINVAL;
++			/* kernel helper call */
++			else
++				func = (u8 *) __bpf_call_base + imm;
+ 
+ 			bpf_jit_emit_func_call(image, ctx, (u64)func);
+ 
+@@ -864,6 +876,14 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 	return 0;
+ }
+ 
++struct powerpc64_jit_data {
++	struct bpf_binary_header *header;
++	u32 *addrs;
++	u8 *image;
++	u32 proglen;
++	struct codegen_context ctx;
++};
++
+ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ {
+ 	u32 proglen;
+@@ -871,6 +891,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	u8 *image = NULL;
+ 	u32 *code_base;
+ 	u32 *addrs;
++	struct powerpc64_jit_data *jit_data;
+ 	struct codegen_context cgctx;
+ 	int pass;
+ 	int flen;
+@@ -878,6 +899,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	struct bpf_prog *org_fp = fp;
+ 	struct bpf_prog *tmp_fp;
+ 	bool bpf_blinded = false;
++	bool extra_pass = false;
+ 
+ 	if (!fp->jit_requested)
+ 		return org_fp;
+@@ -891,7 +913,28 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		fp = tmp_fp;
+ 	}
+ 
++	jit_data = fp->aux->jit_data;
++	if (!jit_data) {
++		jit_data = kzalloc(sizeof(*jit_data), GFP_KERNEL);
++		if (!jit_data) {
++			fp = org_fp;
++			goto out;
 +		}
++		fp->aux->jit_data = jit_data;
 +	}
 +
- done:
- 	if (copy_to_user(uinfo, &info, info_len) ||
- 	    put_user(info_len, &uattr->info.info_len))
-diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index aa76879f4fd1..fc864eb3e29d 100644
---- a/kernel/bpf/verifier.c
-+++ b/kernel/bpf/verifier.c
-@@ -5416,17 +5416,12 @@ static int jit_subprogs(struct bpf_verifier_env *env)
- 	 * later look the same as if they were interpreted only.
- 	 */
- 	for (i = 0, insn = prog->insnsi; i < prog->len; i++, insn++) {
--		unsigned long addr;
--
- 		if (insn->code != (BPF_JMP | BPF_CALL) ||
- 		    insn->src_reg != BPF_PSEUDO_CALL)
- 			continue;
- 		insn->off = env->insn_aux_data[i].call_imm;
- 		subprog = find_subprog(env, i + insn->off + 1);
--		addr  = (unsigned long)func[subprog]->bpf_func;
--		addr &= PAGE_MASK;
--		insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
--			    addr - __bpf_call_base;
-+		insn->imm = subprog;
+ 	flen = fp->len;
++	addrs = jit_data->addrs;
++	if (addrs) {
++		cgctx = jit_data->ctx;
++		image = jit_data->image;
++		bpf_hdr = jit_data->header;
++		proglen = jit_data->proglen;
++		alloclen = proglen + FUNCTION_DESCR_SIZE;
++		extra_pass = true;
++		goto skip_init_ctx;
++	}
++
+ 	addrs = kzalloc((flen+1) * sizeof(*addrs), GFP_KERNEL);
+ 	if (addrs == NULL) {
+ 		fp = org_fp;
+@@ -904,10 +947,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
+ 
+ 	/* Scouting faux-generate pass 0 */
+-	if (bpf_jit_build_body(fp, 0, &cgctx, addrs)) {
++	if (bpf_jit_build_body(fp, 0, &cgctx, addrs, false)) {
+ 		/* We hit something illegal or unsupported. */
+ 		fp = org_fp;
+-		goto out;
++		goto out_addrs;
  	}
  
- 	prog->jited = 1;
+ 	/*
+@@ -925,9 +968,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 			bpf_jit_fill_ill_insns);
+ 	if (!bpf_hdr) {
+ 		fp = org_fp;
+-		goto out;
++		goto out_addrs;
+ 	}
+ 
++skip_init_ctx:
+ 	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
+ 
+ 	/* Code generation passes 1-2 */
+@@ -935,7 +979,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		/* Now build the prologue, body code & epilogue for real. */
+ 		cgctx.idx = 0;
+ 		bpf_jit_build_prologue(code_base, &cgctx);
+-		bpf_jit_build_body(fp, code_base, &cgctx, addrs);
++		bpf_jit_build_body(fp, code_base, &cgctx, addrs, extra_pass);
+ 		bpf_jit_build_epilogue(code_base, &cgctx);
+ 
+ 		if (bpf_jit_enable > 1)
+@@ -956,15 +1000,30 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	((u64 *)image)[1] = local_paca->kernel_toc;
+ #endif
+ 
++	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
++
++	if (!fp->is_func || extra_pass) {
++		bpf_jit_binary_lock_ro(bpf_hdr);
++	} else {
++		jit_data->addrs = addrs;
++		jit_data->ctx = cgctx;
++		jit_data->proglen = proglen;
++		jit_data->image = image;
++		jit_data->header = bpf_hdr;
++	}
++
+ 	fp->bpf_func = (void *)image;
+ 	fp->jited = 1;
+ 	fp->jited_len = alloclen;
+ 
+-	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
++	if (!fp->is_func || extra_pass) {
++out_addrs:
++		kfree(addrs);
++		kfree(jit_data);
++		fp->aux->jit_data = NULL;
++	}
+ 
+ out:
+-	kfree(addrs);
+-
+ 	if (bpf_blinded)
+ 		bpf_jit_prog_release_other(fp, fp == org_fp ? tmp_fp : org_fp);
+ 
 -- 
 2.14.3
