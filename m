@@ -1,30 +1,32 @@
-Return-Path: <SRS0=ywzk=IB=linuxfoundation.org=gregkh@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sandipan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kyzV3vwxzF34M
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:25:07 +1000 (AEST)
-Date: Mon, 14 May 2018 13:24:48 +0200
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Nipun Gupta <nipun.gupta@nxp.com>
-Cc: robin.murphy@arm.com, will.deacon@arm.com, robh+dt@kernel.org,
- robh@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com,
- hch@lst.de, joro@8bytes.org, m.szyprowski@samsung.com,
- shawnguo@kernel.org, frowand.list@gmail.com, bhelgaas@google.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, laurentiu.tudor@nxp.com,
- leoyang.li@nxp.com
-Subject: Re: [PATCH v4 5/6] bus: fsl-mc: supoprt dma configure for devices on
- fsl-mc bus
-Message-ID: <20180514112448.GA26428@kroah.com>
-References: <1524824826-29473-1-git-send-email-nipun.gupta@nxp.com>
- <1525069641-8523-1-git-send-email-nipun.gupta@nxp.com>
- <1525069641-8523-6-git-send-email-nipun.gupta@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1525069641-8523-6-git-send-email-nipun.gupta@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kzYz4B1dzF3X1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:35 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4EBnN4T043550
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:33 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hy6je0v5y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:33 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
+ Mon, 14 May 2018 12:51:30 +0100
+From: Sandipan Das <sandipan@linux.vnet.ibm.com>
+To: ast@fb.com, daniel@iogearbox.net
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
+ naveen.n.rao@linux.vnet.ibm.com
+Subject: [RFC][PATCH bpf v3 4/5] tools: bpf: sync bpf uapi header
+Date: Mon, 14 May 2018 17:21:17 +0530
+In-Reply-To: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
+References: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
+Message-Id: <20180514115118.8149-4-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,11 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 30, 2018 at 11:57:20AM +0530, Nipun Gupta wrote:
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> ---
+Syncing the bpf.h uapi header with tools so that struct
+bpf_prog_info has the new fields for storing the kernel
+symbol addresses for the JITed functions in a program.
 
-I can't take patches without any changelog text at all, sorry.  Please
-fix up and resend.
+Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+---
+ tools/include/uapi/linux/bpf.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-greg k-h
+diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
+index 83a95ae388dd..98857dc3469a 100644
+--- a/tools/include/uapi/linux/bpf.h
++++ b/tools/include/uapi/linux/bpf.h
+@@ -2107,6 +2107,8 @@ struct bpf_prog_info {
+ 	__u32 xlated_prog_len;
+ 	__aligned_u64 jited_prog_insns;
+ 	__aligned_u64 xlated_prog_insns;
++	__aligned_u64 jited_funcs;
++	__u32 nr_jited_funcs;
+ 	__u64 load_time;	/* ns since boottime */
+ 	__u32 created_by_uid;
+ 	__u32 nr_map_ids;
+-- 
+2.14.3
