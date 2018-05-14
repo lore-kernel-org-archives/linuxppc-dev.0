@@ -1,23 +1,41 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga05.intel.com (mga05.intel.com [192.55.52.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yinbo.zhu@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0086.outbound.protection.outlook.com [104.47.2.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kt2h43GpzF3Rh
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 17:42:32 +1000 (AEST)
-Date: Mon, 14 May 2018 15:42:09 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: kbuild-all@01.org, linux-kbuild@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH v3 4/4] powerpc/kbuild: move -mprofile-kernel check to
- Kconfig
-Message-ID: <201805141437.vHS2TLQv%fengguang.wu@intel.com>
-References: <20180514035228.21316-5-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kt8r5dWFzF2mr
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 17:47:54 +1000 (AEST)
+From: Yinbo Zhu <yinbo.zhu@nxp.com>
+To: Leo Li <leoyang.li@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark
+ Rutland <mark.rutland@arm.com>, "Catalin Marinas )"
+ <catalin.marinas@arm.com>, "Will Deacon )" <will.deacon@arm.com>, "Lorenzo
+ Pieralisi )" <lorenzo.pieralisi@arm.com>
+CC: Xiaobo Xie <xiaobo.xie@nxp.com>, Ran Wang <ran.wang_1@nxp.com>, Daniel
+ Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Shawn Guo <shawnguo@kernel.org>, Madalin-cristian Bucur
+ <madalin.bucur@nxp.com>, "Z.q. Hou" <zhiqiang.hou@nxp.com>, Jerry Huang
+ <jerry.huang@nxp.com>, "M.h. Lian" <minghuan.lian@nxp.com>, Qiang Zhao
+ <qiang.zhao@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Jiaheng Fan
+ <jiaheng.fan@nxp.com>, Po Liu <po.liu@nxp.com>, Nipun Gupta
+ <nipun.gupta@nxp.com>, =?utf-8?B?SG9yaWEgR2VhbnTEgw==?=
+ <horia.geanta@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>, Sumit Garg
+ <sumit.garg@nxp.com>, costi <constantin.tudor@freescale.com>, Bogdan
+ Purcareata <bogdan.purcareata@nxp.com>, "open list:CLOCKSOURCE, CLOCKEVENT
+ DRIVERS" <linux-kernel@vger.kernel.org>, "open list:OPEN FIRMWARE AND
+ FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "open list:FREESCALE SOC DRIVERS"
+ <linuxppc-dev@lists.ozlabs.org>, Andy Tang <andy.tang@nxp.com>, Ying Zhang
+ <ying.zhang22455@nxp.com>
+Subject: RE: [PATCH 3/9] soc: fsl: set rcpm bit for FTM
+Date: Mon, 14 May 2018 07:47:45 +0000
+Message-ID: <HE1PR0401MB1945EAD443377803A9F9EA5CE99C0@HE1PR0401MB1945.eurprd04.prod.outlook.com>
+References: <20180511033530.7931-1-yinbo.zhu@nxp.com>
+ <20180511033530.7931-3-yinbo.zhu@nxp.com>
+ <AM4PR0401MB16995DFED0376ACE0DD5E7A78F9F0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+In-Reply-To: <AM4PR0401MB16995DFED0376ACE0DD5E7A78F9F0@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180514035228.21316-5-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +45,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nicholas,
-
-I love your patch! Yet something to improve:
-
-[auto build test ERROR on powerpc/next]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/powerpc-patches-for-new-Kconfig-language/20180514-120748
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-config: powerpc-defconfig
-compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        make.cross ARCH=powerpc  defconfig
-        make.cross ARCH=powerpc 
-
-All errors (new ones prefixed by >>):
-
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:468: syntax error
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:467: invalid option
-   make[2]: *** [defconfig] Error 1
-   make[1]: *** [defconfig] Error 2
-   make: *** [sub-make] Error 2
---
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:468: syntax error
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:467: invalid option
-   make[2]: *** [oldconfig] Error 1
-   make[1]: *** [oldconfig] Error 2
-   make: *** [sub-make] Error 2
---
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:468: syntax error
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:467: invalid option
-   make[2]: *** [olddefconfig] Error 1
-   make[2]: Target 'oldnoconfig' not remade because of errors.
-   make[1]: *** [oldnoconfig] Error 2
-   make: *** [sub-make] Error 2
-
-vim +468 arch/powerpc/Kconfig
-
-e05c0e81 Kevin Hao       2013-07-16  443  
-3d72bbc4 Michael Neuling 2013-02-13  444  config PPC_TRANSACTIONAL_MEM
-3d72bbc4 Michael Neuling 2013-02-13  445         bool "Transactional Memory support for POWERPC"
-3d72bbc4 Michael Neuling 2013-02-13  446         depends on PPC_BOOK3S_64
-3d72bbc4 Michael Neuling 2013-02-13  447         depends on SMP
-7b37a123 Michael Neuling 2014-01-08  448         select ALTIVEC
-7b37a123 Michael Neuling 2014-01-08  449         select VSX
-3d72bbc4 Michael Neuling 2013-02-13  450         default n
-3d72bbc4 Michael Neuling 2013-02-13  451         ---help---
-3d72bbc4 Michael Neuling 2013-02-13  452           Support user-mode Transactional Memory on POWERPC.
-3d72bbc4 Michael Neuling 2013-02-13  453  
-951eedeb Nicholas Piggin 2017-05-29  454  config LD_HEAD_STUB_CATCH
-951eedeb Nicholas Piggin 2017-05-29  455  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
-951eedeb Nicholas Piggin 2017-05-29  456  	depends on PPC64
-951eedeb Nicholas Piggin 2017-05-29  457  	default n
-951eedeb Nicholas Piggin 2017-05-29  458  	help
-951eedeb Nicholas Piggin 2017-05-29  459  	  Very large kernels can cause linker branch stubs to be generated by
-951eedeb Nicholas Piggin 2017-05-29  460  	  code in head_64.S, which moves the head text sections out of their
-951eedeb Nicholas Piggin 2017-05-29  461  	  specified location. This option can work around the problem.
-951eedeb Nicholas Piggin 2017-05-29  462  
-951eedeb Nicholas Piggin 2017-05-29  463  	  If unsure, say "N".
-951eedeb Nicholas Piggin 2017-05-29  464  
-8c50b72a Torsten Duwe    2016-03-03  465  config MPROFILE_KERNEL
-8c50b72a Torsten Duwe    2016-03-03  466  	depends on PPC64 && CPU_LITTLE_ENDIAN
-53561d2c Nicholas Piggin 2018-05-14 @467  	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
-8c50b72a Torsten Duwe    2016-03-03 @468  
-
-:::::: The code at line 468 was first introduced by commit
-:::::: 8c50b72a3b4f1f7cdfdfebd233b1cbd121262e65 powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel
-
-:::::: TO: Torsten Duwe <duwe@lst.de>
-:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBMZW8gTGkgDQpTZW50OiAyMDE4
+5bm0NeaciDEy5pelIDE6MDANClRvOiBZaW5ibyBaaHUgPHlpbmJvLnpodUBueHAuY29tPjsgWWlu
+Ym8gWmh1IDx5aW5iby56aHVAbnhwLmNvbT47IFJvYiBIZXJyaW5nIDxyb2JoK2R0QGtlcm5lbC5v
+cmc+OyBNYXJrIFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgQ2F0YWxpbiBNYXJpbmFz
+ICkgPGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tPjsgV2lsbCBEZWFjb24gKSA8d2lsbC5kZWFjb25A
+YXJtLmNvbT47IExvcmVuem8gUGllcmFsaXNpICkgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+
+DQpDYzogWGlhb2JvIFhpZSA8eGlhb2JvLnhpZUBueHAuY29tPjsgUmFuIFdhbmcgPHJhbi53YW5n
+XzFAbnhwLmNvbT47IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPjsg
+VGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+OyBTaGF3biBHdW8gPHNoYXduZ3Vv
+QGtlcm5lbC5vcmc+OyBNYWRhbGluLWNyaXN0aWFuIEJ1Y3VyIDxtYWRhbGluLmJ1Y3VyQG54cC5j
+b20+OyBaLnEuIEhvdSA8emhpcWlhbmcuaG91QG54cC5jb20+OyBKZXJyeSBIdWFuZyA8amVycnku
+aHVhbmdAbnhwLmNvbT47IE0uaC4gTGlhbiA8bWluZ2h1YW4ubGlhbkBueHAuY29tPjsgUWlhbmcg
+WmhhbyA8cWlhbmcuemhhb0BueHAuY29tPjsgRmFiaW8gRXN0ZXZhbSA8ZmFiaW8uZXN0ZXZhbUBu
+eHAuY29tPjsgSmlhaGVuZyBGYW4gPGppYWhlbmcuZmFuQG54cC5jb20+OyBQbyBMaXUgPHBvLmxp
+dUBueHAuY29tPjsgTmlwdW4gR3VwdGEgPG5pcHVuLmd1cHRhQG54cC5jb20+OyBIb3JpYSBHZWFu
+dMSDIDxob3JpYS5nZWFudGFAbnhwLmNvbT47IFByaXlhbmthIEphaW4gPHByaXlhbmthLmphaW5A
+bnhwLmNvbT47IFN1bWl0IEdhcmcgPHN1bWl0LmdhcmdAbnhwLmNvbT47IGNvc3RpIDxjb25zdGFu
+dGluLnR1ZG9yQGZyZWVzY2FsZS5jb20+OyBCb2dkYW4gUHVyY2FyZWF0YSA8Ym9nZGFuLnB1cmNh
+cmVhdGFAbnhwLmNvbT47IG9wZW4gbGlzdDpDTE9DS1NPVVJDRSwgQ0xPQ0tFVkVOVCBEUklWRVJT
+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgb3BlbiBsaXN0Ok9QRU4gRklSTVdBUkUg
+QU5EIEZMQVRURU5FRCBERVZJQ0UgVFJFRSBCSU5ESU5HUyA8ZGV2aWNldHJlZUB2Z2VyLmtlcm5l
+bC5vcmc+OyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IG9wZW4gbGlzdDpG
+UkVFU0NBTEUgU09DIERSSVZFUlMgPGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPjsgQW5k
+eSBUYW5nIDxhbmR5LnRhbmdAbnhwLmNvbT47IFlpbmcgWmhhbmcgPHlpbmcuemhhbmcyMjQ1NUBu
+eHAuY29tPg0KU3ViamVjdDogUkU6IFtQQVRDSCAzLzldIHNvYzogZnNsOiBzZXQgcmNwbSBiaXQg
+Zm9yIEZUTQ0KDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBZaW5i
+byBaaHUgW21haWx0bzp5aW5iby56aHVAbnhwLmNvbV0NCj4gU2VudDogVGh1cnNkYXksIE1heSAx
+MCwgMjAxOCAxMDozNSBQTQ0KPiBUbzogWWluYm8gWmh1IDx5aW5iby56aHVAbnhwLmNvbT47IFJv
+YiBIZXJyaW5nIDxyb2JoK2R0QGtlcm5lbC5vcmc+OyANCj4gTWFyayBSdXRsYW5kIDxtYXJrLnJ1
+dGxhbmRAYXJtLmNvbT47IENhdGFsaW4gTWFyaW5hcyApIA0KPiA8Y2F0YWxpbi5tYXJpbmFzQGFy
+bS5jb20+OyBXaWxsIERlYWNvbiApIDx3aWxsLmRlYWNvbkBhcm0uY29tPjsgDQo+IExvcmVuem8g
+UGllcmFsaXNpICkgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+OyBMZW8gTGkgDQo+IDxsZW95
+YW5nLmxpQG54cC5jb20+DQo+IENjOiBYaWFvYm8gWGllIDx4aWFvYm8ueGllQG54cC5jb20+OyBS
+YW4gV2FuZyA8cmFuLndhbmdfMUBueHAuY29tPjsgDQo+IERhbmllbCBMZXpjYW5vIDxkYW5pZWwu
+bGV6Y2Fub0BsaW5hcm8ub3JnPjsgVGhvbWFzIEdsZWl4bmVyIA0KPiA8dGdseEBsaW51dHJvbml4
+LmRlPjsgU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJuZWwub3JnPjsgDQo+IE1hZGFsaW4tY3Jpc3Rp
+YW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJAbnhwLmNvbT47IFoucS4gSG91IA0KPiA8emhpcWlhbmcu
+aG91QG54cC5jb20+OyBKZXJyeSBIdWFuZyA8amVycnkuaHVhbmdAbnhwLmNvbT47IE0uaC4gTGlh
+biANCj4gPG1pbmdodWFuLmxpYW5AbnhwLmNvbT47IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9Abnhw
+LmNvbT47IEZhYmlvIA0KPiBFc3RldmFtIDxmYWJpby5lc3RldmFtQG54cC5jb20+OyBKaWFoZW5n
+IEZhbiA8amlhaGVuZy5mYW5AbnhwLmNvbT47IFBvIA0KPiBMaXUgPHBvLmxpdUBueHAuY29tPjsg
+TmlwdW4gR3VwdGEgPG5pcHVuLmd1cHRhQG54cC5jb20+OyBIb3JpYSBHZWFudMSDIA0KPiA8aG9y
+aWEuZ2VhbnRhQG54cC5jb20+OyBQcml5YW5rYSBKYWluIDxwcml5YW5rYS5qYWluQG54cC5jb20+
+OyBTdW1pdCANCj4gR2FyZyA8c3VtaXQuZ2FyZ0BueHAuY29tPjsgY29zdGkgPGNvbnN0YW50aW4u
+dHVkb3JAZnJlZXNjYWxlLmNvbT47IA0KPiBCb2dkYW4gUHVyY2FyZWF0YSA8Ym9nZGFuLnB1cmNh
+cmVhdGFAbnhwLmNvbT47IE1lbmcgWWkgDQo+IDxtZW5nLnlpQG54cC5jb20+OyBXYW5nIERvbmdz
+aGVuZyA8ZG9uZ3NoZW5nLndhbmdAbnhwLmNvbT47IG9wZW4gDQo+IGxpc3Q6Q0xPQ0tTT1VSQ0Us
+IENMT0NLRVZFTlQgRFJJVkVSUyA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IA0KPiBv
+cGVuIGxpc3Q6T1BFTiBGSVJNV0FSRSBBTkQgRkxBVFRFTkVEIERFVklDRSBUUkVFIEJJTkRJTkdT
+IA0KPiA8ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc+OyBsaW51eC1hcm0ta2VybmVsQGxpc3Rz
+LmluZnJhZGVhZC5vcmc7IA0KPiBvcGVuIGxpc3Q6RlJFRVNDQUxFIFNPQyBEUklWRVJTIDxsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZz47IEFuZHkgDQo+IFRhbmcgPGFuZHkudGFuZ0BueHAu
+Y29tPjsgWWluZyBaaGFuZyA8eWluZy56aGFuZzIyNDU1QG54cC5jb20+DQo+IFN1YmplY3Q6IFtQ
+QVRDSCAzLzldIHNvYzogZnNsOiBzZXQgcmNwbSBiaXQgZm9yIEZUTQ0KPiANCj4gRnJvbTogWmhh
+bmcgWWluZy0yMjQ1NSA8eWluZy56aGFuZzIyNDU1QG54cC5jb20+DQo+IA0KPiBTZXQgUkNQTSBm
+b3IgRlRNIHdoZW4gdXNpbmcgRlRNIGFzIHdha2V1cCBzb3VyY2UuIEJlY2F1c2UgdGhlIFJDUE0g
+DQo+IG1vZHVsZSBvZiBlYWNoIHBsYXRmb3JtIGhhcyBkaWZmZXJlbnQgYmlnLWVuZCBhbmQgbGl0
+dGxlLWVuZCBtb2RlLCANCj4gdGhlcmUgbmVlZCB0byBzZXQgUkNQTSBkZXBlbmRpbmcgb24gdGhl
+IHBsYXRmb3JtLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogWmhhbmcgWWluZy0yMjQ1NSA8eWluZy56
+aGFuZzIyNDU1QG54cC5jb20+DQo+IFNpZ25lZC1vZmYtYnk6IFlpbmJvIFpodSA8eWluYm8uemh1
+QG54cC5jb20+DQo+IC0tLQ0KPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGltZXIvZnNsLGZ0
+bS10aW1lci50eHQgICAgfCAgICA3ICsrDQo+ICBkcml2ZXJzL3NvYy9mc2wvbGF5ZXJzY2FwZS9m
+dG1fYWxhcm0uYyAgICAgICAgICAgICB8ICAgOTIgKysrKysrKysrKysrKysrKysrLQ0KPiAgMiBm
+aWxlcyBjaGFuZ2VkLCA5NCBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlm
+ZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aW1lci9mc2wsZnRt
+LXRpbWVyLnR4dA0KPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aW1lci9m
+c2wsZnRtLXRpbWVyLnR4dA0KPiBpbmRleCBhYThjNDAyLi4xNWVhZDU4IDEwMDY0NA0KPiAtLS0g
+YS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGltZXIvZnNsLGZ0bS10aW1lci50
+eHQNCj4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RpbWVyL2ZzbCxm
+dG0tdGltZXIudHh0DQo+IEBAIC0zLDYgKzMsMTMgQEAgRnJlZXNjYWxlIEZsZXhUaW1lciBNb2R1
+bGUgKEZUTSkgVGltZXIgIFJlcXVpcmVkDQo+IHByb3BlcnRpZXM6DQo+IA0KPiAgLSBjb21wYXRp
+YmxlIDogc2hvdWxkIGJlICJmc2wsZnRtLXRpbWVyIg0KDQo+SGkgWWluZ2JvLA0KDQo+VGhpcyBp
+cyBhIGNoYW5nZSB0aGF0IGJyZWFrcyBiYWNrd2FyZCBjb21wYXRpYmlsaXR5IGFuZCBub3QgYWNj
+ZXB0YWJsZS4NCkhpIGxlbywNCg0KVGhpcyBwYXRjaCBpZiBJIGtlZXAgdGhlIGNoYW5nZSBhcyBp
+bm5lciBwYXRjaCBhbmQgcHVzaCBpdCB0byBkYXNoLWxpbm51eCBidXQgSSB3aWxsIG5vdCBwdXNo
+IGl0IHRvIHVwc3RyZWFtLCBJdCdzIG9rYXk/DQpBcyBmYXIgYXMgSSBrbm93LCB0aGVyZSB3YXMg
+YSBvdGhlciBwYXRjaCBhbmQgZmlsZSBmb3IgcmVwbGFjZSB0aGUgZmlsZSBhbmQgdGhhdCB0aGUg
+cGF0Y2ggaXMgYWxyZWFkeSBvbiB0aGUgdXBzdHJlYW0gDQpodHRwczovL3BhdGNod29yay5rZXJu
+ZWwub3JnL3BhdGNoLzkzOTEyOTMvDQoNCj4gKyBQb3NzaWJsZSBjb21wYXRpYmxlcyBmb3IgQVJN
+Og0KPiArICAgICAiZnNsLGxzMTAxMmEtZnRtIg0KPiArICAgICAiZnNsLGxzMTAyMWEtZnRtIg0K
+PiArICAgICAiZnNsLGxzMTA0M2EtZnRtIg0KPiArICAgICAiZnNsLGxzMTA0NmEtZnRtIg0KPiAr
+ICAgICAiZnNsLGxzMTA4OGEtZnRtIg0KPiArICAgICAiZnNsLGxzMjA4eGEtZnRtIg0KPiAgLSBy
+ZWcgOiBTcGVjaWZpZXMgYmFzZSBwaHlzaWNhbCBhZGRyZXNzIGFuZCBzaXplIG9mIHRoZSByZWdp
+c3RlciBzZXRzIGZvciB0aGUNCj4gICAgY2xvY2sgZXZlbnQgZGV2aWNlIGFuZCBjbG9jayBzb3Vy
+Y2UgZGV2aWNlLg0KPiAgLSBpbnRlcnJ1cHRzIDogU2hvdWxkIGJlIHRoZSBjbG9jayBldmVudCBk
+ZXZpY2UgaW50ZXJydXB0Lg0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9zb2MvZnNsL2xheWVyc2Nh
+cGUvZnRtX2FsYXJtLmMNCj4gYi9kcml2ZXJzL3NvYy9mc2wvbGF5ZXJzY2FwZS9mdG1fYWxhcm0u
+Yw0KPiBpbmRleCA2Zjk4ODJmLi44MTFkY2ZhIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3NvYy9m
+c2wvbGF5ZXJzY2FwZS9mdG1fYWxhcm0uYw0KPiArKysgYi9kcml2ZXJzL3NvYy9mc2wvbGF5ZXJz
+Y2FwZS9mdG1fYWxhcm0uYw0KDQo+VGhlcmUgaXMgbm8gc3VjaCBmaWxlIGluIHRoZSBtYWlubGlu
+ZSBrZXJuZWwuICBTbyBpdCBsb29rcyBsaWtlIHRoZSBwYXRjaCBzZXQgaXMNCg0KPiBiYXNlZCBv
+biBzb21lIGludGVybmFsIGdpdCByZXBvIGluc3RlYWQgb2YgdGhlIHVwc3RyZWFtIExpbnV4IGtl
+cm5lbC4gIFRoaXMga2luZCBvZiBwYXRjaGVzDQoNCj4gc2hvdWxkbid0IGJlIHNlbnQgdG8gdGhl
+IHVwc3RyZWFtIG1haWxpbmcgbGlzdCBmb3IgcmV2aWV3Lg0KDQo+UmVnYXJkcywNCg0KPkxlbw0K
+VGhpcyBwYXRjaCB3aWxsIG5vdCB0byB1cHN0cmVhbS4NCg0KUmVnYXJkcywNCg0KWWluYm8uDQo=
