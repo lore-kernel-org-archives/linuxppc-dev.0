@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kzZ02pV3zF3X8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:32 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kzZ24hSJzF3X1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 21:51:38 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4EBnOlI116171
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:29 -0400
+ w4EBnOd5012773
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:35 -0400
 Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hy9jb12g4-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2hy8mguekq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 07:51:35 -0400
 Received: from localhost
  by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Mon, 14 May 2018 12:51:27 +0100
+ Mon, 14 May 2018 12:51:33 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@fb.com, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  naveen.n.rao@linux.vnet.ibm.com
-Subject: [RFC][PATCH bpf v3 2/5] bpf: powerpc64: add JIT support for
- multi-function programs
-Date: Mon, 14 May 2018 17:21:15 +0530
+Subject: [RFC][PATCH bpf v3 5/5] tools: bpftool: resolve call addresses
+ without using imm field
+Date: Mon, 14 May 2018 17:21:18 +0530
 In-Reply-To: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
 References: <20180514115118.8149-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20180514115118.8149-2-sandipan@linux.vnet.ibm.com>
+Message-Id: <20180514115118.8149-5-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,198 +37,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds support for bpf-to-bpf function calls in the powerpc64
-JIT compiler. The JIT compiler converts the bpf call instructions
-to native branch instructions. After a round of the usual passes,
-the start addresses of the JITed images for the callee functions
-are known. Finally, to fixup the branch target addresses, we need
-to perform an extra pass.
+Currently, we resolve the callee's address for a JITed function
+call by using the imm field of the call instruction as an offset
+from __bpf_call_base. If bpf_jit_kallsyms is enabled, we further
+use this address to get the callee's kernel symbol's name.
 
-Because of the address range in which JITed images are allocated
-on powerpc64, the offsets of the start addresses of these images
-from __bpf_call_base are as large as 64 bits. So, for a function
-call, we cannot use the imm field of the instruction to determine
-the callee's address. Instead, we use the alternative method of
-getting it from the list of function addresses in the auxillary
-data of the caller by using the off field as an index.
+For some architectures, such as powerpc64, the imm field is not
+large enough to hold this offset. So, instead of assigning this
+offset to the imm field, the verifier now assigns the subprog
+id. Also, a list of kernel symbol addresses for all the JITed
+functions is provided in the program info. We now use the imm
+field as an index for this list to lookup a callee's symbol's
+address and resolve its name.
 
+Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
 Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
-v3: Mention briefly about why the offsets are large.
+ tools/bpf/bpftool/prog.c          | 33 +++++++++++++++++++++++++++++++++
+ tools/bpf/bpftool/xlated_dumper.c | 24 +++++++++++++++++-------
+ tools/bpf/bpftool/xlated_dumper.h |  2 ++
+ 3 files changed, 52 insertions(+), 7 deletions(-)
 
-v2: Use the off field of the instruction as an index for
-    aux->func to determine the start address of a callee
-    function.
----
- arch/powerpc/net/bpf_jit_comp64.c | 79 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 69 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 1bdb1aff0619..25939892d8f7 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -256,7 +256,7 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
- /* Assemble the body code between the prologue & epilogue */
- static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 			      struct codegen_context *ctx,
--			      u32 *addrs)
-+			      u32 *addrs, bool extra_pass)
- {
- 	const struct bpf_insn *insn = fp->insnsi;
- 	int flen = fp->len;
-@@ -712,11 +712,23 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
- 			break;
+diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
+index 9bdfdf2d3fbe..0ba947c7deec 100644
+--- a/tools/bpf/bpftool/prog.c
++++ b/tools/bpf/bpftool/prog.c
+@@ -428,6 +428,8 @@ static int do_dump(int argc, char **argv)
+ 	bool opcodes = false;
+ 	bool visual = false;
+ 	unsigned char *buf;
++	__u64 *addrs = NULL;
++	__u32 nr_addrs = 0;
+ 	__u32 *member_len;
+ 	__u64 *member_ptr;
+ 	ssize_t n;
+@@ -496,11 +498,27 @@ static int do_dump(int argc, char **argv)
+ 		return -1;
+ 	}
  
- 		/*
--		 * Call kernel helper
-+		 * Call kernel helper or bpf function
- 		 */
- 		case BPF_JMP | BPF_CALL:
- 			ctx->seen |= SEEN_FUNC;
--			func = (u8 *) __bpf_call_base + imm;
++	if (info.nr_jited_funcs) {
++		nr_addrs = info.nr_jited_funcs;
++		addrs = (__u64 *) malloc(nr_addrs * sizeof(__u64));
++		if (!addrs) {
++			p_err("mem alloc failed");
++			free(buf);
++			close(fd);
++			return -1;
++		}
++	}
 +
-+			/* bpf function call */
-+			if (insn[i].src_reg == BPF_PSEUDO_CALL && extra_pass)
-+				if (fp->aux->func && off < fp->aux->func_cnt)
-+					/* use the subprog id from the off
-+					 * field to lookup the callee address
-+					 */
-+					func = (u8 *) fp->aux->func[off]->bpf_func;
-+				else
-+					return -EINVAL;
-+			/* kernel helper call */
-+			else
-+				func = (u8 *) __bpf_call_base + imm;
+ 	memset(&info, 0, sizeof(info));
  
- 			bpf_jit_emit_func_call(image, ctx, (u64)func);
+ 	*member_ptr = ptr_to_u64(buf);
+ 	*member_len = buf_size;
  
-@@ -864,6 +876,14 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
++	if (nr_addrs) {
++		info.jited_funcs = ptr_to_u64(addrs);
++		info.nr_jited_funcs = nr_addrs;
++	}
++
+ 	err = bpf_obj_get_info_by_fd(fd, &info, &len);
+ 	close(fd);
+ 	if (err) {
+@@ -513,6 +531,11 @@ static int do_dump(int argc, char **argv)
+ 		goto err_free;
+ 	}
+ 
++	if (info.nr_jited_funcs > nr_addrs) {
++		p_err("too many addresses returned");
++		goto err_free;
++	}
++
+ 	if ((member_len == &info.jited_prog_len &&
+ 	     info.jited_prog_insns == 0) ||
+ 	    (member_len == &info.xlated_prog_len &&
+@@ -558,6 +581,12 @@ static int do_dump(int argc, char **argv)
+ 			dump_xlated_cfg(buf, *member_len);
+ 	} else {
+ 		kernel_syms_load(&dd);
++
++		if (info.nr_jited_funcs) {
++			dd.jited_funcs = (u64 *) info.jited_funcs;
++			dd.nr_jited_funcs = info.nr_jited_funcs;
++		}
++
+ 		if (json_output)
+ 			dump_xlated_json(&dd, buf, *member_len, opcodes);
+ 		else
+@@ -566,10 +595,14 @@ static int do_dump(int argc, char **argv)
+ 	}
+ 
+ 	free(buf);
++	if (nr_addrs)
++		free(addrs);
  	return 0;
+ 
+ err_free:
+ 	free(buf);
++	if (nr_addrs)
++		free(addrs);
+ 	return -1;
  }
  
-+struct powerpc64_jit_data {
-+	struct bpf_binary_header *header;
-+	u32 *addrs;
-+	u8 *image;
-+	u32 proglen;
-+	struct codegen_context ctx;
-+};
-+
- struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+diff --git a/tools/bpf/bpftool/xlated_dumper.c b/tools/bpf/bpftool/xlated_dumper.c
+index 7a3173b76c16..70943612b667 100644
+--- a/tools/bpf/bpftool/xlated_dumper.c
++++ b/tools/bpf/bpftool/xlated_dumper.c
+@@ -178,8 +178,12 @@ static const char *print_call_pcrel(struct dump_data *dd,
+ 		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+ 			 "%+d#%s", insn->off, sym->name);
+ 	else
+-		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+-			 "%+d#0x%lx", insn->off, address);
++		if (address)
++			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
++				 "%+d#0x%lx", insn->off, address);
++		else
++			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
++				 "%+d", insn->off);
+ 	return dd->scratch_buff;
+ }
+ 
+@@ -200,14 +204,20 @@ static const char *print_call(void *private_data,
+ 			      const struct bpf_insn *insn)
  {
- 	u32 proglen;
-@@ -871,6 +891,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	u8 *image = NULL;
- 	u32 *code_base;
- 	u32 *addrs;
-+	struct powerpc64_jit_data *jit_data;
- 	struct codegen_context cgctx;
- 	int pass;
- 	int flen;
-@@ -878,6 +899,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	struct bpf_prog *org_fp = fp;
- 	struct bpf_prog *tmp_fp;
- 	bool bpf_blinded = false;
-+	bool extra_pass = false;
+ 	struct dump_data *dd = private_data;
+-	unsigned long address = dd->address_call_base + insn->imm;
+-	struct kernel_sym *sym;
++	unsigned long address = 0;
++	struct kernel_sym *sym = NULL;
  
- 	if (!fp->jit_requested)
- 		return org_fp;
-@@ -891,7 +913,28 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 		fp = tmp_fp;
- 	}
- 
-+	jit_data = fp->aux->jit_data;
-+	if (!jit_data) {
-+		jit_data = kzalloc(sizeof(*jit_data), GFP_KERNEL);
-+		if (!jit_data) {
-+			fp = org_fp;
-+			goto out;
+-	sym = kernel_syms_search(dd, address);
+-	if (insn->src_reg == BPF_PSEUDO_CALL)
++	if (insn->src_reg == BPF_PSEUDO_CALL) {
++		if (dd->nr_jited_funcs) {
++			address = dd->jited_funcs[insn->imm];
++			sym = kernel_syms_search(dd, address);
 +		}
-+		fp->aux->jit_data = jit_data;
-+	}
-+
- 	flen = fp->len;
-+	addrs = jit_data->addrs;
-+	if (addrs) {
-+		cgctx = jit_data->ctx;
-+		image = jit_data->image;
-+		bpf_hdr = jit_data->header;
-+		proglen = jit_data->proglen;
-+		alloclen = proglen + FUNCTION_DESCR_SIZE;
-+		extra_pass = true;
-+		goto skip_init_ctx;
-+	}
-+
- 	addrs = kzalloc((flen+1) * sizeof(*addrs), GFP_KERNEL);
- 	if (addrs == NULL) {
- 		fp = org_fp;
-@@ -904,10 +947,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
- 
- 	/* Scouting faux-generate pass 0 */
--	if (bpf_jit_build_body(fp, 0, &cgctx, addrs)) {
-+	if (bpf_jit_build_body(fp, 0, &cgctx, addrs, false)) {
- 		/* We hit something illegal or unsupported. */
- 		fp = org_fp;
--		goto out;
-+		goto out_addrs;
- 	}
- 
- 	/*
-@@ -925,9 +968,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 			bpf_jit_fill_ill_insns);
- 	if (!bpf_hdr) {
- 		fp = org_fp;
--		goto out;
-+		goto out_addrs;
- 	}
- 
-+skip_init_ctx:
- 	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
- 
- 	/* Code generation passes 1-2 */
-@@ -935,7 +979,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 		/* Now build the prologue, body code & epilogue for real. */
- 		cgctx.idx = 0;
- 		bpf_jit_build_prologue(code_base, &cgctx);
--		bpf_jit_build_body(fp, code_base, &cgctx, addrs);
-+		bpf_jit_build_body(fp, code_base, &cgctx, addrs, extra_pass);
- 		bpf_jit_build_epilogue(code_base, &cgctx);
- 
- 		if (bpf_jit_enable > 1)
-@@ -956,15 +1000,30 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
- 	((u64 *)image)[1] = local_paca->kernel_toc;
- #endif
- 
-+	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
-+
-+	if (!fp->is_func || extra_pass) {
-+		bpf_jit_binary_lock_ro(bpf_hdr);
+ 		return print_call_pcrel(dd, sym, address, insn);
+-	else
 +	} else {
-+		jit_data->addrs = addrs;
-+		jit_data->ctx = cgctx;
-+		jit_data->proglen = proglen;
-+		jit_data->image = image;
-+		jit_data->header = bpf_hdr;
++		address = dd->address_call_base + insn->imm;
++		sym = kernel_syms_search(dd, address);
+ 		return print_call_helper(dd, sym, address);
 +	}
-+
- 	fp->bpf_func = (void *)image;
- 	fp->jited = 1;
- 	fp->jited_len = alloclen;
+ }
  
--	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
-+	if (!fp->is_func || extra_pass) {
-+out_addrs:
-+		kfree(addrs);
-+		kfree(jit_data);
-+		fp->aux->jit_data = NULL;
-+	}
+ static const char *print_imm(void *private_data,
+diff --git a/tools/bpf/bpftool/xlated_dumper.h b/tools/bpf/bpftool/xlated_dumper.h
+index b34affa7ef2d..6afc03a5fbad 100644
+--- a/tools/bpf/bpftool/xlated_dumper.h
++++ b/tools/bpf/bpftool/xlated_dumper.h
+@@ -47,6 +47,8 @@ struct kernel_sym {
  
- out:
--	kfree(addrs);
--
- 	if (bpf_blinded)
- 		bpf_jit_prog_release_other(fp, fp == org_fp ? tmp_fp : org_fp);
- 
+ struct dump_data {
+ 	unsigned long address_call_base;
++	unsigned long *jited_funcs;
++	unsigned int nr_jited_funcs;
+ 	struct kernel_sym *sym_mapping;
+ 	__u32 sym_count;
+ 	char scratch_buff[SYM_MAX_NAME + 8];
 -- 
 2.14.3
