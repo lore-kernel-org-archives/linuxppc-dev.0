@@ -1,20 +1,29 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40k9d53y5QzF3Rx
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 14:21:29 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id p14-v6so4462081pfh.9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2018 21:21:29 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 3/3] powerpc/64s/radix: optimise pte_update
-Date: Sun, 13 May 2018 14:21:06 +1000
-Message-Id: <20180513042106.15470-4-npiggin@gmail.com>
-In-Reply-To: <20180513042106.15470-1-npiggin@gmail.com>
-References: <20180513042106.15470-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kh0L4TCDzF2S5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 10:09:53 +1000 (AEST)
+Received: from mail-ua0-f173.google.com (mail-ua0-f173.google.com
+ [209.85.217.173]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id w4E09XkD010754
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 09:09:33 +0900
+Received: by mail-ua0-f173.google.com with SMTP id g9-v6so7173687uak.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 17:09:33 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180509130001.24276-1-npiggin@gmail.com>
+References: <20180509130001.24276-1-npiggin@gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 14 May 2018 09:08:52 +0900
+Message-ID: <CAK7LNARVkvM1deFGbdnaTt41hDqV9pCZ1+OCB0dCqPgspLMVPw@mail.gmail.com>
+Subject: Re: [PATCH v2 0/4] LD_DEAD_CODE_DATA_ELIMINATION fixes and enabling
+ for powerpc
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,133 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implementing pte_update with pte_xchg (which uses cmpxchg) is
-inefficient. A single larx/stcx. works fine, no need for the less
-efficient cmpxchg sequence.
+2018-05-09 21:59 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> v2 changes only patch 4, updates the changelog with ppc32 numbers and
+> Tested-by tags, and also use TEXT_MAIN in the linker script as
+> Christophe suggested.
 
-Then remove the memory barriers from the operation. There is a
-requirement for TLB flushing to load mm_cpumask after the store
-that reduces pte permissions, which is moved into the TLB flush
-code.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/book3s/64/radix.h | 25 +++++++++++-----------
- arch/powerpc/mm/mmu_context.c              |  6 ++++--
- arch/powerpc/mm/tlb-radix.c                | 11 +++++++++-
- 3 files changed, 27 insertions(+), 15 deletions(-)
+Replaced with v2.
+Thanks!
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 45bf1e1b1d33..cc9437a542cc 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -127,20 +127,21 @@ extern void radix__mark_initmem_nx(void);
- static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
- 					       unsigned long set)
- {
--	pte_t pte;
--	unsigned long old_pte, new_pte;
--
--	do {
--		pte = READ_ONCE(*ptep);
--		old_pte = pte_val(pte);
--		new_pte = (old_pte | set) & ~clr;
--
--	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
--
--	return old_pte;
-+	__be64 old_be, tmp_be;
-+
-+	__asm__ __volatile__(
-+	"1:	ldarx	%0,0,%3		# pte_update\n"
-+	"	andc	%1,%0,%5	\n"
-+	"	or	%1,%1,%4	\n"
-+	"	stdcx.	%1,0,%3		\n"
-+	"	bne-	1b"
-+	: "=&r" (old_be), "=&r" (tmp_be), "=m" (*ptep)
-+	: "r" (ptep), "r" (cpu_to_be64(set)), "r" (cpu_to_be64(clr))
-+	: "cc" );
-+
-+	return be64_to_cpu(old_be);
- }
- 
--
- static inline unsigned long radix__pte_update(struct mm_struct *mm,
- 					unsigned long addr,
- 					pte_t *ptep, unsigned long clr,
-diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
-index 0ab297c4cfad..f84e14f23e50 100644
---- a/arch/powerpc/mm/mmu_context.c
-+++ b/arch/powerpc/mm/mmu_context.c
-@@ -57,8 +57,10 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
- 		 * in switch_slb(), and/or the store of paca->mm_ctx_id in
- 		 * copy_mm_to_paca().
- 		 *
--		 * On the read side the barrier is in pte_xchg(), which orders
--		 * the store to the PTE vs the load of mm_cpumask.
-+		 * On the other side, the barrier is in mm/tlb-radix.c for
-+		 * radix which orders earlier stores to clear the PTEs vs
-+		 * the load of mm_cpumask. And pte_xchg which does the same
-+		 * thing for hash.
- 		 *
- 		 * This full barrier is needed by membarrier when switching
- 		 * between processes after store to rq->curr, before user-space
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 55f93d66c8d2..b419702b1ba6 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -535,6 +535,11 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 		return;
- 
- 	preempt_disable();
-+	/*
-+	 * Order loads of mm_cpumask vs previous stores to clear ptes before
-+	 * the invalidate. See barrier in switch_mm_irqs_off
-+	 */
-+	smp_mb();
- 	if (!mm_is_thread_local(mm)) {
- 		if (mm_is_singlethreaded(mm)) {
- 			_tlbie_pid(pid, RIC_FLUSH_ALL);
-@@ -560,6 +565,7 @@ void radix__flush_all_mm(struct mm_struct *mm)
- 		return;
- 
- 	preempt_disable();
-+	smp_mb(); /* see radix__flush_tlb_mm */
- 	if (!mm_is_thread_local(mm)) {
- 		_tlbie_pid(pid, RIC_FLUSH_ALL);
- 		if (mm_is_singlethreaded(mm))
-@@ -587,6 +593,7 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 		return;
- 
- 	preempt_disable();
-+	smp_mb(); /* see radix__flush_tlb_mm */
- 	if (mm_is_thread_local(mm)) {
- 		_tlbiel_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
- 	} else {
-@@ -655,6 +662,7 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 		return;
- 
- 	preempt_disable();
-+	smp_mb(); /* see radix__flush_tlb_mm */
- 	if (mm_is_thread_local(mm)) {
- 		local = true;
- 		full = (end == TLB_FLUSH_ALL ||
-@@ -820,6 +828,7 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 		return;
- 
- 	preempt_disable();
-+	smp_mb(); /* see radix__flush_tlb_mm */
- 	if (mm_is_thread_local(mm)) {
- 		local = true;
- 		full = (end == TLB_FLUSH_ALL ||
-@@ -882,7 +891,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 
- 	/* Otherwise first do the PWC, then iterate the pages. */
- 	preempt_disable();
--
-+	smp_mb(); /* see radix__flush_tlb_mm */
- 	if (mm_is_thread_local(mm)) {
- 		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 	} else {
+
+> Thanks,
+> Nick
+>
+> Nicholas Piggin (4):
+>   kbuild: Fix asm-generic/vmlinux.lds.h for
+>     LD_DEAD_CODE_DATA_ELIMINATION
+>   kbuild: LD_DEAD_CODE_DATA_ELIMINATION no
+>     -ffunction-sections/-fdata-sections for module build
+>   kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be selectable if
+>     enabled
+>   powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be selected
+>
+>  Makefile                          |  4 +--
+>  arch/Kconfig                      | 15 ----------
+>  arch/powerpc/Kconfig              |  1 +
+>  arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++-------
+>  include/asm-generic/vmlinux.lds.h | 49 ++++++++++++++++++-------------
+>  init/Kconfig                      | 27 +++++++++++++++++
+>  6 files changed, 70 insertions(+), 48 deletions(-)
+>
+> --
+> 2.17.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-2.17.0
+Best Regards
+Masahiro Yamada
