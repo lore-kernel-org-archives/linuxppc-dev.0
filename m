@@ -1,19 +1,35 @@
-Return-Path: <peda@axentia.se>
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20133.outbound.protection.outlook.com [40.107.2.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40l3db2tfhzF2r9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 00:54:59 +1000 (AEST)
-From: Peter Rosin <peda@axentia.se>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, linuxppc-dev@lists.ozlabs.org,
- linux-i2c@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH 16/21] i2c: pasemi: make use of i2c_8bit_addr_from_msg
-Date: Mon, 14 May 2018 16:53:25 +0200
-Message-Id: <20180514145330.4857-17-peda@axentia.se>
-In-Reply-To: <20180514145330.4857-1-peda@axentia.se>
-References: <20180514145330.4857-1-peda@axentia.se>
+Return-Path: <punit.agrawal@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40l3sG0wRWzF36W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 01:05:05 +1000 (AEST)
+From: Punit Agrawal <punit.agrawal@arm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
+ kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net, jack@suse.cz,
+ Matthew Wilcox <willy@infradead.org>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
+ Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
+ sergey.senozhatsky.work@gmail.com, Daniel Jordan <daniel.m.jordan@oracle.com>,
+ David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, haren@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com,
+ npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
+ Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.
+ ozlabs.org,  x86@kernel.org
+Subject: Re: [PATCH v10 02/25] x86/mm: define
+ ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1523975611-15978-3-git-send-email-ldufour@linux.vnet.ibm.com>
+ <87sh72jtmn.fsf@e105922-lin.cambridge.arm.com>
+ <c289a58f-8afa-34c7-2624-c7bd2f6fcf48@linux.vnet.ibm.com>
+Date: Mon, 14 May 2018 16:05:01 +0100
+In-Reply-To: <c289a58f-8afa-34c7-2624-c7bd2f6fcf48@linux.vnet.ibm.com>
+ (Laurent Dufour's message of "Mon, 14 May 2018 16:47:39 +0200")
+Message-ID: <87o9hi46si.fsf@e105922-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,25 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Because it looks neater.
+Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
 
-Signed-off-by: Peter Rosin <peda@axentia.se>
----
- drivers/i2c/busses/i2c-pasemi.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> On 08/05/2018 13:04, Punit Agrawal wrote:
+>> Hi Laurent,
+>> 
+>> Laurent Dufour <ldufour@linux.vnet.ibm.com> writes:
+>> 
+>>> Set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT which turns on the
+>>> Speculative Page Fault handler when building for 64bit.
+>>>
+>>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>>> ---
+>>>  arch/x86/Kconfig | 1 +
+>>>  1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>>> index d8983df5a2bc..ebdeb48e4a4a 100644
+>>> --- a/arch/x86/Kconfig
+>>> +++ b/arch/x86/Kconfig
+>>> @@ -30,6 +30,7 @@ config X86_64
+>>>  	select MODULES_USE_ELF_RELA
+>>>  	select X86_DEV_DMA_OPS
+>>>  	select ARCH_HAS_SYSCALL_WRAPPER
+>>> +	select ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+>> 
+>> I'd suggest merging this patch with the one making changes to the
+>> architectural fault handler towards the end of the series.
+>> 
+>> The Kconfig change is closely tied to the architectural support for SPF
+>> and makes sense to be in a single patch.
+>> 
+>> If there's a good reason to keep them as separate patches, please move
+>> the architecture Kconfig changes after the patch adding fault handler
+>> changes.
+>> 
+>> It's better to enable the feature once the core infrastructure is merged
+>> rather than at the beginning of the series to avoid potential bad
+>> fallout from incomplete functionality during bisection.
+>
+> Indeed bisection was the reason why Andrew asked me to push the configuration
+> enablement on top of the series (https://lkml.org/lkml/2017/10/10/1229).
 
-diff --git a/drivers/i2c/busses/i2c-pasemi.c b/drivers/i2c/busses/i2c-pasemi.c
-index df1dbc92a024..55fd5c6f3cca 100644
---- a/drivers/i2c/busses/i2c-pasemi.c
-+++ b/drivers/i2c/busses/i2c-pasemi.c
-@@ -121,7 +121,7 @@ static int pasemi_i2c_xfer_msg(struct i2c_adapter *adapter,
- 
- 	read = msg->flags & I2C_M_RD ? 1 : 0;
- 
--	TXFIFO_WR(smbus, MTXFIFO_START | (msg->addr << 1) | read);
-+	TXFIFO_WR(smbus, MTXFIFO_START | i2c_8bit_addr_from_msg(msg));
- 
- 	if (read) {
- 		TXFIFO_WR(smbus, msg->len | MTXFIFO_READ |
--- 
-2.11.0
+The config options have gone through another round of splitting (between
+core and architecture) since that comment. I agree that it still makes
+sense to define the core config - CONFIG_SPECULATIVE_PAGE_FAULT early
+on.
+
+Just to clarify, my suggestion was to only move the architecture configs
+further down.
+
+>
+> I also think it would be better to have the architecture enablement in on patch
+> but that would mean that the code will not be build when bisecting without the
+> latest patch adding the per architecture code.
+
+I don't see that as a problem. But if I'm in the minority, I am OK with
+leaving things as they are as well.
+
+Thanks,
+Punit
