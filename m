@@ -1,29 +1,23 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kh0L4TCDzF2S5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 10:09:53 +1000 (AEST)
-Received: from mail-ua0-f173.google.com (mail-ua0-f173.google.com
- [209.85.217.173]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id w4E09XkD010754
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 09:09:33 +0900
-Received: by mail-ua0-f173.google.com with SMTP id g9-v6so7173687uak.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2018 17:09:33 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20180509130001.24276-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kkYb1Np9zF3HN
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 12:05:23 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH v2 4/4] powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be
+ selected
+In-Reply-To: <20180509130001.24276-5-npiggin@gmail.com>
 References: <20180509130001.24276-1-npiggin@gmail.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 14 May 2018 09:08:52 +0900
-Message-ID: <CAK7LNARVkvM1deFGbdnaTt41hDqV9pCZ1+OCB0dCqPgspLMVPw@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] LD_DEAD_CODE_DATA_ELIMINATION fixes and enabling
- for powerpc
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+ <20180509130001.24276-5-npiggin@gmail.com>
+Date: Mon, 14 May 2018 12:05:19 +1000
+Message-ID: <87a7t3q9eo.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,46 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-05-09 21:59 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
-> v2 changes only patch 4, updates the changelog with ppc32 numbers and
-> Tested-by tags, and also use TEXT_MAIN in the linker script as
-> Christophe suggested.
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-
-Replaced with v2.
-Thanks!
-
-
-> Thanks,
-> Nick
+> This requires further changes to linker script to KEEP some tables
+> and wildcard compiler generated sections into the right place. This
+> includes pp32 modifications from Christophe Leroy.
 >
-> Nicholas Piggin (4):
->   kbuild: Fix asm-generic/vmlinux.lds.h for
->     LD_DEAD_CODE_DATA_ELIMINATION
->   kbuild: LD_DEAD_CODE_DATA_ELIMINATION no
->     -ffunction-sections/-fdata-sections for module build
->   kbuild: Allow LD_DEAD_CODE_DATA_ELIMINATION to be selectable if
->     enabled
->   powerpc: Allow LD_DEAD_CODE_DATA_ELIMINATION to be selected
+> When compiling powernv_defconfig with this option, the resulting
+> kernel is almost 400kB smaller (and still boots):
 >
->  Makefile                          |  4 +--
->  arch/Kconfig                      | 15 ----------
+>     text      data       bss        dec   filename
+> 11827621   4810490   1341080   17979191   vmlinux
+> 11752437   4598858   1338776   17690071   vmlinux.dcde
+>
+> Mathieu's numbers for custom Mac Mini G4 config has almost 200kB
+> saving. It also had some increase in vmlinux size for as-yet
+> unknown reasons.
+>
+>     text      data       bss        dec   filename
+>  7461457   2475122   1428064   11364643   vmlinux
+>  7386425   2364370   1425432   11176227   vmlinux.dcde
+>
+> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr> [8xx]
+> Tested-by: Mathieu Malaterre <malat@debian.org> [32-bit powermac]
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
 >  arch/powerpc/Kconfig              |  1 +
->  arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++-------
->  include/asm-generic/vmlinux.lds.h | 49 ++++++++++++++++++-------------
->  init/Kconfig                      | 27 +++++++++++++++++
->  6 files changed, 70 insertions(+), 48 deletions(-)
->
-> --
-> 2.17.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  arch/powerpc/kernel/vmlinux.lds.S | 22 +++++++++++-----------
+>  2 files changed, 12 insertions(+), 11 deletions(-)
 
+I'm happy for this to go in via the kbuild tree.
 
+As long as it's in linux-next it will get tested by my CI which should
+hopefully shake out any bugs.
 
--- 
-Best Regards
-Masahiro Yamada
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+cheers
