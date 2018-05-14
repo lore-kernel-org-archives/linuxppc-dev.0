@@ -1,23 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40kyBB73jbzF2k0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 20:49:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40kyD63FDxzF3Vk
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2018 20:51:02 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- "open list\:LINUX FOR POWERPC \(32-BIT AND 64-BIT\)"
- <linuxppc-dev@lists.ozlabs.org>, ppaidipe@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/perf: Fix memory allocation for core-imc based on
- num_possible_cpus()
-In-Reply-To: <e36d5e9e-0d93-0641-061e-730444f1c621@linux.vnet.ibm.com>
-References: <1526046222-17842-1-git-send-email-anju@linux.vnet.ibm.com>
- <CAKTCnzn1QmirDJNOJ5hVB0wKE-wpVLePivZocZ8g0e+sA4O7Wg@mail.gmail.com>
- <e36d5e9e-0d93-0641-061e-730444f1c621@linux.vnet.ibm.com>
-Date: Mon, 14 May 2018 20:49:20 +1000
-Message-ID: <87vabqpl5b.fsf@concordia.ellerman.id.au>
+To: stewart@linux.vnet.ibm.com <stewart@linux.vnet.ibm.com>,
+ Philippe Bergheaud <felix@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com,
+ Philippe Bergheaud <felix@linux.ibm.com>, benh@au1.ibm.com
+Subject: Re: [PATCH v4 1/2] cxl: Set the PBCQ Tunnel BAR register when
+ enabling capi mode
+In-Reply-To: <20180514082736.3699-1-felix@linux.ibm.com>
+References: <20180514082736.3699-1-felix@linux.ibm.com>
+Date: Mon, 14 May 2018 20:51:01 +1000
+Message-ID: <87sh6upl2i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,45 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anju T Sudhakar <anju@linux.vnet.ibm.com> writes:
-> On Saturday 12 May 2018 06:05 AM, Balbir Singh wrote:
->> On Fri, May 11, 2018 at 11:43 PM, Anju T Sudhakar
->> <anju@linux.vnet.ibm.com> wrote:
->>> Currently memory is allocated for core-imc based on cpu_present_mask, which has
->>> bit 'cpu' set iff cpu is populated. We use  (cpu number / threads per core)
->>> as as array index to access the memory.
->>> So in a system with guarded cores, since allocation happens based on
->>> cpu_present_mask, (cpu number / threads per core) bounds the index and leads
->>> to memory overflow.
->>>
->>> The issue is exposed in a guard test.
->>> The guard test will make some CPU's as un-available to the system during boot
->>> time as well as at runtime. So when the cpu is unavailable to the system during
->>> boot time, the memory allocation happens depending on the number of available
->>> cpus. And when we access the memory using (cpu number / threads per core) as the
->>> index the system crashes due to memory overflow.
->>>
->>> Allocating memory for core-imc based on cpu_possible_mask, which has
->>> bit 'cpu' set iff cpu is populatable, will fix this issue.
->>>
->>> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
->>> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
->>> ---
->>>   arch/powerpc/perf/imc-pmu.c | 4 ++--
->>>   1 file changed, 2 insertions(+), 2 deletions(-)
->> The changelog does not clearly call out the confusion between present
->> and possible.
->> Guarded CPUs are possible but not present, so it blows a hole when we assume the
->> max length of our allocation is driven by our max present cpus, where
->> as one of the cpus
->> might be online and be beyond the max present cpus, due to the hole..
->>
->> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
->
-> Thanks for the review.
-> OK. I will update the commit message here.
+Philippe Bergheaud <felix@linux.ibm.com> writes:
 
-Yeah please do. "Guarded" CPUs is also not a well understand term, so
-please explain what that means for people who don't know.
+> Skiboot used to set the default Tunnel BAR register value when capi mode
+> was enabled. This approach was ok for the cxl driver, but prevented other
+> drivers from choosing different values.
+>
+> Skiboot versions > 5.11 will not set the default value any longer. This
+> patch modifies the cxl driver to set/reset the Tunnel BAR register when
+> entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
+>
+> That should work with old skiboot (since we are re-writing the value
+> already set) and new skiboot.
+
+But doesn't that mean new skiboot can't boot any old kernel? That seems
+undesirable.
 
 cheers
