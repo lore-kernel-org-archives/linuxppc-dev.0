@@ -1,33 +1,33 @@
 Return-Path: <srs0=h6/a=ic=linux.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lQMz1pqmzF2j6
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lQMz5jwyzF2jK
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 14:59:27 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40lQMy4dGxz8sxv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 14:59:26 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40lQMz1lrSz8wF8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 14:59:27 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40lQMx4Np6z9s0q
+ by ozlabs.org (Postfix) with ESMTPS id 40lQMy1N9Tz9s1w
  for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 14:59:25 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4F4xNk8051522
- for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 00:59:23 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2hyp0dngh9-1
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4F4xLwb090239
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 00:59:24 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2hyreh0xpb-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 00:59:22 -0400
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 00:59:23 -0400
 Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Tue, 15 May 2018 05:59:15 +0100
-Subject: [RFC PATCH 2/5] pseries/fadump: move out platform specific support
- from generic code
+ Tue, 15 May 2018 05:59:21 +0100
+Subject: [RFC PATCH 3/5] powerpc/fadump: enable fadump support on powernv
+ platform
 From: Hari Bathini <hbathini@linux.ibm.com>
 To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
@@ -35,12 +35,13 @@ To: Ananth N Mavinakayanahalli <ananth@linux.ibm.com>,
  Vasant Hegde <hegdevasant@linux.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Stewart Smith <stewart@linux.ibm.com>
-Date: Tue, 15 May 2018 10:29:07 +0530
+Cc: Hari Bathini <hbathini@linux.vnet.ibm.com>
+Date: Tue, 15 May 2018 10:29:15 +0530
 In-Reply-To: <152636029761.17123.10365462779196202939.stgit@hbathini.in.ibm.com>
 References: <152636029761.17123.10365462779196202939.stgit@hbathini.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <152636034758.17123.8715939657263207581.stgit@hbathini.in.ibm.com>
+Message-Id: <152636035587.17123.1844308737319409343.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,874 +51,730 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce callbacks for platform specific operations like register,
-unregister, invalidate & such, and move pseries specific code into
-platform code.
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+Firmware-assisted dump support is enabled for POWERNV platform in P9
+firmware. Make the corresponding updates in kernel to enable fadump
+support on POWERNV platform.
+
+Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/fadump.h               |   71 ---
- arch/powerpc/kernel/fadump.c                    |  502 ++--------------------
- arch/powerpc/kernel/fadump_internal.h           |   33 +
- arch/powerpc/platforms/pseries/Makefile         |    1 
- arch/powerpc/platforms/pseries/pseries_fadump.c |  528 +++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries_fadump.h |   96 ++++
- 6 files changed, 696 insertions(+), 535 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/pseries_fadump.c
- create mode 100644 arch/powerpc/platforms/pseries/pseries_fadump.h
+ arch/powerpc/Kconfig                            |    2 
+ arch/powerpc/include/asm/opal-api.h             |    4 
+ arch/powerpc/include/asm/opal.h                 |    1 
+ arch/powerpc/kernel/fadump.c                    |  397 ++++++++++++++++++++---
+ arch/powerpc/kernel/fadump_internal.h           |   27 ++
+ arch/powerpc/platforms/powernv/Makefile         |    1 
+ arch/powerpc/platforms/powernv/opal-wrappers.S  |    1 
+ arch/powerpc/platforms/powernv/powernv_fadump.c |  337 ++++++++++++++++++++
+ arch/powerpc/platforms/powernv/powernv_fadump.h |   63 ++++
+ arch/powerpc/platforms/pseries/pseries_fadump.c |    8 
+ 10 files changed, 783 insertions(+), 58 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/powernv_fadump.c
+ create mode 100644 arch/powerpc/platforms/powernv/powernv_fadump.h
 
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index 028a8ef..db9465f 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -24,79 +24,8 @@
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c32a181..d749f1f 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -599,7 +599,7 @@ config CRASH_DUMP
  
- #ifdef CONFIG_FA_DUMP
+ config FA_DUMP
+ 	bool "Firmware-assisted dump"
+-	depends on PPC64 && PPC_RTAS
++	depends on PPC64 && (PPC_RTAS || PPC_POWERNV)
+ 	select CRASH_CORE
+ 	select CRASH_DUMP
+ 	help
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index d886a5b..75e8925 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -206,7 +206,8 @@
+ #define OPAL_NPU_TL_SET				161
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+-#define OPAL_LAST				165
++#define OPAL_CONFIGURE_FADUMP			167
++#define OPAL_LAST				167
  
--/* Firmware provided dump sections */
--#define FADUMP_CPU_STATE_DATA	0x0001
--#define FADUMP_HPTE_REGION	0x0002
--#define FADUMP_REAL_MODE_REGION	0x0011
--
--/* Dump request flag */
--#define FADUMP_REQUEST_FLAG	0x00000001
--
--/* Dump status flag */
--#define FADUMP_ERROR_FLAG	0x2000
--
--/* Utility macros */
--#define SKIP_TO_NEXT_CPU(reg_entry)					\
--({									\
--	while (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUEND"))	\
--		reg_entry++;						\
--	reg_entry++;							\
--})
--
- extern int crashing_cpu;
+ /* Device tree flags */
  
--/* Kernel Dump section info */
--struct fadump_section {
--	__be32	request_flag;
--	__be16	source_data_type;
--	__be16	error_flags;
--	__be64	source_address;
--	__be64	source_len;
--	__be64	bytes_dumped;
--	__be64	destination_address;
--};
--
--/* ibm,configure-kernel-dump header. */
--struct fadump_section_header {
--	__be32	dump_format_version;
--	__be16	dump_num_sections;
--	__be16	dump_status_flag;
--	__be32	offset_first_dump_section;
--
--	/* Fields for disk dump option. */
--	__be32	dd_block_size;
--	__be64	dd_block_offset;
--	__be64	dd_num_blocks;
--	__be32	dd_offset_disk_path;
--
--	/* Maximum time allowed to prevent an automatic dump-reboot. */
--	__be32	max_time_auto;
--};
--
--/*
-- * Firmware Assisted dump memory structure. This structure is required for
-- * registering future kernel dump with power firmware through rtas call.
-- *
-- * No disk dump option. Hence disk dump path string section is not included.
-- */
--struct fadump_mem_struct {
--	struct fadump_section_header	header;
--
--	/* Kernel dump sections */
--	struct fadump_section		cpu_state_data;
--	struct fadump_section		hpte_region;
--	struct fadump_section		rmr_region;
--};
--
--#define REGSAVE_AREA_MAGIC		STR_TO_HEX("REGSAVE")
--
--/* Register save area header. */
--struct fadump_reg_save_area_header {
--	__be64		magic_number;
--	__be32		version;
--	__be32		num_cpu_offset;
--};
--
- extern int is_fadump_memory_area(u64 addr, ulong size);
- extern int early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
- 				      int depth, void *data);
+@@ -1040,6 +1041,7 @@ enum OpalSysCooling {
+ enum {
+ 	OPAL_REBOOT_NORMAL		= 0,
+ 	OPAL_REBOOT_PLATFORM_ERROR	= 1,
++	OPAL_REBOOT_MPIPL		= 3,
+ };
+ 
+ /* Argument to OPAL_PCI_TCE_KILL */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 03e1a92..4c1f483 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -43,6 +43,7 @@ int64_t opal_npu_spa_clear_cache(uint64_t phb_id, uint32_t bdfn,
+ 				uint64_t PE_handle);
+ int64_t opal_npu_tl_set(uint64_t phb_id, uint32_t bdfn, long cap,
+ 			uint64_t rate_phys, uint32_t size);
++int64_t opal_configure_fadump(uint64_t command, void *data, uint64_t data_size);
+ int64_t opal_console_write(int64_t term_number, __be64 *length,
+ 			   const uint8_t *buffer);
+ int64_t opal_console_read(int64_t term_number, __be64 *length,
 diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 75cad00..88fafe1 100644
+index 88fafe1..a27e4af 100644
 --- a/arch/powerpc/kernel/fadump.c
 +++ b/arch/powerpc/kernel/fadump.c
-@@ -39,19 +39,19 @@
- #include <asm/debugfs.h>
- #include <asm/page.h>
- #include <asm/prom.h>
--#include <asm/rtas.h>
- #include <asm/fadump.h>
- #include <asm/setup.h>
+@@ -53,8 +53,12 @@ static struct cma *fadump_cma;
+ struct fadump_ops_t *fadump_ops;
  
- #include "fadump_internal.h"
- 
- static struct fw_dump fw_dump;
--static struct fadump_mem_struct fdm;
--static const struct fadump_mem_struct *fdm_active;
- #ifdef CONFIG_CMA
- static struct cma *fadump_cma;
- #endif
- 
-+/* Firmware-Assisted Dump operations for this machine */
-+struct fadump_ops_t *fadump_ops;
-+
  static DEFINE_MUTEX(fadump_mutex);
- struct fad_crash_memory_ranges crash_memory_ranges[INIT_CRASHMEM_RANGES];
+-struct fad_crash_memory_ranges crash_memory_ranges[INIT_CRASHMEM_RANGES];
++struct fadump_memory_range crash_memory_ranges[INIT_CRASHMEM_RANGES];
  int crash_mem_ranges;
-@@ -114,63 +114,13 @@ static int __init fadump_cma_init(void) { return 1; }
- int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
- 				      int depth, void *data)
- {
--	const __be32 *sections;
--	int i, num_sections;
--	int size;
--	const __be32 *token;
--
--	if (depth != 1 || strcmp(uname, "rtas") != 0)
-+	if (depth != 1)
- 		return 0;
++struct fadump_memory_range reserved_ranges[INIT_MEMBLOCK_REGIONS];
++int reserved_ranges_cnt;
++struct fadump_memory_range memory_ranges[2 * INIT_MEMBLOCK_REGIONS];
++int memory_ranges_cnt;
  
--	/*
--	 * Check if Firmware Assisted dump is supported. if yes, check
--	 * if dump has been initiated on last reboot.
--	 */
--	token = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL);
--	if (!token)
--		return 1;
--
--	fw_dump.fadump_supported = 1;
--	fw_dump.ibm_configure_kernel_dump = be32_to_cpu(*token);
--
--	/*
--	 * The 'ibm,kernel-dump' rtas node is present only if there is
--	 * dump data waiting for us.
--	 */
--	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump", NULL);
--	if (fdm_active)
--		fw_dump.dump_active = 1;
--
--	/* Get the sizes required to store dump data for the firmware provided
--	 * dump sections.
--	 * For each dump section type supported, a 32bit cell which defines
--	 * the ID of a supported section followed by two 32 bit cells which
--	 * gives teh size of the section in bytes.
--	 */
--	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
--					&size);
--
--	if (!sections)
--		return 1;
--
--	num_sections = size / (3 * sizeof(u32));
--
--	for (i = 0; i < num_sections; i++, sections += 3) {
--		u32 type = (u32)of_read_number(sections, 1);
-+	if (strcmp(uname, "rtas") == 0)
-+		return pseries_dt_scan_fadump(&fw_dump, node);
- 
--		switch (type) {
--		case FADUMP_CPU_STATE_DATA:
--			fw_dump.cpu_state_data_size =
--					of_read_ulong(&sections[1], 2);
--			break;
--		case FADUMP_HPTE_REGION:
--			fw_dump.hpte_region_size =
--					of_read_ulong(&sections[1], 2);
--			break;
--		}
--	}
--
--	return 1;
-+	return 0;
- }
- 
- /*
-@@ -222,61 +172,6 @@ static void fadump_show_config(void)
- 	pr_debug("Boot memory size  : %lx\n", fw_dump.boot_memory_size);
- }
- 
--static unsigned long init_fadump_mem_struct(struct fadump_mem_struct *fdm,
--				unsigned long addr)
--{
--	if (!fdm)
--		return 0;
--
--	memset(fdm, 0, sizeof(struct fadump_mem_struct));
--	addr = addr & PAGE_MASK;
--
--	fdm->header.dump_format_version = cpu_to_be32(0x00000001);
--	fdm->header.dump_num_sections = cpu_to_be16(3);
--	fdm->header.dump_status_flag = 0;
--	fdm->header.offset_first_dump_section =
--		cpu_to_be32((u32)offsetof(struct fadump_mem_struct, cpu_state_data));
--
--	/*
--	 * Fields for disk dump option.
--	 * We are not using disk dump option, hence set these fields to 0.
--	 */
--	fdm->header.dd_block_size = 0;
--	fdm->header.dd_block_offset = 0;
--	fdm->header.dd_num_blocks = 0;
--	fdm->header.dd_offset_disk_path = 0;
--
--	/* set 0 to disable an automatic dump-reboot. */
--	fdm->header.max_time_auto = 0;
--
--	/* Kernel dump sections */
--	/* cpu state data section. */
--	fdm->cpu_state_data.request_flag = cpu_to_be32(FADUMP_REQUEST_FLAG);
--	fdm->cpu_state_data.source_data_type = cpu_to_be16(FADUMP_CPU_STATE_DATA);
--	fdm->cpu_state_data.source_address = 0;
--	fdm->cpu_state_data.source_len = cpu_to_be64(fw_dump.cpu_state_data_size);
--	fdm->cpu_state_data.destination_address = cpu_to_be64(addr);
--	addr += fw_dump.cpu_state_data_size;
--
--	/* hpte region section */
--	fdm->hpte_region.request_flag = cpu_to_be32(FADUMP_REQUEST_FLAG);
--	fdm->hpte_region.source_data_type = cpu_to_be16(FADUMP_HPTE_REGION);
--	fdm->hpte_region.source_address = 0;
--	fdm->hpte_region.source_len = cpu_to_be64(fw_dump.hpte_region_size);
--	fdm->hpte_region.destination_address = cpu_to_be64(addr);
--	addr += fw_dump.hpte_region_size;
--
--	/* RMA region section */
--	fdm->rmr_region.request_flag = cpu_to_be32(FADUMP_REQUEST_FLAG);
--	fdm->rmr_region.source_data_type = cpu_to_be16(FADUMP_REAL_MODE_REGION);
--	fdm->rmr_region.source_address = cpu_to_be64(RMA_START);
--	fdm->rmr_region.source_len = cpu_to_be64(fw_dump.boot_memory_size);
--	fdm->rmr_region.destination_address = cpu_to_be64(addr);
--	addr += fw_dump.boot_memory_size;
--
--	return addr;
--}
--
- /**
-  * fadump_calculate_reserve_size(): reserve variable boot area 5% of System RAM
-  *
-@@ -407,16 +302,19 @@ int __init fadump_reserve_mem(void)
- 	 * If dump is active then we have already calculated the size during
- 	 * first kernel.
- 	 */
--	if (fdm_active)
--		fw_dump.boot_memory_size = be64_to_cpu(fdm_active->rmr_region.source_len);
-+	if (fw_dump.dump_active)
-+		fw_dump.boot_memory_size = fw_dump.rmr_source_len;
- 	else {
- 		fw_dump.boot_memory_size = fadump_calculate_reserve_size();
  #ifdef CONFIG_CMA
- 		fw_dump.boot_memory_size = ALIGN(fw_dump.boot_memory_size,
--							FADUMP_CMA_ALIGNMENT);
-+						 FADUMP_CMA_ALIGNMENT);
- #endif
-+		fw_dump.rmr_source_len = fw_dump.boot_memory_size;
- 	}
+ /*
+@@ -120,6 +124,9 @@ int __init early_init_dt_scan_fw_dump(unsigned long node, const char *uname,
+ 	if (strcmp(uname, "rtas") == 0)
+ 		return pseries_dt_scan_fadump(&fw_dump, node);
  
-+	size = get_fadump_area_size();
++	if (strcmp(uname, "ibm,dump") == 0)
++		return powernv_dt_scan_fadump(&fw_dump, node);
 +
- 	/*
- 	 * Calculate the memory boundary.
- 	 * If memory_limit is less than actual memory boundary then reserve
-@@ -425,7 +323,6 @@ int __init fadump_reserve_mem(void)
- 	 * specified memory_limit.
- 	 */
- 	if (memory_limit && memory_limit < memblock_end_of_DRAM()) {
--		size = get_fadump_area_size();
- 		if ((memory_limit + size) < memblock_end_of_DRAM())
- 			memory_limit += size;
- 		else
-@@ -439,8 +336,6 @@ int __init fadump_reserve_mem(void)
- 		memory_boundary = memblock_end_of_DRAM();
- 
- 	if (fw_dump.dump_active) {
--		pr_info("Firmware-assisted dump is active.\n");
--
- #ifdef CONFIG_HUGETLB_PAGE
- 		/*
- 		 * FADump capture kernel doesn't care much about hugepages.
-@@ -460,14 +355,11 @@ int __init fadump_reserve_mem(void)
- 		fadump_reserve_crash_area(base, size);
- 
- 		fw_dump.fadumphdr_addr =
--				be64_to_cpu(fdm_active->rmr_region.destination_address) +
--				be64_to_cpu(fdm_active->rmr_region.source_len);
--		pr_debug("fadumphdr_addr = %pa\n", &fw_dump.fadumphdr_addr);
-+			fadump_ops->get_meta_area_start(&fw_dump);
-+		pr_debug("fadumphdr_addr = %#016lx\n", fw_dump.fadumphdr_addr);
- 		fw_dump.reserve_dump_area_start = base;
- 		fw_dump.reserve_dump_area_size = size;
- 	} else {
--		size = get_fadump_area_size();
--
- 		/*
- 		 * Reserve memory at an offset closer to bottom of the RAM to
- 		 * minimize the impact of memory hot-remove operation. We can't
-@@ -533,62 +425,6 @@ static int __init early_fadump_reserve_mem(char *p)
- }
- early_param("fadump_reserve_mem", early_fadump_reserve_mem);
- 
--static int register_fw_dump(struct fadump_mem_struct *fdm)
--{
--	int rc, err;
--	unsigned int wait_time;
--
--	pr_debug("Registering for firmware-assisted kernel dump...\n");
--
--	/* TODO: Add upper time limit for the delay */
--	do {
--		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
--			FADUMP_REGISTER, fdm,
--			sizeof(struct fadump_mem_struct));
--
--		wait_time = rtas_busy_delay_time(rc);
--		if (wait_time)
--			mdelay(wait_time);
--
--	} while (wait_time);
--
--	err = -EIO;
--	switch (rc) {
--	default:
--		pr_err("Failed to register. Unknown Error(%d).\n", rc);
--		break;
--	case -1:
--		printk(KERN_ERR "Failed to register firmware-assisted kernel"
--			" dump. Hardware Error(%d).\n", rc);
--		break;
--	case -3:
--		if (!is_boot_memory_area_contiguous(&fw_dump))
--			pr_err("Can't have holes in boot memory area while "
--			       "registering fadump\n");
--		else if (!is_reserved_memory_area_contiguous(&fw_dump))
--			pr_err("Can't have holes in reserved memory area while"
--			       " registering fadump\n");
--
--		printk(KERN_ERR "Failed to register firmware-assisted kernel"
--			" dump. Parameter Error(%d).\n", rc);
--		err = -EINVAL;
--		break;
--	case -9:
--		printk(KERN_ERR "firmware-assisted kernel dump is already "
--			" registered.");
--		fw_dump.dump_registered = 1;
--		err = -EEXIST;
--		break;
--	case 0:
--		printk(KERN_INFO "firmware-assisted kernel dump registration"
--			" is successful\n");
--		fw_dump.dump_registered = 1;
--		err = 0;
--		break;
--	}
--	return err;
--}
--
- void crash_fadump(struct pt_regs *regs, const char *str)
- {
- 	struct fadump_crash_info_header *fdh = NULL;
-@@ -631,173 +467,7 @@ void crash_fadump(struct pt_regs *regs, const char *str)
- 
- 	fdh->online_mask = *cpu_online_mask;
- 
--	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
--	rtas_os_term((char *)str);
--}
--
--static struct fadump_reg_entry*
--fadump_read_registers(struct fadump_reg_entry *reg_entry, struct pt_regs *regs)
--{
--	memset(regs, 0, sizeof(struct pt_regs));
--
--	while (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUEND")) {
--		fadump_set_regval(regs, be64_to_cpu(reg_entry->reg_id),
--					be64_to_cpu(reg_entry->reg_value));
--		reg_entry++;
--	}
--	reg_entry++;
--	return reg_entry;
--}
--
--/*
-- * Read CPU state dump data and convert it into ELF notes.
-- * The CPU dump starts with magic number "REGSAVE". NumCpusOffset should be
-- * used to access the data to allow for additional fields to be added without
-- * affecting compatibility. Each list of registers for a CPU starts with
-- * "CPUSTRT" and ends with "CPUEND". Each register entry is of 16 bytes,
-- * 8 Byte ASCII identifier and 8 Byte register value. The register entry
-- * with identifier "CPUSTRT" and "CPUEND" contains 4 byte cpu id as part
-- * of register value. For more details refer to PAPR document.
-- *
-- * Only for the crashing cpu we ignore the CPU dump data and get exact
-- * state from fadump crash info structure populated by first kernel at the
-- * time of crash.
-- */
--static int __init fadump_build_cpu_notes(const struct fadump_mem_struct *fdm)
--{
--	struct fadump_reg_save_area_header *reg_header;
--	struct fadump_reg_entry *reg_entry;
--	struct fadump_crash_info_header *fdh = NULL;
--	void *vaddr;
--	unsigned long addr;
--	u32 num_cpus, *note_buf;
--	struct pt_regs regs;
--	int i, rc = 0, cpu = 0;
--
--	if (!fdm->cpu_state_data.bytes_dumped)
--		return -EINVAL;
--
--	addr = be64_to_cpu(fdm->cpu_state_data.destination_address);
--	vaddr = __va(addr);
--
--	reg_header = vaddr;
--	if (be64_to_cpu(reg_header->magic_number) != REGSAVE_AREA_MAGIC) {
--		printk(KERN_ERR "Unable to read register save area.\n");
--		return -ENOENT;
--	}
--	pr_debug("--------CPU State Data------------\n");
--	pr_debug("Magic Number: %llx\n", be64_to_cpu(reg_header->magic_number));
--	pr_debug("NumCpuOffset: %x\n", be32_to_cpu(reg_header->num_cpu_offset));
--
--	vaddr += be32_to_cpu(reg_header->num_cpu_offset);
--	num_cpus = be32_to_cpu(*((__be32 *)(vaddr)));
--	pr_debug("NumCpus     : %u\n", num_cpus);
--	vaddr += sizeof(u32);
--	reg_entry = (struct fadump_reg_entry *)vaddr;
--
--	/* Allocate buffer to hold cpu crash notes. */
--	fw_dump.cpu_notes_buf_size = num_cpus * sizeof(note_buf_t);
--	fw_dump.cpu_notes_buf_size = PAGE_ALIGN(fw_dump.cpu_notes_buf_size);
--	note_buf = fadump_cpu_notes_buf_alloc(fw_dump.cpu_notes_buf_size);
--	if (!note_buf) {
--		printk(KERN_ERR "Failed to allocate 0x%lx bytes for "
--			"cpu notes buffer\n", fw_dump.cpu_notes_buf_size);
--		return -ENOMEM;
--	}
--	fw_dump.cpu_notes_buf = __pa(note_buf);
--
--	pr_debug("Allocated buffer for cpu notes of size %ld at %p\n",
--			(num_cpus * sizeof(note_buf_t)), note_buf);
--
--	if (fw_dump.fadumphdr_addr)
--		fdh = __va(fw_dump.fadumphdr_addr);
--
--	for (i = 0; i < num_cpus; i++) {
--		if (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUSTRT")) {
--			printk(KERN_ERR "Unable to read CPU state data\n");
--			rc = -ENOENT;
--			goto error_out;
--		}
--		/* Lower 4 bytes of reg_value contains logical cpu id */
--		cpu = be64_to_cpu(reg_entry->reg_value) & FADUMP_CPU_ID_MASK;
--		if (fdh && !cpumask_test_cpu(cpu, &fdh->online_mask)) {
--			SKIP_TO_NEXT_CPU(reg_entry);
--			continue;
--		}
--		pr_debug("Reading register data for cpu %d...\n", cpu);
--		if (fdh && fdh->crashing_cpu == cpu) {
--			regs = fdh->regs;
--			note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
--			SKIP_TO_NEXT_CPU(reg_entry);
--		} else {
--			reg_entry++;
--			reg_entry = fadump_read_registers(reg_entry, &regs);
--			note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
--		}
--	}
--	final_note(note_buf);
--
--	if (fdh) {
--		addr = fdh->elfcorehdr_addr;
--		pr_debug("Updating elfcore header(%lx) with cpu notes\n", addr);
--		fadump_update_elfcore_header(&fw_dump, (char *)__va(addr));
--	}
--	return 0;
--
--error_out:
--	fadump_cpu_notes_buf_free((unsigned long)__va(fw_dump.cpu_notes_buf),
--					fw_dump.cpu_notes_buf_size);
--	fw_dump.cpu_notes_buf = 0;
--	fw_dump.cpu_notes_buf_size = 0;
--	return rc;
--
--}
--
--/*
-- * Validate and process the dump data stored by firmware before exporting
-- * it through '/proc/vmcore'.
-- */
--static int __init process_fadump(const struct fadump_mem_struct *fdm_active)
--{
--	struct fadump_crash_info_header *fdh;
--	int rc = 0;
--
--	if (!fdm_active || !fw_dump.fadumphdr_addr)
--		return -EINVAL;
--
--	/* Check if the dump data is valid. */
--	if ((be16_to_cpu(fdm_active->header.dump_status_flag) == FADUMP_ERROR_FLAG) ||
--			(fdm_active->cpu_state_data.error_flags != 0) ||
--			(fdm_active->rmr_region.error_flags != 0)) {
--		printk(KERN_ERR "Dump taken by platform is not valid\n");
--		return -EINVAL;
--	}
--	if ((fdm_active->rmr_region.bytes_dumped !=
--			fdm_active->rmr_region.source_len) ||
--			!fdm_active->cpu_state_data.bytes_dumped) {
--		printk(KERN_ERR "Dump taken by platform is incomplete\n");
--		return -EINVAL;
--	}
--
--	/* Validate the fadump crash info header */
--	fdh = __va(fw_dump.fadumphdr_addr);
--	if (fdh->magic_number != FADUMP_CRASH_INFO_MAGIC) {
--		printk(KERN_ERR "Crash info header is not valid.\n");
--		return -EINVAL;
--	}
--
--	rc = fadump_build_cpu_notes(fdm_active);
--	if (rc)
--		return rc;
--
--	/*
--	 * We are done validating dump info and elfcore header is now ready
--	 * to be exported. set elfcorehdr_addr so that vmcore module will
--	 * export the elfcore header through '/proc/vmcore'.
--	 */
--	elfcorehdr_addr = fdh->elfcorehdr_addr;
--
--	return 0;
-+	fadump_ops->crash_fadump(str);
- }
- 
- static inline void fadump_add_crash_memory(unsigned long long base,
-@@ -917,7 +587,7 @@ static void fadump_setup_crash_memory_ranges(void)
- static inline unsigned long fadump_relocate(unsigned long paddr)
- {
- 	if (paddr > RMA_START && paddr < fw_dump.boot_memory_size)
--		return be64_to_cpu(fdm.rmr_region.destination_address) + paddr;
-+		return fw_dump.rmr_destination_addr + paddr;
- 	else
- 		return paddr;
- }
-@@ -990,7 +660,7 @@ static int fadump_create_elfcore_headers(char *bufp)
- 			 * to the specified destination_address. Hence set
- 			 * the correct offset.
- 			 */
--			phdr->p_offset = be64_to_cpu(fdm.rmr_region.destination_address);
-+			phdr->p_offset = fw_dump.rmr_destination_addr;
- 		}
- 
- 		phdr->p_paddr = mbase;
-@@ -1039,7 +709,8 @@ static int register_fadump(void)
- 
- 	fadump_setup_crash_memory_ranges();
- 
--	addr = be64_to_cpu(fdm.rmr_region.destination_address) + be64_to_cpu(fdm.rmr_region.source_len);
-+	addr = fadump_ops->get_meta_area_start(&fw_dump);
-+
- 	/* Initialize fadump crash info header. */
- 	addr = init_fadump_header(addr);
- 	vaddr = __va(addr);
-@@ -1048,72 +719,19 @@ static int register_fadump(void)
- 	fadump_create_elfcore_headers(vaddr);
- 
- 	/* register the future kernel dump with firmware. */
--	return register_fw_dump(&fdm);
--}
--
--static int fadump_unregister_dump(struct fadump_mem_struct *fdm)
--{
--	int rc = 0;
--	unsigned int wait_time;
--
--	pr_debug("Un-register firmware-assisted dump\n");
--
--	/* TODO: Add upper time limit for the delay */
--	do {
--		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
--			FADUMP_UNREGISTER, fdm,
--			sizeof(struct fadump_mem_struct));
--
--		wait_time = rtas_busy_delay_time(rc);
--		if (wait_time)
--			mdelay(wait_time);
--	} while (wait_time);
--
--	if (rc) {
--		printk(KERN_ERR "Failed to un-register firmware-assisted dump."
--			" unexpected error(%d).\n", rc);
--		return rc;
--	}
--	fw_dump.dump_registered = 0;
--	return 0;
--}
--
--static int fadump_invalidate_dump(const struct fadump_mem_struct *fdm)
--{
--	int rc = 0;
--	unsigned int wait_time;
--
--	pr_debug("Invalidating firmware-assisted dump registration\n");
--
--	/* TODO: Add upper time limit for the delay */
--	do {
--		rc = rtas_call(fw_dump.ibm_configure_kernel_dump, 3, 1, NULL,
--			FADUMP_INVALIDATE, fdm,
--			sizeof(struct fadump_mem_struct));
--
--		wait_time = rtas_busy_delay_time(rc);
--		if (wait_time)
--			mdelay(wait_time);
--	} while (wait_time);
--
--	if (rc) {
--		pr_err("Failed to invalidate firmware-assisted dump registration. Unexpected error (%d).\n", rc);
--		return rc;
--	}
--	fw_dump.dump_active = 0;
--	fdm_active = NULL;
--	return 0;
-+	pr_debug("Registering for firmware-assisted kernel dump...\n");
-+	return fadump_ops->register_fadump(&fw_dump);
- }
- 
- void fadump_cleanup(void)
- {
- 	/* Invalidate the registration only if dump is active. */
- 	if (fw_dump.dump_active) {
--		/* pass the same memory dump structure provided by platform */
--		fadump_invalidate_dump(fdm_active);
-+		pr_debug("Invalidating firmware-assisted dump registration\n");
-+		fadump_ops->invalidate_fadump(&fw_dump);
- 	} else if (fw_dump.dump_registered) {
- 		/* Un-register Firmware-assisted dump if it was registered. */
--		fadump_unregister_dump(&fdm);
-+		fadump_ops->unregister_fadump(&fw_dump);
- 	}
- }
- 
-@@ -1195,7 +813,7 @@ static void fadump_invalidate_release_mem(void)
- 		return;
- 	}
- 
--	destination_address = be64_to_cpu(fdm_active->cpu_state_data.destination_address);
-+	destination_address = fadump_ops->get_preserv_area_start(&fw_dump);
- 	fadump_cleanup();
- 	mutex_unlock(&fadump_mutex);
- 
-@@ -1221,8 +839,10 @@ static void fadump_invalidate_release_mem(void)
- 		fw_dump.cpu_notes_buf = 0;
- 		fw_dump.cpu_notes_buf_size = 0;
- 	}
-+
- 	/* Initialize the kernel dump memory structure for FAD registration. */
--	init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
-+	fadump_ops->init_fadump_mem_struct(&fw_dump,
-+			fw_dump.reserve_dump_area_start);
- }
- 
- static ssize_t fadump_release_memory_store(struct kobject *kobj,
-@@ -1273,7 +893,7 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 	int ret = 0;
- 	int input = -1;
- 
--	if (!fw_dump.fadump_enabled || fdm_active)
-+	if (!fw_dump.fadump_enabled || fw_dump.dump_active)
- 		return -EPERM;
- 
- 	if (kstrtoint(buf, 0, &input))
-@@ -1286,8 +906,10 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 		if (fw_dump.dump_registered == 0) {
- 			goto unlock_out;
- 		}
-+
- 		/* Un-register Firmware-assisted dump */
--		fadump_unregister_dump(&fdm);
-+		pr_debug("Un-register firmware-assisted dump\n");
-+		fadump_ops->unregister_fadump(&fw_dump);
- 		break;
- 	case 1:
- 		if (fw_dump.dump_registered == 1) {
-@@ -1309,62 +931,13 @@ static ssize_t fadump_register_store(struct kobject *kobj,
- 
- static int fadump_region_show(struct seq_file *m, void *private)
- {
--	const struct fadump_mem_struct *fdm_ptr;
--
- 	if (!fw_dump.fadump_enabled)
- 		return 0;
- 
- 	mutex_lock(&fadump_mutex);
--	if (fdm_active)
--		fdm_ptr = fdm_active;
--	else {
--		mutex_unlock(&fadump_mutex);
--		fdm_ptr = &fdm;
--	}
-+	fadump_ops->fadump_region_show(&fw_dump, m);
-+	mutex_unlock(&fadump_mutex);
- 
--	seq_printf(m,
--			"CPU : [%#016llx-%#016llx] %#llx bytes, "
--			"Dumped: %#llx\n",
--			be64_to_cpu(fdm_ptr->cpu_state_data.destination_address),
--			be64_to_cpu(fdm_ptr->cpu_state_data.destination_address) +
--			be64_to_cpu(fdm_ptr->cpu_state_data.source_len) - 1,
--			be64_to_cpu(fdm_ptr->cpu_state_data.source_len),
--			be64_to_cpu(fdm_ptr->cpu_state_data.bytes_dumped));
--	seq_printf(m,
--			"HPTE: [%#016llx-%#016llx] %#llx bytes, "
--			"Dumped: %#llx\n",
--			be64_to_cpu(fdm_ptr->hpte_region.destination_address),
--			be64_to_cpu(fdm_ptr->hpte_region.destination_address) +
--			be64_to_cpu(fdm_ptr->hpte_region.source_len) - 1,
--			be64_to_cpu(fdm_ptr->hpte_region.source_len),
--			be64_to_cpu(fdm_ptr->hpte_region.bytes_dumped));
--	seq_printf(m,
--			"DUMP: [%#016llx-%#016llx] %#llx bytes, "
--			"Dumped: %#llx\n",
--			be64_to_cpu(fdm_ptr->rmr_region.destination_address),
--			be64_to_cpu(fdm_ptr->rmr_region.destination_address) +
--			be64_to_cpu(fdm_ptr->rmr_region.source_len) - 1,
--			be64_to_cpu(fdm_ptr->rmr_region.source_len),
--			be64_to_cpu(fdm_ptr->rmr_region.bytes_dumped));
--
--	if (!fdm_active ||
--		(fw_dump.reserve_dump_area_start ==
--		be64_to_cpu(fdm_ptr->cpu_state_data.destination_address)))
--		goto out;
--
--	/* Dump is active. Show reserved memory region. */
--	seq_printf(m,
--			"    : [%#016llx-%#016llx] %#llx bytes, "
--			"Dumped: %#llx\n",
--			(unsigned long long)fw_dump.reserve_dump_area_start,
--			be64_to_cpu(fdm_ptr->cpu_state_data.destination_address) - 1,
--			be64_to_cpu(fdm_ptr->cpu_state_data.destination_address) -
--			fw_dump.reserve_dump_area_start,
--			be64_to_cpu(fdm_ptr->cpu_state_data.destination_address) -
--			fw_dump.reserve_dump_area_start);
--out:
--	if (fdm_active)
--		mutex_unlock(&fadump_mutex);
  	return 0;
  }
  
-@@ -1445,12 +1018,13 @@ int __init setup_fadump(void)
- 		 * if dump process fails then invalidate the registration
- 		 * and release memory before proceeding for re-registration.
- 		 */
--		if (process_fadump(fdm_active) < 0)
-+		if (fadump_ops->process_fadump(&fw_dump) < 0)
- 			fadump_invalidate_release_mem();
- 	}
- 	/* Initialize the kernel dump memory structure for FAD registration. */
- 	else if (fw_dump.reserve_dump_area_size)
--		init_fadump_mem_struct(&fdm, fw_dump.reserve_dump_area_start);
-+		fadump_ops->init_fadump_mem_struct(&fw_dump,
-+				fw_dump.reserve_dump_area_start);
- 	fadump_init_files();
+@@ -156,6 +163,8 @@ int is_fadump_active(void)
+ /* Print firmware assisted dump configurations for debugging purpose. */
+ static void fadump_show_config(void)
+ {
++	int i;
++
+ 	pr_debug("Support for firmware-assisted dump (fadump): %s\n",
+ 			(fw_dump.fadump_supported ? "present" : "no support"));
  
- 	return 1;
+@@ -170,6 +179,13 @@ static void fadump_show_config(void)
+ 	pr_debug("    CPU state data size: %lx\n", fw_dump.cpu_state_data_size);
+ 	pr_debug("    HPTE region size   : %lx\n", fw_dump.hpte_region_size);
+ 	pr_debug("Boot memory size  : %lx\n", fw_dump.boot_memory_size);
++	pr_debug("Real memory region hole size  : %lx\n",
++		 fw_dump.boot_memory_hole_size);
++	pr_debug("Real meory regions count : %lx\n", fw_dump.rmr_regions_cnt);
++	for (i = 0; i < fw_dump.rmr_regions_cnt; i++) {
++		pr_debug("%d. RMR base = %lx, size = %lx\n", (i+1),
++			 fw_dump.rmr_src_addr[i], fw_dump.rmr_src_size[i]);
++	}
+ }
+ 
+ /**
+@@ -243,6 +259,157 @@ static inline unsigned long fadump_calculate_reserve_size(void)
+ 	return (size > MIN_BOOT_MEM ? size : MIN_BOOT_MEM);
+ }
+ 
++static void __init fadump_get_reserved_ranges(void)
++{
++	unsigned long i, j, dt_root;
++	unsigned long long base, size;
++	struct fadump_memory_range tmp_range;
++	const __be32 *prop;
++	int len, idx;
++
++	early_init_fdt_reserve_self();
++	early_init_fdt_scan_reserved_mem();
++
++	dt_root = of_get_flat_dt_root();
++
++	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
++
++	if (!prop)
++		return;
++
++	/*
++	 * Each reserved range is an (address,size) pair, 2 cells each,
++	 * totalling 4 cells per range.
++	 */
++	for (i = 0; i < len / (sizeof(*prop) * 4); i++) {
++		u64 base, size;
++
++		base = of_read_number(prop + (i * 4) + 0, 2);
++		size = of_read_number(prop + (i * 4) + 2, 2);
++		if (!size)
++			continue;
++
++		reserved_ranges[reserved_ranges_cnt].base = base;
++		reserved_ranges[reserved_ranges_cnt].size = size;
++		reserved_ranges_cnt++;
++
++	}
++
++	if (!reserved_ranges_cnt)
++		return;
++
++	/* Sort the reserved ranges */
++	for (i = 0; i < reserved_ranges_cnt; i++) {
++		idx = i;
++		for (j = i + 1; j < reserved_ranges_cnt; j++) {
++			if (reserved_ranges[idx].base > reserved_ranges[j].base)
++				idx = j;
++		}
++		if (idx != i) {
++			tmp_range = reserved_ranges[idx];
++			reserved_ranges[idx] = reserved_ranges[i];
++			reserved_ranges[i] = tmp_range;
++		}
++	}
++
++	/* Merge adjacent reserved ranges */
++	idx = 0;
++	for (i = 1; i < reserved_ranges_cnt; i++) {
++		base = reserved_ranges[i-1].base;
++		size = reserved_ranges[i-1].size;
++		if (reserved_ranges[i].base == (base + size))
++			reserved_ranges[idx].size += reserved_ranges[i].size;
++		else {
++			idx++;
++			if (i == idx)
++				continue;
++
++			reserved_ranges[idx] = reserved_ranges[i];
++		}
++	}
++	reserved_ranges_cnt = idx + 1;
++}
++
++static inline void fadump_add_memory_range(unsigned long long base,
++					   unsigned long long size)
++{
++	if (!size)
++		return;
++
++	pr_debug("memory_range[%d] [%#016llx-%#016llx), %#llx bytes\n",
++		 memory_ranges_cnt, base, base + size, size);
++	memory_ranges[memory_ranges_cnt].base = base;
++	memory_ranges[memory_ranges_cnt].size = size;
++	memory_ranges_cnt++;
++}
++
++static void fadump_setup_memory_ranges(void)
++{
++	unsigned long i, j;
++	unsigned long long base, end, size;
++	struct memblock_region *reg;
++	struct fadump_memory_range tmp_ranges[INIT_MEMBLOCK_REGIONS];
++	int tmp_ranges_cnt;
++
++	/* get memory ranges */
++	tmp_ranges_cnt = 0;
++	for_each_memblock(memory, reg) {
++		tmp_ranges[tmp_ranges_cnt].base = (unsigned long long)reg->base;
++		tmp_ranges[tmp_ranges_cnt].size = (unsigned long long)reg->size;
++		tmp_ranges_cnt++;
++	}
++
++	/* exclude reserved ranges */
++	memory_ranges_cnt = 0;
++	for (i = 0; i < tmp_ranges_cnt; i++) {
++		unsigned long long mem_base, mem_end, rsrv_base, rsrv_end;
++		int add = 1;
++
++		base = mem_base = tmp_ranges[i].base;
++		end = mem_end = base + tmp_ranges[i].size;
++		for (j = 0; j < reserved_ranges_cnt; j++) {
++			rsrv_base = reserved_ranges[j].base;
++			rsrv_end  = rsrv_base + reserved_ranges[j].size;
++
++			if (mem_base > rsrv_end)
++				continue;
++
++			if ((j < (reserved_ranges_cnt - 1)) &&
++			    (reserved_ranges[j + 1].base < mem_end))
++				mem_end = reserved_ranges[j + 1].base;
++
++			if ((rsrv_base < mem_end) && (rsrv_end > mem_base)) {
++				if ((mem_base < rsrv_base) &&
++				    (mem_end > rsrv_end)) {
++					size = rsrv_base - mem_base;
++					fadump_add_memory_range(mem_base, size);
++					size = mem_end - rsrv_end;
++					fadump_add_memory_range(rsrv_end, size);
++				} else if (mem_base < rsrv_base) {
++					size = rsrv_base - mem_base;
++					fadump_add_memory_range(mem_base, size);
++				} else if (mem_end > rsrv_end) {
++					size = mem_end - rsrv_end;
++					fadump_add_memory_range(rsrv_end, size);
++				}
++
++				add = 0;
++			}
++
++			if (mem_end == end)
++				break;
++
++			mem_base = mem_end;
++			mem_end = end;
++			add = 1;
++		}
++
++		if (add)
++			fadump_add_memory_range(mem_base, mem_end - mem_base);
++	}
++}
++
++
+ /*
+  * Calculate the total memory size required to be reserved for
+  * firmware-assisted dump registration.
+@@ -264,24 +431,113 @@ static unsigned long get_fadump_area_size(void)
+ 	return size;
+ }
+ 
+-static void __init fadump_reserve_crash_area(unsigned long base,
+-					     unsigned long size)
++/* Preserve everything above the base address */
++static void __init fadump_reserve_crash_area(unsigned long base)
+ {
+-	struct memblock_region *reg;
+-	unsigned long mstart, mend, msize;
++	int i;
++	unsigned long mstart, msize;
+ 
+-	for_each_memblock(memory, reg) {
+-		mstart = max_t(unsigned long, base, reg->base);
+-		mend = reg->base + reg->size;
+-		mend = min(base + size, mend);
+-
+-		if (mstart < mend) {
+-			msize = mend - mstart;
+-			memblock_reserve(mstart, msize);
+-			pr_info("Reserved %ldMB of memory at %#016lx for saving crash dump\n",
+-				(msize >> 20), mstart);
++	for (i = 0; i < memory_ranges_cnt; i++) {
++		mstart = memory_ranges[i].base;
++		msize = memory_ranges[i].size;
++		if ((mstart + msize) < base)
++			continue;
++
++		if (mstart < base) {
++			msize -= (base - mstart);
++			mstart = base;
+ 		}
++		pr_info("Reserving %luMB of memory at %#016lx for saving crash dump",
++			(msize >> 20), mstart);
++		memblock_reserve(mstart, msize);
++	}
++}
++
++static int __init add_rmr_region(unsigned long rmr_start,
++				 unsigned long rmr_size)
++{
++	int i = fw_dump.rmr_regions_cnt++;
++
++	if (fw_dump.rmr_regions_cnt > MAX_REAL_MEM_REGIONS)
++		return 0;
++
++	pr_debug("Added real memory range[%d] [%#016lx-%#016lx)\n",
++		 i, rmr_start, (rmr_start + rmr_size));
++	fw_dump.rmr_src_addr[i] = rmr_start;
++	fw_dump.rmr_src_size[i] = rmr_size;
++	return 1;
++}
++
++/*
++ * Platforms like PowerNV have an upper limit on the size.
++ * If 'rmr_size' is bigger than that limit, split this memory range
++ * into multiple entries.
++ */
++static int __init add_rmr_regions(unsigned long rmr_start,
++				  unsigned long rmr_size)
++{
++	unsigned long rstart, rsize, max_size;
++	int ret = 1;
++
++	rstart = rmr_start;
++	max_size = fw_dump.max_copy_size ? fw_dump.max_copy_size : rmr_size;
++	while (rmr_size) {
++		if (rmr_size > max_size)
++			rsize = max_size;
++		else
++			rsize = rmr_size;
++
++		ret = add_rmr_region(rstart, rsize);
++		if (!ret)
++			break;
++
++		rmr_size -= rsize;
++		rstart += rsize;
+ 	}
++
++	return ret;
++}
++
++static int __init fadump_get_rmr_regions(void)
++{
++	int i, ret = 1;
++	unsigned long base, size, last_end;
++	unsigned long mem_size = fw_dump.boot_memory_size;
++
++	fw_dump.rmr_regions_cnt = 0;
++	fw_dump.boot_memory_hole_size = 0;
++
++	/*
++	 * TODO: Extent support for multiple real memory regions on
++	 *       pseries platform too.
++	 */
++	if (fw_dump.fadump_platform == FADUMP_PLATFORM_PSERIES) {
++		ret = add_rmr_regions(RMA_START, fw_dump.boot_memory_size);
++		return ret;
++	}
++
++	last_end = memory_ranges[0].base;
++	for (i = 0; i < memory_ranges_cnt; i++) {
++		base = memory_ranges[i].base;
++		size = memory_ranges[i].size;
++
++		if (base > last_end)
++			fw_dump.boot_memory_hole_size += (base - last_end);
++
++		if (size >= mem_size) {
++			ret = add_rmr_regions(base, mem_size);
++			break;
++		}
++
++		mem_size -= size;
++		ret = add_rmr_regions(base, size);
++		if (!ret)
++			break;
++
++		last_end = base + size;
++	}
++
++	return ret;
+ }
+ 
+ int __init fadump_reserve_mem(void)
+@@ -297,6 +553,10 @@ int __init fadump_reserve_mem(void)
+ 		fw_dump.fadump_enabled = 0;
+ 		return 0;
+ 	}
++
++	fadump_get_reserved_ranges();
++	fadump_setup_memory_ranges();
++
+ 	/*
+ 	 * Initialize boot memory size
+ 	 * If dump is active then we have already calculated the size during
+@@ -311,6 +571,11 @@ int __init fadump_reserve_mem(void)
+ 						 FADUMP_CMA_ALIGNMENT);
+ #endif
+ 		fw_dump.rmr_source_len = fw_dump.boot_memory_size;
++		if (!fadump_get_rmr_regions()) {
++			fw_dump.fadump_enabled = 0;
++			pr_err("Too many holes in boot memory area to enable fadump\n");
++			return 0;
++		}
+ 	}
+ 
+ 	size = get_fadump_area_size();
+@@ -335,6 +600,7 @@ int __init fadump_reserve_mem(void)
+ 	else
+ 		memory_boundary = memblock_end_of_DRAM();
+ 
++	base = fw_dump.boot_memory_size + fw_dump.boot_memory_hole_size;
+ 	if (fw_dump.dump_active) {
+ #ifdef CONFIG_HUGETLB_PAGE
+ 		/*
+@@ -348,11 +614,9 @@ int __init fadump_reserve_mem(void)
+ 		 * If last boot has crashed then reserve all the memory
+ 		 * above boot_memory_size so that we don't touch it until
+ 		 * dump is written to disk by userspace tool. This memory
+-		 * will be released for general use once the dump is saved.
++		 * can be released for general use by invalidating fadump.
+ 		 */
+-		base = fw_dump.boot_memory_size;
+-		size = memory_boundary - base;
+-		fadump_reserve_crash_area(base, size);
++		fadump_reserve_crash_area(base);
+ 
+ 		fw_dump.fadumphdr_addr =
+ 			fadump_ops->get_meta_area_start(&fw_dump);
+@@ -366,23 +630,22 @@ int __init fadump_reserve_mem(void)
+ 		 * use memblock_find_in_range() here since it doesn't allocate
+ 		 * from bottom to top.
+ 		 */
+-		for (base = fw_dump.boot_memory_size;
+-		     base <= (memory_boundary - size);
+-		     base += size) {
++		while (base <= (memory_boundary - size)) {
+ 			if (memblock_is_region_memory(base, size) &&
+ 			    !memblock_is_region_reserved(base, size))
+ 				break;
++
++			base += size;
+ 		}
++
+ 		if ((base > (memory_boundary - size)) ||
+ 		    memblock_reserve(base, size)) {
+ 			pr_err("Failed to reserve memory\n");
+ 			return 0;
+ 		}
+ 
+-		pr_info("Reserved %ldMB of memory at %ldMB for firmware-"
+-			"assisted dump (System RAM: %ldMB)\n",
+-			(unsigned long)(size >> 20),
+-			(unsigned long)(base >> 20),
++		pr_info("Reserved %ldMB of memory at %#016lx (System RAM: %ldMB)\n",
++			(unsigned long)(size >> 20), base,
+ 			(unsigned long)(memblock_phys_mem_size() >> 20));
+ 
+ 		fw_dump.reserve_dump_area_start = base;
+@@ -543,23 +806,28 @@ static int fadump_init_elfcore_header(char *bufp)
+  */
+ static void fadump_setup_crash_memory_ranges(void)
+ {
+-	struct memblock_region *reg;
+-	unsigned long long start, end;
++	unsigned long long start, end, offset;
++	int i;
+ 
+ 	pr_debug("Setup crash memory ranges.\n");
+ 	crash_mem_ranges = 0;
++	offset = fw_dump.boot_memory_size + fw_dump.boot_memory_hole_size;
++
+ 	/*
+-	 * add the first memory chunk (RMA_START through boot_memory_size) as
+-	 * a separate memory chunk. The reason is, at the time crash firmware
+-	 * will move the content of this memory chunk to different location
+-	 * specified during fadump registration. We need to create a separate
+-	 * program header for this chunk with the correct offset.
++	 * Add real memory region(s) whose content is going to be moved to
++	 * a different location, specified during fadump registration, by
++	 * firmware at the time of crash. We need to create separate program
++	 * header(s) for this memory chunk with the correct offset.
+ 	 */
+-	fadump_add_crash_memory(RMA_START, fw_dump.boot_memory_size);
++	for (i = 0; i < fw_dump.rmr_regions_cnt; i++) {
++		start = fw_dump.rmr_src_addr[i];
++		end = start + fw_dump.rmr_src_size[i];
++		fadump_add_crash_memory(start, end);
++	}
+ 
+-	for_each_memblock(memory, reg) {
+-		start = (unsigned long long)reg->base;
+-		end = start + (unsigned long long)reg->size;
++	for (i = 0; i < memory_ranges_cnt; i++) {
++		start = memory_ranges[i].base;
++		end = start + memory_ranges[i].size;
+ 
+ 		/*
+ 		 * skip the first memory chunk that is already added (RMA_START
+@@ -567,9 +835,9 @@ static void fadump_setup_crash_memory_ranges(void)
+ 		 * when RMA_START changes to a non-zero value.
+ 		 */
+ 		BUILD_BUG_ON(RMA_START != 0);
+-		if (start < fw_dump.boot_memory_size) {
+-			if (end > fw_dump.boot_memory_size)
+-				start = fw_dump.boot_memory_size;
++		if (start < offset) {
++			if (end > offset)
++				start = offset;
+ 			else
+ 				continue;
+ 		}
+@@ -586,17 +854,32 @@ static void fadump_setup_crash_memory_ranges(void)
+  */
+ static inline unsigned long fadump_relocate(unsigned long paddr)
+ {
+-	if (paddr > RMA_START && paddr < fw_dump.boot_memory_size)
+-		return fw_dump.rmr_destination_addr + paddr;
+-	else
+-		return paddr;
++	unsigned long raddr, rstart, rend, offset;
++	int i;
++
++	offset = 0;
++	raddr = paddr;
++	for (i = 0; i < fw_dump.rmr_regions_cnt; i++) {
++		rstart = fw_dump.rmr_src_addr[i];
++		rend = rstart + fw_dump.rmr_src_size[i];
++
++		if (paddr > rstart && paddr < rend) {
++			raddr += fw_dump.rmr_destination_addr + offset;
++			break;
++		}
++
++		offset += fw_dump.rmr_src_size[i];
++	}
++
++	return raddr;
+ }
+ 
+ static int fadump_create_elfcore_headers(char *bufp)
+ {
+ 	struct elfhdr *elf;
+ 	struct elf_phdr *phdr;
+-	int i;
++	unsigned long long raddr, offset;
++	int i, j;
+ 
+ 	fadump_init_elfcore_header(bufp);
+ 	elf = (struct elfhdr *)bufp;
+@@ -639,9 +922,12 @@ static int fadump_create_elfcore_headers(char *bufp)
+ 	(elf->e_phnum)++;
+ 
+ 	/* setup PT_LOAD sections. */
+-
++	j = 0;
++	offset = 0;
++	raddr = fw_dump.rmr_src_addr[0];
+ 	for (i = 0; i < crash_mem_ranges; i++) {
+ 		unsigned long long mbase, msize;
++
+ 		mbase = crash_memory_ranges[i].base;
+ 		msize = crash_memory_ranges[i].size;
+ 
+@@ -654,13 +940,17 @@ static int fadump_create_elfcore_headers(char *bufp)
+ 		phdr->p_flags	= PF_R|PF_W|PF_X;
+ 		phdr->p_offset	= mbase;
+ 
+-		if (mbase == RMA_START) {
++		if (mbase == raddr) {
+ 			/*
+ 			 * The entire RMA region will be moved by firmware
+ 			 * to the specified destination_address. Hence set
+ 			 * the correct offset.
+ 			 */
+-			phdr->p_offset = fw_dump.rmr_destination_addr;
++			phdr->p_offset = fw_dump.rmr_destination_addr + offset;
++			if (j < (fw_dump.rmr_regions_cnt - 1)) {
++				offset += fw_dump.rmr_src_size[j];
++				raddr = fw_dump.rmr_src_addr[++j];
++			}
+ 		}
+ 
+ 		phdr->p_paddr = mbase;
+@@ -707,6 +997,7 @@ static int register_fadump(void)
+ 	if (!fw_dump.reserve_dump_area_size)
+ 		return -ENODEV;
+ 
++	fadump_setup_memory_ranges();
+ 	fadump_setup_crash_memory_ranges();
+ 
+ 	addr = fadump_ops->get_meta_area_start(&fw_dump);
+@@ -822,14 +1113,14 @@ static void fadump_invalidate_release_mem(void)
+ 	 * later for releasing the memory for general use.
+ 	 */
+ 	reserved_area_start = fw_dump.reserve_dump_area_start;
+-	reserved_area_end = reserved_area_start +
+-			fw_dump.reserve_dump_area_size;
++	reserved_area_end =
++		memory_limit ? memory_limit : memblock_end_of_DRAM();
++
+ 	/*
+-	 * Setup reserve_dump_area_start and its size so that we can
+-	 * reuse this reserved memory for Re-registration.
++	 * Setup reserve_dump_area_start so that we can reuse this
++	 * reserved memory for Re-registration.
+ 	 */
+ 	fw_dump.reserve_dump_area_start = destination_address;
+-	fw_dump.reserve_dump_area_size = get_fadump_area_size();
+ 
+ 	fadump_release_memory(reserved_area_start, reserved_area_end);
+ 	if (fw_dump.cpu_notes_buf) {
 diff --git a/arch/powerpc/kernel/fadump_internal.h b/arch/powerpc/kernel/fadump_internal.h
-index 4c26eda..3791da7 100644
+index 3791da7..eae4b55 100644
 --- a/arch/powerpc/kernel/fadump_internal.h
 +++ b/arch/powerpc/kernel/fadump_internal.h
-@@ -47,6 +47,9 @@
- #define FADUMP_UNREGISTER		2
- #define FADUMP_INVALIDATE		3
+@@ -49,6 +49,7 @@
  
-+/* Firmware-Assited Dump platforms */
-+#define FADUMP_PLATFORM_PSERIES		1
-+
+ /* Firmware-Assited Dump platforms */
+ #define FADUMP_PLATFORM_PSERIES		1
++#define FADUMP_PLATFORM_POWERNV		2
+ 
  #define FADUMP_CPU_ID_MASK		((1UL << 32) - 1)
  
- #define CPU_UNKNOWN			(~((u32)0))
-@@ -108,14 +111,34 @@ struct fw_dump {
- 	unsigned long	cpu_notes_buf;
- 	unsigned long	cpu_notes_buf_size;
+@@ -92,11 +93,14 @@ struct fadump_crash_info_header {
+ /* Crash memory ranges */
+ #define INIT_CRASHMEM_RANGES	(INIT_MEMBLOCK_REGIONS + 2)
  
-+	unsigned long	rmr_source_len;
-+	unsigned long	rmr_destination_addr;
+-struct fad_crash_memory_ranges {
++struct fadump_memory_range {
+ 	unsigned long long	base;
+ 	unsigned long long	size;
+ };
+ 
++/* Maximum no. of real memory regions supported by the kernel */
++#define MAX_REAL_MEM_REGIONS		6
++
+ /* Firmware-assisted dump configuration details. */
+ struct fw_dump {
+ 	unsigned long	cpu_state_data_size;
+@@ -114,6 +118,17 @@ struct fw_dump {
+ 	unsigned long	rmr_source_len;
+ 	unsigned long	rmr_destination_addr;
+ 
++	unsigned long	boot_memory_hole_size;
++	unsigned long	rmr_regions_cnt;
++	unsigned long	rmr_src_addr[MAX_REAL_MEM_REGIONS];
++	unsigned long	rmr_src_size[MAX_REAL_MEM_REGIONS];
++
++	/*
++	 * Maximum size supported by firmware to copy from source to
++	 * destination address per entry.
++	 */
++	unsigned long	max_copy_size;
 +
  	int		ibm_configure_kernel_dump;
  
  	unsigned long	fadump_enabled:1;
- 	unsigned long	fadump_supported:1;
- 	unsigned long	dump_active:1;
- 	unsigned long	dump_registered:1;
-+	unsigned long	fadump_platform:4;
-+};
-+
-+struct fadump_ops_t {
-+	ulong	(*init_fadump_mem_struct)(struct fw_dump *fadump_config,
-+					  ulong addr);
-+	int	(*register_fadump)(struct fw_dump *fadump_config);
-+	int	(*unregister_fadump)(struct fw_dump *fadump_config);
-+	ulong	(*get_preserv_area_start)(struct fw_dump *fadump_conf);
-+	ulong	(*get_meta_area_start)(struct fw_dump *fadump_conf);
-+	int	(*invalidate_fadump)(struct fw_dump *fadump_config);
-+	int	(*process_fadump)(struct fw_dump *fadump_config);
-+	void	(*fadump_region_show)(struct fw_dump *fadump_config,
-+				      struct seq_file *m);
-+	void	(*crash_fadump)(const char *msg);
- };
+@@ -157,4 +172,14 @@ pseries_dt_scan_fadump(struct fw_dump *fadump_config, ulong node)
+ }
+ #endif
  
-+extern struct fadump_ops_t *fadump_ops;
-+
- int is_boot_memory_area_contiguous(struct fw_dump *fadump_conf);
- int is_reserved_memory_area_contiguous(struct fw_dump *fadump_conf);
- void *fadump_cpu_notes_buf_alloc(unsigned long size);
-@@ -124,4 +147,14 @@ void fadump_set_regval(struct pt_regs *regs, u64 reg_id, u64 reg_val);
- u32 *fadump_regs_to_elf_notes(u32 *buf, struct pt_regs *regs);
- void fadump_update_elfcore_header(struct fw_dump *fadump_config, char *bufp);
- 
-+#ifdef CONFIG_PPC_PSERIES
-+extern int pseries_dt_scan_fadump(struct fw_dump *fadump_config, ulong node);
++#ifdef CONFIG_PPC_POWERNV
++extern int powernv_dt_scan_fadump(struct fw_dump *fadump_config, ulong node);
 +#else
 +static inline int
-+pseries_dt_scan_fadump(struct fw_dump *fadump_config, ulong node)
++powernv_dt_scan_fadump(struct fw_dump *fadump_config, ulong node)
 +{
 +	return 1;
 +}
 +#endif
 +
  #endif /* __PPC64_FA_DUMP_INTERNAL_H__ */
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index 13eede6..978585c 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -24,6 +24,7 @@ obj-$(CONFIG_IO_EVENT_IRQ)	+= io_event_irq.o
- obj-$(CONFIG_LPARCFG)		+= lparcfg.o
- obj-$(CONFIG_IBMVIO)		+= vio.o
- obj-$(CONFIG_IBMEBUS)		+= ibmebus.o
-+obj-$(CONFIG_FA_DUMP)		+= pseries_fadump.o
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 703a350..0d106b5 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -6,6 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+ obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
  
- ifeq ($(CONFIG_PPC_PSERIES),y)
- obj-$(CONFIG_SUSPEND)		+= suspend.o
-diff --git a/arch/powerpc/platforms/pseries/pseries_fadump.c b/arch/powerpc/platforms/pseries/pseries_fadump.c
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
++obj-$(CONFIG_FA_DUMP)	+= powernv_fadump.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+ obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
+ obj-$(CONFIG_EEH)	+= eeh-powernv.o
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 3da30c2..20bbb9c 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -325,3 +325,4 @@ OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
+ OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
+ OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
+ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
++OPAL_CALL(opal_configure_fadump,		OPAL_CONFIGURE_FADUMP);
+diff --git a/arch/powerpc/platforms/powernv/powernv_fadump.c b/arch/powerpc/platforms/powernv/powernv_fadump.c
 new file mode 100644
-index 0000000..ac54501
+index 0000000..6d4b515
 --- /dev/null
-+++ b/arch/powerpc/platforms/pseries/pseries_fadump.c
-@@ -0,0 +1,528 @@
++++ b/arch/powerpc/platforms/powernv/powernv_fadump.c
+@@ -0,0 +1,337 @@
 +/*
-+ * Firmware-Assisted Dump support on POWERVM platform.
-+ *
-+ * Copyright 2011, IBM Corporation
-+ * Author: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
++ * Firmware-Assisted Dump support on POWERNV platform.
 + *
 + * Copyright 2018, IBM Corporation
 + * Author: Hari Bathini <hbathini@linux.vnet.ibm.com>
@@ -929,139 +786,142 @@ index 0000000..ac54501
 + */
 +
 +#undef DEBUG
-+#define pr_fmt(fmt) "pseries fadump: " fmt
++#define pr_fmt(fmt) "powernv fadump: " fmt
 +
 +#include <linux/string.h>
 +#include <linux/memblock.h>
-+#include <linux/delay.h>
++#include <linux/bug.h>
 +#include <linux/seq_file.h>
 +#include <linux/crash_dump.h>
 +
 +#include <asm/page.h>
 +#include <asm/prom.h>
-+#include <asm/rtas.h>
++#include <asm/opal.h>
 +#include <asm/fadump.h>
 +
 +#include "../../kernel/fadump_internal.h"
-+#include "pseries_fadump.h"
++#include "powernv_fadump.h"
 +
-+static struct pseries_fadump_mem_struct fdm;
-+static const struct pseries_fadump_mem_struct *fdm_active;
++static struct powernv_fadump_mem_struct fdm;
++static const struct powernv_fadump_mem_struct *fdm_active;
++unsigned long fdm_actual_size;
 +
 +static void update_fadump_config(struct fw_dump *fadump_conf,
-+				 const struct pseries_fadump_mem_struct *fdm)
++				 const struct powernv_fadump_mem_struct *fdm)
 +{
-+	fadump_conf->rmr_destination_addr =
-+		be64_to_cpu(fdm->rmr_region.destination_address);
++	unsigned long base, size, last_end;
++	int section_cnt = be16_to_cpu(fdm->section_count);
++	int unused_sections  = (POWERNV_MAX_SECTIONS - section_cnt);
++	int i, j;
++
++	pr_debug("section_cnt: %d\n", section_cnt);
++	WARN_ON(unused_sections < 0);
++	fdm_actual_size = sizeof(*fdm) -
++		(unused_sections * sizeof(struct powernv_fadump_section));
++
++	/*
++	 * The first real memory region entry is the real memory
++	 * regions destination address.
++	 */
++	fadump_conf->rmr_destination_addr = 0;
++	for (i = 0; i < section_cnt; i++) {
++		if (fdm->section[i].src_type ==
++		    POWERNV_FADUMP_REAL_MODE_REGION) {
++			fadump_conf->rmr_destination_addr =
++				be64_to_cpu(fdm->section[i].dest_addr);
++			break;
++		}
++	}
++	pr_debug("Destination address of real memory regions: %#016lx\n",
++		 fadump_conf->rmr_destination_addr);
 +
 +	if (fadump_conf->dump_active) {
-+		fadump_conf->rmr_source_len =
-+			be64_to_cpu(fdm->rmr_region.source_len);
++		j = 0;
++		last_end = 0;
++		fadump_conf->rmr_source_len = 0;
++		fadump_conf->boot_memory_hole_size = 0;
++		for (i = 0; i < section_cnt; i++) {
++			if (fdm->section[i].src_type ==
++			    POWERNV_FADUMP_REAL_MODE_REGION) {
++				base = be64_to_cpu(fdm->section[i].src_addr);
++				size = be64_to_cpu(fdm->section[i].src_size);
++				pr_debug("%d. RMR base: 0x%lx, size: 0x%lx\n",
++					 (i + 1), base, size);
++
++				fadump_conf->rmr_src_addr[j] = base;
++				fadump_conf->rmr_src_size[j] = size;
++				fadump_conf->rmr_source_len += size;
++
++				if (base > last_end) {
++					fadump_conf->boot_memory_hole_size +=
++						(base - last_end);
++				}
++
++				last_end = base + size;
++				j++;
++			}
++		}
++		fadump_conf->rmr_regions_cnt = j;
++		pr_debug("Real memory regions count: %lu\n",
++			 fadump_conf->rmr_regions_cnt);
 +	}
 +}
 +
-+static ulong pseries_init_fadump_mem_struct(struct fw_dump *fadump_conf,
++static ulong powernv_init_fadump_mem_struct(struct fw_dump *fadump_conf,
 +					    ulong addr)
 +{
-+	memset(&fdm, 0, sizeof(struct pseries_fadump_mem_struct));
-+	addr = addr & PAGE_MASK;
++	int i, section_cnt = 0;
 +
-+	fdm.header.dump_format_version = cpu_to_be32(0x00000001);
-+	fdm.header.dump_num_sections = cpu_to_be16(3);
-+	fdm.header.dump_status_flag = 0;
-+	fdm.header.offset_first_dump_section =
-+		cpu_to_be32((u32)offsetof(struct pseries_fadump_mem_struct,
-+					  cpu_state_data));
++	fdm.section_size = cpu_to_be16(sizeof(struct powernv_fadump_section));
 +
-+	/*
-+	 * Fields for disk dump option.
-+	 * We are not using disk dump option, hence set these fields to 0.
-+	 */
-+	fdm.header.dd_block_size = 0;
-+	fdm.header.dd_block_offset = 0;
-+	fdm.header.dd_num_blocks = 0;
-+	fdm.header.dd_offset_disk_path = 0;
++	/* RMA region sections */
++	for (i = 0; i < fadump_conf->rmr_regions_cnt; i++) {
++		fdm.section[RMR_REGION_INPUT_IDX + i].src_type  =
++			POWERNV_FADUMP_REAL_MODE_REGION;
++		fdm.section[RMR_REGION_INPUT_IDX + i].src_addr  =
++			cpu_to_be64(fadump_conf->rmr_src_addr[i]);
++		fdm.section[RMR_REGION_INPUT_IDX + i].dest_addr =
++			cpu_to_be64(addr);
++		fdm.section[RMR_REGION_INPUT_IDX + i].src_size  =
++			fdm.section[RMR_REGION_INPUT_IDX + i].dest_size =
++			cpu_to_be64(fadump_conf->rmr_src_size[i]);
 +
-+	/* set 0 to disable an automatic dump-reboot. */
-+	fdm.header.max_time_auto = 0;
++		section_cnt++;
++		addr += fadump_conf->rmr_src_size[i];
++	}
 +
-+	/* Kernel dump sections */
-+	/* cpu state data section. */
-+	fdm.cpu_state_data.request_flag =
-+		cpu_to_be32(PSERIES_FADUMP_REQUEST_FLAG);
-+	fdm.cpu_state_data.source_data_type =
-+		cpu_to_be16(PSERIES_FADUMP_CPU_STATE_DATA);
-+	fdm.cpu_state_data.source_address = 0;
-+	fdm.cpu_state_data.source_len =
-+		cpu_to_be64(fadump_conf->cpu_state_data_size);
-+	fdm.cpu_state_data.destination_address = cpu_to_be64(addr);
-+	addr += fadump_conf->cpu_state_data_size;
-+
-+	/* hpte region section */
-+	fdm.hpte_region.request_flag = cpu_to_be32(PSERIES_FADUMP_REQUEST_FLAG);
-+	fdm.hpte_region.source_data_type =
-+		cpu_to_be16(PSERIES_FADUMP_HPTE_REGION);
-+	fdm.hpte_region.source_address = 0;
-+	fdm.hpte_region.source_len =
-+		cpu_to_be64(fadump_conf->hpte_region_size);
-+	fdm.hpte_region.destination_address = cpu_to_be64(addr);
-+	addr += fadump_conf->hpte_region_size;
-+
-+	/* RMA region section */
-+	fdm.rmr_region.request_flag = cpu_to_be32(PSERIES_FADUMP_REQUEST_FLAG);
-+	fdm.rmr_region.source_data_type =
-+		cpu_to_be16(PSERIES_FADUMP_REAL_MODE_REGION);
-+	fdm.rmr_region.source_address = cpu_to_be64(RMA_START);
-+	fdm.rmr_region.source_len =
-+		cpu_to_be64(fadump_conf->boot_memory_size);
-+	fdm.rmr_region.destination_address = cpu_to_be64(addr);
-+	addr += fadump_conf->boot_memory_size;
-+
++	fdm.section_count = cpu_to_be16(section_cnt);
 +	update_fadump_config(fadump_conf, &fdm);
 +
 +	return addr;
 +}
 +
-+static int pseries_register_fadump(struct fw_dump *fadump_conf)
++static int powernv_register_fadump(struct fw_dump *fadump_conf)
 +{
-+	int rc, err;
-+	unsigned int wait_time;
++	int rc, err = -EIO;
 +
-+	/* TODO: Add upper time limit for the delay */
-+	do {
-+		rc = rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
-+			NULL, FADUMP_REGISTER, &fdm,
-+			sizeof(struct pseries_fadump_mem_struct));
-+
-+		wait_time = rtas_busy_delay_time(rc);
-+		if (wait_time)
-+			mdelay(wait_time);
-+
-+	} while (wait_time);
-+
-+	err = -EIO;
++	rc = opal_configure_fadump(FADUMP_REGISTER, &fdm, fdm_actual_size);
 +	switch (rc) {
 +	default:
 +		pr_err("Failed to register. Unknown Error(%d).\n", rc);
 +		break;
-+	case -1:
++	case OPAL_UNSUPPORTED:
++		pr_err("Support not available.\n");
++		fadump_conf->fadump_supported = 0;
++		fadump_conf->fadump_enabled = 0;
++		break;
++	case OPAL_INTERNAL_ERROR:
 +		pr_err("Failed to register. Hardware Error(%d).\n", rc);
 +		break;
-+	case -3:
-+		if (!is_boot_memory_area_contiguous(fadump_conf))
-+			pr_err("Can't have holes in boot memory area.\n");
-+		else if (!is_reserved_memory_area_contiguous(fadump_conf))
-+			pr_err("Can't have holes in reserved memory area.\n");
-+
++	case OPAL_PARAMETER:
 +		pr_err("Failed to register. Parameter Error(%d).\n", rc);
-+		err = -EINVAL;
 +		break;
-+	case -9:
++	case OPAL_PERMISSION:
 +		pr_err("Already registered!\n");
 +		fadump_conf->dump_registered = 1;
 +		err = -EEXIST;
 +		break;
-+	case 0:
++	case OPAL_SUCCESS:
 +		pr_err("Registration is successful!\n");
 +		fadump_conf->dump_registered = 1;
 +		err = 0;
@@ -1071,87 +931,45 @@ index 0000000..ac54501
 +	return err;
 +}
 +
-+static int pseries_unregister_fadump(struct fw_dump *fadump_conf)
++static int powernv_unregister_fadump(struct fw_dump *fadump_conf)
 +{
-+	int rc = 0;
-+	unsigned int wait_time;
++	int rc;
 +
-+	/* TODO: Add upper time limit for the delay */
-+	do {
-+		rc = rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
-+			NULL, FADUMP_UNREGISTER, &fdm,
-+			sizeof(struct pseries_fadump_mem_struct));
-+
-+		wait_time = rtas_busy_delay_time(rc);
-+		if (wait_time)
-+			mdelay(wait_time);
-+	} while (wait_time);
-+
++	rc = opal_configure_fadump(FADUMP_UNREGISTER, &fdm, fdm_actual_size);
 +	if (rc) {
-+		pr_err("Failed to un-register - unexpected error(%d).\n", rc);
-+		return rc;
++		pr_err("Failed to un-register - unexpected Error(%d).\n", rc);
++		return -EIO;
 +	}
 +
 +	fadump_conf->dump_registered = 0;
 +	return 0;
 +}
 +
-+static ulong pseries_get_preserv_area_start(struct fw_dump *fadump_conf)
++static ulong powernv_get_preserv_area_start(struct fw_dump *fadump_conf)
 +{
-+	const struct pseries_fadump_mem_struct *fdm_ptr;
-+
-+	if (fdm_active)
-+		fdm_ptr = fdm_active;
-+	else
-+		fdm_ptr = &fdm;
-+
-+	return be64_to_cpu(fdm_ptr->cpu_state_data.destination_address);
++	return fadump_conf->rmr_destination_addr;
 +}
 +
-+static ulong pseries_get_meta_area_start(struct fw_dump *fadump_conf)
++static ulong powernv_get_meta_area_start(struct fw_dump *fadump_conf)
 +{
 +	return (fadump_conf->rmr_destination_addr +
 +		fadump_conf->rmr_source_len);
 +}
 +
-+static int pseries_invalidate_fadump(struct fw_dump *fadump_conf)
++static int powernv_invalidate_fadump(struct fw_dump *fadump_conf)
 +{
-+	int rc = 0;
-+	unsigned int wait_time;
++	int rc;
 +
-+	/* TODO: Add upper time limit for the delay */
-+	do {
-+		rc = rtas_call(fadump_conf->ibm_configure_kernel_dump, 3, 1,
-+			NULL, FADUMP_INVALIDATE, fdm_active,
-+			sizeof(struct pseries_fadump_mem_struct));
-+
-+		wait_time = rtas_busy_delay_time(rc);
-+		if (wait_time)
-+			mdelay(wait_time);
-+	} while (wait_time);
-+
++	rc = opal_configure_fadump(FADUMP_INVALIDATE, (void *)fdm_active,
++				   fdm_actual_size);
 +	if (rc) {
-+		pr_err("Failed to invalidate - unexpected error (%d).\n", rc);
-+		return rc;
++		pr_err("Failed to invalidate - unexpected Error(%d).\n", rc);
++		return -EIO;
 +	}
 +
 +	fadump_conf->dump_active = 0;
 +	fdm_active = NULL;
 +	return 0;
-+}
-+
-+static struct fadump_reg_entry*
-+fadump_read_registers(struct fadump_reg_entry *reg_entry, struct pt_regs *regs)
-+{
-+	memset(regs, 0, sizeof(struct pt_regs));
-+
-+	while (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUEND")) {
-+		fadump_set_regval(regs, be64_to_cpu(reg_entry->reg_id),
-+				  be64_to_cpu(reg_entry->reg_value));
-+		reg_entry++;
-+	}
-+	reg_entry++;
-+	return reg_entry;
 +}
 +
 +/*
@@ -1170,33 +988,8 @@ index 0000000..ac54501
 + */
 +static int __init fadump_build_cpu_notes(struct fw_dump *fadump_conf)
 +{
-+	struct fadump_reg_save_area_header *reg_header;
-+	struct fadump_reg_entry *reg_entry;
++	u32 num_cpus = 1, *note_buf;
 +	struct fadump_crash_info_header *fdh = NULL;
-+	void *vaddr;
-+	unsigned long addr;
-+	u32 num_cpus, *note_buf;
-+	struct pt_regs regs;
-+	int i, rc = 0, cpu = 0;
-+
-+	addr = be64_to_cpu(fdm_active->cpu_state_data.destination_address);
-+	vaddr = __va(addr);
-+
-+	reg_header = vaddr;
-+	if (be64_to_cpu(reg_header->magic_number) != REGSAVE_AREA_MAGIC) {
-+		pr_err("Unable to read register save area.\n");
-+		return -ENOENT;
-+	}
-+
-+	pr_debug("--------CPU State Data------------\n");
-+	pr_debug("Magic Number: %llx\n", be64_to_cpu(reg_header->magic_number));
-+	pr_debug("NumCpuOffset: %x\n", be32_to_cpu(reg_header->num_cpu_offset));
-+
-+	vaddr += be32_to_cpu(reg_header->num_cpu_offset);
-+	num_cpus = be32_to_cpu(*((__be32 *)(vaddr)));
-+	pr_debug("NumCpus     : %u\n", num_cpus);
-+	vaddr += sizeof(u32);
-+	reg_entry = (struct fadump_reg_entry *)vaddr;
 +
 +	/* Allocate buffer to hold cpu crash notes. */
 +	fadump_conf->cpu_notes_buf_size = num_cpus * sizeof(note_buf_t);
@@ -1211,79 +1004,31 @@ index 0000000..ac54501
 +	fadump_conf->cpu_notes_buf = __pa(note_buf);
 +
 +	pr_debug("Allocated buffer for cpu notes of size %ld at %p\n",
-+			(num_cpus * sizeof(note_buf_t)), note_buf);
++		 (num_cpus * sizeof(note_buf_t)), note_buf);
 +
 +	if (fadump_conf->fadumphdr_addr)
 +		fdh = __va(fadump_conf->fadumphdr_addr);
 +
-+	for (i = 0; i < num_cpus; i++) {
-+		if (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUSTRT")) {
-+			pr_err("Unable to read CPU state data\n");
-+			rc = -ENOENT;
-+			goto error_out;
-+		}
-+		/* Lower 4 bytes of reg_value contains logical cpu id */
-+		cpu = be64_to_cpu(reg_entry->reg_value) & FADUMP_CPU_ID_MASK;
-+		if (fdh && !cpumask_test_cpu(cpu, &fdh->online_mask)) {
-+			SKIP_TO_NEXT_CPU(reg_entry);
-+			continue;
-+		}
-+		pr_debug("Reading register data for cpu %d...\n", cpu);
-+		if (fdh && fdh->crashing_cpu == cpu) {
-+			regs = fdh->regs;
-+			note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
-+			SKIP_TO_NEXT_CPU(reg_entry);
-+		} else {
-+			reg_entry++;
-+			reg_entry = fadump_read_registers(reg_entry, &regs);
-+			note_buf = fadump_regs_to_elf_notes(note_buf, &regs);
-+		}
-+	}
-+	final_note(note_buf);
++	if (fdh && (fdh->crashing_cpu != CPU_UNKNOWN)) {
++		note_buf = fadump_regs_to_elf_notes(note_buf, &(fdh->regs));
++		final_note(note_buf);
 +
-+	if (fdh) {
 +		pr_debug("Updating elfcore header (%llx) with cpu notes\n",
 +			 fdh->elfcorehdr_addr);
 +		fadump_update_elfcore_header(fadump_conf,
 +					     __va(fdh->elfcorehdr_addr));
 +	}
++
 +	return 0;
-+
-+error_out:
-+	fadump_cpu_notes_buf_free((ulong)__va(fadump_conf->cpu_notes_buf),
-+				  fadump_conf->cpu_notes_buf_size);
-+	fadump_conf->cpu_notes_buf = 0;
-+	fadump_conf->cpu_notes_buf_size = 0;
-+	return rc;
-+
 +}
 +
-+/*
-+ * Validate and process the dump data stored by firmware before exporting
-+ * it through '/proc/vmcore'.
-+ */
-+static int __init pseries_process_fadump(struct fw_dump *fadump_conf)
++static int __init powernv_process_fadump(struct fw_dump *fadump_conf)
 +{
 +	struct fadump_crash_info_header *fdh;
 +	int rc = 0;
 +
 +	if (!fdm_active || !fadump_conf->fadumphdr_addr)
 +		return -EINVAL;
-+
-+	/* Check if the dump data is valid. */
-+	if ((be16_to_cpu(fdm_active->header.dump_status_flag) ==
-+			PSERIES_FADUMP_ERROR_FLAG) ||
-+			(fdm_active->cpu_state_data.error_flags != 0) ||
-+			(fdm_active->rmr_region.error_flags != 0)) {
-+		pr_err("Dump taken by platform is not valid\n");
-+		return -EINVAL;
-+	}
-+	if ((fdm_active->rmr_region.bytes_dumped !=
-+			fdm_active->rmr_region.source_len) ||
-+			!fdm_active->cpu_state_data.bytes_dumped) {
-+		pr_err("Dump taken by platform is incomplete\n");
-+		return -EINVAL;
-+	}
 +
 +	/* Validate the fadump crash info header */
 +	fdh = __va(fadump_conf->fadumphdr_addr);
@@ -1292,9 +1037,13 @@ index 0000000..ac54501
 +		return -EINVAL;
 +	}
 +
-+	if (!fdm_active->cpu_state_data.bytes_dumped)
-+		return -EINVAL;
-+
++	/*
++	 * TODO: To build cpu notes, find a way to map PIR to logical id.
++	 *       Also, we may need different method for pseries and powernv.
++	 *       The currently booted kernel could have a different PIR to
++	 *       logical id mapping. So, try saving info of previous kernel's
++	 *       paca to get the right PIR to logical id mapping.
++	 */
 +	rc = fadump_build_cpu_notes(fadump_conf);
 +	if (rc)
 +		return rc;
@@ -1306,149 +1055,69 @@ index 0000000..ac54501
 +	 */
 +	elfcorehdr_addr = fdh->elfcorehdr_addr;
 +
-+	return 0;
++	return rc;
 +}
 +
-+static void pseries_fadump_region_show(struct fw_dump *fadump_conf,
++static void powernv_fadump_region_show(struct fw_dump *fadump_conf,
 +				       struct seq_file *m)
 +{
-+	const struct pseries_fadump_mem_struct *fdm_ptr;
-+	const struct pseries_fadump_section *cpu_data_section;
-+
-+	if (fdm_active)
-+		fdm_ptr = fdm_active;
-+	else
-+		fdm_ptr = &fdm;
-+
-+	cpu_data_section = &(fdm_ptr->cpu_state_data);
-+	seq_printf(m,
-+			"CPU :[%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
-+			be64_to_cpu(cpu_data_section->destination_address),
-+			be64_to_cpu(cpu_data_section->destination_address) +
-+			be64_to_cpu(cpu_data_section->source_len) - 1,
-+			be64_to_cpu(cpu_data_section->source_len),
-+			be64_to_cpu(cpu_data_section->bytes_dumped));
-+	seq_printf(m,
-+			"HPTE:[%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
-+			be64_to_cpu(fdm_ptr->hpte_region.destination_address),
-+			be64_to_cpu(fdm_ptr->hpte_region.destination_address) +
-+			be64_to_cpu(fdm_ptr->hpte_region.source_len) - 1,
-+			be64_to_cpu(fdm_ptr->hpte_region.source_len),
-+			be64_to_cpu(fdm_ptr->hpte_region.bytes_dumped));
-+	seq_printf(m,
-+			"DUMP:[%#016llx-%#016llx] %#llx bytes, Dumped: %#llx\n",
-+			be64_to_cpu(fdm_ptr->rmr_region.destination_address),
-+			be64_to_cpu(fdm_ptr->rmr_region.destination_address) +
-+			be64_to_cpu(fdm_ptr->rmr_region.source_len) - 1,
-+			be64_to_cpu(fdm_ptr->rmr_region.source_len),
-+			be64_to_cpu(fdm_ptr->rmr_region.bytes_dumped));
-+
-+	if (!fdm_active ||
-+		(fadump_conf->reserve_dump_area_start ==
-+		be64_to_cpu(cpu_data_section->destination_address)))
-+		return;
-+
-+	/* Dump is active. Show reserved memory region. */
-+	seq_printf(m,
-+			"    :[%#016lx-%#016llx] %#llx bytes, Dumped: %#llx\n",
-+			fadump_conf->reserve_dump_area_start,
-+			be64_to_cpu(cpu_data_section->destination_address) - 1,
-+			be64_to_cpu(cpu_data_section->destination_address) -
-+			fadump_conf->reserve_dump_area_start,
-+			be64_to_cpu(cpu_data_section->destination_address) -
-+			fadump_conf->reserve_dump_area_start);
 +}
 +
-+static void pseries_crash_fadump(const char *msg)
++static void powernv_crash_fadump(const char *msg)
 +{
-+	/* Call ibm,os-term rtas call to trigger firmware assisted dump */
-+	rtas_os_term((char *)msg);
++	int rc;
++
++	rc = opal_cec_reboot2(OPAL_REBOOT_MPIPL, msg);
++	if (rc == OPAL_UNSUPPORTED)
++		pr_emerg("Reboot type %d not supported\n", OPAL_REBOOT_MPIPL);
++	else if (rc == OPAL_HARDWARE)
++		pr_emerg("No backend support for MPIPL!\n");
 +}
 +
-+
-+static struct fadump_ops_t pseries_fadump_ops = {
-+	.init_fadump_mem_struct	= pseries_init_fadump_mem_struct,
-+	.register_fadump	= pseries_register_fadump,
-+	.unregister_fadump	= pseries_unregister_fadump,
-+	.get_preserv_area_start	= pseries_get_preserv_area_start,
-+	.get_meta_area_start	= pseries_get_meta_area_start,
-+	.invalidate_fadump	= pseries_invalidate_fadump,
-+	.process_fadump		= pseries_process_fadump,
-+	.fadump_region_show	= pseries_fadump_region_show,
-+	.crash_fadump		= pseries_crash_fadump,
++static struct fadump_ops_t powernv_fadump_ops = {
++	.init_fadump_mem_struct	= powernv_init_fadump_mem_struct,
++	.register_fadump	= powernv_register_fadump,
++	.unregister_fadump	= powernv_unregister_fadump,
++	.get_preserv_area_start	= powernv_get_preserv_area_start,
++	.get_meta_area_start	= powernv_get_meta_area_start,
++	.invalidate_fadump	= powernv_invalidate_fadump,
++	.process_fadump		= powernv_process_fadump,
++	.fadump_region_show	= powernv_fadump_region_show,
++	.crash_fadump		= powernv_crash_fadump,
 +};
 +
-+int __init pseries_dt_scan_fadump(struct fw_dump *fadump_conf, ulong node)
++int __init powernv_dt_scan_fadump(struct fw_dump *fadump_conf, ulong node)
 +{
-+	const __be32 *sections;
-+	int i, num_sections;
-+	int size;
-+	const __be32 *token;
++	/*
++	 * Firmware currently supports only 32-bit value for size,
++	 * align it to 1MB size.
++	 */
++	fadump_conf->max_copy_size = _ALIGN_DOWN(0xFFFFFFFF, (1 << 20));
 +
 +	/*
-+	 * Check if Firmware Assisted dump is supported. if yes, check
-+	 * if dump has been initiated on last reboot.
++	 * Check if dump has been initiated on last reboot.
 +	 */
-+	token = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL);
-+	if (!token)
-+		return 1;
-+
-+	fadump_conf->ibm_configure_kernel_dump = be32_to_cpu(*token);
-+
-+	/*
-+	 * The 'ibm,kernel-dump' rtas node is present only if there is
-+	 * dump data waiting for us.
-+	 */
-+	fdm_active = of_get_flat_dt_prop(node, "ibm,kernel-dump", NULL);
++	fdm_active = of_get_flat_dt_prop(node, "result-table", NULL);
 +	if (fdm_active) {
 +		pr_info("Firmware-assisted dump is active.\n");
 +		fadump_conf->dump_active = 1;
-+		update_fadump_config(fadump_conf, fdm_active);
++		update_fadump_config(fadump_conf, (void *)__pa(fdm_active));
 +	}
 +
-+	/* Get the sizes required to store dump data for the firmware provided
-+	 * dump sections.
-+	 * For each dump section type supported, a 32bit cell which defines
-+	 * the ID of a supported section followed by two 32 bit cells which
-+	 * gives the size of the section in bytes.
-+	 */
-+	sections = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump-sizes",
-+					&size);
-+
-+	if (!sections)
-+		return 1;
-+
-+	num_sections = size / (3 * sizeof(u32));
-+
-+	for (i = 0; i < num_sections; i++, sections += 3) {
-+		u32 type = (u32)of_read_number(sections, 1);
-+
-+		switch (type) {
-+		case PSERIES_FADUMP_CPU_STATE_DATA:
-+			fadump_conf->cpu_state_data_size =
-+					of_read_ulong(&sections[1], 2);
-+			break;
-+		case PSERIES_FADUMP_HPTE_REGION:
-+			fadump_conf->hpte_region_size =
-+					of_read_ulong(&sections[1], 2);
-+			break;
-+		}
-+	}
-+
-+	fadump_ops = &pseries_fadump_ops;
++	fadump_ops = &powernv_fadump_ops;
 +	fadump_conf->fadump_supported = 1;
-+	fadump_conf->fadump_platform = FADUMP_PLATFORM_PSERIES;
++	fadump_conf->fadump_platform = FADUMP_PLATFORM_POWERNV;
 +
 +	return 1;
 +}
-diff --git a/arch/powerpc/platforms/pseries/pseries_fadump.h b/arch/powerpc/platforms/pseries/pseries_fadump.h
+diff --git a/arch/powerpc/platforms/powernv/powernv_fadump.h b/arch/powerpc/platforms/powernv/powernv_fadump.h
 new file mode 100644
-index 0000000..07226e6
+index 0000000..224a142
 --- /dev/null
-+++ b/arch/powerpc/platforms/pseries/pseries_fadump.h
-@@ -0,0 +1,96 @@
++++ b/arch/powerpc/platforms/powernv/powernv_fadump.h
+@@ -0,0 +1,63 @@
 +/*
-+ * Firmware-Assisted Dump support on POWERVM platform.
++ * Firmware-Assisted Dump support on POWERNV platform.
 + *
 + * Copyright 2018, IBM Corporation
 + * Author: Hari Bathini <hbathini@linux.vnet.ibm.com>
@@ -1459,87 +1128,73 @@ index 0000000..07226e6
 + * 2 of the License, or (at your option) any later version.
 + */
 +
-+#ifndef __PPC64_PSERIES_FA_DUMP_H__
-+#define __PPC64_PSERIES_FA_DUMP_H__
++#ifndef __PPC64_POWERNV_FA_DUMP_H__
++#define __PPC64_POWERNV_FA_DUMP_H__
 +
-+/* Firmware provided dump sections */
-+#define PSERIES_FADUMP_CPU_STATE_DATA	0x0001
-+#define PSERIES_FADUMP_HPTE_REGION	0x0002
-+#define PSERIES_FADUMP_REAL_MODE_REGION	0x0011
++#define POWERNV_FADUMP_CPU_STATE_DATA	0x0000
++/* OPAL : 0x01 – 0x39 */
++#define POWERNV_FADUMP_OPAL_REGION	0x0001
++/* Firmware/SMF : 0x40 – 0x79 */
++#define POWERNV_FADUMP_FW_REGION	0x0040
++/* Kernel memory region : 0x80 – 0xb9 */
++#define POWERNV_FADUMP_REAL_MODE_REGION	0x0080
++/* Reserved for future use : 0xc0 – 0xff */
++#define POWERNV_FADUMP_RESERVED_REGION	0x00c0
 +
-+/* Dump request flag */
-+#define PSERIES_FADUMP_REQUEST_FLAG	0x00000001
-+
-+/* Dump status flag */
-+#define PSERIES_FADUMP_ERROR_FLAG	0x2000
-+
-+/* Utility macros */
-+#define SKIP_TO_NEXT_CPU(reg_entry)					\
-+({									\
-+	while (be64_to_cpu(reg_entry->reg_id) != REG_ID("CPUEND"))	\
-+		reg_entry++;						\
-+	reg_entry++;							\
-+})
-+
-+/* Kernel Dump section info */
-+struct pseries_fadump_section {
-+	__be32	request_flag;
-+	__be16	source_data_type;
-+	__be16	error_flags;
-+	__be64	source_address;
-+	__be64	source_len;
-+	__be64	bytes_dumped;
-+	__be64	destination_address;
++enum powernv_fadump_section_types {
++	CPU_STATE_TYPE		= 0,
++	OPAL_REGION_TYPE,
++	FW_REGION_TYPE,
++	RMR_REGION_TYPE,
++	POWERNV_SECTIONS
 +};
 +
-+/* ibm,configure-kernel-dump header. */
-+struct pseries_fadump_section_header {
-+	__be32	dump_format_version;
-+	__be16	dump_num_sections;
-+	__be16	dump_status_flag;
-+	__be32	offset_first_dump_section;
++/* Starting index of RMR region in dump sections while registering */
++#define RMR_REGION_INPUT_IDX		0
 +
-+	/* Fields for disk dump option. */
-+	__be32	dd_block_size;
-+	__be64	dd_block_offset;
-+	__be64	dd_num_blocks;
-+	__be32	dd_offset_disk_path;
++#define POWERNV_MAX_SECTIONS		(POWERNV_SECTIONS + \
++					 MAX_REAL_MEM_REGIONS - 1)
 +
-+	/* Maximum time allowed to prevent an automatic dump-reboot. */
-+	__be32	max_time_auto;
++/* Kernel Dump section info */
++struct powernv_fadump_section {
++	u8	src_type;
++	u8	reserved[7];
++	__be64	src_addr;
++	__be64	src_size;
++	__be64	dest_addr;
++	__be64	dest_size;
 +};
 +
 +/*
 + * Firmware Assisted dump memory structure. This structure is required for
-+ * registering future kernel dump with power firmware through rtas call.
-+ *
-+ * No disk dump option. Hence disk dump path string section is not included.
++ * registering future kernel dump with power firmware through opal call.
 + */
-+struct pseries_fadump_mem_struct {
-+	struct pseries_fadump_section_header	header;
++struct powernv_fadump_mem_struct {
 +
-+	/* Kernel dump sections */
-+	struct pseries_fadump_section		cpu_state_data;
-+	struct pseries_fadump_section		hpte_region;
-+	struct pseries_fadump_section		rmr_region;
++	__be16	section_size;		/*sizeof(struct fadump_section) */
++	__be16	section_count;		/* number of sections */
++	__be32	reserved;
++
++	struct powernv_fadump_section	section[POWERNV_MAX_SECTIONS];
 +};
 +
-+#define REGSAVE_AREA_MAGIC		STR_TO_HEX("REGSAVE")
-+
-+/* The firmware-assisted dump format.
-+ *
-+ * The register save area is an area in the partition's memory used to preserve
-+ * the register contents (CPU state data) for the active CPUs during a firmware
-+ * assisted dump. The dump format contains register save area header followed
-+ * by register entries. On pseries, each list of registers for a CPU starts with
-+ * "CPUSTRT" and ends with "CPUEND".
-+ */
-+
-+/* Register save area header. */
-+struct fadump_reg_save_area_header {
-+	__be64		magic_number;
-+	__be32		version;
-+	__be32		num_cpu_offset;
-+};
-+
-+#endif /* __PPC64_PSERIES_FA_DUMP_H__ */
++#endif /* __PPC64_POWERNV_FA_DUMP_H__ */
+diff --git a/arch/powerpc/platforms/pseries/pseries_fadump.c b/arch/powerpc/platforms/pseries/pseries_fadump.c
+index ac54501..ef7e59a 100644
+--- a/arch/powerpc/platforms/pseries/pseries_fadump.c
++++ b/arch/powerpc/platforms/pseries/pseries_fadump.c
+@@ -40,8 +40,12 @@ static void update_fadump_config(struct fw_dump *fadump_conf,
+ 		be64_to_cpu(fdm->rmr_region.destination_address);
+ 
+ 	if (fadump_conf->dump_active) {
+-		fadump_conf->rmr_source_len =
+-			be64_to_cpu(fdm->rmr_region.source_len);
++		fadump_conf->rmr_src_addr[0] =
++			be64_to_cpu(fdm->rmr_region.source_address);
++		fadump_conf->rmr_src_size[0] = be64_to_cpu(fdm->rmr_region.source_len);
++		fadump_conf->rmr_regions_cnt = 1;
++		fadump_conf->rmr_source_len = fadump_conf->rmr_src_size[0];
++		fadump_conf->boot_memory_hole_size = 0;
+ 	}
+ }
+ 
