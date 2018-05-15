@@ -2,20 +2,20 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lS3n3nBjzF2sf
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lS3n2zNfzF2sb
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 16:15:33 +1000 (AEST)
-Date: Tue, 15 May 2018 16:15:26 +1000
+Date: Tue, 15 May 2018 16:05:48 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: wei.guo.simon@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 29/30] KVM: PPC: add KVM_SET_ONE_REG/KVM_GET_ONE_REG
- to async ioctl
-Message-ID: <20180515061526.GE28451@fergus.ozlabs.ibm.com>
-References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
- <1519753958-11756-19-git-send-email-wei.guo.simon@gmail.com>
+Subject: Re: [PATCH v2 07/30] KVM: PPC: Book3S PR: add C function wrapper for
+ _kvmppc_save/restore_tm()
+Message-ID: <20180515060548.GB28451@fergus.ozlabs.ibm.com>
+References: <1519753057-11059-1-git-send-email-wei.guo.simon@gmail.com>
+ <1519753057-11059-8-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1519753958-11756-19-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1519753057-11059-8-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +25,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 28, 2018 at 01:52:37AM +0800, wei.guo.simon@gmail.com wrote:
+On Wed, Feb 28, 2018 at 01:37:14AM +0800, wei.guo.simon@gmail.com wrote:
 > From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> In both HV/PR KVM, the KVM_SET_ONE_REG/KVM_GET_ONE_REG ioctl should
-> be able to perform without load vcpu. This patch adds
-> KVM_SET_ONE_REG/KVM_GET_ONE_REG implementation to async ioctl
-> function.
+> Currently _kvmppc_save/restore_tm() APIs can only be invoked from
+> assembly function. This patch adds C function wrappers for them so
+> that they can be safely called from C function.
 > 
 > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
-> ---
->  arch/powerpc/kvm/powerpc.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 7987fa3..6afd004 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -1619,6 +1619,19 @@ long kvm_arch_vcpu_async_ioctl(struct file *filp,
->  			return -EFAULT;
->  		return kvm_vcpu_ioctl_interrupt(vcpu, &irq);
->  	}
-> +
-> +	if ((ioctl == KVM_SET_ONE_REG) || (ioctl == KVM_GET_ONE_REG)) {
-> +		struct kvm_one_reg reg;
-> +
-> +		if (copy_from_user(&reg, argp, sizeof(reg)))
-> +			return -EFAULT;
-> +
-> +		if (ioctl == KVM_SET_ONE_REG)
-> +			return kvm_vcpu_ioctl_set_one_reg(vcpu, &reg);
-> +		else
-> +			return kvm_vcpu_ioctl_get_one_reg(vcpu, &reg);
-> +	}
-> +
->  	return -ENOIOCTLCMD;
->  }
 
-This seems dangerous to me, since now we can have set/get one_reg
-running in parallel with vcpu execution.  Is there a really compelling
-reason to do this?  If not I'd rather not make this change.
+Some relatively minor comments below:
+
+> diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
+> index 2d6fe5b..269dd11 100644
+> --- a/arch/powerpc/kvm/tm.S
+> +++ b/arch/powerpc/kvm/tm.S
+> @@ -35,7 +35,7 @@
+>   * This can modify all checkpointed registers, but
+>   * restores r1, r2 before exit.
+>   */
+> -_GLOBAL(kvmppc_save_tm)
+> +_GLOBAL(__kvmppc_save_tm)
+>  	mflr	r0
+>  	std	r0, PPC_LR_STKOFF(r1)
+>  
+> @@ -149,6 +149,52 @@ _GLOBAL(kvmppc_save_tm)
+>  	blr
+>  
+>  /*
+> + * _kvmppc_save_tm() is a wrapper around __kvmppc_save_tm(), so that it can
+> + * be invoked from C function by PR KVM only.
+> + */
+> +_GLOBAL(_kvmppc_save_tm_pr)
+
+The comment doesn't match the actual function name.
+
+> +	mflr	r5
+> +	std	r5, PPC_LR_STKOFF(r1)
+> +	stdu    r1, -SWITCH_FRAME_SIZE(r1)
+> +	SAVE_NVGPRS(r1)
+> +
+> +	/* save MSR since TM/math bits might be impacted
+> +	 * by __kvmppc_save_tm().
+> +	 */
+> +	mfmsr	r5
+> +	SAVE_GPR(5, r1)
+> +
+> +	/* also save DSCR/CR so that it can be recovered later */
+> +	mfspr   r6, SPRN_DSCR
+> +	SAVE_GPR(6, r1)
+> +
+> +	mfcr    r7
+> +	stw     r7, _CCR(r1)
+> +
+> +	bl	__kvmppc_save_tm
+> +
+> +	ld      r7, _CCR(r1)
+> +	mtcr	r7
+> +
+> +	REST_GPR(6, r1)
+> +	mtspr   SPRN_DSCR, r6
+> +
+> +	/* need preserve current MSR's MSR_TS bits */
+> +	REST_GPR(5, r1)
+> +	mfmsr   r6
+> +	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
+> +	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
+> +	mtmsrd  r5
+> +
+> +	REST_NVGPRS(r1)
+> +	addi    r1, r1, SWITCH_FRAME_SIZE
+> +	ld	r5, PPC_LR_STKOFF(r1)
+> +	mtlr	r5
+> +	blr
+> +
+> +EXPORT_SYMBOL_GPL(_kvmppc_save_tm_pr);
+> +
+> +/*
+>   * Restore transactional state and TM-related registers.
+>   * Called with:
+>   *  - r3 pointing to the vcpu struct.
+> @@ -158,7 +204,7 @@ _GLOBAL(kvmppc_save_tm)
+>   * This potentially modifies all checkpointed registers.
+>   * It restores r1, r2 from the PACA.
+>   */
+> -_GLOBAL(kvmppc_restore_tm)
+> +_GLOBAL(__kvmppc_restore_tm)
+>  	mflr	r0
+>  	std	r0, PPC_LR_STKOFF(r1)
+>  
+> @@ -186,6 +232,7 @@ _GLOBAL(kvmppc_restore_tm)
+>  	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
+>  	beqlr		/* TM not active in guest */
+>  	std	r1, HSTATE_SCRATCH2(r13)
+> +	std	r3, HSTATE_SCRATCH1(r13)
+
+Why do we need to save r3 here and restore it below?
+
+>  
+>  	/* Make sure the failure summary is set, otherwise we'll program check
+>  	 * when we trechkpt.  It's possible that this might have been not set
+> @@ -262,6 +309,7 @@ _GLOBAL(kvmppc_restore_tm)
+>  	ld	r29, HSTATE_DSCR(r13)
+>  	mtspr	SPRN_DSCR, r29
+>  #endif
+> +	ld	r3, HSTATE_SCRATCH1(r13)
+>  	ld	r1, HSTATE_SCRATCH2(r13)
+>  	ld	r2, PACATMSCRATCH(r13)
+>  
+> @@ -273,4 +321,47 @@ _GLOBAL(kvmppc_restore_tm)
+>  	mtlr	r0
+>  	blr
+>  
+> +/*
+> + * _kvmppc_restore_tm() is a wrapper around __kvmppc_restore_tm(), so that it
+> + * can be invoked from C function by PR KVM only.
+> + */
+> +_GLOBAL(_kvmppc_restore_tm_pr)
+
+Again, comment doesn't match the actual function name.
+
+> +	mflr	r5
+> +	std	r5, PPC_LR_STKOFF(r1)
+> +	stdu    r1, -SWITCH_FRAME_SIZE(r1)
+> +	SAVE_NVGPRS(r1)
+> +
+> +	/* save MSR to avoid TM/math bits change */
+> +	mfmsr	r5
+> +	SAVE_GPR(5, r1)
+> +
+> +	/* also save DSCR/CR so that it can be recovered later */
+> +	mfspr   r6, SPRN_DSCR
+> +	SAVE_GPR(6, r1)
+> +
+> +	mfcr    r7
+> +	stw     r7, _CCR(r1)
+> +
+> +	bl	__kvmppc_restore_tm
+> +
+> +	ld      r7, _CCR(r1)
+> +	mtcr	r7
+> +
+> +	REST_GPR(6, r1)
+> +	mtspr   SPRN_DSCR, r6
+> +
+> +	/* need preserve current MSR's MSR_TS bits */
+> +	REST_GPR(5, r1)
+> +	mfmsr   r6
+> +	rldicl  r6, r6, 64 - MSR_TS_S_LG, 62
+> +	rldimi  r5, r6, MSR_TS_S_LG, 63 - MSR_TS_T_LG
+> +	mtmsrd  r5
+> +
+> +	REST_NVGPRS(r1)
+> +	addi    r1, r1, SWITCH_FRAME_SIZE
+> +	ld	r5, PPC_LR_STKOFF(r1)
+> +	mtlr	r5
+> +	blr
+> +
+> +EXPORT_SYMBOL_GPL(_kvmppc_restore_tm_pr);
+>  #endif
+> -- 
+> 1.8.3.1
 
 Paul.
