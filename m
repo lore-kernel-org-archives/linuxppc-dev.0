@@ -1,21 +1,21 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lS3n5GKVzF2sp
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lS3n1tpfzF2sP
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 16:15:33 +1000 (AEST)
-Date: Tue, 15 May 2018 16:07:03 +1000
+Date: Tue, 15 May 2018 16:07:55 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: wei.guo.simon@gmail.com
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v2 17/30] KVM: PPC: Book3S PR: make mtspr/mfspr emulation
- behavior based on active TM SPRs
-Message-ID: <20180515060703.GC28451@fergus.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 18/30] KVM: PPC: Book3S PR: always fail transaction in
+ guest privilege state
+Message-ID: <20180515060755.GD28451@fergus.ozlabs.ibm.com>
 References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
- <1519753958-11756-7-git-send-email-wei.guo.simon@gmail.com>
+ <1519753958-11756-8-git-send-email-wei.guo.simon@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1519753958-11756-7-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1519753958-11756-8-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,75 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 28, 2018 at 01:52:25AM +0800, wei.guo.simon@gmail.com wrote:
+On Wed, Feb 28, 2018 at 01:52:26AM +0800, wei.guo.simon@gmail.com wrote:
 > From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> The mfspr/mtspr on TM SPRs(TEXASR/TFIAR/TFHAR) are non-privileged
-> instructions and can be executed at PR KVM guest without trapping
-> into host in problem state. We only emulate mtspr/mfspr
-> texasr/tfiar/tfhar at guest PR=0 state.
+> Currently kernel doesn't use transaction memory.
+> And there is an issue for privilege guest that:
+> tbegin/tsuspend/tresume/tabort TM instructions can impact MSR TM bits
+> without trap into PR host. So following code will lead to a false mfmsr
+> result:
+> 	tbegin	<- MSR bits update to Transaction active.
+> 	beq 	<- failover handler branch
+> 	mfmsr	<- still read MSR bits from magic page with
+> 		transaction inactive.
 > 
-> When we are emulating mtspr tm sprs at guest PR=0 state, the emulation
-> result need to be visible to guest PR=1 state. That is, the actual TM
-> SPR val should be loaded into actual registers.
+> It is not an issue for non-privilege guest since its mfmsr is not patched
+> with magic page and will always trap into PR host.
 > 
-> We already flush TM SPRs into vcpu when switching out of CPU, and load
-> TM SPRs when switching back.
+> This patch will always fail tbegin attempt for privilege guest, so that
+> the above issue is prevented. It is benign since currently (guest) kernel
+> doesn't initiate a transaction.
 > 
-> This patch corrects mfspr()/mtspr() emulation for TM SPRs to make the
-> actual source/dest based on actual TM SPRs.
+> Test case:
+> https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
 > 
 > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 > ---
->  arch/powerpc/include/asm/kvm_book3s.h |  1 +
->  arch/powerpc/kvm/book3s_emulate.c     | 54 ++++++++++++++++++++++++++++-------
->  arch/powerpc/kvm/book3s_pr.c          |  2 +-
->  3 files changed, 46 insertions(+), 11 deletions(-)
+>  arch/powerpc/include/asm/kvm_book3s.h |  2 ++
+>  arch/powerpc/kvm/book3s_emulate.c     | 43 +++++++++++++++++++++++++++++++++++
+>  arch/powerpc/kvm/book3s_pr.c          | 11 ++++++++-
+>  3 files changed, 55 insertions(+), 1 deletion(-)
 > 
 > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index 5911c3b..2ecb6a3 100644
+> index 2ecb6a3..9690280 100644
 > --- a/arch/powerpc/include/asm/kvm_book3s.h
 > +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -208,6 +208,7 @@ extern long kvmppc_hv_get_dirty_log_radix(struct kvm *kvm,
->  extern void kvmppc_book3s_dequeue_irqprio(struct kvm_vcpu *vcpu,
->  					  unsigned int vec);
->  extern void kvmppc_inject_interrupt(struct kvm_vcpu *vcpu, int vec, u64 flags);
-> +extern void kvmppc_trigger_fac_interrupt(struct kvm_vcpu *vcpu, ulong fac);
->  extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
->  			   bool upper, u32 val);
->  extern void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr);
+> @@ -258,9 +258,11 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>  void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
+>  void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
+> +void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
+>  #else
+>  static inline void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu) {}
+>  static inline void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu) {}
+> +static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
+>  #endif
+>  
+>  extern int kvm_irq_bypass;
 > diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-> index 63af17f..a03533d 100644
+> index a03533d..90b5f59 100644
 > --- a/arch/powerpc/kvm/book3s_emulate.c
 > +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -523,13 +523,35 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
->  		break;
->  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->  	case SPRN_TFHAR:
-> -		vcpu->arch.tfhar = spr_val;
-> -		break;
->  	case SPRN_TEXASR:
-> -		vcpu->arch.texasr = spr_val;
-> -		break;
->  	case SPRN_TFIAR:
-> -		vcpu->arch.tfiar = spr_val;
-> +		if (!cpu_has_feature(CPU_FTR_TM))
-> +			break;
+> @@ -23,6 +23,7 @@
+>  #include <asm/reg.h>
+>  #include <asm/switch_to.h>
+>  #include <asm/time.h>
+> +#include <asm/tm.h>
+>  #include "book3s.h"
+>  
+>  #define OP_19_XOP_RFID		18
+> @@ -47,6 +48,8 @@
+>  #define OP_31_XOP_EIOIO		854
+>  #define OP_31_XOP_SLBMFEE	915
+>  
+> +#define OP_31_XOP_TBEGIN	654
 > +
-> +		if (!(kvmppc_get_msr(vcpu) & MSR_TM)) {
-> +			kvmppc_trigger_fac_interrupt(vcpu, FSCR_TM_LG);
-> +			emulated = EMULATE_AGAIN;
-> +			break;
-> +		}
+>  /* DCBZ is actually 1014, but we patch it to 1010 so we get a trap */
+>  #define OP_31_XOP_DCBZ		1010
+>  
+> @@ -362,6 +365,46 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>  
+>  			break;
+>  		}
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +		case OP_31_XOP_TBEGIN:
+> +		{
+> +			if (!cpu_has_feature(CPU_FTR_TM))
+> +				break;
 > +
-> +		if (MSR_TM_ACTIVE(kvmppc_get_msr(vcpu))) {
-> +			/* it is illegal to mtspr() TM regs in
-> +			 * other than non-transactional state.
-> +			 */
-> +			kvmppc_core_queue_program(vcpu, SRR1_PROGTM);
-> +			emulated = EMULATE_AGAIN;
+> +			if (!(kvmppc_get_msr(vcpu) & MSR_TM)) {
+> +				kvmppc_trigger_fac_interrupt(vcpu, FSCR_TM_LG);
+> +				emulated = EMULATE_AGAIN;
+> +				break;
+> +			}
+> +
+> +			if (!(kvmppc_get_msr(vcpu) & MSR_PR)) {
+> +				preempt_disable();
+> +				vcpu->arch.cr = (CR0_TBEGIN_FAILURE |
+> +				  (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)));
+> +
+> +				vcpu->arch.texasr = (TEXASR_FS | TEXASR_EX |
+> +					(((u64)(TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT))
+> +						 << TEXASR_FC_LG));
+> +
+> +				if ((inst >> 21) & 0x1)
+> +					vcpu->arch.texasr |= TEXASR_ROT;
+> +
+> +				if (kvmppc_get_msr(vcpu) & MSR_PR)
+> +					vcpu->arch.texasr |= TEXASR_PR;
 
-According to the architecture, mtspr to TFHAR is permitted in
-suspended state.
+This if statement seems unnecessary, since we only get here when
+MSR_PR is clear.
 
 Paul.
