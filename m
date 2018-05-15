@@ -1,21 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lQwj5bTmzF2f4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 15:24:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lR4M2zmNzF2sS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 15:30:59 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Steven Rostedt <rostedt@goodmis.org>, Nicholas Piggin <npiggin@gmail.com>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH v3 3/4] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-In-Reply-To: <20180514112826.1b820335@gandalf.local.home>
-References: <20180514035228.21316-1-npiggin@gmail.com>
- <20180514035228.21316-4-npiggin@gmail.com>
- <20180514112826.1b820335@gandalf.local.home>
-Date: Tue, 15 May 2018 15:24:21 +1000
-Message-ID: <87tvr9o5iy.fsf@concordia.ellerman.id.au>
+To: Philippe Bergheaud <felix@linux.ibm.com>,
+ "stewart\@linux.vnet.ibm.com" <stewart@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: fbarrat@linux.ibm.com, clombard@linux.ibm.com, benh@au1.ibm.com
+Subject: Re: [PATCH v4 1/2] cxl: Set the PBCQ Tunnel BAR register when
+ enabling capi mode
+In-Reply-To: <f95e5788-dd8e-8ac9-84e2-9a3fad0e307c@linux.ibm.com>
+References: <20180514082736.3699-1-felix@linux.ibm.com>
+ <87sh6upl2i.fsf@concordia.ellerman.id.au>
+ <f95e5788-dd8e-8ac9-84e2-9a3fad0e307c@linux.ibm.com>
+Date: Tue, 15 May 2018 15:30:58 +1000
+Message-ID: <87r2mdo57x.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,72 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Steven Rostedt <rostedt@goodmis.org> writes:
-> On Mon, 14 May 2018 13:52:27 +1000
-> Nicholas Piggin <npiggin@gmail.com> wrote:
->> The powerpc toolchain can compile combinations of 32/64 bit and
->> big/little endian, so it's convenient to consider, e.g.,
->> 
->>   `CC -m64 -mbig-endian`
->> 
->> To be the C compiler for the purpose of invoking it to build target
->> artifacts. So overriding the the CC variable to include thse flags
-...
->> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
->> index 191eb949d52c..3c67304a7425 100755
->> --- a/scripts/recordmcount.pl
->> +++ b/scripts/recordmcount.pl
->> @@ -274,6 +274,13 @@ if ($arch eq "x86_64") {
->>      if ($bits == 64) {
->>  	$type = ".quad";
->>      }
->> +    if ($endian eq "big") {
->> +	    $cc .= " -mbig-endian ";
->> +	    $ld .= " -EB ";
->> +    } else {
->> +	    $cc .= " -mlittle-endian ";
->> +	    $ld .= " -EL ";
->> +    }
+Philippe Bergheaud <felix@linux.ibm.com> writes:
+
+> On 14/05/2018 12:51, Michael Ellerman wrote:
+>> Philippe Bergheaud <felix@linux.ibm.com> writes:
+>>
+>>> Skiboot used to set the default Tunnel BAR register value when capi mode
+>>> was enabled. This approach was ok for the cxl driver, but prevented other
+>>> drivers from choosing different values.
+>>>
+>>> Skiboot versions > 5.11 will not set the default value any longer. This
+>>> patch modifies the cxl driver to set/reset the Tunnel BAR register when
+>>> entering/exiting the cxl mode, with pnv_pci_set_tunnel_bar().
+>>>
+>>> That should work with old skiboot (since we are re-writing the value
+>>> already set) and new skiboot.
+>> But doesn't that mean new skiboot can't boot any old kernel? That seems
+>> undesirable.
 >
-> Have you tried building all current archs with function tracing enabled
-> to make sure this doesn't break any of them? I can do it if you want.
+> Yes, with new skiboot, all kernels will boot.
 
-We shouldn't need to should we? This is only touching powerpc specific
-code (if I understand perl that is).
+OK.
 
-eg:
+> Capi mode tunnelled operations did not work until linux-4.17-rc1 (Apr 
+> 15, 2008). With new skiboot, kernels since linux-4.17-rc1 will loose 
+        ^
+        1
 
-$ git diff -U9 scripts/recordmcount.pl
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 191eb949d52c..3c67304a7425 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -268,18 +268,25 @@ if ($arch eq "x86_64") {
- } elsif ($arch eq "powerpc") {
-     $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
-     # See comment in the sparc64 section for why we use '\w'.
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?\\w*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
- 
-     if ($bits == 64) {
-        $type = ".quad";
-     }
-+    if ($endian eq "big") {
-+           $cc .= " -mbig-endian ";
-+           $ld .= " -EB ";
-+    } else {
-+           $cc .= " -mlittle-endian ";
-+           $ld .= " -EL ";
-+    }
- 
- } elsif ($arch eq "arm") {
-     $alignment = 2;
-     $section_type = '%progbits';
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):\\s*R_ARM_(CALL|PC24|THM_CALL)" .
-                        "\\s+(__gnu_mcount_nc|mcount)\$";
- 
- } elsif ($arch eq "arm64") {
-     $alignment = 3;
+> tunneled operations in capi mode, until this patch set is merged.
 
+So it would be preferable if I put this patch into 4.17, so that the
+4.17 release works. Am I right?
+
+> Capi mode tunneled operations are not used in any IBM or partner GA 
+> products. The feature will be fully supported after this patch set and 
+> the libcxl PR https://github.com/ibm-capi/libcxl/pull/29 are merged.
+
+OK. In general I ignore that sort of stuff because people also ignore it
+when they're filing bugs against the kernel. So if it's in the tree we
+want it to work (as much as possible), regardless of what's been GA'ed,
+or is supported officially etc.
 
 cheers
