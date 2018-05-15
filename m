@@ -1,25 +1,21 @@
-Return-Path: <SRS0=cHGH=IC=goodmis.org=rostedt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lgKw0YzVzF14f
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 00:43:28 +1000 (AEST)
-Date: Tue, 15 May 2018 10:43:24 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Masahiro Yamada
- <yamada.masahiro@socionext.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH v3 3/4] powerpc/kbuild: Use flags variables rather than
- overriding LD/CC/AS
-Message-ID: <20180515104324.5230d827@gandalf.local.home>
-In-Reply-To: <87tvr9o5iy.fsf@concordia.ellerman.id.au>
-References: <20180514035228.21316-1-npiggin@gmail.com>
- <20180514035228.21316-4-npiggin@gmail.com>
- <20180514112826.1b820335@gandalf.local.home>
- <87tvr9o5iy.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lglW5CrHzF2NB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 01:02:15 +1000 (AEST)
+Date: Tue, 15 May 2018 08:02:05 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stewart@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/3] Add support to disable sensor groups in P9
+Message-ID: <20180515150205.GA29321@roeck-us.net>
+References: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 15 May 2018 15:24:21 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> > Have you tried building all current archs with function tracing enabled
-> > to make sure this doesn't break any of them? I can do it if you want.  
+On Thu, Mar 22, 2018 at 04:24:32PM +0530, Shilpasri G Bhat wrote:
+> This patch series adds support to enable/disable OCC based
+> inband-sensor groups at runtime. The environmental sensor groups are
+> managed in HWMON and the remaining platform specific sensor groups are
+> managed in /sys/firmware/opal.
 > 
-> We shouldn't need to should we? This is only touching powerpc specific
-> code (if I understand perl that is).
+> The firmware changes required for this patch is posted below:
+> https://lists.ozlabs.org/pipermail/skiboot/2018-March/010812.html
 > 
-> eg:
+
+Sorry for not getting back earlier. This is a tough one.
+
+Key problem is that you are changing the ABI with those new attributes.
+On top of that, the attributes _do_ make some sense (many chips support
+enabling/disabling of individual sensors), suggesting that those or
+similar attributes may or even should at some point be added to the ABI.
+
+At the same time, returning "0" as measurement values when sensors are
+disabled does not seem like a good idea, since "0" is a perfectly valid
+measurement, at least for most sensors.
+
+Given that, we need to have a discussion about adding _enable attributes to
+the ABI (what is the scope, when should the attributes exist and when not,
+do we want/need power_enable or powerX_enable or both, and so on), and what
+to return if a sensor is disabled (such as -ENODATA). Once we have an
+agreement, we can continue with an implementation.
+
+Guenter
+
+> Shilpasri G Bhat (3):
+>   powernv:opal-sensor-groups: Add support to enable sensor groups
+>   hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
+>   powernv: opal-sensor-groups: Add attributes to disable/enable sensors
 > 
-> $ git diff -U9 scripts/recordmcount.pl
-
-Thanks for the added context!
-
-Yeah, I don't look at that code much anymore since I mainly deal with
-recordmcount.c now-a-days. I wonder if someone should port ppc to that.
-It is also no my todo list to merge that with objtool.
-
-Anyway,
-
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-
--- Steve
-
-
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 191eb949d52c..3c67304a7425 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -268,18 +268,25 @@ if ($arch eq "x86_64") {
->  } elsif ($arch eq "powerpc") {
->      $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
->      # See comment in the sparc64 section for why we use '\w'.
->      $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?\\w*?)>:";
->      $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
->  
->      if ($bits == 64) {
->         $type = ".quad";
->      }
-> +    if ($endian eq "big") {
-> +           $cc .= " -mbig-endian ";
-> +           $ld .= " -EB ";
-> +    } else {
-> +           $cc .= " -mlittle-endian ";
-> +           $ld .= " -EL ";
-> +    }
->  
->  } elsif ($arch eq "arm") {
->      $alignment = 2;
->      $section_type = '%progbits';
->      $mcount_regex = "^\\s*([0-9a-fA-F]+):\\s*R_ARM_(CALL|PC24|THM_CALL)" .
->                         "\\s+(__gnu_mcount_nc|mcount)\$";
->  
->  } elsif ($arch eq "arm64") {
->      $alignment = 3;
+>  .../ABI/testing/sysfs-firmware-opal-sensor-groups  |  34 ++++++
+>  Documentation/hwmon/ibmpowernv                     |  31 ++++-
+>  arch/powerpc/include/asm/opal-api.h                |   4 +-
+>  arch/powerpc/include/asm/opal.h                    |   2 +
+>  .../powerpc/platforms/powernv/opal-sensor-groups.c | 104 ++++++++++++-----
+>  arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+>  drivers/hwmon/ibmpowernv.c                         | 127 +++++++++++++++++++--
+>  7 files changed, 265 insertions(+), 38 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
 > 
+> -- 
+> 1.8.3.1
 > 
-> cheers
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-hwmon" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
