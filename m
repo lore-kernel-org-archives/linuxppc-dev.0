@@ -1,16 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40m4zT20FhzF154
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 16:59:01 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: get rid of PMD_PAGE_SIZE() and _PMD_SIZE
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180516065857.8043B6F6F2@po14934vm.idsi0.si.c-s.fr>
-Date: Wed, 16 May 2018 08:58:57 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40m5B946xKzF1fl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 17:08:17 +1000 (AEST)
+Date: Wed, 16 May 2018 17:08:14 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: benh@kernel.crashing.org, mpe@ellerman.id.au,
+ Matthew Wilcox <willy@infradead.org>, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] powerpc: kvm: Change return type to vm_fault_t
+Message-ID: <20180516070814.GA20588@fergus.ozlabs.ibm.com>
+References: <20180510182719.GA22217@jordon-HP-15-Notebook-PC>
+ <CAFqt6zbxWkOQXtKZXyDae=ZEQR+d0xf42fvnvUoBSHQZcHRCBg@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAFqt6zbxWkOQXtKZXyDae=ZEQR+d0xf42fvnvUoBSHQZcHRCBg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,62 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PMD_PAGE_SIZE() is nowhere used and _PMD_SIZE is only
-used by PMD_PAGE_SIZE().
+On Wed, May 16, 2018 at 10:11:11AM +0530, Souptick Joarder wrote:
+> On Thu, May 10, 2018 at 11:57 PM, Souptick Joarder <jrdr.linux@gmail.com> wrote:
+> > Use new return type vm_fault_t for fault handler
+> > in struct vm_operations_struct. For now, this is
+> > just documenting that the function returns a
+> > VM_FAULT value rather than an errno.  Once all
+> > instances are converted, vm_fault_t will become
+> > a distinct type.
+> >
+> > commit 1c8f422059ae ("mm: change return type to
+> > vm_fault_t")
+> >
+> > Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> > ---
+> > v2: Updated the change log
+> >
+> >  arch/powerpc/kvm/book3s_64_vio.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+> > index 4dffa61..346ac0d 100644
+> > --- a/arch/powerpc/kvm/book3s_64_vio.c
+> > +++ b/arch/powerpc/kvm/book3s_64_vio.c
+> > @@ -237,7 +237,7 @@ static void release_spapr_tce_table(struct rcu_head *head)
+> >         kfree(stt);
+> >  }
+> >
+> > -static int kvm_spapr_tce_fault(struct vm_fault *vmf)
+> > +static vm_fault_t kvm_spapr_tce_fault(struct vm_fault *vmf)
+> >  {
+> >         struct kvmppc_spapr_tce_table *stt = vmf->vma->vm_file->private_data;
+> >         struct page *page;
+> > --
+> > 1.9.1
+> >
+> 
+> If no comment, we would like to get this patch in queue
+> for 4.18.
 
-This patch removes them.
+It looks fine - I'll queue it up.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- Superseeds "powerpc: get rid of PMD_PAGE_SIZE()" sent a few minutes ago.
-
- arch/powerpc/include/asm/nohash/32/pte-40x.h | 3 ---
- arch/powerpc/include/asm/pte-common.h        | 8 --------
- 2 files changed, 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-index 124f9ac23a1e..bb4b3a4b92a0 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-@@ -52,12 +52,9 @@
- 
- #define _PMD_PRESENT	0x400	/* PMD points to page of PTEs */
- #define _PMD_BAD	0x802
--#define _PMD_SIZE	0x0e0	/* size field, != 0 for large-page PMD entry */
- #define _PMD_SIZE_4M	0x0c0
- #define _PMD_SIZE_16M	0x0e0
- 
--#define PMD_PAGE_SIZE(pmdval)	(1024 << (((pmdval) & _PMD_SIZE) >> 4))
--
- /* Until my rework is finished, 40x still needs atomic PTE updates */
- #define PTE_ATOMIC_UPDATES	1
- 
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index c4a72c7a8c83..050b0d775324 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -60,10 +60,6 @@
- #ifndef _PMD_PRESENT_MASK
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
- #endif
--#ifndef _PMD_SIZE
--#define _PMD_SIZE	0
--#define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
--#endif
- #ifndef _PMD_USER
- #define _PMD_USER	0
- #endif
-@@ -88,11 +84,7 @@
- #define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
- #endif
- 
--/* Make sure we get a link error if PMD_PAGE_SIZE is ever called on a
-- * kernel without large page PMD support
-- */
- #ifndef __ASSEMBLY__
--extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- 
- /*
-  * Don't just check for any non zero bits in __PAGE_USER, since for book3e
--- 
-2.13.3
+Paul.
