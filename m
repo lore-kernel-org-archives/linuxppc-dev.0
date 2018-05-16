@@ -1,39 +1,35 @@
-Return-Path: <mrochs@linux.vnet.ibm.com>
+Return-Path: <stewart@linux.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mHsg2RWxzDrpY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 01:09:37 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mJ8S6Vy3zF155
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 01:22:32 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4GF2VWm084695
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 11:09:34 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j0kyusxpy-1
+ w4GFFBD5005858
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 11:22:30 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j0pwh15pt-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 11:09:33 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 11:22:29 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mrochs@linux.vnet.ibm.com>;
- Wed, 16 May 2018 09:09:33 -0600
-Date: Wed, 16 May 2018 10:09:28 -0500
-From: "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>
-To: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, James Bottomley <jejb@linux.vnet.ibm.com>,
- "Martin K. Petersen" <martin.petersen@oracle.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Christophe Lombard <clombard@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/7] cxlflash: Yield to active send threads
-References: <1526065440-38806-1-git-send-email-ukrishn@linux.vnet.ibm.com>
- <1526065486-38860-1-git-send-email-ukrishn@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
+ Wed, 16 May 2018 09:22:29 -0600
+From: Stewart Smith <stewart@linux.ibm.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, npiggin@gmail.com,
+ ego@linux.vnet.ibm.com
+Subject: Re: [PATCH] cpuidle/powernv : init all present cpus for deep states
+In-Reply-To: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Date: Wed, 16 May 2018 10:22:22 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1526065486-38860-1-git-send-email-ukrishn@linux.vnet.ibm.com>
-Message-Id: <20180516150928.GA8754@p8tul1-build.aus.stglabs.ibm.com>
+Content-Type: text/plain
+Message-Id: <87efiby6a9.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,38 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 11, 2018 at 02:04:46PM -0500, Uma Krishnan wrote:
-> The following Oops may be encountered if the device is reset, i.e. EEH
-> recovery, while there is heavy I/O traffic:
-> 
-> 59:mon> t
-> [c000200db64bb680] c008000009264c40 cxlflash_queuecommand+0x3b8/0x500
-> 					[cxlflash]
-> [c000200db64bb770] c00000000090d3b0 scsi_dispatch_cmd+0x130/0x2f0
-> [c000200db64bb7f0] c00000000090fdd8 scsi_request_fn+0x3c8/0x8d0
-> [c000200db64bb900] c00000000067f528 __blk_run_queue+0x68/0xb0
-> [c000200db64bb930] c00000000067ab80 __elv_add_request+0x140/0x3c0
-> [c000200db64bb9b0] c00000000068daac blk_execute_rq_nowait+0xec/0x1a0
-> [c000200db64bba00] c00000000068dbb0 blk_execute_rq+0x50/0xe0
-> [c000200db64bba50] c0000000006b2040 sg_io+0x1f0/0x520
-> [c000200db64bbaf0] c0000000006b2e94 scsi_cmd_ioctl+0x534/0x610
-> [c000200db64bbc20] c000000000926208 sd_ioctl+0x118/0x280
-> [c000200db64bbcc0] c00000000069f7ac blkdev_ioctl+0x7fc/0xe30
-> [c000200db64bbd20] c000000000439204 block_ioctl+0x84/0xa0
-> [c000200db64bbd40] c0000000003f8514 do_vfs_ioctl+0xd4/0xa00
-> [c000200db64bbde0] c0000000003f8f04 SyS_ioctl+0xc4/0x130
-> [c000200db64bbe30] c00000000000b184 system_call+0x58/0x6c
-> 
-> When there is no room to send the I/O request, the cached room is refreshed
-> by reading the memory mapped command room value from the AFU. The AFU
-> register mapping is refreshed during a reset, creating a race condition
-> that can lead to the Oops above.
-> 
-> During a device reset, the AFU should not be unmapped until all the active
-> send threads quiesce. An atomic counter, cmds_active, is currently used to
-> track internal AFU commands and quiesce during reset. This same counter can
-> also be used for the active send threads.
-> 
-> Signed-off-by: Uma Krishnan <ukrishn@linux.vnet.ibm.com>
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
+> Init all present cpus for deep states instead of "all possible" cpus.
+> Init fails if the possible cpu is gaurded. Resulting in making only
+> non-deep states available for cpuidle/hotplug.
 
-Acked-by: Matthew R. Ochs <mrochs@linux.vnet.ibm.com>
+Should this also head to stable? It means that for single threaded
+workloads, if you guard out a CPU core you'll not get WoF, which means
+that performance goes down when you wouldn't expect it to. Right?
+
+-- 
+Stewart Smith
+OPAL Architect, IBM.
