@@ -2,14 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mFrm3Pm4zF14s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 23:38:48 +1000 (AEST)
-In-Reply-To: <20180509134229.26278-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mFrn06g5zF14s
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 23:38:49 +1000 (AEST)
+In-Reply-To: <20180510130913.23931-1-mpe@ellerman.id.au>
 To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/3] powerpc/prom: Drop support for old FDT versions
-Message-Id: <40mFrl6jRXz9s0y@ozlabs.org>
-Date: Wed, 16 May 2018 23:38:47 +1000 (AEST)
+Cc: rashmica.g@gmail.com, anton@samba.org
+Subject: Re: powerpc/powernv: Fix memtrace build when NUMA=n
+Message-Id: <40mFrm49N5z9s4r@ozlabs.org>
+Date: Wed, 16 May 2018 23:38:48 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,18 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-09 at 13:42:27 UTC, Michael Ellerman wrote:
-> In commit e6a6928c3ea1 ("of/fdt: Convert FDT functions to use
-> libfdt") (Apr 2014), the generic flat device tree code dropped support
-> for flat device tree's older than version 0x10 (16).
+On Thu, 2018-05-10 at 13:09:13 UTC, Michael Ellerman wrote:
+> Currently memtrace doesn't build if NUMA=n:
 > 
-> We still have code in our CPU scanning to cope with flat device tree
-> versions earlier than 2, which can now never trigger, so drop it.
+>   In function ‘memtrace_alloc_node’:
+>   arch/powerpc/platforms/powernv/memtrace.c:134:6:
+>   error: the address of ‘contig_page_data’ will always evaluate as ‘true’
+>     if (!NODE_DATA(nid) || !node_spanned_pages(nid))
+>         ^
+> 
+> This is because for NUMA=n NODE_DATA(nid) points to an always
+> allocated structure, contig_page_data.
+> 
+> But even in the NUMA=y case memtrace_alloc_node() is only called for
+> online nodes, and we should always have a NODE_DATA() allocated for an
+> online node. So remove the (hopefully) overly paranoid check, which
+> also means we can build when NUMA=n.
 > 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/89c190627257a38d5e4d7cb3e5382f
+https://git.kernel.org/powerpc/c/8ccb442dec0ab53eefb5a607e405f7
 
 cheers
