@@ -1,23 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40m9P62vyHzF14x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 20:18:02 +1000 (AEST)
-Subject: Re: [PATCH 00/17] Implement use of HW assistance on TLB table walk on
- 8xx
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1525435203.git.christophe.leroy@c-s.fr>
- <87sh6yr8l2.fsf@concordia.ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d0cb28e9-29fe-f64b-0c9a-ba2eddead0ab@c-s.fr>
-Date: Wed, 16 May 2018 12:17:57 +0200
-MIME-Version: 1.0
-In-Reply-To: <87sh6yr8l2.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mCjf47xdzF1Md
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 22:02:30 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4GBxhcK135165
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 08:02:27 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j0kjat2bk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 08:02:27 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Wed, 16 May 2018 13:02:25 +0100
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, mpe@ellerman.id.au, ego@linux.vnet.ibm.com,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle/powernv : init all present cpus for deep states
+Date: Wed, 16 May 2018 17:32:14 +0530
+Message-Id: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,62 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Init all present cpus for deep states instead of "all possible" cpus.
+Init fails if the possible cpu is gaurded. Resulting in making only
+non-deep states available for cpuidle/hotplug.
 
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/idle.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Le 11/05/2018 à 08:48, Michael Ellerman a écrit :
-> Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> 
->> The purpose of this serie is to implement hardware assistance for TLB table walk
->> on the 8xx.
->>
->> First part is to make L1 entries and L2 entries independant.
->> For that, we need to alter ioremap functions in order to handle GUARD attribute
->> at the PGD/PMD level.
->>
->> Last part is to try and reuse PTE fragment implemented on PPC64 in order to
->> not waste 16k Pages for page tables as only 4k are used. For the time being,
->> it doesn't work, but I include it in the serie anyway in order to get feedback.
->>
->> Tested successfully on 8xx up to the one before the last.
->>
->> Didn't have time to do compilation test on other configs, I send it anyway
->> before leaving for one week vacation in order to get feedback.
-> 
-> I replied to a few patches, here's some other build errors:
-> 
-> 
-> arch/powerpc/mm/ioremap.c:135:15: error: '_PAGE_GUARDED' undeclared (first use in this function):
->    pseries_defconfig/powerpc
-> 
-> arch/powerpc/include/asm/book3s/32/pgtable.h:53:19: error: 'PKMAP_BASE' undeclared (first use in this function):
->    pmac32_defconfig/powerpc-5.3
-> 
-> include/linux/mm.h:533:41: error: 'PKMAP_BASE' undeclared (first use in this function):
->    pmac32_defconfig/powerpc
-> 
-> ERROR: "ioremap_bot" [net/netfilter/nf_conntrack.ko] undefined!:
->    linkstation_defconfig/powerpc
-> 
-> ERROR: "ioremap_bot" [fs/xfs/xfs.ko] undefined!:
->    linkstation_defconfig/powerpc
-> 
-> arch/powerpc/include/asm/nohash/32/pgtable.h:80:20: error: 'PKMAP_BASE' undeclared (first use in this function):
->    corenet32_smp_defconfig/powerpc-5.3
-> 
-> arch/powerpc/include/asm/nohash/32/pgalloc.h:64:43: error: '_PMD_GUARDED' undeclared (first use in this function):
->    ppc40x_defconfig/powerpc-5.3
-> 
-> ERROR: "ioremap_bot" [net/packet/af_packet.ko] undefined!:
->    storcenter_defconfig/powerpc
-> 
-> ERROR: "ioremap_bot" [drivers/usb/core/usbcore.ko] undefined!:
->    ppc44x_defconfig/powerpc
-> 
-
-Thanks for testing. I have now fixed all of them in v2.
-
-For PKMAP_BASE, I had to move it from asm/highmem.h into the 
-book3s/32/pgtable.h and nohash/32/pgtable.h because including 
-asm/highmem.h in the pgtable.h files was introducing circular dependency.
-
-Christophe
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 1f12ab1..1c5d067 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -79,7 +79,7 @@ static int pnv_save_sprs_for_deep_states(void)
+ 	uint64_t msr_val = MSR_IDLE;
+ 	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
+ 
+-	for_each_possible_cpu(cpu) {
++	for_each_present_cpu(cpu) {
+ 		uint64_t pir = get_hard_smp_processor_id(cpu);
+ 		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
+ 
+@@ -814,7 +814,7 @@ static int __init pnv_init_idle_states(void)
+ 		int cpu;
+ 
+ 		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+-		for_each_possible_cpu(cpu) {
++		for_each_present_cpu(cpu) {
+ 			int base_cpu = cpu_first_thread_sibling(cpu);
+ 			int idx = cpu_thread_in_core(cpu);
+ 			int i;
+-- 
+2.5.5
