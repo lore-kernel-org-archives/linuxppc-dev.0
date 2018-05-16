@@ -1,41 +1,46 @@
-Return-Path: <opensource.ganesh@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40lzSF6nVszF23B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 12:50:05 +1000 (AEST)
-Received: by mail-it0-x241.google.com with SMTP id z6-v6so6833171iti.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 19:50:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40m1nn6kFTzF1sg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 14:35:25 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4G4XvBe129004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 00:35:23 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j07a05qpn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 00:35:22 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 15 May 2018 22:35:22 -0600
+Date: Wed, 16 May 2018 10:05:16 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] powerpc: Detect the presence of big-core with
+ interleaved threads
+Reply-To: ego@linux.vnet.ibm.com
+References: <1526037444-22876-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1526037444-22876-2-git-send-email-ego@linux.vnet.ibm.com>
+ <1526268071.30369.20.camel@neuling.org>
 MIME-Version: 1.0
-In-Reply-To: <1523975611-15978-24-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1523975611-15978-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1523975611-15978-24-git-send-email-ldufour@linux.vnet.ibm.com>
-From: Ganesh Mahendran <opensource.ganesh@gmail.com>
-Date: Wed, 16 May 2018 10:50:02 +0800
-Message-ID: <CADAEsF-DbqdOWcbzjvOTbrounCQP5pLmAZBKByfG165bu82_pA@mail.gmail.com>
-Subject: Re: [PATCH v10 23/25] mm: add speculative page fault vmstats
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, kirill@shutemov.name, ak@linux.intel.com,
- dave@stgolabs.net, jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>,
- Jerome Glisse <jglisse@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>,
- Linux-MM <linux-mm@kvack.org>, haren@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com,
- npiggin@gmail.com, Balbir Singh <bsingharora@gmail.com>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1526268071.30369.20.camel@neuling.org>
+Message-Id: <20180516043516.GA14826@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,65 +50,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-04-17 22:33 GMT+08:00 Laurent Dufour <ldufour@linux.vnet.ibm.com>:
-> Add speculative_pgfault vmstat counter to count successful speculative page
-> fault handling.
->
-> Also fixing a minor typo in include/linux/vm_event_item.h.
->
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  include/linux/vm_event_item.h | 3 +++
->  mm/memory.c                   | 1 +
->  mm/vmstat.c                   | 5 ++++-
->  3 files changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/include/linux/vm_event_item.h b/include/linux/vm_event_item.h
-> index 5c7f010676a7..a240acc09684 100644
-> --- a/include/linux/vm_event_item.h
-> +++ b/include/linux/vm_event_item.h
-> @@ -111,6 +111,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
->                 SWAP_RA,
->                 SWAP_RA_HIT,
->  #endif
-> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +               SPECULATIVE_PGFAULT,
-> +#endif
->                 NR_VM_EVENT_ITEMS
->  };
->
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 425f07e0bf38..1cd5bc000643 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -4508,6 +4508,7 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
->          * If there is no need to retry, don't return the vma to the caller.
->          */
->         if (ret != VM_FAULT_RETRY) {
-> +               count_vm_event(SPECULATIVE_PGFAULT);
->                 put_vma(vmf.vma);
->                 *vma = NULL;
->         }
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 536332e988b8..c6b49bfa8139 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -1289,7 +1289,10 @@ const char * const vmstat_text[] = {
->         "swap_ra",
->         "swap_ra_hit",
->  #endif
-> -#endif /* CONFIG_VM_EVENTS_COUNTERS */
-> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
-> +       "speculative_pgfault"
+Hi Mikey,
+On Mon, May 14, 2018 at 01:21:11PM +1000, Michael Neuling wrote:
+> Thanks for posting this... A couple of comments below.
 
-"speculative_pgfault",
-will be better. :)
+Thanks for the review. Replies below.
 
-> +#endif
-> +#endif /* CONFIG_VM_EVENT_COUNTERS */
->  };
->  #endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA */
->
-> --
-> 2.7.4
->
+> > +/*
+> > + * check_for_interleaved_big_core - Checks if the core represented by
+> > + *	 dn is a big-core whose threads are interleavings of the
+> > + *	 threads of the component small cores.
+> > + *
+> > + * @dn: device node corresponding to the core.
+> > + *
+> > + * Returns true if the core is a interleaved big-core.
+> > + * Returns false otherwise.
+> > + */
+> > +static inline bool check_for_interleaved_big_core(struct device_node *dn)
+> > +{
+> > +	int len, nr_groups, threads_per_group;
+> > +	const __be32 *thread_groups;
+> > +	__be32 *thread_list, *first_cpu_idx;
+> > +	int cur_cpu, next_cpu, i, j;
+> > +
+> > +	thread_groups = of_get_property(dn, "ibm,thread-groups", &len);
+> > +	if (!thread_groups)
+> > +		return false;
+> 
+> Can you document what this property looks like? Seems to be nr_groups,
+> threads_per_group, thread_list. Can you explain what each of these
+> > mean?
+
+Sure. I will document this in the next version of the patch.
+
+ibm,thread-groups[0..N-1] array defines which group of threads in the
+CPU-device node can be grouped together based on the property.
+
+ibm,thread-groups[0] tells us the property based on which the threads
+are being grouped together. If this value is 1, it implies that
+the threads in the same group share L1, translation cache.
+
+ibm,thread-groups[1] tells us how many such thread groups exist.
+ibm,thread-groups[2] tells us the number of threads in each such group.
+ibm,thread-groups[3..N-1] is the list of threads identified by
+"ibm,ppc-interrupt-server#s" arranged as per their membership in the
+grouping.
+
+Example: If ibm,thread-groups[ ] = {1,2,4,5,6,7,8,9,10,11,12}
+it implies that there are 2 groups of 4 threads each, where each group
+of threads share L1, translation cache.
+
+The "ibm,ppc-interrupt-server#s" of the first group is  {5,6,7,8} and
+the "ibm,ppc-interrupt-server#s" of the second group is {9, 10, 11, 12}
+
+> 
+> If we get configured with an SMT2 big-core (ie. two interleaved SMT1 normal
+> cores), will this code also work there?
+
+No, this code won't work there. I hadn't considered the case where
+each group consists of only one thread. Thanks for pointing this out.
+
+> 
+> > +
+> > +	nr_groups = be32_to_cpu(*(thread_groups + 1));
+> > +	if (nr_groups <= 1)
+> > +		return false;
+> > +
+> > +	threads_per_group = be32_to_cpu(*(thread_groups + 2));
+> > +	thread_list = (__be32 *)thread_groups + 3;
+> > +
+> > +	/*
+> > +	 * In case of an interleaved big-core, the thread-ids of the
+> > +	 * big-core can be obtained by interleaving the the thread-ids
+> > +	 * of the component small
+> > +	 *
+> > +	 * Eg: On a 8-thread big-core with two SMT4 small cores, the
+> > +	 * threads of the two component small cores will be
+> > +	 * {0, 2, 4, 6} and {1, 3, 5, 7}.
+> > +	 */
+> > +	for (i = 0; i < nr_groups; i++) {
+> > +		first_cpu_idx = thread_list + i * threads_per_group;
+> > +
+> > +		for (j = 0; j < threads_per_group - 1; j++) {
+> > +			cur_cpu = be32_to_cpu(*(first_cpu_idx + j));
+> > +			next_cpu = be32_to_cpu(*(first_cpu_idx + j + 1));
+> > +			if (next_cpu != cur_cpu + nr_groups)
+> > +				return false;
+> > +		}
+> > +	}
+> > +	return true;
+> > +}
+> >  
+> >  /**
+> >   * setup_cpu_maps - initialize the following cpu maps:
+> > @@ -565,7 +615,16 @@ void __init smp_setup_cpu_maps(void)
+> >  	vdso_data->processorCount = num_present_cpus();
+> >  #endif /* CONFIG_PPC64 */
+> >  
+> > -        /* Initialize CPU <=> thread mapping/
+> > +	dn = of_find_node_by_type(NULL, "cpu");
+> > +	if (dn) {
+> > +		if (check_for_interleaved_big_core(dn)) {
+> > +			has_interleaved_big_core = true;
+> > +			pr_info("Detected interleaved big-cores\n");
+> 
+> Is there a runtime way to check this also?  If the dmesg buffer overflows, we
+> lose this.
+
+Where do you suggest we put this ? Should it be a part of
+/proc/cpuinfo ?
+
+> 
+> Mikey
+
+--
+Thanks and Regards
+gautham.
