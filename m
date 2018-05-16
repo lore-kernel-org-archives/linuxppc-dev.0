@@ -2,19 +2,22 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40m97B5TlBzF14x
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 20:05:58 +1000 (AEST)
-Message-Id: <ed178e74604967ae3c6161b2c06ea4d7713ca976.1526464250.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1526464250.git.christophe.leroy@c-s.fr>
-References: <cover.1526464250.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 14/14] powerpc/8xx: Move SW perf counters in first 32kb of
- memory
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40m9HY5jpMzF1Q6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 20:13:13 +1000 (AEST)
+Subject: Re: [PATCH 05/17] powerpc: move io mapping functions into ioremap.c
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 16 May 2018 12:05:51 +0200 (CEST)
+References: <cover.1525435203.git.christophe.leroy@c-s.fr>
+ <b6f1dc10a4e2be3674fb9999d5b176a5ce9787e6.1525435203.git.christophe.leroy@c-s.fr>
+ <87y3gqrarj.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <63426c6c-2b89-30a8-d68a-ca9ee0530d27@c-s.fr>
+Date: Wed, 16 May 2018 12:13:09 +0200
+MIME-Version: 1.0
+In-Reply-To: <87y3gqrarj.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,175 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to simplify time critical exceptions handling 8xx
-specific SW perf counters, this patch moves the counters into
-the begining of memory. This is possible because .text is readable
-and the counters are never modified outside of the handlers.
 
-By doing this, we avoid having to set a second register with
-the upper part of the address of the counters.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 75 +++++++++++++++++++-----------------------
- 1 file changed, 34 insertions(+), 41 deletions(-)
+Le 11/05/2018 à 08:01, Michael Ellerman a écrit :
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index f65bd6fd1572..765fc4970c9c 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -106,6 +106,23 @@ turn_on_mmu:
- 	mtspr	SPRN_SRR0,r0
- 	rfi				/* enables MMU */
- 
-+
-+#ifdef CONFIG_PERF_EVENTS
-+	.align	4
-+
-+	.globl	itlb_miss_counter
-+itlb_miss_counter:
-+	.space	4
-+
-+	.globl	dtlb_miss_counter
-+dtlb_miss_counter:
-+	.space	4
-+
-+	.globl	instruction_counter
-+instruction_counter:
-+	.space	4
-+#endif
-+
- /*
-  * Exception entry code.  This code runs with address translation
-  * turned off, i.e. using physical addresses.
-@@ -368,25 +385,20 @@ _ENTRY(ITLBMiss_cmp)
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
- 	/* Restore registers */
--_ENTRY(itlb_miss_exit_1)
--	mfspr	r10, SPRN_SPRG_SCRATCH0
- #if defined(ITLB_MISS_KERNEL) || defined(CONFIG_SWAP)
- 	mfspr	r11, SPRN_SPRG_SCRATCH1
- #endif
-+_ENTRY(itlb_miss_exit_1)
-+	mfspr	r10, SPRN_SPRG_SCRATCH0
- 	rfi
- #ifdef CONFIG_PERF_EVENTS
- _ENTRY(itlb_miss_perf)
--#if !defined(ITLB_MISS_KERNEL) && !defined(CONFIG_SWAP)
--	mtspr	SPRN_SPRG_SCRATCH1, r11
--#endif
--	lis	r10, (itlb_miss_counter - PAGE_OFFSET)@ha
--	lwz	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
--	addi	r11, r11, 1
--	stw	r11, (itlb_miss_counter - PAGE_OFFSET)@l(r10)
--#endif
-+	lwz	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
-+	addi	r10, r10, 1
-+	stw	r10, (itlb_miss_counter - PAGE_OFFSET)@l(0)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
-+#endif
- 
- #ifndef CONFIG_PIN_TLB_TEXT
- ITLBMissLinear:
-@@ -399,9 +411,9 @@ ITLBMissLinear:
- 			  _PAGE_PRESENT
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
- _ENTRY(itlb_miss_exit_2)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
- #endif
- 
-@@ -465,20 +477,18 @@ _ENTRY(DTLBMiss_jmp)
- 
- 	/* Restore registers */
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
- _ENTRY(dtlb_miss_exit_1)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
- #ifdef CONFIG_PERF_EVENTS
- _ENTRY(dtlb_miss_perf)
--	lis	r10, (dtlb_miss_counter - PAGE_OFFSET)@ha
--	lwz	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
--	addi	r11, r11, 1
--	stw	r11, (dtlb_miss_counter - PAGE_OFFSET)@l(r10)
--#endif
-+	lwz	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
-+	addi	r10, r10, 1
-+	stw	r10, (dtlb_miss_counter - PAGE_OFFSET)@l(0)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
-+#endif
- 
- DTLBMissIMMR:
- 	mtcr	r11
-@@ -493,9 +503,9 @@ DTLBMissIMMR:
- 
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
- _ENTRY(dtlb_miss_exit_2)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
- 
- DTLBMissLinear:
-@@ -510,9 +520,9 @@ DTLBMissLinear:
- 
- 	li	r11, RPN_PATTERN
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r11, SPRN_SPRG_SCRATCH1
- _ENTRY(dtlb_miss_exit_3)
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
- 
- /* This is an instruction TLB error on the MPC8xx.  This could be due
-@@ -598,16 +608,13 @@ DataBreakpoint:
- 	. = 0x1d00
- InstructionBreakpoint:
- 	mtspr	SPRN_SPRG_SCRATCH0, r10
--	mtspr	SPRN_SPRG_SCRATCH1, r11
--	lis	r10, (instruction_counter - PAGE_OFFSET)@ha
--	lwz	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
--	addi	r11, r11, -1
--	stw	r11, (instruction_counter - PAGE_OFFSET)@l(r10)
-+	lwz	r10, (instruction_counter - PAGE_OFFSET)@l(0)
-+	addi	r10, r10, -1
-+	stw	r10, (instruction_counter - PAGE_OFFSET)@l(0)
- 	lis	r10, 0xffff
- 	ori	r10, r10, 0x01
- 	mtspr	SPRN_COUNTA, r10
- 	mfspr	r10, SPRN_SPRG_SCRATCH0
--	mfspr	r11, SPRN_SPRG_SCRATCH1
- 	rfi
- #else
- 	EXCEPTION(0x1d00, Trap_1d, unknown_exception, EXC_XFER_EE)
-@@ -966,17 +973,3 @@ swapper_pg_dir:
-  */
- abatron_pteptrs:
- 	.space	8
--
--#ifdef CONFIG_PERF_EVENTS
--	.globl	itlb_miss_counter
--itlb_miss_counter:
--	.space	4
--
--	.globl	dtlb_miss_counter
--dtlb_miss_counter:
--	.space	4
--
--	.globl	instruction_counter
--instruction_counter:
--	.space	4
--#endif
--- 
-2.13.3
+[...]
+
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/types.h>
+>> +#include <linux/mm.h>
+>> +#include <linux/vmalloc.h>
+>> +#include <linux/init.h>
+>> +#include <linux/highmem.h>
+>> +#include <linux/memblock.h>
+>> +#include <linux/slab.h>
+>> +
+>> +#include <asm/pgtable.h>
+>> +#include <asm/pgalloc.h>
+>> +#include <asm/fixmap.h>
+>> +#include <asm/io.h>
+>> +#include <asm/setup.h>
+>> +#include <asm/sections.h>
+> 
+> I needed:
+> 
+> +#include <asm/machdep.h>
+
+Oops, yes it was added in the following patch. Ok I move it one patch back.
+
+Thanks
+Christophe
+
+> 
+> To fix:
+> 
+> ../arch/powerpc/mm/ioremap.c: In function ‘ioremap_wc’:
+> ../arch/powerpc/mm/ioremap.c:290:6: error: ‘ppc_md’ undeclared (first use in this function)
+>    if (ppc_md.ioremap)
+>        ^~~~~~
+> 
+> cheers
+> 
