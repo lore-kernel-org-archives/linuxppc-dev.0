@@ -1,24 +1,22 @@
-Return-Path: <jrdr.linux@gmail.com>
-Received: from mail-lf0-x242.google.com (mail-lf0-x242.google.com
- [IPv6:2a00:1450:4010:c07::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40m1wW3l60zDqjP
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 14:41:15 +1000 (AEST)
-Received: by mail-lf0-x242.google.com with SMTP id h9-v6so3545647lfi.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 21:41:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40m24t5qqZzF0yB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 14:48:30 +1000 (AEST)
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPSA id 40m24t2zL3z9s1d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 14:48:30 +1000 (AEST)
+Date: Wed, 16 May 2018 14:48:29 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: administrivia: mails containing HTML attachments
+Message-ID: <20180516144829.2dbefb0b@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20180510182719.GA22217@jordon-HP-15-Notebook-PC>
-References: <20180510182719.GA22217@jordon-HP-15-Notebook-PC>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Wed, 16 May 2018 10:11:11 +0530
-Message-ID: <CAFqt6zbxWkOQXtKZXyDae=ZEQR+d0xf42fvnvUoBSHQZcHRCBg@mail.gmail.com>
-Subject: Re: [PATCH v2] powerpc: kvm: Change return type to vm_fault_t
-To: paulus@ozlabs.org, benh@kernel.crashing.org, mpe@ellerman.id.au,
- Matthew Wilcox <willy@infradead.org>
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/Xm6.6Nbsm0j=YwEU26xcwQ+"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 10, 2018 at 11:57 PM, Souptick Joarder <jrdr.linux@gmail.com> wrote:
-> Use new return type vm_fault_t for fault handler
-> in struct vm_operations_struct. For now, this is
-> just documenting that the function returns a
-> VM_FAULT value rather than an errno.  Once all
-> instances are converted, vm_fault_t will become
-> a distinct type.
->
-> commit 1c8f422059ae ("mm: change return type to
-> vm_fault_t")
->
-> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
-> ---
-> v2: Updated the change log
->
->  arch/powerpc/kvm/book3s_64_vio.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-> index 4dffa61..346ac0d 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio.c
-> @@ -237,7 +237,7 @@ static void release_spapr_tce_table(struct rcu_head *head)
->         kfree(stt);
->  }
->
-> -static int kvm_spapr_tce_fault(struct vm_fault *vmf)
-> +static vm_fault_t kvm_spapr_tce_fault(struct vm_fault *vmf)
->  {
->         struct kvmppc_spapr_tce_table *stt = vmf->vma->vm_file->private_data;
->         struct page *page;
-> --
-> 1.9.1
->
+--Sig_/Xm6.6Nbsm0j=YwEU26xcwQ+
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-If no comment, we would like to get this patch in queue
-for 4.18.
+Hi all,
+
+I have decided that any email sent to the linuxppc-dev mailing list
+that contains an HTML attachment (or is just an HTML email) will be
+rejected.  The vast majority of such mail are spam (and I have to spend
+time dropping them manually at the moment) and, I presume, anyone on
+this list is capable of sending no HTML email.
+
+Feel free to discuss ;-)
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/Xm6.6Nbsm0j=YwEU26xcwQ+
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlr7uB0ACgkQAVBC80lX
+0GyJvgf/R6eN7psZWVM502hC8GIlyd8d8VD2TtcLY/Scrz6I1ziXTmIdLxluCqHE
+ynMMYE+20u0qjYbjc4n0HxtUC2BMb+L1rr1uTzAxsbOz1i+RMe3OpIbzMIemFHk2
+JQap5a7bbWKH4TReWoHkp5N0Y65grLf6VuwYn8uGiQsamXv0oJaf6umjf5PzA4SG
+LrRMT6Na6ef9VPJuW2bVUvh7MTMi/0seZn7f8Ma9dbkNf8o0GP5sKXMeSWVxoOw7
+c14B1txYSSugteyXQNMxLJXu08ZFAdxpkUNLuLkhMUd5DMqxuUivMZmPb9AqN2BV
+NtCq1He7LNdBi6B+BQ3oQ+PU/Z0vtg==
+=hiky
+-----END PGP SIGNATURE-----
+
+--Sig_/Xm6.6Nbsm0j=YwEU26xcwQ+--
