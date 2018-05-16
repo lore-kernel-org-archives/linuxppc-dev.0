@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mFrj0fMrzF14v
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mFrj5VlGzF14s
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 23:38:45 +1000 (AEST)
-In-Reply-To: <20180416112724.9677-3-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
- paulus@samba.org
+In-Reply-To: <20180416143905.2716-2-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [V1,
- 01/11] powerpc/mm/book3s64: Move book3s64 code to pgtable-book3s64
-Message-Id: <40mFrh6lHkz9s33@ozlabs.org>
-Date: Wed, 16 May 2018 23:38:44 +1000 (AEST)
+Cc: aik@ozlabs.ru, paulus@samba.org
+Subject: Re: [2/5] powerpc/lib: Fix feature fixup test of external branch
+Message-Id: <40mFrj4Z7Bz9s3B@ozlabs.org>
+Date: Wed, 16 May 2018 23:38:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,15 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-04-16 at 11:27:14 UTC, "Aneesh Kumar K.V" wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Mon, 2018-04-16 at 14:39:02 UTC, Michael Ellerman wrote:
+> The expected case for this test was wrong, the source of the alternate
+> code sequence is:
 > 
-> Only code movement and avoid #ifdef.
+>   FTR_SECTION_ELSE
+>   2:	or	2,2,2
+>   	PPC_LCMPI	r3,1
+>   	beq	3f
+>   	blt	2b
+>   	b	3f
+>   	b	1b
+>   ALT_FTR_SECTION_END(0, 1)
+>   3:	or	1,1,1
+>   	or	2,2,2
+>   4:	or	3,3,3
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> So when it's patched the '3' label should still be on the 'or 1,1,1',
+> and the 4 label is irrelevant and can be removed.
+> 
+> Fixes: 362e7701fd18 ("powerpc: Add self-tests of the feature fixup code")
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Patches 2-5 applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/59879d542a8e880391863d82cddf38
+https://git.kernel.org/powerpc/c/32810d91325ec76b8ef4df463f8a0e
 
 cheers
