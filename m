@@ -1,16 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anju@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40m4gc1N9KzF1Rp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 16:45:14 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: get rid of PMD_PAGE_SIZE()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180516064509.A35E06F6EC@po14934vm.idsi0.si.c-s.fr>
-Date: Wed, 16 May 2018 08:45:09 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40m4j95XmLzF1dm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 16:46:37 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4G6j98n077706
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 02:46:35 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j0fgurcxd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 02:46:35 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anju@linux.vnet.ibm.com>;
+ Wed, 16 May 2018 02:46:34 -0400
+Subject: Re: [PATCH v2] powerpc/perf: Fix memory allocation for core-imc based
+ on num_possible_cpus()
+To: ppaidipe <ppaidipe@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ maddy@linux.vnet.ibm.com, bsingharora@gmail.com
+References: <1526452518-12611-1-git-send-email-anju@linux.vnet.ibm.com>
+ <0df1478ff69b9e2f2c70897a472ada39@linux.vnet.ibm.com>
+From: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Date: Wed, 16 May 2018 12:16:27 +0530
+MIME-Version: 1.0
+In-Reply-To: <0df1478ff69b9e2f2c70897a472ada39@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <8dc8f745-06df-30d8-e38f-88b31ff7b506@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,50 +40,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PMD_PAGE_SIZE() is nowhere used, this patch removes it
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/nohash/32/pte-40x.h | 2 --
- arch/powerpc/include/asm/pte-common.h        | 5 -----
- 2 files changed, 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-index 124f9ac23a1e..1918fba42433 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-@@ -56,8 +56,6 @@
- #define _PMD_SIZE_4M	0x0c0
- #define _PMD_SIZE_16M	0x0e0
- 
--#define PMD_PAGE_SIZE(pmdval)	(1024 << (((pmdval) & _PMD_SIZE) >> 4))
--
- /* Until my rework is finished, 40x still needs atomic PTE updates */
- #define PTE_ATOMIC_UPDATES	1
- 
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index c4a72c7a8c83..0c070107825c 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -62,7 +62,6 @@
- #endif
- #ifndef _PMD_SIZE
- #define _PMD_SIZE	0
--#define PMD_PAGE_SIZE(pmd)	bad_call_to_PMD_PAGE_SIZE()
- #endif
- #ifndef _PMD_USER
- #define _PMD_USER	0
-@@ -88,11 +87,7 @@
- #define _PTE_NONE_MASK	_PAGE_HPTEFLAGS
- #endif
- 
--/* Make sure we get a link error if PMD_PAGE_SIZE is ever called on a
-- * kernel without large page PMD support
-- */
- #ifndef __ASSEMBLY__
--extern unsigned long bad_call_to_PMD_PAGE_SIZE(void);
- 
- /*
-  * Don't just check for any non zero bits in __PAGE_USER, since for book3e
--- 
-2.13.3
+On Wednesday 16 May 2018 12:18 PM, ppaidipe wrote:
+> On 2018-05-16 12:05, Anju T Sudhakar wrote:
+>> Currently memory is allocated for core-imc based on cpu_present_mask,
+>> which has bit 'cpu' set iff cpu is populated. We use (cpu number / 
+>> threads
+>> per core) as the array index to access the memory.
+>>
+>> Under some circumstances firmware marks a CPU as GUARDed CPU and boot 
+>> the
+>> system, until cleared of errors, these CPU's are unavailable for all
+>> subsequent boots. GUARDed CPUs are possible but not present from linux
+>> view, so it blows a hole when we assume the max length of our allocation
+>> is driven by our max present cpus, where as one of the cpus might be 
+>> online
+>> and be beyond the max present cpus, due to the hole.
+>> So (cpu number / threads per core) value bounds the array index and 
+>> leads
+>> to memory overflow.
+>>
+>> Call trace observed during a guard test:
+>>
+>> Faulting instruction address: 0xc000000000149f1c
+>> cpu 0x69: Vector: 380 (Data Access Out of Range) at [c000003fea303420]
+>>     pc:c000000000149f1c: prefetch_freepointer+0x14/0x30
+>>     lr:c00000000014e0f8: __kmalloc+0x1a8/0x1ac
+>>     sp:c000003fea3036a0
+>>    msr:9000000000009033
+>>    dar:c9c54b2c91dbf6b7
+>>   current = 0xc000003fea2c0000
+>>   paca    = 0xc00000000fddd880     softe: 3     irq_happened: 0x01
+>>     pid   = 1, comm = swapper/104
+>> Linux version 4.16.7-openpower1 (smc@smc-desktop) (gcc version 6.4.0
+>> (Buildroot 2018.02.1-00006-ga8d1126)) #2 SMP Fri May 4 16:44:54 PDT 2018
+>> enter ? for help
+>> call trace:
+>>      __kmalloc+0x1a8/0x1ac
+>>      (unreliable)
+>>      init_imc_pmu+0x7f4/0xbf0
+>>      opal_imc_counters_probe+0x3fc/0x43c
+>>      platform_drv_probe+0x48/0x80
+>>      driver_probe_device+0x22c/0x308
+>>      __driver_attach+0xa0/0xd8
+>>      bus_for_each_dev+0x88/0xb4
+>>      driver_attach+0x2c/0x40
+>>      bus_add_driver+0x1e8/0x228
+>>      driver_register+0xd0/0x114
+>>      __platform_driver_register+0x50/0x64
+>>      opal_imc_driver_init+0x24/0x38
+>>      do_one_initcall+0x150/0x15c
+>>      kernel_init_freeable+0x250/0x254
+>>      kernel_init+0x1c/0x150
+>>      ret_from_kernel_thread+0x5c/0xc8
+>>
+>> Allocating memory for core-imc based on cpu_possible_mask, which has
+>> bit 'cpu' set iff cpu is populatable, will fix this issue.
+>>
+>> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+>> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+>> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+>
+> I have verified this fix with both normal and kexec boot multiple 
+> times when
+> system is having GARDed cores. Not seen any crash/memory corruption 
+> issues with
+> this.
+>
+> Tested-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+>
+>
+
+Thanks.
+
+-Anju
+
+>> ---
+>>  arch/powerpc/perf/imc-pmu.c | 4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+>> index d7532e7..75fb23c 100644
+>> --- a/arch/powerpc/perf/imc-pmu.c
+>> +++ b/arch/powerpc/perf/imc-pmu.c
+>> @@ -1146,7 +1146,7 @@ static int init_nest_pmu_ref(void)
+>>
+>>  static void cleanup_all_core_imc_memory(void)
+>>  {
+>> -    int i, nr_cores = DIV_ROUND_UP(num_present_cpus(), 
+>> threads_per_core);
+>> +    int i, nr_cores = DIV_ROUND_UP(num_possible_cpus(), 
+>> threads_per_core);
+>>      struct imc_mem_info *ptr = core_imc_pmu->mem_info;
+>>      int size = core_imc_pmu->counter_mem_size;
+>>
+>> @@ -1264,7 +1264,7 @@ static int imc_mem_init(struct imc_pmu *pmu_ptr,
+>> struct device_node *parent,
+>>          if (!pmu_ptr->pmu.name)
+>>              return -ENOMEM;
+>>
+>> -        nr_cores = DIV_ROUND_UP(num_present_cpus(), threads_per_core);
+>> +        nr_cores = DIV_ROUND_UP(num_possible_cpus(), threads_per_core);
+>>          pmu_ptr->mem_info = kcalloc(nr_cores, sizeof(struct 
+>> imc_mem_info),
+>>                                  GFP_KERNEL);
