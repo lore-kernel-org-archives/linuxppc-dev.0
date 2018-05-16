@@ -1,22 +1,33 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mGg257hrzF157
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 00:15:26 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id f189-v6so425674pfa.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 07:15:26 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH v4 4/4] powerpc/kbuild: move -mprofile-kernel check to Kconfig
-Date: Thu, 17 May 2018 00:14:58 +1000
-Message-Id: <20180516141458.18996-5-npiggin@gmail.com>
-In-Reply-To: <20180516141458.18996-1-npiggin@gmail.com>
-References: <20180516141458.18996-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mHLm2KpHzF14k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 00:46:23 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4GEiZNq023232
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 10:46:21 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j0mptxp43-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 10:46:21 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
+ Wed, 16 May 2018 08:46:21 -0600
+From: Stewart Smith <stewart@linux.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: administrivia: mails containing HTML attachments
+In-Reply-To: <20180516144829.2dbefb0b@canb.auug.org.au>
+References: <20180516144829.2dbefb0b@canb.auug.org.au>
+Date: Wed, 16 May 2018 09:46:15 -0500
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87k1s3y7yg.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,73 +37,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This eliminates the workaround that requires disabling
--mprofile-kernel by default in Kconfig.
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
+> I have decided that any email sent to the linuxppc-dev mailing list
+> that contains an HTML attachment (or is just an HTML email) will be
+> rejected.  The vast majority of such mail are spam (and I have to spend
+> time dropping them manually at the moment) and, I presume, anyone on
+> this list is capable of sending no HTML email.
 
-[ Note: this depends on https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git kconfig-shell-v3 ]
+certainly one way to get those pesky IBM Verse users off. To be fair,
+Documentation/process/email-clients.rst also warns them appropriately.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Since v3:
-- Moved a stray hunk back to patch 3 where it belongs.
+I fully support ditching HTML mail.
 
- arch/powerpc/Kconfig  | 16 +---------------
- arch/powerpc/Makefile | 14 ++------------
- 2 files changed, 3 insertions(+), 27 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 512fcc177c87..af527f894f9b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -460,23 +460,9 @@ config LD_HEAD_STUB_CATCH
- 
- 	  If unsure, say "N".
- 
--config DISABLE_MPROFILE_KERNEL
--	bool "Disable use of mprofile-kernel for kernel tracing"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
--	default y
--	help
--	  Selecting this options disables use of the mprofile-kernel ABI for
--	  kernel tracing. That will cause options such as live patching
--	  (CONFIG_LIVEPATCH) which depend on CONFIG_DYNAMIC_FTRACE_WITH_REGS to
--	  be disabled also.
--
--	  If you have a toolchain which supports mprofile-kernel, then you can
--	  disable this. Otherwise leave it enabled. If you're not sure, say
--	  "Y".
--
- config MPROFILE_KERNEL
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
--	def_bool !DISABLE_MPROFILE_KERNEL
-+	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
- 
- config IOMMU_HELPER
- 	def_bool PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6faf1d6ad9dd..8f7a64fe7370 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -161,18 +161,8 @@ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
- 
- ifdef CONFIG_MPROFILE_KERNEL
--    ifeq ($(shell $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
--        CC_FLAGS_FTRACE := -pg -mprofile-kernel
--        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
--    else
--        # If the user asked for mprofile-kernel but the toolchain doesn't
--        # support it, emit a warning and deliberately break the build later
--        # with mprofile-kernel-not-supported. We would prefer to make this an
--        # error right here, but then the user would never be able to run
--        # oldconfig to change their configuration.
--        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
--        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
--    endif
-+	CC_FLAGS_FTRACE := -pg -mprofile-kernel
-+	KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
- endif
- 
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
 -- 
-2.17.0
+Stewart Smith
+OPAL Architect, IBM.
