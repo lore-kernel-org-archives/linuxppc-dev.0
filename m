@@ -1,47 +1,22 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mRq330GVzF1PN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:58 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4GL4TU3106397
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 17:07:55 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j0t93nhe1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 17:07:55 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 16 May 2018 22:07:53 +0100
-Date: Wed, 16 May 2018 14:07:45 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Andy Lutomirski <luto@kernel.org>
-Cc: Florian Weimer <fweimer@redhat.com>, Dave Hansen <dave.hansen@intel.com>,
- Linux-MM <linux-mm@kvack.org>, Linux API <linux-api@vger.kernel.org>,
- linux-x86_64@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
- X86 ML <x86@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
- signal semantics
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
- <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
- <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
- <20180503021058.GA5670@ram.oc3035372033.ibm.com>
- <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
- <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
- <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
- <314e1a48-db94-9b37-8793-a95a2082c9e2@redhat.com>
- <20180516203534.GA5479@ram.oc3035372033.ibm.com>
- <CALCETrVQs=ix-w9_MLJWikzmBG-e2Fzg61TrZLNVv5R3XFOs=g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mVXx4G1hzDr3y
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 09:10:57 +1000 (AEST)
+Date: Thu, 17 May 2018 09:10:52 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Scott Wood <oss@buserror.net>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Shile Zhang <shile.zhang@nokia.com>
+Subject: Re: [PATCH] Revert "powerpc/64: Fix checksum folding in csum_add()"
+Message-ID: <20180516231052.GA24778@fergus.ozlabs.ibm.com>
+References: <20180410063437.217D2653BC@po15720vm.idsi0.si.c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <CALCETrVQs=ix-w9_MLJWikzmBG-e2Fzg61TrZLNVv5R3XFOs=g@mail.gmail.com>
-Message-Id: <20180516210745.GC5479@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180410063437.217D2653BC@po15720vm.idsi0.si.c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,82 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 16, 2018 at 01:37:46PM -0700, Andy Lutomirski wrote:
-> On Wed, May 16, 2018 at 1:35 PM Ram Pai <linuxram@us.ibm.com> wrote:
+On Tue, Apr 10, 2018 at 08:34:37AM +0200, Christophe Leroy wrote:
+> This reverts commit 6ad966d7303b70165228dba1ee8da1a05c10eefe.
 > 
-> > On Tue, May 08, 2018 at 02:40:46PM +0200, Florian Weimer wrote:
-> > > On 05/08/2018 04:49 AM, Andy Lutomirski wrote:
-> > > >On Mon, May 7, 2018 at 2:48 AM Florian Weimer <fweimer@redhat.com>
-> wrote:
-> > > >
-> > > >>On 05/03/2018 06:05 AM, Andy Lutomirski wrote:
-> > > >>>On Wed, May 2, 2018 at 7:11 PM Ram Pai <linuxram@us.ibm.com> wrote:
-> > > >>>
-> > > >>>>On Wed, May 02, 2018 at 09:23:49PM +0000, Andy Lutomirski wrote:
-> > > >>>>>
-> > > >>>>>>If I recall correctly, the POWER maintainer did express a strong
-> > > >>>desire
-> > > >>>>>>back then for (what is, I believe) their current semantics, which
-> my
-> > > >>>>>>PKEY_ALLOC_SIGNALINHERIT patch implements for x86, too.
-> > > >>>>>
-> > > >>>>>Ram, I really really don't like the POWER semantics.  Can you give
-> > > >some
-> > > >>>>>justification for them?  Does POWER at least have an atomic way for
-> > > >>>>>userspace to modify just the key it wants to modify or, even
-> better,
-> > > >>>>>special load and store instructions to use alternate keys?
-> > > >>>
-> > > >>>>I wouldn't call it POWER semantics. The way I implemented it on
-> power
-> > > >>>>lead to the semantics, given that nothing was explicitly stated
-> > > >>>>about how the semantics should work within a signal handler.
-> > > >>>
-> > > >>>I think that this is further evidence that we should introduce a new
-> > > >>>pkey_alloc() mode and deprecate the old.  To the extent possible,
-> this
-> > > >>>thing should work the same way on x86 and POWER.
-> > > >
-> > > >>Do you propose to change POWER or to change x86?
-> > > >
-> > > >Sorry for being slow to reply.  I propose to introduce a new
-> > > >PKEY_ALLOC_something variant on x86 and POWER and to make the behavior
-> > > >match on both.
-> > >
-> > > So basically implement PKEY_ALLOC_SETSIGNAL for POWER, and keep the
-> > > existing (different) behavior without the flag?
-> > >
-> > > Ram, would you be okay with that?  Could you give me a hand if
-> > > necessary?  (I assume we have silicon in-house because it's a
-> > > long-standing feature of the POWER platform which was simply dormant
-> > > on Linux until now.)
+> That commit was pointless, because csum_add() sums two 32 bits
+> values, so the sum is 0x1fffffffe at the maximum.
+> And then when adding upper part (1) and lower part (0xfffffffe),
+> the result is 0xffffffff which doesn't carry.
+> Any lower value will not carry either.
 > 
-> > Yes. I can help you with that.
+> And behind the fact that this commit is useless, it also kills the
+> whole purpose of having an arch specific inline csum_add()
+> because the resulting code gets even worse than what is obtained
+> with the generic implementation of csum_add()
 > 
-> > So let me see if I understand the overall idea.
+> 0000000000000240 <.csum_add>:
+>  240:	38 00 ff ff 	li      r0,-1
+>  244:	7c 84 1a 14 	add     r4,r4,r3
+>  248:	78 00 00 20 	clrldi  r0,r0,32
+>  24c:	78 89 00 22 	rldicl  r9,r4,32,32
+>  250:	7c 80 00 38 	and     r0,r4,r0
+>  254:	7c 09 02 14 	add     r0,r9,r0
+>  258:	78 09 00 22 	rldicl  r9,r0,32,32
+>  25c:	7c 00 4a 14 	add     r0,r0,r9
+>  260:	78 03 00 20 	clrldi  r3,r0,32
+>  264:	4e 80 00 20 	blr
 > 
-> > Application can allocate new keys through a new syscall
-> > sys_pkey_alloc_1(flags, init_val, sig_init_val)
+> In comparison, the generic implementation of csum_add() gives:
 > 
-> > 'sig_init_val' is the permission-state of the key in signal context.
+> 0000000000000290 <.csum_add>:
+>  290:	7c 63 22 14 	add     r3,r3,r4
+>  294:	7f 83 20 40 	cmplw   cr7,r3,r4
+>  298:	7c 10 10 26 	mfocrf  r0,1
+>  29c:	54 00 ef fe 	rlwinm  r0,r0,29,31,31
+>  2a0:	7c 60 1a 14 	add     r3,r0,r3
+>  2a4:	78 63 00 20 	clrldi  r3,r3,32
+>  2a8:	4e 80 00 20 	blr
 > 
-> > The kernel will set the permission of each keys to their
-> > corresponding values when entering the signal handler and revert
-> > on return from the signal handler.
+> And the reverted implementation for PPC64 gives:
 > 
-> > just like init_val, sig_init_val also percolates to children threads.
+> 0000000000000240 <.csum_add>:
+>  240:	7c 84 1a 14 	add     r4,r4,r3
+>  244:	78 80 00 22 	rldicl  r0,r4,32,32
+>  248:	7c 80 22 14 	add     r4,r0,r4
+>  24c:	78 83 00 20 	clrldi  r3,r4,32
+>  250:	4e 80 00 20 	blr
 > 
-> 
-> I was imagining it would be just pkey_alloc(SOME_NEW_FLAG, init_val); and
-> the init val would be used for the current thread and for signal handlers.
+> Fixes: 6ad966d7303b7 ("powerpc/64: Fix checksum folding in csum_add()")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-what would change the key-permission-values enforced in signal-handler
-context?  Or can it never be changed, ones set through sys_pkey_alloc()?
+Seems I was right first time... :)
 
-I suppose key-permission-values change done in non-signal-handler context,
-will not apply to those in signal-handler context.
-
-Can the signal handler change the key-permission-values from the
-signal-handler context?
-
-RP
+Acked-by: Paul Mackerras <paulus@ozlabs.org>
