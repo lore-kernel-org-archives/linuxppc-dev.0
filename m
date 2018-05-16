@@ -1,34 +1,25 @@
-Return-Path: <srs0=3ayg=ic=google.com=thgarnie@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ls6y42NtzF2H5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 08:04:42 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40ls6y3JS5z8tDY
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 08:04:42 +1000 (AEST)
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40ls6x6Qztz9s0y
- for <linuxppc-dev@ozlabs.org>; Wed, 16 May 2018 08:04:41 +1000 (AEST)
-Received: by mail-it0-x241.google.com with SMTP id 70-v6so5861472ity.2
- for <linuxppc-dev@ozlabs.org>; Tue, 15 May 2018 15:04:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40lxnt1fQdzF1gP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 11:35:14 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id w3-v6so825954pgv.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2018 18:35:14 -0700 (PDT)
+Date: Wed, 16 May 2018 09:35:09 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2 18/30] KVM: PPC: Book3S PR: always fail transaction in
+ guest privilege state
+Message-ID: <20180516013509.GA12896@simonLocalRHEL7.x64>
+References: <1519753958-11756-1-git-send-email-wei.guo.simon@gmail.com>
+ <1519753958-11756-8-git-send-email-wei.guo.simon@gmail.com>
+ <20180515060755.GD28451@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-References: <20180514130316.23855-1-mpe@ellerman.id.au>
- <20180514130316.23855-2-mpe@ellerman.id.au>
-In-Reply-To: <20180514130316.23855-2-mpe@ellerman.id.au>
-From: Thomas Garnier <thgarnie@google.com>
-Date: Tue, 15 May 2018 15:04:26 -0700
-Message-ID: <CAJcbSZE+um6VjY8C_o4aofvZnQU9db46yspTEbB5ibpm9qyOtg@mail.gmail.com>
-Subject: Re: [PATCH 2/2] powerpc: Check address limit on user-mode return
- (TIF_FSCHECK)
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org,
- Kernel Hardening <kernel-hardening@lists.openwall.com>,
- Kees Cook <keescook@chromium.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180515060755.GD28451@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,178 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2018 at 6:03 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Paul,
+On Tue, May 15, 2018 at 04:07:55PM +1000, Paul Mackerras wrote:
+> On Wed, Feb 28, 2018 at 01:52:26AM +0800, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
+> > 
+> > Currently kernel doesn't use transaction memory.
+> > And there is an issue for privilege guest that:
+> > tbegin/tsuspend/tresume/tabort TM instructions can impact MSR TM bits
+> > without trap into PR host. So following code will lead to a false mfmsr
+> > result:
+> > 	tbegin	<- MSR bits update to Transaction active.
+> > 	beq 	<- failover handler branch
+> > 	mfmsr	<- still read MSR bits from magic page with
+> > 		transaction inactive.
+> > 
+> > It is not an issue for non-privilege guest since its mfmsr is not patched
+> > with magic page and will always trap into PR host.
+> > 
+> > This patch will always fail tbegin attempt for privilege guest, so that
+> > the above issue is prevented. It is benign since currently (guest) kernel
+> > doesn't initiate a transaction.
+> > 
+> > Test case:
+> > https://github.com/justdoitqd/publicFiles/blob/master/test_tbegin_pr.c
+> > 
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> > ---
+> >  arch/powerpc/include/asm/kvm_book3s.h |  2 ++
+> >  arch/powerpc/kvm/book3s_emulate.c     | 43 +++++++++++++++++++++++++++++++++++
+> >  arch/powerpc/kvm/book3s_pr.c          | 11 ++++++++-
+> >  3 files changed, 55 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+> > index 2ecb6a3..9690280 100644
+> > --- a/arch/powerpc/include/asm/kvm_book3s.h
+> > +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> > @@ -258,9 +258,11 @@ extern void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+> >  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> >  void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu);
+> >  void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu);
+> > +void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu);
+> >  #else
+> >  static inline void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu) {}
+> >  static inline void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu) {}
+> > +static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
+> >  #endif
+> >  
+> >  extern int kvm_irq_bypass;
+> > diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+> > index a03533d..90b5f59 100644
+> > --- a/arch/powerpc/kvm/book3s_emulate.c
+> > +++ b/arch/powerpc/kvm/book3s_emulate.c
+> > @@ -23,6 +23,7 @@
+> >  #include <asm/reg.h>
+> >  #include <asm/switch_to.h>
+> >  #include <asm/time.h>
+> > +#include <asm/tm.h>
+> >  #include "book3s.h"
+> >  
+> >  #define OP_19_XOP_RFID		18
+> > @@ -47,6 +48,8 @@
+> >  #define OP_31_XOP_EIOIO		854
+> >  #define OP_31_XOP_SLBMFEE	915
+> >  
+> > +#define OP_31_XOP_TBEGIN	654
+> > +
+> >  /* DCBZ is actually 1014, but we patch it to 1010 so we get a trap */
+> >  #define OP_31_XOP_DCBZ		1010
+> >  
+> > @@ -362,6 +365,46 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+> >  
+> >  			break;
+> >  		}
+> > +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > +		case OP_31_XOP_TBEGIN:
+> > +		{
+> > +			if (!cpu_has_feature(CPU_FTR_TM))
+> > +				break;
+> > +
+> > +			if (!(kvmppc_get_msr(vcpu) & MSR_TM)) {
+> > +				kvmppc_trigger_fac_interrupt(vcpu, FSCR_TM_LG);
+> > +				emulated = EMULATE_AGAIN;
+> > +				break;
+> > +			}
+> > +
+> > +			if (!(kvmppc_get_msr(vcpu) & MSR_PR)) {
+> > +				preempt_disable();
+> > +				vcpu->arch.cr = (CR0_TBEGIN_FAILURE |
+> > +				  (vcpu->arch.cr & ~(CR0_MASK << CR0_SHIFT)));
+> > +
+> > +				vcpu->arch.texasr = (TEXASR_FS | TEXASR_EX |
+> > +					(((u64)(TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT))
+> > +						 << TEXASR_FC_LG));
+> > +
+> > +				if ((inst >> 21) & 0x1)
+> > +					vcpu->arch.texasr |= TEXASR_ROT;
+> > +
+> > +				if (kvmppc_get_msr(vcpu) & MSR_PR)
+> > +					vcpu->arch.texasr |= TEXASR_PR;
+> 
+> This if statement seems unnecessary, since we only get here when
+> MSR_PR is clear.
 
-> set_fs() sets the addr_limit, which is used in access_ok() to
-> determine if an address is a user or kernel address.
+Yes. I will remove that.
 
-> Some code paths use set_fs() to temporarily elevate the addr_limit so
-> that kernel code can read/write kernel memory as if it were user
-> memory. That is fine as long as the code can't ever return to
-> userspace with the addr_limit still elevated.
-
-> If that did happen, then userspace can read/write kernel memory as if
-> it were user memory, eg. just with write(2). In case it's not clear,
-> that is very bad. It has also happened in the past due to bugs.
-
-> Commit 5ea0727b163c ("x86/syscalls: Check address limit on user-mode
-> return") added a mechanism to check the addr_limit value before
-> returning to userspace. Any call to set_fs() sets a thread flag,
-> TIF_FSCHECK, and if we see that on the return to userspace we go out
-> of line to check that the addr_limit value is not elevated.
-
-> For further info see the above commit, as well as:
->    https://lwn.net/Articles/722267/
->    https://bugs.chromium.org/p/project-zero/issues/detail?id=990
-
-> Verified to work on 64-bit Book3S using a POC that objdumps the system
-> call handler, and a modified lkdtm_CORRUPT_USER_DS() that doesn't kill
-> the caller.
-
-> Before:
->    $ sudo ./test-tif-fscheck
->    ...
->    0000000000000000 <.data>:
->           0:       e1 f7 8a 79     rldicl. r10,r12,30,63
->           4:       80 03 82 40     bne     0x384
->           8:       00 40 8a 71     andi.   r10,r12,16384
->           c:       78 0b 2a 7c     mr      r10,r1
->          10:       10 fd 21 38     addi    r1,r1,-752
->          14:       08 00 c2 41     beq-    0x1c
->          18:       58 09 2d e8     ld      r1,2392(r13)
->          1c:       00 00 41 f9     std     r10,0(r1)
->          20:       70 01 61 f9     std     r11,368(r1)
->          24:       78 01 81 f9     std     r12,376(r1)
->          28:       70 00 01 f8     std     r0,112(r1)
->          2c:       78 00 41 f9     std     r10,120(r1)
->          30:       20 00 82 41     beq     0x50
->          34:       a6 42 4c 7d     mftb    r10
-
-> After:
-
->    $ sudo ./test-tif-fscheck
->    Killed
-
-> And in dmesg:
->    Invalid address limit on user-mode return
->    WARNING: CPU: 1 PID: 3689 at ../include/linux/syscalls.h:260
-do_notify_resume+0x140/0x170
->    ...
->    NIP [c00000000001ee50] do_notify_resume+0x140/0x170
->    LR [c00000000001ee4c] do_notify_resume+0x13c/0x170
->    Call Trace:
->      do_notify_resume+0x13c/0x170 (unreliable)
->      ret_from_except_lite+0x70/0x74
-
-> Performance overhead is essentially zero in the usual case, because
-> the bit is checked as part of the existing _TIF_USER_WORK_MASK check.
-
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-The change looks good to me.
-
-> ---
->   arch/powerpc/include/asm/thread_info.h | 8 +++++---
->   arch/powerpc/include/asm/uaccess.h     | 8 +++++++-
->   arch/powerpc/kernel/signal.c           | 4 ++++
->   3 files changed, 16 insertions(+), 4 deletions(-)
-
-> diff --git a/arch/powerpc/include/asm/thread_info.h
-b/arch/powerpc/include/asm/thread_info.h
-> index 5964145db03d..f308dfeb2746 100644
-> --- a/arch/powerpc/include/asm/thread_info.h
-> +++ b/arch/powerpc/include/asm/thread_info.h
-> @@ -79,8 +79,7 @@ extern int arch_dup_task_struct(struct task_struct
-*dst, struct task_struct *src
->   #define TIF_SYSCALL_TRACE      0       /* syscall trace active */
->   #define TIF_SIGPENDING         1       /* signal pending */
->   #define TIF_NEED_RESCHED       2       /* rescheduling necessary */
-> -#define TIF_POLLING_NRFLAG     3       /* true if poll_idle() is polling
-> -                                          TIF_NEED_RESCHED */
-> +#define TIF_FSCHECK            3       /* Check FS is USER_DS on return
-*/
->   #define TIF_32BIT              4       /* 32 bit binary */
->   #define TIF_RESTORE_TM         5       /* need to restore TM FP/VEC/VSX
-*/
->   #define TIF_PATCH_PENDING      6       /* pending live patching update */
-> @@ -99,6 +98,7 @@ extern int arch_dup_task_struct(struct task_struct
-*dst, struct task_struct *src
->   #if defined(CONFIG_PPC64)
->   #define TIF_ELF2ABI            18      /* function descriptors must die!
-*/
->   #endif
-> +#define TIF_POLLING_NRFLAG     19      /* true if poll_idle() is polling
-TIF_NEED_RESCHED */
-
->   /* as above, but as bit values */
->   #define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
-> @@ -118,13 +118,15 @@ extern int arch_dup_task_struct(struct task_struct
-*dst, struct task_struct *src
->   #define _TIF_SYSCALL_TRACEPOINT        (1<<TIF_SYSCALL_TRACEPOINT)
->   #define _TIF_EMULATE_STACK_STORE       (1<<TIF_EMULATE_STACK_STORE)
->   #define _TIF_NOHZ              (1<<TIF_NOHZ)
-> +#define _TIF_FSCHECK           (1<<TIF_FSCHECK)
->   #define _TIF_SYSCALL_DOTRACE   (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT
-| \
->                                   _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT |
-\
->                                   _TIF_NOHZ)
-
->   #define _TIF_USER_WORK_MASK    (_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
->                                   _TIF_NOTIFY_RESUME | _TIF_UPROBE | \
-> -                                _TIF_RESTORE_TM | _TIF_PATCH_PENDING)
-> +                                _TIF_RESTORE_TM | _TIF_PATCH_PENDING | \
-> +                                _TIF_FSCHECK)
->   #define _TIF_PERSYSCALL_MASK   (_TIF_RESTOREALL|_TIF_NOERROR)
-
->   /* Bits in local_flags */
-> diff --git a/arch/powerpc/include/asm/uaccess.h
-b/arch/powerpc/include/asm/uaccess.h
-> index a91cea15187b..abba80f8ff04 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -31,7 +31,13 @@
-
->   #define get_ds()       (KERNEL_DS)
->   #define get_fs()       (current->thread.addr_limit)
-> -#define set_fs(val)    (current->thread.addr_limit = (val))
-> +
-> +static inline void set_fs(mm_segment_t fs)
-> +{
-> +       current->thread.addr_limit = fs;
-> +       /* On user-mode return check addr_limit (fs) is correct */
-> +       set_thread_flag(TIF_FSCHECK);
-> +}
-
->   #define segment_eq(a, b)       ((a).seg == (b).seg)
-
-> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> index 61db86ecd318..fb932f1202c7 100644
-> --- a/arch/powerpc/kernel/signal.c
-> +++ b/arch/powerpc/kernel/signal.c
-> @@ -15,6 +15,7 @@
->   #include <linux/key.h>
->   #include <linux/context_tracking.h>
->   #include <linux/livepatch.h>
-> +#include <linux/syscalls.h>
->   #include <asm/hw_breakpoint.h>
->   #include <linux/uaccess.h>
->   #include <asm/unistd.h>
-> @@ -150,6 +151,9 @@ void do_notify_resume(struct pt_regs *regs, unsigned
-long thread_info_flags)
->   {
->          user_exit();
-
-> +       /* Check valid addr_limit, TIF check is done there */
-> +       addr_limit_user_check();
-> +
->          if (thread_info_flags & _TIF_UPROBE)
->                  uprobe_notify_resume(regs);
-
-> --
-> 2.14.1
-
-
-
--- 
-Thomas
+Thanks,
+- Simon
