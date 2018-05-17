@@ -1,20 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mWlQ6kbZzF14v
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 10:05:06 +1000 (AEST)
-Date: Thu, 17 May 2018 10:04:37 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: wei.guo.simon@gmail.com
-Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 00/10] KVM: PPC: reimplement mmio emulation with
- analyse_instr()
-Message-ID: <20180517000437.GD24778@fergus.ozlabs.ibm.com>
-References: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mY394J9bzF15H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 11:03:49 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] selftests/powerpc: add test to verify rfi flush across a
+ system call
+In-Reply-To: <20180406165546.19433-1-naveen.n.rao@linux.vnet.ibm.com>
+References: <20180406165546.19433-1-naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 17 May 2018 11:03:48 +1000
+Message-ID: <877eo3nle3.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1525674016-6703-1-git-send-email-wei.guo.simon@gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 07, 2018 at 02:20:06PM +0800, wei.guo.simon@gmail.com wrote:
-> From: Simon Guo <wei.guo.simon@gmail.com>
-> 
-> We already have analyse_instr() which analyzes instructions for the instruction
-> type, size, addtional flags, etc. What kvmppc_emulate_loadstore() did is somehow
-> duplicated and it will be good to utilize analyse_instr() to reimplement the
-> code. The advantage is that the code logic will be shared and more clean to be 
-> maintained.
-> 
-> This patch series reimplement kvmppc_emulate_loadstore() for various load/store
-> instructions. 
-> 
-> The testcase locates at:
-> https://github.com/justdoitqd/publicFiles/blob/master/test_mmio.c
-> 
-> - Tested at both PR/HV KVM. 
-> - Also tested with little endian host & big endian guest.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-This series looks good.  I have just a couple of comments on two of
-the patches.
+> diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
+> index d46916867a6f..c6b1d20ed3ba 100644
+> --- a/tools/testing/selftests/powerpc/utils.c
+> +++ b/tools/testing/selftests/powerpc/utils.c
+> @@ -104,3 +111,149 @@ int pick_online_cpu(void)
+>  	printf("No cpus in affinity mask?!\n");
+>  	return -1;
+>  }
+...
+> +
+> +static void sigill_handler(int signr, siginfo_t *info, void *unused)
+> +{
+> +	static int warned = 0;
+> +	ucontext_t *ctx = (ucontext_t *)unused;
+> +	unsigned int *pc = (unsigned int *)ctx->uc_mcontext.gp_regs[PT_NIP];
 
-Thanks,
-Paul.
+The above doesn't work on 32-bit, and this code is sometimes built 32-bit.
+
+For an example of how to handle 32 and 64-bit, see eg:
+
+  tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
+
+cheers
