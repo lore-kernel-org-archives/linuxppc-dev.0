@@ -2,16 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3R2LYLzF1Rh
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3R3LhLzF1Rw
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:49:55 +1000 (AEST)
-Message-Id: <cover.1526553552.git.christophe.leroy@c-s.fr>
+Message-Id: <68d0167111d06a8b21d7e52140bf399d79979e3b.1526553552.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1526553552.git.christophe.leroy@c-s.fr>
+References: <cover.1526553552.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 0/5] powerpc/lib: Optimisation of string functions (mainly
- for PPC32)
+Subject: [PATCH v2 1/5] powerpc/lib: move PPC32 specific functions out of
+ string.S
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 17 May 2018 12:49:48 +0200 (CEST)
+Date: Thu, 17 May 2018 12:49:50 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,42 +23,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This serie intend to optimise string functions for PPC32 in the
-same spirit as already done on PPC64.
+In preparation of optimisation patches, move PPC32 specific
+memcmp() and __clear_user() into string_32.S
 
-The first patch moves PPC32 specific functions from string.S into
-a dedicated file named string_32.S
-The second patch rewrites __clear_user() by using dcbz intruction
-The third patch rewrites memcmp() to compare 32 bits words instead
-of comparing byte per byte.
-The fourth patch removes NUL size verification from the assembly
-functions so that GCC can optimise them out when the size is constant
-The last patch inlines memcmp() for constant sizes <= 16
-
-As shown in each individual commit log, second, third and last patches
-provides significant improvment.
-
-Changes in v2:
-- Moved out the patch removing the hot loop alignment on PPC32
-- Squashed the changes related to NUL size verification in a single patch
-- Reordered the patches in a more logical order
-- Modified the inlining patch to avoid warning about impossibility to version symbols.
-
-Christophe Leroy (5):
-  powerpc/lib: move PPC32 specific functions out of string.S
-  powerpc/lib: optimise 32 bits __clear_user()
-  powerpc/lib: optimise PPC32 memcmp
-  powerpc/lib: inline string functions NUL size verification
-  powerpc/lib: inline memcmp() for small constant sizes
-
- arch/powerpc/include/asm/string.h      |  91 ++++++++++++++++++++-
- arch/powerpc/kernel/prom_init_check.sh |   2 +-
- arch/powerpc/lib/Makefile              |   5 +-
- arch/powerpc/lib/memcmp_64.S           |   8 ++
- arch/powerpc/lib/string.S              |  75 ++++-------------
- arch/powerpc/lib/string_32.S           | 145 +++++++++++++++++++++++++++++++++
- 6 files changed, 259 insertions(+), 67 deletions(-)
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/lib/Makefile    |  5 +--
+ arch/powerpc/lib/string.S    | 61 ------------------------------------
+ arch/powerpc/lib/string_32.S | 74 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 77 insertions(+), 63 deletions(-)
  create mode 100644 arch/powerpc/lib/string_32.S
 
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 653901042ad7..2c9b8c0adf22 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -26,13 +26,14 @@ obj-$(CONFIG_PPC_BOOK3S_64) += copyuser_power7.o copypage_power7.o \
+ 			       memcpy_power7.o
+ 
+ obj64-y	+= copypage_64.o copyuser_64.o mem_64.o hweight_64.o \
+-	   string_64.o memcpy_64.o memcmp_64.o pmem.o
++	   memcpy_64.o memcmp_64.o pmem.o
+ 
+ obj64-$(CONFIG_SMP)	+= locks.o
+ obj64-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+ obj64-$(CONFIG_KPROBES_SANITY_TEST) += test_emulate_step.o
+ 
+-obj-y			+= checksum_$(BITS).o checksum_wrappers.o
++obj-y			+= checksum_$(BITS).o checksum_wrappers.o \
++			   string_$(BITS).o
+ 
+ obj-y			+= sstep.o ldstfp.o quad.o
+ obj64-y			+= quad.o
+diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+index a026d8fa8a99..0ef189847337 100644
+--- a/arch/powerpc/lib/string.S
++++ b/arch/powerpc/lib/string.S
+@@ -59,23 +59,6 @@ _GLOBAL(strncmp)
+ 	blr
+ EXPORT_SYMBOL(strncmp)
+ 
+-#ifdef CONFIG_PPC32
+-_GLOBAL(memcmp)
+-	PPC_LCMPI 0,r5,0
+-	beq-	2f
+-	mtctr	r5
+-	addi	r6,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r3,1(r6)
+-	lbzu	r0,1(r4)
+-	subf.	r3,r0,r3
+-	bdnzt	2,1b
+-	blr
+-2:	li	r3,0
+-	blr
+-EXPORT_SYMBOL(memcmp)
+-#endif
+-
+ _GLOBAL(memchr)
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
+@@ -91,47 +74,3 @@ _GLOBAL(memchr)
+ 2:	li	r3,0
+ 	blr
+ EXPORT_SYMBOL(memchr)
+-
+-#ifdef CONFIG_PPC32
+-_GLOBAL(__clear_user)
+-	addi	r6,r3,-4
+-	li	r3,0
+-	li	r5,0
+-	cmplwi	0,r4,4
+-	blt	7f
+-	/* clear a single word */
+-11:	stwu	r5,4(r6)
+-	beqlr
+-	/* clear word sized chunks */
+-	andi.	r0,r6,3
+-	add	r4,r0,r4
+-	subf	r6,r0,r6
+-	srwi	r0,r4,2
+-	andi.	r4,r4,3
+-	mtctr	r0
+-	bdz	7f
+-1:	stwu	r5,4(r6)
+-	bdnz	1b
+-	/* clear byte sized chunks */
+-7:	cmpwi	0,r4,0
+-	beqlr
+-	mtctr	r4
+-	addi	r6,r6,3
+-8:	stbu	r5,1(r6)
+-	bdnz	8b
+-	blr
+-90:	mr	r3,r4
+-	blr
+-91:	mfctr	r3
+-	slwi	r3,r3,2
+-	add	r3,r3,r4
+-	blr
+-92:	mfctr	r3
+-	blr
+-
+-	EX_TABLE(11b, 90b)
+-	EX_TABLE(1b, 91b)
+-	EX_TABLE(8b, 92b)
+-
+-EXPORT_SYMBOL(__clear_user)
+-#endif
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+new file mode 100644
+index 000000000000..ab8c4f5f31b6
+--- /dev/null
++++ b/arch/powerpc/lib/string_32.S
+@@ -0,0 +1,74 @@
++// SPDX-License-Identifier: GPL-2.0
++
++/*
++ * String handling functions for PowerPC32
++ *
++ * Copyright (C) 2018 CS Systemes d'Information
++ *
++ * Author: Christophe Leroy <christophe.leroy@c-s.fr>
++ *
++ */
++
++#include <asm/processor.h>
++#include <asm/errno.h>
++#include <asm/ppc_asm.h>
++#include <asm/export.h>
++
++	.text
++
++_GLOBAL(memcmp)
++	PPC_LCMPI 0,r5,0
++	beq-	2f
++	mtctr	r5
++	addi	r6,r3,-1
++	addi	r4,r4,-1
++1:	lbzu	r3,1(r6)
++	lbzu	r0,1(r4)
++	subf.	r3,r0,r3
++	bdnzt	2,1b
++	blr
++2:	li	r3,0
++	blr
++EXPORT_SYMBOL(memcmp)
++
++_GLOBAL(__clear_user)
++	addi	r6,r3,-4
++	li	r3,0
++	li	r5,0
++	cmplwi	0,r4,4
++	blt	7f
++	/* clear a single word */
++11:	stwu	r5,4(r6)
++	beqlr
++	/* clear word sized chunks */
++	andi.	r0,r6,3
++	add	r4,r0,r4
++	subf	r6,r0,r6
++	srwi	r0,r4,2
++	andi.	r4,r4,3
++	mtctr	r0
++	bdz	7f
++1:	stwu	r5,4(r6)
++	bdnz	1b
++	/* clear byte sized chunks */
++7:	cmpwi	0,r4,0
++	beqlr
++	mtctr	r4
++	addi	r6,r6,3
++8:	stbu	r5,1(r6)
++	bdnz	8b
++	blr
++90:	mr	r3,r4
++	blr
++91:	mfctr	r3
++	slwi	r3,r3,2
++	add	r3,r3,r4
++	blr
++92:	mfctr	r3
++	blr
++
++	EX_TABLE(11b, 90b)
++	EX_TABLE(1b, 91b)
++	EX_TABLE(8b, 92b)
++
++EXPORT_SYMBOL(__clear_user)
 -- 
 2.13.3
