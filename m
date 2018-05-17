@@ -1,25 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40msQ06H77zF1R9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:21:11 +1000 (AEST)
-Subject: Re: [PATCH v2 5/5] powerpc/lib: inline memcmp() for small constant
- sizes
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-References: <cover.1526553552.git.christophe.leroy@c-s.fr>
- <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
- <CA+7wUsyEBW-sKiwP_KJpwuWC0JGi_Cg-xnxcnw0d_Wc7-GWeeA@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <c184c807-dac0-0617-f449-492f5b6eeec1@c-s.fr>
-Date: Thu, 17 May 2018 15:21:07 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40msXB1VVqzF1f2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:26:34 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id q22-v6so2103204pff.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 06:26:33 -0700 (PDT)
+Date: Thu, 17 May 2018 23:26:19 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/lib: Remove .balign inside string functions for
+ PPC32
+Message-ID: <20180517231938.4b1b8172@roar.ozlabs.ibm.com>
+In-Reply-To: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
+References: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <CA+7wUsyEBW-sKiwP_KJpwuWC0JGi_Cg-xnxcnw0d_Wc7-GWeeA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,141 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 17 May 2018 12:04:13 +0200 (CEST)
+Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-
-Le 17/05/2018 à 15:03, Mathieu Malaterre a écrit :
-> On Thu, May 17, 2018 at 12:49 PM, Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->> In my 8xx configuration, I get 208 calls to memcmp()
->> Within those 208 calls, about half of them have constant sizes,
->> 46 have a size of 8, 17 have a size of 16, only a few have a
->> size over 16. Other fixed sizes are mostly 4, 6 and 10.
->>
->> This patch inlines calls to memcmp() when size
->> is constant and lower than or equal to 16
->>
->> In my 8xx configuration, this reduces the number of calls
->> to memcmp() from 208 to 123
->>
->> The following table shows the number of TB timeticks to perform
->> a constant size memcmp() before and after the patch depending on
->> the size
->>
->>          Before  After   Improvement
->> 01:      7577    5682   25%
->> 02:     41668    5682   86%
->> 03:     51137   13258   74%
->> 04:     45455    5682   87%
->> 05:     58713   13258   77%
->> 06:     58712   13258   77%
->> 07:     68183   20834   70%
->> 08:     56819   15153   73%
->> 09:     70077   28411   60%
->> 10:     70077   28411   60%
->> 11:     79546   35986   55%
->> 12:     68182   28411   58%
->> 13:     81440   35986   55%
->> 14:     81440   39774   51%
->> 15:     94697   43562   54%
->> 16:     79546   37881   52%
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/include/asm/string.h | 46 +++++++++++++++++++++++++++++++++++++++
->>   1 file changed, 46 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
->> index 35f1aaad9b50..80cf0f9605dd 100644
->> --- a/arch/powerpc/include/asm/string.h
->> +++ b/arch/powerpc/include/asm/string.h
->> @@ -4,6 +4,8 @@
->>
->>   #ifdef __KERNEL__
->>
->> +#include <linux/kernel.h>
->> +
->>   #define __HAVE_ARCH_STRNCPY
->>   #define __HAVE_ARCH_STRNCMP
->>   #define __HAVE_ARCH_MEMSET
->> @@ -51,10 +53,54 @@ static inline int strncmp(const char *p, const char *q, __kernel_size_t size)
->>          return __strncmp(p, q, size);
->>   }
->>
->> +static inline int __memcmp1(const void *p, const void *q, int off)
+> commit 87a156fb18fe1 ("Align hot loops of some string functions")
+> degraded the performance of string functions by adding useless
+> nops
 > 
-> Does that change anything if you change void* to char* pointer ? I
-> find void* arithmetic hard to read.
-
-Yes that's not the same
-
-void* means you can use any pointer, for instance pointers to two 
-structs you want to compare.
-
-char* will force users to cast their pointers to char*
-
+> A simple benchmark on an 8xx calling 100000x a memchr() that
+> matches the first byte runs in 41668 TB ticks before this patch
+> and in 35986 TB ticks after this patch. So this gives an
+> improvement of approx 10%
 > 
->> +{
->> +       return *(u8*)(p + off) - *(u8*)(q + off);
->> +}
->> +
->> +static inline int __memcmp2(const void *p, const void *q, int off)
->> +{
->> +       return be16_to_cpu(*(u16*)(p + off)) - be16_to_cpu(*(u16*)(q + off));
->> +}
->> +
->> +static inline int __memcmp4(const void *p, const void *q, int off)
->> +{
->> +       return be32_to_cpu(*(u32*)(p + off)) - be32_to_cpu(*(u32*)(q + off));
->> +}
->> +
->> +static inline int __memcmp8(const void *p, const void *q, int off)
->> +{
->> +       s64 tmp = be64_to_cpu(*(u64*)(p + off)) - be64_to_cpu(*(u64*)(q + off));
+> Another benchmark doing the same with a memchr() matching the 128th
+> byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
+> after this patch, so regardless on the number of loops, removing
+> those useless nops improves the test by 5683 TB ticks.
 > 
-> I always assumed 64bits unaligned access would trigger an exception.
-> Is this correct ?
-
-As far as I know, an unaligned access will only occur when the operand 
-of lmw, stmw, lwarx, or stwcx. is not aligned.
-
-Maybe that's different for PPC64 ?
-
-Christophe
-
+> Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  Was sent already as part of a serie optimising string functions.
+>  Resending on itself as it is independent of the other changes in the
+> serie
 > 
->> +       return tmp >> 32 ? : (int)tmp;
->> +}
->> +
->> +static inline int __memcmp_cst(const void *p,const void *q,__kernel_size_t size)
->> +{
->> +       if (size == 1)
->> +               return __memcmp1(p, q, 0);
->> +       if (size == 2)
->> +               return __memcmp2(p, q, 0);
->> +       if (size == 3)
->> +               return __memcmp2(p, q, 0) ? : __memcmp1(p, q, 2);
->> +       if (size == 4)
->> +               return __memcmp4(p, q, 0);
->> +       if (size == 5)
->> +               return __memcmp4(p, q, 0) ? : __memcmp1(p, q, 4);
->> +       if (size == 6)
->> +               return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4);
->> +       if (size == 7)
->> +               return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4) ? : __memcmp1(p, q, 6);
->> +       return __memcmp8(p, q, 0);
->> +}
->> +
->>   static inline int memcmp(const void *p,const void *q,__kernel_size_t size)
->>   {
->>          if (unlikely(!size))
->>                  return 0;
->> +       if (__builtin_constant_p(size) && size <= 8)
->> +               return __memcmp_cst(p, q, size);
->> +       if (__builtin_constant_p(size) && size <= 16)
->> +               return __memcmp8(p, q, 0) ? : __memcmp_cst(p + 8, q + 8, size - 8);
->>          return __memcmp(p, q, size);
->>   }
->>
->> --
->> 2.13.3
->>
+>  arch/powerpc/lib/string.S | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+> index a787776822d8..a026d8fa8a99 100644
+> --- a/arch/powerpc/lib/string.S
+> +++ b/arch/powerpc/lib/string.S
+> @@ -23,7 +23,9 @@ _GLOBAL(strncpy)
+>  	mtctr	r5
+>  	addi	r6,r3,-1
+>  	addi	r4,r4,-1
+> +#ifdef CONFIG_PPC64
+>  	.balign 16
+> +#endif
+>  1:	lbzu	r0,1(r4)
+>  	cmpwi	0,r0,0
+>  	stbu	r0,1(r6)
+
+The ifdefs are a bit ugly, but you can't argue with the numbers. These
+alignments should be IFETCH_ALIGN_BYTES, which is intended to optimise
+the ifetch performance when you have such a loop (although there is
+always a tradeoff for a single iteration).
+
+Would it make sense to define that for 32-bit as well, and you could use
+it here instead of the ifdefs? Small CPUs could just use 0.
+
+Thanks,
+Nick
