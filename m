@@ -1,24 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mszf14P9zF27L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:46:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mtBW2MdZzF27l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:56:19 +1000 (AEST)
+Date: Thu, 17 May 2018 08:55:51 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/lib: Remove .balign inside string functions for
- PPC32
-In-Reply-To: <20180517231938.4b1b8172@roar.ozlabs.ibm.com>
-References: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
- <20180517231938.4b1b8172@roar.ozlabs.ibm.com>
-Date: Thu, 17 May 2018 23:46:52 +1000
-Message-ID: <87wow2mm2b.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Subject: Re: [PATCH v2 5/5] powerpc/lib: inline memcmp() for small constant
+ sizes
+Message-ID: <20180517135551.GT17342@gate.crashing.org>
+References: <cover.1526553552.git.christophe.leroy@c-s.fr>
+ <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+On Thu, May 17, 2018 at 12:49:58PM +0200, Christophe Leroy wrote:
+> In my 8xx configuration, I get 208 calls to memcmp()
+> Within those 208 calls, about half of them have constant sizes,
+> 46 have a size of 8, 17 have a size of 16, only a few have a
+> size over 16. Other fixed sizes are mostly 4, 6 and 10.
+> 
+> This patch inlines calls to memcmp() when size
+> is constant and lower than or equal to 16
+> 
+> In my 8xx configuration, this reduces the number of calls
+> to memcmp() from 208 to 123
+> 
+> The following table shows the number of TB timeticks to perform
+> a constant size memcmp() before and after the patch depending on
+> the size
+> 
+> 	Before	After	Improvement
+> 01:	 7577	 5682	25%
+> 02:	41668	 5682	86%
+> 03:	51137	13258	74%
+> 04:	45455	 5682	87%
+> 05:	58713	13258	77%
+> 06:	58712	13258	77%
+> 07:	68183	20834	70%
+> 08:	56819	15153	73%
+> 09:	70077	28411	60%
+> 10:	70077	28411	60%
+> 11:	79546	35986	55%
+> 12:	68182	28411	58%
+> 13:	81440	35986	55%
+> 14:	81440	39774	51%
+> 15:	94697	43562	54%
+> 16:	79546	37881	52%
 
-> On Thu, 17 May 2018 12:04:13 +0200 (CEST)
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->
->> commit 87a156fb18fe1 ("Align hot loops of some string functions")
->> degraded the performance of string functions by adding useless
->> nops
->> 
->> A simple benchmark on an 8xx calling 100000x a memchr() that
->> matches the first byte runs in 41668 TB ticks before this patch
->> and in 35986 TB ticks after this patch. So this gives an
->> improvement of approx 10%
->> 
->> Another benchmark doing the same with a memchr() matching the 128th
->> byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
->> after this patch, so regardless on the number of loops, removing
->> those useless nops improves the test by 5683 TB ticks.
->> 
->> Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>  Was sent already as part of a serie optimising string functions.
->>  Resending on itself as it is independent of the other changes in the
->> serie
->> 
->>  arch/powerpc/lib/string.S | 6 ++++++
->>  1 file changed, 6 insertions(+)
->> 
->> diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
->> index a787776822d8..a026d8fa8a99 100644
->> --- a/arch/powerpc/lib/string.S
->> +++ b/arch/powerpc/lib/string.S
->> @@ -23,7 +23,9 @@ _GLOBAL(strncpy)
->>  	mtctr	r5
->>  	addi	r6,r3,-1
->>  	addi	r4,r4,-1
->> +#ifdef CONFIG_PPC64
->>  	.balign 16
->> +#endif
->>  1:	lbzu	r0,1(r4)
->>  	cmpwi	0,r0,0
->>  	stbu	r0,1(r6)
->
-> The ifdefs are a bit ugly, but you can't argue with the numbers. These
-> alignments should be IFETCH_ALIGN_BYTES, which is intended to optimise
-> the ifetch performance when you have such a loop (although there is
-> always a tradeoff for a single iteration).
->
-> Would it make sense to define that for 32-bit as well, and you could use
-> it here instead of the ifdefs? Small CPUs could just use 0.
+Could you show results with a more recent GCC?  What version was this?
 
-Can we do it with a macro in the header, eg. like:
-
-#ifdef CONFIG_PPC64
-#define IFETCH_BALIGN	.balign IFETCH_ALIGN_BYTES
-#endif
-
-...
-
-  	addi	r4,r4,-1
-  	IFETCH_BALIGN
-  1:	lbzu	r0,1(r4)
+What is this really measuring?  I doubt it takes 7577 (or 5682) timebase
+ticks to do a 1-byte memcmp, which is just 3 instructions after all.
 
 
-cheers
+Segher
