@@ -1,19 +1,43 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mhxQ5CslzF14y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 16:59:22 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id az12-v6so1940123plb.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 May 2018 23:59:22 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: kvm-ppc@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] KVM: PPC: Book3S HV: lockless tlbie for HPT hcalls
-Date: Thu, 17 May 2018 16:59:10 +1000
-Message-Id: <20180517065910.11693-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mjwm230CzF1Q0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 17:43:52 +1000 (AEST)
+Date: Thu, 17 May 2018 09:43:14 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-api <linux-api@vger.kernel.org>, Paul Turner <pjt@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andrew Hunter <ahh@google.com>, Andi Kleen <andi@firstfloor.org>,
+ Chris Lameter <cl@linux.com>, Ben Maurer <bmaurer@fb.com>,
+ rostedt <rostedt@goodmis.org>, Josh Triplett <josh@joshtriplett.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ Joel Fernandes <joelaf@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
+Message-ID: <20180517074313.GK12217@hirez.programming.kicks-ass.net>
+References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
+ <20180430224433.17407-8-mathieu.desnoyers@efficios.com>
+ <20180516161837.GI12198@hirez.programming.kicks-ass.net>
+ <112970629.1913.1526501596485.JavaMail.zimbra@efficios.com>
+ <20180517011949.GA1121@tardis>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180517011949.GA1121@tardis>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,118 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tlbies to an LPAR do not have to be serialised since POWER4/PPC970,
-after which the MMU_FTR_LOCKLESS_TLBIE feature was introduced to
-avoid tlbie locking.
+On Thu, May 17, 2018 at 09:19:49AM +0800, Boqun Feng wrote:
+> On Wed, May 16, 2018 at 04:13:16PM -0400, Mathieu Desnoyers wrote:
 
-Since commit c17b98cf6028 ("KVM: PPC: Book3S HV: Remove code for
-PPC970 processors"), KVM no longer supports processors that do not
-have this feature, so the tlbie locking can be removed completely.
-A sanity check for the feature is put in kvmppc_mmu_hv_init.
+> > and that x86 calls it from syscall_return_slowpath() (which AFAIU is
+> > now used in the fast-path since KPTI), I wonder where we should call
+> 
+> So we actually detect this after the syscall takes effect, right? I
+> wonder whether this could be problematic, because "disallowing syscall"
+> in rseq areas may means the syscall won't take effect to some people, I
+> guess?
 
-Testing was done on a POWER9 system in HPT mode, with a -smp 32 guest
-in HPT mode. 32 instances of the powerpc fork benchmark from selftests
-were run with --fork, and the results measured.
+It doesn't really matter I suspect, the important part is the program
+getting killed.
 
-Without this patch, total throughput was about 13.5K/sec, and this is
-the top of the host profile:
+I agree that doing it on sysenter is slightly nicer, but I'll take
+sysexit if that's what it takes.
 
-   74.52%  [k] do_tlbies
-    2.95%  [k] kvmppc_book3s_hv_page_fault
-    1.80%  [k] calc_checksum
-    1.80%  [k] kvmppc_vcpu_run_hv
-    1.49%  [k] kvmppc_run_core
+> > this on PowerPC ?  I was under the impression that PowerPC return to
+> > userspace fast-path was not calling C code unless work flags were set,
+> > but I might be wrong.
+> > 
+> 
+> I think you're right. So we have to introduce callsite to rseq_syscall()
+> in syscall path, something like:
+> 
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 51695608c68b..a25734a96640 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -222,6 +222,9 @@ system_call_exit:
+>  	mtmsrd	r11,1
+>  #endif /* CONFIG_PPC_BOOK3E */
+>  
+> +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> +	bl	rseq_syscall
+> +
+>  	ld	r9,TI_FLAGS(r12)
+>  	li	r11,-MAX_ERRNO
+>  	andi.	r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+> 
+> But I think it's important for us to first decide where (before or after
+> the syscall) we do the detection.
 
-After this patch, throughput was about 51K/sec, with this profile:
-
-   21.28%  [k] do_tlbies
-    5.26%  [k] kvmppc_run_core
-    4.88%  [k] kvmppc_book3s_hv_page_fault
-    3.30%  [k] _raw_spin_lock_irqsave
-    3.25%  [k] gup_pgd_range
-
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Changes since v2:
-- Removed the locking code completely (thanks mpe)
-- Updated changelog (thanks mpe)
-
- arch/powerpc/include/asm/kvm_host.h |  1 -
- arch/powerpc/kvm/book3s_64_mmu_hv.c |  3 +++
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 21 ---------------------
- 3 files changed, 3 insertions(+), 22 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 17498e9a26e4..7756b0c6da75 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -269,7 +269,6 @@ struct kvm_arch {
- 	unsigned long host_lpcr;
- 	unsigned long sdr1;
- 	unsigned long host_sdr1;
--	int tlbie_lock;
- 	unsigned long lpcr;
- 	unsigned long vrma_slb_v;
- 	int mmu_ready;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index a670fa5fbe50..37cd6434d1c8 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -272,6 +272,9 @@ int kvmppc_mmu_hv_init(void)
- 	if (!cpu_has_feature(CPU_FTR_HVMODE))
- 		return -EINVAL;
- 
-+	if (!mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE))
-+		return -EINVAL;
-+
- 	/* POWER7 has 10-bit LPIDs (12-bit in POWER8) */
- 	host_lpid = mfspr(SPRN_LPID);
- 	rsvd_lpid = LPID_RSVD;
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 78e6a392330f..89d909b3b881 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -434,24 +434,6 @@ static inline int is_mmio_hpte(unsigned long v, unsigned long r)
- 		(HPTE_R_KEY_HI | HPTE_R_KEY_LO));
- }
- 
--static inline int try_lock_tlbie(unsigned int *lock)
--{
--	unsigned int tmp, old;
--	unsigned int token = LOCK_TOKEN;
--
--	asm volatile("1:lwarx	%1,0,%2\n"
--		     "	cmpwi	cr0,%1,0\n"
--		     "	bne	2f\n"
--		     "  stwcx.	%3,0,%2\n"
--		     "	bne-	1b\n"
--		     "  isync\n"
--		     "2:"
--		     : "=&r" (tmp), "=&r" (old)
--		     : "r" (lock), "r" (token)
--		     : "cc", "memory");
--	return old == 0;
--}
--
- static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- 		      long npages, int global, bool need_sync)
- {
-@@ -463,8 +445,6 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- 	 * the RS field, this is backwards-compatible with P7 and P8.
- 	 */
- 	if (global) {
--		while (!try_lock_tlbie(&kvm->arch.tlbie_lock))
--			cpu_relax();
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
- 		for (i = 0; i < npages; ++i) {
-@@ -483,7 +463,6 @@ static void do_tlbies(struct kvm *kvm, unsigned long *rbvalues,
- 		}
- 
- 		asm volatile("eieio; tlbsync; ptesync" : : : "memory");
--		kvm->arch.tlbie_lock = 0;
- 	} else {
- 		if (need_sync)
- 			asm volatile("ptesync" : : : "memory");
--- 
-2.17.0
+The important thing is the processed getting very dead. Either sysenter
+or sysexit gets that done.
