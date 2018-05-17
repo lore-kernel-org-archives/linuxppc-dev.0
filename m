@@ -1,31 +1,35 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40n5Hv3qBnzF27m
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:16:43 +1000 (AEST)
-Date: Thu, 17 May 2018 17:16:39 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Oza Pawandeep <poza@codeaurora.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- Dongdong Liu <liudongdong3@huawei.com>,
- Keith Busch <keith.busch@intel.com>, Wei Zhang <wzhang@fb.com>,
- Sinan Kaya <okaya@codeaurora.org>, Timur Tabi <timur@codeaurora.org>,
- Russell Currey <ruscur@russell.cc>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
- linux-s390@vger.kernel.org
-Subject: Re: [PATCH v17 0/9] Address error and recovery for AER and DPC
-Message-ID: <20180517221639.GE19955@bhelgaas-glaptop.roam.corp.google.com>
-References: <1526542991-5291-1-git-send-email-poza@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40n5VH2FvXzF27m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:25:42 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4HMO6DK021059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:25:40 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j1fbdybsj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:25:40 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 17 May 2018 16:25:40 -0600
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+Subject: [RFC v4 0/3] powerpc/hotplug: Fix affinity assoc for LPAR migration
+Date: Thu, 17 May 2018 17:25:36 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1526542991-5291-1-git-send-email-poza@codeaurora.org>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <18541bb5-1e79-09d9-767f-1af09370e076@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,183 +39,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Russell, Sam, Bryant, linuxppc-dev, Sebastian, linux-s390]
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks and CPUs.  The
+patches in this set execute when a system is coming up fresh upon a
+migration target.  They are intended to,
 
-Sorry, I should have pulled in these new CC's earlier because ppc and
-s390 both have PCI error handling similar to what Oza is changing
-here.
+* Recognize changes to the associativity of memory and CPUs recorded
+  in internal data structures when compared to the latest copies in
+  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2,
+  cpus),
+* Recognize changes to the associativity mapping (e.g. ibm,
+  associativity-lookup-arrays), locate all assigned memory blocks
+  corresponding to each changed row, and readd all such blocks.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of the CPUs and memory.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of CPUs and memory blocks mostly entails acting as
+  if they have been newly hot-added into the target system.
 
-The basic issue is that the new PCIe DPC (Downstream Port Containment,
-see PCIe r4.0, sec 6.2.10) feature doesn't fit very well in the
-framework of the pci_error_handlers callbacks.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-When DPC is enabled, a Downstream Port (either a Root Port or a Switch
-Downstream Port) that receives an ERR_FATAL message automatically
-disables its Link.  IIUC, this is also intended for use in hot-unplug
-scenarios.
-
-When the DPC hardware takes the Link down, it resets all the
-downstream devices, and there's not much point in calling the
-pci_error_handlers callbacks because the devices are unreachable.
-Even after the Link comes back up, we can't be certain the same device
-is there because of the hotplug possibility.
-
-The software side of DPC recovery basically consists of detaching the
-drivers of the downstream devices (calling their .remove() methods),
-bringing the link back up, re-enumerating the downstream devices, and
-re-attaching the drivers (calling their .probe() methods).
-
-The existing AER code also responds to ERR_FATAL messages, but it does
-call the pci_error_handlers callbacks and also resets the link.
-
-This is a bit of a mess because things look a lot different to the
-driver depending on whether the platform supports AER or DPC.
-
-Since we can't change the way DPC works, the idea of this series is
-basically to make AER handle ERR_FATAL more like DPC does, i.e., by
-resetting the link, detaching, and re-attaching the drivers.
-
-This series is currently on my pci/aer branch
-(https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git/log/?h=pci/aer)
-and is headed for v4.18 unless somebody raises major objections.
-
-On Thu, May 17, 2018 at 03:43:02AM -0400, Oza Pawandeep wrote:
-> This patch set brings in error handling support for DPC
-> 
-> The current implementation of AER and error message broadcasting to the
-> EP driver is tightly coupled and limited to AER service driver.
-> It is important to factor out broadcasting and other link handling
-> callbacks. So that not only when AER gets triggered, but also when DPC get
-> triggered (for e.g. ERR_FATAL), callbacks are handled appropriately.
-> 
-> The goal of the patch-set is:
-> DPC should handle the error handling and recovery similar to AER, because 
-> finally both are attempting recovery in some or the other way,
-> and for that error handling and recovery framework has to be loosely
-> coupled.
-> 
-> It achieves uniformity and transparency to the error handling agents such
-> as AER, DPC, with respect to recovery and error handling.
-> 
-> So, this patch-set tries to unify lot of things between error agents and
-> make them behave in a well defined way. (be it error (FATAL, NON_FATAL)
-> handling or recovery).
-> 
-> The FATAL error handling is handled with remove/reset_link/re-enumerate
-> sequence while the NON_FATAL follows the default path.
-> Documentation/PCI/pci-error-recovery.txt talks more on that.
-
-I applied this series with a trivial change to remove an unused variable to
-pci/aer for v4.18, thanks!
-
-> Changes since v16:
->     Bjorn's comments addressed
->     > remove call pci_walk_bus(dev->subordinate, report_resume, &result_data)
->     > pci_cleanup_aer_uncorrect_error_status(dev); happens only if service is AER
->     > aer_error_resume does not handle ERR_FATAL clearing anymore
-> Changes since v15:
->     Bjorn's comments addressed
->     > minor comments fixed
->     > made FATAL sequence aligned to existing one, as far as clearing status are concerned.
->     > pcie_do_fatal_recovery and pcie_do_nonfatal_recovery functions made to modularize
->     > pcie_do_fatal_recovery now takes service as an argument
-> Changes since v14:
->     Bjorn's comments addressed
->     > simplified the patch set, and moved AER_FATAL handling in the beginning.
->     > rebase the code to 4.17-rc1.
-> Changes since v13:
->     Bjorn's comments addressed
->     > handke FATAL errors with remove devices followed by re-enumeration.
->     > changes in AER and DPC along with required Documentation.
-> Changes since v12:
->     Bjorn's and Keith's Comments addressed.
->     > Made DPC and AER error handling identical <aligned err.c>
->     > hanldled cases for hotplug enabled system differently.
-> Changes since v11:
->     Bjorn's comments addressed.
->     > rename pcie-err.c to err.c
->     > removed EXPORT_SYMBOL
->     > made generic find_serivce function in port driver.
->     > removed mutex patch as no need to have mutex in pcie_do_recovery
->     > brough in DPC_FATAL in aer.h
->     > so now all the error codes (AER and DPC) are unified in aer.h
-> Changes since v10:
->     Christoph Hellwig's, David Laight's and Randy Dunlap's
->     comments addressed.
->         > renamed pci_do_recovery to pcie_do_recovery
->         > removed inner braces in conditional statements.
->         > restrctured the code in pci_wait_for_link
->         > EXPORT_SYMBOL_GPL
-> Changes since v9:
->     Sinan's comments addressed.
->         > bool active = true; unnecessary variable removed.
-> Changes since v8:
->     Fixed Kbuild errors.
-> Changes since v7:
->     Rebased the code on pci master
->         > https://kernel.googlesource.com/pub/scm/linux/kernel/git/helgaas/pci
-> Changes since v6:
->     Sinan's and Stefan's comments implemented.
->         > reordered patch 6 and 7
->         > cleaned up
-> Changes since v5:
->     Sinan's and Keith's comments incorporated.
->         > made separate patch for mutex
->         > unified error repotting codes into driver/pci/pci.h
->         > got rid of wait link active/inactive and
->           made generic function in driver/pci/pci.c
-> Changes since v4:
->     Bjorn's comments incorporated.
->         > Renamed only do_recovery.
->         > moved the things more locally to drivers/pci/pci.h
-> Changes since v3:
->     Bjorn's comments incorporated.
->         > Made separate patch renaming generic pci_err.c
->         > Introduce pci_err.h to contain all the error types and recovery
->         > removed all the dependencies on pci.h
-> Changes since v2:
->     Based on feedback from Keith:
->     "
->     When DPC is triggered due to receipt of an uncorrectable error Message,
->     the Requester ID from the Message is recorded in the DPC Error
->     Source ID register and that Message is discarded and not forwarded Upstream.
->     "
->     Removed the patch where AER checks if DPC service is active
-> Changes since v1:
->     Kbuild errors fixed:
->         > pci_find_dpc_dev made static
->         > ras_event.h updated
->         > pci_find_aer_service call with CONFIG check
->         > pci_find_dpc_service call with CONFIG check
-> 
-> Oza Pawandeep (9):
->   PCI: Unify wait for link active into generic PCI
->   pci-error-recovery: Add AER_FATAL handling
->   PCI/AER: Handle ERRR_FATAL with removal and re-enumeration of devices
->   PCI/AER: Rename error recovery to generic PCI naming
->   PCI/AER: Factor out error reporting from AER
->   PCI/PORTDRV: Implement generic find service
->   PCI/PORTDRV: Implement generic find device
->   PCI/DPC: Unify and plumb error handling into DPC
->   PCI/DPC: Disable ERR_NONFATAL and enable ERR_FATAL for DPC
-> 
->  Documentation/PCI/pci-error-recovery.txt |  35 ++-
->  drivers/pci/hotplug/pciehp_hpc.c         |  20 +-
->  drivers/pci/pci.c                        |  29 +++
->  drivers/pci/pci.h                        |   4 +
->  drivers/pci/pcie/Makefile                |   2 +-
->  drivers/pci/pcie/aer/aerdrv.c            |   2 +
->  drivers/pci/pcie/aer/aerdrv.h            |  30 ---
->  drivers/pci/pcie/aer/aerdrv_core.c       | 317 +-------------------------
->  drivers/pci/pcie/dpc.c                   |  58 +++--
->  drivers/pci/pcie/err.c                   | 374 +++++++++++++++++++++++++++++++
->  drivers/pci/pcie/portdrv.h               |   4 +
->  drivers/pci/pcie/portdrv_core.c          |  67 ++++++
->  include/linux/aer.h                      |   1 +
->  include/uapi/linux/pci_regs.h            |   1 +
->  14 files changed, 540 insertions(+), 404 deletions(-)
->  create mode 100644 drivers/pci/pcie/err.c
-> 
-> -- 
-> 2.7.4
-> 
+Michael Bringmann (3):
+  powerpc migration/drmem: Modify DRMEM code to export more features
+  powerpc migration/cpu: Associativity & cpu changes
+  powerpc migration/memory: Associativity & memory updates
+---
+Changes in RFC:
+  -- Restructure and rearrange content of patches to co-locate
+     similar or related modifications
+  -- Rename pseries_update_drconf_cpu to pseries_update_cpu
+  -- Simplify code to update CPU nodes during mobility checks.
+     Remove functions to generate extra HP_ELOG messages in favor
+     of direct function calls to dlpar_cpu_readd_by_index, or
+     dlpar_memory_readd_by_index.
+  -- Revise code order in dlpar_cpu_readd_by_index() to present
+     more appropriate error codes from underlying layers of the
+     implementation.
+  -- Add hotplug device lock around all property updates
+  -- Schedule all CPU and memory changes due to device-tree updates /
+     LPAR mobility as workqueue operations
+  -- Export DRMEM accessor functions to parse 'ibm,dynamic-memory-v2'
+  -- Export DRMEM functions to provide user copies of LMB array
+  -- Compress code using DRMEM accessor functions.
+  -- Split topology timer crash fix into new patch.
+  -- Modify DRMEM code to replace usages of dt_root_addr_cells, and
+     dt_mem_next_cell, as these are only available at first boot.
+  -- Correct a bug in DRC index selection for queued operation.
+  -- Rebase to 4.17-rc5 kernel
