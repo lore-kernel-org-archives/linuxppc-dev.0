@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mqrK6VL2zF27L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 22:10:25 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/2] powerpc/32be: use stmw/lmw for registers
- save/restore in asm
-In-Reply-To: <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
-References: <7fbae252f24ec4d30f52f57a549901fa3f799f8f.1523984745.git.christophe.leroy@c-s.fr>
- <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
-Date: Thu, 17 May 2018 22:10:21 +1000
-Message-ID: <87zi0ymqj6.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mrSk6QLwzF1R9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 22:38:30 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id c19-v6so2479044pls.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 05:38:30 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH 0/3] Add support to disable sensor groups in P9
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ stewart@linux.vnet.ibm.com
+References: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <20180515150205.GA29321@roeck-us.net>
+ <2ceb6b30-60b7-d985-ee0d-6c5784eda273@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <56bba97b-c6ee-e7a1-136c-a2236437484a@roeck-us.net>
+Date: Thu, 17 May 2018 05:38:25 -0700
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <2ceb6b30-60b7-d985-ee0d-6c5784eda273@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +31,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
-> arch/powerpc/Makefile activates -mmultiple on BE PPC32 configs
-> in order to use multiple word instructions in functions entry/exit
+On 05/16/2018 11:10 PM, Shilpasri G Bhat wrote:
+> 
+> 
+> On 05/15/2018 08:32 PM, Guenter Roeck wrote:
+>> On Thu, Mar 22, 2018 at 04:24:32PM +0530, Shilpasri G Bhat wrote:
+>>> This patch series adds support to enable/disable OCC based
+>>> inband-sensor groups at runtime. The environmental sensor groups are
+>>> managed in HWMON and the remaining platform specific sensor groups are
+>>> managed in /sys/firmware/opal.
+>>>
+>>> The firmware changes required for this patch is posted below:
+>>> https://lists.ozlabs.org/pipermail/skiboot/2018-March/010812.html
+>>>
+>>
+>> Sorry for not getting back earlier. This is a tough one.
+>>
+> 
+> Thanks for the reply. I have tried to answer your questions according to my
+> understanding below:
+> 
+>> Key problem is that you are changing the ABI with those new attributes.
+>> On top of that, the attributes _do_ make some sense (many chips support
+>> enabling/disabling of individual sensors), suggesting that those or
+>> similar attributes may or even should at some point be added to the ABI.
+>>
+>> At the same time, returning "0" as measurement values when sensors are
+>> disabled does not seem like a good idea, since "0" is a perfectly valid
+>> measurement, at least for most sensors.
+> 
+> I agree.
+> 
+>>
+>> Given that, we need to have a discussion about adding _enable attributes to
+>> the ABI
+> 
+>> what is the scope,
+> IIUC the scope should be RW and the attribute is defined for each supported
+> sensor group
+> 
 
-True, though that could be a lot simpler because the MULTIPLEWORD value
-is only used for PPC32, which is always big endian. I'll send a patch
-for that.
+That is _your_ need. I am not aware of any other chip where a per-sensor group
+attribute would make sense. The discussion we need has to extend beyond the need
+of a single chip.
 
-> The patch does the same for the asm parts, for consistency
->
-> On processors like the 8xx on which insn fetching is pretty slow,
-> this speeds up registers save/restore
+Guenter
 
-OK. I've always heard that they should be avoided, but that's coming
-from 64-bit land.
-
-I guess we've been enabling this for all 32-bit targets for ever so it
-must be a reasonable option.
-
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  v2: Swapped both patches in the serie to reduce number of impacted
->      lines and added the same modification in ppc_save_regs()
->
->  arch/powerpc/include/asm/ppc_asm.h  |  5 +++++
->  arch/powerpc/kernel/misc.S          | 10 ++++++++++
->  arch/powerpc/kernel/ppc_save_regs.S |  4 ++++
->  3 files changed, 19 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> index 13f7f4c0e1ea..4bb765d0b758 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -80,11 +80,16 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  #else
->  #define SAVE_GPR(n, base)	stw	n,GPR0+4*(n)(base)
->  #define REST_GPR(n, base)	lwz	n,GPR0+4*(n)(base)
-> +#ifdef CONFIG_CPU_BIG_ENDIAN
-> +#define SAVE_NVGPRS(base)	stmw	13, GPR0+4*13(base)
-> +#define REST_NVGPRS(base)	lmw	13, GPR0+4*13(base)
-> +#else
->  #define SAVE_NVGPRS(base)	SAVE_GPR(13, base); SAVE_8GPRS(14, base); \
->  				SAVE_10GPRS(22, base)
->  #define REST_NVGPRS(base)	REST_GPR(13, base); REST_8GPRS(14, base); \
->  				REST_10GPRS(22, base)
-
-There is no 32-bit little endian, so this is basically dead code now.
-
-Maybe there'll be a 32-bit LE port one day, but if so we can put the
-code back then.
-
-So I'll just drop the else case.
-
->  #endif
-> +#endif
->  
->  #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
->  #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
-> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
-> index 746ee0320ad4..a316d90a5c26 100644
-> --- a/arch/powerpc/kernel/misc.S
-> +++ b/arch/powerpc/kernel/misc.S
-> @@ -49,6 +49,10 @@ _GLOBAL(setjmp)
->  	PPC_STL	r0,0(r3)
->  	PPC_STL	r1,SZL(r3)
->  	PPC_STL	r2,2*SZL(r3)
-> +#if defined(CONFIG_PPC32) && defined(CONFIG_CPU_BIG_ENDIAN)
-
-And this could just be:
-
-#ifdef CONFIG_PPC32
-
-> +	mfcr	r12
-> +	stmw	r12, 3*SZL(r3)
-> +#else
->  	mfcr	r0
->  	PPC_STL	r0,3*SZL(r3)
->  	PPC_STL	r13,4*SZL(r3)
-> @@ -70,10 +74,15 @@ _GLOBAL(setjmp)
->  	PPC_STL	r29,20*SZL(r3)
->  	PPC_STL	r30,21*SZL(r3)
->  	PPC_STL	r31,22*SZL(r3)
-> +#endif
-
-It's a pity to end up with this basically split in half by ifdefs for
-32/64-bit, but maybe we can clean that up later.
-
-cheers
+>> when should the attributes exist and when not,
+> We control this currently via device-tree
+> 
+>> do we want/need power_enable or powerX_enable or both, and so on), and
+> We need power_enable right now
+> 
+>> what to return if a sensor is disabled (such as -ENODATA).
+> -ENODATA sounds good.
+> 
+> Thanks and Regards,
+> Shilpa
+> 
+>   Once we have an
+>> agreement, we can continue with an implementation.
+>>
+>> Guenter
+>>
+>>> Shilpasri G Bhat (3):
+>>>    powernv:opal-sensor-groups: Add support to enable sensor groups
+>>>    hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
+>>>    powernv: opal-sensor-groups: Add attributes to disable/enable sensors
+>>>
+>>>   .../ABI/testing/sysfs-firmware-opal-sensor-groups  |  34 ++++++
+>>>   Documentation/hwmon/ibmpowernv                     |  31 ++++-
+>>>   arch/powerpc/include/asm/opal-api.h                |   4 +-
+>>>   arch/powerpc/include/asm/opal.h                    |   2 +
+>>>   .../powerpc/platforms/powernv/opal-sensor-groups.c | 104 ++++++++++++-----
+>>>   arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+>>>   drivers/hwmon/ibmpowernv.c                         | 127 +++++++++++++++++++--
+>>>   7 files changed, 265 insertions(+), 38 deletions(-)
+>>>   create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
+>>>
+>>> -- 
+>>> 1.8.3.1
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-hwmon" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+> 
+> 
