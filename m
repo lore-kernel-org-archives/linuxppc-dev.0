@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mpRw1BZWzF1nG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 21:07:40 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mpRz2HMhzF1Rc
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 21:07:43 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4HB4FYY024228
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:37 -0400
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j16wmw3am-1
+ w4HB4kp5043168
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:41 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j16b5enft-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:41 -0400
 Received: from localhost
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 17 May 2018 12:07:34 +0100
+ Thu, 17 May 2018 12:07:38 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -39,11 +39,11 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v11 21/26] perf: add a speculative page fault sw event
-Date: Thu, 17 May 2018 13:06:28 +0200
+Subject: [PATCH v11 23/26] mm: add speculative page fault vmstats
+Date: Thu, 17 May 2018 13:06:30 +0200
 In-Reply-To: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1526555193-7242-22-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1526555193-7242-24-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,25 +53,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new software event to count succeeded speculative page faults.
+Add speculative_pgfault vmstat counter to count successful speculative page
+fault handling.
 
-Acked-by: David Rientjes <rientjes@google.com>
+Also fixing a minor typo in include/linux/vm_event_item.h.
+
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- include/uapi/linux/perf_event.h | 1 +
- 1 file changed, 1 insertion(+)
+ include/linux/vm_event_item.h | 3 +++
+ mm/memory.c                   | 3 +++
+ mm/vmstat.c                   | 5 ++++-
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/perf_event.h b/include/uapi/linux/perf_event.h
-index b8e288a1f740..e2b74c055f51 100644
---- a/include/uapi/linux/perf_event.h
-+++ b/include/uapi/linux/perf_event.h
-@@ -112,6 +112,7 @@ enum perf_sw_ids {
- 	PERF_COUNT_SW_EMULATION_FAULTS		= 8,
- 	PERF_COUNT_SW_DUMMY			= 9,
- 	PERF_COUNT_SW_BPF_OUTPUT		= 10,
-+	PERF_COUNT_SW_SPF			= 11,
- 
- 	PERF_COUNT_SW_MAX,			/* non-ABI */
+diff --git a/include/linux/vm_event_item.h b/include/linux/vm_event_item.h
+index 5c7f010676a7..a240acc09684 100644
+--- a/include/linux/vm_event_item.h
++++ b/include/linux/vm_event_item.h
+@@ -111,6 +111,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+ 		SWAP_RA,
+ 		SWAP_RA_HIT,
+ #endif
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++		SPECULATIVE_PGFAULT,
++#endif
+ 		NR_VM_EVENT_ITEMS
  };
+ 
+diff --git a/mm/memory.c b/mm/memory.c
+index 30433bde32f2..48e1cf0a54ef 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -4509,6 +4509,9 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+ 
+ 	put_vma(vma);
+ 
++	if (ret != VM_FAULT_RETRY)
++		count_vm_event(SPECULATIVE_PGFAULT);
++
+ 	/*
+ 	 * The task may have entered a memcg OOM situation but
+ 	 * if the allocation error was handled gracefully (no
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index a2b9518980ce..3af74498a969 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -1289,7 +1289,10 @@ const char * const vmstat_text[] = {
+ 	"swap_ra",
+ 	"swap_ra_hit",
+ #endif
+-#endif /* CONFIG_VM_EVENTS_COUNTERS */
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++	"speculative_pgfault",
++#endif
++#endif /* CONFIG_VM_EVENT_COUNTERS */
+ };
+ #endif /* CONFIG_PROC_FS || CONFIG_SYSFS || CONFIG_NUMA */
+ 
 -- 
 2.7.4
