@@ -2,17 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3Z4xJqzF1fl
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:50:02 +1000 (AEST)
-Message-Id: <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1526553552.git.christophe.leroy@c-s.fr>
-References: <cover.1526553552.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mpGZ6JFGzF1xh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:59:34 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 5/5] powerpc/lib: inline memcmp() for small constant sizes
+Subject: [PATCH v6] powerpc/mm: Only read faulting instruction when necessary
+ in do_page_fault()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 17 May 2018 12:49:58 +0200 (CEST)
+Message-Id: <20180517105930.71B1D6F937@po14934vm.idsi0.si.c-s.fr>
+Date: Thu, 17 May 2018 12:59:29 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,111 +21,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In my 8xx configuration, I get 208 calls to memcmp()
-Within those 208 calls, about half of them have constant sizes,
-46 have a size of 8, 17 have a size of 16, only a few have a
-size over 16. Other fixed sizes are mostly 4, 6 and 10.
+Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
+userspace instruction miss") has shown that limiting the read of
+faulting instruction to likely cases improves performance.
 
-This patch inlines calls to memcmp() when size
-is constant and lower than or equal to 16
+This patch goes further into this direction by limiting the read
+of the faulting instruction to the only cases where it is definitly
+needed.
 
-In my 8xx configuration, this reduces the number of calls
-to memcmp() from 208 to 123
+On an MPC885, with the same benchmark app as in the commit referred
+above, we see a reduction of 4000 dTLB misses (approx 3%):
 
-The following table shows the number of TB timeticks to perform
-a constant size memcmp() before and after the patch depending on
-the size
+Before the patch:
+ Performance counter stats for './fault 500' (10 runs):
 
-	Before	After	Improvement
-01:	 7577	 5682	25%
-02:	41668	 5682	86%
-03:	51137	13258	74%
-04:	45455	 5682	87%
-05:	58713	13258	77%
-06:	58712	13258	77%
-07:	68183	20834	70%
-08:	56819	15153	73%
-09:	70077	28411	60%
-10:	70077	28411	60%
-11:	79546	35986	55%
-12:	68182	28411	58%
-13:	81440	35986	55%
-14:	81440	39774	51%
-15:	94697	43562	54%
-16:	79546	37881	52%
+         720495838      cpu-cycles		( +-  0.04% )
+            141769      dTLB-load-misses	( +-  0.02% )
+             52722      iTLB-load-misses	( +-  0.01% )
+             19611      faults			( +-  0.02% )
+
+       5.750535176 seconds time elapsed		( +-  0.16% )
+
+With the patch:
+ Performance counter stats for './fault 500' (10 runs):
+
+         717669123      cpu-cycles		( +-  0.02% )
+            137344      dTLB-load-misses	( +-  0.03% )
+             52731      iTLB-load-misses	( +-  0.01% )
+             19614      faults			( +-  0.03% )
+
+       5.728423115 seconds time elapsed		( +-  0.14% )
+
+The proper work of the huge stack expansion was tested with the
+following app:
+
+int main(int argc, char **argv)
+{
+	char buf[1024 * 1025];
+
+	sprintf(buf, "Hello world !\n");
+	printf(buf);
+
+	exit(0);
+}
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/string.h | 46 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ v6: Rebased on latest powerpc/merge branch ; Using __get_user_inatomic() instead of get_user() in order
+     to move it inside the semaphored area. That removes all the complexity of the patch.
 
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index 35f1aaad9b50..80cf0f9605dd 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -4,6 +4,8 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/kernel.h>
-+
- #define __HAVE_ARCH_STRNCPY
- #define __HAVE_ARCH_STRNCMP
- #define __HAVE_ARCH_MEMSET
-@@ -51,10 +53,54 @@ static inline int strncmp(const char *p, const char *q, __kernel_size_t size)
- 	return __strncmp(p, q, size);
- }
- 
-+static inline int __memcmp1(const void *p, const void *q, int off)
-+{
-+	return *(u8*)(p + off) - *(u8*)(q + off);
-+}
-+
-+static inline int __memcmp2(const void *p, const void *q, int off)
-+{
-+	return be16_to_cpu(*(u16*)(p + off)) - be16_to_cpu(*(u16*)(q + off));
-+}
-+
-+static inline int __memcmp4(const void *p, const void *q, int off)
-+{
-+	return be32_to_cpu(*(u32*)(p + off)) - be32_to_cpu(*(u32*)(q + off));
-+}
-+
-+static inline int __memcmp8(const void *p, const void *q, int off)
-+{
-+	s64 tmp = be64_to_cpu(*(u64*)(p + off)) - be64_to_cpu(*(u64*)(q + off));
-+	return tmp >> 32 ? : (int)tmp;
-+}
-+
-+static inline int __memcmp_cst(const void *p,const void *q,__kernel_size_t size)
-+{
-+	if (size == 1)
-+		return __memcmp1(p, q, 0);
-+	if (size == 2)
-+		return __memcmp2(p, q, 0);
-+	if (size == 3)
-+		return __memcmp2(p, q, 0) ? : __memcmp1(p, q, 2);
-+	if (size == 4)
-+		return __memcmp4(p, q, 0);
-+	if (size == 5)
-+		return __memcmp4(p, q, 0) ? : __memcmp1(p, q, 4);
-+	if (size == 6)
-+		return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4);
-+	if (size == 7)
-+		return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4) ? : __memcmp1(p, q, 6);
-+	return __memcmp8(p, q, 0);
-+}
-+
- static inline int memcmp(const void *p,const void *q,__kernel_size_t size)
+ v5: Reworked to fit after Benh do_fault improvement and rebased on top of powerpc/merge (65152902e43fef)
+
+ v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
+
+ v3: Do a first try with pagefault disabled before releasing the semaphore
+
+ v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
+
+ arch/powerpc/mm/fault.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index c01d627e687a..a7d5cc76a8ce 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -72,8 +72,18 @@ static inline bool notify_page_fault(struct pt_regs *regs)
+ static bool store_updates_sp(struct pt_regs *regs)
  {
- 	if (unlikely(!size))
- 		return 0;
-+	if (__builtin_constant_p(size) && size <= 8)
-+		return __memcmp_cst(p, q, size);
-+	if (__builtin_constant_p(size) && size <= 16)
-+		return __memcmp8(p, q, 0) ? : __memcmp_cst(p + 8, q + 8, size - 8);
- 	return __memcmp(p, q, size);
+ 	unsigned int inst;
++	int ret;
+ 
+-	if (get_user(inst, (unsigned int __user *)regs->nip))
++	/*
++	 * Using get_user_in_atomic() as reading code around nip can result in
++	 * fault, which may cause a deadlock when called with mmap_sem held,
++	 * however since we are reading the instruction that generated the DSI
++	 * we are handling, the page is necessarily already present.
++	 */
++	pagefault_disable();
++	ret = __get_user_inatomic(inst, (unsigned int __user *)regs->nip);
++	pagefault_enable();
++	if (ret)
+ 		return false;
+ 	/* check for 1 in the rA field */
+ 	if (((inst >> 16) & 0x1f) != 1)
+@@ -234,8 +244,7 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
  }
  
+ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+-				struct vm_area_struct *vma,
+-				bool store_update_sp)
++				struct vm_area_struct *vma)
+ {
+ 	/*
+ 	 * N.B. The POWER/Open ABI allows programs to access up to
+@@ -264,7 +273,7 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
+ 		 * between the last mapped region and the stack will
+ 		 * expand the stack rather than segfaulting.
+ 		 */
+-		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
++		if (address + 2048 < uregs->gpr[1] && !store_updates_sp(regs))
+ 			return true;
+ 	}
+ 	return false;
+@@ -403,7 +412,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 	int is_user = user_mode(regs);
+ 	int is_write = page_fault_is_write(error_code);
+ 	int fault, major = 0;
+-	bool store_update_sp = false;
+ 
+ 	if (notify_page_fault(regs))
+ 		return 0;
+@@ -449,14 +457,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		return bad_key_fault_exception(regs, address,
+ 					       get_mm_addr_key(mm, address));
+ 
+-	/*
+-	 * We want to do this outside mmap_sem, because reading code around nip
+-	 * can result in fault, which will cause a deadlock when called with
+-	 * mmap_sem held
+-	 */
+-	if (is_write && is_user)
+-		store_update_sp = store_updates_sp(regs);
+-
+ 	if (is_user)
+ 		flags |= FAULT_FLAG_USER;
+ 	if (is_write)
+@@ -503,7 +503,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+ 		return bad_area(regs, address);
+ 
+ 	/* The stack is being expanded, check if it's valid */
+-	if (unlikely(bad_stack_expansion(regs, address, vma, store_update_sp)))
++	if (unlikely(bad_stack_expansion(regs, address, vma)))
+ 		return bad_area(regs, address);
+ 
+ 	/* Try to expand it */
 -- 
 2.13.3
