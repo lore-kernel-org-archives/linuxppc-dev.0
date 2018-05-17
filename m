@@ -1,25 +1,31 @@
-Return-Path: <jakub.kicinski@netronome.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40n0kv3bpgzDr4q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 04:51:16 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id u8-v6so2195941pgp.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 11:51:16 -0700 (PDT)
-Date: Thu, 17 May 2018 11:51:10 -0700
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: ast@kernel.org, daniel@iogearbox.net, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, naveen.n.rao@linux.vnet.ibm.com
-Subject: Re: [PATCH bpf 5/6] tools: bpftool: resolve calls without using imm
- field
-Message-ID: <20180517115104.7666ff60@cakuba>
-In-Reply-To: <20180517063548.6373-6-sandipan@linux.vnet.ibm.com>
-References: <20180517063548.6373-1-sandipan@linux.vnet.ibm.com>
- <20180517063548.6373-6-sandipan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40n5Hv3qBnzF27m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:16:43 +1000 (AEST)
+Date: Thu, 17 May 2018 17:16:39 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Oza Pawandeep <poza@codeaurora.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Dongdong Liu <liudongdong3@huawei.com>,
+ Keith Busch <keith.busch@intel.com>, Wei Zhang <wzhang@fb.com>,
+ Sinan Kaya <okaya@codeaurora.org>, Timur Tabi <timur@codeaurora.org>,
+ Russell Currey <ruscur@russell.cc>, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Sebastian Ott <sebott@linux.vnet.ibm.com>,
+ linux-s390@vger.kernel.org
+Subject: Re: [PATCH v17 0/9] Address error and recovery for AER and DPC
+Message-ID: <20180517221639.GE19955@bhelgaas-glaptop.roam.corp.google.com>
+References: <1526542991-5291-1-git-send-email-poza@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1526542991-5291-1-git-send-email-poza@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,189 +35,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 17 May 2018 12:05:47 +0530, Sandipan Das wrote:
-> Currently, we resolve the callee's address for a JITed function
-> call by using the imm field of the call instruction as an offset
-> from __bpf_call_base. If bpf_jit_kallsyms is enabled, we further
-> use this address to get the callee's kernel symbol's name.
+[+cc Russell, Sam, Bryant, linuxppc-dev, Sebastian, linux-s390]
+
+Sorry, I should have pulled in these new CC's earlier because ppc and
+s390 both have PCI error handling similar to what Oza is changing
+here.
+
+The basic issue is that the new PCIe DPC (Downstream Port Containment,
+see PCIe r4.0, sec 6.2.10) feature doesn't fit very well in the
+framework of the pci_error_handlers callbacks.
+
+When DPC is enabled, a Downstream Port (either a Root Port or a Switch
+Downstream Port) that receives an ERR_FATAL message automatically
+disables its Link.  IIUC, this is also intended for use in hot-unplug
+scenarios.
+
+When the DPC hardware takes the Link down, it resets all the
+downstream devices, and there's not much point in calling the
+pci_error_handlers callbacks because the devices are unreachable.
+Even after the Link comes back up, we can't be certain the same device
+is there because of the hotplug possibility.
+
+The software side of DPC recovery basically consists of detaching the
+drivers of the downstream devices (calling their .remove() methods),
+bringing the link back up, re-enumerating the downstream devices, and
+re-attaching the drivers (calling their .probe() methods).
+
+The existing AER code also responds to ERR_FATAL messages, but it does
+call the pci_error_handlers callbacks and also resets the link.
+
+This is a bit of a mess because things look a lot different to the
+driver depending on whether the platform supports AER or DPC.
+
+Since we can't change the way DPC works, the idea of this series is
+basically to make AER handle ERR_FATAL more like DPC does, i.e., by
+resetting the link, detaching, and re-attaching the drivers.
+
+This series is currently on my pci/aer branch
+(https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git/log/?h=pci/aer)
+and is headed for v4.18 unless somebody raises major objections.
+
+On Thu, May 17, 2018 at 03:43:02AM -0400, Oza Pawandeep wrote:
+> This patch set brings in error handling support for DPC
 > 
-> For some architectures, such as powerpc64, the imm field is not
-> large enough to hold this offset. So, instead of assigning this
-> offset to the imm field, the verifier now assigns the subprog
-> id. Also, a list of kernel symbol addresses for all the JITed
-> functions is provided in the program info. We now use the imm
-> field as an index for this list to lookup a callee's symbol's
-> address and resolve its name.
+> The current implementation of AER and error message broadcasting to the
+> EP driver is tightly coupled and limited to AER service driver.
+> It is important to factor out broadcasting and other link handling
+> callbacks. So that not only when AER gets triggered, but also when DPC get
+> triggered (for e.g. ERR_FATAL), callbacks are handled appropriately.
 > 
-> Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
-> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
-
-A few nit-picks below, thank you for the patch!
-
->  tools/bpf/bpftool/prog.c          | 31 +++++++++++++++++++++++++++++++
->  tools/bpf/bpftool/xlated_dumper.c | 24 +++++++++++++++++-------
->  tools/bpf/bpftool/xlated_dumper.h |  2 ++
->  3 files changed, 50 insertions(+), 7 deletions(-)
+> The goal of the patch-set is:
+> DPC should handle the error handling and recovery similar to AER, because 
+> finally both are attempting recovery in some or the other way,
+> and for that error handling and recovery framework has to be loosely
+> coupled.
 > 
-> diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
-> index 9bdfdf2d3fbe..ac2f62a97e84 100644
-> --- a/tools/bpf/bpftool/prog.c
-> +++ b/tools/bpf/bpftool/prog.c
-> @@ -430,6 +430,10 @@ static int do_dump(int argc, char **argv)
->  	unsigned char *buf;
->  	__u32 *member_len;
->  	__u64 *member_ptr;
-> +	unsigned int nr_addrs;
-> +	unsigned long *addrs = NULL;
-> +	__u32 *ksyms_len;
-> +	__u64 *ksyms_ptr;
+> It achieves uniformity and transparency to the error handling agents such
+> as AER, DPC, with respect to recovery and error handling.
+> 
+> So, this patch-set tries to unify lot of things between error agents and
+> make them behave in a well defined way. (be it error (FATAL, NON_FATAL)
+> handling or recovery).
+> 
+> The FATAL error handling is handled with remove/reset_link/re-enumerate
+> sequence while the NON_FATAL follows the default path.
+> Documentation/PCI/pci-error-recovery.txt talks more on that.
 
-nit: please try to keep the variables ordered longest to shortest like
-we do in networking code (please do it in all functions).
+I applied this series with a trivial change to remove an unused variable to
+pci/aer for v4.18, thanks!
 
->  	ssize_t n;
->  	int err;
->  	int fd;
-> @@ -437,6 +441,8 @@ static int do_dump(int argc, char **argv)
->  	if (is_prefix(*argv, "jited")) {
->  		member_len = &info.jited_prog_len;
->  		member_ptr = &info.jited_prog_insns;
-> +		ksyms_len = &info.nr_jited_ksyms;
-> +		ksyms_ptr = &info.jited_ksyms;
->  	} else if (is_prefix(*argv, "xlated")) {
->  		member_len = &info.xlated_prog_len;
->  		member_ptr = &info.xlated_prog_insns;
-> @@ -496,10 +502,23 @@ static int do_dump(int argc, char **argv)
->  		return -1;
->  	}
->  
-> +	nr_addrs = *ksyms_len;
-
-Here and ...
-
-> +	if (nr_addrs) {
-> +		addrs = malloc(nr_addrs * sizeof(__u64));
-> +		if (!addrs) {
-> +			p_err("mem alloc failed");
-> +			free(buf);
-> +			close(fd);
-> +			return -1;
-
-You can just jump to err_free here.
-
-> +		}
-> +	}
-> +
->  	memset(&info, 0, sizeof(info));
->  
->  	*member_ptr = ptr_to_u64(buf);
->  	*member_len = buf_size;
-> +	*ksyms_ptr = ptr_to_u64(addrs);
-> +	*ksyms_len = nr_addrs;
-
-... here - this function is getting long, so maybe I'm not seeing
-something, but are ksyms_ptr and ksyms_len guaranteed to be initialized?
-
->  	err = bpf_obj_get_info_by_fd(fd, &info, &len);
->  	close(fd);
-> @@ -513,6 +532,11 @@ static int do_dump(int argc, char **argv)
->  		goto err_free;
->  	}
->  
-> +	if (*ksyms_len > nr_addrs) {
-> +		p_err("too many addresses returned");
-> +		goto err_free;
-> +	}
-> +
->  	if ((member_len == &info.jited_prog_len &&
->  	     info.jited_prog_insns == 0) ||
->  	    (member_len == &info.xlated_prog_len &&
-> @@ -558,6 +582,9 @@ static int do_dump(int argc, char **argv)
->  			dump_xlated_cfg(buf, *member_len);
->  	} else {
->  		kernel_syms_load(&dd);
-> +		dd.jited_ksyms = ksyms_ptr;
-> +		dd.nr_jited_ksyms = *ksyms_len;
-> +
->  		if (json_output)
->  			dump_xlated_json(&dd, buf, *member_len, opcodes);
->  		else
-> @@ -566,10 +593,14 @@ static int do_dump(int argc, char **argv)
->  	}
->  
->  	free(buf);
-> +	if (addrs)
-> +		free(addrs);
-
-Free can deal with NULL pointers, no need for an if.
-
->  	return 0;
->  
->  err_free:
->  	free(buf);
-> +	if (addrs)
-> +		free(addrs);
->  	return -1;
->  }
->  
-> diff --git a/tools/bpf/bpftool/xlated_dumper.c b/tools/bpf/bpftool/xlated_dumper.c
-> index 7a3173b76c16..dc8e4eca0387 100644
-> --- a/tools/bpf/bpftool/xlated_dumper.c
-> +++ b/tools/bpf/bpftool/xlated_dumper.c
-> @@ -178,8 +178,12 @@ static const char *print_call_pcrel(struct dump_data *dd,
->  		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
->  			 "%+d#%s", insn->off, sym->name);
->  	else
-
-else if (address)
-
-saves us the indentation.
-
-> -		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
-> -			 "%+d#0x%lx", insn->off, address);
-> +		if (address)
-> +			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
-> +				 "%+d#0x%lx", insn->off, address);
-> +		else
-> +			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
-> +				 "%+d", insn->off);
->  	return dd->scratch_buff;
->  }
->  
-> @@ -200,14 +204,20 @@ static const char *print_call(void *private_data,
->  			      const struct bpf_insn *insn)
->  {
->  	struct dump_data *dd = private_data;
-> -	unsigned long address = dd->address_call_base + insn->imm;
-> -	struct kernel_sym *sym;
-> +	unsigned long address = 0;
-> +	struct kernel_sym *sym = NULL;
->  
-
-Hm.  Quite a bit of churn.  Why not just add these three lines here:
-
-if (insn->src_reg == BPF_PSEUDO_CALL && 
-    insn->imm < dd->nr_jited_ksyms)
-	address = dd->jited_ksyms[insn->imm];
-
-> -	sym = kernel_syms_search(dd, address);
-> -	if (insn->src_reg == BPF_PSEUDO_CALL)
-> +	if (insn->src_reg == BPF_PSEUDO_CALL) {
-> +		if (dd->nr_jited_ksyms) {
-> +			address = dd->jited_ksyms[insn->imm];
-
-Perhaps it's paranoid, but it'd please do to bound check insn->imm
-against dd->nr_jited_ksyms.
-
-> +			sym = kernel_syms_search(dd, address);
-> +		}
->  		return print_call_pcrel(dd, sym, address, insn);
-> -	else
-> +	} else {
-> +		address = dd->address_call_base + insn->imm;
-> +		sym = kernel_syms_search(dd, address);
->  		return print_call_helper(dd, sym, address);
-> +	}
->  }
->  
->  static const char *print_imm(void *private_data,
+> Changes since v16:
+>     Bjorn's comments addressed
+>     > remove call pci_walk_bus(dev->subordinate, report_resume, &result_data)
+>     > pci_cleanup_aer_uncorrect_error_status(dev); happens only if service is AER
+>     > aer_error_resume does not handle ERR_FATAL clearing anymore
+> Changes since v15:
+>     Bjorn's comments addressed
+>     > minor comments fixed
+>     > made FATAL sequence aligned to existing one, as far as clearing status are concerned.
+>     > pcie_do_fatal_recovery and pcie_do_nonfatal_recovery functions made to modularize
+>     > pcie_do_fatal_recovery now takes service as an argument
+> Changes since v14:
+>     Bjorn's comments addressed
+>     > simplified the patch set, and moved AER_FATAL handling in the beginning.
+>     > rebase the code to 4.17-rc1.
+> Changes since v13:
+>     Bjorn's comments addressed
+>     > handke FATAL errors with remove devices followed by re-enumeration.
+>     > changes in AER and DPC along with required Documentation.
+> Changes since v12:
+>     Bjorn's and Keith's Comments addressed.
+>     > Made DPC and AER error handling identical <aligned err.c>
+>     > hanldled cases for hotplug enabled system differently.
+> Changes since v11:
+>     Bjorn's comments addressed.
+>     > rename pcie-err.c to err.c
+>     > removed EXPORT_SYMBOL
+>     > made generic find_serivce function in port driver.
+>     > removed mutex patch as no need to have mutex in pcie_do_recovery
+>     > brough in DPC_FATAL in aer.h
+>     > so now all the error codes (AER and DPC) are unified in aer.h
+> Changes since v10:
+>     Christoph Hellwig's, David Laight's and Randy Dunlap's
+>     comments addressed.
+>         > renamed pci_do_recovery to pcie_do_recovery
+>         > removed inner braces in conditional statements.
+>         > restrctured the code in pci_wait_for_link
+>         > EXPORT_SYMBOL_GPL
+> Changes since v9:
+>     Sinan's comments addressed.
+>         > bool active = true; unnecessary variable removed.
+> Changes since v8:
+>     Fixed Kbuild errors.
+> Changes since v7:
+>     Rebased the code on pci master
+>         > https://kernel.googlesource.com/pub/scm/linux/kernel/git/helgaas/pci
+> Changes since v6:
+>     Sinan's and Stefan's comments implemented.
+>         > reordered patch 6 and 7
+>         > cleaned up
+> Changes since v5:
+>     Sinan's and Keith's comments incorporated.
+>         > made separate patch for mutex
+>         > unified error repotting codes into driver/pci/pci.h
+>         > got rid of wait link active/inactive and
+>           made generic function in driver/pci/pci.c
+> Changes since v4:
+>     Bjorn's comments incorporated.
+>         > Renamed only do_recovery.
+>         > moved the things more locally to drivers/pci/pci.h
+> Changes since v3:
+>     Bjorn's comments incorporated.
+>         > Made separate patch renaming generic pci_err.c
+>         > Introduce pci_err.h to contain all the error types and recovery
+>         > removed all the dependencies on pci.h
+> Changes since v2:
+>     Based on feedback from Keith:
+>     "
+>     When DPC is triggered due to receipt of an uncorrectable error Message,
+>     the Requester ID from the Message is recorded in the DPC Error
+>     Source ID register and that Message is discarded and not forwarded Upstream.
+>     "
+>     Removed the patch where AER checks if DPC service is active
+> Changes since v1:
+>     Kbuild errors fixed:
+>         > pci_find_dpc_dev made static
+>         > ras_event.h updated
+>         > pci_find_aer_service call with CONFIG check
+>         > pci_find_dpc_service call with CONFIG check
+> 
+> Oza Pawandeep (9):
+>   PCI: Unify wait for link active into generic PCI
+>   pci-error-recovery: Add AER_FATAL handling
+>   PCI/AER: Handle ERRR_FATAL with removal and re-enumeration of devices
+>   PCI/AER: Rename error recovery to generic PCI naming
+>   PCI/AER: Factor out error reporting from AER
+>   PCI/PORTDRV: Implement generic find service
+>   PCI/PORTDRV: Implement generic find device
+>   PCI/DPC: Unify and plumb error handling into DPC
+>   PCI/DPC: Disable ERR_NONFATAL and enable ERR_FATAL for DPC
+> 
+>  Documentation/PCI/pci-error-recovery.txt |  35 ++-
+>  drivers/pci/hotplug/pciehp_hpc.c         |  20 +-
+>  drivers/pci/pci.c                        |  29 +++
+>  drivers/pci/pci.h                        |   4 +
+>  drivers/pci/pcie/Makefile                |   2 +-
+>  drivers/pci/pcie/aer/aerdrv.c            |   2 +
+>  drivers/pci/pcie/aer/aerdrv.h            |  30 ---
+>  drivers/pci/pcie/aer/aerdrv_core.c       | 317 +-------------------------
+>  drivers/pci/pcie/dpc.c                   |  58 +++--
+>  drivers/pci/pcie/err.c                   | 374 +++++++++++++++++++++++++++++++
+>  drivers/pci/pcie/portdrv.h               |   4 +
+>  drivers/pci/pcie/portdrv_core.c          |  67 ++++++
+>  include/linux/aer.h                      |   1 +
+>  include/uapi/linux/pci_regs.h            |   1 +
+>  14 files changed, 540 insertions(+), 404 deletions(-)
+>  create mode 100644 drivers/pci/pcie/err.c
+> 
+> -- 
+> 2.7.4
+> 
