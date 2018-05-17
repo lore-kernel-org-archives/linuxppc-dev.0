@@ -1,49 +1,23 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mpS60rWYzF1gW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 21:07:49 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4HB4D9v022961
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:47 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j187ph2sf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:47 -0400
-Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 17 May 2018 12:07:41 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
- kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
- jack@suse.cz, Matthew Wilcox <willy@infradead.org>,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- sergey.senozhatsky.work@gmail.com, Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>, kemi.wang@intel.com,
- Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Minchan Kim <minchan@kernel.org>, Punit Agrawal <punitagrawal@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
- npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org
-Subject: [PATCH v11 24/26] x86/mm: add speculative pagefault handling
-Date: Thu, 17 May 2018 13:06:31 +0200
-In-Reply-To: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1526555193-7242-25-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mqrK6VL2zF27L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 22:10:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/2] powerpc/32be: use stmw/lmw for registers
+ save/restore in asm
+In-Reply-To: <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
+References: <7fbae252f24ec4d30f52f57a549901fa3f799f8f.1523984745.git.christophe.leroy@c-s.fr>
+ <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
+Date: Thu, 17 May 2018 22:10:21 +1000
+Message-ID: <87zi0ymqj6.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,77 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Peter Zijlstra <peterz@infradead.org>
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> arch/powerpc/Makefile activates -mmultiple on BE PPC32 configs
+> in order to use multiple word instructions in functions entry/exit
 
-Try a speculative fault before acquiring mmap_sem, if it returns with
-VM_FAULT_RETRY continue with the mmap_sem acquisition and do the
-traditional fault.
+True, though that could be a lot simpler because the MULTIPLEWORD value
+is only used for PPC32, which is always big endian. I'll send a patch
+for that.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> The patch does the same for the asm parts, for consistency
+>
+> On processors like the 8xx on which insn fetching is pretty slow,
+> this speeds up registers save/restore
 
-[Clearing of FAULT_FLAG_ALLOW_RETRY is now done in
- handle_speculative_fault()]
-[Retry with usual fault path in the case VM_ERROR is returned by
- handle_speculative_fault(). This allows signal to be delivered]
-[Don't build SPF call if !CONFIG_SPECULATIVE_PAGE_FAULT]
-[Handle memory protection key fault]
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/x86/mm/fault.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+OK. I've always heard that they should be avoided, but that's coming
+from 64-bit land.
 
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index fd84edf82252..11944bfc805a 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -1224,7 +1224,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 	struct mm_struct *mm;
- 	int fault, major = 0;
- 	unsigned int flags = FAULT_FLAG_ALLOW_RETRY | FAULT_FLAG_KILLABLE;
--	u32 pkey;
-+	u32 pkey, *pt_pkey = &pkey;
- 
- 	tsk = current;
- 	mm = tsk->mm;
-@@ -1314,6 +1314,27 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 		flags |= FAULT_FLAG_INSTRUCTION;
- 
- 	/*
-+	 * Do not try to do a speculative page fault if the fault was due to
-+	 * protection keys since it can't be resolved.
-+	 */
-+	if (!(error_code & X86_PF_PK)) {
-+		fault = handle_speculative_fault(mm, address, flags);
-+		if (fault != VM_FAULT_RETRY) {
-+			perf_sw_event(PERF_COUNT_SW_SPF, 1, regs, address);
-+			/*
-+			 * Do not advertise for the pkey value since we don't
-+			 * know it.
-+			 * This is not a matter as we checked for X86_PF_PK
-+			 * earlier, so we should not handle pkey fault here,
-+			 * but to be sure that mm_fault_error() callees will
-+			 * not try to use it, we invalidate the pointer.
-+			 */
-+			pt_pkey = NULL;
-+			goto done;
-+		}
-+	}
-+
-+	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in
- 	 * the kernel and should generate an OOPS.  Unfortunately, in the
-@@ -1427,8 +1448,10 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
- 	}
- 
- 	up_read(&mm->mmap_sem);
-+
-+done:
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
--		mm_fault_error(regs, error_code, address, &pkey, fault);
-+		mm_fault_error(regs, error_code, address, pt_pkey, fault);
- 		return;
- 	}
- 
--- 
-2.7.4
+I guess we've been enabling this for all 32-bit targets for ever so it
+must be a reasonable option.
+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  v2: Swapped both patches in the serie to reduce number of impacted
+>      lines and added the same modification in ppc_save_regs()
+>
+>  arch/powerpc/include/asm/ppc_asm.h  |  5 +++++
+>  arch/powerpc/kernel/misc.S          | 10 ++++++++++
+>  arch/powerpc/kernel/ppc_save_regs.S |  4 ++++
+>  3 files changed, 19 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+> index 13f7f4c0e1ea..4bb765d0b758 100644
+> --- a/arch/powerpc/include/asm/ppc_asm.h
+> +++ b/arch/powerpc/include/asm/ppc_asm.h
+> @@ -80,11 +80,16 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>  #else
+>  #define SAVE_GPR(n, base)	stw	n,GPR0+4*(n)(base)
+>  #define REST_GPR(n, base)	lwz	n,GPR0+4*(n)(base)
+> +#ifdef CONFIG_CPU_BIG_ENDIAN
+> +#define SAVE_NVGPRS(base)	stmw	13, GPR0+4*13(base)
+> +#define REST_NVGPRS(base)	lmw	13, GPR0+4*13(base)
+> +#else
+>  #define SAVE_NVGPRS(base)	SAVE_GPR(13, base); SAVE_8GPRS(14, base); \
+>  				SAVE_10GPRS(22, base)
+>  #define REST_NVGPRS(base)	REST_GPR(13, base); REST_8GPRS(14, base); \
+>  				REST_10GPRS(22, base)
+
+There is no 32-bit little endian, so this is basically dead code now.
+
+Maybe there'll be a 32-bit LE port one day, but if so we can put the
+code back then.
+
+So I'll just drop the else case.
+
+>  #endif
+> +#endif
+>  
+>  #define SAVE_2GPRS(n, base)	SAVE_GPR(n, base); SAVE_GPR(n+1, base)
+>  #define SAVE_4GPRS(n, base)	SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
+> diff --git a/arch/powerpc/kernel/misc.S b/arch/powerpc/kernel/misc.S
+> index 746ee0320ad4..a316d90a5c26 100644
+> --- a/arch/powerpc/kernel/misc.S
+> +++ b/arch/powerpc/kernel/misc.S
+> @@ -49,6 +49,10 @@ _GLOBAL(setjmp)
+>  	PPC_STL	r0,0(r3)
+>  	PPC_STL	r1,SZL(r3)
+>  	PPC_STL	r2,2*SZL(r3)
+> +#if defined(CONFIG_PPC32) && defined(CONFIG_CPU_BIG_ENDIAN)
+
+And this could just be:
+
+#ifdef CONFIG_PPC32
+
+> +	mfcr	r12
+> +	stmw	r12, 3*SZL(r3)
+> +#else
+>  	mfcr	r0
+>  	PPC_STL	r0,3*SZL(r3)
+>  	PPC_STL	r13,4*SZL(r3)
+> @@ -70,10 +74,15 @@ _GLOBAL(setjmp)
+>  	PPC_STL	r29,20*SZL(r3)
+>  	PPC_STL	r30,21*SZL(r3)
+>  	PPC_STL	r31,22*SZL(r3)
+> +#endif
+
+It's a pity to end up with this basically split in half by ifdefs for
+32/64-bit, but maybe we can clean that up later.
+
+cheers
