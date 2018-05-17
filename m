@@ -1,25 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40msXB1VVqzF1f2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:26:34 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id q22-v6so2103204pff.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 06:26:33 -0700 (PDT)
-Date: Thu, 17 May 2018 23:26:19 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/lib: Remove .balign inside string functions for
- PPC32
-Message-ID: <20180517231938.4b1b8172@roar.ozlabs.ibm.com>
-In-Reply-To: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
-References: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40msYT4Q1MzF27m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:27:41 +1000 (AEST)
+Subject: Re: [PATCH v2 2/2] powerpc/32be: use stmw/lmw for registers
+ save/restore in asm
+To: Segher Boessenkool <segher@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <7fbae252f24ec4d30f52f57a549901fa3f799f8f.1523984745.git.christophe.leroy@c-s.fr>
+ <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
+ <87zi0ymqj6.fsf@concordia.ellerman.id.au>
+ <20180517131550.GR17342@gate.crashing.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <74ce3f30-6c06-e884-f1ea-1539edbf1a74@c-s.fr>
+Date: Thu, 17 May 2018 15:27:37 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180517131550.GR17342@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 17 May 2018 12:04:13 +0200 (CEST)
-Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 
-> commit 87a156fb18fe1 ("Align hot loops of some string functions")
-> degraded the performance of string functions by adding useless
-> nops
-> 
-> A simple benchmark on an 8xx calling 100000x a memchr() that
-> matches the first byte runs in 41668 TB ticks before this patch
-> and in 35986 TB ticks after this patch. So this gives an
-> improvement of approx 10%
-> 
-> Another benchmark doing the same with a memchr() matching the 128th
-> byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
-> after this patch, so regardless on the number of loops, removing
-> those useless nops improves the test by 5683 TB ticks.
-> 
-> Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  Was sent already as part of a serie optimising string functions.
->  Resending on itself as it is independent of the other changes in the
-> serie
-> 
->  arch/powerpc/lib/string.S | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-> index a787776822d8..a026d8fa8a99 100644
-> --- a/arch/powerpc/lib/string.S
-> +++ b/arch/powerpc/lib/string.S
-> @@ -23,7 +23,9 @@ _GLOBAL(strncpy)
->  	mtctr	r5
->  	addi	r6,r3,-1
->  	addi	r4,r4,-1
-> +#ifdef CONFIG_PPC64
->  	.balign 16
-> +#endif
->  1:	lbzu	r0,1(r4)
->  	cmpwi	0,r0,0
->  	stbu	r0,1(r6)
 
-The ifdefs are a bit ugly, but you can't argue with the numbers. These
-alignments should be IFETCH_ALIGN_BYTES, which is intended to optimise
-the ifetch performance when you have such a loop (although there is
-always a tradeoff for a single iteration).
+Le 17/05/2018 à 15:15, Segher Boessenkool a écrit :
+> On Thu, May 17, 2018 at 10:10:21PM +1000, Michael Ellerman wrote:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>> arch/powerpc/Makefile activates -mmultiple on BE PPC32 configs
+>>> in order to use multiple word instructions in functions entry/exit
+>>
+>> True, though that could be a lot simpler because the MULTIPLEWORD value
+>> is only used for PPC32, which is always big endian. I'll send a patch
+>> for that.
+> 
+> Do you mean in the kernel?  Many 32-bit processors can do LE, and many
+> do not implement multiple or string insns in LE mode.
+> 
+>>> The patch does the same for the asm parts, for consistency
+>>>
+>>> On processors like the 8xx on which insn fetching is pretty slow,
+>>> this speeds up registers save/restore
+>>
+>> OK. I've always heard that they should be avoided, but that's coming
+>> from 64-bit land.
+>>
+>> I guess we've been enabling this for all 32-bit targets for ever so it
+>> must be a reasonable option.
+> 
+> On 603, load multiple (and string) are one cycle slower than doing all the
+> loads separately, and store is essentially the same as separate stores.
+> On 7xx and 7xxx both loads and stores are one cycle slower as multiple
+> than as separate insns.
 
-Would it make sense to define that for 32-bit as well, and you could use
-it here instead of the ifdefs? Small CPUs could just use 0.
+That's in theory when the instructions are already in the cache.
 
-Thanks,
-Nick
+But loading several instructions into the cache takes time.
+
+Christophe
+
+> 
+> load/store multiple are nice for saving/storing registers.
+> 
+> 
+> Segher
+> 
