@@ -1,16 +1,33 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mn2p4k5yzF1Ss
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:04:18 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/lib: Remove .balign inside string functions for PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
-Date: Thu, 17 May 2018 12:04:13 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mn906jy9zF1gW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:09:40 +1000 (AEST)
+Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
+ signal semantics
+To: Ram Pai <linuxram@us.ibm.com>, Andy Lutomirski <luto@kernel.org>
+Cc: Dave Hansen <dave.hansen@intel.com>, Linux-MM <linux-mm@kvack.org>,
+ Linux API <linux-api@vger.kernel.org>, linux-x86_64@vger.kernel.org,
+ linux-arch <linux-arch@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
+ <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
+ <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
+ <20180503021058.GA5670@ram.oc3035372033.ibm.com>
+ <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
+ <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
+ <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
+ <314e1a48-db94-9b37-8793-a95a2082c9e2@redhat.com>
+ <20180516203534.GA5479@ram.oc3035372033.ibm.com>
+ <CALCETrVQs=ix-w9_MLJWikzmBG-e2Fzg61TrZLNVv5R3XFOs=g@mail.gmail.com>
+ <20180516210745.GC5479@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <1a46685f-1ca7-d215-455c-c75254959684@redhat.com>
+Date: Thu, 17 May 2018 12:09:36 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180516210745.GC5479@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,62 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 87a156fb18fe1 ("Align hot loops of some string functions")
-degraded the performance of string functions by adding useless
-nops
+On 05/16/2018 11:07 PM, Ram Pai wrote:
 
-A simple benchmark on an 8xx calling 100000x a memchr() that
-matches the first byte runs in 41668 TB ticks before this patch
-and in 35986 TB ticks after this patch. So this gives an
-improvement of approx 10%
+> what would change the key-permission-values enforced in signal-handler
+> context?  Or can it never be changed, ones set through sys_pkey_alloc()?
 
-Another benchmark doing the same with a memchr() matching the 128th
-byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
-after this patch, so regardless on the number of loops, removing
-those useless nops improves the test by 5683 TB ticks.
+The access rights can only be set by pkey_alloc and are unchanged after 
+that (so we do not have to discuss whether the signal handler access 
+rights are per-thread or not).
 
-Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- Was sent already as part of a serie optimising string functions.
- Resending on itself as it is independent of the other changes in the serie
+> I suppose key-permission-values change done in non-signal-handler context,
+> will not apply to those in signal-handler context.
 
- arch/powerpc/lib/string.S | 6 ++++++
- 1 file changed, 6 insertions(+)
+Correct, that is the plan.
 
-diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-index a787776822d8..a026d8fa8a99 100644
---- a/arch/powerpc/lib/string.S
-+++ b/arch/powerpc/lib/string.S
-@@ -23,7 +23,9 @@ _GLOBAL(strncpy)
- 	mtctr	r5
- 	addi	r6,r3,-1
- 	addi	r4,r4,-1
-+#ifdef CONFIG_PPC64
- 	.balign 16
-+#endif
- 1:	lbzu	r0,1(r4)
- 	cmpwi	0,r0,0
- 	stbu	r0,1(r6)
-@@ -43,7 +45,9 @@ _GLOBAL(strncmp)
- 	mtctr	r5
- 	addi	r5,r3,-1
- 	addi	r4,r4,-1
-+#ifdef CONFIG_PPC64
- 	.balign 16
-+#endif
- 1:	lbzu	r3,1(r5)
- 	cmpwi	1,r3,0
- 	lbzu	r0,1(r4)
-@@ -77,7 +81,9 @@ _GLOBAL(memchr)
- 	beq-	2f
- 	mtctr	r5
- 	addi	r3,r3,-1
-+#ifdef CONFIG_PPC64
- 	.balign 16
-+#endif
- 1:	lbzu	r0,1(r3)
- 	cmpw	0,r0,r4
- 	bdnzf	2,1b
--- 
-2.13.3
+> Can the signal handler change the key-permission-values from the
+> signal-handler context?
+
+Yes, changes are possible.  The access rights given to pkey_alloc only 
+specify the initial access rights when the signal handler is entered.
+
+We need to decide if we should restore it on exit from the signal 
+handler.  There is also the matter of siglongjmp, which currently does 
+not restore the current thread's access rights.  In general, this might 
+be difficult to implement because of the limited space in jmp_buf.
+
+Thanks,
+Florian
