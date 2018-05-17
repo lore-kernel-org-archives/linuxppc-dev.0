@@ -1,42 +1,22 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40myk73SGyzF27h
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 03:20:31 +1000 (AEST)
-Date: Thu, 17 May 2018 10:19:51 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Laurent Dufour <ldufour@linux.vnet.ibm.com>, akpm@linux-foundation.org,
- mhocko@kernel.org, peterz@infradead.org, kirill@shutemov.name,
- ak@linux.intel.com, dave@stgolabs.net, jack@suse.cz,
- khandual@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, paulus@samba.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, hpa@zytor.com,
- Will Deacon <will.deacon@arm.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- sergey.senozhatsky.work@gmail.com, Andrea Arcangeli <aarcange@redhat.com>,
- Alexei Starovoitov <alexei.starovoitov@gmail.com>,
- kemi.wang@intel.com, Daniel Jordan <daniel.m.jordan@oracle.com>,
- David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
- Ganesh Mahendran <opensource.ganesh@gmail.com>,
- Minchan Kim <minchan@kernel.org>, Punit Agrawal <punitagrawal@gmail.com>,
- vinayak menon <vinayakm.list@gmail.com>,
- Yang Shi <yang.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, haren@linux.vnet.ibm.com, npiggin@gmail.com,
- bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
- Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v11 01/26] mm: introduce CONFIG_SPECULATIVE_PAGE_FAULT
-Message-ID: <20180517171951.GB26718@bombadil.infradead.org>
-References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
- <1526555193-7242-2-git-send-email-ldufour@linux.vnet.ibm.com>
- <2cb8256d-5822-d94d-b0e6-c46f21d84852@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mywG4FfczF24D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 03:29:16 +1000 (AEST)
+Date: Fri, 18 May 2018 01:28:25 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: kbuild-all@01.org, linux-kbuild@vger.kernel.org,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH v4 4/4] powerpc/kbuild: move -mprofile-kernel check to
+ Kconfig
+Message-ID: <201805180157.CpCE6VYg%fengguang.wu@intel.com>
+References: <20180516141458.18996-5-npiggin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2cb8256d-5822-d94d-b0e6-c46f21d84852@infradead.org>
+In-Reply-To: <20180516141458.18996-5-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,20 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 17, 2018 at 09:36:00AM -0700, Randy Dunlap wrote:
-> > +	 If the speculative page fault fails because of a concurrency is
-> 
-> 	                                     because a concurrency is
+Hi Nicholas,
 
-While one can use concurrency as a noun, it sounds archaic to me.  I'd
-rather:
+I love your patch! Yet something to improve:
 
-	If the speculative page fault fails because a concurrent modification
-	is detected or because underlying PMD or PTE tables are not yet
+[auto build test ERROR on powerpc/next]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-> > +	 detected or because underlying PMD or PTE tables are not yet
-> > +	 allocating, it is failing its processing and a classic page fault
-> 
-> 	 allocated, the speculative page fault fails and a classic page fault
-> 
-> > +	 is then tried.
+url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/powerpc-patches-for-new-Kconfig-language/20180517-224044
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+config: powerpc-allmodconfig
+compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        make.cross ARCH=powerpc  allmodconfig
+        make.cross ARCH=powerpc 
+
+All errors (new ones prefixed by >>):
+
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:468: syntax error
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:467: invalid option
+   make[2]: *** [allmodconfig] Error 1
+   make[1]: *** [allmodconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:468: syntax error
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:467: invalid option
+   make[2]: *** [oldconfig] Error 1
+   make[1]: *** [oldconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:468: syntax error
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:467:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:467: invalid option
+   make[2]: *** [olddefconfig] Error 1
+   make[2]: Target 'oldnoconfig' not remade because of errors.
+   make[1]: *** [oldnoconfig] Error 2
+   make: *** [sub-make] Error 2
+
+vim +468 arch/powerpc/Kconfig
+
+e05c0e81 Kevin Hao       2013-07-16  443  
+3d72bbc4 Michael Neuling 2013-02-13  444  config PPC_TRANSACTIONAL_MEM
+3d72bbc4 Michael Neuling 2013-02-13  445         bool "Transactional Memory support for POWERPC"
+3d72bbc4 Michael Neuling 2013-02-13  446         depends on PPC_BOOK3S_64
+3d72bbc4 Michael Neuling 2013-02-13  447         depends on SMP
+7b37a123 Michael Neuling 2014-01-08  448         select ALTIVEC
+7b37a123 Michael Neuling 2014-01-08  449         select VSX
+3d72bbc4 Michael Neuling 2013-02-13  450         default n
+3d72bbc4 Michael Neuling 2013-02-13  451         ---help---
+3d72bbc4 Michael Neuling 2013-02-13  452           Support user-mode Transactional Memory on POWERPC.
+3d72bbc4 Michael Neuling 2013-02-13  453  
+951eedeb Nicholas Piggin 2017-05-29  454  config LD_HEAD_STUB_CATCH
+951eedeb Nicholas Piggin 2017-05-29  455  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+951eedeb Nicholas Piggin 2017-05-29  456  	depends on PPC64
+951eedeb Nicholas Piggin 2017-05-29  457  	default n
+951eedeb Nicholas Piggin 2017-05-29  458  	help
+951eedeb Nicholas Piggin 2017-05-29  459  	  Very large kernels can cause linker branch stubs to be generated by
+951eedeb Nicholas Piggin 2017-05-29  460  	  code in head_64.S, which moves the head text sections out of their
+951eedeb Nicholas Piggin 2017-05-29  461  	  specified location. This option can work around the problem.
+951eedeb Nicholas Piggin 2017-05-29  462  
+951eedeb Nicholas Piggin 2017-05-29  463  	  If unsure, say "N".
+951eedeb Nicholas Piggin 2017-05-29  464  
+8c50b72a Torsten Duwe    2016-03-03  465  config MPROFILE_KERNEL
+8c50b72a Torsten Duwe    2016-03-03  466  	depends on PPC64 && CPU_LITTLE_ENDIAN
+4421b963 Nicholas Piggin 2018-05-17 @467  	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
+8c50b72a Torsten Duwe    2016-03-03 @468  
+
+:::::: The code at line 468 was first introduced by commit
+:::::: 8c50b72a3b4f1f7cdfdfebd233b1cbd121262e65 powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel
+
+:::::: TO: Torsten Duwe <duwe@lst.de>
+:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
