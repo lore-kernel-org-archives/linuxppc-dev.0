@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mhQg2Bp3zF1TN
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 16:36:10 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mhQs3PYbzF1gP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 16:36:21 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4H6ZKSw144013
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 02:36:08 -0400
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j13ucsu11-1
+ w4H6aAEc194686
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 02:36:18 -0400
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j11pnpesg-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 02:36:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 02:36:16 -0400
 Received: from localhost
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Thu, 17 May 2018 07:36:05 +0100
+ Thu, 17 May 2018 07:35:58 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@kernel.org, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  naveen.n.rao@linux.vnet.ibm.com
-Subject: [PATCH bpf 6/6] bpf: fix JITed dump for multi-function programs via
- syscall
-Date: Thu, 17 May 2018 12:05:48 +0530
+Subject: [PATCH bpf 2/6] bpf: powerpc64: add JIT support for multi-function
+ programs
+Date: Thu, 17 May 2018 12:05:44 +0530
 In-Reply-To: <20180517063548.6373-1-sandipan@linux.vnet.ibm.com>
 References: <20180517063548.6373-1-sandipan@linux.vnet.ibm.com>
-Message-Id: <20180517063548.6373-7-sandipan@linux.vnet.ibm.com>
+Message-Id: <20180517063548.6373-3-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,125 +37,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, for multi-function programs, we cannot get the JITed
-instructions using the bpf system call's BPF_OBJ_GET_INFO_BY_FD
-command. Because of this, userspace tools such as bpftool fail
-to identify a multi-function program as being JITed or not.
+This adds support for bpf-to-bpf function calls in the powerpc64
+JIT compiler. The JIT compiler converts the bpf call instructions
+to native branch instructions. After a round of the usual passes,
+the start addresses of the JITed images for the callee functions
+are known. Finally, to fixup the branch target addresses, we need
+to perform an extra pass.
 
-With the JIT enabled and the test program running, this can be
-verified as follows:
-
-  # cat /proc/sys/net/core/bpf_jit_enable
-  1
-
-Before applying this patch:
-
-  # bpftool prog list
-  1: kprobe  name foo  tag b811aab41a39ad3d  gpl
-          loaded_at 2018-05-16T11:43:38+0530  uid 0
-          xlated 216B  not jited  memlock 65536B
-  ...
-
-  # bpftool prog dump jited id 1
-  no instructions returned
-
-After applying this patch:
-
-  # bpftool prog list
-  1: kprobe  name foo  tag b811aab41a39ad3d  gpl
-          loaded_at 2018-05-16T12:13:01+0530  uid 0
-          xlated 216B  jited 308B  memlock 65536B
-  ...
-
-  # bpftool prog dump jited id 1
-     0:   nop
-     4:   nop
-     8:   mflr    r0
-     c:   std     r0,16(r1)
-    10:   stdu    r1,-112(r1)
-    14:   std     r31,104(r1)
-    18:   addi    r31,r1,48
-    1c:   li      r3,10
-  ...
+Because of the address range in which JITed images are allocated
+on powerpc64, the offsets of the start addresses of these images
+from __bpf_call_base are as large as 64 bits. So, for a function
+call, we cannot use the imm field of the instruction to determine
+the callee's address. Instead, we use the alternative method of
+getting it from the list of function addresses in the auxillary
+data of the caller by using the off field as an index.
 
 Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
- kernel/bpf/syscall.c | 38 ++++++++++++++++++++++++++++++++------
- 1 file changed, 32 insertions(+), 6 deletions(-)
+ arch/powerpc/net/bpf_jit_comp64.c | 79 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 69 insertions(+), 10 deletions(-)
 
-diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-index 03c8437a2990..b2f70718aca7 100644
---- a/kernel/bpf/syscall.c
-+++ b/kernel/bpf/syscall.c
-@@ -1896,7 +1896,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 	struct bpf_prog_info info = {};
- 	u32 info_len = attr->info.info_len;
- 	char __user *uinsns;
--	u32 ulen;
-+	u32 ulen, i;
- 	int err;
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 1bdb1aff0619..25939892d8f7 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -256,7 +256,7 @@ static void bpf_jit_emit_tail_call(u32 *image, struct codegen_context *ctx, u32
+ /* Assemble the body code between the prologue & epilogue */
+ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			      struct codegen_context *ctx,
+-			      u32 *addrs)
++			      u32 *addrs, bool extra_pass)
+ {
+ 	const struct bpf_insn *insn = fp->insnsi;
+ 	int flen = fp->len;
+@@ -712,11 +712,23 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 			break;
  
- 	err = check_uarg_tail_zero(uinfo, sizeof(info), info_len);
-@@ -1922,7 +1922,6 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 	ulen = min_t(u32, info.nr_map_ids, ulen);
- 	if (ulen) {
- 		u32 __user *user_map_ids = u64_to_user_ptr(info.map_ids);
--		u32 i;
+ 		/*
+-		 * Call kernel helper
++		 * Call kernel helper or bpf function
+ 		 */
+ 		case BPF_JMP | BPF_CALL:
+ 			ctx->seen |= SEEN_FUNC;
+-			func = (u8 *) __bpf_call_base + imm;
++
++			/* bpf function call */
++			if (insn[i].src_reg == BPF_PSEUDO_CALL && extra_pass)
++				if (fp->aux->func && off < fp->aux->func_cnt)
++					/* use the subprog id from the off
++					 * field to lookup the callee address
++					 */
++					func = (u8 *) fp->aux->func[off]->bpf_func;
++				else
++					return -EINVAL;
++			/* kernel helper call */
++			else
++				func = (u8 *) __bpf_call_base + imm;
  
- 		for (i = 0; i < ulen; i++)
- 			if (put_user(prog->aux->used_maps[i]->id,
-@@ -1970,13 +1969,41 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 	 * for offload.
- 	 */
- 	ulen = info.jited_prog_len;
--	info.jited_prog_len = prog->jited_len;
-+	if (prog->aux->func_cnt) {
-+		info.jited_prog_len = 0;
-+		for (i = 0; i < prog->aux->func_cnt; i++)
-+			info.jited_prog_len += prog->aux->func[i]->jited_len;
-+	} else {
-+		info.jited_prog_len = prog->jited_len;
+ 			bpf_jit_emit_func_call(image, ctx, (u64)func);
+ 
+@@ -864,6 +876,14 @@ static int bpf_jit_build_body(struct bpf_prog *fp, u32 *image,
+ 	return 0;
+ }
+ 
++struct powerpc64_jit_data {
++	struct bpf_binary_header *header;
++	u32 *addrs;
++	u8 *image;
++	u32 proglen;
++	struct codegen_context ctx;
++};
++
+ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ {
+ 	u32 proglen;
+@@ -871,6 +891,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	u8 *image = NULL;
+ 	u32 *code_base;
+ 	u32 *addrs;
++	struct powerpc64_jit_data *jit_data;
+ 	struct codegen_context cgctx;
+ 	int pass;
+ 	int flen;
+@@ -878,6 +899,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	struct bpf_prog *org_fp = fp;
+ 	struct bpf_prog *tmp_fp;
+ 	bool bpf_blinded = false;
++	bool extra_pass = false;
+ 
+ 	if (!fp->jit_requested)
+ 		return org_fp;
+@@ -891,7 +913,28 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		fp = tmp_fp;
+ 	}
+ 
++	jit_data = fp->aux->jit_data;
++	if (!jit_data) {
++		jit_data = kzalloc(sizeof(*jit_data), GFP_KERNEL);
++		if (!jit_data) {
++			fp = org_fp;
++			goto out;
++		}
++		fp->aux->jit_data = jit_data;
 +	}
 +
- 	if (info.jited_prog_len && ulen) {
- 		if (bpf_dump_raw_ok()) {
- 			uinsns = u64_to_user_ptr(info.jited_prog_insns);
- 			ulen = min_t(u32, info.jited_prog_len, ulen);
--			if (copy_to_user(uinsns, prog->bpf_func, ulen))
--				return -EFAULT;
+ 	flen = fp->len;
++	addrs = jit_data->addrs;
++	if (addrs) {
++		cgctx = jit_data->ctx;
++		image = jit_data->image;
++		bpf_hdr = jit_data->header;
++		proglen = jit_data->proglen;
++		alloclen = proglen + FUNCTION_DESCR_SIZE;
++		extra_pass = true;
++		goto skip_init_ctx;
++	}
 +
-+			/* for multi-function programs, copy the JITed
-+			 * instructions for all the functions
-+			 */
-+			if (prog->aux->func_cnt) {
-+				u32 len, free;
-+				u8 *img;
-+
-+				free = ulen;
-+				for (i = 0; i < prog->aux->func_cnt; i++) {
-+					len = prog->aux->func[i]->jited_len;
-+					img = (u8 *) prog->aux->func[i]->bpf_func;
-+					if (len > free)
-+						break;
-+					if (copy_to_user(uinsns, img, len))
-+						return -EFAULT;
-+					uinsns += len;
-+					free -= len;
-+				}
-+			} else {
-+				if (copy_to_user(uinsns, prog->bpf_func, ulen))
-+					return -EFAULT;
-+			}
- 		} else {
- 			info.jited_prog_insns = 0;
- 		}
-@@ -1987,7 +2014,6 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
- 	if (info.nr_jited_ksyms && ulen) {
- 		u64 __user *user_jited_ksyms = u64_to_user_ptr(info.jited_ksyms);
- 		ulong ksym_addr;
--		u32 i;
+ 	addrs = kzalloc((flen+1) * sizeof(*addrs), GFP_KERNEL);
+ 	if (addrs == NULL) {
+ 		fp = org_fp;
+@@ -904,10 +947,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
  
- 		/* copy the address of the kernel symbol corresponding to
- 		 * each function
+ 	/* Scouting faux-generate pass 0 */
+-	if (bpf_jit_build_body(fp, 0, &cgctx, addrs)) {
++	if (bpf_jit_build_body(fp, 0, &cgctx, addrs, false)) {
+ 		/* We hit something illegal or unsupported. */
+ 		fp = org_fp;
+-		goto out;
++		goto out_addrs;
+ 	}
+ 
+ 	/*
+@@ -925,9 +968,10 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 			bpf_jit_fill_ill_insns);
+ 	if (!bpf_hdr) {
+ 		fp = org_fp;
+-		goto out;
++		goto out_addrs;
+ 	}
+ 
++skip_init_ctx:
+ 	code_base = (u32 *)(image + FUNCTION_DESCR_SIZE);
+ 
+ 	/* Code generation passes 1-2 */
+@@ -935,7 +979,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 		/* Now build the prologue, body code & epilogue for real. */
+ 		cgctx.idx = 0;
+ 		bpf_jit_build_prologue(code_base, &cgctx);
+-		bpf_jit_build_body(fp, code_base, &cgctx, addrs);
++		bpf_jit_build_body(fp, code_base, &cgctx, addrs, extra_pass);
+ 		bpf_jit_build_epilogue(code_base, &cgctx);
+ 
+ 		if (bpf_jit_enable > 1)
+@@ -956,15 +1000,30 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+ 	((u64 *)image)[1] = local_paca->kernel_toc;
+ #endif
+ 
++	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
++
++	if (!fp->is_func || extra_pass) {
++		bpf_jit_binary_lock_ro(bpf_hdr);
++	} else {
++		jit_data->addrs = addrs;
++		jit_data->ctx = cgctx;
++		jit_data->proglen = proglen;
++		jit_data->image = image;
++		jit_data->header = bpf_hdr;
++	}
++
+ 	fp->bpf_func = (void *)image;
+ 	fp->jited = 1;
+ 	fp->jited_len = alloclen;
+ 
+-	bpf_flush_icache(bpf_hdr, (u8 *)bpf_hdr + (bpf_hdr->pages * PAGE_SIZE));
++	if (!fp->is_func || extra_pass) {
++out_addrs:
++		kfree(addrs);
++		kfree(jit_data);
++		fp->aux->jit_data = NULL;
++	}
+ 
+ out:
+-	kfree(addrs);
+-
+ 	if (bpf_blinded)
+ 		bpf_jit_prog_release_other(fp, fp == org_fp ? tmp_fp : org_fp);
+ 
 -- 
 2.14.3
