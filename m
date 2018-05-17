@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mpRT2WvBzF1fk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 21:07:17 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mpRc0t49zF1y4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 21:07:23 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4HB587M103448
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:15 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j17g8u5p8-1
+ w4HB5707059189
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:22 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j15691vns-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 07:07:22 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Thu, 17 May 2018 12:07:11 +0100
+ Thu, 17 May 2018 12:07:17 +0100
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: akpm@linux-foundation.org, mhocko@kernel.org, peterz@infradead.org,
  kirill@shutemov.name, ak@linux.intel.com, dave@stgolabs.net,
@@ -39,11 +39,12 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, haren@linux.vnet.ibm.com,
  npiggin@gmail.com, bsingharora@gmail.com, paulmck@linux.vnet.ibm.com,
  Tim Chen <tim.c.chen@linux.intel.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org
-Subject: [PATCH v11 12/26] mm: protect SPF handler against anon_vma changes
-Date: Thu, 17 May 2018 13:06:19 +0200
+Subject: [PATCH v11 14/26] mm/migrate: Pass vm_fault pointer to
+ migrate_misplaced_page()
+Date: Thu, 17 May 2018 13:06:21 +0200
 In-Reply-To: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
 References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Message-Id: <1526555193-7242-13-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1526555193-7242-15-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,55 +54,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The speculative page fault handler must be protected against anon_vma
-changes. This is because page_add_new_anon_rmap() is called during the
-speculative path.
+migrate_misplaced_page() is only called during the page fault handling so
+it's better to pass the pointer to the struct vm_fault instead of the vma.
 
-In addition, don't try speculative page fault if the VMA don't have an
-anon_vma structure allocated because its allocation should be
-protected by the mmap_sem.
+This way during the speculative page fault path the saved vma->vm_flags
+could be used.
 
-In __vma_adjust() when importer->anon_vma is set, there is no need to
-protect against speculative page faults since speculative page fault
-is aborted if the vma->anon_vma is not set.
-
-When calling page_add_new_anon_rmap() vma->anon_vma is necessarily
-valid since we checked for it when locking the pte and the anon_vma is
-removed once the pte is unlocked. So even if the speculative page
-fault handler is running concurrently with do_unmap(), as the pte is
-locked in unmap_region() - through unmap_vmas() - and the anon_vma
-unlinked later, because we check for the vma sequence counter which is
-updated in unmap_page_range() before locking the pte, and then in
-free_pgtables() so when locking the pte the change will be detected.
-
+Acked-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- mm/memory.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ include/linux/migrate.h | 4 ++--
+ mm/memory.c             | 2 +-
+ mm/migrate.c            | 4 ++--
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/include/linux/migrate.h b/include/linux/migrate.h
+index f2b4abbca55e..fd4c3ab7bd9c 100644
+--- a/include/linux/migrate.h
++++ b/include/linux/migrate.h
+@@ -126,14 +126,14 @@ static inline void __ClearPageMovable(struct page *page)
+ #ifdef CONFIG_NUMA_BALANCING
+ extern bool pmd_trans_migrating(pmd_t pmd);
+ extern int migrate_misplaced_page(struct page *page,
+-				  struct vm_area_struct *vma, int node);
++				  struct vm_fault *vmf, int node);
+ #else
+ static inline bool pmd_trans_migrating(pmd_t pmd)
+ {
+ 	return false;
+ }
+ static inline int migrate_misplaced_page(struct page *page,
+-					 struct vm_area_struct *vma, int node)
++					 struct vm_fault *vmf, int node)
+ {
+ 	return -EAGAIN; /* can't migrate now */
+ }
 diff --git a/mm/memory.c b/mm/memory.c
-index 551a1916da5d..d0b5f14cfe69 100644
+index 9dc455ae550c..cb6310b74cfb 100644
 --- a/mm/memory.c
 +++ b/mm/memory.c
-@@ -624,7 +624,9 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 		 * Hide vma from rmap and truncate_pagecache before freeing
- 		 * pgtables
- 		 */
-+		vm_write_begin(vma);
- 		unlink_anon_vmas(vma);
-+		vm_write_end(vma);
- 		unlink_file_vma(vma);
+@@ -3904,7 +3904,7 @@ static int do_numa_page(struct vm_fault *vmf)
+ 	}
  
- 		if (is_vm_hugetlb_page(vma)) {
-@@ -638,7 +640,9 @@ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *vma,
- 			       && !is_vm_hugetlb_page(next)) {
- 				vma = next;
- 				next = vma->vm_next;
-+				vm_write_begin(vma);
- 				unlink_anon_vmas(vma);
-+				vm_write_end(vma);
- 				unlink_file_vma(vma);
- 			}
- 			free_pgd_range(tlb, addr, vma->vm_end,
+ 	/* Migrate to the requested node */
+-	migrated = migrate_misplaced_page(page, vma, target_nid);
++	migrated = migrate_misplaced_page(page, vmf, target_nid);
+ 	if (migrated) {
+ 		page_nid = target_nid;
+ 		flags |= TNF_MIGRATED;
+diff --git a/mm/migrate.c b/mm/migrate.c
+index ae3d0faf72cb..884c57a16b7a 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -1945,7 +1945,7 @@ bool pmd_trans_migrating(pmd_t pmd)
+  * node. Caller is expected to have an elevated reference count on
+  * the page that will be dropped by this function before returning.
+  */
+-int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
++int migrate_misplaced_page(struct page *page, struct vm_fault *vmf,
+ 			   int node)
+ {
+ 	pg_data_t *pgdat = NODE_DATA(node);
+@@ -1958,7 +1958,7 @@ int migrate_misplaced_page(struct page *page, struct vm_area_struct *vma,
+ 	 * with execute permissions as they are probably shared libraries.
+ 	 */
+ 	if (page_mapcount(page) != 1 && page_is_file_cache(page) &&
+-	    (vma->vm_flags & VM_EXEC))
++	    (vmf->vma_flags & VM_EXEC))
+ 		goto out;
+ 
+ 	/*
 -- 
 2.7.4
