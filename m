@@ -1,23 +1,23 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40n5Vy2gW9zF292
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:26:18 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4HMOKLu107679
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:26:15 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j1jeu8519-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40n5W36CC4zF292
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:26:23 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4HMO6xr111813
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:26:20 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j1hdcah4n-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:26:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 18:26:20 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 17 May 2018 16:26:15 -0600
+ Thu, 17 May 2018 16:26:19 -0600
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
@@ -26,12 +26,11 @@ Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 In-Reply-To: <18541bb5-1e79-09d9-767f-1af09370e076@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC v4 1/3] powerpc migration/drmem: Modify DRMEM code to export
- more features
-Date: Thu, 17 May 2018 17:26:11 -0500
+Subject: [RFC v4 2/3] powerpc migration/cpu: Associativity & cpu changes
+Date: Thu, 17 May 2018 17:26:16 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <a4d036f9-990d-b1db-3de9-aa179c030743@linux.vnet.ibm.com>
+Message-Id: <17dadef4-f7f3-f5b4-8ead-f194dd5cdf2b@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,260 +40,332 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc migration/drmem: Export many of the functions of DRMEM to
-parse "ibm,dynamic-memory" and "ibm,dynamic-memory-v2" during
-hotplug operations and for Post Migration events.
+powerpc migration/cpu: Now apply changes to the associativity of cpus
+for the topology of LPARS in Post Migration events.  Recognize more
+changes to the associativity of memory blocks described by the
+'cpu' properties when processing the topology of LPARS in Post Migration
+events.  Previous efforts only recognized whether a memory block's
+assignment had changed in the property.  Changes here include:
 
-Also modify the DRMEM initialization code to allow it to,
-
-* Be called after system initialization
-* Provide a separate user copy of the LMB array that is produces
-* Free the user copy upon request
+* Provide hotplug CPU 'readd by index' operation
+* Checking for changes in cpu associativity and making 'readd' calls
+  when differences are observed.
+* Queue up  changes to CPU properties so that they may take place
+  after all PowerPC device-tree changes have been applied i.e. after
+  the device hotplug is released in the mobility code.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
-Changes in RFC:
-  -- Separate DRMEM changes into a standalone patch
-  -- Do not export excess functions.  Make exported names more explicit.
-  -- Add new iterator to work through a pair of drmem_info arrays.
-  -- Modify DRMEM code to replace usages of dt_root_addr_cells, and
-     dt_mem_next_cell, as these are only available at first boot.
+Changes include:
+  -- Rearrange patches to co-locate CPU property-related changes.
+  -- Modify dlpar_cpu_add & dlpar_cpu_remove to skip DRC index acquire
+     or release operations during the CPU readd process.
+  -- Correct a bug in DRC index selection for queued operation.
   -- Rebase to 4.17-rc5 kernel
 ---
- arch/powerpc/include/asm/drmem.h |   10 +++++
- arch/powerpc/mm/drmem.c          |   78 +++++++++++++++++++++++++++-----------
- 2 files changed, 66 insertions(+), 22 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |  123 +++++++++++++++++++-------
+ arch/powerpc/platforms/pseries/mobility.c    |    3 +
+ 2 files changed, 95 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index ce242b9..c964b89 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -35,6 +35,13 @@ struct drmem_lmb_info {
- 		&drmem_info->lmbs[0],				\
- 		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index a408217..23d4cb8 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -474,7 +474,7 @@ static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
+ 				&cdata);
+ }
  
-+#define for_each_pair_drmem_lmb(dinfo1, lmb1, dinfo2, lmb2)	\
-+	for ((lmb1) = (&dinfo1->lmbs[0]),			\
-+	     (lmb2) = (&dinfo2->lmbs[0]);			\
-+             ((lmb1) <= (&dinfo1->lmbs[dinfo1->n_lmbs - 1])) &&	\
-+             ((lmb2) <= (&dinfo2->lmbs[dinfo2->n_lmbs - 1]));	\
-+	     (lmb1)++, (lmb2)++)
-+
- /*
-  * The of_drconf_cell_v1 struct defines the layout of the LMB data
-  * specified in the ibm,dynamic-memory device tree property.
-@@ -94,6 +101,9 @@ void __init walk_drmem_lmbs(struct device_node *dn,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
- int drmem_update_dt(void);
- 
-+struct drmem_lmb_info* drmem_init_lmbs(struct property *prop);
-+void drmem_lmbs_free(struct drmem_lmb_info *dinfo);
-+
- #ifdef CONFIG_PPC_PSERIES
- void __init walk_drmem_lmbs_early(unsigned long node,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 3f18036..d9b281c 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -20,6 +20,7 @@
- 
- static struct drmem_lmb_info __drmem_info;
- struct drmem_lmb_info *drmem_info = &__drmem_info;
-+static int n_root_addr_cells;
- 
- u64 drmem_lmb_memory_max(void)
+-static ssize_t dlpar_cpu_add(u32 drc_index)
++static ssize_t dlpar_cpu_add(u32 drc_index, bool acquire_drc)
  {
-@@ -193,12 +194,13 @@ int drmem_update_dt(void)
+ 	struct device_node *dn, *parent;
+ 	int rc, saved_rc;
+@@ -499,19 +499,22 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = dlpar_acquire_drc(drc_index);
+-	if (rc) {
+-		pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
+-			rc, drc_index);
+-		of_node_put(parent);
+-		return -EINVAL;
++	if (acquire_drc) {
++		rc = dlpar_acquire_drc(drc_index);
++		if (rc) {
++			pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
++				rc, drc_index);
++			of_node_put(parent);
++			return -EINVAL;
++		}
+ 	}
+ 
+ 	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
+ 	if (!dn) {
+ 		pr_warn("Failed call to configure-connector, drc index: %x\n",
+ 			drc_index);
+-		dlpar_release_drc(drc_index);
++		if (acquire_drc)
++			dlpar_release_drc(drc_index);
+ 		of_node_put(parent);
+ 		return -EINVAL;
+ 	}
+@@ -526,8 +529,9 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+ 		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
+ 			dn->name, rc, drc_index);
+ 
+-		rc = dlpar_release_drc(drc_index);
+-		if (!rc)
++		if (acquire_drc)
++			rc = dlpar_release_drc(drc_index);
++		if (!rc || acquire_drc)
+ 			dlpar_free_cc_nodes(dn);
+ 
+ 		return saved_rc;
+@@ -540,7 +544,7 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+ 			dn->name, rc, drc_index);
+ 
+ 		rc = dlpar_detach_node(dn);
+-		if (!rc)
++		if (!rc && acquire_drc)
+ 			dlpar_release_drc(drc_index);
+ 
+ 		return saved_rc;
+@@ -608,12 +612,13 @@ static int dlpar_offline_cpu(struct device_node *dn)
+ 
+ }
+ 
+-static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
++static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index,
++				bool release_drc)
+ {
+ 	int rc;
+ 
+-	pr_debug("Attempting to remove CPU %s, drc index: %x\n",
+-		 dn->name, drc_index);
++	pr_debug("Attempting to remove CPU %s, drc index: %x (%d)\n",
++		 dn->name, drc_index, release_drc);
+ 
+ 	rc = dlpar_offline_cpu(dn);
+ 	if (rc) {
+@@ -621,12 +626,14 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = dlpar_release_drc(drc_index);
+-	if (rc) {
+-		pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
+-			drc_index, dn->name, rc);
+-		dlpar_online_cpu(dn);
+-		return rc;
++	if (release_drc) {
++		rc = dlpar_release_drc(drc_index);
++		if (rc) {
++			pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
++				drc_index, dn->name, rc);
++			dlpar_online_cpu(dn);
++			return rc;
++		}
+ 	}
+ 
+ 	rc = dlpar_detach_node(dn);
+@@ -635,7 +642,8 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+ 
+ 		pr_warn("Failed to detach CPU %s, rc: %d", dn->name, rc);
+ 
+-		rc = dlpar_acquire_drc(drc_index);
++		if (release_drc)
++			rc = dlpar_acquire_drc(drc_index);
+ 		if (!rc)
+ 			dlpar_online_cpu(dn);
+ 
+@@ -664,7 +672,7 @@ static struct device_node *cpu_drc_index_to_dn(u32 drc_index)
+ 	return dn;
+ }
+ 
+-static int dlpar_cpu_remove_by_index(u32 drc_index)
++static int dlpar_cpu_remove_by_index(u32 drc_index, bool release_drc)
+ {
+ 	struct device_node *dn;
+ 	int rc;
+@@ -676,10 +684,30 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+ 		return -ENODEV;
+ 	}
+ 
+-	rc = dlpar_cpu_remove(dn, drc_index);
++	rc = dlpar_cpu_remove(dn, drc_index, release_drc);
+ 	of_node_put(dn);
+ 	return rc;
+ }
++ 
++static int dlpar_cpu_readd_by_index(u32 drc_index)
++{
++	int rc = 0;
++
++	pr_info("Attempting to re-add CPU, drc index %x\n", drc_index);
++
++	rc = dlpar_cpu_remove_by_index(drc_index, false);
++	if (!rc)
++		rc = dlpar_cpu_add(drc_index, false);
++
++	if (rc)
++		pr_info("Failed to update cpu at drc_index %lx\n",
++				(unsigned long int)drc_index);
++	else
++		pr_info("CPU at drc_index %lx was updated\n",
++				(unsigned long int)drc_index);
++
++	return rc;
++}
+ 
+ static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+ {
+@@ -741,7 +769,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+ 	}
+ 
+ 	for (i = 0; i < cpus_to_remove; i++) {
+-		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
++		rc = dlpar_cpu_remove_by_index(cpu_drcs[i], true);
+ 		if (rc)
+ 			break;
+ 
+@@ -752,7 +780,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+ 		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
+ 
+ 		for (i = 0; i < cpus_removed; i++)
+-			dlpar_cpu_add(cpu_drcs[i]);
++			dlpar_cpu_add(cpu_drcs[i], true);
+ 
+ 		rc = -EINVAL;
+ 	} else {
+@@ -843,7 +871,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+ 	}
+ 
+ 	for (i = 0; i < cpus_to_add; i++) {
+-		rc = dlpar_cpu_add(cpu_drcs[i]);
++		rc = dlpar_cpu_add(cpu_drcs[i], true);
+ 		if (rc)
+ 			break;
+ 
+@@ -854,7 +882,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+ 		pr_warn("CPU hot-add failed, removing any added CPUs\n");
+ 
+ 		for (i = 0; i < cpus_added; i++)
+-			dlpar_cpu_remove_by_index(cpu_drcs[i]);
++			dlpar_cpu_remove_by_index(cpu_drcs[i], true);
+ 
+ 		rc = -EINVAL;
+ 	} else {
+@@ -880,7 +908,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+ 			rc = dlpar_cpu_remove_by_count(count);
+ 		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+-			rc = dlpar_cpu_remove_by_index(drc_index);
++			rc = dlpar_cpu_remove_by_index(drc_index, true);
+ 		else
+ 			rc = -EINVAL;
+ 		break;
+@@ -888,10 +916,13 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+ 			rc = dlpar_cpu_add_by_count(count);
+ 		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+-			rc = dlpar_cpu_add(drc_index);
++			rc = dlpar_cpu_add(drc_index, true);
+ 		else
+ 			rc = -EINVAL;
+ 		break;
++	case PSERIES_HP_ELOG_ACTION_READD:
++		rc = dlpar_cpu_readd_by_index(drc_index);
++		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+ 		rc = -EINVAL;
+@@ -913,7 +944,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+ 	if (rc)
+ 		return -EINVAL;
+ 
+-	rc = dlpar_cpu_add(drc_index);
++	rc = dlpar_cpu_add(drc_index, true);
+ 
+ 	return rc ? rc : count;
+ }
+@@ -934,7 +965,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+ 		return -EINVAL;
+ 	}
+ 
+-	rc = dlpar_cpu_remove(dn, drc_index);
++	rc = dlpar_cpu_remove(dn, drc_index, true);
+ 	of_node_put(dn);
+ 
+ 	return rc ? rc : count;
+@@ -942,12 +973,38 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+ 
+ #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
+ 
++static int pseries_update_cpu(struct of_reconfig_data *pr)
++{
++	/* So far, we only handle the 'ibm,associativity' property,
++	 * here.
++	 */
++	struct pseries_hp_errorlog *hp_elog;
++
++        hp_elog = kzalloc(sizeof(*hp_elog), GFP_KERNEL);
++        if(!hp_elog)
++                return -ENOMEM;
++
++	hp_elog->resource = PSERIES_HP_ELOG_RESOURCE_CPU;
++	hp_elog->action = PSERIES_HP_ELOG_ACTION_READD;
++	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
++	hp_elog->_drc_u.drc_index = be32_to_cpu(pr->dn->phandle);
++
++	queue_hotplug_event(hp_elog, NULL, NULL);
++
++	kfree(hp_elog);
++
++	return 0;
++}
++
+ static int pseries_smp_notifier(struct notifier_block *nb,
+ 				unsigned long action, void *data)
+ {
+ 	struct of_reconfig_data *rd = data;
+ 	int err = 0;
+ 
++	if (strcmp(rd->dn->type, "cpu"))
++		return notifier_from_errno(err);
++
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 		err = pseries_add_processor(rd->dn);
+@@ -955,6 +1012,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+ 	case OF_RECONFIG_DETACH_NODE:
+ 		pseries_remove_processor(rd->dn);
+ 		break;
++	case OF_RECONFIG_UPDATE_PROPERTY:
++		if (!strcmp(rd->prop->name, "ibm,associativity"))
++			err = pseries_update_cpu(rd);
++		break;
+ 	}
+ 	return notifier_from_errno(err);
+ }
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 8a8033a..6d98f84 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -283,6 +283,8 @@ int pseries_devicetree_update(s32 scope)
+ 	if (!rtas_buf)
+ 		return -ENOMEM;
+ 
++	lock_device_hotplug();
++
+ 	do {
+ 		rc = mobility_rtas_call(update_nodes_token, rtas_buf, scope);
+ 		if (rc && rc != 1)
+@@ -321,6 +323,7 @@ int pseries_devicetree_update(s32 scope)
+ 	} while (rc == 1);
+ 
+ 	kfree(rtas_buf);
++	unlock_device_hotplug();
  	return rc;
  }
  
--static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
-+static void read_drconf_v1_cell(struct drmem_lmb *lmb,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
--	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	lmb->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	lmb->drc_index = of_read_number(p++, 1);
- 
- 	p++; /* skip reserved field */
-@@ -209,7 +211,7 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
-+static void __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *data,
- 			void (*func)(struct drmem_lmb *, const __be32 **))
- {
- 	struct drmem_lmb lmb;
-@@ -221,17 +223,18 @@ static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
- 
- 	for (i = 0; i < n_lmbs; i++) {
- 		read_drconf_v1_cell(&lmb, &prop);
--		func(&lmb, &usm);
-+		func(&lmb, &data);
- 	}
- }
- 
--static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
-+static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
- 	dr_cell->seq_lmbs = of_read_number(p++, 1);
--	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	dr_cell->drc_index = of_read_number(p++, 1);
- 	dr_cell->aa_index = of_read_number(p++, 1);
- 	dr_cell->flags = of_read_number(p++, 1);
-@@ -239,7 +242,7 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
-+static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *data,
- 			void (*func)(struct drmem_lmb *, const __be32 **))
- {
- 	struct of_drconf_cell_v2 dr_cell;
-@@ -263,7 +266,7 @@ static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
- 
--			func(&lmb, &usm);
-+			func(&lmb, &data);
- 		}
- 	}
- }
-@@ -275,6 +278,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
- 	const __be32 *prop, *usm;
- 	int len;
- 
-+	if (n_root_addr_cells == 0)
-+		n_root_addr_cells = dt_root_addr_cells;
-+
- 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
- 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
- 		return;
-@@ -353,24 +359,26 @@ void __init walk_drmem_lmbs(struct device_node *dn,
- 	}
- }
- 
--static void __init init_drmem_v1_lmbs(const __be32 *prop)
-+static void init_drmem_v1_lmbs(const __be32 *prop,
-+			struct drmem_lmb_info *dinfo)
- {
- 	struct drmem_lmb *lmb;
- 
--	drmem_info->n_lmbs = of_read_number(prop++, 1);
--	if (drmem_info->n_lmbs == 0)
-+	dinfo->n_lmbs = of_read_number(prop++, 1);
-+	if (dinfo->n_lmbs == 0)
- 		return;
- 
--	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
-+	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
- 				   GFP_KERNEL);
--	if (!drmem_info->lmbs)
-+	if (!dinfo->lmbs)
- 		return;
- 
- 	for_each_drmem_lmb(lmb)
- 		read_drconf_v1_cell(lmb, &prop);
- }
- 
--static void __init init_drmem_v2_lmbs(const __be32 *prop)
-+static void init_drmem_v2_lmbs(const __be32 *prop,
-+			struct drmem_lmb_info *dinfo)
- {
- 	struct drmem_lmb *lmb;
- 	struct of_drconf_cell_v2 dr_cell;
-@@ -386,12 +394,12 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
- 	p = prop;
- 	for (i = 0; i < lmb_sets; i++) {
- 		read_drconf_v2_cell(&dr_cell, &p);
--		drmem_info->n_lmbs += dr_cell.seq_lmbs;
-+		dinfo->n_lmbs += dr_cell.seq_lmbs;
- 	}
- 
--	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
-+	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
- 				   GFP_KERNEL);
--	if (!drmem_info->lmbs)
-+	if (!dinfo->lmbs)
- 		return;
- 
- 	/* second pass, read in the LMB information */
-@@ -402,25 +410,51 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
- 		read_drconf_v2_cell(&dr_cell, &p);
- 
- 		for (j = 0; j < dr_cell.seq_lmbs; j++) {
--			lmb = &drmem_info->lmbs[lmb_index++];
-+			lmb = &dinfo->lmbs[lmb_index++];
- 
- 			lmb->base_addr = dr_cell.base_addr;
--			dr_cell.base_addr += drmem_info->lmb_size;
-+			dr_cell.base_addr += dinfo->lmb_size;
- 
- 			lmb->drc_index = dr_cell.drc_index;
- 			dr_cell.drc_index++;
- 
- 			lmb->aa_index = dr_cell.aa_index;
--			lmb->flags = dr_cell.flags;
- 		}
- 	}
- }
- 
-+void drmem_lmbs_free(struct drmem_lmb_info *dinfo)
-+{
-+	if (dinfo) {
-+		kfree(dinfo->lmbs);
-+		kfree(dinfo);
-+	}
-+}
-+
-+struct drmem_lmb_info* drmem_init_lmbs(struct property *prop)
-+{
-+	struct drmem_lmb_info *dinfo;
-+
-+	dinfo = kzalloc(sizeof(*dinfo), GFP_KERNEL);
-+	if (!dinfo)
-+		return NULL;
-+
-+	if (!strcmp("ibm,dynamic-memory", prop->name))
-+		init_drmem_v1_lmbs(prop->value, dinfo);
-+	else if (!strcmp("ibm,dynamic-memory-v2", prop->name))
-+		init_drmem_v2_lmbs(prop->value, dinfo);
-+
-+	return dinfo;
-+}
-+
- static int __init drmem_init(void)
- {
- 	struct device_node *dn;
- 	const __be32 *prop;
- 
-+	if (n_root_addr_cells == 0)
-+		n_root_addr_cells = dt_root_addr_cells;
-+
- 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (!dn) {
- 		pr_info("No dynamic reconfiguration memory found\n");
-@@ -434,11 +468,11 @@ static int __init drmem_init(void)
- 
- 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
- 	if (prop) {
--		init_drmem_v1_lmbs(prop);
-+		init_drmem_v1_lmbs(prop, drmem_info);
- 	} else {
- 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
- 		if (prop)
--			init_drmem_v2_lmbs(prop);
-+			init_drmem_v2_lmbs(prop, drmem_info);
- 	}
- 
- 	of_node_put(dn);
