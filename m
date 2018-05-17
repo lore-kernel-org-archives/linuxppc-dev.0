@@ -1,33 +1,17 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mnBv6lhYzF24j
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:11:19 +1000 (AEST)
-Subject: Re: [PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change
- signal semantics
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>,
- Linux-MM <linux-mm@kvack.org>, Linux API <linux-api@vger.kernel.org>,
- linux-x86_64@vger.kernel.org, linux-arch <linux-arch@vger.kernel.org>,
- X86 ML <x86@kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <57459C6F-C8BA-4E2D-99BA-64F35C11FC05@amacapital.net>
- <6286ba0a-7e09-b4ec-e31f-bd091f5940ff@redhat.com>
- <CALCETrVrm6yGiv6_z7RqdeB-324RoeMmjpf1EHsrGOh+iKb7+A@mail.gmail.com>
- <b2df1386-9df9-2db8-0a25-51bf5ff63592@redhat.com>
- <CALCETrW_Dt-HoG4keFJd8DSD=tvyR+bBCFrBDYdym4GQbfng4A@mail.gmail.com>
- <20180503021058.GA5670@ram.oc3035372033.ibm.com>
- <CALCETrXRQF08exQVZqtTLOKbC8Ywq5x4EYH_1D7r5v9bdOSwbg@mail.gmail.com>
- <927c8325-4c98-d7af-b921-6aafcf8fe992@redhat.com>
- <CALCETrX46wR_MDW=m9SVm=ejQmPAmD3+2oC3iapf75bPhnEAWQ@mail.gmail.com>
- <314e1a48-db94-9b37-8793-a95a2082c9e2@redhat.com>
- <20180516203534.GA5479@ram.oc3035372033.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <9c7b1c17-5c0e-11aa-0803-a0f503087b37@redhat.com>
-Date: Thu, 17 May 2018 12:11:15 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180516203534.GA5479@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3R2LYLzF1Rh
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:49:55 +1000 (AEST)
+Message-Id: <cover.1526553552.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 0/5] powerpc/lib: Optimisation of string functions (mainly
+ for PPC32)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 17 May 2018 12:49:48 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,18 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/16/2018 10:35 PM, Ram Pai wrote:
-> So let me see if I understand the overall idea.
-> 
-> Application can allocate new keys through a new syscall
-> sys_pkey_alloc_1(flags, init_val, sig_init_val)
-> 
-> 'sig_init_val' is the permission-state of the key in signal context.
+This serie intend to optimise string functions for PPC32 in the
+same spirit as already done on PPC64.
 
-I would keep the existing system call and just add a flag, say 
-PKEY_ALLOC_SETSIGNAL.  If the current thread needs different access 
-rights, it can set those rights just after pkey_alloc returns.  There is 
-no race that matters here, I think.
+The first patch moves PPC32 specific functions from string.S into
+a dedicated file named string_32.S
+The second patch rewrites __clear_user() by using dcbz intruction
+The third patch rewrites memcmp() to compare 32 bits words instead
+of comparing byte per byte.
+The fourth patch removes NUL size verification from the assembly
+functions so that GCC can optimise them out when the size is constant
+The last patch inlines memcmp() for constant sizes <= 16
 
-Thanks,
-Florian
+As shown in each individual commit log, second, third and last patches
+provides significant improvment.
+
+Changes in v2:
+- Moved out the patch removing the hot loop alignment on PPC32
+- Squashed the changes related to NUL size verification in a single patch
+- Reordered the patches in a more logical order
+- Modified the inlining patch to avoid warning about impossibility to version symbols.
+
+Christophe Leroy (5):
+  powerpc/lib: move PPC32 specific functions out of string.S
+  powerpc/lib: optimise 32 bits __clear_user()
+  powerpc/lib: optimise PPC32 memcmp
+  powerpc/lib: inline string functions NUL size verification
+  powerpc/lib: inline memcmp() for small constant sizes
+
+ arch/powerpc/include/asm/string.h      |  91 ++++++++++++++++++++-
+ arch/powerpc/kernel/prom_init_check.sh |   2 +-
+ arch/powerpc/lib/Makefile              |   5 +-
+ arch/powerpc/lib/memcmp_64.S           |   8 ++
+ arch/powerpc/lib/string.S              |  75 ++++-------------
+ arch/powerpc/lib/string_32.S           | 145 +++++++++++++++++++++++++++++++++
+ 6 files changed, 259 insertions(+), 67 deletions(-)
+ create mode 100644 arch/powerpc/lib/string_32.S
+
+-- 
+2.13.3
