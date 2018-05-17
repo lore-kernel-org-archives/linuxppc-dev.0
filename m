@@ -2,26 +2,22 @@ Return-Path: <segher@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mtv23pC1zF28B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:27:58 +1000 (AEST)
-Date: Thu, 17 May 2018 09:27:32 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mv7Z1lW9zF1y4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:38:49 +1000 (AEST)
+Date: Thu, 17 May 2018 09:38:10 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
+ Shile Zhang <shile.zhang@nokia.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/2] powerpc/32be: use stmw/lmw for registers
- save/restore in asm
-Message-ID: <20180517142732.GU17342@gate.crashing.org>
-References: <7fbae252f24ec4d30f52f57a549901fa3f799f8f.1523984745.git.christophe.leroy@c-s.fr>
- <a94e38e1dbe0c38ce5b363fac29ab6e65fd9985a.1523984745.git.christophe.leroy@c-s.fr>
- <87zi0ymqj6.fsf@concordia.ellerman.id.au>
- <20180517131550.GR17342@gate.crashing.org>
- <74ce3f30-6c06-e884-f1ea-1539edbf1a74@c-s.fr>
+Subject: Re: [PATCH] Revert "powerpc/64: Fix checksum folding in csum_add()"
+Message-ID: <20180517143810.GV17342@gate.crashing.org>
+References: <20180410063437.217D2653BC@po15720vm.idsi0.si.c-s.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <74ce3f30-6c06-e884-f1ea-1539edbf1a74@c-s.fr>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180410063437.217D2653BC@po15720vm.idsi0.si.c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 17, 2018 at 03:27:37PM +0200, Christophe LEROY wrote:
-> Le 17/05/2018 à 15:15, Segher Boessenkool a écrit :
-> >>I guess we've been enabling this for all 32-bit targets for ever so it
-> >>must be a reasonable option.
-> >
-> >On 603, load multiple (and string) are one cycle slower than doing all the
-> >loads separately, and store is essentially the same as separate stores.
-> >On 7xx and 7xxx both loads and stores are one cycle slower as multiple
-> >than as separate insns.
+On Tue, Apr 10, 2018 at 08:34:37AM +0200, Christophe Leroy wrote:
+> This reverts commit 6ad966d7303b70165228dba1ee8da1a05c10eefe.
 > 
-> That's in theory when the instructions are already in the cache.
+> That commit was pointless, because csum_add() sums two 32 bits
+> values, so the sum is 0x1fffffffe at the maximum.
+> And then when adding upper part (1) and lower part (0xfffffffe),
+> the result is 0xffffffff which doesn't carry.
+> Any lower value will not carry either.
 > 
-> But loading several instructions into the cache takes time.
-
-Yes, of course, that's why I wrote:
-
-> >load/store multiple are nice for saving/storing registers.
+> And behind the fact that this commit is useless, it also kills the
+> whole purpose of having an arch specific inline csum_add()
+> because the resulting code gets even worse than what is obtained
+> with the generic implementation of csum_add()
 
 :-)
+
+> And the reverted implementation for PPC64 gives:
+> 
+> 0000000000000240 <.csum_add>:
+>  240:	7c 84 1a 14 	add     r4,r4,r3
+>  244:	78 80 00 22 	rldicl  r0,r4,32,32
+>  248:	7c 80 22 14 	add     r4,r0,r4
+>  24c:	78 83 00 20 	clrldi  r3,r4,32
+>  250:	4e 80 00 20 	blr
+
+If you really, really, *really* want to optimise this you could
+make it:
+
+	rldimi r3,r3,0,32
+	rldimi r4,r4,0,32
+	add r3,r3,r4
+	srdi r3,r3,32
+	blr
+
+which is the same size, but has a shorter critical path length.  Very
+analogous to how you fold 64->32.
 
 
 Segher
