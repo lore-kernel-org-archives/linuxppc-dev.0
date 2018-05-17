@@ -1,27 +1,28 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-x243.google.com (mail-oi0-x243.google.com
+ [IPv6:2607:f8b0:4003:c06::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mrSk6QLwzF1R9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 22:38:30 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id c19-v6so2479044pls.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 05:38:30 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Subject: Re: [PATCH 0/3] Add support to disable sensor groups in P9
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- stewart@linux.vnet.ibm.com
-References: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20180515150205.GA29321@roeck-us.net>
- <2ceb6b30-60b7-d985-ee0d-6c5784eda273@linux.vnet.ibm.com>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <56bba97b-c6ee-e7a1-136c-a2236437484a@roeck-us.net>
-Date: Thu, 17 May 2018 05:38:25 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ms1h0N1SzF1nZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:03:35 +1000 (AEST)
+Received: by mail-oi0-x243.google.com with SMTP id 11-v6so3883431ois.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 06:03:35 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2ceb6b30-60b7-d985-ee0d-6c5784eda273@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
+References: <cover.1526553552.git.christophe.leroy@c-s.fr>
+ <8a6f90d882c8b60e5fa0826cd23dd70a92075659.1526553552.git.christophe.leroy@c-s.fr>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Thu, 17 May 2018 15:03:12 +0200
+Message-ID: <CA+7wUsyEBW-sKiwP_KJpwuWC0JGi_Cg-xnxcnw0d_Wc7-GWeeA@mail.gmail.com>
+Subject: Re: [PATCH v2 5/5] powerpc/lib: inline memcmp() for small constant
+ sizes
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,91 +32,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/16/2018 11:10 PM, Shilpasri G Bhat wrote:
-> 
-> 
-> On 05/15/2018 08:32 PM, Guenter Roeck wrote:
->> On Thu, Mar 22, 2018 at 04:24:32PM +0530, Shilpasri G Bhat wrote:
->>> This patch series adds support to enable/disable OCC based
->>> inband-sensor groups at runtime. The environmental sensor groups are
->>> managed in HWMON and the remaining platform specific sensor groups are
->>> managed in /sys/firmware/opal.
->>>
->>> The firmware changes required for this patch is posted below:
->>> https://lists.ozlabs.org/pipermail/skiboot/2018-March/010812.html
->>>
->>
->> Sorry for not getting back earlier. This is a tough one.
->>
-> 
-> Thanks for the reply. I have tried to answer your questions according to my
-> understanding below:
-> 
->> Key problem is that you are changing the ABI with those new attributes.
->> On top of that, the attributes _do_ make some sense (many chips support
->> enabling/disabling of individual sensors), suggesting that those or
->> similar attributes may or even should at some point be added to the ABI.
->>
->> At the same time, returning "0" as measurement values when sensors are
->> disabled does not seem like a good idea, since "0" is a perfectly valid
->> measurement, at least for most sensors.
-> 
-> I agree.
-> 
->>
->> Given that, we need to have a discussion about adding _enable attributes to
->> the ABI
-> 
->> what is the scope,
-> IIUC the scope should be RW and the attribute is defined for each supported
-> sensor group
-> 
+On Thu, May 17, 2018 at 12:49 PM, Christophe Leroy
+<christophe.leroy@c-s.fr> wrote:
+> In my 8xx configuration, I get 208 calls to memcmp()
+> Within those 208 calls, about half of them have constant sizes,
+> 46 have a size of 8, 17 have a size of 16, only a few have a
+> size over 16. Other fixed sizes are mostly 4, 6 and 10.
+>
+> This patch inlines calls to memcmp() when size
+> is constant and lower than or equal to 16
+>
+> In my 8xx configuration, this reduces the number of calls
+> to memcmp() from 208 to 123
+>
+> The following table shows the number of TB timeticks to perform
+> a constant size memcmp() before and after the patch depending on
+> the size
+>
+>         Before  After   Improvement
+> 01:      7577    5682   25%
+> 02:     41668    5682   86%
+> 03:     51137   13258   74%
+> 04:     45455    5682   87%
+> 05:     58713   13258   77%
+> 06:     58712   13258   77%
+> 07:     68183   20834   70%
+> 08:     56819   15153   73%
+> 09:     70077   28411   60%
+> 10:     70077   28411   60%
+> 11:     79546   35986   55%
+> 12:     68182   28411   58%
+> 13:     81440   35986   55%
+> 14:     81440   39774   51%
+> 15:     94697   43562   54%
+> 16:     79546   37881   52%
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/include/asm/string.h | 46 +++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
+> index 35f1aaad9b50..80cf0f9605dd 100644
+> --- a/arch/powerpc/include/asm/string.h
+> +++ b/arch/powerpc/include/asm/string.h
+> @@ -4,6 +4,8 @@
+>
+>  #ifdef __KERNEL__
+>
+> +#include <linux/kernel.h>
+> +
+>  #define __HAVE_ARCH_STRNCPY
+>  #define __HAVE_ARCH_STRNCMP
+>  #define __HAVE_ARCH_MEMSET
+> @@ -51,10 +53,54 @@ static inline int strncmp(const char *p, const char *q, __kernel_size_t size)
+>         return __strncmp(p, q, size);
+>  }
+>
+> +static inline int __memcmp1(const void *p, const void *q, int off)
 
-That is _your_ need. I am not aware of any other chip where a per-sensor group
-attribute would make sense. The discussion we need has to extend beyond the need
-of a single chip.
+Does that change anything if you change void* to char* pointer ? I
+find void* arithmetic hard to read.
 
-Guenter
+> +{
+> +       return *(u8*)(p + off) - *(u8*)(q + off);
+> +}
+> +
+> +static inline int __memcmp2(const void *p, const void *q, int off)
+> +{
+> +       return be16_to_cpu(*(u16*)(p + off)) - be16_to_cpu(*(u16*)(q + off));
+> +}
+> +
+> +static inline int __memcmp4(const void *p, const void *q, int off)
+> +{
+> +       return be32_to_cpu(*(u32*)(p + off)) - be32_to_cpu(*(u32*)(q + off));
+> +}
+> +
+> +static inline int __memcmp8(const void *p, const void *q, int off)
+> +{
+> +       s64 tmp = be64_to_cpu(*(u64*)(p + off)) - be64_to_cpu(*(u64*)(q + off));
 
->> when should the attributes exist and when not,
-> We control this currently via device-tree
-> 
->> do we want/need power_enable or powerX_enable or both, and so on), and
-> We need power_enable right now
-> 
->> what to return if a sensor is disabled (such as -ENODATA).
-> -ENODATA sounds good.
-> 
-> Thanks and Regards,
-> Shilpa
-> 
->   Once we have an
->> agreement, we can continue with an implementation.
->>
->> Guenter
->>
->>> Shilpasri G Bhat (3):
->>>    powernv:opal-sensor-groups: Add support to enable sensor groups
->>>    hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
->>>    powernv: opal-sensor-groups: Add attributes to disable/enable sensors
->>>
->>>   .../ABI/testing/sysfs-firmware-opal-sensor-groups  |  34 ++++++
->>>   Documentation/hwmon/ibmpowernv                     |  31 ++++-
->>>   arch/powerpc/include/asm/opal-api.h                |   4 +-
->>>   arch/powerpc/include/asm/opal.h                    |   2 +
->>>   .../powerpc/platforms/powernv/opal-sensor-groups.c | 104 ++++++++++++-----
->>>   arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
->>>   drivers/hwmon/ibmpowernv.c                         | 127 +++++++++++++++++++--
->>>   7 files changed, 265 insertions(+), 38 deletions(-)
->>>   create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
->>>
->>> -- 
->>> 1.8.3.1
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-hwmon" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> 
+I always assumed 64bits unaligned access would trigger an exception.
+Is this correct ?
+
+> +       return tmp >> 32 ? : (int)tmp;
+> +}
+> +
+> +static inline int __memcmp_cst(const void *p,const void *q,__kernel_size_t size)
+> +{
+> +       if (size == 1)
+> +               return __memcmp1(p, q, 0);
+> +       if (size == 2)
+> +               return __memcmp2(p, q, 0);
+> +       if (size == 3)
+> +               return __memcmp2(p, q, 0) ? : __memcmp1(p, q, 2);
+> +       if (size == 4)
+> +               return __memcmp4(p, q, 0);
+> +       if (size == 5)
+> +               return __memcmp4(p, q, 0) ? : __memcmp1(p, q, 4);
+> +       if (size == 6)
+> +               return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4);
+> +       if (size == 7)
+> +               return __memcmp4(p, q, 0) ? : __memcmp2(p, q, 4) ? : __memcmp1(p, q, 6);
+> +       return __memcmp8(p, q, 0);
+> +}
+> +
+>  static inline int memcmp(const void *p,const void *q,__kernel_size_t size)
+>  {
+>         if (unlikely(!size))
+>                 return 0;
+> +       if (__builtin_constant_p(size) && size <= 8)
+> +               return __memcmp_cst(p, q, size);
+> +       if (__builtin_constant_p(size) && size <= 16)
+> +               return __memcmp8(p, q, 0) ? : __memcmp_cst(p + 8, q + 8, size - 8);
+>         return __memcmp(p, q, size);
+>  }
+>
+> --
+> 2.13.3
+>
