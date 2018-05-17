@@ -2,17 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3S6W3KzF1Rh
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:49:56 +1000 (AEST)
-Message-Id: <404fbea1966e65b3d6d8f33856f6ff4c6486cce6.1526553552.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mp3V42GvzF1Ry
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 20:49:58 +1000 (AEST)
+Message-Id: <0bb218e986cc117099c3900709adfd2f2ac97c41.1526553552.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1526553552.git.christophe.leroy@c-s.fr>
 References: <cover.1526553552.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 2/5] powerpc/lib: optimise 32 bits __clear_user()
+Subject: [PATCH v2 3/5] powerpc/lib: optimise PPC32 memcmp
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 17 May 2018 12:49:52 +0200 (CEST)
+Date: Thu, 17 May 2018 12:49:54 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,153 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rewrite clear_user() on the same principle as memset(0), making use
-of dcbz to clear complete cache lines.
+At the time being, memcmp() compares two chunks of memory
+byte per byte.
 
-This code is a copy/paste of memset(), with some modifications
-in order to retrieve remaining number of bytes to be cleared,
-as it needs to be returned in case of error.
+This patch optimises the comparison by comparing word by word.
 
-On a MPC885, throughput is almost doubled:
+A small benchmark performed on an 8xx comparing two chuncks
+of 512 bytes performed 100000 times gives:
 
-Before:
-~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 18.990779 seconds, 52.7MB/s
+Before : 5852274 TB ticks
+After:   1488638 TB ticks
 
-After:
-~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 9.611468 seconds, 104.0MB/s
-
-On a MPC8321, throughput is multiplied by 2.12:
-
-Before:
-root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 6.844352 seconds, 146.1MB/s
-
-After:
-root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
-1048576000 bytes (1000.0MB) copied, 3.218854 seconds, 310.7MB/s
+This is almost 4 times faster
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/lib/string_32.S | 85 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 60 insertions(+), 25 deletions(-)
+ arch/powerpc/lib/string_32.S | 42 +++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 35 insertions(+), 7 deletions(-)
 
 diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
-index ab8c4f5f31b6..2c11c2019b69 100644
+index 2c11c2019b69..5c0e77baa9c7 100644
 --- a/arch/powerpc/lib/string_32.S
 +++ b/arch/powerpc/lib/string_32.S
-@@ -13,6 +13,7 @@
- #include <asm/errno.h>
- #include <asm/ppc_asm.h>
- #include <asm/export.h>
-+#include <asm/cache.h>
- 
- 	.text
- 
-@@ -31,44 +32,78 @@ _GLOBAL(memcmp)
- 	blr
- EXPORT_SYMBOL(memcmp)
- 
-+CACHELINE_BYTES = L1_CACHE_BYTES
-+LG_CACHELINE_BYTES = L1_CACHE_SHIFT
-+CACHELINE_MASK = (L1_CACHE_BYTES-1)
-+
- _GLOBAL(__clear_user)
--	addi	r6,r3,-4
--	li	r3,0
--	li	r5,0
--	cmplwi	0,r4,4
-+/*
-+ * Use dcbz on the complete cache lines in the destination
-+ * to set them to zero.  This requires that the destination
-+ * area is cacheable.
-+ */
-+	cmplwi	cr0, r4, 4
-+	mr	r10, r3
-+	li	r3, 0
- 	blt	7f
--	/* clear a single word */
--11:	stwu	r5,4(r6)
-+
-+11:	stw	r3, 0(r10)
- 	beqlr
--	/* clear word sized chunks */
--	andi.	r0,r6,3
--	add	r4,r0,r4
--	subf	r6,r0,r6
--	srwi	r0,r4,2
--	andi.	r4,r4,3
-+	andi.	r0, r10, 3
-+	add	r11, r0, r4
-+	subf	r6, r0, r10
-+
-+	clrlwi	r7, r6, 32 - LG_CACHELINE_BYTES
-+	add	r8, r7, r11
-+	srwi	r9, r8, LG_CACHELINE_BYTES
-+	addic.	r9, r9, -1	/* total number of complete cachelines */
-+	ble	2f
-+	xori	r0, r7, CACHELINE_MASK & ~3
-+	srwi.	r0, r0, 2
-+	beq	3f
-+	mtctr	r0
-+4:	stwu	r3, 4(r6)
-+	bdnz	4b
-+3:	mtctr	r9
-+	li	r7, 4
-+10:	dcbz	r7, r6
-+	addi	r6, r6, CACHELINE_BYTES
-+	bdnz	10b
-+	clrlwi	r11, r8, 32 - LG_CACHELINE_BYTES
-+	addi	r11, r11, 4
-+
-+2:	srwi	r0 ,r11 ,2
- 	mtctr	r0
--	bdz	7f
--1:	stwu	r5,4(r6)
-+	bdz	6f
-+1:	stwu	r3, 4(r6)
- 	bdnz	1b
--	/* clear byte sized chunks */
--7:	cmpwi	0,r4,0
-+6:	andi.	r11, r11, 3
- 	beqlr
--	mtctr	r4
--	addi	r6,r6,3
--8:	stbu	r5,1(r6)
-+	mtctr	r11
-+	addi	r6, r6, 3
-+8:	stbu	r3, 1(r6)
- 	bdnz	8b
- 	blr
--90:	mr	r3,r4
-+
-+7:	cmpwi	cr0, r4, 0
+@@ -20,13 +20,41 @@
+ _GLOBAL(memcmp)
+ 	PPC_LCMPI 0,r5,0
+ 	beq-	2f
+-	mtctr	r5
+-	addi	r6,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r3,1(r6)
+-	lbzu	r0,1(r4)
+-	subf.	r3,r0,r3
+-	bdnzt	2,1b
++	srawi.	r7, r5, 2		/* Divide len by 4 */
++	mr	r6, r3
++	beq-	3f
++	mtctr	r7
++	li	r7, 0
++1:
++#ifdef __LITTLE_ENDIAN__
++	lwbrx	r3, r6, r7
++	lwbrx	r0, r4, r7
++#else
++	lwzx	r3, r6, r7
++	lwzx	r0, r4, r7
++#endif
++	addi	r7, r7, 4
++	subf.	r3, r0, r3
++	bdnzt	eq, 1b
++	bnelr
++	andi.	r5, r5, 3
 +	beqlr
-+	mtctr	r4
-+	addi	r6, r10, -1
-+9:	stbu	r3, 1(r6)
-+	bdnz	9b
++3:	cmplwi	cr1, r5, 2
++	blt-	cr1, 4f
++#ifdef __LITTLE_ENDIAN__
++	lhbrx	r3, r6, r7
++	lhbrx	r0, r4, r7
++#else
++	lhzx	r3, r6, r7
++	lhzx	r0, r4, r7
++#endif
++	addi	r7, r7, 2
++	subf.	r3, r0, r3
++	beqlr	cr1
++	bnelr
++4:	lbzx	r3, r6, r7
++	lbzx	r0, r4, r7
++	subf.	r3, r0, r3
  	blr
--91:	mfctr	r3
--	slwi	r3,r3,2
--	add	r3,r3,r4
-+
-+90:	mr	r3, r4
+ 2:	li	r3,0
  	blr
--92:	mfctr	r3
-+91:	add	r3, r10, r4
-+	subf	r3, r6, r3
- 	blr
- 
- 	EX_TABLE(11b, 90b)
-+	EX_TABLE(4b, 91b)
-+	EX_TABLE(10b, 91b)
- 	EX_TABLE(1b, 91b)
--	EX_TABLE(8b, 92b)
-+	EX_TABLE(8b, 91b)
-+	EX_TABLE(9b, 91b)
- 
- EXPORT_SYMBOL(__clear_user)
 -- 
 2.13.3
