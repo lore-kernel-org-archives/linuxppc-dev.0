@@ -1,23 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40mtZq5jk2zF24L
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:13:55 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: Re: [PATCH v4 3/4] powerpc/64: add 32 bytes prechecking before using
- VMX optimization on memcmp()
-In-Reply-To: <1526459661-17323-4-git-send-email-wei.guo.simon@gmail.com>
-References: <1526459661-17323-1-git-send-email-wei.guo.simon@gmail.com>
- <1526459661-17323-4-git-send-email-wei.guo.simon@gmail.com>
-Date: Fri, 18 May 2018 00:13:52 +1000
-Message-ID: <87o9hemktb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40mtlP438PzF27k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:21:21 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/lib: Remove .balign inside string functions for
+ PPC32
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20180517100413.856096F938@po14934vm.idsi0.si.c-s.fr>
+ <20180517231938.4b1b8172@roar.ozlabs.ibm.com>
+ <87wow2mm2b.fsf@concordia.ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <0e43fd45-67bf-273f-5591-eb01f2254bfc@c-s.fr>
+Date: Thu, 17 May 2018 16:21:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <87wow2mm2b.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,89 +28,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-wei.guo.simon@gmail.com writes:
-> From: Simon Guo <wei.guo.simon@gmail.com>
->
-> This patch is based on the previous VMX patch on memcmp().
->
-> To optimize ppc64 memcmp() with VMX instruction, we need to think about
-> the VMX penalty brought with: If kernel uses VMX instruction, it needs
-> to save/restore current thread's VMX registers. There are 32 x 128 bits
-> VMX registers in PPC, which means 32 x 16 = 512 bytes for load and store.
->
-> The major concern regarding the memcmp() performance in kernel is KSM,
-> who will use memcmp() frequently to merge identical pages. So it will
-> make sense to take some measures/enhancement on KSM to see whether any
-> improvement can be done here.  Cyril Bur indicates that the memcmp() for
-> KSM has a higher possibility to fail (unmatch) early in previous bytes
-> in following mail.
-> 	https://patchwork.ozlabs.org/patch/817322/#1773629
-> And I am taking a follow-up on this with this patch.
->
-> Per some testing, it shows KSM memcmp() will fail early at previous 32
-> bytes.  More specifically:
->     - 76% cases will fail/unmatch before 16 bytes;
->     - 83% cases will fail/unmatch before 32 bytes;
->     - 84% cases will fail/unmatch before 64 bytes;
-> So 32 bytes looks a better choice than other bytes for pre-checking.
->
-> This patch adds a 32 bytes pre-checking firstly before jumping into VMX
-> operations, to avoid the unnecessary VMX penalty. And the testing shows
-> ~20% improvement on memcmp() average execution time with this patch.
->
-> The detail data and analysis is at:
-> https://github.com/justdoitqd/publicFiles/blob/master/memcmp/README.md
->
-> Any suggestion is welcome.
 
-Thanks for digging into that, really great work.
 
-I'm inclined to make this not depend on KSM though. It seems like a good
-optimisation to do in general.
+Le 17/05/2018 à 15:46, Michael Ellerman a écrit :
+> Nicholas Piggin <npiggin@gmail.com> writes:
+> 
+>> On Thu, 17 May 2018 12:04:13 +0200 (CEST)
+>> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+>>
+>>> commit 87a156fb18fe1 ("Align hot loops of some string functions")
+>>> degraded the performance of string functions by adding useless
+>>> nops
+>>>
+>>> A simple benchmark on an 8xx calling 100000x a memchr() that
+>>> matches the first byte runs in 41668 TB ticks before this patch
+>>> and in 35986 TB ticks after this patch. So this gives an
+>>> improvement of approx 10%
+>>>
+>>> Another benchmark doing the same with a memchr() matching the 128th
+>>> byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
+>>> after this patch, so regardless on the number of loops, removing
+>>> those useless nops improves the test by 5683 TB ticks.
+>>>
+>>> Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>> ---
+>>>   Was sent already as part of a serie optimising string functions.
+>>>   Resending on itself as it is independent of the other changes in the
+>>> serie
+>>>
+>>>   arch/powerpc/lib/string.S | 6 ++++++
+>>>   1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
+>>> index a787776822d8..a026d8fa8a99 100644
+>>> --- a/arch/powerpc/lib/string.S
+>>> +++ b/arch/powerpc/lib/string.S
+>>> @@ -23,7 +23,9 @@ _GLOBAL(strncpy)
+>>>   	mtctr	r5
+>>>   	addi	r6,r3,-1
+>>>   	addi	r4,r4,-1
+>>> +#ifdef CONFIG_PPC64
+>>>   	.balign 16
+>>> +#endif
+>>>   1:	lbzu	r0,1(r4)
+>>>   	cmpwi	0,r0,0
+>>>   	stbu	r0,1(r6)
+>>
+>> The ifdefs are a bit ugly, but you can't argue with the numbers. These
+>> alignments should be IFETCH_ALIGN_BYTES, which is intended to optimise
+>> the ifetch performance when you have such a loop (although there is
+>> always a tradeoff for a single iteration).
+>>
+>> Would it make sense to define that for 32-bit as well, and you could use
+>> it here instead of the ifdefs? Small CPUs could just use 0.
+> 
+> Can we do it with a macro in the header, eg. like:
+> 
+> #ifdef CONFIG_PPC64
+> #define IFETCH_BALIGN	.balign IFETCH_ALIGN_BYTES
+> #endif
+> 
+> ...
+> 
+>    	addi	r4,r4,-1
+>    	IFETCH_BALIGN
+>    1:	lbzu	r0,1(r4)
+> 
+> 
 
-So can we just call it the 'pre-check' or something, and always do it?
+Why not just define IFETCH_ALIGN_SHIFT for PPC32 as well in asm/cache.h 
+?, then replace the .balign 16 by .balign IFETCH_ALIGN_BYTES (or .align 
+IFETCH_ALIGN_SHIFT) ?
 
-cheers
+Christophe
 
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index 6303bbf..df2eec0 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -405,6 +405,35 @@ _GLOBAL(memcmp)
->  	/* Enter with src/dst addrs has the same offset with 8 bytes
->  	 * align boundary
->  	 */
-> +
-> +#ifdef CONFIG_KSM
-> +	/* KSM will always compare at page boundary so it falls into
-> +	 * .Lsameoffset_vmx_cmp.
-> +	 *
-> +	 * There is an optimization for KSM based on following fact:
-> +	 * KSM pages memcmp() prones to fail early at the first bytes. In
-> +	 * a statisis data, it shows 76% KSM memcmp() fails at the first
-> +	 * 16 bytes, and 83% KSM memcmp() fails at the first 32 bytes, 84%
-> +	 * KSM memcmp() fails at the first 64 bytes.
-> +	 *
-> +	 * Before applying VMX instructions which will lead to 32x128bits VMX
-> +	 * regs load/restore penalty, let us compares the first 32 bytes
-> +	 * so that we can catch the ~80% fail cases.
-> +	 */
-> +
-> +	li	r0,4
-> +	mtctr	r0
-> +.Lksm_32B_loop:
-> +	LD	rA,0,r3
-> +	LD	rB,0,r4
-> +	cmpld	cr0,rA,rB
-> +	addi	r3,r3,8
-> +	addi	r4,r4,8
-> +	bne     cr0,.LcmpAB_lightweight
-> +	addi	r5,r5,-8
-> +	bdnz	.Lksm_32B_loop
-> +#endif
-> +
->  	ENTER_VMX_OPS
->  	beq     cr1,.Llong_novmx_cmp
->  
-> -- 
-> 1.8.3.1
+> cheers
+> 
