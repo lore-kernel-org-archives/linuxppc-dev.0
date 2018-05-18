@@ -2,20 +2,20 @@ Return-Path: <fweimer@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nglp2sQPzDrTg
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 07:09:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ngrc0gLlzDrTn
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 07:13:36 +1000 (AEST)
 Subject: Re: pkeys on POWER: Default AMR, UAMOR values
-To: Ram Pai <linuxram@us.ibm.com>
+To: Andy Lutomirski <luto@amacapital.net>, linuxram@us.ibm.com
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>,
- Andy Lutomirski <luto@amacapital.net>
+ Linux-MM <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>
 References: <36b98132-d87f-9f75-f1a9-feee36ec8ee6@redhat.com>
  <20180518174448.GE5479@ram.oc3035372033.ibm.com>
+ <CALCETrV_wYPKHna8R2Bu19nsDqF2dJWarLLsyHxbcYD_AgYfPg@mail.gmail.com>
 From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <59616677-49c3-c803-963d-c032168de529@redhat.com>
-Date: Fri, 18 May 2018 23:09:20 +0200
+Message-ID: <27e01118-be5c-5f90-78b2-56bb69d2ab95@redhat.com>
+Date: Fri, 18 May 2018 23:13:30 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180518174448.GE5479@ram.oc3035372033.ibm.com>
+In-Reply-To: <CALCETrV_wYPKHna8R2Bu19nsDqF2dJWarLLsyHxbcYD_AgYfPg@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,40 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/18/2018 07:44 PM, Ram Pai wrote:
-> Florian, is the behavior on x86 any different? A key allocated in the
-> context off one thread is not meaningful in the context of any other
-> thread.
-> 
-> Since thread B was created prior to the creation of the key, and the key
-> was created in the context of thread A, thread B neither inherits the
-> key nor its permissions. Atleast that is how the semantics are supposed
-> to work as per the man page.
-> 
-> man 7 pkey
-> 
-> " Applications  using  threads  and  protection  keys  should
-> be especially careful.  Threads inherit the protection key rights of the
-> parent at the time of the clone(2), system call.  Applications should
-> either ensure that their own permissions are appropriate for child
-> threads at the time when clone(2) is  called,  or ensure that each child
-> thread can perform its own initialization of protection key rights."
+On 05/18/2018 09:39 PM, Andy Lutomirski wrote:
+> The difference is that x86 starts out with deny-all instead of allow-all.
+> The POWER semantics make it very hard for a multithreaded program to
+> meaningfully use protection keys to prevent accidental access to important
+> memory.
 
-I reported two separate issues (actually three, but the execve bug is in 
-a separate issue).  The default, and the write restrictions.
+And you can change access rights for unallocated keys (unallocated at 
+thread start time, allocated later) on x86.  I have extended the 
+misc/tst-pkeys test to verify that, and it passes on x86, but not on 
+POWER, where the access rights are stuck.
 
-The default is just a difference to x86 (however, x86 can be booted with 
-init_pkru=0 and behaves the same way, but we're probably going to remove 
-that).
-
-The POWER implementation has the additional wrinkle that threads 
-launched early, before key allocation, can never change access rights 
-because they inherited not just the access rights, but also the access 
-rights access mask.  This is different from x86, where all threads can 
-freely update access rights, and contradicts the behavior in the manpage 
-which says that “each child thread can perform its own initialization of 
-protection key rights”.  It can't do that if it is launched before key 
-allocation, which is not the right behavior IMO.
+I believe this is due to an incorrect UAMOR setting.
 
 Thanks,
 Florian
