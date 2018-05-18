@@ -1,27 +1,28 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=bj7n=if=mendozajonas.com=sam@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nHhy09ZrzF29B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 16:05:37 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id v63-v6so3226643pfk.8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 23:05:37 -0700 (PDT)
-Date: Fri, 18 May 2018 14:05:26 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH v4 3/4] powerpc/64: add 32 bytes prechecking before using
- VMX optimization on memcmp()
-Message-ID: <20180518060526.GA2498@simonLocalRHEL7.x64>
-References: <1526459661-17323-1-git-send-email-wei.guo.simon@gmail.com>
- <1526459661-17323-4-git-send-email-wei.guo.simon@gmail.com>
- <87o9hemktb.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87o9hemktb.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nJS43ZBczF29F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 16:39:32 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40nJS422B3z8tFr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 16:39:32 +1000 (AEST)
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40nJS200R5z9s19
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2018 16:39:29 +1000 (AEST)
+Message-ID: <865de9ab557621787a26db40c6bf55e1e54ca30d.camel@mendozajonas.com>
+Subject: Re: [PATCH 1/3] powerpc/io: Add __raw_writeq_be() __raw_rm_writeq_be()
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: alistair@popple.id.au, paulus@samba.org
+Date: Fri, 18 May 2018 16:39:20 +1000
+In-Reply-To: <20180514125033.12000-1-mpe@ellerman.id.au>
+References: <20180514125033.12000-1-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,52 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-On Fri, May 18, 2018 at 12:13:52AM +1000, Michael Ellerman wrote:
-> wei.guo.simon@gmail.com writes:
-> > From: Simon Guo <wei.guo.simon@gmail.com>
-> >
-> > This patch is based on the previous VMX patch on memcmp().
-> >
-> > To optimize ppc64 memcmp() with VMX instruction, we need to think about
-> > the VMX penalty brought with: If kernel uses VMX instruction, it needs
-> > to save/restore current thread's VMX registers. There are 32 x 128 bits
-> > VMX registers in PPC, which means 32 x 16 = 512 bytes for load and store.
-> >
-> > The major concern regarding the memcmp() performance in kernel is KSM,
-> > who will use memcmp() frequently to merge identical pages. So it will
-> > make sense to take some measures/enhancement on KSM to see whether any
-> > improvement can be done here.  Cyril Bur indicates that the memcmp() for
-> > KSM has a higher possibility to fail (unmatch) early in previous bytes
-> > in following mail.
-> > 	https://patchwork.ozlabs.org/patch/817322/#1773629
-> > And I am taking a follow-up on this with this patch.
-> >
-> > Per some testing, it shows KSM memcmp() will fail early at previous 32
-> > bytes.  More specifically:
-> >     - 76% cases will fail/unmatch before 16 bytes;
-> >     - 83% cases will fail/unmatch before 32 bytes;
-> >     - 84% cases will fail/unmatch before 64 bytes;
-> > So 32 bytes looks a better choice than other bytes for pre-checking.
-> >
-> > This patch adds a 32 bytes pre-checking firstly before jumping into VMX
-> > operations, to avoid the unnecessary VMX penalty. And the testing shows
-> > ~20% improvement on memcmp() average execution time with this patch.
-> >
-> > The detail data and analysis is at:
-> > https://github.com/justdoitqd/publicFiles/blob/master/memcmp/README.md
-> >
-> > Any suggestion is welcome.
+On Mon, 2018-05-14 at 22:50 +1000, Michael Ellerman wrote:
+> Add byte-swapping versions of __raw_writeq() and __raw_rm_writeq().
 > 
-> Thanks for digging into that, really great work.
+> This allows us to avoid sparse warnings caused by passing __be64 to
+> __raw_writeq(), which takes unsigned long:
 > 
-> I'm inclined to make this not depend on KSM though. It seems like a good
-> optimisation to do in general.
+>   arch/powerpc/platforms/powernv/pci-ioda.c:1981:38:
+>   warning: incorrect type in argument 1 (different base types)
+>       expected unsigned long [unsigned] v
+>       got restricted __be64 [usertype] <noident>
 > 
-> So can we just call it the 'pre-check' or something, and always do it?
+> It's also generally preferable to use a byte-swapping accessor rather
+> than doing it by hand in the code, which is more bug prone.
 > 
-Sound reasonable to me.
-I will expand the change to .Ldiffoffset_vmx_cmp case and test accordingly.
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Thanks,
-- Simon
+For this and the following patches:
+
+Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+
+> ---
+>  arch/powerpc/include/asm/io.h | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+> index af074923d598..e0331e754568 100644
+> --- a/arch/powerpc/include/asm/io.h
+> +++ b/arch/powerpc/include/asm/io.h
+> @@ -367,6 +367,11 @@ static inline void __raw_writeq(unsigned long v, volatile void __iomem *addr)
+>  	*(volatile unsigned long __force *)PCI_FIX_ADDR(addr) = v;
+>  }
+>  
+> +static inline void __raw_writeq_be(unsigned long v, volatile void __iomem *addr)
+> +{
+> +	__raw_writeq((__force unsigned long)cpu_to_be64(v), addr);
+> +}
+> +
+>  /*
+>   * Real mode versions of the above. Those instructions are only supposed
+>   * to be used in hypervisor real mode as per the architecture spec.
+> @@ -395,6 +400,11 @@ static inline void __raw_rm_writeq(u64 val, volatile void __iomem *paddr)
+>  		: : "r" (val), "r" (paddr) : "memory");
+>  }
+>  
+> +static inline void __raw_rm_writeq_be(u64 val, volatile void __iomem *paddr)
+> +{
+> +	__raw_rm_writeq((__force u64)cpu_to_be64(val), paddr);
+> +}
+> +
+>  static inline u8 __raw_rm_readb(volatile void __iomem *paddr)
+>  {
+>  	u8 ret;
