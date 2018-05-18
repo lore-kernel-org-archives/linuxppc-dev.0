@@ -1,18 +1,17 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 40n9Kd00K5zF291
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 11:18:28 +1000 (AEST)
-Date: Fri, 18 May 2018 11:18:33 +1000
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40n9lr5FyzzF297
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 11:37:44 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
-    linux-kernel@vger.kernel.org
-Message-Id: <a93c26abed5911cd92cf51b50bc4a0ca278188de.1526602763.git.fthain@telegraphics.com.au>
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH RESEND] powerpc/lib: Fix "integer constant is too large" build
- failure
-ReSent-Message-ID: <alpine.LNX.2.21.1805181118300.26@nippy.intranet>
+	sam@mendozajonas.com,
+	mikey@neuling.org
+Subject: [PATCH] powepc: Clear PCR on boot
+Date: Fri, 18 May 2018 11:37:42 +1000
+Message-Id: <20180518013742.24095-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,70 +21,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-My powerpc-linux-gnu-gcc v4.4.5 compiler can't build a 32-bit kernel
-any more:
+Clear the PCR on boot to ensure we are not running in a compat mode.
 
-arch/powerpc/lib/sstep.c: In function 'do_popcnt':
-arch/powerpc/lib/sstep.c:1068: error: integer constant is too large for 'long' type
-arch/powerpc/lib/sstep.c:1069: error: integer constant is too large for 'long' type
-arch/powerpc/lib/sstep.c:1069: error: integer constant is too large for 'long' type
-arch/powerpc/lib/sstep.c:1070: error: integer constant is too large for 'long' type
-arch/powerpc/lib/sstep.c:1079: error: integer constant is too large for 'long' type
-arch/powerpc/lib/sstep.c: In function 'do_prty':
-arch/powerpc/lib/sstep.c:1117: error: integer constant is too large for 'long' type
+We've seen this cause problems when a crash (and kdump) occurs while
+running compat mode guests. The kdump kernel then runs with the PCR
+set and causes problems. The symptom in the kdump kernel (also seen in
+petitboot after fast-reboot) is early userspace programs taking
+sigills on newer instructions (seen in libc).
 
-This file gets compiled with -std=gnu89 which means a constant can be
-given the type 'long' even if it won't fit. Fix the errors with a 'ULL'
-suffix on the relevant constants.
-
-Fixes: 2c979c489fee ("powerpc/lib/sstep: Add prty instruction emulation")
-Fixes: dcbd19b48d31 ("powerpc/lib/sstep: Add popcnt instruction emulation")
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Cc: <stable@vger.kernel.org>
 ---
-This change was compile tested but not regression tested.
----
-I'm re-sending this because the first submission didn't show up on
-patchwork.ozlabs.org, apparently because I sent it without any
-message-id header. Sorry about that.
----
- arch/powerpc/lib/sstep.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/cpu_setup_power.S | 6 ++++++
+ arch/powerpc/kernel/dt_cpu_ftrs.c     | 1 +
+ 2 files changed, 7 insertions(+)
 
-diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
-index 34d68f1b1b40..49427a3ee104 100644
---- a/arch/powerpc/lib/sstep.c
-+++ b/arch/powerpc/lib/sstep.c
-@@ -1065,9 +1065,10 @@ static nokprobe_inline void do_popcnt(const struct pt_regs *regs,
- {
- 	unsigned long long out = v1;
- 
--	out -= (out >> 1) & 0x5555555555555555;
--	out = (0x3333333333333333 & out) + (0x3333333333333333 & (out >> 2));
--	out = (out + (out >> 4)) & 0x0f0f0f0f0f0f0f0f;
-+	out -= (out >> 1) & 0x5555555555555555ULL;
-+	out = (0x3333333333333333ULL & out) +
-+	      (0x3333333333333333ULL & (out >> 2));
-+	out = (out + (out >> 4)) & 0x0f0f0f0f0f0f0f0fULL;
- 
- 	if (size == 8) {	/* popcntb */
- 		op->val = out;
-@@ -1076,7 +1077,7 @@ static nokprobe_inline void do_popcnt(const struct pt_regs *regs,
- 	out += out >> 8;
- 	out += out >> 16;
- 	if (size == 32) {	/* popcntw */
--		op->val = out & 0x0000003f0000003f;
-+		op->val = out & 0x0000003f0000003fULL;
- 		return;
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 3f30c994e9..458b928dbd 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -28,6 +28,7 @@ _GLOBAL(__setup_cpu_power7)
+ 	beqlr
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
+ 	bl	__init_LPCR_ISA206
+@@ -41,6 +42,7 @@ _GLOBAL(__restore_cpu_power7)
+ 	beqlr
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	li	r4,(LPCR_LPES1 >> LPCR_LPES_SH)
+ 	bl	__init_LPCR_ISA206
+@@ -57,6 +59,7 @@ _GLOBAL(__setup_cpu_power8)
+ 	beqlr
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	ori	r3, r3, LPCR_PECEDH
+ 	li	r4,0 /* LPES = 0 */
+@@ -78,6 +81,7 @@ _GLOBAL(__restore_cpu_power8)
+ 	beqlr
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr   r3,SPRN_LPCR
+ 	ori	r3, r3, LPCR_PECEDH
+ 	li	r4,0 /* LPES = 0 */
+@@ -99,6 +103,7 @@ _GLOBAL(__setup_cpu_power9)
+ 	mtspr	SPRN_PSSCR,r0
+ 	mtspr	SPRN_LPID,r0
+ 	mtspr	SPRN_PID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr	r3,SPRN_LPCR
+ 	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECE_HVEE | LPCR_HVICE  | LPCR_HEIC)
+ 	or	r3, r3, r4
+@@ -123,6 +128,7 @@ _GLOBAL(__restore_cpu_power9)
+ 	mtspr	SPRN_PSSCR,r0
+ 	mtspr	SPRN_LPID,r0
+ 	mtspr	SPRN_PID,r0
++	mtspr	SPRN_PCR,r0
+ 	mfspr   r3,SPRN_LPCR
+ 	LOAD_REG_IMMEDIATE(r4, LPCR_PECEDH | LPCR_PECE_HVEE | LPCR_HVICE | LPCR_HEIC)
+ 	or	r3, r3, r4
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 8ab51f6ca0..c904477aba 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -101,6 +101,7 @@ static void __restore_cpu_cpufeatures(void)
+ 	if (hv_mode) {
+ 		mtspr(SPRN_LPID, 0);
+ 		mtspr(SPRN_HFSCR, system_registers.hfscr);
++		mtspr(SPRN_PCR, 0);
  	}
- 
-@@ -1114,7 +1115,7 @@ static nokprobe_inline void do_prty(const struct pt_regs *regs,
- 
- 	res ^= res >> 16;
- 	if (size == 32) {		/* prtyw */
--		op->val = res & 0x0000000100000001;
-+		op->val = res & 0x0000000100000001ULL;
- 		return;
- 	}
+ 	mtspr(SPRN_FSCR, system_registers.fscr);
  
 -- 
-2.16.1
+2.14.1
