@@ -1,26 +1,36 @@
-Return-Path: <jakub.kicinski@netronome.com>
-Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
- [IPv6:2607:f8b0:400d:c09::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nf6T1qnJzF2Fm
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 05:55:28 +1000 (AEST)
-Received: by mail-qk0-x244.google.com with SMTP id a74-v6so109232qkg.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 12:55:28 -0700 (PDT)
-Date: Fri, 18 May 2018 12:55:21 -0700
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: ast@kernel.org, daniel@iogearbox.net, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, naveen.n.rao@linux.vnet.ibm.com,
- mpe@ellerman.id.au
-Subject: Re: [PATCH bpf v2 5/6] tools: bpftool: resolve calls without using
- imm field
-Message-ID: <20180518125521.5ef2f31c@cakuba>
-In-Reply-To: <20180518125039.6500-6-sandipan@linux.vnet.ibm.com>
-References: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
- <20180518125039.6500-6-sandipan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nf926g33zF2GY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 05:57:42 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4IJnBkJ010767
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 15:57:39 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j22waeapf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 15:57:39 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Fri, 18 May 2018 13:57:38 -0600
+Subject: Re: [RFC v3 1/4] powerpc/hotplug/drcinfo: Fix bugs parsing
+ ibm,drc-info structs
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+References: <5a950883-d06d-4cdc-2716-8c1ce25f394d@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Fri, 18 May 2018 14:57:34 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <5a950883-d06d-4cdc-2716-8c1ce25f394d@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <66c02d35-2bf4-67c1-1ba0-072e9ac6562c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,133 +40,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 18 May 2018 18:20:38 +0530, Sandipan Das wrote:
-> Currently, we resolve the callee's address for a JITed function
-> call by using the imm field of the call instruction as an offset
-> from __bpf_call_base. If bpf_jit_kallsyms is enabled, we further
-> use this address to get the callee's kernel symbol's name.
+On 05/17/2018 05:41 PM, Michael Bringmann wrote:
+> [Replace/withdraw previous patch submission to ensure that testing
+> of related patches on similar hardware progresses together.]
 > 
-> For some architectures, such as powerpc64, the imm field is not
-> large enough to hold this offset. So, instead of assigning this
-> offset to the imm field, the verifier now assigns the subprog
-> id. Also, a list of kernel symbol addresses for all the JITed
-> functions is provided in the program info. We now use the imm
-> field as an index for this list to lookup a callee's symbol's
-> address and resolve its name.
+> This patch fixes a memory parsing bug when using of_prop_next_u32
+> calls at the start of a structure.  Depending upon the value of
+> "cur" memory pointer argument to of_prop_next_u32, it will or it
+> won't advance the value of the returned memory pointer by the
+> size of one u32.  This patch corrects the code to deal with that
+> indexing feature when parsing the ibm,drc-info structs for CPUs.
+> Also, need to advance the pointer at the end of_read_drc_info_cell
+> for same reason.
 > 
-> Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
-> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+
+I see that you provide an update for of_read_drc_info_cell to fix the
+unexpected behavior you're seeing, but I'm not sure why you're updating
+the code in pseries_energy.c and rpaphp_core.c? can you provide some
+additional information as to why these functions also need to be updated.
+
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmware feature" -- end of patch series applied to powerpc next)
 > ---
-> v2:
->  - Order variables from longest to shortest
->  - Make sure that ksyms_ptr and ksyms_len are always initialized
->  - Simplify code
-
-Thanks for the improvements!  Since there will be v3 two minor nit
-picks still :)
-
->  tools/bpf/bpftool/prog.c          | 29 +++++++++++++++++++++++++++++
->  tools/bpf/bpftool/xlated_dumper.c | 10 +++++++++-
->  tools/bpf/bpftool/xlated_dumper.h |  2 ++
->  3 files changed, 40 insertions(+), 1 deletion(-)
+> Changes in V3:
+>   -- Rebased patch to 4.17-rc5 kernel
+> ---
+>  arch/powerpc/platforms/pseries/of_helpers.c     |    5 ++---
+>  arch/powerpc/platforms/pseries/pseries_energy.c |    2 ++
+>  drivers/pci/hotplug/rpaphp_core.c               |    1 +
+>  3 files changed, 5 insertions(+), 3 deletions(-)
 > 
-> diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
-> index 9bdfdf2d3fbe..e2f8f8f259fc 100644
-> --- a/tools/bpf/bpftool/prog.c
-> +++ b/tools/bpf/bpftool/prog.c
-> @@ -421,19 +421,26 @@ static int do_show(int argc, char **argv)
->  static int do_dump(int argc, char **argv)
->  {
->  	struct bpf_prog_info info = {};
-> +	unsigned long *addrs = NULL;
->  	struct dump_data dd = {};
->  	__u32 len = sizeof(info);
->  	unsigned int buf_size;
-> +	unsigned int nr_addrs;
->  	char *filepath = NULL;
->  	bool opcodes = false;
->  	bool visual = false;
->  	unsigned char *buf;
->  	__u32 *member_len;
->  	__u64 *member_ptr;
-> +	__u32 *ksyms_len;
-> +	__u64 *ksyms_ptr;
->  	ssize_t n;
->  	int err;
->  	int fd;
->  
-> +	ksyms_len = &info.nr_jited_ksyms;
-> +	ksyms_ptr = &info.jited_ksyms;
+> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
+> index 6df192f..20598b2 100644
+> --- a/arch/powerpc/platforms/pseries/of_helpers.c
+> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
+> @@ -65,9 +65,7 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
+> 
+>  	/* Get drc-index-start:encode-int */
+>  	p2 = (const __be32 *)p;
+> -	p2 = of_prop_next_u32(*prop, p2, &data->drc_index_start);
+> -	if (!p2)
+> -		return -EINVAL;
+> +	data->drc_index_start = of_read_number(p2, 1);
 
-I'm not sure why you need these, why not just access
-info.nr_jited_ksyms and info.jited_ksyms directly?  "member" variables
-are there because jited and xlated images get returned in different
-member of struct bpf_prog_info.
+This appears to resolve advancing the pointer for the beginning of a struct.
 
->  	if (is_prefix(*argv, "jited")) {
->  		member_len = &info.jited_prog_len;
->  		member_ptr = &info.jited_prog_insns;
-> @@ -496,10 +503,22 @@ static int do_dump(int argc, char **argv)
->  		return -1;
->  	}
->  
-> +	nr_addrs = *ksyms_len;
-> +	if (nr_addrs) {
-> +		addrs = malloc(nr_addrs * sizeof(__u64));
-> +		if (!addrs) {
-> +			p_err("mem alloc failed");
-> +			close(fd);
-> +			goto err_free;
-> +		}
-> +	}
-> +
->  	memset(&info, 0, sizeof(info));
->  
->  	*member_ptr = ptr_to_u64(buf);
->  	*member_len = buf_size;
-> +	*ksyms_ptr = ptr_to_u64(addrs);
-> +	*ksyms_len = nr_addrs;
->  
->  	err = bpf_obj_get_info_by_fd(fd, &info, &len);
->  	close(fd);
-> @@ -513,6 +532,11 @@ static int do_dump(int argc, char **argv)
->  		goto err_free;
->  	}
->  
-> +	if (*ksyms_len > nr_addrs) {
-> +		p_err("too many addresses returned");
-> +		goto err_free;
-> +	}
-> +
->  	if ((member_len == &info.jited_prog_len &&
->  	     info.jited_prog_insns == 0) ||
->  	    (member_len == &info.xlated_prog_len &&
-> @@ -558,6 +582,9 @@ static int do_dump(int argc, char **argv)
->  			dump_xlated_cfg(buf, *member_len);
->  	} else {
->  		kernel_syms_load(&dd);
-> +		dd.nr_jited_ksyms = *ksyms_len;
-> +		dd.jited_ksyms = (__u64 *) *ksyms_ptr;
-> +
->  		if (json_output)
->  			dump_xlated_json(&dd, buf, *member_len, opcodes);
->  		else
+> 
+>  	/* Get drc-name-suffix-start:encode-int */
+>  	p2 = of_prop_next_u32(*prop, p2, &data->drc_name_suffix_start);
+> @@ -88,6 +86,7 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
+>  	p2 = of_prop_next_u32(*prop, p2, &data->drc_power_domain);
+>  	if (!p2)
+>  		return -EINVAL;
+> +	p2++;
 
-> diff --git a/tools/bpf/bpftool/xlated_dumper.c b/tools/bpf/bpftool/xlated_dumper.c
-> index 7a3173b76c16..fb065b55db6d 100644
-> --- a/tools/bpf/bpftool/xlated_dumper.c
-> +++ b/tools/bpf/bpftool/xlated_dumper.c
-> @@ -203,6 +207,10 @@ static const char *print_call(void *private_data,
->  	unsigned long address = dd->address_call_base + insn->imm;
->  	struct kernel_sym *sym;
->  
-> +	if (insn->src_reg == BPF_PSEUDO_CALL &&
-> +		(__u32) insn->imm < dd->nr_jited_ksyms)
+...but why is the advancement needed here? of_prop_next_u32 should have advanced it, correct?
 
-Indentation seems off.
+-Nathan
 
-> +		address = dd->jited_ksyms[insn->imm];
-> +
->  	sym = kernel_syms_search(dd, address);
->  	if (insn->src_reg == BPF_PSEUDO_CALL)
->  		return print_call_pcrel(dd, sym, address, insn);
+> 
+>  	/* Should now know end of current entry */
+>  	(*curval) = (void *)p2;
+> diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+> index 6ed2212..c7d84aa 100644
+> --- a/arch/powerpc/platforms/pseries/pseries_energy.c
+> +++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+> @@ -64,6 +64,7 @@ static u32 cpu_to_drc_index(int cpu)
+>  		value = of_prop_next_u32(info, NULL, &num_set_entries);
+>  		if (!value)
+>  			goto err_of_node_put;
+> +		value++;
+> 
+>  		for (j = 0; j < num_set_entries; j++) {
+> 
+> @@ -126,6 +127,7 @@ static int drc_index_to_cpu(u32 drc_index)
+>  		value = of_prop_next_u32(info, NULL, &num_set_entries);
+>  		if (!value)
+>  			goto err_of_node_put;
+> +		value++;
+> 
+>  		for (j = 0; j < num_set_entries; j++) {
+> 
+> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+> index fb5e084..dccdf62 100644
+> --- a/drivers/pci/hotplug/rpaphp_core.c
+> +++ b/drivers/pci/hotplug/rpaphp_core.c
+> @@ -239,6 +239,7 @@ static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
+>  	value = of_prop_next_u32(info, NULL, &entries);
+>  	if (!value)
+>  		return -EINVAL;
+> +	value++;
+> 
+>  	for (j = 0; j < entries; j++) {
+>  		of_read_drc_info_cell(&info, &value, &drc);
+> 
