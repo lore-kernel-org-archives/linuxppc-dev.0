@@ -1,31 +1,33 @@
 Return-Path: <sandipan@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nShV4L6zzF29w
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 22:50:50 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4IChsls061529
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:50:47 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nShX31FZzF29w
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 22:50:52 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4IChqQg134189
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:50:49 -0400
 Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j1w8xdf1t-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j1uw50r7c-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:50:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 08:50:49 -0400
 Received: from localhost
  by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Fri, 18 May 2018 13:50:46 +0100
+ Fri, 18 May 2018 13:50:47 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@kernel.org, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  naveen.n.rao@linux.vnet.ibm.com, mpe@ellerman.id.au,
  jakub.kicinski@netronome.com
-Subject: [PATCH bpf v2 0/6] bpf: enhancements for multi-function programs
-Date: Fri, 18 May 2018 18:20:33 +0530
-Message-Id: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
+Subject: [PATCH bpf v2 1/6] bpf: support 64-bit offsets for bpf function calls
+Date: Fri, 18 May 2018 18:20:34 +0530
+In-Reply-To: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
+References: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
+Message-Id: <20180518125039.6500-2-sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +37,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series introduces the following:
+The imm field of a bpf instruction is a signed 32-bit integer.
+For JIT bpf-to-bpf function calls, it stores the offset of the
+start address of the callee's JITed image from __bpf_call_base.
 
-[1] Support for bpf-to-bpf function calls in the powerpc64 JIT compiler.
+For some architectures, such as powerpc64, this offset may be
+as large as 64 bits and cannot be accomodated in the imm field
+without truncation.
 
-[2] Provide a way for resolving function calls because of the way JITed
-    images are allocated in powerpc64.
+We resolve this by:
 
-[3] Fix to get JITed instruction dumps for multi-function programs from
-    the bpf system call.
+[1] Additionally using the auxillary data of each function to
+    keep a list of start addresses of the JITed images for all
+    functions determined by the verifier.
 
-v2:
- - Incorporate review comments from Jakub
+[2] Retaining the subprog id inside the off field of the call
+    instructions and using it to index into the list mentioned
+    above and lookup the callee's address.
 
-Sandipan Das (6):
-  bpf: support 64-bit offsets for bpf function calls
-  bpf: powerpc64: add JIT support for multi-function programs
-  bpf: get kernel symbol addresses via syscall
-  tools: bpf: sync bpf uapi header
-  tools: bpftool: resolve calls without using imm field
-  bpf: fix JITed dump for multi-function programs via syscall
+To make sure that the existing JIT compilers continue to work
+without requiring changes, we keep the imm field as it is.
 
- arch/powerpc/net/bpf_jit_comp64.c | 79 ++++++++++++++++++++++++++++++++++-----
- include/uapi/linux/bpf.h          |  2 +
- kernel/bpf/syscall.c              | 56 ++++++++++++++++++++++++---
- kernel/bpf/verifier.c             | 22 +++++++----
- tools/bpf/bpftool/prog.c          | 29 ++++++++++++++
- tools/bpf/bpftool/xlated_dumper.c | 10 ++++-
- tools/bpf/bpftool/xlated_dumper.h |  2 +
- tools/include/uapi/linux/bpf.h    |  2 +
- 8 files changed, 179 insertions(+), 23 deletions(-)
+Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+---
+ kernel/bpf/verifier.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index a9e4b1372da6..6c56cce9c4e3 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -5383,11 +5383,24 @@ static int jit_subprogs(struct bpf_verifier_env *env)
+ 			    insn->src_reg != BPF_PSEUDO_CALL)
+ 				continue;
+ 			subprog = insn->off;
+-			insn->off = 0;
+ 			insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
+ 				func[subprog]->bpf_func -
+ 				__bpf_call_base;
+ 		}
++
++		/* we use the aux data to keep a list of the start addresses
++		 * of the JITed images for each function in the program
++		 *
++		 * for some architectures, such as powerpc64, the imm field
++		 * might not be large enough to hold the offset of the start
++		 * address of the callee's JITed image from __bpf_call_base
++		 *
++		 * in such cases, we can lookup the start address of a callee
++		 * by using its subprog id, available from the off field of
++		 * the call instruction, as an index for this list
++		 */
++		func[i]->aux->func = func;
++		func[i]->aux->func_cnt = env->subprog_cnt + 1;
+ 	}
+ 	for (i = 0; i < env->subprog_cnt; i++) {
+ 		old_bpf_func = func[i]->bpf_func;
 -- 
 2.14.3
