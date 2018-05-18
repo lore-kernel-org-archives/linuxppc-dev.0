@@ -1,27 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nTMk657FzF2Br
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 23:21:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nTvZ3JfXzF2BD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 23:45:30 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc: Detect the presence of big-core with
- interleaved threads
-In-Reply-To: <1526037444-22876-2-git-send-email-ego@linux.vnet.ibm.com>
-References: <1526037444-22876-1-git-send-email-ego@linux.vnet.ibm.com>
- <1526037444-22876-2-git-send-email-ego@linux.vnet.ibm.com>
-Date: Fri, 18 May 2018 23:21:22 +1000
-Message-ID: <87h8n5xfot.fsf@concordia.ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: fbarrat@linux.vnet.ibm.com, felix@linux.ibm.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.17-6 tag
+Date: Fri, 18 May 2018 23:45:27 +1000
+Message-ID: <87efi9xeko.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,94 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index 0af5c11..884dff2 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -436,8 +438,56 @@ static void __init cpu_init_thread_core_maps(int tpc)
->  	printk(KERN_DEBUG " (thread shift is %d)\n", threads_shift);
->  }
->  
-> -
->  u32 *cpu_to_phys_id = NULL;
-> +/*
-> + * check_for_interleaved_big_core - Checks if the core represented by
-> + *	 dn is a big-core whose threads are interleavings of the
-> + *	 threads of the component small cores.
-> + *
-> + * @dn: device node corresponding to the core.
-> + *
-> + * Returns true if the core is a interleaved big-core.
-> + * Returns false otherwise.
-> + */
-> +static inline bool check_for_interleaved_big_core(struct device_node *dn)
-> +{
-> +	int len, nr_groups, threads_per_group;
-> +	const __be32 *thread_groups;
-> +	__be32 *thread_list, *first_cpu_idx;
-> +	int cur_cpu, next_cpu, i, j;
-> +
-> +	thread_groups = of_get_property(dn, "ibm,thread-groups", &len);
-> +	if (!thread_groups)
-> +		return false;
+Hi Linus,
 
-There are better device tree APIs than bare of_get_property() these
-days, can you try to use those?
+Please pull some more powerpc fixes for 4.17:
 
-> +	nr_groups = be32_to_cpu(*(thread_groups + 1));
-> +	if (nr_groups <= 1)
-> +		return false;
+The following changes since commit 6c0a8f6b5a45ac892a763b6299bd3c5324fc5e02:
 
-eg. this would be of_property_read_u32_index()
+  powerpc/pseries: Fix CONFIG_NUMA=n build (2018-05-08 14:59:56 +1000)
 
-> +
-> +	threads_per_group = be32_to_cpu(*(thread_groups + 2));
-> +	thread_list = (__be32 *)thread_groups + 3;
-> +
-> +	/*
-> +	 * In case of an interleaved big-core, the thread-ids of the
-> +	 * big-core can be obtained by interleaving the the thread-ids
-> +	 * of the component small
-> +	 *
-> +	 * Eg: On a 8-thread big-core with two SMT4 small cores, the
-> +	 * threads of the two component small cores will be
-> +	 * {0, 2, 4, 6} and {1, 3, 5, 7}.
-> +	 */
-> +	for (i = 0; i < nr_groups; i++) {
-> +		first_cpu_idx = thread_list + i * threads_per_group;
-> +
-> +		for (j = 0; j < threads_per_group - 1; j++) {
-> +			cur_cpu = be32_to_cpu(*(first_cpu_idx + j));
-> +			next_cpu = be32_to_cpu(*(first_cpu_idx + j + 1));
-> +			if (next_cpu != cur_cpu + nr_groups)
-> +				return false;
-> +		}
-> +	}
-> +	return true;
-> +}
->  
->  /**
->   * setup_cpu_maps - initialize the following cpu maps:
-> @@ -565,7 +615,16 @@ void __init smp_setup_cpu_maps(void)
->  	vdso_data->processorCount = num_present_cpus();
->  #endif /* CONFIG_PPC64 */
->  
-> -        /* Initialize CPU <=> thread mapping/
-> +	dn = of_find_node_by_type(NULL, "cpu");
-> +	if (dn) {
-> +		if (check_for_interleaved_big_core(dn)) {
-> +			has_interleaved_big_core = true;
-> +			pr_info("Detected interleaved big-cores\n");
-> +		}
-> +		of_node_put(dn);
-> +	}
+are available in the git repository at:
 
-This is a bit untidy, given how unlikely it is that you would have no
-CPUs :)
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.17-6
 
-You should be able to do the lookup of the property and the setting of
-has_interleaved_big_core all inside check_for_interleaved_big_core().
+for you to fetch changes up to c1d2a31397ec51f0370f6bd17b19b39152c263cb:
 
-cheers
+  powerpc/powernv: Fix NVRAM sleep in invalid context when crashing (2018-05-18 00:23:07 +1000)
+
+- ----------------------------------------------------------------
+powerpc fixes for 4.17 #6
+
+Just three commits.
+
+The two cxl ones are not fixes per se, but they modify code that was added this
+cycle so that it will work with a recent firmware change.
+
+And then a fix for a recent commit that added sleeps in the NVRAM code, which
+needs to be more careful and not sleep if eg. we're called in the panic() path.
+
+Thanks to:
+  Nicholas Piggin, Philippe Bergheaud, Christophe Lombard.
+
+- ----------------------------------------------------------------
+Nicholas Piggin (1):
+      powerpc/powernv: Fix NVRAM sleep in invalid context when crashing
+
+Philippe Bergheaud (2):
+      cxl: Set the PBCQ Tunnel BAR register when enabling capi mode
+      cxl: Report the tunneled operations status
+
+ Documentation/ABI/testing/sysfs-class-cxl   |  8 ++++++++
+ arch/powerpc/platforms/powernv/opal-nvram.c | 14 ++++++++++++--
+ drivers/misc/cxl/cxl.h                      |  1 +
+ drivers/misc/cxl/pci.c                      | 12 ++++++++++++
+ drivers/misc/cxl/sysfs.c                    | 10 ++++++++++
+ 5 files changed, 43 insertions(+), 2 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJa/tj4AAoJEFHr6jzI4aWAZBoP/2/kddNPHzMwnzcx0B5WzEfo
+3JQcTLZPEqsb5n0xwaWOgb0o0u8EpHDtPZlJlZZWwPKbphlZvQ+reAJAXCQXXj6P
+n6BrbfpHlJo1J2wZVeihOuVTtSiXqq82YEtCzdUCUQNa8+2rQ7bLOB56cLdnyFWx
+wvK/xOM4rG/nPDi3tlH+IvhNeUdc2Y1vCB6N/RVvJVJOduCED1zCxcWj7uJYGt1x
+UdFPcah4OPSF9qPemReu6CjiwesvEm3y3S9TYLLJLXBDmKvs7BDRbfczP52tY90P
+XMErJN4MtnNasotCJVcZylfNhSTCyyaQ4si+G/COAM0eh8oPdcIH3C2yXnQHXVPz
+pUpe7TF3N7DOoa66WHXsh9dr9G7E0DhcpBgpz30/HmYasaYSEYpDsCH6UvbmvpzO
+xtyocfgtuyaF28Rz4WVYSVGkJwE/+NhdsvfQUFI6DGQXoVu08Xxx3rhOlNKVecTw
+8yuaIpPSz0i1pFg3SRa1MaS0F4FqGs0T3OLFsEihjdsc3EpJeB3Vp0IiqbmhR6Pa
+1rhsjPY4yS5tPJS9K4CQszgw3Ke6C7KYIttGo7BxVKPLXsp52HhTqFpp0LHDcw8y
+zFjOS7kh07NCgn8tSwMLUTRUUXEDLE2fJOVWCDdvkXEzpd/LfaP15gjZ3m66OMTS
+Oj72EjBAGNX4dN4yQuo7
+=4xib
+-----END PGP SIGNATURE-----
