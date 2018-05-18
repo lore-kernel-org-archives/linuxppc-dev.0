@@ -1,38 +1,37 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <sandipan@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nF0p5F68zF292
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 14:04:10 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nFXZ3PqpzF292
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 14:28:13 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4I43vR9117363
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:04:07 -0400
+ w4I4ObJr009086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:28:11 -0400
 Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j1kfs7pt7-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j1pywsmpp-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:04:07 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 00:28:11 -0400
 Received: from localhost
  by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Fri, 18 May 2018 05:04:04 +0100
-Subject: Re: [PATCH 0/3] Add support to disable sensor groups in P9
-To: Guenter Roeck <linux@roeck-us.net>
-References: <1521716075-807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <20180515150205.GA29321@roeck-us.net>
- <2ceb6b30-60b7-d985-ee0d-6c5784eda273@linux.vnet.ibm.com>
- <56bba97b-c6ee-e7a1-136c-a2236437484a@roeck-us.net>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
- stewart@linux.vnet.ibm.com
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Date: Fri, 18 May 2018 09:33:57 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
+ Fri, 18 May 2018 05:28:08 +0100
+Subject: Re: [PATCH bpf 5/6] tools: bpftool: resolve calls without using imm
+ field
+To: Jakub Kicinski <jakub.kicinski@netronome.com>
+Cc: netdev@vger.kernel.org, naveen.n.rao@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, ast@kernel.org, daniel@iogearbox.net
+References: <20180517063548.6373-1-sandipan@linux.vnet.ibm.com>
+ <20180517063548.6373-6-sandipan@linux.vnet.ibm.com>
+ <20180517115104.7666ff60@cakuba>
+From: Sandipan Das <sandipan@linux.vnet.ibm.com>
+Date: Fri, 18 May 2018 09:58:02 +0530
 MIME-Version: 1.0
-In-Reply-To: <56bba97b-c6ee-e7a1-136c-a2236437484a@roeck-us.net>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <ab26d4a0-c71a-abd8-1dad-8b25b77665c1@linux.vnet.ibm.com>
+In-Reply-To: <20180517115104.7666ff60@cakuba>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <586171cd-f920-7051-fcf1-b01f9be40675@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,106 +41,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Jakub,
 
-
-On 05/17/2018 06:08 PM, Guenter Roeck wrote:
-> On 05/16/2018 11:10 PM, Shilpasri G Bhat wrote:
+On 05/18/2018 12:21 AM, Jakub Kicinski wrote:
+> On Thu, 17 May 2018 12:05:47 +0530, Sandipan Das wrote:
+>> Currently, we resolve the callee's address for a JITed function
+>> call by using the imm field of the call instruction as an offset
+>> from __bpf_call_base. If bpf_jit_kallsyms is enabled, we further
+>> use this address to get the callee's kernel symbol's name.
 >>
+>> For some architectures, such as powerpc64, the imm field is not
+>> large enough to hold this offset. So, instead of assigning this
+>> offset to the imm field, the verifier now assigns the subprog
+>> id. Also, a list of kernel symbol addresses for all the JITed
+>> functions is provided in the program info. We now use the imm
+>> field as an index for this list to lookup a callee's symbol's
+>> address and resolve its name.
 >>
->> On 05/15/2018 08:32 PM, Guenter Roeck wrote:
->>> On Thu, Mar 22, 2018 at 04:24:32PM +0530, Shilpasri G Bhat wrote:
->>>> This patch series adds support to enable/disable OCC based
->>>> inband-sensor groups at runtime. The environmental sensor groups are
->>>> managed in HWMON and the remaining platform specific sensor groups are
->>>> managed in /sys/firmware/opal.
->>>>
->>>> The firmware changes required for this patch is posted below:
->>>> https://lists.ozlabs.org/pipermail/skiboot/2018-March/010812.html
->>>>
->>>
->>> Sorry for not getting back earlier. This is a tough one.
->>>
->>
->> Thanks for the reply. I have tried to answer your questions according to my
->> understanding below:
->>
->>> Key problem is that you are changing the ABI with those new attributes.
->>> On top of that, the attributes _do_ make some sense (many chips support
->>> enabling/disabling of individual sensors), suggesting that those or
->>> similar attributes may or even should at some point be added to the ABI.
->>>
->>> At the same time, returning "0" as measurement values when sensors are
->>> disabled does not seem like a good idea, since "0" is a perfectly valid
->>> measurement, at least for most sensors.
->>
->> I agree.
->>
->>>
->>> Given that, we need to have a discussion about adding _enable attributes to
->>> the ABI
->>
->>> what is the scope,
->> IIUC the scope should be RW and the attribute is defined for each supported
->> sensor group
->>
+>> Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
+>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 > 
-> That is _your_ need. I am not aware of any other chip where a per-sensor group
-> attribute would make sense. The discussion we need has to extend beyond the need
-> of a single chip.
+> A few nit-picks below, thank you for the patch!
 > 
-> Guenter
+>>  tools/bpf/bpftool/prog.c          | 31 +++++++++++++++++++++++++++++++
+>>  tools/bpf/bpftool/xlated_dumper.c | 24 +++++++++++++++++-------
+>>  tools/bpf/bpftool/xlated_dumper.h |  2 ++
+>>  3 files changed, 50 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
+>> index 9bdfdf2d3fbe..ac2f62a97e84 100644
+>> --- a/tools/bpf/bpftool/prog.c
+>> +++ b/tools/bpf/bpftool/prog.c
+>> @@ -430,6 +430,10 @@ static int do_dump(int argc, char **argv)
+>>  	unsigned char *buf;
+>>  	__u32 *member_len;
+>>  	__u64 *member_ptr;
+>> +	unsigned int nr_addrs;
+>> +	unsigned long *addrs = NULL;
+>> +	__u32 *ksyms_len;
+>> +	__u64 *ksyms_ptr;
+> 
+> nit: please try to keep the variables ordered longest to shortest like
+> we do in networking code (please do it in all functions).
+> 
+>>  	ssize_t n;
+>>  	int err;
+>>  	int fd;
+>> @@ -437,6 +441,8 @@ static int do_dump(int argc, char **argv)
+>>  	if (is_prefix(*argv, "jited")) {
+>>  		member_len = &info.jited_prog_len;
+>>  		member_ptr = &info.jited_prog_insns;
+>> +		ksyms_len = &info.nr_jited_ksyms;
+>> +		ksyms_ptr = &info.jited_ksyms;
+>>  	} else if (is_prefix(*argv, "xlated")) {
+>>  		member_len = &info.xlated_prog_len;
+>>  		member_ptr = &info.xlated_prog_insns;
+>> @@ -496,10 +502,23 @@ static int do_dump(int argc, char **argv)
+>>  		return -1;
+>>  	}
+>>  
+>> +	nr_addrs = *ksyms_len;
+> 
+> Here and ...
+> 
+>> +	if (nr_addrs) {
+>> +		addrs = malloc(nr_addrs * sizeof(__u64));
+>> +		if (!addrs) {
+>> +			p_err("mem alloc failed");
+>> +			free(buf);
+>> +			close(fd);
+>> +			return -1;
+> 
+> You can just jump to err_free here.
+> 
+>> +		}
+>> +	}
+>> +
+>>  	memset(&info, 0, sizeof(info));
+>>  
+>>  	*member_ptr = ptr_to_u64(buf);
+>>  	*member_len = buf_size;
+>> +	*ksyms_ptr = ptr_to_u64(addrs);
+>> +	*ksyms_len = nr_addrs;
+> 
+> ... here - this function is getting long, so maybe I'm not seeing
+> something, but are ksyms_ptr and ksyms_len guaranteed to be initialized?
+> 
+>>  	err = bpf_obj_get_info_by_fd(fd, &info, &len);
+>>  	close(fd);
+>> @@ -513,6 +532,11 @@ static int do_dump(int argc, char **argv)
+>>  		goto err_free;
+>>  	}
+>>  
+>> +	if (*ksyms_len > nr_addrs) {
+>> +		p_err("too many addresses returned");
+>> +		goto err_free;
+>> +	}
+>> +
+>>  	if ((member_len == &info.jited_prog_len &&
+>>  	     info.jited_prog_insns == 0) ||
+>>  	    (member_len == &info.xlated_prog_len &&
+>> @@ -558,6 +582,9 @@ static int do_dump(int argc, char **argv)
+>>  			dump_xlated_cfg(buf, *member_len);
+>>  	} else {
+>>  		kernel_syms_load(&dd);
+>> +		dd.jited_ksyms = ksyms_ptr;
+>> +		dd.nr_jited_ksyms = *ksyms_len;
+>> +
+>>  		if (json_output)
+>>  			dump_xlated_json(&dd, buf, *member_len, opcodes);
+>>  		else
+>> @@ -566,10 +593,14 @@ static int do_dump(int argc, char **argv)
+>>  	}
+>>  
+>>  	free(buf);
+>> +	if (addrs)
+>> +		free(addrs);
+> 
+> Free can deal with NULL pointers, no need for an if.
+> 
+>>  	return 0;
+>>  
+>>  err_free:
+>>  	free(buf);
+>> +	if (addrs)
+>> +		free(addrs);
+>>  	return -1;
+>>  }
+>>  
+>> diff --git a/tools/bpf/bpftool/xlated_dumper.c b/tools/bpf/bpftool/xlated_dumper.c
+>> index 7a3173b76c16..dc8e4eca0387 100644
+>> --- a/tools/bpf/bpftool/xlated_dumper.c
+>> +++ b/tools/bpf/bpftool/xlated_dumper.c
+>> @@ -178,8 +178,12 @@ static const char *print_call_pcrel(struct dump_data *dd,
+>>  		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+>>  			 "%+d#%s", insn->off, sym->name);
+>>  	else
+> 
+> else if (address)
+> 
+> saves us the indentation.
+> 
+>> -		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+>> -			 "%+d#0x%lx", insn->off, address);
+>> +		if (address)
+>> +			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+>> +				 "%+d#0x%lx", insn->off, address);
+>> +		else
+>> +			snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
+>> +				 "%+d", insn->off);
+>>  	return dd->scratch_buff;
+>>  }
+>>  
+>> @@ -200,14 +204,20 @@ static const char *print_call(void *private_data,
+>>  			      const struct bpf_insn *insn)
+>>  {
+>>  	struct dump_data *dd = private_data;
+>> -	unsigned long address = dd->address_call_base + insn->imm;
+>> -	struct kernel_sym *sym;
+>> +	unsigned long address = 0;
+>> +	struct kernel_sym *sym = NULL;
+>>  
+> 
+> Hm.  Quite a bit of churn.  Why not just add these three lines here:
+> 
+> if (insn->src_reg == BPF_PSEUDO_CALL && 
+>     insn->imm < dd->nr_jited_ksyms)
+> 	address = dd->jited_ksyms[insn->imm];
+> 
+>> -	sym = kernel_syms_search(dd, address);
+>> -	if (insn->src_reg == BPF_PSEUDO_CALL)
+>> +	if (insn->src_reg == BPF_PSEUDO_CALL) {
+>> +		if (dd->nr_jited_ksyms) {
+>> +			address = dd->jited_ksyms[insn->imm];
+> 
+> Perhaps it's paranoid, but it'd please do to bound check insn->imm
+> against dd->nr_jited_ksyms.
+> 
+>> +			sym = kernel_syms_search(dd, address);
+>> +		}
+>>  		return print_call_pcrel(dd, sym, address, insn);
+>> -	else
+>> +	} else {
+>> +		address = dd->address_call_base + insn->imm;
+>> +		sym = kernel_syms_search(dd, address);
+>>  		return print_call_helper(dd, sym, address);
+>> +	}
+>>  }
+>>  
+>>  static const char *print_imm(void *private_data,
+> 
 > 
 
+Thank you for the suggestions. Will post out v2 with these changes.
 
-Is it okay if the ABI provides provision for both types of attribute
-power_enable and powerX_enable. And is it okay to decide which type of attribute
-to be used by the capability provided by the hwmon chip?
-
-
-- Shilpa
-
->>> when should the attributes exist and when not,
->> We control this currently via device-tree
->>
->>> do we want/need power_enable or powerX_enable or both, and so on), and
->> We need power_enable right now
->>
->>> what to return if a sensor is disabled (such as -ENODATA).
->> -ENODATA sounds good.
->>
->> Thanks and Regards,
->> Shilpa
->>
->>   Once we have an
->>> agreement, we can continue with an implementation.
->>>
->>> Guenter
->>>
->>>> Shilpasri G Bhat (3):
->>>>    powernv:opal-sensor-groups: Add support to enable sensor groups
->>>>    hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
->>>>    powernv: opal-sensor-groups: Add attributes to disable/enable sensors
->>>>
->>>>   .../ABI/testing/sysfs-firmware-opal-sensor-groups  |  34 ++++++
->>>>   Documentation/hwmon/ibmpowernv                     |  31 ++++-
->>>>   arch/powerpc/include/asm/opal-api.h                |   4 +-
->>>>   arch/powerpc/include/asm/opal.h                    |   2 +
->>>>   .../powerpc/platforms/powernv/opal-sensor-groups.c | 104 ++++++++++++-----
->>>>   arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
->>>>   drivers/hwmon/ibmpowernv.c                         | 127
->>>> +++++++++++++++++++--
->>>>   7 files changed, 265 insertions(+), 38 deletions(-)
->>>>   create mode 100644
->>>> Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
->>>>
->>>> -- 
->>>> 1.8.3.1
->>>>
->>>> -- 
->>>> To unsubscribe from this list: send the line "unsubscribe linux-hwmon" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->>
->>
-> 
+- Sandipan
