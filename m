@@ -1,17 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nSwc6hp7zF2BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 23:01:20 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/lib: Adjust .balign inside string functions for
- PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180518130116.A1A3B6F937@po14934vm.idsi0.si.c-s.fr>
-Date: Fri, 18 May 2018 15:01:16 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nT1y6tdGzF2Bj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 23:05:58 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc: Enable ASYM_SMT on interleaved big-core
+ systems
+In-Reply-To: <20180516050508.GB14826@in.ibm.com>
+References: <1526037444-22876-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1526037444-22876-3-git-send-email-ego@linux.vnet.ibm.com>
+ <1526268127.30369.21.camel@neuling.org> <20180516050508.GB14826@in.ibm.com>
+Date: Fri, 18 May 2018 23:05:57 +1000
+Message-ID: <87muwxxgei.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,87 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 87a156fb18fe1 ("Align hot loops of some string functions")
-degraded the performance of string functions by adding useless
-nops
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
 
-A simple benchmark on an 8xx calling 100000x a memchr() that
-matches the first byte runs in 41668 TB ticks before this patch
-and in 35986 TB ticks after this patch. So this gives an
-improvement of approx 10%
+> On Mon, May 14, 2018 at 01:22:07PM +1000, Michael Neuling wrote:
+>> On Fri, 2018-05-11 at 16:47 +0530, Gautham R. Shenoy wrote:
+>> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> > 
+>> > Each of the SMT4 cores forming a fused-core are more or less
+>> > independent units. Thus when multiple tasks are scheduled to run on
+>> > the fused core, we get the best performance when the tasks are spread
+>> > across the pair of SMT4 cores.
+>> > 
+>> > Since the threads in the pair of SMT4 cores of an interleaved big-core
+>> > are numbered {0,2,4,6} and {1,3,5,7} respectively, enable ASYM_SMT on
+>> > such interleaved big-cores that will bias the load-balancing of tasks
+>> > on smaller numbered threads, which will automatically result in
+>> > spreading the tasks uniformly across the associated pair of SMT4
+>> > cores.
+>> > 
+>> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> > ---
+>> >  arch/powerpc/kernel/smp.c | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> > 
+>> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+>> > index 9ca7148..0153f01 100644
+>> > --- a/arch/powerpc/kernel/smp.c
+>> > +++ b/arch/powerpc/kernel/smp.c
+>> > @@ -1082,7 +1082,7 @@ static int powerpc_smt_flags(void)
+>> >  {
+>> >  	int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+>> >  
+>> > -	if (cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+>> > +	if (cpu_has_feature(CPU_FTR_ASYM_SMT) || has_interleaved_big_core) {
+>> 
+>> Shouldn't we just set CPU_FTR_ASYM_SMT and leave this code
+> unchanged?
+>
+> Yes, that would have the same effect. I refrained from doing that
+> since I thought CPU_FTR_ASYM_SMT has the "lower numbered threads
+> expedite thread-folding" connotation from the POWER7 generation.
 
-Another benchmark doing the same with a memchr() matching the 128th
-byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
-after this patch, so regardless on the number of loops, removing
-those useless nops improves the test by 5683 TB ticks.
+The above code is the only use of the feature, so I don't think we need
+to worry about any other connotations.
 
-Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: Define IFETCH_ALIGN_SHIFT for PPC32 and use IFETCH_ALIGN_BYTES
-    for the alignment
+> If it is ok to overload CPU_FTR_ASYM_SMT, we can do what you suggest
+> and have all the changes in setup-common.c
 
- arch/powerpc/include/asm/cache.h | 3 +++
- arch/powerpc/lib/string.S        | 7 ++++---
- 2 files changed, 7 insertions(+), 3 deletions(-)
+Yeah let's do that.
 
-diff --git a/arch/powerpc/include/asm/cache.h b/arch/powerpc/include/asm/cache.h
-index c1d257aa4c2d..66298461b640 100644
---- a/arch/powerpc/include/asm/cache.h
-+++ b/arch/powerpc/include/asm/cache.h
-@@ -9,11 +9,14 @@
- #if defined(CONFIG_PPC_8xx) || defined(CONFIG_403GCX)
- #define L1_CACHE_SHIFT		4
- #define MAX_COPY_PREFETCH	1
-+#define IFETCH_ALIGN_SHIFT	2
- #elif defined(CONFIG_PPC_E500MC)
- #define L1_CACHE_SHIFT		6
- #define MAX_COPY_PREFETCH	4
-+#define IFETCH_ALIGN_SHIFT	3
- #elif defined(CONFIG_PPC32)
- #define MAX_COPY_PREFETCH	4
-+#define IFETCH_ALIGN_SHIFT	3	/* 603 fetches 2 insn at a time */
- #if defined(CONFIG_PPC_47x)
- #define L1_CACHE_SHIFT		7
- #else
-diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-index a787776822d8..0378def28d41 100644
---- a/arch/powerpc/lib/string.S
-+++ b/arch/powerpc/lib/string.S
-@@ -12,6 +12,7 @@
- #include <asm/errno.h>
- #include <asm/ppc_asm.h>
- #include <asm/export.h>
-+#include <asm/cache.h>
- 
- 	.text
- 	
-@@ -23,7 +24,7 @@ _GLOBAL(strncpy)
- 	mtctr	r5
- 	addi	r6,r3,-1
- 	addi	r4,r4,-1
--	.balign 16
-+	.balign IFETCH_ALIGN_BYTES
- 1:	lbzu	r0,1(r4)
- 	cmpwi	0,r0,0
- 	stbu	r0,1(r6)
-@@ -43,7 +44,7 @@ _GLOBAL(strncmp)
- 	mtctr	r5
- 	addi	r5,r3,-1
- 	addi	r4,r4,-1
--	.balign 16
-+	.balign IFETCH_ALIGN_BYTES
- 1:	lbzu	r3,1(r5)
- 	cmpwi	1,r3,0
- 	lbzu	r0,1(r4)
-@@ -77,7 +78,7 @@ _GLOBAL(memchr)
- 	beq-	2f
- 	mtctr	r5
- 	addi	r3,r3,-1
--	.balign 16
-+	.balign IFETCH_ALIGN_BYTES
- 1:	lbzu	r0,1(r3)
- 	cmpw	0,r0,r4
- 	bdnzf	2,1b
--- 
-2.13.3
+cheers
