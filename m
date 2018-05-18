@@ -2,20 +2,21 @@ Return-Path: <daniel@iogearbox.net>
 Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nXWv65ZBzF2D0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 01:43:39 +1000 (AEST)
-Subject: Re: [PATCH bpf v2 3/6] bpf: get kernel symbol addresses via syscall
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nXjR34LhzDr4q
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 01:51:55 +1000 (AEST)
+Subject: Re: [PATCH bpf v2 6/6] bpf: fix JITed dump for multi-function
+ programs via syscall
 To: Sandipan Das <sandipan@linux.vnet.ibm.com>, ast@kernel.org
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  naveen.n.rao@linux.vnet.ibm.com, mpe@ellerman.id.au,
  jakub.kicinski@netronome.com
 References: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
- <20180518125039.6500-4-sandipan@linux.vnet.ibm.com>
+ <20180518125039.6500-7-sandipan@linux.vnet.ibm.com>
 From: Daniel Borkmann <daniel@iogearbox.net>
-Message-ID: <47a84b99-b93a-23e4-8797-0736530c52eb@iogearbox.net>
-Date: Fri, 18 May 2018 17:43:32 +0200
+Message-ID: <654d4424-ad99-2b5e-dcbf-9e352aec75d6@iogearbox.net>
+Date: Fri, 18 May 2018 17:51:47 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180518125039.6500-4-sandipan@linux.vnet.ibm.com>
+In-Reply-To: <20180518125039.6500-7-sandipan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,124 +28,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 05/18/2018 02:50 PM, Sandipan Das wrote:
-> This adds new two new fields to struct bpf_prog_info. For
-> multi-function programs, these fields can be used to pass
-> a list of kernel symbol addresses for all functions in a
-> given program and to userspace using the bpf system call
-> with the BPF_OBJ_GET_INFO_BY_FD command.
+> Currently, for multi-function programs, we cannot get the JITed
+> instructions using the bpf system call's BPF_OBJ_GET_INFO_BY_FD
+> command. Because of this, userspace tools such as bpftool fail
+> to identify a multi-function program as being JITed or not.
 > 
-> When bpf_jit_kallsyms is enabled, we can get the address
-> of the corresponding kernel symbol for a callee function
-> and resolve the symbol's name. The address is determined
-> by adding the value of the call instruction's imm field
-> to __bpf_call_base. This offset gets assigned to the imm
-> field by the verifier.
+> With the JIT enabled and the test program running, this can be
+> verified as follows:
 > 
-> For some architectures, such as powerpc64, the imm field
-> is not large enough to hold this offset.
+>   # cat /proc/sys/net/core/bpf_jit_enable
+>   1
 > 
-> We resolve this by:
+> Before applying this patch:
 > 
-> [1] Assigning the subprog id to the imm field of a call
->     instruction in the verifier instead of the offset of
->     the callee's symbol's address from __bpf_call_base.
+>   # bpftool prog list
+>   1: kprobe  name foo  tag b811aab41a39ad3d  gpl
+>           loaded_at 2018-05-16T11:43:38+0530  uid 0
+>           xlated 216B  not jited  memlock 65536B
+>   ...
 > 
-> [2] Determining the address of a callee's corresponding
->     symbol by using the imm field as an index for the
->     list of kernel symbol addresses now available from
->     the program info.
+>   # bpftool prog dump jited id 1
+>   no instructions returned
 > 
-> Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
+> After applying this patch:
+> 
+>   # bpftool prog list
+>   1: kprobe  name foo  tag b811aab41a39ad3d  gpl
+>           loaded_at 2018-05-16T12:13:01+0530  uid 0
+>           xlated 216B  jited 308B  memlock 65536B
+>   ...
+
+That's really nice! One comment inline below:
+
+>   # bpftool prog dump jited id 1
+>      0:   nop
+>      4:   nop
+>      8:   mflr    r0
+>      c:   std     r0,16(r1)
+>     10:   stdu    r1,-112(r1)
+>     14:   std     r31,104(r1)
+>     18:   addi    r31,r1,48
+>     1c:   li      r3,10
+>   ...
+> 
 > Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 > ---
->  include/uapi/linux/bpf.h |  2 ++
->  kernel/bpf/syscall.c     | 20 ++++++++++++++++++++
->  kernel/bpf/verifier.c    |  7 +------
->  3 files changed, 23 insertions(+), 6 deletions(-)
+>  kernel/bpf/syscall.c | 38 ++++++++++++++++++++++++++++++++------
+>  1 file changed, 32 insertions(+), 6 deletions(-)
 > 
-> diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
-> index d94d333a8225..040c9cac7303 100644
-> --- a/include/uapi/linux/bpf.h
-> +++ b/include/uapi/linux/bpf.h
-> @@ -2188,6 +2188,8 @@ struct bpf_prog_info {
->  	__u32 xlated_prog_len;
->  	__aligned_u64 jited_prog_insns;
->  	__aligned_u64 xlated_prog_insns;
-> +	__aligned_u64 jited_ksyms;
-> +	__u32 nr_jited_ksyms;
->  	__u64 load_time;	/* ns since boottime */
->  	__u32 created_by_uid;
->  	__u32 nr_map_ids;
 > diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
-> index bfcde949c7f8..54a72fafe57c 100644
+> index 54a72fafe57c..2430d159078c 100644
 > --- a/kernel/bpf/syscall.c
 > +++ b/kernel/bpf/syscall.c
-> @@ -1933,6 +1933,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
->  	if (!capable(CAP_SYS_ADMIN)) {
->  		info.jited_prog_len = 0;
->  		info.xlated_prog_len = 0;
-> +		info.nr_jited_ksyms = 0;
->  		goto done;
->  	}
+> @@ -1896,7 +1896,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+>  	struct bpf_prog_info info = {};
+>  	u32 info_len = attr->info.info_len;
+>  	char __user *uinsns;
+> -	u32 ulen;
+> +	u32 ulen, i;
+>  	int err;
 >  
-> @@ -1981,6 +1982,25 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
->  		}
->  	}
+>  	err = check_uarg_tail_zero(uinfo, sizeof(info), info_len);
+> @@ -1922,7 +1922,6 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+>  	ulen = min_t(u32, info.nr_map_ids, ulen);
+>  	if (ulen) {
+>  		u32 __user *user_map_ids = u64_to_user_ptr(info.map_ids);
+> -		u32 i;
 >  
-> +	ulen = info.nr_jited_ksyms;
-> +	info.nr_jited_ksyms = prog->aux->func_cnt;
-> +	if (info.nr_jited_ksyms && ulen) {
-
-Since this exposes addresses (though masked one which is correct), this
-definitely needs to be guarded with bpf_dump_raw_ok() like we do in other
-places here (see JIT dump for example).
-
-> +		u64 __user *user_jited_ksyms = u64_to_user_ptr(info.jited_ksyms);
-> +		ulong ksym_addr;
-> +		u32 i;
-> +
-> +		/* copy the address of the kernel symbol corresponding to
-> +		 * each function
-> +		 */
-> +		ulen = min_t(u32, info.nr_jited_ksyms, ulen);
-> +		for (i = 0; i < ulen; i++) {
-> +			ksym_addr = (ulong) prog->aux->func[i]->bpf_func;
-> +			ksym_addr &= PAGE_MASK;
-> +			if (put_user((u64) ksym_addr, &user_jited_ksyms[i]))
-> +				return -EFAULT;
-> +		}
+>  		for (i = 0; i < ulen; i++)
+>  			if (put_user(prog->aux->used_maps[i]->id,
+> @@ -1970,13 +1969,41 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+>  	 * for offload.
+>  	 */
+>  	ulen = info.jited_prog_len;
+> -	info.jited_prog_len = prog->jited_len;
+> +	if (prog->aux->func_cnt) {
+> +		info.jited_prog_len = 0;
+> +		for (i = 0; i < prog->aux->func_cnt; i++)
+> +			info.jited_prog_len += prog->aux->func[i]->jited_len;
+> +	} else {
+> +		info.jited_prog_len = prog->jited_len;
 > +	}
 > +
->  done:
->  	if (copy_to_user(uinfo, &info, info_len) ||
->  	    put_user(info_len, &uattr->info.info_len))
-> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-> index 6c56cce9c4e3..e826c396aba2 100644
-> --- a/kernel/bpf/verifier.c
-> +++ b/kernel/bpf/verifier.c
-> @@ -5426,17 +5426,12 @@ static int jit_subprogs(struct bpf_verifier_env *env)
->  	 * later look the same as if they were interpreted only.
->  	 */
->  	for (i = 0, insn = prog->insnsi; i < prog->len; i++, insn++) {
-> -		unsigned long addr;
-> -
->  		if (insn->code != (BPF_JMP | BPF_CALL) ||
->  		    insn->src_reg != BPF_PSEUDO_CALL)
->  			continue;
->  		insn->off = env->insn_aux_data[i].call_imm;
->  		subprog = find_subprog(env, i + insn->off + 1);
-> -		addr  = (unsigned long)func[subprog]->bpf_func;
+>  	if (info.jited_prog_len && ulen) {
+>  		if (bpf_dump_raw_ok()) {
+>  			uinsns = u64_to_user_ptr(info.jited_prog_insns);
+>  			ulen = min_t(u32, info.jited_prog_len, ulen);
+> -			if (copy_to_user(uinsns, prog->bpf_func, ulen))
+> -				return -EFAULT;
+> +
+> +			/* for multi-function programs, copy the JITed
+> +			 * instructions for all the functions
+> +			 */
+> +			if (prog->aux->func_cnt) {
+> +				u32 len, free;
+> +				u8 *img;
+> +
+> +				free = ulen;
+> +				for (i = 0; i < prog->aux->func_cnt; i++) {
+> +					len = prog->aux->func[i]->jited_len;
+> +					img = (u8 *) prog->aux->func[i]->bpf_func;
+> +					if (len > free)
+> +						break;
+> +					if (copy_to_user(uinsns, img, len))
+> +						return -EFAULT;
+> +					uinsns += len;
+> +					free -= len;
 
-Hmm, in current bpf tree this says 'subprog + 1' here, so this is not
-rebased against bpf tree but bpf-next (unlike what subject says)?
+Is there any way we can introduce a delimiter between the different
+images such that they could be more easily correlated with the call
+from the main (or other sub-)program instead of having one contiguous
+dump blob?
 
-https://git.kernel.org/pub/scm/linux/kernel/git/bpf/bpf.git/tree/kernel/bpf/verifier.c#n5351
-
-> -		addr &= PAGE_MASK;
-> -		insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
-> -			    addr - __bpf_call_base;
-> +		insn->imm = subprog;
->  	}
+> +				}
+> +			} else {
+> +				if (copy_to_user(uinsns, prog->bpf_func, ulen))
+> +					return -EFAULT;
+> +			}
+>  		} else {
+>  			info.jited_prog_insns = 0;
+>  		}
+> @@ -1987,7 +2014,6 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+>  	if (info.nr_jited_ksyms && ulen) {
+>  		u64 __user *user_jited_ksyms = u64_to_user_ptr(info.jited_ksyms);
+>  		ulong ksym_addr;
+> -		u32 i;
 >  
->  	prog->jited = 1;
+>  		/* copy the address of the kernel symbol corresponding to
+>  		 * each function
 > 
