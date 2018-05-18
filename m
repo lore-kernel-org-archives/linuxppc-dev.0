@@ -2,23 +2,24 @@ Return-Path: <herbert@gondor.apana.org.au>
 Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ncjw4zNNzF2Fd
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 04:52:36 +1000 (AEST)
-Date: Sat, 19 May 2018 02:20:51 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nck32DZ8zF2GM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 04:52:43 +1000 (AEST)
+Date: Sat, 19 May 2018 02:21:15 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Colin King <colin.king@canonical.com>
-Cc: Haren Myneni <haren@us.ibm.com>, "David S . Miller" <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: nx: fix spelling mistake: "seqeunce" -> "sequence"
-Message-ID: <20180518182051.dsil4emgxugtnydp@gondor.apana.org.au>
-References: <20180509091636.13589-1-colin.king@canonical.com>
+To: Gilad Ben-Yossef <gilad@benyossef.com>
+Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ "David S. Miller" <davem@davemloft.net>, Ofir Drang <ofir.drang@arm.com>,
+ linux-next <linux-next@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: reorder paes test lexicographically
+Message-ID: <20180518182114.aqrkeoypuh2wlucy@gondor.apana.org.au>
+References: <1526025847-13134-1-git-send-email-gilad@benyossef.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180509091636.13589-1-colin.king@canonical.com>
+In-Reply-To: <1526025847-13134-1-git-send-email-gilad@benyossef.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,12 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 09, 2018 at 10:16:36AM +0100, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Fri, May 11, 2018 at 09:04:06AM +0100, Gilad Ben-Yossef wrote:
+> Due to a snafu "paes" testmgr tests were not ordered
+> lexicographically, which led to boot time warnings.
+> Reorder the tests as needed.
 > 
-> Trivial fix to spelling mistake in CSB_ERR error message text
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> Fixes: a794d8d ("crypto: ccree - enable support for hardware keys")
+> Reported-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> Signed-off-by: Gilad Ben-Yossef <gilad@benyossef.com>
 
 Patch applied.  Thanks.
 -- 
