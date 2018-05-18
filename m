@@ -1,46 +1,18 @@
-Return-Path: <boqun.feng@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40n7NS5rX1zF28G
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 09:50:48 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id j42-v6so8106961qtj.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2018 16:50:48 -0700 (PDT)
-Message-Id: <1526601043.1338308.1376191416.0444B8C5@webmail.messagingengine.com>
-From: Boqun Feng <boqun.feng@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Will Deacon <will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
- "linux-kernel" <linux-kernel@vger.kernel.org>,
- "linux-api" <linux-api@vger.kernel.org>, Paul Turner <pjt@google.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
- Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
- Ben Maurer <bmaurer@fb.com>, rostedt <rostedt@goodmis.org>,
- Josh Triplett <josh@joshtriplett.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- Joel Fernandes <joelaf@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
-Date: Fri, 18 May 2018 07:50:43 +0800
-In-Reply-To: <277374719.2144.1526570889798.JavaMail.zimbra@efficios.com>
-References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
- <20180430224433.17407-8-mathieu.desnoyers@efficios.com>
- <20180516161837.GI12198@hirez.programming.kicks-ass.net>
- <112970629.1913.1526501596485.JavaMail.zimbra@efficios.com>
- <20180517011949.GA1121@tardis>
- <277374719.2144.1526570889798.JavaMail.zimbra@efficios.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40n9Kd00K5zF291
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 11:18:28 +1000 (AEST)
+Date: Fri, 18 May 2018 11:18:33 +1000
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org,
+    linux-kernel@vger.kernel.org
+Message-Id: <a93c26abed5911cd92cf51b50bc4a0ca278188de.1526602763.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH RESEND] powerpc/lib: Fix "integer constant is too large" build
+ failure
+ReSent-Message-ID: <alpine.LNX.2.21.1805181118300.26@nippy.intranet>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,158 +22,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+My powerpc-linux-gnu-gcc v4.4.5 compiler can't build a 32-bit kernel
+any more:
 
+arch/powerpc/lib/sstep.c: In function 'do_popcnt':
+arch/powerpc/lib/sstep.c:1068: error: integer constant is too large for 'long' type
+arch/powerpc/lib/sstep.c:1069: error: integer constant is too large for 'long' type
+arch/powerpc/lib/sstep.c:1069: error: integer constant is too large for 'long' type
+arch/powerpc/lib/sstep.c:1070: error: integer constant is too large for 'long' type
+arch/powerpc/lib/sstep.c:1079: error: integer constant is too large for 'long' type
+arch/powerpc/lib/sstep.c: In function 'do_prty':
+arch/powerpc/lib/sstep.c:1117: error: integer constant is too large for 'long' type
 
-On Thu, May 17, 2018, at 11:28 PM, Mathieu Desnoyers wrote:
-> ----- On May 16, 2018, at 9:19 PM, Boqun Feng boqun.feng@gmail.com wrote:
-> 
-> > On Wed, May 16, 2018 at 04:13:16PM -0400, Mathieu Desnoyers wrote:
-> >> ----- On May 16, 2018, at 12:18 PM, Peter Zijlstra peterz@infradead.org wrote:
-> >> 
-> >> > On Mon, Apr 30, 2018 at 06:44:26PM -0400, Mathieu Desnoyers wrote:
-> >> >> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> >> >> index c32a181a7cbb..ed21a777e8c6 100644
-> >> >> --- a/arch/powerpc/Kconfig
-> >> >> +++ b/arch/powerpc/Kconfig
-> >> >> @@ -223,6 +223,7 @@ config PPC
-> >> >>  	select HAVE_SYSCALL_TRACEPOINTS
-> >> >>  	select HAVE_VIRT_CPU_ACCOUNTING
-> >> >>  	select HAVE_IRQ_TIME_ACCOUNTING
-> >> >> +	select HAVE_RSEQ
-> >> >>  	select IRQ_DOMAIN
-> >> >>  	select IRQ_FORCED_THREADING
-> >> >>  	select MODULES_USE_ELF_RELA
-> >> >> diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-> >> >> index 61db86ecd318..d3bb3aaaf5ac 100644
-> >> >> --- a/arch/powerpc/kernel/signal.c
-> >> >> +++ b/arch/powerpc/kernel/signal.c
-> >> >> @@ -133,6 +133,8 @@ static void do_signal(struct task_struct *tsk)
-> >> >>  	/* Re-enable the breakpoints for the signal stack */
-> >> >>  	thread_change_pc(tsk, tsk->thread.regs);
-> >> >>  
-> >> >> +	rseq_signal_deliver(tsk->thread.regs);
-> >> >> +
-> >> >>  	if (is32) {
-> >> >>          	if (ksig.ka.sa.sa_flags & SA_SIGINFO)
-> >> >>  			ret = handle_rt_signal32(&ksig, oldset, tsk);
-> >> >> @@ -164,6 +166,7 @@ void do_notify_resume(struct pt_regs *regs, unsigned long
-> >> >> thread_info_flags)
-> >> >>  	if (thread_info_flags & _TIF_NOTIFY_RESUME) {
-> >> >>  		clear_thread_flag(TIF_NOTIFY_RESUME);
-> >> >>  		tracehook_notify_resume(regs);
-> >> >> +		rseq_handle_notify_resume(regs);
-> >> >>  	}
-> >> >>  
-> >> >>  	user_enter();
-> >> > 
-> >> > Again no rseq_syscall().
-> >> 
-> >> Same question for PowerPC as for ARM:
-> >> 
-> >> Considering that rseq_syscall is implemented as follows:
-> >> 
-> >> +void rseq_syscall(struct pt_regs *regs)
-> >> +{
-> >> +       unsigned long ip = instruction_pointer(regs);
-> >> +       struct task_struct *t = current;
-> >> +       struct rseq_cs rseq_cs;
-> >> +
-> >> +       if (!t->rseq)
-> >> +               return;
-> >> +       if (!access_ok(VERIFY_READ, t->rseq, sizeof(*t->rseq)) ||
-> >> +           rseq_get_rseq_cs(t, &rseq_cs) || in_rseq_cs(ip, &rseq_cs))
-> >> +               force_sig(SIGSEGV, t);
-> >> +}
-> >> 
-> >> and that x86 calls it from syscall_return_slowpath() (which AFAIU is
-> >> now used in the fast-path since KPTI), I wonder where we should call
-> > 
-> > So we actually detect this after the syscall takes effect, right? I
-> > wonder whether this could be problematic, because "disallowing syscall"
-> > in rseq areas may means the syscall won't take effect to some people, I
-> > guess?
-> > 
-> >> this on PowerPC ?  I was under the impression that PowerPC return to
-> >> userspace fast-path was not calling C code unless work flags were set,
-> >> but I might be wrong.
-> >> 
-> > 
-> > I think you're right. So we have to introduce callsite to rseq_syscall()
-> > in syscall path, something like:
-> > 
-> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> > index 51695608c68b..a25734a96640 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -222,6 +222,9 @@ system_call_exit:
-> > 	mtmsrd	r11,1
-> > #endif /* CONFIG_PPC_BOOK3E */
-> > 
-> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
-> > +	bl	rseq_syscall
-> > +
-> > 	ld	r9,TI_FLAGS(r12)
-> > 	li	r11,-MAX_ERRNO
-> > 	andi.
-> > 		r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
-> > 
-> > But I think it's important for us to first decide where (before or after
-> > the syscall) we do the detection.
-> 
-> As Peter said, we don't really care whether it's on syscall entry or 
-> exit, as
-> long as the process gets killed when the erroneous use is detected. I 
-> think doing
-> it on syscall exit is a bit easier because we can clearly access the 
-> userspace
-> TLS, which AFAIU may be less straightforward on syscall entry.
->
+This file gets compiled with -std=gnu89 which means a constant can be
+given the type 'long' even if it won't fit. Fix the errors with a 'ULL'
+suffix on the relevant constants.
 
-Fair enough.
+Fixes: 2c979c489fee ("powerpc/lib/sstep: Add prty instruction emulation")
+Fixes: dcbd19b48d31 ("powerpc/lib/sstep: Add popcnt instruction emulation")
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+This change was compile tested but not regression tested.
+---
+I'm re-sending this because the first submission didn't show up on
+patchwork.ozlabs.org, apparently because I sent it without any
+message-id header. Sorry about that.
+---
+ arch/powerpc/lib/sstep.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 34d68f1b1b40..49427a3ee104 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -1065,9 +1065,10 @@ static nokprobe_inline void do_popcnt(const struct pt_regs *regs,
+ {
+ 	unsigned long long out = v1;
  
-> We may want to add #ifdef CONFIG_DEBUG_RSEQ / #endif around the code you
-> proposed above, so it's only compiled in if CONFIG_DEBUG_RSEQ=y.
-> 
-
-OK.
-
-> On the ARM leg of the email thread, Will Deacon suggests to test whether 
-> current->rseq
-> is non-NULL before calling rseq_syscall(). I wonder if this added check 
-> is justified
-> as the assembly level, considering that this is just a debugging option. 
-> We already do
-> that check at the very beginning of rseq_syscall().
-> 
-
-Yes, I think it's better to do the check in rseq_syscall(), leaving the asm
-code a bit cleaner.
-
-Regards,
-Boqun
-
-> Thoughts ?
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> > 
-> > Regards,
-> > Boqun
-> > 
-> >> Thoughts ?
-> >> 
-> >> Thanks!
-> >> 
-> >> Mathieu
-> >> 
-> >> --
-> >> Mathieu Desnoyers
-> >> EfficiOS Inc.
-> > > http://www.efficios.com
-> 
-> -- 
-> Mathieu Desnoyers
-> EfficiOS Inc.
-> http://www.efficios.com
+-	out -= (out >> 1) & 0x5555555555555555;
+-	out = (0x3333333333333333 & out) + (0x3333333333333333 & (out >> 2));
+-	out = (out + (out >> 4)) & 0x0f0f0f0f0f0f0f0f;
++	out -= (out >> 1) & 0x5555555555555555ULL;
++	out = (0x3333333333333333ULL & out) +
++	      (0x3333333333333333ULL & (out >> 2));
++	out = (out + (out >> 4)) & 0x0f0f0f0f0f0f0f0fULL;
+ 
+ 	if (size == 8) {	/* popcntb */
+ 		op->val = out;
+@@ -1076,7 +1077,7 @@ static nokprobe_inline void do_popcnt(const struct pt_regs *regs,
+ 	out += out >> 8;
+ 	out += out >> 16;
+ 	if (size == 32) {	/* popcntw */
+-		op->val = out & 0x0000003f0000003f;
++		op->val = out & 0x0000003f0000003fULL;
+ 		return;
+ 	}
+ 
+@@ -1114,7 +1115,7 @@ static nokprobe_inline void do_prty(const struct pt_regs *regs,
+ 
+ 	res ^= res >> 16;
+ 	if (size == 32) {		/* prtyw */
+-		op->val = res & 0x0000000100000001;
++		op->val = res & 0x0000000100000001ULL;
+ 		return;
+ 	}
+ 
+-- 
+2.16.1
