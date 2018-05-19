@@ -1,36 +1,29 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <luto@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nnJv4BgPzF09n
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 11:19:59 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4J1IgWJ035744
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 21:19:56 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j26p5fd74-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 21:19:56 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sat, 19 May 2018 02:19:54 +0100
-Date: Fri, 18 May 2018 18:19:47 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>,
- Andy Lutomirski <luto@amacapital.net>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40np0b2dT5zDrCQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 11:50:54 +1000 (AEST)
+Received: from mail-wm0-f54.google.com (mail-wm0-f54.google.com [74.125.82.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 2740720859
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 01:50:52 +0000 (UTC)
+Received: by mail-wm0-f54.google.com with SMTP id a8-v6so16809814wmg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 18:50:52 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
-Message-Id: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+In-Reply-To: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+From: Andy Lutomirski <luto@kernel.org>
+Date: Fri, 18 May 2018 18:50:39 -0700
+Message-ID: <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+To: linuxram@us.ibm.com
+Cc: Florian Weimer <fweimer@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-MM <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,104 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 18, 2018 at 04:27:14PM +0200, Florian Weimer wrote:
-> This test program:
-> 
-> #include <errno.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <unistd.h>
-> #include <sys/syscall.h>
-> #include <err.h>
-> 
-> /* Return the value of the AMR register.  */
-> static inline unsigned long int
-> pkey_read (void)
-> {
->   unsigned long int result;
->   __asm__ volatile ("mfspr %0, 13" : "=r" (result));
->   return result;
-> }
-> 
-> /* Overwrite the AMR register with VALUE.  */
-> static inline void
-> pkey_write (unsigned long int value)
-> {
->   __asm__ volatile ("mtspr 13, %0" : : "r" (value));
-> }
-> 
-> int
-> main (int argc, char **argv)
-> {
->   printf ("AMR (PID %d): 0x%016lx\n", (int) getpid (), pkey_read());
->   if (argc > 1)
->     {
->       int key = syscall (__NR_pkey_alloc, 0, 0);
->       if (key < 0)
->         err (1, "pkey_alloc");
->       printf ("Allocated key (PID %d): %d\n", (int) getpid (), key);
->       return 0;
->     }
-> 
->   pid_t pid = fork ();
->   if (pid == 0)
->     {
->       execl ("/proc/self/exe", argv[0], "subprocess", NULL);
->       _exit (1);
->     }
->   if (pid < 0)
->     err (1, "fork");
->   int status;
->   if (waitpid (pid, &status, 0) < 0)
->     err (1, "waitpid");
-> 
->   int key = syscall (__NR_pkey_alloc, 0, 0);
->   if (key < 0)
->     err (1, "pkey_alloc");
->   printf ("Allocated key (PID %d): %d\n", (int) getpid (), key);
-> 
->   unsigned long int amr = -1;
->   printf ("Setting AMR: 0x%016lx\n", amr);
->   pkey_write (amr);
->   printf ("New AMR value (PID %d, before execl): 0x%016lx\n",
->           (int) getpid (), pkey_read());
->   execl ("/proc/self/exe", argv[0], "subprocess", NULL);
->   err (1, "exec");
->   return 1;
-> }
-> 
-> shows that the AMR register value is not reset on execve:
-> 
-> AMR (PID 112291): 0x0000000000000000
-> AMR (PID 112292): 0x0000000000000000
-> Allocated key (PID 112292): 2
-> Allocated key (PID 112291): 2
-> Setting AMR: 0xffffffffffffffff
-> New AMR value (PID 112291, before execl): 0x0c00000000000000
-> AMR (PID 112291): 0x0c00000000000000
-> Allocated key (PID 112291): 2
-> 
-> I think this is a real bug and needs to be fixed even if the
-> defaults are kept as-is (see the other thread).
+On Fri, May 18, 2018 at 6:19 PM Ram Pai <linuxram@us.ibm.com> wrote:
 
-The issue you may be talking about here is that  --
+> However the fundamental issue is still the same, as mentioned in the
+> other thread.
 
-"when you set the AMR register to 0xffffffffffffffff, it 
-just sets it to 0x0c00000000000000."
+> "Should the permissions on a key be allowed to be changed, if the key
+> is not allocated in the first place?".
 
-To me it looks like, exec/fork are not related to the issue.
-Or are they also somehow connected to the issue?
+> my answer is NO. Lets debate :)
 
+As a preface, here's my two-minute attempt to understand POWER's behavior:
+there are two registers, AMR and UAMR.  AMR contains both kernel-relevant
+state and user-relevant state.  UAMR specifies which bits of AMR are
+available for user code to directly access.  AMR bits outside UAMR are read
+as zero and are unaffected by writes.  I'm assuming that the kernel
+reserves some subset of AMR bits in advance to correspond to allocatable
+pkeys.
 
-The reason the AMR register does not get set to 0xffffffffffffffff,
-is because none of those keys; except key 2, are active. So it ignores
-all other bits and just sets the bits corresponding to key 2.
+Here's my question: given that disallowed AMR bits are read-as-zero, there
+can always be a thread that is in the middle of a sequence like:
 
-However the fundamental issue is still the same, as mentioned in the
-other thread.
+unsigned long old = amr;
+amr |= whatever;
+...  <- thread is here
+amr = old;
 
-"Should the permissions on a key be allowed to be changed, if the key
-is not allocated in the first place?".
+Now another thread calls pkey_alloc(), so UAMR is asynchronously changed,
+and the thread will write zero to the relevant AMR bits.  If I understand
+correctly, this means that the decision to mask off unallocated keys via
+UAMR effectively forces the initial value of newly-allocated keys in other
+threads in the allocating process to be zero, whatever zero means.  (I
+didn't get far enough in the POWER docs to figure out what zero means.)  So
+I don't think you're doing anyone any favors by making UAMR dynamic.
 
-my answer is NO. Lets debate :)
-RP
+IOW both x86 and POWER screwed up the ISA.
