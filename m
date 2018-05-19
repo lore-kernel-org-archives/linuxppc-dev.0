@@ -1,20 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nsgK497vzF0Qs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 14:36:13 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id bi12-v6so5690161plb.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 21:36:13 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 3/3] powerpc/64: hard disable irqs on the panic()ing CPU
-Date: Sat, 19 May 2018 14:35:54 +1000
-Message-Id: <20180519043554.26640-4-npiggin@gmail.com>
-In-Reply-To: <20180519043554.26640-1-npiggin@gmail.com>
-References: <20180519043554.26640-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ntT731RFzDr61
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:12:26 +1000 (AEST)
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>,
+ Andy Lutomirski <luto@amacapital.net>
+References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <d886e425-71fc-e203-e22d-7e07552c91c4@redhat.com>
+Date: Sat, 19 May 2018 07:12:19 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to previous patches, hard disable interrupts when a CPU is
-in panic. This reduces the chance the watchdog has to interfere with
-the panic, and avoids any other type of masked interrupt being
-executed when crashing which minimises the length of the crash path.
+On 05/19/2018 03:19 AM, Ram Pai wrote:
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/kernel/setup-common.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+>> New AMR value (PID 112291, before execl): 0x0c00000000000000
+>> AMR (PID 112291): 0x0c00000000000000
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 0af5c11b9e78..d45fb522fe8a 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -706,12 +706,19 @@ EXPORT_SYMBOL(check_legacy_ioport);
- static int ppc_panic_event(struct notifier_block *this,
-                              unsigned long event, void *ptr)
- {
-+	/*
-+	 * panic does a local_irq_disable, but we really
-+	 * want interrupts to be hard disabled.
-+	 */
-+	hard_irq_disable();
-+
- 	/*
- 	 * If firmware-assisted dump has been registered then trigger
- 	 * firmware-assisted dump and let firmware handle everything else.
- 	 */
- 	crash_fadump(NULL, ptr);
--	ppc_md.panic(ptr);  /* May not return */
-+	if (ppc_md.panic)
-+		ppc_md.panic(ptr);  /* May not return */
- 	return NOTIFY_DONE;
- }
- 
-@@ -722,7 +729,8 @@ static struct notifier_block ppc_panic_block = {
- 
- void __init setup_panic(void)
- {
--	if (!ppc_md.panic)
-+	/* PPC64 always does a hard irq disable in its panic handler */
-+	if (!IS_ENABLED(CONFIG_PPC64) && !ppc_md.panic)
- 		return;
- 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
- }
--- 
-2.17.0
+The issue is here.  The second line is after the execl (printed from the 
+start of main), and the AMR value is not reset to zero.
+
+>> Allocated key (PID 112291): 2
+>>
+>> I think this is a real bug and needs to be fixed even if the
+>> defaults are kept as-is (see the other thread).
+> 
+> The issue you may be talking about here is that  --
+> 
+> "when you set the AMR register to 0xffffffffffffffff, it
+> just sets it to 0x0c00000000000000."
+> 
+> To me it looks like, exec/fork are not related to the issue.
+> Or are they also somehow connected to the issue?
+
+Yes, this is the other issue.  It is not really important here.
+
+Thanks,
+Florian
