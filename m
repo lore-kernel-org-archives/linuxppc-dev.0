@@ -1,25 +1,21 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ntXD71c0zDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:15:08 +1000 (AEST)
-Subject: Re: pkeys on POWER: Default AMR, UAMOR values
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Andy Lutomirski <luto@amacapital.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux-MM <linux-mm@kvack.org>,
- Dave Hansen <dave.hansen@intel.com>
-References: <36b98132-d87f-9f75-f1a9-feee36ec8ee6@redhat.com>
- <20180518174448.GE5479@ram.oc3035372033.ibm.com>
- <CALCETrV_wYPKHna8R2Bu19nsDqF2dJWarLLsyHxbcYD_AgYfPg@mail.gmail.com>
- <27e01118-be5c-5f90-78b2-56bb69d2ab95@redhat.com>
- <20180519005219.GI5479@ram.oc3035372033.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <0e39d75a-c862-205b-1ba2-6843488d7fcd@redhat.com>
-Date: Sat, 19 May 2018 07:15:05 +0200
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40ntmV6FVWzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:25:46 +1000 (AEST)
+Date: Sat, 19 May 2018 15:25:39 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Christoph Hellwig <hch@lst.de>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Greg Ungerer <gerg@linux-m68k.org>
+Subject: Re: [PATCH 1/2] m68k: Set default dma mask for platform devices
+In-Reply-To: <20180518090434.GC24436@lst.de>
+Message-ID: <alpine.LNX.2.21.1805191408270.23@nippy.intranet>
+References: <cc9b01d2b0e12938fe0e9581dd9d650ad3c4159c.1526551115.git.fthain@telegraphics.com.au>
+ <20180518090434.GC24436@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <20180519005219.GI5479@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2018 02:52 AM, Ram Pai wrote:
+On Fri, 18 May 2018, Christoph Hellwig wrote:
 
->>> The POWER semantics make it very hard for a multithreaded program to
->>> meaningfully use protection keys to prevent accidental access to important
->>> memory.
->>
->> And you can change access rights for unallocated keys (unallocated
->> at thread start time, allocated later) on x86.  I have extended the
->> misc/tst-pkeys test to verify that, and it passes on x86, but not on
->> POWER, where the access rights are stuck.
+> > This implementation of arch_setup_pdev_archdata() differs from the 
+> > powerpc one, in that this one avoids clobbering a device dma mask 
+> > which has already been initialized.
 > 
-> This is something I do not understand. How can a thread change permissions
-> on a key, that is not even allocated in the first place.
+> I think your implementation should move into the generic implementation 
+> in drivers/base/platform.c instead of being stuck in m68k.
+> 
+> Also powerpc probably wants fixing, but that's something left to the
+> ppc folks..
 
-It was allocated by another thread, and there is synchronization so that 
-the allocation happens before the change in access rights.
+On powerpc, all platform devices get a dma mask. But they don't do that in 
+drivers/base/platform.c, they use arch_setup_pdev_archdata(). Why didn't 
+they take the approach you suggest?
 
-> Do you consider a key
-> allocated in some other thread's context, as allocated in this threads
-> context?
+How would I support the claim that replacing an empty platform device dma 
+mask with 0xffffffff is safe on all architectures and platforms?
 
-Yes, x86 does that.
+Is there no code conditional upon dev.coherent_dma_mask or dev.dma_mask 
+that could misbehave? (Didn't I cite an example in the other thread?*)
 
-> If not, does that mean -- On x86, you can activate a key just
-> by changing its permission?
+If you can convince me that it is safe, I'd be happy to submit the patch 
+you asked for.
 
-This also true on x86, but just an artifact of the implementation.  You 
-are supposed to call pkey_alloc before changing the flag.
+For now, I still think that patching the platform driver was the correct 
+patch*.
 
-Thanks,
-Florian
+Maybe the real problem is your commit 205e1b7f51e4 ("dma-mapping: warn 
+when there is no coherent_dma_mask"), because it assumes that all dma_ops 
+implementations care about coherent_dma_mask.
+
+The dma_map_ops implementations that do use coherent_dma_mask should 
+simply fail when it is unset, right?
+
+Would it not be better to revert your patch and fix the dma_map_ops 
+failure paths, than to somehow audit all the platform drivers and patch 
+drivers/base/platform.c?
+
+Thanks.
+
+* https://lkml.kernel.org/r/alpine.LNX.2.21.1805091804290.72%40nippy.intranet
+
+-- 
