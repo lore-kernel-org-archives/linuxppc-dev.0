@@ -2,20 +2,23 @@ Return-Path: <fweimer@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ntT731RFzDr61
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:12:26 +1000 (AEST)
-Subject: Re: pkeys on POWER: Access rights not reset on execve
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ntXD71c0zDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:15:08 +1000 (AEST)
+Subject: Re: pkeys on POWER: Default AMR, UAMOR values
 To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>,
- Andy Lutomirski <luto@amacapital.net>
-References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
- <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+Cc: Andy Lutomirski <luto@amacapital.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux-MM <linux-mm@kvack.org>,
+ Dave Hansen <dave.hansen@intel.com>
+References: <36b98132-d87f-9f75-f1a9-feee36ec8ee6@redhat.com>
+ <20180518174448.GE5479@ram.oc3035372033.ibm.com>
+ <CALCETrV_wYPKHna8R2Bu19nsDqF2dJWarLLsyHxbcYD_AgYfPg@mail.gmail.com>
+ <27e01118-be5c-5f90-78b2-56bb69d2ab95@redhat.com>
+ <20180519005219.GI5479@ram.oc3035372033.ibm.com>
 From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <d886e425-71fc-e203-e22d-7e07552c91c4@redhat.com>
-Date: Sat, 19 May 2018 07:12:19 +0200
+Message-ID: <0e39d75a-c862-205b-1ba2-6843488d7fcd@redhat.com>
+Date: Sat, 19 May 2018 07:15:05 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+In-Reply-To: <20180519005219.GI5479@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,28 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2018 03:19 AM, Ram Pai wrote:
+On 05/19/2018 02:52 AM, Ram Pai wrote:
 
->> New AMR value (PID 112291, before execl): 0x0c00000000000000
->> AMR (PID 112291): 0x0c00000000000000
-
-The issue is here.  The second line is after the execl (printed from the 
-start of main), and the AMR value is not reset to zero.
-
->> Allocated key (PID 112291): 2
+>>> The POWER semantics make it very hard for a multithreaded program to
+>>> meaningfully use protection keys to prevent accidental access to important
+>>> memory.
 >>
->> I think this is a real bug and needs to be fixed even if the
->> defaults are kept as-is (see the other thread).
+>> And you can change access rights for unallocated keys (unallocated
+>> at thread start time, allocated later) on x86.  I have extended the
+>> misc/tst-pkeys test to verify that, and it passes on x86, but not on
+>> POWER, where the access rights are stuck.
 > 
-> The issue you may be talking about here is that  --
-> 
-> "when you set the AMR register to 0xffffffffffffffff, it
-> just sets it to 0x0c00000000000000."
-> 
-> To me it looks like, exec/fork are not related to the issue.
-> Or are they also somehow connected to the issue?
+> This is something I do not understand. How can a thread change permissions
+> on a key, that is not even allocated in the first place.
 
-Yes, this is the other issue.  It is not really important here.
+It was allocated by another thread, and there is synchronization so that 
+the allocation happens before the change in access rights.
+
+> Do you consider a key
+> allocated in some other thread's context, as allocated in this threads
+> context?
+
+Yes, x86 does that.
+
+> If not, does that mean -- On x86, you can activate a key just
+> by changing its permission?
+
+This also true on x86, but just an artifact of the implementation.  You 
+are supposed to call pkey_alloc before changing the flag.
 
 Thanks,
 Florian
