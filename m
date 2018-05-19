@@ -1,21 +1,22 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 40ntmV6FVWzDqDv
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:25:46 +1000 (AEST)
-Date: Sat, 19 May 2018 15:25:39 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Christoph Hellwig <hch@lst.de>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Greg Ungerer <gerg@linux-m68k.org>
-Subject: Re: [PATCH 1/2] m68k: Set default dma mask for platform devices
-In-Reply-To: <20180518090434.GC24436@lst.de>
-Message-ID: <alpine.LNX.2.21.1805191408270.23@nippy.intranet>
-References: <cc9b01d2b0e12938fe0e9581dd9d650ad3c4159c.1526551115.git.fthain@telegraphics.com.au>
- <20180518090434.GC24436@lst.de>
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ntn95FXSzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 15:26:21 +1000 (AEST)
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+To: Andy Lutomirski <luto@kernel.org>, linuxram@us.ibm.com
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-MM <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>
+References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+ <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <b5875cbf-16f6-41cd-1f9e-cb94b0eb3a18@redhat.com>
+Date: Sat, 19 May 2018 07:26:17 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 18 May 2018, Christoph Hellwig wrote:
+On 05/19/2018 03:50 AM, Andy Lutomirski wrote:
+> Now another thread calls pkey_alloc(), so UAMR is asynchronously changed,
+> and the thread will write zero to the relevant AMR bits.  If I understand
+> correctly, this means that the decision to mask off unallocated keys via
+> UAMR effectively forces the initial value of newly-allocated keys in other
+> threads in the allocating process to be zero, whatever zero means.  (I
+> didn't get far enough in the POWER docs to figure out what zero means.)  So
 
-> > This implementation of arch_setup_pdev_archdata() differs from the 
-> > powerpc one, in that this one avoids clobbering a device dma mask 
-> > which has already been initialized.
-> 
-> I think your implementation should move into the generic implementation 
-> in drivers/base/platform.c instead of being stuck in m68k.
-> 
-> Also powerpc probably wants fixing, but that's something left to the
-> ppc folks..
+(Note that this belongs on the other thread, here I originally wanted to 
+talk about the lack of reset of AMR to the default value on execve.)
 
-On powerpc, all platform devices get a dma mask. But they don't do that in 
-drivers/base/platform.c, they use arch_setup_pdev_archdata(). Why didn't 
-they take the approach you suggest?
+I don't think UAMOR is updated asynchronously.  On pkey_alloc, it is 
+only changed for the current thread, and future threads launched from 
+it.  Existing threads are unaffected.  This still results in a 
+programming model which is substantially different from x86.
 
-How would I support the claim that replacing an empty platform device dma 
-mask with 0xffffffff is safe on all architectures and platforms?
+> I don't think you're doing anyone any favors by making UAMR dynamic.
 
-Is there no code conditional upon dev.coherent_dma_mask or dev.dma_mask 
-that could misbehave? (Didn't I cite an example in the other thread?*)
+This is still true, I think.
 
-If you can convince me that it is safe, I'd be happy to submit the patch 
-you asked for.
-
-For now, I still think that patching the platform driver was the correct 
-patch*.
-
-Maybe the real problem is your commit 205e1b7f51e4 ("dma-mapping: warn 
-when there is no coherent_dma_mask"), because it assumes that all dma_ops 
-implementations care about coherent_dma_mask.
-
-The dma_map_ops implementations that do use coherent_dma_mask should 
-simply fail when it is unset, right?
-
-Would it not be better to revert your patch and fix the dma_map_ops 
-failure paths, than to somehow audit all the platform drivers and patch 
-drivers/base/platform.c?
-
-Thanks.
-
-* https://lkml.kernel.org/r/alpine.LNX.2.21.1805091804290.72%40nippy.intranet
-
--- 
+Thanks,
+Florian
