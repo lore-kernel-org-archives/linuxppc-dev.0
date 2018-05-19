@@ -1,22 +1,38 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40p2RD623VzDrCQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 21:11:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40pGnY4cLpzDrJF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 06:28:00 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4JKOE8F012196
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 16:27:57 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j2g4fuj72-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 16:27:57 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sat, 19 May 2018 21:27:56 +0100
+Date: Sat, 19 May 2018 13:27:47 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Florian Weimer <fweimer@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-MM <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>
 Subject: Re: pkeys on POWER: Access rights not reset on execve
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-mm <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>,
- Andy Lutomirski <luto@amacapital.net>
+Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
  <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <c4e640be-3d82-c955-fc28-568ec13d378a@redhat.com>
-Date: Sat, 19 May 2018 13:11:14 +0200
+ <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+Message-Id: <20180519202747.GK5479@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,124 +42,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2018 03:19 AM, Ram Pai wrote:
-> The issue you may be talking about here is that  --
+On Fri, May 18, 2018 at 06:50:39PM -0700, Andy Lutomirski wrote:
+> On Fri, May 18, 2018 at 6:19 PM Ram Pai <linuxram@us.ibm.com> wrote:
 > 
-> "when you set the AMR register to 0xffffffffffffffff, it
-> just sets it to 0x0c00000000000000."
+> > However the fundamental issue is still the same, as mentioned in the
+> > other thread.
 > 
-> To me it looks like, exec/fork are not related to the issue.
-> Or are they also somehow connected to the issue?
+> > "Should the permissions on a key be allowed to be changed, if the key
+> > is not allocated in the first place?".
 > 
+> > my answer is NO. Lets debate :)
 > 
-> The reason the AMR register does not get set to 0xffffffffffffffff,
-> is because none of those keys; except key 2, are active. So it ignores
-> all other bits and just sets the bits corresponding to key 2.
+> As a preface, here's my two-minute attempt to understand POWER's behavior:
+> there are two registers, AMR and UAMR.  AMR contains both kernel-relevant
+> state and user-relevant state.  UAMR specifies which bits of AMR are
+> available for user code to directly access.  AMR bits outside UAMR are read
+> as zero and are unaffected by writes.  I'm assuming that the kernel
+> reserves some subset of AMR bits in advance to correspond to allocatable
+> pkeys.
 
-Here's a slightly different test:
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <err.h>
+You got it mostly right. Filling in some more details below for
+completeness.
 
-/* Return the value of the AMR register.  */
-static inline unsigned long int
-pkey_read (void)
-{
-   unsigned long int result;
-   __asm__ volatile ("mfspr %0, 13" : "=r" (result));
-   return result;
-}
+Yes there is a AMR register which has two bits each corresponding to
+each key.  One bit corresponds to read permission, and the other bit
+corresponds to write permission.  If set, the corresponding permission
+is denied.  Both userspace and kernel can modify the register.
 
-/* Overwrite the AMR register with VALUE.  */
-static inline void
-pkey_write (unsigned long int value)
-{
-   __asm__ volatile ("mtspr 13, %0" : : "r" (value));
-}
+Yes there is a UAMOR register which has a bit corresponding to each key.
+When a bit in UAMOR register is set, that key's permission can be
+changed by userspace. Only kernel can modify UAMOR register.
 
-int
-main (int argc, char **argv)
-{
-   printf ("AMR (PID %d): 0x%016lx\n", (int) getpid (), pkey_read());
-   if (argc > 1 && strcmp (argv[1], "alloc") == 0)
-     {
-       int key = syscall (__NR_pkey_alloc, 0, 0);
-       if (key < 0)
-         err (1, "pkey_alloc");
-       printf ("Allocated key in subprocess (PID %d): %d\n",
-               (int) getpid (), key);
-       return 0;
-     }
+for example, if bit 10 is set in UAMOR register, only then key-10's read-write
+permissions can be modified by userspace.
 
-   pid_t pid = fork ();
-   if (pid == 0)
-     {
-       printf ("AMR after fork (PID %d): 0x%016lx\n",
-               (int) getpid (), pkey_read());
-       execl ("/proc/self/exe", argv[0], "alloc", NULL);
-       _exit (1);
-     }
-   if (pid < 0)
-     err (1, "fork");
-   int status;
-   if (waitpid (pid, &status, 0) < 0)
-     err (1, "waitpid");
+NOTE: the UAMR register you mention above, is actually UAMOR register. 
 
-   int key = syscall (__NR_pkey_alloc, 0, 0);
-   if (key < 0)
-     err (1, "pkey_alloc");
-   printf ("Allocated key (PID %d): %d\n", (int) getpid (), key);
+And finally the kernel reserves some subset of keys, in advance, that
+it wants for itself. It will never give away those keys to userspace
+through sys_pkey_alloc(), and the bits corresponding to those keys will
+be 0 in UAMOR register.
 
-   unsigned long int amr = -1;
-   printf ("Setting AMR: 0x%016lx\n", amr);
-   pkey_write (amr);
-   printf ("New AMR value (PID %d): 0x%016lx\n",
-           (int) getpid (), pkey_read());
-   if (argc == 1)
-     {
-       printf ("About to call execl (PID %d) ...\n", (int) getpid ());
-       execl ("/proc/self/exe", argv[0], "execl", NULL);
-       err (1, "exec");
-       return 1;
-     }
-   else
-     return 0;
-}
+> 
+> Here's my question: given that disallowed AMR bits are read-as-zero, there
+> can always be a thread that is in the middle of a sequence like:
+> 
+> step1 : unsigned long old = amr;
+> step2 : amr |= whatever;
+> step3 : ...  <- thread is here
+> step4 : amr = old;
+> 
+> Now another thread calls pkey_alloc(), so UAMR is asynchronously changed,
+> and the thread will write zero to the relevant AMR bits. 
 
-It produces:
+> If I understand
+> correctly, this means that the decision to mask off unallocated keys via
+> UAMR effectively forces the initial value of newly-allocated keys in other
+> threads in the allocating process to be zero, whatever zero means.
 
-AMR (PID 110163): 0x0000000000000000
-AMR after fork (PID 110164): 0x0000000000000000
-AMR (PID 110164): 0x0000000000000000
-Allocated key in subprocess (PID 110164): 2
-Allocated key (PID 110163): 2
-Setting AMR: 0xffffffffffffffff
-New AMR value (PID 110163): 0x0c00000000000000
-About to call execl (PID 110163) ...
-AMR (PID 110163): 0x0c00000000000000
-AMR after fork (PID 110165): 0x0000000000000000
-AMR (PID 110165): 0x0000000000000000
-Allocated key in subprocess (PID 110165): 2
-Allocated key (PID 110163): 2
-Setting AMR: 0xffffffffffffffff
-New AMR value (PID 110163): 0x0c00000000000000
+The initial value of the newly allocated key will be whatever the
+init_value is, that is specified in the sys_pkey_alloc().
 
-A few things which are odd stand out (apart the wrong default for AMR 
-and the AMR update restriction covered in the other thread):
+Remember, the UAMOR and the AMR values are thread specific. If thread T2
+allocates a new key, then that thread will enable the bit in its version
+of the UAMOR register. It will not have any effect on the UAMOR value of
+any other threads's version.
 
-* execve does not reset AMR (see after “About to call execl”)
-* fork resets AMR (see lines with PID 110165))
-* After execve, a key with non-default access rights is allocated
-   (see “Allocated key (PID 110163): 2”, second time, after execl)
+So in the above code snippet, assuming T1 is executing the code, and T2 is
+running parallely, and assume that both threads have the same AMR and
+UAMOR value till the end of step2.  At step 3, when T2 allocates a new
+key,  thread T2's UAMOR will enable the bit corresponding to the
+allocated key and set the corresponding bits in AMR to the init_val
+specified in sys_pkey_alloc(). It has no effect on thread T1's UAMOR or
+AMR register.
 
-No matter what you think about the AMR default, I posit that each of 
-those are bugs (although the last one should be fixed by resetting AMR 
-on execve).
+> (I
+> didn't get far enough in the POWER docs to figure out what zero means.).
 
-Thanks,
-Florian
+ok.
+
+> So
+> I don't think you're doing anyone any favors by making UAMR dynamic.
+
+depending on the explaination above, do you continue to hold that opinion?
+
+> 
+> IOW both x86 and POWER screwed up the ISA.
+
+-- 
+Ram Pai
