@@ -1,18 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40nsgH4C1mzF0Pl
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 14:36:11 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id t12-v6so5698820plo.7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 21:36:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40nsgK497vzF0Qs
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 14:36:13 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id bi12-v6so5690161plb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2018 21:36:13 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH 2/3] powerpc: smp_send_stop do not offline stopped CPUs
-Date: Sat, 19 May 2018 14:35:53 +1000
-Message-Id: <20180519043554.26640-3-npiggin@gmail.com>
+Subject: [PATCH 3/3] powerpc/64: hard disable irqs on the panic()ing CPU
+Date: Sat, 19 May 2018 14:35:54 +1000
+Message-Id: <20180519043554.26640-4-npiggin@gmail.com>
 In-Reply-To: <20180519043554.26640-1-npiggin@gmail.com>
 References: <20180519043554.26640-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,72 +24,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Marking CPUs stopped by smp_send_stop as offline can cause warnings
-due to cross-CPU wakeups. This trace was noticed on a busy system
-running a sysrq+c crash test, after the injected crash:
-
-WARNING: CPU: 51 PID: 1546 at kernel/sched/core.c:1179 set_task_cpu+0x22c/0x240
-CPU: 51 PID: 1546 Comm: kworker/u352:1 Tainted: G      D
-Workqueue: mlx5e mlx5e_update_stats_work [mlx5_core]
-[...]
-NIP [c00000000017c21c] set_task_cpu+0x22c/0x240
-LR [c00000000017d580] try_to_wake_up+0x230/0x720
-Call Trace:
-[c000000001017700] runqueues+0x0/0xb00 (unreliable)
-[c00000000017d580] try_to_wake_up+0x230/0x720
-[c00000000015a214] insert_work+0x104/0x140
-[c00000000015adb0] __queue_work+0x230/0x690
-[c000003fc5007910] [c00000000015b26c] queue_work_on+0x5c/0x90
-[c0080000135fc8f8] mlx5_cmd_exec+0x538/0xcb0 [mlx5_core]
-[c008000013608fd0] mlx5_core_access_reg+0x140/0x1d0 [mlx5_core]
-[c00800001362777c] mlx5e_update_pport_counters.constprop.59+0x6c/0x90 [mlx5_core]
-[c008000013628868] mlx5e_update_ndo_stats+0x28/0x90 [mlx5_core]
-[c008000013625558] mlx5e_update_stats_work+0x68/0xb0 [mlx5_core]
-[c00000000015bcec] process_one_work+0x1bc/0x5f0
-[c00000000015ecac] worker_thread+0xac/0x6b0
-[c000000000168338] kthread+0x168/0x1b0
-[c00000000000b628] ret_from_kernel_thread+0x5c/0xb4
-
-This happens because firstly the CPU is not really offline in the
-usual sense, processes and interrupts have not been migrated away.
-Secondly smp_send_stop does not happen atomically on all CPUs, so
-one CPU can have marked itself offline, while another CPU is still
-running processes or interrupts which can affect the first CPU.
-
-Fix this by just not marking the CPU as offline. It's more like
-frozen in time, so offline does not really reflect its state properly
-anyway. There should be nothing in the crash/panic path that walks
-online CPUs and synchronously waits for them, so this change should
-not introduce new hangs.
+Similar to previous patches, hard disable interrupts when a CPU is
+in panic. This reduces the chance the watchdog has to interfere with
+the panic, and avoids any other type of masked interrupt being
+executed when crashing which minimises the length of the crash path.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/kernel/smp.c | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/kernel/setup-common.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 9ca7148b5881..6d6cf14009cf 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -579,9 +579,6 @@ static void nmi_stop_this_cpu(struct pt_regs *regs)
- 	nmi_ipi_busy_count--;
- 	nmi_ipi_unlock();
- 
--	/* Remove this CPU */
--	set_cpu_online(smp_processor_id(), false);
--
- 	spin_begin();
- 	while (1)
- 		spin_cpu_relax();
-@@ -596,9 +593,6 @@ void smp_send_stop(void)
- 
- static void stop_this_cpu(void *dummy)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 0af5c11b9e78..d45fb522fe8a 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -706,12 +706,19 @@ EXPORT_SYMBOL(check_legacy_ioport);
+ static int ppc_panic_event(struct notifier_block *this,
+                              unsigned long event, void *ptr)
  {
--	/* Remove this CPU */
--	set_cpu_online(smp_processor_id(), false);
--
- 	hard_irq_disable();
- 	spin_begin();
- 	while (1)
++	/*
++	 * panic does a local_irq_disable, but we really
++	 * want interrupts to be hard disabled.
++	 */
++	hard_irq_disable();
++
+ 	/*
+ 	 * If firmware-assisted dump has been registered then trigger
+ 	 * firmware-assisted dump and let firmware handle everything else.
+ 	 */
+ 	crash_fadump(NULL, ptr);
+-	ppc_md.panic(ptr);  /* May not return */
++	if (ppc_md.panic)
++		ppc_md.panic(ptr);  /* May not return */
+ 	return NOTIFY_DONE;
+ }
+ 
+@@ -722,7 +729,8 @@ static struct notifier_block ppc_panic_block = {
+ 
+ void __init setup_panic(void)
+ {
+-	if (!ppc_md.panic)
++	/* PPC64 always does a hard irq disable in its panic handler */
++	if (!IS_ENABLED(CONFIG_PPC64) && !ppc_md.panic)
+ 		return;
+ 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
+ }
 -- 
 2.17.0
