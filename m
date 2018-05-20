@@ -1,21 +1,40 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40pNTC2yCdzDrWN
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 10:44:15 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id a14-v6so5409072pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 17:44:15 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 7/7] powerpc/64s/radix: avoid ptesync after set_pte and
- ptep_set_access_flags
-Date: Sun, 20 May 2018 10:43:47 +1000
-Message-Id: <20180520004347.19508-8-npiggin@gmail.com>
-In-Reply-To: <20180520004347.19508-1-npiggin@gmail.com>
-References: <20180520004347.19508-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40pWZs3g1wzDrVn
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:04:36 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4K64Eql100498
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 02:04:33 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j314fc077-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 02:04:33 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sun, 20 May 2018 07:04:31 +0100
+Date: Sat, 19 May 2018 23:04:25 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Florian Weimer <fweimer@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-MM <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+ <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+ <20180519202747.GK5479@ram.oc3035372033.ibm.com>
+ <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
+Message-Id: <20180520060425.GL5479@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,74 +44,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ISA suggests ptesync after setting a pte, to prevent a table walk
-initiated by a subsequent access from missing that store and causing a
-spurious fault. This is an architectual allowance that allows an
-implementation's page table walker to be incoherent with the store
-queue.
+On Sat, May 19, 2018 at 04:47:23PM -0700, Andy Lutomirski wrote: > On Sat, May 19, 2018 at 1:28 PM Ram Pai <linuxram@us.ibm.com> wrote:
 
-However there is no correctness problem in taking a spurious fault in
-userspace -- the kernel copes with these at any time, so the updated
-pte will be found eventually. Spurious kernel faults on vmap memory
-must be avoided, so a ptesync is put into flush_cache_vmap.
+...snip...
+> 
+> So is it possible for two threads to each call pkey_alloc() and end up with
+> the same key?  If so, it seems entirely broken. 
 
-On POWER9 so far I have not found a measurable window where this can
-result in more minor faults, so as an optimisation, remove the costly
-ptesync from pte updates. If an implementation benefits from ptesync,
-it would be better to add it back in update_mmu_cache, so it's not
-done for things like fork(2).
+No. Two threads cannot allocate the same key; just like x86. 
 
-fork --fork --exec benchmark improved 5.2% (12400->13100).
+> If not, then how do you
+> intend for a multithreaded application to usefully allocate a new key?
+> Regardless, it seems like the current behavior on POWER is very difficult
+> to work with.  Can you give an example of a use case for which POWER's
+> behavior makes sense?
+> 
+> For the use cases I've imagined, POWER's behavior does not make sense.
+>   x86's is not ideal but is still better.  Here are my two example use cases:
+> 
+> 1. A crypto library.  Suppose I'm writing a TLS-terminating server, and I
+> want it to be resistant to Heartbleed-like bugs.  I could store my private
+> keys protected by mprotect_key() and arrange for all threads and signal
+> handlers to have PKRU/AMR values that prevent any access to the memory.
+> When an explicit call is made to sign with the key, I would temporarily
+> change PKRU/AMR to allow access, compute the signature, and change PKRU/AMR
+> back.  On x86 right now, this works nicely.  On POWER, it doesn't, because
+> any thread started before my pkey_alloc() call can access the protected
+> memory, as can any signal handler.
+> 
+> 2. A database using mmap() (with persistent memory or otherwise).  It would
+> be nice to be resistant to accidental corruption due to stray writes.  I
+> would do more or less the same thing as (1), except that I would want
+> threads that are not actively writing to the database to be able the
+> protected memory.  On x86, I need to manually convince threads that may
+> have been started before my pkey_alloc() call as well as signal handlers to
+> update their PKRU values.  On POWER, as in example (1), the error goes the
+> other direction -- if I fail to propagate the AMR bits to all threads,
+> writes are not blocked.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/book3s/64/radix.h |  2 --
- arch/powerpc/include/asm/cacheflush.h      | 13 +++++++++++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
+I see the problem from an application's point of view, on powerpc.  If
+the key allocated in one thread is not activated on all threads
+(existing one and future one), than other threads will not be able
+to modify the key's permissions. Hence they will not be able to control
+access/write to pages to which the key is associated.
 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index ab4ed61a74fa..cc9437a542cc 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -210,7 +210,6 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
- 		__radix_pte_update(ptep, 0, new_pte);
- 	} else
- 		__radix_pte_update(ptep, 0, set);
--	asm volatile("ptesync" : : : "memory");
- }
- 
- static inline int radix__pte_same(pte_t pte_a, pte_t pte_b)
-@@ -227,7 +226,6 @@ static inline void radix__set_pte_at(struct mm_struct *mm, unsigned long addr,
- 				 pte_t *ptep, pte_t pte, int percpu)
- {
- 	*ptep = pte;
--	asm volatile("ptesync" : : : "memory");
- }
- 
- static inline int radix__pmd_bad(pmd_t pmd)
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 11843e37d9cf..e9662648e72d 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -26,6 +26,19 @@
- #define flush_cache_vmap(start, end)		do { } while (0)
- #define flush_cache_vunmap(start, end)		do { } while (0)
- 
-+#ifdef CONFIG_BOOK3S_64
-+/*
-+ * Book3s has no ptesync after setting a pte, so without this ptesync it's
-+ * possible for a kernel virtual mapping access to return a spurious fault
-+ * if it's accessed right after the pte is set. The page fault handler does
-+ * not expect this type of fault. flush_cache_vmap is not exactly the right
-+ * place to put this, but it seems to work well enough.
-+ */
-+#define flush_cache_vmap(start, end)		do { asm volatile("ptesync"); } while (0)
-+#else
-+#define flush_cache_vmap(start, end)		do { } while (0)
-+#endif
-+
- #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
- extern void flush_dcache_page(struct page *page);
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
--- 
-2.17.0
+As Florian suggested, I should enable the key's bit in the UAMOR value
+corresponding to existing threads, when a new key is allocated.
+
+Now, looking at the implementation for x86, I see that sys_mpkey_alloc()
+makes no attempt to modify anything of any other thread. How
+does it manage to activate the key on any other thread? Is this
+magic done by the hardware?
+
+RP
