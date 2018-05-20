@@ -1,18 +1,26 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 40pXc35p01zDrWV
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:50:41 +1000 (AEST)
-From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-i2c@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Wolfram Sang <wsa@the-dreams.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] i2c: opal: don't check number of messages in the driver
-Date: Sun, 20 May 2018 08:50:34 +0200
-Message-Id: <20180520065035.7920-3-wsa@the-dreams.de>
-In-Reply-To: <20180520065035.7920-1-wsa@the-dreams.de>
-References: <20180520065035.7920-1-wsa@the-dreams.de>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40pZ742Zp4zDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 17:59:12 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id d14-v6so1444945pgv.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 00:59:12 -0700 (PDT)
+Date: Sun, 20 May 2018 17:58:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linux-kbuild@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, Masahiro Yamada
+ <yamada.masahiro@socionext.com>, Segher Boessenkool
+ <segher@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 4/4] powerpc/kbuild: move -mprofile-kernel check to
+ Kconfig
+Message-ID: <20180520175858.7871aa54@roar.ozlabs.ibm.com>
+In-Reply-To: <20180516141458.18996-5-npiggin@gmail.com>
+References: <20180516141458.18996-1-npiggin@gmail.com>
+ <20180516141458.18996-5-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 1eace8344c02 ("i2c: add param sanity check to
-i2c_transfer()") and b7f625840267 ("i2c: add quirk checks to core"), the
-I2C core does this check now. We can remove it here.
+On Thu, 17 May 2018 00:14:58 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> This eliminates the workaround that requires disabling
+> -mprofile-kernel by default in Kconfig.
+> 
+> [ Note: this depends on https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git kconfig-shell-v3 ]
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Here is an incremental patch that brings this up to v4.
+
+https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git kconfig-shell-v4
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Only build tested.
-
- drivers/i2c/busses/i2c-opal.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
-index 0aabb7eca0c5..dc2a23f4fb52 100644
---- a/drivers/i2c/busses/i2c-opal.c
-+++ b/drivers/i2c/busses/i2c-opal.c
-@@ -94,8 +94,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
- 	 */
- 	memset(&req, 0, sizeof(req));
- 	switch(num) {
--	case 0:
--		return 0;
- 	case 1:
- 		req.type = (msgs[0].flags & I2C_M_RD) ?
- 			OPAL_I2C_RAW_READ : OPAL_I2C_RAW_WRITE;
-@@ -114,8 +112,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
- 		req.size = cpu_to_be32(msgs[1].len);
- 		req.buffer_ra = cpu_to_be64(__pa(msgs[1].buf));
- 		break;
--	default:
--		return -EOPNOTSUPP;
- 	}
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index c7cc482cb660..60b83398b498 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -462,7 +462,7 @@ config LD_HEAD_STUB_CATCH
  
- 	rc = i2c_opal_send_request(opal_id, &req);
+ config MPROFILE_KERNEL
+ 	depends on PPC64 && CPU_LITTLE_ENDIAN
+-	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
++	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
+ 
+ config IOMMU_HELPER
+ 	def_bool PPC64
 -- 
-2.11.0
+2.17.0
