@@ -1,18 +1,14 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40pWxn2RWDzDrWQ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:20:58 +1000 (AEST)
-Date: Sun, 20 May 2018 14:20:03 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: [powerpc:topic/kbuild 4/4] arch/powerpc/Kconfig:466: syntax error
-Message-ID: <201805201459.Il5gwYkF%fengguang.wu@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40pXc35qZMzDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:50:41 +1000 (AEST)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Wolfram Sang <wsa@the-dreams.de>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/2] don't check number of I2C messages in drivers
+Date: Sun, 20 May 2018 08:50:32 +0200
+Message-Id: <20180520065035.7920-1-wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,86 +18,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/kbuild
-head:   023eff0e59052c52bc4f077e66e82d68be486d7f
-commit: 023eff0e59052c52bc4f077e66e82d68be486d7f [4/4] powerpc/kbuild: Move -mprofile-kernel check to Kconfig
-config: powerpc-asp8347_defconfig
-compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 023eff0e59052c52bc4f077e66e82d68be486d7f
-        make.cross ARCH=powerpc  83xx/asp8347_defconfig
-        make.cross ARCH=powerpc 
+The core does it now, we can simplify drivers.
 
-All errors (new ones prefixed by >>):
+Wolfram Sang (2):
+  i2c: ibm_iic: don't check number of messages in the driver
+  i2c: opal: don't check number of messages in the driver
 
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:466: syntax error
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:465: invalid option
-   make[2]: *** [83xx/asp8347_defconfig] Error 1
-   make[1]: *** [83xx/asp8347_defconfig] Error 2
-   make: *** [sub-make] Error 2
---
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:466: syntax error
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:465: invalid option
-   make[2]: *** [oldconfig] Error 1
-   make[1]: *** [oldconfig] Error 2
-   make: *** [sub-make] Error 2
---
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:466: syntax error
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
-   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
->> arch/powerpc/Kconfig:465: invalid option
-   make[2]: *** [olddefconfig] Error 1
-   make[2]: Target 'oldnoconfig' not remade because of errors.
-   make[1]: *** [oldnoconfig] Error 2
-   make: *** [sub-make] Error 2
+ drivers/i2c/busses/i2c-ibm_iic.c | 3 ---
+ drivers/i2c/busses/i2c-opal.c    | 4 ----
+ 2 files changed, 7 deletions(-)
 
-vim +466 arch/powerpc/Kconfig
-
-e05c0e81 Kevin Hao       2013-07-16  441  
-3d72bbc4 Michael Neuling 2013-02-13  442  config PPC_TRANSACTIONAL_MEM
-3d72bbc4 Michael Neuling 2013-02-13  443         bool "Transactional Memory support for POWERPC"
-3d72bbc4 Michael Neuling 2013-02-13  444         depends on PPC_BOOK3S_64
-3d72bbc4 Michael Neuling 2013-02-13  445         depends on SMP
-7b37a123 Michael Neuling 2014-01-08  446         select ALTIVEC
-7b37a123 Michael Neuling 2014-01-08  447         select VSX
-3d72bbc4 Michael Neuling 2013-02-13  448         default n
-3d72bbc4 Michael Neuling 2013-02-13  449         ---help---
-3d72bbc4 Michael Neuling 2013-02-13  450           Support user-mode Transactional Memory on POWERPC.
-3d72bbc4 Michael Neuling 2013-02-13  451  
-951eedeb Nicholas Piggin 2017-05-29  452  config LD_HEAD_STUB_CATCH
-951eedeb Nicholas Piggin 2017-05-29  453  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
-951eedeb Nicholas Piggin 2017-05-29  454  	depends on PPC64
-951eedeb Nicholas Piggin 2017-05-29  455  	default n
-951eedeb Nicholas Piggin 2017-05-29  456  	help
-951eedeb Nicholas Piggin 2017-05-29  457  	  Very large kernels can cause linker branch stubs to be generated by
-951eedeb Nicholas Piggin 2017-05-29  458  	  code in head_64.S, which moves the head text sections out of their
-951eedeb Nicholas Piggin 2017-05-29  459  	  specified location. This option can work around the problem.
-951eedeb Nicholas Piggin 2017-05-29  460  
-951eedeb Nicholas Piggin 2017-05-29  461  	  If unsure, say "N".
-951eedeb Nicholas Piggin 2017-05-29  462  
-8c50b72a Torsten Duwe    2016-03-03  463  config MPROFILE_KERNEL
-8c50b72a Torsten Duwe    2016-03-03  464  	depends on PPC64 && CPU_LITTLE_ENDIAN
-023eff0e Nicholas Piggin 2018-05-17 @465  	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
-8c50b72a Torsten Duwe    2016-03-03 @466  
-
-:::::: The code at line 466 was first introduced by commit
-:::::: 8c50b72a3b4f1f7cdfdfebd233b1cbd121262e65 powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel
-
-:::::: TO: Torsten Duwe <duwe@lst.de>
-:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-- 
+2.11.0
