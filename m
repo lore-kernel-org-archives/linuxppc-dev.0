@@ -1,18 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x236.google.com (mail-pf0-x236.google.com
- [IPv6:2607:f8b0:400e:c00::236])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40pNSw0Gl3zDqDv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 10:43:59 +1000 (AEST)
-Received: by mail-pf0-x236.google.com with SMTP id a14-v6so5408919pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 17:43:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40pNSx5wgBzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 10:44:01 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id c19-v6so6682915pls.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 17:44:01 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v2 0/7] Various TLB and PTE improvements
-Date: Sun, 20 May 2018 10:43:40 +1000
-Message-Id: <20180520004347.19508-1-npiggin@gmail.com>
+Subject: [PATCH v2 1/7] powerpc/64s/radix: do not flush TLB on spurious fault
+Date: Sun, 20 May 2018 10:43:41 +1000
+Message-Id: <20180520004347.19508-2-npiggin@gmail.com>
+In-Reply-To: <20180520004347.19508-1-npiggin@gmail.com>
+References: <20180520004347.19508-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I've posted most of these separately at one time or another but I
-will send them as a series, there have been some bug fixes and
-changelog and comment improvements, and got some more numbers.
+In the case of a spurious fault (which can happen due to a race with
+another thread that changes the page table), the default Linux mm code
+calls flush_tlb_page for that address. This is not required because
+the pte will be re-fetched. Hash does not wire this up to a hardware
+TLB flush for this reason. This patch avoids the flush for radix.
 
-Most of the patches are logically independent (except 2 and 3 AFAIKS).
+>From Power ISA v3.0B, p.1090:
 
-Thanks,
-Nick
+    Setting a Reference or Change Bit or Upgrading Access Authority
+    (PTE Subject to Atomic Hardware Updates)
 
-Nicholas Piggin (7):
-  powerpc/64s/radix: do not flush TLB on spurious fault
-  powerpc/64s/radix: reset mm_cpumask for single thread process when
-    possible
-  powerpc/64s/radix: make single threaded mms always flush all translations
-    from non-local CPUs
-  powerpc/64s/radix: make ptep_get_and_clear_full non-atomic for the
-    full case
-  powerpc/64s/radix: optimise pte_update
-  powerpc/64s/radix: prefetch user address in update_mmu_cache
-  powerpc/64s/radix: avoid ptesync after set_pte and
-    ptep_set_access_flags
+    If the only change being made to a valid PTE that is subject to
+    atomic hardware updates is to set the Refer- ence or Change bit to
+    1 or to add access authorities, a simpler sequence suffices
+    because the translation hardware will refetch the PTE if an access
+    is attempted for which the only problems were reference and/or
+    change bits needing to be set or insufficient access authority.
 
- arch/powerpc/include/asm/book3s/64/radix.h    | 37 ++++----
- arch/powerpc/include/asm/book3s/64/tlbflush.h | 12 ++-
- arch/powerpc/include/asm/cacheflush.h         | 13 +++
- arch/powerpc/include/asm/mmu_context.h        | 19 ++++
- arch/powerpc/include/asm/tlb.h                |  8 ++
- arch/powerpc/mm/mem.c                         |  4 +-
- arch/powerpc/mm/mmu_context.c                 |  6 +-
- arch/powerpc/mm/pgtable-book3s64.c            |  3 +-
- arch/powerpc/mm/tlb-radix.c                   | 89 ++++++++++++++-----
- 9 files changed, 143 insertions(+), 48 deletions(-)
+The nest MMU on POWER9 does not re-fetch the PTE after such an access
+attempt before faulting, so address spaces with a coprocessor
+attached will continue to flush in these cases.
 
+This reduces tlbies for a kernel compile workload from 0.95M to 0.90M.
+
+fork --fork --exec benchmark improved 0.5% (12300->12400).
+
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+Since v1:
+- Added NMMU handling
+
+ arch/powerpc/include/asm/book3s/64/tlbflush.h | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush.h b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+index 0cac17253513..ebf572ea621e 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush.h
+@@ -4,7 +4,7 @@
+ 
+ #define MMU_NO_CONTEXT	~0UL
+ 
+-
++#include <linux/mm_types.h>
+ #include <asm/book3s/64/tlbflush-hash.h>
+ #include <asm/book3s/64/tlbflush-radix.h>
+ 
+@@ -137,6 +137,16 @@ static inline void flush_all_mm(struct mm_struct *mm)
+ #define flush_tlb_page(vma, addr)	local_flush_tlb_page(vma, addr)
+ #define flush_all_mm(mm)		local_flush_all_mm(mm)
+ #endif /* CONFIG_SMP */
++
++#define flush_tlb_fix_spurious_fault flush_tlb_fix_spurious_fault
++static inline void flush_tlb_fix_spurious_fault(struct vm_area_struct *vma,
++						unsigned long address)
++{
++	/* See ptep_set_access_flags comment */
++	if (atomic_read(&vma->vm_mm->context.copros) > 0)
++		flush_tlb_page(vma, address);
++}
++
+ /*
+  * flush the page walk cache for the address
+  */
 -- 
 2.17.0
