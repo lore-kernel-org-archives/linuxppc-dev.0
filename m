@@ -1,33 +1,18 @@
-Return-Path: <luto@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40pWd86NzJzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:06:36 +1000 (AEST)
-Received: from mail-wm0-f43.google.com (mail-wm0-f43.google.com [74.125.82.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id BFE1E2086C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 06:06:33 +0000 (UTC)
-Received: by mail-wm0-f43.google.com with SMTP id a137-v6so8150698wme.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2018 23:06:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40pWxn2RWDzDrWQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 16:20:58 +1000 (AEST)
+Date: Sun, 20 May 2018 14:20:03 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:topic/kbuild 4/4] arch/powerpc/Kconfig:466: syntax error
+Message-ID: <201805201459.Il5gwYkF%fengguang.wu@intel.com>
 MIME-Version: 1.0
-References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
- <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
- <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
- <20180519202747.GK5479@ram.oc3035372033.ibm.com>
- <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
- <20180520060425.GL5479@ram.oc3035372033.ibm.com>
-In-Reply-To: <20180520060425.GL5479@ram.oc3035372033.ibm.com>
-From: Andy Lutomirski <luto@kernel.org>
-Date: Sat, 19 May 2018 23:06:20 -0700
-Message-ID: <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-To: linuxram@us.ibm.com
-Cc: Andrew Lutomirski <luto@kernel.org>, Florian Weimer <fweimer@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linux-MM <linux-mm@kvack.org>,
- Dave Hansen <dave.hansen@intel.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,71 +22,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 19, 2018 at 11:04 PM Ram Pai <linuxram@us.ibm.com> wrote:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/kbuild
+head:   023eff0e59052c52bc4f077e66e82d68be486d7f
+commit: 023eff0e59052c52bc4f077e66e82d68be486d7f [4/4] powerpc/kbuild: Move -mprofile-kernel check to Kconfig
+config: powerpc-asp8347_defconfig
+compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 023eff0e59052c52bc4f077e66e82d68be486d7f
+        make.cross ARCH=powerpc  83xx/asp8347_defconfig
+        make.cross ARCH=powerpc 
 
-> On Sat, May 19, 2018 at 04:47:23PM -0700, Andy Lutomirski wrote: > On
-Sat, May 19, 2018 at 1:28 PM Ram Pai <linuxram@us.ibm.com> wrote:
+All errors (new ones prefixed by >>):
 
-> ...snip...
-> >
-> > So is it possible for two threads to each call pkey_alloc() and end up
-with
-> > the same key?  If so, it seems entirely broken.
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [83xx/asp8347_defconfig] Error 1
+   make[1]: *** [83xx/asp8347_defconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [oldconfig] Error 1
+   make[1]: *** [oldconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [olddefconfig] Error 1
+   make[2]: Target 'oldnoconfig' not remade because of errors.
+   make[1]: *** [oldnoconfig] Error 2
+   make: *** [sub-make] Error 2
 
-> No. Two threads cannot allocate the same key; just like x86.
+vim +466 arch/powerpc/Kconfig
 
-> > If not, then how do you
-> > intend for a multithreaded application to usefully allocate a new key?
-> > Regardless, it seems like the current behavior on POWER is very
-difficult
-> > to work with.  Can you give an example of a use case for which POWER's
-> > behavior makes sense?
-> >
-> > For the use cases I've imagined, POWER's behavior does not make sense.
-> >   x86's is not ideal but is still better.  Here are my two example use
-cases:
-> >
-> > 1. A crypto library.  Suppose I'm writing a TLS-terminating server, and
-I
-> > want it to be resistant to Heartbleed-like bugs.  I could store my
-private
-> > keys protected by mprotect_key() and arrange for all threads and signal
-> > handlers to have PKRU/AMR values that prevent any access to the memory.
-> > When an explicit call is made to sign with the key, I would temporarily
-> > change PKRU/AMR to allow access, compute the signature, and change
-PKRU/AMR
-> > back.  On x86 right now, this works nicely.  On POWER, it doesn't,
-because
-> > any thread started before my pkey_alloc() call can access the protected
-> > memory, as can any signal handler.
-> >
-> > 2. A database using mmap() (with persistent memory or otherwise).  It
-would
-> > be nice to be resistant to accidental corruption due to stray writes.  I
-> > would do more or less the same thing as (1), except that I would want
-> > threads that are not actively writing to the database to be able the
-> > protected memory.  On x86, I need to manually convince threads that may
-> > have been started before my pkey_alloc() call as well as signal
-handlers to
-> > update their PKRU values.  On POWER, as in example (1), the error goes
-the
-> > other direction -- if I fail to propagate the AMR bits to all threads,
-> > writes are not blocked.
+e05c0e81 Kevin Hao       2013-07-16  441  
+3d72bbc4 Michael Neuling 2013-02-13  442  config PPC_TRANSACTIONAL_MEM
+3d72bbc4 Michael Neuling 2013-02-13  443         bool "Transactional Memory support for POWERPC"
+3d72bbc4 Michael Neuling 2013-02-13  444         depends on PPC_BOOK3S_64
+3d72bbc4 Michael Neuling 2013-02-13  445         depends on SMP
+7b37a123 Michael Neuling 2014-01-08  446         select ALTIVEC
+7b37a123 Michael Neuling 2014-01-08  447         select VSX
+3d72bbc4 Michael Neuling 2013-02-13  448         default n
+3d72bbc4 Michael Neuling 2013-02-13  449         ---help---
+3d72bbc4 Michael Neuling 2013-02-13  450           Support user-mode Transactional Memory on POWERPC.
+3d72bbc4 Michael Neuling 2013-02-13  451  
+951eedeb Nicholas Piggin 2017-05-29  452  config LD_HEAD_STUB_CATCH
+951eedeb Nicholas Piggin 2017-05-29  453  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+951eedeb Nicholas Piggin 2017-05-29  454  	depends on PPC64
+951eedeb Nicholas Piggin 2017-05-29  455  	default n
+951eedeb Nicholas Piggin 2017-05-29  456  	help
+951eedeb Nicholas Piggin 2017-05-29  457  	  Very large kernels can cause linker branch stubs to be generated by
+951eedeb Nicholas Piggin 2017-05-29  458  	  code in head_64.S, which moves the head text sections out of their
+951eedeb Nicholas Piggin 2017-05-29  459  	  specified location. This option can work around the problem.
+951eedeb Nicholas Piggin 2017-05-29  460  
+951eedeb Nicholas Piggin 2017-05-29  461  	  If unsure, say "N".
+951eedeb Nicholas Piggin 2017-05-29  462  
+8c50b72a Torsten Duwe    2016-03-03  463  config MPROFILE_KERNEL
+8c50b72a Torsten Duwe    2016-03-03  464  	depends on PPC64 && CPU_LITTLE_ENDIAN
+023eff0e Nicholas Piggin 2018-05-17 @465  	def_bool $(success $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
+8c50b72a Torsten Duwe    2016-03-03 @466  
 
-> I see the problem from an application's point of view, on powerpc.  If
-> the key allocated in one thread is not activated on all threads
-> (existing one and future one), than other threads will not be able
-> to modify the key's permissions. Hence they will not be able to control
-> access/write to pages to which the key is associated.
+:::::: The code at line 466 was first introduced by commit
+:::::: 8c50b72a3b4f1f7cdfdfebd233b1cbd121262e65 powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel
 
-> As Florian suggested, I should enable the key's bit in the UAMOR value
-> corresponding to existing threads, when a new key is allocated.
+:::::: TO: Torsten Duwe <duwe@lst.de>
+:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
 
-> Now, looking at the implementation for x86, I see that sys_mpkey_alloc()
-> makes no attempt to modify anything of any other thread. How
-> does it manage to activate the key on any other thread? Is this
-> magic done by the hardware?
-
-x86 has no equivalent concept to UAMOR.  There are 16 keys no matter what.
-
---Andy
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
