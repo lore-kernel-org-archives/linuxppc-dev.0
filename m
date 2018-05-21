@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pK1LzczF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:32 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id c22-v6so5141824pgn.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pM2dC3zF0dT
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:35 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id w19-v6so8049640plq.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:35 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 26/29] KVM: PPC: move vcpu_load/vcpu_put down to each ioctl
- case in kvm_arch_vcpu_ioctl
-Date: Mon, 21 May 2018 12:09:43 +0800
-Message-Id: <1526875786-10372-27-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 27/29] KVM: PPC: remove load/put vcpu for
+ KVM_GET/SET_ONE_REG ioctl
+Date: Mon, 21 May 2018 12:09:44 +0800
+Message-Id: <1526875786-10372-28-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,75 +28,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Although we already have kvm_arch_vcpu_async_ioctl() which doesn't require
-ioctl to load vcpu, the sync ioctl code need to be cleaned up when
-CONFIG_HAVE_KVM_VCPU_ASYNC_IOCTL is not configured.
-
-This patch moves vcpu_load/vcpu_put down to each ioctl switch case so that
-each ioctl can decide to do vcpu_load/vcpu_put or not independently.
+Due to the vcpu mutex locking/unlock has been moved out of vcpu_load()
+/vcpu_put(), KVM_GET_ONE_REG and KVM_SET_ONE_REG doesn't need to do
+ioctl with loading vcpu anymore. This patch removes vcpu_load()/vcpu_put()
+from KVM_GET_ONE_REG and KVM_SET_ONE_REG ioctl.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/powerpc.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/powerpc/kvm/powerpc.c | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 1fa5bbe..c9098ff 100644
+index c9098ff..5def68d 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -1783,16 +1783,16 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	void __user *argp = (void __user *)arg;
- 	long r;
- 
--	vcpu_load(vcpu);
--
- 	switch (ioctl) {
- 	case KVM_ENABLE_CAP:
- 	{
- 		struct kvm_enable_cap cap;
- 		r = -EFAULT;
-+		vcpu_load(vcpu);
- 		if (copy_from_user(&cap, argp, sizeof(cap)))
- 			goto out;
- 		r = kvm_vcpu_ioctl_enable_cap(vcpu, &cap);
-+		vcpu_put(vcpu);
- 		break;
- 	}
- 
-@@ -1801,12 +1801,14 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+@@ -1801,14 +1801,12 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
  	{
  		struct kvm_one_reg reg;
  		r = -EFAULT;
-+		vcpu_load(vcpu);
+-		vcpu_load(vcpu);
  		if (copy_from_user(&reg, argp, sizeof(reg)))
  			goto out;
  		if (ioctl == KVM_SET_ONE_REG)
  			r = kvm_vcpu_ioctl_set_one_reg(vcpu, &reg);
  		else
  			r = kvm_vcpu_ioctl_get_one_reg(vcpu, &reg);
-+		vcpu_put(vcpu);
+-		vcpu_put(vcpu);
  		break;
  	}
- 
-@@ -1814,9 +1816,11 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	case KVM_DIRTY_TLB: {
- 		struct kvm_dirty_tlb dirty;
- 		r = -EFAULT;
-+		vcpu_load(vcpu);
- 		if (copy_from_user(&dirty, argp, sizeof(dirty)))
- 			goto out;
- 		r = kvm_vcpu_ioctl_dirty_tlb(vcpu, &dirty);
-+		vcpu_put(vcpu);
- 		break;
- 	}
- #endif
-@@ -1825,7 +1829,6 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	}
- 
- out:
--	vcpu_put(vcpu);
- 	return r;
- }
  
 -- 
 1.8.3.1
