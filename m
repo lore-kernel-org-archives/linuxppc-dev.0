@@ -1,22 +1,37 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pS3nQ0zF0dS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:40 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id t12-v6so8040986plo.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:40 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 29/29] KVM: PPC: Book3S PR: enable
- kvmppc_get/set_one_reg_pr() for HTM registers
-Date: Mon, 21 May 2018 12:09:46 +0800
-Message-Id: <1526875786-10372-30-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q6295YrZzF0dS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:56:49 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4L4rWe6133894
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 00:56:47 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j3jqk8bdp-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 00:56:47 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Mon, 21 May 2018 05:56:45 +0100
+Subject: Re: [PATCH-RESEND] cxl: Disable prefault_mode in Radix mode
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>,
+ Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ "Alastair D'Silva" <alastair@linux.ibm.com>, stable@vger.kernel.org
+References: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Mon, 21 May 2018 14:56:40 +1000
+MIME-Version: 1.0
+In-Reply-To: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
+Message-Id: <aef09638-d78d-afe3-71fe-99805d7b5225@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,175 +41,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+On 18/05/18 19:42, Vaibhav Jain wrote:
+> From: Vaibhav Jain <vaibhav@linux.ibm.com>
+> 
+> Currently we see a kernel-oops reported on Power-9 while attaching a
+> context to an AFU, with radix-mode and sysfs attr 'prefault_mode' set
+> to anything other than 'none'. The backtrace of the oops is of this
+> form:
+> 
+> Unable to handle kernel paging request for data at address 0x00000080
+> Faulting instruction address: 0xc00800000bcf3b20
+> cpu 0x1: Vector: 300 (Data Access) at [c00000037f003800]
+>      pc: c00800000bcf3b20: cxl_load_segment+0x178/0x290 [cxl]
+>      lr: c00800000bcf39f0: cxl_load_segment+0x48/0x290 [cxl]
+>      sp: c00000037f003a80
+>     msr: 9000000000009033
+>     dar: 80
+>   dsisr: 40000000
+>    current = 0xc00000037f280000
+>    paca    = 0xc0000003ffffe600   softe: 3        irq_happened: 0x01
+>      pid   = 3529, comm = afp_no_int
+> <snip>
+> [c00000037f003af0] c00800000bcf4424 cxl_prefault+0xfc/0x248 [cxl]
+> [c00000037f003b50] c00800000bcf8a40 process_element_entry_psl9+0xd8/0x1a0 [cxl]
+> [c00000037f003b90] c00800000bcf944c cxl_attach_dedicated_process_psl9+0x44/0x130 [cxl]
+> [c00000037f003bd0] c00800000bcf5448 native_attach_process+0xc0/0x130 [cxl]
+> [c00000037f003c50] c00800000bcf16cc afu_ioctl+0x3f4/0x5e0 [cxl]
+> [c00000037f003d00] c00000000039d98c do_vfs_ioctl+0xdc/0x890
+> [c00000037f003da0] c00000000039e1a8 ksys_ioctl+0x68/0xf0
+> [c00000037f003df0] c00000000039e270 sys_ioctl+0x40/0xa0
+> [c00000037f003e30] c00000000000b320 system_call+0x58/0x6c
+> --- Exception: c01 (System Call) at 0000000010053bb0
+> 
+> The issue is caused as on Power-8 the AFU attr 'prefault_mode' was
+> used to improve initial storage fault performance by prefaulting
+> process segments. However on Power-9 with radix mode we don't have
+> Storage-Segments that we can prefault. Also prefaulting process Pages
+> will be too costly and fine-grained.
+> 
+> Hence, since the prefaulting mechanism doesn't makes sense of
+> radix-mode, this patch updates prefault_mode_store() to not allow any
+> other value apart from CXL_PREFAULT_NONE when radix mode is enabled.
+> 
+> Cc: <stable@vger.kernel.org>
+> Fixes: f24be42aab37 ("cxl: Add psl9 specific code")
+> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
+> ---
+> Change-log:
+> 
+> Resend  ->  Updated the commit description to add more info on the
+> 	    issue seen [Andrew]
 
-We need to migrate PR KVM during transaction and qemu will use
-kvmppc_get_one_reg_pr()/kvmppc_set_one_reg_pr() APIs to get/set
-transaction checkpoint state. This patch adds support for that.
+Thanks for redoing the commit message.
 
-So far PPC PR qemu doesn't fully function for migration but the
-savevm/loadvm can be done against a RHEL72 guest. During savevm/
-loadvm procedure, the kvm ioctls will be invoked as well.
+This looks good to me.
 
-Test has been performed to savevm/loadvm for a guest running
-a HTM test program:
-https://github.com/justdoitqd/publicFiles/blob/master/test-tm-mig.c
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- arch/powerpc/kvm/book3s_pr.c | 133 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 133 insertions(+)
-
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 8efc87b..7e76c4a 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -1537,6 +1537,73 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 		else
- 			*val = get_reg_val(id, 0);
- 		break;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	case KVM_REG_PPC_TFHAR:
-+		*val = get_reg_val(id, vcpu->arch.tfhar);
-+		break;
-+	case KVM_REG_PPC_TFIAR:
-+		*val = get_reg_val(id, vcpu->arch.tfiar);
-+		break;
-+	case KVM_REG_PPC_TEXASR:
-+		*val = get_reg_val(id, vcpu->arch.texasr);
-+		break;
-+	case KVM_REG_PPC_TM_GPR0 ... KVM_REG_PPC_TM_GPR31:
-+		*val = get_reg_val(id,
-+				vcpu->arch.gpr_tm[id-KVM_REG_PPC_TM_GPR0]);
-+		break;
-+	case KVM_REG_PPC_TM_VSR0 ... KVM_REG_PPC_TM_VSR63:
-+	{
-+		int i, j;
-+
-+		i = id - KVM_REG_PPC_TM_VSR0;
-+		if (i < 32)
-+			for (j = 0; j < TS_FPRWIDTH; j++)
-+				val->vsxval[j] = vcpu->arch.fp_tm.fpr[i][j];
-+		else {
-+			if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+				val->vval = vcpu->arch.vr_tm.vr[i-32];
-+			else
-+				r = -ENXIO;
-+		}
-+		break;
-+	}
-+	case KVM_REG_PPC_TM_CR:
-+		*val = get_reg_val(id, vcpu->arch.cr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_XER:
-+		*val = get_reg_val(id, vcpu->arch.xer_tm);
-+		break;
-+	case KVM_REG_PPC_TM_LR:
-+		*val = get_reg_val(id, vcpu->arch.lr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_CTR:
-+		*val = get_reg_val(id, vcpu->arch.ctr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_FPSCR:
-+		*val = get_reg_val(id, vcpu->arch.fp_tm.fpscr);
-+		break;
-+	case KVM_REG_PPC_TM_AMR:
-+		*val = get_reg_val(id, vcpu->arch.amr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_PPR:
-+		*val = get_reg_val(id, vcpu->arch.ppr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_VRSAVE:
-+		*val = get_reg_val(id, vcpu->arch.vrsave_tm);
-+		break;
-+	case KVM_REG_PPC_TM_VSCR:
-+		if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+			*val = get_reg_val(id, vcpu->arch.vr_tm.vscr.u[3]);
-+		else
-+			r = -ENXIO;
-+		break;
-+	case KVM_REG_PPC_TM_DSCR:
-+		*val = get_reg_val(id, vcpu->arch.dscr_tm);
-+		break;
-+	case KVM_REG_PPC_TM_TAR:
-+		*val = get_reg_val(id, vcpu->arch.tar_tm);
-+		break;
-+#endif
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -1570,6 +1637,72 @@ static int kvmppc_set_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_LPCR_64:
- 		kvmppc_set_lpcr_pr(vcpu, set_reg_val(id, *val));
- 		break;
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	case KVM_REG_PPC_TFHAR:
-+		vcpu->arch.tfhar = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TFIAR:
-+		vcpu->arch.tfiar = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TEXASR:
-+		vcpu->arch.texasr = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_GPR0 ... KVM_REG_PPC_TM_GPR31:
-+		vcpu->arch.gpr_tm[id - KVM_REG_PPC_TM_GPR0] =
-+			set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VSR0 ... KVM_REG_PPC_TM_VSR63:
-+	{
-+		int i, j;
-+
-+		i = id - KVM_REG_PPC_TM_VSR0;
-+		if (i < 32)
-+			for (j = 0; j < TS_FPRWIDTH; j++)
-+				vcpu->arch.fp_tm.fpr[i][j] = val->vsxval[j];
-+		else
-+			if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+				vcpu->arch.vr_tm.vr[i-32] = val->vval;
-+			else
-+				r = -ENXIO;
-+		break;
-+	}
-+	case KVM_REG_PPC_TM_CR:
-+		vcpu->arch.cr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_XER:
-+		vcpu->arch.xer_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_LR:
-+		vcpu->arch.lr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_CTR:
-+		vcpu->arch.ctr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_FPSCR:
-+		vcpu->arch.fp_tm.fpscr = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_AMR:
-+		vcpu->arch.amr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_PPR:
-+		vcpu->arch.ppr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VRSAVE:
-+		vcpu->arch.vrsave_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_VSCR:
-+		if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+			vcpu->arch.vr.vscr.u[3] = set_reg_val(id, *val);
-+		else
-+			r = -ENXIO;
-+		break;
-+	case KVM_REG_PPC_TM_DSCR:
-+		vcpu->arch.dscr_tm = set_reg_val(id, *val);
-+		break;
-+	case KVM_REG_PPC_TM_TAR:
-+		vcpu->arch.tar_tm = set_reg_val(id, *val);
-+		break;
-+#endif
- 	default:
- 		r = -EINVAL;
- 		break;
 -- 
-1.8.3.1
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
