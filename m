@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qDng3LndzF14Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:27 +1000 (AEST)
-In-Reply-To: <1526452518-12611-1-git-send-email-anju@linux.vnet.ibm.com>
-To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qDnh37BnzF12B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:28 +1000 (AEST)
+In-Reply-To: <20180516065857.8043B6F6F2@po14934vm.idsi0.si.c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- anju@linux.vnet.ibm.com, ppaidipe@linux.vnet.ibm.com
-Subject: Re: [v2] powerpc/perf: Fix memory allocation for core-imc based on
- num_possible_cpus()
-Message-Id: <40qDng1Nh1z9s3R@ozlabs.org>
-Date: Mon, 21 May 2018 20:01:26 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc: get rid of PMD_PAGE_SIZE() and _PMD_SIZE
+Message-Id: <40qDnh0t87z9s3M@ozlabs.org>
+Date: Mon, 21 May 2018 20:01:27 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,64 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-16 at 06:35:18 UTC, Anju T Sudhakar wrote:
-> Currently memory is allocated for core-imc based on cpu_present_mask,
-> which has bit 'cpu' set iff cpu is populated. We use (cpu number / threads
-> per core) as the array index to access the memory.
+On Wed, 2018-05-16 at 06:58:57 UTC, Christophe Leroy wrote:
+> PMD_PAGE_SIZE() is nowhere used and _PMD_SIZE is only
+> used by PMD_PAGE_SIZE().
 > 
-> Under some circumstances firmware marks a CPU as GUARDed CPU and boot the
-> system, until cleared of errors, these CPU's are unavailable for all
-> subsequent boots. GUARDed CPUs are possible but not present from linux
-> view, so it blows a hole when we assume the max length of our allocation
-> is driven by our max present cpus, where as one of the cpus might be online
-> and be beyond the max present cpus, due to the hole. 
-> So (cpu number / threads per core) value bounds the array index and leads
-> to memory overflow.
+> This patch removes them.
 > 
-> Call trace observed during a guard test:
-> 
-> Faulting instruction address: 0xc000000000149f1c
-> cpu 0x69: Vector: 380 (Data Access Out of Range) at [c000003fea303420]
->     pc:c000000000149f1c: prefetch_freepointer+0x14/0x30
->     lr:c00000000014e0f8: __kmalloc+0x1a8/0x1ac
->     sp:c000003fea3036a0
->    msr:9000000000009033
->    dar:c9c54b2c91dbf6b7
->   current = 0xc000003fea2c0000
->   paca    = 0xc00000000fddd880	 softe: 3	 irq_happened: 0x01
->     pid   = 1, comm = swapper/104
-> Linux version 4.16.7-openpower1 (smc@smc-desktop) (gcc version 6.4.0
-> (Buildroot 2018.02.1-00006-ga8d1126)) #2 SMP Fri May 4 16:44:54 PDT 2018
-> enter ? for help
-> call trace:
-> 	 __kmalloc+0x1a8/0x1ac
-> 	 (unreliable)
-> 	 init_imc_pmu+0x7f4/0xbf0
-> 	 opal_imc_counters_probe+0x3fc/0x43c
-> 	 platform_drv_probe+0x48/0x80
-> 	 driver_probe_device+0x22c/0x308
-> 	 __driver_attach+0xa0/0xd8
-> 	 bus_for_each_dev+0x88/0xb4
-> 	 driver_attach+0x2c/0x40
-> 	 bus_add_driver+0x1e8/0x228
-> 	 driver_register+0xd0/0x114
-> 	 __platform_driver_register+0x50/0x64
-> 	 opal_imc_driver_init+0x24/0x38
-> 	 do_one_initcall+0x150/0x15c
-> 	 kernel_init_freeable+0x250/0x254
-> 	 kernel_init+0x1c/0x150
-> 	 ret_from_kernel_thread+0x5c/0xc8
-> 
-> Allocating memory for core-imc based on cpu_possible_mask, which has
-> bit 'cpu' set iff cpu is populatable, will fix this issue.
-> 
-> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
-> Tested-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/d2032678e57fc508d7878307badde8
+https://git.kernel.org/powerpc/c/5279821a6f5ff75d7dce632e49b9fb
 
 cheers
