@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5nh1D93zF0cy
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:00 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id ay10-v6so8057420plb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:45:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5nl2tbWzF0dl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:03 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id 63-v6so3656422pgg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:03 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 13/29] KVM: PPC: Book3S PR: adds new
- kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
-Date: Mon, 21 May 2018 12:09:30 +0800
-Message-Id: <1526875786-10372-14-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 14/29] KVM: PPC: Book3S PR: add
+ kvmppc_save/restore_tm_sprs() APIs
+Date: Mon, 21 May 2018 12:09:31 +0800
+Message-Id: <1526875786-10372-15-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,68 +28,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch adds 2 new APIs: kvmppc_copyto_vcpu_tm() and
-kvmppc_copyfrom_vcpu_tm().  These 2 APIs will be used to copy from/to TM
-data between VCPU_TM/VCPU area.
-
-PR KVM will use these APIs for treclaim. or trchkpt. emulation.
+This patch adds 2 new APIs kvmppc_save_tm_sprs()/kvmppc_restore_tm_sprs()
+for the purpose of TEXASR/TFIAR/TFHAR save/restore.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 41 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ arch/powerpc/kvm/book3s_pr.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 2eb457b..f81a921 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -87,6 +87,47 @@ static bool spr_allowed(struct kvm_vcpu *vcpu, enum priv_level level)
- 	return true;
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index f2ae5a3..7d4905a 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -42,6 +42,7 @@
+ #include <linux/highmem.h>
+ #include <linux/module.h>
+ #include <linux/miscdevice.h>
++#include <asm/asm-prototypes.h>
+ 
+ #include "book3s.h"
+ 
+@@ -284,6 +285,27 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu)
+ 	svcpu_put(svcpu);
  }
  
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static inline void kvmppc_copyto_vcpu_tm(struct kvm_vcpu *vcpu)
++static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu)
 +{
-+	memcpy(&vcpu->arch.gpr_tm[0], &vcpu->arch.regs.gpr[0],
-+			sizeof(vcpu->arch.gpr_tm));
-+	memcpy(&vcpu->arch.fp_tm, &vcpu->arch.fp,
-+			sizeof(struct thread_fp_state));
-+	memcpy(&vcpu->arch.vr_tm, &vcpu->arch.vr,
-+			sizeof(struct thread_vr_state));
-+	vcpu->arch.ppr_tm = vcpu->arch.ppr;
-+	vcpu->arch.dscr_tm = vcpu->arch.dscr;
-+	vcpu->arch.amr_tm = vcpu->arch.amr;
-+	vcpu->arch.ctr_tm = vcpu->arch.regs.ctr;
-+	vcpu->arch.tar_tm = vcpu->arch.tar;
-+	vcpu->arch.lr_tm = vcpu->arch.regs.link;
-+	vcpu->arch.cr_tm = vcpu->arch.cr;
-+	vcpu->arch.xer_tm = vcpu->arch.regs.xer;
-+	vcpu->arch.vrsave_tm = vcpu->arch.vrsave;
++	tm_enable();
++	vcpu->arch.tfhar = mfspr(SPRN_TFHAR);
++	vcpu->arch.texasr = mfspr(SPRN_TEXASR);
++	vcpu->arch.tfiar = mfspr(SPRN_TFIAR);
++	tm_disable();
 +}
 +
-+static inline void kvmppc_copyfrom_vcpu_tm(struct kvm_vcpu *vcpu)
++static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu)
 +{
-+	memcpy(&vcpu->arch.regs.gpr[0], &vcpu->arch.gpr_tm[0],
-+			sizeof(vcpu->arch.regs.gpr));
-+	memcpy(&vcpu->arch.fp, &vcpu->arch.fp_tm,
-+			sizeof(struct thread_fp_state));
-+	memcpy(&vcpu->arch.vr, &vcpu->arch.vr_tm,
-+			sizeof(struct thread_vr_state));
-+	vcpu->arch.ppr = vcpu->arch.ppr_tm;
-+	vcpu->arch.dscr = vcpu->arch.dscr_tm;
-+	vcpu->arch.amr = vcpu->arch.amr_tm;
-+	vcpu->arch.regs.ctr = vcpu->arch.ctr_tm;
-+	vcpu->arch.tar = vcpu->arch.tar_tm;
-+	vcpu->arch.regs.link = vcpu->arch.lr_tm;
-+	vcpu->arch.cr = vcpu->arch.cr_tm;
-+	vcpu->arch.regs.xer = vcpu->arch.xer_tm;
-+	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
++	tm_enable();
++	mtspr(SPRN_TFHAR, vcpu->arch.tfhar);
++	mtspr(SPRN_TEXASR, vcpu->arch.texasr);
++	mtspr(SPRN_TFIAR, vcpu->arch.tfiar);
++	tm_disable();
 +}
 +
 +#endif
 +
- int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			      unsigned int inst, int *advance)
+ static int kvmppc_core_check_requests_pr(struct kvm_vcpu *vcpu)
  {
+ 	int r = 1; /* Indicate we want to get back into the guest */
 -- 
 1.8.3.1
