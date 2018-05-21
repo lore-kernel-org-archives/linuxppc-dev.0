@@ -1,35 +1,22 @@
-Return-Path: <ravi.bangoria@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5FW4qp4zF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:21:35 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4L4J3uG063853
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 00:21:32 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j3hfu23h9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 00:21:32 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ravi.bangoria@linux.ibm.com>;
- Mon, 21 May 2018 05:21:30 +0100
-From: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-To: mpe@ellerman.id.au, mikey@neuling.org
-Cc: benh@kernel.crashing.org, paulus@samba.org,
- naveen.n.rao@linux.vnet.ibm.com, matthew.brown.dev@gmail.com,
- cyrilbur@gmail.com, anton@samba.org, sandipan@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Ravi Bangoria <ravi.bangoria@linux.ibm.com>
-Subject: [PATCH 3/3] powerpc/sstep: Fix emulate_step test if VSX not present
-Date: Mon, 21 May 2018 09:51:08 +0530
-In-Reply-To: <20180521042108.8318-1-ravi.bangoria@linux.ibm.com>
-References: <20180521042108.8318-1-ravi.bangoria@linux.ibm.com>
-Message-Id: <20180521042108.8318-4-ravi.bangoria@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5n76SP1zF0WR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:45:31 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id a20-v6so6469434pfo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:45:31 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v3 03/29] powerpc: export tm_enable()/tm_disable/tm_abort()
+ APIs
+Date: Mon, 21 May 2018 12:09:20 +0800
+Message-Id: <1526875786-10372-4-git-send-email-wei.guo.simon@gmail.com>
+In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
+References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,62 +26,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-emulate_step() tests are failing if VSX is not supported or disabled.
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-  emulate_step_test: lxvd2x         : FAIL
-  emulate_step_test: stxvd2x        : FAIL
+This patch exports tm_enable()/tm_disable/tm_abort() APIs, which
+will be used for PR KVM transaction memory logic.
 
-If !CPU_FTR_VSX, emulate_step() failure is expected and testcase should
-PASS with a valid justification. After patch:
-
-  emulate_step_test: lxvd2x         : PASS (!CPU_FTR_VSX)
-  emulate_step_test: stxvd2x        : PASS (!CPU_FTR_VSX)
-
-Signed-off-by: Ravi Bangoria <ravi.bangoria@linux.ibm.com>
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/lib/test_emulate_step.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |  3 +++
+ arch/powerpc/include/asm/tm.h             |  2 --
+ arch/powerpc/kernel/tm.S                  | 12 ++++++++++++
+ arch/powerpc/mm/hash_utils_64.c           |  1 +
+ 4 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/lib/test_emulate_step.c b/arch/powerpc/lib/test_emulate_step.c
-index 2534c1447554..6c47daa61614 100644
---- a/arch/powerpc/lib/test_emulate_step.c
-+++ b/arch/powerpc/lib/test_emulate_step.c
-@@ -387,10 +387,14 @@ static void __init test_lxvd2x_stxvd2x(void)
- 	/* lxvd2x vsr39, r3, r4 */
- 	stepped = emulate_step(&regs, TEST_LXVD2X(39, 3, 4));
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index d9713ad..dfdcb23 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -141,4 +141,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
+ void pnv_power9_force_smt4_catch(void);
+ void pnv_power9_force_smt4_release(void);
  
--	if (stepped == 1)
-+	if (stepped == 1 && cpu_has_feature(CPU_FTR_VSX)) {
- 		show_result("lxvd2x", "PASS");
--	else
--		show_result("lxvd2x", "FAIL");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("lxvd2x", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("lxvd2x", "FAIL");
-+	}
++void tm_enable(void);
++void tm_disable(void);
++void tm_abort(uint8_t cause);
+ #endif /* _ASM_POWERPC_ASM_PROTOTYPES_H */
+diff --git a/arch/powerpc/include/asm/tm.h b/arch/powerpc/include/asm/tm.h
+index b1658c9..e94f6db 100644
+--- a/arch/powerpc/include/asm/tm.h
++++ b/arch/powerpc/include/asm/tm.h
+@@ -10,12 +10,10 @@
  
+ #ifndef __ASSEMBLY__
  
- 	/*** stxvd2x ***/
-@@ -404,10 +408,15 @@ static void __init test_lxvd2x_stxvd2x(void)
- 	stepped = emulate_step(&regs, TEST_STXVD2X(39, 3, 4));
+-extern void tm_enable(void);
+ extern void tm_reclaim(struct thread_struct *thread,
+ 		       uint8_t cause);
+ extern void tm_reclaim_current(uint8_t cause);
+ extern void tm_recheckpoint(struct thread_struct *thread);
+-extern void tm_abort(uint8_t cause);
+ extern void tm_save_sprs(struct thread_struct *thread);
+ extern void tm_restore_sprs(struct thread_struct *thread);
  
- 	if (stepped == 1 && cached_b[0] == c.b[0] && cached_b[1] == c.b[1] &&
--	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3])
-+	    cached_b[2] == c.b[2] && cached_b[3] == c.b[3] &&
-+	    cpu_has_feature(CPU_FTR_VSX)) {
- 		show_result("stxvd2x", "PASS");
--	else
--		show_result("stxvd2x", "FAIL");
-+	} else {
-+		if (!cpu_has_feature(CPU_FTR_VSX))
-+			show_result("stxvd2x", "PASS (!CPU_FTR_VSX)");
-+		else
-+			show_result("stxvd2x", "FAIL");
-+	}
- }
- #else
- static void __init test_lxvd2x_stxvd2x(void)
+diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
+index b92ac8e..ff12f47 100644
+--- a/arch/powerpc/kernel/tm.S
++++ b/arch/powerpc/kernel/tm.S
+@@ -12,6 +12,7 @@
+ #include <asm/ptrace.h>
+ #include <asm/reg.h>
+ #include <asm/bug.h>
++#include <asm/export.h>
+ 
+ #ifdef CONFIG_VSX
+ /* See fpu.S, this is borrowed from there */
+@@ -55,6 +56,16 @@ _GLOBAL(tm_enable)
+ 	or	r4, r4, r3
+ 	mtmsrd	r4
+ 1:	blr
++EXPORT_SYMBOL_GPL(tm_enable);
++
++_GLOBAL(tm_disable)
++	mfmsr	r4
++	li	r3, MSR_TM >> 32
++	sldi	r3, r3, 32
++	andc	r4, r4, r3
++	mtmsrd	r4
++	blr
++EXPORT_SYMBOL_GPL(tm_disable);
+ 
+ _GLOBAL(tm_save_sprs)
+ 	mfspr	r0, SPRN_TFHAR
+@@ -78,6 +89,7 @@ _GLOBAL(tm_restore_sprs)
+ _GLOBAL(tm_abort)
+ 	TABORT(R3)
+ 	blr
++EXPORT_SYMBOL_GPL(tm_abort);
+ 
+ /* void tm_reclaim(struct thread_struct *thread,
+  *		   uint8_t cause)
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 0bd3790..1bd8b4c1 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -64,6 +64,7 @@
+ #include <asm/trace.h>
+ #include <asm/ps3.h>
+ #include <asm/pte-walk.h>
++#include <asm/asm-prototypes.h>
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
 -- 
-2.16.2
+1.8.3.1
