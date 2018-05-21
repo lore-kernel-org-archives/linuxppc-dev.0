@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pM2dC3zF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:35 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id w19-v6so8049640plq.4
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pP6b5xzF0dl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:37 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id t12-v6so8040931plo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:37 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 27/29] KVM: PPC: remove load/put vcpu for
- KVM_GET/SET_ONE_REG ioctl
-Date: Mon, 21 May 2018 12:09:44 +0800
-Message-Id: <1526875786-10372-28-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 28/29] KVM: PPC: remove load/put vcpu for
+ KVM_GET_REGS/KVM_SET_REGS
+Date: Mon, 21 May 2018 12:09:45 +0800
+Message-Id: <1526875786-10372-29-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,34 +28,58 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
+In both HV/PR KVM, the KVM_SET_REGS/KVM_GET_REGS ioctl should
+be able to perform without load vcpu. This patch adds
+KVM_SET_ONE_REG/KVM_GET_ONE_REG implementation to async ioctl
+function.
+
 Due to the vcpu mutex locking/unlock has been moved out of vcpu_load()
-/vcpu_put(), KVM_GET_ONE_REG and KVM_SET_ONE_REG doesn't need to do
+/vcpu_put(), KVM_SET_REGS/KVM_GET_REGS don't need to do
 ioctl with loading vcpu anymore. This patch removes vcpu_load()/vcpu_put()
-from KVM_GET_ONE_REG and KVM_SET_ONE_REG ioctl.
+from KVM_SET_REGS/KVM_GET_REGS ioctl.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/powerpc.c | 2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/kvm/book3s.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index c9098ff..5def68d 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -1801,14 +1801,12 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
- 	{
- 		struct kvm_one_reg reg;
- 		r = -EFAULT;
--		vcpu_load(vcpu);
- 		if (copy_from_user(&reg, argp, sizeof(reg)))
- 			goto out;
- 		if (ioctl == KVM_SET_ONE_REG)
- 			r = kvm_vcpu_ioctl_set_one_reg(vcpu, &reg);
- 		else
- 			r = kvm_vcpu_ioctl_get_one_reg(vcpu, &reg);
--		vcpu_put(vcpu);
- 		break;
- 	}
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 97d4a11..523c68f 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -509,8 +509,6 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ {
+ 	int i;
+ 
+-	vcpu_load(vcpu);
+-
+ 	regs->pc = kvmppc_get_pc(vcpu);
+ 	regs->cr = kvmppc_get_cr(vcpu);
+ 	regs->ctr = kvmppc_get_ctr(vcpu);
+@@ -532,7 +530,6 @@ int kvm_arch_vcpu_ioctl_get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
+ 		regs->gpr[i] = kvmppc_get_gpr(vcpu, i);
+ 
+-	vcpu_put(vcpu);
+ 	return 0;
+ }
+ 
+@@ -540,8 +537,6 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ {
+ 	int i;
+ 
+-	vcpu_load(vcpu);
+-
+ 	kvmppc_set_pc(vcpu, regs->pc);
+ 	kvmppc_set_cr(vcpu, regs->cr);
+ 	kvmppc_set_ctr(vcpu, regs->ctr);
+@@ -562,7 +557,6 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	for (i = 0; i < ARRAY_SIZE(regs->gpr); i++)
+ 		kvmppc_set_gpr(vcpu, i, regs->gpr[i]);
+ 
+-	vcpu_put(vcpu);
+ 	return 0;
+ }
  
 -- 
 1.8.3.1
