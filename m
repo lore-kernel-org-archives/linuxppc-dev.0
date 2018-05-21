@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qDnd6x7hzF13y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:25 +1000 (AEST)
-In-Reply-To: <20180514155947.22753-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qDng3LndzF14Y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:27 +1000 (AEST)
+In-Reply-To: <1526452518-12611-1-git-send-email-anju@linux.vnet.ibm.com>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/2] powerpc/powernv: Fix opal_event_shutdown() called with
- interrupts disabled
-Message-Id: <40qDnd65QKz9s3M@ozlabs.org>
-Date: Mon, 21 May 2018 20:01:25 +1000 (AEST)
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anju@linux.vnet.ibm.com, ppaidipe@linux.vnet.ibm.com
+Subject: Re: [v2] powerpc/perf: Fix memory allocation for core-imc based on
+ num_possible_cpus()
+Message-Id: <40qDng1Nh1z9s3R@ozlabs.org>
+Date: Mon, 21 May 2018 20:01:26 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,47 +22,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-05-14 at 15:59:46 UTC, Nicholas Piggin wrote:
-> A kernel crash in process context that calls emergency_restart from
-> panic will end up calling opal_event_shutdown with interrupts disabled
-> but not in interrupt. This causes a sleeping function to be called
-> which gives the following warning with sysrq+c:
+On Wed, 2018-05-16 at 06:35:18 UTC, Anju T Sudhakar wrote:
+> Currently memory is allocated for core-imc based on cpu_present_mask,
+> which has bit 'cpu' set iff cpu is populated. We use (cpu number / threads
+> per core) as the array index to access the memory.
 > 
->     Rebooting in 10 seconds..
->     BUG: sleeping function called from invalid context at kernel/locking/mutex.c:238
->     in_atomic(): 0, irqs_disabled(): 1, pid: 7669, name: bash
->     CPU: 20 PID: 7669 Comm: bash Tainted: G      D W         4.17.0-rc5+ #3
->     Call Trace:
->     dump_stack+0xb0/0xf4 (unreliable)
->     ___might_sleep+0x174/0x1a0
->     mutex_lock+0x38/0xb0
->     __free_irq+0x68/0x460
->     free_irq+0x70/0xc0
->     opal_event_shutdown+0xb4/0xf0
->     opal_shutdown+0x24/0xa0
->     pnv_shutdown+0x28/0x40
->     machine_shutdown+0x44/0x60
->     machine_restart+0x28/0x80
->     emergency_restart+0x30/0x50
->     panic+0x2a0/0x328
->     oops_end+0x1ec/0x1f0
->     bad_page_fault+0xe8/0x154
->     handle_page_fault+0x34/0x38
->     --- interrupt: 300 at sysrq_handle_crash+0x44/0x60
->     LR = __handle_sysrq+0xfc/0x260
->     flag_spec.62335+0x12b844/0x1e8db4 (unreliable)
->     __handle_sysrq+0xfc/0x260
->     write_sysrq_trigger+0xa8/0xb0
->     proc_reg_write+0xac/0x110
->     __vfs_write+0x6c/0x240
->     vfs_write+0xd0/0x240
->     ksys_write+0x6c/0x110
+> Under some circumstances firmware marks a CPU as GUARDed CPU and boot the
+> system, until cleared of errors, these CPU's are unavailable for all
+> subsequent boots. GUARDed CPUs are possible but not present from linux
+> view, so it blows a hole when we assume the max length of our allocation
+> is driven by our max present cpus, where as one of the cpus might be online
+> and be beyond the max present cpus, due to the hole. 
+> So (cpu number / threads per core) value bounds the array index and leads
+> to memory overflow.
 > 
-> Fixes: 9f0fd0499d30 ("powerpc/powernv: Add a virtual irqchip for opal events")
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Call trace observed during a guard test:
+> 
+> Faulting instruction address: 0xc000000000149f1c
+> cpu 0x69: Vector: 380 (Data Access Out of Range) at [c000003fea303420]
+>     pc:c000000000149f1c: prefetch_freepointer+0x14/0x30
+>     lr:c00000000014e0f8: __kmalloc+0x1a8/0x1ac
+>     sp:c000003fea3036a0
+>    msr:9000000000009033
+>    dar:c9c54b2c91dbf6b7
+>   current = 0xc000003fea2c0000
+>   paca    = 0xc00000000fddd880	 softe: 3	 irq_happened: 0x01
+>     pid   = 1, comm = swapper/104
+> Linux version 4.16.7-openpower1 (smc@smc-desktop) (gcc version 6.4.0
+> (Buildroot 2018.02.1-00006-ga8d1126)) #2 SMP Fri May 4 16:44:54 PDT 2018
+> enter ? for help
+> call trace:
+> 	 __kmalloc+0x1a8/0x1ac
+> 	 (unreliable)
+> 	 init_imc_pmu+0x7f4/0xbf0
+> 	 opal_imc_counters_probe+0x3fc/0x43c
+> 	 platform_drv_probe+0x48/0x80
+> 	 driver_probe_device+0x22c/0x308
+> 	 __driver_attach+0xa0/0xd8
+> 	 bus_for_each_dev+0x88/0xb4
+> 	 driver_attach+0x2c/0x40
+> 	 bus_add_driver+0x1e8/0x228
+> 	 driver_register+0xd0/0x114
+> 	 __platform_driver_register+0x50/0x64
+> 	 opal_imc_driver_init+0x24/0x38
+> 	 do_one_initcall+0x150/0x15c
+> 	 kernel_init_freeable+0x250/0x254
+> 	 kernel_init+0x1c/0x150
+> 	 ret_from_kernel_thread+0x5c/0xc8
+> 
+> Allocating memory for core-imc based on cpu_possible_mask, which has
+> bit 'cpu' set iff cpu is populatable, will fix this issue.
+> 
+> Reported-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Reviewed-by: Balbir Singh <bsingharora@gmail.com>
+> Tested-by: Pridhiviraj Paidipeddi <ppaidipe@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c0beffc4f4c658fde86d52c837e784
+https://git.kernel.org/powerpc/c/d2032678e57fc508d7878307badde8
 
 cheers
