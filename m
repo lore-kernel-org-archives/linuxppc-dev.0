@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q7RV3LDXzF0n5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 16:00:22 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id o76-v6so6545412pfi.5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 23:00:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q7RZ3XNwzDqNY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 16:00:25 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id c11-v6so8153493plr.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 23:00:25 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: kvm-ppc@vger.kernel.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 5/7] KVM: PPC: reimplements LOAD_VSX/STORE_VSX instruction
- mmio emulation with analyse_intr() input
-Date: Mon, 21 May 2018 13:24:24 +0800
-Message-Id: <1526880266-11291-6-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 6/7] KVM: PPC: expand mmio_vsx_copy_type to mmio_copy_type
+ to cover VMX load/store elem types
+Date: Mon, 21 May 2018 13:24:25 +0800
+Message-Id: <1526880266-11291-7-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526880266-11291-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526880266-11291-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,270 +28,135 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch reimplements LOAD_VSX/STORE_VSX instruction MMIO emulation with
-analyse_intr() input. It utilizes VSX_FPCONV/VSX_SPLAT/SIGNEXT exported
-by analyse_instr() and handle accordingly.
+VSX MMIO emulation uses mmio_vsx_copy_type to represent VSX emulated
+element size/type, such as KVMPPC_VSX_COPY_DWORD_LOAD, etc. This
+patch expands mmio_vsx_copy_type to cover VMX copy type, such as
+KVMPPC_VMX_COPY_BYTE(stvebx/lvebx), etc. As a result,
+mmio_vsx_copy_type is also renamed to mmio_copy_type.
 
-When emulating VSX store, the VSX reg will need to be flushed so that
-the right reg val can be retrieved before writing to IO MEM.
+It is a preparation for reimplement VMX MMIO emulation.
 
-Suggested-by: Paul Mackerras <paulus@ozlabs.org>
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/kvm/emulate_loadstore.c | 227 ++++++++++++++---------------------
- 1 file changed, 91 insertions(+), 136 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h  |  9 +++++++--
+ arch/powerpc/kvm/emulate_loadstore.c | 14 +++++++-------
+ arch/powerpc/kvm/powerpc.c           | 10 +++++-----
+ 3 files changed, 19 insertions(+), 14 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 4bade29..fe506c8 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -455,6 +455,11 @@ struct mmio_hpte_cache {
+ #define KVMPPC_VSX_COPY_DWORD_LOAD_DUMP	3
+ #define KVMPPC_VSX_COPY_WORD_LOAD_DUMP	4
+ 
++#define KVMPPC_VMX_COPY_BYTE		8
++#define KVMPPC_VMX_COPY_HWORD		9
++#define KVMPPC_VMX_COPY_WORD		10
++#define KVMPPC_VMX_COPY_DWORD		11
++
+ struct openpic;
+ 
+ /* W0 and W1 of a XIVE thread management context */
+@@ -677,16 +682,16 @@ struct kvm_vcpu_arch {
+ 	 * Number of simulations for vsx.
+ 	 * If we use 2*8bytes to simulate 1*16bytes,
+ 	 * then the number should be 2 and
+-	 * mmio_vsx_copy_type=KVMPPC_VSX_COPY_DWORD.
++	 * mmio_copy_type=KVMPPC_VSX_COPY_DWORD.
+ 	 * If we use 4*4bytes to simulate 1*16bytes,
+ 	 * the number should be 4 and
+ 	 * mmio_vsx_copy_type=KVMPPC_VSX_COPY_WORD.
+ 	 */
+ 	u8 mmio_vsx_copy_nums;
+ 	u8 mmio_vsx_offset;
+-	u8 mmio_vsx_copy_type;
+ 	u8 mmio_vsx_tx_sx_enabled;
+ 	u8 mmio_vmx_copy_nums;
++	u8 mmio_copy_type;
+ 	u8 osi_needed;
+ 	u8 osi_enabled;
+ 	u8 papr_enabled;
 diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
-index 5d38f95..ed73497 100644
+index ed73497..fa4de6b 100644
 --- a/arch/powerpc/kvm/emulate_loadstore.c
 +++ b/arch/powerpc/kvm/emulate_loadstore.c
-@@ -158,6 +158,54 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+@@ -109,7 +109,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 	vcpu->arch.mmio_vsx_tx_sx_enabled = get_tx_or_sx(inst);
+ 	vcpu->arch.mmio_vsx_copy_nums = 0;
+ 	vcpu->arch.mmio_vsx_offset = 0;
+-	vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_NONE;
++	vcpu->arch.mmio_copy_type = KVMPPC_VSX_COPY_NONE;
+ 	vcpu->arch.mmio_sp64_extend = 0;
+ 	vcpu->arch.mmio_sign_extend = 0;
+ 	vcpu->arch.mmio_vmx_copy_nums = 0;
+@@ -175,17 +175,17 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
  
- 			break;
- #endif
-+#ifdef CONFIG_VSX
-+		case LOAD_VSX: {
-+			int io_size_each;
-+
-+			if (op.vsx_flags & VSX_CHECK_VEC) {
-+				if (kvmppc_check_altivec_disabled(vcpu))
-+					return EMULATE_DONE;
-+			} else {
-+				if (kvmppc_check_vsx_disabled(vcpu))
-+					return EMULATE_DONE;
-+			}
-+
-+			if (op.vsx_flags & VSX_FPCONV)
-+				vcpu->arch.mmio_sp64_extend = 1;
-+
-+			if (op.element_size == 8)  {
-+				if (op.vsx_flags & VSX_SPLAT)
-+					vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_DWORD_LOAD_DUMP;
-+				else
-+					vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_DWORD;
-+			} else if (op.element_size == 4) {
-+				if (op.vsx_flags & VSX_SPLAT)
-+					vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_WORD_LOAD_DUMP;
-+				else
-+					vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_WORD;
-+			} else
-+				break;
-+
-+			if (size < op.element_size) {
-+				/* precision convert case: lxsspx, etc */
-+				vcpu->arch.mmio_vsx_copy_nums = 1;
-+				io_size_each = size;
-+			} else { /* lxvw4x, lxvd2x, etc */
-+				vcpu->arch.mmio_vsx_copy_nums =
-+					size/op.element_size;
-+				io_size_each = op.element_size;
-+			}
-+
-+			emulated = kvmppc_handle_vsx_load(run, vcpu,
-+					KVM_MMIO_REG_VSX|op.reg, io_size_each,
-+					1, op.type & SIGNEXT);
-+			break;
-+		}
-+#endif
- 		case STORE:
- 			/* if need byte reverse, op.val has been reversed by
- 			 * analyse_instr().
-@@ -193,6 +241,49 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 			if (op.element_size == 8)  {
+ 				if (op.vsx_flags & VSX_SPLAT)
+-					vcpu->arch.mmio_vsx_copy_type =
++					vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_DWORD_LOAD_DUMP;
+ 				else
+-					vcpu->arch.mmio_vsx_copy_type =
++					vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_DWORD;
+ 			} else if (op.element_size == 4) {
+ 				if (op.vsx_flags & VSX_SPLAT)
+-					vcpu->arch.mmio_vsx_copy_type =
++					vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_WORD_LOAD_DUMP;
+ 				else
+-					vcpu->arch.mmio_vsx_copy_type =
++					vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_WORD;
+ 			} else
+ 				break;
+@@ -261,10 +261,10 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 				vcpu->arch.mmio_sp64_extend = 1;
  
- 			break;
- #endif
-+#ifdef CONFIG_VSX
-+		case STORE_VSX: {
-+			int io_size_each;
-+
-+			if (op.vsx_flags & VSX_CHECK_VEC) {
-+				if (kvmppc_check_altivec_disabled(vcpu))
-+					return EMULATE_DONE;
-+			} else {
-+				if (kvmppc_check_vsx_disabled(vcpu))
-+					return EMULATE_DONE;
-+			}
-+
-+			if (vcpu->kvm->arch.kvm_ops->giveup_ext)
-+				vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu,
-+						MSR_VSX);
-+
-+			if (op.vsx_flags & VSX_FPCONV)
-+				vcpu->arch.mmio_sp64_extend = 1;
-+
-+			if (op.element_size == 8)
-+				vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_DWORD;
-+			else if (op.element_size == 4)
-+				vcpu->arch.mmio_vsx_copy_type =
-+						KVMPPC_VSX_COPY_WORD;
-+			else
-+				break;
-+
-+			if (size < op.element_size) {
-+				/* precise conversion case, like stxsspx */
-+				vcpu->arch.mmio_vsx_copy_nums = 1;
-+				io_size_each = size;
-+			} else { /* stxvw4x, stxvd2x, etc */
-+				vcpu->arch.mmio_vsx_copy_nums =
-+						size/op.element_size;
-+				io_size_each = op.element_size;
-+			}
-+
-+			emulated = kvmppc_handle_vsx_store(run, vcpu,
-+					op.reg, io_size_each, 1);
-+			break;
-+		}
-+#endif
- 		case CACHEOP:
- 			/* Do nothing. The guest is performing dcbi because
- 			 * hardware DMA is not snooped by the dcache, but
-@@ -214,142 +305,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
- 	switch (get_op(inst)) {
- 	case 31:
- 		switch (get_xop(inst)) {
--#ifdef CONFIG_VSX
--		case OP_31_XOP_LXSDX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 8, 1, 0);
--			break;
--
--		case OP_31_XOP_LXSSPX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 4, 1, 0);
--			break;
--
--		case OP_31_XOP_LXSIWAX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 4, 1, 1);
--			break;
--
--		case OP_31_XOP_LXSIWZX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 4, 1, 0);
--			break;
--
--		case OP_31_XOP_LXVD2X:
--		/*
--		 * In this case, the official load/store process is like this:
--		 * Step1, exit from vm by page fault isr, then kvm save vsr.
--		 * Please see guest_exit_cont->store_fp_state->SAVE_32VSRS
--		 * as reference.
--		 *
--		 * Step2, copy data between memory and VCPU
--		 * Notice: for LXVD2X/STXVD2X/LXVW4X/STXVW4X, we use
--		 * 2copies*8bytes or 4copies*4bytes
--		 * to simulate one copy of 16bytes.
--		 * Also there is an endian issue here, we should notice the
--		 * layout of memory.
--		 * Please see MARCO of LXVD2X_ROT/STXVD2X_ROT as more reference.
--		 * If host is little-endian, kvm will call XXSWAPD for
--		 * LXVD2X_ROT/STXVD2X_ROT.
--		 * So, if host is little-endian,
--		 * the postion of memeory should be swapped.
--		 *
--		 * Step3, return to guest, kvm reset register.
--		 * Please see kvmppc_hv_entry->load_fp_state->REST_32VSRS
--		 * as reference.
--		 */
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 2;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 8, 1, 0);
--			break;
--
--		case OP_31_XOP_LXVW4X:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 4;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_WORD;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 4, 1, 0);
--			break;
--
--		case OP_31_XOP_LXVDSX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type =
--				 KVMPPC_VSX_COPY_DWORD_LOAD_DUMP;
--			emulated = kvmppc_handle_vsx_load(run, vcpu,
--				KVM_MMIO_REG_VSX|rt, 8, 1, 0);
--			break;
--
--		case OP_31_XOP_STXSDX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_store(run, vcpu,
--						 rs, 8, 1);
--			break;
--
--		case OP_31_XOP_STXSSPX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			vcpu->arch.mmio_sp64_extend = 1;
--			emulated = kvmppc_handle_vsx_store(run, vcpu,
--						 rs, 4, 1);
--			break;
--
--		case OP_31_XOP_STXSIWX:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_offset = 1;
--			vcpu->arch.mmio_vsx_copy_nums = 1;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_WORD;
--			emulated = kvmppc_handle_vsx_store(run, vcpu,
--							 rs, 4, 1);
--			break;
--
--		case OP_31_XOP_STXVD2X:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 2;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_DWORD;
--			emulated = kvmppc_handle_vsx_store(run, vcpu,
--							 rs, 8, 1);
--			break;
--
--		case OP_31_XOP_STXVW4X:
--			if (kvmppc_check_vsx_disabled(vcpu))
--				return EMULATE_DONE;
--			vcpu->arch.mmio_vsx_copy_nums = 4;
--			vcpu->arch.mmio_vsx_copy_type = KVMPPC_VSX_COPY_WORD;
--			emulated = kvmppc_handle_vsx_store(run, vcpu,
--							 rs, 4, 1);
--			break;
--#endif /* CONFIG_VSX */
--
- #ifdef CONFIG_ALTIVEC
- 		case OP_31_XOP_LVX:
- 			if (kvmppc_check_altivec_disabled(vcpu))
+ 			if (op.element_size == 8)
+-				vcpu->arch.mmio_vsx_copy_type =
++				vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_DWORD;
+ 			else if (op.element_size == 4)
+-				vcpu->arch.mmio_vsx_copy_type =
++				vcpu->arch.mmio_copy_type =
+ 						KVMPPC_VSX_COPY_WORD;
+ 			else
+ 				break;
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 8ce9e7b..1580bd2 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -1080,14 +1080,14 @@ static void kvmppc_complete_mmio_load(struct kvm_vcpu *vcpu,
+ 		if (vcpu->kvm->arch.kvm_ops->giveup_ext)
+ 			vcpu->kvm->arch.kvm_ops->giveup_ext(vcpu, MSR_VSX);
+ 
+-		if (vcpu->arch.mmio_vsx_copy_type == KVMPPC_VSX_COPY_DWORD)
++		if (vcpu->arch.mmio_copy_type == KVMPPC_VSX_COPY_DWORD)
+ 			kvmppc_set_vsr_dword(vcpu, gpr);
+-		else if (vcpu->arch.mmio_vsx_copy_type == KVMPPC_VSX_COPY_WORD)
++		else if (vcpu->arch.mmio_copy_type == KVMPPC_VSX_COPY_WORD)
+ 			kvmppc_set_vsr_word(vcpu, gpr);
+-		else if (vcpu->arch.mmio_vsx_copy_type ==
++		else if (vcpu->arch.mmio_copy_type ==
+ 				KVMPPC_VSX_COPY_DWORD_LOAD_DUMP)
+ 			kvmppc_set_vsr_dword_dump(vcpu, gpr);
+-		else if (vcpu->arch.mmio_vsx_copy_type ==
++		else if (vcpu->arch.mmio_copy_type ==
+ 				KVMPPC_VSX_COPY_WORD_LOAD_DUMP)
+ 			kvmppc_set_vsr_word_dump(vcpu, gpr);
+ 		break;
+@@ -1260,7 +1260,7 @@ static inline int kvmppc_get_vsr_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
+ 	u32 dword_offset, word_offset;
+ 	union kvmppc_one_reg reg;
+ 	int vsx_offset = 0;
+-	int copy_type = vcpu->arch.mmio_vsx_copy_type;
++	int copy_type = vcpu->arch.mmio_copy_type;
+ 	int result = 0;
+ 
+ 	switch (copy_type) {
 -- 
 1.8.3.1
