@@ -1,35 +1,29 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qMfz52jbzF16W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 01:11:07 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4LF8nUr120048
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:11:04 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qMkY16t1zF16W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 01:14:12 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4LF8lsD001681
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:14:10 -0400
 Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j3wjd9bgd-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j40esgfu5-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:11:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:14:10 -0400
 Received: from localhost
  by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 21 May 2018 16:11:01 +0100
-Date: Mon, 21 May 2018 20:40:55 +0530
+ Mon, 21 May 2018 16:14:08 +0100
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH] selftests/powerpc: add test to verify rfi flush across a
- system call
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-References: <20180406165546.19433-1-naveen.n.rao@linux.vnet.ibm.com>
- <877eo3nle3.fsf@concordia.ellerman.id.au>
-In-Reply-To: <877eo3nle3.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1526914785.dnc989oa1u.naveen@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/2] selftests/powerpc: Add test for rfi_flush
+Date: Mon, 21 May 2018 20:43:55 +0530
+Message-Id: <cover.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->=20
->> diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/sel=
-ftests/powerpc/utils.c
->> index d46916867a6f..c6b1d20ed3ba 100644
->> --- a/tools/testing/selftests/powerpc/utils.c
->> +++ b/tools/testing/selftests/powerpc/utils.c
->> @@ -104,3 +111,149 @@ int pick_online_cpu(void)
->>  	printf("No cpus in affinity mask?!\n");
->>  	return -1;
->>  }
-> ...
->> +
->> +static void sigill_handler(int signr, siginfo_t *info, void *unused)
->> +{
->> +	static int warned =3D 0;
->> +	ucontext_t *ctx =3D (ucontext_t *)unused;
->> +	unsigned int *pc =3D (unsigned int *)ctx->uc_mcontext.gp_regs[PT_NIP];
->=20
-> The above doesn't work on 32-bit, and this code is sometimes built 32-bit=
-.
->=20
-> For an example of how to handle 32 and 64-bit, see eg:
->=20
->   tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
+This is v2 of:
+https://patchwork.ozlabs.org/patch/895765/
 
-Thanks. I'll post a v2 that addresses the 32-bit build issue.
+Changes:
+- Patch 1 is new.
+- Patch 2 uses the new macro introduced in the first patch. The output 
+  message has also been slightly tweaked to make things clearer.
+
 
 - Naveen
 
-=
+Naveen N. Rao (2):
+  selftests/powerpc: Move UCONTEXT_NIA() into utils.h
+  selftests/powerpc: Add test to verify rfi flush across a system call
+
+ tools/testing/selftests/powerpc/Makefile      |   3 +-
+ .../testing/selftests/powerpc/include/utils.h |  18 +++
+ .../primitives/load_unaligned_zeropad.c       |   8 -
+ .../selftests/powerpc/security/Makefile       |   7 +
+ .../selftests/powerpc/security/rfi_flush.c    | 132 +++++++++++++++
+ tools/testing/selftests/powerpc/utils.c       | 153 ++++++++++++++++++
+ 6 files changed, 312 insertions(+), 9 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/security/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/security/rfi_flush.c
+
+-- 
+2.17.0
