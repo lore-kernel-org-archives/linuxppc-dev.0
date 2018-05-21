@@ -1,19 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qDnc2ZqTzF132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:24 +1000 (AEST)
-In-Reply-To: <20180510215919.27808-2-j.neuschaefer@gmx.net>
-To: =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qDnd3WlczF13T
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 20:01:25 +1000 (AEST)
+In-Reply-To: <20180514125033.12000-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
- =?utf-8?q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
- Paul Mackerras <paulus@samba.org>, Joel Stanley <joel@jms.id.au>
-Subject: Re: [1/2] powerpc: flipper-pic: Don't match all IRQ domains
-Message-Id: <40qDnc0ywpz9s3Z@ozlabs.org>
-Date: Mon, 21 May 2018 20:01:23 +1000 (AEST)
+Cc: alistair@popple.id.au, paulus@samba.org
+Subject: Re: [1/3] powerpc/io: Add __raw_writeq_be() __raw_rm_writeq_be()
+Message-Id: <40qDnd0rtdz9s3D@ozlabs.org>
+Date: Mon, 21 May 2018 20:01:24 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,16 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-05-10 at 21:59:18 UTC, =?utf-8?q?Jonathan_Neusch=C3=A4fer?= wrote:
-> On the Wii, there is a secondary IRQ controller (hlwd-pic), so
-> flipper-pic's match operation should not be hardcoded to return 1.
-> In fact, the default matching logic is sufficient, and we can completely
-> omit flipper_pic_match.
+On Mon, 2018-05-14 at 12:50:31 UTC, Michael Ellerman wrote:
+> Add byte-swapping versions of __raw_writeq() and __raw_rm_writeq().
 > 
-> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
+> This allows us to avoid sparse warnings caused by passing __be64 to
+> __raw_writeq(), which takes unsigned long:
+> 
+>   arch/powerpc/platforms/powernv/pci-ioda.c:1981:38:
+>   warning: incorrect type in argument 1 (different base types)
+>       expected unsigned long [unsigned] v
+>       got restricted __be64 [usertype] <noident>
+> 
+> It's also generally preferable to use a byte-swapping accessor rather
+> than doing it by hand in the code, which is more bug prone.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
 
-Series applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/c068e6b8caa0c796535cb12f64767c
+https://git.kernel.org/powerpc/c/8056fe28d04607106e7d418bd9ee2e
 
 cheers
