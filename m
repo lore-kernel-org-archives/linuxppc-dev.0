@@ -1,20 +1,20 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5nX3DClzF0Ws
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:45:52 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id u6-v6so8042574pls.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:45:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5nZ5GpQzF0dS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:45:54 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id a20-v6so6469874pfo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:45:54 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 10/29] KVM: PPC: Book3S PR: Sync TM bits to shadow msr for
- problem state guest
-Date: Mon, 21 May 2018 12:09:27 +0800
-Message-Id: <1526875786-10372-11-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 11/29] KVM: PPC: Book3S PR: implement RFID TM behavior to
+ suppress change from S0 to N0
+Date: Mon, 21 May 2018 12:09:28 +0800
+Message-Id: <1526875786-10372-12-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,125 +28,52 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-MSR TS bits can be modified with non-privileged instruction like
-tbegin./tend.  That means guest can change MSR value "silently" without
-notifying host.
+Accordingly to ISA specification for RFID, in MSR TM disabled and TS
+suspended state(S0), if the target MSR is TM disabled and TS state is
+inactive(N0), rfid should suppress this update.
 
-It is necessary to sync the TM bits to host so that host can calculate
-shadow msr correctly.
-
-note privilege guest will always fail transactions so we only take
-care of problem state guest.
-
-The logic is put into kvmppc_copy_from_svcpu() so that
-kvmppc_handle_exit_pr() can use correct MSR TM bits even when preemption.
+This patch make RFID emulation of PR KVM to be consistent with this.
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_pr.c | 73 ++++++++++++++++++++++++++++++--------------
- 1 file changed, 50 insertions(+), 23 deletions(-)
+ arch/powerpc/kvm/book3s_emulate.c | 21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index d3237f5..f2ae5a3 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -182,10 +182,36 @@ void kvmppc_copy_to_svcpu(struct kvm_vcpu *vcpu)
- 	svcpu_put(svcpu);
- }
- 
-+static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
-+{
-+	ulong guest_msr = kvmppc_get_msr(vcpu);
-+	ulong smsr = guest_msr;
-+
-+	/* Guest MSR values */
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 68d6898..2eb457b 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -117,11 +117,28 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	case 19:
+ 		switch (get_xop(inst)) {
+ 		case OP_19_XOP_RFID:
+-		case OP_19_XOP_RFI:
++		case OP_19_XOP_RFI: {
++			unsigned long srr1 = kvmppc_get_srr1(vcpu);
 +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE |
-+		MSR_TM | MSR_TS_MASK;
-+#else
-+	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
-+#endif
-+	/* Process MSR values */
-+	smsr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
-+	/* External providers the guest reserved */
-+	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
-+	/* 64-bit Process MSR values */
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	smsr |= MSR_ISF | MSR_HV;
-+#endif
-+	vcpu->arch.shadow_msr = smsr;
-+}
++			unsigned long cur_msr = kvmppc_get_msr(vcpu);
 +
- /* Copy data touched by real-mode code from shadow vcpu back to vcpu */
- void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu)
- {
- 	struct kvmppc_book3s_shadow_vcpu *svcpu = svcpu_get(vcpu);
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	ulong old_msr;
++			/*
++			 * add rules to fit in ISA specification regarding TM
++			 * state transistion in TM disable/Suspended state,
++			 * and target TM state is TM inactive(00) state. (the
++			 * change should be suppressed).
++			 */
++			if (((cur_msr & MSR_TM) == 0) &&
++				((srr1 & MSR_TM) == 0) &&
++				MSR_TM_SUSPENDED(cur_msr) &&
++				!MSR_TM_ACTIVE(srr1))
++				srr1 |= MSR_TS_S;
 +#endif
+ 			kvmppc_set_pc(vcpu, kvmppc_get_srr0(vcpu));
+-			kvmppc_set_msr(vcpu, kvmppc_get_srr1(vcpu));
++			kvmppc_set_msr(vcpu, srr1);
+ 			*advance = 0;
+ 			break;
++		}
  
- 	/*
- 	 * Maybe we were already preempted and synced the svcpu from
-@@ -228,6 +254,30 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu)
- 	to_book3s(vcpu)->vtb += get_vtb() - vcpu->arch.entry_vtb;
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		vcpu->arch.ic += mfspr(SPRN_IC) - vcpu->arch.entry_ic;
-+
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/*
-+	 * Unlike other MSR bits, MSR[TS]bits can be changed at guest without
-+	 * notifying host:
-+	 *  modified by unprivileged instructions like "tbegin"/"tend"/
-+	 * "tresume"/"tsuspend" in PR KVM guest.
-+	 *
-+	 * It is necessary to sync here to calculate a correct shadow_msr.
-+	 *
-+	 * privileged guest's tbegin will be failed at present. So we
-+	 * only take care of problem state guest.
-+	 */
-+	old_msr = kvmppc_get_msr(vcpu);
-+	if (unlikely((old_msr & MSR_PR) &&
-+		(vcpu->arch.shadow_srr1 & (MSR_TS_MASK)) !=
-+				(old_msr & (MSR_TS_MASK)))) {
-+		old_msr &= ~(MSR_TS_MASK);
-+		old_msr |= (vcpu->arch.shadow_srr1 & (MSR_TS_MASK));
-+		kvmppc_set_msr_fast(vcpu, old_msr);
-+		kvmppc_recalc_shadow_msr(vcpu);
-+	}
-+#endif
-+
- 	svcpu->in_use = false;
- 
- out:
-@@ -306,29 +356,6 @@ static void kvm_set_spte_hva_pr(struct kvm *kvm, unsigned long hva, pte_t pte)
- 
- /*****************************************/
- 
--static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
--{
--	ulong guest_msr = kvmppc_get_msr(vcpu);
--	ulong smsr = guest_msr;
--
--	/* Guest MSR values */
--#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
--	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE |
--		MSR_TM | MSR_TS_MASK;
--#else
--	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
--#endif
--	/* Process MSR values */
--	smsr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
--	/* External providers the guest reserved */
--	smsr |= (guest_msr & vcpu->arch.guest_owned_ext);
--	/* 64-bit Process MSR values */
--#ifdef CONFIG_PPC_BOOK3S_64
--	smsr |= MSR_ISF | MSR_HV;
--#endif
--	vcpu->arch.shadow_msr = smsr;
--}
--
- static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
- {
- 	ulong old_msr = kvmppc_get_msr(vcpu);
+ 		default:
+ 			emulated = EMULATE_FAIL;
 -- 
 1.8.3.1
