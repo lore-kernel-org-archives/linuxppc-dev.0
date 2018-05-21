@@ -3,18 +3,18 @@ Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
  [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40q5p93W9xzF0WS
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:25 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id e6-v6so8032741plt.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40q5pC3SXpzF0Ws
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 14:46:27 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id c19-v6so8047164pls.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2018 21:46:27 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
  kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v3 23/29] KVM: PPC: Book3S PR: add guard code to prevent
- returning to guest with PR=0 and Transactional state
-Date: Mon, 21 May 2018 12:09:40 +0800
-Message-Id: <1526875786-10372-24-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v3 24/29] KVM: PPC: Book3S PR: Support TAR handling for PR KVM
+ HTM.
+Date: Mon, 21 May 2018 12:09:41 +0800
+Message-Id: <1526875786-10372-25-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1526875786-10372-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,90 +28,186 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Currently PR KVM doesn't support transaction memory at guest privilege
-state.
+Currently guest kernel doesn't handle TAR fac unavailable and it always
+runs with TAR bit on. PR KVM will lazily enable TAR. TAR is not a
+frequent-use reg and it is not included in SVCPU struct.
 
-This patch adds a check at setting guest msr, so that we can never return
-to guest with PR=0 and TS=0b10. A tabort will be emulated to indicate
-this and fail transaction immediately.
+Due to the above, the checkpointed TAR val might be a bogus TAR val.
+To solve this issue, we will make vcpu->arch.fscr tar bit consistent
+with shadow_fscr when TM enabled.
+
+At the end of emulating treclaim., the correct TAR val need to be loaded
+into reg if FSCR_TAR bit is on.
+At the beginning of emulating trechkpt., TAR needs to be flushed so that
+the right tar val can be copy into tar_tm.
+
+Tested with:
+tools/testing/selftests/powerpc/tm/tm-tar
+tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar (remove DSCR/PPR
+related testing).
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/include/uapi/asm/tm.h |  2 +-
- arch/powerpc/kvm/book3s.h          |  6 ++++++
- arch/powerpc/kvm/book3s_emulate.c  |  2 +-
- arch/powerpc/kvm/book3s_pr.c       | 13 ++++++++++++-
- 4 files changed, 20 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h |  2 ++
+ arch/powerpc/kvm/book3s_emulate.c     |  4 ++++
+ arch/powerpc/kvm/book3s_pr.c          | 21 ++++++++++++++++-----
+ arch/powerpc/kvm/tm.S                 | 16 ++++++++++++++--
+ 4 files changed, 36 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/uapi/asm/tm.h b/arch/powerpc/include/uapi/asm/tm.h
-index e1bf0e2..e2947c9 100644
---- a/arch/powerpc/include/uapi/asm/tm.h
-+++ b/arch/powerpc/include/uapi/asm/tm.h
-@@ -13,7 +13,7 @@
- #define TM_CAUSE_TLBI		0xdc
- #define TM_CAUSE_FAC_UNAV	0xda
- #define TM_CAUSE_SYSCALL	0xd8
--#define TM_CAUSE_MISC		0xd6  /* future use */
-+#define TM_CAUSE_PRIV_T		0xd6
- #define TM_CAUSE_SIGNAL		0xd4
- #define TM_CAUSE_ALIGNMENT	0xd2
- #define TM_CAUSE_EMULATE	0xd0
-diff --git a/arch/powerpc/kvm/book3s.h b/arch/powerpc/kvm/book3s.h
-index 4ad5e28..14ef035 100644
---- a/arch/powerpc/kvm/book3s.h
-+++ b/arch/powerpc/kvm/book3s.h
-@@ -31,4 +31,10 @@ extern int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu,
- extern int kvmppc_book3s_init_pr(void);
- extern void kvmppc_book3s_exit_pr(void);
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+extern void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val);
-+#else
-+static inline void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val) {}
-+#endif
-+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 2940de7..1f345a0 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -271,6 +271,8 @@ static inline void kvmppc_save_tm_sprs(struct kvm_vcpu *vcpu) {}
+ static inline void kvmppc_restore_tm_sprs(struct kvm_vcpu *vcpu) {}
  #endif
+ 
++void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
++
+ extern int kvm_irq_bypass;
+ 
+ static inline struct kvmppc_vcpu_book3s *to_book3s(struct kvm_vcpu *vcpu)
 diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 34f910e..67d0fb40 100644
+index 67d0fb40..fdbc695 100644
 --- a/arch/powerpc/kvm/book3s_emulate.c
 +++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -199,7 +199,7 @@ static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
+@@ -173,6 +173,9 @@ static void kvmppc_emulate_treclaim(struct kvm_vcpu *vcpu, int ra_val)
+ 	guest_msr &= ~(MSR_TS_MASK);
+ 	kvmppc_set_msr(vcpu, guest_msr);
+ 	preempt_enable();
++
++	if (vcpu->arch.shadow_fscr & FSCR_TAR)
++		mtspr(SPRN_TAR, vcpu->arch.tar);
  }
  
- /* emulate tabort. at guest privilege state */
--static void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val)
-+void kvmppc_emulate_tabort(struct kvm_vcpu *vcpu, int ra_val)
- {
- 	/* currently we only emulate tabort. but no emulation of other
- 	 * tabort variants since there is no kernel usage of them at
+ static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
+@@ -185,6 +188,7 @@ static void kvmppc_emulate_trchkpt(struct kvm_vcpu *vcpu)
+ 	 * copy.
+ 	 */
+ 	kvmppc_giveup_ext(vcpu, MSR_VSX);
++	kvmppc_giveup_fac(vcpu, FSCR_TAR_LG);
+ 	kvmppc_copyto_vcpu_tm(vcpu);
+ 	kvmppc_save_tm_sprs(vcpu);
+ 
 diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index 5359f9c..526c928 100644
+index 526c928..8efc87b 100644
 --- a/arch/powerpc/kvm/book3s_pr.c
 +++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -446,12 +446,23 @@ static void kvm_set_spte_hva_pr(struct kvm *kvm, unsigned long hva, pte_t pte)
+@@ -55,7 +55,7 @@
  
- static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
+ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
+ 			     ulong msr);
+-static void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac);
++static int kvmppc_handle_fac(struct kvm_vcpu *vcpu, ulong fac);
+ 
+ /* Some compatibility defines */
+ #ifdef CONFIG_PPC_BOOK3S_32
+@@ -346,6 +346,7 @@ void kvmppc_save_tm_pr(struct kvm_vcpu *vcpu)
+ 		return;
+ 	}
+ 
++	kvmppc_giveup_fac(vcpu, FSCR_TAR_LG);
+ 	kvmppc_giveup_ext(vcpu, MSR_VSX);
+ 
+ 	preempt_disable();
+@@ -357,8 +358,11 @@ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu)
  {
--	ulong old_msr = kvmppc_get_msr(vcpu);
-+	ulong old_msr;
+ 	if (!MSR_TM_ACTIVE(kvmppc_get_msr(vcpu))) {
+ 		kvmppc_restore_tm_sprs(vcpu);
+-		if (kvmppc_get_msr(vcpu) & MSR_TM)
++		if (kvmppc_get_msr(vcpu) & MSR_TM) {
+ 			kvmppc_handle_lost_math_exts(vcpu);
++			if (vcpu->arch.fscr & FSCR_TAR)
++				kvmppc_handle_fac(vcpu, FSCR_TAR_LG);
++		}
+ 		return;
+ 	}
  
- #ifdef EXIT_DEBUG
- 	printk(KERN_INFO "KVM: Set MSR to 0x%llx\n", msr);
+@@ -366,9 +370,11 @@ void kvmppc_restore_tm_pr(struct kvm_vcpu *vcpu)
+ 	_kvmppc_restore_tm_pr(vcpu, kvmppc_get_msr(vcpu));
+ 	preempt_enable();
+ 
+-	if (kvmppc_get_msr(vcpu) & MSR_TM)
++	if (kvmppc_get_msr(vcpu) & MSR_TM) {
+ 		kvmppc_handle_lost_math_exts(vcpu);
+-
++		if (vcpu->arch.fscr & FSCR_TAR)
++			kvmppc_handle_fac(vcpu, FSCR_TAR_LG);
++	}
+ }
  #endif
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	/* We should never target guest MSR to TS=10 && PR=0,
-+	 * since we always fail transaction for guest privilege
-+	 * state.
-+	 */
-+	if (!(msr & MSR_PR) && MSR_TM_TRANSACTIONAL(msr))
-+		kvmppc_emulate_tabort(vcpu,
-+			TM_CAUSE_PRIV_T | TM_CAUSE_PERSISTENT);
-+#endif
+@@ -819,7 +825,7 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
+ }
+ 
+ /* Give up facility (TAR / EBB / DSCR) */
+-static void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac)
++void kvmppc_giveup_fac(struct kvm_vcpu *vcpu, ulong fac)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	if (!(vcpu->arch.shadow_fscr & (1ULL << fac))) {
+@@ -1020,7 +1026,12 @@ void kvmppc_set_fscr(struct kvm_vcpu *vcpu, u64 fscr)
+ 	if ((vcpu->arch.fscr & FSCR_TAR) && !(fscr & FSCR_TAR)) {
+ 		/* TAR got dropped, drop it in shadow too */
+ 		kvmppc_giveup_fac(vcpu, FSCR_TAR_LG);
++	} else if (!(vcpu->arch.fscr & FSCR_TAR) && (fscr & FSCR_TAR)) {
++		vcpu->arch.fscr = fscr;
++		kvmppc_handle_fac(vcpu, FSCR_TAR_LG);
++		return;
+ 	}
 +
-+	old_msr = kvmppc_get_msr(vcpu);
- 	msr &= to_book3s(vcpu)->msr_mask;
- 	kvmppc_set_msr_fast(vcpu, msr);
- 	kvmppc_recalc_shadow_msr(vcpu);
+ 	vcpu->arch.fscr = fscr;
+ }
+ #endif
+diff --git a/arch/powerpc/kvm/tm.S b/arch/powerpc/kvm/tm.S
+index 42a7cd8..e6ce4c7 100644
+--- a/arch/powerpc/kvm/tm.S
++++ b/arch/powerpc/kvm/tm.S
+@@ -225,15 +225,21 @@ _GLOBAL(_kvmppc_save_tm_pr)
+ 	mfmsr	r5
+ 	SAVE_GPR(5, r1)
+ 
+-	/* also save DSCR/CR so that it can be recovered later */
++	/* also save DSCR/CR/TAR so that it can be recovered later */
+ 	mfspr   r6, SPRN_DSCR
+ 	SAVE_GPR(6, r1)
+ 
+ 	mfcr    r7
+ 	stw     r7, _CCR(r1)
+ 
++	mfspr   r8, SPRN_TAR
++	SAVE_GPR(8, r1)
++
+ 	bl	__kvmppc_save_tm
+ 
++	REST_GPR(8, r1)
++	mtspr   SPRN_TAR, r8
++
+ 	ld      r7, _CCR(r1)
+ 	mtcr	r7
+ 
+@@ -423,15 +429,21 @@ _GLOBAL(_kvmppc_restore_tm_pr)
+ 	mfmsr	r5
+ 	SAVE_GPR(5, r1)
+ 
+-	/* also save DSCR/CR so that it can be recovered later */
++	/* also save DSCR/CR/TAR so that it can be recovered later */
+ 	mfspr   r6, SPRN_DSCR
+ 	SAVE_GPR(6, r1)
+ 
+ 	mfcr    r7
+ 	stw     r7, _CCR(r1)
+ 
++	mfspr   r8, SPRN_TAR
++	SAVE_GPR(8, r1)
++
+ 	bl	__kvmppc_restore_tm
+ 
++	REST_GPR(8, r1)
++	mtspr   SPRN_TAR, r8
++
+ 	ld      r7, _CCR(r1)
+ 	mtcr	r7
+ 
 -- 
 1.8.3.1
