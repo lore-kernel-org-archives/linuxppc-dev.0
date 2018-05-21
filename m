@@ -1,22 +1,35 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qKDL6RRpzF16f
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 23:21:21 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
- Breno Leitao <leitao@debian.org>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Michal Suchanek <msuchanek@suse.de>
-Subject: [PATCH] powerpc/xmon: really enable xmon when a breakpoint is set
-Date: Mon, 21 May 2018 15:21:08 +0200
-Message-Id: <20180521132108.7938-1-msuchanek@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qMfz52jbzF16W
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 01:11:07 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4LF8nUr120048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:11:04 -0400
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j3wjd9bgd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2018 11:11:04 -0400
+Received: from localhost
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Mon, 21 May 2018 16:11:01 +0100
+Date: Mon, 21 May 2018 20:40:55 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] selftests/powerpc: add test to verify rfi flush across a
+ system call
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+References: <20180406165546.19433-1-naveen.n.rao@linux.vnet.ibm.com>
+ <877eo3nle3.fsf@concordia.ellerman.id.au>
+In-Reply-To: <877eo3nle3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1526914785.dnc989oa1u.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +39,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When single-stepping kernel code from xmon without a debug hook enabled
-the kernel crashes. This can happen when kernel starts with xmon on
-crash disabled but xmon is entered using sysrq.
+Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>=20
+>> diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/sel=
+ftests/powerpc/utils.c
+>> index d46916867a6f..c6b1d20ed3ba 100644
+>> --- a/tools/testing/selftests/powerpc/utils.c
+>> +++ b/tools/testing/selftests/powerpc/utils.c
+>> @@ -104,3 +111,149 @@ int pick_online_cpu(void)
+>>  	printf("No cpus in affinity mask?!\n");
+>>  	return -1;
+>>  }
+> ...
+>> +
+>> +static void sigill_handler(int signr, siginfo_t *info, void *unused)
+>> +{
+>> +	static int warned =3D 0;
+>> +	ucontext_t *ctx =3D (ucontext_t *)unused;
+>> +	unsigned int *pc =3D (unsigned int *)ctx->uc_mcontext.gp_regs[PT_NIP];
+>=20
+> The above doesn't work on 32-bit, and this code is sometimes built 32-bit=
+.
+>=20
+> For an example of how to handle 32 and 64-bit, see eg:
+>=20
+>   tools/testing/selftests/powerpc/primitives/load_unaligned_zeropad.c
 
-Commit e1368d0c9edb ("powerpc/xmon: Setup debugger hooks when first
-break-point is set") adds force_enable_xmon function that prints
-"xmon: Enabling debugger hooks" but does not enable them.
+Thanks. I'll post a v2 that addresses the 32-bit build issue.
 
-Add the call to xmon_init to install the debugger hooks in
-force_enable_xmon and also call force_enable_xmon when single-stepping
-in xmon.
+- Naveen
 
-Fixes: e1368d0c9edb ("powerpc/xmon: Setup debugger hooks when first
-break-point is set")
-
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/powerpc/xmon/xmon.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index a0842f1ff72c..504bd1c3d8b0 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -179,6 +179,9 @@ static const char *getvecname(unsigned long vec);
- 
- static int do_spu_cmd(void);
- 
-+static void xmon_init(int enable);
-+static inline void force_enable_xmon(void);
-+
- #ifdef CONFIG_44x
- static void dump_tlb_44x(void);
- #endif
-@@ -1094,6 +1097,7 @@ static int do_step(struct pt_regs *regs)
- 	unsigned int instr;
- 	int stepped;
- 
-+	force_enable_xmon();
- 	/* check we are in 64-bit kernel mode, translation enabled */
- 	if ((regs->msr & (MSR_64BIT|MSR_PR|MSR_IR)) == (MSR_64BIT|MSR_IR)) {
- 		if (mread(regs->nip, &instr, 4) == 4) {
-@@ -1275,6 +1279,7 @@ static inline void force_enable_xmon(void)
- 	if (!xmon_on) {
- 		printf("xmon: Enabling debugger hooks\n");
- 		xmon_on = 1;
-+		xmon_init(1);
- 	}
- }
- 
--- 
-2.13.6
+=
