@@ -1,24 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qz9J2TbxzDqlg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:51:00 +1000 (AEST)
-Subject: Re: [PATCH v7 2/3] powerpc/mm: Only read faulting instruction when
- necessary in do_page_fault()
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <1053e5f43a2ea9a9d9abb1f45c88dffb60b9b4fc.1526995927.git.christophe.leroy@c-s.fr>
- <d37d9ce7b925bc254082cd664e37a062131d04b8.1526995927.git.christophe.leroy@c-s.fr>
- <20180523003801.43070ddc@roar.ozlabs.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <cb0eaf6d-80ab-b503-d797-cadcd60d4c17@c-s.fr>
-Date: Tue, 22 May 2018 16:50:55 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qzdp30NTzDqyp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 01:12:14 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4MFAOaA088724
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 11:12:11 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j4m82mrhw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 11:12:11 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 22 May 2018 09:12:10 -0600
+Subject: Re: [PATCH] pseries/memory-hotplug: Only update DT once per memory
+ DLPAR request
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: jallen@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
+References: <152425618836.15614.7060070452480906952.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Date: Tue, 22 May 2018 10:12:06 -0500
 MIME-Version: 1.0
-In-Reply-To: <20180523003801.43070ddc@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <152425618836.15614.7060070452480906952.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <d79ee1ae-7df8-30e2-3253-4312237e9a6c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,132 +38,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Michael,
 
+I sent this patch out several weeks ago, just wanted to make sure it hasn't fallen
+off your radar.
 
-Le 22/05/2018 à 16:38, Nicholas Piggin a écrit :
-> On Tue, 22 May 2018 16:02:56 +0200 (CEST)
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+Thanks,
+-Nathan
+
+On 04/20/2018 03:29 PM, Nathan Fontenot wrote:
+> The updates to powerpc numa and memory hotplug code now use the
+> in-kernel LMB array instead of the device tree. This change
+> allows the pseries memory DLPAR code to only update the device
+> tree once after successfully handling a DLPAR request.
 > 
->> Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
->> userspace instruction miss") has shown that limiting the read of
->> faulting instruction to likely cases improves performance.
->>
->> This patch goes further into this direction by limiting the read
->> of the faulting instruction to the only cases where it is likely
->> needed.
->>
->> On an MPC885, with the same benchmark app as in the commit referred
->> above, we see a reduction of about 3900 dTLB misses (approx 3%):
->>
->> Before the patch:
->>   Performance counter stats for './fault 500' (10 runs):
->>
->>           683033312      cpu-cycles                                                    ( +-  0.03% )
->>              134538      dTLB-load-misses                                              ( +-  0.03% )
->>               46099      iTLB-load-misses                                              ( +-  0.02% )
->>               19681      faults                                                        ( +-  0.02% )
->>
->>         5.389747878 seconds time elapsed                                          ( +-  0.06% )
->>
->> With the patch:
->>
->>   Performance counter stats for './fault 500' (10 runs):
->>
->>           682112862      cpu-cycles                                                    ( +-  0.03% )
->>              130619      dTLB-load-misses                                              ( +-  0.03% )
->>               46073      iTLB-load-misses                                              ( +-  0.05% )
->>               19681      faults                                                        ( +-  0.01% )
->>
->>         5.381342641 seconds time elapsed                                          ( +-  0.07% )
->>
->> The proper work of the huge stack expansion was tested with the
->> following app:
->>
->> int main(int argc, char **argv)
->> {
->> 	char buf[1024 * 1025];
->>
->> 	sprintf(buf, "Hello world !\n");
->> 	printf(buf);
->>
->> 	exit(0);
->> }
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   v7: Following comment from Nicholas on v6 on possibility of the page getting removed from the pagetables
->>       between the fault and the read, I have reworked the patch in order to do the get_user() in
->>       __do_page_fault() directly in order to reduce complexity compared to version v5
+> Prior to the in-kernel LMB array, the numa code looked up the
+> affinity for memory being added in the device tree, the code
+> now looks this up in the LMB array. This change means the
+> memory hotplug code can just update the affinity for an LMB
+> in the LMB array instead of updating the device tree.
 > 
-> This is looking better, thanks.
+> This also provides a savings in kernel memory. When updating the
+> device tree old properties are never free'ed since there is no
+> usecount on properties. This behavior leads to a new copy of the
+> property being allocated every time a LMB is added or removed
+> (i.e. a request to add 100 LMBs creates 100 new copies of the
+> property). With this update only a single new property is created
+> when a DLPAR request completes successfully.
 > 
->> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
->> index fcbb34431da2..dc64b8e06477 100644
->> --- a/arch/powerpc/mm/fault.c
->> +++ b/arch/powerpc/mm/fault.c
->> @@ -450,9 +450,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->>   	 * can result in fault, which will cause a deadlock when called with
->>   	 * mmap_sem held
->>   	 */
->> -	if (is_write && is_user)
->> -		get_user(inst, (unsigned int __user *)regs->nip);
->> -
->>   	if (is_user)
->>   		flags |= FAULT_FLAG_USER;
->>   	if (is_write)
->> @@ -498,6 +495,26 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
->>   	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN)))
->>   		return bad_area(regs, address);
->>   
->> +	if (unlikely(is_write && is_user && address + 0x100000 < vma->vm_end &&
->> +		     !inst)) {
->> +		unsigned int __user *nip = (unsigned int __user *)regs->nip;
->> +
->> +		if (likely(access_ok(VERIFY_READ, nip, sizeof(inst)))) {
->> +			int res;
->> +
->> +			pagefault_disable();
->> +			res = __get_user_inatomic(inst, nip);
->> +			pagefault_enable();
->> +			if (unlikely(res)) {
->> +				up_read(&mm->mmap_sem);
->> +				res = __get_user(inst, nip);
->> +				if (!res && inst)
->> +					goto retry;
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/drmem.h                |    5 ++
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |   55 +++++++----------------
+>  2 files changed, 21 insertions(+), 39 deletions(-)
 > 
-> You're handling error here but the previous code did not?
-
-The previous code did in store_updates_sp()
-
-When I moved get_user() out of that function in preceeding patch, I did 
-consider that if get_user() fails, inst will remain 0, which means that 
-store_updates_sp() will return false if ever called.
-
-Now, as the semaphore has been released, we really need to do something, 
-because if we goto retry inconditionally, we may end up in an infinite 
-loop, and we can't let it continue either as the semaphore is not held 
-anymore.
-
+> diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
+> index ce242b9ea8c6..7c1d8e74b25d 100644
+> --- a/arch/powerpc/include/asm/drmem.h
+> +++ b/arch/powerpc/include/asm/drmem.h
+> @@ -99,4 +99,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
+>  			void (*func)(struct drmem_lmb *, const __be32 **));
+>  #endif
 > 
->> +				return bad_area_nosemaphore(regs, address);
->> +			}
->> +		}
->> +	}
+> +static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
+> +{
+> +	lmb->aa_index = 0xffffffff;
+> +}
+> +
+>  #endif /* _ASM_POWERPC_LMB_H */
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> index c1578f54c626..9a15d39995e5 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+> @@ -163,7 +163,7 @@ static u32 find_aa_index(struct device_node *dr_node,
+>  	return aa_index;
+>  }
 > 
-> Would it be nicer to move all this up into bad_stack_expansion().
-> It would need a way to handle the retry and insn, but I think it
-> would still look better.
-
-That's what I did in v5 indeed, but it looked too complex to me at the 
-end. Can you have a look at it 
-(https://patchwork.ozlabs.org/patch/799053/) and tell me if you feel it 
-better than v7, or if you have any suggestion to improve based on v5 
-and/or v7 ?
-
-Thanks
-Christophe
-
+> -static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
+> +static int update_lmb_associativity_index(struct drmem_lmb *lmb)
+>  {
+>  	struct device_node *parent, *lmb_node, *dr_node;
+>  	struct property *ala_prop;
+> @@ -203,43 +203,14 @@ static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
+>  	aa_index = find_aa_index(dr_node, ala_prop, lmb_assoc);
 > 
-> Thanks,
-> Nick
+>  	dlpar_free_cc_nodes(lmb_node);
+> -	return aa_index;
+> -}
+> -
+> -static int dlpar_add_device_tree_lmb(struct drmem_lmb *lmb)
+> -{
+> -	int rc, aa_index;
+> -
+> -	lmb->flags |= DRCONF_MEM_ASSIGNED;
+> 
+> -	aa_index = lookup_lmb_associativity_index(lmb);
+>  	if (aa_index < 0) {
+> -		pr_err("Couldn't find associativity index for drc index %x\n",
+> -		       lmb->drc_index);
+> -		return aa_index;
+> +		pr_err("Could not find LMB associativity\n");
+> +		return -1;
+>  	}
+> 
+>  	lmb->aa_index = aa_index;
+> -
+> -	rtas_hp_event = true;
+> -	rc = drmem_update_dt();
+> -	rtas_hp_event = false;
+> -
+> -	return rc;
+> -}
+> -
+> -static int dlpar_remove_device_tree_lmb(struct drmem_lmb *lmb)
+> -{
+> -	int rc;
+> -
+> -	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+> -	lmb->aa_index = 0xffffffff;
+> -
+> -	rtas_hp_event = true;
+> -	rc = drmem_update_dt();
+> -	rtas_hp_event = false;
+> -
+> -	return rc;
+> +	return 0;
+>  }
+> 
+>  static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
+> @@ -428,7 +399,9 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
+>  	/* Update memory regions for memory remove */
+>  	memblock_remove(lmb->base_addr, block_sz);
+> 
+> -	dlpar_remove_device_tree_lmb(lmb);
+> +	invalidate_lmb_associativity_index(lmb);
+> +	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
+> +
+>  	return 0;
+>  }
+> 
+> @@ -688,10 +661,8 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>  	if (lmb->flags & DRCONF_MEM_ASSIGNED)
+>  		return -EINVAL;
+> 
+> -	rc = dlpar_add_device_tree_lmb(lmb);
+> +	rc = update_lmb_associativity_index(lmb);
+>  	if (rc) {
+> -		pr_err("Couldn't update device tree for drc index %x\n",
+> -		       lmb->drc_index);
+>  		dlpar_release_drc(lmb->drc_index);
+>  		return rc;
+>  	}
+> @@ -704,14 +675,14 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
+>  	/* Add the memory */
+>  	rc = add_memory(nid, lmb->base_addr, block_sz);
+>  	if (rc) {
+> -		dlpar_remove_device_tree_lmb(lmb);
+> +		invalidate_lmb_associativity_index(lmb);
+>  		return rc;
+>  	}
+> 
+>  	rc = dlpar_online_lmb(lmb);
+>  	if (rc) {
+>  		remove_memory(nid, lmb->base_addr, block_sz);
+> -		dlpar_remove_device_tree_lmb(lmb);
+> +		invalidate_lmb_associativity_index(lmb);
+>  	} else {
+>  		lmb->flags |= DRCONF_MEM_ASSIGNED;
+>  	}
+> @@ -958,6 +929,12 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+>  		break;
+>  	}
+> 
+> +	if (!rc) {
+> +		rtas_hp_event = true;
+> +		rc = drmem_update_dt();
+> +		rtas_hp_event = false;
+> +	}
+> +
+>  	unlock_device_hotplug();
+>  	return rc;
+>  }
 > 
