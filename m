@@ -1,19 +1,35 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40r0rz2HTDzDqlh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 02:06:59 +1000 (AEST)
-Message-Id: <05bd657afedaf4a0de5abab0c5db2e88fa73bdfe.1527004752.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1527004752.git.christophe.leroy@c-s.fr>
-References: <cover.1527004752.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 3/3] powerpc/lib: optimise PPC32 memcmp
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- segher@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 May 2018 18:06:55 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40r1WT1z38zDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 02:36:53 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4MGXjZG048433
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 12:36:50 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j4mhf04js-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 12:36:50 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 22 May 2018 10:36:49 -0600
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [RFC v4 0/4] powerpc/drcinfo: Fix bugs 'ibm,drc-info' property
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 22 May 2018 11:36:44 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <47581596-1d6e-a1a9-9490-5b5ff0f5304f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,84 +39,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the time being, memcmp() compares two chunks of memory
-byte per byte.
+This patch set corrects some errors and omissions in the previous
+set of patches adding support for the "ibm,drc-info" property to
+powerpc systems.
 
-This patch optimises the comparison by comparing word by word.
+Unfortunately, some errors in the previous patch set break things
+in some of the DLPAR operations.  In particular when attempting to
+hot-add a new CPU or set of CPUs, the original patch failed to
+properly calculate the available resources, and aborted the operation.
+In addition, the original set missed several opportunities to compress
+and reuse common code, especially, in the area of device processing.
 
-A small benchmark performed on an 8xx comparing two chuncks
-of 512 bytes performed 100000 times gives:
-
-Before : 5852274 TB ticks
-After:   1488638 TB ticks
-
-This is almost 4 times faster
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michael W. Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/lib/string_32.S | 47 +++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 40 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
-index 40a576d56ac7..d83b7d996f61 100644
---- a/arch/powerpc/lib/string_32.S
-+++ b/arch/powerpc/lib/string_32.S
-@@ -18,16 +18,49 @@
- _GLOBAL(memcmp)
- 	cmpwi	cr0, r5, 0
- 	beq-	2f
--	mtctr	r5
--	addi	r6,r3,-1
--	addi	r4,r4,-1
--1:	lbzu	r3,1(r6)
--	lbzu	r0,1(r4)
--	subf.	r3,r0,r3
--	bdnzt	2,1b
-+	srawi.	r7, r5, 2		/* Divide len by 4 */
-+	mr	r6, r3
-+	beq-	3f
-+	mtctr	r7
-+	li	r7, 0
-+1:
-+#ifdef __LITTLE_ENDIAN__
-+	lwbrx	r3, r6, r7
-+	lwbrx	r0, r4, r7
-+#else
-+	lwzx	r3, r6, r7
-+	lwzx	r0, r4, r7
-+#endif
-+	addi	r7, r7, 4
-+	cmpl	cr0, r3, r0
-+	bdnzt	eq, 1b
-+	bne	5f
-+	andi.	r5, r5, 3
-+	li	r3, 0
-+	beqlr
-+3:	cmplwi	cr1, r5, 2
-+	blt-	cr1, 4f
-+#ifdef __LITTLE_ENDIAN__
-+	lhbrx	r3, r6, r7
-+	lhbrx	r0, r4, r7
-+#else
-+	lhzx	r3, r6, r7
-+	lhzx	r0, r4, r7
-+#endif
-+	addi	r7, r7, 2
-+	subf.	r3, r0, r3
-+	beqlr	cr1
-+	bnelr
-+4:	lbzx	r3, r6, r7
-+	lbzx	r0, r4, r7
-+	subf.	r3, r0, r3
- 	blr
- 2:	li	r3,0
- 	blr
-+5:	li	r3, 1
-+	bgtlr
-+	li	r3, -1
-+	blr
- EXPORT_SYMBOL(memcmp)
- 
- CACHELINE_BYTES = L1_CACHE_BYTES
--- 
-2.13.3
+Changes in V4:
+  -- Update code for latest kernel checkins.
+  -- Fix bug with virtual devices.
+  -- Rebase on top of 4.17-rc5 kernel
+  -- Simplify parser code for "ibm,drc-info" property
