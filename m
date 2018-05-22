@@ -2,17 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qm7m0NZwzDqnS
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 16:33:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qmfT24fnzDqDv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 16:57:05 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc: Implement csum_ipv6_magic in assembly
+Subject: [PATCH v3] powerpc: Implement csum_ipv6_magic in assembly
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  segher@kernel.crashing.org
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  netdev@vger.kernel.org
-Message-Id: <20180522063351.A427C6F508@po14934vm.idsi0.si.c-s.fr>
-Date: Tue, 22 May 2018 08:33:51 +0200 (CEST)
+Message-Id: <20180522065701.9DE696CCB4@po14934vm.idsi0.si.c-s.fr>
+Date: Tue, 22 May 2018 08:57:01 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
