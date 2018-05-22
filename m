@@ -1,34 +1,18 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qm7L5BGXzDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 16:33:31 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4M6T6mR120604
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 02:33:29 -0400
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j48mut8nv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 02:33:28 -0400
-Received: from localhost
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 22 May 2018 07:33:26 +0100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net,
- david@gibson.dropbear.id.au, jasowang@redhat.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, mst@redhat.com,
- hch@infradead.org
-Subject: [RFC V2] virtio: Add platform specific DMA API translation for virito
- devices
-Date: Tue, 22 May 2018 12:03:17 +0530
-Message-Id: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qm7m0NZwzDqnS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 16:33:56 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc: Implement csum_ipv6_magic in assembly
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ segher@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org
+Message-Id: <20180522063351.A427C6F508@po14934vm.idsi0.si.c-s.fr>
+Date: Tue, 22 May 2018 08:33:51 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,104 +22,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a hook which a platform can define in order to allow it to
-force the use of the DMA API for all virtio devices even if they don't
-have the VIRTIO_F_IOMMU_PLATFORM flag set.  We want to use this to do
-bounce-buffering of data on the new secure pSeries platform, currently
-under development, where a KVM host cannot access all of the memory
-space of a secure KVM guest.  The host can only access the pages which
-the guest has explicitly requested to be shared with the host, thus
-the virtio implementation in the guest has to copy data to and from
-shared pages.
+The generic csum_ipv6_magic() generates a pretty bad result
 
-With this hook, the platform code in the secure guest can force the
-use of swiotlb for virtio buffers, with a back-end for swiotlb which
-will use a pool of pre-allocated shared pages.  Thus all data being
-sent or received by virtio devices will be copied through pages which
-the host has access to.
+00000000 <csum_ipv6_magic>: (PPC32)
+   0:	81 23 00 00 	lwz     r9,0(r3)
+   4:	81 03 00 04 	lwz     r8,4(r3)
+   8:	7c e7 4a 14 	add     r7,r7,r9
+   c:	7d 29 38 10 	subfc   r9,r9,r7
+  10:	7d 4a 51 10 	subfe   r10,r10,r10
+  14:	7d 27 42 14 	add     r9,r7,r8
+  18:	7d 2a 48 50 	subf    r9,r10,r9
+  1c:	80 e3 00 08 	lwz     r7,8(r3)
+  20:	7d 08 48 10 	subfc   r8,r8,r9
+  24:	7d 4a 51 10 	subfe   r10,r10,r10
+  28:	7d 29 3a 14 	add     r9,r9,r7
+  2c:	81 03 00 0c 	lwz     r8,12(r3)
+  30:	7d 2a 48 50 	subf    r9,r10,r9
+  34:	7c e7 48 10 	subfc   r7,r7,r9
+  38:	7d 4a 51 10 	subfe   r10,r10,r10
+  3c:	7d 29 42 14 	add     r9,r9,r8
+  40:	7d 2a 48 50 	subf    r9,r10,r9
+  44:	80 e4 00 00 	lwz     r7,0(r4)
+  48:	7d 08 48 10 	subfc   r8,r8,r9
+  4c:	7d 4a 51 10 	subfe   r10,r10,r10
+  50:	7d 29 3a 14 	add     r9,r9,r7
+  54:	7d 2a 48 50 	subf    r9,r10,r9
+  58:	81 04 00 04 	lwz     r8,4(r4)
+  5c:	7c e7 48 10 	subfc   r7,r7,r9
+  60:	7d 4a 51 10 	subfe   r10,r10,r10
+  64:	7d 29 42 14 	add     r9,r9,r8
+  68:	7d 2a 48 50 	subf    r9,r10,r9
+  6c:	80 e4 00 08 	lwz     r7,8(r4)
+  70:	7d 08 48 10 	subfc   r8,r8,r9
+  74:	7d 4a 51 10 	subfe   r10,r10,r10
+  78:	7d 29 3a 14 	add     r9,r9,r7
+  7c:	7d 2a 48 50 	subf    r9,r10,r9
+  80:	81 04 00 0c 	lwz     r8,12(r4)
+  84:	7c e7 48 10 	subfc   r7,r7,r9
+  88:	7d 4a 51 10 	subfe   r10,r10,r10
+  8c:	7d 29 42 14 	add     r9,r9,r8
+  90:	7d 2a 48 50 	subf    r9,r10,r9
+  94:	7d 08 48 10 	subfc   r8,r8,r9
+  98:	7d 4a 51 10 	subfe   r10,r10,r10
+  9c:	7d 29 2a 14 	add     r9,r9,r5
+  a0:	7d 2a 48 50 	subf    r9,r10,r9
+  a4:	7c a5 48 10 	subfc   r5,r5,r9
+  a8:	7c 63 19 10 	subfe   r3,r3,r3
+  ac:	7d 29 32 14 	add     r9,r9,r6
+  b0:	7d 23 48 50 	subf    r9,r3,r9
+  b4:	7c c6 48 10 	subfc   r6,r6,r9
+  b8:	7c 63 19 10 	subfe   r3,r3,r3
+  bc:	7c 63 48 50 	subf    r3,r3,r9
+  c0:	54 6a 80 3e 	rotlwi  r10,r3,16
+  c4:	7c 63 52 14 	add     r3,r3,r10
+  c8:	7c 63 18 f8 	not     r3,r3
+  cc:	54 63 84 3e 	rlwinm  r3,r3,16,16,31
+  d0:	4e 80 00 20 	blr
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+0000000000000000 <.csum_ipv6_magic>: (PPC64)
+   0:	81 23 00 00 	lwz     r9,0(r3)
+   4:	80 03 00 04 	lwz     r0,4(r3)
+   8:	81 63 00 08 	lwz     r11,8(r3)
+   c:	7c e7 4a 14 	add     r7,r7,r9
+  10:	7f 89 38 40 	cmplw   cr7,r9,r7
+  14:	7d 47 02 14 	add     r10,r7,r0
+  18:	7d 30 10 26 	mfocrf  r9,1
+  1c:	55 29 f7 fe 	rlwinm  r9,r9,30,31,31
+  20:	7d 4a 4a 14 	add     r10,r10,r9
+  24:	7f 80 50 40 	cmplw   cr7,r0,r10
+  28:	7d 2a 5a 14 	add     r9,r10,r11
+  2c:	80 03 00 0c 	lwz     r0,12(r3)
+  30:	81 44 00 00 	lwz     r10,0(r4)
+  34:	7d 10 10 26 	mfocrf  r8,1
+  38:	55 08 f7 fe 	rlwinm  r8,r8,30,31,31
+  3c:	7d 29 42 14 	add     r9,r9,r8
+  40:	81 04 00 04 	lwz     r8,4(r4)
+  44:	7f 8b 48 40 	cmplw   cr7,r11,r9
+  48:	7d 29 02 14 	add     r9,r9,r0
+  4c:	7d 70 10 26 	mfocrf  r11,1
+  50:	55 6b f7 fe 	rlwinm  r11,r11,30,31,31
+  54:	7d 29 5a 14 	add     r9,r9,r11
+  58:	7f 80 48 40 	cmplw   cr7,r0,r9
+  5c:	7d 29 52 14 	add     r9,r9,r10
+  60:	7c 10 10 26 	mfocrf  r0,1
+  64:	54 00 f7 fe 	rlwinm  r0,r0,30,31,31
+  68:	7d 69 02 14 	add     r11,r9,r0
+  6c:	7f 8a 58 40 	cmplw   cr7,r10,r11
+  70:	7c 0b 42 14 	add     r0,r11,r8
+  74:	81 44 00 08 	lwz     r10,8(r4)
+  78:	7c f0 10 26 	mfocrf  r7,1
+  7c:	54 e7 f7 fe 	rlwinm  r7,r7,30,31,31
+  80:	7c 00 3a 14 	add     r0,r0,r7
+  84:	7f 88 00 40 	cmplw   cr7,r8,r0
+  88:	7d 20 52 14 	add     r9,r0,r10
+  8c:	80 04 00 0c 	lwz     r0,12(r4)
+  90:	7d 70 10 26 	mfocrf  r11,1
+  94:	55 6b f7 fe 	rlwinm  r11,r11,30,31,31
+  98:	7d 29 5a 14 	add     r9,r9,r11
+  9c:	7f 8a 48 40 	cmplw   cr7,r10,r9
+  a0:	7d 29 02 14 	add     r9,r9,r0
+  a4:	7d 70 10 26 	mfocrf  r11,1
+  a8:	55 6b f7 fe 	rlwinm  r11,r11,30,31,31
+  ac:	7d 29 5a 14 	add     r9,r9,r11
+  b0:	7f 80 48 40 	cmplw   cr7,r0,r9
+  b4:	7d 29 2a 14 	add     r9,r9,r5
+  b8:	7c 10 10 26 	mfocrf  r0,1
+  bc:	54 00 f7 fe 	rlwinm  r0,r0,30,31,31
+  c0:	7d 29 02 14 	add     r9,r9,r0
+  c4:	7f 85 48 40 	cmplw   cr7,r5,r9
+  c8:	7c 09 32 14 	add     r0,r9,r6
+  cc:	7d 50 10 26 	mfocrf  r10,1
+  d0:	55 4a f7 fe 	rlwinm  r10,r10,30,31,31
+  d4:	7c 00 52 14 	add     r0,r0,r10
+  d8:	7f 80 30 40 	cmplw   cr7,r0,r6
+  dc:	7d 30 10 26 	mfocrf  r9,1
+  e0:	55 29 ef fe 	rlwinm  r9,r9,29,31,31
+  e4:	7c 09 02 14 	add     r0,r9,r0
+  e8:	54 03 80 3e 	rotlwi  r3,r0,16
+  ec:	7c 03 02 14 	add     r0,r3,r0
+  f0:	7c 03 00 f8 	not     r3,r0
+  f4:	78 63 84 22 	rldicl  r3,r3,48,48
+  f8:	4e 80 00 20 	blr
+
+This patch implements it in assembly for both PPC32 and PPC64
+
+Link: https://github.com/linuxppc/linux/issues/9
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-Changes in V2:
+ v3: Add support for PPC64 (please review, especially whether instructions order in optimal)
+ v2: Fix number of args in final addze
 
-The arch callback has been enabled through an weak symbol defintion
-so that it is enabled only for those architectures subscribing to
-this new framework. Clarified the patch description. The primary
-objective for this RFC has been to get an in principle agreement
-on this approach.
+ arch/powerpc/include/asm/checksum.h |  6 ++++++
+ arch/powerpc/lib/checksum_32.S      | 33 +++++++++++++++++++++++++++++++++
+ arch/powerpc/lib/checksum_64.S      | 28 ++++++++++++++++++++++++++++
+ 3 files changed, 67 insertions(+)
 
-Original V1:
-
-Original RFC and discussions https://patchwork.kernel.org/patch/10324405/
-
- arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
- arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
- drivers/virtio/virtio_ring.c           | 10 ++++++++++
- 3 files changed, 27 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 8fa3945..056e578 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
- #define ARCH_HAS_DMA_MMAP_COHERENT
+diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
+index 54065caa40b3..a78a57e5058d 100644
+--- a/arch/powerpc/include/asm/checksum.h
++++ b/arch/powerpc/include/asm/checksum.h
+@@ -13,6 +13,7 @@
+ #include <asm-generic/checksum.h>
+ #else
+ #include <linux/bitops.h>
++#include <linux/in6.h>
+ /*
+  * Computes the checksum of a memory block at src, length len,
+  * and adds in "sum" (32-bit), while copying the block to dst.
+@@ -211,6 +212,11 @@ static inline __sum16 ip_compute_csum(const void *buff, int len)
+ 	return csum_fold(csum_partial(buff, len, 0));
+ }
  
++#define _HAVE_ARCH_IPV6_CSUM
++__sum16 csum_ipv6_magic(const struct in6_addr *saddr,
++			const struct in6_addr *daddr,
++			__u32 len, __u8 proto, __wsum sum);
++
+ #endif
  #endif /* __KERNEL__ */
-+
-+#define platform_forces_virtio_dma platform_forces_virtio_dma
-+
-+struct virtio_device;
-+
-+extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
- #endif	/* _ASM_DMA_MAPPING_H */
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 06f0296..a2ec15a 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -38,6 +38,7 @@
- #include <linux/of.h>
- #include <linux/iommu.h>
- #include <linux/rculist.h>
-+#include <linux/virtio.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
- __setup("multitce=", disable_multitce);
+ #endif
+diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+index 9a671c774b22..9167ab088f04 100644
+--- a/arch/powerpc/lib/checksum_32.S
++++ b/arch/powerpc/lib/checksum_32.S
+@@ -293,3 +293,36 @@ dst_error:
+ 	EX_TABLE(51b, dst_error);
  
- machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+ EXPORT_SYMBOL(csum_partial_copy_generic)
 +
-+bool platform_forces_virtio_dma(struct virtio_device *vdev)
-+{
-+	/*
-+	 * On protected guest platforms, force virtio core to use DMA
-+	 * MAP API for all virtio devices. But there can also be some
-+	 * exceptions for individual devices like virtio balloon.
-+	 */
-+	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
-+}
-diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-index 21d464a..47ea6c3 100644
---- a/drivers/virtio/virtio_ring.c
-+++ b/drivers/virtio/virtio_ring.c
-@@ -141,8 +141,18 @@ struct vring_virtqueue {
-  * unconditionally on data path.
-  */
- 
-+#ifndef platform_forces_virtio_dma
-+static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
-+{
-+	return false;
-+}
-+#endif
++/*
++ * static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
++ *				      const struct in6_addr *daddr,
++ *				      __u32 len, __u8 proto, __wsum sum)
++ */
 +
- static bool vring_use_dma_api(struct virtio_device *vdev)
- {
-+	if (platform_forces_virtio_dma(vdev))
-+		return true;
++_GLOBAL(csum_ipv6_magic)
++	lwz	r8, 0(r3)
++	lwz	r9, 4(r3)
++	lwz	r10, 8(r3)
++	lwz	r11, 12(r3)
++	addc	r0, r5, r6
++	adde	r0, r0, r7
++	adde	r0, r0, r8
++	adde	r0, r0, r9
++	adde	r0, r0, r10
++	adde	r0, r0, r11
++	lwz	r8, 0(r4)
++	lwz	r9, 4(r4)
++	lwz	r10, 8(r4)
++	lwz	r11, 12(r4)
++	adde	r0, r0, r8
++	adde	r0, r0, r9
++	adde	r0, r0, r10
++	adde	r0, r0, r11
++	addze	r0, r0
++	rotlwi	r3, r0, 16
++	add	r3, r0, r3
++	not	r3, r3
++	rlwinm	r3, r3, 16, 16, 31
++	blr
++EXPORT_SYMBOL(csum_ipv6_magic)
+diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
+index d7f1a966136e..66900baf5600 100644
+--- a/arch/powerpc/lib/checksum_64.S
++++ b/arch/powerpc/lib/checksum_64.S
+@@ -429,3 +429,31 @@ dstnr;	stb	r6,0(r4)
+ 	stw	r6,0(r8)
+ 	blr
+ EXPORT_SYMBOL(csum_partial_copy_generic)
 +
- 	if (!virtio_has_iommu_quirk(vdev))
- 		return true;
- 
++/*
++ * static inline __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
++ *				      const struct in6_addr *daddr,
++ *				      __u32 len, __u8 proto, __wsum sum)
++ */
++
++_GLOBAL(csum_ipv6_magic)
++	ld	r8, 0(r3)
++	ld	r9, 8(r3)
++	add	r5, r5, r6
++	addc	r0, r8, r9
++	ld	r10, 0(r4)
++	ld	r11, 8(r4)
++	adde	r0, r0, r10
++	add	r5, r5, r7
++	adde	r0, r0, r11
++	adde	r0, r0, r5
++	addze	r0, r0
++	rotldi  r3 ,r0, 32		/* fold two 32 bit halves together */
++	add	r3, r0, r3
++	srdi	r0, r3, 32
++	rotlwi	r3, r0, 16		/* fold two 16 bit halves together */
++	add	r3, r0, r3
++	not	r3, r3
++	rlwinm	r3, r3, 16, 16, 31
++	blr
++EXPORT_SYMBOL(csum_ipv6_magic)
 -- 
-2.9.3
+2.13.3
