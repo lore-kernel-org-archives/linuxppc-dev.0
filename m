@@ -1,22 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qyzn4fmwzDqmb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:42:45 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: greg@kroah.com
-Cc: stable@vger.kernel.org,
-	tglx@linutronix.de,
-	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.16 14/14] powerpc/64s: Add support for a store
- forwarding barrier at kernel entry/exit
-Date: Wed, 23 May 2018 00:41:25 +1000
-Message-Id: <20180522144125.10345-15-mpe@ellerman.id.au>
-In-Reply-To: <20180522144125.10345-1-mpe@ellerman.id.au>
-References: <20180522144125.10345-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qz9J2TbxzDqlg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:51:00 +1000 (AEST)
+Subject: Re: [PATCH v7 2/3] powerpc/mm: Only read faulting instruction when
+ necessary in do_page_fault()
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1053e5f43a2ea9a9d9abb1f45c88dffb60b9b4fc.1526995927.git.christophe.leroy@c-s.fr>
+ <d37d9ce7b925bc254082cd664e37a062131d04b8.1526995927.git.christophe.leroy@c-s.fr>
+ <20180523003801.43070ddc@roar.ozlabs.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <cb0eaf6d-80ab-b503-d797-cadcd60d4c17@c-s.fr>
+Date: Tue, 22 May 2018 16:50:55 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20180523003801.43070ddc@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,589 +28,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nicholas Piggin <npiggin@gmail.com>
 
-commit a048a07d7f4535baa4cbad6bc024f175317ab938 upstream.
 
-On some CPUs we can prevent a vulnerability related to store-to-load
-forwarding by preventing store forwarding between privilege domains,
-by inserting a barrier in kernel entry and exit paths.
+Le 22/05/2018 à 16:38, Nicholas Piggin a écrit :
+> On Tue, 22 May 2018 16:02:56 +0200 (CEST)
+> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+> 
+>> Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
+>> userspace instruction miss") has shown that limiting the read of
+>> faulting instruction to likely cases improves performance.
+>>
+>> This patch goes further into this direction by limiting the read
+>> of the faulting instruction to the only cases where it is likely
+>> needed.
+>>
+>> On an MPC885, with the same benchmark app as in the commit referred
+>> above, we see a reduction of about 3900 dTLB misses (approx 3%):
+>>
+>> Before the patch:
+>>   Performance counter stats for './fault 500' (10 runs):
+>>
+>>           683033312      cpu-cycles                                                    ( +-  0.03% )
+>>              134538      dTLB-load-misses                                              ( +-  0.03% )
+>>               46099      iTLB-load-misses                                              ( +-  0.02% )
+>>               19681      faults                                                        ( +-  0.02% )
+>>
+>>         5.389747878 seconds time elapsed                                          ( +-  0.06% )
+>>
+>> With the patch:
+>>
+>>   Performance counter stats for './fault 500' (10 runs):
+>>
+>>           682112862      cpu-cycles                                                    ( +-  0.03% )
+>>              130619      dTLB-load-misses                                              ( +-  0.03% )
+>>               46073      iTLB-load-misses                                              ( +-  0.05% )
+>>               19681      faults                                                        ( +-  0.01% )
+>>
+>>         5.381342641 seconds time elapsed                                          ( +-  0.07% )
+>>
+>> The proper work of the huge stack expansion was tested with the
+>> following app:
+>>
+>> int main(int argc, char **argv)
+>> {
+>> 	char buf[1024 * 1025];
+>>
+>> 	sprintf(buf, "Hello world !\n");
+>> 	printf(buf);
+>>
+>> 	exit(0);
+>> }
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   v7: Following comment from Nicholas on v6 on possibility of the page getting removed from the pagetables
+>>       between the fault and the read, I have reworked the patch in order to do the get_user() in
+>>       __do_page_fault() directly in order to reduce complexity compared to version v5
+> 
+> This is looking better, thanks.
+> 
+>> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+>> index fcbb34431da2..dc64b8e06477 100644
+>> --- a/arch/powerpc/mm/fault.c
+>> +++ b/arch/powerpc/mm/fault.c
+>> @@ -450,9 +450,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>>   	 * can result in fault, which will cause a deadlock when called with
+>>   	 * mmap_sem held
+>>   	 */
+>> -	if (is_write && is_user)
+>> -		get_user(inst, (unsigned int __user *)regs->nip);
+>> -
+>>   	if (is_user)
+>>   		flags |= FAULT_FLAG_USER;
+>>   	if (is_write)
+>> @@ -498,6 +495,26 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
+>>   	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN)))
+>>   		return bad_area(regs, address);
+>>   
+>> +	if (unlikely(is_write && is_user && address + 0x100000 < vma->vm_end &&
+>> +		     !inst)) {
+>> +		unsigned int __user *nip = (unsigned int __user *)regs->nip;
+>> +
+>> +		if (likely(access_ok(VERIFY_READ, nip, sizeof(inst)))) {
+>> +			int res;
+>> +
+>> +			pagefault_disable();
+>> +			res = __get_user_inatomic(inst, nip);
+>> +			pagefault_enable();
+>> +			if (unlikely(res)) {
+>> +				up_read(&mm->mmap_sem);
+>> +				res = __get_user(inst, nip);
+>> +				if (!res && inst)
+>> +					goto retry;
+> 
+> You're handling error here but the previous code did not?
 
-This is known to be the case on at least Power7, Power8 and Power9
-powerpc CPUs.
+The previous code did in store_updates_sp()
 
-Barriers must be inserted generally before the first load after moving
-to a higher privilege, and after the last store before moving to a
-lower privilege, HV and PR privilege transitions must be protected.
+When I moved get_user() out of that function in preceeding patch, I did 
+consider that if get_user() fails, inst will remain 0, which means that 
+store_updates_sp() will return false if ever called.
 
-Barriers are added as patch sections, with all kernel/hypervisor entry
-points patched, and the exit points to lower privilge levels patched
-similarly to the RFI flush patching.
+Now, as the semaphore has been released, we really need to do something, 
+because if we goto retry inconditionally, we may end up in an infinite 
+loop, and we can't let it continue either as the semaphore is not held 
+anymore.
 
-Firmware advertisement is not implemented yet, so CPU flush types
-are hard coded.
+> 
+>> +				return bad_area_nosemaphore(regs, address);
+>> +			}
+>> +		}
+>> +	}
+> 
+> Would it be nicer to move all this up into bad_stack_expansion().
+> It would need a way to handle the retry and insn, but I think it
+> would still look better.
 
-Thanks to Michal Suchánek for bug fixes and review.
+That's what I did in v5 indeed, but it looked too complex to me at the 
+end. Can you have a look at it 
+(https://patchwork.ozlabs.org/patch/799053/) and tell me if you feel it 
+better than v7, or if you have any suggestion to improve based on v5 
+and/or v7 ?
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Signed-off-by: Michal Suchánek <msuchanek@suse.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- arch/powerpc/include/asm/exception-64s.h     |  29 ++++++
- arch/powerpc/include/asm/feature-fixups.h    |  19 ++++
- arch/powerpc/include/asm/security_features.h |  11 ++
- arch/powerpc/kernel/exceptions-64s.S         |  19 +++-
- arch/powerpc/kernel/security.c               | 149 +++++++++++++++++++++++++++
- arch/powerpc/kernel/vmlinux.lds.S            |  14 +++
- arch/powerpc/lib/feature-fixups.c            | 115 +++++++++++++++++++++
- arch/powerpc/platforms/powernv/setup.c       |   1 +
- arch/powerpc/platforms/pseries/setup.c       |   1 +
- 9 files changed, 356 insertions(+), 2 deletions(-)
+Thanks
+Christophe
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 471b2274fbeb..c40b4380951c 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -74,6 +74,27 @@
-  */
- #define EX_R3		EX_DAR
- 
-+#define STF_ENTRY_BARRIER_SLOT						\
-+	STF_ENTRY_BARRIER_FIXUP_SECTION;				\
-+	nop;								\
-+	nop;								\
-+	nop
-+
-+#define STF_EXIT_BARRIER_SLOT						\
-+	STF_EXIT_BARRIER_FIXUP_SECTION;					\
-+	nop;								\
-+	nop;								\
-+	nop;								\
-+	nop;								\
-+	nop;								\
-+	nop
-+
-+/*
-+ * r10 must be free to use, r13 must be paca
-+ */
-+#define INTERRUPT_TO_KERNEL						\
-+	STF_ENTRY_BARRIER_SLOT
-+
- /*
-  * Macros for annotating the expected destination of (h)rfid
-  *
-@@ -90,16 +111,19 @@
- 	rfid
- 
- #define RFI_TO_USER							\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	rfid;								\
- 	b	rfi_flush_fallback
- 
- #define RFI_TO_USER_OR_KERNEL						\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	rfid;								\
- 	b	rfi_flush_fallback
- 
- #define RFI_TO_GUEST							\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	rfid;								\
- 	b	rfi_flush_fallback
-@@ -108,21 +132,25 @@
- 	hrfid
- 
- #define HRFI_TO_USER							\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	hrfid;								\
- 	b	hrfi_flush_fallback
- 
- #define HRFI_TO_USER_OR_KERNEL						\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	hrfid;								\
- 	b	hrfi_flush_fallback
- 
- #define HRFI_TO_GUEST							\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	hrfid;								\
- 	b	hrfi_flush_fallback
- 
- #define HRFI_TO_UNKNOWN							\
-+	STF_EXIT_BARRIER_SLOT;						\
- 	RFI_FLUSH_SLOT;							\
- 	hrfid;								\
- 	b	hrfi_flush_fallback
-@@ -254,6 +282,7 @@ END_FTR_SECTION_NESTED(ftr,ftr,943)
- #define __EXCEPTION_PROLOG_1_PRE(area)					\
- 	OPT_SAVE_REG_TO_PACA(area+EX_PPR, r9, CPU_FTR_HAS_PPR);		\
- 	OPT_SAVE_REG_TO_PACA(area+EX_CFAR, r10, CPU_FTR_CFAR);		\
-+	INTERRUPT_TO_KERNEL;						\
- 	SAVE_CTR(r10, area);						\
- 	mfcr	r9;
- 
-diff --git a/arch/powerpc/include/asm/feature-fixups.h b/arch/powerpc/include/asm/feature-fixups.h
-index 1e82eb3caabd..a9b64df34e2a 100644
---- a/arch/powerpc/include/asm/feature-fixups.h
-+++ b/arch/powerpc/include/asm/feature-fixups.h
-@@ -187,6 +187,22 @@ label##3:					       	\
- 	FTR_ENTRY_OFFSET label##1b-label##3b;		\
- 	.popsection;
- 
-+#define STF_ENTRY_BARRIER_FIXUP_SECTION			\
-+953:							\
-+	.pushsection __stf_entry_barrier_fixup,"a";	\
-+	.align 2;					\
-+954:							\
-+	FTR_ENTRY_OFFSET 953b-954b;			\
-+	.popsection;
-+
-+#define STF_EXIT_BARRIER_FIXUP_SECTION			\
-+955:							\
-+	.pushsection __stf_exit_barrier_fixup,"a";	\
-+	.align 2;					\
-+956:							\
-+	FTR_ENTRY_OFFSET 955b-956b;			\
-+	.popsection;
-+
- #define RFI_FLUSH_FIXUP_SECTION				\
- 951:							\
- 	.pushsection __rfi_flush_fixup,"a";		\
-@@ -199,6 +215,9 @@ label##3:					       	\
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
- 
-+extern long stf_barrier_fallback;
-+extern long __start___stf_entry_barrier_fixup, __stop___stf_entry_barrier_fixup;
-+extern long __start___stf_exit_barrier_fixup, __stop___stf_exit_barrier_fixup;
- extern long __start___rfi_flush_fixup, __stop___rfi_flush_fixup;
- 
- void apply_feature_fixups(void);
-diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
-index fa4d2e1cf772..44989b22383c 100644
---- a/arch/powerpc/include/asm/security_features.h
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -12,6 +12,17 @@
- extern unsigned long powerpc_security_features;
- extern bool rfi_flush;
- 
-+/* These are bit flags */
-+enum stf_barrier_type {
-+	STF_BARRIER_NONE	= 0x1,
-+	STF_BARRIER_FALLBACK	= 0x2,
-+	STF_BARRIER_EIEIO	= 0x4,
-+	STF_BARRIER_SYNC_ORI	= 0x8,
-+};
-+
-+void setup_stf_barrier(void);
-+void do_stf_barrier_fixups(enum stf_barrier_type types);
-+
- static inline void security_ftr_set(unsigned long feature)
- {
- 	powerpc_security_features |= feature;
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 1ecfd8ffb098..bf9b94e376fd 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -833,7 +833,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_TM)
- #endif
- 
- 
--EXC_REAL_MASKABLE(decrementer, 0x900, 0x80, IRQS_DISABLED)
-+EXC_REAL_OOL_MASKABLE(decrementer, 0x900, 0x80, IRQS_DISABLED)
- EXC_VIRT_MASKABLE(decrementer, 0x4900, 0x80, 0x900, IRQS_DISABLED)
- TRAMP_KVM(PACA_EXGEN, 0x900)
- EXC_COMMON_ASYNC(decrementer_common, 0x900, timer_interrupt)
-@@ -909,6 +909,7 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
- 	mtctr	r13;							\
- 	GET_PACA(r13);							\
- 	std	r10,PACA_EXGEN+EX_R10(r13);				\
-+	INTERRUPT_TO_KERNEL;						\
- 	KVMTEST_PR(0xc00); /* uses r10, branch to do_kvm_0xc00_system_call */ \
- 	HMT_MEDIUM;							\
- 	mfctr	r9;
-@@ -917,7 +918,8 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
- #define SYSCALL_KVMTEST							\
- 	HMT_MEDIUM;							\
- 	mr	r9,r13;							\
--	GET_PACA(r13);
-+	GET_PACA(r13);							\
-+	INTERRUPT_TO_KERNEL;
- #endif
- 	
- #define LOAD_SYSCALL_HANDLER(reg)					\
-@@ -1455,6 +1457,19 @@ masked_##_H##interrupt:					\
- 	b	.;					\
- 	MASKED_DEC_HANDLER(_H)
- 
-+TRAMP_REAL_BEGIN(stf_barrier_fallback)
-+	std	r9,PACA_EXRFI+EX_R9(r13)
-+	std	r10,PACA_EXRFI+EX_R10(r13)
-+	sync
-+	ld	r9,PACA_EXRFI+EX_R9(r13)
-+	ld	r10,PACA_EXRFI+EX_R10(r13)
-+	ori	31,31,0
-+	.rept 14
-+	b	1f
-+1:
-+	.endr
-+	blr
-+
- TRAMP_REAL_BEGIN(rfi_flush_fallback)
- 	SET_SCRATCH0(r13);
- 	GET_PACA(r13);
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index bab5a27ea805..b98a722da915 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -8,6 +8,7 @@
- #include <linux/device.h>
- #include <linux/seq_buf.h>
- 
-+#include <asm/debugfs.h>
- #include <asm/security_features.h>
- 
- 
-@@ -86,3 +87,151 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
- 
- 	return s.len;
- }
-+
-+/*
-+ * Store-forwarding barrier support.
-+ */
-+
-+static enum stf_barrier_type stf_enabled_flush_types;
-+static bool no_stf_barrier;
-+bool stf_barrier;
-+
-+static int __init handle_no_stf_barrier(char *p)
-+{
-+	pr_info("stf-barrier: disabled on command line.");
-+	no_stf_barrier = true;
-+	return 0;
-+}
-+
-+early_param("no_stf_barrier", handle_no_stf_barrier);
-+
-+/* This is the generic flag used by other architectures */
-+static int __init handle_ssbd(char *p)
-+{
-+	if (!p || strncmp(p, "auto", 5) == 0 || strncmp(p, "on", 2) == 0 ) {
-+		/* Until firmware tells us, we have the barrier with auto */
-+		return 0;
-+	} else if (strncmp(p, "off", 3) == 0) {
-+		handle_no_stf_barrier(NULL);
-+		return 0;
-+	} else
-+		return 1;
-+
-+	return 0;
-+}
-+early_param("spec_store_bypass_disable", handle_ssbd);
-+
-+/* This is the generic flag used by other architectures */
-+static int __init handle_no_ssbd(char *p)
-+{
-+	handle_no_stf_barrier(NULL);
-+	return 0;
-+}
-+early_param("nospec_store_bypass_disable", handle_no_ssbd);
-+
-+static void stf_barrier_enable(bool enable)
-+{
-+	if (enable)
-+		do_stf_barrier_fixups(stf_enabled_flush_types);
-+	else
-+		do_stf_barrier_fixups(STF_BARRIER_NONE);
-+
-+	stf_barrier = enable;
-+}
-+
-+void setup_stf_barrier(void)
-+{
-+	enum stf_barrier_type type;
-+	bool enable, hv;
-+
-+	hv = cpu_has_feature(CPU_FTR_HVMODE);
-+
-+	/* Default to fallback in case fw-features are not available */
-+	if (cpu_has_feature(CPU_FTR_ARCH_300))
-+		type = STF_BARRIER_EIEIO;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_207S))
-+		type = STF_BARRIER_SYNC_ORI;
-+	else if (cpu_has_feature(CPU_FTR_ARCH_206))
-+		type = STF_BARRIER_FALLBACK;
-+	else
-+		type = STF_BARRIER_NONE;
-+
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
-+		(security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR) ||
-+		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) && hv));
-+
-+	if (type == STF_BARRIER_FALLBACK) {
-+		pr_info("stf-barrier: fallback barrier available\n");
-+	} else if (type == STF_BARRIER_SYNC_ORI) {
-+		pr_info("stf-barrier: hwsync barrier available\n");
-+	} else if (type == STF_BARRIER_EIEIO) {
-+		pr_info("stf-barrier: eieio barrier available\n");
-+	}
-+
-+	stf_enabled_flush_types = type;
-+
-+	if (!no_stf_barrier)
-+		stf_barrier_enable(enable);
-+}
-+
-+ssize_t cpu_show_spec_store_bypass(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	if (stf_barrier && stf_enabled_flush_types != STF_BARRIER_NONE) {
-+		const char *type;
-+		switch (stf_enabled_flush_types) {
-+		case STF_BARRIER_EIEIO:
-+			type = "eieio";
-+			break;
-+		case STF_BARRIER_SYNC_ORI:
-+			type = "hwsync";
-+			break;
-+		case STF_BARRIER_FALLBACK:
-+			type = "fallback";
-+			break;
-+		default:
-+			type = "unknown";
-+		}
-+		return sprintf(buf, "Mitigation: Kernel entry/exit barrier (%s)\n", type);
-+	}
-+
-+	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
-+	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
-+		return sprintf(buf, "Not affected\n");
-+
-+	return sprintf(buf, "Vulnerable\n");
-+}
-+
-+#ifdef CONFIG_DEBUG_FS
-+static int stf_barrier_set(void *data, u64 val)
-+{
-+	bool enable;
-+
-+	if (val == 1)
-+		enable = true;
-+	else if (val == 0)
-+		enable = false;
-+	else
-+		return -EINVAL;
-+
-+	/* Only do anything if we're changing state */
-+	if (enable != stf_barrier)
-+		stf_barrier_enable(enable);
-+
-+	return 0;
-+}
-+
-+static int stf_barrier_get(void *data, u64 *val)
-+{
-+	*val = stf_barrier ? 1 : 0;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_stf_barrier, stf_barrier_get, stf_barrier_set, "%llu\n");
-+
-+static __init int stf_barrier_debugfs_init(void)
-+{
-+	debugfs_create_file("stf_barrier", 0600, powerpc_debugfs_root, NULL, &fops_stf_barrier);
-+	return 0;
-+}
-+device_initcall(stf_barrier_debugfs_init);
-+#endif /* CONFIG_DEBUG_FS */
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index c8af90ff49f0..b8d82678f8b4 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -133,6 +133,20 @@ SECTIONS
- 	RO_DATA(PAGE_SIZE)
- 
- #ifdef CONFIG_PPC64
-+	. = ALIGN(8);
-+	__stf_entry_barrier_fixup : AT(ADDR(__stf_entry_barrier_fixup) - LOAD_OFFSET) {
-+		__start___stf_entry_barrier_fixup = .;
-+		*(__stf_entry_barrier_fixup)
-+		__stop___stf_entry_barrier_fixup = .;
-+	}
-+
-+	. = ALIGN(8);
-+	__stf_exit_barrier_fixup : AT(ADDR(__stf_exit_barrier_fixup) - LOAD_OFFSET) {
-+		__start___stf_exit_barrier_fixup = .;
-+		*(__stf_exit_barrier_fixup)
-+		__stop___stf_exit_barrier_fixup = .;
-+	}
-+
- 	. = ALIGN(8);
- 	__rfi_flush_fixup : AT(ADDR(__rfi_flush_fixup) - LOAD_OFFSET) {
- 		__start___rfi_flush_fixup = .;
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index f61ff5a6bddb..6b3c2d405a6d 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -23,6 +23,7 @@
- #include <asm/page.h>
- #include <asm/sections.h>
- #include <asm/setup.h>
-+#include <asm/security_features.h>
- #include <asm/firmware.h>
- 
- struct fixup_entry {
-@@ -117,6 +118,120 @@ void do_feature_fixups(unsigned long value, void *fixup_start, void *fixup_end)
- }
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-+void do_stf_entry_barrier_fixups(enum stf_barrier_type types)
-+{
-+	unsigned int instrs[3], *dest;
-+	long *start, *end;
-+	int i;
-+
-+	start = PTRRELOC(&__start___stf_entry_barrier_fixup),
-+	end = PTRRELOC(&__stop___stf_entry_barrier_fixup);
-+
-+	instrs[0] = 0x60000000; /* nop */
-+	instrs[1] = 0x60000000; /* nop */
-+	instrs[2] = 0x60000000; /* nop */
-+
-+	i = 0;
-+	if (types & STF_BARRIER_FALLBACK) {
-+		instrs[i++] = 0x7d4802a6; /* mflr r10		*/
-+		instrs[i++] = 0x60000000; /* branch patched below */
-+		instrs[i++] = 0x7d4803a6; /* mtlr r10		*/
-+	} else if (types & STF_BARRIER_EIEIO) {
-+		instrs[i++] = 0x7e0006ac; /* eieio + bit 6 hint */
-+	} else if (types & STF_BARRIER_SYNC_ORI) {
-+		instrs[i++] = 0x7c0004ac; /* hwsync		*/
-+		instrs[i++] = 0xe94d0000; /* ld r10,0(r13)	*/
-+		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
-+	}
-+
-+	for (i = 0; start < end; start++, i++) {
-+		dest = (void *)start + *start;
-+
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+
-+		patch_instruction(dest, instrs[0]);
-+
-+		if (types & STF_BARRIER_FALLBACK)
-+			patch_branch(dest + 1, (unsigned long)&stf_barrier_fallback,
-+				     BRANCH_SET_LINK);
-+		else
-+			patch_instruction(dest + 1, instrs[1]);
-+
-+		patch_instruction(dest + 2, instrs[2]);
-+	}
-+
-+	printk(KERN_DEBUG "stf-barrier: patched %d entry locations (%s barrier)\n", i,
-+		(types == STF_BARRIER_NONE)                  ? "no" :
-+		(types == STF_BARRIER_FALLBACK)              ? "fallback" :
-+		(types == STF_BARRIER_EIEIO)                 ? "eieio" :
-+		(types == (STF_BARRIER_SYNC_ORI))            ? "hwsync"
-+		                                           : "unknown");
-+}
-+
-+void do_stf_exit_barrier_fixups(enum stf_barrier_type types)
-+{
-+	unsigned int instrs[6], *dest;
-+	long *start, *end;
-+	int i;
-+
-+	start = PTRRELOC(&__start___stf_exit_barrier_fixup),
-+	end = PTRRELOC(&__stop___stf_exit_barrier_fixup);
-+
-+	instrs[0] = 0x60000000; /* nop */
-+	instrs[1] = 0x60000000; /* nop */
-+	instrs[2] = 0x60000000; /* nop */
-+	instrs[3] = 0x60000000; /* nop */
-+	instrs[4] = 0x60000000; /* nop */
-+	instrs[5] = 0x60000000; /* nop */
-+
-+	i = 0;
-+	if (types & STF_BARRIER_FALLBACK || types & STF_BARRIER_SYNC_ORI) {
-+		if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+			instrs[i++] = 0x7db14ba6; /* mtspr 0x131, r13 (HSPRG1) */
-+			instrs[i++] = 0x7db04aa6; /* mfspr r13, 0x130 (HSPRG0) */
-+		} else {
-+			instrs[i++] = 0x7db243a6; /* mtsprg 2,r13	*/
-+			instrs[i++] = 0x7db142a6; /* mfsprg r13,1    */
-+	        }
-+		instrs[i++] = 0x7c0004ac; /* hwsync		*/
-+		instrs[i++] = 0xe9ad0000; /* ld r13,0(r13)	*/
-+		instrs[i++] = 0x63ff0000; /* ori 31,31,0 speculation barrier */
-+		if (cpu_has_feature(CPU_FTR_HVMODE)) {
-+			instrs[i++] = 0x7db14aa6; /* mfspr r13, 0x131 (HSPRG1) */
-+		} else {
-+			instrs[i++] = 0x7db242a6; /* mfsprg r13,2 */
-+		}
-+	} else if (types & STF_BARRIER_EIEIO) {
-+		instrs[i++] = 0x7e0006ac; /* eieio + bit 6 hint */
-+	}
-+
-+	for (i = 0; start < end; start++, i++) {
-+		dest = (void *)start + *start;
-+
-+		pr_devel("patching dest %lx\n", (unsigned long)dest);
-+
-+		patch_instruction(dest, instrs[0]);
-+		patch_instruction(dest + 1, instrs[1]);
-+		patch_instruction(dest + 2, instrs[2]);
-+		patch_instruction(dest + 3, instrs[3]);
-+		patch_instruction(dest + 4, instrs[4]);
-+		patch_instruction(dest + 5, instrs[5]);
-+	}
-+	printk(KERN_DEBUG "stf-barrier: patched %d exit locations (%s barrier)\n", i,
-+		(types == STF_BARRIER_NONE)                  ? "no" :
-+		(types == STF_BARRIER_FALLBACK)              ? "fallback" :
-+		(types == STF_BARRIER_EIEIO)                 ? "eieio" :
-+		(types == (STF_BARRIER_SYNC_ORI))            ? "hwsync"
-+		                                           : "unknown");
-+}
-+
-+
-+void do_stf_barrier_fixups(enum stf_barrier_type types)
-+{
-+	do_stf_entry_barrier_fixups(types);
-+	do_stf_exit_barrier_fixups(types);
-+}
-+
- void do_rfi_flush_fixups(enum l1d_flush_type types)
- {
- 	unsigned int instrs[3], *dest;
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 7de050a3736b..fc0412d59149 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -131,6 +131,7 @@ static void __init pnv_setup_arch(void)
- 	set_arch_panic_timeout(10, ARCH_PANIC_TIMEOUT);
- 
- 	pnv_setup_rfi_flush();
-+	setup_stf_barrier();
- 
- 	/* Initialize SMP */
- 	pnv_smp_init();
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 6b2152839c48..21fed38bbbd5 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -699,6 +699,7 @@ static void __init pSeries_setup_arch(void)
- 	fwnmi_init();
- 
- 	pseries_setup_rfi_flush();
-+	setup_stf_barrier();
- 
- 	/* By default, only probe PCI (can be overridden by rtas_pci) */
- 	pci_add_flags(PCI_PROBE_ONLY);
--- 
-2.14.1
+> 
+> Thanks,
+> Nick
+> 
