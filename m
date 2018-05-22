@@ -3,33 +3,32 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40r2PM35nyzDqx2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 03:16:39 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40r2PN6V0WzDqlp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 03:16:40 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4MHF7W4127113
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 13:16:36 -0400
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j4pd1ks25-1
+ w4MHFMg8020159
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 13:16:38 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j4m00484t-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 13:16:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 13:16:35 -0400
 Received: from localhost
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
- Tue, 22 May 2018 18:16:34 +0100
+ Tue, 22 May 2018 18:16:30 +0100
 From: Sandipan Das <sandipan@linux.vnet.ibm.com>
 To: ast@kernel.org, daniel@iogearbox.net
 Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
  naveen.n.rao@linux.vnet.ibm.com, jakub.kicinski@netronome.com
-Subject: [PATCH bpf-next v3 06/10] tools: bpftool: resolve calls without using
- imm field
-Date: Tue, 22 May 2018 22:46:09 +0530
+Subject: [PATCH bpf-next v3 04/10] bpf: get kernel symbol addresses via syscall
+Date: Tue, 22 May 2018 22:46:07 +0530
 In-Reply-To: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
 References: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
 In-Reply-To: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
 References: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
-Message-Id: <02b16a573269b492d4449c0e587ccc0020973e8c.1527008647.git.sandipan@linux.vnet.ibm.com>
+Message-Id: <c4575f3d547407c020c665e52de5381171746591.1527008646.git.sandipan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,148 +38,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, we resolve the callee's address for a JITed function
-call by using the imm field of the call instruction as an offset
-from __bpf_call_base. If bpf_jit_kallsyms is enabled, we further
-use this address to get the callee's kernel symbol's name.
+This adds new two new fields to struct bpf_prog_info. For
+multi-function programs, these fields can be used to pass
+a list of kernel symbol addresses for all functions in a
+given program to userspace using the bpf system call with
+the BPF_OBJ_GET_INFO_BY_FD command.
 
-For some architectures, such as powerpc64, the imm field is not
-large enough to hold this offset. So, instead of assigning this
-offset to the imm field, the verifier now assigns the subprog
-id. Also, a list of kernel symbol addresses for all the JITed
-functions is provided in the program info. We now use the imm
-field as an index for this list to lookup a callee's symbol's
-address and resolve its name.
+When bpf_jit_kallsyms is enabled, we can get the address
+of the corresponding kernel symbol for a callee function
+and resolve the symbol's name. The address is determined
+by adding the value of the call instruction's imm field
+to __bpf_call_base. This offset gets assigned to the imm
+field by the verifier.
+
+For some architectures, such as powerpc64, the imm field
+is not large enough to hold this offset.
+
+We resolve this by:
+
+[1] Assigning the subprog id to the imm field of a call
+    instruction in the verifier instead of the offset of
+    the callee's symbol's address from __bpf_call_base.
+
+[2] Determining the address of a callee's corresponding
+    symbol by using the imm field as an index for the
+    list of kernel symbol addresses now available from
+    the program info.
 
 Suggested-by: Daniel Borkmann <daniel@iogearbox.net>
 Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
 ---
 v3:
- - Avoid using redundant pointers.
- - Fix indentation.
-
-v2:
- - Order variables from longest to shortest.
- - Make sure that ksyms_ptr and ksyms_len are always initialized.
- - Simplify code.
+ - Copy addresses to jited_ksyms only if bpf_dump_raw_ok()
+   is true.
+ - Move new fields to the end of bpf_prog_info to avoid
+   breaking userspace.
 ---
- tools/bpf/bpftool/prog.c          | 24 ++++++++++++++++++++++++
- tools/bpf/bpftool/xlated_dumper.c | 10 +++++++++-
- tools/bpf/bpftool/xlated_dumper.h |  2 ++
- 3 files changed, 35 insertions(+), 1 deletion(-)
+ include/uapi/linux/bpf.h |  2 ++
+ kernel/bpf/syscall.c     | 25 +++++++++++++++++++++++++
+ kernel/bpf/verifier.c    |  7 +------
+ 3 files changed, 28 insertions(+), 6 deletions(-)
 
-diff --git a/tools/bpf/bpftool/prog.c b/tools/bpf/bpftool/prog.c
-index 9bdfdf2d3fbe..e05ab58d39e2 100644
---- a/tools/bpf/bpftool/prog.c
-+++ b/tools/bpf/bpftool/prog.c
-@@ -420,7 +420,9 @@ static int do_show(int argc, char **argv)
+diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
+index 97446bbe2ca5..c44105f27da9 100644
+--- a/include/uapi/linux/bpf.h
++++ b/include/uapi/linux/bpf.h
+@@ -2205,6 +2205,8 @@ struct bpf_prog_info {
+ 	__u32 gpl_compatible:1;
+ 	__u64 netns_dev;
+ 	__u64 netns_ino;
++	__u32 nr_jited_ksyms;
++	__aligned_u64 jited_ksyms;
+ } __attribute__((aligned(8)));
  
- static int do_dump(int argc, char **argv)
- {
-+	unsigned long *func_ksyms = NULL;
- 	struct bpf_prog_info info = {};
-+	unsigned int nr_func_ksyms;
- 	struct dump_data dd = {};
- 	__u32 len = sizeof(info);
- 	unsigned int buf_size;
-@@ -496,10 +498,22 @@ static int do_dump(int argc, char **argv)
- 		return -1;
+ struct bpf_map_info {
+diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
+index bfcde949c7f8..f0ad4b5f0224 100644
+--- a/kernel/bpf/syscall.c
++++ b/kernel/bpf/syscall.c
+@@ -1933,6 +1933,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+ 	if (!capable(CAP_SYS_ADMIN)) {
+ 		info.jited_prog_len = 0;
+ 		info.xlated_prog_len = 0;
++		info.nr_jited_ksyms = 0;
+ 		goto done;
  	}
  
-+	nr_func_ksyms = info.nr_jited_ksyms;
-+	if (nr_func_ksyms) {
-+		func_ksyms = malloc(nr_func_ksyms * sizeof(__u64));
-+		if (!func_ksyms) {
-+			p_err("mem alloc failed");
-+			close(fd);
-+			goto err_free;
+@@ -1981,6 +1982,30 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
+ 		}
+ 	}
+ 
++	ulen = info.nr_jited_ksyms;
++	info.nr_jited_ksyms = prog->aux->func_cnt;
++	if (info.nr_jited_ksyms && ulen) {
++		if (bpf_dump_raw_ok()) {
++			u64 __user *user_ksyms;
++			ulong ksym_addr;
++			u32 i;
++
++			/* copy the address of the kernel symbol
++			 * corresponding to each function
++			 */
++			ulen = min_t(u32, info.nr_jited_ksyms, ulen);
++			user_ksyms = u64_to_user_ptr(info.jited_ksyms);
++			for (i = 0; i < ulen; i++) {
++				ksym_addr = (ulong) prog->aux->func[i]->bpf_func;
++				ksym_addr &= PAGE_MASK;
++				if (put_user((u64) ksym_addr, &user_ksyms[i]))
++					return -EFAULT;
++			}
++		} else {
++			info.jited_ksyms = 0;
 +		}
 +	}
 +
- 	memset(&info, 0, sizeof(info));
- 
- 	*member_ptr = ptr_to_u64(buf);
- 	*member_len = buf_size;
-+	info.jited_ksyms = ptr_to_u64(func_ksyms);
-+	info.nr_jited_ksyms = nr_func_ksyms;
- 
- 	err = bpf_obj_get_info_by_fd(fd, &info, &len);
- 	close(fd);
-@@ -513,6 +527,11 @@ static int do_dump(int argc, char **argv)
- 		goto err_free;
+ done:
+ 	if (copy_to_user(uinfo, &info, info_len) ||
+ 	    put_user(info_len, &uattr->info.info_len))
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index 559cb74ba29e..8c4d9d0fd3ab 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -5426,17 +5426,12 @@ static int jit_subprogs(struct bpf_verifier_env *env)
+ 	 * later look the same as if they were interpreted only.
+ 	 */
+ 	for (i = 0, insn = prog->insnsi; i < prog->len; i++, insn++) {
+-		unsigned long addr;
+-
+ 		if (insn->code != (BPF_JMP | BPF_CALL) ||
+ 		    insn->src_reg != BPF_PSEUDO_CALL)
+ 			continue;
+ 		insn->off = env->insn_aux_data[i].call_imm;
+ 		subprog = find_subprog(env, i + insn->off + 1);
+-		addr  = (unsigned long)func[subprog]->bpf_func;
+-		addr &= PAGE_MASK;
+-		insn->imm = (u64 (*)(u64, u64, u64, u64, u64))
+-			    addr - __bpf_call_base;
++		insn->imm = subprog;
  	}
  
-+	if (info.nr_jited_ksyms > nr_func_ksyms) {
-+		p_err("too many addresses returned");
-+		goto err_free;
-+	}
-+
- 	if ((member_len == &info.jited_prog_len &&
- 	     info.jited_prog_insns == 0) ||
- 	    (member_len == &info.xlated_prog_len &&
-@@ -558,6 +577,9 @@ static int do_dump(int argc, char **argv)
- 			dump_xlated_cfg(buf, *member_len);
- 	} else {
- 		kernel_syms_load(&dd);
-+		dd.nr_jited_ksyms = info.nr_jited_ksyms;
-+		dd.jited_ksyms = (__u64 *) info.jited_ksyms;
-+
- 		if (json_output)
- 			dump_xlated_json(&dd, buf, *member_len, opcodes);
- 		else
-@@ -566,10 +588,12 @@ static int do_dump(int argc, char **argv)
- 	}
- 
- 	free(buf);
-+	free(func_ksyms);
- 	return 0;
- 
- err_free:
- 	free(buf);
-+	free(func_ksyms);
- 	return -1;
- }
- 
-diff --git a/tools/bpf/bpftool/xlated_dumper.c b/tools/bpf/bpftool/xlated_dumper.c
-index 7a3173b76c16..efdc8fecf2bb 100644
---- a/tools/bpf/bpftool/xlated_dumper.c
-+++ b/tools/bpf/bpftool/xlated_dumper.c
-@@ -174,7 +174,11 @@ static const char *print_call_pcrel(struct dump_data *dd,
- 				    unsigned long address,
- 				    const struct bpf_insn *insn)
- {
--	if (sym)
-+	if (!dd->nr_jited_ksyms)
-+		/* Do not show address for interpreted programs */
-+		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
-+			"%+d", insn->off);
-+	else if (sym)
- 		snprintf(dd->scratch_buff, sizeof(dd->scratch_buff),
- 			 "%+d#%s", insn->off, sym->name);
- 	else
-@@ -203,6 +207,10 @@ static const char *print_call(void *private_data,
- 	unsigned long address = dd->address_call_base + insn->imm;
- 	struct kernel_sym *sym;
- 
-+	if (insn->src_reg == BPF_PSEUDO_CALL &&
-+	    (__u32) insn->imm < dd->nr_jited_ksyms)
-+		address = dd->jited_ksyms[insn->imm];
-+
- 	sym = kernel_syms_search(dd, address);
- 	if (insn->src_reg == BPF_PSEUDO_CALL)
- 		return print_call_pcrel(dd, sym, address, insn);
-diff --git a/tools/bpf/bpftool/xlated_dumper.h b/tools/bpf/bpftool/xlated_dumper.h
-index b34affa7ef2d..eafbb49c8d0b 100644
---- a/tools/bpf/bpftool/xlated_dumper.h
-+++ b/tools/bpf/bpftool/xlated_dumper.h
-@@ -49,6 +49,8 @@ struct dump_data {
- 	unsigned long address_call_base;
- 	struct kernel_sym *sym_mapping;
- 	__u32 sym_count;
-+	__u64 *jited_ksyms;
-+	__u32 nr_jited_ksyms;
- 	char scratch_buff[SYM_MAX_NAME + 8];
- };
- 
+ 	prog->jited = 1;
 -- 
 2.14.3
