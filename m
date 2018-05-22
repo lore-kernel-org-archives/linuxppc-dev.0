@@ -1,35 +1,35 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40r8Dw0L4LzDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 07:39:43 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rBqH5C28zDqrM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 09:36:11 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4MLcWUq074276
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:39:41 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j4tsb9522-1
+ w4MNYKEl111123
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:36:09 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j4qqvck0x-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:39:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:36:08 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 22 May 2018 15:39:40 -0600
-Subject: Re: [RFC v4 4/4] hotplug/drcinfo: Code cleanup for devices
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 22 May 2018 17:36:08 -0600
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-References: <3912e8ff-0361-bc42-b8bd-ed1c4d24e218@linux.vnet.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 22 May 2018 16:39:35 -0500
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [RFC v6 0/6] powerpc/hotplug: Fix affinity assoc for LPAR migration
+To: linuxppc-dev@lists.ozlabs.org
+Date: Tue, 22 May 2018 18:36:02 -0500
 MIME-Version: 1.0
-In-Reply-To: <3912e8ff-0361-bc42-b8bd-ed1c4d24e218@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <048197e9-f24f-b51d-0b9f-40d66b243f19@linux.vnet.ibm.com>
+Message-Id: <4b1138ff-4ca0-bdce-26cc-b42191258017@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,273 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/22/2018 11:37 AM, Michael Bringmann wrote:
-> This patch extends the use of a common parse function for the
-> ibm,drc-info property that can be modified by a callback function
-> to the hotplug device processing.  Candidate code is replaced by
-> a call to the parser including a pointer to a local context-specific
-> functions, and local data.
-> 
-> In addition, several more opportunities to compress and reuse
-> common code between the old and new property parsers were applied.
-> 
-> Finally, a bug with the registration of slots was observed on some
-> systems, and the code was rewritten to prevent its reoccurrence.
-> 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmwar
-> e feature" -- end of patch series applied to powerpc next)
-> ---
-> Changes in V4:
->   -- Update code to account for latest kernel checkins.
->   -- Fix bug searching for virtual device slots.
->   -- Rebased to 4.17-rc5 kernel
->   -- Patch cleanup
-> ---
->  drivers/pci/hotplug/rpaphp_core.c |  181 ++++++++++++++++++++++++++-----------
->  1 file changed, 126 insertions(+), 55 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
-> index 435c1a0..dc4ec68 100644
-> --- a/drivers/pci/hotplug/rpaphp_core.c
-> +++ b/drivers/pci/hotplug/rpaphp_core.c
-> @@ -222,47 +222,51 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
->  	return -EINVAL;
->  }
-> 
-> -static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
-> -				char *drc_type, unsigned int my_index)
-> +struct check_drc_props_v2_struct {
-> +	char *drc_name;
-> +	char *drc_type;
-> +	unsigned int my_index;
-> +};
-> +
-> +static int check_drc_props_v2_cb(struct of_drc_info *drc, void *idata,
-> +				void *not_used, int *ret_code)
->  {
-> -	struct property *info;
-> -	unsigned int entries;
-> -	struct of_drc_info drc;
-> -	const __be32 *value;
-> +	struct check_drc_props_v2_struct *cdata = idata;
->  	char cell_drc_name[MAX_DRC_NAME_LEN];
-> -	int j, fndit;
-> 
-> -	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
-> -	if (info == NULL)
-> -		return -EINVAL;
-> +	(*ret_code) = -EINVAL;
-> 
-> -	value = info->value;
-> -	entries = of_read_number(value++, 1);
-> -
-> -	for (j = 0; j < entries; j++) {
-> -		of_read_drc_info_cell(&info, &value, &drc);
-> -
-> -		/* Should now know end of current entry */
-> -
-> -		if (my_index > drc.last_drc_index)
-> -			continue;
-> +	if (cdata->my_index > drc->last_drc_index)
-> +		return 0;
-> 
-> -		fndit = 1;
-> -		break;
-> +	/* Found drc_index.  Now match the rest. */
-> +	sprintf(cell_drc_name, "%s%d", drc->drc_name_prefix,
-> +		cdata->my_index - drc->drc_index_start +
-> +		drc->drc_name_suffix_start);
-> +
-> +	if (((cdata->drc_name == NULL) ||
-> +	     (cdata->drc_name && !strcmp(cdata->drc_name, cell_drc_name))) &&
-> +	    ((cdata->drc_type == NULL) ||
-> +	     (cdata->drc_type && !strcmp(cdata->drc_type, drc->drc_type)))) {
-> +		(*ret_code) = 0;
-> +		return 1;
->  	}
-> -	/* Found it */
-> 
-> -	if (fndit)
-> -		sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix, 
-> -			my_index);
-> +	return 0;
-> +}
-> 
-> -	if (((drc_name == NULL) ||
-> -	     (drc_name && !strcmp(drc_name, cell_drc_name))) &&
-> -	    ((drc_type == NULL) ||
-> -	     (drc_type && !strcmp(drc_type, drc.drc_type))))
-> -		return 0;
-> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
-> +				char *drc_type, unsigned int my_index)
-> +{
-> +	struct device_node *root = dn;
-> +	struct check_drc_props_v2_struct cdata = {
-> +		drc_name, drc_type, be32_to_cpu(my_index) };
-> 
-> -	return -EINVAL;
-> +	if (!drc_type || (drc_type && strcmp(drc_type, "SLOT")))
-> +		root = dn->parent;
-> +
-> +	return drc_info_parser(root, check_drc_props_v2_cb,
-> +				drc_type, &cdata);
->  }
-> 
->  int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
-> @@ -285,7 +289,6 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->  }
->  EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
-> 
-> -
->  static int is_php_type(char *drc_type)
->  {
->  	unsigned long value;
-> @@ -345,17 +348,41 @@ static int is_php_dn(struct device_node *dn, const int **indexes,
->   *
->   * To remove a slot, it suffices to call rpaphp_deregister_slot().
->   */
-> -int rpaphp_add_slot(struct device_node *dn)
-> +
-> +static int rpaphp_add_slot_common(struct device_node *dn,
-> +			u32 drc_index, char *drc_name, char *drc_type,
-> +			u32 drc_power_domain)
->  {
->  	struct slot *slot;
->  	int retval = 0;
-> -	int i;
-> +
-> +	slot = alloc_slot_struct(dn, drc_index, drc_name, drc_power_domain);
-> +	if (!slot)
-> +		return -ENOMEM;
-> +
-> +	slot->type = simple_strtoul(drc_type, NULL, 10);
-> +	if (retval)
-> +		return -EINVAL;
-> +
-> +	dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
-> +		drc_index, drc_name, drc_type);
-> +
-> +	retval = rpaphp_enable_slot(slot);
-> +	if (!retval)
-> +		retval = rpaphp_register_slot(slot);
-> +
-> +	if (retval)
-> +		dealloc_slot_struct(slot);
-> +
-> +	return retval;
-> +}
-> +
-> +static int rpaphp_add_slot_v1(struct device_node *dn)
-> +{
-> +	int i, retval = 0;
->  	const int *indexes, *names, *types, *power_domains;
->  	char *name, *type;
-> 
-> -	if (!dn->name || strcmp(dn->name, "pci"))
-> -		return 0;
-> -
->  	/* If this is not a hotplug slot, return without doing anything. */
->  	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
->  		return 0;
-> @@ -366,25 +393,12 @@ int rpaphp_add_slot(struct device_node *dn)
->  	name = (char *) &names[1];
->  	type = (char *) &types[1];
->  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
-> -		int index;
-> -
-> -		index = be32_to_cpu(indexes[i + 1]);
-> -		slot = alloc_slot_struct(dn, index, name,
-> -					 be32_to_cpu(power_domains[i + 1]));
-> -		if (!slot)
-> -			return -ENOMEM;
-> -
-> -		slot->type = simple_strtoul(type, NULL, 10);
-> 
-> -		dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
-> -				index, name, type);
-> -
-> -		retval = rpaphp_enable_slot(slot);
-> +		retval = rpaphp_add_slot_common(dn,
-> +				be32_to_cpu(indexes[i + 1]), name, type,
-> +				be32_to_cpu(power_domains[i + 1]));
->  		if (!retval)
-> -			retval = rpaphp_register_slot(slot);
-> -
-> -		if (retval)
-> -			dealloc_slot_struct(slot);
-> +			return retval;
-> 
->  		name += strlen(name) + 1;
->  		type += strlen(type) + 1;
-> @@ -394,6 +408,63 @@ int rpaphp_add_slot(struct device_node *dn)
->  	/* XXX FIXME: reports a failure only if last entry in loop failed */
->  	return retval;
->  }
-> +
-> +struct rpaphp_add_slot_v2_struct {
-> +	struct device_node *dn;
-> +};
-> +
-> +static int rpaphp_add_slot_v2_cb(struct of_drc_info *drc, void *idata,
-> +				void *not_used, int *ret_code)
-> +{
-> +	struct rpaphp_add_slot_v2_struct *cdata = idata;
-> +	u32 drc_index;
-> +	char drc_name[MAX_DRC_NAME_LEN];
-> +	int i, retval;
-> +
-> +	(*ret_code) = -EINVAL;
-> +
-> +	if (!is_php_type((char *) drc->drc_type)) {
-> +		(*ret_code) = 0;
-> +		return 1;
-> +	}
-> +
-> +	for (i = 0, drc_index = drc->drc_index_start;
-> +		i < drc->num_sequential_elems; i++, drc_index++) {
-> +
-> +		sprintf(drc_name, "%s%d", drc->drc_name_prefix,
-> +			drc_index - drc->drc_index_start +
-> +			drc->drc_name_suffix_start);
-> +
-> +		retval = rpaphp_add_slot_common(cdata->dn,
-> +				drc_index, drc_name, drc->drc_type,
-> +				drc->drc_power_domain);
-> +		if (!retval) {
-> +			(*ret_code) = retval;
-> +			return 1;
-> +		}
-> +	}
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of memory blocks and CPUs.  The
+patches in this set execute when a system is coming up fresh upon a
+migration target.  They are intended to,
 
-I may be reading this loop wrong, but it appears that it will add all drc indexes
-for all drc_info entries to the specified device node, minus drc-types that don't match.
+* Recognize changes to the associativity of memory and CPUs recorded
+  in internal data structures when compared to the latest copies in
+  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2,
+  cpus),
+* Recognize changes to the associativity mapping (e.g. ibm,
+  associativity-lookup-arrays), locate all assigned memory blocks
+  corresponding to each changed row, and readd all such blocks.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of the CPUs and memory.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of CPUs and memory blocks mostly entails acting as
+  if they have been newly hot-added into the target system.
 
--Nathan
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
-> +
-> +	(*ret_code) = retval;
-> +	return 0;
-> +}
-> +
-> +static int rpaphp_add_slot_v2(struct device_node *dn)
-> +{
-> +	struct rpaphp_add_slot_v2_struct cdata = { dn };
-> +
-> +	return drc_info_parser(dn, rpaphp_add_slot_v2_cb, NULL, &cdata);
-> +}
-> +
-> +int rpaphp_add_slot(struct device_node *dn)
-> +{
-> +	if (!dn->name || strcmp(dn->name, "pci"))
-> +		return 0;
-> +
-> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
-> +		return rpaphp_add_slot_v2(dn);
-> +	else
-> +		return rpaphp_add_slot_v1(dn);
-> +}
->  EXPORT_SYMBOL_GPL(rpaphp_add_slot);
-> 
->  static void __exit cleanup_slots(void)
-> 
+Michael Bringmann (3):
+  powerpc migration/drmem: Modify DRMEM code to export more features
+  powerpc migration/cpu: Associativity & cpu changes
+  powerpc migration/memory: Associativity & memory updates
+---
+Changes in RFC:
+  -- Restructure and rearrange content of patches to co-locate
+     similar or related modifications
+  -- Rename pseries_update_drconf_cpu to pseries_update_cpu
+  -- Simplify code to update CPU nodes during mobility checks.
+     Remove functions to generate extra HP_ELOG messages in favor
+     of direct function calls to dlpar_cpu_readd_by_index, or
+     dlpar_memory_readd_by_index.
+  -- Revise code order in dlpar_cpu_readd_by_index() to present
+     more appropriate error codes from underlying layers of the
+     implementation.
+  -- Add hotplug device lock around all property updates
+  -- Schedule all CPU and memory changes due to device-tree updates /
+     LPAR mobility as workqueue operations
+  -- Export DRMEM accessor functions to parse 'ibm,dynamic-memory-v2'
+  -- Export DRMEM functions to provide user copies of LMB array
+  -- Compress code using DRMEM accessor functions.
+  -- Split topology timer crash fix into new patch.
+  -- Modify DRMEM code to replace usages of dt_root_addr_cells, and
+     dt_mem_next_cell, as these are only available at first boot.
+  -- Correct a bug in DRC index selection for queued operation.
+  -- Rebase to 4.17-rc5 kernel
+  -- Minor code cleanups
+  -- Correct drc_index for worker fn invocation
