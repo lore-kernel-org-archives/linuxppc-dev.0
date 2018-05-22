@@ -1,34 +1,18 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qzdp30NTzDqyp
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 01:12:14 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4MFAOaA088724
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 11:12:11 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j4m82mrhw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 11:12:11 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 22 May 2018 09:12:10 -0600
-Subject: Re: [PATCH] pseries/memory-hotplug: Only update DT once per memory
- DLPAR request
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: jallen@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>
-References: <152425618836.15614.7060070452480906952.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Date: Tue, 22 May 2018 10:12:06 -0500
-MIME-Version: 1.0
-In-Reply-To: <152425618836.15614.7060070452480906952.stgit@ltcalpine2-lp14.aus.stglabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <d79ee1ae-7df8-30e2-3253-4312237e9a6c@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40r0rv3L4fzDqL4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 02:06:55 +1000 (AEST)
+Message-Id: <cover.1527004752.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 0/3] powerpc/lib: Optimisation of string functions for
+ PPC32 - part 1
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ segher@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 22 May 2018 18:06:49 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,165 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+This serie intends to optimise string functions for PPC32 in the
+same spirit as already done on PPC64.
 
-I sent this patch out several weeks ago, just wanted to make sure it hasn't fallen
-off your radar.
+The first patch moves PPC32 specific functions from string.S into
+a dedicated file named string_32.S
+The second patch rewrites __clear_user() by using dcbz intruction
+The third patch rewrites memcmp() to compare 32 bits words instead
+of comparing byte per byte.
 
-Thanks,
--Nathan
+As shown in each individual commit log, second and third patches provide
+significant improvment.
 
-On 04/20/2018 03:29 PM, Nathan Fontenot wrote:
-> The updates to powerpc numa and memory hotplug code now use the
-> in-kernel LMB array instead of the device tree. This change
-> allows the pseries memory DLPAR code to only update the device
-> tree once after successfully handling a DLPAR request.
-> 
-> Prior to the in-kernel LMB array, the numa code looked up the
-> affinity for memory being added in the device tree, the code
-> now looks this up in the LMB array. This change means the
-> memory hotplug code can just update the affinity for an LMB
-> in the LMB array instead of updating the device tree.
-> 
-> This also provides a savings in kernel memory. When updating the
-> device tree old properties are never free'ed since there is no
-> usecount on properties. This behavior leads to a new copy of the
-> property being allocated every time a LMB is added or removed
-> (i.e. a request to add 100 LMBs creates 100 new copies of the
-> property). With this update only a single new property is created
-> when a DLPAR request completes successfully.
-> 
-> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/drmem.h                |    5 ++
->  arch/powerpc/platforms/pseries/hotplug-memory.c |   55 +++++++----------------
->  2 files changed, 21 insertions(+), 39 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-> index ce242b9ea8c6..7c1d8e74b25d 100644
-> --- a/arch/powerpc/include/asm/drmem.h
-> +++ b/arch/powerpc/include/asm/drmem.h
-> @@ -99,4 +99,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
->  			void (*func)(struct drmem_lmb *, const __be32 **));
->  #endif
-> 
-> +static inline void invalidate_lmb_associativity_index(struct drmem_lmb *lmb)
-> +{
-> +	lmb->aa_index = 0xffffffff;
-> +}
-> +
->  #endif /* _ASM_POWERPC_LMB_H */
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index c1578f54c626..9a15d39995e5 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -163,7 +163,7 @@ static u32 find_aa_index(struct device_node *dr_node,
->  	return aa_index;
->  }
-> 
-> -static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
-> +static int update_lmb_associativity_index(struct drmem_lmb *lmb)
->  {
->  	struct device_node *parent, *lmb_node, *dr_node;
->  	struct property *ala_prop;
-> @@ -203,43 +203,14 @@ static u32 lookup_lmb_associativity_index(struct drmem_lmb *lmb)
->  	aa_index = find_aa_index(dr_node, ala_prop, lmb_assoc);
-> 
->  	dlpar_free_cc_nodes(lmb_node);
-> -	return aa_index;
-> -}
-> -
-> -static int dlpar_add_device_tree_lmb(struct drmem_lmb *lmb)
-> -{
-> -	int rc, aa_index;
-> -
-> -	lmb->flags |= DRCONF_MEM_ASSIGNED;
-> 
-> -	aa_index = lookup_lmb_associativity_index(lmb);
->  	if (aa_index < 0) {
-> -		pr_err("Couldn't find associativity index for drc index %x\n",
-> -		       lmb->drc_index);
-> -		return aa_index;
-> +		pr_err("Could not find LMB associativity\n");
-> +		return -1;
->  	}
-> 
->  	lmb->aa_index = aa_index;
-> -
-> -	rtas_hp_event = true;
-> -	rc = drmem_update_dt();
-> -	rtas_hp_event = false;
-> -
-> -	return rc;
-> -}
-> -
-> -static int dlpar_remove_device_tree_lmb(struct drmem_lmb *lmb)
-> -{
-> -	int rc;
-> -
-> -	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
-> -	lmb->aa_index = 0xffffffff;
-> -
-> -	rtas_hp_event = true;
-> -	rc = drmem_update_dt();
-> -	rtas_hp_event = false;
-> -
-> -	return rc;
-> +	return 0;
->  }
-> 
->  static struct memory_block *lmb_to_memblock(struct drmem_lmb *lmb)
-> @@ -428,7 +399,9 @@ static int dlpar_remove_lmb(struct drmem_lmb *lmb)
->  	/* Update memory regions for memory remove */
->  	memblock_remove(lmb->base_addr, block_sz);
-> 
-> -	dlpar_remove_device_tree_lmb(lmb);
-> +	invalidate_lmb_associativity_index(lmb);
-> +	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
-> +
->  	return 0;
->  }
-> 
-> @@ -688,10 +661,8 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
->  	if (lmb->flags & DRCONF_MEM_ASSIGNED)
->  		return -EINVAL;
-> 
-> -	rc = dlpar_add_device_tree_lmb(lmb);
-> +	rc = update_lmb_associativity_index(lmb);
->  	if (rc) {
-> -		pr_err("Couldn't update device tree for drc index %x\n",
-> -		       lmb->drc_index);
->  		dlpar_release_drc(lmb->drc_index);
->  		return rc;
->  	}
-> @@ -704,14 +675,14 @@ static int dlpar_add_lmb(struct drmem_lmb *lmb)
->  	/* Add the memory */
->  	rc = add_memory(nid, lmb->base_addr, block_sz);
->  	if (rc) {
-> -		dlpar_remove_device_tree_lmb(lmb);
-> +		invalidate_lmb_associativity_index(lmb);
->  		return rc;
->  	}
-> 
->  	rc = dlpar_online_lmb(lmb);
->  	if (rc) {
->  		remove_memory(nid, lmb->base_addr, block_sz);
-> -		dlpar_remove_device_tree_lmb(lmb);
-> +		invalidate_lmb_associativity_index(lmb);
->  	} else {
->  		lmb->flags |= DRCONF_MEM_ASSIGNED;
->  	}
-> @@ -958,6 +929,12 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
->  		break;
->  	}
-> 
-> +	if (!rc) {
-> +		rtas_hp_event = true;
-> +		rc = drmem_update_dt();
-> +		rtas_hp_event = false;
-> +	}
-> +
->  	unlock_device_hotplug();
->  	return rc;
->  }
-> 
+Changes in v3:
+- Fixed the sign of the result returned by memcmp() by using a logical
+comparison of u32 words and returning -1, 0 or 1 instead of doing a substract.
+- In first patch, replaced PPC_LCMPI by cmpwi
+- Fixed licence in string_32.S
+- Removed the two last patches from the serie. They will be handled later as
+they require further tests and analysis to properly identify their real benefit
+in all possible cases.
+
+Changes in v2:
+- Moved out the patch removing the hot loop alignment on PPC32
+- Squashed the changes related to NUL size verification in a single patch
+- Reordered the patches in a more logical order
+- Modified the inlining patch to avoid warning about impossibility to version symbols.
+
+Christophe Leroy (3):
+  powerpc/lib: move PPC32 specific functions out of string.S
+  powerpc/lib: optimise 32 bits __clear_user()
+  powerpc/lib: optimise PPC32 memcmp
+
+ arch/powerpc/lib/Makefile    |   5 +-
+ arch/powerpc/lib/string.S    |  61 -------------------
+ arch/powerpc/lib/string_32.S | 140 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 143 insertions(+), 63 deletions(-)
+ create mode 100644 arch/powerpc/lib/string_32.S
+
+-- 
+2.13.3
