@@ -3,42 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rC2w113CzDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 09:46:15 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rC743hCTzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 09:49:52 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4MNiVDW143784
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:46:13 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j4qqvcyy5-1
+ w4MNmXcE068983
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:49:50 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j4qsrw1mh-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:46:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:49:50 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 22 May 2018 17:46:12 -0600
-Received: from b03ledav003.gho.boulder.ibm.com
- (b03ledav003.gho.boulder.ibm.com [9.17.130.234])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w4MNkAWO13828526
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 16:46:10 -0700
-Received: from b03ledav003.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A0BB76A03C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:46:10 -0600 (MDT)
-Received: from oc5000245537.ibm.com (unknown [9.53.92.187])
- by b03ledav003.gho.boulder.ibm.com (Postfix) with ESMTP id 770486A03B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:46:10 -0600 (MDT)
-Subject: Re: [RFC v5 2/6] powerpc/cpu: Conditionally acquire/release DRC index
-To: linuxppc-dev@lists.ozlabs.org
-References: <70c6aae1-6f91-45d5-361b-0d066101d3d0@linux.vnet.ibm.com>
- <f1b2b32c-d8bb-4e25-6272-1fc41ffe1502@linux.vnet.ibm.com>
+ Tue, 22 May 2018 17:49:49 -0600
+Subject: Re: [RFC v5 3/6] migration/dlpar: Add device readd queuing function
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+References: <a44f908b-03f9-9042-afaa-2a8bb593db4b@linux.vnet.ibm.com>
+ <0445c87f-1ab3-7b03-6956-56d4c1beab80@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 22 May 2018 18:46:10 -0500
+Date: Tue, 22 May 2018 18:49:45 -0500
 MIME-Version: 1.0
-In-Reply-To: <f1b2b32c-d8bb-4e25-6272-1fc41ffe1502@linux.vnet.ibm.com>
+In-Reply-To: <0445c87f-1ab3-7b03-6956-56d4c1beab80@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <4cc2c20c-4aa4-7f2b-f446-46d1a2a53bb9@linux.vnet.ibm.com>
+Message-Id: <4fc25f65-cb64-f52e-8701-51497849bee2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,233 +40,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Okay.  Moving validity check mentioned at bottom of patch to 4/6,
-Provide CPU readd operation.
 
-On 05/22/2018 03:17 PM, Nathan Fontenot wrote:
+
+On 05/22/2018 03:24 PM, Thomas Falcon wrote:
 > On 05/21/2018 12:52 PM, Michael Bringmann wrote:
->> powerpc/cpu: Modify dlpar_cpu_add and dlpar_cpu_remove to allow the
->> skipping of DRC index acquire or release operations during the CPU
->> add or remove operations.  This is intended to support subsequent
->> changes to provide a 'CPU readd' operation.
+>> migration/dlpar: This patch adds function dlpar_readd_action()
+>> which will queue a worker function to 'readd' a device in the
+>> system.  Such devices must be identified by a 'resource' type
+>> and a drc_index to be readded.
+> 
+> The function in the commit message and the patch have different names. The patch seems to queue a generic action instead of a readd.  The commit message needs to be updated to describe this new function.
+> 
+> Tom
+
+Fixed.
+
+Michael
+> 
 >>
 >> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 >> ---
->>  arch/powerpc/platforms/pseries/hotplug-cpu.c |   71 +++++++++++++++-----------
->>  1 file changed, 42 insertions(+), 29 deletions(-)
+>>  arch/powerpc/platforms/pseries/dlpar.c   |   14 ++++++++++++++
+>>  arch/powerpc/platforms/pseries/pseries.h |    1 +
+>>  2 files changed, 15 insertions(+)
 >>
->> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> index a408217..ec78cc6 100644
->> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
->> @@ -474,7 +474,7 @@ static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
->>  				&cdata);
+>> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+>> index a0b20c0..a14684e 100644
+>> --- a/arch/powerpc/platforms/pseries/dlpar.c
+>> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+>> @@ -407,6 +407,20 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+>>  	}
 >>  }
 >>
->> -static ssize_t dlpar_cpu_add(u32 drc_index)
->> +static ssize_t dlpar_cpu_add(u32 drc_index, bool acquire_drc)
+>> +int dlpar_queue_action(int resource, int action, u32 drc_index)
+>> +{
+>> +	struct pseries_hp_errorlog hp_elog;
+>> +
+>> +	hp_elog.resource = resource;
+>> +	hp_elog.action = action;
+>> +	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+>> +	hp_elog._drc_u.drc_index = drc_index;
+>> +
+>> +	queue_hotplug_event(&hp_elog, NULL, NULL);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>  static int dlpar_parse_resource(char **cmd, struct pseries_hp_errorlog *hp_elog)
 >>  {
->>  	struct device_node *dn, *parent;
->>  	int rc, saved_rc;
->> @@ -499,19 +499,22 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->>  		return -EINVAL;
->>  	}
+>>  	char *arg;
+>> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+>> index 60db2ee..cb2beb1 100644
+>> --- a/arch/powerpc/platforms/pseries/pseries.h
+>> +++ b/arch/powerpc/platforms/pseries/pseries.h
+>> @@ -61,6 +61,7 @@ extern struct device_node *dlpar_configure_connector(__be32,
 >>
->> -	rc = dlpar_acquire_drc(drc_index);
->> -	if (rc) {
->> -		pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
->> -			rc, drc_index);
->> -		of_node_put(parent);
->> -		return -EINVAL;
->> +	if (acquire_drc) {
->> +		rc = dlpar_acquire_drc(drc_index);
->> +		if (rc) {
->> +			pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
->> +				rc, drc_index);
->> +			of_node_put(parent);
->> +			return -EINVAL;
->> +		}
->>  	}
->>
->>  	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
->>  	if (!dn) {
->>  		pr_warn("Failed call to configure-connector, drc index: %x\n",
->>  			drc_index);
->> -		dlpar_release_drc(drc_index);
->> +		if (acquire_drc)
->> +			dlpar_release_drc(drc_index);
->>  		of_node_put(parent);
->>  		return -EINVAL;
->>  	}
->> @@ -526,8 +529,9 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->>  		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
->>  			dn->name, rc, drc_index);
->>
->> -		rc = dlpar_release_drc(drc_index);
->> -		if (!rc)
->> +		if (acquire_drc)
->> +			rc = dlpar_release_drc(drc_index);
->> +		if (!rc || acquire_drc)
->>  			dlpar_free_cc_nodes(dn);
->>
->>  		return saved_rc;
->> @@ -540,7 +544,7 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
->>  			dn->name, rc, drc_index);
->>
->>  		rc = dlpar_detach_node(dn);
->> -		if (!rc)
->> +		if (!rc && acquire_drc)
->>  			dlpar_release_drc(drc_index);
->>
->>  		return saved_rc;
->> @@ -608,7 +612,8 @@ static int dlpar_offline_cpu(struct device_node *dn)
->>
->>  }
->>
->> -static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->> +static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index,
->> +				bool release_drc)
->>  {
->>  	int rc;
->>
->> @@ -621,12 +626,14 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->>  		return -EINVAL;
->>  	}
->>
->> -	rc = dlpar_release_drc(drc_index);
->> -	if (rc) {
->> -		pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
->> -			drc_index, dn->name, rc);
->> -		dlpar_online_cpu(dn);
->> -		return rc;
->> +	if (release_drc) {
->> +		rc = dlpar_release_drc(drc_index);
->> +		if (rc) {
->> +			pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
->> +				drc_index, dn->name, rc);
->> +			dlpar_online_cpu(dn);
->> +			return rc;
->> +		}
->>  	}
->>
->>  	rc = dlpar_detach_node(dn);
->> @@ -635,7 +642,10 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
->>
->>  		pr_warn("Failed to detach CPU %s, rc: %d", dn->name, rc);
->>
->> -		rc = dlpar_acquire_drc(drc_index);
->> +		if (release_drc)
->> +			rc = dlpar_acquire_drc(drc_index);
->> +		else
->> +			rc = 0;
->>  		if (!rc)
->>  			dlpar_online_cpu(dn);
->>
->> @@ -664,7 +674,7 @@ static struct device_node *cpu_drc_index_to_dn(u32 drc_index)
->>  	return dn;
->>  }
->>
->> -static int dlpar_cpu_remove_by_index(u32 drc_index)
->> +static int dlpar_cpu_remove_by_index(u32 drc_index, bool release_drc)
->>  {
->>  	struct device_node *dn;
->>  	int rc;
->> @@ -676,7 +686,7 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
->>  		return -ENODEV;
->>  	}
->>
->> -	rc = dlpar_cpu_remove(dn, drc_index);
->> +	rc = dlpar_cpu_remove(dn, drc_index, release_drc);
->>  	of_node_put(dn);
->>  	return rc;
->>  }
->> @@ -741,7 +751,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
->>  	}
->>
->>  	for (i = 0; i < cpus_to_remove; i++) {
->> -		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
->> +		rc = dlpar_cpu_remove_by_index(cpu_drcs[i], true);
->>  		if (rc)
->>  			break;
->>
->> @@ -752,7 +762,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
->>  		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
->>
->>  		for (i = 0; i < cpus_removed; i++)
->> -			dlpar_cpu_add(cpu_drcs[i]);
->> +			dlpar_cpu_add(cpu_drcs[i], true);
->>
->>  		rc = -EINVAL;
->>  	} else {
->> @@ -843,7 +853,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
->>  	}
->>
->>  	for (i = 0; i < cpus_to_add; i++) {
->> -		rc = dlpar_cpu_add(cpu_drcs[i]);
->> +		rc = dlpar_cpu_add(cpu_drcs[i], true);
->>  		if (rc)
->>  			break;
->>
->> @@ -854,7 +864,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
->>  		pr_warn("CPU hot-add failed, removing any added CPUs\n");
->>
->>  		for (i = 0; i < cpus_added; i++)
->> -			dlpar_cpu_remove_by_index(cpu_drcs[i]);
->> +			dlpar_cpu_remove_by_index(cpu_drcs[i], true);
->>
->>  		rc = -EINVAL;
->>  	} else {
->> @@ -880,7 +890,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->>  		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
->>  			rc = dlpar_cpu_remove_by_count(count);
->>  		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
->> -			rc = dlpar_cpu_remove_by_index(drc_index);
->> +			rc = dlpar_cpu_remove_by_index(drc_index, true);
->>  		else
->>  			rc = -EINVAL;
->>  		break;
->> @@ -888,7 +898,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
->>  		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
->>  			rc = dlpar_cpu_add_by_count(count);
->>  		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
->> -			rc = dlpar_cpu_add(drc_index);
->> +			rc = dlpar_cpu_add(drc_index, true);
->>  		else
->>  			rc = -EINVAL;
->>  		break;
->> @@ -913,7 +923,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
->>  	if (rc)
->>  		return -EINVAL;
->>
->> -	rc = dlpar_cpu_add(drc_index);
->> +	rc = dlpar_cpu_add(drc_index, true);
->>
->>  	return rc ? rc : count;
->>  }
->> @@ -934,7 +944,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
->>  		return -EINVAL;
->>  	}
->>
->> -	rc = dlpar_cpu_remove(dn, drc_index);
->> +	rc = dlpar_cpu_remove(dn, drc_index, true);
->>  	of_node_put(dn);
->>
->>  	return rc ? rc : count;
->> @@ -948,6 +958,9 @@ static int pseries_smp_notifier(struct notifier_block *nb,
->>  	struct of_reconfig_data *rd = data;
->>  	int err = 0;
->>
->> +	if (strcmp(rd->dn->type, "cpu"))
->> +		return notifier_from_errno(err);> +
+>>  void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
+>>  			 struct completion *hotplug_done, int *rc);
+>> +extern int dlpar_queue_action(int resource, int action, u32 drc_index);
+>>  #ifdef CONFIG_MEMORY_HOTPLUG
+>>  int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
+>>  #else
 > 
-> This last change doesn't seem to fit in this patch, should this be a part of a different patch?
-> 
-> -Nathan
-> 
->>  	switch (action) {
->>  	case OF_RECONFIG_ATTACH_NODE:
->>  		err = pseries_add_processor(rd->dn);
->>
 > 
 > 
 
