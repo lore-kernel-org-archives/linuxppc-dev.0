@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qyzg674gzDqlh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:42:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qyzh3cNKzDqsy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:42:40 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.16 06/14] powerpc/64s: Move cpu_show_meltdown()
-Date: Wed, 23 May 2018 00:41:17 +1000
-Message-Id: <20180522144125.10345-7-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.16 08/14] powerpc/powernv: Use the security flags in
+ pnv_setup_rfi_flush()
+Date: Wed, 23 May 2018 00:41:19 +1000
+Message-Id: <20180522144125.10345-9-mpe@ellerman.id.au>
 In-Reply-To: <20180522144125.10345-1-mpe@ellerman.id.au>
 References: <20180522144125.10345-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,60 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 8ad33041563a10b34988800c682ada14b2612533 upstream.
+commit 37c0bdd00d3ae83369ab60a6712c28e11e6458d5 upstream.
 
-This landed in setup_64.c for no good reason other than we had nowhere
-else to put it. Now that we have a security-related file, that is a
-better place for it so move it.
+Now that we have the security flags we can significantly simplify the
+code in pnv_setup_rfi_flush(), because we can use the flags instead of
+checking device tree properties and because the security flags have
+pessimistic defaults.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/security.c | 11 +++++++++++
- arch/powerpc/kernel/setup_64.c |  8 --------
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 41 +++++++++-------------------------
+ 1 file changed, 10 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 4ccba00d224c..564e7f182a16 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -5,6 +5,8 @@
- // Copyright 2018, Michael Ellerman, IBM Corporation.
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index f5c0c7d91db1..7de050a3736b 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -66,7 +66,7 @@ static void init_fw_feat_flags(struct device_node *np)
+ 	if (fw_feature_is("enabled", "fw-bcctrl-serialized", np))
+ 		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
  
- #include <linux/kernel.h>
-+#include <linux/device.h>
-+
- #include <asm/security_features.h>
+-	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
++	if (fw_feature_is("enabled", "inst-l1d-flush-ori30,30,0", np))
+ 		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
  
+ 	if (fw_feature_is("enabled", "inst-l1d-flush-trig2", np))
+@@ -99,11 +99,10 @@ static void pnv_setup_rfi_flush(void)
+ {
+ 	struct device_node *np, *fw_features;
+ 	enum l1d_flush_type type;
+-	int enable;
++	bool enable;
  
-@@ -13,3 +15,12 @@ unsigned long powerpc_security_features __read_mostly = \
- 	SEC_FTR_L1D_FLUSH_PR | \
- 	SEC_FTR_BNDS_CHK_SPEC_BAR | \
- 	SEC_FTR_FAVOUR_SECURITY;
+ 	/* Default to fallback in case fw-features are not available */
+ 	type = L1D_FLUSH_FALLBACK;
+-	enable = 1;
+ 
+ 	np = of_find_node_by_name(NULL, "ibm,opal");
+ 	fw_features = of_get_child_by_name(np, "fw-features");
+@@ -111,40 +110,20 @@ static void pnv_setup_rfi_flush(void)
+ 
+ 	if (fw_features) {
+ 		init_fw_feat_flags(fw_features);
++		of_node_put(fw_features);
+ 
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
+ 			type = L1D_FLUSH_MTTRIG;
+ 
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
+ 			type = L1D_FLUSH_ORI;
+-
+-		of_node_put(np);
+-
+-		/* Enable unless firmware says NOT to */
+-		enable = 2;
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable = 0;
+-
+-		of_node_put(np);
+-		of_node_put(fw_features);
+ 	}
+ 
+-	setup_rfi_flush(type, enable > 0);
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)   || \
++		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
 +
-+
-+ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	if (rfi_flush)
-+		return sprintf(buf, "Mitigation: RFI Flush\n");
-+
-+	return sprintf(buf, "Vulnerable\n");
-+}
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index c388cc3357fa..c27557aff394 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -927,12 +927,4 @@ static __init int rfi_flush_debugfs_init(void)
++	setup_rfi_flush(type, enable);
  }
- device_initcall(rfi_flush_debugfs_init);
- #endif
--
--ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	if (rfi_flush)
--		return sprintf(buf, "Mitigation: RFI Flush\n");
--
--	return sprintf(buf, "Vulnerable\n");
--}
- #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+ static void __init pnv_setup_arch(void)
 -- 
 2.14.1
