@@ -1,20 +1,35 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40r7lG1X5PzDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 07:17:30 +1000 (AEST)
-Message-ID: <1527020969.30674.13.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Diana Craciun <diana.craciun@nxp.com>, linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, leoyang.li@nxp.com
-Date: Tue, 22 May 2018 15:29:29 -0500
-In-Reply-To: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
-References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
- NXP PowerPC Book E
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40r7tF37VbzDqrN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 07:23:32 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4MLJ1Z8097681
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:23:30 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j4q0bjygm-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 17:23:30 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 22 May 2018 15:23:29 -0600
+Subject: Re: [RFC v4 2/4] hotplug/drcinfo: Provide parser with callback
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+References: <2e2261b4-c0b3-3b6d-d649-541bc8802546@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 22 May 2018 16:23:25 -0500
+MIME-Version: 1.0
+In-Reply-To: <2e2261b4-c0b3-3b6d-d649-541bc8802546@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c9f225f4-591b-37b6-3d70-bf1ae7395a0c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,118 +39,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-22 at 10:10 +0300, Diana Craciun wrote:
-> Implement the barrier_nospec as a isync;sync instruction sequence.
-> The implementation uses the infrastructure built for BOOK3S 64
-> with the difference that for NXP platforms there is no firmware involved
-> and the need for a speculation barrier is read from the device tree.
-> I have used the same name for the property:
-> fsl,needs-spec-barrier-for-bounds-check
-
-Using the device tree this way means that anyone without an updated device
-tree won't get the protection.  I also don't see any device tree updates --
-which chips are affected?  Wouldn't it be more robust to just have the kernel
-check the CPU type, especially given that it already does so for a lot of
-other purposes?
-
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  void setup_barrier_nospec(void)
->  {
->  	bool enable;
-> @@ -44,6 +46,12 @@ void setup_barrier_nospec(void)
->  
->  	enable_barrier_nospec(enable);
->  }
-> +#elif CONFIG_PPC_FSL_BOOK3E
-> +void setup_barrier_nospec(void)
-> +{
-> +	enable_barrier_nospec(true);
-> +}
-> +#endif
-
-The call site is in FSL_BOOK3E-specific code so why not call
-enable_barrier_nospec() directly from there?
-  
+On 05/22/2018 11:37 AM, Michael Bringmann wrote:
+> This patch provides a common parse function for the ibm,drc-info
+> property that can be modified by a callback function.  The caller
+> provides a pointer to the function and a pointer to their unique
+> data, and the parser provides the current lmb set from the struct.
+> The callback function may return codes indicating that the parsing
+> is complete, or should continue, along with an error code that may
+> be returned to the caller.
 > 
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute
-> *attr, char *buf)
->  {
->  	bool thread_priv;
-> @@ -155,3 +164,4 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct
-> device_attribute *attr, c
->  
->  	return s.len;
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmwar
+> e feature" -- end of patch series applied to powerpc next)
+> ---
+> Changes in V4:
+>   -- Update code to account for latest kernel checkins.
+>   -- Rebased to 4.17-rc5 kernel
+>   -- Some patch cleanup including file combination
+> ---
+>  arch/powerpc/include/asm/prom.h             |    7 +++++
+>  arch/powerpc/platforms/pseries/of_helpers.c |   37 +++++++++++++++++++++++++++
+>  2 files changed, 44 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
+> index b04c5ce..2e947b3 100644
+> --- a/arch/powerpc/include/asm/prom.h
+> +++ b/arch/powerpc/include/asm/prom.h
+> @@ -94,6 +94,13 @@ struct of_drc_info {
+>  extern int of_read_drc_info_cell(struct property **prop,
+>  			const __be32 **curval, struct of_drc_info *data);
+> 
+> +extern int drc_info_parser(struct device_node *dn,
+> +			int (*usercb)(struct of_drc_info *drc,
+> +					void *data,
+> +					void *optional_data,
+> +					int *ret_code),
+> +			char *opt_drc_type,
+> +			void *data);
+
+After looking at the patch 3 in this series, I think a couple of comments and
+a small change may help. It was not clear at first what the call back function
+was supposed to return. After reading users of this routine it appears that the
+callback function is returning a bool value indicating whether or not the parser
+should continue. I documenting this and having the callback routine return a bool
+may make this clearer.
+
+Also, I see other places in the kernel name these types of routines as walk_*,
+perhaps a slight name change to walk_drc_info_entries() may also make it clearer
+what the code is doing.
+
+-Nathan
+
+> 
+>  /*
+>   * There are two methods for telling firmware what our capabilities are.
+> diff --git a/arch/powerpc/platforms/pseries/of_helpers.c b/arch/powerpc/platforms/pseries/of_helpers.c
+> index 11b2ef1..a588ee6 100644
+> --- a/arch/powerpc/platforms/pseries/of_helpers.c
+> +++ b/arch/powerpc/platforms/pseries/of_helpers.c
+> @@ -6,6 +6,9 @@
+>  #include <asm/prom.h>
+> 
+>  #include "of_helpers.h"
+> +#include "pseries.h"
+> +
+> +#define	MAX_DRC_NAME_LEN 64
+> 
+>  /**
+>   * pseries_of_derive_parent - basically like dirname(1)
+> @@ -87,3 +90,37 @@ int of_read_drc_info_cell(struct property **prop, const __be32 **curval,
+>  	return 0;
 >  }
-> +#endif
-
-No equivalent of this for FSL?
-
-> +#ifdef CONFIG_PPC_FSL_BOOK3E
-> +void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void
-> *fixup_end)
+>  EXPORT_SYMBOL(of_read_drc_info_cell);
+> +
+> +int drc_info_parser(struct device_node *dn,
+> +		int (*usercb)(struct of_drc_info *drc,
+> +				void *data,
+> +				void *optional_data,
+> +				int *ret_code),
+> +		char *opt_drc_type,
+> +		void *data)
 > +{
-> +	unsigned int instr[2], *dest;
-> +	long *start, *end;
-> +	int i;
+> +	struct property *info;
+> +	unsigned int entries;
+> +	struct of_drc_info drc;
+> +	const __be32 *value;
+> +	int j, done = 0, ret_code = -EINVAL;
 > +
-> +	start = fixup_start;
-> +	end = fixup_end;
+> +	info = of_find_property(dn, "ibm,drc-info", NULL);
+> +	if (info == NULL)
+> +		return -EINVAL;
 > +
-> +	instr[0] = PPC_INST_NOP; /* nop */
-> +	instr[1] = PPC_INST_NOP; /* nop */
+> +	value = info->value;
+> +	entries = of_read_number(value++, 1);
 > +
-> +	if (enable) {
-> +		pr_info("barrier_nospec: using isync; sync as a speculation
-> barrier\n");
-> +		instr[0] = PPC_INST_ISYNC;
-> +		instr[1] = PPC_INST_SYNC;
+> +	for (j = 0, done = 0; (j < entries) && (!done); j++) {
+> +		of_read_drc_info_cell(&info, &value, &drc);
+> +
+> +		if (opt_drc_type && strcmp(opt_drc_type, drc.drc_type))
+> +			continue;
+> +
+> +		done = usercb(&drc, data, NULL, &ret_code);
 > +	}
 > +
-> +	for (i = 0; start < end; start++, i++) {
-> +		dest = (void *)start + *start;
-> +		pr_devel("patching dest %lx\n", (unsigned long)dest);
-> +
-> +		patch_instruction(dest, instr[0]);
-> +		patch_instruction(dest + 1, instr[1]);
-> +
-> +	}
-> +
-> +	pr_debug("barrier-nospec: patched %d locations\n", i);
-
-Why patch nops in if not enabled?  Aren't those locations already nops?  For
-that matter, how can this function even be called on FSL_BOOK3E with enable !=
-true?
-
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c
-> b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index ac191a7..11bce3d 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -59,6 +59,21 @@ void __init corenet_gen_pic_init(void)
->  	}
->  }
->  
-> +static void setup_spec_barrier(void)
-> +{
-> +	struct device_node *np = of_find_node_by_name(NULL, "cpus");
-> +
-> +	if (np) {
-> +		struct property *prop;
-> +
-> +		prop = of_find_property(np,
-> +		       "fsl,needs-spec-barrier-for-bounds-check", NULL);
-> +		if (prop)
-> +			setup_barrier_nospec();
-> +		of_node_put(np);
-> +	}
+> +	return ret_code;
 > +}
-
-Why is this in board code?
-
-Should there be a way for the user to choose not to enable this (editing the
-device tree doesn't count), for a use case that is not sufficiently security
-sensitive to justify the performance loss?  What is the performance impact of
-this patch?
-
--Scott
+> +EXPORT_SYMBOL(drc_info_parser);
+> 
