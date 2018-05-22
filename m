@@ -1,25 +1,32 @@
-Return-Path: <daniel@iogearbox.net>
-Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qqG71732zDqL4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 18:54:37 +1000 (AEST)
-Subject: Re: [PATCH bpf v2 6/6] bpf: fix JITed dump for multi-function
- programs via syscall
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: ast@kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- naveen.n.rao@linux.vnet.ibm.com, mpe@ellerman.id.au,
- jakub.kicinski@netronome.com
-References: <20180518125039.6500-1-sandipan@linux.vnet.ibm.com>
- <20180518125039.6500-7-sandipan@linux.vnet.ibm.com>
- <654d4424-ad99-2b5e-dcbf-9e352aec75d6@iogearbox.net>
- <57a3df63-f533-0dee-3fb8-621c0ba51968@linux.vnet.ibm.com>
-From: Daniel Borkmann <daniel@iogearbox.net>
-Message-ID: <30cb74cc-ce72-b2b8-3ccb-316a26d15bca@iogearbox.net>
-Date: Tue, 22 May 2018 10:54:28 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qqZY0SklzDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 19:08:49 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4M98jNJ040072
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 05:08:47 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j4g580fwn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 05:08:46 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Tue, 22 May 2018 05:08:33 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [PATCH] powerpc/kprobes: Fix build error with kprobes disabled.
+Date: Tue, 22 May 2018 14:38:20 +0530
 MIME-Version: 1.0
-In-Reply-To: <57a3df63-f533-0dee-3fb8-621c0ba51968@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Message-Id: <20180522090820.3307-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,125 +36,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/21/2018 09:42 PM, Sandipan Das wrote:
-> On 05/18/2018 09:21 PM, Daniel Borkmann wrote:
->> On 05/18/2018 02:50 PM, Sandipan Das wrote:
->>> Currently, for multi-function programs, we cannot get the JITed
->>> instructions using the bpf system call's BPF_OBJ_GET_INFO_BY_FD
->>> command. Because of this, userspace tools such as bpftool fail
->>> to identify a multi-function program as being JITed or not.
->>>
->>> With the JIT enabled and the test program running, this can be
->>> verified as follows:
->>>
->>>   # cat /proc/sys/net/core/bpf_jit_enable
->>>   1
->>>
->>> Before applying this patch:
->>>
->>>   # bpftool prog list
->>>   1: kprobe  name foo  tag b811aab41a39ad3d  gpl
->>>           loaded_at 2018-05-16T11:43:38+0530  uid 0
->>>           xlated 216B  not jited  memlock 65536B
->>>   ...
->>>
->>>   # bpftool prog dump jited id 1
->>>   no instructions returned
->>>
->>> After applying this patch:
->>>
->>>   # bpftool prog list
->>>   1: kprobe  name foo  tag b811aab41a39ad3d  gpl
->>>           loaded_at 2018-05-16T12:13:01+0530  uid 0
->>>           xlated 216B  jited 308B  memlock 65536B
->>>   ...
->>
->> That's really nice! One comment inline below:
->>
->>>   # bpftool prog dump jited id 1
->>>      0:   nop
->>>      4:   nop
->>>      8:   mflr    r0
->>>      c:   std     r0,16(r1)
->>>     10:   stdu    r1,-112(r1)
->>>     14:   std     r31,104(r1)
->>>     18:   addi    r31,r1,48
->>>     1c:   li      r3,10
->>>   ...
->>>
->>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
->>> ---
->>>  kernel/bpf/syscall.c | 38 ++++++++++++++++++++++++++++++++------
->>>  1 file changed, 32 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
->>> index 54a72fafe57c..2430d159078c 100644
->>> --- a/kernel/bpf/syscall.c
->>> +++ b/kernel/bpf/syscall.c
->>> @@ -1896,7 +1896,7 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
->>>  	struct bpf_prog_info info = {};
->>>  	u32 info_len = attr->info.info_len;
->>>  	char __user *uinsns;
->>> -	u32 ulen;
->>> +	u32 ulen, i;
->>>  	int err;
->>>  
->>>  	err = check_uarg_tail_zero(uinfo, sizeof(info), info_len);
->>> @@ -1922,7 +1922,6 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
->>>  	ulen = min_t(u32, info.nr_map_ids, ulen);
->>>  	if (ulen) {
->>>  		u32 __user *user_map_ids = u64_to_user_ptr(info.map_ids);
->>> -		u32 i;
->>>  
->>>  		for (i = 0; i < ulen; i++)
->>>  			if (put_user(prog->aux->used_maps[i]->id,
->>> @@ -1970,13 +1969,41 @@ static int bpf_prog_get_info_by_fd(struct bpf_prog *prog,
->>>  	 * for offload.
->>>  	 */
->>>  	ulen = info.jited_prog_len;
->>> -	info.jited_prog_len = prog->jited_len;
->>> +	if (prog->aux->func_cnt) {
->>> +		info.jited_prog_len = 0;
->>> +		for (i = 0; i < prog->aux->func_cnt; i++)
->>> +			info.jited_prog_len += prog->aux->func[i]->jited_len;
->>> +	} else {
->>> +		info.jited_prog_len = prog->jited_len;
->>> +	}
->>> +
->>>  	if (info.jited_prog_len && ulen) {
->>>  		if (bpf_dump_raw_ok()) {
->>>  			uinsns = u64_to_user_ptr(info.jited_prog_insns);
->>>  			ulen = min_t(u32, info.jited_prog_len, ulen);
->>> -			if (copy_to_user(uinsns, prog->bpf_func, ulen))
->>> -				return -EFAULT;
->>> +
->>> +			/* for multi-function programs, copy the JITed
->>> +			 * instructions for all the functions
->>> +			 */
->>> +			if (prog->aux->func_cnt) {
->>> +				u32 len, free;
->>> +				u8 *img;
->>> +
->>> +				free = ulen;
->>> +				for (i = 0; i < prog->aux->func_cnt; i++) {
->>> +					len = prog->aux->func[i]->jited_len;
->>> +					img = (u8 *) prog->aux->func[i]->bpf_func;
->>> +					if (len > free)
->>> +						break;
->>> +					if (copy_to_user(uinsns, img, len))
->>> +						return -EFAULT;
->>> +					uinsns += len;
->>> +					free -= len;
->>
->> Is there any way we can introduce a delimiter between the different
->> images such that they could be more easily correlated with the call
->> from the main (or other sub-)program instead of having one contiguous
->> dump blob?
-> 
-> Can we have another member in bpf_prog_info that points to a list of the lengths of the
-> JITed images for each subprogram? We can use this information to split up the dump.
+arch/powerpc/kernel/stacktrace.c: In function ‘save_stack_trace_tsk_reliable’:
+arch/powerpc/kernel/stacktrace.c:176:28: error: ‘kretprobe_trampoline’ undeclared (first use in this function); did you mean ‘is_ftrace_trampoline’?
+   if (ip == (unsigned long)kretprobe_trampoline)
+                            ^~~~~~~~~~~~~~~~~~~~
+                            is_ftrace_trampoline
+arch/powerpc/kernel/stacktrace.c:176:28: note: each undeclared identifier is reported only once for each function it appears in
 
-Seems okay to me.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+---
+ arch/powerpc/kernel/stacktrace.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Thanks,
-Daniel
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index 26a50603177c..8dd6ba0c7d35 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -168,13 +168,14 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ 		 * arch-dependent code, they are generic.
+ 		 */
+ 		ip = ftrace_graph_ret_addr(tsk, &graph_idx, ip, NULL);
+-
++#ifdef CONFIG_KPROBES
+ 		/*
+ 		 * Mark stacktraces with kretprobed functions on them
+ 		 * as unreliable.
+ 		 */
+ 		if (ip == (unsigned long)kretprobe_trampoline)
+ 			return 1;
++#endif
+ 
+ 		if (!trace->skip)
+ 			trace->entries[trace->nr_entries++] = ip;
+-- 
+2.17.0
