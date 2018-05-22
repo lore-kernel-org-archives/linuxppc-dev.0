@@ -2,19 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40qy5x0wJ8zDqgs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:03:00 +1000 (AEST)
-Message-Id: <d37d9ce7b925bc254082cd664e37a062131d04b8.1526995927.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40qy5y2t00zDq7d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:03:02 +1000 (AEST)
+Message-Id: <f8bb44fbb9aeb9acbe442d38f5baf2da49d179e8.1526995927.git.christophe.leroy@c-s.fr>
 In-Reply-To: <1053e5f43a2ea9a9d9abb1f45c88dffb60b9b4fc.1526995927.git.christophe.leroy@c-s.fr>
 References: <1053e5f43a2ea9a9d9abb1f45c88dffb60b9b4fc.1526995927.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v7 2/3] powerpc/mm: Only read faulting instruction when
- necessary in do_page_fault()
+Subject: [PATCH v7 3/3] powerpc/mm: Use instruction symbolic names in
+ store_updates_sp()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  npiggin@gmail.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 May 2018 16:02:56 +0200 (CEST)
+Date: Tue, 22 May 2018 16:02:58 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,111 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
-userspace instruction miss") has shown that limiting the read of
-faulting instruction to likely cases improves performance.
-
-This patch goes further into this direction by limiting the read
-of the faulting instruction to the only cases where it is likely
-needed.
-
-On an MPC885, with the same benchmark app as in the commit referred
-above, we see a reduction of about 3900 dTLB misses (approx 3%):
-
-Before the patch:
- Performance counter stats for './fault 500' (10 runs):
-
-         683033312      cpu-cycles                                                    ( +-  0.03% )
-            134538      dTLB-load-misses                                              ( +-  0.03% )
-             46099      iTLB-load-misses                                              ( +-  0.02% )
-             19681      faults                                                        ( +-  0.02% )
-
-       5.389747878 seconds time elapsed                                          ( +-  0.06% )
-
-With the patch:
-
- Performance counter stats for './fault 500' (10 runs):
-
-         682112862      cpu-cycles                                                    ( +-  0.03% )
-            130619      dTLB-load-misses                                              ( +-  0.03% )
-             46073      iTLB-load-misses                                              ( +-  0.05% )
-             19681      faults                                                        ( +-  0.01% )
-
-       5.381342641 seconds time elapsed                                          ( +-  0.07% )
-
-The proper work of the huge stack expansion was tested with the
-following app:
-
-int main(int argc, char **argv)
-{
-	char buf[1024 * 1025];
-
-	sprintf(buf, "Hello world !\n");
-	printf(buf);
-
-	exit(0);
-}
+Use symbolic names defined in asm/ppc-opcode.h
+instead of hardcoded values.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- v7: Following comment from Nicholas on v6 on possibility of the page getting removed from the pagetables
-     between the fault and the read, I have reworked the patch in order to do the get_user() in
-     __do_page_fault() directly in order to reduce complexity compared to version v5
+ v7: New
 
- v6: Rebased on latest powerpc/merge branch ; Using __get_user_inatomic() instead of get_user() in order
-     to move it inside the semaphored area. That removes all the complexity of the patch.
+ arch/powerpc/include/asm/ppc-opcode.h |  1 +
+ arch/powerpc/mm/fault.c               | 26 +++++++++++++-------------
+ 2 files changed, 14 insertions(+), 13 deletions(-)
 
- v5: Reworked to fit after Benh do_fault improvement and rebased on top of powerpc/merge (65152902e43fef)
-
- v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
-
- v3: Do a first try with pagefault disabled before releasing the semaphore
-
- v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
-
- arch/powerpc/mm/fault.c | 23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
-
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 18883b8a6dac..4436887bc415 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -162,6 +162,7 @@
+ /* VMX Vector Store Instructions */
+ #define OP_31_XOP_STVX          231
+ 
++#define OP_31   31
+ #define OP_LWZ  32
+ #define OP_STFS 52
+ #define OP_STFSU 53
 diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index fcbb34431da2..dc64b8e06477 100644
+index dc64b8e06477..20f696c10bb3 100644
 --- a/arch/powerpc/mm/fault.c
 +++ b/arch/powerpc/mm/fault.c
-@@ -450,9 +450,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * can result in fault, which will cause a deadlock when called with
- 	 * mmap_sem held
- 	 */
--	if (is_write && is_user)
--		get_user(inst, (unsigned int __user *)regs->nip);
--
- 	if (is_user)
- 		flags |= FAULT_FLAG_USER;
- 	if (is_write)
-@@ -498,6 +495,26 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN)))
- 		return bad_area(regs, address);
- 
-+	if (unlikely(is_write && is_user && address + 0x100000 < vma->vm_end &&
-+		     !inst)) {
-+		unsigned int __user *nip = (unsigned int __user *)regs->nip;
-+
-+		if (likely(access_ok(VERIFY_READ, nip, sizeof(inst)))) {
-+			int res;
-+
-+			pagefault_disable();
-+			res = __get_user_inatomic(inst, nip);
-+			pagefault_enable();
-+			if (unlikely(res)) {
-+				up_read(&mm->mmap_sem);
-+				res = __get_user(inst, nip);
-+				if (!res && inst)
-+					goto retry;
-+				return bad_area_nosemaphore(regs, address);
-+			}
-+		}
-+	}
-+
- 	/* The stack is being expanded, check if it's valid */
- 	if (unlikely(bad_stack_expansion(regs, address, vma, inst)))
- 		return bad_area(regs, address);
+@@ -76,23 +76,23 @@ static bool store_updates_sp(unsigned int inst)
+ 		return false;
+ 	/* check major opcode */
+ 	switch (inst >> 26) {
+-	case 37:	/* stwu */
+-	case 39:	/* stbu */
+-	case 45:	/* sthu */
+-	case 53:	/* stfsu */
+-	case 55:	/* stfdu */
++	case OP_STWU:
++	case OP_STBU:
++	case OP_STHU:
++	case OP_STFSU:
++	case OP_STFDU:
+ 		return true;
+-	case 62:	/* std or stdu */
++	case OP_STD:	/* std or stdu */
+ 		return (inst & 3) == 1;
+-	case 31:
++	case OP_31:
+ 		/* check minor opcode */
+ 		switch ((inst >> 1) & 0x3ff) {
+-		case 181:	/* stdux */
+-		case 183:	/* stwux */
+-		case 247:	/* stbux */
+-		case 439:	/* sthux */
+-		case 695:	/* stfsux */
+-		case 759:	/* stfdux */
++		case OP_31_XOP_STDUX:
++		case OP_31_XOP_STWUX:
++		case OP_31_XOP_STBUX:
++		case OP_31_XOP_STHUX:
++		case OP_31_XOP_STFSUX:
++		case OP_31_XOP_STFDUX:
+ 			return true;
+ 		}
+ 	}
 -- 
 2.13.3
