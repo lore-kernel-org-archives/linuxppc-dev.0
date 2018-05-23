@@ -1,18 +1,18 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <diana.craciun@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rRBG5fmPzF0tm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 18:53:26 +1000 (AEST)
-Message-Id: <3f8c7feadca2d52fa97c8feb5170c2ab67b6f992.1527065339.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v9] powerpc/mm: Only read faulting instruction when necessary
- in do_page_fault()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- npiggin@gmail.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 23 May 2018 10:53:22 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rRTc1Z4tzF0wk
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 19:06:43 +1000 (AEST)
+From: Diana Craciun <diana.craciun@nxp.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Diana Craciun <diana.craciun@nxp.com>
+Subject: [RESEND RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
+ NXP PowerPC Book E
+Date: Wed, 23 May 2018 11:56:45 +0300
+Message-Id: <1527065805-4230-1-git-send-email-diana.craciun@nxp.com>
+In-Reply-To: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
+References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,182 +22,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit a7a9dcd882a67 ("powerpc: Avoid taking a data miss on every
-userspace instruction miss") has shown that limiting the read of
-faulting instruction to likely cases improves performance.
+Implement the barrier_nospec as a isync;sync instruction sequence.
+The implementation uses the infrastructure built for BOOK3S 64
+with the difference that for NXP platforms there is no firmware involved
+and the need for a speculation barrier is read from the device tree.
+I have used the same name for the property:
+fsl,needs-spec-barrier-for-bounds-check
 
-This patch goes further into this direction by limiting the read
-of the faulting instruction to the only cases where it is likely
-needed.
-
-On an MPC885, with the same benchmark app as in the commit referred
-above, we see a reduction of about 3900 dTLB misses (approx 3%):
-
-Before the patch:
- Performance counter stats for './fault 500' (10 runs):
-
-         683033312      cpu-cycles                                                    ( +-  0.03% )
-            134538      dTLB-load-misses                                              ( +-  0.03% )
-             46099      iTLB-load-misses                                              ( +-  0.02% )
-             19681      faults                                                        ( +-  0.02% )
-
-       5.389747878 seconds time elapsed                                          ( +-  0.06% )
-
-With the patch:
-
- Performance counter stats for './fault 500' (10 runs):
-
-         682112862      cpu-cycles                                                    ( +-  0.03% )
-            130619      dTLB-load-misses                                              ( +-  0.03% )
-             46073      iTLB-load-misses                                              ( +-  0.05% )
-             19681      faults                                                        ( +-  0.01% )
-
-       5.381342641 seconds time elapsed                                          ( +-  0.07% )
-
-The proper work of the huge stack expansion was tested with the
-following app:
-
-int main(int argc, char **argv)
-{
-	char buf[1024 * 1025];
-
-	sprintf(buf, "Hello world !\n");
-	printf(buf);
-
-	exit(0);
-}
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- v9: Handling the semaphore drop and the retry directly in __do_page_fault(),
-     using fault_in_pages_readable() then perform a full retry, as suggested by Nicholas
+The patches were created on top of the BOOK3S 64 patches:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-April/172137.html
 
- v8: Back to a single patch as it now makes no sense to split the first part in two. The third patch has no
-     dependencies with the ones before, so it will be resend independantly. As suggested by Nicholas, the
-     patch now does the get_user() stuff inside bad_stack_expansion(), that's a mid way between v5 and v7.
+ arch/powerpc/include/asm/barrier.h            | 12 ++++++++-
+ arch/powerpc/include/asm/setup.h              |  2 +-
+ arch/powerpc/kernel/Makefile                  |  2 +-
+ arch/powerpc/kernel/module.c                  |  2 ++
+ arch/powerpc/kernel/security.c                | 12 ++++++++-
+ arch/powerpc/kernel/vmlinux.lds.S             |  2 ++
+ arch/powerpc/lib/feature-fixups.c             | 38 +++++++++++++++++++++++++--
+ arch/powerpc/platforms/85xx/corenet_generic.c | 17 ++++++++++++
+ 8 files changed, 81 insertions(+), 6 deletions(-)
 
- v7: Following comment from Nicholas on v6 on possibility of the page getting removed from the pagetables
-     between the fault and the read, I have reworked the patch in order to do the get_user() in
-     __do_page_fault() directly in order to reduce complexity compared to version v5
-
- v6: Rebased on latest powerpc/merge branch ; Using __get_user_inatomic() instead of get_user() in order
-     to move it inside the semaphored area. That removes all the complexity of the patch.
-
- v5: Reworked to fit after Benh do_fault improvement and rebased on top of powerpc/merge (65152902e43fef)
-
- v4: Rebased on top of powerpc/next (f718d426d7e42e) and doing access_ok() verification before __get_user_xxx()
-
- v3: Do a first try with pagefault disabled before releasing the semaphore
-
- v2: Changes 'if (cond1) if (cond2)' by 'if (cond1 && cond2)'
-
- arch/powerpc/mm/fault.c | 49 +++++++++++++++++++++++++++++++++----------------
- 1 file changed, 33 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-index 0c99f9b45e8f..8e3f440a5b75 100644
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -66,15 +66,11 @@ static inline bool notify_page_fault(struct pt_regs *regs)
- }
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index f67b3f6..1379386 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -86,7 +86,17 @@ do {									\
+ // This also acts as a compiler barrier due to the memory clobber.
+ #define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
  
- /*
-- * Check whether the instruction at regs->nip is a store using
-+ * Check whether the instruction inst is a store using
-  * an update addressing form which will update r1.
-  */
--static bool store_updates_sp(struct pt_regs *regs)
-+static bool store_updates_sp(unsigned int inst)
- {
--	unsigned int inst;
+-#else /* !CONFIG_PPC_BOOK3S_64 */
++#elif defined(CONFIG_PPC_FSL_BOOK3E)
++/*
++ * Prevent the execution of subsequent instructions speculatively using a
++ * isync;sync instruction sequence.
++ */
++#define barrier_nospec_asm NOSPEC_BARRIER_FIXUP_SECTION; nop; nop
++
++// This also acts as a compiler barrier due to the memory clobber.
++#define barrier_nospec() asm (stringify_in_c(barrier_nospec_asm) ::: "memory")
++
++#else /* !CONFIG_PPC_BOOK3S_64 && !CONFIG_PPC_FSL_BOOK3E */
+ #define barrier_nospec_asm
+ #define barrier_nospec()
+ #endif
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index aeb175e8..fbc3ef7 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -55,7 +55,7 @@ void do_rfi_flush_fixups(enum l1d_flush_type types);
+ void setup_barrier_nospec(void);
+ void do_barrier_nospec_fixups(bool enable);
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
++#if defined(CONFIG_PPC_BOOK3S_64) || defined(CONFIG_PPC_FSL_BOOK3E)
+ void do_barrier_nospec_fixups_range(bool enable, void *start, void *end);
+ #else
+ static inline void do_barrier_nospec_fixups_range(bool enable, void *start, void *end) { };
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 2b4c40b2..d9dee43 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -76,7 +76,7 @@ endif
+ obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
+ obj-$(CONFIG_MODULES)		+= module.o module_$(BITS).o
+ obj-$(CONFIG_44x)		+= cpu_setup_44x.o
+-obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o
++obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o security.o
+ obj-$(CONFIG_PPC_DOORBELL)	+= dbell.o
+ obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
+ 
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index a72698c..ede64a5 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -72,7 +72,9 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
++#endif
+ 
++#if defined(CONFIG_PPC64) || defined(CONFIG_PPC_FSL_BOOK3E)
+ 	sect = find_section(hdr, sechdrs, "__spec_barrier_fixup");
+ 	if (sect != NULL)
+ 		do_barrier_nospec_fixups_range(true,
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index d1b9639..01b6c55 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -12,8 +12,9 @@
+ #include <asm/security_features.h>
+ #include <asm/setup.h>
+ 
 -
--	if (get_user(inst, (unsigned int __user *)regs->nip))
--		return false;
- 	/* check for 1 in the rA field */
- 	if (((inst >> 16) & 0x1f) != 1)
- 		return false;
-@@ -234,8 +230,8 @@ static bool bad_kernel_fault(bool is_exec, unsigned long error_code,
++#ifdef CONFIG_PPC_BOOK3S_64
+ unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
++#endif
+ 
+ static bool barrier_nospec_enabled;
+ 
+@@ -23,6 +24,7 @@ static void enable_barrier_nospec(bool enable)
+ 	do_barrier_nospec_fixups(enable);
  }
  
- static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
--				struct vm_area_struct *vma,
--				bool store_update_sp)
-+				struct vm_area_struct *vma, unsigned int flags,
-+				bool *must_retry)
++#ifdef CONFIG_PPC_BOOK3S_64
+ void setup_barrier_nospec(void)
  {
- 	/*
- 	 * N.B. The POWER/Open ABI allows programs to access up to
-@@ -247,6 +243,7 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
- 	 * expand to 1MB without further checks.
- 	 */
- 	if (address + 0x100000 < vma->vm_end) {
-+		unsigned int __user *nip = (unsigned int __user *)regs->nip;
- 		/* get user regs even if this fault is in kernel mode */
- 		struct pt_regs *uregs = current->thread.regs;
- 		if (uregs == NULL)
-@@ -264,8 +261,22 @@ static bool bad_stack_expansion(struct pt_regs *regs, unsigned long address,
- 		 * between the last mapped region and the stack will
- 		 * expand the stack rather than segfaulting.
- 		 */
--		if (address + 2048 < uregs->gpr[1] && !store_update_sp)
--			return true;
-+		if (address + 2048 >= uregs->gpr[1])
-+			return false;
-+
-+		if ((flags & FAULT_FLAG_WRITE) && (flags & FAULT_FLAG_USER) &&
-+		    access_ok(VERIFY_READ, nip, sizeof(*nip))) {
-+			unsigned int inst;
-+			int res;
-+
-+			pagefault_disable();
-+			res = __get_user_inatomic(inst, nip);
-+			pagefault_enable();
-+			if (!res)
-+				return !store_updates_sp(inst);
-+			*must_retry = true;
-+		}
-+		return true;
+ 	bool enable;
+@@ -44,6 +46,12 @@ void setup_barrier_nospec(void)
+ 
+ 	enable_barrier_nospec(enable);
+ }
++#elif CONFIG_PPC_FSL_BOOK3E
++void setup_barrier_nospec(void)
++{
++	enable_barrier_nospec(true);
++}
++#endif
+ 
+ #ifdef CONFIG_DEBUG_FS
+ static int barrier_nospec_set(void *data, u64 val)
+@@ -82,6 +90,7 @@ static __init int barrier_nospec_debugfs_init(void)
+ device_initcall(barrier_nospec_debugfs_init);
+ #endif /* CONFIG_DEBUG_FS */
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	bool thread_priv;
+@@ -155,3 +164,4 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
+ 
+ 	return s.len;
+ }
++#endif
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index ff73f49..e3c0ef2 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -139,7 +139,9 @@ SECTIONS
+ 		*(__rfi_flush_fixup)
+ 		__stop___rfi_flush_fixup = .;
  	}
- 	return false;
++#endif
+ 
++#if defined(CONFIG_PPC64) || defined (CONFIG_PPC_FSL_BOOK3E)
+ 	. = ALIGN(8);
+ 	__spec_barrier_fixup : AT(ADDR(__spec_barrier_fixup) - LOAD_OFFSET) {
+ 		__start___barrier_nospec_fixup = .;
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 3b37529..033ef28 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -162,7 +162,6 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
+ 		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
+ 						: "unknown");
  }
-@@ -403,7 +414,7 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	int is_user = user_mode(regs);
- 	int is_write = page_fault_is_write(error_code);
- 	int fault, major = 0;
--	bool store_update_sp = false;
-+	bool must_retry = false;
- 
- 	if (notify_page_fault(regs))
- 		return 0;
-@@ -454,9 +465,6 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 	 * can result in fault, which will cause a deadlock when called with
- 	 * mmap_sem held
- 	 */
--	if (is_write && is_user)
--		store_update_sp = store_updates_sp(regs);
 -
- 	if (is_user)
- 		flags |= FAULT_FLAG_USER;
- 	if (is_write)
-@@ -503,8 +511,17 @@ static int __do_page_fault(struct pt_regs *regs, unsigned long address,
- 		return bad_area(regs, address);
+ void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
+ {
+ 	unsigned int instr, *dest;
+@@ -188,7 +187,9 @@ void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_
  
- 	/* The stack is being expanded, check if it's valid */
--	if (unlikely(bad_stack_expansion(regs, address, vma, store_update_sp)))
--		return bad_area(regs, address);
-+	if (unlikely(bad_stack_expansion(regs, address, vma, flags,
-+					 &must_retry))) {
-+		if (!must_retry)
-+			return bad_area(regs, address);
+ 	printk(KERN_DEBUG "barrier-nospec: patched %d locations\n", i);
+ }
++#endif /* CONFIG_PPC_BOOK3S_64 */
+ 
++#if defined(CONFIG_PPC_BOOK3S_64) || defined(CONFIG_PPC_FSL_BOOK3E)
+ void do_barrier_nospec_fixups(bool enable)
+ {
+ 	void *start, *end;
+@@ -199,7 +200,40 @@ void do_barrier_nospec_fixups(bool enable)
+ 	do_barrier_nospec_fixups_range(enable, start, end);
+ }
+ 
+-#endif /* CONFIG_PPC_BOOK3S_64 */
++#endif /* CONFIG_PPC_BOOK3S_64 || CONFIG_PPC_FSL_BOOK3E */
 +
-+		up_read(&mm->mmap_sem);
-+		if (fault_in_pages_readable((const char __user *)regs->nip,
-+					    sizeof(unsigned int)))
-+			return bad_area_nosemaphore(regs, address);
-+		goto retry;
++#ifdef CONFIG_PPC_FSL_BOOK3E
++void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, void *fixup_end)
++{
++	unsigned int instr[2], *dest;
++	long *start, *end;
++	int i;
++
++	start = fixup_start;
++	end = fixup_end;
++
++	instr[0] = PPC_INST_NOP; /* nop */
++	instr[1] = PPC_INST_NOP; /* nop */
++
++	if (enable) {
++		pr_info("barrier_nospec: using isync; sync as a speculation barrier\n");
++		instr[0] = PPC_INST_ISYNC;
++		instr[1] = PPC_INST_SYNC;
 +	}
++
++	for (i = 0; start < end; start++, i++) {
++		dest = (void *)start + *start;
++		pr_devel("patching dest %lx\n", (unsigned long)dest);
++
++		patch_instruction(dest, instr[0]);
++		patch_instruction(dest + 1, instr[1]);
++
++	}
++
++	pr_debug("barrier-nospec: patched %d locations\n", i);
++
++}
++#endif /* CONFIG_PPC_FSL_BOOK3E */
  
- 	/* Try to expand it */
- 	if (unlikely(expand_stack(vma, address)))
+ void do_lwsync_fixups(unsigned long value, void *fixup_start, void *fixup_end)
+ {
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index ac191a7..11bce3d 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -59,6 +59,21 @@ void __init corenet_gen_pic_init(void)
+ 	}
+ }
+ 
++static void setup_spec_barrier(void)
++{
++	struct device_node *np = of_find_node_by_name(NULL, "cpus");
++
++	if (np) {
++		struct property *prop;
++
++		prop = of_find_property(np,
++		       "fsl,needs-spec-barrier-for-bounds-check", NULL);
++		if (prop)
++			setup_barrier_nospec();
++		of_node_put(np);
++	}
++}
++
+ /*
+  * Setup the architecture
+  */
+@@ -80,6 +95,8 @@ void __init corenet_gen_setup_arch(void)
+ 
+ 	pr_info("%s board\n", ppc_md.name);
+ 
++	setup_spec_barrier();
++
+ 	mpc85xx_qe_init();
+ }
+ 
 -- 
-2.13.3
+2.5.5
