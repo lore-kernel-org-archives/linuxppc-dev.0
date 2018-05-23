@@ -1,30 +1,24 @@
-Return-Path: <jakub.kicinski@netronome.com>
-Received: from mail-qt0-x22b.google.com (mail-qt0-x22b.google.com
- [IPv6:2607:f8b0:400d:c0d::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rm2W1K1BzF1BS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 07:32:51 +1000 (AEST)
-Received: by mail-qt0-x22b.google.com with SMTP id f13-v6so30106553qtp.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 14:32:50 -0700 (PDT)
-Date: Wed, 23 May 2018 14:32:44 -0700
-From: Jakub Kicinski <jakub.kicinski@netronome.com>
-To: Sandipan Das <sandipan@linux.vnet.ibm.com>
-Cc: Daniel Borkmann <daniel@iogearbox.net>, ast@kernel.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au,
- naveen.n.rao@linux.vnet.ibm.com, Quentin Monnet
- <quentin.monnet@netronome.com>
-Subject: Re: [PATCH bpf-next v3 10/10] tools: bpftool: add delimiters to
- multi-function JITed dumps
-Message-ID: <20180523143244.52db840f@cakuba>
-In-Reply-To: <7142939b-515e-50ac-bc0b-50444bf9cc97@linux.vnet.ibm.com>
-References: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
- <88b61b11ebca5b44bad0c34225b6f2383e5983a5.1527008647.git.sandipan@linux.vnet.ibm.com>
- <20180522125544.541c68c8@cakuba>
- <2dabfa7f-15b8-236c-7724-33bc3da7e549@iogearbox.net>
- <7142939b-515e-50ac-bc0b-50444bf9cc97@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rmQT3XlrzF1Gj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 07:50:09 +1000 (AEST)
+Date: Wed, 23 May 2018 16:50:06 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] pci/hotplug/pnv-php: add missing of_node_put
+Message-ID: <20180523215006.GF150632@bhelgaas-glaptop.roam.corp.google.com>
+References: <1527102436-13447-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1527102436-13447-5-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1527102436-13447-5-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 23 May 2018 16:07:40 +0530, Sandipan Das wrote:
->         "name": "bpf_prog_196af774a3477707_F",
->         "insns": [{
->                 "pc": "0x0",
->                 "operation": "nop",
->                 "operands": [null
->                 ]
->             },{
->                 "pc": "0x4",
->                 "operation": "nop",
->                 "operands": [null
->                 ]
->             },{
->                 "pc": "0x8",
->                 "operation": "mflr",
->                 "operands": ["r0"
->                 ]
->             },{
->                 ...
->             }
->         ]
->     }
-> ]
+On Wed, May 23, 2018 at 09:07:15PM +0200, Julia Lawall wrote:
+> The device node iterators perform an of_node_get on each iteration, so a
+> jump out of the loop requires an of_node_put.
 > 
-> If this is okay, I can send out the next revision with these changes.
+> The semantic patch that fixes this problem is as follows
+> (http://coccinelle.lip6.fr):
+> 
+> // <smpl>
+> @@
+> expression root,e;
+> local idexpression child;
+> iterator name for_each_child_of_node;
+> @@
+> 
+>  for_each_child_of_node(root, child) {
+>    ... when != of_node_put(child)
+>        when != e = child
+> +  of_node_put(child);
+> ?  break;
+>    ...
+> }
+> ... when != child
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Looks good, thank you!
+Applied to pci/hotplug for v4.18, thanks!
+
+> ---
+>  drivers/pci/hotplug/pnv_php.c |    8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+> index d441006..6c2e8d7 100644
+> --- a/drivers/pci/hotplug/pnv_php.c
+> +++ b/drivers/pci/hotplug/pnv_php.c
+> @@ -220,12 +220,16 @@ static int pnv_php_populate_changeset(struct of_changeset *ocs,
+>  
+>  	for_each_child_of_node(dn, child) {
+>  		ret = of_changeset_attach_node(ocs, child);
+> -		if (ret)
+> +		if (ret) {
+> +			of_node_put(child);
+>  			break;
+> +		}
+>  
+>  		ret = pnv_php_populate_changeset(ocs, child);
+> -		if (ret)
+> +		if (ret) {
+> +			of_node_put(child);
+>  			break;
+> +		}
+>  	}
+>  
+>  	return ret;
+> 
