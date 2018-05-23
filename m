@@ -1,17 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <daniel@iogearbox.net>
+Received: from www62.your-server.de (www62.your-server.de [213.133.104.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rW4d4mv6zF0wk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 21:48:49 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: malat@debian.org
-Subject: [PATCH 2/2] powerpc/xmon: Realign paca dump fields
-Date: Wed, 23 May 2018 21:48:37 +1000
-Message-Id: <20180523114837.6980-2-mpe@ellerman.id.au>
-In-Reply-To: <20180523114837.6980-1-mpe@ellerman.id.au>
-References: <20180523114837.6980-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rYnK6RXSzF0wM
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 23:50:44 +1000 (AEST)
+Subject: Re: [PATCH bpf-next v3 10/10] tools: bpftool: add delimiters to
+ multi-function JITed dumps
+To: Sandipan Das <sandipan@linux.vnet.ibm.com>,
+ Jakub Kicinski <jakub.kicinski@netronome.com>
+Cc: ast@kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, naveen.n.rao@linux.vnet.ibm.com,
+ Quentin Monnet <quentin.monnet@netronome.com>
+References: <cover.1527008646.git.sandipan@linux.vnet.ibm.com>
+ <88b61b11ebca5b44bad0c34225b6f2383e5983a5.1527008647.git.sandipan@linux.vnet.ibm.com>
+ <20180522125544.541c68c8@cakuba>
+ <2dabfa7f-15b8-236c-7724-33bc3da7e549@iogearbox.net>
+ <7142939b-515e-50ac-bc0b-50444bf9cc97@linux.vnet.ibm.com>
+From: Daniel Borkmann <daniel@iogearbox.net>
+Message-ID: <024d9f55-2382-8080-c0c2-e3acfbfb9590@iogearbox.net>
+Date: Wed, 23 May 2018 15:50:33 +0200
+MIME-Version: 1.0
+In-Reply-To: <7142939b-515e-50ac-bc0b-50444bf9cc97@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,74 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've added some fields with longer names since we originally wrote
-this, so the fields are no longer lined up. Adjust the widths to make
-it all look nice again, eg:
+On 05/23/2018 12:37 PM, Sandipan Das wrote:
+[...]
+> Other than that, for powerpc64, there is a problem with the way the
+> binutils disassembler code (in "opcodes/ppc-dis.c") passes arguments
+> to the callback fprintf_json().
+> 
+> In fprintf_json(), we always expect the va_list elements to resolve
+> to strings (char *). But for powerpc64, the register or immediate
+> operands are always passed as integers. So, when the code attempts
+> to resolve these operands using va_arg(ap, char *), bpftool crashes.
+> For now, I am using a workaround based on vsnprintf() but this does
+> not get the semantics correct for memory operands. You can probably
+> see that for the store instructions in the JSON dump above this.
+> 
+> Daniel,
+> 
+> Would it be okay if I send out a fix for this in a different series?
 
-  0:mon> dp
-  paca for cpu 0x0 @ c000000001fa0000:
-   possible                  = yes
-   ...
-   slb_shadow            [0] = 0xc000000008000000 0x400ea1b217000500
-   slb_shadow            [1] = 0xd000000008000001 0x400d43642f000510
-   ...
-   rfi_flush_fallback_area   = c0000000fff80000   (0xcc8)
-   ...
-   accounting.starttime_user = 0x51582f07         (0xae8)
+I'm fine either way with regards to the fix. Feels like a portability bug
+in the binutils disassembler?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/xmon/xmon.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+We could probably have a feature test like in test-disassembler-four-args
+and select a workaround in bpftool based on that outcome.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index a81aa3afd87e..421c3a9aa734 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2345,12 +2345,12 @@ static void dump_one_paca(int cpu)
- 
- 	printf("paca for cpu 0x%x @ %px:\n", cpu, p);
- 
--	printf(" %-*s = %s\n", 20, "possible", cpu_possible(cpu) ? "yes" : "no");
--	printf(" %-*s = %s\n", 20, "present", cpu_present(cpu) ? "yes" : "no");
--	printf(" %-*s = %s\n", 20, "online", cpu_online(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 25, "possible", cpu_possible(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 25, "present", cpu_present(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 25, "online", cpu_online(cpu) ? "yes" : "no");
- 
- #define DUMP(paca, name, format)				\
--	printf(" %-*s = "format"\t(0x%lx)\n", 20, #name, 18, paca->name, \
-+	printf(" %-*s = "format"\t(0x%lx)\n", 25, #name, 18, paca->name, \
- 		offsetof(struct paca_struct, name));
- 
- 	DUMP(p, lock_token, "%#-*x");
-@@ -2381,14 +2381,15 @@ static void dump_one_paca(int cpu)
- 		vsid = be64_to_cpu(p->slb_shadow_ptr->save_area[i].vsid);
- 
- 		if (esid || vsid) {
--			printf(" slb_shadow[%d]:       = 0x%016llx 0x%016llx\n",
--				i, esid, vsid);
-+			printf(" %-*s[%d] = 0x%016llx 0x%016llx\n",
-+			       22, "slb_shadow", i, esid, vsid);
- 		}
- 	}
- 	DUMP(p, vmalloc_sllp, "%#-*x");
- 	DUMP(p, slb_cache_ptr, "%#-*x");
- 	for (i = 0; i < SLB_CACHE_ENTRIES; i++)
--		printf(" slb_cache[%d]:        = 0x%016x\n", i, p->slb_cache[i]);
-+		printf(" %-*s[%d] = 0x%016x\n",
-+		       22, "slb_cache", i, p->slb_cache[i]);
- 
- 	DUMP(p, rfi_flush_fallback_area, "%-*px");
- #endif
-@@ -2403,7 +2404,7 @@ static void dump_one_paca(int cpu)
- #endif
- 	DUMP(p, __current, "%-*px");
- 	DUMP(p, kstack, "%#-*llx");
--	printf(" kstack_base          = 0x%016llx\n", p->kstack & ~(THREAD_SIZE - 1));
-+	printf(" %-*s = 0x%016llx\n", 25, "kstack_base", p->kstack & ~(THREAD_SIZE - 1));
- 	DUMP(p, stab_rr, "%#-*llx");
- 	DUMP(p, saved_r1, "%#-*llx");
- 	DUMP(p, trap_save, "%#-*x");
--- 
-2.14.1
+Thanks Sandipan!
+
+  [1] tools/build/feature/test-disassembler-four-args.c
