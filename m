@@ -2,25 +2,25 @@ Return-Path: <srs1=ml38=kernel.org==wfse=ik=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWN1zpWzF11l
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWR2M7fzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:03 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWN1N46z8tLb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:00 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWQ684Nz8tLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:02 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40rfWM4y3cz9s15
- for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:23:59 +1000 (AEST)
-Subject: Patch "powerpc: Move default security feature flags" has been added
- to the 4.16-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40rfWQ1Whxz9s15
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:24:02 +1000 (AEST)
+Subject: Patch "powerpc/64s: Enhance the information in cpu_show_meltdown()"
+ has been added to the 4.16-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
+ mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Wed, 23 May 2018 19:23:12 +0200
-In-Reply-To: <20180522144125.10345-14-mpe@ellerman.id.au>
-Message-ID: <1527096192133114@kroah.com>
+In-Reply-To: <20180522144125.10345-8-mpe@ellerman.id.au>
+Message-ID: <1527096192242183@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc: Move default security feature flags
+    powerpc/64s: Enhance the information in cpu_show_meltdown()
 
 to the 4.16-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-move-default-security-feature-flags.patch
+     powerpc-64s-enhance-the-information-in-cpu_show_meltdown.patch
 and it can be found in the queue-4.16 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,60 +50,82 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Wed May 23 19:18:22 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 23 May 2018 00:41:24 +1000
-Subject: powerpc: Move default security feature flags
+Date: Wed, 23 May 2018 00:41:18 +1000
+Subject: powerpc/64s: Enhance the information in cpu_show_meltdown()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180522144125.10345-14-mpe@ellerman.id.au>
+Message-ID: <20180522144125.10345-8-mpe@ellerman.id.au>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit e7347a86830f38dc3e40c8f7e28c04412b12a2e7 upstream.
+commit ff348355e9c72493947be337bb4fae4fc1a41eba upstream.
 
-This moves the definition of the default security feature flags
-(i.e., enabled by default) closer to the security feature flags.
+Now that we have the security feature flags we can make the
+information displayed in the "meltdown" file more informative.
 
-This can be used to restore current flags to the default flags.
-
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/security_features.h |    8 ++++++++
- arch/powerpc/kernel/security.c               |    7 +------
- 2 files changed, 9 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/security_features.h |    1 
+ arch/powerpc/kernel/security.c               |   30 +++++++++++++++++++++++++--
+ 2 files changed, 29 insertions(+), 2 deletions(-)
 
 --- a/arch/powerpc/include/asm/security_features.h
 +++ b/arch/powerpc/include/asm/security_features.h
-@@ -63,4 +63,12 @@ static inline bool security_ftr_enabled(
- // Firmware configuration indicates user favours security over performance
- #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+@@ -10,6 +10,7 @@
  
-+
-+// Features enabled by default
-+#define SEC_FTR_DEFAULT \
-+	(SEC_FTR_L1D_FLUSH_HV | \
-+	 SEC_FTR_L1D_FLUSH_PR | \
-+	 SEC_FTR_BNDS_CHK_SPEC_BAR | \
-+	 SEC_FTR_FAVOUR_SECURITY)
-+
- #endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
+ 
+ extern unsigned long powerpc_security_features;
++extern bool rfi_flush;
+ 
+ static inline void security_ftr_set(unsigned long feature)
+ {
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -11,12 +11,7 @@
+@@ -6,6 +6,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/device.h>
++#include <linux/seq_buf.h>
+ 
  #include <asm/security_features.h>
  
- 
--unsigned long powerpc_security_features __read_mostly = \
--	SEC_FTR_L1D_FLUSH_HV | \
--	SEC_FTR_L1D_FLUSH_PR | \
--	SEC_FTR_BNDS_CHK_SPEC_BAR | \
--	SEC_FTR_FAVOUR_SECURITY;
--
-+unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+@@ -19,8 +20,33 @@ unsigned long powerpc_security_features
  
  ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
  {
+-	if (rfi_flush)
+-		return sprintf(buf, "Mitigation: RFI Flush\n");
++	bool thread_priv;
++
++	thread_priv = security_ftr_enabled(SEC_FTR_L1D_THREAD_PRIV);
++
++	if (rfi_flush || thread_priv) {
++		struct seq_buf s;
++		seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++		seq_buf_printf(&s, "Mitigation: ");
++
++		if (rfi_flush)
++			seq_buf_printf(&s, "RFI Flush");
++
++		if (rfi_flush && thread_priv)
++			seq_buf_printf(&s, ", ");
++
++		if (thread_priv)
++			seq_buf_printf(&s, "L1D private per thread");
++
++		seq_buf_printf(&s, "\n");
++
++		return s.len;
++	}
++
++	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
++	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
++		return sprintf(buf, "Not affected\n");
+ 
+ 	return sprintf(buf, "Vulnerable\n");
+ }
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
