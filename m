@@ -2,25 +2,25 @@ Return-Path: <srs1=ml38=kernel.org==wfse=ik=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWJ5h5tzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWN1zpWzF11l
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:00 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWJ51P7z8tLb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:56 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWN1N46z8tLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:00 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40rfWJ0hysz9rxs
- for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:23:56 +1000 (AEST)
-Subject: Patch "powerpc: Add security feature flags for Spectre/Meltdown" has
- been added to the 4.16-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40rfWM4y3cz9s15
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:23:59 +1000 (AEST)
+Subject: Patch "powerpc: Move default security feature flags" has been added
+ to the 4.16-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mpe@ellerman.id.au, tglx@linutronix.de
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Wed, 23 May 2018 19:23:12 +0200
-In-Reply-To: <20180522144125.10345-3-mpe@ellerman.id.au>
-Message-ID: <1527096192209172@kroah.com>
+In-Reply-To: <20180522144125.10345-14-mpe@ellerman.id.au>
+Message-ID: <1527096192133114@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc: Add security feature flags for Spectre/Meltdown
+    powerpc: Move default security feature flags
 
 to the 4.16-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-add-security-feature-flags-for-spectre-meltdown.patch
+     powerpc-move-default-security-feature-flags.patch
 and it can be found in the queue-4.16 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,136 +50,60 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Wed May 23 19:18:22 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 23 May 2018 00:41:13 +1000
-Subject: powerpc: Add security feature flags for Spectre/Meltdown
+Date: Wed, 23 May 2018 00:41:24 +1000
+Subject: powerpc: Move default security feature flags
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180522144125.10345-3-mpe@ellerman.id.au>
+Message-ID: <20180522144125.10345-14-mpe@ellerman.id.au>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-commit 9a868f634349e62922c226834aa23e3d1329ae7f upstream.
+commit e7347a86830f38dc3e40c8f7e28c04412b12a2e7 upstream.
 
-This commit adds security feature flags to reflect the settings we
-receive from firmware regarding Spectre/Meltdown mitigations.
+This moves the definition of the default security feature flags
+(i.e., enabled by default) closer to the security feature flags.
 
-The feature names reflect the names we are given by firmware on bare
-metal machines. See the hostboot source for details.
+This can be used to restore current flags to the default flags.
 
-Arguably these could be firmware features, but that then requires them
-to be read early in boot so they're available prior to asm feature
-patching, but we don't actually want to use them for patching. We may
-also want to dynamically update them in future, which would be
-incompatible with the way firmware features work (at the moment at
-least). So for now just make them separate flags.
-
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/security_features.h |   65 +++++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile                 |    2 
- arch/powerpc/kernel/security.c               |   15 ++++++
- 3 files changed, 81 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/security_features.h
- create mode 100644 arch/powerpc/kernel/security.c
+ arch/powerpc/include/asm/security_features.h |    8 ++++++++
+ arch/powerpc/kernel/security.c               |    7 +------
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
---- /dev/null
+--- a/arch/powerpc/include/asm/security_features.h
 +++ b/arch/powerpc/include/asm/security_features.h
-@@ -0,0 +1,65 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Security related feature bit definitions.
-+ *
-+ * Copyright 2018, Michael Ellerman, IBM Corporation.
-+ */
+@@ -63,4 +63,12 @@ static inline bool security_ftr_enabled(
+ // Firmware configuration indicates user favours security over performance
+ #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
+ 
 +
-+#ifndef _ASM_POWERPC_SECURITY_FEATURES_H
-+#define _ASM_POWERPC_SECURITY_FEATURES_H
++// Features enabled by default
++#define SEC_FTR_DEFAULT \
++	(SEC_FTR_L1D_FLUSH_HV | \
++	 SEC_FTR_L1D_FLUSH_PR | \
++	 SEC_FTR_BNDS_CHK_SPEC_BAR | \
++	 SEC_FTR_FAVOUR_SECURITY)
 +
-+
-+extern unsigned long powerpc_security_features;
-+
-+static inline void security_ftr_set(unsigned long feature)
-+{
-+	powerpc_security_features |= feature;
-+}
-+
-+static inline void security_ftr_clear(unsigned long feature)
-+{
-+	powerpc_security_features &= ~feature;
-+}
-+
-+static inline bool security_ftr_enabled(unsigned long feature)
-+{
-+	return !!(powerpc_security_features & feature);
-+}
-+
-+
-+// Features indicating support for Spectre/Meltdown mitigations
-+
-+// The L1-D cache can be flushed with ori r30,r30,0
-+#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
-+
-+// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2)
-+#define SEC_FTR_L1D_FLUSH_TRIG2		0x0000000000000002ull
-+
-+// ori r31,r31,0 acts as a speculation barrier
-+#define SEC_FTR_SPEC_BAR_ORI31		0x0000000000000004ull
-+
-+// Speculation past bctr is disabled
-+#define SEC_FTR_BCCTRL_SERIALISED	0x0000000000000008ull
-+
-+// Entries in L1-D are private to a SMT thread
-+#define SEC_FTR_L1D_THREAD_PRIV		0x0000000000000010ull
-+
-+// Indirect branch prediction cache disabled
-+#define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
-+
-+
-+// Features indicating need for Spectre/Meltdown mitigations
-+
-+// The L1-D cache should be flushed on MSR[HV] 1->0 transition (hypervisor to guest)
-+#define SEC_FTR_L1D_FLUSH_HV		0x0000000000000040ull
-+
-+// The L1-D cache should be flushed on MSR[PR] 0->1 transition (kernel to userspace)
-+#define SEC_FTR_L1D_FLUSH_PR		0x0000000000000080ull
-+
-+// A speculation barrier should be used for bounds checks (Spectre variant 1)
-+#define SEC_FTR_BNDS_CHK_SPEC_BAR	0x0000000000000100ull
-+
-+// Firmware configuration indicates user favours security over performance
-+#define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
-+
-+#endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -42,7 +42,7 @@ obj-$(CONFIG_VDSO32)		+= vdso32/
- obj-$(CONFIG_PPC_WATCHDOG)	+= watchdog.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
--obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
- obj-$(CONFIG_PPC64)		+= vdso64/
---- /dev/null
+ #endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
+--- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -0,0 +1,15 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+//
-+// Security related flags and so on.
-+//
-+// Copyright 2018, Michael Ellerman, IBM Corporation.
-+
-+#include <linux/kernel.h>
-+#include <asm/security_features.h>
-+
-+
-+unsigned long powerpc_security_features __read_mostly = \
-+	SEC_FTR_L1D_FLUSH_HV | \
-+	SEC_FTR_L1D_FLUSH_PR | \
-+	SEC_FTR_BNDS_CHK_SPEC_BAR | \
-+	SEC_FTR_FAVOUR_SECURITY;
+@@ -11,12 +11,7 @@
+ #include <asm/security_features.h>
+ 
+ 
+-unsigned long powerpc_security_features __read_mostly = \
+-	SEC_FTR_L1D_FLUSH_HV | \
+-	SEC_FTR_L1D_FLUSH_PR | \
+-	SEC_FTR_BNDS_CHK_SPEC_BAR | \
+-	SEC_FTR_FAVOUR_SECURITY;
+-
++unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+ 
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
