@@ -3,23 +3,21 @@ Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
  [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rPPZ3vsLzDrp5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 17:33:06 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id w129-v6so10052682pfd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:33:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rPPd5SGVzDrp0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 17:33:09 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id o76-v6so10051920pfi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:33:09 -0700 (PDT)
 From: wei.guo.simon@gmail.com
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
  "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v5 1/4] powerpc/64: Align bytes before fall back to .Lshort in
- powerpc64 memcmp()
-Date: Wed, 23 May 2018 14:48:00 +0800
-Message-Id: <1527058083-6998-2-git-send-email-wei.guo.simon@gmail.com>
+Subject: [PATCH v5 2/4] powerpc/64: enhance memcmp() with VMX instruction for
+ long bytes comparision
+Date: Wed, 23 May 2018 14:48:01 +0800
+Message-Id: <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
 In-Reply-To: <1527058083-6998-1-git-send-email-wei.guo.simon@gmail.com>
 References: <1527058083-6998-1-git-send-email-wei.guo.simon@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,263 +29,437 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Simon Guo <wei.guo.simon@gmail.com>
 
-Currently memcmp() 64bytes version in powerpc will fall back to .Lshort
-(compare per byte mode) if either src or dst address is not 8 bytes aligned.
-It can be opmitized in 2 situations:
+This patch add VMX primitives to do memcmp() in case the compare size
+exceeds 4K bytes. KSM feature can benefit from this.
 
-1) if both addresses are with the same offset with 8 bytes boundary:
-memcmp() can compare the unaligned bytes within 8 bytes boundary firstly
-and then compare the rest 8-bytes-aligned content with .Llong mode.
+Test result with following test program(replace the "^>" with ""):
+------
+># cat tools/testing/selftests/powerpc/stringloops/memcmp.c
+>#include <malloc.h>
+>#include <stdlib.h>
+>#include <string.h>
+>#include <time.h>
+>#include "utils.h"
+>#define SIZE (1024 * 1024 * 900)
+>#define ITERATIONS 40
 
-2)  If src/dst addrs are not with the same offset of 8 bytes boundary:
-memcmp() can align src addr with 8 bytes, increment dst addr accordingly,
- then load src with aligned mode and load dst with unaligned mode.
+int test_memcmp(const void *s1, const void *s2, size_t n);
 
-This patch optmizes memcmp() behavior in the above 2 situations.
+static int testcase(void)
+{
+        char *s1;
+        char *s2;
+        unsigned long i;
 
-Tested with both little/big endian. Performance result below is based on
-little endian.
+        s1 = memalign(128, SIZE);
+        if (!s1) {
+                perror("memalign");
+                exit(1);
+        }
 
-Following is the test result with src/dst having the same offset case:
-(a similar result was observed when src/dst having different offset):
-(1) 256 bytes
-Test with the existing tools/testing/selftests/powerpc/stringloops/memcmp:
-- without patch
-	29.773018302 seconds time elapsed                                          ( +- 0.09% )
-- with patch
-	16.485568173 seconds time elapsed                                          ( +-  0.02% )
-		-> There is ~+80% percent improvement
+        s2 = memalign(128, SIZE);
+        if (!s2) {
+                perror("memalign");
+                exit(1);
+        }
 
-(2) 32 bytes
-To observe performance impact on < 32 bytes, modify
-tools/testing/selftests/powerpc/stringloops/memcmp.c with following:
--------
- #include <string.h>
- #include "utils.h"
+        for (i = 0; i < SIZE; i++)  {
+                s1[i] = i & 0xff;
+                s2[i] = i & 0xff;
+        }
+        for (i = 0; i < ITERATIONS; i++) {
+		int ret = test_memcmp(s1, s2, SIZE);
 
--#define SIZE 256
-+#define SIZE 32
- #define ITERATIONS 10000
+		if (ret) {
+			printf("return %d at[%ld]! should have returned zero\n", ret, i);
+			abort();
+		}
+	}
 
- int test_memcmp(const void *s1, const void *s2, size_t n);
---------
+        return 0;
+}
 
-- Without patch
-	0.244746482 seconds time elapsed                                          ( +-  0.36%)
-- with patch
-	0.215069477 seconds time elapsed                                          ( +-  0.51%)
-		-> There is ～+13% improvement
+int main(void)
+{
+        return test_harness(testcase, "memcmp");
+}
+------
+Without this patch (but with the first patch "powerpc/64: Align bytes
+before fall back to .Lshort in powerpc64 memcmp()." in the series):
+	4.726728762 seconds time elapsed                                          ( +-  3.54%)
+With VMX patch:
+	4.234335473 seconds time elapsed                                          ( +-  2.63%)
+		There is ~+10% improvement.
 
-(3) 0~8 bytes
-To observe <8 bytes performance impact, modify
-tools/testing/selftests/powerpc/stringloops/memcmp.c with following:
--------
- #include <string.h>
- #include "utils.h"
-
--#define SIZE 256
--#define ITERATIONS 10000
-+#define SIZE 8
-+#define ITERATIONS 1000000
-
- int test_memcmp(const void *s1, const void *s2, size_t n);
--------
-- Without patch
-       1.845642503 seconds time elapsed                                          ( +- 0.12% )
-- With patch
-       1.849767135 seconds time elapsed                                          ( +- 0.26% )
-		-> They are nearly the same. (-0.2%)
+Testing with unaligned and different offset version (make s1 and s2 shift
+random offset within 16 bytes) can archieve higher improvement than 10%..
 
 Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
 ---
- arch/powerpc/lib/memcmp_64.S | 143 ++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 136 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/asm-prototypes.h |   4 +-
+ arch/powerpc/lib/copypage_power7.S        |   4 +-
+ arch/powerpc/lib/memcmp_64.S              | 231 ++++++++++++++++++++++++++++++
+ arch/powerpc/lib/memcpy_power7.S          |   6 +-
+ arch/powerpc/lib/vmx-helper.c             |   4 +-
+ 5 files changed, 240 insertions(+), 9 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index d9713ad..31fdcee 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -49,8 +49,8 @@ void __trace_hcall_exit(long opcode, unsigned long retval,
+ /* VMX copying */
+ int enter_vmx_usercopy(void);
+ int exit_vmx_usercopy(void);
+-int enter_vmx_copy(void);
+-void * exit_vmx_copy(void *dest);
++int enter_vmx_ops(void);
++void *exit_vmx_ops(void *dest);
+ 
+ /* Traps */
+ long machine_check_early(struct pt_regs *regs);
+diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
+index 8fa73b7..e38f956 100644
+--- a/arch/powerpc/lib/copypage_power7.S
++++ b/arch/powerpc/lib/copypage_power7.S
+@@ -57,7 +57,7 @@ _GLOBAL(copypage_power7)
+ 	std	r4,-STACKFRAMESIZE+STK_REG(R30)(r1)
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+-	bl	enter_vmx_copy
++	bl	enter_vmx_ops
+ 	cmpwi	r3,0
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	ld	r3,STK_REG(R31)(r1)
+@@ -100,7 +100,7 @@ _GLOBAL(copypage_power7)
+ 	addi	r3,r3,128
+ 	bdnz	1b
+ 
+-	b	exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_ops		/* tail call optimise */
+ 
+ #else
+ 	li	r0,(PAGE_SIZE/128)
 diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-index d75d18b..f20e883 100644
+index f20e883..6303bbf 100644
 --- a/arch/powerpc/lib/memcmp_64.S
 +++ b/arch/powerpc/lib/memcmp_64.S
-@@ -24,28 +24,41 @@
- #define rH	r31
- 
- #ifdef __LITTLE_ENDIAN__
-+#define LH	lhbrx
-+#define LW	lwbrx
+@@ -27,12 +27,73 @@
+ #define LH	lhbrx
+ #define LW	lwbrx
  #define LD	ldbrx
++#define LVS	lvsr
++#define VPERM(_VRT,_VRA,_VRB,_VRC) \
++	vperm _VRT,_VRB,_VRA,_VRC
  #else
-+#define LH	lhzx
-+#define LW	lwzx
+ #define LH	lhzx
+ #define LW	lwzx
  #define LD	ldx
++#define LVS	lvsl
++#define VPERM(_VRT,_VRA,_VRB,_VRC) \
++	vperm _VRT,_VRA,_VRB,_VRC
  #endif
  
++#define VMX_OPS_THRES 4096
++#define ENTER_VMX_OPS	\
++	mflr    r0;	\
++	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
++	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
++	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
++	std     r0,16(r1); \
++	stdu    r1,-STACKFRAMESIZE(r1); \
++	bl      enter_vmx_ops; \
++	cmpwi   cr1,r3,0; \
++	ld      r0,STACKFRAMESIZE+16(r1); \
++	ld      r3,STK_REG(R31)(r1); \
++	ld      r4,STK_REG(R30)(r1); \
++	ld      r5,STK_REG(R29)(r1); \
++	addi	r1,r1,STACKFRAMESIZE; \
++	mtlr    r0
++
++#define EXIT_VMX_OPS \
++	mflr    r0; \
++	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
++	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
++	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
++	std     r0,16(r1); \
++	stdu    r1,-STACKFRAMESIZE(r1); \
++	bl      exit_vmx_ops; \
++	ld      r0,STACKFRAMESIZE+16(r1); \
++	ld      r3,STK_REG(R31)(r1); \
++	ld      r4,STK_REG(R30)(r1); \
++	ld      r5,STK_REG(R29)(r1); \
++	addi	r1,r1,STACKFRAMESIZE; \
++	mtlr    r0
++
 +/*
-+ * There are 2 categories for memcmp:
-+ * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
-+ * are named like .Lsameoffset_xxxx
-+ * 2) src/dst has different offset to the 8 bytes boundary. The handlers
-+ * are named like .Ldiffoffset_xxxx
++ * LD_VSR_CROSS16B load the 2nd 16 bytes for _vaddr which is unaligned with
++ * 16 bytes boundary and permute the result with the 1st 16 bytes.
++
++ *    |  y y y y y y y y y y y y y 0 1 2 | 3 4 5 6 7 8 9 a b c d e f z z z |
++ *    ^                                  ^                                 ^
++ * 0xbbbb10                          0xbbbb20                          0xbbb30
++ *                                 ^
++ *                                _vaddr
++ *
++ *
++ * _vmask is the mask generated by LVS
++ * _v1st_qw is the 1st aligned QW of current addr which is already loaded.
++ *   for example: 0xyyyyyyyyyyyyy012 for big endian
++ * _v2nd_qw is the 2nd aligned QW of cur _vaddr to be loaded.
++ *   for example: 0x3456789abcdefzzz for big endian
++ * The permute result is saved in _v_res.
++ *   for example: 0x0123456789abcdef for big endian.
 + */
- _GLOBAL(memcmp)
- 	cmpdi	cr1,r5,0
- 
--	/* Use the short loop if both strings are not 8B aligned */
--	or	r6,r3,r4
-+	/* Use the short loop if the src/dst addresses are not
-+	 * with the same offset of 8 bytes align boundary.
-+	 */
-+	xor	r6,r3,r4
- 	andi.	r6,r6,7
- 
--	/* Use the short loop if length is less than 32B */
--	cmpdi	cr6,r5,31
-+	/* Fall back to short loop if compare at aligned addrs
-+	 * with less than 8 bytes.
-+	 */
-+	cmpdi   cr6,r5,7
- 
- 	beq	cr1,.Lzero
--	bne	.Lshort
--	bgt	cr6,.Llong
-+	bgt	cr6,.Lno_short
- 
- .Lshort:
- 	mtctr	r5
--
- 1:	lbz	rA,0(r3)
- 	lbz	rB,0(r4)
- 	subf.	rC,rB,rA
-@@ -78,11 +91,90 @@ _GLOBAL(memcmp)
- 	li	r3,0
- 	blr
- 
-+.Lno_short:
-+	dcbt	0,r3
-+	dcbt	0,r4
-+	bne	.Ldiffoffset_8bytes_make_align_start
++#define LD_VSR_CROSS16B(_vaddr,_vmask,_v1st_qw,_v2nd_qw,_v_res) \
++        lvx     _v2nd_qw,_vaddr,off16; \
++        VPERM(_v_res,_v1st_qw,_v2nd_qw,_vmask)
 +
-+
-+.Lsameoffset_8bytes_make_align_start:
-+	/* attempt to compare bytes not aligned with 8 bytes so that
-+	 * rest comparison can run based on 8 bytes alignment.
-+	 */
-+	andi.   r6,r3,7
-+
-+	/* Try to compare the first double word which is not 8 bytes aligned:
-+	 * load the first double word at (src & ~7UL) and shift left appropriate
-+	 * bits before comparision.
-+	 */
-+	clrlwi  r6,r3,29
-+	rlwinm  r6,r6,3,0,28
-+	beq     .Lsameoffset_8bytes_aligned
-+	clrrdi	r3,r3,3
-+	clrrdi	r4,r4,3
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	sld	rA,rA,r6
-+	sld	rB,rB,r6
-+	cmpld	cr0,rA,rB
-+	srwi	r6,r6,3
-+	bne	cr0,.LcmpAB_lightweight
-+	subfic  r6,r6,8
-+	subfc.	r5,r6,r5
-+	addi	r3,r3,8
-+	addi	r4,r4,8
-+	beq	.Lzero
-+
-+.Lsameoffset_8bytes_aligned:
-+	/* now we are aligned with 8 bytes.
-+	 * Use .Llong loop if left cmp bytes are equal or greater than 32B.
-+	 */
-+	cmpdi   cr6,r5,31
-+	bgt	cr6,.Llong
-+
-+.Lcmp_lt32bytes:
-+	/* compare 1 ~ 32 bytes, at least r3 addr is 8 bytes aligned now */
-+	cmpdi   cr5,r5,7
-+	srdi    r0,r5,3
-+	ble	cr5,.Lcmp_rest_lt8bytes
-+
-+	/* handle 8 ~ 31 bytes */
-+	clrldi  r5,r5,61
-+	mtctr   r0
-+2:
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	cmpld	cr0,rA,rB
-+	addi	r3,r3,8
-+	addi	r4,r4,8
-+	bne	cr0,.LcmpAB_lightweight
-+	bdnz	2b
-+
-+	cmpwi   r5,0
-+	beq	.Lzero
-+
-+.Lcmp_rest_lt8bytes:
-+	/* Here we have only less than 8 bytes to compare with. at least s1
-+	 * Address is aligned with 8 bytes.
-+	 * The next double words are load and shift right with appropriate
-+	 * bits.
-+	 */
-+	subfic  r6,r5,8
-+	rlwinm  r6,r6,3,0,28
-+	LD	rA,0,r3
-+	LD	rB,0,r4
-+	srd	rA,rA,r6
-+	srd	rB,rB,r6
-+	cmpld	cr0,rA,rB
-+	bne	cr0,.LcmpAB_lightweight
-+	b	.Lzero
-+
- .Lnon_zero:
- 	mr	r3,rC
+ /*
+  * There are 2 categories for memcmp:
+  * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
+@@ -174,6 +235,13 @@ _GLOBAL(memcmp)
  	blr
  
  .Llong:
-+	/* At least s1 addr is aligned with 8 bytes */
++#ifdef CONFIG_ALTIVEC
++	/* Try to use vmx loop if length is larger than 4K */
++	cmpldi  cr6,r5,VMX_OPS_THRES
++	bge	cr6,.Lsameoffset_vmx_cmp
++
++.Llong_novmx_cmp:
++#endif
+ 	/* At least s1 addr is aligned with 8 bytes */
  	li	off8,8
  	li	off16,16
- 	li	off24,24
-@@ -232,4 +324,41 @@ _GLOBAL(memcmp)
- 	ld	r28,-32(r1)
- 	ld	r27,-40(r1)
+@@ -332,7 +400,94 @@ _GLOBAL(memcmp)
+ 8:
  	blr
+ 
++#ifdef CONFIG_ALTIVEC
++.Lsameoffset_vmx_cmp:
++	/* Enter with src/dst addrs has the same offset with 8 bytes
++	 * align boundary
++	 */
++	ENTER_VMX_OPS
++	beq     cr1,.Llong_novmx_cmp
 +
-+.LcmpAB_lightweight:   /* skip NV GPRS restore */
-+	li	r3,1
-+	bgt	cr0,8f
-+	li	r3,-1
-+8:
-+	blr
++3:
++	/* need to check whether r4 has the same offset with r3
++	 * for 16 bytes boundary.
++	 */
++	xor	r0,r3,r4
++	andi.	r0,r0,0xf
++	bne	.Ldiffoffset_vmx_cmp_start
 +
-+.Ldiffoffset_8bytes_make_align_start:
-+	/* now try to align s1 with 8 bytes */
-+	andi.   r6,r3,0x7
-+	rlwinm  r6,r6,3,0,28
-+	beq     .Ldiffoffset_align_s1_8bytes
-+
-+	clrrdi	r3,r3,3
++	/* len is no less than 4KB. Need to align with 16 bytes further.
++	 */
++	andi.	rA,r3,8
 +	LD	rA,0,r3
-+	LD	rB,0,r4  /* unaligned load */
-+	sld	rA,rA,r6
-+	srd	rA,rA,r6
-+	srd	rB,rB,r6
++	beq	4f
++	LD	rB,0,r4
 +	cmpld	cr0,rA,rB
-+	srwi	r6,r6,3
++	addi	r3,r3,8
++	addi	r4,r4,8
++	addi	r5,r5,-8
++
++	beq	cr0,4f
++	/* save and restore cr0 */
++	mfocrf  r5,64
++	EXIT_VMX_OPS
++	mtocrf	64,r5
++	b	.LcmpAB_lightweight
++
++4:
++	/* compare 32 bytes for each loop */
++	srdi	r0,r5,5
++	mtctr	r0
++	clrldi  r5,r5,59
++	li	off16,16
++
++.balign 16
++5:
++	lvx 	v0,0,r3
++	lvx 	v1,0,r4
++	vcmpequd. v0,v0,v1
++	bf	24,7f
++	lvx 	v0,off16,r3
++	lvx 	v1,off16,r4
++	vcmpequd. v0,v0,v1
++	bf	24,6f
++	addi	r3,r3,32
++	addi	r4,r4,32
++	bdnz	5b
++
++	EXIT_VMX_OPS
++	cmpdi	r5,0
++	beq	.Lzero
++	b	.Lcmp_lt32bytes
++
++6:
++	addi	r3,r3,16
++	addi	r4,r4,16
++
++7:
++	/* diff the last 16 bytes */
++	EXIT_VMX_OPS
++	LD	rA,0,r3
++	LD	rB,0,r4
++	cmpld	cr0,rA,rB
++	li	off8,8
 +	bne	cr0,.LcmpAB_lightweight
 +
-+	subfic  r6,r6,8
-+	subfc.	r5,r6,r5
-+	addi	r3,r3,8
-+	add	r4,r4,r6
++	LD	rA,off8,r3
++	LD	rB,off8,r4
++	cmpld	cr0,rA,rB
++	bne	cr0,.LcmpAB_lightweight
++	b	.Lzero
++#endif
 +
+ .Ldiffoffset_8bytes_make_align_start:
++#ifdef CONFIG_ALTIVEC
++	/* only do vmx ops when the size exceeds 4K bytes */
++	cmpdi	cr5,r5,VMX_OPS_THRES
++	bge	cr5,.Ldiffoffset_vmx_cmp
++.Ldiffoffset_novmx_cmp:
++#endif
++
+ 	/* now try to align s1 with 8 bytes */
+ 	andi.   r6,r3,0x7
+ 	rlwinm  r6,r6,3,0,28
+@@ -359,6 +514,82 @@ _GLOBAL(memcmp)
+ 	/* now s1 is aligned with 8 bytes. */
+ 	cmpdi   cr5,r5,31
+ 	ble	cr5,.Lcmp_lt32bytes
++
++#ifdef CONFIG_ALTIVEC
++	b	.Llong_novmx_cmp
++#else
+ 	b	.Llong
++#endif
++
++#ifdef CONFIG_ALTIVEC
++.Ldiffoffset_vmx_cmp:
++	ENTER_VMX_OPS
++	beq     cr1,.Ldiffoffset_novmx_cmp
++
++.Ldiffoffset_vmx_cmp_start:
++	/* Firstly try to align r3 with 16 bytes */
++	andi.   r6,r3,0xf
++	li	off16,16
++	beq     .Ldiffoffset_vmx_s1_16bytes_align
+ 
++	LVS	v3,0,r3
++	LVS	v4,0,r4
++
++	lvx     v5,0,r3
++	lvx     v6,0,r4
++	LD_VSR_CROSS16B(r3,v3,v5,v7,v9)
++	LD_VSR_CROSS16B(r4,v4,v6,v8,v10)
++
++	vcmpequb.  v7,v9,v10
++	bnl	cr6,.Ldiffoffset_vmx_diff_found
++
++	subfic  r6,r6,16
++	subf    r5,r6,r5
++	add     r3,r3,r6
++	add     r4,r4,r6
++
++.Ldiffoffset_vmx_s1_16bytes_align:
++	/* now s1 is aligned with 16 bytes */
++	lvx     v6,0,r4
++	LVS	v4,0,r4
++	srdi	r6,r5,5  /* loop for 32 bytes each */
++	clrldi  r5,r5,59
++	mtctr	r6
++
++.balign	16
++.Ldiffoffset_vmx_32bytesloop:
++	/* the first qw of r4 was saved in v6 */
++	lvx	v9,0,r3
++	LD_VSR_CROSS16B(r4,v4,v6,v8,v10)
++	vcmpequb.	v7,v9,v10
++	vor	v6,v8,v8
++	bnl	cr6,.Ldiffoffset_vmx_diff_found
++
++	addi	r3,r3,16
++	addi	r4,r4,16
++
++	lvx	v9,0,r3
++	LD_VSR_CROSS16B(r4,v4,v6,v8,v10)
++	vcmpequb.	v7,v9,v10
++	vor	v6,v8,v8
++	bnl	cr6,.Ldiffoffset_vmx_diff_found
++
++	addi	r3,r3,16
++	addi	r4,r4,16
++
++	bdnz	.Ldiffoffset_vmx_32bytesloop
++
++	EXIT_VMX_OPS
++
++	cmpdi	r5,0
 +	beq	.Lzero
++	b	.Lcmp_lt32bytes
 +
-+.Ldiffoffset_align_s1_8bytes:
-+	/* now s1 is aligned with 8 bytes. */
-+	cmpdi   cr5,r5,31
-+	ble	cr5,.Lcmp_lt32bytes
-+	b	.Llong
++.Ldiffoffset_vmx_diff_found:
++	EXIT_VMX_OPS
++	/* anyway, the diff will appear in next 16 bytes */
++	li	r5,16
++	b	.Lcmp_lt32bytes
 +
++#endif
  EXPORT_SYMBOL(memcmp)
+diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+index df7de9d..070cdf6 100644
+--- a/arch/powerpc/lib/memcpy_power7.S
++++ b/arch/powerpc/lib/memcpy_power7.S
+@@ -230,7 +230,7 @@ _GLOBAL(memcpy_power7)
+ 	std	r5,-STACKFRAMESIZE+STK_REG(R29)(r1)
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+-	bl	enter_vmx_copy
++	bl	enter_vmx_ops
+ 	cmpwi	cr1,r3,0
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	ld	r3,STK_REG(R31)(r1)
+@@ -445,7 +445,7 @@ _GLOBAL(memcpy_power7)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+ 	ld	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+-	b	exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_ops		/* tail call optimise */
+ 
+ .Lvmx_unaligned_copy:
+ 	/* Get the destination 16B aligned */
+@@ -649,5 +649,5 @@ _GLOBAL(memcpy_power7)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+ 	ld	r3,-STACKFRAMESIZE+STK_REG(R31)(r1)
+-	b	exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_ops		/* tail call optimise */
+ #endif /* CONFIG_ALTIVEC */
+diff --git a/arch/powerpc/lib/vmx-helper.c b/arch/powerpc/lib/vmx-helper.c
+index bf925cd..9f34049 100644
+--- a/arch/powerpc/lib/vmx-helper.c
++++ b/arch/powerpc/lib/vmx-helper.c
+@@ -53,7 +53,7 @@ int exit_vmx_usercopy(void)
+ 	return 0;
+ }
+ 
+-int enter_vmx_copy(void)
++int enter_vmx_ops(void)
+ {
+ 	if (in_interrupt())
+ 		return 0;
+@@ -70,7 +70,7 @@ int enter_vmx_copy(void)
+  * passed a pointer to the destination which we return as required by a
+  * memcpy implementation.
+  */
+-void *exit_vmx_copy(void *dest)
++void *exit_vmx_ops(void *dest)
+ {
+ 	disable_kernel_altivec();
+ 	preempt_enable();
 -- 
 1.8.3.1
