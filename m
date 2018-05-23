@@ -1,21 +1,44 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <compudj@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rjmP6KnqzF132
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 05:50:29 +1000 (AEST)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: kernel-janitors@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] pci/hotplug/pnv-php: add missing of_node_put
-Date: Wed, 23 May 2018 21:07:15 +0200
-Message-Id: <1527102436-13447-5-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1527102436-13447-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1527102436-13447-1-git-send-email-Julia.Lawall@lip6.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rkJS1mbyzF1C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 06:14:48 +1000 (AEST)
+Date: Wed, 23 May 2018 16:14:39 -0400 (EDT)
+From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+To: Boqun Feng <boqun.feng@gmail.com>
+Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-api <linux-api@vger.kernel.org>, Paul Turner <pjt@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
+ Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
+ Ben Maurer <bmaurer@fb.com>, rostedt <rostedt@goodmis.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ Joel Fernandes <joelaf@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Message-ID: <1928158599.1541.1527106479862.JavaMail.zimbra@efficios.com>
+In-Reply-To: <20180520140811.GB1121@tardis>
+References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
+ <20180516161837.GI12198@hirez.programming.kicks-ass.net>
+ <112970629.1913.1526501596485.JavaMail.zimbra@efficios.com>
+ <20180517011949.GA1121@tardis>
+ <277374719.2144.1526570889798.JavaMail.zimbra@efficios.com>
+ <1526601043.1338308.1376191416.0444B8C5@webmail.messagingengine.com>
+ <418003803.516.1526667437396.JavaMail.zimbra@efficios.com>
+ <20180520140811.GB1121@tardis>
+Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +48,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The device node iterators perform an of_node_get on each iteration, so a
-jump out of the loop requires an of_node_put.
+----- On May 20, 2018, at 10:08 AM, Boqun Feng boqun.feng@gmail.com wrote:
 
-The semantic patch that fixes this problem is as follows
-(http://coccinelle.lip6.fr):
+> On Fri, May 18, 2018 at 02:17:17PM -0400, Mathieu Desnoyers wrote:
+>> ----- On May 17, 2018, at 7:50 PM, Boqun Feng boqun.feng@gmail.com wrote:
+>> [...]
+>> >> > I think you're right. So we have to introduce callsite to rseq_syscall()
+>> >> > in syscall path, something like:
+>> >> > 
+>> >> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> >> > index 51695608c68b..a25734a96640 100644
+>> >> > --- a/arch/powerpc/kernel/entry_64.S
+>> >> > +++ b/arch/powerpc/kernel/entry_64.S
+>> >> > @@ -222,6 +222,9 @@ system_call_exit:
+>> >> > 	mtmsrd	r11,1
+>> >> > #endif /* CONFIG_PPC_BOOK3E */
+>> >> > 
+>> >> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
+>> >> > +	bl	rseq_syscall
+>> >> > +
+>> >> > 	ld	r9,TI_FLAGS(r12)
+>> >> > 	li	r11,-MAX_ERRNO
+>> >> > 	andi.
+>> >> > 		r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+>> >> > 
+>> 
+>> By the way, I think this is not the right spot to call rseq_syscall, because
+>> interrupts are disabled. I think we should move this hunk right after
+>> system_call_exit.
+>> 
+> 
+> Good point.
+> 
+>> Would you like to implement and test an updated patch adding those calls for ppc
+>> 32 and 64 ?
+>> 
+> 
+> I'd like to help, but I don't have a handy ppc environment for test...
+> So I made the below patch which has only been build-tested, hope it
+> could be somewhat helpful.
 
-// <smpl>
-@@
-expression root,e;
-local idexpression child;
-iterator name for_each_child_of_node;
-@@
+Hi Boqun,
 
- for_each_child_of_node(root, child) {
-   ... when != of_node_put(child)
-       when != e = child
-+  of_node_put(child);
-?  break;
-   ...
-}
-... when != child
-// </smpl>
+I tried your patch in a ppc64 le environment, and it does not survive boot
+with CONFIG_DEBUG_RSEQ=y. init gets killed right away.
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Moreover, I'm not sure that the r3 register don't contain something worth
+saving before the call on ppc32. Just after there is a "mr" instruction
+which AFAIU takes r3 as input register.
 
----
- drivers/pci/hotplug/pnv_php.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Can you look into it ?
 
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index d441006..6c2e8d7 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -220,12 +220,16 @@ static int pnv_php_populate_changeset(struct of_changeset *ocs,
- 
- 	for_each_child_of_node(dn, child) {
- 		ret = of_changeset_attach_node(ocs, child);
--		if (ret)
-+		if (ret) {
-+			of_node_put(child);
- 			break;
-+		}
- 
- 		ret = pnv_php_populate_changeset(ocs, child);
--		if (ret)
-+		if (ret) {
-+			of_node_put(child);
- 			break;
-+		}
- 	}
- 
- 	return ret;
+Thanks,
+
+Mathieu
+
+> 
+> Regards,
+> Boqun
+> 
+> --------------------------------->8
+> Subject: [PATCH] powerpc: Add syscall detection for restartable sequences
+> 
+> Syscalls are not allowed inside restartable sequences, so add a call to
+> rseq_syscall() at the very beginning of system call exiting path for
+> CONFIG_DEBUG_RSEQ=y kernel. This could help us to detect whether there
+> is a syscall issued inside restartable sequences.
+> 
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> ---
+> arch/powerpc/kernel/entry_32.S | 5 +++++
+> arch/powerpc/kernel/entry_64.S | 5 +++++
+> 2 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index eb8d01bae8c6..2f134eebe7ed 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -365,6 +365,11 @@ syscall_dotrace_cont:
+> 	blrl			/* Call handler */
+> 	.globl	ret_from_syscall
+> ret_from_syscall:
+> +#ifdef CONFIG_DEBUG_RSEQ
+> +	/* Check whether the syscall is issued inside a restartable sequence */
+> +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> +	bl      rseq_syscall
+> +#endif
+> 	mr	r6,r3
+> 	CURRENT_THREAD_INFO(r12, r1)
+> 	/* disable interrupts so current_thread_info()->flags can't change */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 2cb5109a7ea3..2e2d59bb45d0 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -204,6 +204,11 @@ system_call:			/* label this so stack traces look sane */
+>  * This is blacklisted from kprobes further below with _ASM_NOKPROBE_SYMBOL().
+>  */
+> system_call_exit:
+> +#ifdef CONFIG_DEBUG_RSEQ
+> +	/* Check whether the syscall is issued inside a restartable sequence */
+> +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> +	bl      rseq_syscall
+> +#endif
+> 	/*
+> 	 * Disable interrupts so current_thread_info()->flags can't change,
+> 	 * and so that we don't get interrupted after loading SRR0/1.
+> --
+> 2.16.2
+
+-- 
+Mathieu Desnoyers
+EfficiOS Inc.
+http://www.efficios.com
