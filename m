@@ -1,23 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40s1cL7483zDrJv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 17:44:34 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40s2VM2YM9zF1MY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 18:24:26 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id a14-v6so500205pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 01:24:26 -0700 (PDT)
+Date: Wed, 23 May 2018 23:37:34 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
  "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
+ Cyril Bur <cyrilbur@gmail.com>
 Subject: Re: [PATCH v5 2/4] powerpc/64: enhance memcmp() with VMX instruction
  for long bytes comparision
-In-Reply-To: <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
+Message-ID: <20180523153734.GC2498@simonLocalRHEL7.x64>
 References: <1527058083-6998-1-git-send-email-wei.guo.simon@gmail.com>
  <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
-Date: Thu, 24 May 2018 17:44:33 +1000
-Message-ID: <87d0xlsdjy.fsf@concordia.ellerman.id.au>
+ <87d0xlsdjy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87d0xlsdjy.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,111 +31,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Simon,
+Hi Michael,
+On Thu, May 24, 2018 at 05:44:33PM +1000, Michael Ellerman wrote:
+> Hi Simon,
+> 
+> wei.guo.simon@gmail.com writes:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
+> >
+> > This patch add VMX primitives to do memcmp() in case the compare size
+> > exceeds 4K bytes. KSM feature can benefit from this.
+> 
+> You say "exceeds 4K" here.
+> 
+it should be >= 4k. I will correct the message.
 
-wei.guo.simon@gmail.com writes:
-> From: Simon Guo <wei.guo.simon@gmail.com>
->
-> This patch add VMX primitives to do memcmp() in case the compare size
-> exceeds 4K bytes. KSM feature can benefit from this.
+> > diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> > index f20e883..6303bbf 100644
+> > --- a/arch/powerpc/lib/memcmp_64.S
+> > +++ b/arch/powerpc/lib/memcmp_64.S
+> > @@ -27,12 +27,73 @@
+> >  #define LH	lhbrx
+> >  #define LW	lwbrx
+> >  #define LD	ldbrx
+> > +#define LVS	lvsr
+> > +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
+> > +	vperm _VRT,_VRB,_VRA,_VRC
+> >  #else
+> >  #define LH	lhzx
+> >  #define LW	lwzx
+> >  #define LD	ldx
+> > +#define LVS	lvsl
+> > +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
+> > +	vperm _VRT,_VRA,_VRB,_VRC
+> >  #endif
+> >  
+> > +#define VMX_OPS_THRES 4096
+> 
+> THRES == 4096
+> 
+> BTW, can we call it VMX_THRESH ?
+> 
+Sure. I will update it.
 
-You say "exceeds 4K" here.
+> > +#define ENTER_VMX_OPS	\
+> > +	mflr    r0;	\
+> > +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
+> > +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
+> > +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
+> > +	std     r0,16(r1); \
+> > +	stdu    r1,-STACKFRAMESIZE(r1); \
+> > +	bl      enter_vmx_ops; \
+> > +	cmpwi   cr1,r3,0; \
+> > +	ld      r0,STACKFRAMESIZE+16(r1); \
+> > +	ld      r3,STK_REG(R31)(r1); \
+> > +	ld      r4,STK_REG(R30)(r1); \
+> > +	ld      r5,STK_REG(R29)(r1); \
+> > +	addi	r1,r1,STACKFRAMESIZE; \
+> > +	mtlr    r0
+> > +
+> > +#define EXIT_VMX_OPS \
+> > +	mflr    r0; \
+> > +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
+> > +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
+> > +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
+> > +	std     r0,16(r1); \
+> > +	stdu    r1,-STACKFRAMESIZE(r1); \
+> > +	bl      exit_vmx_ops; \
+> > +	ld      r0,STACKFRAMESIZE+16(r1); \
+> > +	ld      r3,STK_REG(R31)(r1); \
+> > +	ld      r4,STK_REG(R30)(r1); \
+> > +	ld      r5,STK_REG(R29)(r1); \
+> > +	addi	r1,r1,STACKFRAMESIZE; \
+> > +	mtlr    r0
+> > +
+> > +/*
+> > + * LD_VSR_CROSS16B load the 2nd 16 bytes for _vaddr which is unaligned with
+> > + * 16 bytes boundary and permute the result with the 1st 16 bytes.
+> > +
+> > + *    |  y y y y y y y y y y y y y 0 1 2 | 3 4 5 6 7 8 9 a b c d e f z z z |
+> > + *    ^                                  ^                                 ^
+> > + * 0xbbbb10                          0xbbbb20                          0xbbb30
+> > + *                                 ^
+> > + *                                _vaddr
+> > + *
+> > + *
+> > + * _vmask is the mask generated by LVS
+> > + * _v1st_qw is the 1st aligned QW of current addr which is already loaded.
+> > + *   for example: 0xyyyyyyyyyyyyy012 for big endian
+> > + * _v2nd_qw is the 2nd aligned QW of cur _vaddr to be loaded.
+> > + *   for example: 0x3456789abcdefzzz for big endian
+> > + * The permute result is saved in _v_res.
+> > + *   for example: 0x0123456789abcdef for big endian.
+> > + */
+> > +#define LD_VSR_CROSS16B(_vaddr,_vmask,_v1st_qw,_v2nd_qw,_v_res) \
+> > +        lvx     _v2nd_qw,_vaddr,off16; \
+> > +        VPERM(_v_res,_v1st_qw,_v2nd_qw,_vmask)
+> > +
+> >  /*
+> >   * There are 2 categories for memcmp:
+> >   * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
+> > @@ -174,6 +235,13 @@ _GLOBAL(memcmp)
+> >  	blr
+> >  
+> >  .Llong:
+> > +#ifdef CONFIG_ALTIVEC
+> > +	/* Try to use vmx loop if length is larger than 4K */
+> > +	cmpldi  cr6,r5,VMX_OPS_THRES
+> > +	bge	cr6,.Lsameoffset_vmx_cmp
+> 
+> Here we compare the length to 4K and if it's greater *or equal* then we
+> go to the VMX case. Or am I reading it backward?
+> 
+> So we should say "if the size is 4K or more we do VMX" shouldn't we?
+Yes. Again I need reword the comment to "equal or greater than 4K"
+here.
 
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index f20e883..6303bbf 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -27,12 +27,73 @@
->  #define LH	lhbrx
->  #define LW	lwbrx
->  #define LD	ldbrx
-> +#define LVS	lvsr
-> +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
-> +	vperm _VRT,_VRB,_VRA,_VRC
->  #else
->  #define LH	lhzx
->  #define LW	lwzx
->  #define LD	ldx
-> +#define LVS	lvsl
-> +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
-> +	vperm _VRT,_VRA,_VRB,_VRC
->  #endif
->  
-> +#define VMX_OPS_THRES 4096
-
-THRES == 4096
-
-BTW, can we call it VMX_THRESH ?
-
-> +#define ENTER_VMX_OPS	\
-> +	mflr    r0;	\
-> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
-> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
-> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
-> +	std     r0,16(r1); \
-> +	stdu    r1,-STACKFRAMESIZE(r1); \
-> +	bl      enter_vmx_ops; \
-> +	cmpwi   cr1,r3,0; \
-> +	ld      r0,STACKFRAMESIZE+16(r1); \
-> +	ld      r3,STK_REG(R31)(r1); \
-> +	ld      r4,STK_REG(R30)(r1); \
-> +	ld      r5,STK_REG(R29)(r1); \
-> +	addi	r1,r1,STACKFRAMESIZE; \
-> +	mtlr    r0
-> +
-> +#define EXIT_VMX_OPS \
-> +	mflr    r0; \
-> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
-> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
-> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
-> +	std     r0,16(r1); \
-> +	stdu    r1,-STACKFRAMESIZE(r1); \
-> +	bl      exit_vmx_ops; \
-> +	ld      r0,STACKFRAMESIZE+16(r1); \
-> +	ld      r3,STK_REG(R31)(r1); \
-> +	ld      r4,STK_REG(R30)(r1); \
-> +	ld      r5,STK_REG(R29)(r1); \
-> +	addi	r1,r1,STACKFRAMESIZE; \
-> +	mtlr    r0
-> +
-> +/*
-> + * LD_VSR_CROSS16B load the 2nd 16 bytes for _vaddr which is unaligned with
-> + * 16 bytes boundary and permute the result with the 1st 16 bytes.
-> +
-> + *    |  y y y y y y y y y y y y y 0 1 2 | 3 4 5 6 7 8 9 a b c d e f z z z |
-> + *    ^                                  ^                                 ^
-> + * 0xbbbb10                          0xbbbb20                          0xbbb30
-> + *                                 ^
-> + *                                _vaddr
-> + *
-> + *
-> + * _vmask is the mask generated by LVS
-> + * _v1st_qw is the 1st aligned QW of current addr which is already loaded.
-> + *   for example: 0xyyyyyyyyyyyyy012 for big endian
-> + * _v2nd_qw is the 2nd aligned QW of cur _vaddr to be loaded.
-> + *   for example: 0x3456789abcdefzzz for big endian
-> + * The permute result is saved in _v_res.
-> + *   for example: 0x0123456789abcdef for big endian.
-> + */
-> +#define LD_VSR_CROSS16B(_vaddr,_vmask,_v1st_qw,_v2nd_qw,_v_res) \
-> +        lvx     _v2nd_qw,_vaddr,off16; \
-> +        VPERM(_v_res,_v1st_qw,_v2nd_qw,_vmask)
-> +
->  /*
->   * There are 2 categories for memcmp:
->   * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
-> @@ -174,6 +235,13 @@ _GLOBAL(memcmp)
->  	blr
->  
->  .Llong:
-> +#ifdef CONFIG_ALTIVEC
-> +	/* Try to use vmx loop if length is larger than 4K */
-> +	cmpldi  cr6,r5,VMX_OPS_THRES
-> +	bge	cr6,.Lsameoffset_vmx_cmp
-
-Here we compare the length to 4K and if it's greater *or equal* then we
-go to the VMX case. Or am I reading it backward?
-
-So we should say "if the size is 4K or more we do VMX" shouldn't we?
-
-cheers
+Thanks,
+- Simon
