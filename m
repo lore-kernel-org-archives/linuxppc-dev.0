@@ -1,36 +1,25 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rFLT2TtHzDrCm
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 11:29:53 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4N1T3aF133998
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 21:29:50 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j4tsbg7te-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 21:29:50 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 22 May 2018 19:29:49 -0600
-Subject: Re: [RFC v4 4/4] hotplug/drcinfo: Code cleanup for devices
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-References: <3912e8ff-0361-bc42-b8bd-ed1c4d24e218@linux.vnet.ibm.com>
- <048197e9-f24f-b51d-0b9f-40d66b243f19@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Tue, 22 May 2018 20:29:44 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rHVP07dszDrZD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 13:06:52 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id m24-v6so714595pls.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 20:06:52 -0700 (PDT)
+Date: Wed, 23 May 2018 11:06:46 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 5/7] KVM: PPC: reimplements LOAD_VSX/STORE_VSX
+ instruction mmio emulation with analyse_intr() input
+Message-ID: <20180523030646.GA2498@simonLocalRHEL7.x64>
+References: <1526880266-11291-1-git-send-email-wei.guo.simon@gmail.com>
+ <1526880266-11291-6-git-send-email-wei.guo.simon@gmail.com>
+ <20180522094151.GA9871@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <048197e9-f24f-b51d-0b9f-40d66b243f19@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <e255a3a3-1453-ddc2-9ed2-627f5d6a2830@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180522094151.GA9871@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,297 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
-
-On 05/22/2018 04:39 PM, Nathan Fontenot wrote:
-> On 05/22/2018 11:37 AM, Michael Bringmann wrote:
->> This patch extends the use of a common parse function for the
->> ibm,drc-info property that can be modified by a callback function
->> to the hotplug device processing.  Candidate code is replaced by
->> a call to the parser including a pointer to a local context-specific
->> functions, and local data.
->>
->> In addition, several more opportunities to compress and reuse
->> common code between the old and new property parsers were applied.
->>
->> Finally, a bug with the registration of slots was observed on some
->> systems, and the code was rewritten to prevent its reoccurrence.
->>
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> Fixes: 3f38000eda48 ("powerpc/firmware: Add definitions for new drc-info firmwar
->> e feature" -- end of patch series applied to powerpc next)
->> ---
->> Changes in V4:
->>   -- Update code to account for latest kernel checkins.
->>   -- Fix bug searching for virtual device slots.
->>   -- Rebased to 4.17-rc5 kernel
->>   -- Patch cleanup
->> ---
->>  drivers/pci/hotplug/rpaphp_core.c |  181 ++++++++++++++++++++++++++-----------
->>  1 file changed, 126 insertions(+), 55 deletions(-)
->>
->> diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
->> index 435c1a0..dc4ec68 100644
->> --- a/drivers/pci/hotplug/rpaphp_core.c
->> +++ b/drivers/pci/hotplug/rpaphp_core.c
->> @@ -222,47 +222,51 @@ static int rpaphp_check_drc_props_v1(struct device_node *dn, char *drc_name,
->>  	return -EINVAL;
->>  }
->>
->> -static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
->> -				char *drc_type, unsigned int my_index)
->> +struct check_drc_props_v2_struct {
->> +	char *drc_name;
->> +	char *drc_type;
->> +	unsigned int my_index;
->> +};
->> +
->> +static int check_drc_props_v2_cb(struct of_drc_info *drc, void *idata,
->> +				void *not_used, int *ret_code)
->>  {
->> -	struct property *info;
->> -	unsigned int entries;
->> -	struct of_drc_info drc;
->> -	const __be32 *value;
->> +	struct check_drc_props_v2_struct *cdata = idata;
->>  	char cell_drc_name[MAX_DRC_NAME_LEN];
->> -	int j, fndit;
->>
->> -	info = of_find_property(dn->parent, "ibm,drc-info", NULL);
->> -	if (info == NULL)
->> -		return -EINVAL;
->> +	(*ret_code) = -EINVAL;
->>
->> -	value = info->value;
->> -	entries = of_read_number(value++, 1);
->> -
->> -	for (j = 0; j < entries; j++) {
->> -		of_read_drc_info_cell(&info, &value, &drc);
->> -
->> -		/* Should now know end of current entry */
->> -
->> -		if (my_index > drc.last_drc_index)
->> -			continue;
->> +	if (cdata->my_index > drc->last_drc_index)
->> +		return 0;
->>
->> -		fndit = 1;
->> -		break;
->> +	/* Found drc_index.  Now match the rest. */
->> +	sprintf(cell_drc_name, "%s%d", drc->drc_name_prefix,
->> +		cdata->my_index - drc->drc_index_start +
->> +		drc->drc_name_suffix_start);
->> +
->> +	if (((cdata->drc_name == NULL) ||
->> +	     (cdata->drc_name && !strcmp(cdata->drc_name, cell_drc_name))) &&
->> +	    ((cdata->drc_type == NULL) ||
->> +	     (cdata->drc_type && !strcmp(cdata->drc_type, drc->drc_type)))) {
->> +		(*ret_code) = 0;
->> +		return 1;
->>  	}
->> -	/* Found it */
->>
->> -	if (fndit)
->> -		sprintf(cell_drc_name, "%s%d", drc.drc_name_prefix, 
->> -			my_index);
->> +	return 0;
->> +}
->>
->> -	if (((drc_name == NULL) ||
->> -	     (drc_name && !strcmp(drc_name, cell_drc_name))) &&
->> -	    ((drc_type == NULL) ||
->> -	     (drc_type && !strcmp(drc_type, drc.drc_type))))
->> -		return 0;
->> +static int rpaphp_check_drc_props_v2(struct device_node *dn, char *drc_name,
->> +				char *drc_type, unsigned int my_index)
->> +{
->> +	struct device_node *root = dn;
->> +	struct check_drc_props_v2_struct cdata = {
->> +		drc_name, drc_type, be32_to_cpu(my_index) };
->>
->> -	return -EINVAL;
->> +	if (!drc_type || (drc_type && strcmp(drc_type, "SLOT")))
->> +		root = dn->parent;
->> +
->> +	return drc_info_parser(root, check_drc_props_v2_cb,
->> +				drc_type, &cdata);
->>  }
->>
->>  int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->> @@ -285,7 +289,6 @@ int rpaphp_check_drc_props(struct device_node *dn, char *drc_name,
->>  }
->>  EXPORT_SYMBOL_GPL(rpaphp_check_drc_props);
->>
->> -
->>  static int is_php_type(char *drc_type)
->>  {
->>  	unsigned long value;
->> @@ -345,17 +348,41 @@ static int is_php_dn(struct device_node *dn, const int **indexes,
->>   *
->>   * To remove a slot, it suffices to call rpaphp_deregister_slot().
->>   */
->> -int rpaphp_add_slot(struct device_node *dn)
->> +
->> +static int rpaphp_add_slot_common(struct device_node *dn,
->> +			u32 drc_index, char *drc_name, char *drc_type,
->> +			u32 drc_power_domain)
->>  {
->>  	struct slot *slot;
->>  	int retval = 0;
->> -	int i;
->> +
->> +	slot = alloc_slot_struct(dn, drc_index, drc_name, drc_power_domain);
->> +	if (!slot)
->> +		return -ENOMEM;
->> +
->> +	slot->type = simple_strtoul(drc_type, NULL, 10);
->> +	if (retval)
->> +		return -EINVAL;
->> +
->> +	dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
->> +		drc_index, drc_name, drc_type);
->> +
->> +	retval = rpaphp_enable_slot(slot);
->> +	if (!retval)
->> +		retval = rpaphp_register_slot(slot);
->> +
->> +	if (retval)
->> +		dealloc_slot_struct(slot);
->> +
->> +	return retval;
->> +}
->> +
->> +static int rpaphp_add_slot_v1(struct device_node *dn)
->> +{
->> +	int i, retval = 0;
->>  	const int *indexes, *names, *types, *power_domains;
->>  	char *name, *type;
->>
->> -	if (!dn->name || strcmp(dn->name, "pci"))
->> -		return 0;
->> -
->>  	/* If this is not a hotplug slot, return without doing anything. */
->>  	if (!is_php_dn(dn, &indexes, &names, &types, &power_domains))
->>  		return 0;
->> @@ -366,25 +393,12 @@ int rpaphp_add_slot(struct device_node *dn)
->>  	name = (char *) &names[1];
->>  	type = (char *) &types[1];
->>  	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
->> -		int index;
->> -
->> -		index = be32_to_cpu(indexes[i + 1]);
->> -		slot = alloc_slot_struct(dn, index, name,
->> -					 be32_to_cpu(power_domains[i + 1]));
->> -		if (!slot)
->> -			return -ENOMEM;
->> -
->> -		slot->type = simple_strtoul(type, NULL, 10);
->>
->> -		dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
->> -				index, name, type);
->> -
->> -		retval = rpaphp_enable_slot(slot);
->> +		retval = rpaphp_add_slot_common(dn,
->> +				be32_to_cpu(indexes[i + 1]), name, type,
->> +				be32_to_cpu(power_domains[i + 1]));
->>  		if (!retval)
->> -			retval = rpaphp_register_slot(slot);
->> -
->> -		if (retval)
->> -			dealloc_slot_struct(slot);
->> +			return retval;
->>
->>  		name += strlen(name) + 1;
->>  		type += strlen(type) + 1;
->> @@ -394,6 +408,63 @@ int rpaphp_add_slot(struct device_node *dn)
->>  	/* XXX FIXME: reports a failure only if last entry in loop failed */
->>  	return retval;
->>  }
->> +
->> +struct rpaphp_add_slot_v2_struct {
->> +	struct device_node *dn;
->> +};
->> +
->> +static int rpaphp_add_slot_v2_cb(struct of_drc_info *drc, void *idata,
->> +				void *not_used, int *ret_code)
->> +{
->> +	struct rpaphp_add_slot_v2_struct *cdata = idata;
->> +	u32 drc_index;
->> +	char drc_name[MAX_DRC_NAME_LEN];
->> +	int i, retval;
->> +
->> +	(*ret_code) = -EINVAL;
->> +
->> +	if (!is_php_type((char *) drc->drc_type)) {
->> +		(*ret_code) = 0;
->> +		return 1;
->> +	}
->> +
->> +	for (i = 0, drc_index = drc->drc_index_start;
->> +		i < drc->num_sequential_elems; i++, drc_index++) {
->> +
->> +		sprintf(drc_name, "%s%d", drc->drc_name_prefix,
->> +			drc_index - drc->drc_index_start +
->> +			drc->drc_name_suffix_start);
->> +
->> +		retval = rpaphp_add_slot_common(cdata->dn,
->> +				drc_index, drc_name, drc->drc_type,
->> +				drc->drc_power_domain);
->> +		if (!retval) {
->> +			(*ret_code) = retval;
->> +			return 1;
->> +		}
->> +	}
+Hi Paul,
+On Tue, May 22, 2018 at 07:41:51PM +1000, Paul Mackerras wrote:
+> On Mon, May 21, 2018 at 01:24:24PM +0800, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
+> > 
+> > This patch reimplements LOAD_VSX/STORE_VSX instruction MMIO emulation with
+> > analyse_intr() input. It utilizes VSX_FPCONV/VSX_SPLAT/SIGNEXT exported
+> > by analyse_instr() and handle accordingly.
+> > 
+> > When emulating VSX store, the VSX reg will need to be flushed so that
+> > the right reg val can be retrieved before writing to IO MEM.
 > 
-> I may be reading this loop wrong, but it appears that it will add all drc indexes
-> for all drc_info entries to the specified device node, minus drc-types that don't match.
-
-It is supposed to exit the function after the first successful call
-to rpaphp_add_slot_common().  That function is supposed to try to
-allocate/enable a slot, and return 0 when it succeeds.
-
-Will reconfirm this week.
-
+> When I tested this patch set with the MMIO emulation test program I
+> have, I got a host crash on the first test that used a VSX instruction
+> with a register number >= 32, that is, a VMX register.  The crash was
+> that it hit the BUG() at line 1193 of arch/powerpc/kvm/powerpc.c.
 > 
-> -Nathan
-
-Michael
-
+> The reason it hit the BUG() is that vcpu->arch.io_gpr was 0xa3.
+> What's happening here is that analyse_instr gives a register numbers
+> in the range 32 - 63 for VSX instructions which access VMX registers.
+> When 35 is ORed with 0x80 (KVM_MMIO_REG_VSX) we get 0xa3.
 > 
->> +
->> +	(*ret_code) = retval;
->> +	return 0;
->> +}
->> +
->> +static int rpaphp_add_slot_v2(struct device_node *dn)
->> +{
->> +	struct rpaphp_add_slot_v2_struct cdata = { dn };
->> +
->> +	return drc_info_parser(dn, rpaphp_add_slot_v2_cb, NULL, &cdata);
->> +}
->> +
->> +int rpaphp_add_slot(struct device_node *dn)
->> +{
->> +	if (!dn->name || strcmp(dn->name, "pci"))
->> +		return 0;
->> +
->> +	if (firmware_has_feature(FW_FEATURE_DRC_INFO))
->> +		return rpaphp_add_slot_v2(dn);
->> +	else
->> +		return rpaphp_add_slot_v1(dn);
->> +}
->>  EXPORT_SYMBOL_GPL(rpaphp_add_slot);
->>
->>  static void __exit cleanup_slots(void)
->>
+> The old code didn't pass the high bit of the register number to
+> kvmppc_handle_vsx_load/store, but instead passed it via the
+> vcpu->arch.mmio_vsx_tx_sx_enabled field.  With your patch set we still
+> set and use that field, so the patch below on top of your patches is
+> the quick fix.  Ideally we would get rid of that field and just use
+> the high (0x20) bit of the register number instead, but that can be
+> cleaned up later.
 > 
+> If you like, I will fold the patch below into this patch and push the
+> series to my kvm-ppc-next branch.
 > 
+> Paul.
+Sorry my test missed this kind of cases. Please go ahead to fold the patch
+as you suggested.  Thanks for point it out.
 
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+If you like, I can do the clean up work. If I understand correctly,
+we need to expand io_gpr to u16 from u8 so that reg number can use 
+6 bits and leave room for other reg flag bits.
+
+BR,
+- Simon
+
+> ---
+> diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
+> index 0165fcd..afde788 100644
+> --- a/arch/powerpc/kvm/emulate_loadstore.c
+> +++ b/arch/powerpc/kvm/emulate_loadstore.c
+> @@ -242,8 +242,8 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+>  			}
+>  
+>  			emulated = kvmppc_handle_vsx_load(run, vcpu,
+> -					KVM_MMIO_REG_VSX|op.reg, io_size_each,
+> -					1, op.type & SIGNEXT);
+> +					KVM_MMIO_REG_VSX | (op.reg & 0x1f),
+> +					io_size_each, 1, op.type & SIGNEXT);
+>  			break;
+>  		}
+>  #endif
+> @@ -363,7 +363,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+>  			}
+>  
+>  			emulated = kvmppc_handle_vsx_store(run, vcpu,
+> -					op.reg, io_size_each, 1);
+> +					op.reg & 0x1f, io_size_each, 1);
+>  			break;
+>  		}
+>  #endif
