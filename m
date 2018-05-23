@@ -2,25 +2,25 @@ Return-Path: <srs1=ml38=kernel.org==wfse=ik=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWY1f5szF12Y
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:09 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWY0xY7z8tLb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWd5MntzF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:13 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWd4mHLz8tLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:24:13 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40rfWX4F1Zz9s15
- for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:24:08 +1000 (AEST)
-Subject: Patch "powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags" has
+ by ozlabs.org (Postfix) with ESMTPS id 40rfWd0S8Yz9s1b
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:24:13 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Fix clearing of security feature flags" has
  been added to the 4.16-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mpe@ellerman.id.au, tglx@linutronix.de
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Wed, 23 May 2018 19:23:13 +0200
-In-Reply-To: <20180522144125.10345-4-mpe@ellerman.id.au>
-Message-ID: <152709619324779@kroah.com>
+In-Reply-To: <20180522144125.10345-13-mpe@ellerman.id.au>
+Message-ID: <152709619317274@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+    powerpc/pseries: Fix clearing of security feature flags
 
 to the 4.16-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
+     powerpc-pseries-fix-clearing-of-security-feature-flags.patch
 and it can be found in the queue-4.16 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,37 +50,85 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Wed May 23 19:18:22 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 23 May 2018 00:41:14 +1000
-Subject: powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+Date: Wed, 23 May 2018 00:41:23 +1000
+Subject: powerpc/pseries: Fix clearing of security feature flags
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180522144125.10345-4-mpe@ellerman.id.au>
+Message-ID: <20180522144125.10345-13-mpe@ellerman.id.au>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-commit c4bc36628d7f8b664657d8bd6ad1c44c177880b7 upstream.
+commit 0f9bdfe3c77091e8704d2e510eb7c2c2c6cde524 upstream.
 
-Add some additional values which have been defined for the
-H_GET_CPU_CHARACTERISTICS hypercall.
+The H_CPU_BEHAV_* flags should be checked for in the 'behaviour' field
+of 'struct h_cpu_char_result' -- 'character' is for H_CPU_CHAR_*
+flags.
 
+Found by playing around with QEMU's implementation of the hypercall:
+
+  H_CPU_CHAR=0xf000000000000000
+  H_CPU_BEHAV=0x0000000000000000
+
+  This clears H_CPU_BEHAV_FAVOUR_SECURITY and H_CPU_BEHAV_L1D_FLUSH_PR
+  so pseries_setup_rfi_flush() disables 'rfi_flush'; and it also
+  clears H_CPU_CHAR_L1D_THREAD_PRIV flag. So there is no RFI flush
+  mitigation at all for cpu_show_meltdown() to report; but currently
+  it does:
+
+  Original kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
+    Mitigation: RFI Flush
+
+  Patched kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
+    Not affected
+
+  H_CPU_CHAR=0x0000000000000000
+  H_CPU_BEHAV=0xf000000000000000
+
+  This sets H_CPU_BEHAV_BNDS_CHK_SPEC_BAR so cpu_show_spectre_v1() should
+  report vulnerable; but currently it doesn't:
+
+  Original kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
+    Not affected
+
+  Patched kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
+    Vulnerable
+
+Brown-paper-bag-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/hvcall.h |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -337,6 +337,9 @@
- #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
- #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
- #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
-+#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
-+#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
-+#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -484,13 +484,13 @@ static void init_cpu_char_feature_flags(
+ 	 * The features below are enabled by default, so we instead look to see
+ 	 * if firmware has *disabled* them, and clear them if so.
+ 	 */
+-	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
++	if (!(result->behaviour & H_CPU_BEHAV_FAVOUR_SECURITY))
+ 		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
  
- #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
- #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
+-	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
++	if (!(result->behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
+ 		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
+ 
+-	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
++	if (!(result->behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
+ 		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
+ }
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
