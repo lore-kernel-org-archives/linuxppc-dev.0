@@ -3,33 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rCqt4sK0zDr2m
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 10:21:46 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4N0K45h049988
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 20:21:43 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j4ueuvm5f-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rCrP4rg5zDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 10:22:13 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4N0KNt2063919
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 20:22:10 -0400
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j4tsbdysa-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 20:21:43 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2018 20:22:10 -0400
 Received: from localhost
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Tue, 22 May 2018 18:21:42 -0600
+ Tue, 22 May 2018 18:22:09 -0600
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Subject: [RFC v7 0/7] powerpc/hotplug: Fix affinity assoc for LPAR migration
+Subject: [RFC v7 1/7] powerpc/drmem: Export 'dynamic-memory' loader
 To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 22 May 2018 19:21:37 -0500
+In-Reply-To: <b9c98429-f3d7-1e6d-603f-6ac01225e400@linux.vnet.ibm.com>
+Date: Tue, 22 May 2018 19:22:05 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <b9c98429-f3d7-1e6d-603f-6ac01225e400@linux.vnet.ibm.com>
+Message-Id: <0524cfd7-6bee-0d43-7a2f-8e72ed3993f0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,53 +40,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The migration of LPARs across Power systems affects many attributes
-including that of the associativity of memory blocks and CPUs.  The
-patches in this set execute when a system is coming up fresh upon a
-migration target.  They are intended to,
+powerpc/drmem: Export many of the functions of DRMEM to parse
+"ibm,dynamic-memory" and "ibm,dynamic-memory-v2" during hotplug
+operations and for Post Migration events.
 
-* Recognize changes to the associativity of memory and CPUs recorded
-  in internal data structures when compared to the latest copies in
-  the device tree (e.g. ibm,dynamic-memory, ibm,dynamic-memory-v2,
-  cpus),
-* Recognize changes to the associativity mapping (e.g. ibm,
-  associativity-lookup-arrays), locate all assigned memory blocks
-  corresponding to each changed row, and readd all such blocks.
-* Generate calls to other code layers to reset the data structures
-  related to associativity of the CPUs and memory.
-* Re-register the 'changed' entities into the target system.
-  Re-registration of CPUs and memory blocks mostly entails acting as
-  if they have been newly hot-added into the target system.
+Also modify the DRMEM initialization code to allow it to,
+
+* Be called after system initialization
+* Provide a separate user copy of the LMB array that is produces
+* Free the user copy upon request
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-
-Michael Bringmann (3):
-  powerpc migration/drmem: Modify DRMEM code to export more features
-  powerpc migration/cpu: Associativity & cpu changes
-  powerpc migration/memory: Associativity & memory updates
 ---
 Changes in RFC:
-  -- Restructure and rearrange content of patches to co-locate
-     similar or related modifications
-  -- Rename pseries_update_drconf_cpu to pseries_update_cpu
-  -- Simplify code to update CPU nodes during mobility checks.
-     Remove functions to generate extra HP_ELOG messages in favor
-     of direct function calls to dlpar_cpu_readd_by_index, or
-     dlpar_memory_readd_by_index.
-  -- Revise code order in dlpar_cpu_readd_by_index() to present
-     more appropriate error codes from underlying layers of the
-     implementation.
-  -- Add hotplug device lock around all property updates
-  -- Schedule all CPU and memory changes due to device-tree updates /
-     LPAR mobility as workqueue operations
-  -- Export DRMEM accessor functions to parse 'ibm,dynamic-memory-v2'
-  -- Export DRMEM functions to provide user copies of LMB array
-  -- Compress code using DRMEM accessor functions.
-  -- Split topology timer crash fix into new patch.
+  -- Separate DRMEM changes into a standalone patch
+  -- Do not export excess functions.  Make exported names more explicit.
+  -- Add new iterator to work through a pair of drmem_info arrays.
   -- Modify DRMEM code to replace usages of dt_root_addr_cells, and
      dt_mem_next_cell, as these are only available at first boot.
-  -- Correct a bug in DRC index selection for queued operation.
   -- Rebase to 4.17-rc5 kernel
-  -- Various code cleanups and compaction
-  -- Correct drc_index for worker fn invocation
-  -- Split 'ibm,dynamic-memory-v2' check into separate patch
+  -- Apply several code and patch cleanups.
+---
+ arch/powerpc/include/asm/drmem.h |   10 +++++
+ arch/powerpc/mm/drmem.c          |   73 ++++++++++++++++++++++++++++----------
+ 2 files changed, 64 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
+index ce242b9..e82d254 100644
+--- a/arch/powerpc/include/asm/drmem.h
++++ b/arch/powerpc/include/asm/drmem.h
+@@ -35,6 +35,13 @@ struct drmem_lmb_info {
+ 		&drmem_info->lmbs[0],				\
+ 		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
+ 
++#define for_each_pair_drmem_lmb(dinfo1, lmb1, dinfo2, lmb2)	\
++	for ((lmb1) = (&dinfo1->lmbs[0]),			\
++	     (lmb2) = (&dinfo2->lmbs[0]);			\
++	     ((lmb1) <= (&dinfo1->lmbs[dinfo1->n_lmbs - 1])) &&	\
++	     ((lmb2) <= (&dinfo2->lmbs[dinfo2->n_lmbs - 1]));	\
++	     (lmb1)++, (lmb2)++)
++
+ /*
+  * The of_drconf_cell_v1 struct defines the layout of the LMB data
+  * specified in the ibm,dynamic-memory device tree property.
+@@ -94,6 +101,9 @@ void __init walk_drmem_lmbs(struct device_node *dn,
+ 			void (*func)(struct drmem_lmb *, const __be32 **));
+ int drmem_update_dt(void);
+ 
++struct drmem_lmb_info *drmem_lmbs_init(struct property *prop);
++void drmem_lmbs_free(struct drmem_lmb_info *dinfo);
++
+ #ifdef CONFIG_PPC_PSERIES
+ void __init walk_drmem_lmbs_early(unsigned long node,
+ 			void (*func)(struct drmem_lmb *, const __be32 **));
+diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
+index 3f18036..2bd6a70 100644
+--- a/arch/powerpc/mm/drmem.c
++++ b/arch/powerpc/mm/drmem.c
+@@ -20,6 +20,7 @@
+ 
+ static struct drmem_lmb_info __drmem_info;
+ struct drmem_lmb_info *drmem_info = &__drmem_info;
++static int n_root_addr_cells;
+ 
+ u64 drmem_lmb_memory_max(void)
+ {
+@@ -193,12 +194,13 @@ int drmem_update_dt(void)
+ 	return rc;
+ }
+ 
+-static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
++static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
+ 
+-	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	lmb->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	lmb->drc_index = of_read_number(p++, 1);
+ 
+ 	p++; /* skip reserved field */
+@@ -209,7 +211,7 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
+ 	*prop = p;
+ }
+ 
+-static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
++static void __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
+ 			void (*func)(struct drmem_lmb *, const __be32 **))
+ {
+ 	struct drmem_lmb lmb;
+@@ -225,13 +227,14 @@ static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
+ 	}
+ }
+ 
+-static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
++static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 				       const __be32 **prop)
+ {
+ 	const __be32 *p = *prop;
+ 
+ 	dr_cell->seq_lmbs = of_read_number(p++, 1);
+-	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
++	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
++	p += n_root_addr_cells;
+ 	dr_cell->drc_index = of_read_number(p++, 1);
+ 	dr_cell->aa_index = of_read_number(p++, 1);
+ 	dr_cell->flags = of_read_number(p++, 1);
+@@ -239,7 +242,7 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
+ 	*prop = p;
+ }
+ 
+-static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
++static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
+ 			void (*func)(struct drmem_lmb *, const __be32 **))
+ {
+ 	struct of_drconf_cell_v2 dr_cell;
+@@ -275,6 +278,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
+ 	const __be32 *prop, *usm;
+ 	int len;
+ 
++	if (n_root_addr_cells == 0)
++		n_root_addr_cells = dt_root_addr_cells;
++
+ 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
+ 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
+ 		return;
+@@ -353,24 +359,26 @@ void __init walk_drmem_lmbs(struct device_node *dn,
+ 	}
+ }
+ 
+-static void __init init_drmem_v1_lmbs(const __be32 *prop)
++static void init_drmem_v1_lmbs(const __be32 *prop,
++				struct drmem_lmb_info *dinfo)
+ {
+ 	struct drmem_lmb *lmb;
+ 
+-	drmem_info->n_lmbs = of_read_number(prop++, 1);
+-	if (drmem_info->n_lmbs == 0)
++	dinfo->n_lmbs = of_read_number(prop++, 1);
++	if (dinfo->n_lmbs == 0)
+ 		return;
+ 
+-	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
++	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
+ 				   GFP_KERNEL);
+-	if (!drmem_info->lmbs)
++	if (!dinfo->lmbs)
+ 		return;
+ 
+ 	for_each_drmem_lmb(lmb)
+ 		read_drconf_v1_cell(lmb, &prop);
+ }
+ 
+-static void __init init_drmem_v2_lmbs(const __be32 *prop)
++static void init_drmem_v2_lmbs(const __be32 *prop,
++				struct drmem_lmb_info *dinfo)
+ {
+ 	struct drmem_lmb *lmb;
+ 	struct of_drconf_cell_v2 dr_cell;
+@@ -386,12 +394,12 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 	p = prop;
+ 	for (i = 0; i < lmb_sets; i++) {
+ 		read_drconf_v2_cell(&dr_cell, &p);
+-		drmem_info->n_lmbs += dr_cell.seq_lmbs;
++		dinfo->n_lmbs += dr_cell.seq_lmbs;
+ 	}
+ 
+-	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
++	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
+ 				   GFP_KERNEL);
+-	if (!drmem_info->lmbs)
++	if (!dinfo->lmbs)
+ 		return;
+ 
+ 	/* second pass, read in the LMB information */
+@@ -402,10 +410,10 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 		read_drconf_v2_cell(&dr_cell, &p);
+ 
+ 		for (j = 0; j < dr_cell.seq_lmbs; j++) {
+-			lmb = &drmem_info->lmbs[lmb_index++];
++			lmb = &dinfo->lmbs[lmb_index++];
+ 
+ 			lmb->base_addr = dr_cell.base_addr;
+-			dr_cell.base_addr += drmem_info->lmb_size;
++			dr_cell.base_addr += dinfo->lmb_size;
+ 
+ 			lmb->drc_index = dr_cell.drc_index;
+ 			dr_cell.drc_index++;
+@@ -416,11 +424,38 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
+ 	}
+ }
+ 
++void drmem_lmbs_free(struct drmem_lmb_info *dinfo)
++{
++	if (dinfo) {
++		kfree(dinfo->lmbs);
++		kfree(dinfo);
++	}
++}
++
++struct drmem_lmb_info *drmem_lmbs_init(struct property *prop)
++{
++	struct drmem_lmb_info *dinfo;
++
++	dinfo = kzalloc(sizeof(*dinfo), GFP_KERNEL);
++	if (!dinfo)
++		return NULL;
++
++	if (!strcmp("ibm,dynamic-memory", prop->name))
++		init_drmem_v1_lmbs(prop->value, dinfo);
++	else if (!strcmp("ibm,dynamic-memory-v2", prop->name))
++		init_drmem_v2_lmbs(prop->value, dinfo);
++
++	return dinfo;
++}
++
+ static int __init drmem_init(void)
+ {
+ 	struct device_node *dn;
+ 	const __be32 *prop;
+ 
++	if (n_root_addr_cells == 0)
++		n_root_addr_cells = dt_root_addr_cells;
++
+ 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+ 	if (!dn) {
+ 		pr_info("No dynamic reconfiguration memory found\n");
+@@ -434,11 +469,11 @@ static int __init drmem_init(void)
+ 
+ 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
+ 	if (prop) {
+-		init_drmem_v1_lmbs(prop);
++		init_drmem_v1_lmbs(prop, drmem_info);
+ 	} else {
+ 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
+ 		if (prop)
+-			init_drmem_v2_lmbs(prop);
++			init_drmem_v2_lmbs(prop, drmem_info);
+ 	}
+ 
+ 	of_node_put(dn);
