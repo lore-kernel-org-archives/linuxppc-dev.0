@@ -1,24 +1,31 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=oanc=ik=gmail.com=mathieu.malaterre@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rhQp2G7ZzF15L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 04:50:07 +1000 (AEST)
-Date: Wed, 23 May 2018 21:50:02 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net,
- david@gibson.dropbear.id.au, jasowang@redhat.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-Message-ID: <20180523213703-mutt-send-email-mst@kernel.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rhY54wp5zF19q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 04:55:37 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40rhY53vYRz8tLt
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 04:55:37 +1000 (AEST)
+Received: from mail-ot0-x243.google.com (mail-ot0-x243.google.com
+ [IPv6:2607:f8b0:4003:c0f::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40rhY35zRcz9s1w
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 04:55:35 +1000 (AEST)
+Received: by mail-ot0-x243.google.com with SMTP id l22-v6so26468739otj.0
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 May 2018 11:55:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180523114837.6980-1-mpe@ellerman.id.au>
+References: <20180523114837.6980-1-mpe@ellerman.id.au>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 23 May 2018 20:55:12 +0200
+Message-ID: <CA+7wUsxv5nv3a7juh6KCzP4+-F0CDisXM+LvxBPBt9DaEWA0Ww@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/xmon: Specify the full format in DUMP() macro
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +35,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-subj: s/virito/virtio/
+On Wed, May 23, 2018 at 1:48 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> In dump_one_paca() the DUMP macro unconditionally prepends '#' to the
+> printf format specifier. In most cases we're using either 'x' or 'lx'
+> etc. and that is OK. But for 'p' and other formats using '#' is
+> actually undefined, and once we enable printf() checking for
+> xmon_printf() we will get warnings from the compiler.
 
-On Tue, May 22, 2018 at 12:03:17PM +0530, Anshuman Khandual wrote:
-> This adds a hook which a platform can define in order to allow it to
-> force the use of the DMA API for all virtio devices even if they don't
-> have the VIRTIO_F_IOMMU_PLATFORM flag set.  We want to use this to do
-> bounce-buffering of data on the new secure pSeries platform, currently
-> under development, where a KVM host cannot access all of the memory
-> space of a secure KVM guest.  The host can only access the pages which
-> the guest has explicitly requested to be shared with the host, thus
-> the virtio implementation in the guest has to copy data to and from
-> shared pages.
-> 
-> With this hook, the platform code in the secure guest can force the
-> use of swiotlb for virtio buffers, with a back-end for swiotlb which
-> will use a pool of pre-allocated shared pages.  Thus all data being
-> sent or received by virtio devices will be copied through pages which
-> the host has access to.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Much more elegant, thanks.
+
+All %#-* and %-* formatters are correct. The change to 22 is correct
+since both SLB_NUM_BOLTED & SLB_CACHE_ENTRIES < 10.
+
+For the series:
+
+Reviewed-by: Mathieu Malaterre <malat@debian.org>
+
+> So just have each usage specify the full format, that way we can omit
+> '#' when it's inappropriate.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > ---
-> Changes in V2:
-> 
-> The arch callback has been enabled through an weak symbol defintion
-> so that it is enabled only for those architectures subscribing to
-> this new framework. Clarified the patch description. The primary
-> objective for this RFC has been to get an in principle agreement
-> on this approach.
-> 
-> Original V1:
-> 
-> Original RFC and discussions https://patchwork.kernel.org/patch/10324405/
-
-I re-read that discussion and I'm still unclear on the
-original question, since I got several apparently
-conflicting answers.
-
-I asked:
-
-	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
-	hypervisor side sufficient?
-
-
-
->  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
->  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
->  drivers/virtio/virtio_ring.c           | 10 ++++++++++
->  3 files changed, 27 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 8fa3945..056e578 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
->  #define ARCH_HAS_DMA_MMAP_COHERENT
->  
->  #endif /* __KERNEL__ */
-> +
-> +#define platform_forces_virtio_dma platform_forces_virtio_dma
-> +
-> +struct virtio_device;
-> +
-> +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
->  #endif	/* _ASM_DMA_MAPPING_H */
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 06f0296..a2ec15a 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -38,6 +38,7 @@
->  #include <linux/of.h>
->  #include <linux/iommu.h>
->  #include <linux/rculist.h>
-> +#include <linux/virtio.h>
->  #include <asm/io.h>
->  #include <asm/prom.h>
->  #include <asm/rtas.h>
-> @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
->  __setup("multitce=", disable_multitce);
->  
->  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
-> +
-> +bool platform_forces_virtio_dma(struct virtio_device *vdev)
-> +{
-> +	/*
-> +	 * On protected guest platforms, force virtio core to use DMA
-> +	 * MAP API for all virtio devices. But there can also be some
-> +	 * exceptions for individual devices like virtio balloon.
-> +	 */
-> +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
-> +}
-
-Isn't this kind of slow?  vring_use_dma_api is on
-data path and supposed to be very fast.
-
-> diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> index 21d464a..47ea6c3 100644
-> --- a/drivers/virtio/virtio_ring.c
-> +++ b/drivers/virtio/virtio_ring.c
-> @@ -141,8 +141,18 @@ struct vring_virtqueue {
->   * unconditionally on data path.
->   */
->  
-> +#ifndef platform_forces_virtio_dma
-> +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
-> +{
-> +	return false;
-> +}
-> +#endif
-> +
->  static bool vring_use_dma_api(struct virtio_device *vdev)
->  {
-> +	if (platform_forces_virtio_dma(vdev))
-> +		return true;
-> +
->  	if (!virtio_has_iommu_quirk(vdev))
->  		return true;
->  
-> -- 
-> 2.9.3
+>  arch/powerpc/xmon/xmon.c | 102 +++++++++++++++++++++++------------------------
+>  1 file changed, 51 insertions(+), 51 deletions(-)
+>
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 064e70a59b47..a81aa3afd87e 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -2349,27 +2349,27 @@ static void dump_one_paca(int cpu)
+>         printf(" %-*s = %s\n", 20, "present", cpu_present(cpu) ? "yes" : "no");
+>         printf(" %-*s = %s\n", 20, "online", cpu_online(cpu) ? "yes" : "no");
+>
+> -#define DUMP(paca, name, format) \
+> -       printf(" %-*s = %#-*"format"\t(0x%lx)\n", 20, #name, 18, paca->name, \
+> +#define DUMP(paca, name, format)                               \
+> +       printf(" %-*s = "format"\t(0x%lx)\n", 20, #name, 18, paca->name, \
+>                 offsetof(struct paca_struct, name));
+>
+> -       DUMP(p, lock_token, "x");
+> -       DUMP(p, paca_index, "x");
+> -       DUMP(p, kernel_toc, "llx");
+> -       DUMP(p, kernelbase, "llx");
+> -       DUMP(p, kernel_msr, "llx");
+> -       DUMP(p, emergency_sp, "px");
+> +       DUMP(p, lock_token, "%#-*x");
+> +       DUMP(p, paca_index, "%#-*x");
+> +       DUMP(p, kernel_toc, "%#-*llx");
+> +       DUMP(p, kernelbase, "%#-*llx");
+> +       DUMP(p, kernel_msr, "%#-*llx");
+> +       DUMP(p, emergency_sp, "%-*px");
+>  #ifdef CONFIG_PPC_BOOK3S_64
+> -       DUMP(p, nmi_emergency_sp, "px");
+> -       DUMP(p, mc_emergency_sp, "px");
+> -       DUMP(p, in_nmi, "x");
+> -       DUMP(p, in_mce, "x");
+> -       DUMP(p, hmi_event_available, "x");
+> +       DUMP(p, nmi_emergency_sp, "%-*px");
+> +       DUMP(p, mc_emergency_sp, "%-*px");
+> +       DUMP(p, in_nmi, "%#-*x");
+> +       DUMP(p, in_mce, "%#-*x");
+> +       DUMP(p, hmi_event_available, "%#-*x");
+>  #endif
+> -       DUMP(p, data_offset, "llx");
+> -       DUMP(p, hw_cpu_id, "x");
+> -       DUMP(p, cpu_start, "x");
+> -       DUMP(p, kexec_state, "x");
+> +       DUMP(p, data_offset, "%#-*llx");
+> +       DUMP(p, hw_cpu_id, "%#-*x");
+> +       DUMP(p, cpu_start, "%#-*x");
+> +       DUMP(p, kexec_state, "%#-*x");
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>         for (i = 0; i < SLB_NUM_BOLTED; i++) {
+>                 u64 esid, vsid;
+> @@ -2385,54 +2385,54 @@ static void dump_one_paca(int cpu)
+>                                 i, esid, vsid);
+>                 }
+>         }
+> -       DUMP(p, vmalloc_sllp, "x");
+> -       DUMP(p, slb_cache_ptr, "x");
+> +       DUMP(p, vmalloc_sllp, "%#-*x");
+> +       DUMP(p, slb_cache_ptr, "%#-*x");
+>         for (i = 0; i < SLB_CACHE_ENTRIES; i++)
+>                 printf(" slb_cache[%d]:        = 0x%016x\n", i, p->slb_cache[i]);
+>
+> -       DUMP(p, rfi_flush_fallback_area, "px");
+> +       DUMP(p, rfi_flush_fallback_area, "%-*px");
+>  #endif
+> -       DUMP(p, dscr_default, "llx");
+> +       DUMP(p, dscr_default, "%#-*llx");
+>  #ifdef CONFIG_PPC_BOOK3E
+> -       DUMP(p, pgd, "px");
+> -       DUMP(p, kernel_pgd, "px");
+> -       DUMP(p, tcd_ptr, "px");
+> -       DUMP(p, mc_kstack, "px");
+> -       DUMP(p, crit_kstack, "px");
+> -       DUMP(p, dbg_kstack, "px");
+> +       DUMP(p, pgd, "%-*px");
+> +       DUMP(p, kernel_pgd, "%-*px");
+> +       DUMP(p, tcd_ptr, "%-*px");
+> +       DUMP(p, mc_kstack, "%-*px");
+> +       DUMP(p, crit_kstack, "%-*px");
+> +       DUMP(p, dbg_kstack, "%-*px");
+>  #endif
+> -       DUMP(p, __current, "px");
+> -       DUMP(p, kstack, "llx");
+> +       DUMP(p, __current, "%-*px");
+> +       DUMP(p, kstack, "%#-*llx");
+>         printf(" kstack_base          = 0x%016llx\n", p->kstack & ~(THREAD_SIZE - 1));
+> -       DUMP(p, stab_rr, "llx");
+> -       DUMP(p, saved_r1, "llx");
+> -       DUMP(p, trap_save, "x");
+> -       DUMP(p, irq_soft_mask, "x");
+> -       DUMP(p, irq_happened, "x");
+> -       DUMP(p, io_sync, "x");
+> -       DUMP(p, irq_work_pending, "x");
+> -       DUMP(p, nap_state_lost, "x");
+> -       DUMP(p, sprg_vdso, "llx");
+> +       DUMP(p, stab_rr, "%#-*llx");
+> +       DUMP(p, saved_r1, "%#-*llx");
+> +       DUMP(p, trap_save, "%#-*x");
+> +       DUMP(p, irq_soft_mask, "%#-*x");
+> +       DUMP(p, irq_happened, "%#-*x");
+> +       DUMP(p, io_sync, "%#-*x");
+> +       DUMP(p, irq_work_pending, "%#-*x");
+> +       DUMP(p, nap_state_lost, "%#-*x");
+> +       DUMP(p, sprg_vdso, "%#-*llx");
+>
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> -       DUMP(p, tm_scratch, "llx");
+> +       DUMP(p, tm_scratch, "%#-*llx");
+>  #endif
+>
+>  #ifdef CONFIG_PPC_POWERNV
+> -       DUMP(p, core_idle_state_ptr, "px");
+> -       DUMP(p, thread_idle_state, "x");
+> -       DUMP(p, thread_mask, "x");
+> -       DUMP(p, subcore_sibling_mask, "x");
+> +       DUMP(p, core_idle_state_ptr, "%-*px");
+> +       DUMP(p, thread_idle_state, "%#-*x");
+> +       DUMP(p, thread_mask, "%#-*x");
+> +       DUMP(p, subcore_sibling_mask, "%#-*x");
+>  #endif
+>
+> -       DUMP(p, accounting.utime, "lx");
+> -       DUMP(p, accounting.stime, "lx");
+> -       DUMP(p, accounting.utime_scaled, "lx");
+> -       DUMP(p, accounting.starttime, "lx");
+> -       DUMP(p, accounting.starttime_user, "lx");
+> -       DUMP(p, accounting.startspurr, "lx");
+> -       DUMP(p, accounting.utime_sspurr, "lx");
+> -       DUMP(p, accounting.steal_time, "lx");
+> +       DUMP(p, accounting.utime, "%#-*lx");
+> +       DUMP(p, accounting.stime, "%#-*lx");
+> +       DUMP(p, accounting.utime_scaled, "%#-*lx");
+> +       DUMP(p, accounting.starttime, "%#-*lx");
+> +       DUMP(p, accounting.starttime_user, "%#-*lx");
+> +       DUMP(p, accounting.startspurr, "%#-*lx");
+> +       DUMP(p, accounting.utime_sspurr, "%#-*lx");
+> +       DUMP(p, accounting.steal_time, "%#-*lx");
+>  #undef DUMP
+>
+>         catch_memory_errors = 0;
+> --
+> 2.14.1
+>
