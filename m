@@ -1,14 +1,28 @@
-Return-Path: <compudj@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rkJS1mbyzF1C8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 06:14:48 +1000 (AEST)
-Date: Wed, 23 May 2018 16:14:39 -0400 (EDT)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Boqun Feng <boqun.feng@gmail.com>
-Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rlFW0BkmzF1DM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 06:57:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4NKsneR064600
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 16:57:12 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j5cxt7bng-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 16:57:12 -0400
+Received: from localhost
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 23 May 2018 14:57:12 -0600
+Date: Wed, 23 May 2018 13:46:35 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+Cc: Boqun Feng <boqun.feng@gmail.com>, Will Deacon <will.deacon@arm.com>,
+ Peter Zijlstra <peterz@infradead.org>,
  Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
  linux-kernel <linux-kernel@vger.kernel.org>,
  linux-api <linux-api@vger.kernel.org>, Paul Turner <pjt@google.com>,
@@ -26,8 +40,8 @@ Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Message-ID: <1928158599.1541.1527106479862.JavaMail.zimbra@efficios.com>
-In-Reply-To: <20180520140811.GB1121@tardis>
+Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
+Reply-To: paulmck@linux.vnet.ibm.com
 References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
  <20180516161837.GI12198@hirez.programming.kicks-ass.net>
  <112970629.1913.1526501596485.JavaMail.zimbra@efficios.com>
@@ -36,9 +50,11 @@ References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
  <1526601043.1338308.1376191416.0444B8C5@webmail.messagingengine.com>
  <418003803.516.1526667437396.JavaMail.zimbra@efficios.com>
  <20180520140811.GB1121@tardis>
-Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
+ <1928158599.1541.1527106479862.JavaMail.zimbra@efficios.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1928158599.1541.1527106479862.JavaMail.zimbra@efficios.com>
+Message-Id: <20180523204635.GF3803@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,115 +64,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------ On May 20, 2018, at 10:08 AM, Boqun Feng boqun.feng@gmail.com wrote:
-
-> On Fri, May 18, 2018 at 02:17:17PM -0400, Mathieu Desnoyers wrote:
->> ----- On May 17, 2018, at 7:50 PM, Boqun Feng boqun.feng@gmail.com wrote:
->> [...]
->> >> > I think you're right. So we have to introduce callsite to rseq_syscall()
->> >> > in syscall path, something like:
->> >> > 
->> >> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
->> >> > index 51695608c68b..a25734a96640 100644
->> >> > --- a/arch/powerpc/kernel/entry_64.S
->> >> > +++ b/arch/powerpc/kernel/entry_64.S
->> >> > @@ -222,6 +222,9 @@ system_call_exit:
->> >> > 	mtmsrd	r11,1
->> >> > #endif /* CONFIG_PPC_BOOK3E */
->> >> > 
->> >> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
->> >> > +	bl	rseq_syscall
->> >> > +
->> >> > 	ld	r9,TI_FLAGS(r12)
->> >> > 	li	r11,-MAX_ERRNO
->> >> > 	andi.
->> >> > 		r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
->> >> > 
->> 
->> By the way, I think this is not the right spot to call rseq_syscall, because
->> interrupts are disabled. I think we should move this hunk right after
->> system_call_exit.
->> 
+On Wed, May 23, 2018 at 04:14:39PM -0400, Mathieu Desnoyers wrote:
+> ----- On May 20, 2018, at 10:08 AM, Boqun Feng boqun.feng@gmail.com wrote:
 > 
-> Good point.
+> > On Fri, May 18, 2018 at 02:17:17PM -0400, Mathieu Desnoyers wrote:
+> >> ----- On May 17, 2018, at 7:50 PM, Boqun Feng boqun.feng@gmail.com wrote:
+> >> [...]
+> >> >> > I think you're right. So we have to introduce callsite to rseq_syscall()
+> >> >> > in syscall path, something like:
+> >> >> > 
+> >> >> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> >> >> > index 51695608c68b..a25734a96640 100644
+> >> >> > --- a/arch/powerpc/kernel/entry_64.S
+> >> >> > +++ b/arch/powerpc/kernel/entry_64.S
+> >> >> > @@ -222,6 +222,9 @@ system_call_exit:
+> >> >> > 	mtmsrd	r11,1
+> >> >> > #endif /* CONFIG_PPC_BOOK3E */
+> >> >> > 
+> >> >> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> >> >> > +	bl	rseq_syscall
+> >> >> > +
+> >> >> > 	ld	r9,TI_FLAGS(r12)
+> >> >> > 	li	r11,-MAX_ERRNO
+> >> >> > 	andi.
+> >> >> > 		r0,r9,(_TIF_SYSCALL_DOTRACE|_TIF_SINGLESTEP|_TIF_USER_WORK_MASK|_TIF_PERSYSCALL_MASK)
+> >> >> > 
+> >> 
+> >> By the way, I think this is not the right spot to call rseq_syscall, because
+> >> interrupts are disabled. I think we should move this hunk right after
+> >> system_call_exit.
+> >> 
+> > 
+> > Good point.
+> > 
+> >> Would you like to implement and test an updated patch adding those calls for ppc
+> >> 32 and 64 ?
+> >> 
+> > 
+> > I'd like to help, but I don't have a handy ppc environment for test...
+> > So I made the below patch which has only been build-tested, hope it
+> > could be somewhat helpful.
 > 
->> Would you like to implement and test an updated patch adding those calls for ppc
->> 32 and 64 ?
->> 
+> Hi Boqun,
 > 
-> I'd like to help, but I don't have a handy ppc environment for test...
-> So I made the below patch which has only been build-tested, hope it
-> could be somewhat helpful.
-
-Hi Boqun,
-
-I tried your patch in a ppc64 le environment, and it does not survive boot
-with CONFIG_DEBUG_RSEQ=y. init gets killed right away.
-
-Moreover, I'm not sure that the r3 register don't contain something worth
-saving before the call on ppc32. Just after there is a "mr" instruction
-which AFAIU takes r3 as input register.
-
-Can you look into it ?
-
-Thanks,
-
-Mathieu
-
+> I tried your patch in a ppc64 le environment, and it does not survive boot
+> with CONFIG_DEBUG_RSEQ=y. init gets killed right away.
 > 
-> Regards,
-> Boqun
+> Moreover, I'm not sure that the r3 register don't contain something worth
+> saving before the call on ppc32. Just after there is a "mr" instruction
+> which AFAIU takes r3 as input register.
 > 
-> --------------------------------->8
-> Subject: [PATCH] powerpc: Add syscall detection for restartable sequences
-> 
-> Syscalls are not allowed inside restartable sequences, so add a call to
-> rseq_syscall() at the very beginning of system call exiting path for
-> CONFIG_DEBUG_RSEQ=y kernel. This could help us to detect whether there
-> is a syscall issued inside restartable sequences.
-> 
-> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-> ---
-> arch/powerpc/kernel/entry_32.S | 5 +++++
-> arch/powerpc/kernel/entry_64.S | 5 +++++
-> 2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index eb8d01bae8c6..2f134eebe7ed 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -365,6 +365,11 @@ syscall_dotrace_cont:
-> 	blrl			/* Call handler */
-> 	.globl	ret_from_syscall
-> ret_from_syscall:
-> +#ifdef CONFIG_DEBUG_RSEQ
-> +	/* Check whether the syscall is issued inside a restartable sequence */
-> +	addi    r3,r1,STACK_FRAME_OVERHEAD
-> +	bl      rseq_syscall
-> +#endif
-> 	mr	r6,r3
-> 	CURRENT_THREAD_INFO(r12, r1)
-> 	/* disable interrupts so current_thread_info()->flags can't change */
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index 2cb5109a7ea3..2e2d59bb45d0 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -204,6 +204,11 @@ system_call:			/* label this so stack traces look sane */
->  * This is blacklisted from kprobes further below with _ASM_NOKPROBE_SYMBOL().
->  */
-> system_call_exit:
-> +#ifdef CONFIG_DEBUG_RSEQ
-> +	/* Check whether the syscall is issued inside a restartable sequence */
-> +	addi    r3,r1,STACK_FRAME_OVERHEAD
-> +	bl      rseq_syscall
-> +#endif
-> 	/*
-> 	 * Disable interrupts so current_thread_info()->flags can't change,
-> 	 * and so that we don't get interrupted after loading SRR0/1.
-> --
-> 2.16.2
+> Can you look into it ?
 
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-http://www.efficios.com
+Hello, Boqun,
+
+You can also request access to a ppc64 environment here:
+
+	http://osuosl.org/services/powerdev/request_hosting/
+
+							Thanx, Paul
+
+> Thanks,
+> 
+> Mathieu
+> 
+> > 
+> > Regards,
+> > Boqun
+> > 
+> > --------------------------------->8
+> > Subject: [PATCH] powerpc: Add syscall detection for restartable sequences
+> > 
+> > Syscalls are not allowed inside restartable sequences, so add a call to
+> > rseq_syscall() at the very beginning of system call exiting path for
+> > CONFIG_DEBUG_RSEQ=y kernel. This could help us to detect whether there
+> > is a syscall issued inside restartable sequences.
+> > 
+> > Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> > ---
+> > arch/powerpc/kernel/entry_32.S | 5 +++++
+> > arch/powerpc/kernel/entry_64.S | 5 +++++
+> > 2 files changed, 10 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> > index eb8d01bae8c6..2f134eebe7ed 100644
+> > --- a/arch/powerpc/kernel/entry_32.S
+> > +++ b/arch/powerpc/kernel/entry_32.S
+> > @@ -365,6 +365,11 @@ syscall_dotrace_cont:
+> > 	blrl			/* Call handler */
+> > 	.globl	ret_from_syscall
+> > ret_from_syscall:
+> > +#ifdef CONFIG_DEBUG_RSEQ
+> > +	/* Check whether the syscall is issued inside a restartable sequence */
+> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> > +	bl      rseq_syscall
+> > +#endif
+> > 	mr	r6,r3
+> > 	CURRENT_THREAD_INFO(r12, r1)
+> > 	/* disable interrupts so current_thread_info()->flags can't change */
+> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> > index 2cb5109a7ea3..2e2d59bb45d0 100644
+> > --- a/arch/powerpc/kernel/entry_64.S
+> > +++ b/arch/powerpc/kernel/entry_64.S
+> > @@ -204,6 +204,11 @@ system_call:			/* label this so stack traces look sane */
+> >  * This is blacklisted from kprobes further below with _ASM_NOKPROBE_SYMBOL().
+> >  */
+> > system_call_exit:
+> > +#ifdef CONFIG_DEBUG_RSEQ
+> > +	/* Check whether the syscall is issued inside a restartable sequence */
+> > +	addi    r3,r1,STACK_FRAME_OVERHEAD
+> > +	bl      rseq_syscall
+> > +#endif
+> > 	/*
+> > 	 * Disable interrupts so current_thread_info()->flags can't change,
+> > 	 * and so that we don't get interrupted after loading SRR0/1.
+> > --
+> > 2.16.2
+> 
+> -- 
+> Mathieu Desnoyers
+> EfficiOS Inc.
+> http://www.efficios.com
+> 
