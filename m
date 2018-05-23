@@ -1,22 +1,22 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rPkb0nqMzDrbj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 17:47:50 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id c11-v6so12518412plr.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 00:47:50 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v4 13/29] KVM: PPC: Book3S PR: adds new
- kvmppc_copyto_vcpu_tm/kvmppc_copyfrom_vcpu_tm API for PR KVM.
-Date: Wed, 23 May 2018 15:01:56 +0800
-Message-Id: <1527058932-7434-14-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1527058932-7434-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1527058932-7434-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rPkd59h9zDrq6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2018 17:47:53 +1000 (AEST)
+Subject: [PATCH v4 3/3] powerpc/lib: optimise PPC32 memcmp
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ segher@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <cover.1527004752.git.christophe.leroy@c-s.fr>
+ <05bd657afedaf4a0de5abab0c5db2e88fa73bdfe.1527004752.git.christophe.leroy@c-s.fr>
+Message-ID: <bb7ef10a-4777-7635-3e54-830dd3eeb8bb@c-s.fr>
+Date: Wed, 23 May 2018 09:47:32 +0200
+MIME-Version: 1.0
+In-Reply-To: <05bd657afedaf4a0de5abab0c5db2e88fa73bdfe.1527004752.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +26,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+At the time being, memcmp() compares two chunks of memory
+byte per byte.
 
-This patch adds 2 new APIs: kvmppc_copyto_vcpu_tm() and
-kvmppc_copyfrom_vcpu_tm().  These 2 APIs will be used to copy from/to TM
-data between VCPU_TM/VCPU area.
+This patch optimises the comparison by comparing word by word.
 
-PR KVM will use these APIs for treclaim. or trchkpt. emulation.
+A small benchmark performed on an 8xx comparing two chuncks
+of 512 bytes performed 100000 times gives:
 
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+Before : 5852274 TB ticks
+After:   1488638 TB ticks
+
+This is almost 4 times faster
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 41 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+  Not resending the entire serie
 
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 2eb457b..f81a921 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -87,6 +87,47 @@ static bool spr_allowed(struct kvm_vcpu *vcpu, enum priv_level level)
- 	return true;
- }
- 
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static inline void kvmppc_copyto_vcpu_tm(struct kvm_vcpu *vcpu)
-+{
-+	memcpy(&vcpu->arch.gpr_tm[0], &vcpu->arch.regs.gpr[0],
-+			sizeof(vcpu->arch.gpr_tm));
-+	memcpy(&vcpu->arch.fp_tm, &vcpu->arch.fp,
-+			sizeof(struct thread_fp_state));
-+	memcpy(&vcpu->arch.vr_tm, &vcpu->arch.vr,
-+			sizeof(struct thread_vr_state));
-+	vcpu->arch.ppr_tm = vcpu->arch.ppr;
-+	vcpu->arch.dscr_tm = vcpu->arch.dscr;
-+	vcpu->arch.amr_tm = vcpu->arch.amr;
-+	vcpu->arch.ctr_tm = vcpu->arch.regs.ctr;
-+	vcpu->arch.tar_tm = vcpu->arch.tar;
-+	vcpu->arch.lr_tm = vcpu->arch.regs.link;
-+	vcpu->arch.cr_tm = vcpu->arch.cr;
-+	vcpu->arch.xer_tm = vcpu->arch.regs.xer;
-+	vcpu->arch.vrsave_tm = vcpu->arch.vrsave;
-+}
-+
-+static inline void kvmppc_copyfrom_vcpu_tm(struct kvm_vcpu *vcpu)
-+{
-+	memcpy(&vcpu->arch.regs.gpr[0], &vcpu->arch.gpr_tm[0],
-+			sizeof(vcpu->arch.regs.gpr));
-+	memcpy(&vcpu->arch.fp, &vcpu->arch.fp_tm,
-+			sizeof(struct thread_fp_state));
-+	memcpy(&vcpu->arch.vr, &vcpu->arch.vr_tm,
-+			sizeof(struct thread_vr_state));
-+	vcpu->arch.ppr = vcpu->arch.ppr_tm;
-+	vcpu->arch.dscr = vcpu->arch.dscr_tm;
-+	vcpu->arch.amr = vcpu->arch.amr_tm;
-+	vcpu->arch.regs.ctr = vcpu->arch.ctr_tm;
-+	vcpu->arch.tar = vcpu->arch.tar_tm;
-+	vcpu->arch.regs.link = vcpu->arch.lr_tm;
-+	vcpu->arch.cr = vcpu->arch.cr_tm;
-+	vcpu->arch.regs.xer = vcpu->arch.xer_tm;
-+	vcpu->arch.vrsave = vcpu->arch.vrsave_tm;
-+}
-+
+  v4: Dropped the special handling for when length is 0. Handling it 
+through the small length path.
+
+  arch/powerpc/lib/string_32.S | 48 
++++++++++++++++++++++++++++++++++++---------
+  1 file changed, 38 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+index 40a576d56ac7..542e6cecbcaf 100644
+--- a/arch/powerpc/lib/string_32.S
++++ b/arch/powerpc/lib/string_32.S
+@@ -16,17 +16,45 @@
+  	.text
+
+  _GLOBAL(memcmp)
+-	cmpwi	cr0, r5, 0
+-	beq-	2f
+-	mtctr	r5
+-	addi	r6,r3,-1
+-	addi	r4,r4,-1
+-1:	lbzu	r3,1(r6)
+-	lbzu	r0,1(r4)
+-	subf.	r3,r0,r3
+-	bdnzt	2,1b
++	srawi.	r7, r5, 2		/* Divide len by 4 */
++	mr	r6, r3
++	beq-	3f
++	mtctr	r7
++	li	r7, 0
++1:
++#ifdef __LITTLE_ENDIAN__
++	lwbrx	r3, r6, r7
++	lwbrx	r0, r4, r7
++#else
++	lwzx	r3, r6, r7
++	lwzx	r0, r4, r7
 +#endif
-+
- int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			      unsigned int inst, int *advance)
- {
++	addi	r7, r7, 4
++	cmplw	cr0, r3, r0
++	bdnzt	eq, 1b
++	bne	5f
++3:	andi.	r3, r5, 3
++	beqlr
++	cmplwi	cr1, r3, 2
++	blt-	cr1, 4f
++#ifdef __LITTLE_ENDIAN__
++	lhbrx	r3, r6, r7
++	lhbrx	r0, r4, r7
++#else
++	lhzx	r3, r6, r7
++	lhzx	r0, r4, r7
++#endif
++	addi	r7, r7, 2
++	subf.	r3, r0, r3
++	beqlr	cr1
++	bnelr
++4:	lbzx	r3, r6, r7
++	lbzx	r0, r4, r7
++	subf.	r3, r0, r3
+  	blr
+-2:	li	r3,0
++5:	li	r3, 1
++	bgtlr
++	li	r3, -1
+  	blr
+  EXPORT_SYMBOL(memcmp)
+
 -- 
-1.8.3.1
+2.13.3
