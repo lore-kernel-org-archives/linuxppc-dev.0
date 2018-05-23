@@ -2,25 +2,25 @@ Return-Path: <srs1=ml38=kernel.org==wfse=ik=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rfW86ygCzF0xS
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:48 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfW85nc5z8vwX
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rfWC4frrzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:51 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40rfWC202jz8tLb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 03:23:51 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40rfW81bjkz9rxs
- for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:23:48 +1000 (AEST)
-Subject: Patch "powerpc/64s: Move cpu_show_meltdown()" has been added to the
- 4.16-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40rfWB5BGRz9s15
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 May 2018 03:23:50 +1000 (AEST)
+Subject: Patch "powerpc/64s: Wire up cpu_show_spectre_v1()" has been added to
+ the 4.16-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Wed, 23 May 2018 19:23:12 +0200
-In-Reply-To: <20180522144125.10345-7-mpe@ellerman.id.au>
-Message-ID: <152709619210929@kroah.com>
+In-Reply-To: <20180522144125.10345-11-mpe@ellerman.id.au>
+Message-ID: <15270961929234@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64s: Move cpu_show_meltdown()
+    powerpc/64s: Wire up cpu_show_spectre_v1()
 
 to the 4.16-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-move-cpu_show_meltdown.patch
+     powerpc-64s-wire-up-cpu_show_spectre_v1.patch
 and it can be found in the queue-4.16 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,66 +50,44 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Wed May 23 19:18:22 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 23 May 2018 00:41:17 +1000
-Subject: powerpc/64s: Move cpu_show_meltdown()
+Date: Wed, 23 May 2018 00:41:21 +1000
+Subject: powerpc/64s: Wire up cpu_show_spectre_v1()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180522144125.10345-7-mpe@ellerman.id.au>
+Message-ID: <20180522144125.10345-11-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 8ad33041563a10b34988800c682ada14b2612533 upstream.
+commit 56986016cb8cd9050e601831fe89f332b4e3c46e upstream.
 
-This landed in setup_64.c for no good reason other than we had nowhere
-else to put it. Now that we have a security-related file, that is a
-better place for it so move it.
+Add a definition for cpu_show_spectre_v1() to override the generic
+version. Currently this just prints "Not affected" or "Vulnerable"
+based on the firmware flag.
+
+Although the kernel does have array_index_nospec() in a few places, we
+haven't yet audited all the powerpc code to see where it's necessary,
+so for now we don't list that as a mitigation.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |   11 +++++++++++
- arch/powerpc/kernel/setup_64.c |    8 --------
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/security.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -5,6 +5,8 @@
- // Copyright 2018, Michael Ellerman, IBM Corporation.
+@@ -50,3 +50,11 @@ ssize_t cpu_show_meltdown(struct device
  
- #include <linux/kernel.h>
-+#include <linux/device.h>
+ 	return sprintf(buf, "Vulnerable\n");
+ }
 +
- #include <asm/security_features.h>
- 
- 
-@@ -13,3 +15,12 @@ unsigned long powerpc_security_features
- 	SEC_FTR_L1D_FLUSH_PR | \
- 	SEC_FTR_BNDS_CHK_SPEC_BAR | \
- 	SEC_FTR_FAVOUR_SECURITY;
-+
-+
-+ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
++ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
 +{
-+	if (rfi_flush)
-+		return sprintf(buf, "Mitigation: RFI Flush\n");
++	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
++		return sprintf(buf, "Not affected\n");
 +
 +	return sprintf(buf, "Vulnerable\n");
 +}
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -927,12 +927,4 @@ static __init int rfi_flush_debugfs_init
- }
- device_initcall(rfi_flush_debugfs_init);
- #endif
--
--ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	if (rfi_flush)
--		return sprintf(buf, "Mitigation: RFI Flush\n");
--
--	return sprintf(buf, "Vulnerable\n");
--}
- #endif /* CONFIG_PPC_BOOK3S_64 */
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
