@@ -1,36 +1,24 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sHwr73pCzF1QS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 04:29:48 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4OITgio053025
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 14:29:46 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j62baryma-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 14:29:45 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 24 May 2018 19:29:24 +0100
-Date: Thu, 24 May 2018 23:59:19 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] selftests/powerpc: Add test to verify rfi flush
- across a system call
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <cover.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
- <5777d4ff6a9216b189f349f98217d47b38278661.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
- <87r2m142ci.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87r2m142ci.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sKY76dRWzF1R9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 05:42:51 +1000 (AEST)
+Date: Thu, 24 May 2018 14:42:06 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v3] powerpc: Implement csum_ipv6_magic in assembly
+Message-ID: <20180524194206.GD17342@gate.crashing.org>
+References: <20180522065701.9DE696CCB4@po14934vm.idsi0.si.c-s.fr>
+ <20180523183447.GV17342@gate.crashing.org>
+ <3848a4ad-2c0e-691f-e98f-347cfe3484e8@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <3848a4ad-2c0e-691f-e98f-347cfe3484e8@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,50 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->> diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tool=
-s/testing/selftests/powerpc/security/rfi_flush.c
->> new file mode 100644
->> index 000000000000..a20fe8eca161
->> --- /dev/null
->> +++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
->> @@ -0,0 +1,132 @@
-> ...
->> +
->> +int rfi_flush_test(void)
->> +{
->> +	char *p;
->> +	int repetitions =3D 10;
->> +	int fd, passes =3D 0, iter, rc =3D 0;
->> +	struct perf_event_read v;
->> +	uint64_t l1d_misses_total =3D 0;
->> +	unsigned long iterations =3D 100000, zero_size =3D 24*1024;
->> +	int rfi_flush_org, rfi_flush;
->> +
->> +	SKIP_IF(geteuid() !=3D 0);
->> +
->> +	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
->> +		perror("error reading powerpc/rfi_flush debugfs file");
->> +	        printf("unable to determine current rfi_flush setting");
->> +		return 1;
->> +	}
->=20
-> This leads to a hard error on old kernels, which I don't want (breaks my =
-CI).
+On Thu, May 24, 2018 at 08:20:16AM +0200, Christophe LEROY wrote:
+> Le 23/05/2018 à 20:34, Segher Boessenkool a écrit :
+> >On Tue, May 22, 2018 at 08:57:01AM +0200, Christophe Leroy wrote:
+> >>+_GLOBAL(csum_ipv6_magic)
+> >>+	lwz	r8, 0(r3)
+> >>+	lwz	r9, 4(r3)
+> >>+	lwz	r10, 8(r3)
+> >>+	lwz	r11, 12(r3)
+> >>+	addc	r0, r5, r6
+> >>+	adde	r0, r0, r7
+> >>+	adde	r0, r0, r8
+> >>+	adde	r0, r0, r9
+> >>+	adde	r0, r0, r10
+> >>+	adde	r0, r0, r11
+> >>+	lwz	r8, 0(r4)
+> >>+	lwz	r9, 4(r4)
+> >>+	lwz	r10, 8(r4)
+> >>+	lwz	r11, 12(r4)
+> >>+	adde	r0, r0, r8
+> >>+	adde	r0, r0, r9
+> >>+	adde	r0, r0, r10
+> >>+	adde	r0, r0, r11
+> >>+	addze	r0, r0
+> >>+	rotlwi	r3, r0, 16
+> >>+	add	r3, r0, r3
+> >>+	not	r3, r3
+> >>+	rlwinm	r3, r3, 16, 16, 31
+> >>+	blr
+> >>+EXPORT_SYMBOL(csum_ipv6_magic)
+> >
+> >Clustering the loads and carry insns together is pretty much the worst you
+> >can do on most 32-bit CPUs.
+> 
+> Oh, really ? __csum_partial is written that way too.
 
-Hmm... didn't realize new tests would be run on older kernels. Are those=20
-older stable/distro releases, or actually just earlier kernel versions?
+I thought I told you about this before?  Maybe not.
 
->=20
-> So I changed it to:
->=20
-> 	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
-> 		perror("Unable to read powerpc/rfi_flush debugfs file");
-> 		SKIP_IF(1);
-> 	}
+> Right, now I tried interleaving the lwz and adde. I get no improvment at 
+> all on a 885, but I get a 15% improvment on a 8321.
 
-Sure, thanks!
-- Naveen
+It won't likely help on single-issue cores (like the one 885 has), yes.
 
-=
+
+Segher
