@@ -1,29 +1,23 @@
-Return-Path: <BATV+7c38cfb39597af86d9de+5387+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40s1Zd33MWzF1Hj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 17:43:05 +1000 (AEST)
-Date: Thu, 24 May 2018 00:17:59 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-Message-ID: <20180524071759.GA624@infradead.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40s1cL7483zDrJv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 17:44:34 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
+Subject: Re: [PATCH v5 2/4] powerpc/64: enhance memcmp() with VMX instruction
+ for long bytes comparision
+In-Reply-To: <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
+References: <1527058083-6998-1-git-send-email-wei.guo.simon@gmail.com>
+ <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
+Date: Thu, 24 May 2018 17:44:33 +1000
+Message-ID: <87d0xlsdjy.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +27,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 24, 2018 at 08:27:04AM +1000, Benjamin Herrenschmidt wrote:
-> - First qemu doesn't know that the guest will switch to "secure mode"
-> in advance. There is no difference between a normal and a secure
-> partition until the partition does the magic UV call to "enter secure
-> mode" and qemu doesn't see any of it. So who can set the flag here ?
-> 
-> - Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
-> vhost) go through the emulated MMIO for every access to the guest,
-> which adds additional overhead.
+Hi Simon,
 
-Also this whole scheme is simply the wrong way around.  No driver should
-opt out of the DMA API in general.  For legacy reasons we might have to
-opt out of the dma API for some virtio cases due to qemu bugs, but
-this should never have been the default, but a quirk for the affected
-versions.
+wei.guo.simon@gmail.com writes:
+> From: Simon Guo <wei.guo.simon@gmail.com>
+>
+> This patch add VMX primitives to do memcmp() in case the compare size
+> exceeds 4K bytes. KSM feature can benefit from this.
 
-We need to fix this now and make the dma ops bypass the quirk instead of
-the default, which will also solve the power issue.
+You say "exceeds 4K" here.
+
+> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> index f20e883..6303bbf 100644
+> --- a/arch/powerpc/lib/memcmp_64.S
+> +++ b/arch/powerpc/lib/memcmp_64.S
+> @@ -27,12 +27,73 @@
+>  #define LH	lhbrx
+>  #define LW	lwbrx
+>  #define LD	ldbrx
+> +#define LVS	lvsr
+> +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
+> +	vperm _VRT,_VRB,_VRA,_VRC
+>  #else
+>  #define LH	lhzx
+>  #define LW	lwzx
+>  #define LD	ldx
+> +#define LVS	lvsl
+> +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
+> +	vperm _VRT,_VRA,_VRB,_VRC
+>  #endif
+>  
+> +#define VMX_OPS_THRES 4096
+
+THRES == 4096
+
+BTW, can we call it VMX_THRESH ?
+
+> +#define ENTER_VMX_OPS	\
+> +	mflr    r0;	\
+> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
+> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
+> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
+> +	std     r0,16(r1); \
+> +	stdu    r1,-STACKFRAMESIZE(r1); \
+> +	bl      enter_vmx_ops; \
+> +	cmpwi   cr1,r3,0; \
+> +	ld      r0,STACKFRAMESIZE+16(r1); \
+> +	ld      r3,STK_REG(R31)(r1); \
+> +	ld      r4,STK_REG(R30)(r1); \
+> +	ld      r5,STK_REG(R29)(r1); \
+> +	addi	r1,r1,STACKFRAMESIZE; \
+> +	mtlr    r0
+> +
+> +#define EXIT_VMX_OPS \
+> +	mflr    r0; \
+> +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
+> +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
+> +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
+> +	std     r0,16(r1); \
+> +	stdu    r1,-STACKFRAMESIZE(r1); \
+> +	bl      exit_vmx_ops; \
+> +	ld      r0,STACKFRAMESIZE+16(r1); \
+> +	ld      r3,STK_REG(R31)(r1); \
+> +	ld      r4,STK_REG(R30)(r1); \
+> +	ld      r5,STK_REG(R29)(r1); \
+> +	addi	r1,r1,STACKFRAMESIZE; \
+> +	mtlr    r0
+> +
+> +/*
+> + * LD_VSR_CROSS16B load the 2nd 16 bytes for _vaddr which is unaligned with
+> + * 16 bytes boundary and permute the result with the 1st 16 bytes.
+> +
+> + *    |  y y y y y y y y y y y y y 0 1 2 | 3 4 5 6 7 8 9 a b c d e f z z z |
+> + *    ^                                  ^                                 ^
+> + * 0xbbbb10                          0xbbbb20                          0xbbb30
+> + *                                 ^
+> + *                                _vaddr
+> + *
+> + *
+> + * _vmask is the mask generated by LVS
+> + * _v1st_qw is the 1st aligned QW of current addr which is already loaded.
+> + *   for example: 0xyyyyyyyyyyyyy012 for big endian
+> + * _v2nd_qw is the 2nd aligned QW of cur _vaddr to be loaded.
+> + *   for example: 0x3456789abcdefzzz for big endian
+> + * The permute result is saved in _v_res.
+> + *   for example: 0x0123456789abcdef for big endian.
+> + */
+> +#define LD_VSR_CROSS16B(_vaddr,_vmask,_v1st_qw,_v2nd_qw,_v_res) \
+> +        lvx     _v2nd_qw,_vaddr,off16; \
+> +        VPERM(_v_res,_v1st_qw,_v2nd_qw,_vmask)
+> +
+>  /*
+>   * There are 2 categories for memcmp:
+>   * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
+> @@ -174,6 +235,13 @@ _GLOBAL(memcmp)
+>  	blr
+>  
+>  .Llong:
+> +#ifdef CONFIG_ALTIVEC
+> +	/* Try to use vmx loop if length is larger than 4K */
+> +	cmpldi  cr6,r5,VMX_OPS_THRES
+> +	bge	cr6,.Lsameoffset_vmx_cmp
+
+Here we compare the length to 4K and if it's greater *or equal* then we
+go to the VMX case. Or am I reading it backward?
+
+So we should say "if the size is 4K or more we do VMX" shouldn't we?
+
+cheers
