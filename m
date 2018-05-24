@@ -1,27 +1,38 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sandipan@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40s2VM2YM9zF1MY
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 18:24:26 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id a14-v6so500205pfi.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 01:24:26 -0700 (PDT)
-Date: Wed, 23 May 2018 23:37:34 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@ozlabs.org>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH v5 2/4] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-Message-ID: <20180523153734.GC2498@simonLocalRHEL7.x64>
-References: <1527058083-6998-1-git-send-email-wei.guo.simon@gmail.com>
- <1527058083-6998-3-git-send-email-wei.guo.simon@gmail.com>
- <87d0xlsdjy.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40s2Wr23P6zF1PM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 18:25:44 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4O8OuDm018459
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 04:25:41 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j5s4s1urg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 04:25:41 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sandipan@linux.vnet.ibm.com>;
+ Thu, 24 May 2018 09:25:39 +0100
+Subject: Re: [PATCH bpf-next v4 02/10] bpf: powerpc64: pad function address
+ loads with NOPs
+To: Daniel Borkmann <daniel@iogearbox.net>
+Cc: ast@kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, naveen.n.rao@linux.vnet.ibm.com,
+ jakub.kicinski@netronome.com
+References: <cover.1527143877.git.sandipan@linux.vnet.ibm.com>
+ <d0db970711596827ba88209e545c686d77c22b7d.1527143877.git.sandipan@linux.vnet.ibm.com>
+ <43081c8c-d8a8-254a-69f0-7941acab90a3@iogearbox.net>
+From: Sandipan Das <sandipan@linux.vnet.ibm.com>
+Date: Thu, 24 May 2018 13:55:33 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87d0xlsdjy.fsf@concordia.ellerman.id.au>
+In-Reply-To: <43081c8c-d8a8-254a-69f0-7941acab90a3@iogearbox.net>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8826a2e1-71c5-06fc-7a66-3c33c1a54c78@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,120 +42,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-On Thu, May 24, 2018 at 05:44:33PM +1000, Michael Ellerman wrote:
-> Hi Simon,
-> 
-> wei.guo.simon@gmail.com writes:
-> > From: Simon Guo <wei.guo.simon@gmail.com>
-> >
-> > This patch add VMX primitives to do memcmp() in case the compare size
-> > exceeds 4K bytes. KSM feature can benefit from this.
-> 
-> You say "exceeds 4K" here.
-> 
-it should be >= 4k. I will correct the message.
 
-> > diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> > index f20e883..6303bbf 100644
-> > --- a/arch/powerpc/lib/memcmp_64.S
-> > +++ b/arch/powerpc/lib/memcmp_64.S
-> > @@ -27,12 +27,73 @@
-> >  #define LH	lhbrx
-> >  #define LW	lwbrx
-> >  #define LD	ldbrx
-> > +#define LVS	lvsr
-> > +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
-> > +	vperm _VRT,_VRB,_VRA,_VRC
-> >  #else
-> >  #define LH	lhzx
-> >  #define LW	lwzx
-> >  #define LD	ldx
-> > +#define LVS	lvsl
-> > +#define VPERM(_VRT,_VRA,_VRB,_VRC) \
-> > +	vperm _VRT,_VRA,_VRB,_VRC
-> >  #endif
-> >  
-> > +#define VMX_OPS_THRES 4096
-> 
-> THRES == 4096
-> 
-> BTW, can we call it VMX_THRESH ?
-> 
-Sure. I will update it.
 
-> > +#define ENTER_VMX_OPS	\
-> > +	mflr    r0;	\
-> > +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
-> > +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
-> > +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
-> > +	std     r0,16(r1); \
-> > +	stdu    r1,-STACKFRAMESIZE(r1); \
-> > +	bl      enter_vmx_ops; \
-> > +	cmpwi   cr1,r3,0; \
-> > +	ld      r0,STACKFRAMESIZE+16(r1); \
-> > +	ld      r3,STK_REG(R31)(r1); \
-> > +	ld      r4,STK_REG(R30)(r1); \
-> > +	ld      r5,STK_REG(R29)(r1); \
-> > +	addi	r1,r1,STACKFRAMESIZE; \
-> > +	mtlr    r0
-> > +
-> > +#define EXIT_VMX_OPS \
-> > +	mflr    r0; \
-> > +	std     r3,-STACKFRAMESIZE+STK_REG(R31)(r1); \
-> > +	std     r4,-STACKFRAMESIZE+STK_REG(R30)(r1); \
-> > +	std     r5,-STACKFRAMESIZE+STK_REG(R29)(r1); \
-> > +	std     r0,16(r1); \
-> > +	stdu    r1,-STACKFRAMESIZE(r1); \
-> > +	bl      exit_vmx_ops; \
-> > +	ld      r0,STACKFRAMESIZE+16(r1); \
-> > +	ld      r3,STK_REG(R31)(r1); \
-> > +	ld      r4,STK_REG(R30)(r1); \
-> > +	ld      r5,STK_REG(R29)(r1); \
-> > +	addi	r1,r1,STACKFRAMESIZE; \
-> > +	mtlr    r0
-> > +
-> > +/*
-> > + * LD_VSR_CROSS16B load the 2nd 16 bytes for _vaddr which is unaligned with
-> > + * 16 bytes boundary and permute the result with the 1st 16 bytes.
-> > +
-> > + *    |  y y y y y y y y y y y y y 0 1 2 | 3 4 5 6 7 8 9 a b c d e f z z z |
-> > + *    ^                                  ^                                 ^
-> > + * 0xbbbb10                          0xbbbb20                          0xbbb30
-> > + *                                 ^
-> > + *                                _vaddr
-> > + *
-> > + *
-> > + * _vmask is the mask generated by LVS
-> > + * _v1st_qw is the 1st aligned QW of current addr which is already loaded.
-> > + *   for example: 0xyyyyyyyyyyyyy012 for big endian
-> > + * _v2nd_qw is the 2nd aligned QW of cur _vaddr to be loaded.
-> > + *   for example: 0x3456789abcdefzzz for big endian
-> > + * The permute result is saved in _v_res.
-> > + *   for example: 0x0123456789abcdef for big endian.
-> > + */
-> > +#define LD_VSR_CROSS16B(_vaddr,_vmask,_v1st_qw,_v2nd_qw,_v_res) \
-> > +        lvx     _v2nd_qw,_vaddr,off16; \
-> > +        VPERM(_v_res,_v1st_qw,_v2nd_qw,_vmask)
-> > +
-> >  /*
-> >   * There are 2 categories for memcmp:
-> >   * 1) src/dst has the same offset to the 8 bytes boundary. The handlers
-> > @@ -174,6 +235,13 @@ _GLOBAL(memcmp)
-> >  	blr
-> >  
-> >  .Llong:
-> > +#ifdef CONFIG_ALTIVEC
-> > +	/* Try to use vmx loop if length is larger than 4K */
-> > +	cmpldi  cr6,r5,VMX_OPS_THRES
-> > +	bge	cr6,.Lsameoffset_vmx_cmp
+On 05/24/2018 01:04 PM, Daniel Borkmann wrote:
+> On 05/24/2018 08:56 AM, Sandipan Das wrote:
+>> For multi-function programs, loading the address of a callee
+>> function to a register requires emitting instructions whose
+>> count varies from one to five depending on the nature of the
+>> address.
+>>
+>> Since we come to know of the callee's address only before the
+>> extra pass, the number of instructions required to load this
+>> address may vary from what was previously generated. This can
+>> make the JITed image grow or shrink.
+>>
+>> To avoid this, we should generate a constant five-instruction
+>> when loading function addresses by padding the optimized load
+>> sequence with NOPs.
+>>
+>> Signed-off-by: Sandipan Das <sandipan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/net/bpf_jit_comp64.c | 34 +++++++++++++++++++++++-----------
+>>  1 file changed, 23 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+>> index 1bdb1aff0619..e4582744a31d 100644
+>> --- a/arch/powerpc/net/bpf_jit_comp64.c
+>> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+>> @@ -167,25 +167,37 @@ static void bpf_jit_build_epilogue(u32 *image, struct codegen_context *ctx)
+>>  
+>>  static void bpf_jit_emit_func_call(u32 *image, struct codegen_context *ctx, u64 func)
+>>  {
+>> +	unsigned int i, ctx_idx = ctx->idx;
+>> +
+>> +	/* Load function address into r12 */
+>> +	PPC_LI64(12, func);
+>> +
+>> +	/* For bpf-to-bpf function calls, the callee's address is unknown
+>> +	 * until the last extra pass. As seen above, we use PPC_LI64() to
+>> +	 * load the callee's address, but this may optimize the number of
+>> +	 * instructions required based on the nature of the address.
+>> +	 *
+>> +	 * Since we don't want the number of instructions emitted to change,
+>> +	 * we pad the optimized PPC_LI64() call with NOPs to guarantee that
+>> +	 * we always have a five-instruction sequence, which is the maximum
+>> +	 * that PPC_LI64() can emit.
+>> +	 */
+>> +	for (i = ctx->idx - ctx_idx; i < 5; i++)
+>> +		PPC_NOP();
 > 
-> Here we compare the length to 4K and if it's greater *or equal* then we
-> go to the VMX case. Or am I reading it backward?
+> By the way, I think you can still optimize this. The nops are not really
+> needed in case of insn->src_reg != BPF_PSEUDO_CALL since the address of
+> a normal BPF helper call will always be at a fixed location and known a
+> priori.
 > 
-> So we should say "if the size is 4K or more we do VMX" shouldn't we?
-Yes. Again I need reword the comment to "equal or greater than 4K"
-here.
 
-Thanks,
-- Simon
+Ah, true. Thanks for pointing this out. There are a few other things that
+we are planning to do for the ppc64 JIT compiler. Will put out a patch for
+this with that series.
+
+- Sandipan
+
+>>  #ifdef PPC64_ELF_ABI_v1
+>> -	/* func points to the function descriptor */
+>> -	PPC_LI64(b2p[TMP_REG_2], func);
+>> -	/* Load actual entry point from function descriptor */
+>> -	PPC_BPF_LL(b2p[TMP_REG_1], b2p[TMP_REG_2], 0);
+>> -	/* ... and move it to LR */
+>> -	PPC_MTLR(b2p[TMP_REG_1]);
+>>  	/*
+>>  	 * Load TOC from function descriptor at offset 8.
+>>  	 * We can clobber r2 since we get called through a
+>>  	 * function pointer (so caller will save/restore r2)
+>>  	 * and since we don't use a TOC ourself.
+>>  	 */
+>> -	PPC_BPF_LL(2, b2p[TMP_REG_2], 8);
+>> -#else
+>> -	/* We can clobber r12 */
+>> -	PPC_FUNC_ADDR(12, func);
+>> -	PPC_MTLR(12);
+>> +	PPC_BPF_LL(2, 12, 8);
+>> +	/* Load actual entry point from function descriptor */
+>> +	PPC_BPF_LL(12, 12, 0);
+>>  #endif
+>> +
+>> +	PPC_MTLR(12);
+>>  	PPC_BLRL();
+>>  }
+>>  
+>>
+> 
