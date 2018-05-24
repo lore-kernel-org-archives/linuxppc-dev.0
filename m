@@ -1,22 +1,23 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sL1r1kn0zF1QD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 06:04:16 +1000 (AEST)
-Date: Thu, 24 May 2018 15:03:50 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4] powerpc: Implement csum_ipv6_magic in assembly
-Message-ID: <20180524200350.GG17342@gate.crashing.org>
-References: <7a756b816161007903ca8b28aec662de27135c55.1527161282.git.christophe.leroy@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7a756b816161007903ca8b28aec662de27135c55.1527161282.git.christophe.leroy@c-s.fr>
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40sL6F60NrzF0TM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 06:08:03 +1000 (AEST)
+Date: Thu, 24 May 2018 22:07:59 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] i2c: opal: don't check number of messages in the
+ driver
+Message-ID: <20180524200759.bmcati5h3fzobtur@ninjato>
+References: <20180520065035.7920-1-wsa@the-dreams.de>
+ <20180520065035.7920-3-wsa@the-dreams.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="z2owrkxff3iiku6g"
+In-Reply-To: <20180520065035.7920-3-wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,75 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks fine to me (one comment below):
 
-Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+--z2owrkxff3iiku6g
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 24, 2018 at 11:33:18AM +0000, Christophe Leroy wrote:
-> +_GLOBAL(csum_ipv6_magic)
-> +	lwz	r8, 0(r3)
-> +	lwz	r9, 4(r3)
-> +	addc	r0, r7, r8
-> +	lwz	r10, 8(r3)
-> +	adde	r0, r0, r9
-> +	lwz	r11, 12(r3)
-> +	adde	r0, r0, r10
-> +	lwz	r8, 0(r4)
-> +	adde	r0, r0, r11
-> +	lwz	r9, 4(r4)
-> +	adde	r0, r0, r8
-> +	lwz	r10, 8(r4)
-> +	adde	r0, r0, r9
-> +	lwz	r11, 12(r4)
-> +	adde	r0, r0, r10
-> +	add	r5, r5, r6	/* assumption: len + proto doesn't carry */
-> +	adde	r0, r0, r11
-> +	adde	r0, r0, r5
-> +	addze	r0, r0
-> +	rotlwi	r3, r0, 16
-> +	add	r3, r0, r3
-> +	not	r3, r3
-> +	rlwinm	r3, r3, 16, 16, 31
-> +	blr
-> +EXPORT_SYMBOL(csum_ipv6_magic)
-> diff --git a/arch/powerpc/lib/checksum_64.S b/arch/powerpc/lib/checksum_64.S
-> index d7f1a966136e..bf0546e546fc 100644
-> --- a/arch/powerpc/lib/checksum_64.S
-> +++ b/arch/powerpc/lib/checksum_64.S
-> @@ -429,3 +429,31 @@ dstnr;	stb	r6,0(r4)
->  	stw	r6,0(r8)
->  	blr
->  EXPORT_SYMBOL(csum_partial_copy_generic)
-> +
-> +/*
-> + * __sum16 csum_ipv6_magic(const struct in6_addr *saddr,
-> + *			   const struct in6_addr *daddr,
-> + *			   __u32 len, __u8 proto, __wsum sum)
-> + */
-> +
-> +_GLOBAL(csum_ipv6_magic)
-> +	ld	r8, 0(r3)
-> +	ld	r9, 8(r3)
-> +	add	r5, r5, r6
-> +	addc	r0, r8, r9
-> +	ld	r10, 0(r4)
-> +	ld	r11, 8(r4)
-> +	adde	r0, r0, r10
-> +	add	r5, r5, r7
-> +	adde	r0, r0, r11
-> +	adde	r0, r0, r5
-> +	addze	r0, r0
-> +	rotldi  r3 ,r0, 32		/* fold two 32 bit halves together */
+On Sun, May 20, 2018 at 08:50:34AM +0200, Wolfram Sang wrote:
+> Since commit 1eace8344c02 ("i2c: add param sanity check to
+> i2c_transfer()") and b7f625840267 ("i2c: add quirk checks to core"), the
+> I2C core does this check now. We can remove it here.
+>=20
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 
-Typo (s/ ,/, /).
+Applied to for-next, thanks!
 
-> +	add	r3, r0, r3
-> +	srdi	r0, r3, 32
-> +	rotlwi	r3, r0, 16		/* fold two 16 bit halves together */
-> +	add	r3, r0, r3
-> +	not	r3, r3
-> +	rlwinm	r3, r3, 16, 16, 31
-> +	blr
-> +EXPORT_SYMBOL(csum_ipv6_magic)
-> -- 
-> 2.13.3
+
+--z2owrkxff3iiku6g
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIyBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlsHG58ACgkQFA3kzBSg
+KbakTw/43FO4Yi3zQylLuRTKH8S3IjK5+LMiYiMmYOe4MvFy4GEsjxyrCtA1xzIw
+KEZgbjc34sWfn6YmoFuDVSA8i2uZ+pXfW2vvEhxyYC121Lg+pjwxBRr41RbP05ZZ
+r4uyv6gmkwn3GF9qKDEuToWTIuUDRcm/Js6gKt+BThlnno7NIUfn4YDVUgHowyPH
+53e1A4aL4GxG0j2WU+97l2oMP8GoWeo9uc1WhA5LZy3R34UkUbErzswkQD+z/95/
+FC/TZ3JpIhalVS4LeHaEwmg8oCsCCmkujOCp2RJEUHzsZ99j+MqEDA+fwmO+nzLb
+f7cAjIjOCFOYN5MEIKobbjDoT3nkQZ3qSAo+sx9Li8ZiIFecW4WsQUypA0QX+I7p
+gBlMZodVnuETAMNHaChnnuEMIsAk5wwFxTGWTYUdCheExaQI93+n/PjkpPH2anw4
+2dThwuJqLjDXTgMq7cSbuinxwz6wBobn3gK9kZXU2LDZ7xCWVOe7KNyju6cSt+Qx
+UJe5E48gtHKv/oneKqNN9PFchN8T4y9x0ZXjhSHu9PJQ8MCz28TAFrDSJ0unXeCw
+4UxlR39/BrT242qG2Qfs5JvnQvVgsHL6lVYhmHWxIKhqYyfYV1mZmR+mx7+l3ZhR
+ZJRcIWgA/VHR73WZ3nLcFpus0vehNwWRbVMLFUt4buupvsUp0A==
+=jjt2
+-----END PGP SIGNATURE-----
+
+--z2owrkxff3iiku6g--
