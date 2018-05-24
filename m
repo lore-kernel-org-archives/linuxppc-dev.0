@@ -1,17 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sF0300PpzF1Px
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 02:17:22 +1000 (AEST)
-Message-Id: <54d0574dbb33251ba241620d038b716d90fe0632.1527178313.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/32: implement strlen() in assembly
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- segher@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu, 24 May 2018 16:17:17 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sGVs2cR2zF1PD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 03:25:40 +1000 (AEST)
+Date: Thu, 24 May 2018 12:24:58 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 3/3] powerpc/lib: optimise PPC32 memcmp
+Message-ID: <20180524172458.GA17342@gate.crashing.org>
+References: <cover.1527004752.git.christophe.leroy@c-s.fr>
+ <05bd657afedaf4a0de5abab0c5db2e88fa73bdfe.1527004752.git.christophe.leroy@c-s.fr>
+ <bb7ef10a-4777-7635-3e54-830dd3eeb8bb@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <bb7ef10a-4777-7635-3e54-830dd3eeb8bb@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,86 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic implementation of strlen() reads strings byte per byte.
+On Wed, May 23, 2018 at 09:47:32AM +0200, Christophe Leroy wrote:
+> At the time being, memcmp() compares two chunks of memory
+> byte per byte.
+> 
+> This patch optimises the comparison by comparing word by word.
+> 
+> A small benchmark performed on an 8xx comparing two chuncks
+> of 512 bytes performed 100000 times gives:
+> 
+> Before : 5852274 TB ticks
+> After:   1488638 TB ticks
 
-This patch implements strlen() in assembly for PPC32 based on
-a read of entire words, in the same spirit as what some other
-arches and glibc do.
+> diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+> index 40a576d56ac7..542e6cecbcaf 100644
+> --- a/arch/powerpc/lib/string_32.S
+> +++ b/arch/powerpc/lib/string_32.S
+> @@ -16,17 +16,45 @@
+>  	.text
+> 
+>  _GLOBAL(memcmp)
+> -	cmpwi	cr0, r5, 0
+> -	beq-	2f
+> -	mtctr	r5
+> -	addi	r6,r3,-1
+> -	addi	r4,r4,-1
+> -1:	lbzu	r3,1(r6)
+> -	lbzu	r0,1(r4)
+> -	subf.	r3,r0,r3
+> -	bdnzt	2,1b
+> +	srawi.	r7, r5, 2		/* Divide len by 4 */
+> +	mr	r6, r3
+> +	beq-	3f
+> +	mtctr	r7
+> +	li	r7, 0
+> +1:
+> +#ifdef __LITTLE_ENDIAN__
+> +	lwbrx	r3, r6, r7
+> +	lwbrx	r0, r4, r7
+> +#else
+> +	lwzx	r3, r6, r7
+> +	lwzx	r0, r4, r7
+> +#endif
 
-For long strings, the time spent in strlen is reduced by 50-60%
+You don't test whether the pointers are word-aligned.  Does that work?
+Say, when a load is crossing a page boundary, or segment boundary.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- Applies after the patch 'powerpc/lib: move PPC32 specific functions out of string.S'
 
- arch/powerpc/include/asm/string.h |  3 +++
- arch/powerpc/lib/string_32.S      | 40 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index 0f41686b6243..23ee2a0f2b21 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -15,6 +15,9 @@
- #define __HAVE_ARCH_MEMCHR
- #define __HAVE_ARCH_MEMSET16
- #define __HAVE_ARCH_MEMCPY_FLUSHCACHE
-+#ifdef CONFIG_PPC32
-+#define __HAVE_ARCH_STRLEN
-+#endif
- 
- extern char * strcpy(char *,const char *);
- extern __kernel_size_t strlen(const char *);
-diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
-index c4e70123d245..31575a698c97 100644
---- a/arch/powerpc/lib/string_32.S
-+++ b/arch/powerpc/lib/string_32.S
-@@ -62,6 +62,46 @@ _GLOBAL(memcmp)
- 	blr
- EXPORT_SYMBOL(memcmp)
- 
-+_GLOBAL(strlen)
-+	andi.   r9, r3, 3
-+	addi	r10, r3, -4
-+	beq+	2f
-+1:	lbz	r9, 4(r10)
-+	addi	r10, r10, 1
-+	cmpwi	cr0, r9, 0
-+	beq	19f
-+	andi.	r9, r10, 3
-+	bne	1b
-+2:	lis	r6, 0x8080
-+	ori	r6, r6, 0x8080
-+	rlwinm	r7, r6, 1, 0xffffffff
-+3:	lwzu	r9, 4(r10)
-+	subf	r8, r7, r9
-+	andc	r11, r6, r9
-+	and.	r8, r8, r11
-+	beq+	3b
-+	rlwinm.	r8, r9, 0, 0xff000000
-+	beq	20f
-+	rlwinm.	r8, r9, 0, 0x00ff0000
-+	beq	21f
-+	rlwinm.	r8, r9, 0, 0x0000ff00
-+	beq	22f
-+	rlwinm.	r8, r9, 0, 0x000000ff
-+	bne	3b
-+23:	subf	r3, r3, r10
-+	addi	r3, r3, 3
-+	blr
-+22:	subf	r3, r3, r10
-+	addi	r3, r3, 2
-+	blr
-+21:	subf	r3, r3, r10
-+	addi	r3, r3, 1
-+	blr
-+19:	addi	r10, r10, 3
-+20:	subf	r3, r3, r10
-+	blr
-+EXPORT_SYMBOL(strlen)
-+
- CACHELINE_BYTES = L1_CACHE_BYTES
- LG_CACHELINE_BYTES = L1_CACHE_SHIFT
- CACHELINE_MASK = (L1_CACHE_BYTES-1)
--- 
-2.13.3
+Segher
