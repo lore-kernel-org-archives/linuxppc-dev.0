@@ -1,19 +1,18 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sHFk4ff6zF1QS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 03:59:22 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id q22-v6so1257879pff.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 10:59:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sHFn3R5SzF1R4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 03:59:25 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id u6-v6so1511428pls.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 10:59:25 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 5/7] powerpc/64s/radix: avoid ptesync after set_pte and
- ptep_set_access_flags
-Date: Fri, 25 May 2018 03:58:51 +1000
-Message-Id: <20180524175853.19695-6-npiggin@gmail.com>
+Subject: [PATCH v3 6/7] powerpc/64s/radix: optimise pte_update
+Date: Fri, 25 May 2018 03:58:52 +1000
+Message-Id: <20180524175853.19695-7-npiggin@gmail.com>
 In-Reply-To: <20180524175853.19695-1-npiggin@gmail.com>
 References: <20180524175853.19695-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,74 +24,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The ISA suggests ptesync after setting a pte, to prevent a table walk
-initiated by a subsequent access from missing that store and causing a
-spurious fault. This is an architectual allowance that allows an
-implementation's page table walker to be incoherent with the store
-queue.
+Implementing pte_update with pte_xchg (which uses cmpxchg) is
+inefficient. A single larx/stcx. works fine, no need for the less
+efficient cmpxchg sequence.
 
-However there is no correctness problem in taking a spurious fault in
-userspace -- the kernel copes with these at any time, so the updated
-pte will be found eventually. Spurious kernel faults on vmap memory
-must be avoided, so a ptesync is put into flush_cache_vmap.
-
-On POWER9 so far I have not found a measurable window where this can
-result in more minor faults, so as an optimisation, remove the costly
-ptesync from pte updates. If an implementation benefits from ptesync,
-it would be better to add it back in update_mmu_cache, so it's not
-done for things like fork(2).
-
-fork --fork --exec benchmark improved 5.2% (12400->13100).
+Then remove the memory barriers from the operation. There is a
+requirement for TLB flushing to load mm_cpumask after the store
+that reduces pte permissions, which is moved into the TLB flush
+code.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/include/asm/book3s/64/radix.h |  2 --
- arch/powerpc/include/asm/cacheflush.h      | 13 +++++++++++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/radix.h | 25 +++++++++++-----------
+ arch/powerpc/mm/mmu_context.c              |  6 ++++--
+ arch/powerpc/mm/tlb-radix.c                | 11 +++++++++-
+ 3 files changed, 27 insertions(+), 15 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index fcd92f9b6ec0..45bf1e1b1d33 100644
+index 45bf1e1b1d33..cc9437a542cc 100644
 --- a/arch/powerpc/include/asm/book3s/64/radix.h
 +++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -209,7 +209,6 @@ static inline void radix__ptep_set_access_flags(struct mm_struct *mm,
- 		__radix_pte_update(ptep, 0, new_pte);
- 	} else
- 		__radix_pte_update(ptep, 0, set);
--	asm volatile("ptesync" : : : "memory");
- }
- 
- static inline int radix__pte_same(pte_t pte_a, pte_t pte_b)
-@@ -226,7 +225,6 @@ static inline void radix__set_pte_at(struct mm_struct *mm, unsigned long addr,
- 				 pte_t *ptep, pte_t pte, int percpu)
+@@ -127,20 +127,21 @@ extern void radix__mark_initmem_nx(void);
+ static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
+ 					       unsigned long set)
  {
- 	*ptep = pte;
--	asm volatile("ptesync" : : : "memory");
+-	pte_t pte;
+-	unsigned long old_pte, new_pte;
+-
+-	do {
+-		pte = READ_ONCE(*ptep);
+-		old_pte = pte_val(pte);
+-		new_pte = (old_pte | set) & ~clr;
+-
+-	} while (!pte_xchg(ptep, __pte(old_pte), __pte(new_pte)));
+-
+-	return old_pte;
++	__be64 old_be, tmp_be;
++
++	__asm__ __volatile__(
++	"1:	ldarx	%0,0,%3		# pte_update\n"
++	"	andc	%1,%0,%5	\n"
++	"	or	%1,%1,%4	\n"
++	"	stdcx.	%1,0,%3		\n"
++	"	bne-	1b"
++	: "=&r" (old_be), "=&r" (tmp_be), "=m" (*ptep)
++	: "r" (ptep), "r" (cpu_to_be64(set)), "r" (cpu_to_be64(clr))
++	: "cc" );
++
++	return be64_to_cpu(old_be);
  }
  
- static inline int radix__pmd_bad(pmd_t pmd)
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 11843e37d9cf..e9662648e72d 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -26,6 +26,19 @@
- #define flush_cache_vmap(start, end)		do { } while (0)
- #define flush_cache_vunmap(start, end)		do { } while (0)
+-
+ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+ 					unsigned long addr,
+ 					pte_t *ptep, unsigned long clr,
+diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
+index 0ab297c4cfad..f84e14f23e50 100644
+--- a/arch/powerpc/mm/mmu_context.c
++++ b/arch/powerpc/mm/mmu_context.c
+@@ -57,8 +57,10 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 		 * in switch_slb(), and/or the store of paca->mm_ctx_id in
+ 		 * copy_mm_to_paca().
+ 		 *
+-		 * On the read side the barrier is in pte_xchg(), which orders
+-		 * the store to the PTE vs the load of mm_cpumask.
++		 * On the other side, the barrier is in mm/tlb-radix.c for
++		 * radix which orders earlier stores to clear the PTEs vs
++		 * the load of mm_cpumask. And pte_xchg which does the same
++		 * thing for hash.
+ 		 *
+ 		 * This full barrier is needed by membarrier when switching
+ 		 * between processes after store to rq->curr, before user-space
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 5ac3206c51cc..cdc50398fd60 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -524,6 +524,11 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
+ 		return;
  
-+#ifdef CONFIG_BOOK3S_64
-+/*
-+ * Book3s has no ptesync after setting a pte, so without this ptesync it's
-+ * possible for a kernel virtual mapping access to return a spurious fault
-+ * if it's accessed right after the pte is set. The page fault handler does
-+ * not expect this type of fault. flush_cache_vmap is not exactly the right
-+ * place to put this, but it seems to work well enough.
-+ */
-+#define flush_cache_vmap(start, end)		do { asm volatile("ptesync"); } while (0)
-+#else
-+#define flush_cache_vmap(start, end)		do { } while (0)
-+#endif
-+
- #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
- extern void flush_dcache_page(struct page *page);
- #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+ 	preempt_disable();
++	/*
++	 * Order loads of mm_cpumask vs previous stores to clear ptes before
++	 * the invalidate. See barrier in switch_mm_irqs_off
++	 */
++	smp_mb();
+ 	if (!mm_is_thread_local(mm)) {
+ 		if (mm_needs_flush_escalation(mm))
+ 			_tlbie_pid(pid, RIC_FLUSH_ALL);
+@@ -544,6 +549,7 @@ void radix__flush_all_mm(struct mm_struct *mm)
+ 		return;
+ 
+ 	preempt_disable();
++	smp_mb(); /* see radix__flush_tlb_mm */
+ 	if (!mm_is_thread_local(mm))
+ 		_tlbie_pid(pid, RIC_FLUSH_ALL);
+ 	else
+@@ -568,6 +574,7 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
+ 		return;
+ 
+ 	preempt_disable();
++	smp_mb(); /* see radix__flush_tlb_mm */
+ 	if (!mm_is_thread_local(mm))
+ 		_tlbie_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
+ 	else
+@@ -630,6 +637,7 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 		return;
+ 
+ 	preempt_disable();
++	smp_mb(); /* see radix__flush_tlb_mm */
+ 	if (mm_is_thread_local(mm)) {
+ 		local = true;
+ 		full = (end == TLB_FLUSH_ALL ||
+@@ -791,6 +799,7 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
+ 		return;
+ 
+ 	preempt_disable();
++	smp_mb(); /* see radix__flush_tlb_mm */
+ 	if (mm_is_thread_local(mm)) {
+ 		local = true;
+ 		full = (end == TLB_FLUSH_ALL ||
+@@ -849,7 +858,7 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
+ 
+ 	/* Otherwise first do the PWC, then iterate the pages. */
+ 	preempt_disable();
+-
++	smp_mb(); /* see radix__flush_tlb_mm */
+ 	if (mm_is_thread_local(mm)) {
+ 		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
+ 	} else {
 -- 
 2.17.0
