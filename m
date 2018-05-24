@@ -1,26 +1,44 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40rnGB52d6zF1Gj
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 08:28:02 +1000 (AEST)
-Message-ID: <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net,
- david@gibson.dropbear.id.au, jasowang@redhat.com, mpe@ellerman.id.au,
- hch@infradead.org
-Date: Thu, 24 May 2018 08:27:04 +1000
-In-Reply-To: <20180523213703-mutt-send-email-mst@kernel.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40rrjh4509zF1DM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 11:03:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Boqun Feng <boqun.feng@gmail.com>
+Cc: Will Deacon <will.deacon@arm.com>, Peter Zijlstra <peterz@infradead.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>, Dave Watson <davejwatson@fb.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-api <linux-api@vger.kernel.org>, Paul Turner <pjt@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Andrew Hunter <ahh@google.com>, Andi Kleen <andi@firstfloor.org>,
+ Chris Lameter <cl@linux.com>, Ben Maurer <bmaurer@fb.com>,
+ rostedt <rostedt@goodmis.org>, Josh Triplett <josh@joshtriplett.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Joel Fernandes <joelaf@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 07/14] powerpc: Add support for restartable sequences
+In-Reply-To: <37442352.1577.1527110985175.JavaMail.zimbra@efficios.com>
+References: <20180430224433.17407-1-mathieu.desnoyers@efficios.com>
+ <112970629.1913.1526501596485.JavaMail.zimbra@efficios.com>
+ <20180517011949.GA1121@tardis>
+ <277374719.2144.1526570889798.JavaMail.zimbra@efficios.com>
+ <1526601043.1338308.1376191416.0444B8C5@webmail.messagingengine.com>
+ <418003803.516.1526667437396.JavaMail.zimbra@efficios.com>
+ <20180520140811.GB1121@tardis>
+ <1928158599.1541.1527106479862.JavaMail.zimbra@efficios.com>
+ <37442352.1577.1527110985175.JavaMail.zimbra@efficios.com>
+Date: Thu, 24 May 2018 11:03:29 +1000
+Message-ID: <87o9h5sw4e.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,107 +48,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-23 at 21:50 +0300, Michael S. Tsirkin wrote:
+Mathieu Desnoyers <mathieu.desnoyers@efficios.com> writes:
+> ----- On May 23, 2018, at 4:14 PM, Mathieu Desnoyers mathieu.desnoyers@efficios.com wrote:
+...
+>> 
+>> Hi Boqun,
+>> 
+>> I tried your patch in a ppc64 le environment, and it does not survive boot
+>> with CONFIG_DEBUG_RSEQ=y. init gets killed right away.
 
-> I re-read that discussion and I'm still unclear on the
-> original question, since I got several apparently
-> conflicting answers.
-> 
-> I asked:
-> 
-> 	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
-> 	hypervisor side sufficient?
 
-I thought I had replied to this...
+Sorry this code is super gross and hard to deal with.
 
-There are a couple of reasons:
+> The following fixup gets ppc64 to work:
+>
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -208,6 +208,7 @@ system_call_exit:
+>         /* Check whether the syscall is issued inside a restartable sequence */
+>         addi    r3,r1,STACK_FRAME_OVERHEAD
+>         bl      rseq_syscall
+> +       ld      r3,RESULT(r1)
+>  #endif
+>         /*
+>          * Disable interrupts so current_thread_info()->flags can't change,
 
-- First qemu doesn't know that the guest will switch to "secure mode"
-in advance. There is no difference between a normal and a secure
-partition until the partition does the magic UV call to "enter secure
-mode" and qemu doesn't see any of it. So who can set the flag here ?
+I don't think that's safe.
 
-- Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
-vhost) go through the emulated MMIO for every access to the guest,
-which adds additional overhead.
+If you look above that, we have r3, r8 and r12 all live:
 
-Cheers,
-Ben.
+.Lsyscall_exit:
+	std	r3,RESULT(r1)
+	CURRENT_THREAD_INFO(r12, r1)
 
-> 
-> 
-> >  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
-> >  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
-> >  drivers/virtio/virtio_ring.c           | 10 ++++++++++
-> >  3 files changed, 27 insertions(+)
-> > 
-> > diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> > index 8fa3945..056e578 100644
-> > --- a/arch/powerpc/include/asm/dma-mapping.h
-> > +++ b/arch/powerpc/include/asm/dma-mapping.h
-> > @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
-> >  #define ARCH_HAS_DMA_MMAP_COHERENT
-> >  
-> >  #endif /* __KERNEL__ */
-> > +
-> > +#define platform_forces_virtio_dma platform_forces_virtio_dma
-> > +
-> > +struct virtio_device;
-> > +
-> > +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
-> >  #endif	/* _ASM_DMA_MAPPING_H */
-> > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> > index 06f0296..a2ec15a 100644
-> > --- a/arch/powerpc/platforms/pseries/iommu.c
-> > +++ b/arch/powerpc/platforms/pseries/iommu.c
-> > @@ -38,6 +38,7 @@
-> >  #include <linux/of.h>
-> >  #include <linux/iommu.h>
-> >  #include <linux/rculist.h>
-> > +#include <linux/virtio.h>
-> >  #include <asm/io.h>
-> >  #include <asm/prom.h>
-> >  #include <asm/rtas.h>
-> > @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
-> >  __setup("multitce=", disable_multitce);
-> >  
-> >  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
-> > +
-> > +bool platform_forces_virtio_dma(struct virtio_device *vdev)
-> > +{
-> > +	/*
-> > +	 * On protected guest platforms, force virtio core to use DMA
-> > +	 * MAP API for all virtio devices. But there can also be some
-> > +	 * exceptions for individual devices like virtio balloon.
-> > +	 */
-> > +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
-> > +}
-> 
-> Isn't this kind of slow?  vring_use_dma_api is on
-> data path and supposed to be very fast.
-> 
-> > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
-> > index 21d464a..47ea6c3 100644
-> > --- a/drivers/virtio/virtio_ring.c
-> > +++ b/drivers/virtio/virtio_ring.c
-> > @@ -141,8 +141,18 @@ struct vring_virtqueue {
-> >   * unconditionally on data path.
-> >   */
-> >  
-> > +#ifndef platform_forces_virtio_dma
-> > +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
-> > +{
-> > +	return false;
-> > +}
-> > +#endif
-> > +
-> >  static bool vring_use_dma_api(struct virtio_device *vdev)
-> >  {
-> > +	if (platform_forces_virtio_dma(vdev))
-> > +		return true;
-> > +
-> >  	if (!virtio_has_iommu_quirk(vdev))
-> >  		return true;
-> >  
-> > -- 
-> > 2.9.3
+	ld	r8,_MSR(r1)
+#ifdef CONFIG_PPC_BOOK3S
+	/* No MSR:RI on BookE */
+	andi.	r10,r8,MSR_RI
+	beq-	.Lunrecov_restore
+#endif
+
+
+They're all volatile across function calls:
+
+  http://openpowerfoundation.org/wp-content/uploads/resources/leabi/content/dbdoclet.50655240_68174.html
+
+
+The system_call_exit symbol is actually there for kprobes and cosmetic
+purposes. The actual syscall return flow starts at .Lsyscall_exit.
+
+So I think this would work:
+
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index db4df061c33a..e19f377a25e0 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -184,6 +184,14 @@ system_call:			/* label this so stack traces look sane */
+ 
+ .Lsyscall_exit:
+ 	std	r3,RESULT(r1)
++
++#ifdef CONFIG_DEBUG_RSEQ
++	/* Check whether the syscall is issued inside a restartable sequence */
++	addi    r3,r1,STACK_FRAME_OVERHEAD
++	bl      rseq_syscall
++	ld	r3,RESULT(r1)
++#endif
++
+ 	CURRENT_THREAD_INFO(r12, r1)
+ 
+ 	ld	r8,_MSR(r1)
+
+
+I'll try and get this series into my test setup at some point, been a
+bit busy lately :)
+
+cheers
