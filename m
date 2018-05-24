@@ -1,21 +1,36 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sHFr2wb0zF1QY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 03:59:28 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id c41-v6so1507396plj.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 10:59:28 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH v3 7/7] powerpc/64s/radix: flush remote CPUs out of
- single-threaded mm_cpumask
-Date: Fri, 25 May 2018 03:58:53 +1000
-Message-Id: <20180524175853.19695-8-npiggin@gmail.com>
-In-Reply-To: <20180524175853.19695-1-npiggin@gmail.com>
-References: <20180524175853.19695-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sHwr73pCzF1QS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 04:29:48 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4OITgio053025
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 14:29:46 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j62baryma-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 14:29:45 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 24 May 2018 19:29:24 +0100
+Date: Thu, 24 May 2018 23:59:19 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] selftests/powerpc: Add test to verify rfi flush
+ across a system call
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <cover.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5777d4ff6a9216b189f349f98217d47b38278661.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87r2m142ci.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87r2m142ci.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,314 +40,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a single-threaded process has a non-local mm_cpumask, try to use
-that point to flush the TLBs out of other CPUs in the cpumask.
+Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>> diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tool=
+s/testing/selftests/powerpc/security/rfi_flush.c
+>> new file mode 100644
+>> index 000000000000..a20fe8eca161
+>> --- /dev/null
+>> +++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
+>> @@ -0,0 +1,132 @@
+> ...
+>> +
+>> +int rfi_flush_test(void)
+>> +{
+>> +	char *p;
+>> +	int repetitions =3D 10;
+>> +	int fd, passes =3D 0, iter, rc =3D 0;
+>> +	struct perf_event_read v;
+>> +	uint64_t l1d_misses_total =3D 0;
+>> +	unsigned long iterations =3D 100000, zero_size =3D 24*1024;
+>> +	int rfi_flush_org, rfi_flush;
+>> +
+>> +	SKIP_IF(geteuid() !=3D 0);
+>> +
+>> +	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
+>> +		perror("error reading powerpc/rfi_flush debugfs file");
+>> +	        printf("unable to determine current rfi_flush setting");
+>> +		return 1;
+>> +	}
+>=20
+> This leads to a hard error on old kernels, which I don't want (breaks my =
+CI).
 
-An IPI is used for clearing remote CPUs for a few reasons:
-- An IPI can end lazy TLB use of the mm, which is required to prevent
-  TLB entries being created on the remote CPU. The alternative is to
-  drop lazy TLB switching completely, which costs 7.5% in a context
-  switch ping-pong test betwee a process and kernel idle thread.
-- An IPI can have remote CPUs flush the entire PID, but the local CPU
-  can flush a specific VA. tlbie would require over-flushing of the
-  local CPU (where the process is running).
-- A single threaded process that is migrated to a different CPU is
-  likely to have a relatively small mm_cpumask, so IPI is reasonable.
+Hmm... didn't realize new tests would be run on older kernels. Are those=20
+older stable/distro releases, or actually just earlier kernel versions?
 
-No other thread can concurrently switch to this mm, because it must
-have been given a reference to mm_users by the current thread before it
-can use_mm. mm_users can be asynchronously incremented (by
-mm_activate or mmget_not_zero), but those users must use remote mm
-access and can't use_mm or access user address space. Existing code
-makes the this assumption already, for example sparc64 has reset
-mm_cpumask using this condition since the start of history, see
-arch/sparc/kernel/smp_64.c.
+>=20
+> So I changed it to:
+>=20
+> 	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
+> 		perror("Unable to read powerpc/rfi_flush debugfs file");
+> 		SKIP_IF(1);
+> 	}
 
-This reduces tlbies for a kernel compile workload from 0.90M to 0.12M,
-tlbiels are increased significantly due to the PID flushing for the
-cleaning up remote CPUs, and increased local flushes (PID flushes take
-128 tlbiels vs 1 tlbie).
+Sure, thanks!
+- Naveen
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/tlb.h |  13 +++
- arch/powerpc/mm/tlb-radix.c    | 148 +++++++++++++++++++++++++++------
- 2 files changed, 134 insertions(+), 27 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index a7eabff27a0f..9138baccebb0 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -76,6 +76,19 @@ static inline int mm_is_thread_local(struct mm_struct *mm)
- 		return false;
- 	return cpumask_test_cpu(smp_processor_id(), mm_cpumask(mm));
- }
-+static inline void mm_reset_thread_local(struct mm_struct *mm)
-+{
-+	WARN_ON(atomic_read(&mm->context.copros) > 0);
-+	/*
-+	 * It's possible for mm_access to take a reference on mm_users to
-+	 * access the remote mm from another thread, but it's not allowed
-+	 * to set mm_cpumask, so mm_users may be > 1 here.
-+	 */
-+	WARN_ON(current->mm != mm);
-+	atomic_set(&mm->context.active_cpus, 1);
-+	cpumask_clear(mm_cpumask(mm));
-+	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-+}
- #else /* CONFIG_PPC_BOOK3S_64 */
- static inline int mm_is_thread_local(struct mm_struct *mm)
- {
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index cdc50398fd60..67a6e86d3e7e 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -12,6 +12,8 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/memblock.h>
-+#include <linux/mmu_context.h>
-+#include <linux/sched/mm.h>
- 
- #include <asm/ppc-opcode.h>
- #include <asm/tlb.h>
-@@ -504,6 +506,15 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
- }
- EXPORT_SYMBOL(radix__local_flush_tlb_page);
- 
-+static bool mm_is_singlethreaded(struct mm_struct *mm)
-+{
-+	if (atomic_read(&mm->context.copros) > 0)
-+		return false;
-+	if (atomic_read(&mm->mm_users) <= 1 && current->mm == mm)
-+		return true;
-+	return false;
-+}
-+
- static bool mm_needs_flush_escalation(struct mm_struct *mm)
- {
- 	/*
-@@ -511,10 +522,47 @@ static bool mm_needs_flush_escalation(struct mm_struct *mm)
- 	 * caching PTEs and not flushing them properly when
- 	 * RIC = 0 for a PID/LPID invalidate
- 	 */
--	return atomic_read(&mm->context.copros) != 0;
-+	if (atomic_read(&mm->context.copros) > 0)
-+		return true;
-+	return false;
- }
- 
- #ifdef CONFIG_SMP
-+static void do_exit_flush_lazy_tlb(void *arg)
-+{
-+	struct mm_struct *mm = arg;
-+	unsigned long pid = mm->context.id;
-+
-+	if (current->mm == mm)
-+		return; /* Local CPU */
-+
-+	if (current->active_mm == mm) {
-+		/*
-+		 * Must be a kernel thread because sender is single-threaded.
-+		 */
-+		BUG_ON(current->mm);
-+		mmgrab(&init_mm);
-+		switch_mm(mm, &init_mm, current);
-+		current->active_mm = &init_mm;
-+		mmdrop(mm);
-+	}
-+	_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+}
-+
-+static void exit_flush_lazy_tlbs(struct mm_struct *mm)
-+{
-+	/*
-+	 * Would be nice if this was async so it could be run in
-+	 * parallel with our local flush, but generic code does not
-+	 * give a good API for it. Could extend the generic code or
-+	 * make a special powerpc IPI for flushing TLBs.
-+	 * For now it's not too performance critical.
-+	 */
-+	smp_call_function_many(mm_cpumask(mm), do_exit_flush_lazy_tlb,
-+				(void *)mm, 1);
-+	mm_reset_thread_local(mm);
-+}
-+
- void radix__flush_tlb_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
-@@ -530,17 +578,24 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 	 */
- 	smp_mb();
- 	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
-+
- 		if (mm_needs_flush_escalation(mm))
- 			_tlbie_pid(pid, RIC_FLUSH_ALL);
- 		else
- 			_tlbie_pid(pid, RIC_FLUSH_TLB);
--	} else
-+	} else {
-+local:
- 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
-+	}
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
- 
--void radix__flush_all_mm(struct mm_struct *mm)
-+static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
- {
- 	unsigned long pid;
- 
-@@ -550,12 +605,24 @@ void radix__flush_all_mm(struct mm_struct *mm)
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (!mm_is_thread_local(mm))
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (!fullmm) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto local;
-+			}
-+		}
- 		_tlbie_pid(pid, RIC_FLUSH_ALL);
--	else
-+	} else {
-+local:
- 		_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+	}
- 	preempt_enable();
- }
-+void radix__flush_all_mm(struct mm_struct *mm)
-+{
-+	__flush_all_mm(mm, false);
-+}
- EXPORT_SYMBOL(radix__flush_all_mm);
- 
- void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-@@ -575,10 +642,16 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (!mm_is_thread_local(mm))
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
- 		_tlbie_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
--	else
-+	} else {
-+local:
- 		_tlbiel_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
-+	}
- 	preempt_enable();
- }
- 
-@@ -638,14 +711,21 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		local = true;
--		full = (end == TLB_FLUSH_ALL ||
--				nr_pages > tlb_local_single_page_flush_ceiling);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (end != TLB_FLUSH_ALL) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto is_local;
-+			}
-+		}
- 		local = false;
- 		full = (end == TLB_FLUSH_ALL ||
- 				nr_pages > tlb_single_page_flush_ceiling);
-+	} else {
-+is_local:
-+		local = true;
-+		full = (end == TLB_FLUSH_ALL ||
-+				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
- 
- 	if (full) {
-@@ -766,7 +846,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	 * See the comment for radix in arch_exit_mmap().
- 	 */
- 	if (tlb->fullmm) {
--		radix__flush_all_mm(mm);
-+		__flush_all_mm(mm, true);
- 	} else if ( (psize = radix_get_mmu_psize(page_size)) == -1) {
- 		if (!tlb->need_flush_all)
- 			radix__flush_tlb_mm(mm);
-@@ -800,24 +880,32 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		local = true;
--		full = (end == TLB_FLUSH_ALL ||
--				nr_pages > tlb_local_single_page_flush_ceiling);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (end != TLB_FLUSH_ALL) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto is_local;
-+			}
-+		}
- 		local = false;
- 		full = (end == TLB_FLUSH_ALL ||
- 				nr_pages > tlb_single_page_flush_ceiling);
-+	} else {
-+is_local:
-+		local = true;
-+		full = (end == TLB_FLUSH_ALL ||
-+				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
- 
- 	if (full) {
--		if (!local && mm_needs_flush_escalation(mm))
--			also_pwc = true;
--
--		if (local)
-+		if (local) {
- 			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
--		else
--			_tlbie_pid(pid, also_pwc ? RIC_FLUSH_ALL: RIC_FLUSH_TLB);
-+		} else {
-+			if (mm_needs_flush_escalation(mm))
-+				also_pwc = true;
-+
-+			_tlbie_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
-+		}
- 	} else {
- 		if (local)
- 			_tlbiel_va_range(start, end, pid, page_size, psize, also_pwc);
-@@ -859,10 +947,16 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 	/* Otherwise first do the PWC, then iterate the pages. */
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
- 		_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
-+		goto local;
-+	} else {
-+local:
-+		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 	}
- 
- 	preempt_enable();
--- 
-2.17.0
+=
