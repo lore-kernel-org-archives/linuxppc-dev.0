@@ -2,22 +2,21 @@ Return-Path: <segher@gate.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sKr26WRPzF1PF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 05:55:46 +1000 (AEST)
-Date: Thu, 24 May 2018 14:55:38 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sKw66DrQzF1Pp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 05:59:18 +1000 (AEST)
+Date: Thu, 24 May 2018 14:58:40 -0500
 From: Segher Boessenkool <segher@kernel.crashing.org>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3] powerpc: Implement csum_ipv6_magic in assembly
-Message-ID: <20180524195538.GE17342@gate.crashing.org>
-References: <20180522065701.9DE696CCB4@po14934vm.idsi0.si.c-s.fr>
- <20180523183447.GV17342@gate.crashing.org>
- <3848a4ad-2c0e-691f-e98f-347cfe3484e8@c-s.fr>
- <1dac2356-5d8a-2892-109e-6e1b26c2bd8c@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/32: Optimise __csum_partial()
+Message-ID: <20180524195840.GF17342@gate.crashing.org>
+References: <484bcfaccc1ec3d91b74aeaaa26a0ae66fe0955a.1527160868.git.christophe.leroy@c-s.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1dac2356-5d8a-2892-109e-6e1b26c2bd8c@c-s.fr>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <484bcfaccc1ec3d91b74aeaaa26a0ae66fe0955a.1527160868.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 24, 2018 at 10:18:44AM +0000, Christophe Leroy wrote:
-> On 05/24/2018 06:20 AM, Christophe LEROY wrote:
-> >Le 23/05/2018 à 20:34, Segher Boessenkool a écrit :
-> >>On Tue, May 22, 2018 at 08:57:01AM +0200, Christophe Leroy wrote:
-> >>>The generic csum_ipv6_magic() generates a pretty bad result
-> >>
-> >><snip>
-> >>
-> >>Please try with a more recent compiler, what you used is pretty ancient.
-> >>It's not like recent compilers do great on this either, but it's not
-> >>*that* bad anymore ;-)
+On Thu, May 24, 2018 at 11:22:27AM +0000, Christophe Leroy wrote:
+> Improve __csum_partial by interleaving loads and adds.
 > 
-> Here is what I get with GCC 8.1
-> It doesn't look much better, does it ?
+> On a 8xx, it brings neither improvement nor degradation.
+> On a 83xx, it brings a 25% improvement.
 
-There are no more mfocrf, which is a big speedup.  Other than that it is
-pretty lousy still, I totally agree.  This improvement happened quite a
-while ago, it's fixed in GCC 6.
+Thanks!  Looks fine to me.
 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Segher
+Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+
+> ---
+>  arch/powerpc/lib/checksum_32.S | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+> index d2238ea82209..aa224069f93a 100644
+> --- a/arch/powerpc/lib/checksum_32.S
+> +++ b/arch/powerpc/lib/checksum_32.S
+> @@ -47,16 +47,25 @@ _GLOBAL(__csum_partial)
+>  	bdnz	2b
+>  21:	srwi.	r6,r4,4		/* # blocks of 4 words to do */
+>  	beq	3f
+> +	lwz	r0,4(r3)
+>  	mtctr	r6
+> -22:	lwz	r0,4(r3)
+>  	lwz	r6,8(r3)
+> +	adde	r5,r5,r0
+>  	lwz	r7,12(r3)
+> +	adde	r5,r5,r6
+>  	lwzu	r8,16(r3)
+> +	adde	r5,r5,r7
+> +	bdz	23f
+> +22:	lwz	r0,4(r3)
+> +	adde	r5,r5,r8
+> +	lwz	r6,8(r3)
+>  	adde	r5,r5,r0
+> +	lwz	r7,12(r3)
+>  	adde	r5,r5,r6
+> +	lwzu	r8,16(r3)
+>  	adde	r5,r5,r7
+> -	adde	r5,r5,r8
+>  	bdnz	22b
+> +23:	adde	r5,r5,r8
+>  3:	andi.	r0,r4,2
+>  	beq+	4f
+>  	lhz	r0,4(r3)
+> -- 
+> 2.13.3
