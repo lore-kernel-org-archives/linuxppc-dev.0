@@ -1,33 +1,27 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40srKS137HzF1yq
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 01:49:31 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4PFivCe126684
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 11:49:29 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j6jw4ft1y-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 11:49:29 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 25 May 2018 09:49:28 -0600
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH 2/2] powerpc/mm/radix: Change pte relax sequence to handle
- nest MMU hang
-Date: Fri, 25 May 2018 21:19:17 +0530
-In-Reply-To: <20180525154917.23163-1-aneesh.kumar@linux.ibm.com>
-References: <20180525154917.23163-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180525154917.23163-2-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40stvb0TfmzF24N
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 03:45:47 +1000 (AEST)
+Date: Fri, 25 May 2018 20:45:42 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180525202300-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,239 +31,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When relaxing access (read -> read_write update), pte need to be marked invalid
-to handle a nest MMU bug. We also need to do a tlb flush after the pte is
-marked invalid before updating the pte with new access bits.
+On Thu, May 24, 2018 at 08:27:04AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-05-23 at 21:50 +0300, Michael S. Tsirkin wrote:
+> 
+> > I re-read that discussion and I'm still unclear on the
+> > original question, since I got several apparently
+> > conflicting answers.
+> > 
+> > I asked:
+> > 
+> > 	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
+> > 	hypervisor side sufficient?
+> 
+> I thought I had replied to this...
+> 
+> There are a couple of reasons:
+> 
+> - First qemu doesn't know that the guest will switch to "secure mode"
+> in advance. There is no difference between a normal and a secure
+> partition until the partition does the magic UV call to "enter secure
+> mode" and qemu doesn't see any of it. So who can set the flag here ?
 
-We also move tlb flush to platform specific __ptep_set_access_flags. This will
-help us to gerid of unnecessary tlb flush on BOOK3S 64 later. We don't do that
-in this patch. This also helps in avoiding multiple tlbies with coprocessor
-attached.
+Not sure I understand. Just set the flag e.g. on qemu command line.
+I might be wrong, but these secure mode things usually
+a. require hypervisor side tricks anyway
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/32/pgtable.h |  8 ++++++--
- arch/powerpc/include/asm/book3s/64/pgtable.h |  8 +++++---
- arch/powerpc/include/asm/book3s/64/radix.h   |  5 +++--
- arch/powerpc/include/asm/nohash/32/pgtable.h |  7 +++++--
- arch/powerpc/include/asm/nohash/64/pgtable.h |  7 +++++--
- arch/powerpc/mm/pgtable-book3s64.c           |  9 ++++++---
- arch/powerpc/mm/pgtable-radix.c              | 20 +++++++++++++-------
- arch/powerpc/mm/pgtable.c                    | 11 ++++++-----
- 8 files changed, 49 insertions(+), 26 deletions(-)
+> - Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
+> vhost) go through the emulated MMIO for every access to the guest,
+> which adds additional overhead.
+> 
+> Cheers,
+> Ben.
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index c615abdce119..9b4e95f3070b 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -235,15 +235,19 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- }
- 
- 
--static inline void __ptep_set_access_flags(struct mm_struct *mm,
-+static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
--					   unsigned long address)
-+					   unsigned long address,
-+					   int psize)
- {
- 	unsigned long set = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
- 
- 	pte_update(ptep, clr, set);
-+
-+	flush_tlb_page(vma, address);
-+
- }
- 
- #define __HAVE_ARCH_PTE_SAME
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index c233915abb68..42fe7c2ff2df 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -767,12 +767,14 @@ static inline bool check_pte_access(unsigned long access, unsigned long ptev)
-  * Generic functions with hash/radix callbacks
-  */
- 
--static inline void __ptep_set_access_flags(struct mm_struct *mm,
-+static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
--					   unsigned long address)
-+					   unsigned long address,
-+					   int psize)
- {
- 	if (radix_enabled())
--		return radix__ptep_set_access_flags(mm, ptep, entry, address);
-+		return radix__ptep_set_access_flags(vma, ptep, entry,
-+						    address, psize);
- 	return hash__ptep_set_access_flags(ptep, entry);
- }
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index ff642441aaf6..9fec7724751d 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -127,8 +127,9 @@ extern void radix__mark_initmem_nx(void);
- extern unsigned long radix__pte_update(struct mm_struct *mm, unsigned long addr,
- 				       pte_t *ptep, unsigned long clr,
- 				       unsigned long set, int huge);
--extern void radix__ptep_set_access_flags(struct mm_struct *mm, pte_t *ptep,
--					 pte_t entry, unsigned long address);
-+extern void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
-+					 pte_t entry, unsigned long address,
-+					 int psize);
- 
- static inline unsigned long __radix_pte_update(pte_t *ptep, unsigned long clr,
- 					       unsigned long set)
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 987a658b18e1..7c46a98cc7f4 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -256,15 +256,18 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- }
- 
- 
--static inline void __ptep_set_access_flags(struct mm_struct *mm,
-+static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
--					   unsigned long address)
-+					   unsigned long address,
-+					   int psize)
- {
- 	unsigned long set = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
- 	unsigned long clr = ~pte_val(entry) & (_PAGE_RO | _PAGE_NA);
- 
- 	pte_update(ptep, clr, set);
-+
-+	flush_tlb_page(vma, address);
- }
- 
- static inline int pte_young(pte_t pte)
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index de78eda5f841..dd0c7236208f 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -281,9 +281,10 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- /* Set the dirty and/or accessed bits atomically in a linux PTE, this
-  * function doesn't need to flush the hash entry
-  */
--static inline void __ptep_set_access_flags(struct mm_struct *mm,
-+static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
--					   unsigned long address)
-+					   unsigned long address,
-+					   int psize)
- {
- 	unsigned long bits = pte_val(entry) &
- 		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-@@ -303,6 +304,8 @@ static inline void __ptep_set_access_flags(struct mm_struct *mm,
- 	unsigned long old = pte_val(*ptep);
- 	*ptep = __pte(old | bits);
- #endif
-+
-+	flush_tlb_page(vma, address);
- }
- 
- #define __HAVE_ARCH_PTE_SAME
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index abda2b92f1ba..82fed87289de 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -46,9 +46,12 @@ int pmdp_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- #endif
- 	changed = !pmd_same(*(pmdp), entry);
- 	if (changed) {
--		__ptep_set_access_flags(vma->vm_mm, pmdp_ptep(pmdp),
--					pmd_pte(entry), address);
--		flush_pmd_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
-+		/*
-+		 * We can use MMU_PAGE_2M here, because only radix
-+		 * path look at the psize.
-+		 */
-+		__ptep_set_access_flags(vma, pmdp_ptep(pmdp),
-+					pmd_pte(entry), address, MMU_PAGE_2M);
- 	}
- 	return changed;
- }
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index 68931ca549f7..5073a2efa123 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -1111,14 +1111,18 @@ unsigned long radix__pte_update(struct mm_struct *mm, unsigned long addr,
- 	return old_pte;
- }
- 
--void radix__ptep_set_access_flags(struct mm_struct *mm,
--				  pte_t *ptep, pte_t entry,
--				  unsigned long address)
-+void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
-+				  pte_t entry, unsigned long address, int psize)
- {
-+	struct mm_struct *mm = vma->vm_mm;
- 	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
- 					      _PAGE_RW | _PAGE_EXEC);
--
--	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
-+	/*
-+	 * To avoid NMMU hang while relaxing access, we need mark
-+	 * the pte invalid in between.
-+	 */
-+	if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
-+	    atomic_read(&mm->context.copros) > 0) {
- 		unsigned long old_pte, new_pte;
- 
- 		old_pte = __radix_pte_update(ptep, ~0, 0);
-@@ -1126,9 +1130,11 @@ void radix__ptep_set_access_flags(struct mm_struct *mm,
- 		 * new value of pte
- 		 */
- 		new_pte = old_pte | set;
--		radix__flush_tlb_pte_p9_dd1(old_pte, mm, address);
-+		radix__flush_tlb_page_psize(mm, address, psize);
- 		__radix_pte_update(ptep, 0, new_pte);
--	} else
-+	} else {
- 		__radix_pte_update(ptep, 0, set);
-+		radix__flush_tlb_page_psize(mm, address, psize);
-+	}
- 	asm volatile("ptesync" : : : "memory");
- }
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index e70af9939379..6954b7fb144a 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -222,8 +222,8 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
- 	changed = !pte_same(*(ptep), entry);
- 	if (changed) {
- 		assert_pte_locked(vma->vm_mm, address);
--		__ptep_set_access_flags(vma->vm_mm, ptep, entry, address);
--		flush_tlb_page(vma, address);
-+		__ptep_set_access_flags(vma, ptep, entry,
-+					address, mmu_virtual_psize);
- 	}
- 	return changed;
- }
-@@ -242,7 +242,8 @@ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 	ptep_set_access_flags(vma, addr, ptep, pte, dirty);
- 	return 1;
- #else
--	int changed;
-+	int changed, psize;
-+	struct hstate *hstate = hstate_file(vma->vm_file);
- 
- 	pte = set_access_flags_filter(pte, vma, dirty);
- 	changed = !pte_same(*(ptep), pte);
-@@ -250,8 +251,8 @@ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- #ifdef CONFIG_DEBUG_VM
- 		assert_spin_locked(&vma->vm_mm->page_table_lock);
- #endif
--		__ptep_set_access_flags(vma->vm_mm, ptep, pte, addr);
--		flush_hugetlb_page(vma, addr);
-+		psize = hstate_get_psize(hstate);
-+		__ptep_set_access_flags(vma, ptep, pte, addr, psize);
- 	}
- 	return changed;
- #endif
--- 
-2.17.0
+Well it's not supposed to be much slower for the static case.
+
+vhost has a cache so should be fine.
+
+A while ago Paolo implemented a translation cache which should be
+perfect for this case - most of the code got merged but
+never enabled because of stability issues.
+
+If all else fails, we could teach QEMU to handle the no-iommu case
+as if VIRTIO_F_IOMMU_PLATFORM was off.
+
+
+
+> > 
+> > 
+> > >  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
+> > >  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
+> > >  drivers/virtio/virtio_ring.c           | 10 ++++++++++
+> > >  3 files changed, 27 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> > > index 8fa3945..056e578 100644
+> > > --- a/arch/powerpc/include/asm/dma-mapping.h
+> > > +++ b/arch/powerpc/include/asm/dma-mapping.h
+> > > @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
+> > >  #define ARCH_HAS_DMA_MMAP_COHERENT
+> > >  
+> > >  #endif /* __KERNEL__ */
+> > > +
+> > > +#define platform_forces_virtio_dma platform_forces_virtio_dma
+> > > +
+> > > +struct virtio_device;
+> > > +
+> > > +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
+> > >  #endif	/* _ASM_DMA_MAPPING_H */
+> > > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > > index 06f0296..a2ec15a 100644
+> > > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > > @@ -38,6 +38,7 @@
+> > >  #include <linux/of.h>
+> > >  #include <linux/iommu.h>
+> > >  #include <linux/rculist.h>
+> > > +#include <linux/virtio.h>
+> > >  #include <asm/io.h>
+> > >  #include <asm/prom.h>
+> > >  #include <asm/rtas.h>
+> > > @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
+> > >  __setup("multitce=", disable_multitce);
+> > >  
+> > >  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+> > > +
+> > > +bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > +{
+> > > +	/*
+> > > +	 * On protected guest platforms, force virtio core to use DMA
+> > > +	 * MAP API for all virtio devices. But there can also be some
+> > > +	 * exceptions for individual devices like virtio balloon.
+> > > +	 */
+> > > +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
+> > > +}
+> > 
+> > Isn't this kind of slow?  vring_use_dma_api is on
+> > data path and supposed to be very fast.
+> > 
+> > > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> > > index 21d464a..47ea6c3 100644
+> > > --- a/drivers/virtio/virtio_ring.c
+> > > +++ b/drivers/virtio/virtio_ring.c
+> > > @@ -141,8 +141,18 @@ struct vring_virtqueue {
+> > >   * unconditionally on data path.
+> > >   */
+> > >  
+> > > +#ifndef platform_forces_virtio_dma
+> > > +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > +{
+> > > +	return false;
+> > > +}
+> > > +#endif
+> > > +
+> > >  static bool vring_use_dma_api(struct virtio_device *vdev)
+> > >  {
+> > > +	if (platform_forces_virtio_dma(vdev))
+> > > +		return true;
+> > > +
+> > >  	if (!virtio_has_iommu_quirk(vdev))
+> > >  		return true;
+> > >  
+> > > -- 
+> > > 2.9.3
