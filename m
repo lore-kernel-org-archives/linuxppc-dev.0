@@ -1,17 +1,22 @@
-Return-Path: <jpoimboe@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sXNZ6tp6zF1P7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 13:51:10 +1000 (AEST)
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/modules: remove unused mod_arch_specific.toc field
-Date: Thu, 24 May 2018 22:48:34 -0500
-Message-Id: <2892e4f57d03caf1b3d6c14bc456b2f9a116b32a.1527220066.git.jpoimboe@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sXlp1XWBzF1RG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 14:07:49 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id bi12-v6so2317349plb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 21:07:49 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v6 0/4] powerpc/64: memcmp() optimization
+Date: Fri, 25 May 2018 12:07:32 +0800
+Message-Id: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,64 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The toc field in the mod_arch_specific struct isn't actually used
-anywhere, so remove it.
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-Also the ftrace-specific fields are now common between 32-bit and
-64-bit, so simplify the struct definition a bit by moving them out of
-the __powerpc64__ #ifdef.
+There is some room to optimize memcmp() in powerpc 64 bits version for
+following 2 cases:
+(1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
+memcmp() can align them and go with .Llong comparision mode without
+fallback to .Lshort comparision mode do compare buffer byte by byte.
+(2) VMX instructions can be used to speed up for large size comparision,
+currently the threshold is set for 4K bytes. Notes the VMX instructions
+will lead to VMX regs save/load penalty. This patch set includes a
+patch to add a 32 bytes pre-checking to minimize the penalty.
 
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
----
- arch/powerpc/include/asm/module.h | 13 +++++--------
- arch/powerpc/kernel/module_64.c   |  1 -
- 2 files changed, 5 insertions(+), 9 deletions(-)
+It did the similar with glibc commit dec4a7105e (powerpc: Improve memcmp 
+performance for POWER8). Thanks Cyril Bur's information.
+This patch set also updates memcmp selftest case to make it compiled and
+incorporate large size comparison case.
 
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 18f7214d68b7..d8374f984f39 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -50,13 +50,6 @@ struct mod_arch_specific {
- 	unsigned int stubs_section;	/* Index of stubs section in module */
- 	unsigned int toc_section;	/* What section is the TOC? */
- 	bool toc_fixed;			/* Have we fixed up .TOC.? */
--#ifdef CONFIG_DYNAMIC_FTRACE
--	unsigned long toc;
--	unsigned long tramp;
--#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
--	unsigned long tramp_regs;
--#endif
--#endif
- 
- 	/* For module function descriptor dereference */
- 	unsigned long start_opd;
-@@ -65,10 +58,14 @@ struct mod_arch_specific {
- 	/* Indices of PLT sections within module. */
- 	unsigned int core_plt_section;
- 	unsigned int init_plt_section;
-+#endif /* powerpc64 */
-+
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	unsigned long tramp;
-+#ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
-+	unsigned long tramp_regs;
-+#endif
- #endif
--#endif /* powerpc64 */
- 
- 	/* List of BUG addresses, source line numbers and filenames */
- 	struct list_head bug_list;
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index f7667e2ebfcb..1b7419579820 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -823,7 +823,6 @@ static unsigned long create_ftrace_stub(const Elf64_Shdr *sechdrs,
- 
- int module_finalize_ftrace(struct module *mod, const Elf_Shdr *sechdrs)
- {
--	mod->arch.toc = my_r2(sechdrs, mod);
- 	mod->arch.tramp = create_ftrace_stub(sechdrs, mod,
- 					(unsigned long)ftrace_caller);
- #ifdef CONFIG_DYNAMIC_FTRACE_WITH_REGS
+v5 -> v6:
+- correct some comments/commit messsage.
+- rename VMX_OPS_THRES to VMX_THRESH
+
+v4 -> v5:
+- Expand 32 bytes prechk to src/dst different offset case, and remove
+KSM specific label/comment.
+
+v3 -> v4:
+- Add 32 bytes pre-checking before using VMX instructions.
+
+v2 -> v3:
+- add optimization for src/dst with different offset against 8 bytes
+boundary.
+- renamed some label names.
+- reworked some comments from Cyril Bur, such as fill the pipeline, 
+and use VMX when size == 4K.
+- fix a bug of enter/exit_vmx_ops pairness issue. And revised test 
+case to test whether enter/exit_vmx_ops are paired.
+
+v1 -> v2:
+- update 8bytes unaligned bytes comparison method.
+- fix a VMX comparision bug.
+- enhanced the original memcmp() selftest.
+- add powerpc/64 to subject/commit message.
+
+Simon Guo (4):
+  powerpc/64: Align bytes before fall back to .Lshort in powerpc64
+    memcmp()
+  powerpc/64: enhance memcmp() with VMX instruction for long bytes
+    comparision
+  powerpc/64: add 32 bytes prechecking before using VMX optimization on
+    memcmp()
+  powerpc:selftest update memcmp_64 selftest for VMX implementation
+
+ arch/powerpc/include/asm/asm-prototypes.h          |   4 +-
+ arch/powerpc/lib/copypage_power7.S                 |   4 +-
+ arch/powerpc/lib/memcmp_64.S                       | 408 ++++++++++++++++++++-
+ arch/powerpc/lib/memcpy_power7.S                   |   6 +-
+ arch/powerpc/lib/vmx-helper.c                      |   4 +-
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      |   4 +-
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h    |  22 ++
+ .../testing/selftests/powerpc/stringloops/memcmp.c |  98 +++--
+ 8 files changed, 510 insertions(+), 40 deletions(-)
+
 -- 
-2.17.0
+1.8.3.1
