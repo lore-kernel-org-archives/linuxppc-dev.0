@@ -1,17 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sTvN3wPjzF1Rm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 11:59:12 +1000 (AEST)
-In-Reply-To: <20180509022022.21226-6-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sTvP0vypzF1P7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 11:59:13 +1000 (AEST)
+In-Reply-To: <1527058932-7434-2-git-send-email-wei.guo.simon@gmail.com>
+To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2,
- 5/9] powerpc/mm/radix: implement LPID based TLB flushes to be used by
- KVM
-Message-Id: <40sTvN1zzQz9s1d@ozlabs.org>
+Cc: Simon Guo <wei.guo.simon@gmail.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
+Subject: Re: [v4,01/29] powerpc: export symbol msr_check_and_set().
+Message-Id: <40sTvN3WTzz9s0q@ozlabs.org>
 Date: Fri, 25 May 2018 11:59:12 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,17 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-09 at 02:20:18 UTC, Nicholas Piggin wrote:
-> Implement a local TLB flush for invalidating an LPID with variants for
-> process or partition scope. And a global TLB flush for invalidating
-> a partition scoped page of an LPID.
+On Wed, 2018-05-23 at 07:01:44 UTC, wei.guo.simon@gmail.com wrote:
+> From: Simon Guo <wei.guo.simon@gmail.com>
 > 
-> These will be used by KVM in subsequent patches.
+> PR KVM will need to reuse msr_check_and_set().
+> This patch exports this API for reuse.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> Reviewed-by: Paul Mackerras <paulus@ozlabs.org>
 
 Applied to powerpc topic/ppc-kvm, thanks.
 
-https://git.kernel.org/powerpc/c/0078778a86b14f85bf50e96d9ddeb3
+https://git.kernel.org/powerpc/c/d1c7211281c5e1799f00b222815753
 
 cheers
