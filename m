@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40shnt27BPzF1fm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:10:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40shnv55CjzF1gN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:10:11 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.14 08/23] powerpc/rfi-flush: Call setup_rfi_flush()
- after LPM migration
-Date: Fri, 25 May 2018 20:09:39 +1000
-Message-Id: <20180525100954.31599-9-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.14 09/23] powerpc/pseries: Add new
+ H_GET_CPU_CHARACTERISTICS flags
+Date: Fri, 25 May 2018 20:09:40 +1000
+Message-Id: <20180525100954.31599-10-mpe@ellerman.id.au>
 In-Reply-To: <20180525100954.31599-1-mpe@ellerman.id.au>
 References: <20180525100954.31599-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,56 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We might have migrated to a machine that uses a different flush type,
-or doesn't need flushing at all.
+Add some additional values which have been defined for the
+H_GET_CPU_CHARACTERISTICS hypercall.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-(cherry picked from commit 921bc6cf807ceb2ab8005319cf39f33494d6b100)
 ---
- arch/powerpc/platforms/pseries/mobility.c | 3 +++
- arch/powerpc/platforms/pseries/pseries.h  | 2 ++
- arch/powerpc/platforms/pseries/setup.c    | 2 +-
- 3 files changed, 6 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/hvcall.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index f7042ad492ba..fbea7db043fa 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -348,6 +348,9 @@ void post_mobility_fixup(void)
- 		printk(KERN_ERR "Post-mobility device tree update "
- 			"failed: %d\n", rc);
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index eca3f9c68907..5a740feb7bd7 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -337,6 +337,9 @@
+ #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
+ #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
+ #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
++#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
++#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
  
-+	/* Possibly switch to a new RFI flush type */
-+	pseries_setup_rfi_flush();
-+
- 	return;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 1ae1d9f4dbe9..27cdcb69fd18 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -100,4 +100,6 @@ static inline unsigned long cmo_get_page_size(void)
- 
- int dlpar_workqueue_init(void);
- 
-+void pseries_setup_rfi_flush(void);
-+
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 2708ddab209b..b2d99b384089 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -459,7 +459,7 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
- 
--static void pseries_setup_rfi_flush(void)
-+void pseries_setup_rfi_flush(void)
- {
- 	struct h_cpu_char_result result;
- 	enum l1d_flush_type types;
+ #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
+ #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
 -- 
 2.14.1
