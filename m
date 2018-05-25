@@ -1,18 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40shnm6L7rzF1g3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:10:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40shnq0m9QzF1gC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:10:07 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.14 03/23] powerpc/powernv: Support firmware disable
- of RFI flush
-Date: Fri, 25 May 2018 20:09:34 +1000
-Message-Id: <20180525100954.31599-4-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.14 04/23] powerpc/rfi-flush: Move the logic to avoid
+ a redo into the debugfs code
+Date: Fri, 25 May 2018 20:09:35 +1000
+Message-Id: <20180525100954.31599-5-mpe@ellerman.id.au>
 In-Reply-To: <20180525100954.31599-1-mpe@ellerman.id.au>
 References: <20180525100954.31599-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,30 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+rfi_flush_enable() includes a check to see if we're already
+enabled (or disabled), and in that case does nothing.
 
-Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush settings")
+But that means calling setup_rfi_flush() a 2nd time doesn't actually
+work, which is a bit confusing.
+
+Move that check into the debugfs code, where it really belongs.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-(cherry picked from commit eb0a2d2620ae431c543963c8c7f08f597366fc60)
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+(cherry picked from commit 1e2a9fc7496955faacbbed49461d611b704a7505)
 ---
- arch/powerpc/platforms/powernv/setup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 7966a314d93a..37a7f5ef00b7 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -79,6 +79,10 @@ static void pnv_setup_rfi_flush(void)
- 		if (np && of_property_read_bool(np, "disabled"))
- 			enable--;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 333c64a794eb..cbb3fb1820ce 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -822,9 +822,6 @@ static void do_nothing(void *unused)
  
-+		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable = 0;
+ void rfi_flush_enable(bool enable)
+ {
+-	if (rfi_flush == enable)
+-		return;
+-
+ 	if (enable) {
+ 		do_rfi_flush_fixups(enabled_flush_types);
+ 		on_each_cpu(do_nothing, NULL, 1);
+@@ -878,13 +875,19 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ #ifdef CONFIG_DEBUG_FS
+ static int rfi_flush_set(void *data, u64 val)
+ {
++	bool enable;
 +
- 		of_node_put(np);
- 		of_node_put(fw_features);
- 	}
+ 	if (val == 1)
+-		rfi_flush_enable(true);
++		enable = true;
+ 	else if (val == 0)
+-		rfi_flush_enable(false);
++		enable = false;
+ 	else
+ 		return -EINVAL;
+ 
++	/* Only do anything if we're changing state */
++	if (enable != rfi_flush)
++		rfi_flush_enable(enable);
++
+ 	return 0;
+ }
+ 
 -- 
 2.14.1
