@@ -2,21 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sjBH0bPmzF1g5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:27:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sjRH5GRxzF1n3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:39:07 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Wolfram Sang <wsa@the-dreams.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] i2c: opal: don't check number of messages in the
- driver
-In-Reply-To: <20180520065035.7920-3-wsa@the-dreams.de>
-References: <20180520065035.7920-1-wsa@the-dreams.de>
- <20180520065035.7920-3-wsa@the-dreams.de>
-Date: Fri, 25 May 2018 20:27:47 +1000
-Message-ID: <87muwoqbbw.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/2] selftests/powerpc: Add test to verify rfi flush
+ across a system call
+In-Reply-To: <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
+References: <cover.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5777d4ff6a9216b189f349f98217d47b38278661.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87r2m142ci.fsf@concordia.ellerman.id.au>
+ <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
+Date: Fri, 25 May 2018 20:39:06 +1000
+Message-ID: <87k1rsqat1.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,43 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram Sang <wsa@the-dreams.de> writes:
-
-> Since commit 1eace8344c02 ("i2c: add param sanity check to
-> i2c_transfer()") and b7f625840267 ("i2c: add quirk checks to core"), the
-> I2C core does this check now. We can remove it here.
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> Michael Ellerman wrote:
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>> diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tools/testing/selftests/powerpc/security/rfi_flush.c
+>>> new file mode 100644
+>>> index 000000000000..a20fe8eca161
+>>> --- /dev/null
+>>> +++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
+>>> @@ -0,0 +1,132 @@
+>> ...
+>>> +
+>>> +int rfi_flush_test(void)
+>>> +{
+>>> +	char *p;
+>>> +	int repetitions = 10;
+>>> +	int fd, passes = 0, iter, rc = 0;
+>>> +	struct perf_event_read v;
+>>> +	uint64_t l1d_misses_total = 0;
+>>> +	unsigned long iterations = 100000, zero_size = 24*1024;
+>>> +	int rfi_flush_org, rfi_flush;
+>>> +
+>>> +	SKIP_IF(geteuid() != 0);
+>>> +
+>>> +	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
+>>> +		perror("error reading powerpc/rfi_flush debugfs file");
+>>> +	        printf("unable to determine current rfi_flush setting");
+>>> +		return 1;
+>>> +	}
+>> 
+>> This leads to a hard error on old kernels, which I don't want (breaks my CI).
 >
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> ---
->
-> Only build tested.
+> Hmm... didn't realize new tests would be run on older kernels. Are those 
+> older stable/distro releases, or actually just earlier kernel versions?
 
-It will get boot tested by me once it's in linux-next, which hopefully
-is sufficient for a patch like this.
+All of the above :)
+
+Obviously keeping all the tests working across all kernel versions ever
+is impossible, but when it's relatively easy like in this case, it's
+nice to do.
+
+So that was mostly just an FYI, I don't expect test writers to get their
+tests running across all kernel versions.
 
 cheers
-
-> diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
-> index 0aabb7eca0c5..dc2a23f4fb52 100644
-> --- a/drivers/i2c/busses/i2c-opal.c
-> +++ b/drivers/i2c/busses/i2c-opal.c
-> @@ -94,8 +94,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
->  	 */
->  	memset(&req, 0, sizeof(req));
->  	switch(num) {
-> -	case 0:
-> -		return 0;
->  	case 1:
->  		req.type = (msgs[0].flags & I2C_M_RD) ?
->  			OPAL_I2C_RAW_READ : OPAL_I2C_RAW_WRITE;
-> @@ -114,8 +112,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
->  		req.size = cpu_to_be32(msgs[1].len);
->  		req.buffer_ra = cpu_to_be64(__pa(msgs[1].buf));
->  		break;
-> -	default:
-> -		return -EOPNOTSUPP;
->  	}
->  
->  	rc = i2c_opal_send_request(opal_id, &req);
-> -- 
-> 2.11.0
