@@ -1,19 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sjhh393QzF1wR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:50:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sjl96qK1zF1s7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:52:53 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, ego@linux.vnet.ibm.com,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+ Stewart Smith <stewart@linux.ibm.com>
+Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, npiggin@gmail.com
 Subject: Re: [PATCH] cpuidle/powernv : init all present cpus for deep states
-In-Reply-To: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <20180517055542.vvpgw2vy2ivowfdc@aksadiga.ibm>
 References: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Date: Fri, 25 May 2018 20:50:43 +1000
-Message-ID: <87fu2gqa9o.fsf@concordia.ellerman.id.au>
+ <87efiby6a9.fsf@linux.vnet.ibm.com>
+ <20180517055542.vvpgw2vy2ivowfdc@aksadiga.ibm>
+Date: Fri, 25 May 2018 20:52:53 +1000
+Message-ID: <87efi0qa62.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,48 +29,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
 
-> Init all present cpus for deep states instead of "all possible" cpus.
-> Init fails if the possible cpu is gaurded. Resulting in making only
-> non-deep states available for cpuidle/hotplug.
+> Yes this needs to be sent to  stable. 
+>
+> Fixes: d405a98c ("powerpc/powernv: Move cpuidle related code from setup.c
+> to new file")
 
-This is basically the opposite of what we just did for IMC.
+Is that really the commit that introduced the bug? :)
 
-There we switched from present to possible, to make it work when some
-CPUs are guarded.
+Seems like it's more likely this one:
 
-Which makes me think we need a better way of dealing with guarded CPUs,
-because working out which code should use present or possible seems to
-be basically trial-and-error.
+  Fixes: 77b54e9f213f ("powernv/powerpc: Add winkle support for offline cpus")
 
-I'm not actually sure why Guarded CPUs are showing up as possible but
-not present, did we do that on purpose or is it just happening by
-accident?
 
-I can merge this, but we need to make this less bug prone in future.
+It's true that because the code was moved in d405a98c we won't be able
+to automatically backport the fix past that commit, but we should still
+identify the right commit in the Fixes tag.
 
 cheers
-
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 1f12ab1..1c5d067 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -79,7 +79,7 @@ static int pnv_save_sprs_for_deep_states(void)
->  	uint64_t msr_val = MSR_IDLE;
->  	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
->  
-> -	for_each_possible_cpu(cpu) {
-> +	for_each_present_cpu(cpu) {
->  		uint64_t pir = get_hard_smp_processor_id(cpu);
->  		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
->  
-> @@ -814,7 +814,7 @@ static int __init pnv_init_idle_states(void)
->  		int cpu;
->  
->  		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
-> -		for_each_possible_cpu(cpu) {
-> +		for_each_present_cpu(cpu) {
->  			int base_cpu = cpu_first_thread_sibling(cpu);
->  			int idx = cpu_thread_in_core(cpu);
->  			int i;
-> -- 
-> 2.5.5
