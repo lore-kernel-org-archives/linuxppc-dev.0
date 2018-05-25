@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40skqd314wzF1s3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 21:41:49 +1000 (AEST)
-In-Reply-To: <484449fcfad0f718ce6d63a056d2aafc073991e7.1527058932.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, npiggin@gmail.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40skqf32gZzF1kw
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 21:41:50 +1000 (AEST)
+In-Reply-To: <20180522061428.5142-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc/mm: Use instruction symbolic names in store_updates_sp()
-Message-Id: <40skqd1PTdz9s3c@ozlabs.org>
-Date: Fri, 25 May 2018 21:41:49 +1000 (AEST)
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] selftests/powerpc: Add ptrace hw breakpoint test
+Message-Id: <40skqd5tMfz9s33@ozlabs.org>
+Date: Fri, 25 May 2018 21:41:47 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,14 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-23 at 07:04:04 UTC, Christophe Leroy wrote:
-> Use symbolic names defined in asm/ppc-opcode.h
-> instead of hardcoded values.
+On Tue, 2018-05-22 at 06:14:27 UTC, Michael Neuling wrote:
+> This test the ptrace hw breakpoints via PTRACE_SET_DEBUGREG and
+> PPC_PTRACE_SETHWDEBUG.  This test was use to find the bugs fixed by
+> these recent commits:
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>   4f7c06e26e powerpc/ptrace: Fix setting 512B aligned breakpoints with PTRACE_SET_DEBUGREG
+>   cd6ef7eebf powerpc/ptrace: Fix enforcement of DAWR constraints
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8a0b1120cb25ccd4480ba4fe3650bc
+https://git.kernel.org/powerpc/c/9c2ddfe55c42bf4b9bc336a0650ab7
 
 cheers
