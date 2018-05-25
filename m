@@ -1,21 +1,52 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [184.105.139.130])
+Return-Path: <sbobroff@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sVMD4CtkzF1dH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 12:19:50 +1000 (AEST)
-Date: Thu, 24 May 2018 22:19:46 -0400 (EDT)
-Message-Id: <20180524.221946.1726211556549145445.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Cc: netdev@vger.kernel.org, nfont@linux.vnet.ibm.com,
- jallen@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net-next 0/8] ibmvnic: Failover hardening
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1527100682-23099-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1527100682-23099-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sWW85BBtzF1S9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 13:11:48 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4P34G3s090050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 23:11:45 -0400
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j64j4m0te-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 23:11:45 -0400
+Received: from localhost
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
+ Fri, 25 May 2018 04:11:44 +0100
+Received: from d06av26.portsmouth.uk.ibm.com (d06av26.portsmouth.uk.ibm.com
+ [9.149.105.62])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w4P3Bgdg15860020
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 03:11:42 GMT
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 73377AE051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 04:00:53 +0100 (BST)
+Received: from d06av26.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 21AC5AE04D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 04:00:53 +0100 (BST)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av26.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 04:00:53 +0100 (BST)
+Received: from tungsten.ozlabs.ibm.com (haven.au.ibm.com [9.192.254.114])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 621C3A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 13:11:40 +1000 (AEST)
+From: Sam Bobroff <sbobroff@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 02/13] powerpc/eeh: Add final message for successful
+ recovery
+Date: Fri, 25 May 2018 13:11:29 +1000
+In-Reply-To: <cover.1527217866.git.sbobroff@linux.ibm.com>
+References: <cover.1527217866.git.sbobroff@linux.ibm.com>
+In-Reply-To: <cover.1527217866.git.sbobroff@linux.ibm.com>
+References: <cover.1527217866.git.sbobroff@linux.ibm.com>
+Message-Id: <e2cc8562dcce1d8bc38084bc45414c048b5a441d.1527217866.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,25 +56,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Wed, 23 May 2018 13:37:54 -0500
+Add a single log line at the end of successful EEH recovery, so that
+it's clear that event processing has finished.
 
-> Introduce additional transport event hardening to handle
-> events during device reset. In the driver's current state,
-> if a transport event is received during device reset, it can
-> cause the device to become unresponsive as invalid operations
-> are processed as the backing device context changes. After
-> a transport event, the device expects a request to begin the
-> initialization process. If the driver is still processing
-> a previously queued device reset in this state, it is likely
-> to fail as firmware will reject any commands other than the
-> one to initialize the client driver's Command-Response Queue.
-> 
-> Instead of failing and becoming dormant, the driver will make
-> one more attempt to recover and continue operation. This is
-> achieved by setting a state flag, which if true will direct
-> the driver to clean up all allocated resources and perform
-> a hard reset in an attempt to bring the driver back to an
-> operational state.
+Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+---
+ arch/powerpc/kernel/eeh_driver.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Series applied.
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 56a60b9eb397..07e0a42035ce 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -910,6 +910,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
+ 	pr_info("EEH: Notify device driver to resume\n");
+ 	eeh_pe_dev_traverse(pe, eeh_report_resume, NULL);
+ 
++	pr_info("EEH: Recovery successful.\n");
+ 	goto final;
+ 
+ hard_fail:
+-- 
+2.16.1.74.g9b0b1f47b
