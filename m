@@ -1,21 +1,35 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sbFN5mgtzF1fW
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 16:00:08 +1000 (AEST)
-Message-ID: <ef3168d13a2fc04fd52cd3b77c66e8a6c6f953ac.camel@neuling.org>
-Subject: Re: [PATCH 2/2] selftests/powerpc: Add perf breakpoint test
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 25 May 2018 16:00:08 +1000
-In-Reply-To: <87tvqx4a7q.fsf@concordia.ellerman.id.au>
-References: <20180522061428.5142-1-mikey@neuling.org>
- <20180522061428.5142-2-mikey@neuling.org>
- <87tvqx4a7q.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40scRM2vKkzF1fl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 16:53:48 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4P6nV0U039033
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 02:53:45 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j6c8ejmrh-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 02:53:45 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Fri, 25 May 2018 07:53:42 +0100
+Subject: Re: [PATCH] powerpc/modules: remove unused mod_arch_specific.toc field
+To: Josh Poimboeuf <jpoimboe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <2892e4f57d03caf1b3d6c14bc456b2f9a116b32a.1527220066.git.jpoimboe@redhat.com>
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Fri, 25 May 2018 12:23:35 +0530
+MIME-Version: 1.0
+In-Reply-To: <2892e4f57d03caf1b3d6c14bc456b2f9a116b32a.1527220066.git.jpoimboe@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <872c9b94-62ea-c9cc-78aa-09ae74e44d0c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +39,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-05-24 at 20:30 +1000, Michael Ellerman wrote:
-> Michael Neuling <mikey@neuling.org> writes:
->=20
-> > This tests perf hardware breakpoints (ie PERF_TYPE_BREAKPOINT) on
-> > powerpc.
->=20
-> This doesn't work for me on a P8 guest:
->=20
->   test: perf-hwbreak
->   tags: git_version:bb5602e
->   !! killing perf-hwbreak
->   !! child died by signal 15
->   failure: perf-hwbreak
->=20
->=20
-> That means the harness killed it after 2 minutes.
->=20
-> Sometimes it gets further:
->=20
->   test: perf-hwbreak
->   tags: git_version:v4.17-rc3-109-gbb20240fb508
->   threads=3D16 loops=3D1048576 scalar test
->   !! killing perf-hwbreak
->   !! child died by signal 15
->   failure: perf-hwbreak
->=20
->=20
-> Do we just need to bump the timeout up, or is something going wrong
-> here?
+On Friday 25 May 2018 09:18 AM, Josh Poimboeuf wrote:
+> The toc field in the mod_arch_specific struct isn't actually used
+> anywhere, so remove it.
+> 
+> Also the ftrace-specific fields are now common between 32-bit and
+> 64-bit, so simplify the struct definition a bit by moving them out of
+> the __powerpc64__ #ifdef.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 
-Yeah, sorry my bad.  The test was trying to randomly test all the combinati=
-ons.
-=20
-I've rewritten it now to explicitly test all the combinations. This gives i=
-t a
-more consistent runtime. I do randomly vary the loop count but this is only=
- a
-small variation (~10%) to avoid using a count from a previous test.
-
-Mikey
+Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
