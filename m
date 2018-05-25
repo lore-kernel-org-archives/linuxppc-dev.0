@@ -1,23 +1,24 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sXm23yZ4zF1f8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 14:08:02 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id a3-v6so1706813pgt.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2018 21:08:02 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v6 4/4] powerpc:selftest update memcmp_64 selftest for VMX
- implementation
-Date: Fri, 25 May 2018 12:07:36 +0800
-Message-Id: <1527221256-17029-5-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sb8W6H7SzF1fW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 15:55:55 +1000 (AEST)
+Subject: Re: [PATCH v4 3/3] powerpc/lib: optimise PPC32 memcmp
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <cover.1527004752.git.christophe.leroy@c-s.fr>
+ <05bd657afedaf4a0de5abab0c5db2e88fa73bdfe.1527004752.git.christophe.leroy@c-s.fr>
+ <bb7ef10a-4777-7635-3e54-830dd3eeb8bb@c-s.fr>
+ <20180524172458.GA17342@gate.crashing.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7a77175e-c0c4-4a38-d972-d98ac76cf70a@c-s.fr>
+Date: Fri, 25 May 2018 07:55:51 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180524172458.GA17342@gate.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,247 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
 
-This patch reworked selftest memcmp_64 so that memcmp selftest can
-cover more test cases.
 
-It adds testcases for:
-- memcmp over 4K bytes size.
-- s1/s2 with different/random offset on 16 bytes boundary.
-- enter/exit_vmx_ops pairness.
+Le 24/05/2018 à 19:24, Segher Boessenkool a écrit :
+> On Wed, May 23, 2018 at 09:47:32AM +0200, Christophe Leroy wrote:
+>> At the time being, memcmp() compares two chunks of memory
+>> byte per byte.
+>>
+>> This patch optimises the comparison by comparing word by word.
+>>
+>> A small benchmark performed on an 8xx comparing two chuncks
+>> of 512 bytes performed 100000 times gives:
+>>
+>> Before : 5852274 TB ticks
+>> After:   1488638 TB ticks
+> 
+>> diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+>> index 40a576d56ac7..542e6cecbcaf 100644
+>> --- a/arch/powerpc/lib/string_32.S
+>> +++ b/arch/powerpc/lib/string_32.S
+>> @@ -16,17 +16,45 @@
+>>   	.text
+>>
+>>   _GLOBAL(memcmp)
+>> -	cmpwi	cr0, r5, 0
+>> -	beq-	2f
+>> -	mtctr	r5
+>> -	addi	r6,r3,-1
+>> -	addi	r4,r4,-1
+>> -1:	lbzu	r3,1(r6)
+>> -	lbzu	r0,1(r4)
+>> -	subf.	r3,r0,r3
+>> -	bdnzt	2,1b
+>> +	srawi.	r7, r5, 2		/* Divide len by 4 */
+>> +	mr	r6, r3
+>> +	beq-	3f
+>> +	mtctr	r7
+>> +	li	r7, 0
+>> +1:
+>> +#ifdef __LITTLE_ENDIAN__
+>> +	lwbrx	r3, r6, r7
+>> +	lwbrx	r0, r4, r7
+>> +#else
+>> +	lwzx	r3, r6, r7
+>> +	lwzx	r0, r4, r7
+>> +#endif
+> 
+> You don't test whether the pointers are word-aligned.  Does that work?
 
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- .../selftests/powerpc/copyloops/asm/ppc_asm.h      |  4 +-
- .../selftests/powerpc/stringloops/asm/ppc_asm.h    | 22 +++++
- .../testing/selftests/powerpc/stringloops/memcmp.c | 98 +++++++++++++++++-----
- 3 files changed, 100 insertions(+), 24 deletions(-)
+copy_tofrom_user() word-aligns the store address and doesn't take care 
+of the load address, so I believe it works.
 
-diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-index 5ffe04d..dfce161 100644
---- a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-@@ -36,11 +36,11 @@
- 	li	r3,0
- 	blr
- 
--FUNC_START(enter_vmx_copy)
-+FUNC_START(enter_vmx_ops)
- 	li	r3,1
- 	blr
- 
--FUNC_START(exit_vmx_copy)
-+FUNC_START(exit_vmx_ops)
- 	blr
- 
- FUNC_START(memcpy_power7)
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-index 136242e..185d257 100644
---- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-@@ -1,4 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _PPC_ASM_H
-+#define __PPC_ASM_H
- #include <ppc-asm.h>
- 
- #ifndef r1
-@@ -6,3 +8,23 @@
- #endif
- 
- #define _GLOBAL(A) FUNC_START(test_ ## A)
-+
-+#define CONFIG_ALTIVEC
-+
-+#define R14 r14
-+#define R15 r15
-+#define R16 r16
-+#define R17 r17
-+#define R18 r18
-+#define R19 r19
-+#define R20 r20
-+#define R21 r21
-+#define R22 r22
-+#define R29 r29
-+#define R30 r30
-+#define R31 r31
-+
-+#define STACKFRAMESIZE	256
-+#define STK_REG(i)	(112 + ((i)-14)*8)
-+
-+#endif
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index 8250db2..b5cf717 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -2,20 +2,40 @@
- #include <malloc.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <time.h>
- #include "utils.h"
- 
- #define SIZE 256
- #define ITERATIONS 10000
- 
-+#define LARGE_SIZE (5 * 1024)
-+#define LARGE_ITERATIONS 1000
-+#define LARGE_MAX_OFFSET 32
-+#define LARGE_SIZE_START 4096
-+
-+#define MAX_OFFSET_DIFF_S1_S2 48
-+
-+int vmx_count;
-+int enter_vmx_ops(void)
-+{
-+	vmx_count++;
-+	return 1;
-+}
-+
-+void exit_vmx_ops(void)
-+{
-+	vmx_count--;
-+}
- int test_memcmp(const void *s1, const void *s2, size_t n);
- 
- /* test all offsets and lengths */
--static void test_one(char *s1, char *s2)
-+static void test_one(char *s1, char *s2, unsigned long max_offset,
-+		unsigned long size_start, unsigned long max_size)
- {
- 	unsigned long offset, size;
- 
--	for (offset = 0; offset < SIZE; offset++) {
--		for (size = 0; size < (SIZE-offset); size++) {
-+	for (offset = 0; offset < max_offset; offset++) {
-+		for (size = size_start; size < (max_size - offset); size++) {
- 			int x, y;
- 			unsigned long i;
- 
-@@ -35,70 +55,104 @@ static void test_one(char *s1, char *s2)
- 				printf("\n");
- 				abort();
- 			}
-+
-+			if (vmx_count != 0) {
-+				printf("vmx enter/exit not paired.(offset:%ld size:%ld s1:%p s2:%p vc:%d\n",
-+					offset, size, s1, s2, vmx_count);
-+				printf("\n");
-+				abort();
-+			}
- 		}
- 	}
- }
- 
--static int testcase(void)
-+static int testcase(bool islarge)
- {
- 	char *s1;
- 	char *s2;
- 	unsigned long i;
- 
--	s1 = memalign(128, SIZE);
-+	unsigned long comp_size = (islarge ? LARGE_SIZE : SIZE);
-+	unsigned long alloc_size = comp_size + MAX_OFFSET_DIFF_S1_S2;
-+	int iterations = islarge ? LARGE_ITERATIONS : ITERATIONS;
-+
-+	s1 = memalign(128, alloc_size);
- 	if (!s1) {
- 		perror("memalign");
- 		exit(1);
- 	}
- 
--	s2 = memalign(128, SIZE);
-+	s2 = memalign(128, alloc_size);
- 	if (!s2) {
- 		perror("memalign");
- 		exit(1);
- 	}
- 
--	srandom(1);
-+	srandom(time(0));
- 
--	for (i = 0; i < ITERATIONS; i++) {
-+	for (i = 0; i < iterations; i++) {
- 		unsigned long j;
- 		unsigned long change;
-+		char *rand_s1 = s1;
-+		char *rand_s2 = s2;
- 
--		for (j = 0; j < SIZE; j++)
-+		for (j = 0; j < alloc_size; j++)
- 			s1[j] = random();
- 
--		memcpy(s2, s1, SIZE);
-+		rand_s1 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		rand_s2 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		memcpy(rand_s2, rand_s1, comp_size);
- 
- 		/* change one byte */
--		change = random() % SIZE;
--		s2[change] = random() & 0xff;
--
--		test_one(s1, s2);
-+		change = random() % comp_size;
-+		rand_s2[change] = random() & 0xff;
-+
-+		if (islarge)
-+			test_one(rand_s1, rand_s2, LARGE_MAX_OFFSET,
-+					LARGE_SIZE_START, comp_size);
-+		else
-+			test_one(rand_s1, rand_s2, SIZE, 0, comp_size);
- 	}
- 
--	srandom(1);
-+	srandom(time(0));
- 
--	for (i = 0; i < ITERATIONS; i++) {
-+	for (i = 0; i < iterations; i++) {
- 		unsigned long j;
- 		unsigned long change;
-+		char *rand_s1 = s1;
-+		char *rand_s2 = s2;
- 
--		for (j = 0; j < SIZE; j++)
-+		for (j = 0; j < alloc_size; j++)
- 			s1[j] = random();
- 
--		memcpy(s2, s1, SIZE);
-+		rand_s1 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		rand_s2 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		memcpy(rand_s2, rand_s1, comp_size);
- 
- 		/* change multiple bytes, 1/8 of total */
--		for (j = 0; j < SIZE / 8; j++) {
--			change = random() % SIZE;
-+		for (j = 0; j < comp_size / 8; j++) {
-+			change = random() % comp_size;
- 			s2[change] = random() & 0xff;
- 		}
- 
--		test_one(s1, s2);
-+		if (islarge)
-+			test_one(rand_s1, rand_s2, LARGE_MAX_OFFSET,
-+					LARGE_SIZE_START, comp_size);
-+		else
-+			test_one(rand_s1, rand_s2, SIZE, 0, comp_size);
- 	}
- 
- 	return 0;
- }
- 
-+static int testcases(void)
-+{
-+	testcase(0);
-+	testcase(1);
-+	return 0;
-+}
-+
- int main(void)
- {
--	return test_harness(testcase, "memcmp");
-+	return test_harness(testcases, "memcmp");
- }
--- 
-1.8.3.1
+Now, I just read in the MPC885 Ref Manual that unaligned access 
+generates alignment exception when the processor is running in LE mode.
+
+Ref. made to the discussion on patch "powerpc/32be: use stmw/lmw for 
+registers save/restore in asm" 
+(https://patchwork.ozlabs.org/patch/899465/), I will drop the handling 
+for LE mode.
+
+Christophe
+
+> Say, when a load is crossing a page boundary, or segment boundary.
+> 
+> 
+> Segher
+> 
