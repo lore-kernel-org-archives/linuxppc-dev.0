@@ -2,20 +2,18 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40sjRH5GRxzF1n3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:39:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40sjhh393QzF1wR
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2018 20:50:44 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/2] selftests/powerpc: Add test to verify rfi flush
- across a system call
-In-Reply-To: <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
-References: <cover.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
- <5777d4ff6a9216b189f349f98217d47b38278661.1526915409.git.naveen.n.rao@linux.vnet.ibm.com>
- <87r2m142ci.fsf@concordia.ellerman.id.au>
- <1527185167.d6rdwm7ol7.naveen@linux.ibm.com>
-Date: Fri, 25 May 2018 20:39:06 +1000
-Message-ID: <87k1rsqat1.fsf@concordia.ellerman.id.au>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, ego@linux.vnet.ibm.com,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv : init all present cpus for deep states
+In-Reply-To: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Date: Fri, 25 May 2018 20:50:43 +1000
+Message-ID: <87fu2gqa9o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,47 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-> Michael Ellerman wrote:
->> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->>> diff --git a/tools/testing/selftests/powerpc/security/rfi_flush.c b/tools/testing/selftests/powerpc/security/rfi_flush.c
->>> new file mode 100644
->>> index 000000000000..a20fe8eca161
->>> --- /dev/null
->>> +++ b/tools/testing/selftests/powerpc/security/rfi_flush.c
->>> @@ -0,0 +1,132 @@
->> ...
->>> +
->>> +int rfi_flush_test(void)
->>> +{
->>> +	char *p;
->>> +	int repetitions = 10;
->>> +	int fd, passes = 0, iter, rc = 0;
->>> +	struct perf_event_read v;
->>> +	uint64_t l1d_misses_total = 0;
->>> +	unsigned long iterations = 100000, zero_size = 24*1024;
->>> +	int rfi_flush_org, rfi_flush;
->>> +
->>> +	SKIP_IF(geteuid() != 0);
->>> +
->>> +	if (read_debugfs_file("powerpc/rfi_flush", &rfi_flush_org)) {
->>> +		perror("error reading powerpc/rfi_flush debugfs file");
->>> +	        printf("unable to determine current rfi_flush setting");
->>> +		return 1;
->>> +	}
->> 
->> This leads to a hard error on old kernels, which I don't want (breaks my CI).
->
-> Hmm... didn't realize new tests would be run on older kernels. Are those 
-> older stable/distro releases, or actually just earlier kernel versions?
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
 
-All of the above :)
+> Init all present cpus for deep states instead of "all possible" cpus.
+> Init fails if the possible cpu is gaurded. Resulting in making only
+> non-deep states available for cpuidle/hotplug.
 
-Obviously keeping all the tests working across all kernel versions ever
-is impossible, but when it's relatively easy like in this case, it's
-nice to do.
+This is basically the opposite of what we just did for IMC.
 
-So that was mostly just an FYI, I don't expect test writers to get their
-tests running across all kernel versions.
+There we switched from present to possible, to make it work when some
+CPUs are guarded.
+
+Which makes me think we need a better way of dealing with guarded CPUs,
+because working out which code should use present or possible seems to
+be basically trial-and-error.
+
+I'm not actually sure why Guarded CPUs are showing up as possible but
+not present, did we do that on purpose or is it just happening by
+accident?
+
+I can merge this, but we need to make this less bug prone in future.
 
 cheers
+
+> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+> index 1f12ab1..1c5d067 100644
+> --- a/arch/powerpc/platforms/powernv/idle.c
+> +++ b/arch/powerpc/platforms/powernv/idle.c
+> @@ -79,7 +79,7 @@ static int pnv_save_sprs_for_deep_states(void)
+>  	uint64_t msr_val = MSR_IDLE;
+>  	uint64_t psscr_val = pnv_deepest_stop_psscr_val;
+>  
+> -	for_each_possible_cpu(cpu) {
+> +	for_each_present_cpu(cpu) {
+>  		uint64_t pir = get_hard_smp_processor_id(cpu);
+>  		uint64_t hsprg0_val = (uint64_t)paca_ptrs[cpu];
+>  
+> @@ -814,7 +814,7 @@ static int __init pnv_init_idle_states(void)
+>  		int cpu;
+>  
+>  		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+> -		for_each_possible_cpu(cpu) {
+> +		for_each_present_cpu(cpu) {
+>  			int base_cpu = cpu_first_thread_sibling(cpu);
+>  			int idx = cpu_thread_in_core(cpu);
+>  			int i;
+> -- 
+> 2.5.5
