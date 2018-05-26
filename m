@@ -2,19 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40t98d1b1bzDqx4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:28:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40t98W2g9nzDqH3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:27:55 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.14 v2 07/23] powerpc/rfi-flush: Differentiate enabled
- and patched flush types
-Date: Sat, 26 May 2018 14:27:33 +1000
-Message-Id: <20180526042749.5324-8-mpe@ellerman.id.au>
-In-Reply-To: <20180526042749.5324-1-mpe@ellerman.id.au>
-References: <20180526042749.5324-1-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.14 v2 00/23] powerpc backports for 4.14
+Date: Sat, 26 May 2018 14:27:26 +1000
+Message-Id: <20180526042749.5324-1-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,72 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+Hi Greg,
 
-commit 0063d61ccfc011f379a31acaeba6de7c926fed2c upstream.
+Please queue up this series of patches for 4.14 if you have no objections.
 
-Currently the rfi-flush messages print 'Using <type> flush' for all
-enabled_flush_types, but that is not necessarily true -- as now the
-fallback flush is always enabled on pseries, but the fixup function
-overwrites its nop/branch slot with other flush types, if available.
+cheers
 
-So, replace the 'Using <type> flush' messages with '<type> flush is
-available'.
+v2: Fixed up upstream commit markings.
 
-Also, print the patched flush types in the fixup function, so users
-can know what is (not) being used (e.g., the slower, fallback flush,
-or no flush type at all if flush is disabled via the debugfs switch).
+Mauricio Faria de Oliveira (4):
+  powerpc/rfi-flush: Differentiate enabled and patched flush types
+  powerpc/pseries: Fix clearing of security feature flags
+  powerpc: Move default security feature flags
+  powerpc/pseries: Restore default security feature flags on setup
 
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c    | 6 +++---
- arch/powerpc/lib/feature-fixups.c | 9 ++++++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+Michael Ellerman (17):
+  powerpc/pseries: Support firmware disable of RFI flush
+  powerpc/powernv: Support firmware disable of RFI flush
+  powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs
+    code
+  powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
+  powerpc/rfi-flush: Always enable fallback flush on pseries
+  powerpc/rfi-flush: Call setup_rfi_flush() after LPM migration
+  powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+  powerpc: Add security feature flags for Spectre/Meltdown
+  powerpc/pseries: Set or clear security feature flags
+  powerpc/powernv: Set or clear security feature flags
+  powerpc/64s: Move cpu_show_meltdown()
+  powerpc/64s: Enhance the information in cpu_show_meltdown()
+  powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
+  powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
+  powerpc/64s: Wire up cpu_show_spectre_v1()
+  powerpc/64s: Wire up cpu_show_spectre_v2()
+  powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
 
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index ace6a10a242f..da12b54cbe5c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -860,15 +860,15 @@ static void init_fallback_flush(void)
- void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
- 	if (types & L1D_FLUSH_FALLBACK) {
--		pr_info("rfi-flush: Using fallback displacement flush\n");
-+		pr_info("rfi-flush: fallback displacement flush available\n");
- 		init_fallback_flush();
- 	}
- 
- 	if (types & L1D_FLUSH_ORI)
--		pr_info("rfi-flush: Using ori type flush\n");
-+		pr_info("rfi-flush: ori type flush available\n");
- 
- 	if (types & L1D_FLUSH_MTTRIG)
--		pr_info("rfi-flush: Using mttrig type flush\n");
-+		pr_info("rfi-flush: mttrig type flush available\n");
- 
- 	enabled_flush_types = types;
- 
-diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
-index d0c0b8443dcf..8ac72f7d638f 100644
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -153,7 +153,14 @@ void do_rfi_flush_fixups(enum l1d_flush_type types)
- 		patch_instruction(dest + 2, instrs[2]);
- 	}
- 
--	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
-+	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
-+		(types == L1D_FLUSH_NONE)       ? "no" :
-+		(types == L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
-+		(types &  L1D_FLUSH_ORI)        ? (types & L1D_FLUSH_MTTRIG)
-+							? "ori+mttrig type"
-+							: "ori type" :
-+		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
-+						: "unknown");
- }
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
+Nicholas Piggin (2):
+  powerpc/64s: Improve RFI L1-D cache flush fallback
+  powerpc/64s: Add support for a store forwarding barrier at kernel
+    entry/exit
+
+ arch/powerpc/include/asm/exception-64s.h     |  29 ++++
+ arch/powerpc/include/asm/feature-fixups.h    |  19 +++
+ arch/powerpc/include/asm/hvcall.h            |   3 +
+ arch/powerpc/include/asm/paca.h              |   3 +-
+ arch/powerpc/include/asm/security_features.h |  85 ++++++++++
+ arch/powerpc/include/asm/setup.h             |   2 +-
+ arch/powerpc/kernel/Makefile                 |   2 +-
+ arch/powerpc/kernel/asm-offsets.c            |   3 +-
+ arch/powerpc/kernel/exceptions-64s.S         |  95 ++++++-----
+ arch/powerpc/kernel/security.c               | 237 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/setup_64.c               |  48 ++----
+ arch/powerpc/kernel/vmlinux.lds.S            |  14 ++
+ arch/powerpc/lib/feature-fixups.c            | 124 +++++++++++++-
+ arch/powerpc/platforms/powernv/setup.c       |  92 ++++++++---
+ arch/powerpc/platforms/pseries/mobility.c    |   3 +
+ arch/powerpc/platforms/pseries/pseries.h     |   2 +
+ arch/powerpc/platforms/pseries/setup.c       |  81 +++++++--
+ arch/powerpc/xmon/xmon.c                     |   2 +
+ 18 files changed, 721 insertions(+), 123 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/security_features.h
+ create mode 100644 arch/powerpc/kernel/security.c
+
 -- 
 2.14.1
