@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40t98Z3sQ9zDqH3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:27:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40t98b2D3zzDqH4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:27:59 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.14 v2 04/23] powerpc/rfi-flush: Move the logic to
- avoid a redo into the debugfs code
-Date: Sat, 26 May 2018 14:27:30 +1000
-Message-Id: <20180526042749.5324-5-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.14 v2 05/23] powerpc/rfi-flush: Make it possible to
+ call setup_rfi_flush() again
+Date: Sat, 26 May 2018 14:27:31 +1000
+Message-Id: <20180526042749.5324-6-mpe@ellerman.id.au>
 In-Reply-To: <20180526042749.5324-1-mpe@ellerman.id.au>
 References: <20180526042749.5324-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,58 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
+commit abf110f3e1cea40f5ea15e85f5d67c39c14568a7 upstream.
 
-rfi_flush_enable() includes a check to see if we're already
-enabled (or disabled), and in that case does nothing.
+For PowerVM migration we want to be able to call setup_rfi_flush()
+again after we've migrated the partition.
 
-But that means calling setup_rfi_flush() a 2nd time doesn't actually
-work, which is a bit confusing.
-
-Move that check into the debugfs code, where it really belongs.
+To support that we need to check that we're not trying to allocate the
+fallback flush area after memblock has gone away (i.e., boot-time only).
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/setup.h | 2 +-
+ arch/powerpc/kernel/setup_64.c   | 6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 469b7fdc9be4..bbcdf929be54 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -49,7 +49,7 @@ enum l1d_flush_type {
+ 	L1D_FLUSH_MTTRIG	= 0x8,
+ };
+ 
+-void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
++void setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
+ 
+ #endif /* !__ASSEMBLY__ */
 diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 333c64a794eb..cbb3fb1820ce 100644
+index cbb3fb1820ce..ace6a10a242f 100644
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -822,9 +822,6 @@ static void do_nothing(void *unused)
+@@ -836,6 +836,10 @@ static void init_fallback_flush(void)
+ 	u64 l1d_size, limit;
+ 	int cpu;
  
- void rfi_flush_enable(bool enable)
- {
--	if (rfi_flush == enable)
--		return;
--
- 	if (enable) {
- 		do_rfi_flush_fixups(enabled_flush_types);
- 		on_each_cpu(do_nothing, NULL, 1);
-@@ -878,13 +875,19 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
- #ifdef CONFIG_DEBUG_FS
- static int rfi_flush_set(void *data, u64 val)
- {
-+	bool enable;
++	/* Only allocate the fallback flush area once (at boot time). */
++	if (l1d_flush_fallback_area)
++		return;
 +
- 	if (val == 1)
--		rfi_flush_enable(true);
-+		enable = true;
- 	else if (val == 0)
--		rfi_flush_enable(false);
-+		enable = false;
- 	else
- 		return -EINVAL;
+ 	l1d_size = ppc64_caches.l1d.size;
+ 	limit = min(safe_stack_limit(), ppc64_rma_size);
  
-+	/* Only do anything if we're changing state */
-+	if (enable != rfi_flush)
-+		rfi_flush_enable(enable);
-+
- 	return 0;
+@@ -853,7 +857,7 @@ static void init_fallback_flush(void)
+ 	}
  }
  
+-void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
++void setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ {
+ 	if (types & L1D_FLUSH_FALLBACK) {
+ 		pr_info("rfi-flush: Using fallback displacement flush\n");
 -- 
 2.14.1
