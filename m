@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40t98s34L6zDr0y
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:28:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40t98t1chMzDr0y
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2018 14:28:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: greg@kroah.com
 Cc: stable@vger.kernel.org,
 	tglx@linutronix.de,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.14 v2 19/23] powerpc/pseries: Fix clearing of
- security feature flags
-Date: Sat, 26 May 2018 14:27:45 +1000
-Message-Id: <20180526042749.5324-20-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.14 v2 20/23] powerpc: Move default security feature
+ flags
+Date: Sat, 26 May 2018 14:27:46 +1000
+Message-Id: <20180526042749.5324-21-mpe@ellerman.id.au>
 In-Reply-To: <20180526042749.5324-1-mpe@ellerman.id.au>
 References: <20180526042749.5324-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,77 +26,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-commit 0f9bdfe3c77091e8704d2e510eb7c2c2c6cde524 upstream.
+commit e7347a86830f38dc3e40c8f7e28c04412b12a2e7 upstream.
 
-The H_CPU_BEHAV_* flags should be checked for in the 'behaviour' field
-of 'struct h_cpu_char_result' -- 'character' is for H_CPU_CHAR_*
-flags.
+This moves the definition of the default security feature flags
+(i.e., enabled by default) closer to the security feature flags.
 
-Found by playing around with QEMU's implementation of the hypercall:
+This can be used to restore current flags to the default flags.
 
-  H_CPU_CHAR=0xf000000000000000
-  H_CPU_BEHAV=0x0000000000000000
-
-  This clears H_CPU_BEHAV_FAVOUR_SECURITY and H_CPU_BEHAV_L1D_FLUSH_PR
-  so pseries_setup_rfi_flush() disables 'rfi_flush'; and it also
-  clears H_CPU_CHAR_L1D_THREAD_PRIV flag. So there is no RFI flush
-  mitigation at all for cpu_show_meltdown() to report; but currently
-  it does:
-
-  Original kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
-    Mitigation: RFI Flush
-
-  Patched kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
-    Not affected
-
-  H_CPU_CHAR=0x0000000000000000
-  H_CPU_BEHAV=0xf000000000000000
-
-  This sets H_CPU_BEHAV_BNDS_CHK_SPEC_BAR so cpu_show_spectre_v1() should
-  report vulnerable; but currently it doesn't:
-
-  Original kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
-    Not affected
-
-  Patched kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
-    Vulnerable
-
-Brown-paper-bag-by: Michael Ellerman <mpe@ellerman.id.au>
-Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/security_features.h | 8 ++++++++
+ arch/powerpc/kernel/security.c               | 7 +------
+ 2 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index ba0a36c577ca..3cb12d27f168 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -484,13 +484,13 @@ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
- 	 * The features below are enabled by default, so we instead look to see
- 	 * if firmware has *disabled* them, and clear them if so.
- 	 */
--	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
-+	if (!(result->behaviour & H_CPU_BEHAV_FAVOUR_SECURITY))
- 		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
+diff --git a/arch/powerpc/include/asm/security_features.h b/arch/powerpc/include/asm/security_features.h
+index 400a9050e035..fa4d2e1cf772 100644
+--- a/arch/powerpc/include/asm/security_features.h
++++ b/arch/powerpc/include/asm/security_features.h
+@@ -63,4 +63,12 @@ static inline bool security_ftr_enabled(unsigned long feature)
+ // Firmware configuration indicates user favours security over performance
+ #define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
  
--	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
-+	if (!(result->behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
- 		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
++
++// Features enabled by default
++#define SEC_FTR_DEFAULT \
++	(SEC_FTR_L1D_FLUSH_HV | \
++	 SEC_FTR_L1D_FLUSH_PR | \
++	 SEC_FTR_BNDS_CHK_SPEC_BAR | \
++	 SEC_FTR_FAVOUR_SECURITY)
++
+ #endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index 2cee3dcd231b..bab5a27ea805 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -11,12 +11,7 @@
+ #include <asm/security_features.h>
  
--	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
-+	if (!(result->behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
- 		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
- }
  
+-unsigned long powerpc_security_features __read_mostly = \
+-	SEC_FTR_L1D_FLUSH_HV | \
+-	SEC_FTR_L1D_FLUSH_PR | \
+-	SEC_FTR_BNDS_CHK_SPEC_BAR | \
+-	SEC_FTR_FAVOUR_SECURITY;
+-
++unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
+ 
+ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
+ {
 -- 
 2.14.1
