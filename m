@@ -1,26 +1,26 @@
 Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bb4773zDrBy
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bh4K4xzDr4g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:56 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bb1Ssvz8tG1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:51 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bh0nc1z8tG1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:56 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bZ44Rqz9s1p
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:50 +1000 (AEST)
-Subject: Patch "powerpc/64s: Wire up cpu_show_spectre_v1()" has been added to
- the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1bd63R9z9s1w
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:53 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags" has
+ been added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sun, 27 May 2018 15:49:52 +0200
-In-Reply-To: <20180526042749.5324-18-mpe@ellerman.id.au>
-Message-ID: <1527428992168133@kroah.com>
+Date: Sun, 27 May 2018 15:49:53 +0200
+In-Reply-To: <20180526042749.5324-10-mpe@ellerman.id.au>
+Message-ID: <152742899324035@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64s: Wire up cpu_show_spectre_v1()
+    powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-wire-up-cpu_show_spectre_v1.patch
+     powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,44 +50,37 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:43 +1000
-Subject: powerpc/64s: Wire up cpu_show_spectre_v1()
+Date: Sat, 26 May 2018 14:27:35 +1000
+Subject: powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-18-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-10-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 56986016cb8cd9050e601831fe89f332b4e3c46e upstream.
+commit c4bc36628d7f8b664657d8bd6ad1c44c177880b7 upstream.
 
-Add a definition for cpu_show_spectre_v1() to override the generic
-version. Currently this just prints "Not affected" or "Vulnerable"
-based on the firmware flag.
-
-Although the kernel does have array_index_nospec() in a few places, we
-haven't yet audited all the powerpc code to see where it's necessary,
-so for now we don't list that as a mitigation.
+Add some additional values which have been defined for the
+H_GET_CPU_CHARACTERISTICS hypercall.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/include/asm/hvcall.h |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -50,3 +50,11 @@ ssize_t cpu_show_meltdown(struct device
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -337,6 +337,9 @@
+ #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
+ #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
+ #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
++#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
++#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
++#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
  
- 	return sprintf(buf, "Vulnerable\n");
- }
-+
-+ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
-+		return sprintf(buf, "Not affected\n");
-+
-+	return sprintf(buf, "Vulnerable\n");
-+}
+ #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
+ #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
