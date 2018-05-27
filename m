@@ -2,25 +2,25 @@ Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bm25pczDr4g
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:00 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bl4J1Qz8tG1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bp6pkSzDr41
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:02 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bp50rvz8vHp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:02 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bk5QKLz9s1p
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:58 +1000 (AEST)
-Subject: Patch "powerpc/powernv: Use the security flags in
- pnv_setup_rfi_flush()" has been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1bn5Cnxz9s1w
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:51:01 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Restore default security feature flags on
+ setup" has been added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mpe@ellerman.id.au, tglx@linutronix.de
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:53 +0200
-In-Reply-To: <20180526042749.5324-16-mpe@ellerman.id.au>
-Message-ID: <15274289937460@kroah.com>
+In-Reply-To: <20180526042749.5324-22-mpe@ellerman.id.au>
+Message-ID: <1527428993158180@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
+    powerpc/pseries: Restore default security feature flags on setup
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-powernv-use-the-security-flags-in-pnv_setup_rfi_flush.patch
+     powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,100 +50,65 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:41 +1000
-Subject: powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
+Date: Sat, 26 May 2018 14:27:47 +1000
+Subject: powerpc/pseries: Restore default security feature flags on setup
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-16-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-22-mpe@ellerman.id.au>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-commit 37c0bdd00d3ae83369ab60a6712c28e11e6458d5 upstream.
+commit 6232774f1599028a15418179d17f7df47ede770a upstream.
 
-Now that we have the security flags we can significantly simplify the
-code in pnv_setup_rfi_flush(), because we can use the flags instead of
-checking device tree properties and because the security flags have
-pessimistic defaults.
+After migration the security feature flags might have changed (e.g.,
+destination system with unpatched firmware), but some flags are not
+set/clear again in init_cpu_char_feature_flags() because it assumes
+the security flags to be the defaults.
 
+Additionally, if the H_GET_CPU_CHARACTERISTICS hypercall fails then
+init_cpu_char_feature_flags() does not run again, which potentially
+might leave the system in an insecure or sub-optimal configuration.
+
+So, just restore the security feature flags to the defaults assumed
+by init_cpu_char_feature_flags() so it can set/clear them correctly,
+and to ensure safe settings are in place in case the hypercall fail.
+
+Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
+Depends-on: 19887d6a28e2 ("powerpc: Move default security feature flags")
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/powernv/setup.c |   41 ++++++++-------------------------
- 1 file changed, 10 insertions(+), 31 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -65,7 +65,7 @@ static void init_fw_feat_flags(struct de
- 	if (fw_feature_is("enabled", "fw-bcctrl-serialized", np))
- 		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -462,6 +462,10 @@ static void __init find_and_init_phbs(vo
  
--	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
-+	if (fw_feature_is("enabled", "inst-l1d-flush-ori30,30,0", np))
- 		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
- 
- 	if (fw_feature_is("enabled", "inst-l1d-flush-trig2", np))
-@@ -98,11 +98,10 @@ static void pnv_setup_rfi_flush(void)
+ static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
  {
- 	struct device_node *np, *fw_features;
- 	enum l1d_flush_type type;
--	int enable;
-+	bool enable;
++	/*
++	 * The features below are disabled by default, so we instead look to see
++	 * if firmware has *enabled* them, and set them if so.
++	 */
+ 	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
+ 		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
  
- 	/* Default to fallback in case fw-features are not available */
- 	type = L1D_FLUSH_FALLBACK;
--	enable = 1;
+@@ -501,6 +505,13 @@ void pseries_setup_rfi_flush(void)
+ 	bool enable;
+ 	long rc;
  
- 	np = of_find_node_by_name(NULL, "ibm,opal");
- 	fw_features = of_get_child_by_name(np, "fw-features");
-@@ -110,40 +109,20 @@ static void pnv_setup_rfi_flush(void)
- 
- 	if (fw_features) {
- 		init_fw_feat_flags(fw_features);
-+		of_node_put(fw_features);
- 
--		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
--		if (np && of_property_read_bool(np, "enabled"))
-+		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
- 			type = L1D_FLUSH_MTTRIG;
- 
--		of_node_put(np);
--
--		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
--		if (np && of_property_read_bool(np, "enabled"))
-+		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
- 			type = L1D_FLUSH_ORI;
--
--		of_node_put(np);
--
--		/* Enable unless firmware says NOT to */
--		enable = 2;
--		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
--		if (np && of_property_read_bool(np, "disabled"))
--			enable--;
--
--		of_node_put(np);
--
--		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
--		if (np && of_property_read_bool(np, "disabled"))
--			enable--;
--
--		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
--		if (np && of_property_read_bool(np, "disabled"))
--			enable = 0;
--
--		of_node_put(np);
--		of_node_put(fw_features);
- 	}
- 
--	setup_rfi_flush(type, enable > 0);
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
-+		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)   || \
-+		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
++	/*
++	 * Set features to the defaults assumed by init_cpu_char_feature_flags()
++	 * so it can set/clear again any features that might have changed after
++	 * migration, and in case the hypercall fails and it is not even called.
++	 */
++	powerpc_security_features = SEC_FTR_DEFAULT;
 +
-+	setup_rfi_flush(type, enable);
- }
- 
- static void __init pnv_setup_arch(void)
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS)
+ 		init_cpu_char_feature_flags(&result);
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
