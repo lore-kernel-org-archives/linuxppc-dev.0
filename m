@@ -1,26 +1,26 @@
 Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bX5HPHzDr4d
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bb4773zDrBy
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:51 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bX4XsZz8tG1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:48 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bb1Ssvz8tG1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:51 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bX0v4Vz9s02
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:48 +1000 (AEST)
-Subject: Patch "powerpc/powernv: Support firmware disable of RFI flush" has
- been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1bZ44Rqz9s1p
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:50 +1000 (AEST)
+Subject: Patch "powerpc/64s: Wire up cpu_show_spectre_v1()" has been added to
+ the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:52 +0200
-In-Reply-To: <20180526042749.5324-4-mpe@ellerman.id.au>
-Message-ID: <15274289925916@kroah.com>
+In-Reply-To: <20180526042749.5324-18-mpe@ellerman.id.au>
+Message-ID: <1527428992168133@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/powernv: Support firmware disable of RFI flush
+    powerpc/64s: Wire up cpu_show_spectre_v1()
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-powernv-support-firmware-disable-of-rfi-flush.patch
+     powerpc-64s-wire-up-cpu_show_spectre_v1.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,39 +50,44 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:29 +1000
-Subject: powerpc/powernv: Support firmware disable of RFI flush
+Date: Sat, 26 May 2018 14:27:43 +1000
+Subject: powerpc/64s: Wire up cpu_show_spectre_v1()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-4-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-18-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit eb0a2d2620ae431c543963c8c7f08f597366fc60 upstream.
+commit 56986016cb8cd9050e601831fe89f332b4e3c46e upstream.
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+Add a definition for cpu_show_spectre_v1() to override the generic
+version. Currently this just prints "Not affected" or "Vulnerable"
+based on the firmware flag.
 
-Fixes: 6e032b350cd1 ("powerpc/powernv: Check device-tree for RFI flush settings")
+Although the kernel does have array_index_nospec() in a few places, we
+haven't yet audited all the powerpc code to see where it's necessary,
+so for now we don't list that as a mitigation.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/powernv/setup.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/kernel/security.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -79,6 +79,10 @@ static void pnv_setup_rfi_flush(void)
- 		if (np && of_property_read_bool(np, "disabled"))
- 			enable--;
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -50,3 +50,11 @@ ssize_t cpu_show_meltdown(struct device
  
-+		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
-+		if (np && of_property_read_bool(np, "disabled"))
-+			enable = 0;
+ 	return sprintf(buf, "Vulnerable\n");
+ }
 +
- 		of_node_put(np);
- 		of_node_put(fw_features);
- 	}
++ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
++		return sprintf(buf, "Not affected\n");
++
++	return sprintf(buf, "Vulnerable\n");
++}
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
