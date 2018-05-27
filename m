@@ -1,26 +1,26 @@
 Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1b34xnQzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:23 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1b34Gr9z8vJc
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1b70TNJzDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:27 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1b65WcKz8vJc
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:26 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1b30P8Tz9s1w
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:22 +1000 (AEST)
-Subject: Patch "powerpc/64s: Enhance the information in cpu_show_meltdown()"
- has been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1b54d3Nz9s1w
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:25 +1000 (AEST)
+Subject: Patch "powerpc/64s: Fix section mismatch warnings from
+ setup_rfi_flush()" has been added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:51 +0200
-In-Reply-To: <20180526042749.5324-15-mpe@ellerman.id.au>
-Message-ID: <1527428991195230@kroah.com>
+In-Reply-To: <20180526042749.5324-23-mpe@ellerman.id.au>
+Message-ID: <1527428991673@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64s: Enhance the information in cpu_show_meltdown()
+    powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-enhance-the-information-in-cpu_show_meltdown.patch
+     powerpc-64s-fix-section-mismatch-warnings-from-setup_rfi_flush.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,82 +50,60 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:40 +1000
-Subject: powerpc/64s: Enhance the information in cpu_show_meltdown()
+Date: Sat, 26 May 2018 14:27:48 +1000
+Subject: powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-15-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-23-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit ff348355e9c72493947be337bb4fae4fc1a41eba upstream.
+commit 501a78cbc17c329fabf8e9750a1e9ab810c88a0e upstream.
 
-Now that we have the security feature flags we can make the
-information displayed in the "meltdown" file more informative.
+The recent LPM changes to setup_rfi_flush() are causing some section
+mismatch warnings because we removed the __init annotation on
+setup_rfi_flush():
 
+  The function setup_rfi_flush() references
+  the function __init ppc64_bolted_size().
+  the function __init memblock_alloc_base().
+
+The references are actually in init_fallback_flush(), but that is
+inlined into setup_rfi_flush().
+
+These references are safe because:
+ - only pseries calls setup_rfi_flush() at runtime
+ - pseries always passes L1D_FLUSH_FALLBACK at boot
+ - so the fallback flush area will always be allocated
+ - so the check in init_fallback_flush() will always return early:
+   /* Only allocate the fallback flush area once (at boot time). */
+   if (l1d_flush_fallback_area)
+   	return;
+
+ - and therefore we won't actually call the freed init routines.
+
+We should rework the code to make it safer by default rather than
+relying on the above, but for now as a quick-fix just add a __ref
+annotation to squash the warning.
+
+Fixes: abf110f3e1ce ("powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/security_features.h |    1 
- arch/powerpc/kernel/security.c               |   30 +++++++++++++++++++++++++--
- 2 files changed, 29 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/setup_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/powerpc/include/asm/security_features.h
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -10,6 +10,7 @@
- 
- 
- extern unsigned long powerpc_security_features;
-+extern bool rfi_flush;
- 
- static inline void security_ftr_set(unsigned long feature)
- {
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/device.h>
-+#include <linux/seq_buf.h>
- 
- #include <asm/security_features.h>
- 
-@@ -19,8 +20,33 @@ unsigned long powerpc_security_features
- 
- ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	if (rfi_flush)
--		return sprintf(buf, "Mitigation: RFI Flush\n");
-+	bool thread_priv;
-+
-+	thread_priv = security_ftr_enabled(SEC_FTR_L1D_THREAD_PRIV);
-+
-+	if (rfi_flush || thread_priv) {
-+		struct seq_buf s;
-+		seq_buf_init(&s, buf, PAGE_SIZE - 1);
-+
-+		seq_buf_printf(&s, "Mitigation: ");
-+
-+		if (rfi_flush)
-+			seq_buf_printf(&s, "RFI Flush");
-+
-+		if (rfi_flush && thread_priv)
-+			seq_buf_printf(&s, ", ");
-+
-+		if (thread_priv)
-+			seq_buf_printf(&s, "L1D private per thread");
-+
-+		seq_buf_printf(&s, "\n");
-+
-+		return s.len;
-+	}
-+
-+	if (!security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV) &&
-+	    !security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR))
-+		return sprintf(buf, "Not affected\n");
- 
- 	return sprintf(buf, "Vulnerable\n");
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -831,7 +831,7 @@ void rfi_flush_enable(bool enable)
+ 	rfi_flush = enable;
  }
+ 
+-static void init_fallback_flush(void)
++static void __ref init_fallback_flush(void)
+ {
+ 	u64 l1d_size, limit;
+ 	int cpu;
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
