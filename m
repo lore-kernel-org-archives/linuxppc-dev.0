@@ -2,25 +2,25 @@ Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bp6pkSzDr41
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1by5Y9rzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:10 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bp50rvz8vHp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:02 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bt1k1bz8tG1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:06 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bn5Cnxz9s1w
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:51:01 +1000 (AEST)
-Subject: Patch "powerpc/pseries: Restore default security feature flags on
- setup" has been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1br3jj2z9s1w
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:51:04 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Set or clear security feature flags" has been
+ added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
+ mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:53 +0200
-In-Reply-To: <20180526042749.5324-22-mpe@ellerman.id.au>
-Message-ID: <1527428993158180@kroah.com>
+In-Reply-To: <20180526042749.5324-12-mpe@ellerman.id.au>
+Message-ID: <152742899317224@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Restore default security feature flags on setup
+    powerpc/pseries: Set or clear security feature flags
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
+     powerpc-pseries-set-or-clear-security-feature-flags.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,65 +50,98 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:47 +1000
-Subject: powerpc/pseries: Restore default security feature flags on setup
+Date: Sat, 26 May 2018 14:27:37 +1000
+Subject: powerpc/pseries: Set or clear security feature flags
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-22-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-12-mpe@ellerman.id.au>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 6232774f1599028a15418179d17f7df47ede770a upstream.
+commit f636c14790ead6cc22cf62279b1f8d7e11a67116 upstream.
 
-After migration the security feature flags might have changed (e.g.,
-destination system with unpatched firmware), but some flags are not
-set/clear again in init_cpu_char_feature_flags() because it assumes
-the security flags to be the defaults.
+Now that we have feature flags for security related things, set or
+clear them based on what we receive from the hypercall.
 
-Additionally, if the H_GET_CPU_CHARACTERISTICS hypercall fails then
-init_cpu_char_feature_flags() does not run again, which potentially
-might leave the system in an insecure or sub-optimal configuration.
-
-So, just restore the security feature flags to the defaults assumed
-by init_cpu_char_feature_flags() so it can set/clear them correctly,
-and to ensure safe settings are in place in case the hypercall fail.
-
-Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
-Depends-on: 19887d6a28e2 ("powerpc: Move default security feature flags")
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   43 +++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -462,6 +462,10 @@ static void __init find_and_init_phbs(vo
+@@ -68,6 +68,7 @@
+ #include <asm/plpar_wrappers.h>
+ #include <asm/kexec.h>
+ #include <asm/isa-bridge.h>
++#include <asm/security_features.h>
  
- static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
- {
-+	/*
-+	 * The features below are disabled by default, so we instead look to see
-+	 * if firmware has *enabled* them, and set them if so.
-+	 */
- 	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
- 		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
+ #include "pseries.h"
  
-@@ -501,6 +505,13 @@ void pseries_setup_rfi_flush(void)
- 	bool enable;
- 	long rc;
+@@ -459,6 +460,40 @@ static void __init find_and_init_phbs(vo
+ 	of_pci_check_probe_only();
+ }
  
-+	/*
-+	 * Set features to the defaults assumed by init_cpu_char_feature_flags()
-+	 * so it can set/clear again any features that might have changed after
-+	 * migration, and in case the hypercall fails and it is not even called.
-+	 */
-+	powerpc_security_features = SEC_FTR_DEFAULT;
++static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
++{
++	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
++		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
 +
++	if (result->character & H_CPU_CHAR_BCCTRL_SERIALISED)
++		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
++
++	if (result->character & H_CPU_CHAR_L1D_FLUSH_ORI30)
++		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
++
++	if (result->character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
++		security_ftr_set(SEC_FTR_L1D_FLUSH_TRIG2);
++
++	if (result->character & H_CPU_CHAR_L1D_THREAD_PRIV)
++		security_ftr_set(SEC_FTR_L1D_THREAD_PRIV);
++
++	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
++		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
++
++	/*
++	 * The features below are enabled by default, so we instead look to see
++	 * if firmware has *disabled* them, and clear them if so.
++	 */
++	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
++		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
++
++	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
++		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
++
++	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
++		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
++}
++
+ void pseries_setup_rfi_flush(void)
+ {
+ 	struct h_cpu_char_result result;
+@@ -472,6 +507,8 @@ void pseries_setup_rfi_flush(void)
+ 
  	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS)
- 		init_cpu_char_feature_flags(&result);
+ 	if (rc == H_SUCCESS) {
++		init_cpu_char_feature_flags(&result);
++
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+ 			types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+@@ -482,6 +519,12 @@ void pseries_setup_rfi_flush(void)
+ 			enable = false;
+ 	}
+ 
++	/*
++	 * We're the guest so this doesn't apply to us, clear it to simplify
++	 * handling of it elsewhere.
++	 */
++	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
++
+ 	setup_rfi_flush(types, enable);
+ }
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
