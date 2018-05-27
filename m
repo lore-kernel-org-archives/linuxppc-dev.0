@@ -2,25 +2,25 @@ Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1c821x5zDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:20 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1c76dRSz8tG1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1cC0bHbzDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:23 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1cB6ss6z8tG1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:22 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1c72hKQz9s02
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:51:19 +1000 (AEST)
-Subject: Patch "powerpc/rfi-flush: Make it possible to call setup_rfi_flush()
- again" has been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1cB3FFBz9s02
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:51:22 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Use the security flags in
+ pseries_setup_rfi_flush()" has been added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
+ mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:54 +0200
-In-Reply-To: <20180526042749.5324-6-mpe@ellerman.id.au>
-Message-ID: <152742899453189@kroah.com>
+In-Reply-To: <20180526042749.5324-17-mpe@ellerman.id.au>
+Message-ID: <1527428994244165@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
+    powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-rfi-flush-make-it-possible-to-call-setup_rfi_flush-again.patch
+     powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,64 +50,71 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:31 +1000
-Subject: powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
+Date: Sat, 26 May 2018 14:27:42 +1000
+Subject: powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-6-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-17-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit abf110f3e1cea40f5ea15e85f5d67c39c14568a7 upstream.
+commit 2e4a16161fcd324b1f9bf6cb6856529f7eaf0689 upstream.
 
-For PowerVM migration we want to be able to call setup_rfi_flush()
-again after we've migrated the partition.
+Now that we have the security flags we can simplify the code in
+pseries_setup_rfi_flush() because the security flags have pessimistic
+defaults.
 
-To support that we need to check that we're not trying to allocate the
-fallback flush area after memblock has gone away (i.e., boot-time only).
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/setup.h |    2 +-
- arch/powerpc/kernel/setup_64.c   |    6 +++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c |   27 ++++++++++++---------------
+ 1 file changed, 12 insertions(+), 15 deletions(-)
 
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -49,7 +49,7 @@ enum l1d_flush_type {
- 	L1D_FLUSH_MTTRIG	= 0x8,
- };
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -501,30 +501,27 @@ void pseries_setup_rfi_flush(void)
+ 	bool enable;
+ 	long rc;
  
--void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
-+void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
+-	/* Enable by default */
+-	enable = true;
+-	types = L1D_FLUSH_FALLBACK;
+-
+ 	rc = plpar_get_cpu_characteristics(&result);
+-	if (rc == H_SUCCESS) {
++	if (rc == H_SUCCESS)
+ 		init_cpu_char_feature_flags(&result);
  
- #endif /* !__ASSEMBLY__ */
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -836,6 +836,10 @@ static void init_fallback_flush(void)
- 	u64 l1d_size, limit;
- 	int cpu;
+-		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+-			types |= L1D_FLUSH_MTTRIG;
+-		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+-			types |= L1D_FLUSH_ORI;
+-
+-		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+-		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+-			enable = false;
+-	}
+-
+ 	/*
+ 	 * We're the guest so this doesn't apply to us, clear it to simplify
+ 	 * handling of it elsewhere.
+ 	 */
+ 	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
  
-+	/* Only allocate the fallback flush area once (at boot time). */
-+	if (l1d_flush_fallback_area)
-+		return;
++	types = L1D_FLUSH_FALLBACK;
 +
- 	l1d_size = ppc64_caches.l1d.size;
- 	limit = min(safe_stack_limit(), ppc64_rma_size);
- 
-@@ -853,7 +857,7 @@ static void init_fallback_flush(void)
- 	}
++	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
++		types |= L1D_FLUSH_MTTRIG;
++
++	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
++		types |= L1D_FLUSH_ORI;
++
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
++
+ 	setup_rfi_flush(types, enable);
  }
  
--void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
-+void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
- 	if (types & L1D_FLUSH_FALLBACK) {
- 		pr_info("rfi-flush: Using fallback displacement flush\n");
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
