@@ -2,25 +2,25 @@ Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bj6gxxzDr3M
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bm25pczDr4g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:51:00 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bh5PcSz8vHp
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:56 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bl4J1Qz8tG1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:59 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bg6NtMz9s28
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:55 +1000 (AEST)
-Subject: Patch "powerpc/pseries: Fix clearing of security feature flags" has
- been added to the 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1bk5QKLz9s1p
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:58 +1000 (AEST)
+Subject: Patch "powerpc/powernv: Use the security flags in
+ pnv_setup_rfi_flush()" has been added to the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au, tglx@linutronix.de
+ mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sun, 27 May 2018 15:49:53 +0200
-In-Reply-To: <20180526042749.5324-20-mpe@ellerman.id.au>
-Message-ID: <1527428993253222@kroah.com>
+In-Reply-To: <20180526042749.5324-16-mpe@ellerman.id.au>
+Message-ID: <15274289937460@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Fix clearing of security feature flags
+    powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-fix-clearing-of-security-feature-flags.patch
+     powerpc-powernv-use-the-security-flags-in-pnv_setup_rfi_flush.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,85 +50,100 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:45 +1000
-Subject: powerpc/pseries: Fix clearing of security feature flags
+Date: Sat, 26 May 2018 14:27:41 +1000
+Subject: powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-20-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-16-mpe@ellerman.id.au>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 0f9bdfe3c77091e8704d2e510eb7c2c2c6cde524 upstream.
+commit 37c0bdd00d3ae83369ab60a6712c28e11e6458d5 upstream.
 
-The H_CPU_BEHAV_* flags should be checked for in the 'behaviour' field
-of 'struct h_cpu_char_result' -- 'character' is for H_CPU_CHAR_*
-flags.
+Now that we have the security flags we can significantly simplify the
+code in pnv_setup_rfi_flush(), because we can use the flags instead of
+checking device tree properties and because the security flags have
+pessimistic defaults.
 
-Found by playing around with QEMU's implementation of the hypercall:
-
-  H_CPU_CHAR=0xf000000000000000
-  H_CPU_BEHAV=0x0000000000000000
-
-  This clears H_CPU_BEHAV_FAVOUR_SECURITY and H_CPU_BEHAV_L1D_FLUSH_PR
-  so pseries_setup_rfi_flush() disables 'rfi_flush'; and it also
-  clears H_CPU_CHAR_L1D_THREAD_PRIV flag. So there is no RFI flush
-  mitigation at all for cpu_show_meltdown() to report; but currently
-  it does:
-
-  Original kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
-    Mitigation: RFI Flush
-
-  Patched kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
-    Not affected
-
-  H_CPU_CHAR=0x0000000000000000
-  H_CPU_BEHAV=0xf000000000000000
-
-  This sets H_CPU_BEHAV_BNDS_CHK_SPEC_BAR so cpu_show_spectre_v1() should
-  report vulnerable; but currently it doesn't:
-
-  Original kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
-    Not affected
-
-  Patched kernel:
-
-    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
-    Vulnerable
-
-Brown-paper-bag-by: Michael Ellerman <mpe@ellerman.id.au>
-Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c |   41 ++++++++-------------------------
+ 1 file changed, 10 insertions(+), 31 deletions(-)
 
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -484,13 +484,13 @@ static void init_cpu_char_feature_flags(
- 	 * The features below are enabled by default, so we instead look to see
- 	 * if firmware has *disabled* them, and clear them if so.
- 	 */
--	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
-+	if (!(result->behaviour & H_CPU_BEHAV_FAVOUR_SECURITY))
- 		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -65,7 +65,7 @@ static void init_fw_feat_flags(struct de
+ 	if (fw_feature_is("enabled", "fw-bcctrl-serialized", np))
+ 		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
  
--	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
-+	if (!(result->behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
- 		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
+-	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
++	if (fw_feature_is("enabled", "inst-l1d-flush-ori30,30,0", np))
+ 		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
  
--	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
-+	if (!(result->behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
- 		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
+ 	if (fw_feature_is("enabled", "inst-l1d-flush-trig2", np))
+@@ -98,11 +98,10 @@ static void pnv_setup_rfi_flush(void)
+ {
+ 	struct device_node *np, *fw_features;
+ 	enum l1d_flush_type type;
+-	int enable;
++	bool enable;
+ 
+ 	/* Default to fallback in case fw-features are not available */
+ 	type = L1D_FLUSH_FALLBACK;
+-	enable = 1;
+ 
+ 	np = of_find_node_by_name(NULL, "ibm,opal");
+ 	fw_features = of_get_child_by_name(np, "fw-features");
+@@ -110,40 +109,20 @@ static void pnv_setup_rfi_flush(void)
+ 
+ 	if (fw_features) {
+ 		init_fw_feat_flags(fw_features);
++		of_node_put(fw_features);
+ 
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
+ 			type = L1D_FLUSH_MTTRIG;
+ 
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "inst-l1d-flush-ori30,30,0");
+-		if (np && of_property_read_bool(np, "enabled"))
++		if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
+ 			type = L1D_FLUSH_ORI;
+-
+-		of_node_put(np);
+-
+-		/* Enable unless firmware says NOT to */
+-		enable = 2;
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-hv-1-to-0");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		of_node_put(np);
+-
+-		np = of_get_child_by_name(fw_features, "needs-l1d-flush-msr-pr-0-to-1");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable--;
+-
+-		np = of_get_child_by_name(fw_features, "speculation-policy-favor-security");
+-		if (np && of_property_read_bool(np, "disabled"))
+-			enable = 0;
+-
+-		of_node_put(np);
+-		of_node_put(fw_features);
+ 	}
+ 
+-	setup_rfi_flush(type, enable > 0);
++	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
++		 (security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR)   || \
++		  security_ftr_enabled(SEC_FTR_L1D_FLUSH_HV));
++
++	setup_rfi_flush(type, enable);
  }
  
+ static void __init pnv_setup_arch(void)
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
