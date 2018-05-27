@@ -2,25 +2,25 @@ Return-Path: <srs1=mqwm=kernel.org==ri55=io=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bD4VXhzDr6V
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:32 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bC4C2nz8vSX
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40v1bK5ZDqzDr4g
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:37 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40v1bK3F56z8vHp
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 23:50:37 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40v1bB6Zsgz9s1d
- for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:30 +1000 (AEST)
-Subject: Patch "powerpc/64s: Move cpu_show_meltdown()" has been added to the
- 4.14-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40v1bJ3RWwz9s1p
+ for <linuxppc-dev@ozlabs.org>; Sun, 27 May 2018 23:50:36 +1000 (AEST)
+Subject: Patch "powerpc/64s: Wire up cpu_show_spectre_v2()" has been added to
+ the 4.14-stable tree
 To: greg@kroah.com, gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mpe@ellerman.id.au, tglx@linutronix.de
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sun, 27 May 2018 15:49:51 +0200
-In-Reply-To: <20180526042749.5324-14-mpe@ellerman.id.au>
-Message-ID: <1527428991229142@kroah.com>
+Date: Sun, 27 May 2018 15:49:52 +0200
+In-Reply-To: <20180526042749.5324-19-mpe@ellerman.id.au>
+Message-ID: <1527428992656@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/64s: Move cpu_show_meltdown()
+    powerpc/64s: Wire up cpu_show_spectre_v2()
 
 to the 4.14-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-64s-move-cpu_show_meltdown.patch
+     powerpc-64s-wire-up-cpu_show_spectre_v2.patch
 and it can be found in the queue-4.14 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,66 +50,77 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sun May 27 15:47:18 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat, 26 May 2018 14:27:39 +1000
-Subject: powerpc/64s: Move cpu_show_meltdown()
+Date: Sat, 26 May 2018 14:27:44 +1000
+Subject: powerpc/64s: Wire up cpu_show_spectre_v2()
 To: greg@kroah.com
 Cc: stable@vger.kernel.org, tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Message-ID: <20180526042749.5324-14-mpe@ellerman.id.au>
+Message-ID: <20180526042749.5324-19-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 8ad33041563a10b34988800c682ada14b2612533 upstream.
+commit d6fbe1c55c55c6937cbea3531af7da84ab7473c3 upstream.
 
-This landed in setup_64.c for no good reason other than we had nowhere
-else to put it. Now that we have a security-related file, that is a
-better place for it so move it.
+Add a definition for cpu_show_spectre_v2() to override the generic
+version. This has several permuations, though in practice some may not
+occur we cater for any combination.
+
+The most verbose is:
+
+  Mitigation: Indirect branch serialisation (kernel only), Indirect
+  branch cache disabled, ori31 speculation barrier enabled
+
+We don't treat the ori31 speculation barrier as a mitigation on its
+own, because it has to be *used* by code in order to be a mitigation
+and we don't know if userspace is doing that. So if that's all we see
+we say:
+
+  Vulnerable, ori31 speculation barrier enabled
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/security.c |   11 +++++++++++
- arch/powerpc/kernel/setup_64.c |    8 --------
- 2 files changed, 11 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/security.c |   33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 --- a/arch/powerpc/kernel/security.c
 +++ b/arch/powerpc/kernel/security.c
-@@ -5,6 +5,8 @@
- // Copyright 2018, Michael Ellerman, IBM Corporation.
+@@ -58,3 +58,36 @@ ssize_t cpu_show_spectre_v1(struct devic
  
- #include <linux/kernel.h>
-+#include <linux/device.h>
-+
- #include <asm/security_features.h>
- 
- 
-@@ -13,3 +15,12 @@ unsigned long powerpc_security_features
- 	SEC_FTR_L1D_FLUSH_PR | \
- 	SEC_FTR_BNDS_CHK_SPEC_BAR | \
- 	SEC_FTR_FAVOUR_SECURITY;
-+
-+
-+ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	if (rfi_flush)
-+		return sprintf(buf, "Mitigation: RFI Flush\n");
-+
-+	return sprintf(buf, "Vulnerable\n");
-+}
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -910,12 +910,4 @@ static __init int rfi_flush_debugfs_init
+ 	return sprintf(buf, "Vulnerable\n");
  }
- device_initcall(rfi_flush_debugfs_init);
- #endif
--
--ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	if (rfi_flush)
--		return sprintf(buf, "Mitigation: RFI Flush\n");
--
--	return sprintf(buf, "Vulnerable\n");
--}
- #endif /* CONFIG_PPC_BOOK3S_64 */
++
++ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	bool bcs, ccd, ori;
++	struct seq_buf s;
++
++	seq_buf_init(&s, buf, PAGE_SIZE - 1);
++
++	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
++	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
++	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
++
++	if (bcs || ccd) {
++		seq_buf_printf(&s, "Mitigation: ");
++
++		if (bcs)
++			seq_buf_printf(&s, "Indirect branch serialisation (kernel only)");
++
++		if (bcs && ccd)
++			seq_buf_printf(&s, ", ");
++
++		if (ccd)
++			seq_buf_printf(&s, "Indirect branch cache disabled");
++	} else
++		seq_buf_printf(&s, "Vulnerable");
++
++	if (ori)
++		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
++
++	seq_buf_printf(&s, "\n");
++
++	return s.len;
++}
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
