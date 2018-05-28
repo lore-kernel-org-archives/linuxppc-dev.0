@@ -1,18 +1,37 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+Return-Path: <stewart@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vGBS3jpCzF0Rs
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 09:18:24 +1000 (AEST)
-Date: Sun, 27 May 2018 23:34:03 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH][RFC] [powerpc] arch_ptrace() uses of access_ok() are pointless
-Message-ID: <20180527223403.GT30522@ZenIV.linux.org.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vJ841494zF0dl
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 10:46:27 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4S0hrJ7080031
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 20:46:25 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j86hxsn6v-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 20:46:25 -0400
+Received: from localhost
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
+ Sun, 27 May 2018 20:46:24 -0400
+From: Stewart Smith <stewart@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, ego@linux.vnet.ibm.com,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv : init all present cpus for deep states
+In-Reply-To: <87fu2gqa9o.fsf@concordia.ellerman.id.au>
+References: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <87fu2gqa9o.fsf@concordia.ellerman.id.au>
+Date: Mon, 28 May 2018 10:46:11 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Al Viro <viro@ftp.linux.org.uk>
+Content-Type: text/plain
+Message-Id: <87k1ror4j0.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,52 +41,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-make it use copy_{from,to}_user(), rather than access_ok() +
-__copy_...
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
+>
+>> Init all present cpus for deep states instead of "all possible" cpus.
+>> Init fails if the possible cpu is gaurded. Resulting in making only
+>> non-deep states available for cpuidle/hotplug.
+>
+> This is basically the opposite of what we just did for IMC.
+>
+> There we switched from present to possible, to make it work when some
+> CPUs are guarded.
+>
+> Which makes me think we need a better way of dealing with guarded CPUs,
+> because working out which code should use present or possible seems to
+> be basically trial-and-error.
+>
+> I'm not actually sure why Guarded CPUs are showing up as possible but
+> not present, did we do that on purpose or is it just happening by
+> accident?
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/powerpc/kernel/ptrace.c | 22 +++++++---------------
- 1 file changed, 7 insertions(+), 15 deletions(-)
+My guess is that it flows through from firmware putting the guarded out
+CPUs in the device tree with a not "okay" status (which, I just
+realised, we're putting something in 'status' that isn't what the
+current DeviceTree spec says we should... gah -
+https://github.com/open-power/skiboot/issues/178 filed for that one).
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index d23cf632edf0..d8b0fd2fa3aa 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -3081,27 +3081,19 @@ long arch_ptrace(struct task_struct *child, long request,
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
- 
--		if (!access_ok(VERIFY_WRITE, datavp,
--			       sizeof(struct ppc_debug_info)))
-+		if (unlikely(copy_to_user(datavp, &dbginfo,
-+				     sizeof(struct ppc_debug_info)))
- 			return -EFAULT;
--		ret = __copy_to_user(datavp, &dbginfo,
--				     sizeof(struct ppc_debug_info)) ?
--		      -EFAULT : 0;
--		break;
-+		return 0;
- 	}
- 
- 	case PPC_PTRACE_SETHWDEBUG: {
- 		struct ppc_hw_breakpoint bp_info;
- 
--		if (!access_ok(VERIFY_READ, datavp,
--			       sizeof(struct ppc_hw_breakpoint)))
--			return -EFAULT;
--		ret = __copy_from_user(&bp_info, datavp,
--				       sizeof(struct ppc_hw_breakpoint)) ?
--		      -EFAULT : 0;
--		if (!ret)
--			ret = ppc_set_hwdebug(child, &bp_info);
--		break;
-+		if (unlikely(copy_from_user(&bp_info, datavp,
-+				       sizeof(struct ppc_hw_breakpoint)))
-+		      return -EFAULT;
-+		return ppc_set_hwdebug(child, &bp_info);
- 	}
- 
- 	case PPC_PTRACE_DELHWDEBUG: {
+The idea behind that is that you can answer "where did all my CPUs go?"
+by looking at the device tree rather than having to know the platform
+specific way of how guards are stored.
+
 -- 
-2.11.0
+Stewart Smith
+OPAL Architect, IBM.
