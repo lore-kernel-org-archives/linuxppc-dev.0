@@ -1,21 +1,29 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vhHZ2KXyzDqGQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 01:54:17 +1000 (AEST)
-From: Michal Suchanek <msuchanek@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Michal Suchanek <msuchanek@suse.de>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/64s: Enhance the information in cpu_show_spectre_v1()
-Date: Mon, 28 May 2018 15:19:14 +0200
-Message-Id: <20180528131914.32231-1-msuchanek@suse.de>
-In-Reply-To: <20180424041559.32410-1-mpe@ellerman.id.au>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vhqY5PCxzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 02:18:33 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id t133-v6so7147772oif.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 09:18:33 -0700 (PDT)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180528150726.GC17342@gate.crashing.org>
+References: <0adce33cf1c70ac7203f8ebd987a912451aabd45.1527517001.git.christophe.leroy@c-s.fr>
+ <e81f81b7-2bf5-7f9a-919f-87972bf1a9db@c-s.fr>
+ <20180528150726.GC17342@gate.crashing.org>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 28 May 2018 18:18:09 +0200
+Message-ID: <CA+7wUszZ8Dq8S9ou7tTCF84MYh7De-K02GREVf+8cgqyn0wsSQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/Makefile: fix build failure by disabling
+ attribute-alias warning
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, May 28, 2018 at 5:07 PM, Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
+> On Mon, May 28, 2018 at 02:39:37PM +0000, Christophe Leroy wrote:
+>> In file included from arch/powerpc/kernel/syscalls.c:24:
+>> ./include/linux/syscalls.h:233:18: warning: 'sys_mmap2' alias between
+>> functions of incompatible types 'long int(long unsigned int,  size_t,
+>> long unsigned int,  long unsigned int,  long unsigned int,  long
+>> unsigned int)' {aka 'long int(long unsigned int,  unsigned int,  long
+>> unsigned int,  long unsigned int,  long unsigned int,  long unsigned
+>> int)'} and 'long int(long int,  long int,  long int,  long int,  long
+>> int,  long int)' [-Wattribute-alias]
+>
+> So yes, these are actually different (int vs. long).
+>
+>> In file included from arch/powerpc/kernel/signal_32.c:29:
+>> ./include/linux/syscalls.h:233:18: warning: 'sys_swapcontext' alias
+>> between functions of incompatible types 'long int(struct ucontext *,
+>> struct ucontext *, long int)' and 'long int(long int,  long int,  long
+>> int)' [-Wattribute-alias]
+>
+> And this one is quite spectacularly different.
 
-We now have barrier_nospec as mitigation so print it in
-cpu_show_spectre_v1 when enabled.
+https://patchwork.kernel.org/patch/10375607/
 
-Signed-off-by: Michal Suchanek <msuchanek@suse.de>
----
- arch/powerpc/kernel/security.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index 0239383c7e4d..a0c32d53980b 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -120,7 +120,10 @@ ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, c
- 	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
- 		return sprintf(buf, "Not affected\n");
- 
--	return sprintf(buf, "Vulnerable\n");
-+	if (barrier_nospec_enabled)
-+		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
-+	else
-+		return sprintf(buf, "Vulnerable\n");
- }
- 
- ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
--- 
-2.13.6
+>
+> Try putting this before the wacko aliases:
+>
+> #pragma GCC diagnostic push
+> #pragma GCC diagnostic ignored "-Wattribute-alias"
+>
+> and this after:
+>
+> #pragma GCC diagnostic pop
+>
+> so that you will get this quite useful warning for all other code.
+>
+>
+> Segher
