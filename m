@@ -1,16 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <huntbag@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vjFL2k0gzDq7c
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 02:37:26 +1000 (AEST)
-Message-Id: <1d3fd6a6c35e41d3e25ebe5256adf021369ada7c.1527525305.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/64: Fix build failure with GCC 8.1
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon, 28 May 2018 16:37:22 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vkWh084GzDq7c
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 03:34:55 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4SHXl7b097838
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 13:34:52 -0400
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j8ntrgxa2-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 13:34:52 -0400
+Received: from localhost
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Mon, 28 May 2018 18:34:51 +0100
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle/powernv : Add Description for cpuidle state
+Date: Mon, 28 May 2018 23:04:42 +0530
+Message-Id: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,53 +35,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  CC      arch/powerpc/kernel/nvram_64.o
-arch/powerpc/kernel/nvram_64.c: In function 'nvram_create_partition':
-arch/powerpc/kernel/nvram_64.c:1042:2: error: 'strncpy' specified bound 12 equals destination size [-Werror=stringop-truncation]
-  strncpy(new_part->header.name, name, 12);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Names of cpuidle states were being used for description of states
+in POWER as no descriptions were added in device tree. This patch
+reads description for idle states which have been added in device
+tree.
+The description for idle states in case of POWER can be printed
+using "cpupower monitor -l" or "cpupower idle-info".
 
-  CC      arch/powerpc/kernel/trace/ftrace.o
-In function 'make_field',
-    inlined from 'ps3_repository_read_boot_dat_address' at arch/powerpc/platforms/ps3/repository.c:900:9:
-arch/powerpc/platforms/ps3/repository.c:106:2: error: 'strncpy' output truncated before terminating nul copying 8 bytes from a string of the same length [-Werror=stringop-truncation]
-  strncpy((char *)&n, text, 8);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/nvram_64.c          | 2 +-
- arch/powerpc/platforms/ps3/repository.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index ba681dac7b46..7507448cd904 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -1039,7 +1039,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	new_part->index = free_part->index;
- 	new_part->header.signature = sig;
- 	new_part->header.length = size;
--	strncpy(new_part->header.name, name, 12);
-+	strncpy(new_part->header.name, name, sizeof(new_part->header.name) - 1);
- 	new_part->header.checksum = nvram_checksum(&new_part->header);
- 
- 	rc = nvram_write_header(new_part);
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index 50dbaf24b1ee..b4d6628eec5e 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -101,9 +101,9 @@ static u64 make_first_field(const char *text, u64 index)
- 
- static u64 make_field(const char *text, u64 index)
- {
--	u64 n;
-+	u64 n = 0;
- 
--	strncpy((char *)&n, text, 8);
-+	memcpy((char *)&n, text, min(sizeof(n), strlen(text)));
- 	return n + index;
+The skiboot patch which adds description for idle states in device tree
+can be found here: https://patchwork.ozlabs.org/patch/921637/
+
+ drivers/cpuidle/cpuidle-powernv.c | 17 +++++++++++++----
+ include/linux/cpuidle.h           |  2 +-
+ 2 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 1a8234e706bc..d3915a965128 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -133,7 +133,7 @@ static int stop_loop(struct cpuidle_device *dev,
+ static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
+ 	{ /* Snooze */
+ 		.name = "snooze",
+-		.desc = "snooze",
++		.desc = "idle polling state",
+ 		.exit_latency = 0,
+ 		.target_residency = 0,
+ 		.enter = snooze_loop },
+@@ -206,6 +206,7 @@ static int powernv_cpuidle_driver_init(void)
  }
  
+ static inline void add_powernv_state(int index, const char *name,
++				     const char *desc,
+ 				     unsigned int flags,
+ 				     int (*idle_fn)(struct cpuidle_device *,
+ 						    struct cpuidle_driver *,
+@@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
+ 				     u64 psscr_val, u64 psscr_mask)
+ {
+ 	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+-	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
++	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
+ 	powernv_states[index].flags = flags;
+ 	powernv_states[index].target_residency = target_residency;
+ 	powernv_states[index].exit_latency = exit_latency;
+@@ -250,6 +251,7 @@ static int powernv_add_idle_states(void)
+ 	u64 psscr_val[CPUIDLE_STATE_MAX];
+ 	u64 psscr_mask[CPUIDLE_STATE_MAX];
+ 	const char *names[CPUIDLE_STATE_MAX];
++	const char *descs[CPUIDLE_STATE_MAX];
+ 	u32 has_stop_states = 0;
+ 	int i, rc;
+ 	u32 supported_flags = pnv_get_supported_cpuidle_states();
+@@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
+ 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+ 		goto out;
+ 	}
++	if (of_property_read_string_array(power_mgt,
++		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
++		goto out;
++	}
+ 
+ 	/*
+ 	 * If the idle states use stop instruction, probe for psscr values
+@@ -414,10 +421,11 @@ static int powernv_add_idle_states(void)
+ 				target_residency = 100;
+ 			/* Add NAP state */
+ 			add_powernv_state(nr_idle_states, "Nap",
++					  "stop processor execution",
+ 					  CPUIDLE_FLAG_NONE, nap_loop,
+ 					  target_residency, exit_latency, 0, 0);
+ 		} else if (has_stop_states && !stops_timebase) {
+-			add_powernv_state(nr_idle_states, names[i],
++			add_powernv_state(nr_idle_states, names[i], descs[i],
+ 					  CPUIDLE_FLAG_NONE, stop_loop,
+ 					  target_residency, exit_latency,
+ 					  psscr_val[i], psscr_mask[i]);
+@@ -434,11 +442,12 @@ static int powernv_add_idle_states(void)
+ 				target_residency = 300000;
+ 			/* Add FASTSLEEP state */
+ 			add_powernv_state(nr_idle_states, "FastSleep",
++					  "Core and L2 clock gating",
+ 					  CPUIDLE_FLAG_TIMER_STOP,
+ 					  fastsleep_loop,
+ 					  target_residency, exit_latency, 0, 0);
+ 		} else if (has_stop_states && stops_timebase) {
+-			add_powernv_state(nr_idle_states, names[i],
++			add_powernv_state(nr_idle_states, names[i], descs[i],
+ 					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
+ 					  target_residency, exit_latency,
+ 					  psscr_val[i], psscr_mask[i]);
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 1eefabf1621f..5094755cb132 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -17,7 +17,7 @@
+ 
+ #define CPUIDLE_STATE_MAX	10
+ #define CPUIDLE_NAME_LEN	16
+-#define CPUIDLE_DESC_LEN	32
++#define CPUIDLE_DESC_LEN	60
+ 
+ struct module;
+ 
 -- 
-2.13.3
+2.14.1
