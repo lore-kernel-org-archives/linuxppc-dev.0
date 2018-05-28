@@ -1,23 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vb4g0ZrjzDrWR
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 21:59:31 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: wei.guo.simon@gmail.com, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: Re: [PATCH v6 2/4] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-In-Reply-To: <1527221256-17029-3-git-send-email-wei.guo.simon@gmail.com>
-References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
- <1527221256-17029-3-git-send-email-wei.guo.simon@gmail.com>
-Date: Mon, 28 May 2018 21:59:29 +1000
-Message-ID: <87fu2c3s9q.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vbKj1mHwzDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 22:10:49 +1000 (AEST)
+Message-Id: <d5a7a0c8a6d9deecdeaaea007cbf7042e4b25af6.1527504742.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc/32: implement strlen() in assembly
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ segher@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 28 May 2018 12:10:45 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,103 +21,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Simon,
+The generic implementation of strlen() reads strings byte per byte.
 
-wei.guo.simon@gmail.com writes:
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index f20e883..4ba7bb6 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -174,6 +235,13 @@ _GLOBAL(memcmp)
->  	blr
->  
->  .Llong:
-> +#ifdef CONFIG_ALTIVEC
-> +	/* Try to use vmx loop if length is equal or greater than 4K */
-> +	cmpldi  cr6,r5,VMX_THRESH
-> +	bge	cr6,.Lsameoffset_vmx_cmp
-> +
+This patch implements strlen() in assembly for PPC32 based on
+a read of entire words, in the same spirit as what some other
+arches and glibc do.
 
-Here we decide to use vmx, but we don't do any CPU feature checks.
+For long strings, the time spent in strlen is reduced by 50-60%
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+Applies on top of serie "[v5 0/3] powerpc/lib: Optimisation of memcmp() and __clear_user() for PPC32"
 
-> @@ -332,7 +400,94 @@ _GLOBAL(memcmp)
->  8:
->  	blr
->  
-> +#ifdef CONFIG_ALTIVEC
-> +.Lsameoffset_vmx_cmp:
-> +	/* Enter with src/dst addrs has the same offset with 8 bytes
-> +	 * align boundary
-> +	 */
-> +	ENTER_VMX_OPS
-> +	beq     cr1,.Llong_novmx_cmp
-> +
-> +3:
-> +	/* need to check whether r4 has the same offset with r3
-> +	 * for 16 bytes boundary.
-> +	 */
-> +	xor	r0,r3,r4
-> +	andi.	r0,r0,0xf
-> +	bne	.Ldiffoffset_vmx_cmp_start
-> +
-> +	/* len is no less than 4KB. Need to align with 16 bytes further.
-> +	 */
-> +	andi.	rA,r3,8
-> +	LD	rA,0,r3
-> +	beq	4f
-> +	LD	rB,0,r4
-> +	cmpld	cr0,rA,rB
-> +	addi	r3,r3,8
-> +	addi	r4,r4,8
-> +	addi	r5,r5,-8
-> +
-> +	beq	cr0,4f
-> +	/* save and restore cr0 */
-> +	mfocrf  r5,64
-> +	EXIT_VMX_OPS
-> +	mtocrf	64,r5
-> +	b	.LcmpAB_lightweight
-> +
-> +4:
-> +	/* compare 32 bytes for each loop */
-> +	srdi	r0,r5,5
-> +	mtctr	r0
-> +	clrldi  r5,r5,59
-> +	li	off16,16
-> +
-> +.balign 16
-> +5:
-> +	lvx 	v0,0,r3
-> +	lvx 	v1,0,r4
-> +	vcmpequd. v0,v0,v1
+Changes in v2:
+ - Moved handling of unaligned strings outside of the main path as it is very unlikely.
+ - Removed the verification of the fourth byte in case none of the three first ones are NUL.
 
-vcmpequd is only available on Power8 and later CPUs.
+ arch/powerpc/include/asm/string.h |  3 +++
+ arch/powerpc/lib/string_32.S      | 41 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
 
-Which means this will crash on Power7 or earlier.
-
-Something like this should fix it I think.
-
-diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-index 96eb08b2be2e..0a11ff14dcd9 100644
---- a/arch/powerpc/lib/memcmp_64.S
-+++ b/arch/powerpc/lib/memcmp_64.S
-@@ -236,9 +236,11 @@ _GLOBAL(memcmp)
+diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
+index 9b8cedf618f4..5ecfdb776f87 100644
+--- a/arch/powerpc/include/asm/string.h
++++ b/arch/powerpc/include/asm/string.h
+@@ -13,6 +13,9 @@
+ #define __HAVE_ARCH_MEMCHR
+ #define __HAVE_ARCH_MEMSET16
+ #define __HAVE_ARCH_MEMCPY_FLUSHCACHE
++#ifdef CONFIG_PPC32
++#define __HAVE_ARCH_STRLEN
++#endif
  
- .Llong:
- #ifdef CONFIG_ALTIVEC
-+BEGIN_FTR_SECTION
- 	/* Try to use vmx loop if length is equal or greater than 4K */
- 	cmpldi  cr6,r5,VMX_THRESH
- 	bge	cr6,.Lsameoffset_vmx_cmp
-+END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ extern char * strcpy(char *,const char *);
+ extern char * strncpy(char *,const char *, __kernel_size_t);
+diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
+index 4fbaa046aa84..69593c917b35 100644
+--- a/arch/powerpc/lib/string_32.S
++++ b/arch/powerpc/lib/string_32.S
+@@ -47,6 +47,47 @@ _GLOBAL(memcmp)
+ 	blr
+ EXPORT_SYMBOL(memcmp)
  
- .Llong_novmx_cmp:
- #endif
-
-
-There's another problem which is that old toolchains don't know about
-vcmpequd. To fix that we'll need to add a macro that uses .long to
-construct the instruction.
-
-cheers
++_GLOBAL(strlen)
++	andi.   r9, r3, 3
++	addi	r10, r3, -4
++	bne-	1f
++2:	lis	r6, 0x8080
++	ori	r6, r6, 0x8080		/* r6 = 0x80808080 (himagic) */
++	rlwinm	r7, r6, 1, 0xffffffff	/* r7 = 0x01010101 (lomagic) */
++3:	lwzu	r9, 4(r10)
++	/* ((x - lomagic) & ~x & himagic) == 0 means no byte in x is NUL */
++	subf	r8, r7, r9
++	andc	r11, r6, r9
++	and.	r8, r8, r11
++	beq+	3b
++	rlwinm.	r8, r9, 0, 0xff000000
++	beq	20f
++	rlwinm.	r8, r9, 0, 0x00ff0000
++	beq	21f
++	rlwinm.	r8, r9, 0, 0x0000ff00
++	beq	22f
++	subf	r3, r3, r10
++	addi	r3, r3, 3
++	blr
++22:	subf	r3, r3, r10
++	addi	r3, r3, 2
++	blr
++21:	subf	r3, r3, r10
++	addi	r3, r3, 1
++	blr
++19:	addi	r10, r10, 3
++20:	subf	r3, r3, r10
++	blr
++
++1:	lbz	r9, 4(r10)
++	addi	r10, r10, 1
++	cmpwi	cr1, r9, 0
++	andi.	r9, r10, 3
++	beq	cr1, 19b
++	bne	1b
++	b	2b
++EXPORT_SYMBOL(strlen)
++
+ CACHELINE_BYTES = L1_CACHE_BYTES
+ LG_CACHELINE_BYTES = L1_CACHE_SHIFT
+ CACHELINE_MASK = (L1_CACHE_BYTES-1)
+-- 
+2.13.3
