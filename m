@@ -1,37 +1,20 @@
-Return-Path: <stewart@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vJ841494zF0dl
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 10:46:27 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4S0hrJ7080031
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 20:46:25 -0400
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j86hxsn6v-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 20:46:25 -0400
-Received: from localhost
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
- Sun, 27 May 2018 20:46:24 -0400
-From: Stewart Smith <stewart@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, ego@linux.vnet.ibm.com,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv : init all present cpus for deep states
-In-Reply-To: <87fu2gqa9o.fsf@concordia.ellerman.id.au>
-References: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <87fu2gqa9o.fsf@concordia.ellerman.id.au>
-Date: Mon, 28 May 2018 10:46:11 +1000
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87k1ror4j0.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vKWt58XBzF0S4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 11:48:42 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id p9-v6so4579397pgc.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 May 2018 18:48:42 -0700 (PDT)
+From: wei.guo.simon@gmail.com
+To: kvm-ppc@vger.kernel.org
+Cc: Paul Mackerras <paulus@ozlabs.org>, kvm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Simon Guo <wei.guo.simon@gmail.com>
+Subject: [PATCH v2] KVM: PPC: remove mmio_vsx_tx_sx_enabled in KVM MMIO
+ emulation
+Date: Mon, 28 May 2018 09:48:26 +0800
+Message-Id: <1527472106-22682-1-git-send-email-wei.guo.simon@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,36 +24,196 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
->
->> Init all present cpus for deep states instead of "all possible" cpus.
->> Init fails if the possible cpu is gaurded. Resulting in making only
->> non-deep states available for cpuidle/hotplug.
->
-> This is basically the opposite of what we just did for IMC.
->
-> There we switched from present to possible, to make it work when some
-> CPUs are guarded.
->
-> Which makes me think we need a better way of dealing with guarded CPUs,
-> because working out which code should use present or possible seems to
-> be basically trial-and-error.
->
-> I'm not actually sure why Guarded CPUs are showing up as possible but
-> not present, did we do that on purpose or is it just happening by
-> accident?
+From: Simon Guo <wei.guo.simon@gmail.com>
 
-My guess is that it flows through from firmware putting the guarded out
-CPUs in the device tree with a not "okay" status (which, I just
-realised, we're putting something in 'status' that isn't what the
-current DeviceTree spec says we should... gah -
-https://github.com/open-power/skiboot/issues/178 filed for that one).
+Originally PPC KVM MMIO emulation uses only 0~31#(5 bits) for VSR
+reg number, and use mmio_vsx_tx_sx_enabled field together for
+0~63# VSR regs.
 
-The idea behind that is that you can answer "where did all my CPUs go?"
-by looking at the device tree rather than having to know the platform
-specific way of how guards are stored.
+Currently PPC KVM MMIO emulation is reimplemented with analyse_instr()
+assistence. analyse_instr() returns 0~63 for VSR register number, so
+it is not necessary to use additional mmio_vsx_tx_sx_enabled field
+any more.
 
+This patch extends related reg bits(expand io_gpr to u16 from u8
+and use 6 bits for VSR reg#), so that mmio_vsx_tx_sx_enabled can
+be removed.
+
+v1 -> v2 change:
+rework the commit message to remove "PR KVM" specific word.
+
+Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+---
+ arch/powerpc/include/asm/kvm_host.h  | 17 ++++++++---------
+ arch/powerpc/kvm/emulate_loadstore.c |  7 +++----
+ arch/powerpc/kvm/powerpc.c           | 30 +++++++++++++++---------------
+ 3 files changed, 26 insertions(+), 28 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 8dc5e43..bd220a3 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -673,7 +673,7 @@ struct kvm_vcpu_arch {
+ 	gva_t vaddr_accessed;
+ 	pgd_t *pgdir;
+ 
+-	u8 io_gpr; /* GPR used as IO source/target */
++	u16 io_gpr; /* GPR used as IO source/target */
+ 	u8 mmio_host_swabbed;
+ 	u8 mmio_sign_extend;
+ 	/* conversion between single and double precision */
+@@ -689,7 +689,6 @@ struct kvm_vcpu_arch {
+ 	 */
+ 	u8 mmio_vsx_copy_nums;
+ 	u8 mmio_vsx_offset;
+-	u8 mmio_vsx_tx_sx_enabled;
+ 	u8 mmio_vmx_copy_nums;
+ 	u8 mmio_vmx_offset;
+ 	u8 mmio_copy_type;
+@@ -802,14 +801,14 @@ struct kvm_vcpu_arch {
+ #define KVMPPC_VCPU_BUSY_IN_HOST	2
+ 
+ /* Values for vcpu->arch.io_gpr */
+-#define KVM_MMIO_REG_MASK	0x001f
+-#define KVM_MMIO_REG_EXT_MASK	0xffe0
++#define KVM_MMIO_REG_MASK	0x003f
++#define KVM_MMIO_REG_EXT_MASK	0xffc0
+ #define KVM_MMIO_REG_GPR	0x0000
+-#define KVM_MMIO_REG_FPR	0x0020
+-#define KVM_MMIO_REG_QPR	0x0040
+-#define KVM_MMIO_REG_FQPR	0x0060
+-#define KVM_MMIO_REG_VSX	0x0080
+-#define KVM_MMIO_REG_VMX	0x00c0
++#define KVM_MMIO_REG_FPR	0x0040
++#define KVM_MMIO_REG_QPR	0x0080
++#define KVM_MMIO_REG_FQPR	0x00c0
++#define KVM_MMIO_REG_VSX	0x0100
++#define KVM_MMIO_REG_VMX	0x0180
+ 
+ #define __KVM_HAVE_ARCH_WQP
+ #define __KVM_HAVE_CREATE_DEVICE
+diff --git a/arch/powerpc/kvm/emulate_loadstore.c b/arch/powerpc/kvm/emulate_loadstore.c
+index dca7f1c..64b325b 100644
+--- a/arch/powerpc/kvm/emulate_loadstore.c
++++ b/arch/powerpc/kvm/emulate_loadstore.c
+@@ -106,7 +106,6 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 	 * if mmio_vsx_tx_sx_enabled == 1, copy data between
+ 	 * VSR[32..63] and memory
+ 	 */
+-	vcpu->arch.mmio_vsx_tx_sx_enabled = get_tx_or_sx(inst);
+ 	vcpu->arch.mmio_vsx_copy_nums = 0;
+ 	vcpu->arch.mmio_vsx_offset = 0;
+ 	vcpu->arch.mmio_copy_type = KVMPPC_VSX_COPY_NONE;
+@@ -242,8 +241,8 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 			}
+ 
+ 			emulated = kvmppc_handle_vsx_load(run, vcpu,
+-					KVM_MMIO_REG_VSX | (op.reg & 0x1f),
+-					io_size_each, 1, op.type & SIGNEXT);
++					KVM_MMIO_REG_VSX|op.reg, io_size_each,
++					1, op.type & SIGNEXT);
+ 			break;
+ 		}
+ #endif
+@@ -363,7 +362,7 @@ int kvmppc_emulate_loadstore(struct kvm_vcpu *vcpu)
+ 			}
+ 
+ 			emulated = kvmppc_handle_vsx_store(run, vcpu,
+-					op.reg & 0x1f, io_size_each, 1);
++					op.reg, io_size_each, 1);
+ 			break;
+ 		}
+ #endif
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 05eccdc..dcc7982 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -881,10 +881,10 @@ static inline void kvmppc_set_vsr_dword(struct kvm_vcpu *vcpu,
+ 	if (offset == -1)
+ 		return;
+ 
+-	if (vcpu->arch.mmio_vsx_tx_sx_enabled) {
+-		val.vval = VCPU_VSX_VR(vcpu, index);
++	if (index >= 32) {
++		val.vval = VCPU_VSX_VR(vcpu, index - 32);
+ 		val.vsxval[offset] = gpr;
+-		VCPU_VSX_VR(vcpu, index) = val.vval;
++		VCPU_VSX_VR(vcpu, index - 32) = val.vval;
+ 	} else {
+ 		VCPU_VSX_FPR(vcpu, index, offset) = gpr;
+ 	}
+@@ -896,11 +896,11 @@ static inline void kvmppc_set_vsr_dword_dump(struct kvm_vcpu *vcpu,
+ 	union kvmppc_one_reg val;
+ 	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
+ 
+-	if (vcpu->arch.mmio_vsx_tx_sx_enabled) {
+-		val.vval = VCPU_VSX_VR(vcpu, index);
++	if (index >= 32) {
++		val.vval = VCPU_VSX_VR(vcpu, index - 32);
+ 		val.vsxval[0] = gpr;
+ 		val.vsxval[1] = gpr;
+-		VCPU_VSX_VR(vcpu, index) = val.vval;
++		VCPU_VSX_VR(vcpu, index - 32) = val.vval;
+ 	} else {
+ 		VCPU_VSX_FPR(vcpu, index, 0) = gpr;
+ 		VCPU_VSX_FPR(vcpu, index, 1) = gpr;
+@@ -913,12 +913,12 @@ static inline void kvmppc_set_vsr_word_dump(struct kvm_vcpu *vcpu,
+ 	union kvmppc_one_reg val;
+ 	int index = vcpu->arch.io_gpr & KVM_MMIO_REG_MASK;
+ 
+-	if (vcpu->arch.mmio_vsx_tx_sx_enabled) {
++	if (index >= 32) {
+ 		val.vsx32val[0] = gpr;
+ 		val.vsx32val[1] = gpr;
+ 		val.vsx32val[2] = gpr;
+ 		val.vsx32val[3] = gpr;
+-		VCPU_VSX_VR(vcpu, index) = val.vval;
++		VCPU_VSX_VR(vcpu, index - 32) = val.vval;
+ 	} else {
+ 		val.vsx32val[0] = gpr;
+ 		val.vsx32val[1] = gpr;
+@@ -938,10 +938,10 @@ static inline void kvmppc_set_vsr_word(struct kvm_vcpu *vcpu,
+ 	if (offset == -1)
+ 		return;
+ 
+-	if (vcpu->arch.mmio_vsx_tx_sx_enabled) {
+-		val.vval = VCPU_VSX_VR(vcpu, index);
++	if (index >= 32) {
++		val.vval = VCPU_VSX_VR(vcpu, index - 32);
+ 		val.vsx32val[offset] = gpr32;
+-		VCPU_VSX_VR(vcpu, index) = val.vval;
++		VCPU_VSX_VR(vcpu, index - 32) = val.vval;
+ 	} else {
+ 		dword_offset = offset / 2;
+ 		word_offset = offset % 2;
+@@ -1362,10 +1362,10 @@ static inline int kvmppc_get_vsr_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
+ 			break;
+ 		}
+ 
+-		if (!vcpu->arch.mmio_vsx_tx_sx_enabled) {
++		if (rs < 32) {
+ 			*val = VCPU_VSX_FPR(vcpu, rs, vsx_offset);
+ 		} else {
+-			reg.vval = VCPU_VSX_VR(vcpu, rs);
++			reg.vval = VCPU_VSX_VR(vcpu, rs - 32);
+ 			*val = reg.vsxval[vsx_offset];
+ 		}
+ 		break;
+@@ -1379,13 +1379,13 @@ static inline int kvmppc_get_vsr_data(struct kvm_vcpu *vcpu, int rs, u64 *val)
+ 			break;
+ 		}
+ 
+-		if (!vcpu->arch.mmio_vsx_tx_sx_enabled) {
++		if (rs < 32) {
+ 			dword_offset = vsx_offset / 2;
+ 			word_offset = vsx_offset % 2;
+ 			reg.vsxval[0] = VCPU_VSX_FPR(vcpu, rs, dword_offset);
+ 			*val = reg.vsx32val[word_offset];
+ 		} else {
+-			reg.vval = VCPU_VSX_VR(vcpu, rs);
++			reg.vval = VCPU_VSX_VR(vcpu, rs - 32);
+ 			*val = reg.vsx32val[vsx_offset];
+ 		}
+ 		break;
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+1.8.3.1
