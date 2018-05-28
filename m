@@ -1,16 +1,28 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vtFN4MDTzDr3M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 09:23:04 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	mikey@neuling.org
-Subject: [PATCH v2] selftests/powerpc: Add perf breakpoint test
-Date: Tue, 29 May 2018 09:22:38 +1000
-Message-Id: <20180528232238.22495-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vtqh51LwzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 09:49:20 +1000 (AEST)
+Message-ID: <6fff9f5d67361653e6072570a857cf0d1009a123.camel@kernel.crashing.org>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
+Date: Tue, 29 May 2018 09:48:17 +1000
+In-Reply-To: <20180525202300-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+ <20180525202300-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,243 +32,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This tests perf hardware breakpoints (ie PERF_TYPE_BREAKPOINT) on
-powerpc.
+On Fri, 2018-05-25 at 20:45 +0300, Michael S. Tsirkin wrote:
+> On Thu, May 24, 2018 at 08:27:04AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2018-05-23 at 21:50 +0300, Michael S. Tsirkin wrote:
+> > 
+> > > I re-read that discussion and I'm still unclear on the
+> > > original question, since I got several apparently
+> > > conflicting answers.
+> > > 
+> > > I asked:
+> > > 
+> > > 	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
+> > > 	hypervisor side sufficient?
+> > 
+> > I thought I had replied to this...
+> > 
+> > There are a couple of reasons:
+> > 
+> > - First qemu doesn't know that the guest will switch to "secure mode"
+> > in advance. There is no difference between a normal and a secure
+> > partition until the partition does the magic UV call to "enter secure
+> > mode" and qemu doesn't see any of it. So who can set the flag here ?
+> 
+> Not sure I understand. Just set the flag e.g. on qemu command line.
+> I might be wrong, but these secure mode things usually
+> a. require hypervisor side tricks anyway
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-v2:
-  - fix failure noticed by mpe
-  - rewrite to explicitly test all options (rather than randomly)
----
- .../selftests/powerpc/ptrace/.gitignore       |   1 +
- .../testing/selftests/powerpc/ptrace/Makefile |   2 +-
- .../selftests/powerpc/ptrace/perf-hwbreak.c   | 195 ++++++++++++++++++
- 3 files changed, 197 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
+The way our secure mode architecture is designed, there doesn't need at
+this point to be any knowledge at qemu level whatsoever. Well at least
+until we do migration but that's a different kettle of fish. In any
+case, the guest starts normally (which means as a non-secure guest, and
+thus expects normal virtio, our FW today doesn't handle
+VIRTIO_F_IOMMU_PLATFORM, though granted, we can fix this), and later
+that guest issues some special Ultravisor call that turns it into a
+secure guest.
 
-diff --git a/tools/testing/selftests/powerpc/ptrace/.gitignore b/tools/testing/selftests/powerpc/ptrace/.gitignore
-index 9dcc16ea81..07ec449a27 100644
---- a/tools/testing/selftests/powerpc/ptrace/.gitignore
-+++ b/tools/testing/selftests/powerpc/ptrace/.gitignore
-@@ -9,3 +9,4 @@ ptrace-tm-vsx
- ptrace-tm-spd-vsx
- ptrace-tm-spr
- ptrace-hwbreak
-+perf-hwbreak
-diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index 0e2f4601d1..aaf7044771 100644
---- a/tools/testing/selftests/powerpc/ptrace/Makefile
-+++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- TEST_PROGS := ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
-               ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
--              ptrace-tm-spd-vsx ptrace-tm-spr ptrace-hwbreak
-+              ptrace-tm-spd-vsx ptrace-tm-spr ptrace-hwbreak perf-hwbreak
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
-new file mode 100644
-index 0000000000..60df0b5e62
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/perf-hwbreak.c
-@@ -0,0 +1,195 @@
-+/*
-+ * perf events self profiling example test case for hw breakpoints.
-+ *
-+ * This tests perf PERF_TYPE_BREAKPOINT parameters
-+ * 1) tests all variants of the break on read/write flags
-+ * 2) tests exclude_user == 0 and 1
-+ * 3) test array matches (if DAWR is supported))
-+ * 4) test different numbers of breakpoints matches
-+ *
-+ * Configure this breakpoint, then read and write the data a number of
-+ * times. Then check the output count from perf is as expected.
-+ *
-+ * Based on:
-+ *   http://ozlabs.org/~anton/junkcode/perf_events_example1.c
-+ *
-+ * Copyright (C) 2018 Michael Neuling, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <unistd.h>
-+#include <assert.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/ioctl.h>
-+#include <elf.h>
-+#include <pthread.h>
-+#include <sys/syscall.h>
-+#include <linux/perf_event.h>
-+#include <linux/hw_breakpoint.h>
-+#include "utils.h"
-+
-+#define MAX_LOOPS 10000
-+
-+#define DAWR_LENGTH_MAX ((0x3f + 1) * 8)
-+
-+static inline int sys_perf_event_open(struct perf_event_attr *attr, pid_t pid,
-+				      int cpu, int group_fd,
-+				      unsigned long flags)
-+{
-+	attr->size = sizeof(*attr);
-+	return syscall(__NR_perf_event_open, attr, pid, cpu, group_fd, flags);
-+}
-+
-+static inline bool breakpoint_test(int len)
-+{
-+	struct perf_event_attr attr;
-+	int fd;
-+
-+	/* setup counters */
-+	memset(&attr, 0, sizeof(attr));
-+	attr.disabled = 1;
-+	attr.type = PERF_TYPE_BREAKPOINT;
-+	attr.bp_type = HW_BREAKPOINT_R;
-+	/* bp_addr can point anywhere but needs to be aligned */
-+	attr.bp_addr = (__u64)(&attr) & 0xfffffffffffff800;
-+	attr.bp_len = len;
-+	fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
-+	if (fd < 0)
-+		return false;
-+	close(fd);
-+	return true;
-+}
-+
-+static inline bool perf_breakpoint_supported(void)
-+{
-+	return breakpoint_test(4);
-+}
-+
-+static inline bool dawr_supported(void)
-+{
-+	return breakpoint_test(DAWR_LENGTH_MAX);
-+}
-+
-+static int runtestsingle(int readwriteflag, int exclude_user, int arraytest)
-+{
-+	int i,j;
-+	struct perf_event_attr attr;
-+	size_t res;
-+	unsigned long long breaks, needed;
-+	int readint;
-+	int readintarraybig[2*DAWR_LENGTH_MAX/sizeof(int)];
-+	int *readintalign;
-+	volatile int *ptr;
-+	int break_fd;
-+	int loop_num = MAX_LOOPS - (rand() % 100); /* provide some variability */
-+	volatile int *k;
-+
-+	/* align to 0x400 boundary as required by DAWR */
-+	readintalign = (int *)(((unsigned long)readintarraybig + 0x7ff) &
-+			       0xfffffffffffff800);
-+
-+	ptr = &readint;
-+	if (arraytest)
-+		ptr = &readintalign[0];
-+
-+	/* setup counters */
-+	memset(&attr, 0, sizeof(attr));
-+	attr.disabled = 1;
-+	attr.type = PERF_TYPE_BREAKPOINT;
-+	attr.bp_type = readwriteflag;
-+	attr.bp_addr = (__u64)ptr;
-+	attr.bp_len = sizeof(int);
-+	if (arraytest)
-+		attr.bp_len = DAWR_LENGTH_MAX;
-+	attr.exclude_user = exclude_user;
-+	break_fd = sys_perf_event_open(&attr, 0, -1, -1, 0);
-+	if (break_fd < 0) {
-+		perror("sys_perf_event_open");
-+		exit(1);
-+	}
-+
-+	/* start counters */
-+	ioctl(break_fd, PERF_EVENT_IOC_ENABLE);
-+
-+	/* Test a bunch of reads and writes */
-+	k = &readint;
-+	for (i = 0; i < loop_num; i++) {
-+		if (arraytest)
-+			k = &(readintalign[i % (DAWR_LENGTH_MAX/sizeof(int))]);
-+
-+		j = *k;
-+		*k = j;
-+	}
-+
-+	/* stop counters */
-+	ioctl(break_fd, PERF_EVENT_IOC_DISABLE);
-+
-+	/* read and check counters */
-+	res = read(break_fd, &breaks, sizeof(unsigned long long));
-+	assert(res == sizeof(unsigned long long));
-+	/* we read and write each loop, so subtract the ones we are counting */
-+	needed = 0;
-+	if (readwriteflag & HW_BREAKPOINT_R)
-+		needed += loop_num;
-+	if (readwriteflag & HW_BREAKPOINT_W)
-+		needed += loop_num;
-+	needed = needed * (1 - exclude_user);
-+	printf("TESTED: addr:0x%lx brks:% 8lld loops:% 8i rw:%i !user:%i array:%i\n",
-+	       (unsigned long int)ptr, breaks, loop_num, readwriteflag, exclude_user, arraytest);
-+	if (breaks != needed) {
-+		printf("FAILED: 0x%lx brks:%lld needed:%lli %i %i %i\n\n",
-+		       (unsigned long int)ptr, breaks, needed, loop_num, readwriteflag, exclude_user);
-+		return 1;
-+	}
-+	close(break_fd);
-+
-+	return 0;
-+}
-+
-+static int runtest(void)
-+{
-+	int rwflag;
-+	int exclude_user;
-+	int ret;
-+
-+	/*
-+	 * perf defines rwflag as two bits read and write and at least
-+	 * one must be set.  So range 1-3.
-+	 */
-+	for (rwflag = 1 ; rwflag < 4; rwflag++) {
-+		for (exclude_user = 0 ; exclude_user < 2; exclude_user++) {
-+			ret = runtestsingle(rwflag, exclude_user, 0);
-+			if (ret)
-+				return ret;
-+
-+			/* if we have the dawr, we can do an array test */
-+			if (!dawr_supported())
-+				continue;
-+			ret = runtestsingle(rwflag, exclude_user, 1);
-+			if (ret)
-+				return ret;
-+		}
-+	}
-+	return 0;
-+}
-+
-+
-+static int perf_hwbreak(void)
-+{
-+	srand ( time(NULL) );
-+
-+	SKIP_IF(!perf_breakpoint_supported());
-+
-+	return runtest();
-+}
-+
-+int main(int argc, char *argv[], char **envp)
-+{
-+	return test_harness(perf_hwbreak, "perf_hwbreak");
-+}
--- 
-2.17.0
+There is some involvement of the hypervisor, but not qemu at this
+stage. We would very much like to avoid that, as it would be a hassle
+for users to have to use different libvirt options etc... bcs the guest
+might turn itself into a secure VM.
+
+> > - Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
+> > vhost) go through the emulated MMIO for every access to the guest,
+> > which adds additional overhead.
+> > 
+> > Cheers,
+> > Ben.
+> 
+> Well it's not supposed to be much slower for the static case.
+> 
+> vhost has a cache so should be fine.
+> 
+> A while ago Paolo implemented a translation cache which should be
+> perfect for this case - most of the code got merged but
+> never enabled because of stability issues.
+> 
+> If all else fails, we could teach QEMU to handle the no-iommu case
+> as if VIRTIO_F_IOMMU_PLATFORM was off.
+
+Any serious reason why not just getting that 2 line patch allowing our
+arch code to force virtio to use the DMA API ?
+
+It's not particularly invasive and solves our problem rather nicely
+without adding overhead or additional knowledge to qemu/libvirt/mgmnt
+tools etc... that it doesn't need etc....
+
+The guest knows it's going secure so the guest arch code can do the
+right thing rather trivially.
+
+Long term we should probably make virtio always use the DMA API anyway,
+and interpose "1:1" dma_ops for the traditional virtio case, that would
+reduce code clutter significantly. In that case, it would become just a
+matter of having a platform hook to override the dma_ops used.
+
+Cheers,
+Ben.
+
+> 
+> 
+> > > 
+> > > 
+> > > >  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
+> > > >  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
+> > > >  drivers/virtio/virtio_ring.c           | 10 ++++++++++
+> > > >  3 files changed, 27 insertions(+)
+> > > > 
+> > > > diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> > > > index 8fa3945..056e578 100644
+> > > > --- a/arch/powerpc/include/asm/dma-mapping.h
+> > > > +++ b/arch/powerpc/include/asm/dma-mapping.h
+> > > > @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
+> > > >  #define ARCH_HAS_DMA_MMAP_COHERENT
+> > > >  
+> > > >  #endif /* __KERNEL__ */
+> > > > +
+> > > > +#define platform_forces_virtio_dma platform_forces_virtio_dma
+> > > > +
+> > > > +struct virtio_device;
+> > > > +
+> > > > +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
+> > > >  #endif	/* _ASM_DMA_MAPPING_H */
+> > > > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > > > index 06f0296..a2ec15a 100644
+> > > > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > > > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > > > @@ -38,6 +38,7 @@
+> > > >  #include <linux/of.h>
+> > > >  #include <linux/iommu.h>
+> > > >  #include <linux/rculist.h>
+> > > > +#include <linux/virtio.h>
+> > > >  #include <asm/io.h>
+> > > >  #include <asm/prom.h>
+> > > >  #include <asm/rtas.h>
+> > > > @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
+> > > >  __setup("multitce=", disable_multitce);
+> > > >  
+> > > >  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+> > > > +
+> > > > +bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > +{
+> > > > +	/*
+> > > > +	 * On protected guest platforms, force virtio core to use DMA
+> > > > +	 * MAP API for all virtio devices. But there can also be some
+> > > > +	 * exceptions for individual devices like virtio balloon.
+> > > > +	 */
+> > > > +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
+> > > > +}
+> > > 
+> > > Isn't this kind of slow?  vring_use_dma_api is on
+> > > data path and supposed to be very fast.
+> > > 
+> > > > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> > > > index 21d464a..47ea6c3 100644
+> > > > --- a/drivers/virtio/virtio_ring.c
+> > > > +++ b/drivers/virtio/virtio_ring.c
+> > > > @@ -141,8 +141,18 @@ struct vring_virtqueue {
+> > > >   * unconditionally on data path.
+> > > >   */
+> > > >  
+> > > > +#ifndef platform_forces_virtio_dma
+> > > > +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > +{
+> > > > +	return false;
+> > > > +}
+> > > > +#endif
+> > > > +
+> > > >  static bool vring_use_dma_api(struct virtio_device *vdev)
+> > > >  {
+> > > > +	if (platform_forces_virtio_dma(vdev))
+> > > > +		return true;
+> > > > +
+> > > >  	if (!virtio_has_iommu_quirk(vdev))
+> > > >  		return true;
+> > > >  
+> > > > -- 
+> > > > 2.9.3
