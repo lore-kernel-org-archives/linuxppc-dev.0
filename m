@@ -1,23 +1,22 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vW5754SfzF12M
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 18:59:39 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id az12-v6so6852652plb.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 01:59:39 -0700 (PDT)
-Date: Mon, 28 May 2018 18:59:26 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vWHp6S5kzF0mQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 19:08:54 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id u6-v6so6871875pls.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 02:08:54 -0700 (PDT)
+Date: Mon, 28 May 2018 19:08:43 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc/mm/radix: Change pte relax sequence to
- handle nest MMU hang
-Message-ID: <20180528185926.64e4288b@roar.ozlabs.ibm.com>
-In-Reply-To: <20180525154917.23163-2-aneesh.kumar@linux.ibm.com>
-References: <20180525154917.23163-1-aneesh.kumar@linux.ibm.com>
- <20180525154917.23163-2-aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hugetlb: Use the correct page size when
+ flushing hugepage tlb
+Message-ID: <20180528190843.3cef2676@roar.ozlabs.ibm.com>
+In-Reply-To: <20180522091209.9084-1-aneesh.kumar@linux.ibm.com>
+References: <20180522091209.9084-1-aneesh.kumar@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,24 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 25 May 2018 21:19:17 +0530
+On Tue, 22 May 2018 14:42:09 +0530
 "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
 
-> When relaxing access (read -> read_write update), pte need to be marked invalid
-> to handle a nest MMU bug. We also need to do a tlb flush after the pte is
-> marked invalid before updating the pte with new access bits.
+> We used wrong page size (mmu_virtual_psize) when doing a tlbflush after
+> pte update. This patch update the flush to use hugetlb page size.
+> The page size is derived from hugetlb hstate.
 > 
-> We also move tlb flush to platform specific __ptep_set_access_flags. This will
-> help us to gerid of unnecessary tlb flush on BOOK3S 64 later. We don't do that
-> in this patch. This also helps in avoiding multiple tlbies with coprocessor
-> attached.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Now that ptep_set_access_flags won't be called for hugetlb remove
+> the is_vm_hugetlb_page() check and add the assert of pte lock
+> unconditionally.
 
-I think these look good to me, but same comment: can you split the API
-change from the NMMU fix? The fix is just a couple of lines, and the
-rest of the API change should leave generated code almost unchanged, so
-it would be easier to review if these are split.
+radix__flush_tlb_page seems to check for a hugepage vma and flush the
+right page size in that case. So is there a case where the flush size
+actually goes wrong?
+
+I do think if we could make hugetlb flushing always use
+flush_hugetlb_page version and take the test out of flush_tlb_page I
+think that would be nicer code (I haven't checked if that's feasible
+after this patch), but that wouldn't be a bug-fix.
 
 Thanks,
 Nick
