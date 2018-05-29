@@ -1,27 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wHfp1trlzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:28:02 +1000 (AEST)
-Subject: Re: [PATCH] powerpc/64s: Enhance the information in
- cpu_show_spectre_v1()
-To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180528131914.32231-1-msuchanek@suse.de>
- <1b720765-faf1-719e-ab76-b3eafa559896@c-s.fr>
- <20180529164640.02faedcd@kitsune.suse.cz>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
-Date: Tue, 29 May 2018 15:24:42 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wHjB2KkDzDrCl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:30:05 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christophe LEROY' <christophe.leroy@c-s.fr>, Geert Uytterhoeven
+ <geert@linux-m68k.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Linux Kernel
+ Mailing List" <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Geoff Levand <geoff@infradead.org>
+Subject: RE: [PATCH v2] powerpc/64: Fix build failure with GCC 8.1
+Date: Tue, 29 May 2018 15:24:21 +0000
+Message-ID: <1bfdea64b0cc4be2970e296684c097dc@AcuMS.aculab.com>
+References: <f5f2de3e1a39613f7303bfdc0d2f2210d4c91910.1527573345.git.christophe.leroy@c-s.fr>
+ <CAMuHMdVSKigQPUQH=BVc2fRSRmuEThLaf+V9ghMPDT9_m1C6BA@mail.gmail.com>
+ <1fa5b220-4d21-b4cd-33bf-8a3ce3178063@c-s.fr>
+ <CAMuHMdXwO1_wrrTi40UmZC4o6KjvP0LF38m45n0ZNA2pDb_7Qg@mail.gmail.com>
+ <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
+In-Reply-To: <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20180529164640.02faedcd@kitsune.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,68 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 05/29/2018 02:46 PM, Michal Suchánek wrote:
-> On Tue, 29 May 2018 16:13:49 +0200
-> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
-> 
->> Le 28/05/2018 à 15:19, Michal Suchanek a écrit :
->>> We now have barrier_nospec as mitigation so print it in
->>> cpu_show_spectre_v1 when enabled.
->>>
->>> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
->>> ---
->>>    arch/powerpc/kernel/security.c | 5 ++++-
->>>    1 file changed, 4 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/kernel/security.c
->>> b/arch/powerpc/kernel/security.c index 0239383c7e4d..a0c32d53980b
->>> 100644 --- a/arch/powerpc/kernel/security.c
->>> +++ b/arch/powerpc/kernel/security.c
->>> @@ -120,7 +120,10 @@ ssize_t cpu_show_spectre_v1(struct device
->>> *dev, struct device_attribute *attr, c if
->>> (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) return
->>> sprintf(buf, "Not affected\n");
->>> -	return sprintf(buf, "Vulnerable\n");
->>> +	if (barrier_nospec_enabled)
->>
->>> +		return sprintf(buf, "Mitigation: __user pointer
->>> sanitization\n");
->>> +	else
->>> +		return sprintf(buf, "Vulnerable\n");
->>
->> Checkpatch would tell you that an else is unneeded after a return. So
->> just leave it as it was before.
-> 
-> Where did you get your copy of checkpatch? The one in Linux tree does
-> not do that.
-
-Strange, it should, as checkpatch.pl includes the following code:
-
-# check indentation of any line with a bare else
-# (but not if it is a multiple line "if (foo) return bar; else return baz;")
-# if the previous line is a break or return and is indented 1 tab more...
-		if ($sline =~ /^\+([\t]+)(?:}[ \t]*)?else(?:[ \t]*{)?\s*$/) {
-			my $tabs = length($1) + 1;
-			if ($prevline =~ /^\+\t{$tabs,$tabs}break\b/ ||
-			    ($prevline =~ /^\+\t{$tabs,$tabs}return\b/ &&
-			     defined $lines[$linenr] &&
-			     $lines[$linenr] !~ /^[ \+]\t{$tabs,$tabs}return/)) {
-				WARN("UNNECESSARY_ELSE",
-				     "else is not generally useful after a break or return\n" . 
-$hereprev);
-			}
-		}
-
-
-Anyway, you should remove that 'else' in your patch.
-And the other sprintf line is over 80 characters.
-
-Christophe
-
-> 
-> Thanks
-> 
-> Michal
-> 
+RnJvbTogQ2hyaXN0b3BoZSBMRVJPWQ0KPiBTZW50OiAyOSBNYXkgMjAxOCAxMDozNw0KLi4uDQo+
+ID4+Pj4gLSAgICAgICBzdHJuY3B5KG5ld19wYXJ0LT5oZWFkZXIubmFtZSwgbmFtZSwgMTIpOw0K
+PiA+Pj4+ICsgICAgICAgbWVtY3B5KG5ld19wYXJ0LT5oZWFkZXIubmFtZSwgbmFtZSwgc3Rybmxl
+bihuYW1lLA0KPiA+Pj4+IHNpemVvZihuZXdfcGFydC0+aGVhZGVyLm5hbWUpKSk7DQo+ID4+Pg0K
+PiA+Pj4NCj4gPj4+IFRoZSBjb21tZW50IGZvciBudnJhbV9oZWFkZXIubGdudGggc2F5czoNCj4g
+Pj4+DQo+ID4+PiAgICAgICAgICAgLyogVGVybWluYXRpbmcgbnVsbCByZXF1aXJlZCBvbmx5IGZv
+ciBuYW1lcyA8IDEyIGNoYXJzLiAqLw0KPiA+Pj4NCj4gPj4+IFRoaXMgd2lsbCBub3QgdGVybWlu
+YXRlIHRoZSBzdHJpbmcgd2l0aCBhIHplcm8gKHRoZSBzdHJ1Y3QgaXMNCj4gPj4+IGFsbG9jYXRl
+ZCB3aXRoIGttYWxsb2MpLg0KPiA+Pj4gU28gdGhlIG9yaWdpbmFsIGNvZGUgaXMgY29ycmVjdCwg
+dGhlIG5ldyBvbmUgaXNuJ3QuDQo+ID4+DQo+ID4+IFJpZ2h0LCB0aGVuIEkgaGF2ZSB0byBmaXJz
+dCB6ZXJvaXplIHRoZSBkZXN0aW5hdGlvbi4NCj4gPg0KPiA+IFVzaW5nIGt6YWxsb2MoKSBpbnN0
+ZWFkIG9mIGttYWxsb2MoKSB3aWxsIGRvLg0KPiA+DQo+ID4gU3RpbGwsIHBhcGVyaW5nIGFyb3Vu
+ZCB0aGVzZSB3YXJuaW5ncyBzZWVtcyB0byBvYnNjdXJlIHRoaW5ncywgSU1ITy4NCj4gPiBBbmQg
+aXQgaW5jcmVhc2VzIGNvZGUgc2l6ZSwgYXMgeW91IGhhZCB0byBhZGQgYSBjYWxsIHRvIHN0cm5s
+ZW4oKS4NCj4gDQo+IFJpZ2h0IGJ1dCB0aGVuLCB3aGF0IGlzIHRoZSBiZXN0IHNvbHV0aW9uIHRv
+IGVsaW1hdGUgdGhhdCB3YXJuaW5nID8NCg0KVGltZSB0byBhZGQgdGhlIElfcmVhbGx5X21lYW5f
+c3RybmN5KCkgZnVuY3Rpb24uDQoNCglEYXZpZA0KDQo=
