@@ -1,26 +1,15 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40w7t56fHyzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 19:37:15 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/64: Fix build failure with GCC 8.1
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Geoff Levand <geoff@infradead.org>
-References: <f5f2de3e1a39613f7303bfdc0d2f2210d4c91910.1527573345.git.christophe.leroy@c-s.fr>
- <CAMuHMdVSKigQPUQH=BVc2fRSRmuEThLaf+V9ghMPDT9_m1C6BA@mail.gmail.com>
- <1fa5b220-4d21-b4cd-33bf-8a3ce3178063@c-s.fr>
- <CAMuHMdXwO1_wrrTi40UmZC4o6KjvP0LF38m45n0ZNA2pDb_7Qg@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
-Date: Tue, 29 May 2018 11:37:11 +0200
-MIME-Version: 1.0
-In-Reply-To: <CAMuHMdXwO1_wrrTi40UmZC4o6KjvP0LF38m45n0ZNA2pDb_7Qg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40w8kJ1TsTzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 20:15:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: malat@debian.org
+Subject: [PATCH] powerpc/prom: Fix %llx usage since prom_printf() change
+Date: Tue, 29 May 2018 20:15:29 +1000
+Message-Id: <20180529101529.2583-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,111 +19,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+We recently added the __printf attribute to prom_printf(), which means
+GCC started warning about type/format mismatches. As part of that
+commit we changed some "%lx" formats to "%llx" where the type is
+actually unsigned long long.
 
+Unfortunately prom_printf() doesn't know how to print "%llx", it just
+prints a literal "lx", eg:
 
-Le 29/05/2018 à 11:05, Geert Uytterhoeven a écrit :
-> Hi Christophe,
-> 
-> On Tue, May 29, 2018 at 10:56 AM, Christophe LEROY
-> <christophe.leroy@c-s.fr> wrote:
->> Le 29/05/2018 à 09:47, Geert Uytterhoeven a écrit :
->>> On Tue, May 29, 2018 at 8:03 AM, Christophe Leroy
->>> <christophe.leroy@c-s.fr> wrote:
->>>>
->>>>     CC      arch/powerpc/kernel/nvram_64.o
->>>> arch/powerpc/kernel/nvram_64.c: In function 'nvram_create_partition':
->>>> arch/powerpc/kernel/nvram_64.c:1042:2: error: 'strncpy' specified bound
->>>> 12 equals destination size [-Werror=stringop-truncation]
->>>>     strncpy(new_part->header.name, name, 12);
->>>>     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>
->>>>     CC      arch/powerpc/kernel/trace/ftrace.o
->>>> In function 'make_field',
->>>>       inlined from 'ps3_repository_read_boot_dat_address' at
->>>> arch/powerpc/platforms/ps3/repository.c:900:9:
->>>> arch/powerpc/platforms/ps3/repository.c:106:2: error: 'strncpy' output
->>>> truncated before terminating nul copying 8 bytes from a string of the same
->>>> length [-Werror=stringop-truncation]
->>>>     strncpy((char *)&n, text, 8);
->>>>     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>
->>>
->>> Thanks for your patch!
->>>
->>>> --- a/arch/powerpc/kernel/nvram_64.c
->>>> +++ b/arch/powerpc/kernel/nvram_64.c
->>>> @@ -1039,7 +1039,7 @@ loff_t __init nvram_create_partition(const char
->>>> *name, int sig,
->>>>           new_part->index = free_part->index;
->>>>           new_part->header.signature = sig;
->>>>           new_part->header.length = size;
->>>> -       strncpy(new_part->header.name, name, 12);
->>>> +       memcpy(new_part->header.name, name, strnlen(name,
->>>> sizeof(new_part->header.name)));
->>>
->>>
->>> The comment for nvram_header.lgnth says:
->>>
->>>           /* Terminating null required only for names < 12 chars. */
->>>
->>> This will not terminate the string with a zero (the struct is
->>> allocated with kmalloc).
->>> So the original code is correct, the new one isn't.
->>
->> Right, then I have to first zeroize the destination.
-> 
-> Using kzalloc() instead of kmalloc() will do.
-> 
-> Still, papering around these warnings seems to obscure things, IMHO.
-> And it increases code size, as you had to add a call to strnlen().
+  reserved memory map:
+    lx - lx
+    lx - lx
 
-Right but then, what is the best solution to elimate that warning ?
+We should fix that at some point, but for now just cast the relevant
+values to unsigned long to get things printing again. On 64-bit that
+has no effect on the output, because both types are 64-bit wide. On
+32-bit it means we're potentially not printing the high 32-bits of
+some values, but most of them are pointers anyway, and we've lived
+with that behaviour up until now.
 
-Would it be better to enclose those two lines in:
+Fixes: eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/prom_init.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-...
-#pragma GCC diagnostic pop
-
-
-Christophe
-
-> 
->>>>           new_part->header.checksum = nvram_checksum(&new_part->header);
->>>>
->>>>           rc = nvram_write_header(new_part);
->>>> diff --git a/arch/powerpc/platforms/ps3/repository.c
->>>> b/arch/powerpc/platforms/ps3/repository.c
->>>> index 50dbaf24b1ee..e49c887787c4 100644
->>>> --- a/arch/powerpc/platforms/ps3/repository.c
->>>> +++ b/arch/powerpc/platforms/ps3/repository.c
->>>> @@ -101,9 +101,9 @@ static u64 make_first_field(const char *text, u64
->>>> index)
->>>>
->>>>    static u64 make_field(const char *text, u64 index)
->>>>    {
->>>> -       u64 n;
->>>> +       u64 n = 0;
->>>>
->>>> -       strncpy((char *)&n, text, 8);
->>>> +       memcpy((char *)&n, text, strnlen(text, sizeof(n)));
->>>
->>>
->>> This changes behavior: strncpy() fills the remainder of the buffer with
->>> zeroes.  I don't remember the details of the PS3 repository structure,
->>> but given this writes to a fixed size u64 buffer, I'd expect the PS3
->>> hypervisor code to (1) rely on the zero padding, and (2) not need a zero
->>> terminator if there are 8 characters in the buffer, so probably the
->>> original code is correct, and the "fixed" code isn't.
->>
->> Here I have set n to 0 prior to the copy, so the buffer IS zero padded.
-> 
-> Sorry, I missed that part.
-> 
-> Gr{oetje,eeting}s,
-> 
->                          Geert
-> 
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 425992e393bc..662dd68c3fb8 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -1580,7 +1580,7 @@ static void __init prom_instantiate_opal(void)
+ 		return;
+ 	}
+ 
+-	prom_printf("instantiating opal at 0x%llx...", base);
++	prom_printf("instantiating opal at 0x%lx...", (unsigned long)base);
+ 
+ 	if (call_prom_ret("call-method", 4, 3, rets,
+ 			  ADDR("load-opal-runtime"),
+@@ -1596,10 +1596,10 @@ static void __init prom_instantiate_opal(void)
+ 
+ 	reserve_mem(base, size);
+ 
+-	prom_debug("opal base     = 0x%llx\n", base);
+-	prom_debug("opal align    = 0x%llx\n", align);
+-	prom_debug("opal entry    = 0x%llx\n", entry);
+-	prom_debug("opal size     = 0x%llx\n", size);
++	prom_debug("opal base     = 0x%lx\n", (unsigned long)base);
++	prom_debug("opal align    = 0x%lx\n", (unsigned long)align);
++	prom_debug("opal entry    = 0x%lx\n", (unsigned long)entry);
++	prom_debug("opal size     = 0x%lx\n", (unsigned long)size);
+ 
+ 	prom_setprop(opal_node, "/ibm,opal", "opal-base-address",
+ 		     &base, sizeof(base));
+@@ -1734,7 +1734,7 @@ static void __init prom_instantiate_sml(void)
+ 	if (base == 0)
+ 		prom_panic("Could not allocate memory for sml\n");
+ 
+-	prom_printf("instantiating sml at 0x%llx...", base);
++	prom_printf("instantiating sml at 0x%lx...", (unsigned long)base);
+ 
+ 	memset((void *)base, 0, size);
+ 
+@@ -1753,7 +1753,7 @@ static void __init prom_instantiate_sml(void)
+ 	prom_setprop(ibmvtpm_node, "/vdevice/vtpm", "linux,sml-size",
+ 		     &size, sizeof(size));
+ 
+-	prom_debug("sml base     = 0x%llx\n", base);
++	prom_debug("sml base     = 0x%lx\n", (unsigned long)base);
+ 	prom_debug("sml size     = 0x%x\n", size);
+ 
+ 	prom_debug("prom_instantiate_sml: end...\n");
+@@ -1847,7 +1847,7 @@ static void __init prom_initialize_tce_table(void)
+ 
+ 		prom_debug("TCE table: %s\n", path);
+ 		prom_debug("\tnode = 0x%x\n", node);
+-		prom_debug("\tbase = 0x%llx\n", base);
++		prom_debug("\tbase = 0x%lx\n", (unsigned long)base);
+ 		prom_debug("\tsize = 0x%x\n", minsize);
+ 
+ 		/* Initialize the table to have a one-to-one mapping
+@@ -2559,9 +2559,9 @@ static void __init flatten_device_tree(void)
+ 		int i;
+ 		prom_printf("reserved memory map:\n");
+ 		for (i = 0; i < mem_reserve_cnt; i++)
+-			prom_printf("  %llx - %llx\n",
+-				    be64_to_cpu(mem_reserve_map[i].base),
+-				    be64_to_cpu(mem_reserve_map[i].size));
++			prom_printf("  %lx - %lx\n",
++				    (unsigned long)be64_to_cpu(mem_reserve_map[i].base),
++				    (unsigned long)be64_to_cpu(mem_reserve_map[i].size));
+ 	}
+ #endif
+ 	/* Bump mem_reserve_cnt to cause further reservations to fail
+-- 
+2.14.1
