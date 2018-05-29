@@ -1,29 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vv0Z13qDzDr3M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 09:57:01 +1000 (AEST)
-Message-ID: <2f1d48cf029c1f0903f3cffea946ae5b85f60ec0.camel@kernel.crashing.org>
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
-Date: Tue, 29 May 2018 09:56:24 +1000
-In-Reply-To: <6fff9f5d67361653e6072570a857cf0d1009a123.camel@kernel.crashing.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
- <20180525202300-mutt-send-email-mst@kernel.org>
- <6fff9f5d67361653e6072570a857cf0d1009a123.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vwph3WFwzDr3M
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 11:18:36 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
+ Alastair D'Silva <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH-RESEND] cxl: Disable prefault_mode in Radix mode
+In-Reply-To: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
+References: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
+Date: Tue, 29 May 2018 11:18:32 +1000
+Message-ID: <871sdv5kev.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-29 at 09:48 +1000, Benjamin Herrenschmidt wrote:
-> > Well it's not supposed to be much slower for the static case.
-> > 
-> > vhost has a cache so should be fine.
-> > 
-> > A while ago Paolo implemented a translation cache which should be
-> > perfect for this case - most of the code got merged but
-> > never enabled because of stability issues.
-> > 
-> > If all else fails, we could teach QEMU to handle the no-iommu case
-> > as if VIRTIO_F_IOMMU_PLATFORM was off.
-> 
-> Any serious reason why not just getting that 2 line patch allowing our
-> arch code to force virtio to use the DMA API ?
-> 
-> It's not particularly invasive and solves our problem rather nicely
-> without adding overhead or additional knowledge to qemu/libvirt/mgmnt
-> tools etc... that it doesn't need etc....
-> 
-> The guest knows it's going secure so the guest arch code can do the
-> right thing rather trivially.
-> 
-> Long term we should probably make virtio always use the DMA API anyway,
-> and interpose "1:1" dma_ops for the traditional virtio case, that would
-> reduce code clutter significantly. In that case, it would become just a
-> matter of having a platform hook to override the dma_ops used.
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
 
-To elaborate a bit ....
+> From: Vaibhav Jain <vaibhav@linux.ibm.com>
+>
+> Currently we see a kernel-oops reported on Power-9 while attaching a
+> context to an AFU, with radix-mode and sysfs attr 'prefault_mode' set
+> to anything other than 'none'. The backtrace of the oops is of this
+> form:
+>
+> Unable to handle kernel paging request for data at address 0x00000080
+> Faulting instruction address: 0xc00800000bcf3b20
+> cpu 0x1: Vector: 300 (Data Access) at [c00000037f003800]
+>     pc: c00800000bcf3b20: cxl_load_segment+0x178/0x290 [cxl]
+>     lr: c00800000bcf39f0: cxl_load_segment+0x48/0x290 [cxl]
+>     sp: c00000037f003a80
+>    msr: 9000000000009033
+>    dar: 80
+>  dsisr: 40000000
+>   current = 0xc00000037f280000
+>   paca    = 0xc0000003ffffe600   softe: 3        irq_happened: 0x01
+>     pid   = 3529, comm = afp_no_int
+> <snip>
+> [c00000037f003af0] c00800000bcf4424 cxl_prefault+0xfc/0x248 [cxl]
+> [c00000037f003b50] c00800000bcf8a40 process_element_entry_psl9+0xd8/0x1a0 [cxl]
+> [c00000037f003b90] c00800000bcf944c cxl_attach_dedicated_process_psl9+0x44/0x130 [cxl]
+> [c00000037f003bd0] c00800000bcf5448 native_attach_process+0xc0/0x130 [cxl]
+> [c00000037f003c50] c00800000bcf16cc afu_ioctl+0x3f4/0x5e0 [cxl]
+> [c00000037f003d00] c00000000039d98c do_vfs_ioctl+0xdc/0x890
+> [c00000037f003da0] c00000000039e1a8 ksys_ioctl+0x68/0xf0
+> [c00000037f003df0] c00000000039e270 sys_ioctl+0x40/0xa0
+> [c00000037f003e30] c00000000000b320 system_call+0x58/0x6c
+> --- Exception: c01 (System Call) at 0000000010053bb0
+  ^^^
+This tells patch/git-am to drop the rest of the change log, which is not
+what we want.
 
-What we are trying to solve here is entirely a guest problem, I don't
-think involving qemu in the solution is the right thing to do.
+I tend to indent stack traces etc with two spaces, which avoids the
+problem. Or in this case we can just drop the line as it's not really
+that informative.
 
-The guest can only allow external parties (qemu, potentially PCI
-devices, etc...) access to some restricted portions of memory (insecure
-memory). Thus the guest need to do some bounce buffering/swiotlb type
-tricks.
+I've fixed it up.
 
-This is completely orthogonal to whether there is an actual iommu
-between the guest and the device (or emulated device/virtio).
-
-This is why I think the solution should reside in the guest kernel, by
-proper manipulation (by the arch code) of the dma ops.
-
-I don't think forcing the addition of an emulated iommu in the middle
-just to work around the fact that virtio "cheats" and doesn't use the
-dma API unless there is one, is the right "fix".
-
-The right long term fix is to always use the DMA API, reducing code
-path etc... and just have a single point where virtio can "chose"
-alternate DMA ops (via an arch hook to deal with our case).
-
-In the meantime, having the hook we propose gets us going, but if you
-agree with the approach, we should also work on the long term approach.
-
-Cheers,
-Ben.
+cheers
