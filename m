@@ -1,22 +1,27 @@
-Return-Path: <diana.craciun@nxp.com>
-Received: from EUR02-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr00083.outbound.protection.outlook.com [40.107.0.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wHX36b4nzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:22:11 +1000 (AEST)
-From: Diana Madalina Craciun <diana.craciun@nxp.com>
-To: Scott Wood <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-CC: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, Leo Li <leoyang.li@nxp.com>
-Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
- NXP PowerPC Book E
-Date: Tue, 29 May 2018 15:22:04 +0000
-Message-ID: <VI1PR0401MB246345AD11EC8666B7187F8DFF6D0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
-References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
- <1527020969.30674.13.camel@buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wHfp1trlzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:28:02 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/64s: Enhance the information in
+ cpu_show_spectre_v1()
+To: =?UTF-8?Q?Michal_Such=c3=a1nek?= <msuchanek@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20180424041559.32410-1-mpe@ellerman.id.au>
+ <20180528131914.32231-1-msuchanek@suse.de>
+ <1b720765-faf1-719e-ab76-b3eafa559896@c-s.fr>
+ <20180529164640.02faedcd@kitsune.suse.cz>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
+Date: Tue, 29 May 2018 15:24:42 +0000
 MIME-Version: 1.0
+In-Reply-To: <20180529164640.02faedcd@kitsune.suse.cz>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,159 +31,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,=0A=
-=0A=
-Thanks for the review.=0A=
-=0A=
-On 05/22/2018 11:31 PM, Scott Wood wrote:=0A=
-> On Tue, 2018-05-22 at 10:10 +0300, Diana Craciun wrote:=0A=
->> Implement the barrier_nospec as a isync;sync instruction sequence.=0A=
->> The implementation uses the infrastructure built for BOOK3S 64=0A=
->> with the difference that for NXP platforms there is no firmware involved=
-=0A=
->> and the need for a speculation barrier is read from the device tree.=0A=
->> I have used the same name for the property:=0A=
->> fsl,needs-spec-barrier-for-bounds-check=0A=
-> Using the device tree this way means that anyone without an updated devic=
-e=0A=
-> tree won't get the protection.  I also don't see any device tree updates =
---=0A=
-> which chips are affected?=0A=
-=0A=
-I was planning to have the device tree changes in a different patch-set.=0A=
-The affected cores are e500, e500mc, e5500, e6500.=0A=
-=0A=
->   Wouldn't it be more robust to just have the kernel=0A=
-> check the CPU type, especially given that it already does so for a lot of=
-=0A=
-> other purposes?=0A=
-=0A=
-Yes, I think that it might be a better solution not to use the device=0A=
-tree at all.=0A=
-=0A=
->=0A=
->> +#ifdef CONFIG_PPC_BOOK3S_64=0A=
->>  void setup_barrier_nospec(void)=0A=
->>  {=0A=
->>  	bool enable;=0A=
->> @@ -44,6 +46,12 @@ void setup_barrier_nospec(void)=0A=
->>  =0A=
->>  	enable_barrier_nospec(enable);=0A=
->>  }=0A=
->> +#elif CONFIG_PPC_FSL_BOOK3E=0A=
->> +void setup_barrier_nospec(void)=0A=
->> +{=0A=
->> +	enable_barrier_nospec(true);=0A=
->> +}=0A=
->> +#endif=0A=
-> The call site is in FSL_BOOK3E-specific code so why not call=0A=
-> enable_barrier_nospec() directly from there?=0A=
-=0A=
-OK=0A=
-=0A=
->   =0A=
->> +#ifdef CONFIG_PPC_BOOK3S_64=0A=
->>  ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute=
-=0A=
->> *attr, char *buf)=0A=
->>  {=0A=
->>  	bool thread_priv;=0A=
->> @@ -155,3 +164,4 @@ ssize_t cpu_show_spectre_v2(struct device *dev, stru=
-ct=0A=
->> device_attribute *attr, c=0A=
->>  =0A=
->>  	return s.len;=0A=
->>  }=0A=
->> +#endif=0A=
-> No equivalent of this for FSL?=0A=
-=0A=
-There will be an equivalent for this for FSL as well. I was planning to=0A=
-send a different patch for this.=0A=
-=0A=
->=0A=
->> +#ifdef CONFIG_PPC_FSL_BOOK3E=0A=
->> +void do_barrier_nospec_fixups_range(bool enable, void *fixup_start, voi=
-d=0A=
->> *fixup_end)=0A=
->> +{=0A=
->> +	unsigned int instr[2], *dest;=0A=
->> +	long *start, *end;=0A=
->> +	int i;=0A=
->> +=0A=
->> +	start =3D fixup_start;=0A=
->> +	end =3D fixup_end;=0A=
->> +=0A=
->> +	instr[0] =3D PPC_INST_NOP; /* nop */=0A=
->> +	instr[1] =3D PPC_INST_NOP; /* nop */=0A=
->> +=0A=
->> +	if (enable) {=0A=
->> +		pr_info("barrier_nospec: using isync; sync as a speculation=0A=
->> barrier\n");=0A=
->> +		instr[0] =3D PPC_INST_ISYNC;=0A=
->> +		instr[1] =3D PPC_INST_SYNC;=0A=
->> +	}=0A=
->> +=0A=
->> +	for (i =3D 0; start < end; start++, i++) {=0A=
->> +		dest =3D (void *)start + *start;=0A=
->> +		pr_devel("patching dest %lx\n", (unsigned long)dest);=0A=
->> +=0A=
->> +		patch_instruction(dest, instr[0]);=0A=
->> +		patch_instruction(dest + 1, instr[1]);=0A=
->> +=0A=
->> +	}=0A=
->> +=0A=
->> +	pr_debug("barrier-nospec: patched %d locations\n", i);=0A=
-> Why patch nops in if not enabled?  Aren't those locations already nops?  =
-For=0A=
-> that matter, how can this function even be called on FSL_BOOK3E with enab=
-le !=3D=0A=
-> true?=0A=
-=0A=
-There is some code in arch/powerpc/kernel/security.c which allows=0A=
-control of barrier_nospec via debugfs.=0A=
-=0A=
->=0A=
->> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
->> b/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
->> index ac191a7..11bce3d 100644=0A=
->> --- a/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
->> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c=0A=
->> @@ -59,6 +59,21 @@ void __init corenet_gen_pic_init(void)=0A=
->>  	}=0A=
->>  }=0A=
->>  =0A=
->> +static void setup_spec_barrier(void)=0A=
->> +{=0A=
->> +	struct device_node *np =3D of_find_node_by_name(NULL, "cpus");=0A=
->> +=0A=
->> +	if (np) {=0A=
->> +		struct property *prop;=0A=
->> +=0A=
->> +		prop =3D of_find_property(np,=0A=
->> +		       "fsl,needs-spec-barrier-for-bounds-check", NULL);=0A=
->> +		if (prop)=0A=
->> +			setup_barrier_nospec();=0A=
->> +		of_node_put(np);=0A=
->> +	}=0A=
->> +}=0A=
-> Why is this in board code?=0A=
-=0A=
-I will move it away from the board code.=0A=
-=0A=
->=0A=
-> Should there be a way for the user to choose not to enable this (editing =
-the=0A=
-> device tree doesn't count), for a use case that is not sufficiently secur=
-ity=0A=
-> sensitive to justify the performance loss?  What is the performance impac=
-t of=0A=
-> this patch?=0A=
-=0A=
-My reason was that on the other architectures Spectre variant 1=0A=
-mitigations are not disabled either. But I think that it might be a good=0A=
-idea to add a bootarg parameter to disable the barrier.=0A=
-=0A=
-Regards,=0A=
-=0A=
-Diana=0A=
-=0A=
+
+
+On 05/29/2018 02:46 PM, Michal Suchánek wrote:
+> On Tue, 29 May 2018 16:13:49 +0200
+> Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+> 
+>> Le 28/05/2018 à 15:19, Michal Suchanek a écrit :
+>>> We now have barrier_nospec as mitigation so print it in
+>>> cpu_show_spectre_v1 when enabled.
+>>>
+>>> Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+>>> ---
+>>>    arch/powerpc/kernel/security.c | 5 ++++-
+>>>    1 file changed, 4 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/security.c
+>>> b/arch/powerpc/kernel/security.c index 0239383c7e4d..a0c32d53980b
+>>> 100644 --- a/arch/powerpc/kernel/security.c
+>>> +++ b/arch/powerpc/kernel/security.c
+>>> @@ -120,7 +120,10 @@ ssize_t cpu_show_spectre_v1(struct device
+>>> *dev, struct device_attribute *attr, c if
+>>> (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) return
+>>> sprintf(buf, "Not affected\n");
+>>> -	return sprintf(buf, "Vulnerable\n");
+>>> +	if (barrier_nospec_enabled)
+>>
+>>> +		return sprintf(buf, "Mitigation: __user pointer
+>>> sanitization\n");
+>>> +	else
+>>> +		return sprintf(buf, "Vulnerable\n");
+>>
+>> Checkpatch would tell you that an else is unneeded after a return. So
+>> just leave it as it was before.
+> 
+> Where did you get your copy of checkpatch? The one in Linux tree does
+> not do that.
+
+Strange, it should, as checkpatch.pl includes the following code:
+
+# check indentation of any line with a bare else
+# (but not if it is a multiple line "if (foo) return bar; else return baz;")
+# if the previous line is a break or return and is indented 1 tab more...
+		if ($sline =~ /^\+([\t]+)(?:}[ \t]*)?else(?:[ \t]*{)?\s*$/) {
+			my $tabs = length($1) + 1;
+			if ($prevline =~ /^\+\t{$tabs,$tabs}break\b/ ||
+			    ($prevline =~ /^\+\t{$tabs,$tabs}return\b/ &&
+			     defined $lines[$linenr] &&
+			     $lines[$linenr] !~ /^[ \+]\t{$tabs,$tabs}return/)) {
+				WARN("UNNECESSARY_ELSE",
+				     "else is not generally useful after a break or return\n" . 
+$hereprev);
+			}
+		}
+
+
+Anyway, you should remove that 'else' in your patch.
+And the other sprintf line is over 80 characters.
+
+Christophe
+
+> 
+> Thanks
+> 
+> Michal
+> 
