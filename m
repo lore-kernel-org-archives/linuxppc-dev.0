@@ -2,22 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40vwph3WFwzDr3M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 11:18:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vx8S5K1LzDr41
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 11:34:00 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>
-Subject: Re: [PATCH-RESEND] cxl: Disable prefault_mode in Radix mode
-In-Reply-To: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
-References: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
-Date: Tue, 29 May 2018 11:18:32 +1000
-Message-ID: <871sdv5kev.fsf@concordia.ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hugetlb: Use the correct page size when
+ flushing hugepage tlb
+In-Reply-To: <20180522091209.9084-1-aneesh.kumar@linux.ibm.com>
+References: <20180522091209.9084-1-aneesh.kumar@linux.ibm.com>
+Date: Tue, 29 May 2018 11:33:56 +1000
+Message-ID: <87y3g3454r.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,46 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-> From: Vaibhav Jain <vaibhav@linux.ibm.com>
->
-> Currently we see a kernel-oops reported on Power-9 while attaching a
-> context to an AFU, with radix-mode and sysfs attr 'prefault_mode' set
-> to anything other than 'none'. The backtrace of the oops is of this
-> form:
->
-> Unable to handle kernel paging request for data at address 0x00000080
-> Faulting instruction address: 0xc00800000bcf3b20
-> cpu 0x1: Vector: 300 (Data Access) at [c00000037f003800]
->     pc: c00800000bcf3b20: cxl_load_segment+0x178/0x290 [cxl]
->     lr: c00800000bcf39f0: cxl_load_segment+0x48/0x290 [cxl]
->     sp: c00000037f003a80
->    msr: 9000000000009033
->    dar: 80
->  dsisr: 40000000
->   current = 0xc00000037f280000
->   paca    = 0xc0000003ffffe600   softe: 3        irq_happened: 0x01
->     pid   = 3529, comm = afp_no_int
-> <snip>
-> [c00000037f003af0] c00800000bcf4424 cxl_prefault+0xfc/0x248 [cxl]
-> [c00000037f003b50] c00800000bcf8a40 process_element_entry_psl9+0xd8/0x1a0 [cxl]
-> [c00000037f003b90] c00800000bcf944c cxl_attach_dedicated_process_psl9+0x44/0x130 [cxl]
-> [c00000037f003bd0] c00800000bcf5448 native_attach_process+0xc0/0x130 [cxl]
-> [c00000037f003c50] c00800000bcf16cc afu_ioctl+0x3f4/0x5e0 [cxl]
-> [c00000037f003d00] c00000000039d98c do_vfs_ioctl+0xdc/0x890
-> [c00000037f003da0] c00000000039e1a8 ksys_ioctl+0x68/0xf0
-> [c00000037f003df0] c00000000039e270 sys_ioctl+0x40/0xa0
-> [c00000037f003e30] c00000000000b320 system_call+0x58/0x6c
-> --- Exception: c01 (System Call) at 0000000010053bb0
-  ^^^
-This tells patch/git-am to drop the rest of the change log, which is not
-what we want.
+> We used wrong page size (mmu_virtual_psize) when doing a tlbflush after
+> pte update. This patch update the flush to use hugetlb page size.
+> The page size is derived from hugetlb hstate.
 
-I tend to indent stack traces etc with two spaces, which avoids the
-problem. Or in this case we can just drop the line as it's not really
-that informative.
+This sounds bad. Or is it not for some reason?
 
-I've fixed it up.
+Either way a Fixes tag would be nice. Maybe:
+
+  Fixes: b3603e174fc8 ("powerpc/mm: update radix__ptep_set_access_flag to not do full mm tlb flush")
+
+I think this is only a problem on Radix, but the change log doesn't say.
 
 cheers
+
+> Now that ptep_set_access_flags won't be called for hugetlb remove
+> the is_vm_hugetlb_page() check and add the assert of pte lock
+> unconditionally.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/hugetlb.h | 19 +++--------------
+>  arch/powerpc/mm/pgtable.c          | 33 ++++++++++++++++++++++++++++--
+>  2 files changed, 34 insertions(+), 18 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+> index 78540c074d70..b4404a6da74f 100644
+> --- a/arch/powerpc/include/asm/hugetlb.h
+> +++ b/arch/powerpc/include/asm/hugetlb.h
+> @@ -166,22 +166,9 @@ static inline pte_t huge_pte_wrprotect(pte_t pte)
+>  	return pte_wrprotect(pte);
+>  }
+>  
+> -static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+> -					     unsigned long addr, pte_t *ptep,
+> -					     pte_t pte, int dirty)
+> -{
+> -#ifdef HUGETLB_NEED_PRELOAD
+> -	/*
+> -	 * The "return 1" forces a call of update_mmu_cache, which will write a
+> -	 * TLB entry.  Without this, platforms that don't do a write of the TLB
+> -	 * entry in the TLB miss handler asm will fault ad infinitum.
+> -	 */
+> -	ptep_set_access_flags(vma, addr, ptep, pte, dirty);
+> -	return 1;
+> -#else
+> -	return ptep_set_access_flags(vma, addr, ptep, pte, dirty);
+> -#endif
+> -}
+> +extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+> +				      unsigned long addr, pte_t *ptep,
+> +				      pte_t pte, int dirty);
+>  
+>  static inline pte_t huge_ptep_get(pte_t *ptep)
+>  {
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 9f361ae571e9..e70af9939379 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -221,14 +221,43 @@ int ptep_set_access_flags(struct vm_area_struct *vma, unsigned long address,
+>  	entry = set_access_flags_filter(entry, vma, dirty);
+>  	changed = !pte_same(*(ptep), entry);
+>  	if (changed) {
+> -		if (!is_vm_hugetlb_page(vma))
+> -			assert_pte_locked(vma->vm_mm, address);
+> +		assert_pte_locked(vma->vm_mm, address);
+>  		__ptep_set_access_flags(vma->vm_mm, ptep, entry, address);
+>  		flush_tlb_page(vma, address);
+>  	}
+>  	return changed;
+>  }
+>  
+> +#ifdef CONFIG_HUGETLB_PAGE
+> +extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+> +				      unsigned long addr, pte_t *ptep,
+> +				      pte_t pte, int dirty)
+> +{
+> +#ifdef HUGETLB_NEED_PRELOAD
+> +	/*
+> +	 * The "return 1" forces a call of update_mmu_cache, which will write a
+> +	 * TLB entry.  Without this, platforms that don't do a write of the TLB
+> +	 * entry in the TLB miss handler asm will fault ad infinitum.
+> +	 */
+> +	ptep_set_access_flags(vma, addr, ptep, pte, dirty);
+> +	return 1;
+> +#else
+> +	int changed;
+> +
+> +	pte = set_access_flags_filter(pte, vma, dirty);
+> +	changed = !pte_same(*(ptep), pte);
+> +	if (changed) {
+> +#ifdef CONFIG_DEBUG_VM
+> +		assert_spin_locked(&vma->vm_mm->page_table_lock);
+> +#endif
+> +		__ptep_set_access_flags(vma->vm_mm, ptep, pte, addr);
+> +		flush_hugetlb_page(vma, addr);
+> +	}
+> +	return changed;
+> +#endif
+> +}
+> +#endif /* CONFIG_HUGETLB_PAGE */
+> +
+>  #ifdef CONFIG_DEBUG_VM
+>  void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
+>  {
+> -- 
+> 2.17.0
