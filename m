@@ -1,20 +1,21 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
- [IPv6:2607:f8b0:4003:c0f::244])
+Received: from mail-oi0-x241.google.com (mail-oi0-x241.google.com
+ [IPv6:2607:f8b0:4003:c06::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wC440qnbzDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:01:07 +1000 (AEST)
-Received: by mail-ot0-x244.google.com with SMTP id i5-v6so16627862otf.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 05:01:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wCMt5JBdzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:14:50 +1000 (AEST)
+Received: by mail-oi0-x241.google.com with SMTP id b130-v6so12779977oif.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 05:14:50 -0700 (PDT)
 MIME-Version: 1.0
 Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
+In-Reply-To: <CA+7wUswm60dZAfnTYJ-2p3o1H1ubwn1_OH7GSu9Y_PRKKCHJog@mail.gmail.com>
 References: <20180529210257.26da8de7@canb.auug.org.au>
  <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
+ <CA+7wUswm60dZAfnTYJ-2p3o1H1ubwn1_OH7GSu9Y_PRKKCHJog@mail.gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 29 May 2018 14:00:45 +0200
-Message-ID: <CA+7wUswm60dZAfnTYJ-2p3o1H1ubwn1_OH7GSu9Y_PRKKCHJog@mail.gmail.com>
+Date: Tue, 29 May 2018 14:14:27 +0200
+Message-ID: <CA+7wUsy8=hbyN4NQ3x-Sp-YT1uPFRcYLNpJncuoMMy==Qd7PeQ@mail.gmail.com>
 Subject: Re: linux-next: boot messages from today's linux-next
 To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
@@ -32,26 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 29, 2018 at 1:56 PM, Mathieu Malaterre <malat@debian.org> wrote:
-> On Tue, May 29, 2018 at 1:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->> Hi all,
->>
->> My qemu boots of today's powerpc linux-next kernel produced the following
->> boot message differences:
->>
->> -Max number of cores passed to firmware: 2048 (NR_CPUS = 2048)
->> +Max number of cores passed to firmware: u (NR_CPUS = 2048)
->>
->> Seemingly caused by commit
->>
->>   eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf")
->
-> My bad. Patch is pending (thanks Michael!):
->
-> https://patchwork.ozlabs.org/patch/921948/
+Michael,
 
-Nope, nevermind this is unrelated.
 
->> --
->> Cheers,
->> Stephen Rothwell
+On Tue, May 29, 2018 at 2:00 PM, Mathieu Malaterre <malat@debian.org> wrote:
+> On Tue, May 29, 2018 at 1:56 PM, Mathieu Malaterre <malat@debian.org> wrote:
+>> On Tue, May 29, 2018 at 1:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>> Hi all,
+>>>
+>>> My qemu boots of today's powerpc linux-next kernel produced the following
+>>> boot message differences:
+>>>
+>>> -Max number of cores passed to firmware: 2048 (NR_CPUS = 2048)
+>>> +Max number of cores passed to firmware: u (NR_CPUS = 2048)
+>>>
+>>> Seemingly caused by commit
+>>>
+>>>   eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf")
+>>
+>> My bad. Patch is pending (thanks Michael!):
+>>
+>> https://patchwork.ozlabs.org/patch/921948/
+>
+> Nope, nevermind this is unrelated.
+
+Could you update your patch "powerpc/prom: Fix %llx usage since
+prom_printf() change" to also do "powerpc/prom: Fix %u usage since
+prom_printf() change"
+
+I did not pay attention that "%u" was also not supported in prom_printf.
+
+I may be able to provide a patch tonight, if this is not acceptable,
+please revert my faulty patch. Sorry for the mess.
+
+
+>>> --
+>>> Cheers,
+>>> Stephen Rothwell
