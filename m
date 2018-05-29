@@ -1,16 +1,31 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40w37y0NsMzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 16:03:57 +1000 (AEST)
-Message-Id: <f5f2de3e1a39613f7303bfdc0d2f2210d4c91910.1527573345.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/64: Fix build failure with GCC 8.1
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 29 May 2018 06:03:53 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40w4Bc2XT8zDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 16:51:19 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4T6nD6P072431
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 02:51:17 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j91gts0xd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 02:51:17 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 29 May 2018 07:51:14 +0100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc64/module elfv1: Set opd addresses after module
+ relocation
+Date: Tue, 29 May 2018 12:21:00 +0530
+Message-Id: <20180529065100.2017-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,57 +35,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  CC      arch/powerpc/kernel/nvram_64.o
-arch/powerpc/kernel/nvram_64.c: In function 'nvram_create_partition':
-arch/powerpc/kernel/nvram_64.c:1042:2: error: 'strncpy' specified bound 12 equals destination size [-Werror=stringop-truncation]
-  strncpy(new_part->header.name, name, 12);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+module_frob_arch_sections() is called before the module is moved to its
+final location. The function descriptor section addresses we are setting
+here are thus invalid. Fix this by processing opd section during 
+module_finalize()
 
-  CC      arch/powerpc/kernel/trace/ftrace.o
-In function 'make_field',
-    inlined from 'ps3_repository_read_boot_dat_address' at arch/powerpc/platforms/ps3/repository.c:900:9:
-arch/powerpc/platforms/ps3/repository.c:106:2: error: 'strncpy' output truncated before terminating nul copying 8 bytes from a string of the same length [-Werror=stringop-truncation]
-  strncpy((char *)&n, text, 8);
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fixes: 5633e85b2c313 ("powerpc64: Add .opd based function descriptor dereference")
+Cc: stable@vger.kernel.org # v4.16
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
-v2:
- - Using strnlen(src, sizeof(dest)) instead of min(strlen(src), sizeof(dest))
- - Changed nvram one to memcpy() to still fit the entire fied (thanks to benh)
+This can easily be seen by doing:
 
- arch/powerpc/kernel/nvram_64.c          | 2 +-
- arch/powerpc/platforms/ps3/repository.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+  $ sudo perf probe -L module_frob_arch_sections | grep -A5 opd
+       20  		else if (!strcmp(secstrings + sechdrs[i].sh_name, ".opd")) {
+       21  			me->arch.start_opd = sechdrs[i].sh_addr;
+       22  			me->arch.end_opd = sechdrs[i].sh_addr +
+						     sechdrs[i].sh_size;
+			  }
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index ba681dac7b46..cf7772cdc3fd 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -1039,7 +1039,7 @@ loff_t __init nvram_create_partition(const char *name, int sig,
- 	new_part->index = free_part->index;
- 	new_part->header.signature = sig;
- 	new_part->header.length = size;
--	strncpy(new_part->header.name, name, 12);
-+	memcpy(new_part->header.name, name, strnlen(name, sizeof(new_part->header.name)));
- 	new_part->header.checksum = nvram_checksum(&new_part->header);
+			  /* We don't handle .init for the moment: rename to _init */
+       27  		while ((p = strstr(secstrings + sechdrs[i].sh_name, ".init")))
+  $ sudo perf probe module_frob_arch_sections:27 me-\>arch.start_opd me-\>arch.end_opd
+  Added new events:
+    probe:module_frob_arch_sections (on module_frob_arch_sections:27 with start_opd=me->arch.start_opd end_opd=me->arch.end_opd)
+    probe:module_frob_arch_sections_1 (on module_frob_arch_sections:27 with start_opd=me->arch.start_opd end_opd=me->arch.end_opd)
+
+  You can now use it in all perf tools, such as:
+
+	  perf record -e probe:module_frob_arch_sections_1 -aR sleep 1
+
+  $ sudo perf record -e probe:* modprobe kprobe_example
+  [ perf record: Woken up 1 times to write data ]
+  [ perf record: Captured and wrote 0.011 MB perf.data (48 samples) ]
+  $ sudo perf script
+	  modprobe 10463 [001] 311838.332208:   probe:module_frob_arch_sections: (c000000000043b0c) start_opd=0xd000000000910750 end_opd=0xd0000000009107a0
+	  modprobe 10463 [001] 311838.332209:   probe:module_frob_arch_sections: (c000000000043b0c) start_opd=0xd000000000910750 end_opd=0xd0000000009107a0
+  $ sudo cat /proc/modules | grep kprobe_example
+  kprobe_example 3716 0 - Live 0xd000000000970000
+
+With this patch, probing on module_finalize() shows the expected values.
+
+
+- Naveen
+
+
+ arch/powerpc/kernel/module.c    | 8 ++++++++
+ arch/powerpc/kernel/module_64.c | 5 -----
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/module.c b/arch/powerpc/kernel/module.c
+index 3f7ba0f5bf29..fc9fa24cfe05 100644
+--- a/arch/powerpc/kernel/module.c
++++ b/arch/powerpc/kernel/module.c
+@@ -72,6 +72,14 @@ int module_finalize(const Elf_Ehdr *hdr,
+ 		do_feature_fixups(powerpc_firmware_features,
+ 				  (void *)sect->sh_addr,
+ 				  (void *)sect->sh_addr + sect->sh_size);
++
++#ifdef PPC64_ELF_ABI_v1
++	sect = find_section(hdr, sechdrs, ".opd");
++	if (sect != NULL) {
++		me->arch.start_opd = sect->sh_addr;
++		me->arch.end_opd = sect->sh_addr + sect->sh_size;
++	}
++#endif
+ #endif
  
- 	rc = nvram_write_header(new_part);
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index 50dbaf24b1ee..e49c887787c4 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -101,9 +101,9 @@ static u64 make_first_field(const char *text, u64 index)
+ 	sect = find_section(hdr, sechdrs, "__lwsync_fixup");
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index f7667e2ebfcb..a45204b48d56 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -360,11 +360,6 @@ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 		else if (strcmp(secstrings+sechdrs[i].sh_name,"__versions")==0)
+ 			dedotify_versions((void *)hdr + sechdrs[i].sh_offset,
+ 					  sechdrs[i].sh_size);
+-		else if (!strcmp(secstrings + sechdrs[i].sh_name, ".opd")) {
+-			me->arch.start_opd = sechdrs[i].sh_addr;
+-			me->arch.end_opd = sechdrs[i].sh_addr +
+-					   sechdrs[i].sh_size;
+-		}
  
- static u64 make_field(const char *text, u64 index)
- {
--	u64 n;
-+	u64 n = 0;
- 
--	strncpy((char *)&n, text, 8);
-+	memcpy((char *)&n, text, strnlen(text, sizeof(n)));
- 	return n + index;
- }
- 
+ 		/* We don't handle .init for the moment: rename to _init */
+ 		while ((p = strstr(secstrings + sechdrs[i].sh_name, ".init")))
 -- 
-2.13.3
+2.17.0
