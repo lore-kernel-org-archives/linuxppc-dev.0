@@ -1,29 +1,31 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wKrS6McpzDr43
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 03:06:32 +1000 (AEST)
-Subject: Re: [PATCH] kvm: no need to check return value of debugfs_create
- functions
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kvm@vger.kernel.org
-Cc: Paul Mackerras <paulus@ozlabs.org>,
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 40wMkl4r4FzDr43
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 04:31:41 +1000 (AEST)
+Date: Tue, 29 May 2018 20:31:38 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Peter Rosin <peda@axentia.se>
+Cc: linux-kernel@vger.kernel.org, Brendan Higgins <brendanhiggins@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Christoffer Dall <christoffer.dall@arm.com>,
- Marc Zyngier <marc.zyngier@arm.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?=
- <rkrcmar@redhat.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>,
- Eric Auger <eric.auger@redhat.com>, Andre Przywara <andre.przywara@arm.com>,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.cs.columbia.edu
-References: <20180529162204.11757-1-gregkh@linuxfoundation.org>
-From: Paolo Bonzini <pbonzini@redhat.com>
-Message-ID: <46079df1-2ebf-7ddb-582a-9f644a7802a0@redhat.com>
-Date: Tue, 29 May 2018 19:06:25 +0200
+ Joel Stanley <joel@jms.id.au>, Andrew Jeffery <andrew@aj.id.au>,
+ Guenter Roeck <linux@roeck-us.net>,
+ Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Wolfram Sang <wsa+renesas@sang-engineering.com>,
+ Peter Korsgaard <jacmet@sunsite.dk>, Andy Gross <andy.gross@linaro.org>,
+ David Brown <david.brown@linaro.org>,
+ Linus Walleij <linus.walleij@linaro.org>, linux-i2c@vger.kernel.org,
+ openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-aspeed@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
+Subject: Re: [PATCH v2 1/2] i2c: algos: make use of i2c_8bit_addr_from_msg
+Message-ID: <20180529183137.vsl7cuh2zjlplzfj@ninjato>
+References: <20180516071647.29277-1-peda@axentia.se>
+ <20180516071647.29277-2-peda@axentia.se>
 MIME-Version: 1.0
-In-Reply-To: <20180529162204.11757-1-gregkh@linuxfoundation.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="5jxqd6gx2jsy35an"
+In-Reply-To: <20180516071647.29277-2-peda@axentia.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,185 +35,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 29/05/2018 18:22, Greg Kroah-Hartman wrote:
-> When calling debugfs functions, there is no need to ever check the
-> return value.  The function can work or not, but the code logic should
-> never do something different based on this.
-> 
-> This cleans up the error handling a lot, as this code will never get
-> hit.
-> 
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Christoffer Dall <christoffer.dall@arm.com>
-> Cc: Marc Zyngier <marc.zyngier@arm.com>
-> Cc: Paolo Bonzini <pbonzini@redhat.com>
-> Cc: "Radim Krčmář" <rkrcmar@redhat.com>
-> Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> Cc: Eric Auger <eric.auger@redhat.com>
-> Cc: Andre Przywara <andre.przywara@arm.com>
-> Cc: kvm-ppc@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: kvmarm@lists.cs.columbia.edu
-> Cc: kvm@vger.kernel.org
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> ---
->  arch/powerpc/kvm/book3s_hv.c   |  3 +--
->  virt/kvm/arm/vgic/vgic-debug.c | 17 ++++-----------
->  virt/kvm/arm/vgic/vgic.h       |  4 ++--
->  virt/kvm/kvm_main.c            | 40 +++++++---------------------------
->  4 files changed, 15 insertions(+), 49 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 4d07fca5121c..67d7de1470cc 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -3950,8 +3950,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
->  	 */
->  	snprintf(buf, sizeof(buf), "vm%d", current->pid);
->  	kvm->arch.debugfs_dir = debugfs_create_dir(buf, kvm_debugfs_dir);
-> -	if (!IS_ERR_OR_NULL(kvm->arch.debugfs_dir))
-> -		kvmppc_mmu_debugfs_init(kvm);
-> +	kvmppc_mmu_debugfs_init(kvm);
->  
->  	return 0;
->  }
-> diff --git a/virt/kvm/arm/vgic/vgic-debug.c b/virt/kvm/arm/vgic/vgic-debug.c
-> index 10b38178cff2..0140b29079b6 100644
-> --- a/virt/kvm/arm/vgic/vgic-debug.c
-> +++ b/virt/kvm/arm/vgic/vgic-debug.c
-> @@ -263,21 +263,12 @@ static const struct file_operations vgic_debug_fops = {
->  	.release = seq_release
->  };
->  
-> -int vgic_debug_init(struct kvm *kvm)
-> +void vgic_debug_init(struct kvm *kvm)
->  {
-> -	if (!kvm->debugfs_dentry)
-> -		return -ENOENT;
-> -
-> -	if (!debugfs_create_file("vgic-state", 0444,
-> -				 kvm->debugfs_dentry,
-> -				 kvm,
-> -				 &vgic_debug_fops))
-> -		return -ENOMEM;
-> -
-> -	return 0;
-> +	debugfs_create_file("vgic-state", 0444, kvm->debugfs_dentry, kvm,
-> +			    &vgic_debug_fops);
->  }
->  
-> -int vgic_debug_destroy(struct kvm *kvm)
-> +void vgic_debug_destroy(struct kvm *kvm)
->  {
-> -	return 0;
->  }
-> diff --git a/virt/kvm/arm/vgic/vgic.h b/virt/kvm/arm/vgic/vgic.h
-> index 830e815748a0..3c38c5349953 100644
-> --- a/virt/kvm/arm/vgic/vgic.h
-> +++ b/virt/kvm/arm/vgic/vgic.h
-> @@ -229,8 +229,8 @@ void vgic_get_vmcr(struct kvm_vcpu *vcpu, struct vgic_vmcr *vmcr);
->  int vgic_lazy_init(struct kvm *kvm);
->  int vgic_init(struct kvm *kvm);
->  
-> -int vgic_debug_init(struct kvm *kvm);
-> -int vgic_debug_destroy(struct kvm *kvm);
-> +void vgic_debug_init(struct kvm *kvm);
-> +void vgic_debug_destroy(struct kvm *kvm);
->  
->  bool lock_all_vcpus(struct kvm *kvm);
->  void unlock_all_vcpus(struct kvm *kvm);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index c7b2e927f699..0ad400f353fc 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -572,10 +572,7 @@ static int kvm_create_vm_debugfs(struct kvm *kvm, int fd)
->  		return 0;
->  
->  	snprintf(dir_name, sizeof(dir_name), "%d-%d", task_pid_nr(current), fd);
-> -	kvm->debugfs_dentry = debugfs_create_dir(dir_name,
-> -						 kvm_debugfs_dir);
-> -	if (!kvm->debugfs_dentry)
-> -		return -ENOMEM;
-> +	kvm->debugfs_dentry = debugfs_create_dir(dir_name, kvm_debugfs_dir);
->  
->  	kvm->debugfs_stat_data = kcalloc(kvm_debugfs_num_entries,
->  					 sizeof(*kvm->debugfs_stat_data),
-> @@ -591,11 +588,8 @@ static int kvm_create_vm_debugfs(struct kvm *kvm, int fd)
->  		stat_data->kvm = kvm;
->  		stat_data->offset = p->offset;
->  		kvm->debugfs_stat_data[p - debugfs_entries] = stat_data;
-> -		if (!debugfs_create_file(p->name, 0644,
-> -					 kvm->debugfs_dentry,
-> -					 stat_data,
-> -					 stat_fops_per_vm[p->kind]))
-> -			return -ENOMEM;
-> +		debugfs_create_file(p->name, 0644, kvm->debugfs_dentry,
-> +				    stat_data, stat_fops_per_vm[p->kind]);
->  	}
->  	return 0;
->  }
-> @@ -3896,29 +3890,18 @@ static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm)
->  	kfree(env);
->  }
->  
-> -static int kvm_init_debug(void)
-> +static void kvm_init_debug(void)
->  {
-> -	int r = -EEXIST;
->  	struct kvm_stats_debugfs_item *p;
->  
->  	kvm_debugfs_dir = debugfs_create_dir("kvm", NULL);
-> -	if (kvm_debugfs_dir == NULL)
-> -		goto out;
->  
->  	kvm_debugfs_num_entries = 0;
->  	for (p = debugfs_entries; p->name; ++p, kvm_debugfs_num_entries++) {
-> -		if (!debugfs_create_file(p->name, 0644, kvm_debugfs_dir,
-> -					 (void *)(long)p->offset,
-> -					 stat_fops[p->kind]))
-> -			goto out_dir;
-> +		debugfs_create_file(p->name, 0644, kvm_debugfs_dir,
-> +				    (void *)(long)p->offset,
-> +				    stat_fops[p->kind]);
->  	}
-> -
-> -	return 0;
-> -
-> -out_dir:
-> -	debugfs_remove_recursive(kvm_debugfs_dir);
-> -out:
-> -	return r;
->  }
->  
->  static int kvm_suspend(void)
-> @@ -4046,20 +4029,13 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
->  	kvm_preempt_ops.sched_in = kvm_sched_in;
->  	kvm_preempt_ops.sched_out = kvm_sched_out;
->  
-> -	r = kvm_init_debug();
-> -	if (r) {
-> -		pr_err("kvm: create debugfs files failed\n");
-> -		goto out_undebugfs;
-> -	}
-> +	kvm_init_debug();
->  
->  	r = kvm_vfio_ops_init();
->  	WARN_ON(r);
->  
->  	return 0;
->  
-> -out_undebugfs:
-> -	unregister_syscore_ops(&kvm_syscore_ops);
-> -	misc_deregister(&kvm_dev);
->  out_unreg:
->  	kvm_async_pf_deinit();
->  out_free:
-> 
 
-Queued, thanks.
+--5jxqd6gx2jsy35an
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Paolo
+On Wed, May 16, 2018 at 09:16:46AM +0200, Peter Rosin wrote:
+> Because it looks neater.
+>=20
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+
+Applied to for-next, thanks!
+
+
+--5jxqd6gx2jsy35an
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlsNnIkACgkQFA3kzBSg
+KbZsGg/+ONTuHz2aI66jHvuwKWxiAcRBdlIiawe6gDudTXDr9Uwt9fFXc0YJXxkx
+xB0lnDjcjY/pNi792W0ejqt5G1pGGyPnffD4/MtOS8yH7NewKy/JTurGn3QjvoH6
+qz58+Vmt9sXJkwt2mYOm66euOxRw7DzSJfd/BEovH+lJ2V3bMe9H9AMkns6/buti
+H6t6HGZz0C/Y4G7zhSfmJQJ6K8F1Ak0Swbc4Jc5cvhE+/7K+slKJ8hsbi3Bh9/VG
+2UFwIHW6h3ICBt0xDAhzeH+/tPyGXNyzSph2QCOAnli7nER72sc7hWyIlL6wymJD
+nQq8gfqRJa95mBiIt1BoeMUAO3sR1qzDMdx9j0dEAk868U2/P9AEYHEOw0/L0jU1
+mjypB7RXFg/2aBTiGaqIJL+Nr7a3uYcpk/KqZjmaN3wibZc8MJwE5gio14rPf09F
+akvxCLzRslRKJjG0AdoO3xJZHtYGsPqOKUjrj3t9clhGfuUZnfCepft3xwirIu7p
+8AqGeJB5DWNssIIlzb+2I9243RmV2808BfFB8JBzgHP+AbJ8yCDBfJCj0BqPaGqj
+c/qAYFvPPKwb7qmLNsHLoErqH/2OjqAiOHlHckc3s1/eQNR+XpVD1L37jTROUBNq
+2KI58ADi8/UcUCM6Y5JDyM/G7X6xC+q6oWUmRffSmWkmcoZITVk=
+=y2Wp
+-----END PGP SIGNATURE-----
+
+--5jxqd6gx2jsy35an--
