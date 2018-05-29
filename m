@@ -1,34 +1,29 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
+ [IPv6:2607:f8b0:4003:c0f::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wCrv2NBfzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:36:30 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4TCZ2Hj126352
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 08:36:28 -0400
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j95wquc78-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 08:36:27 -0400
-Received: from localhost
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 29 May 2018 13:36:26 +0100
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Masami Hiramatsu <mhiramat@kernel.org>, Josef Bacik <jbacik@fb.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] powerpc: Add support for function error injection
-Date: Tue, 29 May 2018 18:06:03 +0530
-In-Reply-To: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
-References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
-Message-Id: <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wCwK2TYYzDrCm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:39:29 +1000 (AEST)
+Received: by mail-ot0-x244.google.com with SMTP id q17-v6so6154544otg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 05:39:29 -0700 (PDT)
+MIME-Version: 1.0
+Sender: mathieu.malaterre@gmail.com
+In-Reply-To: <20180529222327.29d16eb6@canb.auug.org.au>
+References: <20180529210257.26da8de7@canb.auug.org.au>
+ <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
+ <20180529222327.29d16eb6@canb.auug.org.au>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 29 May 2018 14:39:06 +0200
+Message-ID: <CA+7wUsy8V9zyH+-nU_X+tpXnN3VYGctErquqSX3g7kQGZsvupQ@mail.gmail.com>
+Subject: Re: linux-next: boot messages from today's linux-next
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,56 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig                       | 1 +
- arch/powerpc/include/asm/error-injection.h | 9 +++++++++
- arch/powerpc/include/asm/ptrace.h          | 5 +++++
- 3 files changed, 15 insertions(+)
- create mode 100644 arch/powerpc/include/asm/error-injection.h
+Stephen,
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 23247fa551e7..ed1ab693f945 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -194,6 +194,7 @@ config PPC
- 	select HAVE_EBPF_JIT			if PPC64
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
- 	select HAVE_FTRACE_MCOUNT_RECORD
-+	select HAVE_FUNCTION_ERROR_INJECTION
- 	select HAVE_FUNCTION_GRAPH_TRACER
- 	select HAVE_FUNCTION_TRACER
- 	select HAVE_GCC_PLUGINS
-diff --git a/arch/powerpc/include/asm/error-injection.h b/arch/powerpc/include/asm/error-injection.h
-new file mode 100644
-index 000000000000..b596eca04ef9
---- /dev/null
-+++ b/arch/powerpc/include/asm/error-injection.h
-@@ -0,0 +1,9 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_ERROR_INJECTION_H
-+#define _ASM_ERROR_INJECTION_H
-+
-+#include <asm-generic/error-injection.h>
-+
-+#define ARCH_FUNC_RET	"blr"
-+
-+#endif /* _ASM_ERROR_INJECTION_H */
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index e4923686e43a..c0705296c2f0 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -101,6 +101,11 @@ static inline long regs_return_value(struct pt_regs *regs)
- 		return -regs->gpr[3];
- }
- 
-+static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
-+{
-+	regs->gpr[3] = rc;
-+}
-+
- #ifdef __powerpc64__
- #define user_mode(regs) ((((regs)->msr) >> MSR_PR_LG) & 0x1)
- #else
--- 
-2.17.0
+On Tue, May 29, 2018 at 2:23 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Mathieu,
+>
+> On Tue, 29 May 2018 13:56:48 +0200 Mathieu Malaterre <malat@debian.org> wrote:
+>>
+>> On Tue, May 29, 2018 at 1:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> > Hi all,
+>> >
+>> > My qemu boots of today's powerpc linux-next kernel produced the following
+>> > boot message differences:
+>> >
+>> > -Max number of cores passed to firmware: 2048 (NR_CPUS = 2048)
+>> > +Max number of cores passed to firmware: u (NR_CPUS = 2048)
+>> >
+>> > Seemingly caused by commit
+>> >
+>> >   eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf")
+>>
+>> My bad. Patch is pending (thanks Michael!):
+>>
+>> https://patchwork.ozlabs.org/patch/921948/
+>
+> Umm, that fixes some other messages, but not this particular one.
+
+Here is what I tried to say:
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 4d62f561f272..72ebe5896c1d 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -379,6 +379,11 @@ static void __init prom_printf(const char *format, ...)
+                        }
+                        prom_print_dec(vs);
+                        break;
++               case 'u':
++                       ++q;
++                       vs = va_arg(args, unsigned long);
++                       prom_print_dec(vs);
++                       break;
+                case 'l':
+                        ++q;
+                        if (*q == 0)
+
+
+> --
+> Cheers,
+> Stephen Rothwell
