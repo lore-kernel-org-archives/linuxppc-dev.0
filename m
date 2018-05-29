@@ -1,29 +1,38 @@
-Return-Path: <hoeun.ryu@lge.com.com>
-Received: from lgeamrelo11.lge.com (lgeamrelo13.lge.com [156.147.23.53])
- by lists.ozlabs.org (Postfix) with ESMTP id 40vvFS6wzMzDr3M
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 10:08:12 +1000 (AEST)
-From: Hoeun Ryu <hoeun.ryu@lge.com.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Petr Mladek <pmladek@suse.com>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Eric Biederman <ebiederm@xmission.com>,
- Nicholas Piggin <npiggin@gmail.com>, Cyril Bur <cyrilbur@gmail.com>,
- Ram Pai <linuxram@us.ibm.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
- Michael Neuling <mikey@neuling.org>, Thomas Gleixner <tglx@linutronix.de>,
- Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Kees Cook <keescook@chromium.org>, Borislav Petkov <bp@suse.de>,
- Andi Kleen <ak@linux.intel.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
- "Liu, Changcheng" <changcheng.liu@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Hoeun Ryu <hoeun.ryu@lge.com>, Philippe Ombredanne <pombredanne@nexb.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kexec@lists.infradead.org
-Subject: [PATCH] printk: make printk_safe_flush safe in NMI context
-Date: Tue, 29 May 2018 08:34:14 +0900
-Message-Id: <1527550647-3953-1-git-send-email-hoeun.ryu@lge.com.com>
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40vxdv0g19zDr41
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 11:56:02 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4T1mwUa005532
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 21:56:00 -0400
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j8w6fgqrj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 May 2018 21:56:00 -0400
+Received: from localhost
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Tue, 29 May 2018 02:55:58 +0100
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>, stable@vger.kernel.org,
+ "Alastair D'Silva" <alastair@linux.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Christophe Lombard <christophe_lombard@fr.ibm.com>
+Subject: Re: [PATCH-RESEND] cxl: Disable prefault_mode in Radix mode
+In-Reply-To: <871sdv5kev.fsf@concordia.ellerman.id.au>
+References: <20180518094223.786-1-vaibhav@linux.vnet.ibm.com>
+ <871sdv5kev.fsf@concordia.ellerman.id.au>
+Date: Tue, 29 May 2018 07:25:48 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87po1fi5sr.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,230 +42,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hoeun Ryu <hoeun.ryu@lge.com>
+Michael Ellerman <mpe@ellerman.id.au> writes:
 
- Make printk_safe_flush() safe in NMI context. And printk_safe_flush_on_panic() is
-folded into this function. The prototype of printk_safe_flush() is changed to
-"void printk_safe_flush(bool panic)".
+> Vaibhav Jain <vaibhav@linux.vnet.ibm.com> writes:
+>
+>> From: Vaibhav Jain <vaibhav@linux.ibm.com>
+>>
+>> Currently we see a kernel-oops reported on Power-9 while attaching a
+>> context to an AFU, with radix-mode and sysfs attr 'prefault_mode' set
+>> to anything other than 'none'. The backtrace of the oops is of this
+>> form:
+>>
+>> Unable to handle kernel paging request for data at address 0x00000080
+>> Faulting instruction address: 0xc00800000bcf3b20
+>> cpu 0x1: Vector: 300 (Data Access) at [c00000037f003800]
+>>     pc: c00800000bcf3b20: cxl_load_segment+0x178/0x290 [cxl]
+>>     lr: c00800000bcf39f0: cxl_load_segment+0x48/0x290 [cxl]
+>>     sp: c00000037f003a80
+>>    msr: 9000000000009033
+>>    dar: 80
+>>  dsisr: 40000000
+>>   current = 0xc00000037f280000
+>>   paca    = 0xc0000003ffffe600   softe: 3        irq_happened: 0x01
+>>     pid   = 3529, comm = afp_no_int
+>> <snip>
+>> [c00000037f003af0] c00800000bcf4424 cxl_prefault+0xfc/0x248 [cxl]
+>> [c00000037f003b50] c00800000bcf8a40 process_element_entry_psl9+0xd8/0x1a0 [cxl]
+>> [c00000037f003b90] c00800000bcf944c cxl_attach_dedicated_process_psl9+0x44/0x130 [cxl]
+>> [c00000037f003bd0] c00800000bcf5448 native_attach_process+0xc0/0x130 [cxl]
+>> [c00000037f003c50] c00800000bcf16cc afu_ioctl+0x3f4/0x5e0 [cxl]
+>> [c00000037f003d00] c00000000039d98c do_vfs_ioctl+0xdc/0x890
+>> [c00000037f003da0] c00000000039e1a8 ksys_ioctl+0x68/0xf0
+>> [c00000037f003df0] c00000000039e270 sys_ioctl+0x40/0xa0
+>> [c00000037f003e30] c00000000000b320 system_call+0x58/0x6c
+>> --- Exception: c01 (System Call) at 0000000010053bb0
+>   ^^^
+> This tells patch/git-am to drop the rest of the change log, which is not
+> what we want.
+>
+> I tend to indent stack traces etc with two spaces, which avoids the
+> problem. Or in this case we can just drop the line as it's not really
+> that informative.
+>
+> I've fixed it up.
+>
+> cheers
+>
 
- nmi_trigger_cpumask_backtrace() can be called in NMI context. For example the
-function is called in watchdog_overflow_callback() if the flag of hardlockup
-backtrace (sysctl_hardlockup_all_cpu_backtrace) is true and
-watchdog_overflow_callback() function is called in NMI context on some
-architectures.
- Calling printk_safe_flush() in nmi_trigger_cpumask_backtrace() eventually tries to
-lock logbuf_lock in vprintk_emit() but the logbuf_lock can be already locked in
-preempted contexts (task or irq in this case) or by other CPUs and it may cause
-deadlocks.
- By making printk_safe_flush() safe in NMI context, the backtrace triggering CPU
-just skips flushing if the lock is not avaiable in NMI context. The messages in
-per-cpu nmi buffer of the backtrace triggering CPU can be lost if the CPU is in
-hard lockup (because irq is disabled here) but if panic() is not called. The
-flushing can be delayed by the next irq work in normal cases.
+Sorry for missing that and thanks for fixing it in the patch.
 
-Suggested-by: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Signed-off-by: Hoeun Ryu <hoeun.ryu@lge.com>
----
- arch/powerpc/kernel/traps.c    |  2 +-
- arch/powerpc/kernel/watchdog.c |  2 +-
- include/linux/printk.h         |  9 ++----
- kernel/kexec_core.c            |  2 +-
- kernel/panic.c                 |  4 +--
- kernel/printk/printk_safe.c    | 62 +++++++++++++++++++++---------------------
- lib/nmi_backtrace.c            |  2 +-
- 7 files changed, 39 insertions(+), 44 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 0904492..c50749c 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -160,7 +160,7 @@ extern void panic_flush_kmsg_start(void)
- 
- extern void panic_flush_kmsg_end(void)
- {
--	printk_safe_flush_on_panic();
-+	printk_safe_flush(true);
- 	kmsg_dump(KMSG_DUMP_PANIC);
- 	bust_spinlocks(0);
- 	debug_locks_off();
-diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-index 6256dc3..3c9138b 100644
---- a/arch/powerpc/kernel/watchdog.c
-+++ b/arch/powerpc/kernel/watchdog.c
-@@ -173,7 +173,7 @@ static void watchdog_smp_panic(int cpu, u64 tb)
- 
- 	wd_smp_unlock(&flags);
- 
--	printk_safe_flush();
-+	printk_safe_flush(false);
- 	/*
- 	 * printk_safe_flush() seems to require another print
- 	 * before anything actually goes out to console.
-diff --git a/include/linux/printk.h b/include/linux/printk.h
-index 6d7e800..495fe26 100644
---- a/include/linux/printk.h
-+++ b/include/linux/printk.h
-@@ -203,8 +203,7 @@ void dump_stack_print_info(const char *log_lvl);
- void show_regs_print_info(const char *log_lvl);
- extern asmlinkage void dump_stack(void) __cold;
- extern void printk_safe_init(void);
--extern void printk_safe_flush(void);
--extern void printk_safe_flush_on_panic(void);
-+extern void printk_safe_flush(bool panic);
- #else
- static inline __printf(1, 0)
- int vprintk(const char *s, va_list args)
-@@ -273,11 +272,7 @@ static inline void printk_safe_init(void)
- {
- }
- 
--static inline void printk_safe_flush(void)
--{
--}
--
--static inline void printk_safe_flush_on_panic(void)
-+static inline void printk_safe_flush(bool panic)
- {
- }
- #endif
-diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
-index 20fef1a..1b0876e 100644
---- a/kernel/kexec_core.c
-+++ b/kernel/kexec_core.c
-@@ -961,7 +961,7 @@ void crash_kexec(struct pt_regs *regs)
- 	old_cpu = atomic_cmpxchg(&panic_cpu, PANIC_CPU_INVALID, this_cpu);
- 	if (old_cpu == PANIC_CPU_INVALID) {
- 		/* This is the 1st CPU which comes here, so go ahead. */
--		printk_safe_flush_on_panic();
-+		printk_safe_flush(true);
- 		__crash_kexec(regs);
- 
- 		/*
-diff --git a/kernel/panic.c b/kernel/panic.c
-index 42e4874..2f2c86c 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -193,7 +193,7 @@ void panic(const char *fmt, ...)
- 	 * Bypass the panic_cpu check and call __crash_kexec directly.
- 	 */
- 	if (!_crash_kexec_post_notifiers) {
--		printk_safe_flush_on_panic();
-+		printk_safe_flush(true);
- 		__crash_kexec(NULL);
- 
- 		/*
-@@ -218,7 +218,7 @@ void panic(const char *fmt, ...)
- 	atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
- 
- 	/* Call flush even twice. It tries harder with a single online CPU */
--	printk_safe_flush_on_panic();
-+	printk_safe_flush(true);
- 	kmsg_dump(KMSG_DUMP_PANIC);
- 
- 	/*
-diff --git a/kernel/printk/printk_safe.c b/kernel/printk/printk_safe.c
-index 3e3c200..35ea941 100644
---- a/kernel/printk/printk_safe.c
-+++ b/kernel/printk/printk_safe.c
-@@ -244,49 +244,49 @@ static void __printk_safe_flush(struct irq_work *work)
- }
- 
- /**
-- * printk_safe_flush - flush all per-cpu nmi buffers.
-+ * printk_safe_flush - flush all per-cpu nmi buffers. it can be called even in NMI
-+ *                     context.
-+ * @panic: true when the system goes down. It does the best effort to get NMI messages
-+ *         into the main ring buffer. Note that it could try harder when there is only
-+ *         one CPU online.
-  *
-- * The buffers are flushed automatically via IRQ work. This function
-+ * The buffers are flushed automatically via IRQ work in normal cases. This function
-  * is useful only when someone wants to be sure that all buffers have
-  * been flushed at some point.
-  */
--void printk_safe_flush(void)
-+void printk_safe_flush(bool panic)
- {
- 	int cpu;
- 
--	for_each_possible_cpu(cpu) {
--#ifdef CONFIG_PRINTK_NMI
--		__printk_safe_flush(&per_cpu(nmi_print_seq, cpu).work);
--#endif
--		__printk_safe_flush(&per_cpu(safe_print_seq, cpu).work);
--	}
--}
--
--/**
-- * printk_safe_flush_on_panic - flush all per-cpu nmi buffers when the system
-- *	goes down.
-- *
-- * Similar to printk_safe_flush() but it can be called even in NMI context when
-- * the system goes down. It does the best effort to get NMI messages into
-- * the main ring buffer.
-- *
-- * Note that it could try harder when there is only one CPU online.
-- */
--void printk_safe_flush_on_panic(void)
--{
- 	/*
- 	 * Make sure that we could access the main ring buffer.
--	 * Do not risk a double release when more CPUs are up.
-+	 * Do not risk a double release when more CPUs are up on panic.
- 	 */
--	if (in_nmi() && raw_spin_is_locked(&logbuf_lock)) {
--		if (num_online_cpus() > 1)
-+	if (this_cpu_read(printk_context) & PRINTK_NMI_CONTEXT_MASK) {
-+		if (panic) {
-+			if (num_online_cpus() > 1)
-+				return;
-+
-+			debug_locks_off();
-+			raw_spin_lock_init(&logbuf_lock);
-+		} else {
-+			/*
-+			 * Just avoid deadlocks here, we could loose the messages in
-+			 * per-cpu nmi buffer in the case that hardlockup happens but
-+			 * panic() is not called (irq_work won't work).
-+			 * The flushing can be delayed by the next irq_work if flushing
-+			 * is skiped here in normal cases.
-+			 */
- 			return;
--
--		debug_locks_off();
--		raw_spin_lock_init(&logbuf_lock);
-+		}
- 	}
- 
--	printk_safe_flush();
-+	for_each_possible_cpu(cpu) {
-+#ifdef CONFIG_PRINTK_NMI
-+		__printk_safe_flush(&per_cpu(nmi_print_seq, cpu).work);
-+#endif
-+		__printk_safe_flush(&per_cpu(safe_print_seq, cpu).work);
-+	}
- }
- 
- #ifdef CONFIG_PRINTK_NMI
-@@ -404,5 +404,5 @@ void __init printk_safe_init(void)
- 	printk_safe_irq_ready = 1;
- 
- 	/* Flush pending messages that did not have scheduled IRQ works. */
--	printk_safe_flush();
-+	printk_safe_flush(false);
- }
-diff --git a/lib/nmi_backtrace.c b/lib/nmi_backtrace.c
-index 61a6b5a..6781698 100644
---- a/lib/nmi_backtrace.c
-+++ b/lib/nmi_backtrace.c
-@@ -79,7 +79,7 @@ void nmi_trigger_cpumask_backtrace(const cpumask_t *mask,
- 	 * Force flush any remote buffers that might be stuck in IRQ context
- 	 * and therefore could not run their irq_work.
- 	 */
--	printk_safe_flush();
-+	printk_safe_flush(false);
- 
- 	clear_bit_unlock(0, &backtrace_flag);
- 	put_cpu();
 -- 
-2.1.4
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
