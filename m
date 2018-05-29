@@ -1,24 +1,30 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wCkZ3SxzzDqGD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:31:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.ibm.com>,
- Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
-In-Reply-To: <87d0xf6y16.fsf@linux.vnet.ibm.com>
-References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
- <87d0xf6y16.fsf@linux.vnet.ibm.com>
-Date: Tue, 29 May 2018 22:30:57 +1000
-Message-ID: <87sh6a4pa6.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wCrk5W4DzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:36:22 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4TCYjvp084078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 08:36:20 -0400
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2j95avcpp7-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 08:36:19 -0400
+Received: from localhost
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 29 May 2018 13:36:17 +0100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Masami Hiramatsu <mhiramat@kernel.org>, Josef Bacik <jbacik@fb.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] error-injection: simplify code and powerpc support
+Date: Tue, 29 May 2018 18:06:01 +0530
+Message-Id: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stewart Smith <stewart@linux.ibm.com> writes:
+The first patch simplifies code around function error-injection by 
+limiting the need for arch-specific helpers. The second patch adds 
+support for powerpc.
 
-> Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
->> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
->>  				     u64 psscr_val, u64 psscr_mask)
->>  {
->>  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
->> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
->> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
->
-> We should still fall back to using name in the event of desc being null,
-> as not all firmware will expose the descriptions.
->
->> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
->>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
->>  		goto out;
->>  	}
->> +	if (of_property_read_string_array(power_mgt,
->> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
->> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
->> +		goto out;
->> +	}
->
-> I don't think pr_warn is appropriate here, as for all current released
-> firmware we don't have that property. I think perhaps just silently
-> continuing on is okay, as we have to keep compatibility with that firmware.
+- Naveen
 
-+1
+Naveen N. Rao (2):
+  error-injection: Simplify arch specific helpers
+  powerpc: Add support for function error injection
 
-Anyone who's wondering why they're not seeing the names can just look at
-the device tree on the machine to see if the property is there or not,
-they don't need a printk in dmesg to tell them.
+ arch/powerpc/Kconfig                       |  1 +
+ arch/powerpc/include/asm/error-injection.h |  9 +++++++++
+ arch/powerpc/include/asm/ptrace.h          |  5 +++++
+ arch/x86/include/asm/error-injection.h     |  6 +-----
+ arch/x86/lib/Makefile                      |  1 -
+ arch/x86/lib/error-inject.c                | 20 --------------------
+ include/asm-generic/error-injection.h      |  6 ++++++
+ include/linux/error-injection.h            |  1 +
+ kernel/fail_function.c                     |  2 +-
+ kernel/trace/bpf_trace.c                   |  2 +-
+ lib/error-inject.c                         |  8 ++++++++
+ 11 files changed, 33 insertions(+), 28 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/error-injection.h
+ delete mode 100644 arch/x86/lib/error-inject.c
 
-cheers
+-- 
+2.17.0
