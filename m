@@ -1,28 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wHjB2KkDzDrCl
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:30:05 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christophe LEROY' <christophe.leroy@c-s.fr>, Geert Uytterhoeven
- <geert@linux-m68k.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, "Linux Kernel
- Mailing List" <linux-kernel@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, Geoff Levand <geoff@infradead.org>
-Subject: RE: [PATCH v2] powerpc/64: Fix build failure with GCC 8.1
-Date: Tue, 29 May 2018 15:24:21 +0000
-Message-ID: <1bfdea64b0cc4be2970e296684c097dc@AcuMS.aculab.com>
-References: <f5f2de3e1a39613f7303bfdc0d2f2210d4c91910.1527573345.git.christophe.leroy@c-s.fr>
- <CAMuHMdVSKigQPUQH=BVc2fRSRmuEThLaf+V9ghMPDT9_m1C6BA@mail.gmail.com>
- <1fa5b220-4d21-b4cd-33bf-8a3ce3178063@c-s.fr>
- <CAMuHMdXwO1_wrrTi40UmZC4o6KjvP0LF38m45n0ZNA2pDb_7Qg@mail.gmail.com>
- <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
-In-Reply-To: <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wJ8X2XdZzDr4N
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 01:50:20 +1000 (AEST)
+Message-Id: <2fdfc94ae4b2d5740c89c5a1c28f2fb6f6832da4.1527608397.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1527608397.git.christophe.leroy@c-s.fr>
+References: <cover.1527608397.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 01/14] Revert "powerpc/8xx: Use L1 entry APG to handle
+ _PAGE_ACCESSED for CONFIG_SWAP"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 29 May 2018 15:50:16 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,20 +24,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQ2hyaXN0b3BoZSBMRVJPWQ0KPiBTZW50OiAyOSBNYXkgMjAxOCAxMDozNw0KLi4uDQo+
-ID4+Pj4gLSAgICAgICBzdHJuY3B5KG5ld19wYXJ0LT5oZWFkZXIubmFtZSwgbmFtZSwgMTIpOw0K
-PiA+Pj4+ICsgICAgICAgbWVtY3B5KG5ld19wYXJ0LT5oZWFkZXIubmFtZSwgbmFtZSwgc3Rybmxl
-bihuYW1lLA0KPiA+Pj4+IHNpemVvZihuZXdfcGFydC0+aGVhZGVyLm5hbWUpKSk7DQo+ID4+Pg0K
-PiA+Pj4NCj4gPj4+IFRoZSBjb21tZW50IGZvciBudnJhbV9oZWFkZXIubGdudGggc2F5czoNCj4g
-Pj4+DQo+ID4+PiAgICAgICAgICAgLyogVGVybWluYXRpbmcgbnVsbCByZXF1aXJlZCBvbmx5IGZv
-ciBuYW1lcyA8IDEyIGNoYXJzLiAqLw0KPiA+Pj4NCj4gPj4+IFRoaXMgd2lsbCBub3QgdGVybWlu
-YXRlIHRoZSBzdHJpbmcgd2l0aCBhIHplcm8gKHRoZSBzdHJ1Y3QgaXMNCj4gPj4+IGFsbG9jYXRl
-ZCB3aXRoIGttYWxsb2MpLg0KPiA+Pj4gU28gdGhlIG9yaWdpbmFsIGNvZGUgaXMgY29ycmVjdCwg
-dGhlIG5ldyBvbmUgaXNuJ3QuDQo+ID4+DQo+ID4+IFJpZ2h0LCB0aGVuIEkgaGF2ZSB0byBmaXJz
-dCB6ZXJvaXplIHRoZSBkZXN0aW5hdGlvbi4NCj4gPg0KPiA+IFVzaW5nIGt6YWxsb2MoKSBpbnN0
-ZWFkIG9mIGttYWxsb2MoKSB3aWxsIGRvLg0KPiA+DQo+ID4gU3RpbGwsIHBhcGVyaW5nIGFyb3Vu
-ZCB0aGVzZSB3YXJuaW5ncyBzZWVtcyB0byBvYnNjdXJlIHRoaW5ncywgSU1ITy4NCj4gPiBBbmQg
-aXQgaW5jcmVhc2VzIGNvZGUgc2l6ZSwgYXMgeW91IGhhZCB0byBhZGQgYSBjYWxsIHRvIHN0cm5s
-ZW4oKS4NCj4gDQo+IFJpZ2h0IGJ1dCB0aGVuLCB3aGF0IGlzIHRoZSBiZXN0IHNvbHV0aW9uIHRv
-IGVsaW1hdGUgdGhhdCB3YXJuaW5nID8NCg0KVGltZSB0byBhZGQgdGhlIElfcmVhbGx5X21lYW5f
-c3RybmN5KCkgZnVuY3Rpb24uDQoNCglEYXZpZA0KDQo=
+This reverts commit 4f94b2c7462d9720b2afa7e8e8d4c19446bb31ce.
+
+That commit was buggy, as it used rlwinm instead of rlwimi.
+Instead of fixing that bug, we revert the previous commit in order to
+reduce the dependency between L1 entries and L2 entries
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/mmu-8xx.h | 34 +++++-----------------------
+ arch/powerpc/kernel/head_8xx.S     | 45 +++++++++++++++++++++++---------------
+ arch/powerpc/mm/8xx_mmu.c          |  2 +-
+ 3 files changed, 34 insertions(+), 47 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index 4f547752ae79..193f53116c7a 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -34,20 +34,12 @@
+  * respectively NA for All or X for Supervisor and no access for User.
+  * Then we use the APG to say whether accesses are according to Page rules or
+  * "all Supervisor" rules (Access to all)
+- * We also use the 2nd APG bit for _PAGE_ACCESSED when having SWAP:
+- * When that bit is not set access is done iaw "all user"
+- * which means no access iaw page rules.
+- * Therefore, we define 4 APG groups. lsb is _PMD_USER, 2nd is _PAGE_ACCESSED
+- * 0x => No access => 11 (all accesses performed as user iaw page definition)
+- * 10 => No user => 01 (all accesses performed according to page definition)
+- * 11 => User => 00 (all accesses performed as supervisor iaw page definition)
++ * Therefore, we define 2 APG groups. lsb is _PMD_USER
++ * 0 => No user => 01 (all accesses performed according to page definition)
++ * 1 => User => 00 (all accesses performed as supervisor iaw page definition)
+  * We define all 16 groups so that all other bits of APG can take any value
+  */
+-#ifdef CONFIG_SWAP
+-#define MI_APG_INIT	0xf4f4f4f4
+-#else
+ #define MI_APG_INIT	0x44444444
+-#endif
+ 
+ /* The effective page number register.  When read, contains the information
+  * about the last instruction TLB miss.  When MI_RPN is written, bits in
+@@ -115,20 +107,12 @@
+  * Supervisor and no access for user and NA for ALL.
+  * Then we use the APG to say whether accesses are according to Page rules or
+  * "all Supervisor" rules (Access to all)
+- * We also use the 2nd APG bit for _PAGE_ACCESSED when having SWAP:
+- * When that bit is not set access is done iaw "all user"
+- * which means no access iaw page rules.
+- * Therefore, we define 4 APG groups. lsb is _PMD_USER, 2nd is _PAGE_ACCESSED
+- * 0x => No access => 11 (all accesses performed as user iaw page definition)
+- * 10 => No user => 01 (all accesses performed according to page definition)
+- * 11 => User => 00 (all accesses performed as supervisor iaw page definition)
++ * Therefore, we define 2 APG groups. lsb is _PMD_USER
++ * 0 => No user => 01 (all accesses performed according to page definition)
++ * 1 => User => 00 (all accesses performed as supervisor iaw page definition)
+  * We define all 16 groups so that all other bits of APG can take any value
+  */
+-#ifdef CONFIG_SWAP
+-#define MD_APG_INIT	0xf4f4f4f4
+-#else
+ #define MD_APG_INIT	0x44444444
+-#endif
+ 
+ /* The effective page number register.  When read, contains the information
+  * about the last instruction TLB miss.  When MD_RPN is written, bits in
+@@ -180,12 +164,6 @@
+  */
+ #define SPRN_M_TW	799
+ 
+-/* APGs */
+-#define M_APG0		0x00000000
+-#define M_APG1		0x00000020
+-#define M_APG2		0x00000040
+-#define M_APG3		0x00000060
+-
+ #ifdef CONFIG_PPC_MM_SLICES
+ #include <asm/nohash/32/slice.h>
+ #define SLICE_ARRAY_SIZE	(1 << (32 - SLICE_LOW_SHIFT - 1))
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 6cab07e76732..19bdc65d05b8 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -354,13 +354,14 @@ _ENTRY(ITLBMiss_cmp)
+ #if defined(ITLB_MISS_KERNEL) || defined(CONFIG_HUGETLB_PAGE)
+ 	mtcr	r12
+ #endif
+-
+-#ifdef CONFIG_SWAP
+-	rlwinm	r11, r10, 31, _PAGE_ACCESSED >> 1
+-#endif
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	mtspr	SPRN_MI_TWC, r11	/* Set segment attributes */
+ 
++#ifdef CONFIG_SWAP
++	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
++	and	r11, r11, r10
++	rlwimi	r10, r11, 0, _PAGE_PRESENT
++#endif
+ 	li	r11, RPN_PATTERN | 0x200
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 20 and 23 must be clear.
+@@ -471,14 +472,22 @@ _ENTRY(DTLBMiss_jmp)
+ 	 * above.
+ 	 */
+ 	rlwimi	r11, r10, 0, _PAGE_GUARDED
+-#ifdef CONFIG_SWAP
+-	/* _PAGE_ACCESSED has to be set. We use second APG bit for that, 0
+-	 * on that bit will represent a Non Access group
+-	 */
+-	rlwinm	r11, r10, 31, _PAGE_ACCESSED >> 1
+-#endif
+ 	mtspr	SPRN_MD_TWC, r11
+ 
++	/* Both _PAGE_ACCESSED and _PAGE_PRESENT has to be set.
++	 * We also need to know if the insn is a load/store, so:
++	 * Clear _PAGE_PRESENT and load that which will
++	 * trap into DTLB Error with store bit set accordinly.
++	 */
++	/* PRESENT=0x1, ACCESSED=0x20
++	 * r11 = ((r10 & PRESENT) & ((r10 & ACCESSED) >> 5));
++	 * r10 = (r10 & ~PRESENT) | r11;
++	 */
++#ifdef CONFIG_SWAP
++	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
++	and	r11, r11, r10
++	rlwimi	r10, r11, 0, _PAGE_PRESENT
++#endif
+ 	/* The Linux PTE won't go exactly into the MMU TLB.
+ 	 * Software indicator bits 24, 25, 26, and 27 must be
+ 	 * set.  All other Linux PTE bits control the behavior
+@@ -638,8 +647,8 @@ InstructionBreakpoint:
+  */
+ DTLBMissIMMR:
+ 	mtcr	r12
+-	/* Set 512k byte guarded page and mark it valid and accessed */
+-	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID | M_APG2
++	/* Set 512k byte guarded page and mark it valid */
++	li	r10, MD_PS512K | MD_GUARDED | MD_SVALID
+ 	mtspr	SPRN_MD_TWC, r10
+ 	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
+ 	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
+@@ -657,8 +666,8 @@ _ENTRY(dtlb_miss_exit_2)
+ 
+ DTLBMissLinear:
+ 	mtcr	r12
+-	/* Set 8M byte page and mark it valid and accessed */
+-	li	r11, MD_PS8MEG | MD_SVALID | M_APG2
++	/* Set 8M byte page and mark it valid */
++	li	r11, MD_PS8MEG | MD_SVALID
+ 	mtspr	SPRN_MD_TWC, r11
+ 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
+ 	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
+@@ -676,8 +685,8 @@ _ENTRY(dtlb_miss_exit_3)
+ #ifndef CONFIG_PIN_TLB_TEXT
+ ITLBMissLinear:
+ 	mtcr	r12
+-	/* Set 8M byte page and mark it valid,accessed */
+-	li	r11, MI_PS8MEG | MI_SVALID | M_APG2
++	/* Set 8M byte page and mark it valid */
++	li	r11, MI_PS8MEG | MI_SVALID
+ 	mtspr	SPRN_MI_TWC, r11
+ 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
+ 	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
+@@ -960,7 +969,7 @@ initial_mmu:
+ 	ori	r8, r8, MI_EVALID	/* Mark it valid */
+ 	mtspr	SPRN_MI_EPN, r8
+ 	li	r8, MI_PS8MEG /* Set 8M byte page */
+-	ori	r8, r8, MI_SVALID | M_APG2	/* Make it valid, APG 2 */
++	ori	r8, r8, MI_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MI_TWC, r8
+ 	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
+ 	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
+@@ -987,7 +996,7 @@ initial_mmu:
+ 	ori	r8, r8, MD_EVALID	/* Mark it valid */
+ 	mtspr	SPRN_MD_EPN, r8
+ 	li	r8, MD_PS512K | MD_GUARDED	/* Set 512k byte page */
+-	ori	r8, r8, MD_SVALID | M_APG2	/* Make it valid and accessed */
++	ori	r8, r8, MD_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MD_TWC, r8
+ 	mr	r8, r9			/* Create paddr for TLB */
+ 	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
+index cf77d755246d..5d53684c2ebd 100644
+--- a/arch/powerpc/mm/8xx_mmu.c
++++ b/arch/powerpc/mm/8xx_mmu.c
+@@ -79,7 +79,7 @@ void __init MMU_init_hw(void)
+ 	for (; i < 32 && mem >= LARGE_PAGE_SIZE_8M; i++) {
+ 		mtspr(SPRN_MD_CTR, ctr | (i << 8));
+ 		mtspr(SPRN_MD_EPN, (unsigned long)__va(addr) | MD_EVALID);
+-		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID | M_APG2);
++		mtspr(SPRN_MD_TWC, MD_PS8MEG | MD_SVALID);
+ 		mtspr(SPRN_MD_RPN, addr | flags | _PAGE_PRESENT);
+ 		addr += LARGE_PAGE_SIZE_8M;
+ 		mem -= LARGE_PAGE_SIZE_8M;
+-- 
+2.13.3
