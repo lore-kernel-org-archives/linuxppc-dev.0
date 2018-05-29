@@ -1,8 +1,8 @@
 Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 40wMkl4r4FzDr43
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 04:31:41 +1000 (AEST)
-Date: Tue, 29 May 2018 20:31:38 +0200
+ by lists.ozlabs.org (Postfix) with ESMTP id 40wMkn3M1jzDr43
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 04:31:45 +1000 (AEST)
+Date: Tue, 29 May 2018 20:31:43 +0200
 From: Wolfram Sang <wsa@the-dreams.de>
 To: Peter Rosin <peda@axentia.se>
 Cc: linux-kernel@vger.kernel.org, Brendan Higgins <brendanhiggins@google.com>,
@@ -18,14 +18,14 @@ Cc: linux-kernel@vger.kernel.org, Brendan Higgins <brendanhiggins@google.com>,
  openbmc@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  linux-aspeed@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org
-Subject: Re: [PATCH v2 1/2] i2c: algos: make use of i2c_8bit_addr_from_msg
-Message-ID: <20180529183137.vsl7cuh2zjlplzfj@ninjato>
+Subject: Re: [PATCH v2 2/2] i2c: busses: make use of i2c_8bit_addr_from_msg
+Message-ID: <20180529183143.ker46to34gr5hx3w@ninjato>
 References: <20180516071647.29277-1-peda@axentia.se>
- <20180516071647.29277-2-peda@axentia.se>
+ <20180516071647.29277-3-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="5jxqd6gx2jsy35an"
-In-Reply-To: <20180516071647.29277-2-peda@axentia.se>
+ protocol="application/pgp-signature"; boundary="ywla3ypxi7fbwfzy"
+In-Reply-To: <20180516071647.29277-3-peda@axentia.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,37 +36,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---5jxqd6gx2jsy35an
-Content-Type: text/plain; charset=us-ascii
+--ywla3ypxi7fbwfzy
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, May 16, 2018 at 09:16:46AM +0200, Peter Rosin wrote:
+On Wed, May 16, 2018 at 09:16:47AM +0200, Peter Rosin wrote:
 > Because it looks neater.
 >=20
+> For diolan, this allows factoring out some code that is now common
+> between if and else.
+>=20
+> For eg20t, pch_i2c_writebytes is always called with a write in
+> msgs->flags, and pch_i2c_readbytes with a read.
+>=20
+> For imx, i2c_imx_dma_write and i2c_imx_write are always called with a
+> write in msgs->flags, and i2c_imx_read with a read.
+>=20
+> For qup, qup_i2c_write_tx_fifo_v1 is always called with a write in
+> qup->msg->flags.
+>=20
+> For stu300, also restructure debug output for resends, since that
+> code as a result is only handling debug output.
+>=20
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net> [diolan]
+> Acked-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de> [emf32 a=
+nd imx]
+> Acked-by: Linus Walleij <linus.walleij@linaro.org> [stu300]
 > Signed-off-by: Peter Rosin <peda@axentia.se>
 
 Applied to for-next, thanks!
 
 
---5jxqd6gx2jsy35an
+--ywla3ypxi7fbwfzy
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlsNnIkACgkQFA3kzBSg
-KbZsGg/+ONTuHz2aI66jHvuwKWxiAcRBdlIiawe6gDudTXDr9Uwt9fFXc0YJXxkx
-xB0lnDjcjY/pNi792W0ejqt5G1pGGyPnffD4/MtOS8yH7NewKy/JTurGn3QjvoH6
-qz58+Vmt9sXJkwt2mYOm66euOxRw7DzSJfd/BEovH+lJ2V3bMe9H9AMkns6/buti
-H6t6HGZz0C/Y4G7zhSfmJQJ6K8F1Ak0Swbc4Jc5cvhE+/7K+slKJ8hsbi3Bh9/VG
-2UFwIHW6h3ICBt0xDAhzeH+/tPyGXNyzSph2QCOAnli7nER72sc7hWyIlL6wymJD
-nQq8gfqRJa95mBiIt1BoeMUAO3sR1qzDMdx9j0dEAk868U2/P9AEYHEOw0/L0jU1
-mjypB7RXFg/2aBTiGaqIJL+Nr7a3uYcpk/KqZjmaN3wibZc8MJwE5gio14rPf09F
-akvxCLzRslRKJjG0AdoO3xJZHtYGsPqOKUjrj3t9clhGfuUZnfCepft3xwirIu7p
-8AqGeJB5DWNssIIlzb+2I9243RmV2808BfFB8JBzgHP+AbJ8yCDBfJCj0BqPaGqj
-c/qAYFvPPKwb7qmLNsHLoErqH/2OjqAiOHlHckc3s1/eQNR+XpVD1L37jTROUBNq
-2KI58ADi8/UcUCM6Y5JDyM/G7X6xC+q6oWUmRffSmWkmcoZITVk=
-=y2Wp
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlsNnI8ACgkQFA3kzBSg
+KbZC4A/7B0QIKCSquWwTUwVg/hBiXgsZTb1tAbuqsmSLFLUN0S/GD2du/zLhpqlc
+tQwrw4SPFDEbDHTLLgu9YOI7Gxfn6IcNm5BEJ3tL7ef1A1Yy/PCpv3/UPAG2QXBd
+Q019MAuoQpanhU3k7L7XSbVAXrPcmspeuYJzSsCvNKnk5/Io8uJ77hl5K8NWryKQ
+MP9Tw8CRaH/vihI+4ZnhU0YUqKJBlFnRXcHThcda1baF6HsNFlqM2PT5XP9TtDvp
+3+Q+g8OCV9TRCFhAeDvJ84CR8TwdXwK0qftlbH4QVl2eq480CBi9r9+Ze5TuaIlH
+4kTJvS+IyRT29GJ+u3VlaD12ZdkcRTW5WQghGhQlTVkmGSSxpybNs3cVoha37/Es
+ntiSMG7YurcXD68hnMkAPpI7cUINMY6/y9mkgTE8Jae/AKf4qTIWtpkDwYiBa+Jh
+SY1WJFPAAhY0Avz/0h13ZZaAu0eeTVbM4kGNiHtV8OTl6FnCmLEfm3gtUE/a2Cnx
+3WdhkQFDlbl2/J3P/MLJcik+fPTSWZPrHblHVn9wtMt++2uCr88R5XCcpJ08pkcH
+F5adRaRAVoI5MDpDT7VifZ7zqVyvfdwjIHEQrjrRnDDIsmo9R+P1+C9WiWsMwLdB
+St94YeEV2gbxn+XFd1SliCKEaoKtu9lnsE2hQGLGwujq1rKyyt8=
+=qpJp
 -----END PGP SIGNATURE-----
 
---5jxqd6gx2jsy35an--
+--ywla3ypxi7fbwfzy--
