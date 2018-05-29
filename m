@@ -1,29 +1,17 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-x244.google.com (mail-ot0-x244.google.com
- [IPv6:2607:f8b0:4003:c0f::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wCwK2TYYzDrCm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:39:29 +1000 (AEST)
-Received: by mail-ot0-x244.google.com with SMTP id q17-v6so6154544otg.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 05:39:29 -0700 (PDT)
-MIME-Version: 1.0
-Sender: mathieu.malaterre@gmail.com
-In-Reply-To: <20180529222327.29d16eb6@canb.auug.org.au>
-References: <20180529210257.26da8de7@canb.auug.org.au>
- <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
- <20180529222327.29d16eb6@canb.auug.org.au>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 29 May 2018 14:39:06 +0200
-Message-ID: <CA+7wUsy8V9zyH+-nU_X+tpXnN3VYGctErquqSX3g7kQGZsvupQ@mail.gmail.com>
-Subject: Re: linux-next: boot messages from today's linux-next
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wDKQ5sQKzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:57:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org,
+	viro@zeniv.linux.org.uk
+Cc: malat@debian.org
+Subject: [PATCH] powerpc/ptrace: Use copy_{from,
+ to}_user() rather than open-coding
+Date: Tue, 29 May 2018 22:57:38 +1000
+Message-Id: <20180529125738.24271-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,52 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen,
+From: Al Viro <viro@ZenIV.linux.org.uk>
 
-On Tue, May 29, 2018 at 2:23 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Mathieu,
->
-> On Tue, 29 May 2018 13:56:48 +0200 Mathieu Malaterre <malat@debian.org> wrote:
->>
->> On Tue, May 29, 2018 at 1:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->> > Hi all,
->> >
->> > My qemu boots of today's powerpc linux-next kernel produced the following
->> > boot message differences:
->> >
->> > -Max number of cores passed to firmware: 2048 (NR_CPUS = 2048)
->> > +Max number of cores passed to firmware: u (NR_CPUS = 2048)
->> >
->> > Seemingly caused by commit
->> >
->> >   eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf")
->>
->> My bad. Patch is pending (thanks Michael!):
->>
->> https://patchwork.ozlabs.org/patch/921948/
->
-> Umm, that fixes some other messages, but not this particular one.
+In PPC_PTRACE_GETHWDBGINFO and PPC_PTRACE_SETHWDEBUG we do an
+access_ok() check and then __copy_{from,to}_user().
 
-Here is what I tried to say:
+Instead we should just use copy_{from,to}_user() which does all that
+for us and is less error prone.
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index 4d62f561f272..72ebe5896c1d 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -379,6 +379,11 @@ static void __init prom_printf(const char *format, ...)
-                        }
-                        prom_print_dec(vs);
-                        break;
-+               case 'u':
-+                       ++q;
-+                       vs = va_arg(args, unsigned long);
-+                       prom_print_dec(vs);
-+                       break;
-                case 'l':
-                        ++q;
-                        if (*q == 0)
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/ptrace.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-
-> --
-> Cheers,
-> Stephen Rothwell
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 0f63dd5972e9..9667666eb18e 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -3082,27 +3082,19 @@ long arch_ptrace(struct task_struct *child, long request,
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
+ 
+-		if (!access_ok(VERIFY_WRITE, datavp,
+-			       sizeof(struct ppc_debug_info)))
++		if (copy_to_user(datavp, &dbginfo,
++				 sizeof(struct ppc_debug_info)))
+ 			return -EFAULT;
+-		ret = __copy_to_user(datavp, &dbginfo,
+-				     sizeof(struct ppc_debug_info)) ?
+-		      -EFAULT : 0;
+-		break;
++		return 0;
+ 	}
+ 
+ 	case PPC_PTRACE_SETHWDEBUG: {
+ 		struct ppc_hw_breakpoint bp_info;
+ 
+-		if (!access_ok(VERIFY_READ, datavp,
+-			       sizeof(struct ppc_hw_breakpoint)))
++		if (copy_from_user(&bp_info, datavp,
++				   sizeof(struct ppc_hw_breakpoint)))
+ 			return -EFAULT;
+-		ret = __copy_from_user(&bp_info, datavp,
+-				       sizeof(struct ppc_hw_breakpoint)) ?
+-		      -EFAULT : 0;
+-		if (!ret)
+-			ret = ppc_set_hwdebug(child, &bp_info);
+-		break;
++		return ppc_set_hwdebug(child, &bp_info);
+ 	}
+ 
+ 	case PPC_PTRACE_DELHWDEBUG: {
+-- 
+2.14.1
