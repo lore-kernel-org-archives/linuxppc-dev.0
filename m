@@ -1,24 +1,24 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wCYs0FQYzDr4N
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:23:29 +1000 (AEST)
-Date: Tue, 29 May 2018 22:23:27 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
- Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing
- List <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: boot messages from today's linux-next
-Message-ID: <20180529222327.29d16eb6@canb.auug.org.au>
-In-Reply-To: <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
-References: <20180529210257.26da8de7@canb.auug.org.au>
- <CA+7wUsw4Us749j8yO5zpqfMcYWPMujwkNq0CRSSWWVFDJXLS0w@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wCkZ3SxzzDqGD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2018 22:31:02 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stewart Smith <stewart@linux.ibm.com>,
+ Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net,
+ daniel.lezcano@linaro.org, benh@kernel.crashing.org, paulus@samba.org,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv : Add Description for cpuidle state
+In-Reply-To: <87d0xf6y16.fsf@linux.vnet.ibm.com>
+References: <20180528173442.100642-1-huntbag@linux.vnet.ibm.com>
+ <87d0xf6y16.fsf@linux.vnet.ibm.com>
+Date: Tue, 29 May 2018 22:30:57 +1000
+Message-ID: <87sh6a4pa6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/QVX.L/P4qjtv1+yvwEKFwpx"; protocol="application/pgp-signature"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/QVX.L/P4qjtv1+yvwEKFwpx
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Stewart Smith <stewart@linux.ibm.com> writes:
 
-Hi Mathieu,
-
-On Tue, 29 May 2018 13:56:48 +0200 Mathieu Malaterre <malat@debian.org> wro=
-te:
+> Abhishek Goel <huntbag@linux.vnet.ibm.com> writes:
+>> @@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
+>>  				     u64 psscr_val, u64 psscr_mask)
+>>  {
+>>  	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+>> -	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
+>> +	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
 >
-> On Tue, May 29, 2018 at 1:02 PM, Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
-> > Hi all,
-> >
-> > My qemu boots of today's powerpc linux-next kernel produced the followi=
-ng
-> > boot message differences:
-> >
-> > -Max number of cores passed to firmware: 2048 (NR_CPUS =3D 2048)
-> > +Max number of cores passed to firmware: u (NR_CPUS =3D 2048)
-> >
-> > Seemingly caused by commit
-> >
-> >   eae5f709a4d7 ("powerpc: Add __printf verification to prom_printf") =20
->=20
-> My bad. Patch is pending (thanks Michael!):
->=20
-> https://patchwork.ozlabs.org/patch/921948/
+> We should still fall back to using name in the event of desc being null,
+> as not all firmware will expose the descriptions.
+>
+>> @@ -311,6 +313,11 @@ static int powernv_add_idle_states(void)
+>>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+>>  		goto out;
+>>  	}
+>> +	if (of_property_read_string_array(power_mgt,
+>> +		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
+>> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n");
+>> +		goto out;
+>> +	}
+>
+> I don't think pr_warn is appropriate here, as for all current released
+> firmware we don't have that property. I think perhaps just silently
+> continuing on is okay, as we have to keep compatibility with that firmware.
 
-Umm, that fixes some other messages, but not this particular one.
++1
 
---=20
-Cheers,
-Stephen Rothwell
+Anyone who's wondering why they're not seeing the names can just look at
+the device tree on the machine to see if the property is there or not,
+they don't need a printk in dmesg to tell them.
 
---Sig_/QVX.L/P4qjtv1+yvwEKFwpx
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlsNRj8ACgkQAVBC80lX
-0GwSWAf/X+uepuMrYN2u3rwltVhmCwERj1SOYZwcok8zW/lT25+Ix8rZWes92Xm2
-zadjH7cH0C9Umt7FTc8mnJ51WTKoPz8CKQzvdLGE1DBAEJtLtWdowPbK9BfEbbwN
-DMnjQxekWX5/B7uwPczkRaI9QdqAnJnUAxhBfx+wJEkpXKqo6cfHvu2kcuhEyilw
-rLU/L032uNC92sctqZfJfml9NN0wLy3FnVbSXC3gW9LkffIU2ZS39wus7HNlZLJm
-Lg1qzZS2CagtyJ962TB090Fql4C8lAMEUZEvlCY0GXURh47CxJoLT0RhRFKKtver
-T+P9RxiA90jtjs9eVvmsi5D4N5lbIw==
-=22jt
------END PGP SIGNATURE-----
-
---Sig_/QVX.L/P4qjtv1+yvwEKFwpx--
+cheers
