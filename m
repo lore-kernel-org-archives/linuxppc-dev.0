@@ -1,18 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0050.hostedemail.com
+ [216.40.44.50])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wJWT3lHSzDr69
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:06:45 +1000 (AEST)
-Message-Id: <919de56550f431fda0e1073cd51519b2c2623294.1527609852.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3] powerpc: fix build failure by disabling attribute-alias
- warning
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- segher@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 29 May 2018 16:06:41 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wJjZ1pqbzDrBy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:15:29 +1000 (AEST)
+Message-ID: <0ccd6834d0c4a24f351050d0cd7581e2d2aecd7c.camel@perches.com>
+Subject: Re: [PATCH] powerpc/64s: Enhance the information in
+ cpu_show_spectre_v1()
+From: Joe Perches <joe@perches.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Michal
+ =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Mauricio Faria
+ de Oliveira <mauricfo@linux.vnet.ibm.com>, Nicholas Piggin
+ <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org
+Date: Tue, 29 May 2018 09:15:21 -0700
+In-Reply-To: <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
+References: <20180424041559.32410-1-mpe@ellerman.id.au>
+ <20180528131914.32231-1-msuchanek@suse.de>
+ <1b720765-faf1-719e-ab76-b3eafa559896@c-s.fr>
+ <20180529164640.02faedcd@kitsune.suse.cz>
+ <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,320 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Latest GCC version emit the following warnings
+On Tue, 2018-05-29 at 15:24 +0000, Christophe Leroy wrote:
+> On 05/29/2018 02:46 PM, Michal Suchánek wrote:
+> > On Tue, 29 May 2018 16:13:49 +0200 Christophe LEROY <christophe.leroy@c-s.fr> wrote:
+[]
+> > diff --git a/arch/powerpc/kernel/security.c
+> > > > b/arch/powerpc/kernel/security.c index 0239383c7e4d..a0c32d53980b
+> > > > 100644 --- a/arch/powerpc/kernel/security.c
+> > > > +++ b/arch/powerpc/kernel/security.c
+> > > > @@ -120,7 +120,10 @@ ssize_t cpu_show_spectre_v1(struct device
+> > > > *dev, struct device_attribute *attr, c if
+> > > > (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) return
+> > > > sprintf(buf, "Not affected\n");
+> > > > -	return sprintf(buf, "Vulnerable\n");
+> > > > +	if (barrier_nospec_enabled)
+> > > > +		return sprintf(buf, "Mitigation: __user pointer
+> > > > sanitization\n");
+> > > > +	else
+> > > > +		return sprintf(buf, "Vulnerable\n");
+> > > 
+> > > Checkpatch would tell you that an else is unneeded after a return. So
+> > > just leave it as it was before.
+> > 
+> > Where did you get your copy of checkpatch? The one in Linux tree does
+> > not do that.
 
-As arch/powerpc code is built with -Werror, this breaks build with
-GCC 8.1
+Correct as this particular style is a maintainer preference.
 
-This patch inhibits those warnings
+> Strange, it should, as checkpatch.pl includes the following code:
+> 
+> # check indentation of any line with a bare else
+> # (but not if it is a multiple line "if (foo) return bar; else return baz;")
 
-  CC      arch/powerpc/kernel/syscalls.o
-In file included from arch/powerpc/kernel/syscalls.c:24:
-./include/linux/syscalls.h:233:18: error: 'sys_mmap2' alias between functions of incompatible types 'long int(long unsigned int,  size_t,  long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int)' {aka 'long int(long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int)'} and 'long int(long int,  long int,  long int,  long int,  long int,  long int)' [-Werror=attribute-alias]
-  asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:216:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/syscalls.c:65:1: note: in expansion of macro 'SYSCALL_DEFINE6'
- SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:238:18: note: aliased declaration here
-  asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:216:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/syscalls.c:65:1: note: in expansion of macro 'SYSCALL_DEFINE6'
- SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:233:18: error: 'sys_mmap' alias between functions of incompatible types 'long int(long unsigned int,  size_t,  long unsigned int,  long unsigned int,  long unsigned int,  off_t)' {aka 'long int(long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int,  long unsigned int,  long int)'} and 'long int(long int,  long int,  long int,  long int,  long int,  long int)' [-Werror=attribute-alias]
-  asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:216:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/syscalls.c:72:1: note: in expansion of macro 'SYSCALL_DEFINE6'
- SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:238:18: note: aliased declaration here
-  asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:216:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE6(name, ...) SYSCALL_DEFINEx(6, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/syscalls.c:72:1: note: in expansion of macro 'SYSCALL_DEFINE6'
- SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
- ^~~~~~~~~~~~~~~
-  CC      arch/powerpc/kernel/signal_32.o
-In file included from arch/powerpc/kernel/signal_32.c:31:
-./include/linux/compat.h:74:18: error: 'compat_sys_swapcontext' alias between functions of incompatible types 'long int(struct ucontext32 *, struct ucontext32 *, int)' and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
-  asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~~~~~~~~
-./include/linux/compat.h:58:2: note: in expansion of macro 'COMPAT_SYSCALL_DEFINEx'
-  COMPAT_SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~~~~~~
-arch/powerpc/kernel/signal_32.c:1041:1: note: in expansion of macro 'COMPAT_SYSCALL_DEFINE3'
- COMPAT_SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- ^~~~~~~~~~~~~~~~~~~~~~
-./include/linux/compat.h:79:18: note: aliased declaration here
-  asmlinkage long __se_compat_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~~~~~~~~
-./include/linux/compat.h:58:2: note: in expansion of macro 'COMPAT_SYSCALL_DEFINEx'
-  COMPAT_SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~~~~~~
-arch/powerpc/kernel/signal_32.c:1041:1: note: in expansion of macro 'COMPAT_SYSCALL_DEFINE3'
- COMPAT_SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- ^~~~~~~~~~~~~~~~~~~~~~
-  CC      arch/powerpc/kernel/signal_64.o
-In file included from arch/powerpc/kernel/signal_64.c:27:
-./include/linux/syscalls.h:233:18: error: 'sys_swapcontext' alias between functions of incompatible types 'long int(struct ucontext *, struct ucontext *, long int)' and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
-  asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/signal_64.c:628:1: note: in expansion of macro 'SYSCALL_DEFINE3'
- SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:238:18: note: aliased declaration here
-  asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/signal_64.c:628:1: note: in expansion of macro 'SYSCALL_DEFINE3'
- SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- ^~~~~~~~~~~~~~~
-  CC      arch/powerpc/kernel/rtas.o
-In file included from arch/powerpc/kernel/rtas.c:29:
-./include/linux/syscalls.h:233:18: error: 'sys_rtas' alias between functions of incompatible types 'long int(struct rtas_args *)' and 'long int(long int)' [-Werror=attribute-alias]
-  asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:211:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/rtas.c:1054:1: note: in expansion of macro 'SYSCALL_DEFINE1'
- SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:238:18: note: aliased declaration here
-  asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:211:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE1(name, ...) SYSCALL_DEFINEx(1, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/rtas.c:1054:1: note: in expansion of macro 'SYSCALL_DEFINE1'
- SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- ^~~~~~~~~~~~~~~
-  CC      arch/powerpc/kernel/pci_64.o
-In file included from arch/powerpc/kernel/pci_64.c:23:
-./include/linux/syscalls.h:233:18: error: 'sys_pciconfig_iobase' alias between functions of incompatible types 'long int(long int,  long unsigned int,  long unsigned int)' and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
-  asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
-                  ^~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/pci_64.c:206:1: note: in expansion of macro 'SYSCALL_DEFINE3'
- SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, in_bus,
- ^~~~~~~~~~~~~~~
-./include/linux/syscalls.h:238:18: note: aliased declaration here
-  asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
-                  ^~~~~~~~
-./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
-  __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~
-./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
- #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
-                                    ^~~~~~~~~~~~~~~
-arch/powerpc/kernel/pci_64.c:206:1: note: in expansion of macro 'SYSCALL_DEFINE3'
- SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, in_bus,
- ^~~~~~~~~~~~~~~
+Note this comment and also that this case is
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
-v3: added '#pragma GCC diagnostic ignored "-Wpragmas"' to avoid build failure on old GCC
+	if (foo)
+		return bar;
+	else
+		return baz;
 
- arch/powerpc/kernel/pci_64.c    | 4 ++++
- arch/powerpc/kernel/rtas.c      | 4 ++++
- arch/powerpc/kernel/signal_32.c | 8 ++++++++
- arch/powerpc/kernel/signal_64.c | 4 ++++
- arch/powerpc/kernel/syscalls.c  | 4 ++++
- arch/powerpc/mm/subpage-prot.c  | 4 ++++
- 6 files changed, 28 insertions(+)
+so no warning is generated.
 
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index dff28f903512..812171c09f42 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -203,6 +203,9 @@ void pcibios_setup_phb_io_space(struct pci_controller *hose)
- #define IOBASE_ISA_IO		3
- #define IOBASE_ISA_MEM		4
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, in_bus,
- 			  unsigned long, in_devfn)
- {
-@@ -256,6 +259,7 @@ SYSCALL_DEFINE3(pciconfig_iobase, long, which, unsigned long, in_bus,
- 
- 	return -EOPNOTSUPP;
- }
-+#pragma GCC diagnostic pop
- 
- #ifdef CONFIG_NUMA
- int pcibus_to_node(struct pci_bus *bus)
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 8afd146bc9c7..7fb9f83dcde8 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -1051,6 +1051,9 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
- }
- 
- /* We assume to be passed big endian arguments */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- {
- 	struct rtas_args args;
-@@ -1137,6 +1140,7 @@ SYSCALL_DEFINE1(rtas, struct rtas_args __user *, uargs)
- 
- 	return 0;
- }
-+#pragma GCC diagnostic pop
- 
- /*
-  * Call early during boot, before mem init, to retrieve the RTAS
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 9cf8a03d3bc7..342ac78f620f 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1037,6 +1037,9 @@ static int do_setcontext_tm(struct ucontext __user *ucp,
- }
- #endif
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- #ifdef CONFIG_PPC64
- COMPAT_SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 		       struct ucontext __user *, new_ctx, int, ctx_size)
-@@ -1132,6 +1135,7 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
- }
-+#pragma GCC diagnostic pop
- 
- #ifdef CONFIG_PPC64
- COMPAT_SYSCALL_DEFINE0(rt_sigreturn)
-@@ -1228,6 +1232,9 @@ SYSCALL_DEFINE0(rt_sigreturn)
- 	return 0;
- }
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- #ifdef CONFIG_PPC32
- SYSCALL_DEFINE3(debug_setcontext, struct ucontext __user *, ctx,
- 			 int, ndbg, struct sig_dbg_op __user *, dbg)
-@@ -1333,6 +1340,7 @@ SYSCALL_DEFINE3(debug_setcontext, struct ucontext __user *, ctx,
- 	return 0;
- }
- #endif
-+#pragma GCC diagnostic pop
- 
- /*
-  * OK, we're invoking a handler
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 83d51bf586c7..d42b60020389 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -625,6 +625,9 @@ static long setup_trampoline(unsigned int syscall, unsigned int __user *tramp)
- /*
-  * Handle {get,set,swap}_context operations
-  */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 		struct ucontext __user *, new_ctx, long, ctx_size)
- {
-@@ -690,6 +693,7 @@ SYSCALL_DEFINE3(swapcontext, struct ucontext __user *, old_ctx,
- 	set_thread_flag(TIF_RESTOREALL);
- 	return 0;
- }
-+#pragma GCC diagnostic pop
- 
- 
- /*
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index 466216506eb2..083fa06962fd 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -62,6 +62,9 @@ static inline long do_mmap2(unsigned long addr, size_t len,
- 	return ret;
- }
- 
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
- 		unsigned long, prot, unsigned long, flags,
- 		unsigned long, fd, unsigned long, pgoff)
-@@ -75,6 +78,7 @@ SYSCALL_DEFINE6(mmap, unsigned long, addr, size_t, len,
- {
- 	return do_mmap2(addr, len, prot, flags, fd, offset, PAGE_SHIFT);
- }
-+#pragma GCC diagnostic pop
- 
- #ifdef CONFIG_PPC32
- /*
-diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
-index 9d16ee251fc0..75cb646a79c3 100644
---- a/arch/powerpc/mm/subpage-prot.c
-+++ b/arch/powerpc/mm/subpage-prot.c
-@@ -186,6 +186,9 @@ static void subpage_mark_vma_nohuge(struct mm_struct *mm, unsigned long addr,
-  * in a 2-bit field won't allow writes to a page that is otherwise
-  * write-protected.
-  */
-+#pragma GCC diagnostic push
-+#pragma GCC diagnostic ignored "-Wpragmas"
-+#pragma GCC diagnostic ignored "-Wattribute-alias"
- SYSCALL_DEFINE3(subpage_prot, unsigned long, addr,
- 		unsigned long, len, u32 __user *, map)
- {
-@@ -269,3 +272,4 @@ SYSCALL_DEFINE3(subpage_prot, unsigned long, addr,
- 	up_write(&mm->mmap_sem);
- 	return err;
- }
-+#pragma GCC diagnostic pop
--- 
-2.13.3
+> # if the previous line is a break or return and is indented 1 tab more...
+> 		if ($sline =~ /^\+([\t]+)(?:}[ \t]*)?else(?:[ \t]*{)?\s*$/) {
+> 			my $tabs = length($1) + 1;
+> 			if ($prevline =~ /^\+\t{$tabs,$tabs}break\b/ ||
+> 			    ($prevline =~ /^\+\t{$tabs,$tabs}return\b/ &&
+> 			     defined $lines[$linenr] &&
+> 			     $lines[$linenr] !~ /^[ \+]\t{$tabs,$tabs}return/)) {
+> 				WARN("UNNECESSARY_ELSE",
+> 				     "else is not generally useful after a break or return\n" . 
+> $hereprev);
+> 			}
+> 		}
+> 
+> 
+> Anyway, you should remove that 'else' in your patch.
+> And the other sprintf line is over 80 characters.
+> 
+> Christophe
+> 
+> > 
+> > Thanks
+> > 
+> > Michal
+> > 
