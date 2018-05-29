@@ -1,30 +1,16 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0050.hostedemail.com
- [216.40.44.50])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wJjZ1pqbzDrBy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:15:29 +1000 (AEST)
-Message-ID: <0ccd6834d0c4a24f351050d0cd7581e2d2aecd7c.camel@perches.com>
-Subject: Re: [PATCH] powerpc/64s: Enhance the information in
- cpu_show_spectre_v1()
-From: Joe Perches <joe@perches.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>, Michal
- =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Mauricio Faria
- de Oliveira <mauricfo@linux.vnet.ibm.com>, Nicholas Piggin
- <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org,  linux-kernel@vger.kernel.org
-Date: Tue, 29 May 2018 09:15:21 -0700
-In-Reply-To: <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
-References: <20180424041559.32410-1-mpe@ellerman.id.au>
- <20180528131914.32231-1-msuchanek@suse.de>
- <1b720765-faf1-719e-ab76-b3eafa559896@c-s.fr>
- <20180529164640.02faedcd@kitsune.suse.cz>
- <59492aa2-a12d-4f74-0a5a-14f89de64908@c-s.fr>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wJny1yVtzDrRY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:19:18 +1000 (AEST)
+Message-Id: <2e937890abac10677aae3c1e345dd934a6794c37.1527610536.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 1/3] powerpc/time: inline arch_vtime_task_switch()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 29 May 2018 16:19:14 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,68 +20,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-29 at 15:24 +0000, Christophe Leroy wrote:
-> On 05/29/2018 02:46 PM, Michal Suchánek wrote:
-> > On Tue, 29 May 2018 16:13:49 +0200 Christophe LEROY <christophe.leroy@c-s.fr> wrote:
-[]
-> > diff --git a/arch/powerpc/kernel/security.c
-> > > > b/arch/powerpc/kernel/security.c index 0239383c7e4d..a0c32d53980b
-> > > > 100644 --- a/arch/powerpc/kernel/security.c
-> > > > +++ b/arch/powerpc/kernel/security.c
-> > > > @@ -120,7 +120,10 @@ ssize_t cpu_show_spectre_v1(struct device
-> > > > *dev, struct device_attribute *attr, c if
-> > > > (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) return
-> > > > sprintf(buf, "Not affected\n");
-> > > > -	return sprintf(buf, "Vulnerable\n");
-> > > > +	if (barrier_nospec_enabled)
-> > > > +		return sprintf(buf, "Mitigation: __user pointer
-> > > > sanitization\n");
-> > > > +	else
-> > > > +		return sprintf(buf, "Vulnerable\n");
-> > > 
-> > > Checkpatch would tell you that an else is unneeded after a return. So
-> > > just leave it as it was before.
-> > 
-> > Where did you get your copy of checkpatch? The one in Linux tree does
-> > not do that.
+arch_vtime_task_switch() is a small function which is called
+only from vtime_common_task_switch(), so it is worth inlining
 
-Correct as this particular style is a maintainer preference.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v3: no change
+ v2: added a local pointer for get_accounting(prev) to avoid GCC to read it twice
 
-> Strange, it should, as checkpatch.pl includes the following code:
-> 
-> # check indentation of any line with a bare else
-> # (but not if it is a multiple line "if (foo) return bar; else return baz;")
+ arch/powerpc/include/asm/cputime.h | 16 +++++++++++++++-
+ arch/powerpc/kernel/time.c         | 21 ---------------------
+ 2 files changed, 15 insertions(+), 22 deletions(-)
 
-Note this comment and also that this case is
-
-	if (foo)
-		return bar;
-	else
-		return baz;
-
-so no warning is generated.
-
-> # if the previous line is a break or return and is indented 1 tab more...
-> 		if ($sline =~ /^\+([\t]+)(?:}[ \t]*)?else(?:[ \t]*{)?\s*$/) {
-> 			my $tabs = length($1) + 1;
-> 			if ($prevline =~ /^\+\t{$tabs,$tabs}break\b/ ||
-> 			    ($prevline =~ /^\+\t{$tabs,$tabs}return\b/ &&
-> 			     defined $lines[$linenr] &&
-> 			     $lines[$linenr] !~ /^[ \+]\t{$tabs,$tabs}return/)) {
-> 				WARN("UNNECESSARY_ELSE",
-> 				     "else is not generally useful after a break or return\n" . 
-> $hereprev);
-> 			}
-> 		}
-> 
-> 
-> Anyway, you should remove that 'else' in your patch.
-> And the other sprintf line is over 80 characters.
-> 
-> Christophe
-> 
-> > 
-> > Thanks
-> > 
-> > Michal
-> > 
+diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
+index 99b541865d8d..bc4903badb3f 100644
+--- a/arch/powerpc/include/asm/cputime.h
++++ b/arch/powerpc/include/asm/cputime.h
+@@ -47,9 +47,23 @@ static inline unsigned long cputime_to_usecs(const cputime_t ct)
+  * has to be populated in the new task
+  */
+ #ifdef CONFIG_PPC64
++#define get_accounting(tsk)	(&get_paca()->accounting)
+ static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
+ #else
+-void arch_vtime_task_switch(struct task_struct *tsk);
++#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
++/*
++ * Called from the context switch with interrupts disabled, to charge all
++ * accumulated times to the current process, and to prepare accounting on
++ * the next process.
++ */
++static inline void arch_vtime_task_switch(struct task_struct *prev)
++{
++	struct cpu_accounting_data *acct = get_accounting(current);
++	struct cpu_accounting_data *acct0 = get_accounting(prev);
++
++	acct->starttime = acct0->starttime;
++	acct->startspurr = acct0->startspurr;
++}
+ #endif
+ 
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 360e71d455cc..a3ed2eb99d88 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -163,12 +163,6 @@ EXPORT_SYMBOL(__cputime_usec_factor);
+ void (*dtl_consumer)(struct dtl_entry *, u64);
+ #endif
+ 
+-#ifdef CONFIG_PPC64
+-#define get_accounting(tsk)	(&get_paca()->accounting)
+-#else
+-#define get_accounting(tsk)	(&task_thread_info(tsk)->accounting)
+-#endif
+-
+ static void calc_cputime_factors(void)
+ {
+ 	struct div_result res;
+@@ -421,21 +415,6 @@ void vtime_flush(struct task_struct *tsk)
+ 	acct->softirq_time = 0;
+ }
+ 
+-#ifdef CONFIG_PPC32
+-/*
+- * Called from the context switch with interrupts disabled, to charge all
+- * accumulated times to the current process, and to prepare accounting on
+- * the next process.
+- */
+-void arch_vtime_task_switch(struct task_struct *prev)
+-{
+-	struct cpu_accounting_data *acct = get_accounting(current);
+-
+-	acct->starttime = get_accounting(prev)->starttime;
+-	acct->startspurr = get_accounting(prev)->startspurr;
+-}
+-#endif /* CONFIG_PPC32 */
+-
+ #else /* ! CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+ #define calc_cputime_factors()
+ #endif
+-- 
+2.13.3
