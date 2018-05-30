@@ -1,22 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wqR81wllzDrJr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:19:48 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id az12-v6so10991613plb.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 05:19:48 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-kbuild@vger.kernel.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH v5 4/4] powerpc/kbuild: move -mprofile-kernel check to Kconfig
-Date: Wed, 30 May 2018 22:19:22 +1000
-Message-Id: <20180530121922.22122-5-npiggin@gmail.com>
-In-Reply-To: <20180530121922.22122-1-npiggin@gmail.com>
-References: <20180530121922.22122-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wqk215LWzDrJB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:32:41 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4UCOvfS047582
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 08:32:38 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2j9s4nyptp-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 08:32:36 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 30 May 2018 08:32:36 -0400
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [PATCH] powerpc/mm: Fix kernel crash on page table free
+Date: Wed, 30 May 2018 18:02:25 +0530
+Message-Id: <20180530123225.7732-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,149 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This eliminates the workaround that requires disabling
--mprofile-kernel by default in Kconfig.
+Fix the below crash on BookE 64. pgtable_page_dtor expects struct page *arg.
 
-[ Note: this depends on https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git kconfig-shell-v3 ]
+Also call the destructor on non book3s platforms correctly. This free up the
+split ptl locks correctly if we had allocated them before.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Call Trace:
+[c0000000f30c7520] [c00000000021eeec] .kmem_cache_free+0x9c/0x44c (unreliable)
+[c0000000f30c75c0] [c0000000001ee07c] .ptlock_free+0x1c/0x30
+[c0000000f30c7630] [c0000000001ee260] .tlb_remove_table+0xdc/0x224
+[c0000000f30c76c0] [c0000000001ee640] .free_pgd_range+0x298/0x500
+[c0000000f30c77d0] [c000000000232afc] .shift_arg_pages+0x10c/0x1e0
+[c0000000f30c7910] [c000000000232dd0] .setup_arg_pages+0x200/0x25c
+[c0000000f30c79c0] [c0000000002ad4fc] .load_elf_binary+0x450/0x16c8
+[c0000000f30c7b10] [c000000000234914] .search_binary_handler.part.11+0x9c/0x248
+[c0000000f30c7bb0] [c00000000023595c] .do_execveat_common.isra.13+0x868/0xc18
+[c0000000f30c7cb0] [c00000000000184c] .run_init_process+0x34/0x4c
+[c0000000f30c7d30] [c000000000001880] .try_to_run_init_process+0x1c/0x68
+[c0000000f30c7db0] [c000000000002bd8] .kernel_init+0xdc/0x130
+[c0000000f30c7e30] [c0000000000009dc] .ret_from_kernel_thread+0x58/0x7c
+
+Fixes: 702346768 ("powerpc/mm/nohash: Remove pte fragment dependency from nohash")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/Kconfig                            | 16 +---------------
- arch/powerpc/Makefile                           | 13 +------------
- arch/powerpc/include/asm/module.h               |  2 +-
- arch/powerpc/kernel/module_64.c                 |  4 ++--
- arch/powerpc/kernel/trace/ftrace.c              |  6 +++---
- arch/powerpc/tools/gcc-check-mprofile-kernel.sh |  1 -
- 6 files changed, 8 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 1 +
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 1 +
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 2 +-
+ 3 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0cc41146bc51..736fe35a657d 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -461,23 +461,9 @@ config LD_HEAD_STUB_CATCH
- 
- 	  If unsure, say "N".
- 
--config DISABLE_MPROFILE_KERNEL
--	bool "Disable use of mprofile-kernel for kernel tracing"
--	depends on PPC64 && CPU_LITTLE_ENDIAN
--	default y
--	help
--	  Selecting this options disables use of the mprofile-kernel ABI for
--	  kernel tracing. That will cause options such as live patching
--	  (CONFIG_LIVEPATCH) which depend on CONFIG_DYNAMIC_FTRACE_WITH_REGS to
--	  be disabled also.
--
--	  If you have a toolchain which supports mprofile-kernel, then you can
--	  disable this. Otherwise leave it enabled. If you're not sure, say
--	  "Y".
--
- config MPROFILE_KERNEL
- 	depends on PPC64 && CPU_LITTLE_ENDIAN
--	def_bool !DISABLE_MPROFILE_KERNEL
-+	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
- 
- config IOMMU_HELPER
- 	def_bool PPC64
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6faf1d6ad9dd..8eda91e0b8df 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -161,18 +161,7 @@ CFLAGS-$(CONFIG_GENERIC_CPU) += -mcpu=powerpc64
- endif
- 
- ifdef CONFIG_MPROFILE_KERNEL
--    ifeq ($(shell $(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__),OK)
--        CC_FLAGS_FTRACE := -pg -mprofile-kernel
--        KBUILD_CPPFLAGS += -DCC_USING_MPROFILE_KERNEL
--    else
--        # If the user asked for mprofile-kernel but the toolchain doesn't
--        # support it, emit a warning and deliberately break the build later
--        # with mprofile-kernel-not-supported. We would prefer to make this an
--        # error right here, but then the user would never be able to run
--        # oldconfig to change their configuration.
--        $(warning Compiler does not support mprofile-kernel, set CONFIG_DISABLE_MPROFILE_KERNEL)
--        CC_FLAGS_FTRACE := -mprofile-kernel-not-supported
--    endif
-+	CC_FLAGS_FTRACE := -pg -mprofile-kernel
- endif
- 
- CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 4f6573934792..c38b125b7a57 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -14,7 +14,7 @@
- #include <asm-generic/module.h>
- 
- 
--#ifdef CC_USING_MPROFILE_KERNEL
-+#ifdef CONFIG_MPROFILE_KERNEL
- #define MODULE_ARCH_VERMAGIC_FTRACE	"mprofile-kernel "
- #else
- #define MODULE_ARCH_VERMAGIC_FTRACE	""
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index a2636c250b7b..55bccc315e1a 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -462,7 +462,7 @@ static unsigned long stub_for_addr(const Elf64_Shdr *sechdrs,
- 	return (unsigned long)&stubs[i];
- }
- 
--#ifdef CC_USING_MPROFILE_KERNEL
-+#ifdef CONFIG_MPROFILE_KERNEL
- static bool is_early_mcount_callsite(u32 *instruction)
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 5073cc75f1c8..6a6673907e45 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -99,6 +99,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ static inline void pgtable_free(void *table, unsigned index_size)
  {
- 	/*
-@@ -746,7 +746,7 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
- 
--#ifdef CC_USING_MPROFILE_KERNEL
-+#ifdef CONFIG_MPROFILE_KERNEL
- 
- #define PACATOC offsetof(struct paca_struct, kernel_toc)
- 
-diff --git a/arch/powerpc/kernel/trace/ftrace.c b/arch/powerpc/kernel/trace/ftrace.c
-index 4741fe112f05..b2272308225a 100644
---- a/arch/powerpc/kernel/trace/ftrace.c
-+++ b/arch/powerpc/kernel/trace/ftrace.c
-@@ -144,7 +144,7 @@ __ftrace_make_nop(struct module *mod,
- 		return -EINVAL;
- 	}
- 
--#ifdef CC_USING_MPROFILE_KERNEL
-+#ifdef CONFIG_MPROFILE_KERNEL
- 	/* When using -mkernel_profile there is no load to jump over */
- 	pop = PPC_INST_NOP;
- 
-@@ -188,7 +188,7 @@ __ftrace_make_nop(struct module *mod,
- 		pr_err("Expected %08x found %08x\n", PPC_INST_LD_TOC, op);
- 		return -EINVAL;
- 	}
--#endif /* CC_USING_MPROFILE_KERNEL */
-+#endif /* CONFIG_MPROFILE_KERNEL */
- 
- 	if (patch_instruction((unsigned int *)ip, pop)) {
- 		pr_err("Patching NOP failed.\n");
-@@ -324,7 +324,7 @@ int ftrace_make_nop(struct module *mod,
-  * They should effectively be a NOP, and follow formal constraints,
-  * depending on the ABI. Return false if they don't.
-  */
--#ifndef CC_USING_MPROFILE_KERNEL
-+#ifndef CONFIG_MPROFILE_KERNEL
- static int
- expected_nop_sequence(void *ip, unsigned int op0, unsigned int op1)
+ 	if (!index_size) {
++		pgtable_page_dtor(virt_to_page(table));
+ 		free_page((unsigned long)table);
+ 	} else {
+ 		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+index 29d37bd1f3b3..1707781d2f20 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+@@ -100,6 +100,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ static inline void pgtable_free(void *table, unsigned index_size)
  {
-diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-index a7dd0e5d9f98..137f3376ac2b 100755
---- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-+++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
-@@ -24,5 +24,4 @@ echo -e "#include <linux/compiler.h>\nnotrace int func() { return 0; }" | \
-     2> /dev/null | grep -q "_mcount" && \
-     exit 1
- 
--echo "OK"
- exit 0
+ 	if (!index_size) {
++		pgtable_page_dtor(virt_to_page(table));
+ 		free_page((unsigned long)table);
+ 	} else {
+ 		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+index 21624ff1f065..0e693f322cb2 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+@@ -133,7 +133,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+ static inline void pgtable_free(void *table, int shift)
+ {
+ 	if (!shift) {
+-		pgtable_page_dtor(table);
++		pgtable_page_dtor(virt_to_page(table));
+ 		free_page((unsigned long)table);
+ 	} else {
+ 		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
 -- 
 2.17.0
