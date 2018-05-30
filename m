@@ -1,29 +1,25 @@
 Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wl4c18RQzDr7s
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 19:03:27 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id m5-v6so3480897pgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:03:27 -0700 (PDT)
-Date: Wed, 30 May 2018 17:03:21 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wl6G4CFczDrJr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 19:04:54 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id k2-v6so7855499pgc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:04:54 -0700 (PDT)
+Date: Wed, 30 May 2018 17:04:49 +0800
 From: Simon Guo <wei.guo.simon@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH v6 2/4] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-Message-ID: <20180530090321.GE5951@simonLocalRHEL7.x64>
-References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
- <1527221256-17029-3-git-send-email-wei.guo.simon@gmail.com>
- <20180528110558.GZ17342@gate.crashing.org>
- <20180530081402.GB5951@simonLocalRHEL7.x64>
- <20180530083540.GG17342@gate.crashing.org>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v4 04/29] KVM: PPC: Book3S PR: Move
+ kvmppc_save_tm/kvmppc_restore_tm to separate file
+Message-ID: <20180530090449.GF5951@simonLocalRHEL7.x64>
+References: <1527058932-7434-1-git-send-email-wei.guo.simon@gmail.com>
+ <1527058932-7434-5-git-send-email-wei.guo.simon@gmail.com>
+ <20180529234027.GA28144@fergus.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180530083540.GG17342@gate.crashing.org>
+In-Reply-To: <20180529234027.GA28144@fergus.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 30, 2018 at 03:35:40AM -0500, Segher Boessenkool wrote:
-> On Wed, May 30, 2018 at 04:14:02PM +0800, Simon Guo wrote:
-> > Hi Segher,
-> > On Mon, May 28, 2018 at 06:05:59AM -0500, Segher Boessenkool wrote:
-> > > On Fri, May 25, 2018 at 12:07:34PM +0800, wei.guo.simon@gmail.com wrote:
-> > > > +	/* save and restore cr0 */
-> > > > +	mfocrf  r5,64
-> > > > +	EXIT_VMX_OPS
-> > > > +	mtocrf	64,r5
-> > > > +	b	.LcmpAB_lightweight
-> > > 
-> > > That's cr1, not cr0.  You can use mcrf instead, it is cheaper (esp. if
-> > > you have it in a non-volatile CR field before so you need only one, if any).
-> > > 
-> > You are right :) How about using mtcr/mfcr instead, I think they are
-> > fast as well and more readable.
+On Wed, May 30, 2018 at 09:40:27AM +1000, Paul Mackerras wrote:
+> On Wed, May 23, 2018 at 03:01:47PM +0800, wei.guo.simon@gmail.com wrote:
+> > From: Simon Guo <wei.guo.simon@gmail.com>
+> > 
+> > It is a simple patch just for moving kvmppc_save_tm/kvmppc_restore_tm()
+> > functionalities to tm.S. There is no logic change. The reconstruct of
+> > those APIs will be done in later patches to improve readability.
+> > 
+> > It is for preparation of reusing those APIs on both HV/PR PPC KVM.
+> > 
+> > Some slight change during move the functions includes:
+> > - surrounds some HV KVM specific code with CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> > for compilation.
+> > - use _GLOBAL() to define kvmppc_save_tm/kvmppc_restore_tm()
+> > 
+> > Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
+> > ---
+> >  arch/powerpc/kvm/Makefile               |   3 +
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S | 322 ----------------------------
+> >  arch/powerpc/kvm/tm.S                   | 363 ++++++++++++++++++++++++++++++++
+> >  3 files changed, 366 insertions(+), 322 deletions(-)
+> >  create mode 100644 arch/powerpc/kvm/tm.S
+> > 
+> > diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+> > index 4b19da8..f872c04 100644
+> > --- a/arch/powerpc/kvm/Makefile
+> > +++ b/arch/powerpc/kvm/Makefile
+> > @@ -63,6 +63,9 @@ kvm-pr-y := \
+> >  	book3s_64_mmu.o \
+> >  	book3s_32_mmu.o
+> >  
+> > +kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
+> > +	tm.o
+> > +
+> >  ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
+> >  kvm-book3s_64-builtin-objs-$(CONFIG_KVM_BOOK3S_64_HANDLER) += \
+> >  	book3s_rmhandlers.o
+> > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > index 5e6e493..4db2b10 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > @@ -39,8 +39,6 @@ BEGIN_FTR_SECTION;				\
+> >  	extsw	reg, reg;			\
+> >  END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+> >  
+> > -#define VCPU_GPRS_TM(reg) (((reg) * ULONG_SIZE) + VCPU_GPR_TM)
+> > -
+> >  /* Values in HSTATE_NAPPING(r13) */
+> >  #define NAPPING_CEDE	1
+> >  #define NAPPING_NOVCPU	2
+> > @@ -3119,326 +3117,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+> >  	mr	r4,r31
+> >  	blr
+> >  
+> > -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> > -/*
+> > - * Save transactional state and TM-related registers.
+> > - * Called with r9 pointing to the vcpu struct.
+> > - * This can modify all checkpointed registers, but
+> > - * restores r1, r2 and r9 (vcpu pointer) before exit.
+> > - */
+> > -kvmppc_save_tm:
+> > -	mflr	r0
+> > -	std	r0, PPC_LR_STKOFF(r1)
+> > -	stdu	r1, -PPC_MIN_STKFRM(r1)
+> > -
+> > -	/* Turn on TM. */
+> > -	mfmsr	r8
+> > -	li	r0, 1
+> > -	rldimi	r8, r0, MSR_TM_LG, 63-MSR_TM_LG
+> > -	mtmsrd	r8
+> > -
+> > -	ld	r5, VCPU_MSR(r9)
+> > -	rldicl. r5, r5, 64 - MSR_TS_S_LG, 62
+> > -	beq	1f	/* TM not active in guest. */
+> > -
+> > -	std	r1, HSTATE_HOST_R1(r13)
+> > -	li	r3, TM_CAUSE_KVM_RESCHED
+> > -
+> > -BEGIN_FTR_SECTION
+> > -	lbz	r0, HSTATE_FAKE_SUSPEND(r13) /* Were we fake suspended? */
+> > -	cmpwi	r0, 0
+> > -	beq	3f
+> > -	rldicl. r8, r8, 64 - MSR_TS_S_LG, 62 /* Did we actually hrfid? */
+> > -	beq	4f
+> > -BEGIN_FTR_SECTION_NESTED(96)
+> > -	bl	pnv_power9_force_smt4_catch
+> > -END_FTR_SECTION_NESTED(CPU_FTR_P9_TM_XER_SO_BUG, CPU_FTR_P9_TM_XER_SO_BUG, 96)
+> > -	nop
+> > -	b	6f
+> > -3:
+> > -	/* Emulation of the treclaim instruction needs TEXASR before treclaim */
+> > -	mfspr	r6, SPRN_TEXASR
+> > -	std	r6, VCPU_ORIG_TEXASR(r9)
+> > -6:
+> > -END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_HV_ASSIST)
 > 
-> Those are much worse than m[ft]ocrf.
-> 
-> You probably should just shuffle things around so that EXIT_VMX_OPS
-> does not clobber the CR field you need to keep.
-Let me use mcrf then :)
+> It worries me that we now have this TM hypervisor assist stuff in a
+> place where it could be active with PR KVM.  I think it would be
+> better to factor out the TM assist code into a separate function which
+> then calls kvmppc_save_tm if it needs to do an actual treclaim.  I'll
+> look at doing that.
+Paul,
+Thanks for the info. Please let me know if anything I can help.
 
-Thanks,
+BR,
 - Simon
