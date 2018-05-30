@@ -1,18 +1,18 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wxFm4g9BzDrCm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 02:42:03 +1000 (AEST)
-Message-Id: <05b6577a2dc06424f1c884b107d701fdb006c6c3.1527697995.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1527697995.git.christophe.leroy@c-s.fr>
-References: <cover.1527697995.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [RFC PATCH 8/8] powerpc: fix includes in asm/processor.h
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed, 30 May 2018 16:42:00 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wzZv4vnkzDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 04:27:00 +1000 (AEST)
+Date: Thu, 31 May 2018 02:26:51 +0800
+From: kbuild test robot <lkp@intel.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [powerpc:topic/kbuild 4/4] arch/powerpc/Kconfig:466: syntax error
+Message-ID: <201805310245.6Zx8EAuh%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,42 +22,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove superflous includes and add missing ones
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git topic/kbuild
+head:   cfff26c2dc7a18a4d10366896a68fb0ef9c793cb
+commit: cfff26c2dc7a18a4d10366896a68fb0ef9c793cb [4/4] powerpc/kbuild: move -mprofile-kernel check to Kconfig
+config: powerpc-allmodconfig
+compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout cfff26c2dc7a18a4d10366896a68fb0ef9c793cb
+        make.cross ARCH=powerpc  allmodconfig
+        make.cross ARCH=powerpc 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+All errors (new ones prefixed by >>):
+
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character ','
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [allmodconfig] Error 1
+   make[1]: *** [allmodconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character ','
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [oldconfig] Error 1
+   make[1]: *** [oldconfig] Error 2
+   make: *** [sub-make] Error 2
+--
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character ','
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:466: syntax error
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+   arch/powerpc/Kconfig:465:warning: ignoring unsupported character '$'
+>> arch/powerpc/Kconfig:465: invalid option
+   make[2]: *** [olddefconfig] Error 1
+   make[2]: Target 'oldnoconfig' not remade because of errors.
+   make[1]: *** [oldnoconfig] Error 2
+   make: *** [sub-make] Error 2
+
+vim +466 arch/powerpc/Kconfig
+
+e05c0e81 Kevin Hao       2013-07-16  441  
+3d72bbc4 Michael Neuling 2013-02-13  442  config PPC_TRANSACTIONAL_MEM
+3d72bbc4 Michael Neuling 2013-02-13  443         bool "Transactional Memory support for POWERPC"
+3d72bbc4 Michael Neuling 2013-02-13  444         depends on PPC_BOOK3S_64
+3d72bbc4 Michael Neuling 2013-02-13  445         depends on SMP
+7b37a123 Michael Neuling 2014-01-08  446         select ALTIVEC
+7b37a123 Michael Neuling 2014-01-08  447         select VSX
+3d72bbc4 Michael Neuling 2013-02-13  448         default n
+3d72bbc4 Michael Neuling 2013-02-13  449         ---help---
+3d72bbc4 Michael Neuling 2013-02-13  450           Support user-mode Transactional Memory on POWERPC.
+3d72bbc4 Michael Neuling 2013-02-13  451  
+951eedeb Nicholas Piggin 2017-05-29  452  config LD_HEAD_STUB_CATCH
+951eedeb Nicholas Piggin 2017-05-29  453  	bool "Reserve 256 bytes to cope with linker stubs in HEAD text" if EXPERT
+951eedeb Nicholas Piggin 2017-05-29  454  	depends on PPC64
+951eedeb Nicholas Piggin 2017-05-29  455  	default n
+951eedeb Nicholas Piggin 2017-05-29  456  	help
+951eedeb Nicholas Piggin 2017-05-29  457  	  Very large kernels can cause linker branch stubs to be generated by
+951eedeb Nicholas Piggin 2017-05-29  458  	  code in head_64.S, which moves the head text sections out of their
+951eedeb Nicholas Piggin 2017-05-29  459  	  specified location. This option can work around the problem.
+951eedeb Nicholas Piggin 2017-05-29  460  
+951eedeb Nicholas Piggin 2017-05-29  461  	  If unsure, say "N".
+951eedeb Nicholas Piggin 2017-05-29  462  
+8c50b72a Torsten Duwe    2016-03-03  463  config MPROFILE_KERNEL
+8c50b72a Torsten Duwe    2016-03-03  464  	depends on PPC64 && CPU_LITTLE_ENDIAN
+cfff26c2 Nicholas Piggin 2018-05-30 @465  	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-mprofile-kernel.sh $(CC) -I$(srctree)/include -D__KERNEL__)
+8c50b72a Torsten Duwe    2016-03-03 @466  
+
+:::::: The code at line 466 was first introduced by commit
+:::::: 8c50b72a3b4f1f7cdfdfebd233b1cbd121262e65 powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel
+
+:::::: TO: Torsten Duwe <duwe@lst.de>
+:::::: CC: Michael Ellerman <mpe@ellerman.id.au>
+
 ---
- arch/powerpc/include/asm/hw_breakpoint.h | 1 +
- arch/powerpc/include/asm/processor.h     | 5 ++---
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index 8e7b09703ca4..3637588d3f6d 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -55,6 +55,7 @@ struct arch_hw_breakpoint {
- struct perf_event;
- struct pmu;
- struct perf_sample_data;
-+struct task_struct;
- 
- #define HW_BREAKPOINT_ALIGN 0x7
- 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index c4b36a494a63..74ed654928f0 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -39,10 +39,9 @@
- #endif /* CONFIG_PPC64 */
- 
- #ifndef __ASSEMBLY__
--#include <linux/compiler.h>
--#include <linux/cache.h>
-+#include <linux/types.h>
-+#include <asm/thread_info.h>
- #include <asm/ptrace.h>
--#include <asm/types.h>
- #include <asm/hw_breakpoint.h>
- 
- /* We do _not_ want to define new machine types at all, those must die
--- 
-2.13.3
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
