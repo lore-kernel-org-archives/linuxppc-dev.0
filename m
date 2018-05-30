@@ -1,35 +1,30 @@
-Return-Path: <bryantly@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
+ [210.131.2.91])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wsZ71J31zDr61
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 23:55:55 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4UDsKIw051802
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 09:55:52 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2j9u1qf7bv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 09:55:52 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.ibm.com>;
- Wed, 30 May 2018 07:55:52 -0600
-Subject: Re: [PATCH v2 1/1] powerpc/pseries: fix EEH recovery of some IOV
- devices
-To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Cc: mpe@ellerman.id.au, bhelgaas@google.com, bryantly@linux.vnet.ibm.com
-References: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
-From: "Bryant G. Ly" <bryantly@linux.ibm.com>
-Date: Wed, 30 May 2018 08:55:46 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wtLd4w5WzDr69
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:31:04 +1000 (AEST)
+Received: from mail-vk0-f52.google.com (mail-vk0-f52.google.com
+ [209.85.213.52]) (authenticated)
+ by conssluserg-06.nifty.com with ESMTP id w4UEUjrk023314
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 23:30:46 +0900
+Received: by mail-vk0-f52.google.com with SMTP id x66-v6so11222397vka.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 07:30:46 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <6cc94197-7b29-1a73-e9d5-f99f97e1a2c1@linux.ibm.com>
+In-Reply-To: <20180530121922.22122-2-npiggin@gmail.com>
+References: <20180530121922.22122-1-npiggin@gmail.com>
+ <20180530121922.22122-2-npiggin@gmail.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 30 May 2018 23:30:04 +0900
+Message-ID: <CAK7LNAQCzWQ78aFF=1HPvE=6eWCCGvccjaz4UmR01jcfUu+-jQ@mail.gmail.com>
+Subject: Re: [PATCH v5 1/4] powerpc/kbuild: set default generic machine type
+ for 32-bit compile
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,109 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 5/24/18 7:31 PM, Sam Bobroff wrote:
-> EEH recovery currently fails on pSeries for some IOV capable PCI
-> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
-> certain device tree properties for the device. (Found on an IOV
-> capable device using the ipr driver.)
+2018-05-30 21:19 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> Some 64-bit toolchains uses the wrong ISA variant for compiling 32-bit
+> kernels, even with -m32. Debian's powerpc64le is one such case, and
+> that is because it is built with --with-cpu=power8.
 >
-> Recovery fails in pci_enable_resources() at the check on r->parent,
-> because r->flags is set and r->parent is not.  This state is due to
-> sriov_init() setting the start, end and flags members of the IOV BARs
-> but the parent not being set later in
-> pseries_pci_fixup_iov_resources(), because the
-> "ibm,open-sriov-vf-bar-info" property is missing.
+> So when cross compiling a 32-bit kernel with a 64-bit toolchain, set
+> -mcpu=powerpc initially, which is the generic 32-bit powerpc machine
+> type and scheduling model. CPU and platform code can override this
+> with subsequent -mcpu flags if necessary.
 >
-> Correct this by zeroing the resource flags for IOV BARs when they
-> can't be configured.
+> This is not done for 32-bit toolchains otherwise it would override
+> their defaults, which are presumably set appropriately for the
+> environment (moreso than a 64-bit cross compiler).
 >
-> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> This fixes a lot of build failures due to incompatible assembly when
+> compiling 32-bit kernel with th Debian powerpc64le 64-bit toolchain.
+>
+> Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>
+> Since v1: reworded changelog to explain the cause of the problem (thanks
+> Segher) and moved the flags into the 64-32 cross compile case.
 > ---
-> Hi,
+>  arch/powerpc/Makefile | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 >
-> This is a fix to allow EEH recovery to succeed in a specific situation,
-> which I've tried to explain in the commit message.
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 95813df90801..d628724087c6 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -24,6 +24,14 @@ ifeq ($(HAS_BIARCH),y)
+>  ifeq ($(CROSS32_COMPILE),)
+>  CROSS32CC      := $(CC) -m32
+>  KBUILD_ARFLAGS += --target=elf32-powerpc
+> +ifdef CONFIG_PPC32
+> +# These options will be overridden by any -mcpu option that the CPU
+> +# or platform code sets later on the command line, but they are needed
+> +# to set a sane 32-bit cpu target for the 64-bit cross compiler which
+> +# may default to the wrong ISA.
+> +KBUILD_CFLAGS          += -mcpu=powerpc
+> +KBUILD_AFLAGS          += -mcpu=powerpc
+> +endif
+>  endif
+>  endif
 >
-> As with the RFC version, the IOV BARs are disabled by setting the resource
-> flags to 0 but the other fields are now left as-is because that is what is done
-> elsewhere (see sriov_init() and __pci_read_base()).
+> --
+> 2.17.0
 >
-> I've also examined the concern raised by Bjorn Helgaas, that VFs could be
-> enabled later after the BARs are disabled, and it already seems safe: enabling
-> VFs (on pseries) depends on another device tree property,
-> "ibm,number-of-configurable-vfs" as well as support for the RTAS function
-> "ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
-> seems unlikely that we would ever see some of them but not all. (None are
-> currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
-> recovery failure was discovered doesn't even seem to have SR-IOV support so it
-> certainly can't enable VFs.)
->
-> Cheers,
-> Sam.
-> ====== v1 -> v2: ======
->
-> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
-> * Moved the BAR disabling code to a function.
-> * Also check in pseries_pci_fixup_resources().
->
-> ====== v1: ======
->
-> Patch 1/1: powerpc/pseries: fix EEH recovery of IOV devices
->
->  arch/powerpc/platforms/pseries/setup.c | 25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index b55ad4286dc7..0a9e4243ae1d 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -645,6 +645,15 @@ void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
->  	}
->  }
->
-> +static void pseries_disable_sriov_resources(struct pci_dev *pdev)
-> +{
-> +	int i;
-> +
-> +	pci_warn(pdev, "No hypervisor support for SR-IOV on this device, IOV BARs disabled.\n");
-> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
-> +		pdev->resource[i + PCI_IOV_RESOURCES].flags = 0;
-> +}
-> +
->  static void pseries_pci_fixup_resources(struct pci_dev *pdev)
->  {
->  	const int *indexes;
-> @@ -652,10 +661,10 @@ static void pseries_pci_fixup_resources(struct pci_dev *pdev)
->
->  	/*Firmware must support open sriov otherwise dont configure*/
->  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
-> -	if (!indexes)
-> -		return;
-> -	/* Assign the addresses from device tree*/
-> -	of_pci_set_vf_bar_size(pdev, indexes);
-> +	if (indexes)
-> +		of_pci_set_vf_bar_size(pdev, indexes);
-> +	else
-> +		pseries_disable_sriov_resources(pdev);
->  }
->
->  static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
-> @@ -667,10 +676,10 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
->  		return;
->  	/*Firmware must support open sriov otherwise dont configure*/
->  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
-> -	if (!indexes)
-> -		return;
-> -	/* Assign the addresses from device tree*/
-> -	of_pci_parse_iov_addrs(pdev, indexes);
-> +	if (indexes)
-> +		of_pci_parse_iov_addrs(pdev, indexes);
-> +	else
-> +		pseries_disable_sriov_resources(pdev);
->  }
->
->  static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Acked-by: Bryant G. Ly <bryantly@linux.vnet.ibm.com>
+
+All applied to linux-kbuild/kconfig.
+Thanks!
+
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
