@@ -1,25 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wkkk5XBlzDr61
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 18:47:58 +1000 (AEST)
-Subject: Re: [PATCH v5 3/3] powerpc/lib: optimise PPC32 memcmp
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-References: <cover.1527503958.git.christophe.leroy@c-s.fr>
- <88c8cc033b4ea364d62d1d8ba811a8f8d56c297d.1527503958.git.christophe.leroy@c-s.fr>
- <CA+7wUszdfG+u4YSnxjFaujy3s_Vu92POPamK+=zjYe6Pbu+kxw@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <f2931bb1-2d56-8a5f-84b2-044f043b7633@c-s.fr>
-Date: Wed, 30 May 2018 10:47:48 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wl3N17ZFzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 19:02:24 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id 30-v6so10679117pld.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:02:23 -0700 (PDT)
+Date: Wed, 30 May 2018 17:02:17 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Cyril Bur <cyrilbur@gmail.com>
+Subject: Re: [PATCH v6 1/4] powerpc/64: Align bytes before fall back to
+ .Lshort in powerpc64 memcmp()
+Message-ID: <20180530090217.GD5951@simonLocalRHEL7.x64>
+References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
+ <1527221256-17029-2-git-send-email-wei.guo.simon@gmail.com>
+ <20180528103505.GY17342@gate.crashing.org>
+ <20180530081150.GA5951@simonLocalRHEL7.x64>
+ <20180530082739.GF17342@gate.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <CA+7wUszdfG+u4YSnxjFaujy3s_Vu92POPamK+=zjYe6Pbu+kxw@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180530082739.GF17342@gate.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 29/05/2018 à 22:03, Mathieu Malaterre a écrit :
-> On Mon, May 28, 2018 at 12:49 PM, Christophe Leroy
-> <christophe.leroy@c-s.fr> wrote:
->> At the time being, memcmp() compares two chunks of memory
->> byte per byte.
->>
->> This patch optimises the comparison by comparing word by word.
->>
->> A small benchmark performed on an 8xx comparing two chuncks
->> of 512 bytes performed 100000 times gives:
->>
->> Before : 5852274 TB ticks
->> After:   1488638 TB ticks
->>
->> This is almost 4 times faster
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/lib/string_32.S | 37 +++++++++++++++++++++++++++----------
->>   1 file changed, 27 insertions(+), 10 deletions(-)
+On Wed, May 30, 2018 at 03:27:39AM -0500, Segher Boessenkool wrote:
+> Hi!
 > 
-> Would it possible for you to move the actual code instead to:
+> On Wed, May 30, 2018 at 04:11:50PM +0800, Simon Guo wrote:
+> > On Mon, May 28, 2018 at 05:35:12AM -0500, Segher Boessenkool wrote:
+> > > On Fri, May 25, 2018 at 12:07:33PM +0800, wei.guo.simon@gmail.com wrote:
+> > > If this doesn't use cr0 anymore, you can do  rlwinm r6,r6,0,7  instead of
+> > > andi r6,r6,7 .
+> > > 
+> > CR0 is used at .Lno_short handling.
 > 
-> ./arch/powerpc/lib/memcmp_32.S
+> Tricky.
 > 
-> This will seat right next to memcmp_64.S implementation.
-
-Good idea, thanks.
-Done in v6
-
-Christophe
-
+> > > > +	subfc.	r5,r6,r5
+> > > 
+> > > Why subfc?  You don't use the carry.
+> > OK. I will use subfc instead.
 > 
->> diff --git a/arch/powerpc/lib/string_32.S b/arch/powerpc/lib/string_32.S
->> index 40a576d56ac7..4fbaa046aa84 100644
->> --- a/arch/powerpc/lib/string_32.S
->> +++ b/arch/powerpc/lib/string_32.S
->> @@ -16,17 +16,34 @@
->>          .text
->>
->>   _GLOBAL(memcmp)
->> -       cmpwi   cr0, r5, 0
->> -       beq-    2f
->> -       mtctr   r5
->> -       addi    r6,r3,-1
->> -       addi    r4,r4,-1
->> -1:     lbzu    r3,1(r6)
->> -       lbzu    r0,1(r4)
->> -       subf.   r3,r0,r3
->> -       bdnzt   2,1b
->> +       srawi.  r7, r5, 2               /* Divide len by 4 */
->> +       mr      r6, r3
->> +       beq-    3f
->> +       mtctr   r7
->> +       li      r7, 0
->> +1:     lwzx    r3, r6, r7
->> +       lwzx    r0, r4, r7
->> +       addi    r7, r7, 4
->> +       cmplw   cr0, r3, r0
->> +       bdnzt   eq, 1b
->> +       bne     5f
->> +3:     andi.   r3, r5, 3
->> +       beqlr
->> +       cmplwi  cr1, r3, 2
->> +       blt-    cr1, 4f
->> +       lhzx    r3, r6, r7
->> +       lhzx    r0, r4, r7
->> +       addi    r7, r7, 2
->> +       subf.   r3, r0, r3
->> +       beqlr   cr1
->> +       bnelr
->> +4:     lbzx    r3, r6, r7
->> +       lbzx    r0, r4, r7
->> +       subf.   r3, r0, r3
->>          blr
->> -2:     li      r3,0
->> +5:     li      r3, 1
->> +       bgtlr
->> +       li      r3, -1
->>          blr
->>   EXPORT_SYMBOL(memcmp)
->>
->> --
->> 2.13.3
->>
+> I meant subf -- no carry.  If you want CR0 set there is subf. just fine.
+> 
+> > > > +	bgt	cr0,8f
+> > > > +	li	r3,-1
+> > > > +8:
+> > > > +	blr
+> > > 
+> > >   blelr
+> > >   li r3,-1
+> > >   blr
+> > Sure. That looks more impact.
+> 
+> Should have been bgtlr of course -- well check please :-)
+Yes :)
+
+Thanks,
+- Simon
