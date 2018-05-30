@@ -1,20 +1,23 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wqQv13ZgzDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:19:35 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id e9-v6so8947498pfi.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 05:19:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wqQy2brrzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:19:38 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id n10-v6so10991807plp.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 05:19:38 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linux-kbuild@vger.kernel.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  Masahiro Yamada <yamada.masahiro@socionext.com>,
  Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH v5 0/4] powerpc patches for new Kconfig language
-Date: Wed, 30 May 2018 22:19:18 +1000
-Message-Id: <20180530121922.22122-1-npiggin@gmail.com>
+Subject: [PATCH v5 1/4] powerpc/kbuild: set default generic machine type for
+ 32-bit compile
+Date: Wed, 30 May 2018 22:19:19 +1000
+Message-Id: <20180530121922.22122-2-npiggin@gmail.com>
+In-Reply-To: <20180530121922.22122-1-npiggin@gmail.com>
+References: <20180530121922.22122-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of patches improves th powerpc kbuild system. The
-motivation was to to be compatible with the new Kconfig scripting
-language that Yamada-san has implemented here for merge:
+Some 64-bit toolchains uses the wrong ISA variant for compiling 32-bit
+kernels, even with -m32. Debian's powerpc64le is one such case, and
+that is because it is built with --with-cpu=power8.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git/log/?h=kconfig
+So when cross compiling a 32-bit kernel with a 64-bit toolchain, set
+-mcpu=powerpc initially, which is the generic 32-bit powerpc machine
+type and scheduling model. CPU and platform code can override this
+with subsequent -mcpu flags if necessary.
 
-I have tested on top of that tree, powerpc now builds there.
+This is not done for 32-bit toolchains otherwise it would override
+their defaults, which are presumably set appropriately for the
+environment (moreso than a 64-bit cross compiler).
 
-To avoid build breakage, the first 3 patches must go before the
-kconfig change, and the 4th patch must go after it.
+This fixes a lot of build failures due to incompatible assembly when
+compiling 32-bit kernel with th Debian powerpc64le 64-bit toolchain.
 
-v5 changes:
-- Patch 4 update to syntax changed since kconfig-shell-v3 release.
-- Patch 4 suggestions from Masahiro Yamada, remove unnecessary "OK"
-  output from check mprofile script, and fold CC_USING_MPROFILE_KERNEL
-  into CONFIG_MPROFILE_KERNEL.
-- Reduce whitespace disturbance in patch 1.
+Cc: Segher Boessenkool <segher@kernel.crashing.org>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Thanks,
-Nick
+Since v1: reworded changelog to explain the cause of the problem (thanks
+Segher) and moved the flags into the 64-32 cross compile case.
+---
+ arch/powerpc/Makefile | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-
-Nicholas Piggin (4):
-  powerpc/kbuild: set default generic machine type for 32-bit compile
-  powerpc/kbuild: remove CROSS32 defines from top level powerpc Makefile
-  powerpc/kbuild: Use flags variables rather than overriding LD/CC/AS
-  powerpc/kbuild: move -mprofile-kernel check to Kconfig
-
- arch/powerpc/Kconfig                          | 16 +------
- arch/powerpc/Makefile                         | 44 ++++++++-----------
- arch/powerpc/boot/Makefile                    | 16 ++++---
- arch/powerpc/include/asm/module.h             |  2 +-
- arch/powerpc/kernel/module_64.c               |  4 +-
- arch/powerpc/kernel/trace/ftrace.c            |  6 +--
- arch/powerpc/kernel/vdso32/Makefile           | 15 +++++--
- .../tools/gcc-check-mprofile-kernel.sh        | 13 +++---
- scripts/recordmcount.pl                       | 18 +++++++-
- 9 files changed, 72 insertions(+), 62 deletions(-)
-
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 95813df90801..d628724087c6 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -24,6 +24,14 @@ ifeq ($(HAS_BIARCH),y)
+ ifeq ($(CROSS32_COMPILE),)
+ CROSS32CC	:= $(CC) -m32
+ KBUILD_ARFLAGS	+= --target=elf32-powerpc
++ifdef CONFIG_PPC32
++# These options will be overridden by any -mcpu option that the CPU
++# or platform code sets later on the command line, but they are needed
++# to set a sane 32-bit cpu target for the 64-bit cross compiler which
++# may default to the wrong ISA.
++KBUILD_CFLAGS		+= -mcpu=powerpc
++KBUILD_AFLAGS		+= -mcpu=powerpc
++endif
+ endif
+ endif
+ 
 -- 
 2.17.0
