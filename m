@@ -1,23 +1,23 @@
 Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-06.nifty.com (conssluserg-06.nifty.com
- [210.131.2.91])
+Received: from conssluserg-05.nifty.com (conssluserg-05.nifty.com
+ [210.131.2.90])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wtLd4w5WzDr69
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:31:04 +1000 (AEST)
-Received: from mail-vk0-f52.google.com (mail-vk0-f52.google.com
- [209.85.213.52]) (authenticated)
- by conssluserg-06.nifty.com with ESMTP id w4UEUjrk023314
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 23:30:46 +0900
-Received: by mail-vk0-f52.google.com with SMTP id x66-v6so11222397vka.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 07:30:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wtPW4ZNszDrJn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:33:34 +1000 (AEST)
+Received: from mail-vk0-f53.google.com (mail-vk0-f53.google.com
+ [209.85.213.53]) (authenticated)
+ by conssluserg-05.nifty.com with ESMTP id w4UEX1Uk011341
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 23:33:01 +0900
+Received: by mail-vk0-f53.google.com with SMTP id m144-v6so11226781vke.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 07:33:01 -0700 (PDT)
 MIME-Version: 1.0
 In-Reply-To: <20180530121922.22122-2-npiggin@gmail.com>
 References: <20180530121922.22122-1-npiggin@gmail.com>
  <20180530121922.22122-2-npiggin@gmail.com>
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 30 May 2018 23:30:04 +0900
-Message-ID: <CAK7LNAQCzWQ78aFF=1HPvE=6eWCCGvccjaz4UmR01jcfUu+-jQ@mail.gmail.com>
+Date: Wed, 30 May 2018 23:32:20 +0900
+Message-ID: <CAK7LNAQJcZO7sy6qkX+vVSX9rx5db+r2Ni=4dgpY=jgbh7-VjA@mail.gmail.com>
 Subject: Re: [PATCH v5 1/4] powerpc/kbuild: set default generic machine type
  for 32-bit compile
 To: Nicholas Piggin <npiggin@gmail.com>
@@ -50,7 +50,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 >
 > This fixes a lot of build failures due to incompatible assembly when
 > compiling 32-bit kernel with th Debian powerpc64le 64-bit toolchain.
->
+
+When I applied this patch, I changed the following.
+
+"th" -> "the"
+
+
+Please let me know if my fix-up is bad.
+
+
+
+
+
+
 > Cc: Segher Boessenkool <segher@kernel.crashing.org>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 >
@@ -86,11 +98,6 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-All applied to linux-kbuild/kconfig.
-Thanks!
-
 
 
 
