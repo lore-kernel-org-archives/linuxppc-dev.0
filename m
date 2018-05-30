@@ -1,23 +1,23 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
+Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40x3wl2pFWzDrWZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 07:42:44 +1000 (AEST)
-Date: Thu, 31 May 2018 05:42:06 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40x3wl2nvCzDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 07:42:45 +1000 (AEST)
+Date: Thu, 31 May 2018 05:42:13 +0800
 From: kbuild test robot <lkp@intel.com>
 To: Christophe Leroy <christophe.leroy@c-s.fr>
 Cc: kbuild-all@01.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/cell: fix build failure by disabling
+Subject: Re: [PATCH v2] powerpc: fix build failure by disabling
  attribute-alias warning
-Message-ID: <201805310504.NNwSQ9cD%fengguang.wu@intel.com>
-References: <97b30159fb712dcdb7ea2fa748fed45f0a18e2eb.1527576934.git.christophe.leroy@c-s.fr>
+Message-ID: <201805310507.g4CbWzwq%fengguang.wu@intel.com>
+References: <871bd59bfbec78acb31082df2c3f1be43658bcb5.1527576941.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="5vNYLRcllDrimb99"
-In-Reply-To: <97b30159fb712dcdb7ea2fa748fed45f0a18e2eb.1527576934.git.christophe.leroy@c-s.fr>
+Content-Type: multipart/mixed; boundary="2fHTh5uZTiUOsy+g"
+In-Reply-To: <871bd59bfbec78acb31082df2c3f1be43658bcb5.1527576941.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,7 +28,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---5vNYLRcllDrimb99
+--2fHTh5uZTiUOsy+g
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -37,10 +37,11 @@ Hi Christophe,
 Thank you for the patch! Yet something to improve:
 
 [auto build test ERROR on powerpc/next]
-[also build test ERROR on v4.17-rc7 next-20180530]
+[also build test ERROR on next-20180530]
+[cannot apply to v4.17-rc7]
 [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-cell-fix-build-failure-by-disabling-attribute-alias-warning/20180531-003218
+url:    https://github.com/0day-ci/linux/commits/Christophe-Leroy/powerpc-fix-build-failure-by-disabling-attribute-alias-warning/20180531-030007
 base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
 config: powerpc-defconfig (attached as .config)
 compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
@@ -52,51 +53,57 @@ reproduce:
 
 All errors (new ones prefixed by >>):
 
->> arch/powerpc/platforms/cell/spu_syscalls.c:71:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+>> arch/powerpc/kernel/syscalls.c:66:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+    #pragma GCC diagnostic ignored "-Wattribute-alias"
+                                   ^~~~~~~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
+--
+>> arch/powerpc/kernel/signal_32.c:1041:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+    #pragma GCC diagnostic ignored "-Wattribute-alias"
+                                   ^~~~~~~~~~~~~~~~~~~
+   arch/powerpc/kernel/signal_32.c:1235:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+    #pragma GCC diagnostic ignored "-Wattribute-alias"
+                                   ^~~~~~~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
+--
+>> arch/powerpc/kernel/signal_64.c:629:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+    #pragma GCC diagnostic ignored "-Wattribute-alias"
+                                   ^~~~~~~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
+--
+>> arch/powerpc/kernel/rtas.c:1055:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
+    #pragma GCC diagnostic ignored "-Wattribute-alias"
+                                   ^~~~~~~~~~~~~~~~~~~
+   cc1: all warnings being treated as errors
+--
+>> arch/powerpc/kernel/pci_64.c:207:32: error: unknown option after '#pragma GCC diagnostic' kind [-Werror=pragmas]
     #pragma GCC diagnostic ignored "-Wattribute-alias"
                                    ^~~~~~~~~~~~~~~~~~~
    cc1: all warnings being treated as errors
 
-vim +71 arch/powerpc/platforms/cell/spu_syscalls.c
+vim +66 arch/powerpc/kernel/syscalls.c
 
-    69	
-    70	#pragma GCC diagnostic push
-  > 71	#pragma GCC diagnostic ignored "-Wattribute-alias"
-    72	SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
-    73		umode_t, mode, int, neighbor_fd)
-    74	{
-    75		long ret;
-    76		struct spufs_calls *calls;
-    77	
-    78		calls = spufs_calls_get();
-    79		if (!calls)
-    80			return -ENOSYS;
-    81	
-    82		if (flags & SPU_CREATE_AFFINITY_SPU) {
-    83			struct fd neighbor = fdget(neighbor_fd);
-    84			ret = -EBADF;
-    85			if (neighbor.file) {
-    86				ret = calls->create_thread(name, flags, mode, neighbor.file);
-    87				fdput(neighbor);
-    88			}
-    89		} else
-    90			ret = calls->create_thread(name, flags, mode, NULL);
-    91	
-    92		spufs_calls_put(calls);
-    93		return ret;
-    94	}
-    95	
+    64	
+    65	#pragma GCC diagnostic push
+  > 66	#pragma GCC diagnostic ignored "-Wattribute-alias"
+    67	SYSCALL_DEFINE6(mmap2, unsigned long, addr, size_t, len,
+    68			unsigned long, prot, unsigned long, flags,
+    69			unsigned long, fd, unsigned long, pgoff)
+    70	{
+    71		return do_mmap2(addr, len, prot, flags, fd, pgoff, PAGE_SHIFT-12);
+    72	}
+    73	
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---5vNYLRcllDrimb99
+--2fHTh5uZTiUOsy+g
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICCUJD1sAAy5jb25maWcAlDzbctw2su/5iinn5ZyHzcqyLNvnlB5AEOQgQxIQAM5IemHJ
+H4sICGgRD1sAAy5jb25maWcAlDzbctw2su/5iinn5ZyHzcqyLNvnlB5AEOQgQxIQAM5IemHJ
 0thRRRevJG+Sv99ugBcABMfZVCURuxu3RqNvaMzPP/28It9fnx6uX+9uru/v/1p93T/un69f
 97erL3f3+/9f5WLVCLNiOTe/AHF19/j9z39+e/pj//ztZnXyy9sPvxz94/nm3Wqzf37c36/o
 0+OXu6/foYe7p8effv6JiqbgZSclPT05++sngPy8ks9PN/uXl6fn1cv3b9+enl8Dui4TYvNO
@@ -530,4 +537,4 @@ FG+04ahXfnDags02D+P22ZiVb3RHuLYo2hgEYiRSFzJqZYhy++ikBHKLpiFzI5elE8wEh7mN
 MnkzpECf6nIrXpbl5ryGIosks295Fu5iMYtOt/j6uJbLTDCfT7vAK9XJo+LiKnp7u/WKvWzQ
 RYWeNaTdy7h2W7WXW6ud27SsMbOptVM1yIm6qmkwm3g9KOJMGAC7zv8DEoUM0Cp8AQA=
 
---5vNYLRcllDrimb99--
+--2fHTh5uZTiUOsy+g--
