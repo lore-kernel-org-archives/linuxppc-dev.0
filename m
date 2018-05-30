@@ -1,30 +1,18 @@
-Return-Path: <srs0=mwky=ir=mendozajonas.com=sam@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wh5N4DGtzDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 16:48:56 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40wh5N3RFyz8sxv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 16:48:56 +1000 (AEST)
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40wh5L4sG0z9s0q
- for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2018 16:48:54 +1000 (AEST)
-Message-ID: <df2bff3ec92f8b2e96fd13a7900af506ac92aa63.camel@mendozajonas.com>
-Subject: Re: [PATCH] powerpc/ptrace: Use copy_{from, to}_user() rather than
- open-coding
-From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- viro@zeniv.linux.org.uk
-Cc: malat@debian.org
-Date: Wed, 30 May 2018 16:48:47 +1000
-In-Reply-To: <20180529125738.24271-1-mpe@ellerman.id.au>
-References: <20180529125738.24271-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40whTN1VMvzDr61
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 17:06:15 +1000 (AEST)
+Message-Id: <cover.1527663626.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v6 0/2] powerpc/lib: Optimisation of memcmp() and
+ __clear_user() for PPC32
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ segher@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed, 30 May 2018 07:06:11 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,59 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-29 at 22:57 +1000, Michael Ellerman wrote:
-> From: Al Viro <viro@ZenIV.linux.org.uk>
-> 
-> In PPC_PTRACE_GETHWDBGINFO and PPC_PTRACE_SETHWDEBUG we do an
-> access_ok() check and then __copy_{from,to}_user().
-> 
-> Instead we should just use copy_{from,to}_user() which does all that
-> for us and is less error prone.
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+This serie intends to optimise memcmp() and __clear_user() for PPC32
+in the same spirit as already done on PPC64.
 
-Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+The first patch rewrites __clear_user() by using dcbz intruction
+The second patch rewrites memcmp() to compare 32 bits words instead
+of comparing byte per byte.
 
-> ---
->  arch/powerpc/kernel/ptrace.c | 20 ++++++--------------
->  1 file changed, 6 insertions(+), 14 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 0f63dd5972e9..9667666eb18e 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -3082,27 +3082,19 @@ long arch_ptrace(struct task_struct *child, long request,
->  #endif /* CONFIG_HAVE_HW_BREAKPOINT */
->  #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
->  
-> -		if (!access_ok(VERIFY_WRITE, datavp,
-> -			       sizeof(struct ppc_debug_info)))
-> +		if (copy_to_user(datavp, &dbginfo,
-> +				 sizeof(struct ppc_debug_info)))
->  			return -EFAULT;
-> -		ret = __copy_to_user(datavp, &dbginfo,
-> -				     sizeof(struct ppc_debug_info)) ?
-> -		      -EFAULT : 0;
-> -		break;
-> +		return 0;
->  	}
->  
->  	case PPC_PTRACE_SETHWDEBUG: {
->  		struct ppc_hw_breakpoint bp_info;
->  
-> -		if (!access_ok(VERIFY_READ, datavp,
-> -			       sizeof(struct ppc_hw_breakpoint)))
-> +		if (copy_from_user(&bp_info, datavp,
-> +				   sizeof(struct ppc_hw_breakpoint)))
->  			return -EFAULT;
-> -		ret = __copy_from_user(&bp_info, datavp,
-> -				       sizeof(struct ppc_hw_breakpoint)) ?
-> -		      -EFAULT : 0;
-> -		if (!ret)
-> -			ret = ppc_set_hwdebug(child, &bp_info);
-> -		break;
-> +		return ppc_set_hwdebug(child, &bp_info);
->  	}
->  
->  	case PPC_PTRACE_DELHWDEBUG: {
+As shown in each individual commit log, second and third patches
+provide significant improvment.
+
+Changes in v6:
+- Dropped first patch of the serie which was just moving memcmp() and __clear_user()
+into new string_32.S file
+- As suggested by Mathieu, to be consistant with PPC64:
+  - __clear_user() is moved into new file string_32.S
+  - memcmp() is moved into new file memcmp_32.S
+- Removed unneccessary included header files.
+
+Changes in v5:
+- Removed the handling of Little Endian, as PPC32 kernel only support Big Endian
+at the time being, and because unaligned accesses should be handled differently
+in LE.
+
+Changes in v4:
+- In memcmp(), dropped the special handling for when length is 0. Handling it 
+through the small length path.
+
+Changes in v3:
+- Fixed the sign of the result returned by memcmp() by using a logical
+comparison of u32 words and returning -1, 0 or 1 instead of doing a substract.
+- In first patch, replaced PPC_LCMPI by cmpwi
+- Fixed licence in string_32.S
+- Removed the two last patches from the serie. They will be handled later as
+they require further tests and analysis to properly identify their real benefit
+in all possible cases.
+
+Changes in v2:
+- Moved out the patch removing the hot loop alignment on PPC32
+- Squashed the changes related to NUL size verification in a single patch
+- Reordered the patches in a more logical order
+- Modified the inlining patch to avoid warning about impossibility to version symbols.
+
+Christophe Leroy (2):
+  powerpc/lib: optimise 32 bits __clear_user()
+  powerpc/lib: optimise PPC32 memcmp
+
+ arch/powerpc/lib/Makefile    |  5 ++-
+ arch/powerpc/lib/memcmp_32.S | 45 ++++++++++++++++++++++
+ arch/powerpc/lib/string.S    | 63 -------------------------------
+ arch/powerpc/lib/string_32.S | 90 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 138 insertions(+), 65 deletions(-)
+ create mode 100644 arch/powerpc/lib/memcmp_32.S
+ create mode 100644 arch/powerpc/lib/string_32.S
+
+-- 
+2.13.3
