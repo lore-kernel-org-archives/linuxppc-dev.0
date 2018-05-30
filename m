@@ -1,19 +1,27 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wn2G2Zl4zDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 20:31:33 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id r11-v6so1252210pfl.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 03:31:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wnJZ3ddCzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 20:43:57 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id t12-v6so10851193plo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 03:43:57 -0700 (PDT)
+Date: Wed, 30 May 2018 20:43:47 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/64s: Fix compiler store ordering to SLB shadow area
-Date: Wed, 30 May 2018 20:31:22 +1000
-Message-Id: <20180530103122.27674-1-npiggin@gmail.com>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Segher Boessenkool
+ <segher@kernel.crashing.org>
+Subject: Re: [PATCH v4 1/4] powerpc/kbuild: set default generic machine type
+ for 32-bit compile
+Message-ID: <20180530204347.45655a87@roar.ozlabs.ibm.com>
+In-Reply-To: <CAK7LNASsx_gDQePtNRdiY8v4RbysQqoKKfr1LW6dsz=7fq-oEQ@mail.gmail.com>
+References: <20180516141458.18996-1-npiggin@gmail.com>
+ <20180516141458.18996-2-npiggin@gmail.com>
+ <CAK7LNASsx_gDQePtNRdiY8v4RbysQqoKKfr1LW6dsz=7fq-oEQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The stores to update the SLB shadow area must be made as they appear
-in the C code, so that the hypervisor does not see an entry with
-mismatched vsid and esid. Use WRITE_ONCE for this.
+On Tue, 29 May 2018 22:39:48 +0900
+Masahiro Yamada <yamada.masahiro@socionext.com> wrote:
 
-GCC has been observed to elide the first store to esid in the update,
-which means that if the hypervisor interrupts the guest after storing
-to vsid, it could see an entry with old esid and new vsid, which may
-possibly result in memory corruption.
+> 2018-05-16 23:14 GMT+09:00 Nicholas Piggin <npiggin@gmail.com>:
+> > Some 64-bit toolchains uses the wrong ISA variant for compiling 32-bit
+> > kernels, even with -m32. Debian's powerpc64le is one such case, and
+> > that is because it is built with --with-cpu=power8.
+> >
+> > So when cross compiling a 32-bit kernel with a 64-bit toolchain, set
+> > -mcpu=powerpc initially, which is the generic 32-bit powerpc machine
+> > type and scheduling model. CPU and platform code can override this
+> > with subsequent -mcpu flags if necessary.
+> >
+> > This is not done for 32-bit toolchains otherwise it would override
+> > their defaults, which are presumably set appropriately for the
+> > environment (moreso than a 64-bit cross compiler).
+> >
+> > This fixes a lot of build failures due to incompatible assembly when
+> > compiling 32-bit kernel with th Debian powerpc64le 64-bit toolchain.
+> >
+> > Cc: Segher Boessenkool <segher@kernel.crashing.org>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---  
+> 
+> 
+> Can you please remove the noise changes?
+> 
+> 1/4 adds some blank lines, then 2/4 removes them.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/mm/slb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Okay sure, I will change that.
 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 66577cc66dc9..2f4b33b24b3b 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -63,14 +63,14 @@ static inline void slb_shadow_update(unsigned long ea, int ssize,
- 	 * updating it.  No write barriers are needed here, provided
- 	 * we only update the current CPU's SLB shadow buffer.
- 	 */
--	p->save_area[index].esid = 0;
--	p->save_area[index].vsid = cpu_to_be64(mk_vsid_data(ea, ssize, flags));
--	p->save_area[index].esid = cpu_to_be64(mk_esid_data(ea, ssize, index));
-+	WRITE_ONCE(p->save_area[index].esid, 0);
-+	WRITE_ONCE(p->save_area[index].vsid, cpu_to_be64(mk_vsid_data(ea, ssize, flags)));
-+	WRITE_ONCE(p->save_area[index].esid, cpu_to_be64(mk_esid_data(ea, ssize, index)));
- }
- 
- static inline void slb_shadow_clear(enum slb_index index)
- {
--	get_slb_shadow()->save_area[index].esid = 0;
-+	WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
- }
- 
- static inline void create_shadowed_slbe(unsigned long ea, int ssize,
--- 
-2.17.0
+Thanks,
+Nick
