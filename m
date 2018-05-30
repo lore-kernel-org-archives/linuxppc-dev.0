@@ -1,21 +1,21 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wqR142jNzDr6Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:19:41 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id l2-v6so8071020pgc.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 05:19:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wqR46N8gzDrJD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 22:19:44 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id v63-v6so8942177pfk.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 05:19:44 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linux-kbuild@vger.kernel.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  Masahiro Yamada <yamada.masahiro@socionext.com>,
  Segher Boessenkool <segher@kernel.crashing.org>
-Subject: [PATCH v5 2/4] powerpc/kbuild: remove CROSS32 defines from top level
- powerpc Makefile
-Date: Wed, 30 May 2018 22:19:20 +1000
-Message-Id: <20180530121922.22122-3-npiggin@gmail.com>
+Subject: [PATCH v5 3/4] powerpc/kbuild: Use flags variables rather than
+ overriding LD/CC/AS
+Date: Wed, 30 May 2018 22:19:21 +1000
+Message-Id: <20180530121922.22122-4-npiggin@gmail.com>
 In-Reply-To: <20180530121922.22122-1-npiggin@gmail.com>
 References: <20180530121922.22122-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,128 +27,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch VDSO32 build over to use CROSS32_COMPILE directly, and have
-it pass in -m32 after the standard c_flags. This allows endianness
-overrides to be removed and the endian and bitness flags moved into
-standard flags variables.
+The powerpc toolchain can compile combinations of 32/64 bit and
+big/little endian, so it's convenient to consider, e.g.,
+
+  `CC -m64 -mbig-endian`
+
+To be the C compiler for the purpose of invoking it to build target
+artifacts. So overriding the the CC variable to include thse flags
+works for this purpose.
+
+Unfortunately that is not compatible with the way the proposed new
+Kconfig macro language will work.
+
+After previous patches in this series, these flags can be carefully
+passed in using flags instead.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+
+Since v1: removed extra -EB in the recordmcount script (thanks mpe)
 ---
- arch/powerpc/Makefile               |  7 -------
- arch/powerpc/boot/Makefile          | 16 +++++++++++-----
- arch/powerpc/kernel/vdso32/Makefile | 15 +++++++++++----
- 3 files changed, 22 insertions(+), 16 deletions(-)
+ arch/powerpc/Makefile                          | 16 +++++++++-------
+ .../powerpc/tools/gcc-check-mprofile-kernel.sh | 12 ++++++++----
+ scripts/recordmcount.pl                        | 18 +++++++++++++++++-
+ 3 files changed, 34 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index d628724087c6..167b26a0780c 100644
+index 167b26a0780c..6faf1d6ad9dd 100644
 --- a/arch/powerpc/Makefile
 +++ b/arch/powerpc/Makefile
-@@ -17,13 +17,8 @@ HAS_BIARCH	:= $(call cc-option-yn, -m32)
- # Set default 32 bits cross compilers for vdso and boot wrapper
- CROSS32_COMPILE ?=
+@@ -75,13 +75,15 @@ endif
+ endif
  
--CROSS32CC		:= $(CROSS32_COMPILE)gcc
--CROSS32AR		:= $(CROSS32_COMPILE)ar
--
+ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+-override LD	+= -EL
++KBUILD_CFLAGS	+= -mlittle-endian
++LDFLAGS		+= -EL
+ LDEMULATION	:= lppc
+ GNUTARGET	:= powerpcle
+ MULTIPLEWORD	:= -mno-multiple
+ KBUILD_CFLAGS_MODULE += $(call cc-option,-mno-save-toc-indirect)
+ else
+-override LD	+= -EB
++KBUILD_CFLAGS += $(call cc-option,-mbig-endian)
++LDFLAGS		+= -EB
+ LDEMULATION	:= ppc
+ GNUTARGET	:= powerpc
+ MULTIPLEWORD	:= -mmultiple
+@@ -94,19 +96,19 @@ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mabi=elfv1)
+ aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mabi=elfv2
+ endif
+ 
+-cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+-cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
+ ifneq ($(cc-name),clang)
+   cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mno-strict-align
+ endif
+ 
++cflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
++cflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+ aflags-$(CONFIG_CPU_BIG_ENDIAN)		+= $(call cc-option,-mbig-endian)
+ aflags-$(CONFIG_CPU_LITTLE_ENDIAN)	+= -mlittle-endian
+ 
  ifeq ($(HAS_BIARCH),y)
- ifeq ($(CROSS32_COMPILE),)
--CROSS32CC	:= $(CC) -m32
--KBUILD_ARFLAGS	+= --target=elf32-powerpc
- ifdef CONFIG_PPC32
- # These options will be overridden by any -mcpu option that the CPU
- # or platform code sets later on the command line, but they are needed
-@@ -35,8 +30,6 @@ endif
- endif
+-override AS	+= -a$(BITS)
+-override LD	+= -m elf$(BITS)$(LDEMULATION)
+-override CC	+= -m$(BITS)
++KBUILD_CFLAGS	+= -m$(BITS)
++KBUILD_AFLAGS	+= -m$(BITS) -Wl,-a$(BITS)
++LDFLAGS		+= -m elf$(BITS)$(LDEMULATION)
+ KBUILD_ARFLAGS	+= --target=elf$(BITS)-$(GNUTARGET)
  endif
  
--export CROSS32CC CROSS32AR
--
- ifeq ($(CROSS_COMPILE),)
- KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
- else
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 26d5d2a5b8e9..49767e06202c 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -23,19 +23,23 @@ all: $(obj)/zImage
- compress-$(CONFIG_KERNEL_GZIP) := CONFIG_KERNEL_GZIP
- compress-$(CONFIG_KERNEL_XZ)   := CONFIG_KERNEL_XZ
+diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
+index 061f8035bdbe..a7dd0e5d9f98 100755
+--- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
++++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
+@@ -7,17 +7,21 @@ set -o pipefail
+ # To debug, uncomment the following line
+ # set -x
  
-+ifdef CROSS32_COMPILE
-+    BOOTCC := $(CROSS32_COMPILE)gcc
-+    BOOTAR := $(CROSS32_COMPILE)ar
-+else
-+    BOOTCC := $(CC)
-+    BOOTAR := $(AR)
-+endif
++# -mprofile-kernel is only supported on 64le, so this should not be invoked
++# for other targets. Therefore we can pass in -m64 and -mlittle-endian
++# explicitly, to take care of toolchains defaulting to other targets.
 +
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
- 		 -D$(compress-y)
+ # Test whether the compile option -mprofile-kernel exists and generates
+ # profiling code (ie. a call to _mcount()).
+ echo "int func() { return 0; }" | \
+-    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
+-    grep -q "_mcount"
++    $* -m64 -mlittle-endian -S -x c -O2 -p -mprofile-kernel - -o - \
++    2> /dev/null | grep -q "_mcount"
  
--BOOTCC := $(CC)
- ifdef CONFIG_PPC64_BOOT_WRAPPER
- BOOTCFLAGS	+= -m64
- else
- BOOTCFLAGS	+= -m32
--ifdef CROSS32_COMPILE
--    BOOTCC := $(CROSS32_COMPILE)gcc
--endif
- endif
+ # Test whether the notrace attribute correctly suppresses calls to _mcount().
  
- BOOTCFLAGS	+= -isystem $(shell $(BOOTCC) -print-file-name=include)
-@@ -49,6 +53,8 @@ endif
+ echo -e "#include <linux/compiler.h>\nnotrace int func() { return 0; }" | \
+-    $* -S -x c -O2 -p -mprofile-kernel - -o - 2> /dev/null | \
+-    grep -q "_mcount" && \
++    $* -m64 -mlittle-endian -S -x c -O2 -p -mprofile-kernel - -o - \
++    2> /dev/null | grep -q "_mcount" && \
+     exit 1
  
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
+ echo "OK"
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 191eb949d52c..fe06e77c15eb 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -266,13 +266,29 @@ if ($arch eq "x86_64") {
+     $objcopy .= " -O elf32-sh-linux";
  
-+BOOTARFLAGS	:= -cr$(KBUILD_ARFLAGS)
+ } elsif ($arch eq "powerpc") {
++    my $ldemulation;
 +
- ifdef CONFIG_DEBUG_INFO
- BOOTCFLAGS	+= -g
- endif
-@@ -202,7 +208,7 @@ quiet_cmd_bootas = BOOTAS  $@
-       cmd_bootas = $(BOOTCC) -Wp,-MD,$(depfile) $(BOOTAFLAGS) -c -o $@ $<
+     $local_regex = "^[0-9a-fA-F]+\\s+t\\s+(\\.?\\S+)";
+     # See comment in the sparc64 section for why we use '\w'.
+     $function_regex = "^([0-9a-fA-F]+)\\s+<(\\.?\\w*?)>:";
+     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\s\\.?_mcount\$";
  
- quiet_cmd_bootar = BOOTAR  $@
--      cmd_bootar = $(CROSS32AR) -cr$(KBUILD_ARFLAGS) $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
-+      cmd_bootar = $(BOOTAR) $(BOOTARFLAGS) $@.$$$$ $(filter-out FORCE,$^); mv $@.$$$$ $@
++    if ($endian eq "big") {
++	    $cc .= " -mbig-endian ";
++	    $ld .= " -EB ";
++	    $ldemulation = "ppc"
++    } else {
++	    $cc .= " -mlittle-endian ";
++	    $ld .= " -EL ";
++	    $ldemulation = "lppc"
++    }
+     if ($bits == 64) {
+-	$type = ".quad";
++        $type = ".quad";
++        $cc .= " -m64 ";
++        $ld .= " -m elf64".$ldemulation." ";
++    } else {
++        $cc .= " -m32 ";
++        $ld .= " -m elf32".$ldemulation." ";
+     }
  
- $(obj-libfdt): $(obj)/%.o: $(srctree)/scripts/dtc/libfdt/%.c FORCE
- 	$(call if_changed_dep,bootcc)
-diff --git a/arch/powerpc/kernel/vdso32/Makefile b/arch/powerpc/kernel/vdso32/Makefile
-index b8c434d1d459..50112d4473bb 100644
---- a/arch/powerpc/kernel/vdso32/Makefile
-+++ b/arch/powerpc/kernel/vdso32/Makefile
-@@ -8,8 +8,15 @@ obj-vdso32 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o \
- 
- # Build rules
- 
--ifeq ($(CONFIG_PPC32),y)
--CROSS32CC := $(CC)
-+ifdef CROSS32_COMPILE
-+    VDSOCC := $(CROSS32_COMPILE)gcc
-+else
-+    VDSOCC := $(CC)
-+endif
-+
-+CC32FLAGS :=
-+ifdef CONFIG_PPC64
-+CC32FLAGS += -m32
- endif
- 
- targets := $(obj-vdso32) vdso32.so vdso32.so.dbg
-@@ -45,9 +52,9 @@ $(obj-vdso32): %.o: %.S FORCE
- 
- # actual build commands
- quiet_cmd_vdso32ld = VDSO32L $@
--      cmd_vdso32ld = $(CROSS32CC) $(c_flags) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
-+      cmd_vdso32ld = $(VDSOCC) $(c_flags) $(CC32FLAGS) -o $@ -Wl,-T$(filter %.lds,$^) $(filter %.o,$^)
- quiet_cmd_vdso32as = VDSO32A $@
--      cmd_vdso32as = $(CROSS32CC) $(a_flags) -c -o $@ $<
-+      cmd_vdso32as = $(VDSOCC) $(a_flags) $(CC32FLAGS) -c -o $@ $<
- 
- # install commands for the unstripped file
- quiet_cmd_vdso_install = INSTALL $@
+ } elsif ($arch eq "arm") {
 -- 
 2.17.0
