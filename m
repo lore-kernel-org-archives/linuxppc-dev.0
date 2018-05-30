@@ -1,34 +1,30 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=mwky=ir=mendozajonas.com=sam@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40wgzH1KqczDr5J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 16:43:35 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4U6dStJ109069
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:43:33 -0400
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2j9nhmbb3w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 02:43:32 -0400
-Received: from localhost
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Wed, 30 May 2018 07:43:31 +0100
-Subject: Re: [PATCH v2] powerpc/numa: Correct kernel message severity
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, Christophe LEROY <christophe.leroy@c-s.fr>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <1521013954-21348-1-git-send-email-vipin@linux.vnet.ibm.com>
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Date: Wed, 30 May 2018 12:13:25 +0530
-MIME-Version: 1.0
-In-Reply-To: <1521013954-21348-1-git-send-email-vipin@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <53e120f0-2f35-05b0-7a18-9eec6ce8da72@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40wh5N4DGtzDr5J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 16:48:56 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40wh5N3RFyz8sxv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2018 16:48:56 +1000 (AEST)
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 40wh5L4sG0z9s0q
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2018 16:48:54 +1000 (AEST)
+Message-ID: <df2bff3ec92f8b2e96fd13a7900af506ac92aa63.camel@mendozajonas.com>
+Subject: Re: [PATCH] powerpc/ptrace: Use copy_{from, to}_user() rather than
+ open-coding
+From: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ viro@zeniv.linux.org.uk
+Cc: malat@debian.org
+Date: Wed, 30 May 2018 16:48:47 +1000
+In-Reply-To: <20180529125738.24271-1-mpe@ellerman.id.au>
+References: <20180529125738.24271-1-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,39 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 2018-05-29 at 22:57 +1000, Michael Ellerman wrote:
+> From: Al Viro <viro@ZenIV.linux.org.uk>
+> 
+> In PPC_PTRACE_GETHWDBGINFO and PPC_PTRACE_SETHWDEBUG we do an
+> access_ok() check and then __copy_{from,to}_user().
+> 
+> Instead we should just use copy_{from,to}_user() which does all that
+> for us and is less error prone.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
+Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
 
-Any progress/update with this patch ?
-
-Please do let know, if something more is needed here.
-
-
-Regards,
-
-Vipin
-
-
-On Wednesday 14 March 2018 01:22 PM, Vipin K Parashar wrote:
-> printk() in unmap_cpu_from_node() uses KERN_ERR message severity,
-> for a WARNING message. Change it to pr_warn().
->
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 > ---
->   arch/powerpc/mm/numa.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index edd8d0b..1632f4b 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -163,8 +163,7 @@ static void unmap_cpu_from_node(unsigned long cpu)
->   	if (cpumask_test_cpu(cpu, node_to_cpumask_map[node])) {
->   		cpumask_clear_cpu(cpu, node_to_cpumask_map[node]);
->   	} else {
-> -		printk(KERN_ERR "WARNING: cpu %lu not found in node %d\n",
-> -		       cpu, node);
-> +		pr_warn("WARNING: cpu %lu not found in node %d\n", cpu, node);
->   	}
->   }
->   #endif /* CONFIG_HOTPLUG_CPU || CONFIG_PPC_SPLPAR */
+>  arch/powerpc/kernel/ptrace.c | 20 ++++++--------------
+>  1 file changed, 6 insertions(+), 14 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index 0f63dd5972e9..9667666eb18e 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -3082,27 +3082,19 @@ long arch_ptrace(struct task_struct *child, long request,
+>  #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+>  #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
+>  
+> -		if (!access_ok(VERIFY_WRITE, datavp,
+> -			       sizeof(struct ppc_debug_info)))
+> +		if (copy_to_user(datavp, &dbginfo,
+> +				 sizeof(struct ppc_debug_info)))
+>  			return -EFAULT;
+> -		ret = __copy_to_user(datavp, &dbginfo,
+> -				     sizeof(struct ppc_debug_info)) ?
+> -		      -EFAULT : 0;
+> -		break;
+> +		return 0;
+>  	}
+>  
+>  	case PPC_PTRACE_SETHWDEBUG: {
+>  		struct ppc_hw_breakpoint bp_info;
+>  
+> -		if (!access_ok(VERIFY_READ, datavp,
+> -			       sizeof(struct ppc_hw_breakpoint)))
+> +		if (copy_from_user(&bp_info, datavp,
+> +				   sizeof(struct ppc_hw_breakpoint)))
+>  			return -EFAULT;
+> -		ret = __copy_from_user(&bp_info, datavp,
+> -				       sizeof(struct ppc_hw_breakpoint)) ?
+> -		      -EFAULT : 0;
+> -		if (!ret)
+> -			ret = ppc_set_hwdebug(child, &bp_info);
+> -		break;
+> +		return ppc_set_hwdebug(child, &bp_info);
+>  	}
+>  
+>  	case PPC_PTRACE_DELHWDEBUG: {
