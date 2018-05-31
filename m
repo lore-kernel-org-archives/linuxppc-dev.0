@@ -1,22 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xTkn4V73zDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 00:05:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xTw95V4JzDrZD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 00:13:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Venkat Rao B <vrbagal1@linux.vnet.ibm.com>,
- Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Cc: sfr@canb.auug.org.au
-Subject: Re: Build Failure on linux-next on Power8 machine
-In-Reply-To: <1fd71673-9e1e-9f95-057e-ed8fb87e503d@linux.vnet.ibm.com>
-References: <d377489b3333eca0951510c19b7d8878@linux.vnet.ibm.com>
- <5abede57-06bd-bb3c-385e-11a61a380027@c-s.fr>
- <1fd71673-9e1e-9f95-057e-ed8fb87e503d@linux.vnet.ibm.com>
-Date: Fri, 01 Jun 2018 00:05:36 +1000
-Message-ID: <8736y7zzrj.fsf@concordia.ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Josef Bacik <jbacik@fb.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2] powerpc: Add support for function error injection
+In-Reply-To: <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
+References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87h8mozajv.fsf@concordia.ellerman.id.au>
+ <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
+Date: Fri, 01 Jun 2018 00:13:44 +1000
+Message-ID: <87zi0fyktj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Venkat Rao B <vrbagal1@linux.vnet.ibm.com> writes:
-> On Thursday 31 May 2018 04:44 PM, Christophe LEROY wrote:
->> Le 31/05/2018 =C3=A0 12:38, vrbagal1 a =C3=A9crit=C2=A0:
->>> Greetings!!!
->>>
->>> I am observing a build failure on linux-next kernel.
->>>
->>> Machine: Power8
->>> Platform: PowerNV(Baremetal)
->>> Git Tree:=20
->>> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
->>=20
->> Which defconfig do you use, or can you give your .config ?
->>=20
->> Christophe
->>=20
->>=20
-> Unfortunately I lost it. I  only have complete fail logs. Will that be=20
-> helpful?
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
 
-We really need the .config, or at least some idea of which config it is.
+> Michael Ellerman wrote:
+>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>> ...
+>> 
+>> A change log is always nice even if it's short :)
+>
+> I tried, but really couldn't come up with anything more to write. I'll 
+> try harder for v2 :)
 
-We also really need to know which exact revision you're building.
-linux-next is updated every day.
+Yeah true.
 
-Today's build results are here:
+You could just say "All that's required is to define x and y and select
+the Kconfig symbol".
 
-  http://kisskb.ellerman.id.au/kisskb/head/14032/
+>> This looks fine to me, it's probably easiest if it goes in via tip along
+>> with patch 1.
+>> 
+>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>
+> Thanks for the review. I'll base v2 on -tip
 
-
-I don't see any fails that look similar to yours. So perhaps you're
-using a different compiler or something. That's another detail you
-should tell us, the exact compiler version :)
+I guess if it doesn't already apply to tip you should rebase it. You've
+probably missed 4.18 anyway.
 
 cheers
