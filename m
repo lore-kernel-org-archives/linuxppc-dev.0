@@ -1,21 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xN9l1Sj7zDrYf
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 19:55:07 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 0/8] Remove unneccessary included headers
-In-Reply-To: <cover.1527697995.git.christophe.leroy@c-s.fr>
-References: <cover.1527697995.git.christophe.leroy@c-s.fr>
-Date: Thu, 31 May 2018 19:55:03 +1000
-Message-ID: <87bmcwywso.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xNV14PgbzDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 20:09:13 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4VA4REE118036
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 06:09:10 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jae3tjgx9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 06:09:10 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 31 May 2018 11:09:08 +0100
+Date: Thu, 31 May 2018 15:39:03 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] error-injection: Simplify arch specific helpers
+To: Masami Hiramatsu <mhiramat@kernel.org>
+Cc: Josef Bacik <jbacik@fb.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <8f4883f08feaf6e040255015af2da7bbc7741e41.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20180530174156.cb1799687fb834f26fe570a9@kernel.org>
+In-Reply-To: <20180530174156.cb1799687fb834f26fe570a9@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1527761241.kc7z6i13ny.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,145 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+Masami Hiramatsu wrote:
+> On Tue, 29 May 2018 18:06:02 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+>=20
+>> We already have an arch-independent way to set the instruction pointer
+>> with instruction_pointer_set(). Using this allows us to get rid of the
+>> need for override_function_with_return() that each architecture has to
+>> implement.
+>>=20
+>> Furthermore, just_return_func() only has to encode arch-specific
+>> assembly instructions to return from a function. Introduce a macro
+>> ARCH_FUNC_RET to provide the arch-specific instruction and move over
+>> just_return_func() to generic code.
+>>=20
+>> With these changes, architectures that already support kprobes, only
+>> just need to ensure they provide regs_set_return_value(), GET_IP() (for
+>> instruction_pointer_set()), and ARCH_FUNC_RET to support error
+>> injection.
+>=20
+> Nice! the code basically good to me. Just one comment, ARCH_FUNC_RET soun=
+ds
+> like a function. Maybe ARCH_RETURN_INSTRUCTION will be better name, isn't=
+ it? :)
 
-> The purpose of this serie is to limit the number of includes to
-> only the necessary ones in order to reduce the number of files
-> recompiled everytime a header file is modified.
->
-> This is the start of the work, please provide feedback if any so
-> that I don't go in the wrong direction.
+Sure -- I thought of writing ARCH_FUNCTION_RETURN, but felt that was too=20
+verbose. How about ARCH_FUNC_RET_INST?
 
-Thanks for starting on this.
+Thanks for the review,
+Naveen
 
-There's a few build errors, summary below.
-
-  http://kisskb.ellerman.id.au/kisskb/head/14031/
-
-cheers
-
-arch/powerpc/kernel/machine_kexec.c:140:26: error: 'KDUMP_KERNELBASE' undeclared (first use in this function):
-  corenet32_smp_defconfig powerpc
-  corenet32_smp_defconfig powerpc-5.3
-  g5_defconfig powerpc
-  g5_defconfig powerpc-5.3
-  gamecube_defconfig powerpc
-  gamecube_defconfig powerpc-5.3
-  maple_defconfig powerpc
-  maple_defconfig powerpc-5.3
-  mpc85xx_defconfig powerpc
-  mpc85xx_defconfig powerpc-5.3
-  mpc85xx_smp_defconfig powerpc
-  mpc85xx_smp_defconfig powerpc-5.3
-  mpc86xx_defconfig powerpc
-  mpc86xx_defconfig powerpc-5.3
-  powernv_defconfig+NO_NUMA ppc64le
-  powernv_defconfig+NO_PERF ppc64le
-  powernv_defconfig+NO_RADIX ppc64le
-  powernv_defconfig+STRICT_RWX ppc64le
-  powernv_defconfig+THIN ppc64le
-  powerpc-randconfig powerpc-5.3
-  ppc64e_defconfig+KEXEC powerpc
-  ppc64e_defconfig+KEXEC powerpc-5.3
-  ps3_defconfig powerpc
-  ps3_defconfig powerpc-5.3
-  pseries_defconfig powerpc
-  pseries_defconfig powerpc-5.3
-  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc
-  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc-5.3
-  pseries_defconfig+NO_MEMORY_HOTREMOVE powerpc
-  pseries_defconfig+NO_SPLPAR powerpc
-  pseries_defconfig+NO_SPLPAR powerpc-5.3
-  pseries_le_defconfig ppc64le
-  pseries_le_defconfig+NO_NUMA ppc64le
-  pseries_le_defconfig+NO_SPLPAR ppc64le
-  skiroot_defconfig ppc64le
-  wii_defconfig powerpc
-  wii_defconfig powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:146:23: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
-  amigaone_defconfig powerpc-5.3
-  corenet_basic_defconfig powerpc-5.3
-  holly_defconfig powerpc-5.3
-  mpc85xx_basic_defconfig powerpc-5.3
-  pmac32_defconfig powerpc-5.3
-  pmac32_defconfig+KVM powerpc-5.3
-  pmac32_defconfig+kexec powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:538:6: error: enumerator value for 'CPU_FTRS_POSSIBLE' is not an integer constant:
-  44x/akebono_defconfig powerpc
-  44x/akebono_defconfig powerpc-5.3
-  44x/currituck_defconfig powerpc
-  44x/currituck_defconfig powerpc-5.3
-  amigaone_defconfig powerpc
-  amigaone_defconfig powerpc-5.3
-  chrp32_defconfig powerpc
-  chrp32_defconfig powerpc-5.3
-  corenet_basic_defconfig powerpc
-  corenet_basic_defconfig powerpc-5.3
-  holly_defconfig powerpc
-  holly_defconfig powerpc-5.3
-  mpc85xx_basic_defconfig powerpc
-  mpc85xx_basic_defconfig powerpc-5.3
-  pmac32_defconfig powerpc
-  pmac32_defconfig powerpc-5.3
-  pmac32_defconfig+KVM powerpc
-  pmac32_defconfig+KVM powerpc-5.3
-  pmac32_defconfig+SMP powerpc
-  pmac32_defconfig+SMP powerpc-5.3
-  pmac32_defconfig+kexec powerpc
-  pmac32_defconfig+kexec powerpc-5.3
-  ppc6xx_defconfig powerpc
-  ppc6xx_defconfig powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:614:6: error: enumerator value for 'CPU_FTRS_ALWAYS' is not an integer constant:
-  44x/akebono_defconfig powerpc
-  44x/akebono_defconfig powerpc-5.3
-  44x/currituck_defconfig powerpc
-  44x/currituck_defconfig powerpc-5.3
-  amigaone_defconfig powerpc
-  amigaone_defconfig powerpc-5.3
-  chrp32_defconfig powerpc
-  chrp32_defconfig powerpc-5.3
-  corenet_basic_defconfig powerpc
-  corenet_basic_defconfig powerpc-5.3
-  holly_defconfig powerpc
-  holly_defconfig powerpc-5.3
-  mpc85xx_basic_defconfig powerpc
-  mpc85xx_basic_defconfig powerpc-5.3
-  pmac32_defconfig powerpc
-  pmac32_defconfig powerpc-5.3
-  pmac32_defconfig+KVM powerpc
-  pmac32_defconfig+KVM powerpc-5.3
-  pmac32_defconfig+SMP powerpc
-  pmac32_defconfig+SMP powerpc-5.3
-  pmac32_defconfig+kexec powerpc
-  pmac32_defconfig+kexec powerpc-5.3
-  ppc6xx_defconfig powerpc
-  ppc6xx_defconfig powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:505:6: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
-  amigaone_defconfig powerpc
-  chrp32_defconfig powerpc
-  corenet_basic_defconfig powerpc
-  holly_defconfig powerpc
-  mpc85xx_basic_defconfig powerpc
-  pmac32_defconfig powerpc
-  pmac32_defconfig+KVM powerpc
-  pmac32_defconfig+SMP powerpc
-  pmac32_defconfig+kexec powerpc
-  ppc6xx_defconfig powerpc
-
-arch/powerpc/kernel/machine_kexec.c:155:22: error: 'KDUMP_KERNELBASE' undeclared (first use in this function):
-  44x/fsp2_defconfig powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:158:32: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
-  44x/akebono_defconfig powerpc-5.3
-  44x/currituck_defconfig powerpc-5.3
-  chrp32_defconfig powerpc-5.3
-  pmac32_defconfig+SMP powerpc-5.3
-  ppc6xx_defconfig powerpc-5.3
-
-arch/powerpc/include/asm/cputable.h:515:6: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
-  44x/akebono_defconfig powerpc
-  44x/currituck_defconfig powerpc
+=
