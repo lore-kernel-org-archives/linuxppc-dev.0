@@ -1,39 +1,22 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xFNB20XRzDrcW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:48:42 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4V4dbpp014389
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:48:39 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ja6bj7enf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:48:39 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Thu, 31 May 2018 05:48:37 +0100
-Subject: Re: [PATCH v5 7/7] ocxl: Document new OCXL IOCTLs
-To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
- vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
- malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
- sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
- gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
- corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
-References: <20180511061303.10728-1-alastair@au1.ibm.com>
- <20180511061303.10728-8-alastair@au1.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 31 May 2018 14:48:29 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xFZv0NkyzDrpC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:57:59 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Josef Bacik <jbacik@fb.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc: Add support for function error injection
+In-Reply-To: <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+Date: Thu, 31 May 2018 14:57:56 +1000
+Message-ID: <87h8mozajv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180511061303.10728-8-alastair@au1.ibm.com>
-Message-Id: <55074981-80d1-e11c-b394-0f06183ac09c@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,14 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/18 16:13, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+> ...
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+A change log is always nice even if it's short :)
 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/Kconfig                       | 1 +
+>  arch/powerpc/include/asm/error-injection.h | 9 +++++++++
+>  arch/powerpc/include/asm/ptrace.h          | 5 +++++
+>  3 files changed, 15 insertions(+)
+>  create mode 100644 arch/powerpc/include/asm/error-injection.h
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+This looks fine to me, it's probably easiest if it goes in via tip along
+with patch 1.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+cheers
+
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 23247fa551e7..ed1ab693f945 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -194,6 +194,7 @@ config PPC
+>  	select HAVE_EBPF_JIT			if PPC64
+>  	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+>  	select HAVE_FTRACE_MCOUNT_RECORD
+> +	select HAVE_FUNCTION_ERROR_INJECTION
+>  	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select HAVE_FUNCTION_TRACER
+>  	select HAVE_GCC_PLUGINS
+> diff --git a/arch/powerpc/include/asm/error-injection.h b/arch/powerpc/include/asm/error-injection.h
+> new file mode 100644
+> index 000000000000..b596eca04ef9
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/error-injection.h
+> @@ -0,0 +1,9 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_ERROR_INJECTION_H
+> +#define _ASM_ERROR_INJECTION_H
+> +
+> +#include <asm-generic/error-injection.h>
+> +
+> +#define ARCH_FUNC_RET	"blr"
+> +
+> +#endif /* _ASM_ERROR_INJECTION_H */
+> diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+> index e4923686e43a..c0705296c2f0 100644
+> --- a/arch/powerpc/include/asm/ptrace.h
+> +++ b/arch/powerpc/include/asm/ptrace.h
+> @@ -101,6 +101,11 @@ static inline long regs_return_value(struct pt_regs *regs)
+>  		return -regs->gpr[3];
+>  }
+>  
+> +static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
+> +{
+> +	regs->gpr[3] = rc;
+> +}
+> +
+>  #ifdef __powerpc64__
+>  #define user_mode(regs) ((((regs)->msr) >> MSR_PR_LG) & 0x1)
+>  #else
+> -- 
+> 2.17.0
