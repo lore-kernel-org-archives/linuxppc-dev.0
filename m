@@ -1,38 +1,27 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xcQf18sGzDrph
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 05:07:05 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4VJ4K9Q111158
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 15:07:03 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jaj6ucxuq-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 15:07:02 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 31 May 2018 20:07:00 +0100
-Date: Fri, 01 Jun 2018 00:36:54 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc: Add support for function error injection
-To: Josef Bacik <jbacik@fb.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <87h8mozajv.fsf@concordia.ellerman.id.au>
- <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
- <87zi0fyktj.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87zi0fyktj.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1527793526.g9zv2oo8k4.naveen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xhNw535TzDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 08:05:52 +1000 (AEST)
+Message-ID: <1527804215.30674.35.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Diana Madalina Craciun <diana.craciun@nxp.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: Leo Li <leoyang.li@nxp.com>
+Date: Thu, 31 May 2018 17:03:35 -0500
+In-Reply-To: <VI1PR0401MB2463C17743BC5C25C2152631FF630@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
+ <1527020969.30674.13.camel@buserror.net>
+ <VI1PR0401MB246345AD11EC8666B7187F8DFF6D0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+ <1527621245.30674.30.camel@buserror.net>
+ <87wovjykh8.fsf@concordia.ellerman.id.au>
+ <VI1PR0401MB2463C17743BC5C25C2152631FF630@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
+ NXP PowerPC Book E
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->=20
->> Michael Ellerman wrote:
->>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->>>> ...
->>>=20
->>> A change log is always nice even if it's short :)
->>
->> I tried, but really couldn't come up with anything more to write. I'll=20
->> try harder for v2 :)
->=20
-> Yeah true.
->=20
-> You could just say "All that's required is to define x and y and select
-> the Kconfig symbol".
+On Thu, 2018-05-31 at 14:35 +0000, Diana Madalina Craciun wrote:
+> On 5/31/2018 5:21 PM, Michael Ellerman wrote:
+> > 
+> > We can add a nospectre_v1 command line option if necessary.
+> 
+> What about nobarrier_nospec (or similar) instead of nospectre_v1 command
+> line? We are not disabling all the v1 mitigations, the masking part will
+> remain unchanged.
 
-Ok, sure.
+I think nospectre_v1 makes more sense as it's about the user's intentions
+rather than the implementation.  The user is giving the kernel permission to
+not defend against spectre v1, and it's up to the implementation which
+mitigations (if any) to disable in response to that, same as any other
+optimization.
 
->=20
->>> This looks fine to me, it's probably easiest if it goes in via tip alon=
-g
->>> with patch 1.
->>>=20
->>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
->>
->> Thanks for the review. I'll base v2 on -tip
->=20
-> I guess if it doesn't already apply to tip you should rebase it. You've
-> probably missed 4.18 anyway.
-
-Oh ok. I just tried and it seems to apply just fine. I'll post v2 after=20
-giving this a quick test.
-
-- Naveen
-
-=
+-Scott
