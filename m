@@ -1,35 +1,40 @@
-Return-Path: <akshay.adiga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xFDD1TgwzDsC1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:41:47 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xFFC2xyRzDrph
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:42:39 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4V4dEDY033305
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:41:45 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ja59xshx9-1
+ w4V4eS6Q005134
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:42:37 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ja5gg903f-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:41:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:42:36 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Thu, 31 May 2018 05:41:43 +0100
-Date: Thu, 31 May 2018 10:11:34 +0530
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: stewart@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, mpe@ellerman.id.au
-Subject: Re: [PATCH] [SCHEME 2]powernv/cpuidle: Add support for new idle
- state device-tree format
-References: <1527735200-24653-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 31 May 2018 05:42:34 +0100
+Subject: Re: [PATCH v5 5/7] ocxl: Expose the thread_id needed for wait on
+ POWER9
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+References: <20180511061303.10728-1-alastair@au1.ibm.com>
+ <20180511061303.10728-6-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 31 May 2018 14:42:28 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1527735200-24653-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Message-Id: <20180531044134.q752bdg5ichp34hm@aksadiga.ibm>
+In-Reply-To: <20180511061303.10728-6-alastair@au1.ibm.com>
+Message-Id: <fc2184c1-eb0f-0116-8565-b2eac4354379@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,54 +44,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 31, 2018 at 08:23:20AM +0530, Akshay Adiga wrote:
-> This patch adds support for new device-tree format for idle state
-> description.
+On 11/05/18 16:13, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
 > 
-> Previously if a older kernel runs on a newer firmware, it may enable
-> all available states irrespective of its capability of handling it.
-> New device tree format adds a compatible flag, so that only kernel
-> which has the capability to handle the version of stop state will enable
-> it.
+> In order to successfully issue as_notify, an AFU needs to know the TID
+> to notify, which in turn means that this information should be
+> available in userspace so it can be communicated to the AFU.
 > 
-> Older kernel will still see stop0 and stop0_lite in older format and we
-> will depricate it after some time.
-> 
-> Idea is to bump up the version in firmware if we find a bug or
-> regression in stop states. A fix will be provided in linux which would
-> now know about the bumped up version of stop states, where as kernel
-> without fixes would ignore the states.
-> 
-> New idle state device tree format :
-> 
->     power-mgt {
->         ibm,cpu-idle-state-names = "stop0_lite", "stop0";
->         ibm,cpu-idle-state-residency-ns = <0x2710 0x4e20>;
->         ibm,cpu-idle-state-latencies-ns = <0x3e8 0x7d0>;
->         ibm,cpu-idle-state-psscr-mask = <0x0 0x3003ff 0x0 0x3003ff>;
->         ibm,cpu-idle-state-psscr = <0x0 0x330 0x0 0x300330>;
->         ibm,cpu-idle-state-flags = <0x100000 0x101000>;
->         ibm,enabled-stop-levels = <0xec000000>;
->         ibm,idle-states {
->           ibm,cpu-idle-state-names = "stop1", "stop2", "stop4", "stop5";
->           ibm,cpu-idle-state-residency-ns = <0xc350 0x186a0 0x989680
->     0x1312d00>;
->           ibm,cpu-idle-state-latencies-ns = <0x1388 0x2710 0x186a0
->     0x30d40>;
->           ibm,cpu-idle-state-psscr-mask = <0x0 0x3003ff 0x0 0x3003ff 0x0
->     0x3003ff 0x0 0x3003ff>;
->           ibm,cpu-idle-state-psscr = <0x0 0x300331 0x0 0x300332 0x0
->     0x300374 0x0 0x300375>;
->           ibm,cpu-idle-state-versions = "ibm,idle-state-v1
->     ", "ibm,idle-state-v1", "ibm,idle-state-v1", "ibm,idle-state-v1";
->           ibm,cpu-idle-state-flags = <0x101000 0x101000 0x207000
-> 0x207000>;
->        }
->      }
-> 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-This patch is intended to be a RFC.
-The skiboot patch has been posted here :
-https://patchwork.ozlabs.org/patch/923121/
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+
+Comments below.
+
+> +#ifdef CONFIG_PPC64
+> +static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
+> +		struct ocxl_ioctl_p9_wait __user *uarg)
+> +{
+> +	struct ocxl_ioctl_p9_wait arg;
+> +
+> +	memset(&arg, 0, sizeof(arg));
+> +
+> +	if (cpu_has_feature(CPU_FTR_P9_TIDR)) {
+> +		enum ocxl_context_status status;
+> +
+> +		// Locks both status & tidr
+> +		mutex_lock(&ctx->status_mutex);
+> +		if (!ctx->tidr) {
+> +			if (set_thread_tidr(current))
+> +				return -ENOENT;
+> +
+> +			ctx->tidr = current->thread.tidr;
+> +		}
+> +
+> +		status = ctx->status;
+> +		mutex_unlock(&ctx->status_mutex);
+> +
+> +		if (status == ATTACHED) {
+> +			int rc;
+> +			struct link *link = ctx->afu->fn->link;
+> +
+> +			rc = ocxl_link_update_pe(link, ctx->pasid, ctx->tidr);
+> +			if (rc)
+> +				return rc;
+> +		}
+> +
+> +		arg.thread_id = ctx->tidr;
+> +	} else
+> +		return -ENOENT;
+
+I didn't pick this up before - please please please use braces on both 
+sides of the if here.
+
+> +
+> +	if (copy_to_user(uarg, &arg, sizeof(arg)))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
+> +#endif
+
+> diff --git a/include/misc/ocxl.h b/include/misc/ocxl.h
+> index 51ccf76db293..9ff6ddc28e22 100644
+> --- a/include/misc/ocxl.h
+> +++ b/include/misc/ocxl.h
+> @@ -188,6 +188,15 @@ extern int ocxl_link_add_pe(void *link_handle, int pasid, u32 pidr, u32 tidr,
+>   		void (*xsl_err_cb)(void *data, u64 addr, u64 dsisr),
+>   		void *xsl_err_data);
+>   
+> +/**
+> + * Update values within a Process Element
+> + *
+> + * link_handle: the link handle associated with the process element
+> + * pasid: the PASID for the AFU context
+> + * tid: the new thread id for the process element
+> + */
+> +extern int ocxl_link_update_pe(void *link_handle, int pasid, __u16 tid);
+
+My earlier comment about __u16 vs u16 applies for this declaration (and 
+the body declaration) as well
+
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
