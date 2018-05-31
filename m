@@ -1,20 +1,23 @@
-Return-Path: <xieyisheng1@huawei.com>
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xQTZ12NdzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:38:58 +1000 (AEST)
-From: Yisheng Xie <xieyisheng1@huawei.com>
-To: <linux-kernel@vger.kernel.org>
-CC: <andy.shevchenko@gmail.com>, Yisheng Xie <xieyisheng1@huawei.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 20/21] powerpc/xmon: use match_string() helper
-Date: Thu, 31 May 2018 19:11:25 +0800
-Message-ID: <1527765086-19873-21-git-send-email-xieyisheng1@huawei.com>
-In-Reply-To: <1527765086-19873-1-git-send-email-xieyisheng1@huawei.com>
-References: <1527765086-19873-1-git-send-email-xieyisheng1@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xQm432f5zDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:51:32 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v5 0/4] powerpc patches for new Kconfig language
+In-Reply-To: <CAK7LNARbz8YC7=vB_Pt-FFepLfLY-Yt=8ZiOAoPeZV3EA3VQOg@mail.gmail.com>
+References: <20180530121922.22122-1-npiggin@gmail.com>
+ <87o9gxyzpo.fsf@concordia.ellerman.id.au>
+ <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
+ <87k1rkzbry.fsf@concordia.ellerman.id.au>
+ <CAK7LNARbz8YC7=vB_Pt-FFepLfLY-Yt=8ZiOAoPeZV3EA3VQOg@mail.gmail.com>
+Date: Thu, 31 May 2018 21:51:31 +1000
+Message-ID: <876034yrek.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,59 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-match_string() returns the index of an array for a matching string,
-which can be used instead of open coded variant.
+Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+> 2018-05-31 13:31 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
+>> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+>>> 2018-05-30 23:39 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
+>>>> Nicholas Piggin <npiggin@gmail.com> writes:
+>>>>
+>>>>> This series of patches improves th powerpc kbuild system. The
+>>>>> motivation was to to be compatible with the new Kconfig scripting
+>>>>> language that Yamada-san has implemented here for merge:
+>>>>>
+>>>>> https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git/log/?h=kconfig
+>>>>>
+>>>>> I have tested on top of that tree, powerpc now builds there.
+>>>>>
+>>>>> To avoid build breakage, the first 3 patches must go before the
+>>>>> kconfig change, and the 4th patch must go after it.
+>>>>>
+>>>>> v5 changes:
+>>>>> - Patch 4 update to syntax changed since kconfig-shell-v3 release.
+>>>>> - Patch 4 suggestions from Masahiro Yamada, remove unnecessary "OK"
+>>>>>   output from check mprofile script, and fold CC_USING_MPROFILE_KERNEL
+>>>>>   into CONFIG_MPROFILE_KERNEL.
+>>>>> - Reduce whitespace disturbance in patch 1.
+>>>>
+>>>> I've put this series in a topic branch.
+>>>>
+>>>>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/kbuild
+>>>
+>>>
+>>> No, you can't.
+>>>
+>>> This series depends on my Kconfig work.
+>>
+>> The *last* commit depends on your work, the rest do not.
+>>
+>>> You queued it up on v4.17-rc3,
+>>> but necessary patches are not there.
+>>>
+>>> You will get build errors.
+>>
+>> I do not get any build errors for the first three commits.
+>
+>
+> Right, the first three are fine.
+>
+> If we make sure commit cfff26c2dc7a1
+> does not appear in Linus' tree,
+> we are good.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
----
- arch/powerpc/xmon/xmon.c | 23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+Yep agreed.
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index a0842f1..872ac8c 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3161,7 +3161,7 @@ static void proccall(void)
- }
- 
- #define N_PTREGS	44
--static char *regnames[N_PTREGS] = {
-+static const char *regnames[N_PTREGS] = {
- 	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
- 	"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
- 	"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
-@@ -3196,18 +3196,17 @@ static void proccall(void)
- 			regname[i] = c;
- 		}
- 		regname[i] = 0;
--		for (i = 0; i < N_PTREGS; ++i) {
--			if (strcmp(regnames[i], regname) == 0) {
--				if (xmon_regs == NULL) {
--					printf("regs not available\n");
--					return 0;
--				}
--				*vp = ((unsigned long *)xmon_regs)[i];
--				return 1;
--			}
-+		i = match_string(regnames, N_PTREGS, regname);
-+		if (i < 0) {
-+			printf("invalid register name '%%%s'\n", regname);
-+			return 0;
- 		}
--		printf("invalid register name '%%%s'\n", regname);
--		return 0;
-+		if (xmon_regs == NULL) {
-+			printf("regs not available\n");
-+			return 0;
-+		}
-+		*vp = ((unsigned long *)xmon_regs)[i];
-+		return 1;
- 	}
- 
- 	/* skip leading "0x" if any */
--- 
-1.7.12.4
+>>>> I'll plan to merge the first three into the powerpc tree.
+>>>
+>>> Please do not do this.
+>>>
+>>> You can issue Acked-by instead.
+>>
+>> I'd prefer the first three commits were in my tree so they're tested
+>> properly.
+>>
+>>> I need all the 4 patches to my tree.
+>>> Otherwise, the git-bisect'ability breaks for PowerPC.
+>>
+>> You should merge all 4 into your tree, ie. all of my topic/kbuild
+>> branch.
+>
+> This depends on what "merge" means.
+>
+> If it means "git pull", I cannot pull your topic/kbuild branch
+> since it is broken.
+
+Yeah OK I understand what you mean now.
+
+> So, how do you want me to handle the last patch?
+>
+> I can pull the first three from your branch,
+> then I can cherry-pick the last one on top of my kconfig tree.
+
+Yes, please do that.
+
+cheers
