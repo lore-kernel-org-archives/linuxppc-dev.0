@@ -1,31 +1,21 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xMJv57BlzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 19:16:15 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4V4TCc9127994
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:29:21 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ja9269x68-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:29:21 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Thu, 31 May 2018 00:29:21 -0400
-Subject: powerpc/powernv: copy/paste - Mask XERS0 bit in CR
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 May 2018 21:29:16 -0700
-Mime-Version: 1.0
-Message-Id: <1527740956.5945.12.camel@hbabu-laptop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xN9l1Sj7zDrYf
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 19:55:07 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 0/8] Remove unneccessary included headers
+In-Reply-To: <cover.1527697995.git.christophe.leroy@c-s.fr>
+References: <cover.1527697995.git.christophe.leroy@c-s.fr>
+Date: Thu, 31 May 2018 19:55:03 +1000
+Message-ID: <87bmcwywso.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,27 +25,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-    
-NX can set 3rd bit in CR register for XER[SO] (Summation overflow)
-which is not related to paste request. The current paste function
-returns failure for the successful request when this bit is set.
-So mask this bit and check the proper return status.
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-Fixes: 2392c8c8c045 ("powerpc/powernv/vas: Define copy/paste interfaces")
-Cc: stable@vger.kernel.org # v4.14+    
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+> The purpose of this serie is to limit the number of includes to
+> only the necessary ones in order to reduce the number of files
+> recompiled everytime a header file is modified.
+>
+> This is the start of the work, please provide feedback if any so
+> that I don't go in the wrong direction.
 
-diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
-index c9a5036..82392e3 100644
---- a/arch/powerpc/platforms/powernv/copy-paste.h
-+++ b/arch/powerpc/platforms/powernv/copy-paste.h
-@@ -9,7 +9,8 @@
- #include <asm/ppc-opcode.h>
- 
- #define CR0_SHIFT	28
--#define CR0_MASK	0xF
-+#define CR0_MASK	0xE /* 3rd bit undefined or set for XER[SO] */
-+
- /*
-  * Copy/paste instructions:
-  *
+Thanks for starting on this.
+
+There's a few build errors, summary below.
+
+  http://kisskb.ellerman.id.au/kisskb/head/14031/
+
+cheers
+
+arch/powerpc/kernel/machine_kexec.c:140:26: error: 'KDUMP_KERNELBASE' undeclared (first use in this function):
+  corenet32_smp_defconfig powerpc
+  corenet32_smp_defconfig powerpc-5.3
+  g5_defconfig powerpc
+  g5_defconfig powerpc-5.3
+  gamecube_defconfig powerpc
+  gamecube_defconfig powerpc-5.3
+  maple_defconfig powerpc
+  maple_defconfig powerpc-5.3
+  mpc85xx_defconfig powerpc
+  mpc85xx_defconfig powerpc-5.3
+  mpc85xx_smp_defconfig powerpc
+  mpc85xx_smp_defconfig powerpc-5.3
+  mpc86xx_defconfig powerpc
+  mpc86xx_defconfig powerpc-5.3
+  powernv_defconfig+NO_NUMA ppc64le
+  powernv_defconfig+NO_PERF ppc64le
+  powernv_defconfig+NO_RADIX ppc64le
+  powernv_defconfig+STRICT_RWX ppc64le
+  powernv_defconfig+THIN ppc64le
+  powerpc-randconfig powerpc-5.3
+  ppc64e_defconfig+KEXEC powerpc
+  ppc64e_defconfig+KEXEC powerpc-5.3
+  ps3_defconfig powerpc
+  ps3_defconfig powerpc-5.3
+  pseries_defconfig powerpc
+  pseries_defconfig powerpc-5.3
+  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc
+  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc-5.3
+  pseries_defconfig+NO_MEMORY_HOTREMOVE powerpc
+  pseries_defconfig+NO_SPLPAR powerpc
+  pseries_defconfig+NO_SPLPAR powerpc-5.3
+  pseries_le_defconfig ppc64le
+  pseries_le_defconfig+NO_NUMA ppc64le
+  pseries_le_defconfig+NO_SPLPAR ppc64le
+  skiroot_defconfig ppc64le
+  wii_defconfig powerpc
+  wii_defconfig powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:146:23: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
+  amigaone_defconfig powerpc-5.3
+  corenet_basic_defconfig powerpc-5.3
+  holly_defconfig powerpc-5.3
+  mpc85xx_basic_defconfig powerpc-5.3
+  pmac32_defconfig powerpc-5.3
+  pmac32_defconfig+KVM powerpc-5.3
+  pmac32_defconfig+kexec powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:538:6: error: enumerator value for 'CPU_FTRS_POSSIBLE' is not an integer constant:
+  44x/akebono_defconfig powerpc
+  44x/akebono_defconfig powerpc-5.3
+  44x/currituck_defconfig powerpc
+  44x/currituck_defconfig powerpc-5.3
+  amigaone_defconfig powerpc
+  amigaone_defconfig powerpc-5.3
+  chrp32_defconfig powerpc
+  chrp32_defconfig powerpc-5.3
+  corenet_basic_defconfig powerpc
+  corenet_basic_defconfig powerpc-5.3
+  holly_defconfig powerpc
+  holly_defconfig powerpc-5.3
+  mpc85xx_basic_defconfig powerpc
+  mpc85xx_basic_defconfig powerpc-5.3
+  pmac32_defconfig powerpc
+  pmac32_defconfig powerpc-5.3
+  pmac32_defconfig+KVM powerpc
+  pmac32_defconfig+KVM powerpc-5.3
+  pmac32_defconfig+SMP powerpc
+  pmac32_defconfig+SMP powerpc-5.3
+  pmac32_defconfig+kexec powerpc
+  pmac32_defconfig+kexec powerpc-5.3
+  ppc6xx_defconfig powerpc
+  ppc6xx_defconfig powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:614:6: error: enumerator value for 'CPU_FTRS_ALWAYS' is not an integer constant:
+  44x/akebono_defconfig powerpc
+  44x/akebono_defconfig powerpc-5.3
+  44x/currituck_defconfig powerpc
+  44x/currituck_defconfig powerpc-5.3
+  amigaone_defconfig powerpc
+  amigaone_defconfig powerpc-5.3
+  chrp32_defconfig powerpc
+  chrp32_defconfig powerpc-5.3
+  corenet_basic_defconfig powerpc
+  corenet_basic_defconfig powerpc-5.3
+  holly_defconfig powerpc
+  holly_defconfig powerpc-5.3
+  mpc85xx_basic_defconfig powerpc
+  mpc85xx_basic_defconfig powerpc-5.3
+  pmac32_defconfig powerpc
+  pmac32_defconfig powerpc-5.3
+  pmac32_defconfig+KVM powerpc
+  pmac32_defconfig+KVM powerpc-5.3
+  pmac32_defconfig+SMP powerpc
+  pmac32_defconfig+SMP powerpc-5.3
+  pmac32_defconfig+kexec powerpc
+  pmac32_defconfig+kexec powerpc-5.3
+  ppc6xx_defconfig powerpc
+  ppc6xx_defconfig powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:505:6: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
+  amigaone_defconfig powerpc
+  chrp32_defconfig powerpc
+  corenet_basic_defconfig powerpc
+  holly_defconfig powerpc
+  mpc85xx_basic_defconfig powerpc
+  pmac32_defconfig powerpc
+  pmac32_defconfig+KVM powerpc
+  pmac32_defconfig+SMP powerpc
+  pmac32_defconfig+kexec powerpc
+  ppc6xx_defconfig powerpc
+
+arch/powerpc/kernel/machine_kexec.c:155:22: error: 'KDUMP_KERNELBASE' undeclared (first use in this function):
+  44x/fsp2_defconfig powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:158:32: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
+  44x/akebono_defconfig powerpc-5.3
+  44x/currituck_defconfig powerpc-5.3
+  chrp32_defconfig powerpc-5.3
+  pmac32_defconfig+SMP powerpc-5.3
+  ppc6xx_defconfig powerpc-5.3
+
+arch/powerpc/include/asm/cputable.h:515:6: error: implicit declaration of function 'ASM_CONST' [-Werror=implicit-function-declaration]:
+  44x/akebono_defconfig powerpc
+  44x/currituck_defconfig powerpc
