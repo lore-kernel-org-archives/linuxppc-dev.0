@@ -1,22 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xTw95V4JzDrZD
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 00:13:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xV4h3vTdzDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 00:21:08 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Josef Bacik <jbacik@fb.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] powerpc: Add support for function error injection
-In-Reply-To: <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
-References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <87h8mozajv.fsf@concordia.ellerman.id.au>
- <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
-Date: Fri, 01 Jun 2018 00:13:44 +1000
-Message-ID: <87zi0fyktj.fsf@concordia.ellerman.id.au>
+To: Scott Wood <oss@buserror.net>,
+ Diana Madalina Craciun <diana.craciun@nxp.com>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Leo Li <leoyang.li@nxp.com>
+Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
+ NXP PowerPC Book E
+In-Reply-To: <1527621245.30674.30.camel@buserror.net>
+References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
+ <1527020969.30674.13.camel@buserror.net>
+ <VI1PR0401MB246345AD11EC8666B7187F8DFF6D0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+ <1527621245.30674.30.camel@buserror.net>
+Date: Fri, 01 Jun 2018 00:21:07 +1000
+Message-ID: <87wovjykh8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,30 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
-
-> Michael Ellerman wrote:
->> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
->>> ...
->> 
->> A change log is always nice even if it's short :)
+Scott Wood <oss@buserror.net> writes:
+> On Tue, 2018-05-29 at 15:22 +0000, Diana Madalina Craciun wrote:
+>> On 05/22/2018 11:31 PM, Scott Wood wrote:
 >
-> I tried, but really couldn't come up with anything more to write. I'll 
-> try harder for v2 :)
-
-Yeah true.
-
-You could just say "All that's required is to define x and y and select
-the Kconfig symbol".
-
->> This looks fine to me, it's probably easiest if it goes in via tip along
->> with patch 1.
+>> > Should there be a way for the user to choose not to enable this (editing
+>> > the
+>> > device tree doesn't count), for a use case that is not sufficiently
+>> > security
+>> > sensitive to justify the performance loss?  What is the performance impact
+>> > of
+>> > this patch?
 >> 
->> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>> My reason was that on the other architectures Spectre variant 1
+>> mitigations are not disabled either. But I think that it might be a good
+>> idea to add a bootarg parameter to disable the barrier.
 >
-> Thanks for the review. I'll base v2 on -tip
+> Is there a specific policy reason why they allow spectre v2 to be disabled but
+> not v1,
 
-I guess if it doesn't already apply to tip you should rebase it. You've
-probably missed 4.18 anyway.
+No.
+
+> or just a matter of not having a mechanism to disable it,
+
+Yes and no. Some of the v1 mitigation is done via masking which can't be
+easily patched. eg. array_index_nospec()
+
+> or the parts which could practically be disabled not impacting
+> performance much?
+
+That's the mean reason AIUI.
+
+We can add a nospectre_v1 command line option if necessary.
 
 cheers
