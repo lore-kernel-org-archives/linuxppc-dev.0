@@ -1,19 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xPxK3lmyzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:14:29 +1000 (AEST)
-Subject: Re: Build Failure on linux-next on Power8 machine
-To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: sfr@canb.auug.org.au
-References: <d377489b3333eca0951510c19b7d8878@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <5abede57-06bd-bb3c-385e-11a61a380027@c-s.fr>
-Date: Thu, 31 May 2018 13:14:23 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xQ0f4k0PzDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:17:22 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH v2] powerpc/64: Fix build failure with GCC 8.1
+In-Reply-To: <fd687f6c-0846-07da-328d-dd01bb2d0fdb@c-s.fr>
+References: <f5f2de3e1a39613f7303bfdc0d2f2210d4c91910.1527573345.git.christophe.leroy@c-s.fr>
+ <CAMuHMdVSKigQPUQH=BVc2fRSRmuEThLaf+V9ghMPDT9_m1C6BA@mail.gmail.com>
+ <1fa5b220-4d21-b4cd-33bf-8a3ce3178063@c-s.fr>
+ <CAMuHMdXwO1_wrrTi40UmZC4o6KjvP0LF38m45n0ZNA2pDb_7Qg@mail.gmail.com>
+ <3a438dd8-49c3-ad39-e2a1-040e0ce67279@c-s.fr>
+ <87efhsz7xz.fsf@concordia.ellerman.id.au>
+ <fd687f6c-0846-07da-328d-dd01bb2d0fdb@c-s.fr>
+Date: Thu, 31 May 2018 21:17:20 +1000
+Message-ID: <878t80yszj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <d377489b3333eca0951510c19b7d8878@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +34,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> Le 31/05/2018 =C3=A0 07:54, Michael Ellerman a =C3=A9crit=C2=A0:
+>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>>> Le 29/05/2018 =C3=A0 11:05, Geert Uytterhoeven a =C3=A9crit=C2=A0:
+>>>> Hi Christophe,
+>>>> On Tue, May 29, 2018 at 10:56 AM, Christophe LEROY
+>>>> <christophe.leroy@c-s.fr> wrote:
+>>>>> Le 29/05/2018 =C3=A0 09:47, Geert Uytterhoeven a =C3=A9crit :
+>>>>>> On Tue, May 29, 2018 at 8:03 AM, Christophe Leroy
+>>>>>>> --- a/arch/powerpc/kernel/nvram_64.c
+>>>>>>> +++ b/arch/powerpc/kernel/nvram_64.c
+>>>>>>> @@ -1039,7 +1039,7 @@ loff_t __init nvram_create_partition(const ch=
+ar
+>>>>>>> *name, int sig,
+>>>>>>>            new_part->index =3D free_part->index;
+>>>>>>>            new_part->header.signature =3D sig;
+>>>>>>>            new_part->header.length =3D size;
+>>>>>>> -       strncpy(new_part->header.name, name, 12);
+>>>>>>> +       memcpy(new_part->header.name, name, strnlen(name,
+>>>>>>> sizeof(new_part->header.name)));
+>>>>>>
+>>>>>>
+>>>>>> The comment for nvram_header.lgnth says:
+>>>>>>
+>>>>>>            /* Terminating null required only for names < 12 chars. */
+>>>>>>
+>>>>>> This will not terminate the string with a zero (the struct is
+>>>>>> allocated with kmalloc).
+>>>>>> So the original code is correct, the new one isn't.
+>>>>>
+>>>>> Right, then I have to first zeroize the destination.
+>>>>
+>>>> Using kzalloc() instead of kmalloc() will do.
+>>>>
+>>>> Still, papering around these warnings seems to obscure things, IMHO.
+>>>> And it increases code size, as you had to add a call to strnlen().
+>>=20
+>>=20
+>> The right fix is to not try and mirror the on-device structure in the
+>> kernel struct. We should just use a proper NULL terminated string, which
+>> would avoid the need to explicitly do strncmp(.., .., 12) in the code
+>> and be less bug prone in general.
+>>=20
+>> The only place where we should need to worry about the 12 byte buffer is
+>> in nvram_write_header().
+>>=20
+>> Anyway that's a bigger change, so I'll take this for now with kzalloc().
+>
+> Thanks. You take it as is and add the kzalloc() or you expect a v3 from=20
+> me with the kzalloc()
 
+Sorry that wasn't clear was it. I'll add the kzalloc().
 
-Le 31/05/2018 à 12:38, vrbagal1 a écrit :
-> Greetings!!!
-> 
-> 
-> I am observing a build failure on linux-next kernel.
-> 
-> Machine: Power8
-> Platform: PowerNV(Baremetal)
-> Git Tree: 
-> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-
-Which defconfig do you use, or can you give your .config ?
-
-Christophe
-
-
-> 
-> Below is the build error.
-> 
-> 14:20:48 make[1]: *** [kernel/umh.o] Error 1
-> 14:20:48 make[1]: *** [kernel/fork.o] Error 1
-> 14:20:48 In file included from ./arch/powerpc/include/asm/highmem.h:30:0,
-> 14:20:48                  from ./include/linux/highmem.h:35,
-> 14:20:48                  from ./include/linux/pagemap.h:11,
-> 14:20:48                  from security/commoncap.c:19:
-> 14:20:48 ./arch/powerpc/include/asm/fixmap.h:52:2: error: overflow in 
-> enumeration values
-> 14:20:48   FIX_KMAP_BEGIN, /* reserved pte's for temporary kernel 
-> mappings */
-> 14:20:48   ^
-> 14:20:48 make[2]: *** [kernel/sched/swait.o] Error 1
-> 14:20:48 make[1]: *** [mm/page_alloc.o] Error 1
-> 14:20:48 make[1]: *** [kernel/sched] Error 2
-> 14:20:48 make: *** [mm] Error 2
-> 14:20:48 make[1]: *** [kernel/exit.o] Error 1
-> 14:20:48 make[1]: *** [security/commoncap.o] Error 1
-> 14:20:48 make[1]: *** [fs/kernfs] Error 2
-> 14:20:48 make: *** [fs] Error 2
-> 14:20:48 make: *** [arch/powerpc/kernel] Error 2
-> 14:20:48 make: *** [security] Error 2
-> 14:20:48 make: *** [kernel] Error 2
-> 
-> Cheers.
+cheers
