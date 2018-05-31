@@ -1,33 +1,38 @@
-Return-Path: <haren@linux.vnet.ibm.com>
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xZqP0JfXzDrbk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 03:54:56 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xcQf18sGzDrph
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 05:07:05 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4VHsZEW094620
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 13:54:54 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jajp38j6j-1
+ w4VJ4K9Q111158
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 15:07:03 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jaj6ucxuq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 13:54:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 15:07:02 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Thu, 31 May 2018 11:54:53 -0600
-Subject: [PATCH] crypto/nx: Initialize 842 high and normal RxFIFO control
- registers
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: herbert@gondor.apana.org.au, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, hbabu@us.ibm.com
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 31 May 2018 10:54:47 -0700
-Mime-Version: 1.0
-Message-Id: <1527789287.5945.23.camel@hbabu-laptop>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 31 May 2018 20:07:00 +0100
+Date: Fri, 01 Jun 2018 00:36:54 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc: Add support for function error injection
+To: Josef Bacik <jbacik@fb.com>, Masami Hiramatsu <mhiramat@kernel.org>,
+ Ingo Molnar <mingo@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <5ad23690185a90a887514d702ecb45783090d7c0.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <87h8mozajv.fsf@concordia.ellerman.id.au>
+ <1527761352.z5jz8jg2d5.naveen@linux.ibm.com>
+ <87zi0fyktj.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87zi0fyktj.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1527793526.g9zv2oo8k4.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,104 +42,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Ellerman wrote:
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>=20
+>> Michael Ellerman wrote:
+>>> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> writes:
+>>>> ...
+>>>=20
+>>> A change log is always nice even if it's short :)
+>>
+>> I tried, but really couldn't come up with anything more to write. I'll=20
+>> try harder for v2 :)
+>=20
+> Yeah true.
+>=20
+> You could just say "All that's required is to define x and y and select
+> the Kconfig symbol".
 
-NX increments readOffset by FIFO size in receive FIFO control register
-when CRB is read. But the index in RxFIFO has to match with the
-corresponding entry in FIFO maintained by VAS in kernel. Otherwise NX
-may be processing incorrect CRBs and can cause CRB timeout.
+Ok, sure.
 
-VAS FIFO offset is 0 when the receive window is opened during
-initialization. When the module is reloaded or in kexec boot, readOffset
-in FIFO control register may not match with VAS entry. This patch adds
-nx_coproc_init OPAL call to reset readOffset and queued entries in FIFO
-control register for both high and normal FIFOs.
+>=20
+>>> This looks fine to me, it's probably easiest if it goes in via tip alon=
+g
+>>> with patch 1.
+>>>=20
+>>> Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+>>
+>> Thanks for the review. I'll base v2 on -tip
+>=20
+> I guess if it doesn't already apply to tip you should rebase it. You've
+> probably missed 4.18 anyway.
 
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
+Oh ok. I just tried and it seems to apply just fine. I'll post v2 after=20
+giving this a quick test.
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index d886a5b..ff61e4b 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -206,7 +206,8 @@
- #define OPAL_NPU_TL_SET				161
- #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
- #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
--#define OPAL_LAST				165
-+#define	OPAL_NX_COPROC_INIT			167
-+#define OPAL_LAST				167
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 7159e1a..d79eb82 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -288,6 +288,7 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
- int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
- int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
- int opal_sensor_group_clear(u32 group_hndl, int token);
-+int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
- 
- s64 opal_signal_system_reset(s32 cpu);
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3da30c2..c7541a9 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -325,3 +325,4 @@ OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
- OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
- OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
-+OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 48fbb41..5e13908 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1035,3 +1035,5 @@ void powernv_set_nmmu_ptcr(unsigned long ptcr)
- EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
- EXPORT_SYMBOL_GPL(opal_int_eoi);
- EXPORT_SYMBOL_GPL(opal_error_code);
-+/* Export the below symbol for NX compression */
-+EXPORT_SYMBOL(opal_nx_coproc_init);
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 1e87637..6c4784d 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -24,6 +24,8 @@
- #include <asm/icswx.h>
- #include <asm/vas.h>
- #include <asm/reg.h>
-+#include <asm/opal-api.h>
-+#include <asm/opal.h>
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-@@ -803,9 +805,26 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
- 	if (!coproc)
- 		return -ENOMEM;
- 
--	if (!strcmp(priority, "High"))
-+	if (!strcmp(priority, "High")) {
-+		/*
-+		 * (lpid, pid, tid) combination has to be unique for each
-+		 * coprocessor instance in the system. So to make it
-+		 * unique, skiboot uses coprocessor type such as 842 or
-+		 * GZIP for pid and provides this value to kernel in pid
-+		 * device-tree property.
-+		 *
-+		 * Initialize each NX instance for both high and normal
-+		 * priority FIFOs.
-+		 */
-+		ret = opal_nx_coproc_init(chip_id, pid);
-+		if (ret) {
-+			pr_err("Failed to initialize NX coproc: %d\n", ret);
-+			ret = opal_error_code(ret);
-+			goto err_out;
-+		}
-+
- 		coproc->ct = VAS_COP_TYPE_842_HIPRI;
--	else if (!strcmp(priority, "Normal"))
-+	} else if (!strcmp(priority, "Normal"))
- 		coproc->ct = VAS_COP_TYPE_842;
- 	else {
- 		pr_err("Invalid RxFIFO priority value\n");
+- Naveen
+
+=
