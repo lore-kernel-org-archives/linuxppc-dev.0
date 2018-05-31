@@ -1,23 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xF0M0dr9zF0Pc
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:31:31 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v5 0/4] powerpc patches for new Kconfig language
-In-Reply-To: <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
-References: <20180530121922.22122-1-npiggin@gmail.com>
- <87o9gxyzpo.fsf@concordia.ellerman.id.au>
- <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
-Date: Thu, 31 May 2018 14:31:29 +1000
-Message-ID: <87k1rkzbry.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xF270j54zDrp5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:33:02 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w4V4TDwb128080
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:33:00 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ja926a30h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 00:33:00 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 31 May 2018 05:32:58 +0100
+Subject: Re: [PATCH v5 4/7] ocxl: Rename pnv_ocxl_spa_remove_pe to clarify
+ it's action
+To: "Alastair D'Silva" <alastair@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, mikey@neuling.org,
+ vaibhav@linux.vnet.ibm.com, aneesh.kumar@linux.vnet.ibm.com,
+ malat@debian.org, felix@linux.vnet.ibm.com, pombredanne@nexb.com,
+ sukadev@linux.vnet.ibm.com, npiggin@gmail.com,
+ gregkh@linuxfoundation.org, arnd@arndb.de, fbarrat@linux.vnet.ibm.com,
+ corbet@lwn.net, "Alastair D'Silva" <alastair@d-silva.org>
+References: <20180511061303.10728-1-alastair@au1.ibm.com>
+ <20180511061303.10728-5-alastair@au1.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 31 May 2018 14:32:50 +1000
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180511061303.10728-5-alastair@au1.ibm.com>
+Message-Id: <9b50b81a-2bcf-1250-61e9-565b0b8c8314@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +44,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> 2018-05-30 23:39 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
->> Nicholas Piggin <npiggin@gmail.com> writes:
->>
->>> This series of patches improves th powerpc kbuild system. The
->>> motivation was to to be compatible with the new Kconfig scripting
->>> language that Yamada-san has implemented here for merge:
->>>
->>> https://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git/log/?h=kconfig
->>>
->>> I have tested on top of that tree, powerpc now builds there.
->>>
->>> To avoid build breakage, the first 3 patches must go before the
->>> kconfig change, and the 4th patch must go after it.
->>>
->>> v5 changes:
->>> - Patch 4 update to syntax changed since kconfig-shell-v3 release.
->>> - Patch 4 suggestions from Masahiro Yamada, remove unnecessary "OK"
->>>   output from check mprofile script, and fold CC_USING_MPROFILE_KERNEL
->>>   into CONFIG_MPROFILE_KERNEL.
->>> - Reduce whitespace disturbance in patch 1.
->>
->> I've put this series in a topic branch.
->>
->>   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/kbuild
->
->
-> No, you can't.
->
-> This series depends on my Kconfig work.
+On 11/05/18 16:13, Alastair D'Silva wrote:
+> From: Alastair D'Silva <alastair@d-silva.org>
+> 
+> The function removes the process element from NPU cache.
+> 
+> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
-The *last* commit depends on your work, the rest do not.
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-> You queued it up on v4.17-rc3,
-> but necessary patches are not there.
->
-> You will get build errors.
 
-I do not get any build errors for the first three commits.
-
->> I'll plan to merge the first three into the powerpc tree.
->
-> Please do not do this.
->
-> You can issue Acked-by instead.
-
-I'd prefer the first three commits were in my tree so they're tested
-properly.
-
-> I need all the 4 patches to my tree.
-> Otherwise, the git-bisect'ability breaks for PowerPC.
-
-You should merge all 4 into your tree, ie. all of my topic/kbuild
-branch.
-
-And, I'll merge the first 3 into my tree.
-
-There should be no bisection breakage as a result.
-
-cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
