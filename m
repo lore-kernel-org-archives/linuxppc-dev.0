@@ -1,34 +1,22 @@
-Return-Path: <vrbagal1@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <xieyisheng1@huawei.com>
+Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xQFk43rKzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:28:42 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w4VBOARg062814
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 07:28:40 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jaf24jtxf-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 07:28:39 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vrbagal1@linux.vnet.ibm.com>;
- Thu, 31 May 2018 07:28:38 -0400
-Subject: Re: Build Failure on linux-next on Power8 machine
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org
-Cc: sfr@canb.auug.org.au
-References: <d377489b3333eca0951510c19b7d8878@linux.vnet.ibm.com>
- <5abede57-06bd-bb3c-385e-11a61a380027@c-s.fr>
-From: Venkat Rao B <vrbagal1@linux.vnet.ibm.com>
-Date: Thu, 31 May 2018 16:58:34 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xQTZ12NdzDr30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 21:38:58 +1000 (AEST)
+From: Yisheng Xie <xieyisheng1@huawei.com>
+To: <linux-kernel@vger.kernel.org>
+CC: <andy.shevchenko@gmail.com>, Yisheng Xie <xieyisheng1@huawei.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 20/21] powerpc/xmon: use match_string() helper
+Date: Thu, 31 May 2018 19:11:25 +0800
+Message-ID: <1527765086-19873-21-git-send-email-xieyisheng1@huawei.com>
+In-Reply-To: <1527765086-19873-1-git-send-email-xieyisheng1@huawei.com>
+References: <1527765086-19873-1-git-send-email-xieyisheng1@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <5abede57-06bd-bb3c-385e-11a61a380027@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1fd71673-9e1e-9f95-057e-ed8fb87e503d@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,56 +26,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+match_string() returns the index of an array for a matching string,
+which can be used instead of open coded variant.
 
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
+---
+ arch/powerpc/xmon/xmon.c | 23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-On Thursday 31 May 2018 04:44 PM, Christophe LEROY wrote:
-> 
-> 
-> Le 31/05/2018 à 12:38, vrbagal1 a écrit :
->> Greetings!!!
->>
->>
->> I am observing a build failure on linux-next kernel.
->>
->> Machine: Power8
->> Platform: PowerNV(Baremetal)
->> Git Tree: 
->> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> 
-> Which defconfig do you use, or can you give your .config ?
-> 
-> Christophe
-> 
-> 
-Unfortunately I lost it. I  only have complete fail logs. Will that be 
-helpful?
-
-Venkat
->>
->> Below is the build error.
->>
->> 14:20:48 make[1]: *** [kernel/umh.o] Error 1
->> 14:20:48 make[1]: *** [kernel/fork.o] Error 1
->> 14:20:48 In file included from ./arch/powerpc/include/asm/highmem.h:30:0,
->> 14:20:48                  from ./include/linux/highmem.h:35,
->> 14:20:48                  from ./include/linux/pagemap.h:11,
->> 14:20:48                  from security/commoncap.c:19:
->> 14:20:48 ./arch/powerpc/include/asm/fixmap.h:52:2: error: overflow in 
->> enumeration values
->> 14:20:48   FIX_KMAP_BEGIN, /* reserved pte's for temporary kernel 
->> mappings */
->> 14:20:48   ^
->> 14:20:48 make[2]: *** [kernel/sched/swait.o] Error 1
->> 14:20:48 make[1]: *** [mm/page_alloc.o] Error 1
->> 14:20:48 make[1]: *** [kernel/sched] Error 2
->> 14:20:48 make: *** [mm] Error 2
->> 14:20:48 make[1]: *** [kernel/exit.o] Error 1
->> 14:20:48 make[1]: *** [security/commoncap.o] Error 1
->> 14:20:48 make[1]: *** [fs/kernfs] Error 2
->> 14:20:48 make: *** [fs] Error 2
->> 14:20:48 make: *** [arch/powerpc/kernel] Error 2
->> 14:20:48 make: *** [security] Error 2
->> 14:20:48 make: *** [kernel] Error 2
->>
->> Cheers.
-> 
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index a0842f1..872ac8c 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3161,7 +3161,7 @@ static void proccall(void)
+ }
+ 
+ #define N_PTREGS	44
+-static char *regnames[N_PTREGS] = {
++static const char *regnames[N_PTREGS] = {
+ 	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
+ 	"r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",
+ 	"r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",
+@@ -3196,18 +3196,17 @@ static void proccall(void)
+ 			regname[i] = c;
+ 		}
+ 		regname[i] = 0;
+-		for (i = 0; i < N_PTREGS; ++i) {
+-			if (strcmp(regnames[i], regname) == 0) {
+-				if (xmon_regs == NULL) {
+-					printf("regs not available\n");
+-					return 0;
+-				}
+-				*vp = ((unsigned long *)xmon_regs)[i];
+-				return 1;
+-			}
++		i = match_string(regnames, N_PTREGS, regname);
++		if (i < 0) {
++			printf("invalid register name '%%%s'\n", regname);
++			return 0;
+ 		}
+-		printf("invalid register name '%%%s'\n", regname);
+-		return 0;
++		if (xmon_regs == NULL) {
++			printf("regs not available\n");
++			return 0;
++		}
++		*vp = ((unsigned long *)xmon_regs)[i];
++		return 1;
+ 	}
+ 
+ 	/* skip leading "0x" if any */
+-- 
+1.7.12.4
