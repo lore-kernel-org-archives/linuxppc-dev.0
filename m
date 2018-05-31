@@ -2,16 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40xF424ZmQzDr30
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:34:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xF444PgFzDrnR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2018 14:34:44 +1000 (AEST)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 05/11] powerpc/prom_init: Remove support for OPAL v2
-Date: Thu, 31 May 2018 14:33:43 +1000
-Message-Id: <20180531043349.24783-6-benh@kernel.crashing.org>
-In-Reply-To: <20180531043349.24783-1-benh@kernel.crashing.org>
-References: <20180531043349.24783-1-benh@kernel.crashing.org>
-Reply-To: [RFC.PATCH.00/11]prom_init.cleanups.and.sanitization@gate.crashing.org
+Subject: [RFC PATCH] powerpc: Add support for adding an ESM blob to the zImage
+ wrapper
+Date: Thu, 31 May 2018 14:34:17 +1000
+Message-Id: <20180531043417.25073-1-benh@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,267 +19,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We removed support for running under any OPAL version
-earlier than v3 in 2015 (they never saw the light of day
-anyway), but we kept some leftovers of this support in
-prom_init.c, so let's take it out.
+For secure VMs, the signing tool will create a ticket called
+the "ESM blob" with the signatures of the kernel and initrd
+among other things.
+
+This adds support to the wrapper script for adding that
+blob via the "-e" option to the zImage.pseries.
+
+It also adds code to the zImage wrapper itself to
+retrieve and if necessary relocate the blob, and pass
+its address to Linux via the device-tree, to be later
+consumed by prom_init.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- arch/powerpc/kernel/prom_init.c | 147 +++-----------------------------
- 1 file changed, 10 insertions(+), 137 deletions(-)
+ arch/powerpc/boot/main.c       | 41 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/ops.h        |  2 ++
+ arch/powerpc/boot/wrapper      | 24 +++++++++++++++++---
+ arch/powerpc/boot/zImage.lds.S |  8 +++++++
+ 4 files changed, 72 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
-index d60feccf4b27..7c3d285750ad 100644
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -44,7 +44,6 @@
- #include <asm/btext.h>
- #include <asm/sections.h>
- #include <asm/machdep.h>
--#include <asm/opal.h>
- #include <asm/asm-prototypes.h>
- 
- #include <linux/linux_logo.h>
-@@ -192,7 +191,6 @@ struct platform_support {
- #define PLATFORM_LPAR		0x0001
- #define PLATFORM_POWERMAC	0x0400
- #define PLATFORM_GENERIC	0x0500
--#define PLATFORM_OPAL		0x0600
- 
- static int __prombss of_platform;
- 
-@@ -659,7 +657,7 @@ static void __init early_cmdline_parse(void)
- 		prom_debug("Radix disabled from cmdline\n");
+diff --git a/arch/powerpc/boot/main.c b/arch/powerpc/boot/main.c
+index 78aaf4ffd7ab..2e818ed4a9ef 100644
+--- a/arch/powerpc/boot/main.c
++++ b/arch/powerpc/boot/main.c
+@@ -150,6 +150,46 @@ static struct addr_range prep_initrd(struct addr_range vmlinux, void *chosen,
+ 	return (struct addr_range){(void *)initrd_addr, initrd_size};
  }
  
--#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-+#ifdef CONFIG_PPC_PSERIES
- /*
-  * The architecture vector has an array of PVR mask/value pairs,
-  * followed by # option vectors - 1, followed by the option vectors.
-@@ -1203,7 +1201,7 @@ static void __init prom_send_capabilities(void)
- 	}
- #endif /* __BIG_ENDIAN__ */
++#ifdef __powerpc64__
++static void prep_esm_blob(struct addr_range vmlinux, void *chosen)
++{
++	unsigned long esm_blob_addr, esm_blob_size;
++
++	/* Do we have a blob ? */
++	if (_esm_blob_end <= _esm_blob_start)
++		return;
++
++	printf("Attached ESM blob at 0x%p-0x%p\n\r",
++	       _esm_blob_start, _esm_blob_end);
++	esm_blob_addr = (unsigned long)_esm_blob_start;
++	esm_blob_size = _esm_blob_end - _esm_blob_start;
++
++	/*
++	 * If the initrd is too low it will be clobbered when the
++	 * kernel relocates to its final location.  In this case,
++	 * allocate a safer place and move it.
++	 */
++	if (esm_blob_addr < vmlinux.size) {
++		void *old_addr = (void *)esm_blob_addr;
++
++		printf("Allocating 0x%lx bytes for esm_blob ...\n\r",
++		       esm_blob_size);
++		esm_blob_addr = (unsigned long)malloc(esm_blob_size);
++		if (!esm_blob_addr)
++			fatal("Can't allocate memory for ESM blob !\n\r");
++		printf("Relocating ESM blob 0x%lx <- 0x%p (0x%lx bytes)\n\r",
++		       esm_blob_addr, old_addr, esm_blob_size);
++		memmove((void *)esm_blob_addr, old_addr, esm_blob_size);
++	}
++
++	/* Tell the kernel initrd address via device tree */
++	setprop_val(chosen, "linux,esm-blob-start", (u32)(esm_blob_addr));
++	setprop_val(chosen, "linux,esm-blob-end", (u32)(esm_blob_addr+esm_blob_size));
++}
++#else
++static inline void prep_esm_blob(struct addr_range vmlinux, void *chosen) { }
++#endif
++
+ /* A buffer that may be edited by tools operating on a zImage binary so as to
+  * edit the command line passed to vmlinux (by setting /chosen/bootargs).
+  * The buffer is put in it's own section so that tools may locate it easier.
+@@ -218,6 +258,7 @@ void start(void)
+ 	vmlinux = prep_kernel();
+ 	initrd = prep_initrd(vmlinux, chosen,
+ 			     loader_info.initrd_addr, loader_info.initrd_size);
++	prep_esm_blob(vmlinux, chosen);
+ 	prep_cmdline(chosen);
+ 
+ 	printf("Finalizing device tree...");
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index fad1862f4b2d..1212aca660f2 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -252,6 +252,8 @@ extern char _initrd_start[];
+ extern char _initrd_end[];
+ extern char _dtb_start[];
+ extern char _dtb_end[];
++extern char _esm_blob_start[];
++extern char _esm_blob_end[];
+ 
+ static inline __attribute__((const))
+ int __ilog2_u32(u32 n)
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index f9141eaec6ff..36b2ad6cd5b7 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -14,6 +14,7 @@
+ # -i initrd	specify initrd file
+ # -d devtree	specify device-tree blob
+ # -s tree.dts	specify device-tree source file (needs dtc installed)
++# -e esm_blob   specify ESM blob for secure images
+ # -c		cache $kernel.strip.gz (use if present & newer, else make)
+ # -C prefix	specify command prefix for cross-building tools
+ #		(strip, objcopy, ld)
+@@ -38,6 +39,7 @@ platform=of
+ initrd=
+ dtb=
+ dts=
++esm_blob=
+ cacheit=
+ binary=
+ compression=.gz
+@@ -60,9 +62,9 @@ tmpdir=.
+ 
+ usage() {
+     echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
+-    echo '       [-d devtree] [-s tree.dts] [-c] [-C cross-prefix]' >&2
+-    echo '       [-D datadir] [-W workingdir] [-Z (gz|xz|none)]' >&2
+-    echo '       [--no-compression] [vmlinux]' >&2
++    echo '       [-d devtree] [-s tree.dts] [-e esm_blob]' >&2
++    echo '       [-c] [-C cross-prefix] [-D datadir] [-W workingdir]' >&2
++    echo '       [-Z (gz|xz|none)] [--no-compression] [vmlinux]' >&2
+     exit 1
  }
--#endif /* #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
-+#endif /* CONFIG_PPC_PSERIES */
  
- /*
-  * Memory allocation strategy... our layout is normally:
-@@ -1534,88 +1532,6 @@ static void __init prom_close_stdin(void)
- 	}
- }
+@@ -105,6 +107,11 @@ while [ "$#" -gt 0 ]; do
+ 	[ "$#" -gt 0 ] || usage
+ 	dtb="$1"
+ 	;;
++    -e)
++	shift
++	[ "$#" -gt 0 ] || usage
++	esm_blob="$1"
++	;;
+     -s)
+ 	shift
+ 	[ "$#" -gt 0 ] || usage
+@@ -211,9 +218,16 @@ objflags=-S
+ tmp=$tmpdir/zImage.$$.o
+ ksection=.kernel:vmlinux.strip
+ isection=.kernel:initrd
++esection=.kernel:esm_blob
+ link_address='0x400000'
+ make_space=y
  
--#ifdef CONFIG_PPC_POWERNV
--
--#ifdef CONFIG_PPC_EARLY_DEBUG_OPAL
--static u64 __prombss prom_opal_base;
--static u64 __prombss prom_opal_entry;
--#endif
--
--/*
-- * Allocate room for and instantiate OPAL
-- */
--static void __init prom_instantiate_opal(void)
--{
--	phandle opal_node;
--	ihandle opal_inst;
--	u64 base, entry;
--	u64 size = 0, align = 0x10000;
--	__be64 val64;
--	u32 rets[2];
--
--	prom_debug("prom_instantiate_opal: start...\n");
--
--	opal_node = call_prom("finddevice", 1, 1, ADDR("/ibm,opal"));
--	prom_debug("opal_node: %x\n", opal_node);
--	if (!PHANDLE_VALID(opal_node))
--		return;
--
--	val64 = 0;
--	prom_getprop(opal_node, "opal-runtime-size", &val64, sizeof(val64));
--	size = be64_to_cpu(val64);
--	if (size == 0)
--		return;
--	val64 = 0;
--	prom_getprop(opal_node, "opal-runtime-alignment", &val64,sizeof(val64));
--	align = be64_to_cpu(val64);
--
--	base = alloc_down(size, align, 0);
--	if (base == 0) {
--		prom_printf("OPAL allocation failed !\n");
--		return;
--	}
--
--	opal_inst = call_prom("open", 1, 1, ADDR("/ibm,opal"));
--	if (!IHANDLE_VALID(opal_inst)) {
--		prom_printf("opening opal package failed (%x)\n", opal_inst);
--		return;
--	}
--
--	prom_printf("instantiating opal at 0x%x...", base);
--
--	if (call_prom_ret("call-method", 4, 3, rets,
--			  ADDR("load-opal-runtime"),
--			  opal_inst,
--			  base >> 32, base & 0xffffffff) != 0
--	    || (rets[0] == 0 && rets[1] == 0)) {
--		prom_printf(" failed\n");
--		return;
--	}
--	entry = (((u64)rets[0]) << 32) | rets[1];
--
--	prom_printf(" done\n");
--
--	reserve_mem(base, size);
--
--	prom_debug("opal base     = 0x%x\n", base);
--	prom_debug("opal align    = 0x%x\n", align);
--	prom_debug("opal entry    = 0x%x\n", entry);
--	prom_debug("opal size     = 0x%x\n", (long)size);
--
--	prom_setprop(opal_node, "/ibm,opal", "opal-base-address",
--		     &base, sizeof(base));
--	prom_setprop(opal_node, "/ibm,opal", "opal-entry-address",
--		     &entry, sizeof(entry));
--
--#ifdef CONFIG_PPC_EARLY_DEBUG_OPAL
--	prom_opal_base = base;
--	prom_opal_entry = entry;
--#endif
--	prom_debug("prom_instantiate_opal: end...\n");
--}
--
--#endif /* CONFIG_PPC_POWERNV */
--
- /*
-  * Allocate room for and instantiate RTAS
-  */
-@@ -2124,10 +2040,6 @@ static int __init prom_find_machine_type(void)
- 		}
- 	}
- #ifdef CONFIG_PPC64
--	/* Try to detect OPAL */
--	if (PHANDLE_VALID(call_prom("finddevice", 1, 1, ADDR("/ibm,opal"))))
--		return PLATFORM_OPAL;
--
- 	/* Try to figure out if it's an IBM pSeries or any other
- 	 * PAPR compliant platform. We assume it is if :
- 	 *  - /device_type is "chrp" (please, do NOT use that for future
-@@ -2373,7 +2285,7 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
- 	unsigned long soff;
- 	unsigned char *valp;
- 	static char pname[MAX_PROPERTY_NAME];
--	int l, room, has_phandle = 0;
-+	int l, room;
++
++if [ -n "$esm_blob" -a "$platform" != "pseries" ]; then
++    echo "ESM blob not support on non-pseries platforms" >&2
++    exit 1
++fi
++
+ case "$platform" in
+ of)
+     platformo="$object/of.o $object/epapr.o"
+@@ -463,6 +477,10 @@ if [ -n "$dtb" ]; then
+     fi
+ fi
  
- 	dt_push_token(OF_DT_BEGIN_NODE, mem_start, mem_end);
++if [ -n "$esm_blob" ]; then
++    addsec $tmp "$esm_blob" $esection
++fi
++
+ if [ "$platform" != "miboot" ]; then
+     if [ -n "$link_address" ] ; then
+         text_start="-Ttext $link_address"
+diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
+index 4ac1e36edfe7..a21f3a76e06f 100644
+--- a/arch/powerpc/boot/zImage.lds.S
++++ b/arch/powerpc/boot/zImage.lds.S
+@@ -68,6 +68,14 @@ SECTIONS
+     _initrd_end =  .;
+   }
  
-@@ -2450,26 +2362,6 @@ static void __init scan_dt_build_struct(phandle node, unsigned long *mem_start,
- 		valp = make_room(mem_start, mem_end, l, 4);
- 		call_prom("getprop", 4, 1, node, pname, valp, l);
- 		*mem_start = _ALIGN(*mem_start, 4);
--
--		if (!strcmp(pname, "phandle"))
--			has_phandle = 1;
--	}
--
--	/* Add a "linux,phandle" property if no "phandle" property already
--	 * existed (can happen with OPAL)
--	 */
--	if (!has_phandle) {
--		soff = dt_find_string("linux,phandle");
--		if (soff == 0)
--			prom_printf("WARNING: Can't find string index for"
--				    " <linux-phandle> node %s\n", path);
--		else {
--			dt_push_token(OF_DT_PROP, mem_start, mem_end);
--			dt_push_token(4, mem_start, mem_end);
--			dt_push_token(soff, mem_start, mem_end);
--			valp = make_room(mem_start, mem_end, 4, 4);
--			*(__be32 *)valp = cpu_to_be32(node);
--		}
- 	}
- 
- 	/* do all our children */
-@@ -3146,7 +3038,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 */
- 	early_cmdline_parse();
- 
--#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-+#ifdef CONFIG_PPC_PSERIES
- 	/*
- 	 * On pSeries, inform the firmware about our capabilities
- 	 */
-@@ -3190,15 +3082,9 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 * On non-powermacs, try to instantiate RTAS. PowerMacs don't
- 	 * have a usable RTAS implementation.
- 	 */
--	if (of_platform != PLATFORM_POWERMAC &&
--	    of_platform != PLATFORM_OPAL)
-+	if (of_platform != PLATFORM_POWERMAC)
- 		prom_instantiate_rtas();
- 
--#ifdef CONFIG_PPC_POWERNV
--	if (of_platform == PLATFORM_OPAL)
--		prom_instantiate_opal();
--#endif /* CONFIG_PPC_POWERNV */
--
- #ifdef CONFIG_PPC64
- 	/* instantiate sml */
- 	prom_instantiate_sml();
-@@ -3211,8 +3097,7 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 *
- 	 * (This must be done after instanciating RTAS)
- 	 */
--	if (of_platform != PLATFORM_POWERMAC &&
--	    of_platform != PLATFORM_OPAL)
-+	if (of_platform != PLATFORM_POWERMAC)
- 		prom_hold_cpus();
- 
- 	/*
-@@ -3256,11 +3141,9 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	/*
- 	 * in case stdin is USB and still active on IBM machines...
- 	 * Unfortunately quiesce crashes on some powermacs if we have
--	 * closed stdin already (in particular the powerbook 101). It
--	 * appears that the OPAL version of OFW doesn't like it either.
-+	 * closed stdin already (in particular the powerbook 101).
- 	 */
--	if (of_platform != PLATFORM_POWERMAC &&
--	    of_platform != PLATFORM_OPAL)
-+	if (of_platform != PLATFORM_POWERMAC)
- 		prom_close_stdin();
- 
- 	/*
-@@ -3277,25 +3160,15 @@ unsigned long __init prom_init(unsigned long r3, unsigned long r4,
- 	 */
- 	hdr = dt_header_start;
- 
--	/* Don't print anything after quiesce under OPAL, it crashes OFW */
--	if (of_platform != PLATFORM_OPAL) {
--		prom_printf("Booting Linux via __start() @ 0x%lx ...\n", kbase);
--		prom_debug("->dt_header_start=0x%x\n", hdr);
--	}
-+	prom_printf("Booting Linux via __start() @ 0x%lx ...\n", kbase);
-+	prom_debug("->dt_header_start=0x%x\n", hdr);
- 
- #ifdef CONFIG_PPC32
- 	reloc_got2(-offset);
- #else
- 	unreloc_toc();
- #endif
--
--#ifdef CONFIG_PPC_EARLY_DEBUG_OPAL
--	/* OPAL early debug gets the OPAL base & entry in r8 and r9 */
--	__start(hdr, kbase, 0, 0, 0,
--		prom_opal_base, prom_opal_entry);
--#else
- 	__start(hdr, kbase, 0, 0, 0, 0, 0);
--#endif
- 
- 	return 0;
- }
++  . = ALIGN(4096);
++  .kernel:esm_blob :
++  {
++    _esm_blob_start =  .;
++    *(.kernel:esm_blob)
++    _esm_blob_end =  .;
++  }
++
+ #ifdef CONFIG_PPC64_BOOT_WRAPPER
+   . = ALIGN(256);
+   .got :
 -- 
 2.17.0
