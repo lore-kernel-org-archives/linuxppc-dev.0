@@ -1,20 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y86X2pjmzF0WH
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 01:55:00 +1000 (AEST)
-In-Reply-To: <20180525021145.4520-2-bauerman@linux.ibm.com>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y86Y3Cn2zF0WH
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 01:55:01 +1000 (AEST)
+In-Reply-To: <2892e4f57d03caf1b3d6c14bc456b2f9a116b32a.1527220066.git.jpoimboe@redhat.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linux-kernel@vger.kernel.org,
- linux-kselftest@vger.kernel.org
-Subject: Re: [v2, 2/2] selftests/powerpc: Add core file test for Protection Key
- registers
-Message-Id: <40y86W6jNmz9s3x@ozlabs.org>
-Date: Sat,  2 Jun 2018 01:54:59 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/modules: remove unused mod_arch_specific.toc field
+Message-Id: <40y86X6K4mz9s4Y@ozlabs.org>
+Date: Sat,  2 Jun 2018 01:55:00 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-05-25 at 02:11:45 UTC, Thiago Jung Bauermann wrote:
-> This test verifies that the AMR, IAMR and UAMOR are being written to a
-> process' core file.
+On Fri, 2018-05-25 at 03:48:34 UTC, Josh Poimboeuf wrote:
+> The toc field in the mod_arch_specific struct isn't actually used
+> anywhere, so remove it.
 > 
-> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> Also the ftrace-specific fields are now common between 32-bit and
+> 64-bit, so simplify the struct definition a bit by moving them out of
+> the __powerpc64__ #ifdef.
+> 
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> Reviewed-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/39b91dd625f15438859204a489ab62
+https://git.kernel.org/powerpc/c/8ce621e1d946b1d1d7717337ab8dc3
 
 cheers
