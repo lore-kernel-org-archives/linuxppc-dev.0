@@ -1,22 +1,27 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y0HB1b6GzF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:01:58 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id x9-v6so12283814pfm.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 03:01:58 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y10z62zCzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:34:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
 Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v4 7/7] powerpc/64s/radix: flush remote CPUs out of
- single-threaded mm_cpumask
-Date: Fri,  1 Jun 2018 20:01:21 +1000
-Message-Id: <20180601100121.393-8-npiggin@gmail.com>
-In-Reply-To: <20180601100121.393-1-npiggin@gmail.com>
-References: <20180601100121.393-1-npiggin@gmail.com>
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v5 0/4] powerpc patches for new Kconfig language
+In-Reply-To: <CAK7LNASxgQOsSveFuKrx7do-+643KUZwU_Gn+z7O7JK+TtMEww@mail.gmail.com>
+References: <20180530121922.22122-1-npiggin@gmail.com>
+ <87o9gxyzpo.fsf@concordia.ellerman.id.au>
+ <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
+ <87k1rkzbry.fsf@concordia.ellerman.id.au>
+ <CAK7LNARbz8YC7=vB_Pt-FFepLfLY-Yt=8ZiOAoPeZV3EA3VQOg@mail.gmail.com>
+ <876034yrek.fsf@concordia.ellerman.id.au>
+ <CAK7LNASxgQOsSveFuKrx7do-+643KUZwU_Gn+z7O7JK+TtMEww@mail.gmail.com>
+Date: Fri, 01 Jun 2018 20:34:42 +1000
+Message-ID: <871sdq4wxp.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,314 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a single-threaded process has a non-local mm_cpumask, try to use
-that point to flush the TLBs out of other CPUs in the cpumask.
+Hi Masahiro,
 
-An IPI is used for clearing remote CPUs for a few reasons:
-- An IPI can end lazy TLB use of the mm, which is required to prevent
-  TLB entries being created on the remote CPU. The alternative is to
-  drop lazy TLB switching completely, which costs 7.5% in a context
-  switch ping-pong test betwee a process and kernel idle thread.
-- An IPI can have remote CPUs flush the entire PID, but the local CPU
-  can flush a specific VA. tlbie would require over-flushing of the
-  local CPU (where the process is running).
-- A single threaded process that is migrated to a different CPU is
-  likely to have a relatively small mm_cpumask, so IPI is reasonable.
+Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+...
+>
+> Also, the change logs could be dropped.
+>
+> I see
+>
+> Since v1: reworded changelog to explain the cause of the problem (thanks
+> Segher) and moved the flags into the 64-32 cross compile case.
+>
+> or
+>
+> Since v1: removed extra -EB in the recordmcount script (thanks mpe)
+>
+>
+> above your signed-off-by.
+>
+>
+> Of course, this is your call,
+> and you do not need to disturb the git history if it is too late.
 
-No other thread can concurrently switch to this mm, because it must
-have been given a reference to mm_users by the current thread before it
-can use_mm. mm_users can be asynchronously incremented (by
-mm_activate or mmget_not_zero), but those users must use remote mm
-access and can't use_mm or access user address space. Existing code
-makes the this assumption already, for example sparc64 has reset
-mm_cpumask using this condition since the start of history, see
-arch/sparc/kernel/smp_64.c.
+You're right, sorry those are bit messy.
 
-This reduces tlbies for a kernel compile workload from 0.90M to 0.12M,
-tlbiels are increased significantly due to the PID flushing for the
-cleaning up remote CPUs, and increased local flushes (PID flushes take
-128 tlbiels vs 1 tlbie).
+I'm happy to update them, I haven't merged them yet, but I see you have
+them in your tree.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/tlb.h |  13 +++
- arch/powerpc/mm/tlb-radix.c    | 148 +++++++++++++++++++++++++++------
- 2 files changed, 134 insertions(+), 27 deletions(-)
+So I won't change them unless you confirm you're OK with it. Let me
+know.
 
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index a7eabff27a0f..9138baccebb0 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -76,6 +76,19 @@ static inline int mm_is_thread_local(struct mm_struct *mm)
- 		return false;
- 	return cpumask_test_cpu(smp_processor_id(), mm_cpumask(mm));
- }
-+static inline void mm_reset_thread_local(struct mm_struct *mm)
-+{
-+	WARN_ON(atomic_read(&mm->context.copros) > 0);
-+	/*
-+	 * It's possible for mm_access to take a reference on mm_users to
-+	 * access the remote mm from another thread, but it's not allowed
-+	 * to set mm_cpumask, so mm_users may be > 1 here.
-+	 */
-+	WARN_ON(current->mm != mm);
-+	atomic_set(&mm->context.active_cpus, 1);
-+	cpumask_clear(mm_cpumask(mm));
-+	cpumask_set_cpu(smp_processor_id(), mm_cpumask(mm));
-+}
- #else /* CONFIG_PPC_BOOK3S_64 */
- static inline int mm_is_thread_local(struct mm_struct *mm)
- {
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index cdc50398fd60..67a6e86d3e7e 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -12,6 +12,8 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- #include <linux/memblock.h>
-+#include <linux/mmu_context.h>
-+#include <linux/sched/mm.h>
- 
- #include <asm/ppc-opcode.h>
- #include <asm/tlb.h>
-@@ -504,6 +506,15 @@ void radix__local_flush_tlb_page(struct vm_area_struct *vma, unsigned long vmadd
- }
- EXPORT_SYMBOL(radix__local_flush_tlb_page);
- 
-+static bool mm_is_singlethreaded(struct mm_struct *mm)
-+{
-+	if (atomic_read(&mm->context.copros) > 0)
-+		return false;
-+	if (atomic_read(&mm->mm_users) <= 1 && current->mm == mm)
-+		return true;
-+	return false;
-+}
-+
- static bool mm_needs_flush_escalation(struct mm_struct *mm)
- {
- 	/*
-@@ -511,10 +522,47 @@ static bool mm_needs_flush_escalation(struct mm_struct *mm)
- 	 * caching PTEs and not flushing them properly when
- 	 * RIC = 0 for a PID/LPID invalidate
- 	 */
--	return atomic_read(&mm->context.copros) != 0;
-+	if (atomic_read(&mm->context.copros) > 0)
-+		return true;
-+	return false;
- }
- 
- #ifdef CONFIG_SMP
-+static void do_exit_flush_lazy_tlb(void *arg)
-+{
-+	struct mm_struct *mm = arg;
-+	unsigned long pid = mm->context.id;
-+
-+	if (current->mm == mm)
-+		return; /* Local CPU */
-+
-+	if (current->active_mm == mm) {
-+		/*
-+		 * Must be a kernel thread because sender is single-threaded.
-+		 */
-+		BUG_ON(current->mm);
-+		mmgrab(&init_mm);
-+		switch_mm(mm, &init_mm, current);
-+		current->active_mm = &init_mm;
-+		mmdrop(mm);
-+	}
-+	_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+}
-+
-+static void exit_flush_lazy_tlbs(struct mm_struct *mm)
-+{
-+	/*
-+	 * Would be nice if this was async so it could be run in
-+	 * parallel with our local flush, but generic code does not
-+	 * give a good API for it. Could extend the generic code or
-+	 * make a special powerpc IPI for flushing TLBs.
-+	 * For now it's not too performance critical.
-+	 */
-+	smp_call_function_many(mm_cpumask(mm), do_exit_flush_lazy_tlb,
-+				(void *)mm, 1);
-+	mm_reset_thread_local(mm);
-+}
-+
- void radix__flush_tlb_mm(struct mm_struct *mm)
- {
- 	unsigned long pid;
-@@ -530,17 +578,24 @@ void radix__flush_tlb_mm(struct mm_struct *mm)
- 	 */
- 	smp_mb();
- 	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
-+
- 		if (mm_needs_flush_escalation(mm))
- 			_tlbie_pid(pid, RIC_FLUSH_ALL);
- 		else
- 			_tlbie_pid(pid, RIC_FLUSH_TLB);
--	} else
-+	} else {
-+local:
- 		_tlbiel_pid(pid, RIC_FLUSH_TLB);
-+	}
- 	preempt_enable();
- }
- EXPORT_SYMBOL(radix__flush_tlb_mm);
- 
--void radix__flush_all_mm(struct mm_struct *mm)
-+static void __flush_all_mm(struct mm_struct *mm, bool fullmm)
- {
- 	unsigned long pid;
- 
-@@ -550,12 +605,24 @@ void radix__flush_all_mm(struct mm_struct *mm)
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (!mm_is_thread_local(mm))
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (!fullmm) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto local;
-+			}
-+		}
- 		_tlbie_pid(pid, RIC_FLUSH_ALL);
--	else
-+	} else {
-+local:
- 		_tlbiel_pid(pid, RIC_FLUSH_ALL);
-+	}
- 	preempt_enable();
- }
-+void radix__flush_all_mm(struct mm_struct *mm)
-+{
-+	__flush_all_mm(mm, false);
-+}
- EXPORT_SYMBOL(radix__flush_all_mm);
- 
- void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr)
-@@ -575,10 +642,16 @@ void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmaddr,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (!mm_is_thread_local(mm))
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
- 		_tlbie_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
--	else
-+	} else {
-+local:
- 		_tlbiel_va(vmaddr, pid, psize, RIC_FLUSH_TLB);
-+	}
- 	preempt_enable();
- }
- 
-@@ -638,14 +711,21 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		local = true;
--		full = (end == TLB_FLUSH_ALL ||
--				nr_pages > tlb_local_single_page_flush_ceiling);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (end != TLB_FLUSH_ALL) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto is_local;
-+			}
-+		}
- 		local = false;
- 		full = (end == TLB_FLUSH_ALL ||
- 				nr_pages > tlb_single_page_flush_ceiling);
-+	} else {
-+is_local:
-+		local = true;
-+		full = (end == TLB_FLUSH_ALL ||
-+				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
- 
- 	if (full) {
-@@ -766,7 +846,7 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	 * See the comment for radix in arch_exit_mmap().
- 	 */
- 	if (tlb->fullmm) {
--		radix__flush_all_mm(mm);
-+		__flush_all_mm(mm, true);
- 	} else if ( (psize = radix_get_mmu_psize(page_size)) == -1) {
- 		if (!tlb->need_flush_all)
- 			radix__flush_tlb_mm(mm);
-@@ -800,24 +880,32 @@ static inline void __radix__flush_tlb_range_psize(struct mm_struct *mm,
- 
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		local = true;
--		full = (end == TLB_FLUSH_ALL ||
--				nr_pages > tlb_local_single_page_flush_ceiling);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			if (end != TLB_FLUSH_ALL) {
-+				exit_flush_lazy_tlbs(mm);
-+				goto is_local;
-+			}
-+		}
- 		local = false;
- 		full = (end == TLB_FLUSH_ALL ||
- 				nr_pages > tlb_single_page_flush_ceiling);
-+	} else {
-+is_local:
-+		local = true;
-+		full = (end == TLB_FLUSH_ALL ||
-+				nr_pages > tlb_local_single_page_flush_ceiling);
- 	}
- 
- 	if (full) {
--		if (!local && mm_needs_flush_escalation(mm))
--			also_pwc = true;
--
--		if (local)
-+		if (local) {
- 			_tlbiel_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
--		else
--			_tlbie_pid(pid, also_pwc ? RIC_FLUSH_ALL: RIC_FLUSH_TLB);
-+		} else {
-+			if (mm_needs_flush_escalation(mm))
-+				also_pwc = true;
-+
-+			_tlbie_pid(pid, also_pwc ? RIC_FLUSH_ALL : RIC_FLUSH_TLB);
-+		}
- 	} else {
- 		if (local)
- 			_tlbiel_va_range(start, end, pid, page_size, psize, also_pwc);
-@@ -859,10 +947,16 @@ void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr)
- 	/* Otherwise first do the PWC, then iterate the pages. */
- 	preempt_disable();
- 	smp_mb(); /* see radix__flush_tlb_mm */
--	if (mm_is_thread_local(mm)) {
--		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
--	} else {
-+	if (!mm_is_thread_local(mm)) {
-+		if (unlikely(mm_is_singlethreaded(mm))) {
-+			exit_flush_lazy_tlbs(mm);
-+			goto local;
-+		}
- 		_tlbie_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
-+		goto local;
-+	} else {
-+local:
-+		_tlbiel_va_range(addr, end, pid, PAGE_SIZE, mmu_virtual_psize, true);
- 	}
- 
- 	preempt_enable();
--- 
-2.17.0
+cheers
