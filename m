@@ -1,35 +1,24 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
- [210.131.2.80])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y1Ps6gB9zDr2n
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:52:49 +1000 (AEST)
-Received: from mail-vk0-f44.google.com (mail-vk0-f44.google.com
- [209.85.213.44]) (authenticated)
- by conssluserg-01.nifty.com with ESMTP id w51AqSZO008149
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2018 19:52:29 +0900
-Received: by mail-vk0-f44.google.com with SMTP id 128-v6so9884791vkf.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 03:52:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y1t25pVjzDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 21:13:46 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/64s: Fix compiler store ordering to SLB shadow
+ area
+In-Reply-To: <20180601085227.45008311@roar.ozlabs.ibm.com>
+References: <20180530103122.27674-1-npiggin@gmail.com>
+ <87tvqnykf6.fsf@concordia.ellerman.id.au>
+ <20180601085227.45008311@roar.ozlabs.ibm.com>
+Date: Fri, 01 Jun 2018 21:13:45 +1000
+Message-ID: <87sh663gk6.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <871sdq4wxp.fsf@concordia.ellerman.id.au>
-References: <20180530121922.22122-1-npiggin@gmail.com>
- <87o9gxyzpo.fsf@concordia.ellerman.id.au>
- <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
- <87k1rkzbry.fsf@concordia.ellerman.id.au>
- <CAK7LNARbz8YC7=vB_Pt-FFepLfLY-Yt=8ZiOAoPeZV3EA3VQOg@mail.gmail.com>
- <876034yrek.fsf@concordia.ellerman.id.au>
- <CAK7LNASxgQOsSveFuKrx7do-+643KUZwU_Gn+z7O7JK+TtMEww@mail.gmail.com>
- <871sdq4wxp.fsf@concordia.ellerman.id.au>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Fri, 1 Jun 2018 19:51:47 +0900
-Message-ID: <CAK7LNASwEv8RGi=PtKyDjcwt9DFy93ug22xQAWOJ2b5j+yNkqg@mail.gmail.com>
-Subject: Re: [PATCH v5 0/4] powerpc patches for new Kconfig language
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi.
-
-2018-06-01 19:34 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
-> Hi Masahiro,
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Fri, 01 Jun 2018 00:22:21 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> > The stores to update the SLB shadow area must be made as they appear
+>> > in the C code, so that the hypervisor does not see an entry with
+>> > mismatched vsid and esid. Use WRITE_ONCE for this.
+>> >
+>> > GCC has been observed to elide the first store to esid in the update,
+>> > which means that if the hypervisor interrupts the guest after storing
+>> > to vsid, it could see an entry with old esid and new vsid, which may
+>> > possibly result in memory corruption.
+>> >
+>> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> > ---
+>> >  arch/powerpc/mm/slb.c | 8 ++++----
+>> >  1 file changed, 4 insertions(+), 4 deletions(-)
+>> >
+>> > diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+>> > index 66577cc66dc9..2f4b33b24b3b 100644
+>> > --- a/arch/powerpc/mm/slb.c
+>> > +++ b/arch/powerpc/mm/slb.c
+>> > @@ -63,14 +63,14 @@ static inline void slb_shadow_update(unsigned long ea, int ssize,
+>> >  	 * updating it.  No write barriers are needed here, provided
+>> >  	 * we only update the current CPU's SLB shadow buffer.
+>> >  	 */
+>> > -	p->save_area[index].esid = 0;
+>> > -	p->save_area[index].vsid = cpu_to_be64(mk_vsid_data(ea, ssize, flags));
+>> > -	p->save_area[index].esid = cpu_to_be64(mk_esid_data(ea, ssize, index));
+>> > +	WRITE_ONCE(p->save_area[index].esid, 0);
+>> > +	WRITE_ONCE(p->save_area[index].vsid, cpu_to_be64(mk_vsid_data(ea, ssize, flags)));
+>> > +	WRITE_ONCE(p->save_area[index].esid, cpu_to_be64(mk_esid_data(ea, ssize, index)));  
+>> 
+>> What's the code-gen for that look like? I suspect it's terrible?
 >
-> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> ...
->>
->> Also, the change logs could be dropped.
->>
->> I see
->>
->> Since v1: reworded changelog to explain the cause of the problem (thanks
->> Segher) and moved the flags into the 64-32 cross compile case.
->>
->> or
->>
->> Since v1: removed extra -EB in the recordmcount script (thanks mpe)
->>
->>
->> above your signed-off-by.
->>
->>
->> Of course, this is your call,
->> and you do not need to disturb the git history if it is too late.
->
-> You're right, sorry those are bit messy.
->
-> I'm happy to update them, I haven't merged them yet, but I see you have
-> them in your tree.
->
-> So I won't change them unless you confirm you're OK with it. Let me
-> know.
+> Yeah it's not great.
 
+Actually with GCC 7 the WRITE_ONCE() doesn't make it any worse.
 
-Could you update your branch, please?
+Which is a little suspicious. But it is doing the first store:
 
-Then, I will re-pull the new one.
+	li      r10,0			# r10 = 0
+	ld      r29,56(r13)		# r29 = paca->slb_shadow_ptr
+	rldicr  r8,r31,4,59		# r8 = index
+	rldicr  r9,r9,32,31
+	add     r29,r29,r8		# r29 = r29 + index
+	oris    r9,r9,65535
+	std     r10,16(r29)		# esid = r10 = 0
 
-Thanks!
+So I'll just merge this as-is.
 
-
-
--- 
-Best Regards
-Masahiro Yamada
+cheers
