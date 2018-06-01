@@ -1,28 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-01.nifty.com (conssluserg-01.nifty.com
+ [210.131.2.80])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y17J4sqYzDr2n
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:40:12 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <oss@buserror.net>,
- Diana Madalina Craciun <diana.craciun@nxp.com>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: Leo Li <leoyang.li@nxp.com>
-Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
- NXP PowerPC Book E
-In-Reply-To: <1527804215.30674.35.camel@buserror.net>
-References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
- <1527020969.30674.13.camel@buserror.net>
- <VI1PR0401MB246345AD11EC8666B7187F8DFF6D0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
- <1527621245.30674.30.camel@buserror.net>
- <87wovjykh8.fsf@concordia.ellerman.id.au>
- <VI1PR0401MB2463C17743BC5C25C2152631FF630@VI1PR0401MB2463.eurprd04.prod.outlook.com>
- <1527804215.30674.35.camel@buserror.net>
-Date: Fri, 01 Jun 2018 20:40:11 +1000
-Message-ID: <87vab23i44.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y1Ps6gB9zDr2n
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:52:49 +1000 (AEST)
+Received: from mail-vk0-f44.google.com (mail-vk0-f44.google.com
+ [209.85.213.44]) (authenticated)
+ by conssluserg-01.nifty.com with ESMTP id w51AqSZO008149
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2018 19:52:29 +0900
+Received: by mail-vk0-f44.google.com with SMTP id 128-v6so9884791vkf.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 03:52:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <871sdq4wxp.fsf@concordia.ellerman.id.au>
+References: <20180530121922.22122-1-npiggin@gmail.com>
+ <87o9gxyzpo.fsf@concordia.ellerman.id.au>
+ <CAK7LNARoj4g5Wf2Do1npiQUeTpiiFZLuNdmW4JfZw2D-Oe++jw@mail.gmail.com>
+ <87k1rkzbry.fsf@concordia.ellerman.id.au>
+ <CAK7LNARbz8YC7=vB_Pt-FFepLfLY-Yt=8ZiOAoPeZV3EA3VQOg@mail.gmail.com>
+ <876034yrek.fsf@concordia.ellerman.id.au>
+ <CAK7LNASxgQOsSveFuKrx7do-+643KUZwU_Gn+z7O7JK+TtMEww@mail.gmail.com>
+ <871sdq4wxp.fsf@concordia.ellerman.id.au>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Fri, 1 Jun 2018 19:51:47 +0900
+Message-ID: <CAK7LNASwEv8RGi=PtKyDjcwt9DFy93ug22xQAWOJ2b5j+yNkqg@mail.gmail.com>
+Subject: Re: [PATCH v5 0/4] powerpc patches for new Kconfig language
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <oss@buserror.net> writes:
+Hi.
 
-> On Thu, 2018-05-31 at 14:35 +0000, Diana Madalina Craciun wrote:
->> On 5/31/2018 5:21 PM, Michael Ellerman wrote:
->> > 
->> > We can add a nospectre_v1 command line option if necessary.
->> 
->> What about nobarrier_nospec (or similar) instead of nospectre_v1 command
->> line? We are not disabling all the v1 mitigations, the masking part will
->> remain unchanged.
+2018-06-01 19:34 GMT+09:00 Michael Ellerman <mpe@ellerman.id.au>:
+> Hi Masahiro,
 >
-> I think nospectre_v1 makes more sense as it's about the user's intentions
-> rather than the implementation.  The user is giving the kernel permission to
-> not defend against spectre v1, and it's up to the implementation which
-> mitigations (if any) to disable in response to that, same as any other
-> optimization.
+> Masahiro Yamada <yamada.masahiro@socionext.com> writes:
+> ...
+>>
+>> Also, the change logs could be dropped.
+>>
+>> I see
+>>
+>> Since v1: reworded changelog to explain the cause of the problem (thanks
+>> Segher) and moved the flags into the 64-32 cross compile case.
+>>
+>> or
+>>
+>> Since v1: removed extra -EB in the recordmcount script (thanks mpe)
+>>
+>>
+>> above your signed-off-by.
+>>
+>>
+>> Of course, this is your call,
+>> and you do not need to disturb the git history if it is too late.
+>
+> You're right, sorry those are bit messy.
+>
+> I'm happy to update them, I haven't merged them yet, but I see you have
+> them in your tree.
+>
+> So I won't change them unless you confirm you're OK with it. Let me
+> know.
 
-Yeah I agree. We also have `nospectre_v2` on x86/s390 so I think keeping
-consistency with that is a must.
 
-cheers
+Could you update your branch, please?
+
+Then, I will re-pull the new one.
+
+Thanks!
+
+
+
+-- 
+Best Regards
+Masahiro Yamada
