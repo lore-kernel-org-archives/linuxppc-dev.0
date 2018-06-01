@@ -1,19 +1,31 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 40xxph4FLlzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 18:10:36 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alistair Popple <alistair@popple.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel 2/2] powerpc/powernv: Define PHB4 type and enable
- sketchy bypass on POWER9
-Date: Fri,  1 Jun 2018 18:10:28 +1000
-Message-Id: <20180601081028.29401-3-aik@ozlabs.ru>
-In-Reply-To: <20180601081028.29401-1-aik@ozlabs.ru>
-References: <20180601081028.29401-1-aik@ozlabs.ru>
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40xy6d5v3FzDrp0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 18:24:25 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w518JbGS105287
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2018 04:24:23 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jayhwqafu-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 04:24:23 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Fri, 1 Jun 2018 02:24:22 -0600
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ npiggin@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: [PATCH] powerpc/mm/hash: hard disable irq in the SLB insert path
+Date: Fri,  1 Jun 2018 13:54:02 +0530
+Message-Id: <20180601082402.17192-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are found in POWER9 chips. Right now these PHBs have unknown type
-so changing it to PHB4 won't make much of a difference except enabling
-sketchy bypass for POWER9 as this does below.
+When inserting SLB entries for EA above 512TB, we need to hard disable irq.
+This will make sure we don't take a PMU interrupt that can possibly touch
+user space address via a stack dump. To prevent this, we need to hard disable
+the interrupt.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Also add a comment explaining why we don't need context synchronizing isync
+with slbmte.
+
+Fixes: f384796c4 ("powerpc/mm: Add support for handling > 512TB address in SLB miss")
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci.h      | 1 +
- arch/powerpc/platforms/powernv/pci-ioda.c | 5 ++++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/slb.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index eada4b6..1408247 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -23,6 +23,7 @@ enum pnv_phb_model {
- 	PNV_PHB_MODEL_UNKNOWN,
- 	PNV_PHB_MODEL_P7IOC,
- 	PNV_PHB_MODEL_PHB3,
-+	PNV_PHB_MODEL_PHB4,
- 	PNV_PHB_MODEL_NPU,
- 	PNV_PHB_MODEL_NPU2,
- };
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 9239142..66c2804 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1882,7 +1882,8 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
- 		if (dma_mask >> 32 &&
- 		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
- 		    pnv_pci_ioda_pe_single_vendor(pe) &&
--		    phb->model == PNV_PHB_MODEL_PHB3) {
-+		    (phb->model == PNV_PHB_MODEL_PHB3 ||
-+		     phb->model == PNV_PHB_MODEL_PHB4)) {
- 			/* Configure the bypass mode */
- 			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
- 			if (rc)
-@@ -3930,6 +3931,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 		phb->model = PNV_PHB_MODEL_P7IOC;
- 	else if (of_device_is_compatible(np, "ibm,power8-pciex"))
- 		phb->model = PNV_PHB_MODEL_PHB3;
-+	else if (of_device_is_compatible(np, "ibm,power9-pciex"))
-+		phb->model = PNV_PHB_MODEL_PHB4;
- 	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
- 		phb->model = PNV_PHB_MODEL_NPU;
- 	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 66577cc66dc9..27f5b81c372a 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -352,6 +352,14 @@ static void insert_slb_entry(unsigned long vsid, unsigned long ea,
+ 	/*
+ 	 * We are irq disabled, hence should be safe to access PACA.
+ 	 */
++	VM_WARN_ON(!irqs_disabled());
++
++	/*
++	 * We can't take a PMU exception in the following code, so hard
++	 * disable interrupts.
++	 */
++	hard_irq_disable();
++
+ 	index = get_paca()->stab_rr;
+ 
+ 	/*
+@@ -369,6 +377,11 @@ static void insert_slb_entry(unsigned long vsid, unsigned long ea,
+ 		    ((unsigned long) ssize << SLB_VSID_SSIZE_SHIFT);
+ 	esid_data = mk_esid_data(ea, ssize, index);
+ 
++	/*
++	 * No need for an isync before or after this slbmte. The exception
++	 * we enter with and the rfid we exit with are context synchronizing.
++	 * Also we only handle user segments here.
++	 */
+ 	asm volatile("slbmte %0, %1" : : "r" (vsid_data), "r" (esid_data)
+ 		     : "memory");
+ 
 -- 
-2.11.0
+2.17.0
