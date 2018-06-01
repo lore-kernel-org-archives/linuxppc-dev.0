@@ -1,20 +1,20 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y0H140ntzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:01:49 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id i5-v6so15053297plt.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 03:01:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y0H43rbrzF0dY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2018 20:01:52 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id h12-v6so2344932pfk.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 03:01:52 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH v4 4/7] powerpc/64s/radix: prefetch user address in
- update_mmu_cache
-Date: Fri,  1 Jun 2018 20:01:18 +1000
-Message-Id: <20180601100121.393-5-npiggin@gmail.com>
+Subject: [PATCH v4 5/7] powerpc/64s/radix: avoid ptesync after set_pte and
+ ptep_set_access_flags
+Date: Fri,  1 Jun 2018 20:01:19 +1000
+Message-Id: <20180601100121.393-6-npiggin@gmail.com>
 In-Reply-To: <20180601100121.393-1-npiggin@gmail.com>
 References: <20180601100121.393-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,45 +26,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Prefetch the faulting address in update_mmu_cache to give the page
-table walker perhaps 100 cycles head start as locks are dropped and
-the interrupt completed.
+The ISA suggests ptesync after setting a pte, to prevent a table walk
+initiated by a subsequent access from missing that store and causing a
+spurious fault. This is an architectual allowance that allows an
+implementation's page table walker to be incoherent with the store
+queue.
+
+However there is no correctness problem in taking a spurious fault in
+userspace -- the kernel copes with these at any time, so the updated
+pte will be found eventually. Spurious kernel faults on vmap memory
+must be avoided, so a ptesync is put into flush_cache_vmap.
+
+On POWER9 so far I have not found a measurable window where this can
+result in more minor faults, so as an optimisation, remove the costly
+ptesync from pte updates. If an implementation benefits from ptesync,
+it would be better to add it back in update_mmu_cache, so it's not
+done for things like fork(2).
+
+fork --fork --exec benchmark improved 5.2% (12400->13100).
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/mem.c              | 4 +++-
- arch/powerpc/mm/pgtable-book3s64.c | 3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/book3s/64/radix.h | 19 ++++++++++++++++++-
+ arch/powerpc/include/asm/cacheflush.h      | 13 +++++++++++++
+ arch/powerpc/mm/pgtable-radix.c            |  2 +-
+ 3 files changed, 32 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index c3c39b02b2ba..8cecda4bd66a 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -509,8 +509,10 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
- 	 */
- 	unsigned long access, trap;
- 
--	if (radix_enabled())
-+	if (radix_enabled()) {
-+		prefetch((void *)address);
- 		return;
-+	}
- 
- 	/* We only want HPTEs for linux PTEs that have _PAGE_ACCESSED set */
- 	if (!pte_young(*ptep) || address >= TASK_SIZE)
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 82fed87289de..c1f4ca45c93a 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -152,7 +152,8 @@ pmd_t pmd_modify(pmd_t pmd, pgprot_t newprot)
- void update_mmu_cache_pmd(struct vm_area_struct *vma, unsigned long addr,
- 			  pmd_t *pmd)
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index 01f6c2ca7ecd..9c567d243f61 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -202,7 +202,24 @@ static inline void radix__set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 				 pte_t *ptep, pte_t pte, int percpu)
  {
--	return;
-+	if (radix_enabled())
-+		prefetch((void *)addr);
+ 	*ptep = pte;
+-	asm volatile("ptesync" : : : "memory");
++
++	/*
++	 * The architecture suggests a ptesync after setting the pte, which
++	 * orders the store that updates the pte with subsequent page table
++	 * walk accesses which may load the pte. Without this it may be
++	 * possible for a subsequent access to result in spurious fault.
++	 *
++	 * This is not necessary for correctness, because a spurious fault
++	 * is tolerated by the page fault handler, and this store will
++	 * eventually be seen. In testing, there was no noticable increase
++	 * in user faults on POWER9. Avoiding ptesync here is a significant
++	 * win for things like fork. If a future microarchitecture benefits
++	 * from ptesync, it should probably go into update_mmu_cache, rather
++	 * than set_pte_at (which is used to set ptes unrelated to faults).
++	 *
++	 * Spurious faults to vmalloc region are not tolerated, so there is
++	 * a ptesync in flush_cache_vmap.
++	 */
  }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
  
+ static inline int radix__pmd_bad(pmd_t pmd)
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index 11843e37d9cf..e9662648e72d 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -26,6 +26,19 @@
+ #define flush_cache_vmap(start, end)		do { } while (0)
+ #define flush_cache_vunmap(start, end)		do { } while (0)
+ 
++#ifdef CONFIG_BOOK3S_64
++/*
++ * Book3s has no ptesync after setting a pte, so without this ptesync it's
++ * possible for a kernel virtual mapping access to return a spurious fault
++ * if it's accessed right after the pte is set. The page fault handler does
++ * not expect this type of fault. flush_cache_vmap is not exactly the right
++ * place to put this, but it seems to work well enough.
++ */
++#define flush_cache_vmap(start, end)		do { asm volatile("ptesync"); } while (0)
++#else
++#define flush_cache_vmap(start, end)		do { } while (0)
++#endif
++
+ #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
+ extern void flush_dcache_page(struct page *page);
+ #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index d6f74cbf0fed..96f68c5aa1f5 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -1115,5 +1115,5 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
+ 		 * an access fault, which is defined by the architectue.
+ 		 */
+ 	}
+-	asm volatile("ptesync" : : : "memory");
++	/* See ptesync comment in radix__set_pte_at */
+ }
 -- 
 2.17.0
