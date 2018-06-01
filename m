@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y86R2MPMzF0kW
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 01:54:55 +1000 (AEST)
-In-Reply-To: <1525755624-9802-1-git-send-email-maddy@linux.vnet.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y86S14HbzDrq6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 01:54:56 +1000 (AEST)
+In-Reply-To: <1526472134-23757-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/perf: Update raw-event code encoding comment for power8
-Message-Id: <40y86R1ctpz9s1p@ozlabs.org>
+Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, npiggin@gmail.com,
+ ego@linux.vnet.ibm.com
+Subject: Re: cpuidle/powernv : init all present cpus for deep states
+Message-Id: <40y86R6lD6z9s1w@ozlabs.org>
 Date: Sat,  2 Jun 2018 01:54:55 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,18 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-08 at 05:00:24 UTC, Madhavan Srinivasan wrote:
-> Comment explanning the raw event code encoding for Power8 was
-> moved to isa207_common.h file when re-factoring the code to
-> support power9. But then Power9 pmu branched out due to changes
-> specific to power9. So move the encoding comment back to power8-pmu.c
-> Just comment movement and no logic change.
+On Wed, 2018-05-16 at 12:02:14 UTC, Akshay Adiga wrote:
+> Init all present cpus for deep states instead of "all possible" cpus.
+> Init fails if the possible cpu is gaurded. Resulting in making only
+> non-deep states available for cpuidle/hotplug.
 > 
-> Fixes: 4d3576b20716 ('powerpc/perf: factor out power8 pmu macros and defines')
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/458c70173daaaa823faeb5b4031bf8
+https://git.kernel.org/powerpc/c/ac9816dcbab53c57bcf1d7b15370b0
 
 cheers
