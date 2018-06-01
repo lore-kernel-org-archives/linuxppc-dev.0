@@ -1,23 +1,24 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mhiramat@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yHlx5VSXzDrpC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 07:39:25 +1000 (AEST)
-Date: Fri, 1 Jun 2018 16:38:51 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/64s: Fix compiler store ordering to SLB shadow
- area
-Message-ID: <20180601213851.GW17342@gate.crashing.org>
-References: <20180530103122.27674-1-npiggin@gmail.com>
- <87tvqnykf6.fsf@concordia.ellerman.id.au>
- <20180601085227.45008311@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yKpv6FhvzDrYb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 09:12:07 +1000 (AEST)
+Date: Sat, 2 Jun 2018 08:12:01 +0900
+From: Masami Hiramatsu <mhiramat@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Josef Bacik <jbacik@fb.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Michael
+ Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/2] error-injection: Simplify arch specific helpers
+Message-Id: <20180602081201.7fa34675839a53822b5d795f@kernel.org>
+In-Reply-To: <1527761241.kc7z6i13ny.naveen@linux.ibm.com>
+References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <8f4883f08feaf6e040255015af2da7bbc7741e41.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20180530174156.cb1799687fb834f26fe570a9@kernel.org>
+ <1527761241.kc7z6i13ny.naveen@linux.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180601085227.45008311@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 01, 2018 at 08:52:27AM +1000, Nicholas Piggin wrote:
-> On Fri, 01 Jun 2018 00:22:21 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > Nicholas Piggin <npiggin@gmail.com> writes:
-> > > -	p->save_area[index].esid = 0;
-> > > -	p->save_area[index].vsid = cpu_to_be64(mk_vsid_data(ea, ssize, flags));
-> > > -	p->save_area[index].esid = cpu_to_be64(mk_esid_data(ea, ssize, index));
-> > > +	WRITE_ONCE(p->save_area[index].esid, 0);
-> > > +	WRITE_ONCE(p->save_area[index].vsid, cpu_to_be64(mk_vsid_data(ea, ssize, flags)));
-> > > +	WRITE_ONCE(p->save_area[index].esid, cpu_to_be64(mk_esid_data(ea, ssize, index)));  
+On Thu, 31 May 2018 15:39:03 +0530
+"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+
+> Masami Hiramatsu wrote:
+> > On Tue, 29 May 2018 18:06:02 +0530
+> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
 > > 
-> > What's the code-gen for that look like? I suspect it's terrible?
-> 
-> Yeah it's not great.
-> 
+> >> We already have an arch-independent way to set the instruction pointer
+> >> with instruction_pointer_set(). Using this allows us to get rid of the
+> >> need for override_function_with_return() that each architecture has to
+> >> implement.
+> >> 
+> >> Furthermore, just_return_func() only has to encode arch-specific
+> >> assembly instructions to return from a function. Introduce a macro
+> >> ARCH_FUNC_RET to provide the arch-specific instruction and move over
+> >> just_return_func() to generic code.
+> >> 
+> >> With these changes, architectures that already support kprobes, only
+> >> just need to ensure they provide regs_set_return_value(), GET_IP() (for
+> >> instruction_pointer_set()), and ARCH_FUNC_RET to support error
+> >> injection.
 > > 
-> > Should we just do it in inline-asm I wonder?
+> > Nice! the code basically good to me. Just one comment, ARCH_FUNC_RET sounds
+> > like a function. Maybe ARCH_RETURN_INSTRUCTION will be better name, isn't it? :)
+> 
+> Sure -- I thought of writing ARCH_FUNCTION_RETURN, but felt that was too 
+> verbose. How about ARCH_FUNC_RET_INST?
 
-That is my recommendation: that will work for all compiler versions.
+It is OK if we can recognize it is an instruction.
 
-> There should be no fundamental correctness reason why we can't store
-> to a volatile with a byteswap store.
+Thank you,
 
-There are may operations that are *not* correct to merge into a volatile
-memory access, and which are fine is different for every arch.  GCC
-simply disallows combining anything into any volatile memory by default.
-This is kind of fine because volatile already means "I want this to go
-slow", in common cases ;-)
-
-I'll see what I can do to make the byteswap load/stores work with volatile
-(for powerpc).
-
-> The other option we could do is
-> add a compiler barrier() between each store. The reason I didn't is
-> that in theory we don't need to invalidate all memory contents here,
-> but in practice probably the end result code generation would be
-> better.
-
-Something like
-
-	p->save_area[index].esid = 0;
-	asm("" : : "m"(p->save_area[index].esid));
-	p->save_area[index].vsid = cpu_to_be64(mk_vsid_data(ea, ssize, flags));
-	asm("" : : "m"(p->save_area[index].vsid));
-	p->save_area[index].esid = cpu_to_be64(mk_esid_data(ea, ssize, index));
-
-should do the trick (and once again for the second write to esid, if you
-want to be sure it is not optimised away).
-
-
-Segher
+-- 
+Masami Hiramatsu <mhiramat@kernel.org>
