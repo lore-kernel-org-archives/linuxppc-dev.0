@@ -1,28 +1,19 @@
-Return-Path: <diana.craciun@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0067.outbound.protection.outlook.com [104.47.2.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40y6s26hdXzDrpC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 00:58:14 +1000 (AEST)
-From: Diana Madalina Craciun <diana.craciun@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <oss@buserror.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: Leo Li <leoyang.li@nxp.com>
-Subject: Re: [RFC PATCH] powerpc/fsl: Add barrier_nospec implementation for
- NXP PowerPC Book E
-Date: Fri, 1 Jun 2018 14:58:07 +0000
-Message-ID: <VI1PR0401MB2463DDC6B6E08DB063884294FF620@VI1PR0401MB2463.eurprd04.prod.outlook.com>
-References: <1526973031-9543-1-git-send-email-diana.craciun@nxp.com>
- <1527020969.30674.13.camel@buserror.net>
- <VI1PR0401MB246345AD11EC8666B7187F8DFF6D0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
- <1527621245.30674.30.camel@buserror.net>
- <87wovjykh8.fsf@concordia.ellerman.id.au>
- <VI1PR0401MB2463C17743BC5C25C2152631FF630@VI1PR0401MB2463.eurprd04.prod.outlook.com>
- <1527804215.30674.35.camel@buserror.net>
- <87vab23i44.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40y7pG0PT9zDrph
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 01:40:54 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 07/13] powerpc/eeh: Clean up pci_ers_result handling
+In-Reply-To: <e638159f9e6dfc4931f5164220741dd99bb4c0c7.1527217866.git.sbobroff@linux.ibm.com>
+References: <cover.1527217866.git.sbobroff@linux.ibm.com>
+ <e638159f9e6dfc4931f5164220741dd99bb4c0c7.1527217866.git.sbobroff@linux.ibm.com>
+Date: Sat, 02 Jun 2018 01:40:46 +1000
+Message-ID: <87muwe3475.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +23,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/1/2018 1:40 PM, Michael Ellerman wrote:=0A=
-> Scott Wood <oss@buserror.net> writes:=0A=
->=0A=
->> On Thu, 2018-05-31 at 14:35 +0000, Diana Madalina Craciun wrote:=0A=
->>> On 5/31/2018 5:21 PM, Michael Ellerman wrote:=0A=
->>>> We can add a nospectre_v1 command line option if necessary.=0A=
->>> What about nobarrier_nospec (or similar) instead of nospectre_v1 comman=
-d=0A=
->>> line? We are not disabling all the v1 mitigations, the masking part wil=
-l=0A=
->>> remain unchanged.=0A=
->> I think nospectre_v1 makes more sense as it's about the user's intention=
-s=0A=
->> rather than the implementation.  The user is giving the kernel permissio=
-n to=0A=
->> not defend against spectre v1, and it's up to the implementation which=
-=0A=
->> mitigations (if any) to disable in response to that, same as any other=
-=0A=
->> optimization.=0A=
-> Yeah I agree. We also have `nospectre_v2` on x86/s390 so I think keeping=
-=0A=
-> consistency with that is a must.=0A=
->=0A=
-> cheers=0A=
->=0A=
-OK=0A=
-=0A=
-Diana=0A=
-=0A=
+Sam Bobroff <sbobroff@linux.ibm.com> writes:
+
+> As EEH event handling progresses, a cumulative result of type
+> pci_ers_result is built up by (some of) the eeh_report_*() functions
+> using either:
+> 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+> 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+> or:
+> 	if ((*res == PCI_ERS_RESULT_NONE) ||
+> 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+> 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+> 	    rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+> (Where *res is the accumulator.)
+>
+> However, the intent is not immediately clear and the result in some
+> situations is order dependent.
+>
+> Address this by assigning a priority to each result value, and always
+> merging to the highest priority. This renders the intent clear, and
+> provides a stable value for all orderings.
+>
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> ---
+> ====== v1 -> v2: ======
+>
+> * Added the value, and missing newline, to some WARN()s.
+> * Improved name of merge_result() to pci_ers_merge_result().
+> * Adjusted the result priorities so that unknown doesn't overlap with _NONE.
+
+These === markers seem to have confused patchwork, they ended up in the
+patch, and then git put them in the changelog.
+
+http://patchwork.ozlabs.org/patch/920194/
+
+The usual format is just something like:
+
+v2 - Added the value, and missing newline, to some WARN()s.
+   - Improved name of merge_result() to pci_ers_merge_result().
+   - Adjusted the result priorities so that unknown doesn't overlap with _NONE.
+
+cheers
+
+>  arch/powerpc/kernel/eeh_driver.c | 36 ++++++++++++++++++++++++++----------
+>  1 file changed, 26 insertions(+), 10 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> index 188d15c4fe3a..2d3cac584899 100644
+> --- a/arch/powerpc/kernel/eeh_driver.c
+> +++ b/arch/powerpc/kernel/eeh_driver.c
+> @@ -39,6 +39,29 @@ struct eeh_rmv_data {
+>  	int removed;
+>  };
+>  
+> +static int eeh_result_priority(enum pci_ers_result result)
+> +{
+> +	switch (result) {
+> +	case PCI_ERS_RESULT_NONE: return 1;
+> +	case PCI_ERS_RESULT_NO_AER_DRIVER: return 2;
+> +	case PCI_ERS_RESULT_RECOVERED: return 3;
+> +	case PCI_ERS_RESULT_CAN_RECOVER: return 4;
+> +	case PCI_ERS_RESULT_DISCONNECT: return 5;
+> +	case PCI_ERS_RESULT_NEED_RESET: return 6;
+> +	default:
+> +		WARN_ONCE(1, "Unknown pci_ers_result value: %d\n", (int)result);
+> +		return 0;
+> +	}
+> +};
+> +
+> +static enum pci_ers_result pci_ers_merge_result(enum pci_ers_result old,
+> +						enum pci_ers_result new)
+> +{
+> +	if (eeh_result_priority(new) > eeh_result_priority(old))
+> +		return new;
+> +	return old;
+> +}
+> +
+>  /**
+>   * eeh_pcid_get - Get the PCI device driver
+>   * @pdev: PCI device
+> @@ -206,9 +229,7 @@ static void *eeh_report_error(struct eeh_dev *edev, void *userdata)
+>  
+>  	rc = driver->err_handler->error_detected(dev, pci_channel_io_frozen);
+>  
+> -	/* A driver that needs a reset trumps all others */
+> -	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+> -	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+> +	*res = pci_ers_merge_result(*res, rc);
+>  
+>  	edev->in_error = true;
+>  	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
+> @@ -249,9 +270,7 @@ static void *eeh_report_mmio_enabled(struct eeh_dev *edev, void *userdata)
+>  
+>  	rc = driver->err_handler->mmio_enabled(dev);
+>  
+> -	/* A driver that needs a reset trumps all others */
+> -	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+> -	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+> +	*res = pci_ers_merge_result(*res, rc);
+>  
+>  out:
+>  	eeh_pcid_put(dev);
+> @@ -294,10 +313,7 @@ static void *eeh_report_reset(struct eeh_dev *edev, void *userdata)
+>  		goto out;
+>  
+>  	rc = driver->err_handler->slot_reset(dev);
+> -	if ((*res == PCI_ERS_RESULT_NONE) ||
+> -	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+> -	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+> -	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+> +	*res = pci_ers_merge_result(*res, rc);
+>  
+>  out:
+>  	eeh_pcid_put(dev);
+> -- 
+> 2.16.1.74.g9b0b1f47b
