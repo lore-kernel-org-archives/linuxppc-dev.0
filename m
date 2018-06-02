@@ -1,28 +1,23 @@
-Return-Path: <srs1=dmfv=kernel.org==e1is=iu=linuxfoundation.org=gregkh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1y727dzF13P
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:58 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1y49gGz8tGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:58 +1000 (AEST)
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40yj1x5L9Jz9s08
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:57 +1000 (AEST)
-Subject: Patch "powerpc/rfi-flush: Move the logic to avoid a redo into the
- debugfs code" has been added to the 4.9-stable tree
-To: gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
- mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au
-Cc: <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Sat, 02 Jun 2018 15:35:43 +0200
-In-Reply-To: <20180602110908.29773-5-mpe@ellerman.id.au>
-Message-ID: <1527946543213228@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zBQk1xvdzF1GF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jun 2018 18:42:37 +1000 (AEST)
+Subject: Re: [PATCH 4.14 2/4] powerpc/mm/slice: create header files dedicated
+ to slices
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stable@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <170bd2b5b5cb1e474599165e8f21f121225a2df9.1527755908.git.christophe.leroy@c-s.fr>
+ <798b787d74d94b5d29f1c0279bad157b6b5df7ec.1527755908.git.christophe.leroy@c-s.fr>
+ <20180602132107.GH31493@kroah.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <f18dc860-6007-9955-8c73-25faf43097e8@c-s.fr>
+Date: Sat, 2 Jun 2018 22:55:31 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+In-Reply-To: <20180602132107.GH31493@kroah.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,108 +28,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-This is a note to let you know that I've just added the patch titled
 
-    powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
+On 06/02/2018 03:21 PM, Greg Kroah-Hartman wrote:
+> On Thu, May 31, 2018 at 08:54:52AM +0000, Christophe Leroy wrote:
+>> [ Upstream commit a3286f05bc5a5bc7fc73a9783ec89de78fcd07f8 ]
+>>
+>> In preparation for the following patch which will enhance 'slices'
+>> for supporting PPC32 in order to fix an issue on hugepages on 8xx,
+>> this patch takes out of page*.h all bits related to 'slices' and put
+>> them into newly created slice.h header files.
+>> While common parts go into asm/slice.h, subarch specific
+>> parts go into respective books3s/64/slice.c and nohash/64/slice.c
+>> 'slices'
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>   arch/powerpc/include/asm/book3s/64/slice.h | 27 ++++++++++++++
+>>   arch/powerpc/include/asm/nohash/64/slice.h | 12 ++++++
+>>   arch/powerpc/include/asm/page.h            |  1 +
+>>   arch/powerpc/include/asm/page_64.h         | 59 ----------------------=
+--------
+>>   arch/powerpc/include/asm/slice.h           | 40 ++++++++++++++++++++
+>>   5 files changed, 80 insertions(+), 59 deletions(-)
+>>   create mode 100644 arch/powerpc/include/asm/book3s/64/slice.h
+>>   create mode 100644 arch/powerpc/include/asm/nohash/64/slice.h
+>>   create mode 100644 arch/powerpc/include/asm/slice.h
+> 
+> This patch does not apply :(
 
-to the 4.9-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+I tried again, it applies well for me:
 
-The filename of the patch is:
-     powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
-and it can be found in the queue-4.9 subdirectory.
+[root@localhost linux-stable]# git checkout v4.14.47 -b 4.14.47
+Checking out files: 100% (27111/27111), done.
+Switched to a new branch '4.14.47'
+[root@localhost linux-stable]# git am 
+/root/Downloads/4.14-1-4-powerpc-mm-slice-Remove-intermediate-bitmap-copy.p=
+atch 
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
+Applying: powerpc/mm/slice: Remove intermediate bitmap copy
+Applying: powerpc/mm/slice: create header files dedicated to slices
+Applying: powerpc/mm/slice: Enhance for supporting PPC32
+Applying: powerpc/mm/slice: Fix hugepage allocation at hint address on 8xx
+[root@localhost linux-stable]#
 
+> 
+> Can you fix this series up and resend the whole thing?
 
->From foo@baz Sat Jun  2 15:29:05 CEST 2018
-From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  2 Jun 2018 21:08:49 +1000
-Subject: powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
-To: gregkh@linuxfoundation.org
-Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-ID: <20180602110908.29773-5-mpe@ellerman.id.au>
+Is there any conflicting patch in the queue ?
+What should I rebase on ?
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+Thanks,
+Christophe
 
-commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
+> 
+> thanks,
+> 
+> greg k-h
+> 
 
-rfi_flush_enable() includes a check to see if we're already
-enabled (or disabled), and in that case does nothing.
-
-But that means calling setup_rfi_flush() a 2nd time doesn't actually
-work, which is a bit confusing.
-
-Move that check into the debugfs code, where it really belongs.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/setup_64.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
-
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -717,9 +717,6 @@ static void do_nothing(void *unused)
- 
- void rfi_flush_enable(bool enable)
- {
--	if (rfi_flush == enable)
--		return;
--
- 	if (enable) {
- 		do_rfi_flush_fixups(enabled_flush_types);
- 		on_each_cpu(do_nothing, NULL, 1);
-@@ -773,13 +770,19 @@ void __init setup_rfi_flush(enum l1d_flu
- #ifdef CONFIG_DEBUG_FS
- static int rfi_flush_set(void *data, u64 val)
- {
-+	bool enable;
-+
- 	if (val == 1)
--		rfi_flush_enable(true);
-+		enable = true;
- 	else if (val == 0)
--		rfi_flush_enable(false);
-+		enable = false;
- 	else
- 		return -EINVAL;
- 
-+	/* Only do anything if we're changing state */
-+	if (enable != rfi_flush)
-+		rfi_flush_enable(enable);
-+
- 	return 0;
- }
- 
-
-
-Patches currently in stable-queue which might be from mpe@ellerman.id.au are
-
-queue-4.9/powerpc-64s-clear-pcr-on-boot.patch
-queue-4.9/powerpc-rfi-flush-differentiate-enabled-and-patched-flush-types.patch
-queue-4.9/powerpc-64s-fix-section-mismatch-warnings-from-setup_rfi_flush.patch
-queue-4.9/powerpc-pseries-fix-clearing-of-security-feature-flags.patch
-queue-4.9/powerpc-powernv-set-or-clear-security-feature-flags.patch
-queue-4.9/powerpc-64s-move-cpu_show_meltdown.patch
-queue-4.9/powerpc-rfi-flush-call-setup_rfi_flush-after-lpm-migration.patch
-queue-4.9/powerpc-pseries-set-or-clear-security-feature-flags.patch
-queue-4.9/powerpc-rfi-flush-make-it-possible-to-call-setup_rfi_flush-again.patch
-queue-4.9/powerpc-move-default-security-feature-flags.patch
-queue-4.9/powerpc-powernv-use-the-security-flags-in-pnv_setup_rfi_flush.patch
-queue-4.9/powerpc-add-security-feature-flags-for-spectre-meltdown.patch
-queue-4.9/powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
-queue-4.9/powerpc-64s-enhance-the-information-in-cpu_show_meltdown.patch
-queue-4.9/powerpc-rfi-flush-move-out-of-hardlockup_detector-ifdef.patch
-queue-4.9/powerpc-rfi-flush-always-enable-fallback-flush-on-pseries.patch
-queue-4.9/powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
-queue-4.9/powerpc-pseries-restore-default-security-feature-flags-on-setup.patch
-queue-4.9/powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
-queue-4.9/powerpc-64s-add-support-for-a-store-forwarding-barrier-at-kernel-entry-exit.patch
-queue-4.9/powerpc-64s-wire-up-cpu_show_spectre_v1.patch
-queue-4.9/powerpc-powernv-support-firmware-disable-of-rfi-flush.patch
-queue-4.9/powerpc-pseries-support-firmware-disable-of-rfi-flush.patch
-queue-4.9/powerpc-64s-wire-up-cpu_show_spectre_v2.patch
+L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=C3=
+=A9rifi=C3=A9e par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
