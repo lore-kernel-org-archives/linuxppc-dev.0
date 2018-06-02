@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkj2X2yzF0sk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkk0ryHzF0tm
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:34 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.9 21/23] powerpc/pseries: Restore default security
- feature flags on setup
-Date: Sat,  2 Jun 2018 21:09:06 +1000
-Message-Id: <20180602110908.29773-22-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.9 22/23] powerpc/64s: Fix section mismatch warnings
+ from setup_rfi_flush()
+Date: Sat,  2 Jun 2018 21:09:07 +1000
+Message-Id: <20180602110908.29773-23-mpe@ellerman.id.au>
 In-Reply-To: <20180602110908.29773-1-mpe@ellerman.id.au>
 References: <20180602110908.29773-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,59 +23,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+commit 501a78cbc17c329fabf8e9750a1e9ab810c88a0e upstream.
 
-commit 6232774f1599028a15418179d17f7df47ede770a upstream.
+The recent LPM changes to setup_rfi_flush() are causing some section
+mismatch warnings because we removed the __init annotation on
+setup_rfi_flush():
 
-After migration the security feature flags might have changed (e.g.,
-destination system with unpatched firmware), but some flags are not
-set/clear again in init_cpu_char_feature_flags() because it assumes
-the security flags to be the defaults.
+  The function setup_rfi_flush() references
+  the function __init ppc64_bolted_size().
+  the function __init memblock_alloc_base().
 
-Additionally, if the H_GET_CPU_CHARACTERISTICS hypercall fails then
-init_cpu_char_feature_flags() does not run again, which potentially
-might leave the system in an insecure or sub-optimal configuration.
+The references are actually in init_fallback_flush(), but that is
+inlined into setup_rfi_flush().
 
-So, just restore the security feature flags to the defaults assumed
-by init_cpu_char_feature_flags() so it can set/clear them correctly,
-and to ensure safe settings are in place in case the hypercall fail.
+These references are safe because:
+ - only pseries calls setup_rfi_flush() at runtime
+ - pseries always passes L1D_FLUSH_FALLBACK at boot
+ - so the fallback flush area will always be allocated
+ - so the check in init_fallback_flush() will always return early:
+   /* Only allocate the fallback flush area once (at boot time). */
+   if (l1d_flush_fallback_area)
+   	return;
 
-Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
-Depends-on: 19887d6a28e2 ("powerpc: Move default security feature flags")
-Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+ - and therefore we won't actually call the freed init routines.
+
+We should rework the code to make it safer by default rather than
+relying on the above, but for now as a quick-fix just add a __ref
+annotation to squash the warning.
+
+Fixes: abf110f3e1ce ("powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again")
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/powerpc/kernel/setup_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 8d9f591e7950..7349c05032be 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -453,6 +453,10 @@ static void __init find_and_init_phbs(void)
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index eda7eefe4927..fdba10695208 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -726,7 +726,7 @@ void rfi_flush_enable(bool enable)
+ 	rfi_flush = enable;
+ }
  
- static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
+-static void init_fallback_flush(void)
++static void __ref init_fallback_flush(void)
  {
-+	/*
-+	 * The features below are disabled by default, so we instead look to see
-+	 * if firmware has *enabled* them, and set them if so.
-+	 */
- 	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
- 		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
- 
-@@ -492,6 +496,13 @@ void pseries_setup_rfi_flush(void)
- 	bool enable;
- 	long rc;
- 
-+	/*
-+	 * Set features to the defaults assumed by init_cpu_char_feature_flags()
-+	 * so it can set/clear again any features that might have changed after
-+	 * migration, and in case the hypercall fails and it is not even called.
-+	 */
-+	powerpc_security_features = SEC_FTR_DEFAULT;
-+
- 	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS)
- 		init_cpu_char_feature_flags(&result);
+ 	u64 l1d_size, limit;
+ 	int cpu;
 -- 
 2.14.1
