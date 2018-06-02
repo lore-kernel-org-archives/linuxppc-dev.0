@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkN1kWzzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkP6kySzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:17 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.9 02/23] powerpc/pseries: Support firmware disable of
- RFI flush
-Date: Sat,  2 Jun 2018 21:08:47 +1000
-Message-Id: <20180602110908.29773-3-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.9 04/23] powerpc/rfi-flush: Move the logic to avoid a
+ redo into the debugfs code
+Date: Sat,  2 Jun 2018 21:08:49 +1000
+Message-Id: <20180602110908.29773-5-mpe@ellerman.id.au>
 In-Reply-To: <20180602110908.29773-1-mpe@ellerman.id.au>
 References: <20180602110908.29773-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,30 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit 582605a429e20ae68fd0b041b2e840af296edd08 upstream.
+commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
 
-Some versions of firmware will have a setting that can be configured
-to disable the RFI flush, add support for it.
+rfi_flush_enable() includes a check to see if we're already
+enabled (or disabled), and in that case does nothing.
 
-Fixes: 8989d56878a7 ("powerpc/pseries: Query hypervisor for RFI flush settings")
+But that means calling setup_rfi_flush() a 2nd time doesn't actually
+work, which is a bit confusing.
+
+Move that check into the debugfs code, where it really belongs.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/setup_64.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1845fc611912..0982e13b2942 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -473,7 +473,8 @@ static void pseries_setup_rfi_flush(void)
- 		if (types == L1D_FLUSH_NONE)
- 			types = L1D_FLUSH_FALLBACK;
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 1746639c4dcd..e6bed89a98ed 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -717,9 +717,6 @@ static void do_nothing(void *unused)
  
--		if (!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
-+		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
-+		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
- 			enable = false;
- 	} else {
- 		/* Default to fallback if case hcall is not available */
+ void rfi_flush_enable(bool enable)
+ {
+-	if (rfi_flush == enable)
+-		return;
+-
+ 	if (enable) {
+ 		do_rfi_flush_fixups(enabled_flush_types);
+ 		on_each_cpu(do_nothing, NULL, 1);
+@@ -773,13 +770,19 @@ void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
+ #ifdef CONFIG_DEBUG_FS
+ static int rfi_flush_set(void *data, u64 val)
+ {
++	bool enable;
++
+ 	if (val == 1)
+-		rfi_flush_enable(true);
++		enable = true;
+ 	else if (val == 0)
+-		rfi_flush_enable(false);
++		enable = false;
+ 	else
+ 		return -EINVAL;
+ 
++	/* Only do anything if we're changing state */
++	if (enable != rfi_flush)
++		rfi_flush_enable(enable);
++
+ 	return 0;
+ }
+ 
 -- 
 2.14.1
