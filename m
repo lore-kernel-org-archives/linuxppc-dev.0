@@ -2,24 +2,25 @@ Return-Path: <srs1=dmfv=kernel.org==e1is=iu=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yj165dCTzF13P
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yj184PbBzF15H
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:16 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj162w8mz8tGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:14 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1818jWz8vll
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:16 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40yj144mKPz9s08
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:12 +1000 (AEST)
-Subject: Patch "powerpc: Add security feature flags for Spectre/Meltdown" has
+ by ozlabs.org (Postfix) with ESMTPS id 40yj17116qz9s0x
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:15 +1000 (AEST)
+Subject: Patch "powerpc/pseries: Fix clearing of security feature flags" has
  been added to the 4.9-stable tree
-To: gregkh@linuxfoundation.org,linuxppc-dev@ozlabs.org,mpe@ellerman.id.au
+To: gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sat, 02 Jun 2018 15:35:40 +0200
-In-Reply-To: <20180602110908.29773-11-mpe@ellerman.id.au>
-Message-ID: <152794654058174@kroah.com>
+Date: Sat, 02 Jun 2018 15:35:41 +0200
+In-Reply-To: <20180602110908.29773-20-mpe@ellerman.id.au>
+Message-ID: <15279465411770@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc: Add security feature flags for Spectre/Meltdown
+    powerpc/pseries: Fix clearing of security feature flags
 
 to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-add-security-feature-flags-for-spectre-meltdown.patch
+     powerpc-pseries-fix-clearing-of-security-feature-flags.patch
 and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -49,136 +50,85 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sat Jun  2 15:29:05 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  2 Jun 2018 21:08:55 +1000
-Subject: powerpc: Add security feature flags for Spectre/Meltdown
+Date: Sat,  2 Jun 2018 21:09:04 +1000
+Subject: powerpc/pseries: Fix clearing of security feature flags
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-ID: <20180602110908.29773-11-mpe@ellerman.id.au>
+Message-ID: <20180602110908.29773-20-mpe@ellerman.id.au>
 
-From: Michael Ellerman <mpe@ellerman.id.au>
+From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 
-commit 9a868f634349e62922c226834aa23e3d1329ae7f upstream.
+commit 0f9bdfe3c77091e8704d2e510eb7c2c2c6cde524 upstream.
 
-This commit adds security feature flags to reflect the settings we
-receive from firmware regarding Spectre/Meltdown mitigations.
+The H_CPU_BEHAV_* flags should be checked for in the 'behaviour' field
+of 'struct h_cpu_char_result' -- 'character' is for H_CPU_CHAR_*
+flags.
 
-The feature names reflect the names we are given by firmware on bare
-metal machines. See the hostboot source for details.
+Found by playing around with QEMU's implementation of the hypercall:
 
-Arguably these could be firmware features, but that then requires them
-to be read early in boot so they're available prior to asm feature
-patching, but we don't actually want to use them for patching. We may
-also want to dynamically update them in future, which would be
-incompatible with the way firmware features work (at the moment at
-least). So for now just make them separate flags.
+  H_CPU_CHAR=0xf000000000000000
+  H_CPU_BEHAV=0x0000000000000000
 
+  This clears H_CPU_BEHAV_FAVOUR_SECURITY and H_CPU_BEHAV_L1D_FLUSH_PR
+  so pseries_setup_rfi_flush() disables 'rfi_flush'; and it also
+  clears H_CPU_CHAR_L1D_THREAD_PRIV flag. So there is no RFI flush
+  mitigation at all for cpu_show_meltdown() to report; but currently
+  it does:
+
+  Original kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
+    Mitigation: RFI Flush
+
+  Patched kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/meltdown
+    Not affected
+
+  H_CPU_CHAR=0x0000000000000000
+  H_CPU_BEHAV=0xf000000000000000
+
+  This sets H_CPU_BEHAV_BNDS_CHK_SPEC_BAR so cpu_show_spectre_v1() should
+  report vulnerable; but currently it doesn't:
+
+  Original kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
+    Not affected
+
+  Patched kernel:
+
+    # cat /sys/devices/system/cpu/vulnerabilities/spectre_v1
+    Vulnerable
+
+Brown-paper-bag-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: f636c14790ea ("powerpc/pseries: Set or clear security feature flags")
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/security_features.h |   65 +++++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile                 |    2 
- arch/powerpc/kernel/security.c               |   15 ++++++
- 3 files changed, 81 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/security_features.h
- create mode 100644 arch/powerpc/kernel/security.c
+ arch/powerpc/platforms/pseries/setup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- /dev/null
-+++ b/arch/powerpc/include/asm/security_features.h
-@@ -0,0 +1,65 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * Security related feature bit definitions.
-+ *
-+ * Copyright 2018, Michael Ellerman, IBM Corporation.
-+ */
-+
-+#ifndef _ASM_POWERPC_SECURITY_FEATURES_H
-+#define _ASM_POWERPC_SECURITY_FEATURES_H
-+
-+
-+extern unsigned long powerpc_security_features;
-+
-+static inline void security_ftr_set(unsigned long feature)
-+{
-+	powerpc_security_features |= feature;
-+}
-+
-+static inline void security_ftr_clear(unsigned long feature)
-+{
-+	powerpc_security_features &= ~feature;
-+}
-+
-+static inline bool security_ftr_enabled(unsigned long feature)
-+{
-+	return !!(powerpc_security_features & feature);
-+}
-+
-+
-+// Features indicating support for Spectre/Meltdown mitigations
-+
-+// The L1-D cache can be flushed with ori r30,r30,0
-+#define SEC_FTR_L1D_FLUSH_ORI30		0x0000000000000001ull
-+
-+// The L1-D cache can be flushed with mtspr 882,r0 (aka SPRN_TRIG2)
-+#define SEC_FTR_L1D_FLUSH_TRIG2		0x0000000000000002ull
-+
-+// ori r31,r31,0 acts as a speculation barrier
-+#define SEC_FTR_SPEC_BAR_ORI31		0x0000000000000004ull
-+
-+// Speculation past bctr is disabled
-+#define SEC_FTR_BCCTRL_SERIALISED	0x0000000000000008ull
-+
-+// Entries in L1-D are private to a SMT thread
-+#define SEC_FTR_L1D_THREAD_PRIV		0x0000000000000010ull
-+
-+// Indirect branch prediction cache disabled
-+#define SEC_FTR_COUNT_CACHE_DISABLED	0x0000000000000020ull
-+
-+
-+// Features indicating need for Spectre/Meltdown mitigations
-+
-+// The L1-D cache should be flushed on MSR[HV] 1->0 transition (hypervisor to guest)
-+#define SEC_FTR_L1D_FLUSH_HV		0x0000000000000040ull
-+
-+// The L1-D cache should be flushed on MSR[PR] 0->1 transition (kernel to userspace)
-+#define SEC_FTR_L1D_FLUSH_PR		0x0000000000000080ull
-+
-+// A speculation barrier should be used for bounds checks (Spectre variant 1)
-+#define SEC_FTR_BNDS_CHK_SPEC_BAR	0x0000000000000100ull
-+
-+// Firmware configuration indicates user favours security over performance
-+#define SEC_FTR_FAVOUR_SECURITY		0x0000000000000200ull
-+
-+#endif /* _ASM_POWERPC_SECURITY_FEATURES_H */
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -44,7 +44,7 @@ obj-$(CONFIG_PPC64)		+= setup_64.o sys_p
- obj-$(CONFIG_VDSO32)		+= vdso32/
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
--obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-+obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o security.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= mce.o mce_power.o
- obj-$(CONFIG_PPC_BOOK3E_64)	+= exceptions-64e.o idle_book3e.o
- obj-$(CONFIG_PPC64)		+= vdso64/
---- /dev/null
-+++ b/arch/powerpc/kernel/security.c
-@@ -0,0 +1,15 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+//
-+// Security related flags and so on.
-+//
-+// Copyright 2018, Michael Ellerman, IBM Corporation.
-+
-+#include <linux/kernel.h>
-+#include <asm/security_features.h>
-+
-+
-+unsigned long powerpc_security_features __read_mostly = \
-+	SEC_FTR_L1D_FLUSH_HV | \
-+	SEC_FTR_L1D_FLUSH_PR | \
-+	SEC_FTR_BNDS_CHK_SPEC_BAR | \
-+	SEC_FTR_FAVOUR_SECURITY;
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -475,13 +475,13 @@ static void init_cpu_char_feature_flags(
+ 	 * The features below are enabled by default, so we instead look to see
+ 	 * if firmware has *disabled* them, and clear them if so.
+ 	 */
+-	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
++	if (!(result->behaviour & H_CPU_BEHAV_FAVOUR_SECURITY))
+ 		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
+ 
+-	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
++	if (!(result->behaviour & H_CPU_BEHAV_L1D_FLUSH_PR))
+ 		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
+ 
+-	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
++	if (!(result->behaviour & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
+ 		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
+ }
+ 
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
