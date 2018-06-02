@@ -2,17 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkL4WHwzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkM3cJzzF0mQ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:15 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.9 00/23] powerpc backports for 4.9
-Date: Sat,  2 Jun 2018 21:08:45 +1000
-Message-Id: <20180602110908.29773-1-mpe@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH stable 4.9 01/23] powerpc/rfi-flush: Move out of
+ HARDLOCKUP_DETECTOR #ifdef
+Date: Sat,  2 Jun 2018 21:08:46 +1000
+Message-Id: <20180602110908.29773-2-mpe@ellerman.id.au>
+In-Reply-To: <20180602110908.29773-1-mpe@ellerman.id.au>
+References: <20180602110908.29773-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,63 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Greg,
+The backport of the RFI flush support, done by me, has a minor bug in
+that the code is inside an #ifdef CONFIG_HARDLOCKUP_DETECTOR, which is
+incorrect.
 
-Please queue up this series of patches for 4.9 if you have no objections.
+This doesn't matter with common configs because we enable
+HARDLOCKUP_DETECTOR, but with future patches it will break the build.
+So fix it.
 
-The first one is not a backport but a fix for a previous backport.
+Fixes: c3b82ebee6e0 ("powerpc/64s: Add support for RFI flush of L1-D cache")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
-
-Mauricio Faria de Oliveira (4):
-  powerpc/rfi-flush: Differentiate enabled and patched flush types
-  powerpc/pseries: Fix clearing of security feature flags
-  powerpc: Move default security feature flags
-  powerpc/pseries: Restore default security feature flags on setup
-
-Michael Ellerman (18):
-  powerpc/rfi-flush: Move out of HARDLOCKUP_DETECTOR #ifdef
-  powerpc/pseries: Support firmware disable of RFI flush
-  powerpc/powernv: Support firmware disable of RFI flush
-  powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs
-    code
-  powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
-  powerpc/rfi-flush: Always enable fallback flush on pseries
-  powerpc/rfi-flush: Call setup_rfi_flush() after LPM migration
-  powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
-  powerpc: Add security feature flags for Spectre/Meltdown
-  powerpc/pseries: Set or clear security feature flags
-  powerpc/powernv: Set or clear security feature flags
-  powerpc/64s: Move cpu_show_meltdown()
-  powerpc/64s: Enhance the information in cpu_show_meltdown()
-  powerpc/powernv: Use the security flags in pnv_setup_rfi_flush()
-  powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
-  powerpc/64s: Wire up cpu_show_spectre_v1()
-  powerpc/64s: Wire up cpu_show_spectre_v2()
-  powerpc/64s: Fix section mismatch warnings from setup_rfi_flush()
-
-Nicholas Piggin (1):
-  powerpc/64s: Add support for a store forwarding barrier at kernel
-    entry/exit
-
- arch/powerpc/include/asm/exception-64s.h     |  29 ++++
- arch/powerpc/include/asm/feature-fixups.h    |  19 +++
- arch/powerpc/include/asm/hvcall.h            |   3 +
- arch/powerpc/include/asm/security_features.h |  85 ++++++++++
- arch/powerpc/include/asm/setup.h             |   2 +-
- arch/powerpc/kernel/Makefile                 |   2 +-
- arch/powerpc/kernel/exceptions-64s.S         |  16 +-
- arch/powerpc/kernel/security.c               | 237 +++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_64.c               |  37 ++---
- arch/powerpc/kernel/vmlinux.lds.S            |  14 ++
- arch/powerpc/lib/feature-fixups.c            | 124 +++++++++++++-
- arch/powerpc/platforms/powernv/setup.c       |  92 ++++++++---
- arch/powerpc/platforms/pseries/mobility.c    |   3 +
- arch/powerpc/platforms/pseries/pseries.h     |   2 +
- arch/powerpc/platforms/pseries/setup.c       |  81 +++++++--
- 15 files changed, 679 insertions(+), 67 deletions(-)
- create mode 100644 arch/powerpc/include/asm/security_features.h
- create mode 100644 arch/powerpc/kernel/security.c
-
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 5243501d95ef..1746639c4dcd 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -679,6 +679,7 @@ static int __init disable_hardlockup_detector(void)
+ 	return 0;
+ }
+ early_initcall(disable_hardlockup_detector);
++#endif /* CONFIG_HARDLOCKUP_DETECTOR */
+ 
+ #ifdef CONFIG_PPC_BOOK3S_64
+ static enum l1d_flush_type enabled_flush_types;
+@@ -806,4 +807,3 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
+ 	return sprintf(buf, "Vulnerable\n");
+ }
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+-#endif
 -- 
 2.14.1
