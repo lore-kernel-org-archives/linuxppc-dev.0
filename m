@@ -2,24 +2,25 @@ Return-Path: <srs1=dmfv=kernel.org==e1is=iu=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1M2v9hzF19d
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1Q2P9SzF19d
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:30 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1M1LBWz8tGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:27 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1P6xk7z8tGk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:29 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40yj1L35jZz9s08
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:26 +1000 (AEST)
-Subject: Patch "powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags" has
- been added to the 4.9-stable tree
-To: gregkh@linuxfoundation.org,linuxppc-dev@ozlabs.org,mpe@ellerman.id.au
+ by ozlabs.org (Postfix) with ESMTPS id 40yj1P2BN8z9s08
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:29 +1000 (AEST)
+Subject: Patch "powerpc/rfi-flush: Always enable fallback flush on pseries"
+ has been added to the 4.9-stable tree
+To: gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sat, 02 Jun 2018 15:35:41 +0200
-In-Reply-To: <20180602110908.29773-10-mpe@ellerman.id.au>
-Message-ID: <1527946541125250@kroah.com>
+Date: Sat, 02 Jun 2018 15:35:42 +0200
+In-Reply-To: <20180602110908.29773-7-mpe@ellerman.id.au>
+Message-ID: <1527946542204192@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+    powerpc/rfi-flush: Always enable fallback flush on pseries
 
 to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-add-new-h_get_cpu_characteristics-flags.patch
+     powerpc-rfi-flush-always-enable-fallback-flush-on-pseries.patch
 and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -49,37 +50,58 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sat Jun  2 15:29:05 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  2 Jun 2018 21:08:54 +1000
-Subject: powerpc/pseries: Add new H_GET_CPU_CHARACTERISTICS flags
+Date: Sat,  2 Jun 2018 21:08:51 +1000
+Subject: powerpc/rfi-flush: Always enable fallback flush on pseries
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-ID: <20180602110908.29773-10-mpe@ellerman.id.au>
+Message-ID: <20180602110908.29773-7-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit c4bc36628d7f8b664657d8bd6ad1c44c177880b7 upstream.
+commit 84749a58b6e382f109abf1e734bc4dd43c2c25bb upstream.
 
-Add some additional values which have been defined for the
-H_GET_CPU_CHARACTERISTICS hypercall.
+This ensures the fallback flush area is always allocated on pseries,
+so in case a LPAR is migrated from a patched to an unpatched system,
+it is possible to enable the fallback flush in the target system.
 
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/include/asm/hvcall.h |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -313,6 +313,9 @@
- #define H_CPU_CHAR_L1D_FLUSH_ORI30	(1ull << 61) // IBM bit 2
- #define H_CPU_CHAR_L1D_FLUSH_TRIG2	(1ull << 60) // IBM bit 3
- #define H_CPU_CHAR_L1D_THREAD_PRIV	(1ull << 59) // IBM bit 4
-+#define H_CPU_CHAR_BRANCH_HINTS_HONORED	(1ull << 58) // IBM bit 5
-+#define H_CPU_CHAR_THREAD_RECONFIG_CTRL	(1ull << 57) // IBM bit 6
-+#define H_CPU_CHAR_COUNT_CACHE_DISABLED	(1ull << 56) // IBM bit 7
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -459,26 +459,18 @@ static void pseries_setup_rfi_flush(void
  
- #define H_CPU_BEHAV_FAVOUR_SECURITY	(1ull << 63) // IBM bit 0
- #define H_CPU_BEHAV_L1D_FLUSH_PR	(1ull << 62) // IBM bit 1
+ 	/* Enable by default */
+ 	enable = true;
++	types = L1D_FLUSH_FALLBACK;
+ 
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS) {
+-		types = L1D_FLUSH_NONE;
+-
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+ 			types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+ 			types |= L1D_FLUSH_ORI;
+ 
+-		/* Use fallback if nothing set in hcall */
+-		if (types == L1D_FLUSH_NONE)
+-			types = L1D_FLUSH_FALLBACK;
+-
+ 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+ 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+ 			enable = false;
+-	} else {
+-		/* Default to fallback if case hcall is not available */
+-		types = L1D_FLUSH_FALLBACK;
+ 	}
+ 
+ 	setup_rfi_flush(types, enable);
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
