@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkW73KwzF0tR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkX6YzgzF0wb
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:24 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.9 11/23] powerpc/pseries: Set or clear security
+Subject: [PATCH stable 4.9 12/23] powerpc/powernv: Set or clear security
  feature flags
-Date: Sat,  2 Jun 2018 21:08:56 +1000
-Message-Id: <20180602110908.29773-12-mpe@ellerman.id.au>
+Date: Sat,  2 Jun 2018 21:08:57 +1000
+Message-Id: <20180602110908.29773-13-mpe@ellerman.id.au>
 In-Reply-To: <20180602110908.29773-1-mpe@ellerman.id.au>
 References: <20180602110908.29773-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,90 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit f636c14790ead6cc22cf62279b1f8d7e11a67116 upstream.
+commit 77addf6e95c8689e478d607176b399a6242a777e upstream.
 
 Now that we have feature flags for security related things, set or
-clear them based on what we receive from the hypercall.
+clear them based on what we see in the device tree provided by
+firmware.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/setup.c | 43 ++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ arch/powerpc/platforms/powernv/setup.c | 56 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 56 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 483aa7a70d0a..a65515abe25f 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -66,6 +66,7 @@
- #include <asm/reg.h>
- #include <asm/plpar_wrappers.h>
- #include <asm/kexec.h>
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 4764bc91570c..26fbaf14f87a 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -37,9 +37,63 @@
+ #include <asm/smp.h>
+ #include <asm/tm.h>
+ #include <asm/setup.h>
 +#include <asm/security_features.h>
  
- #include "pseries.h"
+ #include "powernv.h"
  
-@@ -450,6 +451,40 @@ static void __init find_and_init_phbs(void)
- 	of_pci_check_probe_only();
- }
- 
-+static void init_cpu_char_feature_flags(struct h_cpu_char_result *result)
++
++static bool fw_feature_is(const char *state, const char *name,
++			  struct device_node *fw_features)
 +{
-+	if (result->character & H_CPU_CHAR_SPEC_BAR_ORI31)
++	struct device_node *np;
++	bool rc = false;
++
++	np = of_get_child_by_name(fw_features, name);
++	if (np) {
++		rc = of_property_read_bool(np, state);
++		of_node_put(np);
++	}
++
++	return rc;
++}
++
++static void init_fw_feat_flags(struct device_node *np)
++{
++	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
 +		security_ftr_set(SEC_FTR_SPEC_BAR_ORI31);
 +
-+	if (result->character & H_CPU_CHAR_BCCTRL_SERIALISED)
++	if (fw_feature_is("enabled", "fw-bcctrl-serialized", np))
 +		security_ftr_set(SEC_FTR_BCCTRL_SERIALISED);
 +
-+	if (result->character & H_CPU_CHAR_L1D_FLUSH_ORI30)
++	if (fw_feature_is("enabled", "inst-spec-barrier-ori31,31,0", np))
 +		security_ftr_set(SEC_FTR_L1D_FLUSH_ORI30);
 +
-+	if (result->character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
++	if (fw_feature_is("enabled", "inst-l1d-flush-trig2", np))
 +		security_ftr_set(SEC_FTR_L1D_FLUSH_TRIG2);
 +
-+	if (result->character & H_CPU_CHAR_L1D_THREAD_PRIV)
++	if (fw_feature_is("enabled", "fw-l1d-thread-split", np))
 +		security_ftr_set(SEC_FTR_L1D_THREAD_PRIV);
 +
-+	if (result->character & H_CPU_CHAR_COUNT_CACHE_DISABLED)
++	if (fw_feature_is("enabled", "fw-count-cache-disabled", np))
 +		security_ftr_set(SEC_FTR_COUNT_CACHE_DISABLED);
 +
 +	/*
 +	 * The features below are enabled by default, so we instead look to see
 +	 * if firmware has *disabled* them, and clear them if so.
 +	 */
-+	if (!(result->character & H_CPU_BEHAV_FAVOUR_SECURITY))
++	if (fw_feature_is("disabled", "speculation-policy-favor-security", np))
 +		security_ftr_clear(SEC_FTR_FAVOUR_SECURITY);
 +
-+	if (!(result->character & H_CPU_BEHAV_L1D_FLUSH_PR))
++	if (fw_feature_is("disabled", "needs-l1d-flush-msr-pr-0-to-1", np))
 +		security_ftr_clear(SEC_FTR_L1D_FLUSH_PR);
 +
-+	if (!(result->character & H_CPU_BEHAV_BNDS_CHK_SPEC_BAR))
++	if (fw_feature_is("disabled", "needs-l1d-flush-msr-hv-1-to-0", np))
++		security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
++
++	if (fw_feature_is("disabled", "needs-spec-barrier-for-bound-checks", np))
 +		security_ftr_clear(SEC_FTR_BNDS_CHK_SPEC_BAR);
 +}
 +
- void pseries_setup_rfi_flush(void)
+ static void pnv_setup_rfi_flush(void)
  {
- 	struct h_cpu_char_result result;
-@@ -463,6 +498,8 @@ void pseries_setup_rfi_flush(void)
+ 	struct device_node *np, *fw_features;
+@@ -55,6 +109,8 @@ static void pnv_setup_rfi_flush(void)
+ 	of_node_put(np);
  
- 	rc = plpar_get_cpu_characteristics(&result);
- 	if (rc == H_SUCCESS) {
-+		init_cpu_char_feature_flags(&result);
+ 	if (fw_features) {
++		init_fw_feat_flags(fw_features);
 +
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
- 			types |= L1D_FLUSH_MTTRIG;
- 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
-@@ -473,6 +510,12 @@ void pseries_setup_rfi_flush(void)
- 			enable = false;
- 	}
- 
-+	/*
-+	 * We're the guest so this doesn't apply to us, clear it to simplify
-+	 * handling of it elsewhere.
-+	 */
-+	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
-+
- 	setup_rfi_flush(types, enable);
- }
- 
+ 		np = of_get_child_by_name(fw_features, "inst-l1d-flush-trig2");
+ 		if (np && of_property_read_bool(np, "enabled"))
+ 			type = L1D_FLUSH_MTTRIG;
 -- 
 2.14.1
