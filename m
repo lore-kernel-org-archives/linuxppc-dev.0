@@ -2,25 +2,25 @@ Return-Path: <srs1=dmfv=kernel.org==e1is=iu=linuxfoundation.org=gregkh@ozlabs.or
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1X0JBRzF13P
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1W5RRZz8tGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1Z35tyzF158
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:38 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1Z2L4Pz8tGk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:38 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40yj1W0qYSz9s08
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:35 +1000 (AEST)
-Subject: Patch "powerpc/rfi-flush: Differentiate enabled and patched flush
- types" has been added to the 4.9-stable tree
+ by ozlabs.org (Postfix) with ESMTPS id 40yj1Y4QhPz9s08
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:37 +1000 (AEST)
+Subject: Patch "powerpc/rfi-flush: Make it possible to call setup_rfi_flush()
+ again" has been added to the 4.9-stable tree
 To: gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
  mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
 Date: Sat, 02 Jun 2018 15:35:42 +0200
-In-Reply-To: <20180602110908.29773-8-mpe@ellerman.id.au>
-Message-ID: <1527946542147122@kroah.com>
+In-Reply-To: <20180602110908.29773-6-mpe@ellerman.id.au>
+Message-ID: <152794654235136@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -35,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/rfi-flush: Differentiate enabled and patched flush types
+    powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
 
 to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-rfi-flush-differentiate-enabled-and-patched-flush-types.patch
+     powerpc-rfi-flush-make-it-possible-to-call-setup_rfi_flush-again.patch
 and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -50,76 +50,64 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sat Jun  2 15:29:05 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  2 Jun 2018 21:08:52 +1000
-Subject: powerpc/rfi-flush: Differentiate enabled and patched flush types
+Date: Sat,  2 Jun 2018 21:08:50 +1000
+Subject: powerpc/rfi-flush: Make it possible to call setup_rfi_flush() again
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-ID: <20180602110908.29773-8-mpe@ellerman.id.au>
+Message-ID: <20180602110908.29773-6-mpe@ellerman.id.au>
 
-From: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 0063d61ccfc011f379a31acaeba6de7c926fed2c upstream.
+commit abf110f3e1cea40f5ea15e85f5d67c39c14568a7 upstream.
 
-Currently the rfi-flush messages print 'Using <type> flush' for all
-enabled_flush_types, but that is not necessarily true -- as now the
-fallback flush is always enabled on pseries, but the fixup function
-overwrites its nop/branch slot with other flush types, if available.
+For PowerVM migration we want to be able to call setup_rfi_flush()
+again after we've migrated the partition.
 
-So, replace the 'Using <type> flush' messages with '<type> flush is
-available'.
+To support that we need to check that we're not trying to allocate the
+fallback flush area after memblock has gone away (i.e., boot-time only).
 
-Also, print the patched flush types in the fixup function, so users
-can know what is (not) being used (e.g., the slower, fallback flush,
-or no flush type at all if flush is disabled via the debugfs switch).
-
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/kernel/setup_64.c    |    6 +++---
- arch/powerpc/lib/feature-fixups.c |    9 ++++++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/setup.h |    2 +-
+ arch/powerpc/kernel/setup_64.c   |    6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -48,7 +48,7 @@ enum l1d_flush_type {
+ 	L1D_FLUSH_MTTRIG	= 0x8,
+ };
+ 
+-void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
++void setup_rfi_flush(enum l1d_flush_type, bool enable);
+ void do_rfi_flush_fixups(enum l1d_flush_type types);
+ 
+ #endif /* !__ASSEMBLY__ */
 --- a/arch/powerpc/kernel/setup_64.c
 +++ b/arch/powerpc/kernel/setup_64.c
-@@ -755,15 +755,15 @@ static void init_fallback_flush(void)
- void setup_rfi_flush(enum l1d_flush_type types, bool enable)
+@@ -731,6 +731,10 @@ static void init_fallback_flush(void)
+ 	u64 l1d_size, limit;
+ 	int cpu;
+ 
++	/* Only allocate the fallback flush area once (at boot time). */
++	if (l1d_flush_fallback_area)
++		return;
++
+ 	l1d_size = ppc64_caches.dsize;
+ 	limit = min(safe_stack_limit(), ppc64_rma_size);
+ 
+@@ -748,7 +752,7 @@ static void init_fallback_flush(void)
+ 	}
+ }
+ 
+-void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
++void setup_rfi_flush(enum l1d_flush_type types, bool enable)
  {
  	if (types & L1D_FLUSH_FALLBACK) {
--		pr_info("rfi-flush: Using fallback displacement flush\n");
-+		pr_info("rfi-flush: fallback displacement flush available\n");
- 		init_fallback_flush();
- 	}
- 
- 	if (types & L1D_FLUSH_ORI)
--		pr_info("rfi-flush: Using ori type flush\n");
-+		pr_info("rfi-flush: ori type flush available\n");
- 
- 	if (types & L1D_FLUSH_MTTRIG)
--		pr_info("rfi-flush: Using mttrig type flush\n");
-+		pr_info("rfi-flush: mttrig type flush available\n");
- 
- 	enabled_flush_types = types;
- 
---- a/arch/powerpc/lib/feature-fixups.c
-+++ b/arch/powerpc/lib/feature-fixups.c
-@@ -153,7 +153,14 @@ void do_rfi_flush_fixups(enum l1d_flush_
- 		patch_instruction(dest + 2, instrs[2]);
- 	}
- 
--	printk(KERN_DEBUG "rfi-flush: patched %d locations\n", i);
-+	printk(KERN_DEBUG "rfi-flush: patched %d locations (%s flush)\n", i,
-+		(types == L1D_FLUSH_NONE)       ? "no" :
-+		(types == L1D_FLUSH_FALLBACK)   ? "fallback displacement" :
-+		(types &  L1D_FLUSH_ORI)        ? (types & L1D_FLUSH_MTTRIG)
-+							? "ori+mttrig type"
-+							: "ori type" :
-+		(types &  L1D_FLUSH_MTTRIG)     ? "mttrig type"
-+						: "unknown");
- }
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
+ 		pr_info("rfi-flush: Using fallback displacement flush\n");
 
 
 Patches currently in stable-queue which might be from mpe@ellerman.id.au are
