@@ -1,25 +1,26 @@
 Return-Path: <srs1=dmfv=kernel.org==e1is=iu=linuxfoundation.org=gregkh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1h59cxzF19d
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yj1y727dzF13P
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:58 +1000 (AEST)
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1h3Y5Zz8tGk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:44 +1000 (AEST)
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 40yj1y49gGz8tGk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:37:58 +1000 (AEST)
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40yj1g5gFDz9s02
- for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:43 +1000 (AEST)
-Subject: Patch "powerpc/pseries: Use the security flags in
- pseries_setup_rfi_flush()" has been added to the 4.9-stable tree
-To: gregkh@linuxfoundation.org,linuxppc-dev@ozlabs.org,mpe@ellerman.id.au
+ by ozlabs.org (Postfix) with ESMTPS id 40yj1x5L9Jz9s08
+ for <linuxppc-dev@ozlabs.org>; Sat,  2 Jun 2018 23:37:57 +1000 (AEST)
+Subject: Patch "powerpc/rfi-flush: Move the logic to avoid a redo into the
+ debugfs code" has been added to the 4.9-stable tree
+To: gregkh@linuxfoundation.org, linuxppc-dev@ozlabs.org,
+ mauricfo@linux.vnet.ibm.com, mpe@ellerman.id.au
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sat, 02 Jun 2018 15:35:42 +0200
-In-Reply-To: <20180602110908.29773-17-mpe@ellerman.id.au>
-Message-ID: <1527946541138164@kroah.com>
+Date: Sat, 02 Jun 2018 15:35:43 +0200
+In-Reply-To: <20180602110908.29773-5-mpe@ellerman.id.au>
+Message-ID: <1527946543213228@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,13 +35,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-    powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
+    powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
 
 to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
-     powerpc-pseries-use-the-security-flags-in-pseries_setup_rfi_flush.patch
+     powerpc-rfi-flush-move-the-logic-to-avoid-a-redo-into-the-debugfs-code.patch
 and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
@@ -49,69 +50,64 @@ please let <stable@vger.kernel.org> know about it.
 
 >From foo@baz Sat Jun  2 15:29:05 CEST 2018
 From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Sat,  2 Jun 2018 21:09:01 +1000
-Subject: powerpc/pseries: Use the security flags in pseries_setup_rfi_flush()
+Date: Sat,  2 Jun 2018 21:08:49 +1000
+Subject: powerpc/rfi-flush: Move the logic to avoid a redo into the debugfs code
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-ID: <20180602110908.29773-17-mpe@ellerman.id.au>
+Message-ID: <20180602110908.29773-5-mpe@ellerman.id.au>
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-commit 2e4a16161fcd324b1f9bf6cb6856529f7eaf0689 upstream.
+commit 1e2a9fc7496955faacbbed49461d611b704a7505 upstream.
 
-Now that we have the security flags we can simplify the code in
-pseries_setup_rfi_flush() because the security flags have pessimistic
-defaults.
+rfi_flush_enable() includes a check to see if we're already
+enabled (or disabled), and in that case does nothing.
 
+But that means calling setup_rfi_flush() a 2nd time doesn't actually
+work, which is a bit confusing.
+
+Move that check into the debugfs code, where it really belongs.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ arch/powerpc/kernel/setup_64.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -492,30 +492,27 @@ void pseries_setup_rfi_flush(void)
- 	bool enable;
- 	long rc;
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -717,9 +717,6 @@ static void do_nothing(void *unused)
  
--	/* Enable by default */
--	enable = true;
--	types = L1D_FLUSH_FALLBACK;
+ void rfi_flush_enable(bool enable)
+ {
+-	if (rfi_flush == enable)
+-		return;
 -
- 	rc = plpar_get_cpu_characteristics(&result);
--	if (rc == H_SUCCESS) {
-+	if (rc == H_SUCCESS)
- 		init_cpu_char_feature_flags(&result);
+ 	if (enable) {
+ 		do_rfi_flush_fixups(enabled_flush_types);
+ 		on_each_cpu(do_nothing, NULL, 1);
+@@ -773,13 +770,19 @@ void __init setup_rfi_flush(enum l1d_flu
+ #ifdef CONFIG_DEBUG_FS
+ static int rfi_flush_set(void *data, u64 val)
+ {
++	bool enable;
++
+ 	if (val == 1)
+-		rfi_flush_enable(true);
++		enable = true;
+ 	else if (val == 0)
+-		rfi_flush_enable(false);
++		enable = false;
+ 	else
+ 		return -EINVAL;
  
--		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
--			types |= L1D_FLUSH_MTTRIG;
--		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
--			types |= L1D_FLUSH_ORI;
--
--		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
--		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
--			enable = false;
--	}
--
- 	/*
- 	 * We're the guest so this doesn't apply to us, clear it to simplify
- 	 * handling of it elsewhere.
- 	 */
- 	security_ftr_clear(SEC_FTR_L1D_FLUSH_HV);
- 
-+	types = L1D_FLUSH_FALLBACK;
++	/* Only do anything if we're changing state */
++	if (enable != rfi_flush)
++		rfi_flush_enable(enable);
 +
-+	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_TRIG2))
-+		types |= L1D_FLUSH_MTTRIG;
-+
-+	if (security_ftr_enabled(SEC_FTR_L1D_FLUSH_ORI30))
-+		types |= L1D_FLUSH_ORI;
-+
-+	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) && \
-+		 security_ftr_enabled(SEC_FTR_L1D_FLUSH_PR);
-+
- 	setup_rfi_flush(types, enable);
+ 	return 0;
  }
  
 
