@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkQ5w2WzF0sk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ydkR21NrzF0sk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 21:09:19 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: gregkh@linuxfoundation.org
 Cc: stable@vger.kernel.org,
 	linuxppc-dev@ozlabs.org
-Subject: [PATCH stable 4.9 05/23] powerpc/rfi-flush: Make it possible to call
- setup_rfi_flush() again
-Date: Sat,  2 Jun 2018 21:08:50 +1000
-Message-Id: <20180602110908.29773-6-mpe@ellerman.id.au>
+Subject: [PATCH stable 4.9 06/23] powerpc/rfi-flush: Always enable fallback
+ flush on pseries
+Date: Sat,  2 Jun 2018 21:08:51 +1000
+Message-Id: <20180602110908.29773-7-mpe@ellerman.id.au>
 In-Reply-To: <20180602110908.29773-1-mpe@ellerman.id.au>
 References: <20180602110908.29773-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,58 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit abf110f3e1cea40f5ea15e85f5d67c39c14568a7 upstream.
+commit 84749a58b6e382f109abf1e734bc4dd43c2c25bb upstream.
 
-For PowerVM migration we want to be able to call setup_rfi_flush()
-again after we've migrated the partition.
-
-To support that we need to check that we're not trying to allocate the
-fallback flush area after memblock has gone away (i.e., boot-time only).
+This ensures the fallback flush area is always allocated on pseries,
+so in case a LPAR is migrated from a patched to an unpatched system,
+it is possible to enable the fallback flush in the target system.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mauricio Faria de Oliveira <mauricfo@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/setup.h | 2 +-
- arch/powerpc/kernel/setup_64.c   | 6 +++++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/setup.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 6825a67cc3db..3f160cd20107 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -48,7 +48,7 @@ enum l1d_flush_type {
- 	L1D_FLUSH_MTTRIG	= 0x8,
- };
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 0982e13b2942..626bf1ce1d80 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -459,26 +459,18 @@ static void pseries_setup_rfi_flush(void)
  
--void __init setup_rfi_flush(enum l1d_flush_type, bool enable);
-+void setup_rfi_flush(enum l1d_flush_type, bool enable);
- void do_rfi_flush_fixups(enum l1d_flush_type types);
+ 	/* Enable by default */
+ 	enable = true;
++	types = L1D_FLUSH_FALLBACK;
  
- #endif /* !__ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index e6bed89a98ed..568793009daa 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -731,6 +731,10 @@ static void init_fallback_flush(void)
- 	u64 l1d_size, limit;
- 	int cpu;
+ 	rc = plpar_get_cpu_characteristics(&result);
+ 	if (rc == H_SUCCESS) {
+-		types = L1D_FLUSH_NONE;
+-
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_TRIG2)
+ 			types |= L1D_FLUSH_MTTRIG;
+ 		if (result.character & H_CPU_CHAR_L1D_FLUSH_ORI30)
+ 			types |= L1D_FLUSH_ORI;
  
-+	/* Only allocate the fallback flush area once (at boot time). */
-+	if (l1d_flush_fallback_area)
-+		return;
-+
- 	l1d_size = ppc64_caches.dsize;
- 	limit = min(safe_stack_limit(), ppc64_rma_size);
- 
-@@ -748,7 +752,7 @@ static void init_fallback_flush(void)
+-		/* Use fallback if nothing set in hcall */
+-		if (types == L1D_FLUSH_NONE)
+-			types = L1D_FLUSH_FALLBACK;
+-
+ 		if ((!(result.behaviour & H_CPU_BEHAV_L1D_FLUSH_PR)) ||
+ 		    (!(result.behaviour & H_CPU_BEHAV_FAVOUR_SECURITY)))
+ 			enable = false;
+-	} else {
+-		/* Default to fallback if case hcall is not available */
+-		types = L1D_FLUSH_FALLBACK;
  	}
- }
  
--void __init setup_rfi_flush(enum l1d_flush_type types, bool enable)
-+void setup_rfi_flush(enum l1d_flush_type types, bool enable)
- {
- 	if (types & L1D_FLUSH_FALLBACK) {
- 		pr_info("rfi-flush: Using fallback displacement flush\n");
+ 	setup_rfi_flush(types, enable);
 -- 
 2.14.1
