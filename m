@@ -1,37 +1,22 @@
-Return-Path: <mathieu.desnoyers@efficios.com>
-Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
+Return-Path: <SRS0=E1Is=IU=linuxfoundation.org=gregkh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ygrX4f4xzF13G
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 22:44:41 +1000 (AEST)
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-To: Peter Zijlstra <peterz@infradead.org>,
- "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
- Boqun Feng <boqun.feng@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
- Dave Watson <davejwatson@fb.com>
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
- Paul Turner <pjt@google.com>, Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, Andrew Hunter <ahh@google.com>,
- Andi Kleen <andi@firstfloor.org>, Chris Lameter <cl@linux.com>,
- Ben Maurer <bmaurer@fb.com>, Steven Rostedt <rostedt@goodmis.org>,
- Josh Triplett <josh@joshtriplett.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Michael Kerrisk <mtk.manpages@gmail.com>,
- Joel Fernandes <joelaf@google.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yhg33zzWzF13P
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 23:21:31 +1000 (AEST)
+Date: Sat, 2 Jun 2018 15:21:07 +0200
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: stable@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH for 4.18 10/16] powerpc: Wire up restartable sequences
- system call
-Date: Sat,  2 Jun 2018 08:44:02 -0400
-Message-Id: <20180602124408.8430-11-mathieu.desnoyers@efficios.com>
-In-Reply-To: <20180602124408.8430-1-mathieu.desnoyers@efficios.com>
-References: <20180602124408.8430-1-mathieu.desnoyers@efficios.com>
+Subject: Re: [PATCH 4.14 2/4] powerpc/mm/slice: create header files dedicated
+ to slices
+Message-ID: <20180602132107.GH31493@kroah.com>
+References: <170bd2b5b5cb1e474599165e8f21f121225a2df9.1527755908.git.christophe.leroy@c-s.fr>
+ <798b787d74d94b5d29f1c0279bad157b6b5df7ec.1527755908.git.christophe.leroy@c-s.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <798b787d74d94b5d29f1c0279bad157b6b5df7ec.1527755908.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,61 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Boqun Feng <boqun.feng@gmail.com>
+On Thu, May 31, 2018 at 08:54:52AM +0000, Christophe Leroy wrote:
+> [ Upstream commit a3286f05bc5a5bc7fc73a9783ec89de78fcd07f8 ]
+> 
+> In preparation for the following patch which will enhance 'slices'
+> for supporting PPC32 in order to fix an issue on hugepages on 8xx,
+> this patch takes out of page*.h all bits related to 'slices' and put
+> them into newly created slice.h header files.
+> While common parts go into asm/slice.h, subarch specific
+> parts go into respective books3s/64/slice.c and nohash/64/slice.c
+> 'slices'
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/include/asm/book3s/64/slice.h | 27 ++++++++++++++
+>  arch/powerpc/include/asm/nohash/64/slice.h | 12 ++++++
+>  arch/powerpc/include/asm/page.h            |  1 +
+>  arch/powerpc/include/asm/page_64.h         | 59 ------------------------------
+>  arch/powerpc/include/asm/slice.h           | 40 ++++++++++++++++++++
+>  5 files changed, 80 insertions(+), 59 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/book3s/64/slice.h
+>  create mode 100644 arch/powerpc/include/asm/nohash/64/slice.h
+>  create mode 100644 arch/powerpc/include/asm/slice.h
 
-Wire up the rseq system call on powerpc.
+This patch does not apply :(
 
-This provides an ABI improving the speed of a user-space getcpu
-operation on powerpc by skipping the getcpu system call on the fast
-path, as well as improving the speed of user-space operations on per-cpu
-data compared to using load-reservation/store-conditional atomics.
+Can you fix this series up and resend the whole thing?
 
-Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Peter Zijlstra <peterz@infradead.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/systbl.h      | 1 +
- arch/powerpc/include/asm/unistd.h      | 2 +-
- arch/powerpc/include/uapi/asm/unistd.h | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+thanks,
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index d61f9c96d916..45d4d37495fd 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -392,3 +392,4 @@ SYSCALL(statx)
- SYSCALL(pkey_alloc)
- SYSCALL(pkey_free)
- SYSCALL(pkey_mprotect)
-+SYSCALL(rseq)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index daf1ba97a00c..1e9708632dce 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
- 
- 
--#define NR_syscalls		387
-+#define NR_syscalls		388
- 
- #define __NR__exit __NR_exit
- 
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 389c36fd8299..ac5ba55066dd 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -398,5 +398,6 @@
- #define __NR_pkey_alloc		384
- #define __NR_pkey_free		385
- #define __NR_pkey_mprotect	386
-+#define __NR_rseq		387
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
--- 
-2.11.0
+greg k-h
