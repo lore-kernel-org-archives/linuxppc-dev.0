@@ -1,24 +1,36 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bsingharora@gmail.com>
+Received: from mail-ua0-x241.google.com (mail-ua0-x241.google.com
+ [IPv6:2607:f8b0:400c:c08::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40yKpv6FhvzDrYb
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 09:12:07 +1000 (AEST)
-Date: Sat, 2 Jun 2018 08:12:01 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Josef Bacik <jbacik@fb.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Michael
- Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] error-injection: Simplify arch specific helpers
-Message-Id: <20180602081201.7fa34675839a53822b5d795f@kernel.org>
-In-Reply-To: <1527761241.kc7z6i13ny.naveen@linux.ibm.com>
-References: <cover.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <8f4883f08feaf6e040255015af2da7bbc7741e41.1527596631.git.naveen.n.rao@linux.vnet.ibm.com>
- <20180530174156.cb1799687fb834f26fe570a9@kernel.org>
- <1527761241.kc7z6i13ny.naveen@linux.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40yMFZ42lVzDrph
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2018 10:16:50 +1000 (AEST)
+Received: by mail-ua0-x241.google.com with SMTP id c23-v6so11950294uan.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 Jun 2018 17:16:50 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20180601045433.GA17425@in.ibm.com>
+References: <1527768909-32637-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKTCnz=WhC_vamKPZruEqc04WKpD5ZqZm0zTcCtagRHib6OZPw@mail.gmail.com>
+ <20180601045433.GA17425@in.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Date: Sat, 2 Jun 2018 10:16:45 +1000
+Message-ID: <CAKTCnznToaF_b9-Z6dH95DQOAu19q3otQc8ugAYXeQj76a5SHA@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle:powernv: Make the snooze timeout dynamic.
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
+ <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +40,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 31 May 2018 15:39:03 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On Fri, Jun 1, 2018 at 2:54 PM, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> Hi Balbir,
+>
+> Thanks for reviewing the patch!
+>
+> On Fri, Jun 01, 2018 at 12:51:05AM +1000, Balbir Singh wrote:
+>> On Thu, May 31, 2018 at 10:15 PM, Gautham R. Shenoy
+>
+> [..snip..]
+>> >
+>> > +static u64 get_snooze_timeout(struct cpuidle_device *dev,
+>> > +                             struct cpuidle_driver *drv,
+>> > +                             int index)
+>> > +{
+>> > +       int i;
+>> > +
+>> > +       if (unlikely(!snooze_timeout_en))
+>> > +               return default_snooze_timeout;
+>> > +
+>> > +       for (i = index + 1; i < drv->state_count; i++) {
+>> > +               struct cpuidle_state *s = &drv->states[i];
+>> > +               struct cpuidle_state_usage *su = &dev->states_usage[i];
+>> > +
+>> > +               if (s->disabled || su->disable)
+>> > +                       continue;
+>> > +
+>> > +               return s->target_residency * tb_ticks_per_usec;
+>>
+>> Can we ensure this is not prone to overflow?
+>
+> s->target_residency is an "unsigned int" so can take a maximum value
+> of UINT_MAX. tb_ticks_per_usec is an "unsigned long" with a value in
+> the range of 100-1000. The return value is a u64. The product of
+> s->target_residency and tb_ticks_per_usec should be contained in u64.
+>
 
-> Masami Hiramatsu wrote:
-> > On Tue, 29 May 2018 18:06:02 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> >> We already have an arch-independent way to set the instruction pointer
-> >> with instruction_pointer_set(). Using this allows us to get rid of the
-> >> need for override_function_with_return() that each architecture has to
-> >> implement.
-> >> 
-> >> Furthermore, just_return_func() only has to encode arch-specific
-> >> assembly instructions to return from a function. Introduce a macro
-> >> ARCH_FUNC_RET to provide the arch-specific instruction and move over
-> >> just_return_func() to generic code.
-> >> 
-> >> With these changes, architectures that already support kprobes, only
-> >> just need to ensure they provide regs_set_return_value(), GET_IP() (for
-> >> instruction_pointer_set()), and ARCH_FUNC_RET to support error
-> >> injection.
-> > 
-> > Nice! the code basically good to me. Just one comment, ARCH_FUNC_RET sounds
-> > like a function. Maybe ARCH_RETURN_INSTRUCTION will be better name, isn't it? :)
-> 
-> Sure -- I thought of writing ARCH_FUNCTION_RETURN, but felt that was too 
-> verbose. How about ARCH_FUNC_RET_INST?
+Fair enough, looks reasonable to me
 
-It is OK if we can recognize it is an instruction.
-
-Thank you,
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Balbir Singh.
