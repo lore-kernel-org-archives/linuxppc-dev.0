@@ -1,18 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zHM61v22zF1Kh
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jun 2018 22:24:49 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id c23-v6so6665957plz.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 05:24:49 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc/64s: make PACA_IRQ_HARD_DIS track MSR[EE] closely
-Date: Sun,  3 Jun 2018 22:24:32 +1000
-Message-Id: <20180603122432.617-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zR2D1kkSzF1LK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 04:10:41 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w53I9J5M060896
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 14:10:38 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jc870ap76-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 14:10:38 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Sun, 3 Jun 2018 19:10:36 +0100
+Subject: Re: [PATCH] powerpc/perf: Remove sched_task function defined for
+ thread-imc
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Date: Sun, 3 Jun 2018 23:40:30 +0530
+MIME-Version: 1.0
+In-Reply-To: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <bf1c684c-d461-cd98-f077-b0348f1c1e94@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,206 +38,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the masked interrupt handler clears MSR[EE] for an interrupt in
-the PACA_IRQ_MUST_HARD_MASK set, it does not set PACA_IRQ_HARD_DIS.
-This makes them get out of synch.
 
-With that taken into account, it's only low level irq manipulation
-(and interrupt entry before reconcile) where they can be out of synch.
-This makes the code less surprising.
 
-It also allows the IRQ replay code to rely on the IRQ_HARD_DIS value
-and not have to mtmsrd again in this case (e.g., for an external
-interrupt that has been masked). The bigger benefit might just be
-that there is not such an element of surprise in these two bits of
-state.
+On Friday 18 May 2018 01:05 PM, Anju T Sudhakar wrote:
+> Call trace observed while running perf-fuzzer:
+>
+> [  329.228068] CPU: 43 PID: 9088 Comm: perf_fuzzer Not tainted 4.13.0-32-generic #35~lp1746225
+> [  329.228070] task: c000003f776ac900 task.stack: c000003f77728000
+> [  329.228071] NIP: c000000000299b70 LR: c0000000002a4534 CTR: c00000000029bb80
+> [  329.228073] REGS: c000003f7772b760 TRAP: 0700   Not tainted  (4.13.0-32-generic)
+> [  329.228073] MSR: 900000000282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
+> [  329.228079]   CR: 24008822  XER: 00000000
+> [  329.228080] CFAR: c000000000299a70 SOFTE: 0
+> GPR00: c0000000002a4534 c000003f7772b9e0 c000000001606200 c000003fef858908
+> GPR04: c000003f776ac900 0000000000000001 ffffffffffffffff 0000003fee730000
+> GPR08: 0000000000000000 0000000000000000 c0000000011220d8 0000000000000002
+> GPR12: c00000000029bb80 c000000007a3d900 0000000000000000 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 c000003f776ad090 c000000000c71354
+> GPR24: c000003fef716780 0000003fee730000 c000003fe69d4200 c000003f776ad330
+> GPR28: c0000000011220d8 0000000000000001 c0000000014c6108 c000003fef858900
+> [  329.228098] NIP [c000000000299b70] perf_pmu_sched_task+0x170/0x180
+> [  329.228100] LR [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
+> [  329.228101] Call Trace:
+> [  329.228102] [c000003f7772b9e0] [c0000000002a0678] perf_iterate_sb+0x158/0x2a0 (unreliable)
+> [  329.228105] [c000003f7772ba30] [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
+> [  329.228107] [c000003f7772bab0] [c0000000001396dc] finish_task_switch+0x21c/0x310
+> [  329.228109] [c000003f7772bb60] [c000000000c71354] __schedule+0x304/0xb80
+> [  329.228111] [c000003f7772bc40] [c000000000c71c10] schedule+0x40/0xc0
+> [  329.228113] [c000003f7772bc60] [c0000000001033f4] do_wait+0x254/0x2e0
+> [  329.228115] [c000003f7772bcd0] [c000000000104ac0] kernel_wait4+0xa0/0x1a0
+> [  329.228117] [c000003f7772bd70] [c000000000104c24] SyS_wait4+0x64/0xc0
+> [  329.228121] [c000003f7772be30] [c00000000000b184] system_call+0x58/0x6c
+> [  329.228121] Instruction dump:
+> [  329.228123] 3beafea0 7faa4800 409eff18 e8010060 eb610028 ebc10040 7c0803a6 38210050
+> [  329.228127] eb81ffe0 eba1ffe8 ebe1fff8 4e800020 <0fe00000> 4bffffbc 60000000 60420000
+> [  329.228131] ---[ end trace 8c46856d314c1811 ]---
+> [  375.755943] hrtimer: interrupt took 31601 ns
+>
+>
+> The context switch call-backs for thread-imc are defined in sched_task function.
+> So when thread-imc events are grouped with software pmu events,
+> perf_pmu_sched_task hits the WARN_ON_ONCE condition, since software PMUs are
+> assumed not to have a sched_task defined.
+>
+> Patch to move the thread_imc enable/disable opal call back from sched_task to
+> event_[add/del] function
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
-Changes since v1:
-- Several fixes for 64e exception and idle code.
-- Bug: "ld  r4,PACAIRQHAPPENED(r13)" should be lbz, resulted in random
-  hangs on booke.
+Changes looks fine to me.
+Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
- arch/powerpc/include/asm/hw_irq.h    | 10 ++++----
- arch/powerpc/kernel/entry_64.S       |  8 +++++++
- arch/powerpc/kernel/exceptions-64e.S |  4 ++++
- arch/powerpc/kernel/exceptions-64s.S |  5 +++-
- arch/powerpc/kernel/idle_book3e.S    |  7 +++++-
- arch/powerpc/kernel/irq.c            | 34 ++++++++++++++++++++--------
- 6 files changed, 52 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index 855e17d158b1..8004d7887ff6 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -248,14 +248,16 @@ static inline bool lazy_irq_pending(void)
- 
- /*
-  * This is called by asynchronous interrupts to conditionally
-- * re-enable hard interrupts when soft-disabled after having
-- * cleared the source of the interrupt
-+ * re-enable hard interrupts after having cleared the source
-+ * of the interrupt. They are kept disabled if there is a different
-+ * soft-masked interrupt pending that requires hard masking.
-  */
- static inline void may_hard_irq_enable(void)
- {
--	get_paca()->irq_happened &= ~PACA_IRQ_HARD_DIS;
--	if (!(get_paca()->irq_happened & PACA_IRQ_MUST_HARD_MASK))
-+	if (!(get_paca()->irq_happened & PACA_IRQ_MUST_HARD_MASK)) {
-+		get_paca()->irq_happened &= ~PACA_IRQ_HARD_DIS;
- 		__hard_irq_enable();
-+	}
- }
- 
- static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 51695608c68b..c5e3938f8e6f 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -973,6 +973,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
- 	or	r4,r4,r3
- 	std	r4,_TRAP(r1)
- 
-+	/*
-+	 * PACA_IRQ_HARD_DIS won't always be set here, so set it now
-+	 * to reconcile the IRQ state. Tracing is already accounted for.
-+	 */
-+	lbz	r4,PACAIRQHAPPENED(r13)
-+	ori	r4,r4,PACA_IRQ_HARD_DIS
-+	stb	r4,PACAIRQHAPPENED(r13)
-+
- 	/*
- 	 * Then find the right handler and call it. Interrupts are
- 	 * still soft-disabled and we keep them that way.
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 9b6e653e501a..3325f721e7b2 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -949,7 +949,11 @@ kernel_dbg_exc:
- 
- .macro masked_interrupt_book3e paca_irq full_mask
- 	lbz	r10,PACAIRQHAPPENED(r13)
-+	.if \full_mask == 1
-+	ori	r10,r10,\paca_irq | PACA_IRQ_HARD_DIS
-+	.else
- 	ori	r10,r10,\paca_irq
-+	.endif
- 	stb	r10,PACAIRQHAPPENED(r13)
- 
- 	.if \full_mask == 1
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index ae6a849db60b..69172dd41b11 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1498,7 +1498,10 @@ masked_##_H##interrupt:					\
- 	mfspr	r10,SPRN_##_H##SRR1;			\
- 	xori	r10,r10,MSR_EE; /* clear MSR_EE */	\
- 	mtspr	SPRN_##_H##SRR1,r10;			\
--2:	mtcrf	0x80,r9;				\
-+	ori	r11,r11,PACA_IRQ_HARD_DIS;		\
-+	stb	r11,PACAIRQHAPPENED(r13);		\
-+2:	/* done */					\
-+	mtcrf	0x80,r9;				\
- 	ld	r9,PACA_EXGEN+EX_R9(r13);		\
- 	ld	r10,PACA_EXGEN+EX_R10(r13);		\
- 	ld	r11,PACA_EXGEN+EX_R11(r13);		\
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 2b269315d377..4e0d94d02030 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -36,7 +36,7 @@ _GLOBAL(\name)
- 	 */
- 	lbz	r3,PACAIRQHAPPENED(r13)
- 	cmpwi	cr0,r3,0
--	bnelr
-+	bne	2f
- 
- 	/* Now we are going to mark ourselves as soft and hard enabled in
- 	 * order to be able to take interrupts while asleep. We inform lockdep
-@@ -72,6 +72,11 @@ _GLOBAL(\name)
- 	wrteei	1
- 	\loop
- 
-+2:
-+	lbz	r10,PACAIRQHAPPENED(r13)
-+	ori	r10,r10,PACA_IRQ_HARD_DIS
-+	stb	r10,PACAIRQHAPPENED(r13)
-+	blr
- .endm
- 
- .macro BOOK3E_IDLE_LOOP
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 061aa0f47bb1..50b6cbedf549 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -145,8 +145,20 @@ notrace unsigned int __check_irq_replay(void)
- 	trace_hardirqs_on();
- 	trace_hardirqs_off();
- 
-+	/*
-+	 * We are always hard disabled here, but PACA_IRQ_HARD_DIS may
-+	 * not be set, which means interrupts have only just been hard
-+	 * disabled as part of the local_irq_restore or interrupt return
-+	 * code. In that case, skip the decrementr check becaus it's
-+	 * expensive to read the TB.
-+	 *
-+	 * HARD_DIS then gets cleared here, but it's reconciled later.
-+	 * Either local_irq_disable will replay the interrupt and that
-+	 * will reconcile state like other hard interrupts. Or interrupt
-+	 * retur will replay the interrupt and in that case it sets
-+	 * PACA_IRQ_HARD_DIS by hand (see comments in entry_64.S).
-+	 */
- 	if (happened & PACA_IRQ_HARD_DIS) {
--		/* Clear bit 0 which we wouldn't clear otherwise */
- 		local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
- 
- 		/*
-@@ -248,24 +260,26 @@ notrace void arch_local_irq_restore(unsigned long mask)
- 	 * cannot have preempted.
- 	 */
- 	irq_happened = get_irq_happened();
--	if (!irq_happened)
-+	if (!irq_happened) {
-+#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-+		WARN_ON(!(mfmsr() & MSR_EE));
-+#endif
- 		return;
-+	}
- 
- 	/*
- 	 * We need to hard disable to get a trusted value from
- 	 * __check_irq_replay(). We also need to soft-disable
- 	 * again to avoid warnings in there due to the use of
- 	 * per-cpu variables.
--	 *
--	 * We know that if the value in irq_happened is exactly 0x01
--	 * then we are already hard disabled (there are other less
--	 * common cases that we'll ignore for now), so we skip the
--	 * (expensive) mtmsrd.
- 	 */
--	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
-+	if (!(irq_happened & PACA_IRQ_HARD_DIS)) {
-+#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-+		WARN_ON(!(mfmsr() & MSR_EE));
-+#endif
- 		__hard_irq_disable();
- #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
--	else {
-+	} else {
- 		/*
- 		 * We should already be hard disabled here. We had bugs
- 		 * where that wasn't the case so let's dbl check it and
-@@ -274,8 +288,8 @@ notrace void arch_local_irq_restore(unsigned long mask)
- 		 */
- 		if (WARN_ON(mfmsr() & MSR_EE))
- 			__hard_irq_disable();
--	}
- #endif
-+	}
- 
- 	irq_soft_mask_set(IRQS_ALL_DISABLED);
- 	trace_hardirqs_off();
--- 
-2.17.0
+>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/perf/imc-pmu.c | 108 +++++++++++++++++++++-----------------------
+>   1 file changed, 51 insertions(+), 57 deletions(-)
+>
+> diff --git a/arch/powerpc/perf/imc-pmu.c b/arch/powerpc/perf/imc-pmu.c
+> index d7532e7..71d9ba7 100644
+> --- a/arch/powerpc/perf/imc-pmu.c
+> +++ b/arch/powerpc/perf/imc-pmu.c
+> @@ -866,59 +866,6 @@ static int thread_imc_cpu_init(void)
+>   			  ppc_thread_imc_cpu_offline);
+>   }
+>
+> -void thread_imc_pmu_sched_task(struct perf_event_context *ctx,
+> -				      bool sched_in)
+> -{
+> -	int core_id;
+> -	struct imc_pmu_ref *ref;
+> -
+> -	if (!is_core_imc_mem_inited(smp_processor_id()))
+> -		return;
+> -
+> -	core_id = smp_processor_id() / threads_per_core;
+> -	/*
+> -	 * imc pmus are enabled only when it is used.
+> -	 * See if this is triggered for the first time.
+> -	 * If yes, take the mutex lock and enable the counters.
+> -	 * If not, just increment the count in ref count struct.
+> -	 */
+> -	ref = &core_imc_refc[core_id];
+> -	if (!ref)
+> -		return;
+> -
+> -	if (sched_in) {
+> -		mutex_lock(&ref->lock);
+> -		if (ref->refc == 0) {
+> -			if (opal_imc_counters_start(OPAL_IMC_COUNTERS_CORE,
+> -			     get_hard_smp_processor_id(smp_processor_id()))) {
+> -				mutex_unlock(&ref->lock);
+> -				pr_err("thread-imc: Unable to start the counter\
+> -							for core %d\n", core_id);
+> -				return;
+> -			}
+> -		}
+> -		++ref->refc;
+> -		mutex_unlock(&ref->lock);
+> -	} else {
+> -		mutex_lock(&ref->lock);
+> -		ref->refc--;
+> -		if (ref->refc == 0) {
+> -			if (opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE,
+> -			    get_hard_smp_processor_id(smp_processor_id()))) {
+> -				mutex_unlock(&ref->lock);
+> -				pr_err("thread-imc: Unable to stop the counters\
+> -							for core %d\n", core_id);
+> -				return;
+> -			}
+> -		} else if (ref->refc < 0) {
+> -			ref->refc = 0;
+> -		}
+> -		mutex_unlock(&ref->lock);
+> -	}
+> -
+> -	return;
+> -}
+> -
+>   static int thread_imc_event_init(struct perf_event *event)
+>   {
+>   	u32 config = event->attr.config;
+> @@ -1045,22 +992,70 @@ static int imc_event_add(struct perf_event *event, int flags)
+>
+>   static int thread_imc_event_add(struct perf_event *event, int flags)
+>   {
+> +	int core_id;
+> +	struct imc_pmu_ref *ref;
+> +
+>   	if (flags & PERF_EF_START)
+>   		imc_event_start(event, flags);
+>
+> -	/* Enable the sched_task to start the engine */
+> -	perf_sched_cb_inc(event->ctx->pmu);
+> +	if (!is_core_imc_mem_inited(smp_processor_id()))
+> +		return -EINVAL;
+> +
+> +	core_id = smp_processor_id() / threads_per_core;
+> +	/*
+> +	 * imc pmus are enabled only when it is used.
+> +	 * See if this is triggered for the first time.
+> +	 * If yes, take the mutex lock and enable the counters.
+> +	 * If not, just increment the count in ref count struct.
+> +	 */
+> +	ref = &core_imc_refc[core_id];
+> +	if (!ref)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&ref->lock);
+> +	if (ref->refc == 0) {
+> +		if (opal_imc_counters_start(OPAL_IMC_COUNTERS_CORE,
+> +		    get_hard_smp_processor_id(smp_processor_id()))) {
+> +			mutex_unlock(&ref->lock);
+> +			pr_err("thread-imc: Unable to start the counter\
+> +				for core %d\n", core_id);
+> +			return -EINVAL;
+> +		}
+> +	}
+> +	++ref->refc;
+> +	mutex_unlock(&ref->lock);
+>   	return 0;
+>   }
+>
+>   static void thread_imc_event_del(struct perf_event *event, int flags)
+>   {
+> +
+> +	int core_id;
+> +	struct imc_pmu_ref *ref;
+> +
+>   	/*
+>   	 * Take a snapshot and calculate the delta and update
+>   	 * the event counter values.
+>   	 */
+>   	imc_event_update(event);
+> -	perf_sched_cb_dec(event->ctx->pmu);
+> +
+> +	core_id = smp_processor_id() / threads_per_core;
+> +	ref = &core_imc_refc[core_id];
+> +
+> +	mutex_lock(&ref->lock);
+> +	ref->refc--;
+> +	if (ref->refc == 0) {
+> +		if (opal_imc_counters_stop(OPAL_IMC_COUNTERS_CORE,
+> +		    get_hard_smp_processor_id(smp_processor_id()))) {
+> +			mutex_unlock(&ref->lock);
+> +			pr_err("thread-imc: Unable to stop the counters\
+> +				for core %d\n", core_id);
+> +			return;
+> +		}
+> +	} else if (ref->refc < 0) {
+> +		ref->refc = 0;
+> +	}
+> +	mutex_unlock(&ref->lock);
+>   }
+>
+>   /* update_pmu_ops : Populate the appropriate operations for "pmu" */
+> @@ -1086,7 +1081,6 @@ static int update_pmu_ops(struct imc_pmu *pmu)
+>   		break;
+>   	case IMC_DOMAIN_THREAD:
+>   		pmu->pmu.event_init = thread_imc_event_init;
+> -		pmu->pmu.sched_task = thread_imc_pmu_sched_task;
+>   		pmu->pmu.add = thread_imc_event_add;
+>   		pmu->pmu.del = thread_imc_event_del;
+>   		pmu->pmu.start_txn = thread_imc_pmu_start_txn;
