@@ -3,34 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zTYd27NBzF1LY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 06:04:37 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zTYn2M2SzF143
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 06:04:45 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w53K3e1M068132
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 16:04:34 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jc88t4ujv-1
+ w53K3hE2127891
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 16:04:42 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jc870cwxq-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 16:04:34 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 16:04:42 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Sun, 3 Jun 2018 14:04:33 -0600
+ Sun, 3 Jun 2018 14:04:41 -0600
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC v9 2/4] hotplug/cpu: Add operation queuing function
+Subject: [RFC v9 3/4] hotplug/dlpar/cpu: Provide CPU readd operation
 To: linuxppc-dev@lists.ozlabs.org
 In-Reply-To: <95c97180-37b7-85da-a82f-17dbc73f5ed6@linux.vnet.ibm.com>
-Date: Sun, 3 Jun 2018 15:04:28 -0500
+Date: Sun, 3 Jun 2018 15:04:34 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <703bd384-b38e-d05a-04ac-aae1d60ae6b8@linux.vnet.ibm.com>
+Message-Id: <0bcbf84e-91c5-8f00-f88d-5f4f7f168c99@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,96 +42,118 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 [Testing delayed due to internal SAN problems.]
 
-migration/dlpar: This patch adds function dlpar_queue_action()
-which will add information about a CPU/Memory 'readd' operation
-according to resource type, action code, and DRC index.  Initial
-usage is for the 'readd' CPU and Memory blocks identified as
-having changed their associativity during a migration event.
+powerpc/dlpar: Provide hotplug CPU 'readd by index' operation to
+support LPAR Post Migration state updates.  When such changes are
+invoked by the PowerPC 'mobility' code, they will be queued up so
+that modifications to CPU properties will take place after the new
+property value is written to the device-tree.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
 Changes in RFC:
-  -- Correct drc_index for dlpar_queue_action worker invocation
-  -- Correct text of notice
-  -- Revise queuing model to save up all of the DLPAR actions for
-     later execution.
+  -- Add CPU validity check to pseries_smp_notifier
+  -- Improve check on 'ibm,associativity' property
 ---
- arch/powerpc/platforms/pseries/dlpar.c   |   51 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/pseries.h |    2 +
- 2 files changed, 53 insertions(+)
+ arch/powerpc/platforms/pseries/hotplug-cpu.c |   61 ++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index a0b20c0..a1300d2 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -407,6 +407,57 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
- 	}
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 3632db2..be7ff7c 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -305,6 +305,37 @@ static int pseries_add_processor(struct device_node *np)
+ 	return err;
  }
  
-+struct DlparWork {
-+	struct list_head list;
-+	int resource;
-+	int action;
-+	u32 drc_index;
-+} DlparWorkQ;
-+
-+int dlpar_delayed_queue_action(int resource, int action, u32 drc_index)
++static int pseries_update_processor(struct of_reconfig_data *pr)
 +{
-+	struct DlparWork *dwq;
++	int old_entries, new_entries, rc = 0;
++	__be32 *old_assoc, *new_assoc;
 +
-+	dwq = kmalloc(sizeof(struct DlparWork), GFP_KERNEL);
-+	if (!dwq)
-+		return -ENOMEM;
++	/* We only handle changes due to 'ibm,associativity' property
++	 */
++	old_assoc = pr->old_prop->value;
++	old_entries = be32_to_cpu(*old_assoc++);
 +
-+	dwq->resource = resource;
-+	dwq->action = action;
-+	dwq->drc_index = drc_index;
++	new_assoc = pr->prop->value;
++	new_entries = be32_to_cpu(*new_assoc++);
 +
-+	list_add_tail(&dwq->list, &DlparWorkQ.list);
++	if (old_entries == new_entries) {
++		int sz = old_entries * sizeof(int);
 +
-+	return 0;
-+}
-+
-+int dlpar_schedule_delayed_queue(void)
-+{
-+	struct DlparWork *iter;
-+	struct list_head *pos, *q;
-+
-+	list_for_each_entry(iter, &DlparWorkQ.list, list) {
-+	        struct pseries_hp_errorlog hp_elog;
-+
-+        	hp_elog.resource = iter->resource;
-+        	hp_elog.action = iter->action;
-+        	hp_elog.id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
-+        	hp_elog._drc_u.drc_index = cpu_to_be32(iter->drc_index);
-+
-+		handle_dlpar_errorlog(&hp_elog);
++		if (memcmp(old_assoc, new_assoc, sz))
++			rc = dlpar_delayed_queue_action(
++					PSERIES_HP_ELOG_RESOURCE_CPU,
++					PSERIES_HP_ELOG_ACTION_READD,
++					pr->dn->phandle);
++	} else {
++		rc = dlpar_delayed_queue_action(
++					PSERIES_HP_ELOG_RESOURCE_CPU,
++					PSERIES_HP_ELOG_ACTION_READD,
++					pr->dn->phandle);
 +	}
 +
-+	list_for_each_safe(pos, q, &DlparWorkQ.list) {
-+		struct DlparWork *tmp;
-+
-+		tmp = list_entry(pos, struct DlparWork, list);
-+		list_del(pos);
-+		kfree(tmp);
-+	}
-+
-+	return 0;
++	return rc;
 +}
 +
- static int dlpar_parse_resource(char **cmd, struct pseries_hp_errorlog *hp_elog)
- {
- 	char *arg;
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 60db2ee..de73fda 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -61,6 +61,8 @@ extern struct device_node *dlpar_configure_connector(__be32,
+ /*
+  * Update the present map for a cpu node which is going away, and set
+  * the hard id in the paca(s) to -1 to be consistent with boot time
+@@ -649,6 +680,26 @@ static int dlpar_cpu_remove_by_index(u32 drc_index, bool release_drc)
+ 	return rc;
+ }
  
- void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
- 			 struct completion *hotplug_done, int *rc);
-+int dlpar_delayed_queue_action(int resource, int action, u32 drc_index);
-+int dlpar_schedule_delayed_queue(void);
- #ifdef CONFIG_MEMORY_HOTPLUG
- int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
- #else
++static int dlpar_cpu_readd_by_index(u32 drc_index)
++{
++	int rc = 0;
++
++	pr_info("Attempting to re-add CPU, drc index %x\n", drc_index);
++
++	rc = dlpar_cpu_remove_by_index(drc_index, false);
++	if (!rc)
++		rc = dlpar_cpu_add(drc_index, false);
++
++	if (rc)
++		pr_info("Failed to update cpu at drc_index %lx\n",
++				(unsigned long int)drc_index);
++	else
++		pr_info("CPU at drc_index %lx was updated\n",
++				(unsigned long int)drc_index);
++
++	return rc;
++}
++
+ static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+ {
+ 	struct device_node *dn;
+@@ -839,6 +890,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+ 		else
+ 			rc = -EINVAL;
+ 		break;
++	case PSERIES_HP_ELOG_ACTION_READD:
++		rc = dlpar_cpu_readd_by_index(drc_index);
++		break;
+ 	default:
+ 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
+ 		rc = -EINVAL;
+@@ -895,6 +949,9 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+ 	struct of_reconfig_data *rd = data;
+ 	int err = 0;
+ 
++	if (strcmp(rd->dn->type, "cpu"))
++		return notifier_from_errno(err);
++
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 		err = pseries_add_processor(rd->dn);
+@@ -902,6 +959,10 @@ static int pseries_smp_notifier(struct notifier_block *nb,
+ 	case OF_RECONFIG_DETACH_NODE:
+ 		pseries_remove_processor(rd->dn);
+ 		break;
++	case OF_RECONFIG_UPDATE_PROPERTY:
++		if (!strcmp(rd->prop->name, "ibm,associativity"))
++			pseries_update_processor(rd);
++		break;
+ 	}
+ 	return notifier_from_errno(err);
+ }
