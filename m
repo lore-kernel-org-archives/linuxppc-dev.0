@@ -1,37 +1,44 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
+Return-Path: <linuxram@us.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zTYv310DzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 06:04:51 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zTsw0LwtzF0fZ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 06:18:43 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w53K3huJ091536
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 16:04:49 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jc8ehcs3v-1
+ w53KEXjL069617
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 16:18:41 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jc8mkmkyr-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 16:04:48 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 16:18:41 -0400
 Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Sun, 3 Jun 2018 14:04:48 -0600
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [RFC v9 4/4] mobility/numa: Ensure numa update does not overlap
-To: "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <95c97180-37b7-85da-a82f-17dbc73f5ed6@linux.vnet.ibm.com>
-Date: Sun, 3 Jun 2018 15:04:40 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Sun, 3 Jun 2018 21:18:39 +0100
+Date: Sun, 3 Jun 2018 13:18:32 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Dave Hansen <dave.hansen@intel.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
+ <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+ <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+ <20180519202747.GK5479@ram.oc3035372033.ibm.com>
+ <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
+ <20180520060425.GL5479@ram.oc3035372033.ibm.com>
+ <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
+ <20180520191115.GM5479@ram.oc3035372033.ibm.com>
+ <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Message-Id: <d9fc79ad-ca0c-4438-47cc-e06238fa72d3@linux.vnet.ibm.com>
+In-Reply-To: <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
+Message-Id: <20180603201832.GA10109@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,56 +48,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Testing delayed due to internal SAN problems.]
+On Mon, May 21, 2018 at 01:29:11PM +0200, Florian Weimer wrote:
+> On 05/20/2018 09:11 PM, Ram Pai wrote:
+> >Florian,
+> >
+> >	Does the following patch fix the problem for you?  Just like x86
+> >	I am enabling all keys in the UAMOR register during
+> >	initialization itself. Hence any key created by any thread at
+> >	any time, will get activated on all threads. So any thread
+> >	can change the permission on that key. Smoke tested it
+> >	with your test program.
+> 
+> I think this goes in the right direction, but the AMR value after
+> fork is still strange:
+> 
+> AMR (PID 34912): 0x0000000000000000
+> AMR after fork (PID 34913): 0x0000000000000000
+> AMR (PID 34913): 0x0000000000000000
+> Allocated key in subprocess (PID 34913): 2
+> Allocated key (PID 34912): 2
+> Setting AMR: 0xffffffffffffffff
+> New AMR value (PID 34912): 0x0fffffffffffffff
+> About to call execl (PID 34912) ...
+> AMR (PID 34912): 0x0fffffffffffffff
+> AMR after fork (PID 34914): 0x0000000000000003
+> AMR (PID 34914): 0x0000000000000003
+> Allocated key in subprocess (PID 34914): 2
+> Allocated key (PID 34912): 2
+> Setting AMR: 0xffffffffffffffff
+> New AMR value (PID 34912): 0x0fffffffffffffff
+> 
+> I mean this line:
+> 
+> AMR after fork (PID 34914): 0x0000000000000003
+> 
+> Shouldn't it be the same as in the parent process?
 
-mobility/numa: Ensure that numa_update_cpu_topology() can not be
-entered multiple times concurrently.  It may be accessed through
-many different paths / concurrent work functions, and the lock
-ordering may be difficult to ensure otherwise.
+Fixed it. Please try this patch. If it all works to your satisfaction, I
+will clean it up further and send to Michael Ellermen(ppc maintainer).
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 8802e7d..d4543b3 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1079,6 +1079,7 @@ struct topology_update_data {
- static int topology_timer_secs = 1;
- static int topology_inited;
- static int topology_update_needed;
-+static struct mutex topology_update_lock;
+commit 51f4208ed5baeab1edb9b0f8b68d7144449b3527
+Author: Ram Pai <linuxram@us.ibm.com>
+Date:   Sun Jun 3 14:44:32 2018 -0500
+
+    Fix for the fork bug.
+    
+    Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1237f13..999dd08 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -582,6 +582,7 @@ static void save_all(struct task_struct *tsk)
+ 		__giveup_spe(tsk);
  
- /*
-  * Change polling interval for associativity changes.
-@@ -1320,6 +1321,11 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	if (!updates)
- 		return 0;
- 
-+	if (!mutex_trylock(&topology_update_lock)) {
-+		kfree(updates);
-+		return 0;
-+	}
-+
- 	cpumask_clear(&updated_cpus);
- 
- 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
-@@ -1424,6 +1430,7 @@ int numa_update_cpu_topology(bool cpus_locked)
- out:
- 	kfree(updates);
- 	topology_update_needed = 0;
-+	mutex_unlock(&topology_update_lock);
- 	return changed;
+ 	msr_check_and_clear(msr_all_available);
++	thread_pkey_regs_save(&tsk->thread);
  }
  
-@@ -1598,6 +1605,8 @@ static ssize_t topology_write(struct file *file, const char __user *buf,
+ void flush_all_to_thread(struct task_struct *tsk)
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index ab4519a..af6aa4a 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -294,6 +294,7 @@ void thread_pkey_regs_save(struct thread_struct *thread)
+ 	 */
+ 	thread->amr = read_amr();
+ 	thread->iamr = read_iamr();
++	thread->uamor = read_uamor();
+ }
  
- static int topology_update_init(void)
- {
-+	mutex_init(&topology_update_lock);
+ void thread_pkey_regs_restore(struct thread_struct *new_thread,
+@@ -315,9 +316,13 @@ void thread_pkey_regs_init(struct thread_struct *thread)
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return;
+ 
+-	thread->amr = read_amr() & pkey_amr_mask;
+-	thread->iamr = read_iamr() & pkey_iamr_mask;
++	thread->amr = pkey_amr_mask;
++	thread->iamr = pkey_iamr_mask;
+ 	thread->uamor = pkey_uamor_mask;
 +
- 	/* Do not poll for changes if disabled at boot */
- 	if (topology_updates_enabled)
- 		start_topology_update();
++	write_uamor(pkey_uamor_mask);
++	write_amr(pkey_amr_mask);
++	write_iamr(pkey_iamr_mask);
+ }
+ 
+ static inline bool pkey_allows_readwrite(int pkey)
+
+
+> 
+> Thanks,
+> Florian
+
+-- 
+Ram Pai
