@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgC4sglzF0gv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgC5xyrzF0kx
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:03 +1000 (AEST)
-In-Reply-To: <20180518130116.A1A3B6F937@po14934vm.idsi0.si.c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1526980357-25385-2-git-send-email-anju@linux.vnet.ibm.com>
+To: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v2] powerpc/lib: Adjust .balign inside string functions for PPC32
-Message-Id: <40zxg75qFJz9s5b@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:10:58 +1000 (AEST)
+Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ anju@linux.vnet.ibm.com
+Subject: Re: [v2,1/4] powerpc/perf: Rearrange memory freeing in imc init
+Message-Id: <40zxgC0BYwz9s4n@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:11:01 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-05-18 at 13:01:16 UTC, Christophe Leroy wrote:
-> commit 87a156fb18fe1 ("Align hot loops of some string functions")
-> degraded the performance of string functions by adding useless
-> nops
+On Tue, 2018-05-22 at 09:12:34 UTC, Anju T Sudhakar wrote:
+> When any of the IMC (In-Memory Collection counter) devices fail
+> to initialize, imc_common_mem_free() frees set of memory. In doing so,
+> pmu_ptr pointer is also freed. But pmu_ptr pointer is used in subsequent
+> function (imc_common_cpuhp_mem_free()) which is wrong. Patch here reorders
+> the code to avoid such access.
 > 
-> A simple benchmark on an 8xx calling 100000x a memchr() that
-> matches the first byte runs in 41668 TB ticks before this patch
-> and in 35986 TB ticks after this patch. So this gives an
-> improvement of approx 10%
+> Also free the memory which is dynamically allocated during imc
+> initialization, wherever required.
 > 
-> Another benchmark doing the same with a memchr() matching the 128th
-> byte runs in 1011365 TB ticks before this patch and 1005682 TB ticks
-> after this patch, so regardless on the number of loops, removing
-> those useless nops improves the test by 5683 TB ticks.
-> 
-> Fixes: 87a156fb18fe1 ("Align hot loops of some string functions")
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+> Reviewed-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/1128bb7813a896bd608fb622eee3c2
+https://git.kernel.org/powerpc/c/cb094fa5af7c9623084aa4c3cf529b
 
 cheers
