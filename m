@@ -1,25 +1,27 @@
-Return-Path: <julia.lawall@lip6.fr>
-Received: from mail2-relais-roc.national.inria.fr
- (mail2-relais-roc.national.inria.fr [192.134.164.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zx6j5P2kzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 23:46:19 +1000 (AEST)
-Date: Mon, 4 Jun 2018 22:46:08 +0900 (JST)
-From: Julia Lawall <julia.lawall@lip6.fr>
-To: Dan Carpenter <dan.carpenter@oracle.com>
-cc: Qiang Zhao <qiang.zhao@nxp.com>, Li Yang <leoyang.li@nxp.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] fsl/qe: ucc: copy and paste bug in
- ucc_get_tdm_sync_shift()
-In-Reply-To: <20180604134024.dmd7mn2wggqpmkcq@mwanda>
-Message-ID: <alpine.DEB.2.20.1806042245360.3542@hadrien>
-References: <20180604115842.7c4vzge3igjbnblt@kili.mountain>
- <alpine.DEB.2.20.1806042223580.3542@hadrien>
- <20180604134024.dmd7mn2wggqpmkcq@mwanda>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxBK3hgtzF11V
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 23:49:25 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id w17-v6so3917372pll.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 06:49:25 -0700 (PDT)
+Date: Mon, 4 Jun 2018 06:49:20 -0700
+From: Richard Cochran <richardcochran@gmail.com>
+To: Yangbo Lu <yangbo.lu@nxp.com>
+Cc: netdev@vger.kernel.org, madalin.bucur@nxp.com,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/10] dpaa_eth: add support for hardware timestamping
+Message-ID: <20180604134920.ezhe6jz5ntpnqyzj@localhost>
+References: <20180604070837.19265-1-yangbo.lu@nxp.com>
+ <20180604070837.19265-10-yangbo.lu@nxp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180604070837.19265-10-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,45 +31,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jun 04, 2018 at 03:08:36PM +0800, Yangbo Lu wrote:
 
+> +if FSL_DPAA_ETH
+> +config FSL_DPAA_ETH_TS
+> +	bool "DPAA hardware timestamping support"
+> +	select PTP_1588_CLOCK_QORIQ
+> +	default n
+> +	help
+> +	  Enable DPAA hardware timestamping support.
+> +	  This option is useful for applications to get
+> +	  hardware time stamps on the Ethernet packets
+> +	  using the SO_TIMESTAMPING API.
+> +endif
 
-On Mon, 4 Jun 2018, Dan Carpenter wrote:
+You should drop this #ifdef.  In general, if a MAC supports time
+stamping and PHC, then the driver support should simply be compiled
+in.
 
-> On Mon, Jun 04, 2018 at 10:25:14PM +0900, Julia Lawall wrote:
-> >
-> >
-> > On Mon, 4 Jun 2018, Dan Carpenter wrote:
-> >
-> > > There is a copy and paste bug so we accidentally use the RX_ shift when
-> > > we're in TX_ mode.
-> > >
-> > > Fixes: bb8b2062aff3 ("fsl/qe: setup clock source for TDM mode")
-> > > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > > ---
-> > > Static analysis work.  Not tested.  This affects the success path, so
-> > > we should probably test it.
-> >
-> > Maybe this is another one?  I don't have time to look into it at the
-> > moment...
-> >
-> > drivers/net/ethernet/broadcom/bnx2x/bnx2x_link.c
-> >
-> >  	/* For strict priority entries defines the number of consecutive
-> >  	 * slots for the highest priority.
-> >  	 */
-> > 	REG_WR(bp, (port) ? NIG_REG_P1_TX_ARB_NUM_STRICT_ARB_SLOTS :
-> > 		   NIG_REG_P1_TX_ARB_NUM_STRICT_ARB_SLOTS, 0x100);
-> >  	/* Mapping between the CREDIT_WEIGHT registers and actual client
-> >  	 * numbers
-> >  	 */
-> >
-> > I find some others that choose between constants, such as ... ? 0 : 0.
->
-> I feel like it should warn about all of those because people shouldn't
-> be submitting unfinished written code to the kernel.  Coccinelle is a
-> lot better for this than Smatch is because it's pre-processor stuff.
+[ When time stamping incurs a large run time performance penalty to
+  non-PTP users, then it might make sense to have a Kconfig option to
+  disable it, but that doesn't appear to be the case here. ]
 
-OK, maybe I can report these in the next few days.
+> @@ -1615,6 +1635,24 @@ static int dpaa_eth_refill_bpools(struct dpaa_priv *priv)
+>  	skbh = (struct sk_buff **)phys_to_virt(addr);
+>  	skb = *skbh;
+>  
+> +#ifdef CONFIG_FSL_DPAA_ETH_TS
+> +	if (priv->tx_tstamp &&
+> +	    skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
 
-thanks,
-julia
+This condition fits on one line easily.
+
+> +		struct skb_shared_hwtstamps shhwtstamps;
+> +		u64 ns;
+
+Local variables belong at the top of the function.
+
+> +		memset(&shhwtstamps, 0, sizeof(shhwtstamps));
+> +
+> +		if (!dpaa_get_tstamp_ns(priv->net_dev, &ns,
+> +					priv->mac_dev->port[TX],
+> +					(void *)skbh)) {
+> +			shhwtstamps.hwtstamp = ns_to_ktime(ns);
+> +			skb_tstamp_tx(skb, &shhwtstamps);
+> +		} else {
+> +			dev_warn(dev, "dpaa_get_tstamp_ns failed!\n");
+> +		}
+> +	}
+> +#endif
+>  	if (unlikely(qm_fd_get_format(fd) == qm_fd_sg)) {
+>  		nr_frags = skb_shinfo(skb)->nr_frags;
+>  		dma_unmap_single(dev, addr, qm_fd_get_offset(fd) +
+> @@ -2086,6 +2124,14 @@ static int dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
+>  	if (unlikely(err < 0))
+>  		goto skb_to_fd_failed;
+>  
+> +#ifdef CONFIG_FSL_DPAA_ETH_TS
+> +	if (priv->tx_tstamp &&
+> +	    skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
+
+One line please.
+
+> +		fd.cmd |= FM_FD_CMD_UPD;
+> +		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
+> +	}
+> +#endif
+> +
+>  	if (likely(dpaa_xmit(priv, percpu_stats, queue_mapping, &fd) == 0))
+>  		return NETDEV_TX_OK;
+>  
+
+Thanks,
+Richard
