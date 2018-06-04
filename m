@@ -1,43 +1,29 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41005c71CXzF0fC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 02:00:36 +1000 (AEST)
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@kernel.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- "H . Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
- Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org,
- Vineet Gupta <vgupta@synopsys.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Ralf Baechle <ralf@linux-mips.org>,
- James Hogan <jhogan@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>,
- "David S. Miller" <davem@davemloft.net>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Josef Bacik <jbacik@fb.com>, Alexei Starovoitov <ast@kernel.org>,
- x86@kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org
-Subject: [RFC PATCH -tip v5 24/27] bpf: error-inject: kprobes: Clear
- current_kprobe and enable preempt in kprobe
-Date: Tue,  5 Jun 2018 01:00:08 +0900
-Message-Id: <152812800822.10068.3306094708706993432.stgit@devbox>
-In-Reply-To: <152812730943.10068.5166429445118734697.stgit@devbox>
-References: <152812730943.10068.5166429445118734697.stgit@devbox>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4100Yg4pCzzF1PN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 02:21:27 +1000 (AEST)
+Date: Mon, 4 Jun 2018 19:21:23 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180604184035-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+ <20180604153558-mutt-send-email-mst@kernel.org>
+ <e7ceddbec11711a89282e9b70b7fd3c8af10b030.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e7ceddbec11711a89282e9b70b7fd3c8af10b030.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,442 +33,162 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Clear current_kprobe and enable preemption in kprobe
-even if pre_handler returns !0.
+On Mon, Jun 04, 2018 at 11:11:52PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-06-04 at 15:43 +0300, Michael S. Tsirkin wrote:
+> > On Thu, May 24, 2018 at 08:27:04AM +1000, Benjamin Herrenschmidt wrote:
+> > > On Wed, 2018-05-23 at 21:50 +0300, Michael S. Tsirkin wrote:
+> > > 
+> > > > I re-read that discussion and I'm still unclear on the
+> > > > original question, since I got several apparently
+> > > > conflicting answers.
+> > > > 
+> > > > I asked:
+> > > > 
+> > > > 	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
+> > > > 	hypervisor side sufficient?
+> > > 
+> > > I thought I had replied to this...
+> > > 
+> > > There are a couple of reasons:
+> > > 
+> > > - First qemu doesn't know that the guest will switch to "secure mode"
+> > > in advance. There is no difference between a normal and a secure
+> > > partition until the partition does the magic UV call to "enter secure
+> > > mode" and qemu doesn't see any of it. So who can set the flag here ?
+> > 
+> > The user should set it. You just tell user "to be able to use with
+> > feature X, enable IOMMU".
+> 
+> That's completely backwards. The user has no idea what that stuff is.
+> And it would have to percolate all the way up the management stack,
+> libvirt, kimchi, whatever else ... that's just nonsense.
+> 
+> Especially since, as I explained in my other email, this is *not* a
+> qemu problem and thus the solution shouldn't be messing around with
+> qemu.
 
-This simplifies function override using kprobes.
+virtio is implemented in qemu though. If you prefer to stick
+all your code in either guest or the UV that's your decision
+but it looks like qemu could be helpful here.
 
-Jprobe used to require to keep the preemption disabled and
-keep current_kprobe until it returned to original function
-entry. For this reason kprobe_int3_handler() and similar
-arch dependent kprobe handers checks pre_handler result
-and exit without enabling preemption if the result is !0.
+For example what if you have a guest that passes physical addresses
+to qemu bypassing swiotlb? Don't you want to detect
+that and fail gracefully rather than crash the guest?
+That's what VIRTIO_F_IOMMU_PLATFORM will do for you.
 
-After removing the jprobe, Kprobes does not need to
-keep preempt disabled even if user handler returns !0
-anymore.
+Still that's hypervisor's decision. What isn't up to the hypervisor is
+the way we structure code. We made an early decision to merge a hack
+with xen, among discussion about how with time DMA API will learn to
+support per-device quirks and we'll be able to switch to that.
+So let's do that now?
 
-But since the function override handler in error-inject
-and bpf is also returns !0 if it overrides a function,
-to balancing the preempt count, it enables preemption
-and reset current kprobe by itself.
+> > 
+> > > - Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
+> > > vhost) go through the emulated MMIO for every access to the guest,
+> > > which adds additional overhead.
+> > > 
+> > > Cheers,
+> > > Ben.
+> > 
+> > There are several answers to this.  One is that we are working hard to
+> > make overhead small when the mappings are static (which they would be if
+> > there's no actual IOMMU). So maybe especially given you are using
+> > a bounce buffer on top it's not so bad - did you try to
+> > benchmark?
+> > 
+> > Another is that given the basic functionality is in there, optimizations
+> > can possibly wait until per-device quirks in DMA API are supported.
+> 
+> The point is that requiring specific qemu command line arguments isn't
+> going to fly. We have additional problems due to the fact that our
+> firmware (SLOF) inside qemu doesn't currently deal with iommu's etc...
+> though those can be fixed.
+> 
+> Overall, however, this seems to be the most convoluted way of achieving
+> things, require user interventions where none should be needed etc...
+> 
+> Again, what's wrong with a 2 lines hook instead that solves it all and
+> completely avoids involving qemu ?
+> 
+> Ben.
 
-That is a bad design that is very buggy. This fixes
-such unbalanced preempt-count and current_kprobes setting
-in kprobes, bpf and error-inject.
+That each platform wants to add hacks in this data path function.
 
-Note: for powerpc and x86, this removes all preempt_disable
-from kprobe_ftrace_handler because ftrace callbacks are
-called under preempt disabled.
-
-Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Vineet Gupta <vgupta@synopsys.com>
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: James Hogan <jhogan@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: Rich Felker <dalias@libc.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Josef Bacik <jbacik@fb.com>
-Cc: Alexei Starovoitov <ast@kernel.org>
-Cc: x86@kernel.org
-Cc: linux-snps-arc@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: linux-sh@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
----
- Changes in v5:
-  - Fix kprobe_ftrace_handler in arch/powerpc too.
----
- arch/arc/kernel/kprobes.c            |    5 +++--
- arch/arm/probes/kprobes/core.c       |   10 +++++-----
- arch/arm64/kernel/probes/kprobes.c   |   10 +++++-----
- arch/ia64/kernel/kprobes.c           |   13 ++++---------
- arch/mips/kernel/kprobes.c           |    4 ++--
- arch/powerpc/kernel/kprobes-ftrace.c |   15 ++++++---------
- arch/powerpc/kernel/kprobes.c        |    7 +++++--
- arch/s390/kernel/kprobes.c           |    7 ++++---
- arch/sh/kernel/kprobes.c             |    7 ++++---
- arch/sparc/kernel/kprobes.c          |    7 ++++---
- arch/x86/kernel/kprobes/core.c       |    4 ++++
- arch/x86/kernel/kprobes/ftrace.c     |   15 ++++++++-------
- kernel/fail_function.c               |    3 ---
- kernel/trace/trace_kprobe.c          |   11 +++--------
- 14 files changed, 57 insertions(+), 61 deletions(-)
-
-diff --git a/arch/arc/kernel/kprobes.c b/arch/arc/kernel/kprobes.c
-index 465365696c91..df35d4c0b0b8 100644
---- a/arch/arc/kernel/kprobes.c
-+++ b/arch/arc/kernel/kprobes.c
-@@ -231,6 +231,9 @@ int __kprobes arc_kprobe_handler(unsigned long addr, struct pt_regs *regs)
- 		if (!p->pre_handler || !p->pre_handler(p, regs)) {
- 			setup_singlestep(p, regs);
- 			kcb->kprobe_status = KPROBE_HIT_SS;
-+		} else {
-+			reset_current_kprobe();
-+			preempt_enable_no_resched();
- 		}
- 
- 		return 1;
-@@ -442,9 +445,7 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
- 	kretprobe_assert(ri, orig_ret_address, trampoline_address);
- 	regs->ret = orig_ret_address;
- 
--	reset_current_kprobe();
- 	kretprobe_hash_unlock(current, &flags);
--	preempt_enable_no_resched();
- 
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
-diff --git a/arch/arm/probes/kprobes/core.c b/arch/arm/probes/kprobes/core.c
-index 3192350f389d..8d37601fdb20 100644
---- a/arch/arm/probes/kprobes/core.c
-+++ b/arch/arm/probes/kprobes/core.c
-@@ -300,10 +300,10 @@ void __kprobes kprobe_handler(struct pt_regs *regs)
- 
- 			/*
- 			 * If we have no pre-handler or it returned 0, we
--			 * continue with normal processing.  If we have a
--			 * pre-handler and it returned non-zero, it prepped
--			 * for calling the break_handler below on re-entry,
--			 * so get out doing nothing more here.
-+			 * continue with normal processing. If we have a
-+			 * pre-handler and it returned non-zero, it will
-+			 * modify the execution path and no need to single
-+			 * stepping. Let's just reset current kprobe and exit.
- 			 */
- 			if (!p->pre_handler || !p->pre_handler(p, regs)) {
- 				kcb->kprobe_status = KPROBE_HIT_SS;
-@@ -312,8 +312,8 @@ void __kprobes kprobe_handler(struct pt_regs *regs)
- 					kcb->kprobe_status = KPROBE_HIT_SSDONE;
- 					p->post_handler(p, regs, 0);
- 				}
--				reset_current_kprobe();
- 			}
-+			reset_current_kprobe();
- 		}
- 	} else {
- 		/*
-diff --git a/arch/arm64/kernel/probes/kprobes.c b/arch/arm64/kernel/probes/kprobes.c
-index 076c3c0775a6..5daf3d721cb7 100644
---- a/arch/arm64/kernel/probes/kprobes.c
-+++ b/arch/arm64/kernel/probes/kprobes.c
-@@ -395,9 +395,9 @@ static void __kprobes kprobe_handler(struct pt_regs *regs)
- 			/*
- 			 * If we have no pre-handler or it returned 0, we
- 			 * continue with normal processing.  If we have a
--			 * pre-handler and it returned non-zero, it prepped
--			 * for calling the break_handler below on re-entry,
--			 * so get out doing nothing more here.
-+			 * pre-handler and it returned non-zero, it will
-+			 * modify the execution path and no need to single
-+			 * stepping. Let's just reset current kprobe and exit.
- 			 *
- 			 * pre_handler can hit a breakpoint and can step thru
- 			 * before return, keep PSTATE D-flag enabled until
-@@ -405,8 +405,8 @@ static void __kprobes kprobe_handler(struct pt_regs *regs)
- 			 */
- 			if (!p->pre_handler || !p->pre_handler(p, regs)) {
- 				setup_singlestep(p, regs, kcb, 0);
--				return;
--			}
-+			} else
-+				reset_current_kprobe();
- 		}
- 	}
- 	/*
-diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
-index 74c8524e6309..aa41bd5cf9b7 100644
---- a/arch/ia64/kernel/kprobes.c
-+++ b/arch/ia64/kernel/kprobes.c
-@@ -478,12 +478,9 @@ int __kprobes trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
- 			 */
- 			break;
- 	}
--
- 	kretprobe_assert(ri, orig_ret_address, trampoline_address);
- 
--	reset_current_kprobe();
- 	kretprobe_hash_unlock(current, &flags);
--	preempt_enable_no_resched();
- 
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
-@@ -851,13 +848,11 @@ static int __kprobes pre_kprobes_handler(struct die_args *args)
- 	set_current_kprobe(p, kcb);
- 	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
- 
--	if (p->pre_handler && p->pre_handler(p, regs))
--		/*
--		 * Our pre-handler is specifically requesting that we just
--		 * do a return.  This is used for both the jprobe pre-handler
--		 * and the kretprobe trampoline
--		 */
-+	if (p->pre_handler && p->pre_handler(p, regs)) {
-+		reset_current_kprobe();
-+		preempt_enable_no_resched();
- 		return 1;
-+	}
- 
- #if !defined(CONFIG_PREEMPT)
- 	if (p->ainsn.inst_flag == INST_FLAG_BOOSTABLE && !p->post_handler) {
-diff --git a/arch/mips/kernel/kprobes.c b/arch/mips/kernel/kprobes.c
-index 7fd277bc59b9..54cd675c5d1d 100644
---- a/arch/mips/kernel/kprobes.c
-+++ b/arch/mips/kernel/kprobes.c
-@@ -358,6 +358,8 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 
- 	if (p->pre_handler && p->pre_handler(p, regs)) {
- 		/* handler has already set things up, so skip ss setup */
-+		reset_current_kprobe();
-+		preempt_enable_no_resched();
- 		return 1;
- 	}
- 
-@@ -543,9 +545,7 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
- 	kretprobe_assert(ri, orig_ret_address, trampoline_address);
- 	instruction_pointer(regs) = orig_ret_address;
- 
--	reset_current_kprobe();
- 	kretprobe_hash_unlock(current, &flags);
--	preempt_enable_no_resched();
- 
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
-diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
-index 3869b0e5d5c7..c80c35d1e26e 100644
---- a/arch/powerpc/kernel/kprobes-ftrace.c
-+++ b/arch/powerpc/kernel/kprobes-ftrace.c
-@@ -51,11 +51,9 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
- 	struct kprobe *p;
- 	struct kprobe_ctlblk *kcb;
- 
--	preempt_disable();
--
- 	p = get_kprobe((kprobe_opcode_t *)nip);
- 	if (unlikely(!p) || kprobe_disabled(p))
--		goto end;
-+		return;
- 
- 	kcb = get_kprobe_ctlblk();
- 	if (kprobe_running()) {
-@@ -75,15 +73,14 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
- 			skip_singlestep(p, regs, kcb, orig_nip);
- 		else {
- 			/*
--			 * If pre_handler returns !0, it sets regs->nip and
--			 * resets current kprobe. In this case, we should not
--			 * re-enable preemption.
-+			 * If pre_handler returns !0, this handler
-+			 * modifies regs->ip and goes back to there
-+			 * directly without single stepping.
-+			 * So let's just clear current kprobe.
- 			 */
--			return;
-+			__this_cpu_write(current_kprobe, NULL);
- 		}
- 	}
--end:
--	preempt_enable_no_resched();
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
- 
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index f06747e2e70d..5c60bb0f927f 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -358,9 +358,12 @@ int kprobe_handler(struct pt_regs *regs)
- 
- 	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
- 	set_current_kprobe(p, regs, kcb);
--	if (p->pre_handler && p->pre_handler(p, regs))
--		/* handler has already set things up, so skip ss setup */
-+	if (p->pre_handler && p->pre_handler(p, regs)) {
-+		/* handler changed execution path, so skip ss setup */
-+		reset_current_kprobe();
-+		preempt_enable_no_resched();
- 		return 1;
-+	}
- 
- 	if (p->ainsn.boostable >= 0) {
- 		ret = try_to_emulate(p, regs);
-diff --git a/arch/s390/kernel/kprobes.c b/arch/s390/kernel/kprobes.c
-index 3e34018960b5..7c0a095e9c5f 100644
---- a/arch/s390/kernel/kprobes.c
-+++ b/arch/s390/kernel/kprobes.c
-@@ -326,8 +326,11 @@ static int kprobe_handler(struct pt_regs *regs)
- 			 */
- 			push_kprobe(kcb, p);
- 			kcb->kprobe_status = KPROBE_HIT_ACTIVE;
--			if (p->pre_handler && p->pre_handler(p, regs))
-+			if (p->pre_handler && p->pre_handler(p, regs)) {
-+				pop_kprobe(kcb);
-+				preempt_enable_no_resched();
- 				return 1;
-+			}
- 			kcb->kprobe_status = KPROBE_HIT_SS;
- 		}
- 		enable_singlestep(kcb, regs, (unsigned long) p->ainsn.insn);
-@@ -431,9 +434,7 @@ static int trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
- 
- 	regs->psw.addr = orig_ret_address;
- 
--	pop_kprobe(get_kprobe_ctlblk());
- 	kretprobe_hash_unlock(current, &flags);
--	preempt_enable_no_resched();
- 
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
-diff --git a/arch/sh/kernel/kprobes.c b/arch/sh/kernel/kprobes.c
-index 4fafe0cd12c6..241e903dd3ee 100644
---- a/arch/sh/kernel/kprobes.c
-+++ b/arch/sh/kernel/kprobes.c
-@@ -272,9 +272,12 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 	set_current_kprobe(p, regs, kcb);
- 	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
- 
--	if (p->pre_handler && p->pre_handler(p, regs))
-+	if (p->pre_handler && p->pre_handler(p, regs)) {
- 		/* handler has already set things up, so skip ss setup */
-+		reset_current_kprobe();
-+		preempt_enable_no_resched();
- 		return 1;
-+	}
- 
- 	prepare_singlestep(p, regs);
- 	kcb->kprobe_status = KPROBE_HIT_SS;
-@@ -352,8 +355,6 @@ int __kprobes trampoline_probe_handler(struct kprobe *p, struct pt_regs *regs)
- 	regs->pc = orig_ret_address;
- 	kretprobe_hash_unlock(current, &flags);
- 
--	preempt_enable_no_resched();
--
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
- 		kfree(ri);
-diff --git a/arch/sparc/kernel/kprobes.c b/arch/sparc/kernel/kprobes.c
-index c684c96ef2e9..dfbca2470536 100644
---- a/arch/sparc/kernel/kprobes.c
-+++ b/arch/sparc/kernel/kprobes.c
-@@ -175,8 +175,11 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
- 
- 	set_current_kprobe(p, regs, kcb);
- 	kcb->kprobe_status = KPROBE_HIT_ACTIVE;
--	if (p->pre_handler && p->pre_handler(p, regs))
-+	if (p->pre_handler && p->pre_handler(p, regs)) {
-+		reset_current_kprobe();
-+		preempt_enable_no_resched();
- 		return 1;
-+	}
- 
- 	prepare_singlestep(p, regs, kcb);
- 	kcb->kprobe_status = KPROBE_HIT_SS;
-@@ -508,9 +511,7 @@ static int __kprobes trampoline_probe_handler(struct kprobe *p,
- 	regs->tpc = orig_ret_address;
- 	regs->tnpc = orig_ret_address + 4;
- 
--	reset_current_kprobe();
- 	kretprobe_hash_unlock(current, &flags);
--	preempt_enable_no_resched();
- 
- 	hlist_for_each_entry_safe(ri, tmp, &empty_rp, hlist) {
- 		hlist_del(&ri->hlist);
-diff --git a/arch/x86/kernel/kprobes/core.c b/arch/x86/kernel/kprobes/core.c
-index 0ac16a0d93e5..814e26b7c8a2 100644
---- a/arch/x86/kernel/kprobes/core.c
-+++ b/arch/x86/kernel/kprobes/core.c
-@@ -694,6 +694,10 @@ int kprobe_int3_handler(struct pt_regs *regs)
- 			 */
- 			if (!p->pre_handler || !p->pre_handler(p, regs))
- 				setup_singlestep(p, regs, kcb, 0);
-+			else {
-+				reset_current_kprobe();
-+				preempt_enable_no_resched();
-+			}
- 			return 1;
- 		}
- 	} else if (*addr != BREAKPOINT_INSTRUCTION) {
-diff --git a/arch/x86/kernel/kprobes/ftrace.c b/arch/x86/kernel/kprobes/ftrace.c
-index c8696f2a583f..310ef737b9d4 100644
---- a/arch/x86/kernel/kprobes/ftrace.c
-+++ b/arch/x86/kernel/kprobes/ftrace.c
-@@ -63,18 +63,19 @@ void kprobe_ftrace_handler(unsigned long ip, unsigned long parent_ip,
- 		/* Kprobe handler expects regs->ip = ip + 1 as breakpoint hit */
- 		regs->ip = ip + sizeof(kprobe_opcode_t);
- 
--		/* To emulate trap based kprobes, preempt_disable here */
--		preempt_disable();
- 		__this_cpu_write(current_kprobe, p);
- 		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
- 		if (!p->pre_handler || !p->pre_handler(p, regs)) {
- 			skip_singlestep(p, regs, kcb, orig_ip);
--			preempt_enable_no_resched();
-+		} else {
-+			/*
-+			 * If pre_handler returns !0, this handler
-+			 * modifies regs->ip and goes back to there
-+			 * directly without single stepping.
-+			 * So let's just clear current kprobe.
-+			 */
-+			__this_cpu_write(current_kprobe, NULL);
- 		}
--		/*
--		 * If pre_handler returns !0, it sets regs->ip and
--		 * resets current kprobe, and keep preempt count +1.
--		 */
- 	}
- }
- NOKPROBE_SYMBOL(kprobe_ftrace_handler);
-diff --git a/kernel/fail_function.c b/kernel/fail_function.c
-index 1d5632d8bbcc..b090688df94f 100644
---- a/kernel/fail_function.c
-+++ b/kernel/fail_function.c
-@@ -184,9 +184,6 @@ static int fei_kprobe_handler(struct kprobe *kp, struct pt_regs *regs)
- 	if (should_fail(&fei_fault_attr, 1)) {
- 		regs_set_return_value(regs, attr->retval);
- 		override_function_with_return(regs);
--		/* Kprobe specific fixup */
--		reset_current_kprobe();
--		preempt_enable_no_resched();
- 		return 1;
- 	}
- 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 02aed76e0978..b65cd6834450 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -1217,16 +1217,11 @@ kprobe_perf_func(struct trace_kprobe *tk, struct pt_regs *regs)
- 
- 		/*
- 		 * We need to check and see if we modified the pc of the
--		 * pt_regs, and if so clear the kprobe and return 1 so that we
--		 * don't do the single stepping.
--		 * The ftrace kprobe handler leaves it up to us to re-enable
--		 * preemption here before returning if we've modified the ip.
-+		 * pt_regs, and if so return 1 so that we don't do the
-+		 * single stepping.
- 		 */
--		if (orig_ip != instruction_pointer(regs)) {
--			reset_current_kprobe();
--			preempt_enable_no_resched();
-+		if (orig_ip != instruction_pointer(regs))
- 			return 1;
--		}
- 		if (!ret)
- 			return 0;
- 	}
+> > 
+> > > > 
+> > > > 
+> > > > >  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
+> > > > >  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
+> > > > >  drivers/virtio/virtio_ring.c           | 10 ++++++++++
+> > > > >  3 files changed, 27 insertions(+)
+> > > > > 
+> > > > > diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> > > > > index 8fa3945..056e578 100644
+> > > > > --- a/arch/powerpc/include/asm/dma-mapping.h
+> > > > > +++ b/arch/powerpc/include/asm/dma-mapping.h
+> > > > > @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
+> > > > >  #define ARCH_HAS_DMA_MMAP_COHERENT
+> > > > >  
+> > > > >  #endif /* __KERNEL__ */
+> > > > > +
+> > > > > +#define platform_forces_virtio_dma platform_forces_virtio_dma
+> > > > > +
+> > > > > +struct virtio_device;
+> > > > > +
+> > > > > +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
+> > > > >  #endif	/* _ASM_DMA_MAPPING_H */
+> > > > > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > > > > index 06f0296..a2ec15a 100644
+> > > > > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > > > > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > > > > @@ -38,6 +38,7 @@
+> > > > >  #include <linux/of.h>
+> > > > >  #include <linux/iommu.h>
+> > > > >  #include <linux/rculist.h>
+> > > > > +#include <linux/virtio.h>
+> > > > >  #include <asm/io.h>
+> > > > >  #include <asm/prom.h>
+> > > > >  #include <asm/rtas.h>
+> > > > > @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
+> > > > >  __setup("multitce=", disable_multitce);
+> > > > >  
+> > > > >  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+> > > > > +
+> > > > > +bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > > +{
+> > > > > +	/*
+> > > > > +	 * On protected guest platforms, force virtio core to use DMA
+> > > > > +	 * MAP API for all virtio devices. But there can also be some
+> > > > > +	 * exceptions for individual devices like virtio balloon.
+> > > > > +	 */
+> > > > > +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
+> > > > > +}
+> > > > 
+> > > > Isn't this kind of slow?  vring_use_dma_api is on
+> > > > data path and supposed to be very fast.
+> > > > 
+> > > > > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> > > > > index 21d464a..47ea6c3 100644
+> > > > > --- a/drivers/virtio/virtio_ring.c
+> > > > > +++ b/drivers/virtio/virtio_ring.c
+> > > > > @@ -141,8 +141,18 @@ struct vring_virtqueue {
+> > > > >   * unconditionally on data path.
+> > > > >   */
+> > > > >  
+> > > > > +#ifndef platform_forces_virtio_dma
+> > > > > +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > > +{
+> > > > > +	return false;
+> > > > > +}
+> > > > > +#endif
+> > > > > +
+> > > > >  static bool vring_use_dma_api(struct virtio_device *vdev)
+> > > > >  {
+> > > > > +	if (platform_forces_virtio_dma(vdev))
+> > > > > +		return true;
+> > > > > +
+> > > > >  	if (!virtio_has_iommu_quirk(vdev))
+> > > > >  		return true;
+> > > > >  
+> > > > > -- 
+> > > > > 2.9.3
