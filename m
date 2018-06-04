@@ -1,27 +1,45 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxBK3hgtzF11V
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 23:49:25 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id w17-v6so3917372pll.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 06:49:25 -0700 (PDT)
-Date: Mon, 4 Jun 2018 06:49:20 -0700
-From: Richard Cochran <richardcochran@gmail.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/10] dpaa_eth: add support for hardware timestamping
-Message-ID: <20180604134920.ezhe6jz5ntpnqyzj@localhost>
-References: <20180604070837.19265-1-yangbo.lu@nxp.com>
- <20180604070837.19265-10-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxSY0v03zDrYb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:01:48 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w54E0Ulj033085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2018 10:01:46 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jd5rduw5k-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 10:01:45 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Mon, 4 Jun 2018 15:01:43 +0100
+Date: Mon, 4 Jun 2018 07:01:35 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Linux-MM <linux-mm@kvack.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Dave Hansen <dave.hansen@intel.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
+ <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
+ <20180519202747.GK5479@ram.oc3035372033.ibm.com>
+ <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
+ <20180520060425.GL5479@ram.oc3035372033.ibm.com>
+ <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
+ <20180520191115.GM5479@ram.oc3035372033.ibm.com>
+ <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
+ <20180603201832.GA10109@ram.oc3035372033.ibm.com>
+ <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
 MIME-Version: 1.0
+In-Reply-To: <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
+Message-Id: <20180604140135.GA10088@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180604070837.19265-10-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,76 +49,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 04, 2018 at 03:08:36PM +0800, Yangbo Lu wrote:
+On Mon, Jun 04, 2018 at 12:12:07PM +0200, Florian Weimer wrote:
+> On 06/03/2018 10:18 PM, Ram Pai wrote:
+> >On Mon, May 21, 2018 at 01:29:11PM +0200, Florian Weimer wrote:
+> >>On 05/20/2018 09:11 PM, Ram Pai wrote:
+> >>>Florian,
+> >>>
+> >>>	Does the following patch fix the problem for you?  Just like x86
+> >>>	I am enabling all keys in the UAMOR register during
+> >>>	initialization itself. Hence any key created by any thread at
+> >>>	any time, will get activated on all threads. So any thread
+> >>>	can change the permission on that key. Smoke tested it
+> >>>	with your test program.
+> >>
+> >>I think this goes in the right direction, but the AMR value after
+> >>fork is still strange:
+> >>
+> >>AMR (PID 34912): 0x0000000000000000
+> >>AMR after fork (PID 34913): 0x0000000000000000
+> >>AMR (PID 34913): 0x0000000000000000
+> >>Allocated key in subprocess (PID 34913): 2
+> >>Allocated key (PID 34912): 2
+> >>Setting AMR: 0xffffffffffffffff
+> >>New AMR value (PID 34912): 0x0fffffffffffffff
+> >>About to call execl (PID 34912) ...
+> >>AMR (PID 34912): 0x0fffffffffffffff
+> >>AMR after fork (PID 34914): 0x0000000000000003
+> >>AMR (PID 34914): 0x0000000000000003
+> >>Allocated key in subprocess (PID 34914): 2
+> >>Allocated key (PID 34912): 2
+> >>Setting AMR: 0xffffffffffffffff
+> >>New AMR value (PID 34912): 0x0fffffffffffffff
+> >>
+> >>I mean this line:
+> >>
+> >>AMR after fork (PID 34914): 0x0000000000000003
+> >>
+> >>Shouldn't it be the same as in the parent process?
+> >
+> >Fixed it. Please try this patch. If it all works to your satisfaction, I
+> >will clean it up further and send to Michael Ellermen(ppc maintainer).
+> >
+> >
+> >commit 51f4208ed5baeab1edb9b0f8b68d7144449b3527
+> >Author: Ram Pai <linuxram@us.ibm.com>
+> >Date:   Sun Jun 3 14:44:32 2018 -0500
+> >
+> >     Fix for the fork bug.
+> >     Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> 
+> Is this on top of the previous patch, or a separate fix?
 
-> +if FSL_DPAA_ETH
-> +config FSL_DPAA_ETH_TS
-> +	bool "DPAA hardware timestamping support"
-> +	select PTP_1588_CLOCK_QORIQ
-> +	default n
-> +	help
-> +	  Enable DPAA hardware timestamping support.
-> +	  This option is useful for applications to get
-> +	  hardware time stamps on the Ethernet packets
-> +	  using the SO_TIMESTAMPING API.
-> +endif
-
-You should drop this #ifdef.  In general, if a MAC supports time
-stamping and PHC, then the driver support should simply be compiled
-in.
-
-[ When time stamping incurs a large run time performance penalty to
-  non-PTP users, then it might make sense to have a Kconfig option to
-  disable it, but that doesn't appear to be the case here. ]
-
-> @@ -1615,6 +1635,24 @@ static int dpaa_eth_refill_bpools(struct dpaa_priv *priv)
->  	skbh = (struct sk_buff **)phys_to_virt(addr);
->  	skb = *skbh;
->  
-> +#ifdef CONFIG_FSL_DPAA_ETH_TS
-> +	if (priv->tx_tstamp &&
-> +	    skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
-
-This condition fits on one line easily.
-
-> +		struct skb_shared_hwtstamps shhwtstamps;
-> +		u64 ns;
-
-Local variables belong at the top of the function.
-
-> +		memset(&shhwtstamps, 0, sizeof(shhwtstamps));
-> +
-> +		if (!dpaa_get_tstamp_ns(priv->net_dev, &ns,
-> +					priv->mac_dev->port[TX],
-> +					(void *)skbh)) {
-> +			shhwtstamps.hwtstamp = ns_to_ktime(ns);
-> +			skb_tstamp_tx(skb, &shhwtstamps);
-> +		} else {
-> +			dev_warn(dev, "dpaa_get_tstamp_ns failed!\n");
-> +		}
-> +	}
-> +#endif
->  	if (unlikely(qm_fd_get_format(fd) == qm_fd_sg)) {
->  		nr_frags = skb_shinfo(skb)->nr_frags;
->  		dma_unmap_single(dev, addr, qm_fd_get_offset(fd) +
-> @@ -2086,6 +2124,14 @@ static int dpaa_start_xmit(struct sk_buff *skb, struct net_device *net_dev)
->  	if (unlikely(err < 0))
->  		goto skb_to_fd_failed;
->  
-> +#ifdef CONFIG_FSL_DPAA_ETH_TS
-> +	if (priv->tx_tstamp &&
-> +	    skb_shinfo(skb)->tx_flags & SKBTX_HW_TSTAMP) {
-
-One line please.
-
-> +		fd.cmd |= FM_FD_CMD_UPD;
-> +		skb_shinfo(skb)->tx_flags |= SKBTX_IN_PROGRESS;
-> +	}
-> +#endif
-> +
->  	if (likely(dpaa_xmit(priv, percpu_stats, queue_mapping, &fd) == 0))
->  		return NETDEV_TX_OK;
->  
-
-Thanks,
-Richard
+top of previous patch.
+RP
