@@ -1,21 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zvwd0wjdzF18B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 22:52:33 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH v2 00/14] Remove unneccessary included headers
-In-Reply-To: <cover.1527868006.git.christophe.leroy@c-s.fr>
-References: <cover.1527868006.git.christophe.leroy@c-s.fr>
-Date: Mon, 04 Jun 2018 22:52:31 +1000
-Message-ID: <87d0x6bto0.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zwP614zQzF13x
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 23:13:45 +1000 (AEST)
+Message-ID: <e7ceddbec11711a89282e9b70b7fd3c8af10b030.camel@kernel.crashing.org>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org
+Date: Mon, 04 Jun 2018 23:11:52 +1000
+In-Reply-To: <20180604153558-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
+ <20180604153558-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +32,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
+On Mon, 2018-06-04 at 15:43 +0300, Michael S. Tsirkin wrote:
+> On Thu, May 24, 2018 at 08:27:04AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2018-05-23 at 21:50 +0300, Michael S. Tsirkin wrote:
+> > 
+> > > I re-read that discussion and I'm still unclear on the
+> > > original question, since I got several apparently
+> > > conflicting answers.
+> > > 
+> > > I asked:
+> > > 
+> > > 	Why isn't setting VIRTIO_F_IOMMU_PLATFORM on the
+> > > 	hypervisor side sufficient?
+> > 
+> > I thought I had replied to this...
+> > 
+> > There are a couple of reasons:
+> > 
+> > - First qemu doesn't know that the guest will switch to "secure mode"
+> > in advance. There is no difference between a normal and a secure
+> > partition until the partition does the magic UV call to "enter secure
+> > mode" and qemu doesn't see any of it. So who can set the flag here ?
+> 
+> The user should set it. You just tell user "to be able to use with
+> feature X, enable IOMMU".
 
-> The purpose of this serie is to limit the number of includes to
-> only the necessary ones in order to reduce the number of files
-> recompiled everytime a header file is modified.
->
-> This is the start of the work, please provide feedback if any so
-> that I don't go in the wrong direction.
->
-> Handled inclusion changes more carrefully after Michael feedback.
->
-> Started splitting some headers in order to reduce their coverage.
->
-> Christophe Leroy (14):
->   powerpc: remove kdump.h from page.h
->   powerpc: remove unneeded inclusions of cpu_has_feature.h
->   powerpc/405: move PPC405_ERR77 in asm-405.h
->   powerpc: move ASM_CONST and stringify_in_c() into asm-const.h
->   powerpc: clean the inclusion of stringify.h
->   powerpc: clean inclusions of asm/feature-fixups.h
->   powerpc: remove superflous inclusions of asm/fixmap.h
->   powerpc: declare set_breakpoint() static
->   powerpc/book3s: Remove PPC_PIN_SIZE
->   powerpc: fix includes in asm/processor.h
->   powerpc/nohash: fix hash related comments in pgtable.h
->   powerpc/44x: remove page.h from mmu-44x.h
->   powerpc: split reg.h in two parts
->   powerpc: Split synch.h in two parts
+That's completely backwards. The user has no idea what that stuff is.
+And it would have to percolate all the way up the management stack,
+libvirt, kimchi, whatever else ... that's just nonsense.
 
-Still some problems :)
+Especially since, as I explained in my other email, this is *not* a
+qemu problem and thus the solution shouldn't be messing around with
+qemu.
 
-  http://kisskb.ellerman.id.au/kisskb/head/14047/
+> 
+> > - Second, when using VIRTIO_F_IOMMU_PLATFORM, we also make qemu (or
+> > vhost) go through the emulated MMIO for every access to the guest,
+> > which adds additional overhead.
+> > 
+> > Cheers,
+> > Ben.
+> 
+> There are several answers to this.  One is that we are working hard to
+> make overhead small when the mappings are static (which they would be if
+> there's no actual IOMMU). So maybe especially given you are using
+> a bounce buffer on top it's not so bad - did you try to
+> benchmark?
+> 
+> Another is that given the basic functionality is in there, optimizations
+> can possibly wait until per-device quirks in DMA API are supported.
 
-cheers
+The point is that requiring specific qemu command line arguments isn't
+going to fly. We have additional problems due to the fact that our
+firmware (SLOF) inside qemu doesn't currently deal with iommu's etc...
+though those can be fixed.
 
+Overall, however, this seems to be the most convoluted way of achieving
+things, require user interventions where none should be needed etc...
 
-arch/powerpc/include/asm/reg.h:1286:31: error: expected ':' or ')' before 'ASM_FTR_IFCLR':
-  allmodconfig+64K_PAGES powerpc
-  allmodconfig+64K_PAGES powerpc-5.3
-  allmodconfig+ppc64le ppc64le
-  powernv_defconfig+NO_NUMA ppc64le
-  powernv_defconfig+NO_PERF ppc64le
-  powernv_defconfig+NO_RADIX ppc64le
-  powernv_defconfig+STRICT_RWX ppc64le
-  powernv_defconfig+THIN ppc64le
-  powerpc-allmodconfig powerpc
-  powerpc-allmodconfig powerpc-5.3
-  powerpc-allyesconfig powerpc
-  powerpc-allyesconfig powerpc-5.3
-  ppc64_defconfig powerpc
-  ppc64_defconfig powerpc-5.3
-  ppc64_defconfig+NO_ALTIVEC powerpc
-  ppc64_defconfig+NO_ALTIVEC powerpc-5.3
-  ppc64_defconfig+NO_HUGETLB powerpc
-  ppc64_defconfig+NO_HUGETLB powerpc-5.3
-  ppc64_defconfig+NO_KVM powerpc
-  ppc64_defconfig+NO_KVM powerpc-5.3
-  ppc64_defconfig+NO_RADIX powerpc
-  ppc64_defconfig+NO_TM powerpc
-  ppc64_defconfig+NO_TM powerpc-5.3
-  ppc64_defconfig+UP powerpc
-  ppc64_defconfig+UP powerpc-5.3
-  ppc64e_defconfig powerpc
-  ppc64e_defconfig powerpc-5.3
-  ppc64e_defconfig+KEXEC powerpc
-  ppc64e_defconfig+KEXEC powerpc-5.3
-  ppc64e_defconfig+UP powerpc
-  ppc64e_defconfig+UP powerpc-5.3
-  ppc64le_defconfig ppc64le
-  ppc64le_defconfig+NO_KPROBES ppc64le
-  ppc64le_defconfig+NO_KVM ppc64le
-  ppc6xx_defconfig powerpc
-  ppc6xx_defconfig powerpc-5.3
-  pseries_defconfig powerpc
-  pseries_defconfig powerpc-5.3
-  pseries_defconfig+FA_DUMP powerpc
-  pseries_defconfig+FA_DUMP powerpc-5.3
-  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc
-  pseries_defconfig+NO_MEMORY_HOTPLUG powerpc-5.3
-  pseries_defconfig+NO_MEMORY_HOTREMOVE powerpc
-  pseries_defconfig+NO_SPLPAR powerpc
-  pseries_defconfig+NO_SPLPAR powerpc-5.3
-  pseries_le_defconfig ppc64le
-  pseries_le_defconfig+NO_NUMA ppc64le
-  pseries_le_defconfig+NO_SPLPAR ppc64le
-  skiroot_defconfig ppc64le
+Again, what's wrong with a 2 lines hook instead that solves it all and
+completely avoids involving qemu ?
+
+Ben.
+
+> 
+> > > 
+> > > 
+> > > >  arch/powerpc/include/asm/dma-mapping.h |  6 ++++++
+> > > >  arch/powerpc/platforms/pseries/iommu.c | 11 +++++++++++
+> > > >  drivers/virtio/virtio_ring.c           | 10 ++++++++++
+> > > >  3 files changed, 27 insertions(+)
+> > > > 
+> > > > diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> > > > index 8fa3945..056e578 100644
+> > > > --- a/arch/powerpc/include/asm/dma-mapping.h
+> > > > +++ b/arch/powerpc/include/asm/dma-mapping.h
+> > > > @@ -115,4 +115,10 @@ extern u64 __dma_get_required_mask(struct device *dev);
+> > > >  #define ARCH_HAS_DMA_MMAP_COHERENT
+> > > >  
+> > > >  #endif /* __KERNEL__ */
+> > > > +
+> > > > +#define platform_forces_virtio_dma platform_forces_virtio_dma
+> > > > +
+> > > > +struct virtio_device;
+> > > > +
+> > > > +extern bool platform_forces_virtio_dma(struct virtio_device *vdev);
+> > > >  #endif	/* _ASM_DMA_MAPPING_H */
+> > > > diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+> > > > index 06f0296..a2ec15a 100644
+> > > > --- a/arch/powerpc/platforms/pseries/iommu.c
+> > > > +++ b/arch/powerpc/platforms/pseries/iommu.c
+> > > > @@ -38,6 +38,7 @@
+> > > >  #include <linux/of.h>
+> > > >  #include <linux/iommu.h>
+> > > >  #include <linux/rculist.h>
+> > > > +#include <linux/virtio.h>
+> > > >  #include <asm/io.h>
+> > > >  #include <asm/prom.h>
+> > > >  #include <asm/rtas.h>
+> > > > @@ -1396,3 +1397,13 @@ static int __init disable_multitce(char *str)
+> > > >  __setup("multitce=", disable_multitce);
+> > > >  
+> > > >  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+> > > > +
+> > > > +bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > +{
+> > > > +	/*
+> > > > +	 * On protected guest platforms, force virtio core to use DMA
+> > > > +	 * MAP API for all virtio devices. But there can also be some
+> > > > +	 * exceptions for individual devices like virtio balloon.
+> > > > +	 */
+> > > > +	return (of_find_compatible_node(NULL, NULL, "ibm,ultravisor") != NULL);
+> > > > +}
+> > > 
+> > > Isn't this kind of slow?  vring_use_dma_api is on
+> > > data path and supposed to be very fast.
+> > > 
+> > > > diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+> > > > index 21d464a..47ea6c3 100644
+> > > > --- a/drivers/virtio/virtio_ring.c
+> > > > +++ b/drivers/virtio/virtio_ring.c
+> > > > @@ -141,8 +141,18 @@ struct vring_virtqueue {
+> > > >   * unconditionally on data path.
+> > > >   */
+> > > >  
+> > > > +#ifndef platform_forces_virtio_dma
+> > > > +static inline bool platform_forces_virtio_dma(struct virtio_device *vdev)
+> > > > +{
+> > > > +	return false;
+> > > > +}
+> > > > +#endif
+> > > > +
+> > > >  static bool vring_use_dma_api(struct virtio_device *vdev)
+> > > >  {
+> > > > +	if (platform_forces_virtio_dma(vdev))
+> > > > +		return true;
+> > > > +
+> > > >  	if (!virtio_has_iommu_quirk(vdev))
+> > > >  		return true;
+> > > >  
+> > > > -- 
+> > > > 2.9.3
