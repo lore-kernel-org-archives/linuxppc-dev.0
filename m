@@ -2,18 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgd1BXrzF12j
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:25 +1000 (AEST)
-In-Reply-To: <20180530121922.22122-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linux-kbuild@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgf17mSzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:26 +1000 (AEST)
+In-Reply-To: <20180530103122.27674-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v5,
- 1/4] powerpc/kbuild: set default generic machine type for 32-bit
- compile
-Message-Id: <40zxgc4r2sz9s4b@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:11:23 +1000 (AEST)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64s: Fix compiler store ordering to SLB shadow area
+Message-Id: <40zxgd3sqlz9s0w@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:11:22 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-05-30 at 12:19:19 UTC, Nicholas Piggin wrote:
-> Some 64-bit toolchains uses the wrong ISA variant for compiling 32-bit
-> kernels, even with -m32. Debian's powerpc64le is one such case, and
-> that is because it is built with --with-cpu=power8.
+On Wed, 2018-05-30 at 10:31:22 UTC, Nicholas Piggin wrote:
+> The stores to update the SLB shadow area must be made as they appear
+> in the C code, so that the hypervisor does not see an entry with
+> mismatched vsid and esid. Use WRITE_ONCE for this.
 > 
-> So when cross compiling a 32-bit kernel with a 64-bit toolchain, set
-> -mcpu=powerpc initially, which is the generic 32-bit powerpc machine
-> type and scheduling model. CPU and platform code can override this
-> with subsequent -mcpu flags if necessary.
+> GCC has been observed to elide the first store to esid in the update,
+> which means that if the hypervisor interrupts the guest after storing
+> to vsid, it could see an entry with old esid and new vsid, which may
+> possibly result in memory corruption.
 > 
-> This is not done for 32-bit toolchains otherwise it would override
-> their defaults, which are presumably set appropriately for the
-> environment (moreso than a 64-bit cross compiler).
-> 
-> This fixes a lot of build failures due to incompatible assembly when
-> compiling 32-bit kernel with th Debian powerpc64le 64-bit toolchain.
-> 
-> Cc: Segher Boessenkool <segher@kernel.crashing.org>
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4bf4f42a2febb449a5cc5d79e7c58e
+https://git.kernel.org/powerpc/c/926bc2f100c24d4842b3064b5af44a
 
 cheers
