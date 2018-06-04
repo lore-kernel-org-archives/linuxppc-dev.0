@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgD73J9zF0Rs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:04 +1000 (AEST)
-In-Reply-To: <484bcfaccc1ec3d91b74aeaaa26a0ae66fe0955a.1527160868.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, segher@kernel.crashing.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgH5tQtzF0dT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:07 +1000 (AEST)
+In-Reply-To: <ac861431c98e0c259fec18a0d220994ad6b362ae.1527217866.git.sbobroff@linux.ibm.com>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc/32: Optimise __csum_partial()
-Message-Id: <40zxgC5wYpz9s0x@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:11:03 +1000 (AEST)
+Subject: Re: [v2,
+ 01/13] powerpc/eeh: Add eeh_max_freezes to initial EEH log line
+Message-Id: <40zxgG0CjHz9s2t@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:11:05 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-05-24 at 11:22:27 UTC, Christophe Leroy wrote:
-> Improve __csum_partial by interleaving loads and adds.
+On Fri, 2018-05-25 at 03:11:28 UTC, Sam Bobroff wrote:
+> The current failure message includes the number of failures that have
+> occurred in the last hour (for a device) but it does not indicate
+> how many failures will be tolerated before the device is permanently
+> disabled.
 > 
-> On a 8xx, it brings neither improvement nor degradation.
-> On a 83xx, it brings a 25% improvement.
+> Include the limit (eeh_max_freezes) to make this less surprising when
+> it happens.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Segher Boessenkool <segher@kernel.crashing.org>
+> Also remove the embedded newline from the existing message to make it
+> easier to grep for.
+> 
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/373e098e1e788d7b89ec0f31765a6c
+https://git.kernel.org/powerpc/c/796b9f5b317a46d1b744f661c38a62
 
 cheers
