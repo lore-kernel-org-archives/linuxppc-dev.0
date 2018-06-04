@@ -2,16 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgk2768zF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:30 +1000 (AEST)
-In-Reply-To: <1527765086-19873-21-git-send-email-xieyisheng1@huawei.com>
-To: Yisheng Xie <xieyisheng1@huawei.com>, <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgl0KzJzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:31 +1000 (AEST)
+In-Reply-To: <20180601082402.17192-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Yisheng Xie <xieyisheng1@huawei.com>, andy.shevchenko@gmail.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v2,20/21] powerpc/xmon: use match_string() helper
-Message-Id: <40zxgj5Kw4z9s1B@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:11:28 +1000 (AEST)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/mm/hash: hard disable irq in the SLB insert path
+Message-Id: <40zxgk3kS9z9s1w@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:11:29 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,18 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-05-31 at 11:11:25 UTC, Yisheng Xie wrote:
-> match_string() returns the index of an array for a matching string,
-> which can be used instead of open coded variant.
+On Fri, 2018-06-01 at 08:24:02 UTC, "Aneesh Kumar K.V" wrote:
+> When inserting SLB entries for EA above 512TB, we need to hard disable irq.
+> This will make sure we don't take a PMU interrupt that can possibly touch
+> user space address via a stack dump. To prevent this, we need to hard disable
+> the interrupt.
 > 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
+> Also add a comment explaining why we don't need context synchronizing isync
+> with slbmte.
+> 
+> Fixes: f384796c4 ("powerpc/mm: Add support for handling > 512TB address in SLB miss")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/0abbf2bfdc9dec32e9832aa8d4522a
+https://git.kernel.org/powerpc/c/a5db5060e0b2e27605df272224bfd4
 
 cheers
