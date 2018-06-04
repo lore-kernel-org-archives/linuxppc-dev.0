@@ -1,37 +1,29 @@
-Return-Path: <akshay.adiga@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
+ [IPv6:2607:f8b0:400c:c08::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ztR11p1JzF13h
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 21:45:16 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w54BdZBO044084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2018 07:45:14 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jd4r5064b-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 07:45:13 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
- Mon, 4 Jun 2018 12:45:11 +0100
-Date: Mon, 4 Jun 2018 17:15:00 +0530
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, stewart@linux.vnet.ibm.com
-Subject: Re: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
-References: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
- <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ztRz6dtfzF12j
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 21:46:07 +1000 (AEST)
+Received: by mail-ua0-x243.google.com with SMTP id m21-v6so554544uan.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 04:46:07 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
-Message-Id: <20180604114500.3rlpuso5aftesnf5@aksadiga.ibm>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <7ce9a8c3996506ae6f9ab16b3cf73c287e205a89.1527909627.git.fthain@telegraphics.com.au>
+References: <cover.1527909627.git.fthain@telegraphics.com.au>
+ <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
+ <7ce9a8c3996506ae6f9ab16b3cf73c287e205a89.1527909627.git.fthain@telegraphics.com.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 4 Jun 2018 13:46:04 +0200
+Message-ID: <CAMuHMdUzDqSvVxjOPWK=TSSsNo4Ej3_5TRbv+vRLU5ukSGvxdw@mail.gmail.com>
+Subject: Re: [PATCH 02/11] macintosh/via-pmu: Add missing mmio accessors
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 04, 2018 at 07:04:14PM +1000, Benjamin Herrenschmidt wrote:
-> Is this a new property ? I'm not fan of adding yet another of those
-> silly arrays.
-> 
-> I would say this is the right time now to switch over to a node per
-> state instead, as we discussed with Vaidy.
+On Sat, Jun 2, 2018 at 5:27 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
+> Add missing in_8() accessors to init_pmu() and pmu_sr_intr().
+>
+> This fixes several sparse warnings:
+> drivers/macintosh/via-pmu.c:536:29: warning: dereference of noderef expression
+> drivers/macintosh/via-pmu.c:537:33: warning: dereference of noderef expression
+> drivers/macintosh/via-pmu.c:1455:17: warning: dereference of noderef expression
+> drivers/macintosh/via-pmu.c:1456:69: warning: dereference of noderef expression
+>
+> Tested-by: Stan Johnson <userm57@yahoo.com>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-I posted  the node based device tree here :
-skiboot patch :  https://patchwork.ozlabs.org/patch/923120/
-kernel patch : https://lkml.org/lkml/2018/5/30/1146
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Do you have any inputs for this design ?
+Gr{oetje,eeting}s,
 
-> 
-> Additionally, while doing that, we can provide the versioning mechanism
-> I proposed so we can deal with state specific issues and erratas.
-> 
-> Cheers,
-> Ben.
-> 
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
