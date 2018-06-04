@@ -1,45 +1,18 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxSY0v03zDrYb
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:01:48 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w54E0Ulj033085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2018 10:01:46 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jd5rduw5k-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 10:01:45 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 4 Jun 2018 15:01:43 +0100
-Date: Mon, 4 Jun 2018 07:01:35 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Linux-MM <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
- <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
- <20180519202747.GK5479@ram.oc3035372033.ibm.com>
- <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
- <20180520060425.GL5479@ram.oc3035372033.ibm.com>
- <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
- <20180520191115.GM5479@ram.oc3035372033.ibm.com>
- <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
- <20180603201832.GA10109@ram.oc3035372033.ibm.com>
- <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
-MIME-Version: 1.0
-In-Reply-To: <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
-Message-Id: <20180604140135.GA10088@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxfY2vFYzF0Rs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:10:29 +1000 (AEST)
+In-Reply-To: <20180228182145.AD1C76F114@po15720vm.idsi0.si.c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/dma: remove unnecessary BUG()
+Message-Id: <40zxfY1vv9z9s0w@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:10:29 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,56 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 04, 2018 at 12:12:07PM +0200, Florian Weimer wrote:
-> On 06/03/2018 10:18 PM, Ram Pai wrote:
-> >On Mon, May 21, 2018 at 01:29:11PM +0200, Florian Weimer wrote:
-> >>On 05/20/2018 09:11 PM, Ram Pai wrote:
-> >>>Florian,
-> >>>
-> >>>	Does the following patch fix the problem for you?  Just like x86
-> >>>	I am enabling all keys in the UAMOR register during
-> >>>	initialization itself. Hence any key created by any thread at
-> >>>	any time, will get activated on all threads. So any thread
-> >>>	can change the permission on that key. Smoke tested it
-> >>>	with your test program.
-> >>
-> >>I think this goes in the right direction, but the AMR value after
-> >>fork is still strange:
-> >>
-> >>AMR (PID 34912): 0x0000000000000000
-> >>AMR after fork (PID 34913): 0x0000000000000000
-> >>AMR (PID 34913): 0x0000000000000000
-> >>Allocated key in subprocess (PID 34913): 2
-> >>Allocated key (PID 34912): 2
-> >>Setting AMR: 0xffffffffffffffff
-> >>New AMR value (PID 34912): 0x0fffffffffffffff
-> >>About to call execl (PID 34912) ...
-> >>AMR (PID 34912): 0x0fffffffffffffff
-> >>AMR after fork (PID 34914): 0x0000000000000003
-> >>AMR (PID 34914): 0x0000000000000003
-> >>Allocated key in subprocess (PID 34914): 2
-> >>Allocated key (PID 34912): 2
-> >>Setting AMR: 0xffffffffffffffff
-> >>New AMR value (PID 34912): 0x0fffffffffffffff
-> >>
-> >>I mean this line:
-> >>
-> >>AMR after fork (PID 34914): 0x0000000000000003
-> >>
-> >>Shouldn't it be the same as in the parent process?
-> >
-> >Fixed it. Please try this patch. If it all works to your satisfaction, I
-> >will clean it up further and send to Michael Ellermen(ppc maintainer).
-> >
-> >
-> >commit 51f4208ed5baeab1edb9b0f8b68d7144449b3527
-> >Author: Ram Pai <linuxram@us.ibm.com>
-> >Date:   Sun Jun 3 14:44:32 2018 -0500
-> >
-> >     Fix for the fork bug.
-> >     Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+On Wed, 2018-02-28 at 18:21:45 UTC, Christophe Leroy wrote:
+> Direction is already checked in all calling functions in
+> include/linux/dma-mapping.h and also in called function __dma_sync()
 > 
-> Is this on top of the previous patch, or a separate fix?
+> So really no need to check it once more here.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-top of previous patch.
-RP
+Applied to powerpc next, thanks.
+
+https://git.kernel.org/powerpc/c/9887334b804892f10262fa7f805998
+
+cheers
