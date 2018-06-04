@@ -2,16 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxfs5ffNzF0dm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:10:45 +1000 (AEST)
-In-Reply-To: <20180504171935.25410-2-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxg24jrtzF0dd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:10:54 +1000 (AEST)
+In-Reply-To: <20180510172005.27160-1-npiggin@gmail.com>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [01/11] powerpc/64: irq_work avoid interrupt when called with
- hardware irqs enabled
-Message-Id: <40zxfs0Y5Zz9s5b@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:10:44 +1000 (AEST)
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/powernv: process all OPAL event interrupts with kopald
+Message-Id: <40zxg14GWMz9ryk@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:10:52 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-05-04 at 17:19:25 UTC, Nicholas Piggin wrote:
-> irq_work_raise should not cause a decrementer exception unless it is
-> called from NMI context. Doing so often just results in an immediate
-> masked decrementer interrupt:
+On Thu, 2018-05-10 at 17:20:05 UTC, Nicholas Piggin wrote:
+> Using irq_work for processing OPAL event interrupts is not necessary.
+> irq_work is typically used to schedule work from NMI context, a
+> softirq may be more appropriate. However OPAL events are not
+> particularly performance or latency critical, so they can all be
+> invoked by kopald.
 > 
->    <...>-550    90d...    4us : update_curr_rt <-dequeue_task_rt
->    <...>-550    90d...    5us : dbs_update_util_handler <-update_curr_rt
->    <...>-550    90d...    6us : arch_irq_work_raise <-irq_work_queue
->    <...>-550    90d...    7us : soft_nmi_interrupt <-soft_nmi_common
->    <...>-550    90d...    7us : printk_nmi_enter <-soft_nmi_interrupt
->    <...>-550    90d.Z.    8us : rcu_nmi_enter <-soft_nmi_interrupt
->    <...>-550    90d.Z.    9us : rcu_nmi_exit <-soft_nmi_interrupt
->    <...>-550    90d...    9us : printk_nmi_exit <-soft_nmi_interrupt
->    <...>-550    90d...   10us : cpuacct_charge <-update_curr_rt
+> This patch removes the irq_work queueing, and instead wakes up
+> kopald when there is an event to be processed. kopald processes
+> interrupts individually, enabling irqs and calling cond_resched
+> between each one to minimise latencies.
 > 
-> The soft_nmi_interrupt here is the call into the watchdog, due to the
-> decrementer interrupt firing with irqs soft-disabled. This is
-> harmless, but sub-optimal.
-> 
-> When it's not called from NMI context or with interrupts enabled, mark
-> the decrementer pending in the irq_happened mask directly, rather than
-> having the masked decrementer interupt handler do it. This will be
-> replayed at the next local_irq_enable. See the comment for details.
+> Event handlers themselves should still use threaded handlers,
+> workqueues, etc. as necessary to avoid high interrupts-off latencies
+> within any single interrupt.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ebb37cf3ffd39fdb6ec5b07111f8bb
+https://git.kernel.org/powerpc/c/56c0b48b1e443efa5d6f4d60513302
 
 cheers
