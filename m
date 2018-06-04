@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgX5C8fzF0dd
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:20 +1000 (AEST)
-In-Reply-To: <20180529125738.24271-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- viro@zeniv.linux.org.uk
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxgZ0hVMzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:22 +1000 (AEST)
+In-Reply-To: <23d156759ff411f5fd932e167b8b5f5ecd6aa88b.1527663626.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, segher@kernel.crashing.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: malat@debian.org
-Subject: Re: powerpc/ptrace: Use copy_{from, to}_user() rather than open-coding
-Message-Id: <40zxgV5SmWz9s7Q@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:11:15 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v6,1/2] powerpc/lib: optimise 32 bits __clear_user()
+Message-Id: <40zxgY4PMWz9s2k@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:11:20 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,21 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-05-29 at 12:57:38 UTC, Michael Ellerman wrote:
-> From: Al Viro <viro@ZenIV.linux.org.uk>
+On Wed, 2018-05-30 at 07:06:13 UTC, Christophe Leroy wrote:
+> Rewrite clear_user() on the same principle as memset(0), making use
+> of dcbz to clear complete cache lines.
 > 
-> In PPC_PTRACE_GETHWDBGINFO and PPC_PTRACE_SETHWDEBUG we do an
-> access_ok() check and then __copy_{from,to}_user().
+> This code is a copy/paste of memset(), with some modifications
+> in order to retrieve remaining number of bytes to be cleared,
+> as it needs to be returned in case of error.
 > 
-> Instead we should just use copy_{from,to}_user() which does all that
-> for us and is less error prone.
+> On the same way as done on PPC64 in commit 17968fbbd19f1
+> ("powerpc: 64bit optimised __clear_user"), the patch moves
+> __clear_user() into a dedicated file string_32.S
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Reviewed-by: Samuel Mendoza-Jonas <sam@mendozajonas.com>
+> On a MPC885, throughput is almost doubled:
+> 
+> Before:
+> ~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+> 1048576000 bytes (1000.0MB) copied, 18.990779 seconds, 52.7MB/s
+> 
+> After:
+> ~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+> 1048576000 bytes (1000.0MB) copied, 9.611468 seconds, 104.0MB/s
+> 
+> On a MPC8321, throughput is multiplied by 2.12:
+> 
+> Before:
+> root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+> 1048576000 bytes (1000.0MB) copied, 6.844352 seconds, 146.1MB/s
+> 
+> After:
+> root@vgoippro:~# dd if=/dev/zero of=/dev/null bs=1M count=1000
+> 1048576000 bytes (1000.0MB) copied, 3.218854 seconds, 310.7MB/s
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/6bcdd2972b9f6ebda9ae5c7075e2d5
+https://git.kernel.org/powerpc/c/f36bbf21e8b911b3c629fd36d4d217
 
 cheers
