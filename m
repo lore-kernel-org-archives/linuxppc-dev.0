@@ -1,22 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zpsg1x7zzF0tP
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 19:04:38 +1000 (AEST)
-Message-ID: <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net,
- daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au,
- linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: stewart@linux.vnet.ibm.com
-Date: Mon, 04 Jun 2018 19:04:14 +1000
-In-Reply-To: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
-References: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zq0r6jT3zF0Rs
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 19:10:52 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/powernv: copy/paste - Mask SO bit in CR
+Date: Mon,  4 Jun 2018 18:33:38 +1000
+Message-Id: <20180604083338.2661-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +18,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-06-04 at 13:47 +0530, Abhishek Goel wrote:
-> +       if (of_property_read_string_array(power_mgt,
-> +               "ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
-> +               of_property_read_string_array(power_mgt,
-> +                               "ibm,cpu-idle-state-names", descs, dt_idle_states);
-> +               pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n"
-> +                       "Name will be used for description\n");
-> +       }
->  
->         /*
+NX can set the 3rd bit in CR register for XER[SO] (Summary overflow)
+which is not related to paste request. The current paste function
+returns failure for a successful request when this bit is set. So mask
+this bit and check the proper return status.
 
-Is this a new property ? I'm not fan of adding yet another of those
-silly arrays.
+Fixes: 2392c8c8c045 ("powerpc/powernv/vas: Define copy/paste interfaces")
+Cc: stable@vger.kernel.org # v4.14+
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/platforms/powernv/copy-paste.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I would say this is the right time now to switch over to a node per
-state instead, as we discussed with Vaidy.
-
-Additionally, while doing that, we can provide the versioning mechanism
-I proposed so we can deal with state specific issues and erratas.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+index 3fa62de96d9c..cb36f9fbcef3 100644
+--- a/arch/powerpc/platforms/powernv/copy-paste.h
++++ b/arch/powerpc/platforms/powernv/copy-paste.h
+@@ -41,5 +41,6 @@ static inline int vas_paste(void *paste_address, int offset)
+ 		: "b" (offset), "b" (paste_address)
+ 		: "memory", "cr0");
+ 
+-	return (cr >> CR0_SHIFT) & CR0_MASK;
++	/* We mask with 0xE to ignore SO */
++	return (cr >> CR0_SHIFT) & 0xE;
+ }
+-- 
+2.14.1
