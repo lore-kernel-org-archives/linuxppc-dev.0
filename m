@@ -1,22 +1,31 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Return-Path: <huntbag@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zmV26GfDzF0pl
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 17:17:29 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Richard Cochran <richardcochran@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [PATCH 02/10] ptp: support DPAA FMan 1588 timer in ptp_qoriq
-Date: Mon,  4 Jun 2018 15:08:29 +0800
-Message-Id: <20180604070837.19265-3-yangbo.lu@nxp.com>
-In-Reply-To: <20180604070837.19265-1-yangbo.lu@nxp.com>
-References: <20180604070837.19265-1-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40znr51Nz0zF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 18:18:12 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w548E7MY036657
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2018 04:18:10 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jd06bc2ef-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 04:18:09 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <huntbag@linux.vnet.ibm.com>;
+ Mon, 4 Jun 2018 09:18:08 +0100
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: stewart@linux.vnet.ibm.com, Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
+Date: Mon,  4 Jun 2018 13:47:58 +0530
+Message-Id: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,396 +35,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch is to support DPAA (Data Path Acceleration Architecture)
-1588 timer by adding "fsl,fman-ptp-timer" compatible, sharing
-interrupt with FMan, adding FSL_DPAA_ETH dependency, and fixing
-up register offset.
+    Names of cpuidle states were being used for description of states
+    in POWER as no descriptions were added in device tree. This patch
+    reads description for idle states which have been added in device
+    tree.
+    The description for idle states in case of POWER can be printed
+    using "cpupower monitor -l" or "cpupower idle-info".
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- drivers/ptp/Kconfig           |    2 +-
- drivers/ptp/ptp_qoriq.c       |  104 ++++++++++++++++++++++++++---------------
- include/linux/fsl/ptp_qoriq.h |   38 ++++++++++++---
- 3 files changed, 98 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/ptp/Kconfig b/drivers/ptp/Kconfig
-index 474c988..d137c48 100644
---- a/drivers/ptp/Kconfig
-+++ b/drivers/ptp/Kconfig
-@@ -43,7 +43,7 @@ config PTP_1588_CLOCK_DTE
- 
- config PTP_1588_CLOCK_QORIQ
- 	tristate "Freescale QorIQ 1588 timer as PTP clock"
--	depends on GIANFAR
-+	depends on GIANFAR || FSL_DPAA_ETH
- 	depends on PTP_1588_CLOCK
- 	default y
- 	help
-diff --git a/drivers/ptp/ptp_qoriq.c b/drivers/ptp/ptp_qoriq.c
-index 1468a16..c4e3545 100644
---- a/drivers/ptp/ptp_qoriq.c
-+++ b/drivers/ptp/ptp_qoriq.c
-@@ -39,11 +39,12 @@
- /* Caller must hold qoriq_ptp->lock. */
- static u64 tmr_cnt_read(struct qoriq_ptp *qoriq_ptp)
- {
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 	u64 ns;
- 	u32 lo, hi;
- 
--	lo = qoriq_read(&qoriq_ptp->regs->tmr_cnt_l);
--	hi = qoriq_read(&qoriq_ptp->regs->tmr_cnt_h);
-+	lo = qoriq_read(&regs->ctrl_regs->tmr_cnt_l);
-+	hi = qoriq_read(&regs->ctrl_regs->tmr_cnt_h);
- 	ns = ((u64) hi) << 32;
- 	ns |= lo;
- 	return ns;
-@@ -52,16 +53,18 @@ static u64 tmr_cnt_read(struct qoriq_ptp *qoriq_ptp)
- /* Caller must hold qoriq_ptp->lock. */
- static void tmr_cnt_write(struct qoriq_ptp *qoriq_ptp, u64 ns)
- {
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 	u32 hi = ns >> 32;
- 	u32 lo = ns & 0xffffffff;
- 
--	qoriq_write(&qoriq_ptp->regs->tmr_cnt_l, lo);
--	qoriq_write(&qoriq_ptp->regs->tmr_cnt_h, hi);
-+	qoriq_write(&regs->ctrl_regs->tmr_cnt_l, lo);
-+	qoriq_write(&regs->ctrl_regs->tmr_cnt_h, hi);
+The skiboot patch which adds description for idle states in device tree
+can be found here: https://patchwork.ozlabs.org/patch/924879/
+
+ drivers/cpuidle/cpuidle-powernv.c | 19 +++++++++++++++----
+ include/linux/cpuidle.h           |  2 +-
+ 2 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 1a8234e706bc..08d8b0953a14 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -133,7 +133,7 @@ static int stop_loop(struct cpuidle_device *dev,
+ static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
+ 	{ /* Snooze */
+ 		.name = "snooze",
+-		.desc = "snooze",
++		.desc = "idle polling state",
+ 		.exit_latency = 0,
+ 		.target_residency = 0,
+ 		.enter = snooze_loop },
+@@ -206,6 +206,7 @@ static int powernv_cpuidle_driver_init(void)
  }
  
- /* Caller must hold qoriq_ptp->lock. */
- static void set_alarm(struct qoriq_ptp *qoriq_ptp)
+ static inline void add_powernv_state(int index, const char *name,
++				     const char *desc,
+ 				     unsigned int flags,
+ 				     int (*idle_fn)(struct cpuidle_device *,
+ 						    struct cpuidle_driver *,
+@@ -215,7 +216,7 @@ static inline void add_powernv_state(int index, const char *name,
+ 				     u64 psscr_val, u64 psscr_mask)
  {
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 	u64 ns;
- 	u32 lo, hi;
- 
-@@ -70,16 +73,18 @@ static void set_alarm(struct qoriq_ptp *qoriq_ptp)
- 	ns -= qoriq_ptp->tclk_period;
- 	hi = ns >> 32;
- 	lo = ns & 0xffffffff;
--	qoriq_write(&qoriq_ptp->regs->tmr_alarm1_l, lo);
--	qoriq_write(&qoriq_ptp->regs->tmr_alarm1_h, hi);
-+	qoriq_write(&regs->alarm_regs->tmr_alarm1_l, lo);
-+	qoriq_write(&regs->alarm_regs->tmr_alarm1_h, hi);
- }
- 
- /* Caller must hold qoriq_ptp->lock. */
- static void set_fipers(struct qoriq_ptp *qoriq_ptp)
- {
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
-+
- 	set_alarm(qoriq_ptp);
--	qoriq_write(&qoriq_ptp->regs->tmr_fiper1, qoriq_ptp->tmr_fiper1);
--	qoriq_write(&qoriq_ptp->regs->tmr_fiper2, qoriq_ptp->tmr_fiper2);
-+	qoriq_write(&regs->fiper_regs->tmr_fiper1, qoriq_ptp->tmr_fiper1);
-+	qoriq_write(&regs->fiper_regs->tmr_fiper2, qoriq_ptp->tmr_fiper2);
- }
- 
- /*
-@@ -89,16 +94,17 @@ static void set_fipers(struct qoriq_ptp *qoriq_ptp)
- static irqreturn_t isr(int irq, void *priv)
- {
- 	struct qoriq_ptp *qoriq_ptp = priv;
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 	struct ptp_clock_event event;
- 	u64 ns;
- 	u32 ack = 0, lo, hi, mask, val;
- 
--	val = qoriq_read(&qoriq_ptp->regs->tmr_tevent);
-+	val = qoriq_read(&regs->ctrl_regs->tmr_tevent);
- 
- 	if (val & ETS1) {
- 		ack |= ETS1;
--		hi = qoriq_read(&qoriq_ptp->regs->tmr_etts1_h);
--		lo = qoriq_read(&qoriq_ptp->regs->tmr_etts1_l);
-+		hi = qoriq_read(&regs->etts_regs->tmr_etts1_h);
-+		lo = qoriq_read(&regs->etts_regs->tmr_etts1_l);
- 		event.type = PTP_CLOCK_EXTTS;
- 		event.index = 0;
- 		event.timestamp = ((u64) hi) << 32;
-@@ -108,8 +114,8 @@ static irqreturn_t isr(int irq, void *priv)
- 
- 	if (val & ETS2) {
- 		ack |= ETS2;
--		hi = qoriq_read(&qoriq_ptp->regs->tmr_etts2_h);
--		lo = qoriq_read(&qoriq_ptp->regs->tmr_etts2_l);
-+		hi = qoriq_read(&regs->etts_regs->tmr_etts2_h);
-+		lo = qoriq_read(&regs->etts_regs->tmr_etts2_l);
- 		event.type = PTP_CLOCK_EXTTS;
- 		event.index = 1;
- 		event.timestamp = ((u64) hi) << 32;
-@@ -130,16 +136,16 @@ static irqreturn_t isr(int irq, void *priv)
- 			hi = ns >> 32;
- 			lo = ns & 0xffffffff;
- 			spin_lock(&qoriq_ptp->lock);
--			qoriq_write(&qoriq_ptp->regs->tmr_alarm2_l, lo);
--			qoriq_write(&qoriq_ptp->regs->tmr_alarm2_h, hi);
-+			qoriq_write(&regs->alarm_regs->tmr_alarm2_l, lo);
-+			qoriq_write(&regs->alarm_regs->tmr_alarm2_h, hi);
- 			spin_unlock(&qoriq_ptp->lock);
- 			qoriq_ptp->alarm_value = ns;
- 		} else {
--			qoriq_write(&qoriq_ptp->regs->tmr_tevent, ALM2);
-+			qoriq_write(&regs->ctrl_regs->tmr_tevent, ALM2);
- 			spin_lock(&qoriq_ptp->lock);
--			mask = qoriq_read(&qoriq_ptp->regs->tmr_temask);
-+			mask = qoriq_read(&regs->ctrl_regs->tmr_temask);
- 			mask &= ~ALM2EN;
--			qoriq_write(&qoriq_ptp->regs->tmr_temask, mask);
-+			qoriq_write(&regs->ctrl_regs->tmr_temask, mask);
- 			spin_unlock(&qoriq_ptp->lock);
- 			qoriq_ptp->alarm_value = 0;
- 			qoriq_ptp->alarm_interval = 0;
-@@ -153,7 +159,7 @@ static irqreturn_t isr(int irq, void *priv)
+ 	strlcpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+-	strlcpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
++	strlcpy(powernv_states[index].desc, desc, CPUIDLE_DESC_LEN);
+ 	powernv_states[index].flags = flags;
+ 	powernv_states[index].target_residency = target_residency;
+ 	powernv_states[index].exit_latency = exit_latency;
+@@ -250,6 +251,7 @@ static int powernv_add_idle_states(void)
+ 	u64 psscr_val[CPUIDLE_STATE_MAX];
+ 	u64 psscr_mask[CPUIDLE_STATE_MAX];
+ 	const char *names[CPUIDLE_STATE_MAX];
++	const char *descs[CPUIDLE_STATE_MAX];
+ 	u32 has_stop_states = 0;
+ 	int i, rc;
+ 	u32 supported_flags = pnv_get_supported_cpuidle_states();
+@@ -311,6 +313,13 @@ static int powernv_add_idle_states(void)
+ 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+ 		goto out;
  	}
- 
- 	if (ack) {
--		qoriq_write(&qoriq_ptp->regs->tmr_tevent, ack);
-+		qoriq_write(&regs->ctrl_regs->tmr_tevent, ack);
- 		return IRQ_HANDLED;
- 	} else
- 		return IRQ_NONE;
-@@ -169,6 +175,7 @@ static int ptp_qoriq_adjfine(struct ptp_clock_info *ptp, long scaled_ppm)
- 	u32 tmr_add;
- 	int neg_adj = 0;
- 	struct qoriq_ptp *qoriq_ptp = container_of(ptp, struct qoriq_ptp, caps);
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 
- 	if (scaled_ppm < 0) {
- 		neg_adj = 1;
-@@ -186,7 +193,7 @@ static int ptp_qoriq_adjfine(struct ptp_clock_info *ptp, long scaled_ppm)
- 
- 	tmr_add = neg_adj ? tmr_add - diff : tmr_add + diff;
- 
--	qoriq_write(&qoriq_ptp->regs->tmr_add, tmr_add);
-+	qoriq_write(&regs->ctrl_regs->tmr_add, tmr_add);
- 
- 	return 0;
- }
-@@ -250,6 +257,7 @@ static int ptp_qoriq_enable(struct ptp_clock_info *ptp,
- 			      struct ptp_clock_request *rq, int on)
- {
- 	struct qoriq_ptp *qoriq_ptp = container_of(ptp, struct qoriq_ptp, caps);
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 	unsigned long flags;
- 	u32 bit, mask;
- 
-@@ -266,23 +274,23 @@ static int ptp_qoriq_enable(struct ptp_clock_info *ptp,
- 			return -EINVAL;
- 		}
- 		spin_lock_irqsave(&qoriq_ptp->lock, flags);
--		mask = qoriq_read(&qoriq_ptp->regs->tmr_temask);
-+		mask = qoriq_read(&regs->ctrl_regs->tmr_temask);
- 		if (on)
- 			mask |= bit;
- 		else
- 			mask &= ~bit;
--		qoriq_write(&qoriq_ptp->regs->tmr_temask, mask);
-+		qoriq_write(&regs->ctrl_regs->tmr_temask, mask);
- 		spin_unlock_irqrestore(&qoriq_ptp->lock, flags);
- 		return 0;
- 
- 	case PTP_CLK_REQ_PPS:
- 		spin_lock_irqsave(&qoriq_ptp->lock, flags);
--		mask = qoriq_read(&qoriq_ptp->regs->tmr_temask);
-+		mask = qoriq_read(&regs->ctrl_regs->tmr_temask);
- 		if (on)
- 			mask |= PP1EN;
- 		else
- 			mask &= ~PP1EN;
--		qoriq_write(&qoriq_ptp->regs->tmr_temask, mask);
-+		qoriq_write(&regs->ctrl_regs->tmr_temask, mask);
- 		spin_unlock_irqrestore(&qoriq_ptp->lock, flags);
- 		return 0;
- 
-@@ -313,10 +321,12 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- {
- 	struct device_node *node = dev->dev.of_node;
- 	struct qoriq_ptp *qoriq_ptp;
-+	struct qoriq_ptp_registers *regs;
- 	struct timespec64 now;
- 	int err = -ENOMEM;
- 	u32 tmr_ctrl;
- 	unsigned long flags;
-+	void __iomem *base;
- 
- 	qoriq_ptp = kzalloc(sizeof(*qoriq_ptp), GFP_KERNEL);
- 	if (!qoriq_ptp)
-@@ -351,7 +361,7 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 		pr_err("irq not in device tree\n");
- 		goto no_node;
- 	}
--	if (request_irq(qoriq_ptp->irq, isr, 0, DRIVER, qoriq_ptp)) {
-+	if (request_irq(qoriq_ptp->irq, isr, IRQF_SHARED, DRIVER, qoriq_ptp)) {
- 		pr_err("request_irq failed\n");
- 		goto no_node;
- 	}
-@@ -368,12 +378,27 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 
- 	spin_lock_init(&qoriq_ptp->lock);
- 
--	qoriq_ptp->regs = ioremap(qoriq_ptp->rsrc->start,
--				resource_size(qoriq_ptp->rsrc));
--	if (!qoriq_ptp->regs) {
-+	base = ioremap(qoriq_ptp->rsrc->start,
-+		       resource_size(qoriq_ptp->rsrc));
-+	if (!base) {
- 		pr_err("ioremap ptp registers failed\n");
- 		goto no_ioremap;
- 	}
-+
-+	qoriq_ptp->base = base;
-+
-+	if (of_device_is_compatible(node, "fsl,fman-ptp-timer")) {
-+		qoriq_ptp->regs.ctrl_regs = base + FMAN_CTRL_REGS_OFFSET;
-+		qoriq_ptp->regs.alarm_regs = base + FMAN_ALARM_REGS_OFFSET;
-+		qoriq_ptp->regs.fiper_regs = base + FMAN_FIPER_REGS_OFFSET;
-+		qoriq_ptp->regs.etts_regs = base + FMAN_ETTS_REGS_OFFSET;
-+	} else {
-+		qoriq_ptp->regs.ctrl_regs = base + CTRL_REGS_OFFSET;
-+		qoriq_ptp->regs.alarm_regs = base + ALARM_REGS_OFFSET;
-+		qoriq_ptp->regs.fiper_regs = base + FIPER_REGS_OFFSET;
-+		qoriq_ptp->regs.etts_regs = base + ETTS_REGS_OFFSET;
++	if (of_property_read_string_array(power_mgt,
++		"ibm,cpu-idle-state-descs", descs, dt_idle_states) < 0) {
++		of_property_read_string_array(power_mgt,
++				"ibm,cpu-idle-state-names", descs, dt_idle_states);
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-descs in DT\n"
++			"Name will be used for description\n");
 +	}
-+
- 	getnstimeofday64(&now);
- 	ptp_qoriq_settime(&qoriq_ptp->caps, &now);
  
-@@ -383,13 +408,14 @@ static int qoriq_ptp_probe(struct platform_device *dev)
+ 	/*
+ 	 * If the idle states use stop instruction, probe for psscr values
+@@ -414,10 +423,11 @@ static int powernv_add_idle_states(void)
+ 				target_residency = 100;
+ 			/* Add NAP state */
+ 			add_powernv_state(nr_idle_states, "Nap",
++					  "stop processor execution",
+ 					  CPUIDLE_FLAG_NONE, nap_loop,
+ 					  target_residency, exit_latency, 0, 0);
+ 		} else if (has_stop_states && !stops_timebase) {
+-			add_powernv_state(nr_idle_states, names[i],
++			add_powernv_state(nr_idle_states, names[i], descs[i],
+ 					  CPUIDLE_FLAG_NONE, stop_loop,
+ 					  target_residency, exit_latency,
+ 					  psscr_val[i], psscr_mask[i]);
+@@ -434,11 +444,12 @@ static int powernv_add_idle_states(void)
+ 				target_residency = 300000;
+ 			/* Add FASTSLEEP state */
+ 			add_powernv_state(nr_idle_states, "FastSleep",
++					  "Core and L2 clock gating",
+ 					  CPUIDLE_FLAG_TIMER_STOP,
+ 					  fastsleep_loop,
+ 					  target_residency, exit_latency, 0, 0);
+ 		} else if (has_stop_states && stops_timebase) {
+-			add_powernv_state(nr_idle_states, names[i],
++			add_powernv_state(nr_idle_states, names[i], descs[i],
+ 					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
+ 					  target_residency, exit_latency,
+ 					  psscr_val[i], psscr_mask[i]);
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 1eefabf1621f..5094755cb132 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -17,7 +17,7 @@
  
- 	spin_lock_irqsave(&qoriq_ptp->lock, flags);
+ #define CPUIDLE_STATE_MAX	10
+ #define CPUIDLE_NAME_LEN	16
+-#define CPUIDLE_DESC_LEN	32
++#define CPUIDLE_DESC_LEN	60
  
--	qoriq_write(&qoriq_ptp->regs->tmr_ctrl,   tmr_ctrl);
--	qoriq_write(&qoriq_ptp->regs->tmr_add,    qoriq_ptp->tmr_add);
--	qoriq_write(&qoriq_ptp->regs->tmr_prsc,   qoriq_ptp->tmr_prsc);
--	qoriq_write(&qoriq_ptp->regs->tmr_fiper1, qoriq_ptp->tmr_fiper1);
--	qoriq_write(&qoriq_ptp->regs->tmr_fiper2, qoriq_ptp->tmr_fiper2);
-+	regs = &qoriq_ptp->regs;
-+	qoriq_write(&regs->ctrl_regs->tmr_ctrl,   tmr_ctrl);
-+	qoriq_write(&regs->ctrl_regs->tmr_add,    qoriq_ptp->tmr_add);
-+	qoriq_write(&regs->ctrl_regs->tmr_prsc,   qoriq_ptp->tmr_prsc);
-+	qoriq_write(&regs->fiper_regs->tmr_fiper1, qoriq_ptp->tmr_fiper1);
-+	qoriq_write(&regs->fiper_regs->tmr_fiper2, qoriq_ptp->tmr_fiper2);
- 	set_alarm(qoriq_ptp);
--	qoriq_write(&qoriq_ptp->regs->tmr_ctrl,   tmr_ctrl|FIPERST|RTPE|TE|FRD);
-+	qoriq_write(&regs->ctrl_regs->tmr_ctrl,   tmr_ctrl|FIPERST|RTPE|TE|FRD);
+ struct module;
  
- 	spin_unlock_irqrestore(&qoriq_ptp->lock, flags);
- 
-@@ -405,7 +431,7 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 	return 0;
- 
- no_clock:
--	iounmap(qoriq_ptp->regs);
-+	iounmap(qoriq_ptp->base);
- no_ioremap:
- 	release_resource(qoriq_ptp->rsrc);
- no_resource:
-@@ -419,12 +445,13 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- static int qoriq_ptp_remove(struct platform_device *dev)
- {
- 	struct qoriq_ptp *qoriq_ptp = platform_get_drvdata(dev);
-+	struct qoriq_ptp_registers *regs = &qoriq_ptp->regs;
- 
--	qoriq_write(&qoriq_ptp->regs->tmr_temask, 0);
--	qoriq_write(&qoriq_ptp->regs->tmr_ctrl,   0);
-+	qoriq_write(&regs->ctrl_regs->tmr_temask, 0);
-+	qoriq_write(&regs->ctrl_regs->tmr_ctrl,   0);
- 
- 	ptp_clock_unregister(qoriq_ptp->clock);
--	iounmap(qoriq_ptp->regs);
-+	iounmap(qoriq_ptp->base);
- 	release_resource(qoriq_ptp->rsrc);
- 	free_irq(qoriq_ptp->irq, qoriq_ptp);
- 	kfree(qoriq_ptp);
-@@ -434,6 +461,7 @@ static int qoriq_ptp_remove(struct platform_device *dev)
- 
- static const struct of_device_id match_table[] = {
- 	{ .compatible = "fsl,etsec-ptp" },
-+	{ .compatible = "fsl,fman-ptp-timer" },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, match_table);
-diff --git a/include/linux/fsl/ptp_qoriq.h b/include/linux/fsl/ptp_qoriq.h
-index b462d9e..dc3dac4 100644
---- a/include/linux/fsl/ptp_qoriq.h
-+++ b/include/linux/fsl/ptp_qoriq.h
-@@ -11,9 +11,8 @@
- 
- /*
-  * qoriq ptp registers
-- * Generated by regen.tcl on Thu May 13 01:38:57 PM CEST 2010
-  */
--struct qoriq_ptp_registers {
-+struct ctrl_regs {
- 	u32 tmr_ctrl;     /* Timer control register */
- 	u32 tmr_tevent;   /* Timestamp event register */
- 	u32 tmr_temask;   /* Timer event mask register */
-@@ -28,22 +27,47 @@ struct qoriq_ptp_registers {
- 	u8  res1[4];
- 	u32 tmroff_h;     /* Timer offset high */
- 	u32 tmroff_l;     /* Timer offset low */
--	u8  res2[8];
-+};
-+
-+struct alarm_regs {
- 	u32 tmr_alarm1_h; /* Timer alarm 1 high register */
- 	u32 tmr_alarm1_l; /* Timer alarm 1 high register */
- 	u32 tmr_alarm2_h; /* Timer alarm 2 high register */
- 	u32 tmr_alarm2_l; /* Timer alarm 2 high register */
--	u8  res3[48];
-+};
-+
-+struct fiper_regs {
- 	u32 tmr_fiper1;   /* Timer fixed period interval */
- 	u32 tmr_fiper2;   /* Timer fixed period interval */
- 	u32 tmr_fiper3;   /* Timer fixed period interval */
--	u8  res4[20];
-+};
-+
-+struct etts_regs {
- 	u32 tmr_etts1_h;  /* Timestamp of general purpose external trigger */
- 	u32 tmr_etts1_l;  /* Timestamp of general purpose external trigger */
- 	u32 tmr_etts2_h;  /* Timestamp of general purpose external trigger */
- 	u32 tmr_etts2_l;  /* Timestamp of general purpose external trigger */
- };
- 
-+struct qoriq_ptp_registers {
-+	struct ctrl_regs __iomem *ctrl_regs;
-+	struct alarm_regs __iomem *alarm_regs;
-+	struct fiper_regs __iomem *fiper_regs;
-+	struct etts_regs __iomem *etts_regs;
-+};
-+
-+/* Offset definitions for the four register groups */
-+#define CTRL_REGS_OFFSET	0x0
-+#define ALARM_REGS_OFFSET	0x40
-+#define FIPER_REGS_OFFSET	0x80
-+#define ETTS_REGS_OFFSET	0xa0
-+
-+#define FMAN_CTRL_REGS_OFFSET	0x80
-+#define FMAN_ALARM_REGS_OFFSET	0xb8
-+#define FMAN_FIPER_REGS_OFFSET	0xd0
-+#define FMAN_ETTS_REGS_OFFSET	0xe0
-+
-+
- /* Bit definitions for the TMR_CTRL register */
- #define ALM1P                 (1<<31) /* Alarm1 output polarity */
- #define ALM2P                 (1<<30) /* Alarm2 output polarity */
-@@ -105,10 +129,10 @@ struct qoriq_ptp_registers {
- #define DRIVER		"ptp_qoriq"
- #define DEFAULT_CKSEL	1
- #define N_EXT_TS	2
--#define REG_SIZE	sizeof(struct qoriq_ptp_registers)
- 
- struct qoriq_ptp {
--	struct qoriq_ptp_registers __iomem *regs;
-+	void __iomem *base;
-+	struct qoriq_ptp_registers regs;
- 	spinlock_t lock; /* protects regs */
- 	struct ptp_clock *clock;
- 	struct ptp_clock_info caps;
 -- 
-1.7.1
+2.14.1
