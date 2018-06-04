@@ -1,28 +1,37 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
- [IPv6:2607:f8b0:400c:c08::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <akshay.adiga@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40ztQL26kLzF0mR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 21:44:41 +1000 (AEST)
-Received: by mail-ua0-x243.google.com with SMTP id x18-v6so15126675uaj.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 04:44:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40ztR11p1JzF13h
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 21:45:16 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w54BdZBO044084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2018 07:45:14 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jd4r5064b-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2018 07:45:13 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <akshay.adiga@linux.vnet.ibm.com>;
+ Mon, 4 Jun 2018 12:45:11 +0100
+Date: Mon, 4 Jun 2018 17:15:00 +0530
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>, rjw@rjwysocki.net,
+ daniel.lezcano@linaro.org, paulus@samba.org, mpe@ellerman.id.au,
+ linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stewart@linux.vnet.ibm.com
+Subject: Re: [PATCH v2] cpuidle/powernv : Add Description for cpuidle state
+References: <20180604081758.104201-1-huntbag@linux.vnet.ibm.com>
+ <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
-References: <cover.1527909627.git.fthain@telegraphics.com.au>
- <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 4 Jun 2018 13:44:38 +0200
-Message-ID: <CAMuHMdXVR3g6Pm8RoVbpcs+JpTpHDkTnZvhNsKLWBszcgsXRfA@mail.gmail.com>
-Subject: Re: [PATCH 01/11] macintosh/via-pmu: Fix section mismatch warning
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Schmitz <schmitzmic@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0a28154deb468669a59c120a90d4aedc1e1e705b.camel@kernel.crashing.org>
+Message-Id: <20180604114500.3rlpuso5aftesnf5@aksadiga.ibm>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Finn,
+On Mon, Jun 04, 2018 at 07:04:14PM +1000, Benjamin Herrenschmidt wrote:
+> Is this a new property ? I'm not fan of adding yet another of those
+> silly arrays.
+> 
+> I would say this is the right time now to switch over to a node per
+> state instead, as we discussed with Vaidy.
 
-On Sat, Jun 2, 2018 at 5:27 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> The pmu_init() function has the __init qualifier, but the ops struct
-> that holds a pointer to it does not. This causes a build warning.
-> The driver works fine because the pointer is only dereferenced early.
->
-> The function is so small that there's negligible benefit from using
-> the __init qualifier. Remove it to fix the warning, consistent with
-> the other ADB drivers.
+I posted  the node based device tree here :
+skiboot patch :  https://patchwork.ozlabs.org/patch/923120/
+kernel patch : https://lkml.org/lkml/2018/5/30/1146
 
-Some other ADB subdriver .init() and .probe() functions aren't that small.
-But with the current scheme using adb_drivers_list[], they cannot be __init.
-Probably the long term fix is to change the ADB subsystem from the
-centralized approach of letting adb_init() call all subdrivers, to making the
-subdrivers platform drivers registering with the ADB core.
+Do you have any inputs for this design ?
 
-> Tested-by: Stan Johnson <userm57@yahoo.com>
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-
-Anyway:
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> 
+> Additionally, while doing that, we can provide the versioning mechanism
+> I proposed so we can deal with state specific issues and erratas.
+> 
+> Cheers,
+> Ben.
+> 
