@@ -1,44 +1,36 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <stewart@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zTsw0LwtzF0fZ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 06:18:43 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w53KEXjL069617
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 16:18:41 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jc8mkmkyr-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zbjN5kqszF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 10:41:44 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w540cd9e032635
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 20:41:41 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jcsw1a0cd-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 16:18:41 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 20:41:41 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Sun, 3 Jun 2018 21:18:39 +0100
-Date: Sun, 3 Jun 2018 13:18:32 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Linux-MM <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <53828769-23c4-b2e3-cf59-239936819c3e@redhat.com>
- <20180519011947.GJ5479@ram.oc3035372033.ibm.com>
- <CALCETrWMP9kTmAFCR0WHR3YP93gLSzgxhfnb0ma_0q=PCuSdQA@mail.gmail.com>
- <20180519202747.GK5479@ram.oc3035372033.ibm.com>
- <CALCETrVz9otkOQAxVkz6HtuMwjAeY6mMuLgFK_o0M0kbkUznwg@mail.gmail.com>
- <20180520060425.GL5479@ram.oc3035372033.ibm.com>
- <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
- <20180520191115.GM5479@ram.oc3035372033.ibm.com>
- <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
+ Sun, 3 Jun 2018 20:41:40 -0400
+From: Stewart Smith <stewart@linux.ibm.com>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ herbert@gondor.apana.org.au, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto/nx: Initialize 842 high and normal RxFIFO control
+ registers
+In-Reply-To: <5B117946.8010100@linux.vnet.ibm.com>
+References: <1527789287.5945.23.camel@hbabu-laptop>
+ <87h8mn2bta.fsf@linux.vnet.ibm.com> <5B117946.8010100@linux.vnet.ibm.com>
+Date: Mon, 04 Jun 2018 10:41:35 +1000
 MIME-Version: 1.0
-In-Reply-To: <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
-Message-Id: <20180603201832.GA10109@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Message-Id: <87bmcr2xj4.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,99 +40,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 21, 2018 at 01:29:11PM +0200, Florian Weimer wrote:
-> On 05/20/2018 09:11 PM, Ram Pai wrote:
-> >Florian,
-> >
-> >	Does the following patch fix the problem for you?  Just like x86
-> >	I am enabling all keys in the UAMOR register during
-> >	initialization itself. Hence any key created by any thread at
-> >	any time, will get activated on all threads. So any thread
-> >	can change the permission on that key. Smoke tested it
-> >	with your test program.
-> 
-> I think this goes in the right direction, but the AMR value after
-> fork is still strange:
-> 
-> AMR (PID 34912): 0x0000000000000000
-> AMR after fork (PID 34913): 0x0000000000000000
-> AMR (PID 34913): 0x0000000000000000
-> Allocated key in subprocess (PID 34913): 2
-> Allocated key (PID 34912): 2
-> Setting AMR: 0xffffffffffffffff
-> New AMR value (PID 34912): 0x0fffffffffffffff
-> About to call execl (PID 34912) ...
-> AMR (PID 34912): 0x0fffffffffffffff
-> AMR after fork (PID 34914): 0x0000000000000003
-> AMR (PID 34914): 0x0000000000000003
-> Allocated key in subprocess (PID 34914): 2
-> Allocated key (PID 34912): 2
-> Setting AMR: 0xffffffffffffffff
-> New AMR value (PID 34912): 0x0fffffffffffffff
-> 
-> I mean this line:
-> 
-> AMR after fork (PID 34914): 0x0000000000000003
-> 
-> Shouldn't it be the same as in the parent process?
+Haren Myneni <haren@linux.vnet.ibm.com> writes:
+> On 06/01/2018 12:41 AM, Stewart Smith wrote:
+>> Haren Myneni <haren@linux.vnet.ibm.com> writes:
+>>> NX increments readOffset by FIFO size in receive FIFO control register
+>>> when CRB is read. But the index in RxFIFO has to match with the
+>>> corresponding entry in FIFO maintained by VAS in kernel. Otherwise NX
+>>> may be processing incorrect CRBs and can cause CRB timeout.
+>>>
+>>> VAS FIFO offset is 0 when the receive window is opened during
+>>> initialization. When the module is reloaded or in kexec boot, readOffset
+>>> in FIFO control register may not match with VAS entry. This patch adds
+>>> nx_coproc_init OPAL call to reset readOffset and queued entries in FIFO
+>>> control register for both high and normal FIFOs.
+>>>
+>>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>>>
+>>> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+>>> index d886a5b..ff61e4b 100644
+>>> --- a/arch/powerpc/include/asm/opal-api.h
+>>> +++ b/arch/powerpc/include/asm/opal-api.h
+>>> @@ -206,7 +206,8 @@
+>>>  #define OPAL_NPU_TL_SET				161
+>>>  #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+>>>  #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+>>> -#define OPAL_LAST				165
+>>> +#define	OPAL_NX_COPROC_INIT			167
+>>> +#define OPAL_LAST				167
+>>>  
+>>>  /* Device tree flags */
+>>>  
+>>> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+>>> index 7159e1a..d79eb82 100644
+>>> --- a/arch/powerpc/include/asm/opal.h
+>>> +++ b/arch/powerpc/include/asm/opal.h
+>>> @@ -288,6 +288,7 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
+>>>  int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
+>>>  int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+>>>  int opal_sensor_group_clear(u32 group_hndl, int token);
+>>> +int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
+>>>  
+>>>  s64 opal_signal_system_reset(s32 cpu);
+>>>  
+>>> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+>>> index 3da30c2..c7541a9 100644
+>>> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+>>> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+>>> @@ -325,3 +325,4 @@ OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
+>>>  OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
+>>>  OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
+>>>  OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
+>>> +OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
+>>> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+>>> index 48fbb41..5e13908 100644
+>>> --- a/arch/powerpc/platforms/powernv/opal.c
+>>> +++ b/arch/powerpc/platforms/powernv/opal.c
+>>> @@ -1035,3 +1035,5 @@ void powernv_set_nmmu_ptcr(unsigned long ptcr)
+>>>  EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
+>>>  EXPORT_SYMBOL_GPL(opal_int_eoi);
+>>>  EXPORT_SYMBOL_GPL(opal_error_code);
+>>> +/* Export the below symbol for NX compression */
+>>> +EXPORT_SYMBOL(opal_nx_coproc_init);
+>>> diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+>>> index 1e87637..6c4784d 100644
+>>> --- a/drivers/crypto/nx/nx-842-powernv.c
+>>> +++ b/drivers/crypto/nx/nx-842-powernv.c
+>>> @@ -24,6 +24,8 @@
+>>>  #include <asm/icswx.h>
+>>>  #include <asm/vas.h>
+>>>  #include <asm/reg.h>
+>>> +#include <asm/opal-api.h>
+>>> +#include <asm/opal.h>
+>>>  
+>>>  MODULE_LICENSE("GPL");
+>>>  MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+>>> @@ -803,9 +805,26 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+>>>  	if (!coproc)
+>>>  		return -ENOMEM;
+>>>  
+>>> -	if (!strcmp(priority, "High"))
+>>> +	if (!strcmp(priority, "High")) {
+>>> +		/*
+>>> +		 * (lpid, pid, tid) combination has to be unique for each
+>>> +		 * coprocessor instance in the system. So to make it
+>>> +		 * unique, skiboot uses coprocessor type such as 842 or
+>>> +		 * GZIP for pid and provides this value to kernel in pid
+>>> +		 * device-tree property.
+>>> +		 *
+>>> +		 * Initialize each NX instance for both high and normal
+>>> +		 * priority FIFOs.
+>>> +		 */
+>>> +		ret = opal_nx_coproc_init(chip_id, pid);
+>>> +		if (ret) {
+>>> +			pr_err("Failed to initialize NX coproc: %d\n", ret);
+>>> +			ret = opal_error_code(ret);
+>>> +			goto err_out;
+>>> +		}
+>>> +
+>>>  		coproc->ct = VAS_COP_TYPE_842_HIPRI;
+>> 
+>> I think this should be called for all priority queues as it would be at
+>> least theoretically possible to only have Normal priority queues, in
+>> which case this patch wouldn't fix the problem.
+>
+> device tree exports separate nodes for high and normal priority FIFOs
+> per each NX instance. But NX init OPAL function is called once per
+> each NX instance when high-FIFO device node is parsed to reset high
+> and normal FIFO control registers. As you see in skiboot patch, resets
+> both priority registers. Thought we should minimize the number of OPAL
+> calla execution and also should have generic NX init OPAL call. We can
+> extend this call to reset default values for any other registers if
+> needed.
 
-Fixed it. Please try this patch. If it all works to your satisfaction, I
-will clean it up further and send to Michael Ellermen(ppc maintainer).
+This code does'nt do that though, it calls it for "high" priority, so if
+for whatever reason there was a DT without a "High" priority node there,
+it'd not call it.
 
+> If you prefer calling separately based on priority, we can have
+> opal_nx_coproc_FIFO_init(chip_id, pid, priority). Please let me know.
 
-commit 51f4208ed5baeab1edb9b0f8b68d7144449b3527
-Author: Ram Pai <linuxram@us.ibm.com>
-Date:   Sun Jun 3 14:44:32 2018 -0500
-
-    Fix for the fork bug.
-    
-    Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 1237f13..999dd08 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -582,6 +582,7 @@ static void save_all(struct task_struct *tsk)
- 		__giveup_spe(tsk);
- 
- 	msr_check_and_clear(msr_all_available);
-+	thread_pkey_regs_save(&tsk->thread);
- }
- 
- void flush_all_to_thread(struct task_struct *tsk)
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index ab4519a..af6aa4a 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -294,6 +294,7 @@ void thread_pkey_regs_save(struct thread_struct *thread)
- 	 */
- 	thread->amr = read_amr();
- 	thread->iamr = read_iamr();
-+	thread->uamor = read_uamor();
- }
- 
- void thread_pkey_regs_restore(struct thread_struct *new_thread,
-@@ -315,9 +316,13 @@ void thread_pkey_regs_init(struct thread_struct *thread)
- 	if (static_branch_likely(&pkey_disabled))
- 		return;
- 
--	thread->amr = read_amr() & pkey_amr_mask;
--	thread->iamr = read_iamr() & pkey_iamr_mask;
-+	thread->amr = pkey_amr_mask;
-+	thread->iamr = pkey_iamr_mask;
- 	thread->uamor = pkey_uamor_mask;
-+
-+	write_uamor(pkey_uamor_mask);
-+	write_amr(pkey_amr_mask);
-+	write_iamr(pkey_iamr_mask);
- }
- 
- static inline bool pkey_allows_readwrite(int pkey)
-
-
-> 
-> Thanks,
-> Florian
+I think the call is okay, it's just that if it needs to be called once
+per accellerator, then we should ensure it does that.
 
 -- 
-Ram Pai
+Stewart Smith
+OPAL Architect, IBM.
