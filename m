@@ -2,14 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zxg82CcczF0kx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zxg82CTGzF0gv
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 00:11:00 +1000 (AEST)
-In-Reply-To: <20180511080313.29815-1-ruscur@russell.cc>
-To: Russell Currey <ruscur@russell.cc>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180514130316.23855-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/xive: Remove (almost) unused macros
-Message-Id: <40zxg45xZYz9s08@ozlabs.org>
-Date: Tue,  5 Jun 2018 00:10:55 +1000 (AEST)
+Cc: thgarnie@google.com, keescook@chromium.org,
+ kernel-hardening@lists.openwall.com
+Subject: Re: [1/2] powerpc: Rename thread_struct.fs to addr_limit
+Message-Id: <40zxg609Blz9ryk@ozlabs.org>
+Date: Tue,  5 Jun 2018 00:10:57 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,17 +21,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-05-11 at 08:03:13 UTC, Russell Currey wrote:
-> The GETFIELD and SETFIELD macros in xive-regs.h aren't used except for a
-> single instance of GETFIELD, so replace that and remove them.
+On Mon, 2018-05-14 at 13:03:15 UTC, Michael Ellerman wrote:
+> It's called 'fs' for historical reasons, it's named after the x86 'FS'
+> register. But we don't have to use that name for the member of
+> thread_struct, and in fact arch/x86 doesn't even call it 'fs' anymore.
 > 
-> These macros are also defined in vas.h, so either those should be
-> eventually replaced or the macros moved into bitops.h.
+> So rename it to 'addr_limit', which better reflects what it's used
+> for, and is also the name used on other arches.
 > 
-> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/8a792262f320245de0174e6bcb5513
+https://git.kernel.org/powerpc/c/ba0635fcbe8c1ce83523c1ec797538
 
 cheers
