@@ -1,36 +1,34 @@
-Return-Path: <sbobroff@linux.ibm.com>
+Return-Path: <haren@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40zcld0Cy5zF0dm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 11:28:44 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40zdpK1YPCzF0fC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2018 12:16:08 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w541OG1e064804
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 21:28:42 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jc870m1dr-1
+ w542C0bJ005326
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 3 Jun 2018 22:16:06 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jcveb82wf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 21:28:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 Jun 2018 22:16:05 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Mon, 4 Jun 2018 02:28:40 +0100
-Date: Mon, 4 Jun 2018 11:28:34 +1000
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 07/13] powerpc/eeh: Clean up pci_ers_result handling
-References: <cover.1527217866.git.sbobroff@linux.ibm.com>
- <e638159f9e6dfc4931f5164220741dd99bb4c0c7.1527217866.git.sbobroff@linux.ibm.com>
- <87muwe3475.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sun, 3 Jun 2018 20:16:05 -0600
+Date: Sun, 03 Jun 2018 19:15:55 -0700
+From: Haren Myneni <haren@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="XsQoSWH+UP9D9v3l"
-In-Reply-To: <87muwe3475.fsf@concordia.ellerman.id.au>
-Message-Id: <20180604012833.GA6139@tungsten.ozlabs.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+CC: linuxppc-dev@lists.ozlabs.org, sukadev@linux.vnet.ibm.com
+Subject: Re: powerpc/powernv: copy/paste - Mask XERS0 bit in CR
+References: <1527740956.5945.12.camel@hbabu-laptop>
+ <87r2lokuxb.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87r2lokuxb.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Message-Id: <5B14A0DB.9040704@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,158 +38,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/03/2018 03:48 AM, Michael Ellerman wrote:
+> Hi Haren,
+> 
+> Haren Myneni <haren@linux.vnet.ibm.com> writes:
+>>     
+>> NX can set 3rd bit in CR register for XER[SO] (Summation overflow)
+>> which is not related to paste request. The current paste function
+>> returns failure for the successful request when this bit is set.
+>> So mask this bit and check the proper return status.
+>>
+>> Fixes: 2392c8c8c045 ("powerpc/powernv/vas: Define copy/paste interfaces")
+>> Cc: stable@vger.kernel.org # v4.14+    
+>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+>> index c9a5036..82392e3 100644
+>> --- a/arch/powerpc/platforms/powernv/copy-paste.h
+>> +++ b/arch/powerpc/platforms/powernv/copy-paste.h
+>> @@ -9,7 +9,8 @@
+>>  #include <asm/ppc-opcode.h>
+>>  
+>>  #define CR0_SHIFT	28
+>> -#define CR0_MASK	0xF
+>> +#define CR0_MASK	0xE /* 3rd bit undefined or set for XER[SO] */
+>> +
+>>  /*
+>>   * Copy/paste instructions:
+>>   *
+> 
+> Unfortunately this no longer applies to my next branch, because those
+> macros have been moved out of this header as part of an unrelated patch.
+> 
+> The following patch should work instead, can you please confirm by
+> testing it?
+> 
+> diff --git a/arch/powerpc/platforms/powernv/copy-paste.h b/arch/powerpc/platforms/powernv/copy-paste.h
+> index 3fa62de96d9c..c46a326776cf 100644
+> --- a/arch/powerpc/platforms/powernv/copy-paste.h
+> +++ b/arch/powerpc/platforms/powernv/copy-paste.h
+> @@ -41,5 +41,7 @@ static inline int vas_paste(void *paste_address, int offset)
+>  		: "b" (offset), "b" (paste_address)
+>  		: "memory", "cr0");
+> 
+> -	return (cr >> CR0_SHIFT) & CR0_MASK;
+> +
+> +	/* We mask with 0xE to ignore SO */
+> +	return (cr >> CR0_SHIFT) & 0xE;
+>  }
+> 
+> 
 
---XsQoSWH+UP9D9v3l
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Tested with this patch and it works.
 
-On Sat, Jun 02, 2018 at 01:40:46AM +1000, Michael Ellerman wrote:
-> Sam Bobroff <sbobroff@linux.ibm.com> writes:
->=20
-> > As EEH event handling progresses, a cumulative result of type
-> > pci_ers_result is built up by (some of) the eeh_report_*() functions
-> > using either:
-> > 	if (rc =3D=3D PCI_ERS_RESULT_NEED_RESET) *res =3D rc;
-> > 	if (*res =3D=3D PCI_ERS_RESULT_NONE) *res =3D rc;
-> > or:
-> > 	if ((*res =3D=3D PCI_ERS_RESULT_NONE) ||
-> > 	    (*res =3D=3D PCI_ERS_RESULT_RECOVERED)) *res =3D rc;
-> > 	if (*res =3D=3D PCI_ERS_RESULT_DISCONNECT &&
-> > 	    rc =3D=3D PCI_ERS_RESULT_NEED_RESET) *res =3D rc;
-> > (Where *res is the accumulator.)
-> >
-> > However, the intent is not immediately clear and the result in some
-> > situations is order dependent.
-> >
-> > Address this by assigning a priority to each result value, and always
-> > merging to the highest priority. This renders the intent clear, and
-> > provides a stable value for all orderings.
-> >
-> > Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-> > ---
-> > =3D=3D=3D=3D=3D=3D v1 -> v2: =3D=3D=3D=3D=3D=3D
-> >
-> > * Added the value, and missing newline, to some WARN()s.
-> > * Improved name of merge_result() to pci_ers_merge_result().
-> > * Adjusted the result priorities so that unknown doesn't overlap with _=
-NONE.
->=20
-> These =3D=3D=3D markers seem to have confused patchwork, they ended up in=
- the
-> patch, and then git put them in the changelog.
->=20
-> http://patchwork.ozlabs.org/patch/920194/
->=20
-> The usual format is just something like:
->=20
-> v2 - Added the value, and missing newline, to some WARN()s.
->    - Improved name of merge_result() to pci_ers_merge_result().
->    - Adjusted the result priorities so that unknown doesn't overlap with =
-_NONE.
->=20
+Thanks
+Haren
+
 > cheers
-
-Oh! I'll change it!
-
-Sam.
-
->=20
-> >  arch/powerpc/kernel/eeh_driver.c | 36 ++++++++++++++++++++++++++------=
-----
-> >  1 file changed, 26 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh=
-_driver.c
-> > index 188d15c4fe3a..2d3cac584899 100644
-> > --- a/arch/powerpc/kernel/eeh_driver.c
-> > +++ b/arch/powerpc/kernel/eeh_driver.c
-> > @@ -39,6 +39,29 @@ struct eeh_rmv_data {
-> >  	int removed;
-> >  };
-> > =20
-> > +static int eeh_result_priority(enum pci_ers_result result)
-> > +{
-> > +	switch (result) {
-> > +	case PCI_ERS_RESULT_NONE: return 1;
-> > +	case PCI_ERS_RESULT_NO_AER_DRIVER: return 2;
-> > +	case PCI_ERS_RESULT_RECOVERED: return 3;
-> > +	case PCI_ERS_RESULT_CAN_RECOVER: return 4;
-> > +	case PCI_ERS_RESULT_DISCONNECT: return 5;
-> > +	case PCI_ERS_RESULT_NEED_RESET: return 6;
-> > +	default:
-> > +		WARN_ONCE(1, "Unknown pci_ers_result value: %d\n", (int)result);
-> > +		return 0;
-> > +	}
-> > +};
-> > +
-> > +static enum pci_ers_result pci_ers_merge_result(enum pci_ers_result ol=
-d,
-> > +						enum pci_ers_result new)
-> > +{
-> > +	if (eeh_result_priority(new) > eeh_result_priority(old))
-> > +		return new;
-> > +	return old;
-> > +}
-> > +
-> >  /**
-> >   * eeh_pcid_get - Get the PCI device driver
-> >   * @pdev: PCI device
-> > @@ -206,9 +229,7 @@ static void *eeh_report_error(struct eeh_dev *edev,=
- void *userdata)
-> > =20
-> >  	rc =3D driver->err_handler->error_detected(dev, pci_channel_io_frozen=
-);
-> > =20
-> > -	/* A driver that needs a reset trumps all others */
-> > -	if (rc =3D=3D PCI_ERS_RESULT_NEED_RESET) *res =3D rc;
-> > -	if (*res =3D=3D PCI_ERS_RESULT_NONE) *res =3D rc;
-> > +	*res =3D pci_ers_merge_result(*res, rc);
-> > =20
-> >  	edev->in_error =3D true;
-> >  	pci_uevent_ers(dev, PCI_ERS_RESULT_NONE);
-> > @@ -249,9 +270,7 @@ static void *eeh_report_mmio_enabled(struct eeh_dev=
- *edev, void *userdata)
-> > =20
-> >  	rc =3D driver->err_handler->mmio_enabled(dev);
-> > =20
-> > -	/* A driver that needs a reset trumps all others */
-> > -	if (rc =3D=3D PCI_ERS_RESULT_NEED_RESET) *res =3D rc;
-> > -	if (*res =3D=3D PCI_ERS_RESULT_NONE) *res =3D rc;
-> > +	*res =3D pci_ers_merge_result(*res, rc);
-> > =20
-> >  out:
-> >  	eeh_pcid_put(dev);
-> > @@ -294,10 +313,7 @@ static void *eeh_report_reset(struct eeh_dev *edev=
-, void *userdata)
-> >  		goto out;
-> > =20
-> >  	rc =3D driver->err_handler->slot_reset(dev);
-> > -	if ((*res =3D=3D PCI_ERS_RESULT_NONE) ||
-> > -	    (*res =3D=3D PCI_ERS_RESULT_RECOVERED)) *res =3D rc;
-> > -	if (*res =3D=3D PCI_ERS_RESULT_DISCONNECT &&
-> > -	     rc =3D=3D PCI_ERS_RESULT_NEED_RESET) *res =3D rc;
-> > +	*res =3D pci_ers_merge_result(*res, rc);
-> > =20
-> >  out:
-> >  	eeh_pcid_put(dev);
-> > --=20
-> > 2.16.1.74.g9b0b1f47b
->=20
-
---XsQoSWH+UP9D9v3l
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlsUlbgACgkQMX8w6AQl
-/iKH8Af/ZbAJ/CUyw+nkdUvssi0JndK+2JIEabfm7V1p24kxa8/4YHnc168A3okU
-dRKzZ4q1PGrMy3GgrE6mgO42YbUeXqzOyK7du70jBsZNs5WaZwIVV2B3uRCGTWPl
-I8hjTGrAAykgWKzN7m/6/YaoiUXHJ06nAbySVeQBA/4DMsKoCN2K0LrwcgwJo6sz
-RsOVnwbzILBgdT7wBe0WxBEMaxIQwGONiWYKuDkpEh0o8ha6qAka4Yhf7iUO3qcV
-ykKMoHpfcxvOQ/1/NW+uBwqVuBHS11tDtPMAKmJCAIfmqi2CVrp4E3bgZk0npzZB
-5Ijsgl9jGZjEZ15xr0c3IL+p7Oj4og==
-=wmnL
------END PGP SIGNATURE-----
-
---XsQoSWH+UP9D9v3l--
+> 
