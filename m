@@ -1,40 +1,32 @@
-Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <richardcochran@gmail.com>
+Received: from mail-pl0-x232.google.com (mail-pl0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410WzW715VzDrpC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 22:57:11 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w55Csvi0127323
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jun 2018 08:57:08 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jdsfnm77q-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 08:57:07 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Tue, 5 Jun 2018 13:57:06 +0100
-Subject: Re: [PATCH -next] ocxl: Fix missing unlock on error in
- afu_ioctl_enable_p9_wait()
-To: Wei Yongjun <weiyongjun1@huawei.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Alastair D'Silva" <alastair@d-silva.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-References: <1528190181-15745-1-git-send-email-weiyongjun1@huawei.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Tue, 5 Jun 2018 14:57:00 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410YKZ4kGkzF1ls
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 23:57:54 +1000 (AEST)
+Received: by mail-pl0-x232.google.com with SMTP id g20-v6so1575252plq.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 06:57:54 -0700 (PDT)
+Date: Tue, 5 Jun 2018 06:57:49 -0700
+From: Richard Cochran <richardcochran@gmail.com>
+To: "Y.b. Lu" <yangbo.lu@nxp.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Madalin-cristian Bucur <madalin.bucur@nxp.com>,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ "David S . Miller" <davem@davemloft.net>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 09/10] dpaa_eth: add support for hardware timestamping
+Message-ID: <20180605135748.mlarwiyzf2oe27ax@localhost>
+References: <20180604070837.19265-1-yangbo.lu@nxp.com>
+ <20180604070837.19265-10-yangbo.lu@nxp.com>
+ <20180604134920.ezhe6jz5ntpnqyzj@localhost>
+ <DB6PR0401MB2536376432EC481473A5B4A3F8660@DB6PR0401MB2536.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <1528190181-15745-1-git-send-email-weiyongjun1@huawei.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <eb4f541f-cd2a-2af6-0770-fc8cc4f4063b@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <DB6PR0401MB2536376432EC481473A5B4A3F8660@DB6PR0401MB2536.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,37 +36,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jun 05, 2018 at 03:35:28AM +0000, Y.b. Lu wrote:
+> [Y.b. Lu] Actually these timestamping codes affected DPAA networking performance in our previous performance test.
+> That's why we used ifdef for it.
 
+How much does time stamping hurt performance?
 
-Le 05/06/2018 à 11:16, Wei Yongjun a écrit :
-> Add the missing unlock before return from function
-> afu_ioctl_enable_p9_wait() in the error handling case.
-> 
-> Fixes: e948e06fc63a ("ocxl: Expose the thread_id needed for wait on POWER9")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> ---
->   drivers/misc/ocxl/file.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/misc/ocxl/file.c b/drivers/misc/ocxl/file.c
-> index 33ae46c..e6a6074 100644
-> --- a/drivers/misc/ocxl/file.c
-> +++ b/drivers/misc/ocxl/file.c
-> @@ -139,8 +139,10 @@ static long afu_ioctl_enable_p9_wait(struct ocxl_context *ctx,
->   		// Locks both status & tidr
->   		mutex_lock(&ctx->status_mutex);
->   		if (!ctx->tidr) {
-> -			if (set_thread_tidr(current))
-> +			if (set_thread_tidr(current)) {
-> +				mutex_unlock(&ctx->status_mutex);
->   				return -ENOENT;
-> +			}
+If the time stamping is compiled in but not enabled at run time, does
+it still affect performace?
 
-O_o   Thanks for fixing it
-
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
-
-
->   			ctx->tidr = current->thread.tidr;
->   		}
-> 
+Thanks,
+Richard
