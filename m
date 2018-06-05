@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410b7k3Qh7zF1lm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:30 +1000 (AEST)
-In-Reply-To: <20180330155553.7170-1-colin.king@canonical.com>
-To: Colin King <colin.king@canonical.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410b7l2zd8zF1lm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:31 +1000 (AEST)
+In-Reply-To: <1525464111-1096-1-git-send-email-linuxram@us.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc: fix spelling mistake: "Usupported" -> "Unsupported"
-Message-Id: <410b7k1yJtz9s0W@ozlabs.org>
+Cc: dave.hansen@intel.com, msuchanek@suse.com, Ulrich.Weigand@de.ibm.com,
+ linuxram@us.ibm.com, mhocko@kernel.org, paulus@samba.org,
+ aneesh.kumar@linux.vnet.ibm.com, bauerman@linux.vnet.ibm.com,
+ Shakeel Butt <shakeelb@google.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc/pkeys: Detach execute_only key on !PROT_EXEC
+Message-Id: <410b7l0wxRz9s0x@ozlabs.org>
 Date: Wed,  6 Jun 2018 01:19:30 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,15 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-03-30 at 15:55:53 UTC, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
+On Fri, 2018-05-04 at 20:01:51 UTC, Ram Pai wrote:
+> Disassociate the exec_key from a VMA if the VMA permission is not
+> PROT_EXEC anymore.  Otherwise the exec_only key continues to be
+> associated with the vma, causing unexpected behavior.
 > 
-> Trivial fix to spelling mistake in bootx_printf message text
+> The problem was reported on x86 by Shakeel Butt,
+> which is also applicable on powerpc.
 > 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> cc: Shakeel Butt <shakeelb@google.com>
+> Reported-by: Shakeel Butt <shakeelb@google.com>
+> Fixes 5586cf6 ("powerpc: introduce execute-only pkey")
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/e6536a9f94c00a5e1da0a869ccea07
+https://git.kernel.org/powerpc/c/eabdb8ca8690eedd461e61ea778059
 
 cheers
