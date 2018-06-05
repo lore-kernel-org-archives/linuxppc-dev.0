@@ -1,32 +1,26 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-pl0-x232.google.com (mail-pl0-x232.google.com
- [IPv6:2607:f8b0:400e:c01::232])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410YKZ4kGkzF1ls
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 23:57:54 +1000 (AEST)
-Received: by mail-pl0-x232.google.com with SMTP id g20-v6so1575252plq.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 06:57:54 -0700 (PDT)
-Date: Tue, 5 Jun 2018 06:57:49 -0700
-From: Richard Cochran <richardcochran@gmail.com>
-To: "Y.b. Lu" <yangbo.lu@nxp.com>
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Madalin-cristian Bucur <madalin.bucur@nxp.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 09/10] dpaa_eth: add support for hardware timestamping
-Message-ID: <20180605135748.mlarwiyzf2oe27ax@localhost>
-References: <20180604070837.19265-1-yangbo.lu@nxp.com>
- <20180604070837.19265-10-yangbo.lu@nxp.com>
- <20180604134920.ezhe6jz5ntpnqyzj@localhost>
- <DB6PR0401MB2536376432EC481473A5B4A3F8660@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410Z3v68pFzF1nG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 00:31:04 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id 76-v6so3640557itx.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 07:31:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <DB6PR0401MB2536376432EC481473A5B4A3F8660@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+Sender: arndbergmann@gmail.com
+In-Reply-To: <e11832b0-f071-b709-be34-417f2d3bc343@roeck-us.net>
+References: <e11832b0-f071-b709-be34-417f2d3bc343@roeck-us.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 5 Jun 2018 16:31:00 +0200
+Message-ID: <CAK8P3a3CFhkjPCX8bgZbx7aYwrUVsKE5ct4ghnMxJLo5OSYqbA@mail.gmail.com>
+Subject: Re: Problems building ppc images in v4.14.y and v4.16.y using gcc
+ 7.3.0 / 8.1.0 from kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: stable <stable@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 05, 2018 at 03:35:28AM +0000, Y.b. Lu wrote:
-> [Y.b. Lu] Actually these timestamping codes affected DPAA networking performance in our previous performance test.
-> That's why we used ifdef for it.
+On Tue, Jun 5, 2018 at 3:52 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> Hi Arnd,
+>
+> when using the ppc64 compiler from kernel.org, I see the following problems
+> when trying to compile ppc:allnoconfig in v4.14.y or v4.16.y.
+>
+> gcc 7.3.0: Compilation of kernel.cpu.o hangs
+>
+> The problem goes away if I apply the following two patches (tested with
+> 4.16.y)
+>
+> 17a2f1ced028 cpu/hotplug: Merge cpuhp_bp_states and cpuhp_ap_states
+> fcb3029a8d89 cpu/hotplug: Fix unused function warning
 
-How much does time stamping hurt performance?
+This is probably the same as
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84038
 
-If the time stamping is compiled in but not enabled at run time, does
-it still affect performace?
+I thought I had included the fix in my builds.
 
-Thanks,
-Richard
+> gcc 8.1.0: Compilation of kernel/cpu.o results in the following error
+>
+> powerpc64-linux-gcc: error: unrecognized command line option '-mno-spe'; did
+> you mean '-fno-see'?
+> powerpc64-linux-gcc: error: unrecognized command line option '-mspe=no'; did
+> you mean '-misel=no'?
+>
+> This problem is also seen with mainline.
+
+I've seen it, but couldn't figure out what the right fix is. I ended
+up commenting
+out those two lines in my private builds:
+
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -215,8 +215,8 @@ KBUILD_CFLAGS += $(call cc-option,-mno-vsx)
+
+ # No SPE instruction when building kernel
+ # (We use all available options to help semi-broken compilers)
+-KBUILD_CFLAGS += $(call cc-option,-mno-spe)
+-KBUILD_CFLAGS += $(call cc-option,-mspe=no)
++#KBUILD_CFLAGS += $(call cc-option,-mno-spe)
++#KBUILD_CFLAGS += $(call cc-option,-mspe=no)
+
+ # Enable unit-at-a-time mode when possible. It shrinks the
+ # kernel considerably.
+
+I think there were some changes in how cc-option gets evaluated, maybe
+those rely on something else to be enabled or disabled first?
+
+        Arnd
