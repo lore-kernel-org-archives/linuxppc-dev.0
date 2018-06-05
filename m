@@ -1,34 +1,37 @@
-Return-Path: <BATV+f68373395790e050ff16+5399+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410Kkq3YJ1zF1fm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 15:15:31 +1000 (AEST)
-Date: Mon, 4 Jun 2018 21:52:08 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, hch@infradead.org,
- luto@amacapital.net
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-Message-ID: <20180605045207.GA28447@infradead.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <f77638ddef3af52dd71341083707c9e3745dd505.camel@kernel.crashing.org>
- <20180604153558-mutt-send-email-mst@kernel.org>
- <e7ceddbec11711a89282e9b70b7fd3c8af10b030.camel@kernel.crashing.org>
- <20180604184035-mutt-send-email-mst@kernel.org>
- <6164442a718645a754879eac5c4c5fad9283c211.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410Kpp0XvczF0dl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2018 15:18:58 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+ Boqun Feng <boqun.feng@gmail.com>, Andy Lutomirski <luto@amacapital.net>,
+ Dave Watson <davejwatson@fb.com>
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+ Paul Turner <pjt@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>,
+ Andrew Hunter <ahh@google.com>, Andi Kleen <andi@firstfloor.org>,
+ Chris Lameter <cl@linux.com>, Ben Maurer <bmaurer@fb.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Josh Triplett <josh@joshtriplett.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>, Joel Fernandes <joelaf@google.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH for 4.18 10/16] powerpc: Wire up restartable sequences
+ system call
+In-Reply-To: <20180602124408.8430-11-mathieu.desnoyers@efficios.com>
+References: <20180602124408.8430-1-mathieu.desnoyers@efficios.com>
+ <20180602124408.8430-11-mathieu.desnoyers@efficios.com>
+Date: Tue, 05 Jun 2018 15:18:44 +1000
+Message-ID: <874lihbykr.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <6164442a718645a754879eac5c4c5fad9283c211.camel@kernel.crashing.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 05, 2018 at 09:26:56AM +1000, Benjamin Herrenschmidt wrote:
-> Sorry Michael, that doesn't click. Yes of course virtio is implemented
-> in qemu, but the problem we are trying to solve is *not* a qemu problem
-> (the fact that the Linux drivers bypass the DMA API is wrong, needs
-> fixing, and isnt a qemu problem). The fact that the secure guests need
-> bounce buffering is not a qemu problem either.
-> 
-> Whether qemu chose to use an iommu or not is, and should remain an
-> orthogonal problem.
+Mathieu Desnoyers <mathieu.desnoyers@efficios.com> writes:
 
-Agreed.  We have a problem with qemu (old qemu only?) punching a hole
-into the VM abstraction by deciding that even if firmware tables
-claim use of an IOMMU for a PCI bus it expects virtio to use physiscal
-addresses.  So far so bad.  The answer to that should have been to
-quirk the affected qemu versions and move on.  Instead we now have
-virtio not use the DMA API by default and are creating a worse problem.
+> From: Boqun Feng <boqun.feng@gmail.com>
+>
+> Wire up the rseq system call on powerpc.
+>
+> This provides an ABI improving the speed of a user-space getcpu
+> operation on powerpc by skipping the getcpu system call on the fast
+> path, as well as improving the speed of user-space operations on per-cpu
+> data compared to using load-reservation/store-conditional atomics.
+>
+> Signed-off-by: Boqun Feng <boqun.feng@gmail.com>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Michael Ellerman <mpe@ellerman.id.au>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> CC: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/include/asm/systbl.h      | 1 +
+>  arch/powerpc/include/asm/unistd.h      | 2 +-
+>  arch/powerpc/include/uapi/asm/unistd.h | 1 +
+>  3 files changed, 3 insertions(+), 1 deletion(-)
 
-Let's fix this issue ASAP and quirk the buggy implementations instead
-of letting everyone else suffer.  
+Looks fine to me.
 
-> The DMA API itself isn't the one that needs to learn "per-device
-> quirks", it's just plumbing into arch backends. The "quirk" is at the
-> point of establishing the backend for a given device.
-> 
-> We can go a good way down that path simply by having virtio in Linux
-> start with putting *itself* its own direct ops in there when
-> VIRTIO_F_IOMMU_PLATFORM is not set, and removing all the special casing
-> in the rest of the driver.
+I don't have any other new syscalls in my next, so this should not
+conflict with anything for 4.18.
 
-Yes.  And we have all the infrastructure for that now.  A few RDMA
-drivers quirk to virt_dma_ops, and virtio could quirk to dma_direct_ops
-anytime now.  In fact given how much time we are spending arguing here
-I'm going to give it a spin today.
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
-> Once that's done, we have a single point of establishing the dma ops,
-> we can quirk in there if needed, that's rather nicely contained, or put
-> an arch hook, or whatever is necessary.
 
-Yes.
+cheers
