@@ -1,22 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410b7t1L6WzF1n9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:38 +1000 (AEST)
-In-Reply-To: <1528190181-15745-1-git-send-email-weiyongjun1@huawei.com>
-To: Wei Yongjun <weiyongjun1@huawei.com>,
- Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
- Alastair D'Silva <alastair@d-silva.org>
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
- Wei Yongjun <weiyongjun1@huawei.com>, linux-kernel@vger.kernel.org
-Subject: Re: [-next] ocxl: Fix missing unlock on error in
- afu_ioctl_enable_p9_wait()
-Message-Id: <410b7r1h68z9s2k@ozlabs.org>
-Date: Wed,  6 Jun 2018 01:19:34 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410c9y2444zF1Rt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 02:06:29 +1000 (AEST)
+Date: Tue, 5 Jun 2018 09:06:24 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: stable <stable@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Problems building ppc images in v4.14.y and v4.16.y using gcc
+ 7.3.0 / 8.1.0 from kernel.org
+Message-ID: <20180605160624.GA30373@roeck-us.net>
+References: <e11832b0-f071-b709-be34-417f2d3bc343@roeck-us.net>
+ <CAK8P3a3CFhkjPCX8bgZbx7aYwrUVsKE5ct4ghnMxJLo5OSYqbA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAK8P3a3CFhkjPCX8bgZbx7aYwrUVsKE5ct4ghnMxJLo5OSYqbA@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-06-05 at 09:16:21 UTC, Wei Yongjun wrote:
-> Add the missing unlock before return from function
-> afu_ioctl_enable_p9_wait() in the error handling case.
+On Tue, Jun 05, 2018 at 04:31:00PM +0200, Arnd Bergmann wrote:
+> On Tue, Jun 5, 2018 at 3:52 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> > Hi Arnd,
+> >
+> > when using the ppc64 compiler from kernel.org, I see the following problems
+> > when trying to compile ppc:allnoconfig in v4.14.y or v4.16.y.
+> >
+> > gcc 7.3.0: Compilation of kernel.cpu.o hangs
+> >
+> > The problem goes away if I apply the following two patches (tested with
+> > 4.16.y)
+> >
+> > 17a2f1ced028 cpu/hotplug: Merge cpuhp_bp_states and cpuhp_ap_states
+> > fcb3029a8d89 cpu/hotplug: Fix unused function warning
 > 
-> Fixes: e948e06fc63a ("ocxl: Expose the thread_id needed for wait on POWER9")
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
-> Reviewed-by: Alastair D'Silva <alastair@d-silva.org>
+> This is probably the same as
+> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84038
+> 
+> I thought I had included the fix in my builds.
+> 
+Guess not.
 
-Applied to powerpc next, thanks.
+> > gcc 8.1.0: Compilation of kernel/cpu.o results in the following error
+> >
+> > powerpc64-linux-gcc: error: unrecognized command line option '-mno-spe'; did
+> > you mean '-fno-see'?
+> > powerpc64-linux-gcc: error: unrecognized command line option '-mspe=no'; did
+> > you mean '-misel=no'?
+> >
+> > This problem is also seen with mainline.
+> 
+> I've seen it, but couldn't figure out what the right fix is. I ended
+> up commenting
+> out those two lines in my private builds:
+> 
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -215,8 +215,8 @@ KBUILD_CFLAGS += $(call cc-option,-mno-vsx)
+> 
+>  # No SPE instruction when building kernel
+>  # (We use all available options to help semi-broken compilers)
+> -KBUILD_CFLAGS += $(call cc-option,-mno-spe)
+> -KBUILD_CFLAGS += $(call cc-option,-mspe=no)
+> +#KBUILD_CFLAGS += $(call cc-option,-mno-spe)
+> +#KBUILD_CFLAGS += $(call cc-option,-mspe=no)
+> 
+>  # Enable unit-at-a-time mode when possible. It shrinks the
+>  # kernel considerably.
+> 
+> I think there were some changes in how cc-option gets evaluated, maybe
+> those rely on something else to be enabled or disabled first?
+> 
+I think it may have cached the flags from the other compiler version.
+"make mrproper" prior to "make defconfig" took care of the issue.
 
-https://git.kernel.org/powerpc/c/2e5c93d6bb2f7bc17eb82748943a1b
+However, that doesn't really help - I get lots of
+	error: 'sys_spu_create' alias between functions of incompatible types
+	error: 'strncpy' output truncated before terminating nul
+if I try to use gcc 8.1.0.
 
-cheers
+Oh well. I'll try gcc 6.4.0 next.
+
+Thanks,
+Guenter
