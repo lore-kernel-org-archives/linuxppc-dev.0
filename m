@@ -2,14 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410b7p0dcdzF1my
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410b7p4XwfzF1my
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:34 +1000 (AEST)
-In-Reply-To: <20180604083338.2661-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+In-Reply-To: <fa51770430e00ac2db1c621365473a0c893d105e.1528179842.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: powerpc/powernv: copy/paste - Mask SO bit in CR
-Message-Id: <410b7n49N9z9s55@ozlabs.org>
-Date: Wed,  6 Jun 2018 01:19:33 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc: fix build failure by disabling attribute-alias warning
+ in pci_32
+Message-Id: <410b7p2cVbz9s08@ozlabs.org>
+Date: Wed,  6 Jun 2018 01:19:34 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,19 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-06-04 at 08:33:38 UTC, Michael Ellerman wrote:
-> NX can set the 3rd bit in CR register for XER[SO] (Summary overflow)
-> which is not related to paste request. The current paste function
-> returns failure for a successful request when this bit is set. So mask
-> this bit and check the proper return status.
+On Tue, 2018-06-05 at 06:57:43 UTC, Christophe Leroy wrote:
+> Commit 2479bfc9bc600 ("powerpc: Fix build by disabling attribute-alias
+> warning for SYSCALL_DEFINEx") forgot arch/powerpc/kernel/pci_32.c
 > 
-> Fixes: 2392c8c8c045 ("powerpc/powernv/vas: Define copy/paste interfaces")
-> Cc: stable@vger.kernel.org # v4.14+
-> Signed-off-by: Haren Myneni <haren@us.ibm.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Latest GCC version emit the following warnings
+> 
+> As arch/powerpc code is built with -Werror, this breaks build with
+> GCC 8.1
+> 
+> This patch inhibits this warning
+> 
+> In file included from arch/powerpc/kernel/pci_32.c:14:
+> ./include/linux/syscalls.h:233:18: error: 'sys_pciconfig_iobase' alias between functions of incompatible types 'long int(long int,  long unsigned int,  long unsigned int)' and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
+>   asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
+>                   ^~~
+> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
+>   __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+>   ^~~~~~~~~~~~~~~~~
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/75743649064ec0cf5ddd69f240ef23
+https://git.kernel.org/powerpc/c/415520373975d2eba565c256d2cad8
 
 cheers
