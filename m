@@ -2,17 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410b7p4XwfzF1my
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:34 +1000 (AEST)
-In-Reply-To: <fa51770430e00ac2db1c621365473a0c893d105e.1528179842.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410b7t1L6WzF1n9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 01:19:38 +1000 (AEST)
+In-Reply-To: <1528190181-15745-1-git-send-email-weiyongjun1@huawei.com>
+To: Wei Yongjun <weiyongjun1@huawei.com>,
+ Frederic Barrat <fbarrat@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+ "Greg Kroah-Hartman" <gregkh@linuxfoundation.org>,
+ Alastair D'Silva <alastair@d-silva.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc: fix build failure by disabling attribute-alias warning
- in pci_32
-Message-Id: <410b7p2cVbz9s08@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
+ Wei Yongjun <weiyongjun1@huawei.com>, linux-kernel@vger.kernel.org
+Subject: Re: [-next] ocxl: Fix missing unlock on error in
+ afu_ioctl_enable_p9_wait()
+Message-Id: <410b7r1h68z9s2k@ozlabs.org>
 Date: Wed,  6 Jun 2018 01:19:34 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,29 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-06-05 at 06:57:43 UTC, Christophe Leroy wrote:
-> Commit 2479bfc9bc600 ("powerpc: Fix build by disabling attribute-alias
-> warning for SYSCALL_DEFINEx") forgot arch/powerpc/kernel/pci_32.c
+On Tue, 2018-06-05 at 09:16:21 UTC, Wei Yongjun wrote:
+> Add the missing unlock before return from function
+> afu_ioctl_enable_p9_wait() in the error handling case.
 > 
-> Latest GCC version emit the following warnings
-> 
-> As arch/powerpc code is built with -Werror, this breaks build with
-> GCC 8.1
-> 
-> This patch inhibits this warning
-> 
-> In file included from arch/powerpc/kernel/pci_32.c:14:
-> ./include/linux/syscalls.h:233:18: error: 'sys_pciconfig_iobase' alias between functions of incompatible types 'long int(long int,  long unsigned int,  long unsigned int)' and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
->   asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
->                   ^~~
-> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
->   __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
->   ^~~~~~~~~~~~~~~~~
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Fixes: e948e06fc63a ("ocxl: Expose the thread_id needed for wait on POWER9")
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> Reviewed-by: Alastair D'Silva <alastair@d-silva.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/415520373975d2eba565c256d2cad8
+https://git.kernel.org/powerpc/c/2e5c93d6bb2f7bc17eb82748943a1b
 
 cheers
