@@ -1,26 +1,32 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410zs82LydzF12M
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:53:16 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id a12-v6so2686850pfi.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 23:53:16 -0700 (PDT)
-Date: Wed, 6 Jun 2018 14:53:10 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Cyril Bur <cyrilbur@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v7 0/5] powerpc/64: memcmp() optimization
-Message-ID: <20180606065310.GC7342@simonLocalRHEL7.x64>
-References: <1527672063-6953-1-git-send-email-wei.guo.simon@gmail.com>
- <877eneasg9.fsf@concordia.ellerman.id.au>
- <20180606062153.GA7342@simonLocalRHEL7.x64>
- <1528266847.dixm3thyfj.naveen@linux.ibm.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 410zxp1YbXzDqG0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:57:17 +1000 (AEST)
+Date: Wed, 6 Jun 2018 16:57:31 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 08/11] macintosh/via-pmu: Replace via-pmu68k driver with
+ via-pmu driver
+In-Reply-To: <CAMuHMdVheowFa8bx0fg-_Dvx+TMZhPbvouTs82Y3tq1gtSpRMQ@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1806061619240.8@nippy.intranet>
+References: <cover.1527909627.git.fthain@telegraphics.com.au>
+ <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
+ <7ce9a8c3996506ae6f9ab16b3cf73c287e205a89.1527909627.git.fthain@telegraphics.com.au>
+ <8597ac466215f573d8bea40e74fdec2bf72fabbb.1527909627.git.fthain@telegraphics.com.au>
+ <878b389293851359e53de186bf302ce52d95ad95.1527909627.git.fthain@telegraphics.com.au>
+ <adba0545c06cd6c67e26c433990d036b0d7e968c.1527909627.git.fthain@telegraphics.com.au>
+ <166b4c3a7347fe27f12bda86d50533cd01ee11b9.1527909627.git.fthain@telegraphics.com.au>
+ <73507a3e9444da17c222cf74df41842ce30d15ee.1527909627.git.fthain@telegraphics.com.au>
+ <de8edb03dbd2fd25b53d0bdf9c6d65adf9aa0aa3.1527909627.git.fthain@telegraphics.com.au>
+ <CAMuHMdVheowFa8bx0fg-_Dvx+TMZhPbvouTs82Y3tq1gtSpRMQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1528266847.dixm3thyfj.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,71 +36,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Naveen,
-On Wed, Jun 06, 2018 at 12:06:09PM +0530, Naveen N. Rao wrote:
-> Simon Guo wrote:
-> >Hi Michael,
-> >On Tue, Jun 05, 2018 at 12:16:22PM +1000, Michael Ellerman wrote:
-> >>Hi Simon,
-> >>
-> >>wei.guo.simon@gmail.com writes:
-> >>> From: Simon Guo <wei.guo.simon@gmail.com>
-> >>>
-> >>> There is some room to optimize memcmp() in powerpc 64 bits version for
-> >>> following 2 cases:
-> >>> (1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
-> >>> memcmp() can align them and go with .Llong comparision mode without
-> >>> fallback to .Lshort comparision mode do compare buffer byte by byte.
-> >>> (2) VMX instructions can be used to speed up for large size comparision,
-> >>> currently the threshold is set for 4K bytes. Notes the VMX instructions
-> >>> will lead to VMX regs save/load penalty. This patch set includes a
-> >>> patch to add a 32 bytes pre-checking to minimize the penalty.
-> >>>
-> >>> It did the similar with glibc commit dec4a7105e (powerpc:
-> >>Improve memcmp > performance for POWER8). Thanks Cyril Bur's
-> >>information.
-> >>> This patch set also updates memcmp selftest case to make it compiled and
-> >>> incorporate large size comparison case.
-> >>
-> >>I'm seeing a few crashes with this applied, I haven't had time to look
-> >>into what is happening yet, sorry.
-> >>
-> >
-> >The bug is due to memcmp() invokes a C function enter_vmx_ops()
-> >who will load some PIC value based on r2.
-> >
-> >memcmp() doesn't use r2 and if the memcmp() is invoked from kernel
-> >itself, everything is fine. But if memcmp() is invoked from
-> >modules[test_user_copy], r2 will be required to be setup
-> >correctly. Otherwise the enter_vmx_ops() will refer to an
-> >incorrect/unexisting data location based on wrong r2 value.
-> >
-> >Following patch will fix this issue:
-> >------------
-> >diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> >index 5eba49744a5a..24d093fa89bb 100644
-> >--- a/arch/powerpc/lib/memcmp_64.S
-> >+++ b/arch/powerpc/lib/memcmp_64.S
-> >@@ -102,7 +102,7 @@
-> >  * 2) src/dst has different offset to the 8 bytes boundary. The handlers
-> >  * are named like .Ldiffoffset_xxxx
-> >  */
-> >-_GLOBAL(memcmp)
-> >+_GLOBAL_TOC(memcmp)
-> >        cmpdi   cr1,r5,0
-> >
-> >        /* Use the short loop if the src/dst addresses are not
-> >----------
-> >
-> >It means the memcmp() fun entry will have additional 2 instructions. Is there
-> >any way to save these 2 instructions when the memcmp() is actually invoked
-> >from kernel itself?
+On Mon, 4 Jun 2018, Geert Uytterhoeven wrote:
+
 > 
-> That will be the case. We will end up entering the function via the
-> local entry point skipping the first two instructions. The Global
-> entry point is only used for cross-module calls.
+> > Don't call pmu_shutdown() or pmu_restart() on early PowerBooks: the 
+> > PMU device found in these PowerBooks isn't supported.
+> 
+> Shouldn't that be a separate patch?
+> 
+> > --- a/arch/m68k/mac/misc.c
+> > +++ b/arch/m68k/mac/misc.c
+> 
+> > @@ -477,9 +445,8 @@ void mac_poweroff(void)
+> >                    macintosh_config->adb_type == MAC_ADB_CUDA) {
+> >                 cuda_shutdown();
+> >  #endif
+> > -#ifdef CONFIG_ADB_PMU68K
+> > -       } else if (macintosh_config->adb_type == MAC_ADB_PB1
+> > -               || macintosh_config->adb_type == MAC_ADB_PB2) {
+> > +#ifdef CONFIG_ADB_PMU
+> > +       } else if (macintosh_config->adb_type == MAC_ADB_PB2) {
+> >                 pmu_shutdown();
+> >  #endif
+> >         }
+> > @@ -519,9 +486,8 @@ void mac_reset(void)
+> >                    macintosh_config->adb_type == MAC_ADB_CUDA) {
+> >                 cuda_restart();
+> >  #endif
+> > -#ifdef CONFIG_ADB_PMU68K
+> > -       } else if (macintosh_config->adb_type == MAC_ADB_PB1
+> > -               || macintosh_config->adb_type == MAC_ADB_PB2) {
+> > +#ifdef CONFIG_ADB_PMU
+> > +       } else if (macintosh_config->adb_type == MAC_ADB_PB2) {
+> >                 pmu_restart();
+> >  #endif
+> >         } else if (CPU_IS_030) {
 > 
 
-Yes. Thanks :)
+The stability problem here is bigger than just pmu_restart() and 
+pmu_shutdown(), so those hunks are insufficient. You need to prevent the 
+via-pmu68k driver from loading in the first place and to drop all the 
+PMU_68K_V1 cases.
 
-- Simon
+But splitting this patch in that way creates potential merge conflicts, 
+which is a hassle. E.g. this hunk:
+
+-       ....
+-       switch (macintosh_config->adb_type) {
+-       case MAC_ADB_PB1:
+-               pmu_kind = PMU_68K_V1;
+-               break;
+-       case MAC_ADB_PB2:
+-               pmu_kind = PMU_68K_V2;
+-               break;
+-       default:
+-               pmu_kind = PMU_UNKNOWN;
+-               return -ENODEV;
+-       }
+-       ...
+
+would get split over two patches.
+
+The way I see it, having no PMU driver for PMU_68K_V1 machines is a bug. 
+And loading any of the existing PMU drivers on that hardware is also a 
+bug. These bugs are equivalent in that either one means you can't use the 
+keyboard, trackpad etc. So there's no value in cherry-picking the other 
+bug.
+
+If you are using v4.17 on a PMU_68K_V1 machine, you probably already have 
+CONFIG_ADB_PMU68K=n. With that config, here's nothing to be gained from 
+bisecting these changes.
+
+Does that make sense? Did I overlook other possible reason(s) to split up 
+this patch?
+
+-- 
