@@ -1,22 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410r9P3SyGzF1wr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 11:06:49 +1000 (AEST)
-Date: Wed, 6 Jun 2018 11:06:15 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: qemu-ppc@nongnu.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH QEMU] osdep: powerpc64 align memory to allow 2MB radix
- THP page tables
-Message-ID: <20180606010615.GE17757@umbus.fritz.box>
-References: <20180506072949.12783-1-npiggin@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="brEuL7wsLY8+TuWz"
-In-Reply-To: <20180506072949.12783-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410rw26cL1zF1xl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 11:40:18 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id z9-v6so2710785plk.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 18:40:18 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64s/radix: Fix missing ptesync in flush_cache_vmap
+Date: Wed,  6 Jun 2018 11:40:08 +1000
+Message-Id: <20180606014008.20363-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+There is a typo in f1cb8f9beb ("powerpc/64s/radix: avoid ptesync after
+set_pte and ptep_set_access_flags") config ifdef, which results in the
+necessary ptesync not being issued after vmalloc.
 
---brEuL7wsLY8+TuWz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This causes random kernel faults in module load, bpf load, anywhere
+that vmalloc mappings are used.
 
-On Sun, May 06, 2018 at 05:29:49PM +1000, Nicholas Piggin wrote:
-> This allows KVM with the Book3S radix MMU mode to take advantage of
-> THP and install larger pages in the partition scope page tables (the
-> host translation).
->=20
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+After correcting the code, this survives a guest kernel booting
+hundreds of times where previously there would be a crash every few
+boots (I haven't noticed the crash on host, perhaps due to different
+TLB and page table walking behaviour in hardware).
 
-I've applied this to my ppc-for-3.0 tree.  It's not strictly within
-the code I maintain, but since it only affects ppc, it seems
-reasonable to go through my tree.
+A memory clobber is also added to the flush, just to be sure it won't
+be reordered with the pte set or the subsequent mapping access.
 
-> ---
->  include/qemu/osdep.h | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/include/qemu/osdep.h b/include/qemu/osdep.h
-> index 41658060a7..5910682221 100644
-> --- a/include/qemu/osdep.h
-> +++ b/include/qemu/osdep.h
-> @@ -357,7 +357,8 @@ void qemu_anon_ram_free(void *ptr, size_t size);
->  #endif
-> =20
->  #if defined(__linux__) && \
-> -    (defined(__x86_64__) || defined(__arm__) || defined(__aarch64__))
-> +    (defined(__x86_64__) || defined(__arm__) || defined(__aarch64__) \
-> +     || defined(__powerpc64__))
->     /* Use 2 MiB alignment so transparent hugepages can be used by KVM.
->        Valgrind does not support alignments larger than 1 MiB,
->        therefore we need special code which handles running on Valgrind. =
-*/
+Fixes: f1cb8f9beb ("powerpc/64s/radix: avoid ptesync after set_pte and ptep_set_access_flags")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+This code obviously can't have been tested properly, I'm sorry about
+that. I tested with the ptesync and then "tidied up" the patch by
+putting it in ifdef, and didn't test the final patch sufficiently :(
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ arch/powerpc/include/asm/cacheflush.h | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---brEuL7wsLY8+TuWz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlsXM4cACgkQbDjKyiDZ
-s5LgxxAA3/kc3un9Gylx4Zke7JyldmZg8AbJET8FXSBSHnaBzs90rjT6RFfpJlvm
-BzJz8RZjFozH5tu5o+0YRc1WUvLCpyNYBIkSoATc2eM4RsVrmMn6PEySdhRBuIdo
-t/4Uj/QWtg3Qp6azosRVkFzE8pLJrudF/IDa+e1KC32PmyUvaufiCsbHytePQ1pI
-JHQSfJl+iL2bI8HxJrPxzY8xtwi2+bI+R77U0GRFQqwCVfuuo34cosL9TTDhq6qw
-XIfT12qHAN+RyfYExyiKH1sdCfBFfwprJXb7qysyfyxiOCdjxKkbEyoSgJwac4aB
-hRBIJSV2bd7iRq0XeLodKAeypVZgM5IQQhKuqdP3tW8RPs2STlhr1Ky61/eWI40v
-GSNg3i8JeMKxjBbAQBdlaWR2bz69KJR89sRDQUx46AZDDE9o00hx1Fv4/WdDK5ZO
-484vTZ5Y+5rXSiQAZTHobDVaRumJ4aHkHGQS22lbJB4PrZDBgLYf/+tkO1X56RRa
-b4LpIXZ0i/HaNP/giFMxVFtXzm0ruVDHqJuJxhflW/z6Jvf2l3CprZvNlmteqS/h
-bTOm7g43qpX+su3r1kctseL/4Zncujryjhrr6+r27SuIGQ6C6ArOx9qy9do0O/xI
-Jgn4B/W9rzRdW6YruLYMJbRtChKv+0DsMDaDLSku4hNm2T8/U14=
-=Yz/P
------END PGP SIGNATURE-----
-
---brEuL7wsLY8+TuWz--
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index e9662648e72d..0d72ec75da63 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -23,10 +23,9 @@
+ #define flush_cache_range(vma, start, end)	do { } while (0)
+ #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
+ #define flush_icache_page(vma, page)		do { } while (0)
+-#define flush_cache_vmap(start, end)		do { } while (0)
+ #define flush_cache_vunmap(start, end)		do { } while (0)
+ 
+-#ifdef CONFIG_BOOK3S_64
++#ifdef CONFIG_PPC_BOOK3S_64
+ /*
+  * Book3s has no ptesync after setting a pte, so without this ptesync it's
+  * possible for a kernel virtual mapping access to return a spurious fault
+@@ -34,7 +33,7 @@
+  * not expect this type of fault. flush_cache_vmap is not exactly the right
+  * place to put this, but it seems to work well enough.
+  */
+-#define flush_cache_vmap(start, end)		do { asm volatile("ptesync"); } while (0)
++#define flush_cache_vmap(start, end)		do { asm volatile("ptesync" ::: "memory"); } while (0)
+ #else
+ #define flush_cache_vmap(start, end)		do { } while (0)
+ #endif
+-- 
+2.17.0
