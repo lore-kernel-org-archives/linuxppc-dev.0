@@ -1,18 +1,33 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410rw26cL1zF1xl
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 11:40:18 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id z9-v6so2710785plk.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 18:40:18 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64s/radix: Fix missing ptesync in flush_cache_vmap
-Date: Wed,  6 Jun 2018 11:40:08 +1000
-Message-Id: <20180606014008.20363-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410wMf2ccwzF1wr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 14:15:58 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w564EjHv098272
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jun 2018 00:15:55 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2je6y7tuy9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jun 2018 00:15:55 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Wed, 6 Jun 2018 00:15:54 -0400
+Subject: [PATCH V2] crypto/nx: Initialize 842 high and normal RxFIFO
+ control registers
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Cc: herbert@gondor.apana.org.au, stewart@linux.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jun 2018 21:15:39 -0700
+Mime-Version: 1.0
+Message-Id: <1528258539.5945.29.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +37,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a typo in f1cb8f9beb ("powerpc/64s/radix: avoid ptesync after
-set_pte and ptep_set_access_flags") config ifdef, which results in the
-necessary ptesync not being issued after vmalloc.
 
-This causes random kernel faults in module load, bpf load, anywhere
-that vmalloc mappings are used.
+NX increments readOffset by FIFO size in receive FIFO control register
+when CRB is read. But the index in RxFIFO has to match with the
+corresponding entry in FIFO maintained by VAS in kernel. Otherwise NX
+may be processing incorrect CRBs and can cause CRB timeout.
 
-After correcting the code, this survives a guest kernel booting
-hundreds of times where previously there would be a crash every few
-boots (I haven't noticed the crash on host, perhaps due to different
-TLB and page table walking behaviour in hardware).
+VAS FIFO offset is 0 when the receive window is opened during
+initialization. When the module is reloaded or in kexec boot, readOffset
+in FIFO control register may not match with VAS entry. This patch adds
+nx_coproc_init OPAL call to reset readOffset and queued entries in FIFO
+control register for both high and normal FIFOs.
 
-A memory clobber is also added to the flush, just to be sure it won't
-be reordered with the pte set or the subsequent mapping access.
-
-Fixes: f1cb8f9beb ("powerpc/64s/radix: avoid ptesync after set_pte and ptep_set_access_flags")
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
-This code obviously can't have been tested properly, I'm sorry about
-that. I tested with the ptesync and then "tidied up" the patch by
-putting it in ifdef, and didn't test the final patch sufficiently :(
+Changlog:
+V2: Execute nx_coproc_init OPAL call per NX without depending on
+    FIFO priority [Stewart Smith]
 
- arch/powerpc/include/asm/cacheflush.h | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index e9662648e72d..0d72ec75da63 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -23,10 +23,9 @@
- #define flush_cache_range(vma, start, end)	do { } while (0)
- #define flush_cache_page(vma, vmaddr, pfn)	do { } while (0)
- #define flush_icache_page(vma, page)		do { } while (0)
--#define flush_cache_vmap(start, end)		do { } while (0)
- #define flush_cache_vunmap(start, end)		do { } while (0)
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index d886a5b..ff61e4b 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -206,7 +206,8 @@
+ #define OPAL_NPU_TL_SET				161
+ #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
+ #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
+-#define OPAL_LAST				165
++#define	OPAL_NX_COPROC_INIT			167
++#define OPAL_LAST				167
  
--#ifdef CONFIG_BOOK3S_64
-+#ifdef CONFIG_PPC_BOOK3S_64
- /*
-  * Book3s has no ptesync after setting a pte, so without this ptesync it's
-  * possible for a kernel virtual mapping access to return a spurious fault
-@@ -34,7 +33,7 @@
-  * not expect this type of fault. flush_cache_vmap is not exactly the right
-  * place to put this, but it seems to work well enough.
-  */
--#define flush_cache_vmap(start, end)		do { asm volatile("ptesync"); } while (0)
-+#define flush_cache_vmap(start, end)		do { asm volatile("ptesync" ::: "memory"); } while (0)
- #else
- #define flush_cache_vmap(start, end)		do { } while (0)
- #endif
--- 
-2.17.0
+ /* Device tree flags */
+ 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 7159e1a..d79eb82 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -288,6 +288,7 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
+ int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
+ int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
+ int opal_sensor_group_clear(u32 group_hndl, int token);
++int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
+ 
+ s64 opal_signal_system_reset(s32 cpu);
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 3da30c2..c7541a9 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -325,3 +325,4 @@ OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
+ OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
+ OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
+ OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
++OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 48fbb41..5e13908 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -1035,3 +1035,5 @@ void powernv_set_nmmu_ptcr(unsigned long ptcr)
+ EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
+ EXPORT_SYMBOL_GPL(opal_int_eoi);
+ EXPORT_SYMBOL_GPL(opal_error_code);
++/* Export the below symbol for NX compression */
++EXPORT_SYMBOL(opal_nx_coproc_init);
+diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
+index 1e87637..435396b 100644
+--- a/drivers/crypto/nx/nx-842-powernv.c
++++ b/drivers/crypto/nx/nx-842-powernv.c
+@@ -24,6 +24,8 @@
+ #include <asm/icswx.h>
+ #include <asm/vas.h>
+ #include <asm/reg.h>
++#include <asm/opal-api.h>
++#include <asm/opal.h>
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
+@@ -753,7 +755,7 @@ static int nx842_open_percpu_txwins(void)
+ }
+ 
+ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+-					int vasid)
++					int vasid, int *ct)
+ {
+ 	struct vas_window *rxwin = NULL;
+ 	struct vas_rx_win_attr rxattr;
+@@ -837,6 +839,15 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+ 	coproc->vas.id = vasid;
+ 	nx842_add_coprocs_list(coproc, chip_id);
+ 
++	/*
++	 * (lpid, pid, tid) combination has to be unique for each
++	 * coprocessor instance in the system. So to make it
++	 * unique, skiboot uses coprocessor type such as 842 or
++	 * GZIP for pid and provides this value to kernel in pid
++	 * device-tree property.
++	 */
++	*ct = pid;
++
+ 	return 0;
+ 
+ err_out:
+@@ -848,7 +859,7 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
+ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+ {
+ 	struct device_node *dn;
+-	int chip_id, vasid, ret = 0;
++	int chip_id, vasid, ct, ret = 0;
+ 	int nx_fifo_found = 0;
+ 
+ 	chip_id = of_get_ibm_chip_id(pn);
+@@ -865,7 +876,7 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+ 
+ 	for_each_child_of_node(pn, dn) {
+ 		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
+-			ret = vas_cfg_coproc_info(dn, chip_id, vasid);
++			ret = vas_cfg_coproc_info(dn, chip_id, vasid, &ct);
+ 			if (ret) {
+ 				of_node_put(dn);
+ 				return ret;
+@@ -879,6 +890,16 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
+ 		ret = -EINVAL;
+ 	}
+ 
++	/*
++	 * Initialize each NX instance for both high and normal
++	 * priority FIFOs.
++	 */
++	ret = opal_nx_coproc_init(chip_id, ct);
++	if (ret) {
++		pr_err("Failed to initialize NX coproc: %d\n", ret);
++		ret = opal_error_code(ret);
++	}
++
+ 	return ret;
+ }
+ 
