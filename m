@@ -1,35 +1,30 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410zTf4zPgzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:36:22 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w566XwJB036724
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jun 2018 02:36:19 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2je3bqed0u-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jun 2018 02:36:19 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 6 Jun 2018 07:36:14 +0100
-Date: Wed, 06 Jun 2018 12:06:09 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 0/5] powerpc/64: memcmp() optimization
-To: Michael Ellerman <mpe@ellerman.id.au>, Simon Guo <wei.guo.simon@gmail.com>
-Cc: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
-References: <1527672063-6953-1-git-send-email-wei.guo.simon@gmail.com>
- <877eneasg9.fsf@concordia.ellerman.id.au>
- <20180606062153.GA7342@simonLocalRHEL7.x64>
-In-Reply-To: <20180606062153.GA7342@simonLocalRHEL7.x64>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410zcp5jtszF12M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:42:34 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id 31-v6so3171959plc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 23:42:34 -0700 (PDT)
+Date: Wed, 6 Jun 2018 14:42:27 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Cyril Bur <cyrilbur@gmail.com>
+Subject: Re: [PATCH v6 2/4] powerpc/64: enhance memcmp() with VMX instruction
+ for long bytes comparision
+Message-ID: <20180606064227.GB7342@simonLocalRHEL7.x64>
+References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
+ <1527221256-17029-3-git-send-email-wei.guo.simon@gmail.com>
+ <20180528110558.GZ17342@gate.crashing.org>
+ <20180530081402.GB5951@simonLocalRHEL7.x64>
+ <20180530083540.GG17342@gate.crashing.org>
+ <20180530090321.GE5951@simonLocalRHEL7.x64>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1528266847.dixm3thyfj.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180530090321.GE5951@simonLocalRHEL7.x64>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,76 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Simon Guo wrote:
-> Hi Michael,
-> On Tue, Jun 05, 2018 at 12:16:22PM +1000, Michael Ellerman wrote:
->> Hi Simon,
->>=20
->> wei.guo.simon@gmail.com writes:
->> > From: Simon Guo <wei.guo.simon@gmail.com>
->> >
->> > There is some room to optimize memcmp() in powerpc 64 bits version for
->> > following 2 cases:
->> > (1) Even src/dst addresses are not aligned with 8 bytes at the beginni=
-ng,
->> > memcmp() can align them and go with .Llong comparision mode without
->> > fallback to .Lshort comparision mode do compare buffer byte by byte.
->> > (2) VMX instructions can be used to speed up for large size comparisio=
-n,
->> > currently the threshold is set for 4K bytes. Notes the VMX instruction=
-s
->> > will lead to VMX regs save/load penalty. This patch set includes a
->> > patch to add a 32 bytes pre-checking to minimize the penalty.
->> >
->> > It did the similar with glibc commit dec4a7105e (powerpc: Improve memc=
-mp=20
->> > performance for POWER8). Thanks Cyril Bur's information.
->> > This patch set also updates memcmp selftest case to make it compiled a=
-nd
->> > incorporate large size comparison case.
->>=20
->> I'm seeing a few crashes with this applied, I haven't had time to look
->> into what is happening yet, sorry.
->>=20
->=20
-> The bug is due to memcmp() invokes a C function enter_vmx_ops() who will =
-load=20
-> some PIC value based on r2.
->=20
-> memcmp() doesn't use r2 and if the memcmp() is invoked from kernel
-> itself, everything is fine. But if memcmp() is invoked from modules[test_=
-user_copy],=20
-> r2 will be required to be setup correctly. Otherwise the enter_vmx_ops() =
-will refer=20
-> to an incorrect/unexisting data location based on wrong r2 value.
->=20
-> Following patch will fix this issue:
-> ------------
-> diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
-> index 5eba49744a5a..24d093fa89bb 100644
-> --- a/arch/powerpc/lib/memcmp_64.S
-> +++ b/arch/powerpc/lib/memcmp_64.S
-> @@ -102,7 +102,7 @@
->   * 2) src/dst has different offset to the 8 bytes boundary. The handlers
->   * are named like .Ldiffoffset_xxxx
->   */
-> -_GLOBAL(memcmp)
-> +_GLOBAL_TOC(memcmp)
->         cmpdi   cr1,r5,0
->=20
->         /* Use the short loop if the src/dst addresses are not
-> ----------
->=20
-> It means the memcmp() fun entry will have additional 2 instructions. Is t=
-here
-> any way to save these 2 instructions when the memcmp() is actually invoke=
-d
-> from kernel itself?
+Hi segher,
+On Wed, May 30, 2018 at 05:03:21PM +0800, Simon Guo wrote:
+> On Wed, May 30, 2018 at 03:35:40AM -0500, Segher Boessenkool wrote:
+> > On Wed, May 30, 2018 at 04:14:02PM +0800, Simon Guo wrote:
+> > > Hi Segher,
+> > > On Mon, May 28, 2018 at 06:05:59AM -0500, Segher Boessenkool wrote:
+> > > > On Fri, May 25, 2018 at 12:07:34PM +0800, wei.guo.simon@gmail.com wrote:
+> > > > > +	/* save and restore cr0 */
+> > > > > +	mfocrf  r5,64
+> > > > > +	EXIT_VMX_OPS
+> > > > > +	mtocrf	64,r5
+> > > > > +	b	.LcmpAB_lightweight
+> > > > 
+> > > > That's cr1, not cr0.  You can use mcrf instead, it is cheaper (esp. if
+> > > > you have it in a non-volatile CR field before so you need only one, if any).
+> > > > 
+> > > You are right :) How about using mtcr/mfcr instead, I think they are
+> > > fast as well and more readable.
+> > 
+> > Those are much worse than m[ft]ocrf.
+> > 
+> > You probably should just shuffle things around so that EXIT_VMX_OPS
+> > does not clobber the CR field you need to keep.
+> Let me use mcrf then :)
 
-That will be the case. We will end up entering the function via the=20
-local entry point skipping the first two instructions. The Global entry=20
-point is only used for cross-module calls.
+I now felt unformatable to use mcrf like:
+mcrf    7,0
 
-- Naveen
+since I cannot 100% confident that compiler will not use CR7 or other
+CR# in exit_vmx_ops().
 
-=
+Can we switch back to mfocrf/mtocrf with correct CR0 value?
+       mfocrf  r5,128
+        ...
+       mtocrf  128,r5
+
+Thanks,
+- Simon
