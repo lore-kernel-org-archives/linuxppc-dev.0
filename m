@@ -1,30 +1,24 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410zcp5jtszF12M
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:42:34 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id 31-v6so3171959plc.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 23:42:34 -0700 (PDT)
-Date: Wed, 6 Jun 2018 14:42:27 +0800
-From: Simon Guo <wei.guo.simon@gmail.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH v6 2/4] powerpc/64: enhance memcmp() with VMX instruction
- for long bytes comparision
-Message-ID: <20180606064227.GB7342@simonLocalRHEL7.x64>
-References: <1527221256-17029-1-git-send-email-wei.guo.simon@gmail.com>
- <1527221256-17029-3-git-send-email-wei.guo.simon@gmail.com>
- <20180528110558.GZ17342@gate.crashing.org>
- <20180530081402.GB5951@simonLocalRHEL7.x64>
- <20180530083540.GG17342@gate.crashing.org>
- <20180530090321.GE5951@simonLocalRHEL7.x64>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410zgC72xjzF2NS
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:44:39 +1000 (AEST)
+Subject: Re: Problems building ppc images in v4.14.y and v4.16.y using gcc
+ 7.3.0 / 8.1.0 from kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Guenter Roeck <linux@roeck-us.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, stable <stable@vger.kernel.org>
+References: <e11832b0-f071-b709-be34-417f2d3bc343@roeck-us.net>
+ <CAK8P3a3CFhkjPCX8bgZbx7aYwrUVsKE5ct4ghnMxJLo5OSYqbA@mail.gmail.com>
+ <20180605160624.GA30373@roeck-us.net>
+ <CAK8P3a0CjKCYCyhGejF6e3-Mk0mQ2=x3Kd76U8B4iB1amNr76g@mail.gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <8c064173-30c8-9be3-2377-d2018841a2eb@c-s.fr>
+Date: Wed, 6 Jun 2018 08:44:36 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180530090321.GE5951@simonLocalRHEL7.x64>
+In-Reply-To: <CAK8P3a0CjKCYCyhGejF6e3-Mk0mQ2=x3Kd76U8B4iB1amNr76g@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +28,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi segher,
-On Wed, May 30, 2018 at 05:03:21PM +0800, Simon Guo wrote:
-> On Wed, May 30, 2018 at 03:35:40AM -0500, Segher Boessenkool wrote:
-> > On Wed, May 30, 2018 at 04:14:02PM +0800, Simon Guo wrote:
-> > > Hi Segher,
-> > > On Mon, May 28, 2018 at 06:05:59AM -0500, Segher Boessenkool wrote:
-> > > > On Fri, May 25, 2018 at 12:07:34PM +0800, wei.guo.simon@gmail.com wrote:
-> > > > > +	/* save and restore cr0 */
-> > > > > +	mfocrf  r5,64
-> > > > > +	EXIT_VMX_OPS
-> > > > > +	mtocrf	64,r5
-> > > > > +	b	.LcmpAB_lightweight
-> > > > 
-> > > > That's cr1, not cr0.  You can use mcrf instead, it is cheaper (esp. if
-> > > > you have it in a non-volatile CR field before so you need only one, if any).
-> > > > 
-> > > You are right :) How about using mtcr/mfcr instead, I think they are
-> > > fast as well and more readable.
-> > 
-> > Those are much worse than m[ft]ocrf.
-> > 
-> > You probably should just shuffle things around so that EXIT_VMX_OPS
-> > does not clobber the CR field you need to keep.
-> Let me use mcrf then :)
 
-I now felt unformatable to use mcrf like:
-mcrf    7,0
 
-since I cannot 100% confident that compiler will not use CR7 or other
-CR# in exit_vmx_ops().
+Le 05/06/2018 à 21:47, Arnd Bergmann a écrit :
+> On Tue, Jun 5, 2018 at 6:06 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+>> On Tue, Jun 05, 2018 at 04:31:00PM +0200, Arnd Bergmann wrote:
+>>> On Tue, Jun 5, 2018 at 3:52 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+>>>> Hi Arnd,
+>>>>
+>>>> when using the ppc64 compiler from kernel.org, I see the following problems
+>>>> when trying to compile ppc:allnoconfig in v4.14.y or v4.16.y.
+>>>>
+>>>> gcc 7.3.0: Compilation of kernel.cpu.o hangs
+>>>>
+>>>> The problem goes away if I apply the following two patches (tested with
+>>>> 4.16.y)
+>>>>
+>>>> 17a2f1ced028 cpu/hotplug: Merge cpuhp_bp_states and cpuhp_ap_states
+>>>> fcb3029a8d89 cpu/hotplug: Fix unused function warning
+>>>
+>>> This is probably the same as
+>>> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84038
+>>>
+>>> I thought I had included the fix in my builds.
+>>>
+>> Guess not.
+> 
+> I probably had it in one build and then forgot about it when I did a
+> rebuild of 7.3 :(
+> 
+> I'm still planning to do a new set of gcc-7.3 binaries (or maybe 7.4
+> if that gets
+> released soon) and should try to remember doing that.
+> 
+>>>
+>> I think it may have cached the flags from the other compiler version.
+>> "make mrproper" prior to "make defconfig" took care of the issue.
+>>
+>> However, that doesn't really help - I get lots of
+>>          error: 'sys_spu_create' alias between functions of incompatible types
+>>          error: 'strncpy' output truncated before terminating nul
+>> if I try to use gcc 8.1.0.
+>>
+>> Oh well. I'll try gcc 6.4.0 next.
+> 
+> On the upside, those two errors are just a result of arch/power/*/*.c getting
+> built with -Werror, they are warnings that gcc-8 introduced that we should
+> either shut up or fix.
 
-Can we switch back to mfocrf/mtocrf with correct CR0 value?
-       mfocrf  r5,128
-        ...
-       mtocrf  128,r5
+They are fixed in next:
 
-Thanks,
-- Simon
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=2479bfc9bc600dcce7f932d52dcfa8d677c41f93
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=c95998811807d897ca112ea62d66716ed733d058
+
+Christophe
+
+> 
+>          Arnd
+> 
