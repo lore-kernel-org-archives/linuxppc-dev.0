@@ -1,24 +1,26 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wei.guo.simon@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 410zgC72xjzF2NS
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:44:39 +1000 (AEST)
-Subject: Re: Problems building ppc images in v4.14.y and v4.16.y using gcc
- 7.3.0 / 8.1.0 from kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Guenter Roeck <linux@roeck-us.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, stable <stable@vger.kernel.org>
-References: <e11832b0-f071-b709-be34-417f2d3bc343@roeck-us.net>
- <CAK8P3a3CFhkjPCX8bgZbx7aYwrUVsKE5ct4ghnMxJLo5OSYqbA@mail.gmail.com>
- <20180605160624.GA30373@roeck-us.net>
- <CAK8P3a0CjKCYCyhGejF6e3-Mk0mQ2=x3Kd76U8B4iB1amNr76g@mail.gmail.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <8c064173-30c8-9be3-2377-d2018841a2eb@c-s.fr>
-Date: Wed, 6 Jun 2018 08:44:36 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 410zs82LydzF12M
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2018 16:53:16 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id a12-v6so2686850pfi.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Jun 2018 23:53:16 -0700 (PDT)
+Date: Wed, 6 Jun 2018 14:53:10 +0800
+From: Simon Guo <wei.guo.simon@gmail.com>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Cyril Bur <cyrilbur@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v7 0/5] powerpc/64: memcmp() optimization
+Message-ID: <20180606065310.GC7342@simonLocalRHEL7.x64>
+References: <1527672063-6953-1-git-send-email-wei.guo.simon@gmail.com>
+ <877eneasg9.fsf@concordia.ellerman.id.au>
+ <20180606062153.GA7342@simonLocalRHEL7.x64>
+ <1528266847.dixm3thyfj.naveen@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAK8P3a0CjKCYCyhGejF6e3-Mk0mQ2=x3Kd76U8B4iB1amNr76g@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1528266847.dixm3thyfj.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,61 +30,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 05/06/2018 à 21:47, Arnd Bergmann a écrit :
-> On Tue, Jun 5, 2018 at 6:06 PM, Guenter Roeck <linux@roeck-us.net> wrote:
->> On Tue, Jun 05, 2018 at 04:31:00PM +0200, Arnd Bergmann wrote:
->>> On Tue, Jun 5, 2018 at 3:52 PM, Guenter Roeck <linux@roeck-us.net> wrote:
->>>> Hi Arnd,
->>>>
->>>> when using the ppc64 compiler from kernel.org, I see the following problems
->>>> when trying to compile ppc:allnoconfig in v4.14.y or v4.16.y.
->>>>
->>>> gcc 7.3.0: Compilation of kernel.cpu.o hangs
->>>>
->>>> The problem goes away if I apply the following two patches (tested with
->>>> 4.16.y)
->>>>
->>>> 17a2f1ced028 cpu/hotplug: Merge cpuhp_bp_states and cpuhp_ap_states
->>>> fcb3029a8d89 cpu/hotplug: Fix unused function warning
->>>
->>> This is probably the same as
->>> https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84038
->>>
->>> I thought I had included the fix in my builds.
->>>
->> Guess not.
+Hi Naveen,
+On Wed, Jun 06, 2018 at 12:06:09PM +0530, Naveen N. Rao wrote:
+> Simon Guo wrote:
+> >Hi Michael,
+> >On Tue, Jun 05, 2018 at 12:16:22PM +1000, Michael Ellerman wrote:
+> >>Hi Simon,
+> >>
+> >>wei.guo.simon@gmail.com writes:
+> >>> From: Simon Guo <wei.guo.simon@gmail.com>
+> >>>
+> >>> There is some room to optimize memcmp() in powerpc 64 bits version for
+> >>> following 2 cases:
+> >>> (1) Even src/dst addresses are not aligned with 8 bytes at the beginning,
+> >>> memcmp() can align them and go with .Llong comparision mode without
+> >>> fallback to .Lshort comparision mode do compare buffer byte by byte.
+> >>> (2) VMX instructions can be used to speed up for large size comparision,
+> >>> currently the threshold is set for 4K bytes. Notes the VMX instructions
+> >>> will lead to VMX regs save/load penalty. This patch set includes a
+> >>> patch to add a 32 bytes pre-checking to minimize the penalty.
+> >>>
+> >>> It did the similar with glibc commit dec4a7105e (powerpc:
+> >>Improve memcmp > performance for POWER8). Thanks Cyril Bur's
+> >>information.
+> >>> This patch set also updates memcmp selftest case to make it compiled and
+> >>> incorporate large size comparison case.
+> >>
+> >>I'm seeing a few crashes with this applied, I haven't had time to look
+> >>into what is happening yet, sorry.
+> >>
+> >
+> >The bug is due to memcmp() invokes a C function enter_vmx_ops()
+> >who will load some PIC value based on r2.
+> >
+> >memcmp() doesn't use r2 and if the memcmp() is invoked from kernel
+> >itself, everything is fine. But if memcmp() is invoked from
+> >modules[test_user_copy], r2 will be required to be setup
+> >correctly. Otherwise the enter_vmx_ops() will refer to an
+> >incorrect/unexisting data location based on wrong r2 value.
+> >
+> >Following patch will fix this issue:
+> >------------
+> >diff --git a/arch/powerpc/lib/memcmp_64.S b/arch/powerpc/lib/memcmp_64.S
+> >index 5eba49744a5a..24d093fa89bb 100644
+> >--- a/arch/powerpc/lib/memcmp_64.S
+> >+++ b/arch/powerpc/lib/memcmp_64.S
+> >@@ -102,7 +102,7 @@
+> >  * 2) src/dst has different offset to the 8 bytes boundary. The handlers
+> >  * are named like .Ldiffoffset_xxxx
+> >  */
+> >-_GLOBAL(memcmp)
+> >+_GLOBAL_TOC(memcmp)
+> >        cmpdi   cr1,r5,0
+> >
+> >        /* Use the short loop if the src/dst addresses are not
+> >----------
+> >
+> >It means the memcmp() fun entry will have additional 2 instructions. Is there
+> >any way to save these 2 instructions when the memcmp() is actually invoked
+> >from kernel itself?
 > 
-> I probably had it in one build and then forgot about it when I did a
-> rebuild of 7.3 :(
+> That will be the case. We will end up entering the function via the
+> local entry point skipping the first two instructions. The Global
+> entry point is only used for cross-module calls.
 > 
-> I'm still planning to do a new set of gcc-7.3 binaries (or maybe 7.4
-> if that gets
-> released soon) and should try to remember doing that.
-> 
->>>
->> I think it may have cached the flags from the other compiler version.
->> "make mrproper" prior to "make defconfig" took care of the issue.
->>
->> However, that doesn't really help - I get lots of
->>          error: 'sys_spu_create' alias between functions of incompatible types
->>          error: 'strncpy' output truncated before terminating nul
->> if I try to use gcc 8.1.0.
->>
->> Oh well. I'll try gcc 6.4.0 next.
-> 
-> On the upside, those two errors are just a result of arch/power/*/*.c getting
-> built with -Werror, they are warnings that gcc-8 introduced that we should
-> either shut up or fix.
 
-They are fixed in next:
+Yes. Thanks :)
 
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=2479bfc9bc600dcce7f932d52dcfa8d677c41f93
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=c95998811807d897ca112ea62d66716ed733d058
-
-Christophe
-
-> 
->          Arnd
-> 
+- Simon
