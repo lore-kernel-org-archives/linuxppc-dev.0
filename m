@@ -1,31 +1,43 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pedromfc@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411pHx6YbbzF33m
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 00:45:48 +1000 (AEST)
-Received: by mail-io0-x244.google.com with SMTP id d22-v6so12084733iof.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 07:45:48 -0700 (PDT)
-Subject: Re: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory
- hotplug on Power8 baremetal
-To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
- Bart Van Assche <Bart.VanAssche@wdc.com>, kent.overstreet@gmail.com,
- snitzer@redhat.com, linux-block@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sachinp@linux.vnet.ibm.com, Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
-References: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
- <d5b62afc48ece5aca8d08a80871c8613dd555d17.camel@wdc.com>
- <d011631b-c667-2628-dda8-2c87961329f0@linux.vnet.ibm.com>
- <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
- <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
-From: Jens Axboe <axboe@kernel.dk>
-Message-ID: <b1b67ad6-b300-7def-5851-b11baa6edf97@kernel.dk>
-Date: Thu, 7 Jun 2018 08:45:41 -0600
-MIME-Version: 1.0
-In-Reply-To: <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411qBB6WD5zF34D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 01:25:50 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w57FOOm4121279
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 11:25:47 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jf5pewb7q-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 11:25:47 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pedromfc@linux.vnet.ibm.com>;
+ Thu, 7 Jun 2018 09:25:46 -0600
+Received: from b03ledav004.gho.boulder.ibm.com
+ (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w57FPiRK12386588
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 08:25:44 -0700
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id A569778066
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 6D86C7805E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
+Received: from pedro.localdomain (unknown [9.18.235.95])
+ by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
+From: Pedro Franco de Carvalho <pedromfc@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 0/5] powerpc: Misc. ptrace regset fixes
+Date: Thu,  7 Jun 2018 12:25:29 -0300
+Message-Id: <20180607152534.29427-1-pedromfc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,163 +47,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/7/18 4:37 AM, vrbagal1 wrote:
-> On 2018-06-07 13:12, Bart Van Assche wrote:
->> On Thu, 2018-06-07 at 12:56 +0530, Venkat Rao B wrote:
->>> On Thursday 07 June 2018 12:46 PM, Bart Van Assche wrote:
->>>> On Thu, 2018-06-07 at 12:38 +0530, vrbagal1 wrote:
->>>>> Observing Kernel oops and machine reboots while executing memory hotplug
->>>>> test case, on Power8 Baremetal machine.
->>>>>
->>>>> I see this is introduced some where between rc6 and 4.17.
->>>>
->>>> Please provide the exact versions (git commit IDs) of the kernel versions
->>>> you have tested.
->>>
->>> Commit Id ---> 5037be168f
->>
->> The reason I was asking for the commit ID is because I saw that 
->> clone_endio()
->> occurs in the oops which means that the dm driver is involved. An 
->> important fix
->> for the dm driver went upstream recently, namely d37753540568 ("dm: Use 
->> kzalloc
->> for all structs with embedded biosets/mempools"). Can you double check 
->> whether
->> that commit it present in your tree? If it is not present, please 
->> update to the
->> latest master and retest. If it is present, please report how to 
->> reproduce
->> this oops to Kent Overstreet, Jens Axboe, linux-block and Mike Snitzer.
->>
->> Thanks,
->>
->> Bart.
-> 
-> 
-> Yes, the fix is present in the tree, which I have tested.
-> 
-> Steps to reproduce:
-> 
-> Step1: Clone and Install avocado git clone 
-> https://github.com/avocado-framework/avocado.git
-> Step2: Clone 
-> https://github.com/avocado-framework-tests/avocado-misc-tests.git
->         Test case is 
-> https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py
-> Step3: Command to run the test is avocado run 
-> avocado-misc-tests/memory/memhotplug.py
+This series attempts to fix a few issues with ptrace regsets.
 
-Can you try with the below? Not a fully formed fix since I'd prefer
-if the dm bioset copy stuff was changed instead, but worth a shot.
+Patch 1 simply inverts the active predicate for ebb_set. I don't know
+if there was a reason for having opposite predicates in
+ebb_get/ebb_set, but I assumed this was a typo.
 
+Patch 2 adds the usual HTM prologue for regsets to the tm_cgpr32
+get/set functions, so that the cgprs are flushed. I don't really
+understand the need for flushing the fp and altivec states, but I
+copied that over since it was done in the regular tm_cgpr get/set
+functions.
 
-diff --git a/block/bio.c b/block/bio.c
-index 595663e0281a..45bdee67d28b 100644
---- a/block/bio.c
-+++ b/block/bio.c
-@@ -1967,6 +1967,27 @@ int bioset_init(struct bio_set *bs,
- }
- EXPORT_SYMBOL(bioset_init);
- 
-+void bioset_move(struct bio_set *dst, struct bio_set *src)
-+{
-+	dst->bio_slab = src->bio_slab;
-+	dst->front_pad = src->front_pad;
-+	mempool_move(&dst->bio_pool, &src->bio_pool);
-+	mempool_move(&dst->bvec_pool, &src->bvec_pool);
-+#if defined(CONFIG_BLK_DEV_INTEGRITY)
-+	mempool_move(&dst->bio_integrity_pool, &src->bio_integrity_pool);
-+	mempool_move(&dst->bvec_integrity_pool, &src->bvec_integrity_pool);
-+#endif
-+	BUG_ON(!bio_list_empty(&src->rescue_list));
-+	BUG_ON(work_pending(&src->rescue_work));
-+	spin_lock_init(&dst->rescue_lock);
-+	bio_list_init(&dst->rescue_list);
-+	INIT_WORK(&dst->rescue_work, bio_alloc_rescue);
-+	dst->rescue_workqueue = src->rescue_workqueue;
-+
-+	memset(src, 0, sizeof(*src));
-+}
-+EXPORT_SYMBOL(bioset_move);
-+
- #ifdef CONFIG_BLK_CGROUP
- 
- /**
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 98dff36b89a3..87f636815baf 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -1982,10 +1982,8 @@ static void __bind_mempools(struct mapped_device *md, struct dm_table *t)
- 	       bioset_initialized(&md->bs) ||
- 	       bioset_initialized(&md->io_bs));
- 
--	md->bs = p->bs;
--	memset(&p->bs, 0, sizeof(p->bs));
--	md->io_bs = p->io_bs;
--	memset(&p->io_bs, 0, sizeof(p->io_bs));
-+	bioset_move(&md->bs, &p->bs);
-+	bioset_move(&md->io_bs, &p->io_bs);
- out:
- 	/* mempool bind completed, no longer need any mempools in the table */
- 	dm_table_free_md_mempools(t);
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 810a8bee8f85..7581231dd0a3 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -417,6 +417,7 @@ enum {
- extern int bioset_init(struct bio_set *, unsigned int, unsigned int, int flags);
- extern void bioset_exit(struct bio_set *);
- extern int biovec_init_pool(mempool_t *pool, int pool_entries);
-+extern void bioset_move(struct bio_set *dst, struct bio_set *src);
- 
- extern struct bio *bio_alloc_bioset(gfp_t, unsigned int, struct bio_set *);
- extern void bio_put(struct bio *);
-diff --git a/include/linux/mempool.h b/include/linux/mempool.h
-index 0c964ac107c2..20818919180c 100644
---- a/include/linux/mempool.h
-+++ b/include/linux/mempool.h
-@@ -47,6 +47,7 @@ extern int mempool_resize(mempool_t *pool, int new_min_nr);
- extern void mempool_destroy(mempool_t *pool);
- extern void *mempool_alloc(mempool_t *pool, gfp_t gfp_mask) __malloc;
- extern void mempool_free(void *element, mempool_t *pool);
-+extern void mempool_move(mempool_t *dst, mempool_t *src);
- 
- /*
-  * A mempool_alloc_t and mempool_free_t that get the memory from
-diff --git a/mm/mempool.c b/mm/mempool.c
-index b54f2c20e5e0..dd402653367b 100644
---- a/mm/mempool.c
-+++ b/mm/mempool.c
-@@ -181,6 +181,8 @@ int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
- 		      mempool_free_t *free_fn, void *pool_data,
- 		      gfp_t gfp_mask, int node_id)
- {
-+	memset(pool, 0, sizeof(*pool));
-+
- 	spin_lock_init(&pool->lock);
- 	pool->min_nr	= min_nr;
- 	pool->pool_data = pool_data;
-@@ -546,3 +548,19 @@ void mempool_free_pages(void *element, void *pool_data)
- 	__free_pages(element, order);
- }
- EXPORT_SYMBOL(mempool_free_pages);
-+
-+void mempool_move(mempool_t *dst, mempool_t *src)
-+{
-+	BUG_ON(waitqueue_active(&src->wait));
-+
-+	spin_lock_init(&dst->lock);
-+	dst->min_nr = src->min_nr;
-+	dst->curr_nr = src->curr_nr;
-+	memcpy(dst->elements, src->elements, sizeof(void *) * src->curr_nr);
-+	dst->pool_data = src->pool_data;
-+	dst->alloc = src->alloc;
-+	dst->free = src->free;
-+	init_waitqueue_head(&dst->wait);
-+
-+	memset(src, 0, sizeof(*src));
-+}
+Patch 3 changes the pmu get/set functions so that they don't read or
+write outside the bounds of thread_struct.mmcr0. The endianess of the
+kernel is used to determine where the mmcr0 word should be placed (or
+read from) in its corresponding 64-bit slot in the regset. I am not
+sure if this is the correct way to go, or if the endianess of the
+thread being traced should determine this position (can the kernel run
+threads with a different endianess?). I used the kernel endianess
+because that is what seems to happen for other registers smaller than
+their regset fields (for instance, it seems that checkpointed CR is
+saved by the kernel as a doubleword, so the the position of the word
+depends on the kernel's endianess). The rest of the function assumes
+that unsigned longs are doublewords, so the patch assumes that an
+unsigned is a word. This patch (and the original pmu_get/set
+functions) might not work if the kernel is compiled in 32 bits.
+
+Patch 4 adds the VSX regset to compat_regsets, which could cause out
+of bounds writes in fs/binfmt_elf.c.
+
+Patch 5 adds the PMU regset to compat_regsets.
+
+I also noticed that the regset for CGPRs for 32-bit threads has 48 * 8
+bytes (same as the one for 64-bit threads), but the data only occupies
+the first 48 * 4 bytes (like for the 32-bit GPR regset). I am not sure
+if this was intended, or if it can be changed now that other programs
+might already assume the 48 * 8 size. If the kernel is compiled in
+32-bits, the size will change (because it depends on sizeof (long)),
+but I don't know if HTM and the corresponding regsets are supported in
+the first place for a 32-bit kernel.
+
+I haven't added the PKEY regset to compat_regsets. Does that make
+sense for 32-bit threads?
+
+Pedro Franco de Carvalho (5):
+  powerpc: Fix inverted active predicate for setting the EBB regset
+  powerpc: Flush checkpointed gpr state for 32-bit processes in ptrace
+  powerpc: Fix pmu get/set functions
+  powerpc: Add VSX regset to compat_regsets
+  powerpc: Add PMU regset to compat_regsets
+
+ arch/powerpc/kernel/ptrace.c | 65 ++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 60 insertions(+), 5 deletions(-)
 
 -- 
-Jens Axboe
+2.13.6
