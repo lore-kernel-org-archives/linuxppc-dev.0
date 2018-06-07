@@ -1,34 +1,33 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 411YxM32JszF32P
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 15:28:55 +1000 (AEST)
-Date: Thu, 7 Jun 2018 15:29:11 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Schmitz <schmitzmic@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 08/11] macintosh/via-pmu: Replace via-pmu68k driver with
- via-pmu driver
-In-Reply-To: <CAMuHMdWQsHLGoxf4_2xtSi4fVc+Lxxa3KXP9VntFYu85YVC0tQ@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1806071514460.12@nippy.intranet>
-References: <cover.1527909627.git.fthain@telegraphics.com.au>
- <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
- <7ce9a8c3996506ae6f9ab16b3cf73c287e205a89.1527909627.git.fthain@telegraphics.com.au>
- <8597ac466215f573d8bea40e74fdec2bf72fabbb.1527909627.git.fthain@telegraphics.com.au>
- <878b389293851359e53de186bf302ce52d95ad95.1527909627.git.fthain@telegraphics.com.au>
- <adba0545c06cd6c67e26c433990d036b0d7e968c.1527909627.git.fthain@telegraphics.com.au>
- <166b4c3a7347fe27f12bda86d50533cd01ee11b9.1527909627.git.fthain@telegraphics.com.au>
- <73507a3e9444da17c222cf74df41842ce30d15ee.1527909627.git.fthain@telegraphics.com.au>
- <de8edb03dbd2fd25b53d0bdf9c6d65adf9aa0aa3.1527909627.git.fthain@telegraphics.com.au>
- <CAMuHMdVheowFa8bx0fg-_Dvx+TMZhPbvouTs82Y3tq1gtSpRMQ@mail.gmail.com>
- <alpine.LNX.2.21.1806061619240.8@nippy.intranet>
- <CAMuHMdWQsHLGoxf4_2xtSi4fVc+Lxxa3KXP9VntFYu85YVC0tQ@mail.gmail.com>
+Return-Path: <BATV+903b398dd7e97a6c787a+5401+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411ZGX6Y5WzDrYb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 15:43:48 +1000 (AEST)
+Date: Wed, 6 Jun 2018 22:23:06 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, robh@kernel.org, aik@ozlabs.ru,
+ jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, hch@infradead.org,
+ joe@perches.com, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ cohuck@redhat.com, pawel.moll@arm.com,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ "Rustad, Mark D" <mark.d.rustad@intel.com>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180607052306.GA1532@infradead.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180531204320-mutt-send-email-mst@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,26 +37,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 6 Jun 2018, Geert Uytterhoeven wrote:
+On Thu, May 31, 2018 at 08:43:58PM +0300, Michael S. Tsirkin wrote:
+> Pls work on a long term solution. Short term needs can be served by
+> enabling the iommu platform in qemu.
 
-> So 4.17 mac_defconfig won't work on PMU_68K_V1 machines? Perhaps that 
-> should be fixed first.
-> 
+So, I spent some time looking at converting virtio to dma ops overrides,
+and the current virtio spec, and the sad through I have to tell is that
+both the spec and the Linux implementation are complete and utterly fucked
+up.
 
-AFAICT there's nothing to fix.
+Both in the flag naming and the implementation there is an implication
+of DMA API == IOMMU, which is fundamentally wrong.
 
-$ grep PMU arch/m68k/configs/mac_defconfig 
-CONFIG_ADB_PMU68K=y
+The DMA API does a few different things:
 
-This works fine for PMU_68K_V2 machines. But if you try to boot a 
-PMU_68K_V1 machine, you will have trouble starting the kernel. Sometimes 
-you can boot by fiddling with ADB devices, but not always. This is not a 
-new problem. The via-pmu68k driver has never worked on PMU_68K_V1 
-machines.
+ a) address translation
 
-So as far as PMU_68K_V1 is concerned, there's no need to bisect any of the 
-changes under review. To answer your question, "Shouldn't that be a 
-separate patch?", all I can say is "not to my knowledge". But I'm probably 
-missing something.
+	This does include IOMMUs.  But it also includes random offsets
+	between PCI bars and system memory that we see on various
+	platforms.  Worse so some of these offsets might be based on
+	banks, e.g. on the broadcom bmips platform.  It also deals
+	with bitmask in physical addresses related to memory encryption
+	like AMD SEV.  I'd be really curious how for example the
+	Intel virtio based NIC is going to work on any of those
+	plaforms.
 
--- 
+  b) coherency
+
+	On many architectures DMA is not cache coherent, and we need
+	to invalidate and/or write back cache lines before doing
+	DMA.  Again, I wonder how this is every going to work with
+	hardware based virtio implementations.  Even worse I think this
+	is actually broken at least for VIVT event for virtualized
+	implementations.  E.g. a KVM guest is going to access memory
+	using different virtual addresses than qemu, vhost might throw
+	in another different address space.
+
+  c) bounce buffering
+
+	Many DMA implementations can not address all physical memory
+	due to addressing limitations.  In such cases we copy the
+	DMA memory into a known addressable bounc buffer and DMA
+	from there.
+
+  d) flushing write combining buffers or similar
+
+	On some hardware platforms we need workarounds to e.g. read
+	from a certain mmio address to make sure DMA can actually
+	see memory written by the host.
+
+All of this is bypassed by virtio by default despite generally being
+platform issues, not particular to a given device.
