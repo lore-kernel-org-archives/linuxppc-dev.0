@@ -1,26 +1,31 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <axboe@kernel.dk>
+Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
+ [IPv6:2607:f8b0:4001:c06::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411nvW1ZGTzF33m
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 00:28:07 +1000 (AEST)
-Date: Thu, 7 Jun 2018 23:28:02 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>, "H . Peter Anvin"
- <hpa@zytor.com>, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>, Paul
- Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC PATCH -tip v5 18/27] powerpc/kprobes: Don't call the
- ->break_handler() in arm kprobes code
-Message-Id: <20180607232802.c5fcea960e94ef2f3cd4cde8@kernel.org>
-In-Reply-To: <1528371112.vwnh1m0k39.naveen@linux.ibm.com>
-References: <152812730943.10068.5166429445118734697.stgit@devbox>
- <152812783350.10068.4690566636762511152.stgit@devbox>
- <1528371112.vwnh1m0k39.naveen@linux.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411pHx6YbbzF33m
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 00:45:48 +1000 (AEST)
+Received: by mail-io0-x244.google.com with SMTP id d22-v6so12084733iof.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 07:45:48 -0700 (PDT)
+Subject: Re: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory
+ hotplug on Power8 baremetal
+To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
+ Bart Van Assche <Bart.VanAssche@wdc.com>, kent.overstreet@gmail.com,
+ snitzer@redhat.com, linux-block@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sachinp@linux.vnet.ibm.com, Linuxppc-dev
+ <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
+References: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
+ <d5b62afc48ece5aca8d08a80871c8613dd555d17.camel@wdc.com>
+ <d011631b-c667-2628-dda8-2c87961329f0@linux.vnet.ibm.com>
+ <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
+ <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
+From: Jens Axboe <axboe@kernel.dk>
+Message-ID: <b1b67ad6-b300-7def-5851-b11baa6edf97@kernel.dk>
+Date: Thu, 7 Jun 2018 08:45:41 -0600
+MIME-Version: 1.0
+In-Reply-To: <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,112 +35,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 07 Jun 2018 17:07:00 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+On 6/7/18 4:37 AM, vrbagal1 wrote:
+> On 2018-06-07 13:12, Bart Van Assche wrote:
+>> On Thu, 2018-06-07 at 12:56 +0530, Venkat Rao B wrote:
+>>> On Thursday 07 June 2018 12:46 PM, Bart Van Assche wrote:
+>>>> On Thu, 2018-06-07 at 12:38 +0530, vrbagal1 wrote:
+>>>>> Observing Kernel oops and machine reboots while executing memory hotplug
+>>>>> test case, on Power8 Baremetal machine.
+>>>>>
+>>>>> I see this is introduced some where between rc6 and 4.17.
+>>>>
+>>>> Please provide the exact versions (git commit IDs) of the kernel versions
+>>>> you have tested.
+>>>
+>>> Commit Id ---> 5037be168f
+>>
+>> The reason I was asking for the commit ID is because I saw that 
+>> clone_endio()
+>> occurs in the oops which means that the dm driver is involved. An 
+>> important fix
+>> for the dm driver went upstream recently, namely d37753540568 ("dm: Use 
+>> kzalloc
+>> for all structs with embedded biosets/mempools"). Can you double check 
+>> whether
+>> that commit it present in your tree? If it is not present, please 
+>> update to the
+>> latest master and retest. If it is present, please report how to 
+>> reproduce
+>> this oops to Kent Overstreet, Jens Axboe, linux-block and Mike Snitzer.
+>>
+>> Thanks,
+>>
+>> Bart.
+> 
+> 
+> Yes, the fix is present in the tree, which I have tested.
+> 
+> Steps to reproduce:
+> 
+> Step1: Clone and Install avocado git clone 
+> https://github.com/avocado-framework/avocado.git
+> Step2: Clone 
+> https://github.com/avocado-framework-tests/avocado-misc-tests.git
+>         Test case is 
+> https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py
+> Step3: Command to run the test is avocado run 
+> avocado-misc-tests/memory/memhotplug.py
 
-> Masami Hiramatsu wrote:
-> > Don't call the ->break_handler() from the arm kprobes code,
-> 					    ^^^ powerpc
-> 
-> > because it was only used by jprobes which got removed.
-> > 
-> > This also makes skip_singlestep() a static function since
-> > only ftrace-kprobe.c is using this function.
-> > 
-> > Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
-> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> > Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > ---
-> >  arch/powerpc/include/asm/kprobes.h   |   10 ----------
-> >  arch/powerpc/kernel/kprobes-ftrace.c |   16 +++-------------
-> >  arch/powerpc/kernel/kprobes.c        |   31 +++++++++++--------------------
-> >  3 files changed, 14 insertions(+), 43 deletions(-)
-> 
-> With 2 small comments...
+Can you try with the below? Not a fully formed fix since I'd prefer
+if the dm bioset copy stuff was changed instead, but worth a shot.
 
-2 ? or 1 ?
 
-> Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> 
-> - Naveen
-> 
-> > 
-> > diff --git a/arch/powerpc/include/asm/kprobes.h b/arch/powerpc/include/asm/kprobes.h
-> > index 674036db558b..785c464b6588 100644
-> > --- a/arch/powerpc/include/asm/kprobes.h
-> > +++ b/arch/powerpc/include/asm/kprobes.h
-> > @@ -102,16 +102,6 @@ extern int kprobe_exceptions_notify(struct notifier_block *self,
-> >  extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
-> >  extern int kprobe_handler(struct pt_regs *regs);
-> >  extern int kprobe_post_handler(struct pt_regs *regs);
-> > -#ifdef CONFIG_KPROBES_ON_FTRACE
-> > -extern int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> > -			   struct kprobe_ctlblk *kcb);
-> > -#else
-> > -static inline int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> > -				  struct kprobe_ctlblk *kcb)
-> > -{
-> > -	return 0;
-> > -}
-> > -#endif
-> >  #else
-> >  static inline int kprobe_handler(struct pt_regs *regs) { return 0; }
-> >  static inline int kprobe_post_handler(struct pt_regs *regs) { return 0; }
-> > diff --git a/arch/powerpc/kernel/kprobes-ftrace.c b/arch/powerpc/kernel/kprobes-ftrace.c
-> > index 1b316331c2d9..3869b0e5d5c7 100644
-> > --- a/arch/powerpc/kernel/kprobes-ftrace.c
-> > +++ b/arch/powerpc/kernel/kprobes-ftrace.c
-> > @@ -26,8 +26,8 @@
-> >  #include <linux/ftrace.h>
-> > 
-> >  static nokprobe_inline
-> > -int __skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> > -		      struct kprobe_ctlblk *kcb, unsigned long orig_nip)
-> > +int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> > +		    struct kprobe_ctlblk *kcb, unsigned long orig_nip)
-> >  {
-> >  	/*
-> >  	 * Emulate singlestep (and also recover regs->nip)
-> > @@ -44,16 +44,6 @@ int __skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> >  	return 1;
-> >  }
-> > 
-> > -int skip_singlestep(struct kprobe *p, struct pt_regs *regs,
-> > -		    struct kprobe_ctlblk *kcb)
-> > -{
-> > -	if (kprobe_ftrace(p))
-> > -		return __skip_singlestep(p, regs, kcb, 0);
-> > -	else
-> > -		return 0;
-> > -}
-> > -NOKPROBE_SYMBOL(skip_singlestep);
-> > -
-> >  /* Ftrace callback handler for kprobes */
-> >  void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
-> >  			   struct ftrace_ops *ops, struct pt_regs *regs)
-> > @@ -82,7 +72,7 @@ void kprobe_ftrace_handler(unsigned long nip, unsigned long parent_nip,
-> >  		__this_cpu_write(current_kprobe, p);
-> >  		kcb->kprobe_status = KPROBE_HIT_ACTIVE;
-> >  		if (!p->pre_handler || !p->pre_handler(p, regs))
-> > -			__skip_singlestep(p, regs, kcb, orig_nip);
-> > +			skip_singlestep(p, regs, kcb, orig_nip);
-> 
-> We can probably get rid of skip_singlestep() completely along with 
-> orig_nip since instructions are always 4 bytes on powerpc. So, the 
-> changes we do to nip should help to recover the value automatically.
-
-Good point! Yes, skip_singlestep() is no more exported, so we just consolidate
-it into kprobe_ftrace_handler() for simplifying operation.
-
-Thank you!
-> 
-> - Naveen
-> 
-> 
-
+diff --git a/block/bio.c b/block/bio.c
+index 595663e0281a..45bdee67d28b 100644
+--- a/block/bio.c
++++ b/block/bio.c
+@@ -1967,6 +1967,27 @@ int bioset_init(struct bio_set *bs,
+ }
+ EXPORT_SYMBOL(bioset_init);
+ 
++void bioset_move(struct bio_set *dst, struct bio_set *src)
++{
++	dst->bio_slab = src->bio_slab;
++	dst->front_pad = src->front_pad;
++	mempool_move(&dst->bio_pool, &src->bio_pool);
++	mempool_move(&dst->bvec_pool, &src->bvec_pool);
++#if defined(CONFIG_BLK_DEV_INTEGRITY)
++	mempool_move(&dst->bio_integrity_pool, &src->bio_integrity_pool);
++	mempool_move(&dst->bvec_integrity_pool, &src->bvec_integrity_pool);
++#endif
++	BUG_ON(!bio_list_empty(&src->rescue_list));
++	BUG_ON(work_pending(&src->rescue_work));
++	spin_lock_init(&dst->rescue_lock);
++	bio_list_init(&dst->rescue_list);
++	INIT_WORK(&dst->rescue_work, bio_alloc_rescue);
++	dst->rescue_workqueue = src->rescue_workqueue;
++
++	memset(src, 0, sizeof(*src));
++}
++EXPORT_SYMBOL(bioset_move);
++
+ #ifdef CONFIG_BLK_CGROUP
+ 
+ /**
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 98dff36b89a3..87f636815baf 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -1982,10 +1982,8 @@ static void __bind_mempools(struct mapped_device *md, struct dm_table *t)
+ 	       bioset_initialized(&md->bs) ||
+ 	       bioset_initialized(&md->io_bs));
+ 
+-	md->bs = p->bs;
+-	memset(&p->bs, 0, sizeof(p->bs));
+-	md->io_bs = p->io_bs;
+-	memset(&p->io_bs, 0, sizeof(p->io_bs));
++	bioset_move(&md->bs, &p->bs);
++	bioset_move(&md->io_bs, &p->io_bs);
+ out:
+ 	/* mempool bind completed, no longer need any mempools in the table */
+ 	dm_table_free_md_mempools(t);
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 810a8bee8f85..7581231dd0a3 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -417,6 +417,7 @@ enum {
+ extern int bioset_init(struct bio_set *, unsigned int, unsigned int, int flags);
+ extern void bioset_exit(struct bio_set *);
+ extern int biovec_init_pool(mempool_t *pool, int pool_entries);
++extern void bioset_move(struct bio_set *dst, struct bio_set *src);
+ 
+ extern struct bio *bio_alloc_bioset(gfp_t, unsigned int, struct bio_set *);
+ extern void bio_put(struct bio *);
+diff --git a/include/linux/mempool.h b/include/linux/mempool.h
+index 0c964ac107c2..20818919180c 100644
+--- a/include/linux/mempool.h
++++ b/include/linux/mempool.h
+@@ -47,6 +47,7 @@ extern int mempool_resize(mempool_t *pool, int new_min_nr);
+ extern void mempool_destroy(mempool_t *pool);
+ extern void *mempool_alloc(mempool_t *pool, gfp_t gfp_mask) __malloc;
+ extern void mempool_free(void *element, mempool_t *pool);
++extern void mempool_move(mempool_t *dst, mempool_t *src);
+ 
+ /*
+  * A mempool_alloc_t and mempool_free_t that get the memory from
+diff --git a/mm/mempool.c b/mm/mempool.c
+index b54f2c20e5e0..dd402653367b 100644
+--- a/mm/mempool.c
++++ b/mm/mempool.c
+@@ -181,6 +181,8 @@ int mempool_init_node(mempool_t *pool, int min_nr, mempool_alloc_t *alloc_fn,
+ 		      mempool_free_t *free_fn, void *pool_data,
+ 		      gfp_t gfp_mask, int node_id)
+ {
++	memset(pool, 0, sizeof(*pool));
++
+ 	spin_lock_init(&pool->lock);
+ 	pool->min_nr	= min_nr;
+ 	pool->pool_data = pool_data;
+@@ -546,3 +548,19 @@ void mempool_free_pages(void *element, void *pool_data)
+ 	__free_pages(element, order);
+ }
+ EXPORT_SYMBOL(mempool_free_pages);
++
++void mempool_move(mempool_t *dst, mempool_t *src)
++{
++	BUG_ON(waitqueue_active(&src->wait));
++
++	spin_lock_init(&dst->lock);
++	dst->min_nr = src->min_nr;
++	dst->curr_nr = src->curr_nr;
++	memcpy(dst->elements, src->elements, sizeof(void *) * src->curr_nr);
++	dst->pool_data = src->pool_data;
++	dst->alloc = src->alloc;
++	dst->free = src->free;
++	init_waitqueue_head(&dst->wait);
++
++	memset(src, 0, sizeof(*src));
++}
 
 -- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Jens Axboe
