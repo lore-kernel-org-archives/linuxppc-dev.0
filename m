@@ -1,22 +1,34 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411WBV2TL0zF324
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 13:25:06 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Richard Cochran <richardcochran@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v2, 10/10] dpaa_eth: add the get_ts_info interface for ethtool
-Date: Thu,  7 Jun 2018 11:22:56 +0800
-Message-Id: <20180607032256.39802-11-yangbo.lu@nxp.com>
-In-Reply-To: <20180607032256.39802-1-yangbo.lu@nxp.com>
-References: <20180607032256.39802-1-yangbo.lu@nxp.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 411YxM32JszF32P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 15:28:55 +1000 (AEST)
+Date: Thu, 7 Jun 2018 15:29:11 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 08/11] macintosh/via-pmu: Replace via-pmu68k driver with
+ via-pmu driver
+In-Reply-To: <CAMuHMdWQsHLGoxf4_2xtSi4fVc+Lxxa3KXP9VntFYu85YVC0tQ@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1806071514460.12@nippy.intranet>
+References: <cover.1527909627.git.fthain@telegraphics.com.au>
+ <f32f4e3a0fd736152f768b7a00bfc731daba1629.1527909627.git.fthain@telegraphics.com.au>
+ <7ce9a8c3996506ae6f9ab16b3cf73c287e205a89.1527909627.git.fthain@telegraphics.com.au>
+ <8597ac466215f573d8bea40e74fdec2bf72fabbb.1527909627.git.fthain@telegraphics.com.au>
+ <878b389293851359e53de186bf302ce52d95ad95.1527909627.git.fthain@telegraphics.com.au>
+ <adba0545c06cd6c67e26c433990d036b0d7e968c.1527909627.git.fthain@telegraphics.com.au>
+ <166b4c3a7347fe27f12bda86d50533cd01ee11b9.1527909627.git.fthain@telegraphics.com.au>
+ <73507a3e9444da17c222cf74df41842ce30d15ee.1527909627.git.fthain@telegraphics.com.au>
+ <de8edb03dbd2fd25b53d0bdf9c6d65adf9aa0aa3.1527909627.git.fthain@telegraphics.com.au>
+ <CAMuHMdVheowFa8bx0fg-_Dvx+TMZhPbvouTs82Y3tq1gtSpRMQ@mail.gmail.com>
+ <alpine.LNX.2.21.1806061619240.8@nippy.intranet>
+ <CAMuHMdWQsHLGoxf4_2xtSi4fVc+Lxxa3KXP9VntFYu85YVC0tQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,78 +38,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added the get_ts_info interface for ethtool to check
-the timestamping capability.
+On Wed, 6 Jun 2018, Geert Uytterhoeven wrote:
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
----
-Changes for v2:
-	- Removed ifdef for hw timestamp.
----
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |   39 ++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+> So 4.17 mac_defconfig won't work on PMU_68K_V1 machines? Perhaps that 
+> should be fixed first.
+> 
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-index 2f933b6..3184c8f 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-@@ -32,6 +32,9 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/string.h>
-+#include <linux/of_platform.h>
-+#include <linux/net_tstamp.h>
-+#include <linux/fsl/ptp_qoriq.h>
- 
- #include "dpaa_eth.h"
- #include "mac.h"
-@@ -515,6 +518,41 @@ static int dpaa_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	return ret;
- }
- 
-+static int dpaa_get_ts_info(struct net_device *net_dev,
-+			    struct ethtool_ts_info *info)
-+{
-+	struct device *dev = net_dev->dev.parent;
-+	struct device_node *mac_node = dev->of_node;
-+	struct device_node *fman_node = NULL, *ptp_node = NULL;
-+	struct platform_device *ptp_dev = NULL;
-+	struct qoriq_ptp *ptp = NULL;
-+
-+	info->phc_index = -1;
-+
-+	fman_node = of_get_parent(mac_node);
-+	if (fman_node)
-+		ptp_node = of_parse_phandle(fman_node, "ptimer-handle", 0);
-+
-+	if (ptp_node)
-+		ptp_dev = of_find_device_by_node(ptp_node);
-+
-+	if (ptp_dev)
-+		ptp = platform_get_drvdata(ptp_dev);
-+
-+	if (ptp)
-+		info->phc_index = ptp->phc_index;
-+
-+	info->so_timestamping = SOF_TIMESTAMPING_TX_HARDWARE |
-+				SOF_TIMESTAMPING_RX_HARDWARE |
-+				SOF_TIMESTAMPING_RAW_HARDWARE;
-+	info->tx_types = (1 << HWTSTAMP_TX_OFF) |
-+			 (1 << HWTSTAMP_TX_ON);
-+	info->rx_filters = (1 << HWTSTAMP_FILTER_NONE) |
-+			   (1 << HWTSTAMP_FILTER_ALL);
-+
-+	return 0;
-+}
-+
- const struct ethtool_ops dpaa_ethtool_ops = {
- 	.get_drvinfo = dpaa_get_drvinfo,
- 	.get_msglevel = dpaa_get_msglevel,
-@@ -530,4 +568,5 @@ static int dpaa_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	.set_link_ksettings = dpaa_set_link_ksettings,
- 	.get_rxnfc = dpaa_get_rxnfc,
- 	.set_rxnfc = dpaa_set_rxnfc,
-+	.get_ts_info = dpaa_get_ts_info,
- };
+AFAICT there's nothing to fix.
+
+$ grep PMU arch/m68k/configs/mac_defconfig 
+CONFIG_ADB_PMU68K=y
+
+This works fine for PMU_68K_V2 machines. But if you try to boot a 
+PMU_68K_V1 machine, you will have trouble starting the kernel. Sometimes 
+you can boot by fiddling with ADB devices, but not always. This is not a 
+new problem. The via-pmu68k driver has never worked on PMU_68K_V1 
+machines.
+
+So as far as PMU_68K_V1 is concerned, there's no need to bisect any of the 
+changes under review. To answer your question, "Shouldn't that be a 
+separate patch?", all I can say is "not to my knowledge". But I'm probably 
+missing something.
+
 -- 
-1.7.1
