@@ -2,8 +2,8 @@ Return-Path: <yangbo.lu@nxp.com>
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411g6r2rRHzF338
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:22:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411g6v0km2zF33V
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:22:30 +1000 (AEST)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
  Richard Cochran <richardcochran@gmail.com>,
@@ -12,9 +12,11 @@ To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v3, 00/10] Support DPAA PTP clock and timestamping
-Date: Thu,  7 Jun 2018 17:20:40 +0800
-Message-Id: <20180607092050.46128-1-yangbo.lu@nxp.com>
+Subject: [v3, 01/10] fsl/fman: share the event interrupt
+Date: Thu,  7 Jun 2018 17:20:41 +0800
+Message-Id: <20180607092050.46128-2-yangbo.lu@nxp.com>
+In-Reply-To: <20180607092050.46128-1-yangbo.lu@nxp.com>
+References: <20180607092050.46128-1-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset is to support DPAA FMAN PTP clock and HW timestamping.
-It had been verified on both ARM platform and PPC platform.
-- The patch #1 to patch #5 are to support DPAA FMAN 1588 timer in
-  ptp_qoriq driver.
-- The patch #6 to patch #10 are to add HW timestamping support in
-  DPAA ethernet driver.
+This patch is to share fman event interrupt because
+the 1588 timer driver will also use this interrupt.
 
-Yangbo Lu (10):
-  fsl/fman: share the event interrupt
-  ptp: support DPAA FMan 1588 timer in ptp_qoriq
-  dt-binding: ptp_qoriq: add DPAA FMan support
-  powerpc/mpc85xx: move ptp timer out of fman in dts
-  arm64: dts: fsl: move ptp timer out of fman
-  fsl/fman: add set_tstamp interface
-  fsl/fman_port: support getting timestamp
-  fsl/fman: define frame description command UPD
-  dpaa_eth: add support for hardware timestamping
-  dpaa_eth: add the get_ts_info interface for ethtool
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+---
+Changes for v2:
+	- None.
+Changes for v3:
+	- None.
+---
+ drivers/net/ethernet/freescale/fman/fman.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
- Documentation/devicetree/bindings/net/fsl-fman.txt |   25 +-----
- .../devicetree/bindings/ptp/ptp-qoriq.txt          |   15 +++-
- arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi   |   14 ++-
- arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi        |   14 ++-
- arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi        |   14 ++-
- arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi       |   14 ++-
- arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi       |   14 ++-
- arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi      |   14 ++-
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |   88 ++++++++++++++++-
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |    3 +
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |   39 ++++++++
- drivers/net/ethernet/freescale/fman/fman.c         |    3 +-
- drivers/net/ethernet/freescale/fman/fman.h         |    1 +
- drivers/net/ethernet/freescale/fman/fman_dtsec.c   |   27 +++++
- drivers/net/ethernet/freescale/fman/fman_dtsec.h   |    1 +
- drivers/net/ethernet/freescale/fman/fman_memac.c   |    5 +
- drivers/net/ethernet/freescale/fman/fman_memac.h   |    1 +
- drivers/net/ethernet/freescale/fman/fman_port.c    |   12 +++
- drivers/net/ethernet/freescale/fman/fman_port.h    |    2 +
- drivers/net/ethernet/freescale/fman/fman_tgec.c    |   21 ++++
- drivers/net/ethernet/freescale/fman/fman_tgec.h    |    1 +
- drivers/net/ethernet/freescale/fman/mac.c          |    3 +
- drivers/net/ethernet/freescale/fman/mac.h          |    1 +
- drivers/ptp/Kconfig                                |    2 +-
- drivers/ptp/ptp_qoriq.c                            |  104 ++++++++++++-------
- include/linux/fsl/ptp_qoriq.h                      |   38 ++++++--
- 26 files changed, 361 insertions(+), 115 deletions(-)
+diff --git a/drivers/net/ethernet/freescale/fman/fman.c b/drivers/net/ethernet/freescale/fman/fman.c
+index 9530405..c415ac6 100644
+--- a/drivers/net/ethernet/freescale/fman/fman.c
++++ b/drivers/net/ethernet/freescale/fman/fman.c
+@@ -2801,7 +2801,8 @@ static irqreturn_t fman_irq(int irq, void *handle)
+ 	of_node_put(muram_node);
+ 	of_node_put(fm_node);
+ 
+-	err = devm_request_irq(&of_dev->dev, irq, fman_irq, 0, "fman", fman);
++	err = devm_request_irq(&of_dev->dev, irq, fman_irq, IRQF_SHARED,
++			       "fman", fman);
+ 	if (err < 0) {
+ 		dev_err(&of_dev->dev, "%s: irq %d allocation failed (error = %d)\n",
+ 			__func__, irq, err);
+-- 
+1.7.1
