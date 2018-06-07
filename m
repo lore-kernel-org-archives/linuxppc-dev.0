@@ -1,41 +1,33 @@
-Return-Path: <vrbagal1@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=yflj=iz=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411hhW5QSWzF1Hv
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:33:15 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57ASbdp078192
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 06:33:12 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jf2ew9rtw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 06:33:12 -0400
-Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vrbagal1@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 04:33:11 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411hzK5QtnzF33m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:46:05 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 411hzK4lGtz8tKk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:46:05 +1000 (AEST)
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 411hzK19NXz9s1b
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2018 20:46:04 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id e11-v6so4578940pgq.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 03:46:04 -0700 (PDT)
+Date: Thu, 7 Jun 2018 20:45:54 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [v2 PATCH 0/5] powerpc/pseries: Machien check handler
+ improvements.
+Message-ID: <20180607204554.05565a56@roar.ozlabs.ibm.com>
+In-Reply-To: <152836568375.29173.3046879842311381046.stgit@jupiter.in.ibm.com>
+References: <152836568375.29173.3046879842311381046.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Thu, 07 Jun 2018 16:07:23 +0530
-From: vrbagal1 <vrbagal1@linux.vnet.ibm.com>
-To: Bart Van Assche <Bart.VanAssche@wdc.com>, axboe@kernel.dk,
- kent.overstreet@gmail.com, snitzer@redhat.com, linux-block@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sachinp@linux.vnet.ibm.com, Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
-Subject: Re: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory
- hotplug on Power8 baremetal
-In-Reply-To: <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
-References: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
- <d5b62afc48ece5aca8d08a80871c8613dd555d17.camel@wdc.com>
- <d011631b-c667-2628-dda8-2c87961329f0@linux.vnet.ibm.com>
- <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
-Message-Id: <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,51 +37,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018-06-07 13:12, Bart Van Assche wrote:
-> On Thu, 2018-06-07 at 12:56 +0530, Venkat Rao B wrote:
->> On Thursday 07 June 2018 12:46 PM, Bart Van Assche wrote:
->> > On Thu, 2018-06-07 at 12:38 +0530, vrbagal1 wrote:
->> > > Observing Kernel oops and machine reboots while executing memory hotplug
->> > > test case, on Power8 Baremetal machine.
->> > >
->> > > I see this is introduced some where between rc6 and 4.17.
->> >
->> > Please provide the exact versions (git commit IDs) of the kernel versions
->> > you have tested.
->> 
->> Commit Id ---> 5037be168f
+On Thu, 07 Jun 2018 15:36:25 +0530
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+
+> This patch series includes some improvement to Machine check handler
+> for pseries. Patch 1 fixes an issue where machine check handler crashes
+> kernel while accessing vmalloc-ed buffer while in nmi context.
+> Patch 3 dumps the SLB contents on SLB MCE errors to improve the debugability.
+> Patch 4 display's the MCE error details on console.
 > 
-> The reason I was asking for the commit ID is because I saw that 
-> clone_endio()
-> occurs in the oops which means that the dm driver is involved. An 
-> important fix
-> for the dm driver went upstream recently, namely d37753540568 ("dm: Use 
-> kzalloc
-> for all structs with embedded biosets/mempools"). Can you double check 
-> whether
-> that commit it present in your tree? If it is not present, please 
-> update to the
-> latest master and retest. If it is present, please report how to 
-> reproduce
-> this oops to Kent Overstreet, Jens Axboe, linux-block and Mike Snitzer.
+> Change in V2:
+> - patch 4: Display additional info (NIP and task info) in MCE error details.
+> - patch 5: Fix endain bug while restoring of r3 in MCE handler.
 > 
-> Thanks,
+> ---
 > 
-> Bart.
+> Mahesh Salgaonkar (5):
+>       powerpc/pseries: convert rtas_log_buf to linear allocation.
+>       powerpc/pseries: Define MCE error event section.
+>       powerpc/pseries: Dump and flush SLB contents on SLB MCE errors.
+>       powerpc/pseries: Display machine check error details.
+>       powerpc/pseries: Fix endainness while restoring of r3 in MCE handler.
 
+These look good, should patch 5 be moved to patch 2 and the first 2
+patches marked for stable?
 
-Yes, the fix is present in the tree, which I have tested.
+Do you also plan to dump SLB contents for bare metal MCEs?
 
-Steps to reproduce:
-
-Step1: Clone and Install avocado git clone 
-https://github.com/avocado-framework/avocado.git
-Step2: Clone 
-https://github.com/avocado-framework-tests/avocado-misc-tests.git
-        Test case is 
-https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py
-Step3: Command to run the test is avocado run 
-avocado-misc-tests/memory/memhotplug.py
-
-Regards,
-Venkat.
+Thanks,
+Nick
