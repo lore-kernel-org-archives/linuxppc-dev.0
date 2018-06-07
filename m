@@ -1,19 +1,41 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vrbagal1@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411hBB0dT2zDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:10:25 +1000 (AEST)
-Message-Id: <630b39e3b632912e982168782e071ddf15336eb3.1528365638.git.christophe.leroy@c-s.fr>
-In-Reply-To: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
-References: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/3] powerpc: Allow CPU selection of e300core variants
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- npiggin@gmail.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  7 Jun 2018 10:10:22 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411hhW5QSWzF1Hv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:33:15 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w57ASbdp078192
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 06:33:12 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jf2ew9rtw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 06:33:12 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vrbagal1@linux.vnet.ibm.com>;
+ Thu, 7 Jun 2018 04:33:11 -0600
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Thu, 07 Jun 2018 16:07:23 +0530
+From: vrbagal1 <vrbagal1@linux.vnet.ibm.com>
+To: Bart Van Assche <Bart.VanAssche@wdc.com>, axboe@kernel.dk,
+ kent.overstreet@gmail.com, snitzer@redhat.com, linux-block@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sachinp@linux.vnet.ibm.com, Linuxppc-dev
+ <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
+Subject: Re: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory
+ hotplug on Power8 baremetal
+In-Reply-To: <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
+References: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
+ <d5b62afc48ece5aca8d08a80871c8613dd555d17.camel@wdc.com>
+ <d011631b-c667-2628-dda8-2c87961329f0@linux.vnet.ibm.com>
+ <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
+Message-Id: <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +45,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-GCC supports -mcpu=e300c2 and -mcpu=e300c3
+On 2018-06-07 13:12, Bart Van Assche wrote:
+> On Thu, 2018-06-07 at 12:56 +0530, Venkat Rao B wrote:
+>> On Thursday 07 June 2018 12:46 PM, Bart Van Assche wrote:
+>> > On Thu, 2018-06-07 at 12:38 +0530, vrbagal1 wrote:
+>> > > Observing Kernel oops and machine reboots while executing memory hotplug
+>> > > test case, on Power8 Baremetal machine.
+>> > >
+>> > > I see this is introduced some where between rc6 and 4.17.
+>> >
+>> > Please provide the exact versions (git commit IDs) of the kernel versions
+>> > you have tested.
+>> 
+>> Commit Id ---> 5037be168f
+> 
+> The reason I was asking for the commit ID is because I saw that 
+> clone_endio()
+> occurs in the oops which means that the dm driver is involved. An 
+> important fix
+> for the dm driver went upstream recently, namely d37753540568 ("dm: Use 
+> kzalloc
+> for all structs with embedded biosets/mempools"). Can you double check 
+> whether
+> that commit it present in your tree? If it is not present, please 
+> update to the
+> latest master and retest. If it is present, please report how to 
+> reproduce
+> this oops to Kent Overstreet, Jens Axboe, linux-block and Mike Snitzer.
+> 
+> Thanks,
+> 
+> Bart.
 
-This patch gives the opportunity to tune kernel to one of
-those two types.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/platforms/Kconfig.cputype | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+Yes, the fix is present in the tree, which I have tested.
 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index ed7c6edec87e..d174acb41389 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -145,6 +145,14 @@ config 860_CPU
- 	bool "8xx family"
- 	depends on PPC_8xx
- 
-+config E300C2_CPU
-+	bool "e300c2 (832x)"
-+	depends on PPC_BOOK3S_32
-+
-+config E300C3_CPU
-+	bool "e300c3 (831x)"
-+	depends on PPC_BOOK3S_32
-+
- endchoice
- 
- config SPECIAL_CPU_BOOL
-@@ -161,6 +169,8 @@ config SPECIAL_CPU
- 	default "power8" if POWER8_CPU
- 	default "power9" if POWER9_CPU
- 	default "860" if 860_CPU
-+	default "e300c2" if E300C2_CPU
-+	default "e300c3" if E300C3_CPU
- 
- config PPC_BOOK3S
- 	def_bool y
--- 
-2.13.3
+Steps to reproduce:
+
+Step1: Clone and Install avocado git clone 
+https://github.com/avocado-framework/avocado.git
+Step2: Clone 
+https://github.com/avocado-framework-tests/avocado-misc-tests.git
+        Test case is 
+https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py
+Step3: Command to run the test is avocado run 
+avocado-misc-tests/memory/memhotplug.py
+
+Regards,
+Venkat.
