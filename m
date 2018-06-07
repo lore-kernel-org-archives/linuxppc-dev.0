@@ -1,44 +1,19 @@
-Return-Path: <srs0=fawz=iz=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f54.google.com (mail-oi0-f54.google.com
+ [209.85.218.54])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411swd5565zF34x
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:29:21 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 411swd4SSdz994y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:29:21 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 411swd00jWz9s1b
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 03:29:20 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57HJjBJ093240
- for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2018 13:29:19 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jf5pf2bd2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 13:29:18 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 18:29:16 +0100
-Subject: [v3 PATCH 5/5] powerpc/pseries: Display machine check error details.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 07 Jun 2018 22:59:04 +0530
-In-Reply-To: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
-References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411vBw74WhzF35G
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 04:26:48 +1000 (AEST)
+Received: by mail-oi0-f54.google.com with SMTP id k190-v6so9503036oib.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 11:26:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152839254280.25118.11212831020041096859.stgit@jupiter.in.ibm.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Thu, 7 Jun 2018 20:26:33 +0200
+Message-ID: <CA+7wUszLF3R3QCgBw2jwLtgLw2C=QnH1jHz6_RUDDouMEmfr9A@mail.gmail.com>
+Subject: UBSAN: Undefined behaviour in ../include/linux/percpu_counter.h:137:13
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,191 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Hi there,
 
-Extract the MCE error details from RTAS extended log and display it to
-console.
+I have a reproducible UBSAN appearing in dmesg after a while on my G4
+(*). Could anyone suggest a way to diagnose the actual root issue here
+(or is it just a false positive) ?
 
-With this patch you should now see mce logs like below:
+Thanks,
 
-[  142.371818] Severe Machine check interrupt [Recovered]
-[  142.371822]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
-[  142.371822]   Initiator: CPU
-[  142.371823]   Error type: SLB [Multihit]
-[  142.371824]     Effective address: d00000000ca70000
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/rtas.h      |    5 +
- arch/powerpc/platforms/pseries/ras.c |  128 +++++++++++++++++++++++++++++++++-
- 2 files changed, 131 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 3f2fba7ef23b..8100a95c133a 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -190,6 +190,11 @@ static inline uint8_t rtas_error_extended(const struct rtas_error_log *elog)
- 	return (elog->byte1 & 0x04) >> 2;
- }
- 
-+static inline uint8_t rtas_error_initiator(const struct rtas_error_log *elog)
-+{
-+	return (elog->byte2 & 0xf0) >> 4;
-+}
-+
- #define rtas_error_type(x)	((x)->byte3)
- 
- static inline
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index e56759d92356..cd9446980092 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -422,7 +422,130 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
- 	return 0; /* need to perform reset */
- }
- 
--static int mce_handle_error(struct rtas_error_log *errp)
-+#define VAL_TO_STRING(ar, val)	((val < ARRAY_SIZE(ar)) ? ar[val] : "Unknown")
-+
-+static void pseries_print_mce_info(struct pt_regs *regs,
-+				struct rtas_error_log *errp, int disposition)
-+{
-+	const char *level, *sevstr;
-+	struct pseries_errorlog *pseries_log;
-+	struct pseries_mc_errorlog *mce_log;
-+	uint8_t error_type, err_sub_type;
-+	uint8_t initiator = rtas_error_initiator(errp);
-+	uint64_t addr;
-+
-+	static const char * const initiators[] = {
-+		"Unknown",
-+		"CPU",
-+		"PCI",
-+		"ISA",
-+		"Memory",
-+		"Power Mgmt",
-+	};
-+	static const char * const mc_err_types[] = {
-+		"UE",
-+		"SLB",
-+		"ERAT",
-+		"TLB",
-+		"D-Cache",
-+		"Unknown",
-+		"I-Cache",
-+	};
-+	static const char * const mc_ue_types[] = {
-+		"Indeterminate",
-+		"Instruction fetch",
-+		"Page table walk ifetch",
-+		"Load/Store",
-+		"Page table walk Load/Store",
-+	};
-+
-+	/* SLB sub errors valid values are 0x0, 0x1, 0x2 */
-+	static const char * const mc_slb_types[] = {
-+		"Parity",
-+		"Multihit",
-+		"Indeterminate",
-+	};
-+
-+	/* TLB and ERAT sub errors valid values are 0x1, 0x2, 0x3 */
-+	static const char * const mc_soft_types[] = {
-+		"Unknown",
-+		"Parity",
-+		"Multihit",
-+		"Indeterminate",
-+	};
-+
-+	pseries_log = get_pseries_errorlog(errp, PSERIES_ELOG_SECT_ID_MCE);
-+	if (pseries_log == NULL)
-+		return;
-+
-+	mce_log = (struct pseries_mc_errorlog *)pseries_log->data;
-+
-+	error_type = rtas_mc_error_type(mce_log);
-+	err_sub_type = rtas_mc_error_sub_type(mce_log);
-+
-+	switch (rtas_error_severity(errp)) {
-+	case RTAS_SEVERITY_NO_ERROR:
-+		level = KERN_INFO;
-+		sevstr = "Harmless";
-+		break;
-+	case RTAS_SEVERITY_WARNING:
-+		level = KERN_WARNING;
-+		sevstr = "";
-+		break;
-+	case RTAS_SEVERITY_ERROR:
-+	case RTAS_SEVERITY_ERROR_SYNC:
-+		level = KERN_ERR;
-+		sevstr = "Severe";
-+		break;
-+	case RTAS_SEVERITY_FATAL:
-+	default:
-+		level = KERN_ERR;
-+		sevstr = "Fatal";
-+		break;
-+	}
-+
-+	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
-+		disposition == RTAS_DISP_FULLY_RECOVERED ?
-+		"Recovered" : "Not recovered");
-+	if (user_mode(regs)) {
-+		printk("%s  NIP: [%016lx] PID: %d Comm: %s\n", level,
-+			regs->nip, current->pid, current->comm);
-+	} else {
-+		printk("%s  NIP [%016lx]: %pS\n", level, regs->nip,
-+			(void *)regs->nip);
-+	}
-+	printk("%s  Initiator: %s\n", level,
-+				VAL_TO_STRING(initiators, initiator));
-+
-+	switch (error_type) {
-+	case PSERIES_MC_ERROR_TYPE_UE:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_ue_types, err_sub_type));
-+		break;
-+	case PSERIES_MC_ERROR_TYPE_SLB:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_slb_types, err_sub_type));
-+		break;
-+	case PSERIES_MC_ERROR_TYPE_ERAT:
-+	case PSERIES_MC_ERROR_TYPE_TLB:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_soft_types, err_sub_type));
-+		break;
-+	default:
-+		printk("%s  Error type: %s\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type));
-+		break;
-+	}
-+
-+	addr = rtas_mc_get_effective_addr(mce_log);
-+	if (addr)
-+		printk("%s    Effective address: %016llx\n", level, addr);
-+}
-+
-+static int mce_handle_error(struct pt_regs *regs, struct rtas_error_log *errp)
- {
- 	struct pseries_errorlog *pseries_log;
- 	struct pseries_mc_errorlog *mce_log;
-@@ -442,6 +565,7 @@ static int mce_handle_error(struct rtas_error_log *errp)
- 		slb_flush_and_rebolt();
- 		disposition = RTAS_DISP_FULLY_RECOVERED;
- 	}
-+	pseries_print_mce_info(regs, errp, disposition);
- 
- out:
- 	return disposition;
-@@ -461,7 +585,7 @@ static int recover_mce(struct pt_regs *regs, struct rtas_error_log *err)
- 	int recovered = 0;
- 	int disposition;
- 
--	disposition = mce_handle_error(err);
-+	disposition = mce_handle_error(regs, err);
- 
- 	if (!(regs->msr & MSR_RI)) {
- 		/* If MSR_RI isn't set, we cannot recover */
+(*)
+[41877.514338] ================================================================================
+[41877.514364] UBSAN: Undefined behaviour in
+../include/linux/percpu_counter.h:137:13
+[41877.514373] signed integer overflow:
+[41877.514378] 9223352809007201260 + 41997676517838 cannot be
+represented in type 'long long int'
+[41877.514389] CPU: 0 PID: 0 Comm: swapper Not tainted 4.17.0+ #54
+[41877.514394] Call Trace:
+[41877.514411] [dffedd30] [c047a5f8] ubsan_epilogue+0x18/0x4c (unreliable)
+[41877.514422] [dffedd40] [c047af98] handle_overflow+0xbc/0xdc
+[41877.514437] [dffeddc0] [c043aaa8] cfq_completed_request+0x560/0x1234
+[41877.514446] [dffede40] [c03f595c] __blk_put_request+0xb0/0x2dc
+[41877.514460] [dffede80] [c05aa41c] scsi_end_request+0x19c/0x344
+[41877.514469] [dffedeb0] [c05abba0] scsi_io_completion+0x4b4/0x854
+[41877.514482] [dffedf10] [c040604c] blk_done_softirq+0xe4/0x1e0
+[41877.514496] [dffedf60] [c07eef84] __do_softirq+0x16c/0x5f0
+[41877.514508] [dffedfd0] [c0065160] irq_exit+0x110/0x1a8
+[41877.514520] [dffedff0] [c001646c] call_do_irq+0x24/0x3c
+[41877.514533] [c0ce5e80] [c0009a2c] do_IRQ+0x98/0x1a0
+[41877.514541] [c0ce5eb0] [c001b93c] ret_from_except+0x0/0x14
+[41877.514549] --- interrupt: 501 at arch_cpu_idle+0x30/0x78
+                   LR = arch_cpu_idle+0x30/0x78
+[41877.514558] [c0ce5f70] [c0ce4000] 0xc0ce4000 (unreliable)
+[41877.514570] [c0ce5f80] [c00a3928] do_idle+0xc4/0x158
+[41877.514577] [c0ce5fb0] [c00a3b74] cpu_startup_entry+0x24/0x28
+[41877.514585] [c0ce5fc0] [c0988820] start_kernel+0x47c/0x490
+[41877.514592] [c0ce5ff0] [00003444] 0x3444
+[41877.514597] ================================================================================
+[41886.390210] ================================================================================
+[41886.390236] UBSAN: Undefined behaviour in
+../include/linux/percpu_counter.h:137:13
+[41886.390245] signed integer overflow:
+[41886.390250] 9223366156262940402 + 42006563339289 cannot be
+represented in type 'long long int'
+[41886.390260] CPU: 0 PID: 0 Comm: swapper Not tainted 4.17.0+ #54
+[41886.390265] Call Trace:
+[41886.390282] [dffedd30] [c047a5f8] ubsan_epilogue+0x18/0x4c (unreliable)
+[41886.390293] [dffedd40] [c047af98] handle_overflow+0xbc/0xdc
+[41886.390309] [dffeddc0] [c043a8c4] cfq_completed_request+0x37c/0x1234
+[41886.390317] [dffede40] [c03f595c] __blk_put_request+0xb0/0x2dc
+[41886.390331] [dffede80] [c05aa41c] scsi_end_request+0x19c/0x344
+[41886.390340] [dffedeb0] [c05abba0] scsi_io_completion+0x4b4/0x854
+[41886.390353] [dffedf10] [c040604c] blk_done_softirq+0xe4/0x1e0
+[41886.390367] [dffedf60] [c07eef84] __do_softirq+0x16c/0x5f0
+[41886.390379] [dffedfd0] [c0065160] irq_exit+0x110/0x1a8
+[41886.390391] [dffedff0] [c001646c] call_do_irq+0x24/0x3c
+[41886.390404] [c0ce5e80] [c0009a2c] do_IRQ+0x98/0x1a0
+[41886.390411] [c0ce5eb0] [c001b93c] ret_from_except+0x0/0x14
+[41886.390420] --- interrupt: 501 at arch_cpu_idle+0x30/0x78
+                   LR = arch_cpu_idle+0x30/0x78
+[41886.390429] [c0ce5f70] [c0ce4000] 0xc0ce4000 (unreliable)
+[41886.390441] [c0ce5f80] [c00a3928] do_idle+0xc4/0x158
+[41886.390449] [c0ce5fb0] [c00a3b74] cpu_startup_entry+0x24/0x28
+[41886.390457] [c0ce5fc0] [c0988820] start_kernel+0x47c/0x490
+[41886.390463] [c0ce5ff0] [00003444] 0x3444
+[41886.390468] ================================================================================
