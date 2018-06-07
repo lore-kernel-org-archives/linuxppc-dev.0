@@ -1,22 +1,30 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411g7P4QwFzF32x
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:22:57 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Richard Cochran <richardcochran@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v3, 10/10] dpaa_eth: add the get_ts_info interface for ethtool
-Date: Thu,  7 Jun 2018 17:20:50 +0800
-Message-Id: <20180607092050.46128-11-yangbo.lu@nxp.com>
-In-Reply-To: <20180607092050.46128-1-yangbo.lu@nxp.com>
-References: <20180607092050.46128-1-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411gnD1bSZzF0WH
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:52:16 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w579n88q108029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 05:52:13 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jeyd60jek-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 05:52:13 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 7 Jun 2018 10:52:11 +0100
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] powerpc: Add support for function error injection
+Date: Thu,  7 Jun 2018 15:22:02 +0530
+Message-Id: <20180607095202.29189-1-naveen.n.rao@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +34,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added the get_ts_info interface for ethtool to check
-the timestamping capability.
+We implement regs_set_return_value() and override_function_with_return()
+for this purpose.
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
----
-Changes for v2:
-	- Removed ifdef for hw timestamp.
-Changes for v3:
-	- None.
----
- drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |   39 ++++++++++++++++++++
- 1 files changed, 39 insertions(+), 0 deletions(-)
+On powerpc, a return from a function (blr) just branches to the location
+contained in the link register. So, we can just update pt_regs rather
+than redirecting execution to a dummy function that returns.
 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-index 2f933b6..3184c8f 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-@@ -32,6 +32,9 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/string.h>
-+#include <linux/of_platform.h>
-+#include <linux/net_tstamp.h>
-+#include <linux/fsl/ptp_qoriq.h>
- 
- #include "dpaa_eth.h"
- #include "mac.h"
-@@ -515,6 +518,41 @@ static int dpaa_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	return ret;
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+The only change is to add a comment in override_function_with_return() 
+to clarify that we don't need to worry about 32-bit userspace while 
+emulating 'blr'.
+
+- Naveen
+
+ arch/powerpc/Kconfig                       |  1 +
+ arch/powerpc/include/asm/error-injection.h | 13 +++++++++++++
+ arch/powerpc/include/asm/ptrace.h          |  5 +++++
+ arch/powerpc/lib/Makefile                  |  2 ++
+ arch/powerpc/lib/error-inject.c            | 16 ++++++++++++++++
+ 5 files changed, 37 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/error-injection.h
+ create mode 100644 arch/powerpc/lib/error-inject.c
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 076fe3094856..00dad3c759a0 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -187,6 +187,7 @@ config PPC
+ 	select HAVE_EBPF_JIT			if PPC64
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS	if !(CPU_LITTLE_ENDIAN && POWER7_CPU)
+ 	select HAVE_FTRACE_MCOUNT_RECORD
++	select HAVE_FUNCTION_ERROR_INJECTION
+ 	select HAVE_FUNCTION_GRAPH_TRACER
+ 	select HAVE_FUNCTION_TRACER
+ 	select HAVE_GCC_PLUGINS
+diff --git a/arch/powerpc/include/asm/error-injection.h b/arch/powerpc/include/asm/error-injection.h
+new file mode 100644
+index 000000000000..740c3075bdf4
+--- /dev/null
++++ b/arch/powerpc/include/asm/error-injection.h
+@@ -0,0 +1,13 @@
++// SPDX-License-Identifier: GPL-2.0+
++
++#ifndef _ASM_ERROR_INJECTION_H
++#define _ASM_ERROR_INJECTION_H
++
++#include <linux/compiler.h>
++#include <linux/linkage.h>
++#include <asm/ptrace.h>
++#include <asm-generic/error-injection.h>
++
++void override_function_with_return(struct pt_regs *regs);
++
++#endif /* _ASM_ERROR_INJECTION_H */
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index e4923686e43a..c0705296c2f0 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -101,6 +101,11 @@ static inline long regs_return_value(struct pt_regs *regs)
+ 		return -regs->gpr[3];
  }
  
-+static int dpaa_get_ts_info(struct net_device *net_dev,
-+			    struct ethtool_ts_info *info)
++static inline void regs_set_return_value(struct pt_regs *regs, unsigned long rc)
 +{
-+	struct device *dev = net_dev->dev.parent;
-+	struct device_node *mac_node = dev->of_node;
-+	struct device_node *fman_node = NULL, *ptp_node = NULL;
-+	struct platform_device *ptp_dev = NULL;
-+	struct qoriq_ptp *ptp = NULL;
-+
-+	info->phc_index = -1;
-+
-+	fman_node = of_get_parent(mac_node);
-+	if (fman_node)
-+		ptp_node = of_parse_phandle(fman_node, "ptimer-handle", 0);
-+
-+	if (ptp_node)
-+		ptp_dev = of_find_device_by_node(ptp_node);
-+
-+	if (ptp_dev)
-+		ptp = platform_get_drvdata(ptp_dev);
-+
-+	if (ptp)
-+		info->phc_index = ptp->phc_index;
-+
-+	info->so_timestamping = SOF_TIMESTAMPING_TX_HARDWARE |
-+				SOF_TIMESTAMPING_RX_HARDWARE |
-+				SOF_TIMESTAMPING_RAW_HARDWARE;
-+	info->tx_types = (1 << HWTSTAMP_TX_OFF) |
-+			 (1 << HWTSTAMP_TX_ON);
-+	info->rx_filters = (1 << HWTSTAMP_FILTER_NONE) |
-+			   (1 << HWTSTAMP_FILTER_ALL);
-+
-+	return 0;
++	regs->gpr[3] = rc;
 +}
 +
- const struct ethtool_ops dpaa_ethtool_ops = {
- 	.get_drvinfo = dpaa_get_drvinfo,
- 	.get_msglevel = dpaa_get_msglevel,
-@@ -530,4 +568,5 @@ static int dpaa_set_rxnfc(struct net_device *dev, struct ethtool_rxnfc *cmd)
- 	.set_link_ksettings = dpaa_set_link_ksettings,
- 	.get_rxnfc = dpaa_get_rxnfc,
- 	.set_rxnfc = dpaa_set_rxnfc,
-+	.get_ts_info = dpaa_get_ts_info,
- };
+ #ifdef __powerpc64__
+ #define user_mode(regs) ((((regs)->msr) >> MSR_PR_LG) & 0x1)
+ #else
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index d0ca13ad8231..dd43c5a53396 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -14,6 +14,8 @@ obj-y += string.o alloc.o code-patching.o feature-fixups.o
+ 
+ obj-$(CONFIG_PPC32)	+= div64.o copy_32.o crtsavres.o
+ 
++obj-$(CONFIG_FUNCTION_ERROR_INJECTION)	+= error-inject.o
++
+ # See corresponding test in arch/powerpc/Makefile
+ # 64-bit linker creates .sfpr on demand for final link (vmlinux),
+ # so it is only needed for modules, and only for older linkers which
+diff --git a/arch/powerpc/lib/error-inject.c b/arch/powerpc/lib/error-inject.c
+new file mode 100644
+index 000000000000..407b992fb02f
+--- /dev/null
++++ b/arch/powerpc/lib/error-inject.c
+@@ -0,0 +1,16 @@
++// SPDX-License-Identifier: GPL-2.0+
++
++#include <linux/error-injection.h>
++#include <linux/kprobes.h>
++#include <linux/uaccess.h>
++
++void override_function_with_return(struct pt_regs *regs)
++{
++	/*
++	 * Emulate 'blr'. 'regs' represents the state on entry of a predefined
++	 * function in the kernel/module, captured on a kprobe. We don't need
++	 * to worry about 32-bit userspace on a 64-bit kernel.
++	 */
++	regs->nip = regs->link;
++}
++NOKPROBE_SYMBOL(override_function_with_return);
 -- 
-1.7.1
+2.17.0
