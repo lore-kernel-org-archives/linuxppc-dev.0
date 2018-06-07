@@ -2,20 +2,21 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411sMk5jwyzF34W
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:04:13 +1000 (AEST)
-Date: Thu, 7 Jun 2018 11:04:09 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411sNN56xrzF34s
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:04:52 +1000 (AEST)
+Date: Thu, 7 Jun 2018 11:04:49 -0600
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
  <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Benjamin
  Herrenschmidt <benh@kernel.crashing.org>, Ram Pai <linuxram@us.ibm.com>,
  kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
- Tesla V100
-Message-ID: <20180607110409.5057ebac@w520.home>
-In-Reply-To: <20180607084420.29513-1-aik@ozlabs.ru>
+Subject: Re: [RFC PATCH kernel 5/5] vfio_pci: Add NVIDIA GV100GL [Tesla V100
+ SXM2] [10de:1db1] subdriver
+Message-ID: <20180607110449.2c25a62d@w520.home>
+In-Reply-To: <20180607084420.29513-6-aik@ozlabs.ru>
 References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607084420.29513-6-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,128 +28,317 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  7 Jun 2018 18:44:15 +1000
+On Thu,  7 Jun 2018 18:44:20 +1000
 Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> Here is an rfc of some patches adding psaa-through support
-> for NVIDIA V100 GPU found in some POWER9 boxes.
+> Some POWER9 chips come with special NVLink2 links which provide
+> cacheable memory access to the RAM physically located on NVIDIA GPU.
+> This memory is presented to a host via the device tree but remains
+> offline until the NVIDIA driver onlines it.
 > 
-> The example P9 system has 6 GPUs, each accompanied with 2 bridges
-> representing the hardware links (aka NVLink2):
+> This exports this RAM to the userspace as a new region so
+> the NVIDIA driver in the guest can train these links and online GPU RAM.
 > 
->  4  0004:04:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
->  5  0004:05:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
->  6  0004:06:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
->  4  0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
->  4  0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
->  5  0006:00:01.0 Bridge: IBM Device 04ea (rev 01)
->  5  0006:00:01.1 Bridge: IBM Device 04ea (rev 01)
->  6  0006:00:02.0 Bridge: IBM Device 04ea (rev 01)
->  6  0006:00:02.1 Bridge: IBM Device 04ea (rev 01)
-> 10  0007:00:00.0 Bridge: IBM Device 04ea (rev 01)
-> 10  0007:00:00.1 Bridge: IBM Device 04ea (rev 01)
-> 11  0007:00:01.0 Bridge: IBM Device 04ea (rev 01)
-> 11  0007:00:01.1 Bridge: IBM Device 04ea (rev 01)
-> 12  0007:00:02.0 Bridge: IBM Device 04ea (rev 01)
-> 12  0007:00:02.1 Bridge: IBM Device 04ea (rev 01)
-> 10  0035:03:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
-> 11  0035:04:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
-> 12  0035:05:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
-> 
-> ^^ the number is an IOMMU group ID.
-
-Can we back up and discuss whether the IOMMU grouping of NVLink
-connected devices makes sense?  AIUI we have a PCI view of these
-devices and from that perspective they're isolated.  That's the view of
-the device used to generate the grouping.  However, not visible to us,
-these devices are interconnected via NVLink.  What isolation properties
-does NVLink provide given that its entire purpose for existing seems to
-be to provide a high performance link for p2p between devices?
- 
-> Each bridge represents an additional hardware interface called "NVLink2",
-> it is not a PCI link but separate but. The design inherits from original
-> NVLink from POWER8.
-> 
-> The new feature of V100 is 16GB of cache coherent memory on GPU board.
-> This memory is presented to the host via the device tree and remains offline
-> until the NVIDIA driver loads, trains NVLink2 (via the config space of these
-> bridges above) and the nvidia-persistenced daemon then onlines it.
-> The memory remains online as long as nvidia-persistenced is running, when
-> it stops, it offlines the memory.
-> 
-> The amount of GPUs suggest passing them through to a guest. However,
-> in order to do so we cannot use the NVIDIA driver so we have a host with
-> a 128GB window (bigger or equal to actual GPU RAM size) in a system memory
-> with no page structs backing this window and we cannot touch this memory
-> before the NVIDIA driver configures it in a host or a guest as
-> HMI (hardware management interrupt?) occurs.
-
-Having a lot of GPUs only suggests assignment to a guest if there's
-actually isolation provided between those GPUs.  Otherwise we'd need to
-assign them as one big group, which gets a lot less useful.  Thanks,
-
-Alex
-
-> On the example system the GPU RAM windows are located at:
-> 0x0400 0000 0000
-> 0x0420 0000 0000
-> 0x0440 0000 0000
-> 0x2400 0000 0000
-> 0x2420 0000 0000
-> 0x2440 0000 0000
-> 
-> So the complications are:
-> 
-> 1. cannot touch the GPU memory till it is trained, i.e. cannot add ptes
-> to VFIO-to-userspace or guest-to-host-physical translations till
-> the driver trains it (i.e. nvidia-persistenced has started), otherwise
-> prefetching happens and HMI occurs; I am trying to get this changed
-> somehow;
-> 
-> 2. since it appears as normal cache coherent memory, it will be used
-> for DMA which means it has to be pinned and mapped in the host. Having
-> no page structs makes it different from the usual case - we only need
-> translate user addresses to host physical and map GPU RAM memory but
-> pinning is not required.
-> 
-> This series maps GPU RAM via the GPU vfio-pci device so QEMU can then
-> register this memory as a KVM memory slot and present memory nodes to
-> the guest. Unless NVIDIA provides an userspace driver, this is no use
-> for things like DPDK.
-> 
-> 
-> There is another problem which the series does not address but worth
-> mentioning - it is not strictly necessary to map GPU RAM to the guest
-> exactly where it is in the host (I tested this to some extent), we still
-> might want to represent the memory at the same offset as on the host
-> which increases the size of a TCE table needed to cover such a huge
-> window: (((0x244000000000 + 0x2000000000) >> 16)*8)>>20 = 4556MB
-> I am addressing this in a separate patchset by allocating indirect TCE
-> levels on demand and using 16MB IOMMU pages in the guest as we can now
-> back emulated pages with the smaller hardware ones.
-> 
-> 
-> This is an RFC. Please comment. Thanks.
-> 
-> 
-> 
-> Alexey Kardashevskiy (5):
->   vfio/spapr_tce: Simplify page contained test
->   powerpc/iommu_context: Change referencing in API
->   powerpc/iommu: Do not pin memory of a memory device
->   vfio_pci: Allow mapping extra regions
->   vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] [10de:1db1] subdriver
-> 
->  drivers/vfio/pci/Makefile              |   1 +
->  arch/powerpc/include/asm/mmu_context.h |   5 +-
->  drivers/vfio/pci/vfio_pci_private.h    |  11 ++
->  include/uapi/linux/vfio.h              |   3 +
->  arch/powerpc/kernel/iommu.c            |   8 +-
->  arch/powerpc/mm/mmu_context_iommu.c    |  70 +++++++++---
->  drivers/vfio/pci/vfio_pci.c            |  19 +++-
->  drivers/vfio/pci/vfio_pci_nvlink2.c    | 190 +++++++++++++++++++++++++++++++++
->  drivers/vfio/vfio_iommu_spapr_tce.c    |  42 +++++---
->  drivers/vfio/pci/Kconfig               |   4 +
->  10 files changed, 319 insertions(+), 34 deletions(-)
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  drivers/vfio/pci/Makefile           |   1 +
+>  drivers/vfio/pci/vfio_pci_private.h |   8 ++
+>  include/uapi/linux/vfio.h           |   3 +
+>  drivers/vfio/pci/vfio_pci.c         |   9 ++
+>  drivers/vfio/pci/vfio_pci_nvlink2.c | 190 ++++++++++++++++++++++++++++++++++++
+>  drivers/vfio/pci/Kconfig            |   4 +
+>  6 files changed, 215 insertions(+)
 >  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
 > 
+> diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
+> index 76d8ec0..9662c06 100644
+> --- a/drivers/vfio/pci/Makefile
+> +++ b/drivers/vfio/pci/Makefile
+> @@ -1,5 +1,6 @@
+>  
+>  vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
+>  vfio-pci-$(CONFIG_VFIO_PCI_IGD) += vfio_pci_igd.o
+> +vfio-pci-$(CONFIG_VFIO_PCI_NVLINK2) += vfio_pci_nvlink2.o
+>  
+>  obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
+> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
+> index 86aab05..7115b9b 100644
+> --- a/drivers/vfio/pci/vfio_pci_private.h
+> +++ b/drivers/vfio/pci/vfio_pci_private.h
+> @@ -160,4 +160,12 @@ static inline int vfio_pci_igd_init(struct vfio_pci_device *vdev)
+>  	return -ENODEV;
+>  }
+>  #endif
+> +#ifdef CONFIG_VFIO_PCI_NVLINK2
+> +extern int vfio_pci_nvlink2_init(struct vfio_pci_device *vdev);
+> +#else
+> +static inline int vfio_pci_nvlink2_init(struct vfio_pci_device *vdev)
+> +{
+> +	return -ENODEV;
+> +}
+> +#endif
+>  #endif /* VFIO_PCI_PRIVATE_H */
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index 1aa7b82..2fe8227 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -301,6 +301,9 @@ struct vfio_region_info_cap_type {
+>  #define VFIO_REGION_SUBTYPE_INTEL_IGD_HOST_CFG	(2)
+>  #define VFIO_REGION_SUBTYPE_INTEL_IGD_LPC_CFG	(3)
+>  
+> +/* NVIDIA GPU NV2 */
+> +#define VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2	(4)
+
+You're continuing the Intel vendor ID sub-types for an NVIDIA vendor ID
+subtype.  Each vendor has their own address space of sub-types.
+
+> +
+>  /*
+>   * The MSIX mappable capability informs that MSIX data of a BAR can be mmapped
+>   * which allows direct access to non-MSIX registers which happened to be within
+> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+> index 7bddf1e..38c9475 100644
+> --- a/drivers/vfio/pci/vfio_pci.c
+> +++ b/drivers/vfio/pci/vfio_pci.c
+> @@ -306,6 +306,15 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+>  		}
+>  	}
+>  
+> +	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA &&
+> +	    pdev->device == 0x1db1 &&
+> +	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {
+
+Can't we do better than check this based on device ID?  Perhaps PCIe
+capability hints at this?
+
+Is it worthwhile to continue with assigning the device in the !ENABLED
+case?  For instance, maybe it would be better to provide a weak
+definition of vfio_pci_nvlink2_init() that would cause us to fail here
+if we don't have this device specific support enabled.  I realize
+you're following the example set forth for IGD, but those regions are
+optional, for better or worse.
+
+> +		ret = vfio_pci_nvlink2_init(vdev);
+> +		if (ret)
+> +			dev_warn(&vdev->pdev->dev,
+> +				 "Failed to setup NVIDIA NV2 RAM region\n");
+> +	}
+> +
+>  	vfio_pci_probe_mmaps(vdev);
+>  
+>  	return 0;
+> diff --git a/drivers/vfio/pci/vfio_pci_nvlink2.c b/drivers/vfio/pci/vfio_pci_nvlink2.c
+> new file mode 100644
+> index 0000000..451c5cb
+> --- /dev/null
+> +++ b/drivers/vfio/pci/vfio_pci_nvlink2.c
+> @@ -0,0 +1,190 @@
+> +// SPDX-License-Identifier: GPL-2.0+
+> +/*
+> + * VFIO PCI NVIDIA Whitherspoon GPU support a.k.a. NVLink2.
+> + *
+> + * Copyright (C) 2018 IBM Corp.  All rights reserved.
+> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * Register an on-GPU RAM region for cacheable access.
+> + *
+> + * Derived from original vfio_pci_igd.c:
+> + * Copyright (C) 2016 Red Hat, Inc.  All rights reserved.
+> + *	Author: Alex Williamson <alex.williamson@redhat.com>
+> + */
+> +
+> +#include <linux/io.h>
+> +#include <linux/pci.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/vfio.h>
+> +#include <linux/sched/mm.h>
+> +#include <linux/mmu_context.h>
+> +
+> +#include "vfio_pci_private.h"
+> +
+> +struct vfio_pci_nvlink2_data {
+> +	unsigned long gpu_hpa;
+> +	unsigned long useraddr;
+> +	unsigned long size;
+> +	struct mm_struct *mm;
+> +	struct mm_iommu_table_group_mem_t *mem;
+> +};
+> +
+> +static size_t vfio_pci_nvlink2_rw(struct vfio_pci_device *vdev,
+> +		char __user *buf, size_t count, loff_t *ppos, bool iswrite)
+> +{
+> +	unsigned int i = VFIO_PCI_OFFSET_TO_INDEX(*ppos) - VFIO_PCI_NUM_REGIONS;
+> +	void *base = vdev->region[i].data;
+> +	loff_t pos = *ppos & VFIO_PCI_OFFSET_MASK;
+> +
+> +	if (pos >= vdev->region[i].size)
+> +		return -EINVAL;
+> +
+> +	count = min(count, (size_t)(vdev->region[i].size - pos));
+> +
+> +	if (iswrite) {
+> +		if (copy_from_user(base + pos, buf, count))
+> +			return -EFAULT;
+> +	} else {
+> +		if (copy_to_user(buf, base + pos, count))
+> +			return -EFAULT;
+> +	}
+> +	*ppos += count;
+> +
+> +	return count;
+> +}
+> +
+> +static void vfio_pci_nvlink2_release(struct vfio_pci_device *vdev,
+> +		struct vfio_pci_region *region)
+> +{
+> +	struct vfio_pci_nvlink2_data *data = region->data;
+> +	long ret;
+> +
+> +	ret = mm_iommu_put(data->mm, data->mem);
+> +	WARN_ON(ret);
+> +
+> +	mmdrop(data->mm);
+> +	kfree(data);
+> +}
+> +
+> +static int vfio_pci_nvlink2_mmap_fault(struct vm_fault *vmf)
+> +{
+> +	struct vm_area_struct *vma = vmf->vma;
+> +	struct vfio_pci_region *region = vma->vm_private_data;
+> +	struct vfio_pci_nvlink2_data *data = region->data;
+> +	int ret;
+> +	unsigned long vmf_off = (vmf->address - vma->vm_start) >> PAGE_SHIFT;
+> +	unsigned long nv2pg = data->gpu_hpa >> PAGE_SHIFT;
+> +	unsigned long vm_pgoff = vma->vm_pgoff &
+> +		((1U << (VFIO_PCI_OFFSET_SHIFT - PAGE_SHIFT)) - 1);
+> +	unsigned long pfn = nv2pg + vm_pgoff + vmf_off;
+> +
+> +	ret = vm_insert_pfn(vma, vmf->address, pfn);
+> +	/* TODO: make it a tracepoint */
+> +	pr_debug("NVLink2: vmf=%lx hpa=%lx ret=%d\n",
+> +		 vmf->address, pfn << PAGE_SHIFT, ret);
+> +	if (ret)
+> +		return VM_FAULT_SIGSEGV;
+> +
+> +	return VM_FAULT_NOPAGE;
+> +}
+> +
+> +static const struct vm_operations_struct vfio_pci_nvlink2_mmap_vmops = {
+> +	.fault = vfio_pci_nvlink2_mmap_fault,
+> +};
+> +
+> +static int vfio_pci_nvlink2_mmap(struct vfio_pci_device *vdev,
+> +		struct vfio_pci_region *region, struct vm_area_struct *vma)
+> +{
+> +	long ret;
+> +	struct vfio_pci_nvlink2_data *data = region->data;
+> +
+> +	if (data->useraddr)
+> +		return -EPERM;
+> +
+> +	if (vma->vm_end - vma->vm_start > data->size)
+> +		return -EINVAL;
+> +
+> +	vma->vm_private_data = region;
+> +	vma->vm_flags |= VM_PFNMAP;
+> +	vma->vm_ops = &vfio_pci_nvlink2_mmap_vmops;
+> +
+> +	/*
+> +	 * Calling mm_iommu_newdev() here once as the region is not
+> +	 * registered yet and therefore right initialization will happen now.
+> +	 * Other places will use mm_iommu_find() which returns
+> +	 * registered @mem and does not go gup().
+> +	 */
+> +	data->useraddr = vma->vm_start;
+> +	data->mm = current->mm;
+> +	atomic_inc(&data->mm->mm_count);
+> +	ret = mm_iommu_newdev(data->mm, data->useraddr,
+> +			(vma->vm_end - vma->vm_start) >> PAGE_SHIFT,
+> +			data->gpu_hpa, &data->mem);
+> +
+> +	pr_debug("VFIO NVLINK2 mmap: useraddr=%lx hpa=%lx size=%lx ret=%ld\n",
+> +			data->useraddr, data->gpu_hpa,
+> +			vma->vm_end - vma->vm_start, ret);
+> +
+> +	return ret;
+> +}
+> +
+> +static const struct vfio_pci_regops vfio_pci_nvlink2_regops = {
+> +	.rw = vfio_pci_nvlink2_rw,
+> +	.release = vfio_pci_nvlink2_release,
+> +	.mmap = vfio_pci_nvlink2_mmap,
+> +};
+> +
+> +int vfio_pci_nvlink2_init(struct vfio_pci_device *vdev)
+> +{
+> +	int len = 0, ret;
+> +	struct device_node *npu_node, *mem_node;
+> +	struct pci_dev *npu_dev;
+> +	uint32_t *mem_phandle, *val;
+> +	struct vfio_pci_nvlink2_data *data;
+> +
+> +	npu_dev = pnv_pci_get_npu_dev(vdev->pdev, 0);
+> +	if (!npu_dev)
+> +		return -EINVAL;
+> +
+> +	npu_node = pci_device_to_OF_node(npu_dev);
+> +	if (!npu_node)
+> +		return -EINVAL;
+> +
+> +	mem_phandle = (void *) of_get_property(npu_node, "memory-region", NULL);
+> +	if (!mem_phandle)
+> +		return -EINVAL;
+> +
+> +	mem_node = of_find_node_by_phandle(be32_to_cpu(*mem_phandle));
+> +	if (!mem_node)
+> +		return -EINVAL;
+> +
+> +	val = (uint32_t *) of_get_property(mem_node, "reg", &len);
+> +	if (!val || len != 2 * sizeof(uint64_t))
+> +		return -EINVAL;
+> +
+> +	data = kzalloc(sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	data->gpu_hpa = ((uint64_t)be32_to_cpu(val[0]) << 32) |
+> +			be32_to_cpu(val[1]);
+> +	data->size = ((uint64_t)be32_to_cpu(val[2]) << 32) |
+> +			be32_to_cpu(val[3]);
+> +
+> +	dev_dbg(&vdev->pdev->dev, "%lx..%lx\n", data->gpu_hpa,
+> +			data->gpu_hpa + data->size - 1);
+> +
+> +	ret = vfio_pci_register_dev_region(vdev,
+> +			PCI_VENDOR_ID_NVIDIA | VFIO_REGION_TYPE_PCI_VENDOR_TYPE,
+> +			VFIO_REGION_SUBTYPE_NVIDIA_NVLINK2,
+> +			&vfio_pci_nvlink2_regops, data->size,
+> +			VFIO_REGION_INFO_FLAG_READ, data);
+> +	if (ret)
+> +		kfree(data);
+> +
+> +	return ret;
+> +}
+> diff --git a/drivers/vfio/pci/Kconfig b/drivers/vfio/pci/Kconfig
+> index 24ee260..2725bc8 100644
+> --- a/drivers/vfio/pci/Kconfig
+> +++ b/drivers/vfio/pci/Kconfig
+> @@ -30,3 +30,7 @@ config VFIO_PCI_INTX
+>  config VFIO_PCI_IGD
+>  	depends on VFIO_PCI
+>  	def_bool y if X86
+> +
+> +config VFIO_PCI_NVLINK2
+> +	depends on VFIO_PCI
+> +	def_bool y if PPC_POWERNV
+
+As written, this also depends on PPC_POWERNV (or at least TCE), it's not
+a portable implementation that we could re-use on X86 or ARM or any
+other platform if hardware appeared for it.  Can we improve that as
+well to make this less POWER specific?  Thanks,
+
+Alex
