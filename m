@@ -1,23 +1,20 @@
-Return-Path: <wei.guo.simon@gmail.com>
-Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
- [IPv6:2607:f8b0:400e:c05::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411TGQ4f7CzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 11:58:22 +1000 (AEST)
-Received: by mail-pg0-x241.google.com with SMTP id 15-v6so3916440pge.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 Jun 2018 18:58:22 -0700 (PDT)
-From: wei.guo.simon@gmail.com
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <paulus@ozlabs.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Naveen N.  Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- Cyril Bur <cyrilbur@gmail.com>, Simon Guo <wei.guo.simon@gmail.com>
-Subject: [PATCH v8 5/5] powerpc:selftest update memcmp_64 selftest for VMX
- implementation
-Date: Thu,  7 Jun 2018 09:57:55 +0800
-Message-Id: <1528336675-10879-6-git-send-email-wei.guo.simon@gmail.com>
-In-Reply-To: <1528336675-10879-1-git-send-email-wei.guo.simon@gmail.com>
-References: <1528336675-10879-1-git-send-email-wei.guo.simon@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411W9y67KpzF1RX
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 13:24:36 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
+ Richard Cochran <richardcochran@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ "David S . Miller" <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v2, 00/10] Support DPAA PTP clock and timestamping
+Date: Thu,  7 Jun 2018 11:22:46 +0800
+Message-Id: <20180607032256.39802-1-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,297 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Simon Guo <wei.guo.simon@gmail.com>
+This patchset is to support DPAA FMAN PTP clock and HW timestamping.
+- The patch #1 to patch #5 are to support DPAA FMAN 1588 timer in
+  ptp_qoriq driver.
+- The patch #6 to patch #10 are to add HW timestamping support in
+  DPAA ethernet driver.
 
-This patch reworked selftest memcmp_64 so that memcmp selftest can
-cover more test cases.
+Yangbo Lu (10):
+  fsl/fman: share the event interrupt
+  ptp: support DPAA FMan 1588 timer in ptp_qoriq
+  dt-binding: ptp_qoriq: add DPAA FMan support
+  powerpc/mpc85xx: move ptp timer out of fman in dts
+  arm64: dts: fsl: move ptp timer out of fman
+  fsl/fman: add set_tstamp interface
+  fsl/fman_port: support getting timestamp field
+  fsl/fman: define frame description command UPD
+  dpaa_eth: add support for hardware timestamping
+  dpaa_eth: add the get_ts_info interface for ethtool
 
-It adds testcases for:
-- memcmp over 4K bytes size.
-- s1/s2 with different/random offset on 16 bytes boundary.
-- enter/exit_vmx_ops pairness.
-
-Signed-off-by: Simon Guo <wei.guo.simon@gmail.com>
----
- .../selftests/powerpc/copyloops/asm/ppc_asm.h      |  4 +-
- .../selftests/powerpc/stringloops/asm/ppc-opcode.h | 39 +++++++++
- .../selftests/powerpc/stringloops/asm/ppc_asm.h    | 25 ++++++
- .../testing/selftests/powerpc/stringloops/memcmp.c | 98 +++++++++++++++++-----
- 4 files changed, 142 insertions(+), 24 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
-
-diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-index 5ffe04d..dfce161 100644
---- a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
-@@ -36,11 +36,11 @@
- 	li	r3,0
- 	blr
- 
--FUNC_START(enter_vmx_copy)
-+FUNC_START(enter_vmx_ops)
- 	li	r3,1
- 	blr
- 
--FUNC_START(exit_vmx_copy)
-+FUNC_START(exit_vmx_ops)
- 	blr
- 
- FUNC_START(memcpy_power7)
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
-new file mode 100644
-index 0000000..9de413c
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc-opcode.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright 2009 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ * provides masks and opcode images for use by code generation, emulation
-+ * and for instructions that older assemblers might not know about
-+ */
-+#ifndef _ASM_POWERPC_PPC_OPCODE_H
-+#define _ASM_POWERPC_PPC_OPCODE_H
-+
-+
-+#  define stringify_in_c(...)	__VA_ARGS__
-+#  define ASM_CONST(x)		x
-+
-+
-+#define PPC_INST_VCMPEQUD_RC		0x100000c7
-+#define PPC_INST_VCMPEQUB_RC		0x10000006
-+
-+#define __PPC_RC21     (0x1 << 10)
-+
-+/* macros to insert fields into opcodes */
-+#define ___PPC_RA(a)	(((a) & 0x1f) << 16)
-+#define ___PPC_RB(b)	(((b) & 0x1f) << 11)
-+#define ___PPC_RS(s)	(((s) & 0x1f) << 21)
-+#define ___PPC_RT(t)	___PPC_RS(t)
-+
-+#define VCMPEQUD_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUD_RC | \
-+			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
-+			      ___PPC_RB(vrb) | __PPC_RC21)
-+
-+#define VCMPEQUB_RC(vrt, vra, vrb)	stringify_in_c(.long PPC_INST_VCMPEQUB_RC | \
-+			      ___PPC_RT(vrt) | ___PPC_RA(vra) | \
-+			      ___PPC_RB(vrb) | __PPC_RC21)
-+
-+#endif /* _ASM_POWERPC_PPC_OPCODE_H */
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-index 136242e..d2c0a91 100644
---- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-@@ -1,4 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _PPC_ASM_H
-+#define __PPC_ASM_H
- #include <ppc-asm.h>
- 
- #ifndef r1
-@@ -6,3 +8,26 @@
- #endif
- 
- #define _GLOBAL(A) FUNC_START(test_ ## A)
-+#define _GLOBAL_TOC(A) FUNC_START(test_ ## A)
-+
-+#define CONFIG_ALTIVEC
-+
-+#define R14 r14
-+#define R15 r15
-+#define R16 r16
-+#define R17 r17
-+#define R18 r18
-+#define R19 r19
-+#define R20 r20
-+#define R21 r21
-+#define R22 r22
-+#define R29 r29
-+#define R30 r30
-+#define R31 r31
-+
-+#define STACKFRAMESIZE	256
-+#define STK_REG(i)	(112 + ((i)-14)*8)
-+
-+#define BEGIN_FTR_SECTION
-+#define END_FTR_SECTION_IFSET(val)
-+#endif
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index 8250db2..b5cf717 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -2,20 +2,40 @@
- #include <malloc.h>
- #include <stdlib.h>
- #include <string.h>
-+#include <time.h>
- #include "utils.h"
- 
- #define SIZE 256
- #define ITERATIONS 10000
- 
-+#define LARGE_SIZE (5 * 1024)
-+#define LARGE_ITERATIONS 1000
-+#define LARGE_MAX_OFFSET 32
-+#define LARGE_SIZE_START 4096
-+
-+#define MAX_OFFSET_DIFF_S1_S2 48
-+
-+int vmx_count;
-+int enter_vmx_ops(void)
-+{
-+	vmx_count++;
-+	return 1;
-+}
-+
-+void exit_vmx_ops(void)
-+{
-+	vmx_count--;
-+}
- int test_memcmp(const void *s1, const void *s2, size_t n);
- 
- /* test all offsets and lengths */
--static void test_one(char *s1, char *s2)
-+static void test_one(char *s1, char *s2, unsigned long max_offset,
-+		unsigned long size_start, unsigned long max_size)
- {
- 	unsigned long offset, size;
- 
--	for (offset = 0; offset < SIZE; offset++) {
--		for (size = 0; size < (SIZE-offset); size++) {
-+	for (offset = 0; offset < max_offset; offset++) {
-+		for (size = size_start; size < (max_size - offset); size++) {
- 			int x, y;
- 			unsigned long i;
- 
-@@ -35,70 +55,104 @@ static void test_one(char *s1, char *s2)
- 				printf("\n");
- 				abort();
- 			}
-+
-+			if (vmx_count != 0) {
-+				printf("vmx enter/exit not paired.(offset:%ld size:%ld s1:%p s2:%p vc:%d\n",
-+					offset, size, s1, s2, vmx_count);
-+				printf("\n");
-+				abort();
-+			}
- 		}
- 	}
- }
- 
--static int testcase(void)
-+static int testcase(bool islarge)
- {
- 	char *s1;
- 	char *s2;
- 	unsigned long i;
- 
--	s1 = memalign(128, SIZE);
-+	unsigned long comp_size = (islarge ? LARGE_SIZE : SIZE);
-+	unsigned long alloc_size = comp_size + MAX_OFFSET_DIFF_S1_S2;
-+	int iterations = islarge ? LARGE_ITERATIONS : ITERATIONS;
-+
-+	s1 = memalign(128, alloc_size);
- 	if (!s1) {
- 		perror("memalign");
- 		exit(1);
- 	}
- 
--	s2 = memalign(128, SIZE);
-+	s2 = memalign(128, alloc_size);
- 	if (!s2) {
- 		perror("memalign");
- 		exit(1);
- 	}
- 
--	srandom(1);
-+	srandom(time(0));
- 
--	for (i = 0; i < ITERATIONS; i++) {
-+	for (i = 0; i < iterations; i++) {
- 		unsigned long j;
- 		unsigned long change;
-+		char *rand_s1 = s1;
-+		char *rand_s2 = s2;
- 
--		for (j = 0; j < SIZE; j++)
-+		for (j = 0; j < alloc_size; j++)
- 			s1[j] = random();
- 
--		memcpy(s2, s1, SIZE);
-+		rand_s1 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		rand_s2 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		memcpy(rand_s2, rand_s1, comp_size);
- 
- 		/* change one byte */
--		change = random() % SIZE;
--		s2[change] = random() & 0xff;
--
--		test_one(s1, s2);
-+		change = random() % comp_size;
-+		rand_s2[change] = random() & 0xff;
-+
-+		if (islarge)
-+			test_one(rand_s1, rand_s2, LARGE_MAX_OFFSET,
-+					LARGE_SIZE_START, comp_size);
-+		else
-+			test_one(rand_s1, rand_s2, SIZE, 0, comp_size);
- 	}
- 
--	srandom(1);
-+	srandom(time(0));
- 
--	for (i = 0; i < ITERATIONS; i++) {
-+	for (i = 0; i < iterations; i++) {
- 		unsigned long j;
- 		unsigned long change;
-+		char *rand_s1 = s1;
-+		char *rand_s2 = s2;
- 
--		for (j = 0; j < SIZE; j++)
-+		for (j = 0; j < alloc_size; j++)
- 			s1[j] = random();
- 
--		memcpy(s2, s1, SIZE);
-+		rand_s1 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		rand_s2 += random() % MAX_OFFSET_DIFF_S1_S2;
-+		memcpy(rand_s2, rand_s1, comp_size);
- 
- 		/* change multiple bytes, 1/8 of total */
--		for (j = 0; j < SIZE / 8; j++) {
--			change = random() % SIZE;
-+		for (j = 0; j < comp_size / 8; j++) {
-+			change = random() % comp_size;
- 			s2[change] = random() & 0xff;
- 		}
- 
--		test_one(s1, s2);
-+		if (islarge)
-+			test_one(rand_s1, rand_s2, LARGE_MAX_OFFSET,
-+					LARGE_SIZE_START, comp_size);
-+		else
-+			test_one(rand_s1, rand_s2, SIZE, 0, comp_size);
- 	}
- 
- 	return 0;
- }
- 
-+static int testcases(void)
-+{
-+	testcase(0);
-+	testcase(1);
-+	return 0;
-+}
-+
- int main(void)
- {
--	return test_harness(testcase, "memcmp");
-+	return test_harness(testcases, "memcmp");
- }
--- 
-1.8.3.1
+ Documentation/devicetree/bindings/net/fsl-fman.txt |   25 +-----
+ .../devicetree/bindings/ptp/ptp-qoriq.txt          |   15 +++-
+ arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi   |   14 ++-
+ arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi        |   14 ++-
+ arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi        |   14 ++-
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi       |   14 ++-
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi       |   14 ++-
+ arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi      |   14 ++-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  101 ++++++++++++++++++-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |    3 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |   39 ++++++++
+ drivers/net/ethernet/freescale/fman/fman.c         |    3 +-
+ drivers/net/ethernet/freescale/fman/fman.h         |    1 +
+ drivers/net/ethernet/freescale/fman/fman_dtsec.c   |   27 +++++
+ drivers/net/ethernet/freescale/fman/fman_dtsec.h   |    1 +
+ drivers/net/ethernet/freescale/fman/fman_memac.c   |    5 +
+ drivers/net/ethernet/freescale/fman/fman_memac.h   |    1 +
+ drivers/net/ethernet/freescale/fman/fman_port.c    |   12 +++
+ drivers/net/ethernet/freescale/fman/fman_port.h    |    3 +
+ drivers/net/ethernet/freescale/fman/fman_tgec.c    |   21 ++++
+ drivers/net/ethernet/freescale/fman/fman_tgec.h    |    1 +
+ drivers/net/ethernet/freescale/fman/mac.c          |    3 +
+ drivers/net/ethernet/freescale/fman/mac.h          |    1 +
+ drivers/ptp/Kconfig                                |    2 +-
+ drivers/ptp/ptp_qoriq.c                            |  104 ++++++++++++-------
+ include/linux/fsl/ptp_qoriq.h                      |   38 ++++++--
+ 26 files changed, 375 insertions(+), 115 deletions(-)
