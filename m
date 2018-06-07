@@ -2,45 +2,43 @@ Return-Path: <srs0=fawz=iz=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411svx1vXYzF35K
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:28:45 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 411svx184Gz8tQK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:28:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411sw65qJdzF35B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:28:54 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 411sw64jGHz8tQK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:28:54 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 411svw3yCKz9s1B
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 03:28:44 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 411sw56BBzz9s1b
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 03:28:53 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57HJDeU068753
- for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2018 13:28:42 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jf7x8uymq-1
+ w57HJhHK093072
+ for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2018 13:28:52 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jf5pf2au0-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 13:28:42 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 13:28:51 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 18:28:40 +0100
-Subject: [v3 PATCH 2/5] powerpc/pseries: Fix endainness while restoring of
- r3 in MCE handler.
+ Thu, 7 Jun 2018 18:28:49 +0100
+Subject: [v3 PATCH 3/5] powerpc/pseries: Define MCE error event section.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: stable@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Laurent Dufour <ldufour@linux.vnet.ibm.com>,
  Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 07 Jun 2018 22:58:33 +0530
+Date: Thu, 07 Jun 2018 22:58:45 +0530
 In-Reply-To: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
 References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
+Message-Id: <152839252128.25118.9560641131752593763.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,63 +50,135 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-During Machine Check interrupt on pseries platform, register r3 points
-RTAS extended event log passed by hypervisor. Since hypervisor uses r3
-to pass pointer to rtas log, it stores the original r3 value at the
-start of the memory (first 8 bytes) pointed by r3. Since hypervisor
-stores this info and rtas log is in BE format, linux should make
-sure to restore r3 value in correct endian format.
+On pseries, the machine check error details are part of RTAS extended
+event log passed under Machine check exception section. This patch adds
+the definition of rtas MCE event section and related helper
+functions.
 
-Without this patch when MCE handler, after recovery, returns to code that
-that caused the MCE may end up with Data SLB access interrupt for invalid
-address followed by kernel panic or hang.
-
-[   62.878965] Severe Machine check interrupt [Recovered]
-[   62.878968]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
-[   62.878969]   Initiator: CPU
-[   62.878970]   Error type: SLB [Multihit]
-[   62.878971]     Effective address: d00000000ca70000
-cpu 0xa: Vector: 380 (Data SLB Access) at [c0000000fc7775b0]
-    pc: c0000000009694c0: vsnprintf+0x80/0x480
-    lr: c0000000009698e0: vscnprintf+0x20/0x60
-    sp: c0000000fc777830
-   msr: 8000000002009033
-   dar: a803a30c000000d0
-  current = 0xc00000000bc9ef00
-  paca    = 0xc00000001eca5c00	 softe: 3	 irq_happened: 0x01
-    pid   = 8860, comm = insmod
-[c0000000fc7778b0] c0000000009698e0 vscnprintf+0x20/0x60
-[c0000000fc7778e0] c00000000016b6c4 vprintk_emit+0xb4/0x4b0
-[c0000000fc777960] c00000000016d40c vprintk_func+0x5c/0xd0
-[c0000000fc777980] c00000000016cbb4 printk+0x38/0x4c
-[c0000000fc7779a0] d00000000ca301c0 init_module+0x1c0/0x338 [bork_kernel]
-[c0000000fc777a40] c00000000000d9c4 do_one_initcall+0x54/0x230
-[c0000000fc777b00] c0000000001b3b74 do_init_module+0x8c/0x248
-[c0000000fc777b90] c0000000001b2478 load_module+0x12b8/0x15b0
-[c0000000fc777d30] c0000000001b29e8 sys_finit_module+0xa8/0x110
-[c0000000fc777e30] c00000000000b204 system_call+0x58/0x6c
---- Exception: c00 (System Call) at 00007fff8bda0644
-SP (7fffdfbfe980) is in userspace
-
-This patch fixes this issue.
-
-Fixes: a08a53ea4c97 ("powerpc/le: Enable RTAS events support")
-Cc: stable@vger.kernel.org
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/ras.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/rtas.h |  104 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 5e1ef9150182..2edc673be137 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -360,7 +360,7 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
- 	}
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index ec9dd79398ee..3f2fba7ef23b 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -275,6 +275,7 @@ inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
+ #define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
+ #define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
+ #define PSERIES_ELOG_SECT_ID_HOTPLUG		(('H' << 8) | 'P')
++#define PSERIES_ELOG_SECT_ID_MCE		(('M' << 8) | 'C')
  
- 	savep = __va(regs->gpr[3]);
--	regs->gpr[3] = savep[0];	/* restore original r3 */
-+	regs->gpr[3] = be64_to_cpu(savep[0]);	/* restore original r3 */
+ /* Vendor specific Platform Event Log Format, Version 6, section header */
+ struct pseries_errorlog {
+@@ -326,6 +327,109 @@ struct pseries_hp_errorlog {
+ #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
+ #define PSERIES_HP_ELOG_ID_DRC_IC	4
  
- 	/* If it isn't an extended log we can use the per cpu 64bit buffer */
- 	h = (struct rtas_error_log *)&savep[1];
++/* RTAS pseries MCE errorlog section */
++#pragma pack(push, 1)
++struct pseries_mc_errorlog {
++	__be32	fru_id;
++	__be32	proc_id;
++	uint8_t	error_type;
++	union {
++		struct {
++			uint8_t	ue_err_type;
++			/* XXXXXXXX
++			 * X		1: Permanent or Transient UE.
++			 *  X		1: Effective address provided.
++			 *   X		1: Logical address provided.
++			 *    XX	2: Reserved.
++			 *      XXX	3: Type of UE error.
++			 */
++			uint8_t	reserved_1[6];
++			__be64	effective_address;
++			__be64	logical_address;
++		} ue_error;
++		struct {
++			uint8_t	soft_err_type;
++			/* XXXXXXXX
++			 * X		1: Effective address provided.
++			 *  XXXXX	5: Reserved.
++			 *       XX	2: Type of SLB/ERAT/TLB error.
++			 */
++			uint8_t	reserved_1[6];
++			__be64	effective_address;
++			uint8_t	reserved_2[8];
++		} soft_error;
++	} u;
++};
++#pragma pack(pop)
++
++/* RTAS pseries MCE error types */
++#define PSERIES_MC_ERROR_TYPE_UE		0x00
++#define PSERIES_MC_ERROR_TYPE_SLB		0x01
++#define PSERIES_MC_ERROR_TYPE_ERAT		0x02
++#define PSERIES_MC_ERROR_TYPE_TLB		0x04
++#define PSERIES_MC_ERROR_TYPE_D_CACHE		0x05
++#define PSERIES_MC_ERROR_TYPE_I_CACHE		0x07
++
++/* RTAS pseries MCE error sub types */
++#define PSERIES_MC_ERROR_UE_INDETERMINATE		0
++#define PSERIES_MC_ERROR_UE_IFETCH			1
++#define PSERIES_MC_ERROR_UE_PAGE_TABLE_WALK_IFETCH	2
++#define PSERIES_MC_ERROR_UE_LOAD_STORE			3
++#define PSERIES_MC_ERROR_UE_PAGE_TABLE_WALK_LOAD_STORE	4
++
++#define PSERIES_MC_ERROR_SLB_PARITY		0
++#define PSERIES_MC_ERROR_SLB_MULTIHIT		1
++#define PSERIES_MC_ERROR_SLB_INDETERMINATE	2
++
++#define PSERIES_MC_ERROR_ERAT_PARITY		1
++#define PSERIES_MC_ERROR_ERAT_MULTIHIT		2
++#define PSERIES_MC_ERROR_ERAT_INDETERMINATE	3
++
++#define PSERIES_MC_ERROR_TLB_PARITY		1
++#define PSERIES_MC_ERROR_TLB_MULTIHIT		2
++#define PSERIES_MC_ERROR_TLB_INDETERMINATE	3
++
++static inline uint8_t rtas_mc_error_type(const struct pseries_mc_errorlog *mlog)
++{
++	return mlog->error_type;
++}
++
++static inline uint8_t rtas_mc_error_sub_type(
++					const struct pseries_mc_errorlog *mlog)
++{
++	switch (mlog->error_type) {
++	case	PSERIES_MC_ERROR_TYPE_UE:
++		return (mlog->u.ue_error.ue_err_type & 0x07);
++	case	PSERIES_MC_ERROR_TYPE_SLB:
++	case	PSERIES_MC_ERROR_TYPE_ERAT:
++	case	PSERIES_MC_ERROR_TYPE_TLB:
++		return (mlog->u.soft_error.soft_err_type & 0x03);
++	default:
++		return 0;
++	}
++}
++
++static inline uint64_t rtas_mc_get_effective_addr(
++					const struct pseries_mc_errorlog *mlog)
++{
++	uint64_t addr = 0;
++
++	switch (mlog->error_type) {
++	case	PSERIES_MC_ERROR_TYPE_UE:
++		if (mlog->u.ue_error.ue_err_type & 0x40)
++			addr = mlog->u.ue_error.effective_address;
++		break;
++	case	PSERIES_MC_ERROR_TYPE_SLB:
++	case	PSERIES_MC_ERROR_TYPE_ERAT:
++	case	PSERIES_MC_ERROR_TYPE_TLB:
++		if (mlog->u.soft_error.soft_err_type & 0x80)
++			addr = mlog->u.soft_error.effective_address;
++	default:
++		break;
++	}
++	return be64_to_cpu(addr);
++}
++
+ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ 					      uint16_t section_id);
+ 
