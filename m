@@ -1,43 +1,17 @@
-Return-Path: <srs0=fawz=iz=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411h834HlWzF33p
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:08:35 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 411h833ng0z98st
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:08:35 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 411h830BtKz9s01
- for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2018 20:08:34 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57A4VHO079221
- for <linuxppc-dev@ozlabs.org>; Thu, 7 Jun 2018 06:08:33 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jf0vcwqbe-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 06:08:32 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 11:08:31 +0100
-Subject: [v2 PATCH 5/5] powerpc/pseries: Fix endainness while restoring of
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 07 Jun 2018 15:38:27 +0530
-In-Reply-To: <152836568375.29173.3046879842311381046.stgit@jupiter.in.ibm.com>
-References: <152836568375.29173.3046879842311381046.stgit@jupiter.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <152836605787.29173.4384469130105616077.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411hB620szzF34N
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 20:10:22 +1000 (AEST)
+Message-Id: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/3] powerpc: make CPU selection logic generic in Makefile
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ npiggin@gmail.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Thu,  7 Jun 2018 10:10:18 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,65 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-r3 in MCE handler.
+At the time being, when adding a new CPU for selection, both
+Kconfig.cputype and Makefile have to be modified.
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+This patch moves into Kconfig.cputype the name of the CPU to me
+passed to the -mcpu= argument.
 
-During Machine Check interrupt on pseries platform, register r3 points
-RTAS extended event log passed by hypervisor. Since hypervisor uses r3
-to pass pointer to rtas log, it stores the original r3 value at the
-start of the memory (first 8 bytes) pointed by r3. Since hypervisor
-stores this info and rtas log is in BE format, linux should make
-sure to restore r3 value in correct endian format.
-
-Without this patch when MCE handler, after recovery, returns to code that
-that caused the MCE may end up with Data SLB access interrupt for invalid
-address followed by kernel panic or hang.
-
-[   62.878965] Severe Machine check interrupt [Recovered]
-[   62.878968]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
-[   62.878969]   Initiator: CPU
-[   62.878970]   Error type: SLB [Multihit]
-[   62.878971]     Effective address: d00000000ca70000
-cpu 0xa: Vector: 380 (Data SLB Access) at [c0000000fc7775b0]
-    pc: c0000000009694c0: vsnprintf+0x80/0x480
-    lr: c0000000009698e0: vscnprintf+0x20/0x60
-    sp: c0000000fc777830
-   msr: 8000000002009033
-   dar: a803a30c000000d0
-  current = 0xc00000000bc9ef00
-  paca    = 0xc00000001eca5c00	 softe: 3	 irq_happened: 0x01
-    pid   = 8860, comm = insmod
-[c0000000fc7778b0] c0000000009698e0 vscnprintf+0x20/0x60
-[c0000000fc7778e0] c00000000016b6c4 vprintk_emit+0xb4/0x4b0
-[c0000000fc777960] c00000000016d40c vprintk_func+0x5c/0xd0
-[c0000000fc777980] c00000000016cbb4 printk+0x38/0x4c
-[c0000000fc7779a0] d00000000ca301c0 init_module+0x1c0/0x338 [bork_kernel]
-[c0000000fc777a40] c00000000000d9c4 do_one_initcall+0x54/0x230
-[c0000000fc777b00] c0000000001b3b74 do_init_module+0x8c/0x248
-[c0000000fc777b90] c0000000001b2478 load_module+0x12b8/0x15b0
-[c0000000fc777d30] c0000000001b29e8 sys_finit_module+0xa8/0x110
-[c0000000fc777e30] c00000000000b204 system_call+0x58/0x6c
---- Exception: c00 (System Call) at 00007fff8bda0644
-SP (7fffdfbfe980) is in userspace
-
-This patch fixes this issue.
-
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/platforms/pseries/ras.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/Makefile                  |  8 +-------
+ arch/powerpc/platforms/Kconfig.cputype | 15 +++++++++++++++
+ 2 files changed, 16 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index afdf05444bc2..cd9446980092 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -360,7 +360,7 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
- 	}
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 9704ab360d39..9a5642552abc 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -175,13 +175,7 @@ ifdef CONFIG_MPROFILE_KERNEL
+     endif
+ endif
  
- 	savep = __va(regs->gpr[3]);
--	regs->gpr[3] = savep[0];	/* restore original r3 */
-+	regs->gpr[3] = be64_to_cpu(savep[0]);	/* restore original r3 */
+-CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
+-CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
+-CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
+-CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
+-CFLAGS-$(CONFIG_POWER8_CPU) += $(call cc-option,-mcpu=power8)
+-CFLAGS-$(CONFIG_POWER9_CPU) += $(call cc-option,-mcpu=power9)
+-CFLAGS-$(CONFIG_PPC_8xx) += $(call cc-option,-mcpu=860)
++CFLAGS-$(CONFIG_SPECIAL_CPU_BOOL) += $(call cc-option,-mcpu=$(CONFIG_SPECIAL_CPU))
  
- 	/* If it isn't an extended log we can use the per cpu 64bit buffer */
- 	h = (struct rtas_error_log *)&savep[1];
+ # Altivec option not allowed with e500mc64 in GCC.
+ ifeq ($(CONFIG_ALTIVEC),y)
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index cc892dcfa114..71ef559cc474 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -140,6 +140,21 @@ config E6500_CPU
+ 
+ endchoice
+ 
++config SPECIAL_CPU_BOOL
++	bool
++	default !GENERIC_CPU
++
++config SPECIAL_CPU
++	string
++	depends on SPECIAL_CPU_BOOL
++	default "cell" if CELL_CPU
++	default "power5" if POWER5_CPU
++	default "power6" if POWER6_CPU
++	default "power7" if POWER7_CPU
++	default "power8" if POWER8_CPU
++	default "power9" if POWER9_CPU
++	default "860" if PPC_8xx
++
+ config PPC_BOOK3S
+ 	def_bool y
+ 	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
+-- 
+2.13.3
