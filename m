@@ -1,32 +1,32 @@
-Return-Path: <axboe@kernel.dk>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411qWS2zJlzF315
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 01:40:52 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id g7-v6so12319834ioh.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 08:40:52 -0700 (PDT)
-Subject: Re: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory
- hotplug on Power8 baremetal
-From: Jens Axboe <axboe@kernel.dk>
-To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
- Bart Van Assche <Bart.VanAssche@wdc.com>, kent.overstreet@gmail.com,
- snitzer@redhat.com, linux-block@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sachinp@linux.vnet.ibm.com, Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
-References: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
- <d5b62afc48ece5aca8d08a80871c8613dd555d17.camel@wdc.com>
- <d011631b-c667-2628-dda8-2c87961329f0@linux.vnet.ibm.com>
- <042fc8ee69b74c57815c0edfdbb253495e9d7718.camel@wdc.com>
- <e01428cf15ab45bd42a45a14424e5384@linux.vnet.ibm.com>
- <b1b67ad6-b300-7def-5851-b11baa6edf97@kernel.dk>
-Message-ID: <f4a4410b-2517-9cf9-71bc-d337d04a0226@kernel.dk>
-Date: Thu, 7 Jun 2018 09:40:47 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411rZd6jXlzF34J
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 02:28:41 +1000 (AEST)
+Date: Thu, 7 Jun 2018 19:28:35 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, robh@kernel.org, aik@ozlabs.ru,
+ jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, cohuck@redhat.com, pawel.moll@arm.com,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ "Rustad, Mark D" <mark.d.rustad@intel.com>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180607185234-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
+ <20180607052306.GA1532@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <b1b67ad6-b300-7def-5851-b11baa6edf97@kernel.dk>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180607052306.GA1532@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,164 +36,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/7/18 8:45 AM, Jens Axboe wrote:
-> On 6/7/18 4:37 AM, vrbagal1 wrote:
->> On 2018-06-07 13:12, Bart Van Assche wrote:
->>> On Thu, 2018-06-07 at 12:56 +0530, Venkat Rao B wrote:
->>>> On Thursday 07 June 2018 12:46 PM, Bart Van Assche wrote:
->>>>> On Thu, 2018-06-07 at 12:38 +0530, vrbagal1 wrote:
->>>>>> Observing Kernel oops and machine reboots while executing memory hotplug
->>>>>> test case, on Power8 Baremetal machine.
->>>>>>
->>>>>> I see this is introduced some where between rc6 and 4.17.
->>>>>
->>>>> Please provide the exact versions (git commit IDs) of the kernel versions
->>>>> you have tested.
->>>>
->>>> Commit Id ---> 5037be168f
->>>
->>> The reason I was asking for the commit ID is because I saw that 
->>> clone_endio()
->>> occurs in the oops which means that the dm driver is involved. An 
->>> important fix
->>> for the dm driver went upstream recently, namely d37753540568 ("dm: Use 
->>> kzalloc
->>> for all structs with embedded biosets/mempools"). Can you double check 
->>> whether
->>> that commit it present in your tree? If it is not present, please 
->>> update to the
->>> latest master and retest. If it is present, please report how to 
->>> reproduce
->>> this oops to Kent Overstreet, Jens Axboe, linux-block and Mike Snitzer.
->>>
->>> Thanks,
->>>
->>> Bart.
->>
->>
->> Yes, the fix is present in the tree, which I have tested.
->>
->> Steps to reproduce:
->>
->> Step1: Clone and Install avocado git clone 
->> https://github.com/avocado-framework/avocado.git
->> Step2: Clone 
->> https://github.com/avocado-framework-tests/avocado-misc-tests.git
->>         Test case is 
->> https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py
->> Step3: Command to run the test is avocado run 
->> avocado-misc-tests/memory/memhotplug.py
+On Wed, Jun 06, 2018 at 10:23:06PM -0700, Christoph Hellwig wrote:
+> On Thu, May 31, 2018 at 08:43:58PM +0300, Michael S. Tsirkin wrote:
+> > Pls work on a long term solution. Short term needs can be served by
+> > enabling the iommu platform in qemu.
 > 
-> Can you try with the below? Not a fully formed fix since I'd prefer
-> if the dm bioset copy stuff was changed instead, but worth a shot.
+> So, I spent some time looking at converting virtio to dma ops overrides,
+> and the current virtio spec, and the sad through I have to tell is that
+> both the spec and the Linux implementation are complete and utterly fucked
+> up.
 
-This is closer to an actual fix, please try that instead.
+Let me restate it: DMA API has support for a wide range of hardware, and
+hardware based virtio implementations likely won't benefit from all of
+it.
+
+And given virtio right now is optimized for specific workloads, improving
+portability without regressing performance isn't easy.
+
+I think it's unsurprising since it started a strictly a guest/host
+mechanism.  People did implement offloads on specific platforms though,
+and they are known to work. To improve portability even further,
+we might need to make spec and code changes.
+
+I'm not really sympathetic to people complaining that they can't even
+set a flag in qemu though. If that's the case the stack in question is
+way too inflexible.
 
 
-diff --git a/block/bio.c b/block/bio.c
-index 595663e0281a..0616d86b15c6 100644
---- a/block/bio.c
-+++ b/block/bio.c
-@@ -1967,6 +1967,21 @@ int bioset_init(struct bio_set *bs,
- }
- EXPORT_SYMBOL(bioset_init);
- 
-+int bioset_init_from_src(struct bio_set *new, struct bio_set *src)
-+{
-+	unsigned int pool_size = src->bio_pool.min_nr;
-+	int flags;
-+
-+	flags = 0;
-+	if (src->bvec_pool.min_nr)
-+		flags |= BIOSET_NEED_BVECS;
-+	if (src->rescue_workqueue)
-+		flags |= BIOSET_NEED_RESCUER;
-+
-+	return bioset_init(new, pool_size, src->front_pad, flags);
-+}
-+EXPORT_SYMBOL(bioset_init_from_src);
-+
- #ifdef CONFIG_BLK_CGROUP
- 
- /**
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 98dff36b89a3..20a8d63754bf 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -1953,9 +1953,10 @@ static void free_dev(struct mapped_device *md)
- 	kvfree(md);
- }
- 
--static void __bind_mempools(struct mapped_device *md, struct dm_table *t)
-+static int __bind_mempools(struct mapped_device *md, struct dm_table *t)
- {
- 	struct dm_md_mempools *p = dm_table_get_md_mempools(t);
-+	int ret = 0;
- 
- 	if (dm_table_bio_based(t)) {
- 		/*
-@@ -1982,13 +1983,16 @@ static void __bind_mempools(struct mapped_device *md, struct dm_table *t)
- 	       bioset_initialized(&md->bs) ||
- 	       bioset_initialized(&md->io_bs));
- 
--	md->bs = p->bs;
--	memset(&p->bs, 0, sizeof(p->bs));
--	md->io_bs = p->io_bs;
--	memset(&p->io_bs, 0, sizeof(p->io_bs));
-+	ret = bioset_init_from_src(&md->bs, &p->bs);
-+	if (ret)
-+		goto out;
-+	ret = bioset_init_from_src(&md->io_bs, &p->io_bs);
-+	if (ret)
-+		bioset_exit(&md->bs);
- out:
- 	/* mempool bind completed, no longer need any mempools in the table */
- 	dm_table_free_md_mempools(t);
-+	return ret;
- }
- 
- /*
-@@ -2033,6 +2037,7 @@ static struct dm_table *__bind(struct mapped_device *md, struct dm_table *t,
- 	struct request_queue *q = md->queue;
- 	bool request_based = dm_table_request_based(t);
- 	sector_t size;
-+	int ret;
- 
- 	lockdep_assert_held(&md->suspend_lock);
- 
-@@ -2068,7 +2073,11 @@ static struct dm_table *__bind(struct mapped_device *md, struct dm_table *t,
- 		md->immutable_target = dm_table_get_immutable_target(t);
- 	}
- 
--	__bind_mempools(md, t);
-+	ret = __bind_mempools(md, t);
-+	if (ret) {
-+		old_map = ERR_PTR(ret);
-+		goto out;
-+	}
- 
- 	old_map = rcu_dereference_protected(md->map, lockdep_is_held(&md->suspend_lock));
- 	rcu_assign_pointer(md->map, (void *)t);
-@@ -2078,6 +2087,7 @@ static struct dm_table *__bind(struct mapped_device *md, struct dm_table *t,
- 	if (old_map)
- 		dm_sync_table(md);
- 
-+out:
- 	return old_map;
- }
- 
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index 810a8bee8f85..307682ac2f31 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -417,6 +417,7 @@ enum {
- extern int bioset_init(struct bio_set *, unsigned int, unsigned int, int flags);
- extern void bioset_exit(struct bio_set *);
- extern int biovec_init_pool(mempool_t *pool, int pool_entries);
-+extern int bioset_init_from_src(struct bio_set *new, struct bio_set *src);
- 
- extern struct bio *bio_alloc_bioset(gfp_t, unsigned int, struct bio_set *);
- extern void bio_put(struct bio *);
+
+> Both in the flag naming and the implementation there is an implication
+> of DMA API == IOMMU, which is fundamentally wrong.
+
+Maybe we need to extend the meaning of PLATFORM_IOMMU or rename it.
+
+It's possible that some setups will benefit from a more
+fine-grained approach where some aspects of the DMA
+API are bypassed, others aren't.
+
+This seems to be what was being asked for in this thread,
+with comments claiming IOMMU flag adds too much overhead.
+
+
+> The DMA API does a few different things:
+> 
+>  a) address translation
+> 
+> 	This does include IOMMUs.  But it also includes random offsets
+> 	between PCI bars and system memory that we see on various
+> 	platforms.
+
+I don't think you mean bars. That's unrelated to DMA.
+
+>  Worse so some of these offsets might be based on
+> 	banks, e.g. on the broadcom bmips platform.  It also deals
+> 	with bitmask in physical addresses related to memory encryption
+> 	like AMD SEV.  I'd be really curious how for example the
+> 	Intel virtio based NIC is going to work on any of those
+> 	plaforms.
+
+SEV guys report that they just set the iommu flag and then it all works.
+I guess if there's translation we can think of this as a kind of iommu.
+Maybe we should rename PLATFORM_IOMMU to PLARTFORM_TRANSLATION?
+
+And apparently some people complain that just setting that flag makes
+qemu check translation on each access with an unacceptable performance
+overhead.  Forcing same behaviour for everyone on general principles
+even without the flag is unlikely to make them happy.
+
+>   b) coherency
+> 
+> 	On many architectures DMA is not cache coherent, and we need
+> 	to invalidate and/or write back cache lines before doing
+> 	DMA.  Again, I wonder how this is every going to work with
+> 	hardware based virtio implementations.
+
+
+You mean dma_Xmb and friends?
+There's a new feature VIRTIO_F_IO_BARRIER that's being proposed
+for that.
+
+
+>  Even worse I think this
+> 	is actually broken at least for VIVT event for virtualized
+> 	implementations.  E.g. a KVM guest is going to access memory
+> 	using different virtual addresses than qemu, vhost might throw
+> 	in another different address space.
+
+I don't really know what VIVT is. Could you help me please?
+
+>   c) bounce buffering
+> 
+> 	Many DMA implementations can not address all physical memory
+> 	due to addressing limitations.  In such cases we copy the
+> 	DMA memory into a known addressable bounc buffer and DMA
+> 	from there.
+
+Don't do it then?
+
+
+>   d) flushing write combining buffers or similar
+> 
+> 	On some hardware platforms we need workarounds to e.g. read
+> 	from a certain mmio address to make sure DMA can actually
+> 	see memory written by the host.
+
+I guess it isn't an issue as long as WC isn't actually used.
+It will become an issue when virtio spec adds some WC capability -
+I suspect we can ignore this for now.
+
+> 
+> All of this is bypassed by virtio by default despite generally being
+> platform issues, not particular to a given device.
+
+It's both a device and a platform issue. A PV device is often more like
+another CPU than like a PCI device.
+
+
 
 -- 
-Jens Axboe
+MST
