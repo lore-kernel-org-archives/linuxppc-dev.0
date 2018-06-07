@@ -1,26 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4121k45bCMzF340
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 09:20:44 +1000 (AEST)
-Message-ID: <33590885d138195c8ede78b588ddb03b132267fd.camel@kernel.crashing.org>
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
- Tesla V100
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Ram
- Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org, Alistair Popple
- <alistair@popple.id.au>
-Date: Fri, 08 Jun 2018 09:20:30 +1000
-In-Reply-To: <20180607161541.21df6434@w520.home>
-References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4122R24znWzF346
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 09:52:46 +1000 (AEST)
+Date: Fri, 8 Jun 2018 09:52:20 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
+ Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel Mailing
+ List <linux-kernel@vger.kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: linux-next: manual merge of the powerpc tree with the kbuild tree
+Message-ID: <20180608095220.20b85912@canb.auug.org.au>
+In-Reply-To: <20180531093216.5c91aa2b@canb.auug.org.au>
+References: <20180531093216.5c91aa2b@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/yJu_K3LFBM2YxfOxmOM6LA+"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-06-07 at 16:15 -0600, Alex Williamson wrote:
-> On Fri, 08 Jun 2018 07:54:02 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Thu, 2018-06-07 at 11:04 -0600, Alex Williamson wrote:
-> > > 
-> > > Can we back up and discuss whether the IOMMU grouping of NVLink
-> > > connected devices makes sense?  AIUI we have a PCI view of these
-> > > devices and from that perspective they're isolated.  That's the view of
-> > > the device used to generate the grouping.  However, not visible to us,
-> > > these devices are interconnected via NVLink.  What isolation properties
-> > > does NVLink provide given that its entire purpose for existing seems to
-> > > be to provide a high performance link for p2p between devices?  
-> > 
-> > Not entire. On POWER chips, we also have an nvlink between the device
-> > and the CPU which is running significantly faster than PCIe.
-> > 
-> > But yes, there are cross-links and those should probably be accounted
-> > for in the grouping.
-> 
-> Then after we fix the grouping, can we just let the host driver manage
-> this coherent memory range and expose vGPUs to guests?  The use case of
-> assigning all 6 GPUs to one VM seems pretty limited.  (Might need to
-> convince NVIDIA to support more than a single vGPU per VM though)
-> Thanks,
+--Sig_/yJu_K3LFBM2YxfOxmOM6LA+
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I don't know about "vGPUs" and what nVidia may be cooking in that area.
+Hi all,
 
-The patched from Alexey allow for passing through the full thing, but
-they aren't trivial (there are additional issues, I'm not sure how
-covered they are, as we need to pay with the mapping attributes of
-portions of the GPU memory on the host side...).
+On Thu, 31 May 2018 09:32:16 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Today's linux-next merge of the powerpc tree got a conflict in:
+>=20
+>   arch/powerpc/kernel/module_64.c
+>=20
+> between commit:
+>=20
+>   06aeb9e3f2bc ("powerpc/kbuild: move -mprofile-kernel check to Kconfig")
+>=20
+> from the kbuild tree and commit:
+>=20
+>   250122baed29 ("powerpc64/module: Tighten detection of mcount call sites=
+ with -mprofile-kernel")
+>=20
+> from the powerpc tree.
+>=20
+> I fixed it up (see below) and can carry the fix as necessary. This
+> is now fixed as far as linux-next is concerned, but any non trivial
+> conflicts should be mentioned to your upstream maintainer when your tree
+> is submitted for merging.  You may also want to consider cooperating
+> with the maintainer of the conflicting tree to minimise any particularly
+> complex conflicts.
+>=20
+> --=20
+> Cheers,
+> Stephen Rothwell
+>=20
+> diff --cc arch/powerpc/kernel/module_64.c
+> index 55bccc315e1a,f7667e2ebfcb..000000000000
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@@ -462,9 -466,12 +466,12 @@@ static unsigned long stub_for_addr(cons
+>   	return (unsigned long)&stubs[i];
+>   }
+>  =20
+>  -#ifdef CC_USING_MPROFILE_KERNEL
+>  +#ifdef CONFIG_MPROFILE_KERNEL
+> - static bool is_early_mcount_callsite(u32 *instruction)
+> + static bool is_mprofile_mcount_callsite(const char *name, u32 *instruct=
+ion)
+>   {
+> + 	if (strcmp("_mcount", name))
+> + 		return false;
+> +=20
+>   	/*
+>   	 * Check if this is one of the -mprofile-kernel sequences.
+>   	 */
 
-Note: The cross-links are only per-socket so that would be 2 groups of
-3.
+This is now a conflict between the kbuild tree and Linus' tree.
 
-We *can* allow individual GPUs to be passed through, either if somebody
-designs a system without cross links, or if the user is ok with the
-security risk as the guest driver will not enable them if it doesn't
-"find" both sides of them.
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell
+
+--Sig_/yJu_K3LFBM2YxfOxmOM6LA+
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlsZxTQACgkQAVBC80lX
+0GzdkQgAo7Py6BrGkGFA/KxklVAutZ/Izxa4Iv0l2mGK1SjNX1xU8+WIfjF+bmy2
+kTdudvPJj5HbWxWisYKiChTSzQrXsH8abckx/s5vq9hvWPF1IbQ5WK2iaTehzfvw
+um7Dvkm9sTeDmTPZzEZ3nhsFOeyYp2ukkBP2TUseZQ95/Nvr4d0pvF0ZWl/dMm6T
+cQqmP2/ZYZaTk6N9XRvowaPdy5HuWy+nGr9Y8tuNukGmpfF6GciDvwR+RifSSZq0
+pw6GfbgcvolFOUxezRhJsWzaXQyPMlnAgdzPSF5x/g15PvUwjZ8XNhvvwL8D9n4I
+PxqALtRLOqWW34uTmDmmUeufcAGzEQ==
+=ZRqp
+-----END PGP SIGNATURE-----
+
+--Sig_/yJu_K3LFBM2YxfOxmOM6LA+--
