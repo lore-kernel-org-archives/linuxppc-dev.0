@@ -3,43 +3,43 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411qBB6rXKzF34G
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 01:25:51 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411qBC2Bc7zF34H
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 01:25:55 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57FOkd9076451
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 11:25:50 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jf5q15epb-1
+ w57FOKI1121440
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 11:25:51 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jf4n5hfpj-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 11:25:49 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 11:25:51 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <pedromfc@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 09:25:49 -0600
-Received: from b03ledav005.gho.boulder.ibm.com
- (b03ledav005.gho.boulder.ibm.com [9.17.130.236])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- w57FPivL10420658
+ Thu, 7 Jun 2018 11:25:50 -0400
+Received: from b01ledav005.gho.pok.ibm.com (b01ledav005.gho.pok.ibm.com
+ [9.57.199.110])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w57FPkqq17170766
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 08:25:44 -0700
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id A637BBE05B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
-Received: from b03ledav005.gho.boulder.ibm.com (unknown [127.0.0.1])
- by IMSVA (Postfix) with ESMTP id 6E183BE058
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 15:25:46 GMT
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 7E552AE064
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 11:26:02 -0400 (EDT)
+Received: from b01ledav005.gho.pok.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 517A0AE05C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 11:26:02 -0400 (EDT)
 Received: from pedro.localdomain (unknown [9.18.235.95])
- by b03ledav005.gho.boulder.ibm.com (Postfix) with ESMTP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 09:25:44 -0600 (MDT)
+ by b01ledav005.gho.pok.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 11:26:02 -0400 (EDT)
 From: Pedro Franco de Carvalho <pedromfc@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 3/5] powerpc: Fix pmu get/set functions
-Date: Thu,  7 Jun 2018 12:25:32 -0300
+Subject: [RFC PATCH 5/5] powerpc: Add PMU regset to compat_regsets
+Date: Thu,  7 Jun 2018 12:25:34 -0300
 In-Reply-To: <20180607152534.29427-1-pedromfc@linux.vnet.ibm.com>
 References: <20180607152534.29427-1-pedromfc@linux.vnet.ibm.com>
-Message-Id: <20180607152534.29427-4-pedromfc@linux.vnet.ibm.com>
+Message-Id: <20180607152534.29427-6-pedromfc@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,79 +49,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PMU regset exposed through ptrace has 5 64-bit words, which are
-all copied in and out. However, mmcr0 in the thread_struct is an
-unsigned, which causes pmu_set to clobber the next variable in the
-thread_struct (used_ebb), and pmu_get to return the same variable in
-one half of the mmcr0 slot.
+This patch allows setting and getting PMU registers from 32-bit
+threads.
 ---
- arch/powerpc/kernel/ptrace.c | 31 +++++++++++++++++++++++++++----
- 1 file changed, 27 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/ptrace.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index be8ca03a0bd5..69123feaef9e 100644
+index 2da0668a96dc..3a9c4ae65429 100644
 --- a/arch/powerpc/kernel/ptrace.c
 +++ b/arch/powerpc/kernel/ptrace.c
-@@ -1733,6 +1733,9 @@ static int pmu_get(struct task_struct *target,
- 		      unsigned int pos, unsigned int count,
- 		      void *kbuf, void __user *ubuf)
- {
-+	int ret = 0;
-+	unsigned long mmcr0 = target->thread.mmcr0;
-+
- 	/* Build tests */
- 	BUILD_BUG_ON(TSO(siar) + sizeof(unsigned long) != TSO(sdar));
- 	BUILD_BUG_ON(TSO(sdar) + sizeof(unsigned long) != TSO(sier));
-@@ -1742,9 +1745,16 @@ static int pmu_get(struct task_struct *target,
- 	if (!cpu_has_feature(CPU_FTR_ARCH_207S))
- 		return -ENODEV;
- 
--	return user_regset_copyout(&pos, &count, &kbuf, &ubuf,
--			&target->thread.siar, 0,
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+		&target->thread.siar, 0,
-+		4 * sizeof(unsigned long));
-+
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+			&mmcr0, 4 * sizeof(unsigned long),
- 			5 * sizeof(unsigned long));
-+
-+	return ret;
- }
- 
- static int pmu_set(struct task_struct *target,
-@@ -1754,6 +1764,12 @@ static int pmu_set(struct task_struct *target,
- {
- 	int ret = 0;
- 
-+#ifdef __BIG_ENDIAN
-+	int mmcr0_offset = sizeof(unsigned);
-+#else
-+	int mmcr0_offset = 0;
-+#endif
-+
- 	/* Build tests */
- 	BUILD_BUG_ON(TSO(siar) + sizeof(unsigned long) != TSO(sdar));
- 	BUILD_BUG_ON(TSO(sdar) + sizeof(unsigned long) != TSO(sier));
-@@ -1783,9 +1799,16 @@ static int pmu_set(struct task_struct *target,
- 			4 * sizeof(unsigned long));
- 
- 	if (!ret)
-+		ret = user_regset_copyin_ignore(&pos, &count, &kbuf,
-+			&ubuf, 4 * sizeof(unsigned long),
-+			4 * sizeof(unsigned long) + mmcr0_offset);
-+
-+	if (!ret)
- 		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
--			&target->thread.mmcr0, 4 * sizeof(unsigned long),
--			5 * sizeof(unsigned long));
-+			&target->thread.mmcr0,
-+			4 * sizeof(unsigned long) + mmcr0_offset,
-+			4 * sizeof(unsigned long) + mmcr0_offset
-+			+ sizeof (unsigned));
- 	return ret;
- }
+@@ -2317,6 +2317,11 @@ static const struct user_regset compat_regsets[] = {
+ 		.size = sizeof(u64), .align = sizeof(u64),
+ 		.active = ebb_active, .get = ebb_get, .set = ebb_set
+ 	},
++	[REGSET_PMR] = {
++		.core_note_type = NT_PPC_PMU, .n = ELF_NPMU,
++		.size = sizeof(u64), .align = sizeof(u64),
++		.active = pmu_active, .get = pmu_get, .set = pmu_set
++	},
  #endif
+ };
+ 
 -- 
 2.13.6
