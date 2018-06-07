@@ -1,9 +1,9 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411g710CCzzF333
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:22:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411g744lKNzF33Q
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 19:22:40 +1000 (AEST)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
  Richard Cochran <richardcochran@gmail.com>,
@@ -12,9 +12,9 @@ To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v3, 03/10] dt-binding: ptp_qoriq: add DPAA FMan support
-Date: Thu,  7 Jun 2018 17:20:43 +0800
-Message-Id: <20180607092050.46128-4-yangbo.lu@nxp.com>
+Subject: [v3, 04/10] powerpc/mpc85xx: move ptp timer out of fman in dts
+Date: Thu,  7 Jun 2018 17:20:44 +0800
+Message-Id: <20180607092050.46128-5-yangbo.lu@nxp.com>
 In-Reply-To: <20180607092050.46128-1-yangbo.lu@nxp.com>
 References: <20180607092050.46128-1-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,9 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch is to add bindings description for DPAA
-FMan 1588 timer, and also remove its description in
-fsl-fman dt-bindings document.
+This patch is to move ptp timer node out of fman.
+Because ptp timer will be probed by ptp_qoriq driver,
+it should be an independent device in case of conflict
+memory mapping.
 
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
 ---
@@ -37,84 +38,187 @@ Changes for v2:
 Changes for v3:
 	- None.
 ---
- Documentation/devicetree/bindings/net/fsl-fman.txt |   25 +-------------------
- .../devicetree/bindings/ptp/ptp-qoriq.txt          |   15 +++++++++--
- 2 files changed, 13 insertions(+), 27 deletions(-)
+ arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi   |   14 ++++++++------
+ arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi   |   14 ++++++++------
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi  |   14 ++++++++------
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi  |   14 ++++++++------
+ arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi |   14 ++++++++------
+ 5 files changed, 40 insertions(+), 30 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/fsl-fman.txt b/Documentation/devicetree/bindings/net/fsl-fman.txt
-index df873d1..74603dd 100644
---- a/Documentation/devicetree/bindings/net/fsl-fman.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-fman.txt
-@@ -356,30 +356,7 @@ ethernet@e0000 {
- ============================================================================
- FMan IEEE 1588 Node
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
+index abd01d4..6b124f7 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
+@@ -37,12 +37,13 @@ fman0: fman@400000 {
+ 	#size-cells = <1>;
+ 	cell-index = <0>;
+ 	compatible = "fsl,fman";
+-	ranges = <0 0x400000 0x100000>;
+-	reg = <0x400000 0x100000>;
++	ranges = <0 0x400000 0xfe000>;
++	reg = <0x400000 0xfe000>;
+ 	interrupts = <96 2 0 0>, <16 2 1 1>;
+ 	clocks = <&clockgen 3 0>;
+ 	clock-names = "fmanclk";
+ 	fsl,qman-channel-range = <0x40 0xc>;
++	ptimer-handle = <&ptp_timer0>;
  
--DESCRIPTION
--
--The FMan interface to support IEEE 1588
--
--
--PROPERTIES
--
--- compatible
--		Usage: required
--		Value type: <stringlist>
--		Definition: A standard property.
--		Must include "fsl,fman-ptp-timer".
--
--- reg
--		Usage: required
--		Value type: <prop-encoded-array>
--		Definition: A standard property.
--
--EXAMPLE
--
--ptp-timer@fe000 {
--	compatible = "fsl,fman-ptp-timer";
--	reg = <0xfe000 0x1000>;
--};
-+Refer to Documentation/devicetree/bindings/ptp/ptp-qoriq.txt
+ 	muram@0 {
+ 		compatible = "fsl,fman-muram";
+@@ -93,9 +94,10 @@ fman0: fman@400000 {
+ 		reg = <0x87000 0x1000>;
+ 		status = "disabled";
+ 	};
++};
  
- =============================================================================
- FMan MDIO Node
-diff --git a/Documentation/devicetree/bindings/ptp/ptp-qoriq.txt b/Documentation/devicetree/bindings/ptp/ptp-qoriq.txt
-index 0f569d8..c5d0e79 100644
---- a/Documentation/devicetree/bindings/ptp/ptp-qoriq.txt
-+++ b/Documentation/devicetree/bindings/ptp/ptp-qoriq.txt
-@@ -2,7 +2,8 @@
+-	ptp_timer0: ptp-timer@fe000 {
+-		compatible = "fsl,fman-ptp-timer";
+-		reg = <0xfe000 0x1000>;
+-	};
++ptp_timer0: ptp-timer@4fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0x4fe000 0x1000>;
++	interrupts = <96 2 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
+index debea75..b80aaf5 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
+@@ -37,12 +37,13 @@ fman1: fman@500000 {
+ 	#size-cells = <1>;
+ 	cell-index = <1>;
+ 	compatible = "fsl,fman";
+-	ranges = <0 0x500000 0x100000>;
+-	reg = <0x500000 0x100000>;
++	ranges = <0 0x500000 0xfe000>;
++	reg = <0x500000 0xfe000>;
+ 	interrupts = <97 2 0 0>, <16 2 1 0>;
+ 	clocks = <&clockgen 3 1>;
+ 	clock-names = "fmanclk";
+ 	fsl,qman-channel-range = <0x60 0xc>;
++	ptimer-handle = <&ptp_timer1>;
  
- General Properties:
+ 	muram@0 {
+ 		compatible = "fsl,fman-muram";
+@@ -93,9 +94,10 @@ fman1: fman@500000 {
+ 		reg = <0x87000 0x1000>;
+ 		status = "disabled";
+ 	};
++};
  
--  - compatible   Should be "fsl,etsec-ptp"
-+  - compatible   Should be "fsl,etsec-ptp" for eTSEC
-+                 Should be "fsl,fman-ptp-timer" for DPAA FMan
-   - reg          Offset and length of the register set for the device
-   - interrupts   There should be at least two interrupts. Some devices
-                  have as many as four PTP related interrupts.
-@@ -43,14 +44,22 @@ Clock Properties:
-   value, which will be directly written in those bits, that is why,
-   according to reference manual, the next clock sources can be used:
+-	ptp_timer1: ptp-timer@fe000 {
+-		compatible = "fsl,fman-ptp-timer";
+-		reg = <0xfe000 0x1000>;
+-	};
++ptp_timer1: ptp-timer@5fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0x5fe000 0x1000>;
++	interrupts = <97 2 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
+index 3a20e0d..d3720fd 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
+@@ -37,12 +37,13 @@ fman0: fman@400000 {
+ 	#size-cells = <1>;
+ 	cell-index = <0>;
+ 	compatible = "fsl,fman";
+-	ranges = <0 0x400000 0x100000>;
+-	reg = <0x400000 0x100000>;
++	ranges = <0 0x400000 0xfe000>;
++	reg = <0x400000 0xfe000>;
+ 	interrupts = <96 2 0 0>, <16 2 1 1>;
+ 	clocks = <&clockgen 3 0>;
+ 	clock-names = "fmanclk";
+ 	fsl,qman-channel-range = <0x800 0x10>;
++	ptimer-handle = <&ptp_timer0>;
  
-+  For eTSEC,
-   <0> - external high precision timer reference clock (TSEC_TMR_CLK
-         input is used for this purpose);
-   <1> - eTSEC system clock;
-   <2> - eTSEC1 transmit clock;
-   <3> - RTC clock input.
+ 	muram@0 {
+ 		compatible = "fsl,fman-muram";
+@@ -98,9 +99,10 @@ fman0: fman@400000 {
+ 		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
+ 		reg = <0xfd000 0x1000>;
+ 	};
++};
  
--  When this attribute is not used, eTSEC system clock will serve as
--  IEEE 1588 timer reference clock.
-+  For DPAA FMan,
-+  <0> - external high precision timer reference clock (TMR_1588_CLK)
-+  <1> - MAC system clock (1/2 FMan clock)
-+  <2> - reserved
-+  <3> - RTC clock oscillator
-+
-+  When this attribute is not used, the IEEE 1588 timer reference clock
-+  will use the eTSEC system clock (for Gianfar) or the MAC system
-+  clock (for DPAA).
+-	ptp_timer0: ptp-timer@fe000 {
+-		compatible = "fsl,fman-ptp-timer";
+-		reg = <0xfe000 0x1000>;
+-	};
++ptp_timer0: ptp-timer@4fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0x4fe000 0x1000>;
++	interrupts = <96 2 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
+index 82750ac..ae34c20 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
+@@ -37,12 +37,13 @@ fman1: fman@500000 {
+ 	#size-cells = <1>;
+ 	cell-index = <1>;
+ 	compatible = "fsl,fman";
+-	ranges = <0 0x500000 0x100000>;
+-	reg = <0x500000 0x100000>;
++	ranges = <0 0x500000 0xfe000>;
++	reg = <0x500000 0xfe000>;
+ 	interrupts = <97 2 0 0>, <16 2 1 0>;
+ 	clocks = <&clockgen 3 1>;
+ 	clock-names = "fmanclk";
+ 	fsl,qman-channel-range = <0x820 0x10>;
++	ptimer-handle = <&ptp_timer1>;
  
- Example:
+ 	muram@0 {
+ 		compatible = "fsl,fman-muram";
+@@ -98,9 +99,10 @@ fman1: fman@500000 {
+ 		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
+ 		reg = <0xfd000 0x1000>;
+ 	};
++};
  
+-	ptp_timer1: ptp-timer@fe000 {
+-		compatible = "fsl,fman-ptp-timer";
+-		reg = <0xfe000 0x1000>;
+-	};
++ptp_timer1: ptp-timer@5fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0x5fe000 0x1000>;
++	interrupts = <97 2 0 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
+index 7f60b60..02f2755 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
+@@ -37,12 +37,13 @@ fman0: fman@400000 {
+ 	#size-cells = <1>;
+ 	cell-index = <0>;
+ 	compatible = "fsl,fman";
+-	ranges = <0 0x400000 0x100000>;
+-	reg = <0x400000 0x100000>;
++	ranges = <0 0x400000 0xfe000>;
++	reg = <0x400000 0xfe000>;
+ 	interrupts = <96 2 0 0>, <16 2 1 1>;
+ 	clocks = <&clockgen 3 0>;
+ 	clock-names = "fmanclk";
+ 	fsl,qman-channel-range = <0x800 0x10>;
++	ptimer-handle = <&ptp_timer0>;
+ 
+ 	muram@0 {
+ 		compatible = "fsl,fman-muram";
+@@ -86,9 +87,10 @@ fman0: fman@400000 {
+ 		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
+ 		reg = <0xfd000 0x1000>;
+ 	};
++};
+ 
+-	ptp_timer0: ptp-timer@fe000 {
+-		compatible = "fsl,fman-ptp-timer";
+-		reg = <0xfe000 0x1000>;
+-	};
++ptp_timer0: ptp-timer@4fe000 {
++	compatible = "fsl,fman-ptp-timer";
++	reg = <0x4fe000 0x1000>;
++	interrupts = <96 2 0 0>;
+ };
 -- 
 1.7.1
