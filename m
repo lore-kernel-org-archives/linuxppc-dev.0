@@ -3,31 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411b6P2LFSzF32F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 16:21:49 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411c350x4WzF32c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 17:04:00 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w576KjBU012289
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 02:21:47 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jeufq03w4-1
+ w5773jWu096841
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 03:03:58 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jeyehsbbf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 02:21:45 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 03:03:57 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vrbagal1@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 00:21:42 -0600
+ Thu, 7 Jun 2018 03:03:54 -0400
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="=_477b1b30237f50ffd049fac1340233b6"
-Date: Thu, 07 Jun 2018 11:55:53 +0530
+ boundary="=_94a5de351d04e0a26fd92b0aa4419b8a"
+Date: Thu, 07 Jun 2018 12:38:05 +0530
 From: vrbagal1 <vrbagal1@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Subject: [mainline] [powerpc/powervm]Kernel OOPS while executing memory
- hotplug on Power8 baremetal
-Message-Id: <7f47de1257b620ea4c5468bc6f8a7364@linux.vnet.ibm.com>
+To: linux-scsi@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Mpe <mpe@ellerman.id.au>, sachinp <sachinp@linux.vnet.ibm.com>
+Subject: Fwd: [powerpc/Baremetal]Kernel OOPS while executing memory hotplug on
+ Power8 baremetal
+Message-Id: <ee45ead1d96ad05f77aec1d8d3e39c85@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,10 +37,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=_477b1b30237f50ffd049fac1340233b6
+--=_94a5de351d04e0a26fd92b0aa4419b8a
 Content-Transfer-Encoding: 7bit
 Content-Type: text/plain; charset=US-ASCII;
  format=flowed
+
+
++scsi mailing list, and edited the subject line.
+
+Pasting the traces here.
+
+[ 2484.634761] Unable to handle kernel paging request for instruction 
+fetch
+[ 2484.634849] Faulting instruction address: 0x00000000
+[ 2484.634862] Oops: Kernel access of bad area, sig: 11 [#1]
+[ 2484.634905] LE SMP NR_CPUS=2048 NUMA PowerNV
+[ 2484.634991] Dumping ftrace buffer:
+[ 2484.635116]    (ftrace buffer empty)
+[ 2484.635158] Modules linked in: binfmt_misc ipt_MASQUERADE 
+nf_nat_masquerade_ipv4 tun bridge stp llc xt_tcpudp ipt_REJECT 
+nf_reject_ipv4 xt_conntrack nfnetlink iptable_nat nf_conntrack_ipv4 
+nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle 
+iptable_filter powernv_rng rng_core ipmi_powernv ipmi_devintf 
+ipmi_msghandler vmx_crypto leds_powernv powernv_op_panel led_class 
+kvm_hv nfsd kvm ip_tables x_tables autofs4
+[ 2484.635528] CPU: 48 PID: 0 Comm: swapper/48 Not tainted 
+4.17.0-autotest #1
+[ 2484.635591] NIP:  0000000000000000 LR: c00000000014beb4 CTR: 
+0000000000000000
+[ 2484.635667] REGS: c000000ffff4f600 TRAP: 0400   Not tainted  
+(4.17.0-autotest)
+[ 2484.635741] MSR:  9000000040009033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 
+28028028  XER: 20000000
+[ 2484.635835] CFAR: c000000000008934 SOFTE: 1
+[ 2484.635835] GPR00: c00000000014c4ec c000000ffff4f880 c0000000010fb800 
+c0000007eb6d1d10
+[ 2484.635835] GPR04: 0000000000000003 0000000000000000 0000000000000000 
+0000000000000000
+[ 2484.635835] GPR08: c000000ffff4f910 0000000000000000 0000000000000000 
+c000000f11557970
+[ 2484.635835] GPR12: 0000000000000000 c000000ffffb1880 c000000f272dff90 
+0000000000200042
+[ 2484.635835] GPR16: 0000000100035566 c000000ffff4c000 0000000000000000 
+0000000000000001
+[ 2484.635835] GPR20: c000000000dd6c80 c000000001123b00 0000000000000005 
+c000000ffff4f910
+[ 2484.635835] GPR24: 0000000000000001 0000000000000000 0000000000000000 
+0000000000000003
+[ 2484.635835] GPR28: 0000000000000000 c0000007e03001b0 0000000000000000 
+ffffffffffffffe8
+[ 2484.636474] NIP [0000000000000000]           (null)
+[ 2484.636530] LR [c00000000014beb4] __wake_up_common+0xe4/0x1e0
+[ 2484.636593] Call Trace:
+[ 2484.636620] [c000000ffff4f880] [c000000ffff4f8c0] 0xc000000ffff4f8c0 
+(unreliable)
+[ 2484.636698] [c000000ffff4f8f0] [c00000000014c4ec] 
+__wake_up_common_lock+0xac/0x100
+[ 2484.636776] [c000000ffff4f980] [c000000000243acc] 
+mempool_free+0xcc/0xf0
+[ 2484.636842] [c000000ffff4f9b0] [c00000000052c090] bio_free+0x50/0x90
+[ 2484.636907] [c000000ffff4f9e0] [c000000000850dc0] 
+dec_pending+0x130/0x310
+[ 2484.636971] [c000000ffff4fa60] [c0000000008512fc] 
+clone_endio+0xcc/0x180
+[ 2484.637036] [c000000ffff4fae0] [c00000000052c2a4] 
+bio_endio+0x164/0x280
+[ 2484.637102] [c000000ffff4fb80] [c000000000538eb0] 
+blk_update_request+0xf0/0x4a0
+[ 2484.637179] [c000000ffff4fc20] [c0000000006ba600] 
+scsi_end_request+0x50/0x270
+[ 2484.637255] [c000000ffff4fc80] [c0000000006baa44] 
+scsi_io_completion+0x224/0x6b0
+[ 2484.637332] [c000000ffff4fd10] [c0000000006b09a8] 
+scsi_finish_command+0x138/0x170
+[ 2484.637408] [c000000ffff4fd50] [c0000000006b9b28] 
+scsi_softirq_done+0x178/0x1d0
+[ 2484.637485] [c000000ffff4fdd0] [c000000000543e88] 
+blk_done_softirq+0xa8/0xd0
+[ 2484.637562] [c000000ffff4fe10] [c000000000a1fdbc] 
+__do_softirq+0x15c/0x3b4
+[ 2484.637628] [c000000ffff4ff00] [c0000000000f7d98] irq_exit+0xf8/0x110
+[ 2484.637693] [c000000ffff4ff20] [c000000000016e98] __do_irq+0x98/0x200
+[ 2484.637759] [c000000ffff4ff90] [c000000000028bd4] 
+call_do_irq+0x14/0x24
+[ 2484.637823] [c000000f272dfa50] [c000000000017094] do_IRQ+0x94/0x110
+[ 2484.637888] [c000000f272dfaa0] [c000000000008db8] 
+hardware_interrupt_common+0x158/0x160
+[ 2484.637967] --- interrupt: 501 at replay_interrupt_return+0x0/0x4
+[ 2484.637967]     LR = arch_local_irq_restore+0x74/0x90
+[ 2484.638068] [c000000f272dfd90] [c000000000871c88] 
+menu_select+0xc8/0x7f0 (unreliable)
+[ 2484.638145] [c000000f272dfdb0] [c00000000086fc88] 
+cpuidle_enter_state+0x108/0x3c0
+[ 2484.638222] [c000000f272dfe10] [c0000000001308e4] 
+call_cpuidle+0x44/0x80
+[ 2484.638286] [c000000f272dfe30] [c000000000130e78] do_idle+0x2f8/0x3a0
+[ 2484.638350] [c000000f272dfec0] [c0000000001310f0] 
+cpu_startup_entry+0x30/0x40
+[ 2484.638427] [c000000f272dfef0] [c000000000043580] 
+start_secondary+0x4d0/0x520
+[ 2484.638504] [c000000f272dff90] [c00000000000b284] 
+start_secondary_resume+0x10/0x14
+[ 2484.638579] Instruction dump:
+[ 2484.638618] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+XXXXXXXX XXXXXXXX
+[ 2484.638697] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX 
+XXXXXXXX XXXXXXXX
+[ 2484.638778] ---[ end trace 9e63f5da6878e977 ]---
+[ 2484.639008]
+[ 2485.639101] Kernel panic - not syncing: Fatal exception in interrupt
+[ 2485.639465] Dumping ftrace buffer:
+[ 2485.639514]    (ftrace buffer empty)
+[ 2485.639732] Rebooting in 10 seconds..
+
+
+Cheers,
+Venkat.
+IBM Linux Technology Centre
+
+
+-------- Original Message --------
+Subject: [mainline] [powerpc/powervm]Kernel OOPS while executing memory 
+hotplug on Power8 baremetal
+Date: 2018-06-07 11:55
+ From: vrbagal1 <vrbagal1@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, mpe@ellerman.id.au
 
 Greetings!!!
 
@@ -49,14 +171,15 @@ test case, on Power8 Baremetal machine.
 
 I see this is introduced some where between rc6 and 4.17.
 
-Machine: Power 8 Baremetal(PowerNV)
-Kernel Veriosn: Linux version 4.17.0-autotest
+Machine: Power 8 Baremetal
+Kernel Version: Linux version 4.17.0-autotest
 gcc Version: gcc version 4.8.5 20150623 (Red Hat 4.8.5-28) (GCC))
+
 
 Attached is the .config file and traces found.
 
 Cheers.
---=_477b1b30237f50ffd049fac1340233b6
+--=_94a5de351d04e0a26fd92b0aa4419b8a
 Content-Transfer-Encoding: base64
 Content-Type: text/plain;
  name=Tul-NV-config
@@ -1675,7 +1798,7 @@ TV9CT09LM1NfNjRfSFY9bQojIENPTkZJR19LVk1fQk9PSzNTXzY0X1BSIGlzIG5vdCBzZXQKIyBD
 T05GSUdfS1ZNX0JPT0szU19IVl9FWElUX1RJTUlORyBpcyBub3Qgc2V0CkNPTkZJR19LVk1fWElD
 Uz15CkNPTkZJR19LVk1fWElWRT15CkNPTkZJR19WSE9TVF9ORVQ9bQpDT05GSUdfVkhPU1Q9bQoj
 IENPTkZJR19WSE9TVF9DUk9TU19FTkRJQU5fTEVHQUNZIGlzIG5vdCBzZXQK
---=_477b1b30237f50ffd049fac1340233b6
+--=_94a5de351d04e0a26fd92b0aa4419b8a
 Content-Transfer-Encoding: base64
 Content-Type: text/plain;
  name=kernel_oops_memory_hotplug
@@ -1766,4 +1889,4 @@ bCBwYW5pYyAtIG5vdCBzeW5jaW5nOiBGYXRhbCBleGNlcHRpb24gaW4gaW50ZXJydXB0ClsgMjQ4
 NS42Mzk0NjVdIER1bXBpbmcgZnRyYWNlIGJ1ZmZlcjoKWyAyNDg1LjYzOTUxNF0gICAgKGZ0cmFj
 ZSBidWZmZXIgZW1wdHkpClsgMjQ4NS42Mzk3MzJdIFJlYm9vdGluZyBpbiAxMCBzZWNvbmRzLi5g
 YGAK
---=_477b1b30237f50ffd049fac1340233b6--
+--=_94a5de351d04e0a26fd92b0aa4419b8a--
