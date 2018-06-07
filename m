@@ -1,42 +1,23 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411rn13QJhzF33Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 02:37:41 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w57GZnTq089011
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 12:37:38 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jf5pf09py-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 12:37:36 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 7 Jun 2018 17:37:34 +0100
-Date: Thu, 07 Jun 2018 22:07:26 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH -tip v5 18/27] powerpc/kprobes: Don't call the
- ->break_handler() in arm kprobes code
-To: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "H . Peter Anvin"
- <hpa@zytor.com>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, Steven Rostedt <rostedt@goodmis.org>,
- Thomas Gleixner <tglx@linutronix.de>
-References: <152812730943.10068.5166429445118734697.stgit@devbox>
- <152812783350.10068.4690566636762511152.stgit@devbox>
- <1528371112.vwnh1m0k39.naveen@linux.ibm.com>
- <20180607232802.c5fcea960e94ef2f3cd4cde8@kernel.org>
-In-Reply-To: <20180607232802.c5fcea960e94ef2f3cd4cde8@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411sMk5jwyzF34W
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 03:04:13 +1000 (AEST)
+Date: Thu, 7 Jun 2018 11:04:09 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Benjamin
+ Herrenschmidt <benh@kernel.crashing.org>, Ram Pai <linuxram@us.ibm.com>,
+ kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
+ Tesla V100
+Message-ID: <20180607110409.5057ebac@w520.home>
+In-Reply-To: <20180607084420.29513-1-aik@ozlabs.ru>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <1528389409.62iyaqw9yn.naveen@linux.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,38 +27,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masami Hiramatsu wrote:
-> On Thu, 07 Jun 2018 17:07:00 +0530
-> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
->=20
->> Masami Hiramatsu wrote:
->> > Don't call the ->break_handler() from the arm kprobes code,
->> 					    ^^^ powerpc
->>=20
->> > because it was only used by jprobes which got removed.
->> >=20
->> > This also makes skip_singlestep() a static function since
->> > only ftrace-kprobe.c is using this function.
->> >=20
->> > Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
->> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> > Cc: Paul Mackerras <paulus@samba.org>
->> > Cc: Michael Ellerman <mpe@ellerman.id.au>
->> > Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
->> > Cc: linuxppc-dev@lists.ozlabs.org
->> > ---
->> >  arch/powerpc/include/asm/kprobes.h   |   10 ----------
->> >  arch/powerpc/kernel/kprobes-ftrace.c |   16 +++-------------
->> >  arch/powerpc/kernel/kprobes.c        |   31 +++++++++++--------------=
-------
->> >  3 files changed, 14 insertions(+), 43 deletions(-)
->>=20
->> With 2 small comments...
->=20
-> 2 ? or 1 ?
+On Thu,  7 Jun 2018 18:44:15 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-Two, with one in the commit log above :)
+> Here is an rfc of some patches adding psaa-through support
+> for NVIDIA V100 GPU found in some POWER9 boxes.
+> 
+> The example P9 system has 6 GPUs, each accompanied with 2 bridges
+> representing the hardware links (aka NVLink2):
+> 
+>  4  0004:04:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+>  5  0004:05:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+>  6  0004:06:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+>  4  0006:00:00.0 Bridge: IBM Device 04ea (rev 01)
+>  4  0006:00:00.1 Bridge: IBM Device 04ea (rev 01)
+>  5  0006:00:01.0 Bridge: IBM Device 04ea (rev 01)
+>  5  0006:00:01.1 Bridge: IBM Device 04ea (rev 01)
+>  6  0006:00:02.0 Bridge: IBM Device 04ea (rev 01)
+>  6  0006:00:02.1 Bridge: IBM Device 04ea (rev 01)
+> 10  0007:00:00.0 Bridge: IBM Device 04ea (rev 01)
+> 10  0007:00:00.1 Bridge: IBM Device 04ea (rev 01)
+> 11  0007:00:01.0 Bridge: IBM Device 04ea (rev 01)
+> 11  0007:00:01.1 Bridge: IBM Device 04ea (rev 01)
+> 12  0007:00:02.0 Bridge: IBM Device 04ea (rev 01)
+> 12  0007:00:02.1 Bridge: IBM Device 04ea (rev 01)
+> 10  0035:03:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+> 11  0035:04:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+> 12  0035:05:00.0 3D: NVIDIA Corporation GV100GL [Tesla V100 SXM2] (rev a1)
+> 
+> ^^ the number is an IOMMU group ID.
 
-- Naveen
+Can we back up and discuss whether the IOMMU grouping of NVLink
+connected devices makes sense?  AIUI we have a PCI view of these
+devices and from that perspective they're isolated.  That's the view of
+the device used to generate the grouping.  However, not visible to us,
+these devices are interconnected via NVLink.  What isolation properties
+does NVLink provide given that its entire purpose for existing seems to
+be to provide a high performance link for p2p between devices?
+ 
+> Each bridge represents an additional hardware interface called "NVLink2",
+> it is not a PCI link but separate but. The design inherits from original
+> NVLink from POWER8.
+> 
+> The new feature of V100 is 16GB of cache coherent memory on GPU board.
+> This memory is presented to the host via the device tree and remains offline
+> until the NVIDIA driver loads, trains NVLink2 (via the config space of these
+> bridges above) and the nvidia-persistenced daemon then onlines it.
+> The memory remains online as long as nvidia-persistenced is running, when
+> it stops, it offlines the memory.
+> 
+> The amount of GPUs suggest passing them through to a guest. However,
+> in order to do so we cannot use the NVIDIA driver so we have a host with
+> a 128GB window (bigger or equal to actual GPU RAM size) in a system memory
+> with no page structs backing this window and we cannot touch this memory
+> before the NVIDIA driver configures it in a host or a guest as
+> HMI (hardware management interrupt?) occurs.
 
-=
+Having a lot of GPUs only suggests assignment to a guest if there's
+actually isolation provided between those GPUs.  Otherwise we'd need to
+assign them as one big group, which gets a lot less useful.  Thanks,
+
+Alex
+
+> On the example system the GPU RAM windows are located at:
+> 0x0400 0000 0000
+> 0x0420 0000 0000
+> 0x0440 0000 0000
+> 0x2400 0000 0000
+> 0x2420 0000 0000
+> 0x2440 0000 0000
+> 
+> So the complications are:
+> 
+> 1. cannot touch the GPU memory till it is trained, i.e. cannot add ptes
+> to VFIO-to-userspace or guest-to-host-physical translations till
+> the driver trains it (i.e. nvidia-persistenced has started), otherwise
+> prefetching happens and HMI occurs; I am trying to get this changed
+> somehow;
+> 
+> 2. since it appears as normal cache coherent memory, it will be used
+> for DMA which means it has to be pinned and mapped in the host. Having
+> no page structs makes it different from the usual case - we only need
+> translate user addresses to host physical and map GPU RAM memory but
+> pinning is not required.
+> 
+> This series maps GPU RAM via the GPU vfio-pci device so QEMU can then
+> register this memory as a KVM memory slot and present memory nodes to
+> the guest. Unless NVIDIA provides an userspace driver, this is no use
+> for things like DPDK.
+> 
+> 
+> There is another problem which the series does not address but worth
+> mentioning - it is not strictly necessary to map GPU RAM to the guest
+> exactly where it is in the host (I tested this to some extent), we still
+> might want to represent the memory at the same offset as on the host
+> which increases the size of a TCE table needed to cover such a huge
+> window: (((0x244000000000 + 0x2000000000) >> 16)*8)>>20 = 4556MB
+> I am addressing this in a separate patchset by allocating indirect TCE
+> levels on demand and using 16MB IOMMU pages in the guest as we can now
+> back emulated pages with the smaller hardware ones.
+> 
+> 
+> This is an RFC. Please comment. Thanks.
+> 
+> 
+> 
+> Alexey Kardashevskiy (5):
+>   vfio/spapr_tce: Simplify page contained test
+>   powerpc/iommu_context: Change referencing in API
+>   powerpc/iommu: Do not pin memory of a memory device
+>   vfio_pci: Allow mapping extra regions
+>   vfio_pci: Add NVIDIA GV100GL [Tesla V100 SXM2] [10de:1db1] subdriver
+> 
+>  drivers/vfio/pci/Makefile              |   1 +
+>  arch/powerpc/include/asm/mmu_context.h |   5 +-
+>  drivers/vfio/pci/vfio_pci_private.h    |  11 ++
+>  include/uapi/linux/vfio.h              |   3 +
+>  arch/powerpc/kernel/iommu.c            |   8 +-
+>  arch/powerpc/mm/mmu_context_iommu.c    |  70 +++++++++---
+>  drivers/vfio/pci/vfio_pci.c            |  19 +++-
+>  drivers/vfio/pci/vfio_pci_nvlink2.c    | 190 +++++++++++++++++++++++++++++++++
+>  drivers/vfio/vfio_iommu_spapr_tce.c    |  42 +++++---
+>  drivers/vfio/pci/Kconfig               |   4 +
+>  10 files changed, 319 insertions(+), 34 deletions(-)
+>  create mode 100644 drivers/vfio/pci/vfio_pci_nvlink2.c
+> 
