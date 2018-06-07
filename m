@@ -2,8 +2,8 @@ Return-Path: <yangbo.lu@nxp.com>
 Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411WB94SxyzF327
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 13:24:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 411WBC5ZzvzF327
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2018 13:24:51 +1000 (AEST)
 From: Yangbo Lu <yangbo.lu@nxp.com>
 To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
  Richard Cochran <richardcochran@gmail.com>,
@@ -12,9 +12,9 @@ To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
  Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v2, 04/10] powerpc/mpc85xx: move ptp timer out of fman in dts
-Date: Thu,  7 Jun 2018 11:22:50 +0800
-Message-Id: <20180607032256.39802-5-yangbo.lu@nxp.com>
+Subject: [v2, 05/10] arm64: dts: fsl: move ptp timer out of fman
+Date: Thu,  7 Jun 2018 11:22:51 +0800
+Message-Id: <20180607032256.39802-6-yangbo.lu@nxp.com>
 In-Reply-To: <20180607032256.39802-1-yangbo.lu@nxp.com>
 References: <20180607032256.39802-1-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,98 +34,25 @@ memory mapping.
 Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
 ---
 Changes for v2:
-	- None.
+	- Fixed address-cells for ptp-timer.
 ---
- arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi   |   14 ++++++++------
- arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi   |   14 ++++++++------
- arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi  |   14 ++++++++------
- arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi  |   14 ++++++++------
- arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi |   14 ++++++++------
- 5 files changed, 40 insertions(+), 30 deletions(-)
+ arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi |   14 ++++++++------
+ 1 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
-index abd01d4..6b124f7 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
-@@ -37,12 +37,13 @@ fman0: fman@400000 {
+diff --git a/arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi b/arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi
+index 4dd0676..a56a408 100644
+--- a/arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi
++++ b/arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi
+@@ -11,13 +11,14 @@ fman0: fman@1a00000 {
  	#size-cells = <1>;
  	cell-index = <0>;
  	compatible = "fsl,fman";
--	ranges = <0 0x400000 0x100000>;
--	reg = <0x400000 0x100000>;
-+	ranges = <0 0x400000 0xfe000>;
-+	reg = <0x400000 0xfe000>;
- 	interrupts = <96 2 0 0>, <16 2 1 1>;
- 	clocks = <&clockgen 3 0>;
- 	clock-names = "fmanclk";
- 	fsl,qman-channel-range = <0x40 0xc>;
-+	ptimer-handle = <&ptp_timer0>;
- 
- 	muram@0 {
- 		compatible = "fsl,fman-muram";
-@@ -93,9 +94,10 @@ fman0: fman@400000 {
- 		reg = <0x87000 0x1000>;
- 		status = "disabled";
- 	};
-+};
- 
--	ptp_timer0: ptp-timer@fe000 {
--		compatible = "fsl,fman-ptp-timer";
--		reg = <0xfe000 0x1000>;
--	};
-+ptp_timer0: ptp-timer@4fe000 {
-+	compatible = "fsl,fman-ptp-timer";
-+	reg = <0x4fe000 0x1000>;
-+	interrupts = <96 2 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
-index debea75..b80aaf5 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
-@@ -37,12 +37,13 @@ fman1: fman@500000 {
- 	#size-cells = <1>;
- 	cell-index = <1>;
- 	compatible = "fsl,fman";
--	ranges = <0 0x500000 0x100000>;
--	reg = <0x500000 0x100000>;
-+	ranges = <0 0x500000 0xfe000>;
-+	reg = <0x500000 0xfe000>;
- 	interrupts = <97 2 0 0>, <16 2 1 0>;
- 	clocks = <&clockgen 3 1>;
- 	clock-names = "fmanclk";
- 	fsl,qman-channel-range = <0x60 0xc>;
-+	ptimer-handle = <&ptp_timer1>;
- 
- 	muram@0 {
- 		compatible = "fsl,fman-muram";
-@@ -93,9 +94,10 @@ fman1: fman@500000 {
- 		reg = <0x87000 0x1000>;
- 		status = "disabled";
- 	};
-+};
- 
--	ptp_timer1: ptp-timer@fe000 {
--		compatible = "fsl,fman-ptp-timer";
--		reg = <0xfe000 0x1000>;
--	};
-+ptp_timer1: ptp-timer@5fe000 {
-+	compatible = "fsl,fman-ptp-timer";
-+	reg = <0x5fe000 0x1000>;
-+	interrupts = <97 2 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
-index 3a20e0d..d3720fd 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
-@@ -37,12 +37,13 @@ fman0: fman@400000 {
- 	#size-cells = <1>;
- 	cell-index = <0>;
- 	compatible = "fsl,fman";
--	ranges = <0 0x400000 0x100000>;
--	reg = <0x400000 0x100000>;
-+	ranges = <0 0x400000 0xfe000>;
-+	reg = <0x400000 0xfe000>;
- 	interrupts = <96 2 0 0>, <16 2 1 1>;
+-	ranges = <0x0 0x0 0x1a00000 0x100000>;
+-	reg = <0x0 0x1a00000 0x0 0x100000>;
++	ranges = <0x0 0x0 0x1a00000 0xfe000>;
++	reg = <0x0 0x1a00000 0x0 0xfe000>;
+ 	interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>,
+ 		     <GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
  	clocks = <&clockgen 3 0>;
  	clock-names = "fmanclk";
  	fsl,qman-channel-range = <0x800 0x10>;
@@ -133,7 +60,7 @@ index 3a20e0d..d3720fd 100644
  
  	muram@0 {
  		compatible = "fsl,fman-muram";
-@@ -98,9 +99,10 @@ fman0: fman@400000 {
+@@ -73,9 +74,10 @@ fman0: fman@1a00000 {
  		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
  		reg = <0xfd000 0x1000>;
  	};
@@ -143,80 +70,10 @@ index 3a20e0d..d3720fd 100644
 -		compatible = "fsl,fman-ptp-timer";
 -		reg = <0xfe000 0x1000>;
 -	};
-+ptp_timer0: ptp-timer@4fe000 {
++ptp_timer0: ptp-timer@1afe000 {
 +	compatible = "fsl,fman-ptp-timer";
-+	reg = <0x4fe000 0x1000>;
-+	interrupts = <96 2 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
-index 82750ac..ae34c20 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
-@@ -37,12 +37,13 @@ fman1: fman@500000 {
- 	#size-cells = <1>;
- 	cell-index = <1>;
- 	compatible = "fsl,fman";
--	ranges = <0 0x500000 0x100000>;
--	reg = <0x500000 0x100000>;
-+	ranges = <0 0x500000 0xfe000>;
-+	reg = <0x500000 0xfe000>;
- 	interrupts = <97 2 0 0>, <16 2 1 0>;
- 	clocks = <&clockgen 3 1>;
- 	clock-names = "fmanclk";
- 	fsl,qman-channel-range = <0x820 0x10>;
-+	ptimer-handle = <&ptp_timer1>;
- 
- 	muram@0 {
- 		compatible = "fsl,fman-muram";
-@@ -98,9 +99,10 @@ fman1: fman@500000 {
- 		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
- 		reg = <0xfd000 0x1000>;
- 	};
-+};
- 
--	ptp_timer1: ptp-timer@fe000 {
--		compatible = "fsl,fman-ptp-timer";
--		reg = <0xfe000 0x1000>;
--	};
-+ptp_timer1: ptp-timer@5fe000 {
-+	compatible = "fsl,fman-ptp-timer";
-+	reg = <0x5fe000 0x1000>;
-+	interrupts = <97 2 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
-index 7f60b60..02f2755 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
-@@ -37,12 +37,13 @@ fman0: fman@400000 {
- 	#size-cells = <1>;
- 	cell-index = <0>;
- 	compatible = "fsl,fman";
--	ranges = <0 0x400000 0x100000>;
--	reg = <0x400000 0x100000>;
-+	ranges = <0 0x400000 0xfe000>;
-+	reg = <0x400000 0xfe000>;
- 	interrupts = <96 2 0 0>, <16 2 1 1>;
- 	clocks = <&clockgen 3 0>;
- 	clock-names = "fmanclk";
- 	fsl,qman-channel-range = <0x800 0x10>;
-+	ptimer-handle = <&ptp_timer0>;
- 
- 	muram@0 {
- 		compatible = "fsl,fman-muram";
-@@ -86,9 +87,10 @@ fman0: fman@400000 {
- 		compatible = "fsl,fman-memac-mdio", "fsl,fman-xmdio";
- 		reg = <0xfd000 0x1000>;
- 	};
-+};
- 
--	ptp_timer0: ptp-timer@fe000 {
--		compatible = "fsl,fman-ptp-timer";
--		reg = <0xfe000 0x1000>;
--	};
-+ptp_timer0: ptp-timer@4fe000 {
-+	compatible = "fsl,fman-ptp-timer";
-+	reg = <0x4fe000 0x1000>;
-+	interrupts = <96 2 0 0>;
++	reg = <0x0 0x1afe000 0x0 0x1000>;
++	interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
  };
 -- 
 1.7.1
