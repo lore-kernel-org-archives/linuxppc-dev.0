@@ -1,25 +1,25 @@
-Return-Path: <lkp@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert@linux-m68k.org>
+Received: from newton.telenet-ops.be (newton.telenet-ops.be
+ [IPv6:2a02:1800:120:4::f00:d])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412G7h74ngzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 18:40:05 +1000 (AEST)
-Date: Fri, 8 Jun 2018 16:39:41 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: kbuild-all@01.org, netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Richard Cochran <richardcochran@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Yangbo Lu <yangbo.lu@nxp.com>
-Subject: Re: [v3, 07/10] fsl/fman_port: support getting timestamp
-Message-ID: <201806081628.UCdhDsEg%fengguang.wu@intel.com>
-References: <20180607092050.46128-8-yangbo.lu@nxp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180607092050.46128-8-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412HqB4YwYzDqG0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 19:56:05 +1000 (AEST)
+Received: from michel.telenet-ops.be (michel.telenet-ops.be
+ [IPv6:2a02:1800:110:4::f00:18])
+ by newton.telenet-ops.be (Postfix) with ESMTPS id 412Hfs37f0zMr0Qd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:48:53 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] media: fsl-viu: Use proper check for presence of {out,
+ in}_be32()
+Date: Fri,  8 Jun 2018 11:48:48 +0200
+Message-Id: <1528451328-21316-1-git-send-email-geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Yangbo,
+When compile-testing on m68k or microblaze:
 
-I love your patch! Perhaps something to improve:
+    drivers/media/platform/fsl-viu.c:41:1: warning: "out_be32" redefined
+    drivers/media/platform/fsl-viu.c:42:1: warning: "in_be32" redefined
 
-[auto build test WARNING on net-next/master]
-[also build test WARNING on next-20180608]
-[cannot apply to v4.17]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Fix this by replacing the check for PowerPC by checks for the presence
+of {out,in}_be32().
 
-url:    https://github.com/0day-ci/linux/commits/Yangbo-Lu/Support-DPAA-PTP-clock-and-timestamping/20180608-131649
-reproduce:
-        # apt-get install sparse
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
+As PowerPC implements the be32 accessors using inline functions instead
+of macros, identity definions are added for all accessors to make the
+above checks work.
 
-
-sparse warnings: (new ones prefixed by >>)
-
-   drivers/net/ethernet/freescale/fman/fman_port.c:879:26: sparse: expression using sizeof(void)
-   drivers/net/ethernet/freescale/fman/fman_port.c:879:26: sparse: expression using sizeof(void)
-   drivers/net/ethernet/freescale/fman/fman_port.c:1035:36: sparse: expression using sizeof(void)
-   drivers/net/ethernet/freescale/fman/fman_port.c:1247:17: sparse: expression using sizeof(void)
-   drivers/net/ethernet/freescale/fman/fman_port.c:1249:17: sparse: expression using sizeof(void)
-   drivers/net/ethernet/freescale/fman/fman_port.c:1249:17: sparse: expression using sizeof(void)
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
->> drivers/net/ethernet/freescale/fman/fman_port.c:1739:19: sparse: cast to restricted __be64
-
-vim +1739 drivers/net/ethernet/freescale/fman/fman_port.c
-
-  1733	
-  1734	int fman_port_get_tstamp(struct fman_port *port, const void *data, u64 *tstamp)
-  1735	{
-  1736		if (port->buffer_offsets.time_stamp_offset == ILLEGAL_BASE)
-  1737			return -EINVAL;
-  1738	
-> 1739		*tstamp = be64_to_cpu(*(u64 *)(data +
-  1740				port->buffer_offsets.time_stamp_offset));
-  1741	
-  1742		return 0;
-  1743	}
-  1744	EXPORT_SYMBOL(fman_port_get_tstamp);
-  1745	
-
+Fixes: 29d750686331a1a9 ("media: fsl-viu: allow building it with COMPILE_TEST")
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Compile-tested on m68k, microblaze, and powerpc.
+Assembler output before/after compared for powerpc.
+---
+ arch/powerpc/include/asm/io.h    | 14 ++++++++++++++
+ drivers/media/platform/fsl-viu.c |  4 +++-
+ 2 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e7545685c5f..3741183ae09349f1 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -222,6 +222,20 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+ #endif
+ #endif /* __powerpc64__ */
+ 
++#define in_be16 in_be16
++#define in_be32 in_be32
++#define in_be64 in_be64
++#define in_le16 in_le16
++#define in_le32 in_le32
++#define in_le64 in_le64
++
++#define out_be16 out_be16
++#define out_be32 out_be32
++#define out_be64 out_be64
++#define out_le16 out_le16
++#define out_le32 out_le32
++#define out_le64 out_le64
++
+ /*
+  * Low level IO stream instructions are defined out of line for now
+  */
+diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
+index e41510ce69a40815..5d5e030c9c980647 100644
+--- a/drivers/media/platform/fsl-viu.c
++++ b/drivers/media/platform/fsl-viu.c
+@@ -37,8 +37,10 @@
+ #define VIU_VERSION		"0.5.1"
+ 
+ /* Allow building this driver with COMPILE_TEST */
+-#ifndef CONFIG_PPC
++#ifndef out_be32
+ #define out_be32(v, a)	iowrite32be(a, (void __iomem *)v)
++#endif
++#ifndef in_be32
+ #define in_be32(a)	ioread32be((void __iomem *)a)
+ #endif
+ 
+-- 
+2.7.4
