@@ -1,20 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412NWR0RQYzDqsx
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 23:27:46 +1000 (AEST)
-Message-Id: <f473fd0faf8b61909726b3a5032d118b22958f59.1528463979.git.christophe.leroy@c-s.fr>
-In-Reply-To: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
-References: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 4/4] selftests/powerpc: update strlen() test to test the
- new assembly function
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- wei.guo.simon@gmail.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  8 Jun 2018 13:27:41 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412P135npCzDqG0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 23:49:58 +1000 (AEST)
+Date: Fri, 8 Jun 2018 15:49:54 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Linux-MM <linux-mm@kvack.org>, Ram Pai <linuxram@us.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Andy Lutomirski
+ <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+Message-ID: <20180608154954.327c19be@kitsune.suse.cz>
+In-Reply-To: <f440aaa4-0a55-3ccd-2df1-2ad595e9e17a@redhat.com>
+References: <20180520060425.GL5479@ram.oc3035372033.ibm.com>
+ <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
+ <20180520191115.GM5479@ram.oc3035372033.ibm.com>
+ <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
+ <20180603201832.GA10109@ram.oc3035372033.ibm.com>
+ <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
+ <20180604140135.GA10088@ram.oc3035372033.ibm.com>
+ <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
+ <20180604190229.GB10088@ram.oc3035372033.ibm.com>
+ <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
+ <20180608023441.GA5573@ram.oc3035372033.ibm.com>
+ <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
+ <20180608121551.3c151e0c@naga.suse.cz>
+ <aa136e1e-3bf2-fd92-2eab-16469c467729@redhat.com>
+ <20180608145413.393fa245@kitsune.suse.cz>
+ <f440aaa4-0a55-3ccd-2df1-2ad595e9e17a@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,83 +40,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch modifies the test for testing the new assembly strlen() instead
-of the generic strlen()
+On Fri, 8 Jun 2018 14:57:06 +0200
+Florian Weimer <fweimer@redhat.com> wrote:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v5: no change
- v4: new
+> On 06/08/2018 02:54 PM, Michal Such=C3=A1nek wrote:
+> > On Fri, 8 Jun 2018 12:44:53 +0200
+> > Florian Weimer <fweimer@redhat.com> wrote:
+> >  =20
+> >> On 06/08/2018 12:15 PM, Michal Such=C3=A1nek wrote: =20
+> >>> On Fri, 8 Jun 2018 07:53:51 +0200
+> >>> Florian Weimer <fweimer@redhat.com> wrote:
+> >>>     =20
+> >>>> On 06/08/2018 04:34 AM, Ram Pai wrote: =20
+> >>>>>>
+> >>>>>> So the remaining question at this point is whether the Intel
+> >>>>>> behavior (default-deny instead of default-allow) is
+> >>>>>> preferable. =20
+> >>>>>
+> >>>>> Florian, remind me what behavior needs to fixed? =20
+> >>>>
+> >>>> See the other thread.  The Intel register equivalent to the AMR
+> >>>> by default disallows access to yet-unallocated keys, so that
+> >>>> threads which are created before key allocation do not magically
+> >>>> gain access to a key allocated by another thread.
+> >>>>    =20
+> >>>
+> >>> That does not make any sense. The threads share the address space
+> >>> so they should also share the keys.
+> >>>
+> >>> Or in other words the keys are supposed to be acceleration of
+> >>> mprotect() so if mprotect() magically gives access to threads that
+> >>> did not call it so should pkey functions. If they cannot do that
+> >>> then they fail the primary purpose. =20
+> >>
+> >> That's not how protection keys work.  The access rights are
+> >> thread-specific, so that you can change them locally, without
+> >> synchronization and expensive inter-node communication.
+> >> =20
+> >=20
+> > And the association of a key with part of the address space is
+> > thread-local as well? =20
+>=20
+> No, that part is still per-process.
 
- tools/testing/selftests/powerpc/stringloops/Makefile |  3 +--
- .../selftests/powerpc/stringloops/asm/cache.h        |  1 +
- .../selftests/powerpc/stringloops/asm/ppc_asm.h      | 20 ++++++++++++++++++++
- tools/testing/selftests/powerpc/stringloops/string.S |  1 +
- 4 files changed, 23 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/cache.h
- create mode 120000 tools/testing/selftests/powerpc/stringloops/string.S
+So as said above it does not make sense to make keys per-thread.
 
-diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
-index df663ee9ddb3..0c088a6d0369 100644
---- a/tools/testing/selftests/powerpc/stringloops/Makefile
-+++ b/tools/testing/selftests/powerpc/stringloops/Makefile
-@@ -10,8 +10,7 @@ $(OUTPUT)/memcmp_64: CFLAGS += -m64
- $(OUTPUT)/memcmp_32: memcmp.c
- $(OUTPUT)/memcmp_32: CFLAGS += -m32
- 
--$(OUTPUT)/strlen: strlen.c string.o
--$(OUTPUT)/string.o: string.c
-+$(OUTPUT)/strlen: strlen.c string.S
- 
- ASFLAGS = $(CFLAGS)
- 
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/cache.h b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-new file mode 100644
-index 000000000000..8a2840831122
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-@@ -0,0 +1 @@
-+#define	IFETCH_ALIGN_BYTES 4
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-index 136242ec4b0e..9f8e34ffc131 100644
---- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-@@ -1,4 +1,12 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+#if !defined(CONFIG_PPC64) && !defined(CONFIG_PPC32)
-+#ifdef __powerpc64__
-+#define CONFIG_PPC64
-+#else
-+#define CONFIG_PPC32
-+#endif
-+#endif
-+
- #include <ppc-asm.h>
- 
- #ifndef r1
-@@ -6,3 +14,15 @@
- #endif
- 
- #define _GLOBAL(A) FUNC_START(test_ ## A)
-+
-+#ifdef __powerpc64__
-+#define SZL		8
-+#define PPC_LLU		ldu
-+#define PPC_LCMPI	cmpldi
-+#define PPC_ROTLI	rotldi
-+#else
-+#define SZL		4
-+#define PPC_LLU		lwzu
-+#define PPC_LCMPI	cmplwi
-+#define PPC_ROTLI	rotlwi
-+#endif
-diff --git a/tools/testing/selftests/powerpc/stringloops/string.S b/tools/testing/selftests/powerpc/stringloops/string.S
-new file mode 120000
-index 000000000000..9f5babec7d21
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/string.S
-@@ -0,0 +1 @@
-+../../../../../arch/powerpc/lib/string.S
-\ No newline at end of file
--- 
-2.13.3
+Thanks
+
+Michal
