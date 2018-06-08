@@ -1,47 +1,25 @@
-Return-Path: <srs0=xhv0=i2=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412CCw4ZZSzDrcd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 16:28:44 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 412CCw44fHz8tNJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 16:28:44 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 412CCv70xZz9s01
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 16:28:43 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w586OBNb078257
- for <linuxppc-dev@ozlabs.org>; Fri, 8 Jun 2018 02:28:42 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jfjg1m7un-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 08 Jun 2018 02:28:41 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 8 Jun 2018 07:28:40 +0100
-Subject: Re: [v3 PATCH 5/5] powerpc/pseries: Display machine check error
- details.
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412CjT0TdpzF363
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 16:50:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: stable@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v3 PATCH 2/5] powerpc/pseries: Fix endainness while restoring of
+ r3 in MCE handler.
+In-Reply-To: <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
 References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
- <152839254280.25118.11212831020041096859.stgit@jupiter.in.ibm.com>
- <20180608115136.7a6db415@roar.ozlabs.ibm.com>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 8 Jun 2018 11:58:34 +0530
+ <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
+Date: Fri, 08 Jun 2018 16:50:47 +1000
+Message-ID: <87fu1xvkjc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180608115136.7a6db415@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <e8b55035-417b-7180-5ed1-1e7decef4f87@linux.vnet.ibm.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,156 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/08/2018 07:21 AM, Nicholas Piggin wrote:
-> On Thu, 07 Jun 2018 22:59:04 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> Extract the MCE error details from RTAS extended log and display it to
->> console.
->>
->> With this patch you should now see mce logs like below:
->>
->> [  142.371818] Severe Machine check interrupt [Recovered]
->> [  142.371822]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
->> [  142.371822]   Initiator: CPU
->> [  142.371823]   Error type: SLB [Multihit]
->> [  142.371824]     Effective address: d00000000ca70000
->>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/rtas.h      |    5 +
->>  arch/powerpc/platforms/pseries/ras.c |  128 +++++++++++++++++++++++++++++++++-
->>  2 files changed, 131 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
->> index 3f2fba7ef23b..8100a95c133a 100644
->> --- a/arch/powerpc/include/asm/rtas.h
->> +++ b/arch/powerpc/include/asm/rtas.h
->> @@ -190,6 +190,11 @@ static inline uint8_t rtas_error_extended(const struct rtas_error_log *elog)
->>  	return (elog->byte1 & 0x04) >> 2;
->>  }
->>  
->> +static inline uint8_t rtas_error_initiator(const struct rtas_error_log *elog)
->> +{
->> +	return (elog->byte2 & 0xf0) >> 4;
->> +}
->> +
->>  #define rtas_error_type(x)	((x)->byte3)
->>  
->>  static inline
->> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
->> index e56759d92356..cd9446980092 100644
->> --- a/arch/powerpc/platforms/pseries/ras.c
->> +++ b/arch/powerpc/platforms/pseries/ras.c
->> @@ -422,7 +422,130 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
->>  	return 0; /* need to perform reset */
->>  }
->>  
->> -static int mce_handle_error(struct rtas_error_log *errp)
->> +#define VAL_TO_STRING(ar, val)	((val < ARRAY_SIZE(ar)) ? ar[val] : "Unknown")
->> +
->> +static void pseries_print_mce_info(struct pt_regs *regs,
->> +				struct rtas_error_log *errp, int disposition)
->> +{
->> +	const char *level, *sevstr;
->> +	struct pseries_errorlog *pseries_log;
->> +	struct pseries_mc_errorlog *mce_log;
->> +	uint8_t error_type, err_sub_type;
->> +	uint8_t initiator = rtas_error_initiator(errp);
->> +	uint64_t addr;
->> +
->> +	static const char * const initiators[] = {
->> +		"Unknown",
->> +		"CPU",
->> +		"PCI",
->> +		"ISA",
->> +		"Memory",
->> +		"Power Mgmt",
->> +	};
->> +	static const char * const mc_err_types[] = {
->> +		"UE",
->> +		"SLB",
->> +		"ERAT",
->> +		"TLB",
->> +		"D-Cache",
->> +		"Unknown",
->> +		"I-Cache",
->> +	};
->> +	static const char * const mc_ue_types[] = {
->> +		"Indeterminate",
->> +		"Instruction fetch",
->> +		"Page table walk ifetch",
->> +		"Load/Store",
->> +		"Page table walk Load/Store",
->> +	};
->> +
->> +	/* SLB sub errors valid values are 0x0, 0x1, 0x2 */
->> +	static const char * const mc_slb_types[] = {
->> +		"Parity",
->> +		"Multihit",
->> +		"Indeterminate",
->> +	};
->> +
->> +	/* TLB and ERAT sub errors valid values are 0x1, 0x2, 0x3 */
->> +	static const char * const mc_soft_types[] = {
->> +		"Unknown",
->> +		"Parity",
->> +		"Multihit",
->> +		"Indeterminate",
->> +	};
->> +
->> +	pseries_log = get_pseries_errorlog(errp, PSERIES_ELOG_SECT_ID_MCE);
->> +	if (pseries_log == NULL)
->> +		return;
->> +
->> +	mce_log = (struct pseries_mc_errorlog *)pseries_log->data;
->> +
->> +	error_type = rtas_mc_error_type(mce_log);
->> +	err_sub_type = rtas_mc_error_sub_type(mce_log);
->> +
->> +	switch (rtas_error_severity(errp)) {
->> +	case RTAS_SEVERITY_NO_ERROR:
->> +		level = KERN_INFO;
->> +		sevstr = "Harmless";
->> +		break;
->> +	case RTAS_SEVERITY_WARNING:
->> +		level = KERN_WARNING;
->> +		sevstr = "";
->> +		break;
->> +	case RTAS_SEVERITY_ERROR:
->> +	case RTAS_SEVERITY_ERROR_SYNC:
->> +		level = KERN_ERR;
->> +		sevstr = "Severe";
->> +		break;
->> +	case RTAS_SEVERITY_FATAL:
->> +	default:
->> +		level = KERN_ERR;
->> +		sevstr = "Fatal";
->> +		break;
->> +	}
->> +
->> +	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
->> +		disposition == RTAS_DISP_FULLY_RECOVERED ?
->> +		"Recovered" : "Not recovered");
->> +	if (user_mode(regs)) {
->> +		printk("%s  NIP: [%016lx] PID: %d Comm: %s\n", level,
->> +			regs->nip, current->pid, current->comm);
->> +	} else {
->> +		printk("%s  NIP [%016lx]: %pS\n", level, regs->nip,
->> +			(void *)regs->nip);
->> +	}
-> 
-> I think it's probably still useful to print pid/comm for kernel mode
-> faults if !in_interrupt()... I see you're basically taking kernel/mce.c
-> and doing the same thing.
-> 
-> Is there any reasonable way to share code here?
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>
+> During Machine Check interrupt on pseries platform, register r3 points
+> RTAS extended event log passed by hypervisor. Since hypervisor uses r3
+> to pass pointer to rtas log, it stores the original r3 value at the
+> start of the memory (first 8 bytes) pointed by r3. Since hypervisor
+> stores this info and rtas log is in BE format, linux should make
+> sure to restore r3 value in correct endian format.
 
-I did think of doing that, but I wanted make this patch series simple
-enough to be able to make backport easy for very old kernels. I will
-work on consolidating the code as enhancement later.
+Can we hit this under KVM? And if so what if the KVM/qemu is running
+little endian, does it still write the value BE?
 
-Thanks,
--Mahesh.
+cheers
