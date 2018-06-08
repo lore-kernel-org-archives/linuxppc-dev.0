@@ -2,31 +2,31 @@ Return-Path: <srs0=i0xg=i2=gmail.com=npiggin@ozlabs.org>
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4124g80wf3zF356
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:33:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4125115dHwzF34D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:48:53 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 4124g75t5Rz8t0F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:33:23 +1000 (AEST)
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41251152Hvz8xKW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:48:53 +1000 (AEST)
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4124g71jlTz9s1b
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 11:33:23 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id i5-v6so7250187plt.2
- for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 18:33:23 -0700 (PDT)
-Date: Fri, 8 Jun 2018 11:33:14 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 4125106tMgz9s1b
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 11:48:52 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id i5-v6so7270624plt.2
+ for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 18:48:52 -0700 (PDT)
+Date: Fri, 8 Jun 2018 11:48:44 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, stable@vger.kernel.org, "Aneesh
- Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 2/5] powerpc/pseries: Fix endainness while restoring
- of r3 in MCE handler.
-Message-ID: <20180608113314.02fca098@roar.ozlabs.ibm.com>
-In-Reply-To: <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [v3 PATCH 4/5] powerpc/pseries: Dump and flush SLB contents on
+ SLB MCE errors.
+Message-ID: <20180608114844.2b38d590@roar.ozlabs.ibm.com>
+In-Reply-To: <152839253238.25118.3114450844744290470.stgit@jupiter.in.ibm.com>
 References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
- <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
+ <152839253238.25118.3114450844744290470.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,74 +38,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 07 Jun 2018 22:58:33 +0530
+On Thu, 07 Jun 2018 22:58:55 +0530
 Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
 > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> During Machine Check interrupt on pseries platform, register r3 points
-> RTAS extended event log passed by hypervisor. Since hypervisor uses r3
-> to pass pointer to rtas log, it stores the original r3 value at the
-> start of the memory (first 8 bytes) pointed by r3. Since hypervisor
-> stores this info and rtas log is in BE format, linux should make
-> sure to restore r3 value in correct endian format.
-> 
-> Without this patch when MCE handler, after recovery, returns to code that
-> that caused the MCE may end up with Data SLB access interrupt for invalid
-> address followed by kernel panic or hang.
-> 
-> [   62.878965] Severe Machine check interrupt [Recovered]
-> [   62.878968]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
-> [   62.878969]   Initiator: CPU
-> [   62.878970]   Error type: SLB [Multihit]
-> [   62.878971]     Effective address: d00000000ca70000
-> cpu 0xa: Vector: 380 (Data SLB Access) at [c0000000fc7775b0]
->     pc: c0000000009694c0: vsnprintf+0x80/0x480
->     lr: c0000000009698e0: vscnprintf+0x20/0x60
->     sp: c0000000fc777830
->    msr: 8000000002009033
->    dar: a803a30c000000d0
->   current = 0xc00000000bc9ef00
->   paca    = 0xc00000001eca5c00	 softe: 3	 irq_happened: 0x01
->     pid   = 8860, comm = insmod
-> [c0000000fc7778b0] c0000000009698e0 vscnprintf+0x20/0x60
-> [c0000000fc7778e0] c00000000016b6c4 vprintk_emit+0xb4/0x4b0
-> [c0000000fc777960] c00000000016d40c vprintk_func+0x5c/0xd0
-> [c0000000fc777980] c00000000016cbb4 printk+0x38/0x4c
-> [c0000000fc7779a0] d00000000ca301c0 init_module+0x1c0/0x338 [bork_kernel]
-> [c0000000fc777a40] c00000000000d9c4 do_one_initcall+0x54/0x230
-> [c0000000fc777b00] c0000000001b3b74 do_init_module+0x8c/0x248
-> [c0000000fc777b90] c0000000001b2478 load_module+0x12b8/0x15b0
-> [c0000000fc777d30] c0000000001b29e8 sys_finit_module+0xa8/0x110
-> [c0000000fc777e30] c00000000000b204 system_call+0x58/0x6c
-> --- Exception: c00 (System Call) at 00007fff8bda0644
-> SP (7fffdfbfe980) is in userspace
-> 
-> This patch fixes this issue.
+> If we get a machine check exceptions due to SLB errors then dump the
+> current SLB contents which will be very much helpful in debugging the
+> root cause of SLB errors. On pseries, as of today system crashes on SLB
+> errors. These are soft errors and can be fixed by flushing the SLBs so
+> the kernel can continue to function instead of system crash. This patch
+> fixes that also.
 
-LGTM
+So pseries never flushed SLB and reloaded in response to multi hit
+errors? This seems like quite a good improvement then. I like
+dumping SLB too.
+
+It's a bit annoying we can't share the same code with xmon really,
+that's okay but I just suggest commenting them both if you take a
+copy like this with a note to keep them in synch if you re-post
+the series.
+
+> 
+> With this patch the console will log SLB contents like below on SLB MCE
+> errors:
+> 
+> [  822.711728] slb contents:
+
+Suggest keeping the same format as the xmon dump (in particular
+CPU number, even though it's probably printed elsewhere in the MCE
+message it doesn't hurt.
 
 Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
+Thanks,
+Nick
+
+> [  822.711730] 00 c000000008000000 400ea1b217000500
+> [  822.711731]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
+> [  822.711732] 01 d000000008000000 400d43642f000510
+> [  822.711733]   1T  ESID=   d00000  VSID=      d43642f LLP:110
+> [  822.711734] 09 f000000008000000 400a86c85f000500
+> [  822.711736]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
+> [  822.711737] 10 00007f0008000000 400d1f26e3000d90
+> [  822.711738]   1T  ESID=       7f  VSID=      d1f26e3 LLP:110
+> [  822.711739] 11 0000000018000000 000e3615f520fd90
+> [  822.711740]  256M ESID=        1  VSID=   e3615f520f LLP:110
+> [  822.711740] 12 d000000008000000 400d43642f000510
+> [  822.711741]   1T  ESID=   d00000  VSID=      d43642f LLP:110
+> [  822.711742] 13 d000000008000000 400d43642f000510
+> [  822.711743]   1T  ESID=   d00000  VSID=      d43642f LLP:110
 > 
-> Fixes: a08a53ea4c97 ("powerpc/le: Enable RTAS events support")
-> Cc: stable@vger.kernel.org
+> 
+> Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/platforms/pseries/ras.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1 +
+>  arch/powerpc/mm/slb.c                         |   35 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/ras.c          |   29 ++++++++++++++++++++-
+>  3 files changed, 64 insertions(+), 1 deletion(-)
 > 
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> index 50ed64fba4ae..c0da68927235 100644
+> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> @@ -487,6 +487,7 @@ extern void hpte_init_native(void);
+>  
+>  extern void slb_initialize(void);
+>  extern void slb_flush_and_rebolt(void);
+> +extern void slb_dump_contents(void);
+>  
+>  extern void slb_vmalloc_update(void);
+>  extern void slb_set_size(u16 size);
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 66577cc66dc9..799aa117cec3 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -145,6 +145,41 @@ void slb_flush_and_rebolt(void)
+>  	get_paca()->slb_cache_ptr = 0;
+>  }
+>  
+> +void slb_dump_contents(void)
+> +{
+> +	int i;
+> +	unsigned long e, v;
+> +	unsigned long llp;
+> +
+> +	pr_err("slb contents:\n");
+> +	for (i = 0; i < mmu_slb_size; i++) {
+> +		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
+> +		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
+> +
+> +		if (!e && !v)
+> +			continue;
+> +
+> +		pr_err("%02d %016lx %016lx", i, e, v);
+> +
+> +		if (!(e & SLB_ESID_V)) {
+> +			pr_err("\n");
+> +			continue;
+> +		}
+> +		llp = v & SLB_VSID_LLP;
+> +		if (v & SLB_VSID_B_1T) {
+> +			pr_err("  1T  ESID=%9lx  VSID=%13lx LLP:%3lx\n",
+> +				GET_ESID_1T(e),
+> +				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT_1T,
+> +				llp);
+> +		} else {
+> +			pr_err(" 256M ESID=%9lx  VSID=%13lx LLP:%3lx\n",
+> +				GET_ESID(e),
+> +				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT,
+> +				llp);
+> +		}
+> +	}
+> +}
+> +
+>  void slb_vmalloc_update(void)
+>  {
+>  	unsigned long vflags;
 > diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 5e1ef9150182..2edc673be137 100644
+> index 2edc673be137..e56759d92356 100644
 > --- a/arch/powerpc/platforms/pseries/ras.c
 > +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -360,7 +360,7 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  	}
+> @@ -422,6 +422,31 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
+>  	return 0; /* need to perform reset */
+>  }
 >  
->  	savep = __va(regs->gpr[3]);
-> -	regs->gpr[3] = savep[0];	/* restore original r3 */
-> +	regs->gpr[3] = be64_to_cpu(savep[0]);	/* restore original r3 */
+> +static int mce_handle_error(struct rtas_error_log *errp)
+> +{
+> +	struct pseries_errorlog *pseries_log;
+> +	struct pseries_mc_errorlog *mce_log;
+> +	int disposition = rtas_error_disposition(errp);
+> +	uint8_t error_type;
+> +
+> +	pseries_log = get_pseries_errorlog(errp, PSERIES_ELOG_SECT_ID_MCE);
+> +	if (pseries_log == NULL)
+> +		goto out;
+> +
+> +	mce_log = (struct pseries_mc_errorlog *)pseries_log->data;
+> +	error_type = rtas_mc_error_type(mce_log);
+> +
+> +	if ((disposition == RTAS_DISP_NOT_RECOVERED) &&
+> +			(error_type == PSERIES_MC_ERROR_TYPE_SLB)) {
+> +		slb_dump_contents();
+> +		slb_flush_and_rebolt();
+> +		disposition = RTAS_DISP_FULLY_RECOVERED;
+> +	}
+> +
+> +out:
+> +	return disposition;
+> +}
+> +
+>  /*
+>   * See if we can recover from a machine check exception.
+>   * This is only called on power4 (or above) and only via
+> @@ -434,7 +459,9 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
+>  static int recover_mce(struct pt_regs *regs, struct rtas_error_log *err)
+>  {
+>  	int recovered = 0;
+> -	int disposition = rtas_error_disposition(err);
+> +	int disposition;
+> +
+> +	disposition = mce_handle_error(err);
 >  
->  	/* If it isn't an extended log we can use the per cpu 64bit buffer */
->  	h = (struct rtas_error_log *)&savep[1];
+>  	if (!(regs->msr & MSR_RI)) {
+>  		/* If MSR_RI isn't set, we cannot recover */
 > 
