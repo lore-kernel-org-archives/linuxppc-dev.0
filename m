@@ -1,45 +1,30 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4126265C92zF33h
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 12:34:54 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w582TGFe141930
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 Jun 2018 22:34:52 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jfdwredhk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 22:34:51 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 8 Jun 2018 03:34:49 +0100
-Date: Thu, 7 Jun 2018 19:34:41 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: Linux-MM <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180520060425.GL5479@ram.oc3035372033.ibm.com>
- <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
- <20180520191115.GM5479@ram.oc3035372033.ibm.com>
- <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
- <20180603201832.GA10109@ram.oc3035372033.ibm.com>
- <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
- <20180604140135.GA10088@ram.oc3035372033.ibm.com>
- <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
- <20180604190229.GB10088@ram.oc3035372033.ibm.com>
- <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4126nV5jxLzF34c
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 13:09:02 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id t12-v6so7366971plo.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 20:09:02 -0700 (PDT)
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA Tesla
+ V100
+To: Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
+ Alistair Popple <alistair@popple.id.au>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607110409.5057ebac@w520.home>
+ <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
+ <20180607161541.21df6434@w520.home>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+Date: Fri, 8 Jun 2018 13:08:54 +1000
 MIME-Version: 1.0
-In-Reply-To: <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
-Message-Id: <20180608023441.GA5573@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180607161541.21df6434@w520.home>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,11 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 8/6/18 8:15 am, Alex Williamson wrote:
+> On Fri, 08 Jun 2018 07:54:02 +1000
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 > 
-> So the remaining question at this point is whether the Intel
-> behavior (default-deny instead of default-allow) is preferable.
+>> On Thu, 2018-06-07 at 11:04 -0600, Alex Williamson wrote:
+>>>
+>>> Can we back up and discuss whether the IOMMU grouping of NVLink
+>>> connected devices makes sense?  AIUI we have a PCI view of these
+>>> devices and from that perspective they're isolated.  That's the view of
+>>> the device used to generate the grouping.  However, not visible to us,
+>>> these devices are interconnected via NVLink.  What isolation properties
+>>> does NVLink provide given that its entire purpose for existing seems to
+>>> be to provide a high performance link for p2p between devices?  
+>>
+>> Not entire. On POWER chips, we also have an nvlink between the device
+>> and the CPU which is running significantly faster than PCIe.
+>>
+>> But yes, there are cross-links and those should probably be accounted
+>> for in the grouping.
+> 
+> Then after we fix the grouping, can we just let the host driver manage
+> this coherent memory range and expose vGPUs to guests?  The use case of
+> assigning all 6 GPUs to one VM seems pretty limited.  (Might need to
+> convince NVIDIA to support more than a single vGPU per VM though)
 
-Florian, remind me what behavior needs to fixed? 
+These are physical GPUs, not virtual sriov-alike things they are
+implementing as well elsewhere.
+
+My current understanding is that every P9 chip in that box has some NVLink2
+logic on it so each P9 is directly connected to 3 GPUs via PCIe and
+2xNVLink2, and GPUs in that big group are interconnected by NVLink2 links
+as well.
+
+>From small bits of information I have it seems that a GPU can perfectly
+work alone and if the NVIDIA driver does not see these interconnects
+(because we do not pass the rest of the big 3xGPU group to this guest), it
+continues with a single GPU. There is an "nvidia-smi -r" big reset hammer
+which simply refuses to work until all 3 GPUs are passed so there is some
+distinction between passing 1 or 3 GPUs, and I am trying (as we speak) to
+get a confirmation from NVIDIA that it is ok to pass just a single GPU.
+
+So we will either have 6 groups (one per GPU) or 2 groups (one per
+interconnected group).
+
 
 -- 
-Ram Pai
+Alexey
