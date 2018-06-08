@@ -1,27 +1,32 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=i0xg=i2=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4124L94YydzF33s
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:18:41 +1000 (AEST)
-Date: Thu, 7 Jun 2018 19:18:38 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Ram
- Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org, Alistair Popple
- <alistair@popple.id.au>
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
- Tesla V100
-Message-ID: <20180607191838.2d456467@w520.home>
-In-Reply-To: <f6fbd7996a2edfc0bdb8363cb6384caeae7d47b9.camel@kernel.crashing.org>
-References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
- <33590885d138195c8ede78b588ddb03b132267fd.camel@kernel.crashing.org>
- <20180607183417.3ff2acf1@w520.home>
- <f6fbd7996a2edfc0bdb8363cb6384caeae7d47b9.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4124dK3QJJzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:31:49 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 4124dK2BC6z8t0F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:31:49 +1000 (AEST)
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4124dJ5KYhz9s0W
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 11:31:48 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id a22-v6so5775379pfo.12
+ for <linuxppc-dev@ozlabs.org>; Thu, 07 Jun 2018 18:31:48 -0700 (PDT)
+Date: Fri, 8 Jun 2018 11:31:37 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, stable@vger.kernel.org, "Aneesh
+ Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [v3 PATCH 1/5] powerpc/pseries: convert rtas_log_buf to linear
+ allocation.
+Message-ID: <20180608113137.7d409c6c@roar.ozlabs.ibm.com>
+In-Reply-To: <152839248387.25118.579137029955034015.stgit@jupiter.in.ibm.com>
+References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
+ <152839248387.25118.579137029955034015.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,27 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 08 Jun 2018 10:58:54 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Thu, 07 Jun 2018 22:58:11 +0530
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-> On Thu, 2018-06-07 at 18:34 -0600, Alex Williamson wrote:
-> > > We *can* allow individual GPUs to be passed through, either if somebody
-> > > designs a system without cross links, or if the user is ok with the
-> > > security risk as the guest driver will not enable them if it doesn't
-> > > "find" both sides of them.  
-> > 
-> > If GPUs are not isolated and we cannot prevent them from probing each
-> > other via these links, then I think we have an obligation to configure
-> > grouping in a way that doesn't rely on a benevolent userspace.  Thanks,  
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Well, it's a user decision, no ? Like how we used to let the user
-> decide whether to pass-through things that have LSIs shared out of
-> their domain.
+> rtas_log_buf is a buffer to hold RTAS event data that are communicated
+> to kernel by hypervisor. This buffer is then used to pass RTAS event
+> data to user through proc fs. This buffer is allocated from vmalloc
+> (non-linear mapping) area.
+> 
+> On Machine check interrupt, register r3 points to RTAS extended event
+> log passed by hypervisor that contains the MCE event. The pseries
+> machine check handler then logs this error into rtas_log_buf. The
+> rtas_log_buf is a vmalloc-ed (non-linear) buffer we end up taking up a
+> page fault (vector 0x300) while accessing it. Since machine check
+> interrupt handler runs in NMI context we can not afford to take any
+> page fault. Page faults are not honored in NMI context and causes
+> kernel panic. This patch fixes this issue by allocating rtas_log_buf
+> using kmalloc.
+> 
+> Fixes: b96672dd840f ("powerpc: Machine check interrupt is a non-maskable interrupt")
+> Cc: stable@vger.kernel.org
+> Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/rtasd.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index f915db93cd42..3957d4ae2ba2 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -559,7 +559,7 @@ static int __init rtas_event_scan_init(void)
+>  	rtas_error_log_max = rtas_get_error_log_max();
+>  	rtas_error_log_buffer_max = rtas_error_log_max + sizeof(int);
+>  
+> -	rtas_log_buf = vmalloc(rtas_error_log_buffer_max*LOG_NUMBER);
+> +	rtas_log_buf = kmalloc(rtas_error_log_buffer_max*LOG_NUMBER, GFP_KERNEL);
 
-No, users don't get to pinky swear they'll be good.  The kernel creates
-IOMMU groups assuming the worst case isolation and malicious users.
-Its the kernel's job to protect itself from users and to protect users
-from each other.  Anything else is unsupportable.  The only way to
-bypass the default grouping is to modify the kernel.  Thanks,
+Does this have to be in the RMA region if it's to be accessed with
+relocation off in the guest?
 
-Alex
+A comment about it being accessed with relocation off might be helpful
+too.
+
+Thanks,
+Nick
