@@ -2,16 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412NWQ4XsczDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 23:27:45 +1000 (AEST)
-Message-Id: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412NWR0RQYzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 23:27:46 +1000 (AEST)
+Message-Id: <f473fd0faf8b61909726b3a5032d118b22958f59.1528463979.git.christophe.leroy@c-s.fr>
+In-Reply-To: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
+References: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 1/4] selftests/powerpc: add test for 32 bits memcmp
+Subject: [PATCH v5 4/4] selftests/powerpc: update strlen() test to test the
+ new assembly function
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  wei.guo.simon@gmail.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  8 Jun 2018 13:27:35 +0000 (UTC)
+Date: Fri,  8 Jun 2018 13:27:41 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,52 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch renames memcmp test to memcmp_64 and adds
-a memcmp_32 test for testing the 32 bits version of memcmp()
+This patch modifies the test for testing the new assembly strlen() instead
+of the generic strlen()
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
  v5: no change
  v4: new
 
- tools/testing/selftests/powerpc/stringloops/Makefile    | 14 +++++++++++---
- tools/testing/selftests/powerpc/stringloops/memcmp_32.S |  1 +
- 2 files changed, 12 insertions(+), 3 deletions(-)
- create mode 120000 tools/testing/selftests/powerpc/stringloops/memcmp_32.S
+ tools/testing/selftests/powerpc/stringloops/Makefile |  3 +--
+ .../selftests/powerpc/stringloops/asm/cache.h        |  1 +
+ .../selftests/powerpc/stringloops/asm/ppc_asm.h      | 20 ++++++++++++++++++++
+ tools/testing/selftests/powerpc/stringloops/string.S |  1 +
+ 4 files changed, 23 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/cache.h
+ create mode 120000 tools/testing/selftests/powerpc/stringloops/string.S
 
 diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
-index 1125e489055e..1e7301d4bac9 100644
+index df663ee9ddb3..0c088a6d0369 100644
 --- a/tools/testing/selftests/powerpc/stringloops/Makefile
 +++ b/tools/testing/selftests/powerpc/stringloops/Makefile
-@@ -1,10 +1,18 @@
- # SPDX-License-Identifier: GPL-2.0
- # The loops are all 64-bit code
--CFLAGS += -m64
- CFLAGS += -I$(CURDIR)
+@@ -10,8 +10,7 @@ $(OUTPUT)/memcmp_64: CFLAGS += -m64
+ $(OUTPUT)/memcmp_32: memcmp.c
+ $(OUTPUT)/memcmp_32: CFLAGS += -m32
  
--TEST_GEN_PROGS := memcmp
--EXTRA_SOURCES := memcmp_64.S ../harness.c
-+EXTRA_SOURCES := ../harness.c
-+
-+$(OUTPUT)/memcmp_64: memcmp.c
-+$(OUTPUT)/memcmp_64: CFLAGS += -m64
-+
-+$(OUTPUT)/memcmp_32: memcmp.c
-+$(OUTPUT)/memcmp_32: CFLAGS += -m32
-+
-+ASFLAGS = $(CFLAGS)
-+
-+TEST_GEN_PROGS := memcmp_32 memcmp_64
+-$(OUTPUT)/strlen: strlen.c string.o
+-$(OUTPUT)/string.o: string.c
++$(OUTPUT)/strlen: strlen.c string.S
  
- include ../../lib.mk
+ ASFLAGS = $(CFLAGS)
  
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp_32.S b/tools/testing/selftests/powerpc/stringloops/memcmp_32.S
-new file mode 120000
-index 000000000000..056f2b3af789
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/cache.h b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
+new file mode 100644
+index 000000000000..8a2840831122
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp_32.S
++++ b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
 @@ -0,0 +1 @@
-+../../../../../arch/powerpc/lib/memcmp_32.S
++#define	IFETCH_ALIGN_BYTES 4
+diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+index 136242ec4b0e..9f8e34ffc131 100644
+--- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
++++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
+@@ -1,4 +1,12 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
++#if !defined(CONFIG_PPC64) && !defined(CONFIG_PPC32)
++#ifdef __powerpc64__
++#define CONFIG_PPC64
++#else
++#define CONFIG_PPC32
++#endif
++#endif
++
+ #include <ppc-asm.h>
+ 
+ #ifndef r1
+@@ -6,3 +14,15 @@
+ #endif
+ 
+ #define _GLOBAL(A) FUNC_START(test_ ## A)
++
++#ifdef __powerpc64__
++#define SZL		8
++#define PPC_LLU		ldu
++#define PPC_LCMPI	cmpldi
++#define PPC_ROTLI	rotldi
++#else
++#define SZL		4
++#define PPC_LLU		lwzu
++#define PPC_LCMPI	cmplwi
++#define PPC_ROTLI	rotlwi
++#endif
+diff --git a/tools/testing/selftests/powerpc/stringloops/string.S b/tools/testing/selftests/powerpc/stringloops/string.S
+new file mode 120000
+index 000000000000..9f5babec7d21
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/string.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/string.S
 \ No newline at end of file
 -- 
 2.13.3
