@@ -1,28 +1,28 @@
-Return-Path: <mhiramat@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4123XB01TGzF349
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 10:42:17 +1000 (AEST)
-Date: Fri, 8 Jun 2018 09:42:11 +0900
-From: Masami Hiramatsu <mhiramat@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "H . Peter Anvin"
- <hpa@zytor.com>, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>, Ingo Molnar
- <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>, Steven Rostedt
- <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH -tip v5 18/27] powerpc/kprobes: Don't call the
- ->break_handler() in arm kprobes code
-Message-Id: <20180608094211.0d225831bb7acc100b7c2436@kernel.org>
-In-Reply-To: <1528389409.62iyaqw9yn.naveen@linux.ibm.com>
-References: <152812730943.10068.5166429445118734697.stgit@devbox>
- <152812783350.10068.4690566636762511152.stgit@devbox>
- <1528371112.vwnh1m0k39.naveen@linux.ibm.com>
- <20180607232802.c5fcea960e94ef2f3cd4cde8@kernel.org>
- <1528389409.62iyaqw9yn.naveen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4123wP0yxzzF327
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 10:59:48 +1000 (AEST)
+Message-ID: <f6fbd7996a2edfc0bdb8363cb6384caeae7d47b9.camel@kernel.crashing.org>
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
+ Tesla V100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Ram
+ Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org, Alistair Popple
+ <alistair@popple.id.au>
+Date: Fri, 08 Jun 2018 10:58:54 +1000
+In-Reply-To: <20180607183417.3ff2acf1@w520.home>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607110409.5057ebac@w520.home>
+ <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
+ <20180607161541.21df6434@w520.home>
+ <33590885d138195c8ede78b588ddb03b132267fd.camel@kernel.crashing.org>
+ <20180607183417.3ff2acf1@w520.home>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 07 Jun 2018 22:07:26 +0530
-"Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-
-> Masami Hiramatsu wrote:
-> > On Thu, 07 Jun 2018 17:07:00 +0530
-> > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > 
-> >> Masami Hiramatsu wrote:
-> >> > Don't call the ->break_handler() from the arm kprobes code,
-> >> 					    ^^^ powerpc
-> >> 
-> >> > because it was only used by jprobes which got removed.
-> >> > 
-> >> > This also makes skip_singlestep() a static function since
-> >> > only ftrace-kprobe.c is using this function.
-> >> > 
-> >> > Signed-off-by: Masami Hiramatsu <mhiramat@kernel.org>
-> >> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >> > Cc: Paul Mackerras <paulus@samba.org>
-> >> > Cc: Michael Ellerman <mpe@ellerman.id.au>
-> >> > Cc: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-> >> > Cc: linuxppc-dev@lists.ozlabs.org
-> >> > ---
-> >> >  arch/powerpc/include/asm/kprobes.h   |   10 ----------
-> >> >  arch/powerpc/kernel/kprobes-ftrace.c |   16 +++-------------
-> >> >  arch/powerpc/kernel/kprobes.c        |   31 +++++++++++--------------------
-> >> >  3 files changed, 14 insertions(+), 43 deletions(-)
-> >> 
-> >> With 2 small comments...
-> > 
-> > 2 ? or 1 ?
+On Thu, 2018-06-07 at 18:34 -0600, Alex Williamson wrote:
+> > We *can* allow individual GPUs to be passed through, either if somebody
+> > designs a system without cross links, or if the user is ok with the
+> > security risk as the guest driver will not enable them if it doesn't
+> > "find" both sides of them.
 > 
-> Two, with one in the commit log above :)
+> If GPUs are not isolated and we cannot prevent them from probing each
+> other via these links, then I think we have an obligation to configure
+> grouping in a way that doesn't rely on a benevolent userspace.  Thanks,
 
-Oops, sorry I missed it. yeah, the comment above is my mistake. I'll fix it.
+Well, it's a user decision, no ? Like how we used to let the user
+decide whether to pass-through things that have LSIs shared out of
+their domain.
 
-Thanks!
-
-
--- 
-Masami Hiramatsu <mhiramat@kernel.org>
+Cheers,
+Ben.
