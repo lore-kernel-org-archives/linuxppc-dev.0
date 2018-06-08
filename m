@@ -2,18 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412NWQ5WlFzDqJl
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412NWR1h2RzDr1b
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 23:27:46 +1000 (AEST)
-Message-Id: <ce98c6b8e80f85635a67093bbb59f13dae758112.1528463979.git.christophe.leroy@c-s.fr>
+Message-Id: <8581e4d6076a9791e94b43ec693196d3e89bcf91.1528463979.git.christophe.leroy@c-s.fr>
 In-Reply-To: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
 References: <85de16f5629ac9f4a815230cced361908758b53a.1528463979.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v5 3/4] powerpc/lib: implement strlen() in assembly
+Subject: [PATCH v5 2/4] selftests/powerpc: Add test for strlen()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  wei.guo.simon@gmail.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  8 Jun 2018 13:27:39 +0000 (UTC)
+Date: Fri,  8 Jun 2018 13:27:37 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,171 +23,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic implementation of strlen() reads strings byte per byte.
+This patch adds a test for strlen()
 
-This patch implements strlen() in assembly based on a read of entire
-words, in the same spirit as what some other arches and glibc do.
+string.c contains a copy of strlen() from lib/string.c
 
-On a 8xx the time spent in strlen is reduced by 2/3 for long strings.
+The test first tests the correctness of strlen() by comparing
+the result with libc strlen(). It tests all cases of alignment.
 
-strlen() selftest on an 8xx provides the following values:
-
-Before the patch (ie with the generic strlen() in lib/string.c):
-
-len 256 : time = 0.803648
-len 16  : time = 0.062989
-len 4   : time = 0.026269
-
-After the patch:
-
-len 256 : time = 0.267791  ==>  66% improvment
-len 16  : time = 0.037902  ==>  41% improvment
-len 4   : time = 0.026124  ==>  no degradation
+It them tests the duration of an aligned strlen() on a 4 bytes string,
+on a 16 bytes string and on a 256 bytes string.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-Not tested on PPC64.
+ v5: no change
+ v4: new
 
-Changes in v5:
- - Fixed for PPC64 LITTLE ENDIAN
+ .../testing/selftests/powerpc/stringloops/Makefile |   5 +-
+ .../testing/selftests/powerpc/stringloops/string.c |  36 ++++++
+ .../testing/selftests/powerpc/stringloops/strlen.c | 123 +++++++++++++++++++++
+ 3 files changed, 163 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/string.c
+ create mode 100644 tools/testing/selftests/powerpc/stringloops/strlen.c
 
-Changes in v4:
- - Added alignment of the loop
- - doing the andc only if still not 0 as it happends only for bytes above 0x7f which is pretty rare in a string
-
-Changes in v3:
- - Made it common to PPC32 and PPC64
-
-Changes in v2:
- - Moved handling of unaligned strings outside of the main path as it is very unlikely.
- - Removed the verification of the fourth byte in case none of the three first ones are NUL.
-
- arch/powerpc/include/asm/asm-compat.h |  4 ++
- arch/powerpc/include/asm/string.h     |  1 +
- arch/powerpc/lib/string.S             | 76 +++++++++++++++++++++++++++++++++++
- 3 files changed, 81 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/asm-compat.h b/arch/powerpc/include/asm/asm-compat.h
-index 7f2a7702596c..0e99fe7570c0 100644
---- a/arch/powerpc/include/asm/asm-compat.h
-+++ b/arch/powerpc/include/asm/asm-compat.h
-@@ -20,8 +20,10 @@
+diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
+index 1e7301d4bac9..df663ee9ddb3 100644
+--- a/tools/testing/selftests/powerpc/stringloops/Makefile
++++ b/tools/testing/selftests/powerpc/stringloops/Makefile
+@@ -10,9 +10,12 @@ $(OUTPUT)/memcmp_64: CFLAGS += -m64
+ $(OUTPUT)/memcmp_32: memcmp.c
+ $(OUTPUT)/memcmp_32: CFLAGS += -m32
  
- /* operations for longs and pointers */
- #define PPC_LL		stringify_in_c(ld)
-+#define PPC_LLU		stringify_in_c(ldu)
- #define PPC_STL		stringify_in_c(std)
- #define PPC_STLU	stringify_in_c(stdu)
-+#define PPC_ROTLI	stringify_in_c(rotldi)
- #define PPC_LCMPI	stringify_in_c(cmpdi)
- #define PPC_LCMPLI	stringify_in_c(cmpldi)
- #define PPC_LCMP	stringify_in_c(cmpd)
-@@ -53,8 +55,10 @@
- 
- /* operations for longs and pointers */
- #define PPC_LL		stringify_in_c(lwz)
-+#define PPC_LLU		stringify_in_c(lwzu)
- #define PPC_STL		stringify_in_c(stw)
- #define PPC_STLU	stringify_in_c(stwu)
-+#define PPC_ROTLI	stringify_in_c(rotlwi)
- #define PPC_LCMPI	stringify_in_c(cmpwi)
- #define PPC_LCMPLI	stringify_in_c(cmplwi)
- #define PPC_LCMP	stringify_in_c(cmpw)
-diff --git a/arch/powerpc/include/asm/string.h b/arch/powerpc/include/asm/string.h
-index 9b8cedf618f4..8fdcb532de72 100644
---- a/arch/powerpc/include/asm/string.h
-+++ b/arch/powerpc/include/asm/string.h
-@@ -13,6 +13,7 @@
- #define __HAVE_ARCH_MEMCHR
- #define __HAVE_ARCH_MEMSET16
- #define __HAVE_ARCH_MEMCPY_FLUSHCACHE
-+#define __HAVE_ARCH_STRLEN
- 
- extern char * strcpy(char *,const char *);
- extern char * strncpy(char *,const char *, __kernel_size_t);
-diff --git a/arch/powerpc/lib/string.S b/arch/powerpc/lib/string.S
-index 4b41970e9ed8..1bb8e178c843 100644
---- a/arch/powerpc/lib/string.S
-+++ b/arch/powerpc/lib/string.S
-@@ -67,3 +67,79 @@ _GLOBAL(memchr)
- 2:	li	r3,0
- 	blr
- EXPORT_SYMBOL(memchr)
++$(OUTPUT)/strlen: strlen.c string.o
++$(OUTPUT)/string.o: string.c
 +
-+_GLOBAL(strlen)
-+	andi.   r9, r3, (SZL - 1)
-+	addi	r10, r3, -SZL
-+	bne-	1f
-+2:	lis	r6, 0x8080
-+	ori	r6, r6, 0x8080		/* r6 = 0x80808080 (himagic) */
-+#ifdef CONFIG_PPC64
-+	rldimi	r6, r6, 32, 0		/* r6 = 0x8080808080808080 (himagic) */
-+#endif
-+	PPC_ROTLI  r7, r6, 1 		/* r7 = 0x01010101(01010101) (lomagic)*/
-+	.balign IFETCH_ALIGN_BYTES
-+3:	PPC_LLU	r9, SZL(r10)
-+	/* ((x - lomagic) & ~x & himagic) == 0 means no byte in x is NUL */
-+	subf	r8, r7, r9
-+	and.	r8, r8, r6
-+	beq+	3b
-+	andc.	r8, r8, r9
-+	beq+	3b
-+#ifdef CPU_LITTLE_ENDIAN
-+	rldicl.	r8, r9, 0, 56
-+	beq	20f
-+	rldicl.	r8, r9, 56, 56
-+	beq	21f
-+	rldicl.	r8, r9, 48, 56
-+	beq	22f
-+	rldicl.	r8, r9, 40, 56
-+	beq	23f
-+	addi	r10, r10, 4
-+	rldicl.	r8, r9, 32, 56
-+	beq	20f
-+	rldicl.	r8, r9, 24, 56
-+	beq	21f
-+	rldicl.	r8, r9, 16, 56
-+	beq	22f
-+	rldicl.	r8, r9, 8, 56
-+#else
-+#ifdef CONFIG_PPC64
-+	rldicl.	r8, r9, 8, 56
-+	beq	20f
-+	rldicl.	r8, r9, 16, 56
-+	beq	21f
-+	rldicl.	r8, r9, 24, 56
-+	beq	22f
-+	rldicl.	r8, r9, 32, 56
-+	beq	23f
-+	addi	r10, r10, 4
-+#endif
-+	rlwinm.	r8, r9, 0, 0xff000000
-+	beq	20f
-+	rlwinm.	r8, r9, 0, 0x00ff0000
-+	beq	21f
-+	rlwinm.	r8, r9, 0, 0x0000ff00
-+	beq	22f
-+#endif /* CPU_LITTLE_ENDIAN */
-+23:	subf	r3, r3, r10
-+	addi	r3, r3, 3
-+	blr
-+22:	subf	r3, r3, r10
-+	addi	r3, r3, 2
-+	blr
-+21:	subf	r3, r3, r10
-+	addi	r3, r3, 1
-+	blr
-+19:	addi	r10, r10, (SZL - 1)
-+20:	subf	r3, r3, r10
-+	blr
+ ASFLAGS = $(CFLAGS)
+ 
+-TEST_GEN_PROGS := memcmp_32 memcmp_64
++TEST_GEN_PROGS := memcmp_32 memcmp_64 strlen
+ 
+ include ../../lib.mk
+ 
+diff --git a/tools/testing/selftests/powerpc/stringloops/string.c b/tools/testing/selftests/powerpc/stringloops/string.c
+new file mode 100644
+index 000000000000..d05200481017
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/string.c
+@@ -0,0 +1,36 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ *  linux/lib/string.c
++ *
++ *  Copyright (C) 1991, 1992  Linus Torvalds
++ */
 +
-+1:	lbz	r9, SZL(r10)
-+	addi	r10, r10, 1
-+	cmpwi	cr1, r9, 0
-+	andi.	r9, r10, (SZL - 1)
-+	beq	cr1, 19b
-+	bne	1b
-+	b	2b
-+EXPORT_SYMBOL(strlen)
++/*
++ * stupid library routines.. The optimized versions should generally be found
++ * as inline code in <asm-xx/string.h>
++ *
++ * These are buggy as well..
++ *
++ * * Fri Jun 25 1999, Ingo Oeser <ioe@informatik.tu-chemnitz.de>
++ * -  Added strsep() which will replace strtok() soon (because strsep() is
++ *    reentrant and should be faster). Use only strsep() in new code, please.
++ *
++ * * Sat Feb 09 2002, Jason Thomas <jason@topic.com.au>,
++ *                    Matthew Hawkins <matt@mh.dropbear.id.au>
++ * -  Kissed strtok() goodbye
++ */
++
++#include <stddef.h>
++
++/**
++ * strlen - Find the length of a string
++ * @s: The string to be sized
++ */
++size_t test_strlen(const char *s)
++{
++	const char *sc;
++
++	for (sc = s; *sc != '\0'; ++sc)
++		/* nothing */;
++	return sc - s;
++}
+diff --git a/tools/testing/selftests/powerpc/stringloops/strlen.c b/tools/testing/selftests/powerpc/stringloops/strlen.c
+new file mode 100644
+index 000000000000..e87ca65ea156
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/stringloops/strlen.c
+@@ -0,0 +1,123 @@
++// SPDX-License-Identifier: GPL-2.0
++#include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
++#include <time.h>
++#include "utils.h"
++
++#define SIZE 256
++#define ITERATIONS 1000
++#define ITERATIONS_BENCH 100000
++
++int test_strlen(const void *s);
++
++/* test all offsets and lengths */
++static void test_one(char *s)
++{
++	unsigned long offset;
++
++	for (offset = 0; offset < SIZE; offset++) {
++		int x, y;
++		unsigned long i;
++
++		y = strlen(s + offset);
++		x = test_strlen(s + offset);
++
++		if (x != y) {
++			printf("strlen() returned %d, should have returned %d (%p offset %ld)\n", x, y, s, offset);
++
++			for (i = offset; i < SIZE; i++)
++				printf("%02x ", s[i]);
++			printf("\n");
++		}
++	}
++}
++
++static int testcase(void)
++{
++	char *s;
++	unsigned long i;
++	struct timespec ts_start, ts_end;
++
++	s = memalign(128, SIZE);
++	if (!s) {
++		perror("memalign");
++		exit(1);
++	}
++
++	srandom(1);
++
++	memset(s, 0, SIZE);
++	for (i = 0; i < SIZE; i++) {
++		char c;
++
++		do {
++			c = random() & 0x7f;
++		} while (!c);
++		s[i] = c;
++		test_one(s);
++	}
++
++	for (i = 0; i < ITERATIONS; i++) {
++		unsigned long j;
++
++		for (j = 0; j < SIZE; j++) {
++			char c;
++
++			do {
++				c = random() & 0x7f;
++			} while (!c);
++			s[j] = c;
++		}
++		for (j = 0; j < sizeof(long); j++) {
++			s[SIZE - 1 - j] = 0;
++			test_one(s);
++		}
++	}
++
++	for (i = 0; i < SIZE; i++) {
++		char c;
++
++		do {
++			c = random() & 0x7f;
++		} while (!c);
++		s[i] = c;
++	}
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_start);
++
++	s[SIZE - 1] = 0;
++	for (i = 0; i < ITERATIONS_BENCH; i++)
++		test_strlen(s);
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_end);
++
++	printf("len %3.3d : time = %.6f\n", SIZE, ts_end.tv_sec - ts_start.tv_sec + (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9);
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_start);
++
++	s[16] = 0;
++	for (i = 0; i < ITERATIONS_BENCH; i++)
++		test_strlen(s);
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_end);
++
++	printf("len 16  : time = %.6f\n", ts_end.tv_sec - ts_start.tv_sec + (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9);
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_start);
++
++	s[4] = 0;
++	for (i = 0; i < ITERATIONS_BENCH; i++)
++		test_strlen(s);
++
++	clock_gettime(CLOCK_MONOTONIC, &ts_end);
++
++	printf("len 4   : time = %.6f\n", ts_end.tv_sec - ts_start.tv_sec + (ts_end.tv_nsec - ts_start.tv_nsec) / 1e9);
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(testcase, "strlen");
++}
 -- 
 2.13.3
