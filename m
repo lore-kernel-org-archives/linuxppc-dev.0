@@ -1,31 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4128F40NtgzF363
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 14:14:31 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id j20-v6so5944783pff.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 21:14:31 -0700 (PDT)
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA Tesla
- V100
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4128P03BrKzF0sk
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 14:21:24 +1000 (AEST)
+Date: Fri, 8 Jun 2018 13:32:36 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
  Alistair Popple <alistair@popple.id.au>
+Subject: Re: [RFC PATCH kernel 1/5] vfio/spapr_tce: Simplify page contained
+ test
+Message-ID: <20180608033236.GN3344@umbus.fritz.box>
 References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
- <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
- <20180607214455.51ecfa1a@w520.home>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
-Date: Fri, 8 Jun 2018 14:14:23 +1000
+ <20180607084420.29513-2-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20180607214455.51ecfa1a@w520.home>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="20XocjIeMTCm4X0r"
+In-Reply-To: <20180607084420.29513-2-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,74 +30,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 8/6/18 1:44 pm, Alex Williamson wrote:
-> On Fri, 8 Jun 2018 13:08:54 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> On 8/6/18 8:15 am, Alex Williamson wrote:
->>> On Fri, 08 Jun 2018 07:54:02 +1000
->>> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->>>   
->>>> On Thu, 2018-06-07 at 11:04 -0600, Alex Williamson wrote:  
->>>>>
->>>>> Can we back up and discuss whether the IOMMU grouping of NVLink
->>>>> connected devices makes sense?  AIUI we have a PCI view of these
->>>>> devices and from that perspective they're isolated.  That's the view of
->>>>> the device used to generate the grouping.  However, not visible to us,
->>>>> these devices are interconnected via NVLink.  What isolation properties
->>>>> does NVLink provide given that its entire purpose for existing seems to
->>>>> be to provide a high performance link for p2p between devices?    
->>>>
->>>> Not entire. On POWER chips, we also have an nvlink between the device
->>>> and the CPU which is running significantly faster than PCIe.
->>>>
->>>> But yes, there are cross-links and those should probably be accounted
->>>> for in the grouping.  
->>>
->>> Then after we fix the grouping, can we just let the host driver manage
->>> this coherent memory range and expose vGPUs to guests?  The use case of
->>> assigning all 6 GPUs to one VM seems pretty limited.  (Might need to
->>> convince NVIDIA to support more than a single vGPU per VM though)  
->>
->> These are physical GPUs, not virtual sriov-alike things they are
->> implementing as well elsewhere.
-> 
-> vGPUs as implemented on M- and P-series Teslas aren't SR-IOV like
-> either.  That's why we have mdev devices now to implement software
-> defined devices.  I don't have first hand experience with V-series, but
-> I would absolutely expect a PCIe-based Tesla V100 to support vGPU.
 
-So assuming V100 can do vGPU, you are suggesting ditching this patchset and
-using mediated vGPUs instead, correct?
+--20XocjIeMTCm4X0r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Jun 07, 2018 at 06:44:16PM +1000, Alexey Kardashevskiy wrote:
+> The test function takes a page struct pointer which is not used by
+> either of two callers in any other way, make it simple and just pass
+> a physical address there.
+>=20
+> This should cause no behavioral change now but later we may start
+> supporting host addresses for memory devices which are not backed
+> with page structs.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
->> My current understanding is that every P9 chip in that box has some NVLink2
->> logic on it so each P9 is directly connected to 3 GPUs via PCIe and
->> 2xNVLink2, and GPUs in that big group are interconnected by NVLink2 links
->> as well.
->>
->> From small bits of information I have it seems that a GPU can perfectly
->> work alone and if the NVIDIA driver does not see these interconnects
->> (because we do not pass the rest of the big 3xGPU group to this guest), it
->> continues with a single GPU. There is an "nvidia-smi -r" big reset hammer
->> which simply refuses to work until all 3 GPUs are passed so there is some
->> distinction between passing 1 or 3 GPUs, and I am trying (as we speak) to
->> get a confirmation from NVIDIA that it is ok to pass just a single GPU.
->>
->> So we will either have 6 groups (one per GPU) or 2 groups (one per
->> interconnected group).
-> 
-> I'm not gaining much confidence that we can rely on isolation between
-> NVLink connected GPUs, it sounds like you're simply expecting that
-> proprietary code from NVIDIA on a proprietary interconnect from NVIDIA
-> is going to play nice and nobody will figure out how to do bad things
-> because... obfuscation?  Thanks,
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Well, we already believe that a proprietary firmware of a sriov-capable
-adapter like Mellanox ConnextX is not doing bad things, how is this
-different in principle?
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 11 ++++-------
+>  1 file changed, 4 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index 759a5bd..2c4a048 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -249,8 +249,9 @@ static void tce_iommu_userspace_view_free(struct iomm=
+u_table *tbl,
+>  	decrement_locked_vm(mm, cb >> PAGE_SHIFT);
+>  }
+> =20
+> -static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+> +static bool tce_page_is_contained(unsigned long hpa, unsigned page_shift)
+>  {
+> +	struct page *page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+>  	/*
+>  	 * Check that the TCE table granularity is not bigger than the size of
+>  	 * a page we just found. Otherwise the hardware can get access to
+> @@ -549,7 +550,6 @@ static long tce_iommu_build(struct tce_container *con=
+tainer,
+>  		enum dma_data_direction direction)
+>  {
+>  	long i, ret =3D 0;
+> -	struct page *page;
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> @@ -560,8 +560,7 @@ static long tce_iommu_build(struct tce_container *con=
+tainer,
+>  		if (ret)
+>  			break;
+> =20
+> -		page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+> -		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> +		if (!tce_page_is_contained(hpa, tbl->it_page_shift)) {
+>  			ret =3D -EPERM;
+>  			break;
+>  		}
+> @@ -595,7 +594,6 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  		enum dma_data_direction direction)
+>  {
+>  	long i, ret =3D 0;
+> -	struct page *page;
+>  	unsigned long hpa;
+>  	enum dma_data_direction dirtmp;
+> =20
+> @@ -615,8 +613,7 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  		if (ret)
+>  			break;
+> =20
+> -		page =3D pfn_to_page(hpa >> PAGE_SHIFT);
+> -		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> +		if (!tce_page_is_contained(hpa, tbl->it_page_shift)) {
+>  			ret =3D -EPERM;
+>  			break;
+>  		}
 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-ps. their obfuscation is funny indeed :)
--- 
-Alexey
+--20XocjIeMTCm4X0r
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlsZ+NQACgkQbDjKyiDZ
+s5ImDA//UvobddFnWiCH6HN7UEFKsnd8Tu+B0E44P42Iuv5Cbp2pNxAjAWnlhQxo
+nCio9yrhpX6IrAbjVu0jNiZvXb02iZfmvo9adU7wEtndDqU5BSjmVg9bvbhAG9jh
+P4/kAIFqYSqZEVlmWEfCwvjAePREMggUTPDJKHD8fkj7Kxc/T4cMi5yrGyc47yAv
+UXFIBUEMYd+qcjPEQug3/yHuWMGM1Yc6IhzRtDD+0iG6ybTh8wefsdfzvDB0z1lk
+tmfFG5vUy+Jmt450L3SrfIG8gWqa0mI0H6RCffsRi8OSO0qyU2ou1lrSQnIhQFZH
+jSvFT812olbMwp7Tkm9N1BMWlmOwQzVKwRY1gYVhDS0gB6lsEeCCUYJXsg9TWu1L
+15JbNXl+D5STO5iLMXwo+e6T2Yz9ZpSTpjWf+VY78+QFOvCAhNCWhWv04eyzC3nA
+nOlo7ptUzW2f3T3Y2f3/XyxFYRhUs/vxrYPSUfRns0uNwmKhkb66iIbVg0dsKnro
+uFgJQOanvjeOt2+8D98BJ5L7R8PThUoKsjCOXpw2EzTJf92vfId/NExH9wNa4ppZ
+X6TcLBzZd/cBw3A77ChKtSz2Rrlh8hGGkIskYlvMm+F2pFNuCVITc6j/g4COEglk
+FppwlOD/9Q9NjnRTsQV/UBJka745FeLW39F0hh8HTxVjIp4NtM8=
+=+159
+-----END PGP SIGNATURE-----
+
+--20XocjIeMTCm4X0r--
