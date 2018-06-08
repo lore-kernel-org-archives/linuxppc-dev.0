@@ -1,25 +1,32 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from newton.telenet-ops.be (newton.telenet-ops.be
- [IPv6:2a02:1800:120:4::f00:d])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412HqB4YwYzDqG0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 19:56:05 +1000 (AEST)
-Received: from michel.telenet-ops.be (michel.telenet-ops.be
- [IPv6:2a02:1800:110:4::f00:18])
- by newton.telenet-ops.be (Postfix) with ESMTPS id 412Hfs37f0zMr0Qd
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:48:53 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] media: fsl-viu: Use proper check for presence of {out,
- in}_be32()
-Date: Fri,  8 Jun 2018 11:48:48 +0200
-Message-Id: <1528451328-21316-1-git-send-email-geert@linux-m68k.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412JG66JTQzDqJl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 20:15:56 +1000 (AEST)
+Date: Fri, 8 Jun 2018 12:15:51 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Florian Weimer <fweimer@redhat.com>
+Cc: Ram Pai <linuxram@us.ibm.com>, Linux-MM <linux-mm@kvack.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Andy Lutomirski
+ <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+Message-ID: <20180608121551.3c151e0c@naga.suse.cz>
+In-Reply-To: <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
+References: <20180520060425.GL5479@ram.oc3035372033.ibm.com>
+ <CALCETrVvQkphypn10A_rkX35DNqi29MJcXYRpRiCFNm02VYz2g@mail.gmail.com>
+ <20180520191115.GM5479@ram.oc3035372033.ibm.com>
+ <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
+ <20180603201832.GA10109@ram.oc3035372033.ibm.com>
+ <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
+ <20180604140135.GA10088@ram.oc3035372033.ibm.com>
+ <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
+ <20180604190229.GB10088@ram.oc3035372033.ibm.com>
+ <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
+ <20180608023441.GA5573@ram.oc3035372033.ibm.com>
+ <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +36,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When compile-testing on m68k or microblaze:
+On Fri, 8 Jun 2018 07:53:51 +0200
+Florian Weimer <fweimer@redhat.com> wrote:
 
-    drivers/media/platform/fsl-viu.c:41:1: warning: "out_be32" redefined
-    drivers/media/platform/fsl-viu.c:42:1: warning: "in_be32" redefined
+> On 06/08/2018 04:34 AM, Ram Pai wrote:
+> >>
+> >> So the remaining question at this point is whether the Intel
+> >> behavior (default-deny instead of default-allow) is preferable.  
+> > 
+> > Florian, remind me what behavior needs to fixed?  
+> 
+> See the other thread.  The Intel register equivalent to the AMR by 
+> default disallows access to yet-unallocated keys, so that threads
+> which are created before key allocation do not magically gain access
+> to a key allocated by another thread.
+> 
 
-Fix this by replacing the check for PowerPC by checks for the presence
-of {out,in}_be32().
+That does not make any sense. The threads share the address space so
+they should also share the keys.
 
-As PowerPC implements the be32 accessors using inline functions instead
-of macros, identity definions are added for all accessors to make the
-above checks work.
+Or in other words the keys are supposed to be acceleration of
+mprotect() so if mprotect() magically gives access to threads that did
+not call it so should pkey functions. If they cannot do that then they
+fail the primary purpose.
 
-Fixes: 29d750686331a1a9 ("media: fsl-viu: allow building it with COMPILE_TEST")
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Compile-tested on m68k, microblaze, and powerpc.
-Assembler output before/after compared for powerpc.
----
- arch/powerpc/include/asm/io.h    | 14 ++++++++++++++
- drivers/media/platform/fsl-viu.c |  4 +++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+And in any case what semantic that makes sense will you ever get by
+threads not magically getting new keys?
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e7545685c5f..3741183ae09349f1 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -222,6 +222,20 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
- #endif
- #endif /* __powerpc64__ */
- 
-+#define in_be16 in_be16
-+#define in_be32 in_be32
-+#define in_be64 in_be64
-+#define in_le16 in_le16
-+#define in_le32 in_le32
-+#define in_le64 in_le64
-+
-+#define out_be16 out_be16
-+#define out_be32 out_be32
-+#define out_be64 out_be64
-+#define out_le16 out_le16
-+#define out_le32 out_le32
-+#define out_le64 out_le64
-+
- /*
-  * Low level IO stream instructions are defined out of line for now
-  */
-diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
-index e41510ce69a40815..5d5e030c9c980647 100644
---- a/drivers/media/platform/fsl-viu.c
-+++ b/drivers/media/platform/fsl-viu.c
-@@ -37,8 +37,10 @@
- #define VIU_VERSION		"0.5.1"
- 
- /* Allow building this driver with COMPILE_TEST */
--#ifndef CONFIG_PPC
-+#ifndef out_be32
- #define out_be32(v, a)	iowrite32be(a, (void __iomem *)v)
-+#endif
-+#ifndef in_be32
- #define in_be32(a)	ioread32be((void __iomem *)a)
- #endif
- 
--- 
-2.7.4
+Suppose you will spawn some threads, then allocate a new key, associate
+it with a piece of protected data, etc.
+
+Now the old threads do not have access to the protected data at all. So
+if they want to access it they have to call into a management thread
+that created the access key to give them the data. Which means they
+need to call into the kernel to switch to the management thread. Which
+completely defeats the purpose of the acceleration of mprotect() which
+was to avoid calling into the kernel to access the data. In other words
+you can as well spawn a management process and use shared memory.
+
+What's worse, if you wanted to opt out of this feature and give the old
+threads the new key that's going to be quite a bit of fiddling.
+
+That said there might be an enhancement that kind of makes sense. For
+example if you allocate a key to associate with an area that you want
+to read most of the time and update occasionally it might make sense to
+tell the kernel: make the read bit on this key process-global, make the
+write bit on this key thread-local, and do not allow setting the
+execute bit at all. Then a thread calling a function to update the data
+will get write access but other threads will continue to have read
+access unless they also call a function to update the data.
+
+Thanks
+
+Michal
