@@ -1,27 +1,30 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4127b11gbyzF35k
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 13:45:01 +1000 (AEST)
-Date: Thu, 7 Jun 2018 21:44:55 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>,
- kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
- Tesla V100
-Message-ID: <20180607214455.51ecfa1a@w520.home>
-In-Reply-To: <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4127lK5lcqzF1C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 13:52:13 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id p21-v6so5728526pgd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 20:52:13 -0700 (PDT)
+Subject: Re: [RFC PATCH kernel 5/5] vfio_pci: Add NVIDIA GV100GL [Tesla V100
+ SXM2] [10de:1db1] subdriver
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
+ <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
+ Alistair Popple <alistair@popple.id.au>
 References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
- <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+ <20180607084420.29513-6-aik@ozlabs.ru> <20180607110449.2c25a62d@w520.home>
+ <d4ffacf9-5028-9f76-cbad-4f1a487b6db3@ozlabs.ru>
+ <20180607213535.04e68bac@w520.home>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <b1ec37e5-e7a0-5930-edcb-08272ca841b0@ozlabs.ru>
+Date: Fri, 8 Jun 2018 13:52:05 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180607213535.04e68bac@w520.home>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,62 +34,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 8 Jun 2018 13:08:54 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> On 8/6/18 8:15 am, Alex Williamson wrote:
-> > On Fri, 08 Jun 2018 07:54:02 +1000
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >   
-> >> On Thu, 2018-06-07 at 11:04 -0600, Alex Williamson wrote:  
-> >>>
-> >>> Can we back up and discuss whether the IOMMU grouping of NVLink
-> >>> connected devices makes sense?  AIUI we have a PCI view of these
-> >>> devices and from that perspective they're isolated.  That's the view of
-> >>> the device used to generate the grouping.  However, not visible to us,
-> >>> these devices are interconnected via NVLink.  What isolation properties
-> >>> does NVLink provide given that its entire purpose for existing seems to
-> >>> be to provide a high performance link for p2p between devices?    
-> >>
-> >> Not entire. On POWER chips, we also have an nvlink between the device
-> >> and the CPU which is running significantly faster than PCIe.
-> >>
-> >> But yes, there are cross-links and those should probably be accounted
-> >> for in the grouping.  
-> > 
-> > Then after we fix the grouping, can we just let the host driver manage
-> > this coherent memory range and expose vGPUs to guests?  The use case of
-> > assigning all 6 GPUs to one VM seems pretty limited.  (Might need to
-> > convince NVIDIA to support more than a single vGPU per VM though)  
+On 8/6/18 1:35 pm, Alex Williamson wrote:
+> On Fri, 8 Jun 2018 13:09:13 +1000
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>> On 8/6/18 3:04 am, Alex Williamson wrote:
+>>> On Thu,  7 Jun 2018 18:44:20 +1000
+>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
+>>>> index 7bddf1e..38c9475 100644
+>>>> --- a/drivers/vfio/pci/vfio_pci.c
+>>>> +++ b/drivers/vfio/pci/vfio_pci.c
+>>>> @@ -306,6 +306,15 @@ static int vfio_pci_enable(struct vfio_pci_device *vdev)
+>>>>  		}
+>>>>  	}
+>>>>  
+>>>> +	if (pdev->vendor == PCI_VENDOR_ID_NVIDIA &&
+>>>> +	    pdev->device == 0x1db1 &&
+>>>> +	    IS_ENABLED(CONFIG_VFIO_PCI_NVLINK2)) {  
+>>>
+>>> Can't we do better than check this based on device ID?  Perhaps PCIe
+>>> capability hints at this?  
+>>
+>> A normal PCI pluggable device looks like this:
+>>
+>> root@fstn3:~# sudo lspci -vs 0000:03:00.0
+>> 0000:03:00.0 3D controller: NVIDIA Corporation GK210GL [Tesla K80] (rev a1)
+>> 	Subsystem: NVIDIA Corporation GK210GL [Tesla K80]
+>> 	Flags: fast devsel, IRQ 497
+>> 	Memory at 3fe000000000 (32-bit, non-prefetchable) [disabled] [size=16M]
+>> 	Memory at 200000000000 (64-bit, prefetchable) [disabled] [size=16G]
+>> 	Memory at 200400000000 (64-bit, prefetchable) [disabled] [size=32M]
+>> 	Capabilities: [60] Power Management version 3
+>> 	Capabilities: [68] MSI: Enable- Count=1/1 Maskable- 64bit+
+>> 	Capabilities: [78] Express Endpoint, MSI 00
+>> 	Capabilities: [100] Virtual Channel
+>> 	Capabilities: [128] Power Budgeting <?>
+>> 	Capabilities: [420] Advanced Error Reporting
+>> 	Capabilities: [600] Vendor Specific Information: ID=0001 Rev=1 Len=024 <?>
+>> 	Capabilities: [900] #19
+>>
+>>
+>> This is a NVLink v1 machine:
+>>
+>> aik@garrison1:~$ sudo lspci -vs 000a:01:00.0
+>> 000a:01:00.0 3D controller: NVIDIA Corporation Device 15fe (rev a1)
+>> 	Subsystem: NVIDIA Corporation Device 116b
+>> 	Flags: bus master, fast devsel, latency 0, IRQ 457
+>> 	Memory at 3fe300000000 (32-bit, non-prefetchable) [size=16M]
+>> 	Memory at 260000000000 (64-bit, prefetchable) [size=16G]
+>> 	Memory at 260400000000 (64-bit, prefetchable) [size=32M]
+>> 	Capabilities: [60] Power Management version 3
+>> 	Capabilities: [68] MSI: Enable- Count=1/1 Maskable- 64bit+
+>> 	Capabilities: [78] Express Endpoint, MSI 00
+>> 	Capabilities: [100] Virtual Channel
+>> 	Capabilities: [250] Latency Tolerance Reporting
+>> 	Capabilities: [258] L1 PM Substates
+>> 	Capabilities: [128] Power Budgeting <?>
+>> 	Capabilities: [420] Advanced Error Reporting
+>> 	Capabilities: [600] Vendor Specific Information: ID=0001 Rev=1 Len=024 <?>
+>> 	Capabilities: [900] #19
+>> 	Kernel driver in use: nvidia
+>> 	Kernel modules: nvidiafb, nouveau, nvidia_384_drm, nvidia_384
+>>
+>>
+>> This is the one the patch is for:
+>>
+>> [aik@yc02goos ~]$ sudo lspci -vs 0035:03:00.0
+>> 0035:03:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
+>> (rev a1)
+>> 	Subsystem: NVIDIA Corporation Device 1212
+>> 	Flags: fast devsel, IRQ 82, NUMA node 8
+>> 	Memory at 620c280000000 (32-bit, non-prefetchable) [disabled] [size=16M]
+>> 	Memory at 6228000000000 (64-bit, prefetchable) [disabled] [size=16G]
+>> 	Memory at 6228400000000 (64-bit, prefetchable) [disabled] [size=32M]
+>> 	Capabilities: [60] Power Management version 3
+>> 	Capabilities: [68] MSI: Enable- Count=1/1 Maskable- 64bit+
+>> 	Capabilities: [78] Express Endpoint, MSI 00
+>> 	Capabilities: [100] Virtual Channel
+>> 	Capabilities: [250] Latency Tolerance Reporting
+>> 	Capabilities: [258] L1 PM Substates
+>> 	Capabilities: [128] Power Budgeting <?>
+>> 	Capabilities: [420] Advanced Error Reporting
+>> 	Capabilities: [600] Vendor Specific Information: ID=0001 Rev=1 Len=024 <?>
+>> 	Capabilities: [900] #19
+>> 	Capabilities: [ac0] #23
+>> 	Kernel driver in use: vfio-pci
+>>
+>>
+>> I can only see a new capability #23 which I have no idea about what it
+>> actually does - my latest PCIe spec is
+>> PCI_Express_Base_r3.1a_December7-2015.pdf and that only knows capabilities
+>> till #21, do you have any better spec? Does not seem promising anyway...
 > 
-> These are physical GPUs, not virtual sriov-alike things they are
-> implementing as well elsewhere.
+> You could just look in include/uapi/linux/pci_regs.h and see that 23
+> (0x17) is a TPH Requester capability and google for that...  It's a TLP
+> processing hint related to cache processing for requests from system
+> specific interconnects.  Sounds rather promising.  Of course there's
+> also the vendor specific capability that might be probed if NVIDIA will
+> tell you what to look for and the init function you've implemented
+> looks for specific devicetree nodes, that I imagine you could test for
+> in a probe as well.
 
-vGPUs as implemented on M- and P-series Teslas aren't SR-IOV like
-either.  That's why we have mdev devices now to implement software
-defined devices.  I don't have first hand experience with V-series, but
-I would absolutely expect a PCIe-based Tesla V100 to support vGPU.
 
-> My current understanding is that every P9 chip in that box has some NVLink2
-> logic on it so each P9 is directly connected to 3 GPUs via PCIe and
-> 2xNVLink2, and GPUs in that big group are interconnected by NVLink2 links
-> as well.
+This 23 is in hex:
+
+[aik@yc02goos ~]$ sudo lspci -vs 0035:03:00.0
+0035:03:00.0 3D controller: NVIDIA Corporation GV100GL [Tesla V100 SXM2]
+(rev a1)
+	Subsystem: NVIDIA Corporation Device 1212
+	Flags: fast devsel, IRQ 82, NUMA node 8
+	Memory at 620c280000000 (32-bit, non-prefetchable) [disabled] [size=16M]
+	Memory at 6228000000000 (64-bit, prefetchable) [disabled] [size=16G]
+	Memory at 6228400000000 (64-bit, prefetchable) [disabled] [size=32M]
+	Capabilities: [60] Power Management version 3
+	Capabilities: [68] MSI: Enable- Count=1/1 Maskable- 64bit+
+	Capabilities: [78] Express Endpoint, MSI 00
+	Capabilities: [100] Virtual Channel
+	Capabilities: [250] Latency Tolerance Reporting
+	Capabilities: [258] L1 PM Substates
+	Capabilities: [128] Power Budgeting <?>
+	Capabilities: [420] Advanced Error Reporting
+	Capabilities: [600] Vendor Specific Information: ID=0001 Rev=1 Len=024 <?>
+	Capabilities: [900] #19
+	Capabilities: [ac0] #23
+	Kernel driver in use: vfio-pci
+
+[aik@yc02goos ~]$ sudo lspci -vvvxxxxs 0035:03:00.0 | grep ac0
+	Capabilities: [ac0 v1] #23
+ac0: 23 00 01 00 de 10 c1 00 01 00 10 00 00 00 00 00
+
+
+Talking to NVIDIA is always an option :)
+
+
 > 
-> From small bits of information I have it seems that a GPU can perfectly
-> work alone and if the NVIDIA driver does not see these interconnects
-> (because we do not pass the rest of the big 3xGPU group to this guest), it
-> continues with a single GPU. There is an "nvidia-smi -r" big reset hammer
-> which simply refuses to work until all 3 GPUs are passed so there is some
-> distinction between passing 1 or 3 GPUs, and I am trying (as we speak) to
-> get a confirmation from NVIDIA that it is ok to pass just a single GPU.
+>>> Is it worthwhile to continue with assigning the device in the !ENABLED
+>>> case?  For instance, maybe it would be better to provide a weak
+>>> definition of vfio_pci_nvlink2_init() that would cause us to fail here
+>>> if we don't have this device specific support enabled.  I realize
+>>> you're following the example set forth for IGD, but those regions are
+>>> optional, for better or worse.  
+>>
+>>
+>> The device is supposed to work even without GPU RAM passed through, this
+>> should look like NVLink v1 in this case (there used to be bugs in the
+>> driver, may be still are, have not checked for a while but there is a bug
+>> opened at NVIDIA about this and they were going to fix that), this is why I
+>> chose not to fail here.
 > 
-> So we will either have 6 groups (one per GPU) or 2 groups (one per
-> interconnected group).
+> Ok.
+> 
+>>>> diff --git a/drivers/vfio/pci/Kconfig b/drivers/vfio/pci/Kconfig
+>>>> index 24ee260..2725bc8 100644
+>>>> --- a/drivers/vfio/pci/Kconfig
+>>>> +++ b/drivers/vfio/pci/Kconfig
+>>>> @@ -30,3 +30,7 @@ config VFIO_PCI_INTX
+>>>>  config VFIO_PCI_IGD
+>>>>  	depends on VFIO_PCI
+>>>>  	def_bool y if X86
+>>>> +
+>>>> +config VFIO_PCI_NVLINK2
+>>>> +	depends on VFIO_PCI
+>>>> +	def_bool y if PPC_POWERNV  
+>>>
+>>> As written, this also depends on PPC_POWERNV (or at least TCE), it's not
+>>> a portable implementation that we could re-use on X86 or ARM or any
+>>> other platform if hardware appeared for it.  Can we improve that as
+>>> well to make this less POWER specific?  Thanks,  
+>>
+>>
+>> As I said in another mail, every P9 chip in that box has some NVLink2 logic
+>> on it so it is not even common among P9's in general and I am having hard
+>> time seeing these V100s used elsewhere in such way.
+> 
+> https://www.redhat.com/archives/vfio-users/2018-May/msg00000.html
+> 
+> Not much platform info, but based on the rpm mentioned, looks like an
+> x86_64 box.  Thanks,
 
-I'm not gaining much confidence that we can rely on isolation between
-NVLink connected GPUs, it sounds like you're simply expecting that
-proprietary code from NVIDIA on a proprietary interconnect from NVIDIA
-is going to play nice and nobody will figure out how to do bad things
-because... obfuscation?  Thanks,
+Wow. Interesting. Thanks for the pointer. No advertising material actually
+says that it is P9 only or even mention P9, wiki does not say it is P9 only
+either. Hmmm...
 
-Alex
+
+
+-- 
+Alexey
