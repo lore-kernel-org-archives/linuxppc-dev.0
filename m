@@ -1,20 +1,48 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=xhv0=i2=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 412JMg5trRzDqJl
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 20:20:47 +1000 (AEST)
-Message-Id: <d840d836f392b890c2e477d059b5a3a511a14631.1528452373.git.christophe.leroy@c-s.fr>
-In-Reply-To: <a348f4ffda6349467e4270e754d12150fa773462.1528452373.git.christophe.leroy@c-s.fr>
-References: <a348f4ffda6349467e4270e754d12150fa773462.1528452373.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v4 4/4] selftests/powerpc: update strlen() test to test the
- new assembly function
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- wei.guo.simon@gmail.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri,  8 Jun 2018 10:20:44 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 412Jc33kk3zDqG0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 20:31:31 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 412Jc31ftmz96xt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 20:31:31 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 412Jc22Vrpz9s0W
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2018 20:31:29 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w58ASuG2066631
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 Jun 2018 06:31:28 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jfps8ue2y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 08 Jun 2018 06:31:27 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 8 Jun 2018 11:31:26 +0100
+Subject: Re: [v3 PATCH 2/5] powerpc/pseries: Fix endainness while restoring of
+ r3 in MCE handler.
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: stable@vger.kernel.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+References: <152839244928.25118.15100234720683911223.stgit@jupiter.in.ibm.com>
+ <152839249913.25118.1191250274945665204.stgit@jupiter.in.ibm.com>
+ <87fu1xvkjc.fsf@concordia.ellerman.id.au>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 8 Jun 2018 16:01:21 +0530
+MIME-Version: 1.0
+In-Reply-To: <87fu1xvkjc.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <f53147a1-bb9f-a1a8-8418-90ce9669d34c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,82 +52,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch modifies the test for testing the new assembly strlen() instead
-of the generic strlen()
+On 06/08/2018 12:20 PM, Michael Ellerman wrote:
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> During Machine Check interrupt on pseries platform, register r3 points
+>> RTAS extended event log passed by hypervisor. Since hypervisor uses r3
+>> to pass pointer to rtas log, it stores the original r3 value at the
+>> start of the memory (first 8 bytes) pointed by r3. Since hypervisor
+>> stores this info and rtas log is in BE format, linux should make
+>> sure to restore r3 value in correct endian format.
+> 
+> Can we hit this under KVM? And if so what if the KVM/qemu is running
+> little endian, does it still write the value BE?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v4: new
+FWNMI support for qemu is still not in. But when it is in, we can hit
+this. But whenever FWNMI support gets in, it should pass RTAS event data
+always in BE format including original r3 value.
 
- tools/testing/selftests/powerpc/stringloops/Makefile |  3 +--
- .../selftests/powerpc/stringloops/asm/cache.h        |  1 +
- .../selftests/powerpc/stringloops/asm/ppc_asm.h      | 20 ++++++++++++++++++++
- tools/testing/selftests/powerpc/stringloops/string.S |  1 +
- 4 files changed, 23 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/cache.h
- create mode 120000 tools/testing/selftests/powerpc/stringloops/string.S
-
-diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
-index df663ee9ddb3..0c088a6d0369 100644
---- a/tools/testing/selftests/powerpc/stringloops/Makefile
-+++ b/tools/testing/selftests/powerpc/stringloops/Makefile
-@@ -10,8 +10,7 @@ $(OUTPUT)/memcmp_64: CFLAGS += -m64
- $(OUTPUT)/memcmp_32: memcmp.c
- $(OUTPUT)/memcmp_32: CFLAGS += -m32
- 
--$(OUTPUT)/strlen: strlen.c string.o
--$(OUTPUT)/string.o: string.c
-+$(OUTPUT)/strlen: strlen.c string.S
- 
- ASFLAGS = $(CFLAGS)
- 
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/cache.h b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-new file mode 100644
-index 000000000000..8a2840831122
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-@@ -0,0 +1 @@
-+#define	IFETCH_ALIGN_BYTES 4
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-index 136242ec4b0e..9f8e34ffc131 100644
---- a/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/ppc_asm.h
-@@ -1,4 +1,12 @@
- /* SPDX-License-Identifier: GPL-2.0 */
-+#if !defined(CONFIG_PPC64) && !defined(CONFIG_PPC32)
-+#ifdef __powerpc64__
-+#define CONFIG_PPC64
-+#else
-+#define CONFIG_PPC32
-+#endif
-+#endif
-+
- #include <ppc-asm.h>
- 
- #ifndef r1
-@@ -6,3 +14,15 @@
- #endif
- 
- #define _GLOBAL(A) FUNC_START(test_ ## A)
-+
-+#ifdef __powerpc64__
-+#define SZL		8
-+#define PPC_LLU		ldu
-+#define PPC_LCMPI	cmpldi
-+#define PPC_ROTLI	rotldi
-+#else
-+#define SZL		4
-+#define PPC_LLU		lwzu
-+#define PPC_LCMPI	cmplwi
-+#define PPC_ROTLI	rotlwi
-+#endif
-diff --git a/tools/testing/selftests/powerpc/stringloops/string.S b/tools/testing/selftests/powerpc/stringloops/string.S
-new file mode 120000
-index 000000000000..9f5babec7d21
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/string.S
-@@ -0,0 +1 @@
-+../../../../../arch/powerpc/lib/string.S
-\ No newline at end of file
--- 
-2.13.3
+Thanks,
+-Mahesh.
+> 
+> cheers
+> 
