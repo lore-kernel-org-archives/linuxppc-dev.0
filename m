@@ -1,24 +1,15 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41257f5D9tzF31v
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 11:54:38 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id f1-v6so7278515plt.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Jun 2018 18:54:38 -0700 (PDT)
-Date: Fri, 8 Jun 2018 11:54:29 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/3] powerpc: make CPU selection logic generic in Makefile
-Message-ID: <20180608115429.50c8d578@roar.ozlabs.ibm.com>
-In-Reply-To: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
-References: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4125p757MszF33h
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2018 12:24:31 +1000 (AEST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
+Message-Id: <cover.1528423341.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH v2 00/12] macintosh: Resolve various PMU driver problems
+Date: Thu,  7 Jun 2018 22:24:28 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,68 +19,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  7 Jun 2018 10:10:18 +0000 (UTC)
-Christophe Leroy <christophe.leroy@c-s.fr> wrote:
+This series of patches has the following aims.
 
-> At the time being, when adding a new CPU for selection, both
-> Kconfig.cputype and Makefile have to be modified.
-> 
-> This patch moves into Kconfig.cputype the name of the CPU to me
-> passed to the -mcpu= argument.
+1) Eliminate duplicated code. Linux presently has two drivers for
+   the 68HC05-based PMU devices found in Macs: via-pmu and via-pmu68k.
+   There's no value in having separate PMU drivers for each architecture.
 
-Seems like a good cleanup.
+2) Avoid further work on via-pmu68k that's not needed for via-pmu.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+3) Fix some bugs in the via-pmu driver.
 
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/Makefile                  |  8 +-------
->  arch/powerpc/platforms/Kconfig.cputype | 15 +++++++++++++++
->  2 files changed, 16 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 9704ab360d39..9a5642552abc 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -175,13 +175,7 @@ ifdef CONFIG_MPROFILE_KERNEL
->      endif
->  endif
->  
-> -CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
-> -CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
-> -CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
-> -CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
-> -CFLAGS-$(CONFIG_POWER8_CPU) += $(call cc-option,-mcpu=power8)
-> -CFLAGS-$(CONFIG_POWER9_CPU) += $(call cc-option,-mcpu=power9)
-> -CFLAGS-$(CONFIG_PPC_8xx) += $(call cc-option,-mcpu=860)
-> +CFLAGS-$(CONFIG_SPECIAL_CPU_BOOL) += $(call cc-option,-mcpu=$(CONFIG_SPECIAL_CPU))
->  
->  # Altivec option not allowed with e500mc64 in GCC.
->  ifeq ($(CONFIG_ALTIVEC),y)
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index cc892dcfa114..71ef559cc474 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -140,6 +140,21 @@ config E6500_CPU
->  
->  endchoice
->  
-> +config SPECIAL_CPU_BOOL
-> +	bool
-> +	default !GENERIC_CPU
-> +
-> +config SPECIAL_CPU
-> +	string
-> +	depends on SPECIAL_CPU_BOOL
-> +	default "cell" if CELL_CPU
-> +	default "power5" if POWER5_CPU
-> +	default "power6" if POWER6_CPU
-> +	default "power7" if POWER7_CPU
-> +	default "power8" if POWER8_CPU
-> +	default "power9" if POWER9_CPU
-> +	default "860" if PPC_8xx
-> +
->  config PPC_BOOK3S
->  	def_bool y
->  	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
+4) Enable the /dev/pmu and /proc/pmu/* userspace APIs on m68k Macs
+   by adopting via-pmu.
+
+5) Improve stability on early 100-series PowerBooks by loading no PMU
+   driver at all. Neither via-pmu nor via-pmu68k supports the early
+   M50753-based PMU device found in these models.
+
+6) Eliminate duplicated RTC accessors for PMU and Cuda. Presently these
+   can be found under both arch/m68k and arch/powerpc.
+
+7) Assist the out-of-tree NuBus PowerMac port to support PMU designs
+   shared with the m68k Mac port (e.g. PowerBooks 190 and 5300).
+
+This patch series has been regression tested on various PowerBooks
+(190, 520, 3400, Pismo G3) and PowerMacs (Beige G3, G5). These patches
+did not affect userland utilities. (Note that there is a userland-
+visible change to the contents of /proc/pmu/interrupts.)
+
+Changed since v1:
+1) Added blank lines after 'break' statements in patch 10.
+2) Improved patch description for patch 3.
+3) Added reviewed-by tags.
+4) Split patch 8 to make code review easier.
+
+
+Finn Thain (12):
+  macintosh/via-pmu: Fix section mismatch warning
+  macintosh/via-pmu: Add missing mmio accessors
+  macintosh/via-pmu: Don't clear shift register interrupt flag twice
+  macintosh/via-pmu: Enhance state machine with new 'uninitialized'
+    state
+  macintosh/via-pmu: Replace via pointer with via1 and via2 pointers
+  macintosh/via-pmu: Add support for m68k PowerBooks
+  macintosh/via-pmu: Make CONFIG_PPC_PMAC Kconfig deps explicit
+  macintosh/via-pmu68k: Don't load driver on unsupported hardware
+  macintosh/via-pmu: Replace via-pmu68k driver with via-pmu driver
+  macintosh: Use common code to access RTC
+  macintosh/via-pmu: Clean up interrupt statistics
+  macintosh/via-pmu: Disambiguate interrupt statistics
+
+ arch/m68k/configs/mac_defconfig        |   2 +-
+ arch/m68k/configs/multi_defconfig      |   2 +-
+ arch/m68k/mac/config.c                 |   2 +-
+ arch/m68k/mac/misc.c                   | 118 +----
+ arch/powerpc/platforms/powermac/time.c |  74 +--
+ drivers/macintosh/Kconfig              |  19 +-
+ drivers/macintosh/Makefile             |   1 -
+ drivers/macintosh/adb.c                |   2 +-
+ drivers/macintosh/via-cuda.c           |  34 ++
+ drivers/macintosh/via-pmu.c            | 378 ++++++++++-----
+ drivers/macintosh/via-pmu68k.c         | 850 ---------------------------------
+ include/linux/cuda.h                   |   3 +
+ include/linux/pmu.h                    |   3 +
+ include/uapi/linux/pmu.h               |   2 -
+ 14 files changed, 311 insertions(+), 1179 deletions(-)
+ delete mode 100644 drivers/macintosh/via-pmu68k.c
+
+-- 
+2.16.4
