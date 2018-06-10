@@ -1,32 +1,33 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 413dlB202SzF116
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 00:27:18 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5AEO05C145388
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2018 10:27:15 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jh50s915e-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 413dlF0YkQzF14f
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 00:27:20 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5AENpp8002111
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2018 10:27:18 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jgvj35khj-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2018 10:27:15 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2018 10:27:17 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sun, 10 Jun 2018 15:27:12 +0100
+ Sun, 10 Jun 2018 15:27:16 +0100
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] powerpc/perf: Add constraints for power9 l2/l3 bus events
-Date: Sun, 10 Jun 2018 19:57:01 +0530
+Subject: [PATCH 2/2] powerpc/perf: Remove l2 bus events from HW cache event
+ array
+Date: Sun, 10 Jun 2018 19:57:02 +0530
 In-Reply-To: <1528640822-4800-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1528640822-4800-1-git-send-email-maddy@linux.vnet.ibm.com>
-Message-Id: <1528640822-4800-2-git-send-email-maddy@linux.vnet.ibm.com>
+Message-Id: <1528640822-4800-3-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,185 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In previous generation processors, both bus events and direct
-events of performance monitoring unit can be individually
-programmabled and monitored in PMCs.
+Remove PM_L2_ST_MISS and PM_L2_ST from HW cache event array since
+these are bus events. And these needs to be programmed in groups.
+Hence remove them.
 
-But in Power9, L2/L3 bus events are always available as a
-"bank" of 4 events. To obtain the counts for any of the
-l2/l3 bus events in a given bank, the user will have to
-program PMC4 with corresponding l2/l3 bus event for that
-bank.
-
-Patch enforce two contraints incase of L2/L3 bus events.
-
-1)Any L2/L3 event when programmed is also expected to program corresponding
-PMC4 event from that group.
-2)PMC4 event should always been programmed first due to group constraint
-logic limitation
-
-For ex. consider these L3 bus events
-
-PM_L3_PF_ON_CHIP_MEM (0x460A0),
-PM_L3_PF_MISS_L3 (0x160A0),
-PM_L3_CO_MEM (0x260A0),
-PM_L3_PF_ON_CHIP_CACHE (0x360A0),
-
-1) This is an INVALID group for L3 Bus event monitoring,
-since it is missing PMC4 event.
-	perf stat -e "{r160A0,r260A0,r360A0}" < >
-
-And this is a VALID group for L3 Bus events:
-	perf stat -e "{r460A0,r160A0,r260A0,r360A0}" < >
-
-2) This is an INVALID group for L3 Bus event monitoring,
-since it is missing PMC4 event.
-	perf stat -e "{r260A0,r360A0}" < >
-
-And this is a VALID group for L3 Bus events:
-	perf stat -e "{r460A0,r260A0,r360A0}" < >
-
-3) This is an INVALID group for L3 Bus event monitoring,
-since it is missing PMC4 event.
-	perf stat -e "{r360A0}" < >
-
-And this is a VALID group for L3 Bus events:
-	perf stat -e "{r460A0,r360A0}" < >
-
-Patch here implements group constraint logic suggested by Michael Ellerman.
-
+Fixes: f1fb60bfde65 ('powerpc/perf: Export Power9 generic and cache events to sysfs')
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/perf_event_server.h |  2 ++
- arch/powerpc/perf/core-book3s.c              | 20 +++++++++++++++-----
- arch/powerpc/perf/isa207-common.c            | 28 ++++++++++++++++++----------
- arch/powerpc/perf/isa207-common.h            |  5 +++++
- arch/powerpc/perf/power9-pmu.c               |  2 ++
- 5 files changed, 42 insertions(+), 15 deletions(-)
+ arch/powerpc/perf/power9-pmu.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 67a8a9585d50..e60aeb46d6a0 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -41,6 +41,8 @@ struct power_pmu {
- 	void		(*get_mem_data_src)(union perf_mem_data_src *dsrc,
- 				u32 flags, struct pt_regs *regs);
- 	void		(*get_mem_weight)(u64 *weight);
-+	unsigned long	group_constraint_mask;
-+	unsigned long	group_constraint_val;
- 	u64             (*bhrb_filter_map)(u64 branch_sample_type);
- 	void            (*config_bhrb)(u64 pmu_bhrb_filter);
- 	void		(*disable_pmc)(unsigned int pmc, unsigned long mmcr[]);
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 3f66fcf8ad99..e429a395c6dd 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -876,6 +876,8 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
- 	int i, j;
- 	unsigned long addf = ppmu->add_fields;
- 	unsigned long tadd = ppmu->test_adder;
-+	unsigned long grp_mask = ppmu->group_constraint_mask;
-+	unsigned long grp_val = ppmu->group_constraint_val;
- 
- 	if (n_ev > ppmu->n_counter)
- 		return -1;
-@@ -896,15 +898,23 @@ static int power_check_constraints(struct cpu_hw_events *cpuhw,
- 	for (i = 0; i < n_ev; ++i) {
- 		nv = (value | cpuhw->avalues[i][0]) +
- 			(value & cpuhw->avalues[i][0] & addf);
--		if ((((nv + tadd) ^ value) & mask) != 0 ||
--		    (((nv + tadd) ^ cpuhw->avalues[i][0]) &
--		     cpuhw->amasks[i][0]) != 0)
-+
-+		if (((((nv + tadd) ^ value) & mask) & (~grp_mask)) != 0)
-+			break;
-+
-+		if (((((nv + tadd) ^ cpuhw->avalues[i][0]) & cpuhw->amasks[i][0])
-+			& (~grp_mask)) != 0)
- 			break;
-+
- 		value = nv;
- 		mask |= cpuhw->amasks[i][0];
- 	}
--	if (i == n_ev)
--		return 0;	/* all OK */
-+	if (i == n_ev) {
-+		if ((value & mask & grp_mask) != (mask & grp_val))
-+			return -1;
-+		else
-+			return 0;	/* all OK */
-+	}
- 
- 	/* doesn't work, gather alternatives... */
- 	if (!ppmu->get_alternatives)
-diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
-index 2efee3f196f5..bff206831667 100644
---- a/arch/powerpc/perf/isa207-common.c
-+++ b/arch/powerpc/perf/isa207-common.c
-@@ -276,17 +276,25 @@ int isa207_get_constraint(u64 event, unsigned long *maskp, unsigned long *valp)
- 	}
- 
- 	if (unit >= 6 && unit <= 9) {
--		/*
--		 * L2/L3 events contain a cache selector field, which is
--		 * supposed to be programmed into MMCRC. However MMCRC is only
--		 * HV writable, and there is no API for guest kernels to modify
--		 * it. The solution is for the hypervisor to initialise the
--		 * field to zeroes, and for us to only ever allow events that
--		 * have a cache selector of zero. The bank selector (bit 3) is
--		 * irrelevant, as long as the rest of the value is 0.
--		 */
--		if (cache & 0x7)
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			mask  |= CNST_CACHE_GROUP_MASK;
-+			value |= CNST_CACHE_GROUP_VAL(event & 0xff);
-+
-+			mask |= CNST_CACHE_PMC4_MASK;
-+			if (pmc == 4)
-+				value |= CNST_CACHE_PMC4_VAL;
-+		} else if (cache & 0x7) {
-+			/*
-+			 * L2/L3 events contain a cache selector field, which is
-+			 * supposed to be programmed into MMCRC. However MMCRC is only
-+			 * HV writable, and there is no API for guest kernels to modify
-+			 * it. The solution is for the hypervisor to initialise the
-+			 * field to zeroes, and for us to only ever allow events that
-+			 * have a cache selector of zero. The bank selector (bit 3) is
-+			 * irrelevant, as long as the rest of the value is 0.
-+			 */
- 			return -1;
-+		}
- 
- 	} else if (event & EVENT_IS_L1) {
- 		mask  |= CNST_L1_QUAL_MASK;
-diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
-index 6c737d675792..b26de74aa382 100644
---- a/arch/powerpc/perf/isa207-common.h
-+++ b/arch/powerpc/perf/isa207-common.h
-@@ -198,6 +198,11 @@
- #define CNST_SAMPLE_VAL(v)	(((v) & EVENT_SAMPLE_MASK) << 16)
- #define CNST_SAMPLE_MASK	CNST_SAMPLE_VAL(EVENT_SAMPLE_MASK)
- 
-+#define CNST_CACHE_GROUP_VAL(v)	(((v) & 0xffull) << 55)
-+#define CNST_CACHE_GROUP_MASK	CNST_CACHE_GROUP_VAL(0xff)
-+#define CNST_CACHE_PMC4_VAL	(1ull << 54)
-+#define CNST_CACHE_PMC4_MASK	CNST_CACHE_PMC4_VAL
-+
- /*
-  * For NC we are counting up to 4 events. This requires three bits, and we need
-  * the fifth event to overflow and set the 4th bit. To achieve that we bias the
 diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
-index 2ca0b33b4efb..9601f0d035b4 100644
+index 9601f0d035b4..0e769a8490a0 100644
 --- a/arch/powerpc/perf/power9-pmu.c
 +++ b/arch/powerpc/perf/power9-pmu.c
-@@ -463,6 +463,8 @@ static struct power_pmu power9_pmu = {
- 	.n_counter		= MAX_PMU_COUNTERS,
- 	.add_fields		= ISA207_ADD_FIELDS,
- 	.test_adder		= ISA207_TEST_ADDER,
-+	.group_constraint_mask	= CNST_CACHE_PMC4_MASK,
-+	.group_constraint_val	= CNST_CACHE_PMC4_VAL,
- 	.compute_mmcr		= isa207_compute_mmcr,
- 	.config_bhrb		= power9_config_bhrb,
- 	.bhrb_filter_map	= power9_bhrb_filter_map,
+@@ -179,8 +179,6 @@ CACHE_EVENT_ATTR(L1-icache-prefetches,		PM_IC_PREF_WRITE);
+ CACHE_EVENT_ATTR(LLC-load-misses,		PM_DATA_FROM_L3MISS);
+ CACHE_EVENT_ATTR(LLC-loads,			PM_DATA_FROM_L3);
+ CACHE_EVENT_ATTR(LLC-prefetches,		PM_L3_PREF_ALL);
+-CACHE_EVENT_ATTR(LLC-store-misses,		PM_L2_ST_MISS);
+-CACHE_EVENT_ATTR(LLC-stores,			PM_L2_ST);
+ CACHE_EVENT_ATTR(branch-load-misses,		PM_BR_MPRED_CMPL);
+ CACHE_EVENT_ATTR(branch-loads,			PM_BR_CMPL);
+ CACHE_EVENT_ATTR(dTLB-load-misses,		PM_DTLB_MISS);
+@@ -205,8 +203,6 @@ static struct attribute *power9_events_attr[] = {
+ 	CACHE_EVENT_PTR(PM_DATA_FROM_L3MISS),
+ 	CACHE_EVENT_PTR(PM_DATA_FROM_L3),
+ 	CACHE_EVENT_PTR(PM_L3_PREF_ALL),
+-	CACHE_EVENT_PTR(PM_L2_ST_MISS),
+-	CACHE_EVENT_PTR(PM_L2_ST),
+ 	CACHE_EVENT_PTR(PM_BR_MPRED_CMPL),
+ 	CACHE_EVENT_PTR(PM_BR_CMPL),
+ 	CACHE_EVENT_PTR(PM_DTLB_MISS),
+@@ -371,8 +367,8 @@ static int power9_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 			[ C(RESULT_MISS)   ] = PM_DATA_FROM_L3MISS,
+ 		},
+ 		[ C(OP_WRITE) ] = {
+-			[ C(RESULT_ACCESS) ] = PM_L2_ST,
+-			[ C(RESULT_MISS)   ] = PM_L2_ST_MISS,
++			[ C(RESULT_ACCESS) ] = 0,
++			[ C(RESULT_MISS)   ] = 0,
+ 		},
+ 		[ C(OP_PREFETCH) ] = {
+ 			[ C(RESULT_ACCESS) ] = PM_L3_PREF_ALL,
 -- 
 2.7.4
