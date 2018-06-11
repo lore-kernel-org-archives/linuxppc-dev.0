@@ -1,31 +1,14 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414Kbr2gqwzF3V7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 03:23:20 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5BHIUvS051380
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:23:16 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jhugungk5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:23:16 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 11 Jun 2018 18:23:13 +0100
-Date: Mon, 11 Jun 2018 10:23:05 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414Kl63R2jzF3TB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 03:29:37 +1000 (AEST)
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+To: Ram Pai <linuxram@us.ibm.com>
 Cc: Linux-MM <linux-mm@kvack.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
 References: <20180520191115.GM5479@ram.oc3035372033.ibm.com>
  <aae1952c-886b-cfc8-e98b-fa3be5fab0fa@redhat.com>
  <20180603201832.GA10109@ram.oc3035372033.ibm.com>
@@ -36,10 +19,13 @@ References: <20180520191115.GM5479@ram.oc3035372033.ibm.com>
  <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
  <20180608023441.GA5573@ram.oc3035372033.ibm.com>
  <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
+ <20180611172305.GB5697@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <30f5cb0e-e09a-15e6-f77d-a3afa422a651@redhat.com>
+Date: Mon, 11 Jun 2018 19:29:33 +0200
 MIME-Version: 1.0
-In-Reply-To: <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
-Message-Id: <20180611172305.GB5697@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180611172305.GB5697@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,23 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 08, 2018 at 07:53:51AM +0200, Florian Weimer wrote:
-> On 06/08/2018 04:34 AM, Ram Pai wrote:
-> >>
-> >>So the remaining question at this point is whether the Intel
-> >>behavior (default-deny instead of default-allow) is preferable.
-> >
-> >Florian, remind me what behavior needs to fixed?
+On 06/11/2018 07:23 PM, Ram Pai wrote:
+> On Fri, Jun 08, 2018 at 07:53:51AM +0200, Florian Weimer wrote:
+>> On 06/08/2018 04:34 AM, Ram Pai wrote:
+>>>>
+>>>> So the remaining question at this point is whether the Intel
+>>>> behavior (default-deny instead of default-allow) is preferable.
+>>>
+>>> Florian, remind me what behavior needs to fixed?
+>>
+>> See the other thread.  The Intel register equivalent to the AMR by
+>> default disallows access to yet-unallocated keys, so that threads
+>> which are created before key allocation do not magically gain access
+>> to a key allocated by another thread.
 > 
-> See the other thread.  The Intel register equivalent to the AMR by
-> default disallows access to yet-unallocated keys, so that threads
-> which are created before key allocation do not magically gain access
-> to a key allocated by another thread.
+> Are you referring to the thread
+> '[PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change signal semantics'
 
-Are you referring to the thread
-'[PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change signal semantics'
+> Otherwise please point me to the URL of that thread. Sorry and thankx. :)
 
-If yes, I will wait for your next version of the patch.
+No, it's this issue:
 
-Otherwise please point me to the URL of that thread. Sorry and thankx. :)
-RP
+   <https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-May/173157.html>
+
+The UAMOR part has been fixed (thanks), but I think processes still 
+start out with default-allow AMR.
+
+Thanks,
+Florian
