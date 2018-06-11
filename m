@@ -1,24 +1,22 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-f178.google.com (mail-ot0-f178.google.com
- [74.125.82.178])
+Return-Path: <jrdr.linux@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414PY33sdxzF3MY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 06:21:11 +1000 (AEST)
-Received: by mail-ot0-f178.google.com with SMTP id a5-v6so25337355otf.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:21:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414PgV5DBCzF3RT
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 06:26:43 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id k1-v6so4564156plt.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:26:43 -0700 (PDT)
+Date: Tue, 12 Jun 2018 01:59:04 +0530
+From: Souptick Joarder <jrdr.linux@gmail.com>
+To: willy@infradead.org, fbarrat@linux.vnet.ibm.com,
+ andrew.donnellan@au1.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ sabyasachi.linux@gmail.com, brajeswar.linux@gmail.com
+Subject: [PATCH] misc: ocxl: Change return type for fault handler
+Message-ID: <20180611202904.GA25538@jordon-HP-15-Notebook-PC>
 MIME-Version: 1.0
-References: <alpine.LRH.2.21.1806111352330.17091@math.ut.ee>
-In-Reply-To: <alpine.LRH.2.21.1806111352330.17091@math.ut.ee>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Mon, 11 Jun 2018 22:20:56 +0200
-Message-ID: <CA+7wUsw_8znPDsej=j48kkmqV3vPbOuDociBE4tth53-Zj32qA@mail.gmail.com>
-Subject: Re: 4.17.0-10146-gf0dc7f9c6dd9: hw csum failure on powerpc+sungem
-To: Meelis Roos <mroos@linux.ee>
-Cc: netdev@vger.kernel.org, Mauro Carvalho Chehab <mchehab@s-opensource.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +26,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Meelis,
+Use new return type vm_fault_t for fault handler. For
+now, this is just documenting that the function returns
+a VM_FAULT value rather than an errno. Once all instances
+are converted, vm_fault_t will become a distinct type.
 
-On Mon, Jun 11, 2018 at 1:21 PM Meelis Roos <mroos@linux.ee> wrote:
->
-> I am seeing this on PowerMac G4 with sungem ethernet driver. 4.17 was
-> OK, 4.17.0-10146-gf0dc7f9c6dd9 is problematic.
+Ref-> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
 
-Same here.
+There is an existing bug when vm_insert_pfn() can return
+ENOMEM which was ignored and VM_FAULT_NOPAGE returned as
+default. The new inline vmf_insert_pfn() has removed
+this inefficiency by returning correct vm_fault_ type.
 
-> [  140.518664] eth0: hw csum failure
-> [  140.518699] CPU: 0 PID: 1237 Comm: postconf Not tainted 4.17.0-10146-gf0dc7f9c6dd9 #83
-> [  140.518707] Call Trace:
-> [  140.518734] [effefd90] [c03d6db8] __skb_checksum_complete+0xd8/0xdc (unreliable)
-> [  140.518759] [effefdb0] [c04c1284] icmpv6_rcv+0x248/0x4ec
-> [  140.518775] [effefdd0] [c049a448] ip6_input_finish.constprop.0+0x11c/0x5f4
-> [  140.518786] [effefe10] [c049b1c0] ip6_mc_input+0xcc/0x100
-> [  140.518807] [effefe20] [c03e110c] __netif_receive_skb_core+0x310/0x944
-> [  140.518820] [effefe70] [c03e76ec] napi_gro_receive+0xd0/0xe8
-> [  140.518845] [effefe80] [f3e1f66c] gem_poll+0x618/0x1274 [sungem]
-> [  140.518856] [effeff30] [c03e6f0c] net_rx_action+0x198/0x374
-> [  140.518872] [effeff90] [c0501a88] __do_softirq+0x120/0x278
-> [  140.518890] [effeffe0] [c0036188] irq_exit+0xd8/0xdc
-> [  140.518908] [effefff0] [c000f478] call_do_irq+0x24/0x3c
-> [  140.518925] [d05a5d30] [c0007120] do_IRQ+0x74/0xf0
-> [  140.518941] [d05a5d50] [c0012474] ret_from_except+0x0/0x14
-> [  140.518960] --- interrupt: 501 at copy_page+0x40/0x90
->                    LR = copy_user_page+0x18/0x30
-> [  140.518973] [d05a5e10] [d058cd80] 0xd058cd80 (unreliable)
-> [  140.518989] [d05a5e20] [c00fa2bc] wp_page_copy+0xec/0x654
-> [  140.519002] [d05a5e60] [c00fd3a4] do_wp_page+0xa8/0x5b4
-> [  140.519013] [d05a5e90] [c00fe934] handle_mm_fault+0x564/0xa84
-> [  140.519025] [d05a5f00] [c0016230] do_page_fault+0x1bc/0x7e8
-> [  140.519037] [d05a5f40] [c0012300] handle_page_fault+0x14/0x40
-> [  140.519048] --- interrupt: 301 at 0xb78b6864
->                    LR = 0xb78b6c54
->
+Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+---
+ drivers/misc/ocxl/context.c | 22 +++++++++++-----------
+ drivers/misc/ocxl/sysfs.c   |  5 ++---
+ 2 files changed, 13 insertions(+), 14 deletions(-)
 
-For some reason if I do a git bisect it returns that:
-
-$ git bisect good
-3036bc45364f98515a2c446d7fac2c34dcfbeff4 is the first bad commit
-
-Could you also check on your side please.
-
-> --
-> Meelis Roos (mroos@linux.ee)
+diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
+index 909e880..98daf91 100644
+--- a/drivers/misc/ocxl/context.c
++++ b/drivers/misc/ocxl/context.c
+@@ -83,7 +83,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
+ 	return rc;
+ }
+ 
+-static int map_afu_irq(struct vm_area_struct *vma, unsigned long address,
++static vm_fault_t map_afu_irq(struct vm_area_struct *vma, unsigned long address,
+ 		u64 offset, struct ocxl_context *ctx)
+ {
+ 	u64 trigger_addr;
+@@ -92,15 +92,15 @@ static int map_afu_irq(struct vm_area_struct *vma, unsigned long address,
+ 	if (!trigger_addr)
+ 		return VM_FAULT_SIGBUS;
+ 
+-	vm_insert_pfn(vma, address, trigger_addr >> PAGE_SHIFT);
+-	return VM_FAULT_NOPAGE;
++	return vmf_insert_pfn(vma, address, trigger_addr >> PAGE_SHIFT);
+ }
+ 
+-static int map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
++static vm_fault_t map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
+ 		u64 offset, struct ocxl_context *ctx)
+ {
+ 	u64 pp_mmio_addr;
+ 	int pasid_off;
++	vm_fault_t ret;
+ 
+ 	if (offset >= ctx->afu->config.pp_mmio_stride)
+ 		return VM_FAULT_SIGBUS;
+@@ -118,27 +118,27 @@ static int map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
+ 		pasid_off * ctx->afu->config.pp_mmio_stride +
+ 		offset;
+ 
+-	vm_insert_pfn(vma, address, pp_mmio_addr >> PAGE_SHIFT);
++	ret = vmf_insert_pfn(vma, address, pp_mmio_addr >> PAGE_SHIFT);
+ 	mutex_unlock(&ctx->status_mutex);
+-	return VM_FAULT_NOPAGE;
++	return ret;
+ }
+ 
+-static int ocxl_mmap_fault(struct vm_fault *vmf)
++static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
+ {
+ 	struct vm_area_struct *vma = vmf->vma;
+ 	struct ocxl_context *ctx = vma->vm_file->private_data;
+ 	u64 offset;
+-	int rc;
++	vm_fault_t ret;
+ 
+ 	offset = vmf->pgoff << PAGE_SHIFT;
+ 	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
+ 		ctx->pasid, vmf->address, offset);
+ 
+ 	if (offset < ctx->afu->irq_base_offset)
+-		rc = map_pp_mmio(vma, vmf->address, offset, ctx);
++		ret = map_pp_mmio(vma, vmf->address, offset, ctx);
+ 	else
+-		rc = map_afu_irq(vma, vmf->address, offset, ctx);
+-	return rc;
++		ret = map_afu_irq(vma, vmf->address, offset, ctx);
++	return ret;
+ }
+ 
+ static const struct vm_operations_struct ocxl_vmops = {
+diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
+index d9753a1..0ab1fd1 100644
+--- a/drivers/misc/ocxl/sysfs.c
++++ b/drivers/misc/ocxl/sysfs.c
+@@ -64,7 +64,7 @@ static ssize_t global_mmio_read(struct file *filp, struct kobject *kobj,
+ 	return count;
+ }
+ 
+-static int global_mmio_fault(struct vm_fault *vmf)
++static vm_fault_t global_mmio_fault(struct vm_fault *vmf)
+ {
+ 	struct vm_area_struct *vma = vmf->vma;
+ 	struct ocxl_afu *afu = vma->vm_private_data;
+@@ -75,8 +75,7 @@ static int global_mmio_fault(struct vm_fault *vmf)
+ 
+ 	offset = vmf->pgoff;
+ 	offset += (afu->global_mmio_start >> PAGE_SHIFT);
+-	vm_insert_pfn(vma, vmf->address, offset);
+-	return VM_FAULT_NOPAGE;
++	return vmf_insert_pfn(vma, vmf->address, offset);
+ }
+ 
+ static const struct vm_operations_struct global_mmio_vmops = {
+-- 
+1.9.1
