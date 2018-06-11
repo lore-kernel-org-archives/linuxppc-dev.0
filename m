@@ -1,30 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 413tZc2wP0zF36r
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 10:05:44 +1000 (AEST)
-Message-ID: <22a505e0f094352b9cb883935fae9f494fb2cb0b.camel@kernel.crashing.org>
-Subject: Re: [PATCH v2 08/12] macintosh/via-pmu68k: Don't load driver on
- unsupported hardware
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Schmitz <schmitzmic@gmail.com>, Geert Uytterhoeven
- <geert@linux-m68k.org>, Finn Thain <fthain@telegraphics.com.au>
-Cc: Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, linux-m68k <linux-m68k@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 11 Jun 2018 10:05:22 +1000
-In-Reply-To: <3187b544-e265-dfd9-e0e3-e2a742c190d5@gmail.com>
-References: <cover.1528423341.git.fthain@telegraphics.com.au>
- <d9d626ca4e7ac9c7e81b24a34f5fbcae9d1d5046.1528423341.git.fthain@telegraphics.com.au>
- <9f015684-4d91-70e4-d2a4-89fe167ff8ab@gmail.com>
- <m2h8mc4ejw.fsf@linux-m68k.org>
- <e1006b0a-a429-4744-7525-203cb91f1d5f@gmail.com>
- <alpine.LNX.2.21.1806092140410.26@nippy.intranet>
- <CAMuHMdUHnFKzhe3x3=bG63HwnM7psu7AA=nba8q+nTDnxBAryw@mail.gmail.com>
- <3187b544-e265-dfd9-e0e3-e2a742c190d5@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 413wcp18mlzF3C1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 11:37:45 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id w17-v6so11371316pll.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2018 18:37:45 -0700 (PDT)
+Date: Mon, 11 Jun 2018 11:37:34 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH] powerpc/64s: remove POWER9 DD1 support
+Message-ID: <20180611113734.136fce95@roar.ozlabs.ibm.com>
+In-Reply-To: <20180610225811.35006b61@naga.suse.cz>
+References: <20180610133027.16819-1-npiggin@gmail.com>
+ <20180610225811.35006b61@naga.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2018-06-10 at 21:12 +1200, Michael Schmitz wrote:
-> Hi Geert,
+On Sun, 10 Jun 2018 22:58:11 +0200
+Michal Such=C3=A1nek <msuchanek@suse.de> wrote:
 
-Top posting, sorry ...
+> On Sun, 10 Jun 2018 23:30:27 +1000
+> Nicholas Piggin <npiggin@gmail.com> wrote:
+>=20
+> > POWER9 DD1 was never a product. It is no longer supported by upstream
+> > firmware, and it is not effectively supported in Linux due to lack of
+> > testing.
+> >  =20
+>=20
+> > diff --git a/arch/powerpc/kvm/book3s_xive_template.c
+> > b/arch/powerpc/kvm/book3s_xive_template.c index
+> > 99c3620b40d9..487f1f6650cc 100644 ---
+> > a/arch/powerpc/kvm/book3s_xive_template.c +++
+> > b/arch/powerpc/kvm/book3s_xive_template.c @@ -25,18 +25,6 @@ static
+> > void GLUE(X_PFX,ack_pending)(struct kvmppc_xive_vcpu *xc) */
+> >  	eieio();
+> > =20
+> > -	/*
+> > -	 * DD1 bug workaround: If PIPR is less favored than CPPR
+> > -	 * ignore the interrupt or we might incorrectly lose an IPB
+> > -	 * bit.
+> > -	 */
+> > -	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+> > -		__be64 qw1 =3D __x_readq(__x_tima + TM_QW1_OS);
+> > -		u8 pipr =3D be64_to_cpu(qw1) & 0xff;
+> > -		if (pipr >=3D xc->hw_cppr)
+> > -			return;
+> > -	}
+> > -
+> >  	/* Perform the acknowledge OS to register cycle. */
+> >  	ack =3D be16_to_cpu(__x_readw(__x_tima + TM_SPC_ACK_OS_REG));
+> > =20
+> > @@ -105,7 +93,7 @@ static void GLUE(X_PFX,source_eoi)(u32 hw_irq,
+> > struct xive_irq_data *xd) *
+> >  		 * For LSIs, using the HW EOI cycle works around a
+> > problem
+> >  		 * on P9 DD1 PHBs where the other ESB accesses don't
+> > work
+> > -		 * properly.
+> > +		 * properly. XXX: can this be removed?
+> >  		 */
+> >  		if (xd->flags & XIVE_IRQ_FLAG_LSI)
+> >  			__x_readq(__x_eoi_page(xd) + =20
+>=20
+> Maybe this should be really removed or the comment changed to why it is
+> still useful?
 
-We are painting that bike shed with way too many coats..
+Good point, I meant to ask Ben about that.
 
-We can keep the existing definitions, stick a comment on them stating
-"obsolete" and use new number if/when needed.
-
-Ben.
-
-
-> Am 10.06.2018 um 20:29 schrieb Geert Uytterhoeven:
-> > Hi Finn,
-> > 
-> > On Sat, Jun 9, 2018 at 2:20 PM Finn Thain <fthain@telegraphics.com.au> wrote:
-> > > > > > Is this enum used by any user space code? If so, perhaps rather
-> > > > > > leave the PMU_68K_V1 in there to avoid upsetting that?
-> > > > > 
-> > > > > It also changes the value of PMU_68K_V2, which is an ABI break.
-> > > > 
-> > > > Yes, that's what I worry about - but do we know of any users of that
-> > > > particular interface?
-> > > 
-> > > There is no ABI issue AFAIK. The value of pmu_kind is visible to userland
-> > > only on powerpc. /dev/pmu and /proc/pmu/* do not exist on m68k. This patch
-> > > series will make these UAPIs available on m68k, and for that reason I've
-> > > chosen the value PMU_UNKNOWN for pmu_kind.
-> > 
-> > While /dev/pmu and /proc/pmu/* may not exist on m68k, definitions in
-> > include/uapi/linux/pmu.h are part of the ABI, and cannot be changed or removed,
-> > unless we are 100% sure there are no users.
-> > 
-> > If I would write a program interfacing with /dev/pmu and /proc/pmu/*, and
-> > needing to check the PMU type, it would have a switch() statement with
-> > all existing values defined in <linux/pmu.h>. So that would become broken
-> > by your change.
-> > 
-> > Hence the enum is append-only.
-> 
-> The PMU type from pmu.h was never exposed to user space on m68k via 
-> /proc/pmu/*, and /dev/pmu is used for ioctls to the PMU driver on 
-> powerpc only (the 68k PMU driver doesn't have ioctl support). No way 
-> that I can see for user space to make use of the PMU type definition 
-> from pmu.h, so I suppose we can be sure there are no users.
-> 
-> The m68k PMU types cannot be said to be exposed on powerpc either (which 
-> has ioctl support to interrogate the PMU type), as these only return 
-> values up to PMU_KEYLARGO_BASED.
-> 
-> Applications like pbbuttonsd or pmud don't use the kernel PMU type at 
-> all, but go straight to the PMU via the ADB bus to interrogate the 
-> hardware type, so won't be affected either.
-> 
-> Is there any other way besides procfs and ioctl for user space to 
-> interrogate the PMU type that I'm missing here?
-> 
-> (I understand that breaking the ABI should not be done as a rule, but 
-> this may be a case where we can successfully argue the definitions were 
-> never in use, so the rules may be bent a little).
+Thanks,
+Nick
