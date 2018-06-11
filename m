@@ -1,20 +1,29 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414S3c5q7nzF3jb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 08:14:20 +1000 (AEST)
-Date: Tue, 12 Jun 2018 08:14:13 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>
-Subject: linux-next: build warnings from Linus' tree
-Message-ID: <20180612081413.323d85b8@canb.auug.org.au>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 414V6K2ltxzF3n6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 09:46:48 +1000 (AEST)
+Date: Tue, 12 Jun 2018 09:47:06 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Michael Schmitz <schmitzmic@gmail.com>,
+ Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Laurent Vivier <lvivier@redhat.com>
+Subject: Re: [PATCH v2 08/12] macintosh/via-pmu68k: Don't load driver on
+ unsupported hardware
+In-Reply-To: <3490f7d6f45ec2586858e4547e97474d93bd2d4d.camel@kernel.crashing.org>
+Message-ID: <alpine.LNX.2.21.1806120911370.34@nippy.intranet>
+References: <cover.1528423341.git.fthain@telegraphics.com.au>
+ <d9d626ca4e7ac9c7e81b24a34f5fbcae9d1d5046.1528423341.git.fthain@telegraphics.com.au>
+ <9f015684-4d91-70e4-d2a4-89fe167ff8ab@gmail.com>
+ <m2h8mc4ejw.fsf@linux-m68k.org>
+ <e1006b0a-a429-4744-7525-203cb91f1d5f@gmail.com>
+ <alpine.LNX.2.21.1806092140410.26@nippy.intranet>
+ <3490f7d6f45ec2586858e4547e97474d93bd2d4d.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/W/m1/rBdObywzXKqe1sTqIe"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,43 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/W/m1/rBdObywzXKqe1sTqIe
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sun, 10 Jun 2018, Benjamin Herrenschmidt wrote:
 
-Hi all,
+> Pre-PCI is basically "NUBUS" based even in absence of an actual NuBus 
+> slot :-) It has to do with the internal HW architecture. The only ones 
+> that aren't are the even older designs (the 68000 based ones).
+> 
 
-Building Linus' tree, today's linux-next build (powerpc ppc64_defconfig)
-produced these warning:
+There is already some disagreement in the comments in the nubus-pmac code 
+about the suitability of "PMU_NUBUS_BASED" as opposed to e.g. 
+"PMU_WHITNEY_BASED".
 
-ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
- section `.gnu.hash'.
-ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
- section `.gnu.hash'.
-ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
- section `.gnu.hash'.
+Point is, the PMU driver doesn't care about the expansion slots or 
+architecture (Whitney-based PMU appears on m68k and powerpc). So NuBus vs. 
+PCI is a red herring here. The pmu_kind relates to backlight, buttons and 
+battery.
 
-This may just be because I have started building using the native Debian
-gcc for the powerpc builds ...
+(Leaving aside the PMU driver, if a pre-OpenFirmware Mac has a "slot zero" 
+ROM, one can argue that it is actually a NuBus machine, regardless of any 
+actual expansion slots.)
 
---=20
-Cheers,
-Stephen Rothwell
+> What's the situation with those NuBus things ? What do they use as a 
+> bootloader ? The old Apple one or BootX ? We should merge that port of 
+> it's maintained.
+> 
 
---Sig_/W/m1/rBdObywzXKqe1sTqIe
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+I agree that this code should not languish out-of-tree. But it would need 
+more work before it could reasonably be submitted to reviewers.
 
------BEGIN PGP SIGNATURE-----
+I do have some nubus-pmac hardware but I also have more mac/68k driver 
+work to do before I can tackle another architecture.
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlse9DUACgkQAVBC80lX
-0GwAawgApdMf0NhVOmjUuHMCIsVcF2VnHyuaeXZRscavEqHiPxuWDsM4siF5nZ1Z
-EVBIptKv3UADfLoAWr1k26l7LQpg57iCvTVRwd/8l5KTujs0Qh32vJ87hVHGK57a
-7MMD1DC9m2J774Eyrl0ZiZeJPeYP5vdRz5pBcsvINuWwJR51T7NvY6RwZhOrKpNa
-D7z4KRX6xA6X3j2wnMwZQNS+r4BbMP79VRzCq5DUn1LtidTS6BcD3u11m6+m3f5W
-CZY3lXXbEEkK9i0NYmTTKo+3GR5X8W4Nw92UeIGkmE+bI4DffnJe22Fz0mWXRT1h
-hLs6n+kDpZzDtRcB76Tgxy4wyP6fNA==
-=BwqD
------END PGP SIGNATURE-----
+I don't know what the bootloader situation is, but it looks messy...
+http://nubus-pmac.sourceforge.net/#booters
 
---Sig_/W/m1/rBdObywzXKqe1sTqIe--
+Laurent, does Emile work on these machines?
+
+-- 
+
+> Cheers,
+> Ben.
+>  
