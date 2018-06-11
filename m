@@ -1,45 +1,24 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-ot0-f178.google.com (mail-ot0-f178.google.com
+ [74.125.82.178])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414PGC1rlKzF3f4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 06:08:19 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5BK4IAN042656
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 16:08:16 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jhvua7c7w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 16:08:16 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 11 Jun 2018 21:08:14 +0100
-Date: Mon, 11 Jun 2018 13:08:07 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Florian Weimer <fweimer@redhat.com>
-Cc: Linux-MM <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <20180603201832.GA10109@ram.oc3035372033.ibm.com>
- <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
- <20180604140135.GA10088@ram.oc3035372033.ibm.com>
- <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
- <20180604190229.GB10088@ram.oc3035372033.ibm.com>
- <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
- <20180608023441.GA5573@ram.oc3035372033.ibm.com>
- <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
- <20180611172305.GB5697@ram.oc3035372033.ibm.com>
- <30f5cb0e-e09a-15e6-f77d-a3afa422a651@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414PY33sdxzF3MY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 06:21:11 +1000 (AEST)
+Received: by mail-ot0-f178.google.com with SMTP id a5-v6so25337355otf.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:21:11 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <30f5cb0e-e09a-15e6-f77d-a3afa422a651@redhat.com>
-Message-Id: <20180611200807.GA5773@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+References: <alpine.LRH.2.21.1806111352330.17091@math.ut.ee>
+In-Reply-To: <alpine.LRH.2.21.1806111352330.17091@math.ut.ee>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 11 Jun 2018 22:20:56 +0200
+Message-ID: <CA+7wUsw_8znPDsej=j48kkmqV3vPbOuDociBE4tth53-Zj32qA@mail.gmail.com>
+Subject: Re: 4.17.0-10146-gf0dc7f9c6dd9: hw csum failure on powerpc+sungem
+To: Meelis Roos <mroos@linux.ee>
+Cc: netdev@vger.kernel.org, Mauro Carvalho Chehab <mchehab@s-opensource.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,74 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 11, 2018 at 07:29:33PM +0200, Florian Weimer wrote:
-> On 06/11/2018 07:23 PM, Ram Pai wrote:
-> >On Fri, Jun 08, 2018 at 07:53:51AM +0200, Florian Weimer wrote:
-> >>On 06/08/2018 04:34 AM, Ram Pai wrote:
-> >>>>
-> >>>>So the remaining question at this point is whether the Intel
-> >>>>behavior (default-deny instead of default-allow) is preferable.
-> >>>
-> >>>Florian, remind me what behavior needs to fixed?
-> >>
-> >>See the other thread.  The Intel register equivalent to the AMR by
-> >>default disallows access to yet-unallocated keys, so that threads
-> >>which are created before key allocation do not magically gain access
-> >>to a key allocated by another thread.
-> >
-> >Are you referring to the thread
-> >'[PATCH] pkeys: Introduce PKEY_ALLOC_SIGNALINHERIT and change signal semantics'
-> 
-> >Otherwise please point me to the URL of that thread. Sorry and thankx. :)
-> 
-> No, it's this issue:
-> 
->   ...
+Hi Meelis,
 
-Ok. try this patch. This patch is on top of the 5 patches that I had
-sent last week i.e  "[PATCH  0/5] powerpc/pkeys: fixes to pkeys"
+On Mon, Jun 11, 2018 at 1:21 PM Meelis Roos <mroos@linux.ee> wrote:
+>
+> I am seeing this on PowerMac G4 with sungem ethernet driver. 4.17 was
+> OK, 4.17.0-10146-gf0dc7f9c6dd9 is problematic.
 
-The following is a draft patch though to check if it meets your
-expectations.
+Same here.
 
-commit fe53b5fe2dcb3139ea27ade3ae7cbbe43c4af3be
-Author: Ram Pai <linuxram@us.ibm.com>
-Date:   Mon Jun 11 14:57:34 2018 -0500
+> [  140.518664] eth0: hw csum failure
+> [  140.518699] CPU: 0 PID: 1237 Comm: postconf Not tainted 4.17.0-10146-gf0dc7f9c6dd9 #83
+> [  140.518707] Call Trace:
+> [  140.518734] [effefd90] [c03d6db8] __skb_checksum_complete+0xd8/0xdc (unreliable)
+> [  140.518759] [effefdb0] [c04c1284] icmpv6_rcv+0x248/0x4ec
+> [  140.518775] [effefdd0] [c049a448] ip6_input_finish.constprop.0+0x11c/0x5f4
+> [  140.518786] [effefe10] [c049b1c0] ip6_mc_input+0xcc/0x100
+> [  140.518807] [effefe20] [c03e110c] __netif_receive_skb_core+0x310/0x944
+> [  140.518820] [effefe70] [c03e76ec] napi_gro_receive+0xd0/0xe8
+> [  140.518845] [effefe80] [f3e1f66c] gem_poll+0x618/0x1274 [sungem]
+> [  140.518856] [effeff30] [c03e6f0c] net_rx_action+0x198/0x374
+> [  140.518872] [effeff90] [c0501a88] __do_softirq+0x120/0x278
+> [  140.518890] [effeffe0] [c0036188] irq_exit+0xd8/0xdc
+> [  140.518908] [effefff0] [c000f478] call_do_irq+0x24/0x3c
+> [  140.518925] [d05a5d30] [c0007120] do_IRQ+0x74/0xf0
+> [  140.518941] [d05a5d50] [c0012474] ret_from_except+0x0/0x14
+> [  140.518960] --- interrupt: 501 at copy_page+0x40/0x90
+>                    LR = copy_user_page+0x18/0x30
+> [  140.518973] [d05a5e10] [d058cd80] 0xd058cd80 (unreliable)
+> [  140.518989] [d05a5e20] [c00fa2bc] wp_page_copy+0xec/0x654
+> [  140.519002] [d05a5e60] [c00fd3a4] do_wp_page+0xa8/0x5b4
+> [  140.519013] [d05a5e90] [c00fe934] handle_mm_fault+0x564/0xa84
+> [  140.519025] [d05a5f00] [c0016230] do_page_fault+0x1bc/0x7e8
+> [  140.519037] [d05a5f40] [c0012300] handle_page_fault+0x14/0x40
+> [  140.519048] --- interrupt: 301 at 0xb78b6864
+>                    LR = 0xb78b6c54
+>
 
-    powerpc/pkeys: Deny read/write/execute by default
-    
-    Deny everything for all keys; with some exceptions. Do not do this for
-    pkey-0, or else everything will come to a screaching halt.  Also by
-    default, do not deny execute for execute-only key.
-    
-    This is a draft-patch for now.
-    
-    Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+For some reason if I do a git bisect it returns that:
 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 8225263..289aafd 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -128,13 +128,13 @@ int pkey_initialize(void)
- 
- 	/* register mask is in BE format */
- 	pkey_amr_mask = ~0x0ul;
--	pkey_iamr_mask = ~0x0ul;
-+	pkey_amr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-+	pkey_amr_mask &= ~(0x3ul << pkeyshift(1));
- 
--	for (i = 0; i < (pkeys_total - os_reserved); i++) {
--		pkey_amr_mask &= ~(0x3ul << pkeyshift(i));
--		pkey_iamr_mask &= ~(0x1ul << pkeyshift(i));
--	}
--	pkey_amr_mask |= (AMR_RD_BIT|AMR_WR_BIT) << pkeyshift(EXECUTE_ONLY_KEY);
-+	pkey_iamr_mask = ~0x0ul;
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(1));
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
- 
- 	pkey_uamor_mask = ~0x0ul;
- 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
+$ git bisect good
+3036bc45364f98515a2c446d7fac2c34dcfbeff4 is the first bad commit
 
--- 
-Ram Pai
+Could you also check on your side please.
+
+> --
+> Meelis Roos (mroos@linux.ee)
