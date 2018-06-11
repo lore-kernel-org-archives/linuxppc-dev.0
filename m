@@ -1,22 +1,20 @@
-Return-Path: <jrdr.linux@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414PgV5DBCzF3RT
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 06:26:43 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id k1-v6so4564156plt.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2018 13:26:43 -0700 (PDT)
-Date: Tue, 12 Jun 2018 01:59:04 +0530
-From: Souptick Joarder <jrdr.linux@gmail.com>
-To: willy@infradead.org, fbarrat@linux.vnet.ibm.com,
- andrew.donnellan@au1.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- sabyasachi.linux@gmail.com, brajeswar.linux@gmail.com
-Subject: [PATCH] misc: ocxl: Change return type for fault handler
-Message-ID: <20180611202904.GA25538@jordon-HP-15-Notebook-PC>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414S3c5q7nzF3jb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 08:14:20 +1000 (AEST)
+Date: Tue, 12 Jun 2018 08:14:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>
+Subject: linux-next: build warnings from Linus' tree
+Message-ID: <20180612081413.323d85b8@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/W/m1/rBdObywzXKqe1sTqIe"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,113 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use new return type vm_fault_t for fault handler. For
-now, this is just documenting that the function returns
-a VM_FAULT value rather than an errno. Once all instances
-are converted, vm_fault_t will become a distinct type.
+--Sig_/W/m1/rBdObywzXKqe1sTqIe
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Ref-> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
+Hi all,
 
-There is an existing bug when vm_insert_pfn() can return
-ENOMEM which was ignored and VM_FAULT_NOPAGE returned as
-default. The new inline vmf_insert_pfn() has removed
-this inefficiency by returning correct vm_fault_ type.
+Building Linus' tree, today's linux-next build (powerpc ppc64_defconfig)
+produced these warning:
 
-Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
----
- drivers/misc/ocxl/context.c | 22 +++++++++++-----------
- drivers/misc/ocxl/sysfs.c   |  5 ++---
- 2 files changed, 13 insertions(+), 14 deletions(-)
+ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
+ section `.gnu.hash'.
+ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
+ section `.gnu.hash'.
+ld: warning: orphan section `.gnu.hash' from `linker stubs' being placed in=
+ section `.gnu.hash'.
 
-diff --git a/drivers/misc/ocxl/context.c b/drivers/misc/ocxl/context.c
-index 909e880..98daf91 100644
---- a/drivers/misc/ocxl/context.c
-+++ b/drivers/misc/ocxl/context.c
-@@ -83,7 +83,7 @@ int ocxl_context_attach(struct ocxl_context *ctx, u64 amr)
- 	return rc;
- }
- 
--static int map_afu_irq(struct vm_area_struct *vma, unsigned long address,
-+static vm_fault_t map_afu_irq(struct vm_area_struct *vma, unsigned long address,
- 		u64 offset, struct ocxl_context *ctx)
- {
- 	u64 trigger_addr;
-@@ -92,15 +92,15 @@ static int map_afu_irq(struct vm_area_struct *vma, unsigned long address,
- 	if (!trigger_addr)
- 		return VM_FAULT_SIGBUS;
- 
--	vm_insert_pfn(vma, address, trigger_addr >> PAGE_SHIFT);
--	return VM_FAULT_NOPAGE;
-+	return vmf_insert_pfn(vma, address, trigger_addr >> PAGE_SHIFT);
- }
- 
--static int map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
-+static vm_fault_t map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
- 		u64 offset, struct ocxl_context *ctx)
- {
- 	u64 pp_mmio_addr;
- 	int pasid_off;
-+	vm_fault_t ret;
- 
- 	if (offset >= ctx->afu->config.pp_mmio_stride)
- 		return VM_FAULT_SIGBUS;
-@@ -118,27 +118,27 @@ static int map_pp_mmio(struct vm_area_struct *vma, unsigned long address,
- 		pasid_off * ctx->afu->config.pp_mmio_stride +
- 		offset;
- 
--	vm_insert_pfn(vma, address, pp_mmio_addr >> PAGE_SHIFT);
-+	ret = vmf_insert_pfn(vma, address, pp_mmio_addr >> PAGE_SHIFT);
- 	mutex_unlock(&ctx->status_mutex);
--	return VM_FAULT_NOPAGE;
-+	return ret;
- }
- 
--static int ocxl_mmap_fault(struct vm_fault *vmf)
-+static vm_fault_t ocxl_mmap_fault(struct vm_fault *vmf)
- {
- 	struct vm_area_struct *vma = vmf->vma;
- 	struct ocxl_context *ctx = vma->vm_file->private_data;
- 	u64 offset;
--	int rc;
-+	vm_fault_t ret;
- 
- 	offset = vmf->pgoff << PAGE_SHIFT;
- 	pr_debug("%s: pasid %d address 0x%lx offset 0x%llx\n", __func__,
- 		ctx->pasid, vmf->address, offset);
- 
- 	if (offset < ctx->afu->irq_base_offset)
--		rc = map_pp_mmio(vma, vmf->address, offset, ctx);
-+		ret = map_pp_mmio(vma, vmf->address, offset, ctx);
- 	else
--		rc = map_afu_irq(vma, vmf->address, offset, ctx);
--	return rc;
-+		ret = map_afu_irq(vma, vmf->address, offset, ctx);
-+	return ret;
- }
- 
- static const struct vm_operations_struct ocxl_vmops = {
-diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
-index d9753a1..0ab1fd1 100644
---- a/drivers/misc/ocxl/sysfs.c
-+++ b/drivers/misc/ocxl/sysfs.c
-@@ -64,7 +64,7 @@ static ssize_t global_mmio_read(struct file *filp, struct kobject *kobj,
- 	return count;
- }
- 
--static int global_mmio_fault(struct vm_fault *vmf)
-+static vm_fault_t global_mmio_fault(struct vm_fault *vmf)
- {
- 	struct vm_area_struct *vma = vmf->vma;
- 	struct ocxl_afu *afu = vma->vm_private_data;
-@@ -75,8 +75,7 @@ static int global_mmio_fault(struct vm_fault *vmf)
- 
- 	offset = vmf->pgoff;
- 	offset += (afu->global_mmio_start >> PAGE_SHIFT);
--	vm_insert_pfn(vma, vmf->address, offset);
--	return VM_FAULT_NOPAGE;
-+	return vmf_insert_pfn(vma, vmf->address, offset);
- }
- 
- static const struct vm_operations_struct global_mmio_vmops = {
--- 
-1.9.1
+This may just be because I have started building using the native Debian
+gcc for the powerpc builds ...
+
+--=20
+Cheers,
+Stephen Rothwell
+
+--Sig_/W/m1/rBdObywzXKqe1sTqIe
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlse9DUACgkQAVBC80lX
+0GwAawgApdMf0NhVOmjUuHMCIsVcF2VnHyuaeXZRscavEqHiPxuWDsM4siF5nZ1Z
+EVBIptKv3UADfLoAWr1k26l7LQpg57iCvTVRwd/8l5KTujs0Qh32vJ87hVHGK57a
+7MMD1DC9m2J774Eyrl0ZiZeJPeYP5vdRz5pBcsvINuWwJR51T7NvY6RwZhOrKpNa
+D7z4KRX6xA6X3j2wnMwZQNS+r4BbMP79VRzCq5DUn1LtidTS6BcD3u11m6+m3f5W
+CZY3lXXbEEkK9i0NYmTTKo+3GR5X8W4Nw92UeIGkmE+bI4DffnJe22Fz0mWXRT1h
+hLs6n+kDpZzDtRcB76Tgxy4wyP6fNA==
+=BwqD
+-----END PGP SIGNATURE-----
+
+--Sig_/W/m1/rBdObywzXKqe1sTqIe--
