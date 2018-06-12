@@ -1,23 +1,32 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <julia.lawall@lip6.fr>
+Received: from mail2-relais-roc.national.inria.fr
+ (mail2-relais-roc.national.inria.fr [192.134.164.83])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414tDt33dfzF4cQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 00:53:50 +1000 (AEST)
-Date: Tue, 12 Jun 2018 09:53:15 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, wei.guo.simon@gmail.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v6 3/4] powerpc/lib: implement strlen() in assembly
-Message-ID: <20180612145315.GJ27520@gate.crashing.org>
-References: <85de16f5629ac9f4a815230cced361908758b53a.1528791416.git.christophe.leroy@c-s.fr>
- <8b89f2e21f7e3a865105eeeeda509243db393454.1528791416.git.christophe.leroy@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <8b89f2e21f7e3a865105eeeeda509243db393454.1528791416.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414tc30whMzF34X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 01:10:23 +1000 (AEST)
+Date: Tue, 12 Jun 2018 17:10:12 +0200 (CEST)
+From: Julia Lawall <julia.lawall@lip6.fr>
+To: Baoquan He <bhe@redhat.com>
+cc: brijesh.singh@amd.com, devicetree@vger.kernel.org, airlied@linux.ie,
+ linux-pci@vger.kernel.org, richard.weiyang@gmail.com,
+ keith.busch@intel.com, jcmvbkbc@gmail.com, baiyaowei@cmss.chinamobile.com,
+ frowand.list@gmail.com, lorenzo.pieralisi@arm.com, sthemmin@microsoft.com,
+ Baoquan He <bhe@redhat.com>, linux-nvdimm@lists.01.org,
+ patrik.r.jakobsson@gmail.com, linux-input@vger.kernel.org,
+ gustavo@padovan.org, dyoung@redhat.com, vgoyal@redhat.com,
+ thomas.lendacky@amd.com, haiyangz@microsoft.com,
+ maarten.lankhorst@linux.intel.com, jglisse@redhat.com,
+ seanpaul@chromium.org, bhelgaas@google.com, tglx@linutronix.de,
+ yinghai@kernel.org, jonathan.derrick@intel.com, chris@zankel.net,
+ monstr@monstr.eu, linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org,
+ dmitry.torokhov@gmail.com, kexec@lists.infradead.org,
+ ebiederm@xmission.com, devel@linuxdriverproject.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net, kbuild-all@01.org
+Subject: Re: [PATCH v5 2/4] resource: Use list_head to link sibling resource
+Message-ID: <alpine.DEB.2.20.1806121708070.3334@hadrien>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 12, 2018 at 09:14:53AM +0000, Christophe Leroy wrote:
-> ---
-> Not tested on PPC64.
+This looks wrong.  After a list iterator, the index variable points to a
+dummy structure.
 
-It won't be acceptable until that happens.  It also is likely quite bad
-performance on all 64-bit CPUs from the last fifteen years or so.  Or you
-did nothing to prove otherwise, at least.
+julia
 
-> + * Algorigthm:
+url:    https://github.com/0day-ci/linux/commits/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180612-113600
+:::::: branch date: 7 hours ago
+:::::: commit date: 7 hours ago
 
-Typo.
+>> kernel/resource.c:265:17-20: ERROR: invalid reference to the index variable of the iterator on line 253
 
+# https://github.com/0day-ci/linux/commit/e906f15906750a86913ba2b1f08bad99129d3dfc
+git remote add linux-review https://github.com/0day-ci/linux
+git remote update linux-review
+git checkout e906f15906750a86913ba2b1f08bad99129d3dfc
+vim +265 kernel/resource.c
 
-Segher
+^1da177e4 Linus Torvalds 2005-04-16  247
+5eeec0ec9 Yinghai Lu     2009-12-22  248  static void __release_child_resources(struct resource *r)
+5eeec0ec9 Yinghai Lu     2009-12-22  249  {
+e906f1590 Baoquan He     2018-06-12  250  	struct resource *tmp, *next;
+5eeec0ec9 Yinghai Lu     2009-12-22  251  	resource_size_t size;
+5eeec0ec9 Yinghai Lu     2009-12-22  252
+e906f1590 Baoquan He     2018-06-12 @253  	list_for_each_entry_safe(tmp, next, &r->child, sibling) {
+5eeec0ec9 Yinghai Lu     2009-12-22  254  		tmp->parent = NULL;
+e906f1590 Baoquan He     2018-06-12  255  		INIT_LIST_HEAD(&tmp->sibling);
+5eeec0ec9 Yinghai Lu     2009-12-22  256  		__release_child_resources(tmp);
+5eeec0ec9 Yinghai Lu     2009-12-22  257
+5eeec0ec9 Yinghai Lu     2009-12-22  258  		printk(KERN_DEBUG "release child resource %pR\n", tmp);
+5eeec0ec9 Yinghai Lu     2009-12-22  259  		/* need to restore size, and keep flags */
+5eeec0ec9 Yinghai Lu     2009-12-22  260  		size = resource_size(tmp);
+5eeec0ec9 Yinghai Lu     2009-12-22  261  		tmp->start = 0;
+5eeec0ec9 Yinghai Lu     2009-12-22  262  		tmp->end = size - 1;
+5eeec0ec9 Yinghai Lu     2009-12-22  263  	}
+e906f1590 Baoquan He     2018-06-12  264
+e906f1590 Baoquan He     2018-06-12 @265  	INIT_LIST_HEAD(&tmp->child);
+5eeec0ec9 Yinghai Lu     2009-12-22  266  }
+5eeec0ec9 Yinghai Lu     2009-12-22  267
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
