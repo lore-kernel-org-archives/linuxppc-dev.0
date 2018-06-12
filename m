@@ -1,23 +1,31 @@
-Return-Path: <bsingharora@gmail.com>
-Subject: Re: [powerpc/powervm]kernel BUG at mm/memory_hotplug.c:1864!
-To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
- Oscar Salvador <osalvador@techadventures.net>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, linux-mm@kvack.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, nfont@linux.vnet.ibm.com,
- Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>,
- linux-next <linux-next@vger.kernel.org>
-References: <6826dab0e4382380db8d11b047272bda@linux.vnet.ibm.com>
- <20180608112823.GA20395@techadventures.net>
- <3d1e7740df56ed35c8b56941acdb7079@linux.vnet.ibm.com>
- <20180608121553.GA20774@techadventures.net>
- <0aac625ee724d877b87c69bba5ac9a0e@linux.vnet.ibm.com>
-From: Balbir Singh <bsingharora@gmail.com>
-Message-ID: <605b4df2-4cf1-2dda-3661-68b78845f8ec@gmail.com>
-Date: Tue, 12 Jun 2018 20:28:43 +1000
+Return-Path: <fweimer@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414pmQ6yd1zF4Tq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 22:17:26 +1000 (AEST)
+Subject: Re: pkeys on POWER: Access rights not reset on execve
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: Linux-MM <linux-mm@kvack.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
+References: <20180603201832.GA10109@ram.oc3035372033.ibm.com>
+ <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
+ <20180604140135.GA10088@ram.oc3035372033.ibm.com>
+ <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
+ <20180604190229.GB10088@ram.oc3035372033.ibm.com>
+ <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
+ <20180608023441.GA5573@ram.oc3035372033.ibm.com>
+ <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
+ <20180611172305.GB5697@ram.oc3035372033.ibm.com>
+ <30f5cb0e-e09a-15e6-f77d-a3afa422a651@redhat.com>
+ <20180611200807.GA5773@ram.oc3035372033.ibm.com>
+From: Florian Weimer <fweimer@redhat.com>
+Message-ID: <c2931344-d2e8-46c0-b70c-97567ae7f7a0@redhat.com>
+Date: Tue, 12 Jun 2018 14:17:21 +0200
 MIME-Version: 1.0
-In-Reply-To: <0aac625ee724d877b87c69bba5ac9a0e@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180611200807.GA5773@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +35,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 11/06/18 17:41, vrbagal1 wrote:
-> On 2018-06-08 17:45, Oscar Salvador wrote:
->> On Fri, Jun 08, 2018 at 05:11:24PM +0530, vrbagal1 wrote:
->>> On 2018-06-08 16:58, Oscar Salvador wrote:
->>> >On Fri, Jun 08, 2018 at 04:44:24PM +0530, vrbagal1 wrote:
->>> >>Greetings!!!
->>> >>
->>> >>I am seeing kernel bug followed by oops message and system reboots,
->>> >>while
->>> >>running dlpar memory hotplug test.
->>> >>
->>> >>Machine Details: Power6 PowerVM Platform
->>> >>GCC version: (gcc version 4.8.3 20140911 (Red Hat 4.8.3-7) (GCC))
->>> >>Test case: dlpar memory hotplug test (https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py)
->>> >>Kernel Version: Linux version 4.17.0-autotest
->>> >>
->>> >>I am seeing this bug on rc7 as well.
+On 06/11/2018 10:08 PM, Ram Pai wrote:
+> Ok. try this patch. This patch is on top of the 5 patches that I had
+> sent last week i.e  "[PATCH  0/5] powerpc/pkeys: fixes to pkeys"
 > 
-> Observing similar traces on linux next kernel: 4.17.0-next-20180608-autotest
+> The following is a draft patch though to check if it meets your
+> expectations.
 > 
->  Block size [0x4000000] unaligned hotplug range: start 0x220000000, size 0x1000000
+> commit fe53b5fe2dcb3139ea27ade3ae7cbbe43c4af3be
+> Author: Ram Pai<linuxram@us.ibm.com>
+> Date:   Mon Jun 11 14:57:34 2018 -0500
+> 
+>      powerpc/pkeys: Deny read/write/execute by default
 
-size < block_size in this case, why? how? Could you confirm that the block size is 64MB and your trying to remove 16MB
+With this patch, my existing misc/tst-pkey test in glibc passes.  The 
+in-tree version still has some incorrect assumptions on implementation 
+behavior, but those are test bugs.  The kernel behavior with your patch 
+look good to me.  Thanks.
 
-Balbir Singh.
+Florian
