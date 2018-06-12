@@ -1,59 +1,27 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-vk0-x242.google.com (mail-vk0-x242.google.com
- [IPv6:2607:f8b0:400c:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@nxp.com>
+Received: from EUR02-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr00052.outbound.protection.outlook.com [40.107.0.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414sbQ4dMRzF4WW
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 00:24:50 +1000 (AEST)
-Received: by mail-vk0-x242.google.com with SMTP id q135-v6so14502806vkh.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 07:24:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414sfm0DgYzF4Pf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 00:27:42 +1000 (AEST)
+From: Madalin-cristian Bucur <madalin.bucur@nxp.com>
+To: "Y.b. Lu" <yangbo.lu@nxp.com>, "netdev@vger.kernel.org"
+ <netdev@vger.kernel.org>, Richard Cochran <richardcochran@gmail.com>, Rob
+ Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, "David S .
+ Miller" <davem@davemloft.net>
+CC: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "Y.b. Lu" <yangbo.lu@nxp.com>
+Subject: RE: [v3, 00/10] Support DPAA PTP clock and timestamping
+Date: Tue, 12 Jun 2018 14:27:35 +0000
+Message-ID: <AM6PR04MB400853DACF980BE0E117D9C6EC7F0@AM6PR04MB4008.eurprd04.prod.outlook.com>
+References: <20180607092050.46128-1-yangbo.lu@nxp.com>
+In-Reply-To: <20180607092050.46128-1-yangbo.lu@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <CAHp75Vf_kBLkE6v=JyOdfNoWktWEfKs7JzRP1XEc4TeuT5xqfw@mail.gmail.com>
-References: <20180612032831.29747-1-bhe@redhat.com>
- <20180612032831.29747-2-bhe@redhat.com>
- <CAHp75Vd6v4+RTq-5uw_BJpT6=w2KGjTfU+rEst6+8igs2cyntw@mail.gmail.com>
- <20180612093812.GC1820@MiWiFi-R3L-srv>
- <CAHp75Vf_kBLkE6v=JyOdfNoWktWEfKs7JzRP1XEc4TeuT5xqfw@mail.gmail.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Tue, 12 Jun 2018 17:24:47 +0300
-Message-ID: <CAHp75Vdaqj+n=F7wSB9PFGpf9Ok2XZzKcq_H0DzmtjmN-4UUfw@mail.gmail.com>
-Subject: Re: [PATCH v5 1/4] resource: Move reparent_resources() to
- kernel/resource.c and make it public
-To: Baoquan He <bhe@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Nicolas Pitre <nicolas.pitre@linaro.org>, Josh Triplett <josh@joshtriplett.org>,
- kbuild test robot <fengguang.wu@intel.com>, Borislav Petkov <bp@suse.de>,
- Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
- David Airlie <airlied@linux.ie>,
- KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Frank Rowand <frowand.list@gmail.com>, Keith Busch <keith.busch@intel.com>,
- Jon Derrick <jonathan.derrick@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- brijesh.singh@amd.com,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- baiyaowei@cmss.chinamobile.com, richard.weiyang@gmail.com,
- devel@linuxdriverproject.org, linux-input <linux-input@vger.kernel.org>,
- linux-nvdimm@lists.01.org, devicetree <devicetree@vger.kernel.org>,
- linux-pci@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Yinghai Lu <yinghai@kernel.org>,
- kexec@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- "David S. Miller" <davem@davemloft.net>, Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Gustavo Padovan <gustavo@padovan.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Sean Paul <seanpaul@chromium.org>, linux-parisc@vger.kernel.org,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,66 +31,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 12, 2018 at 5:20 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> On Tue, Jun 12, 2018 at 12:38 PM, Baoquan He <bhe@redhat.com> wrote:
->> On 06/12/18 at 11:29am, Andy Shevchenko wrote:
->>> On Tue, Jun 12, 2018 at 6:28 AM, Baoquan He <bhe@redhat.com> wrote:
->
->>> > +{
->>>
->>> > +       for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
->>> > +               if (p->end < res->start)
->>> > +                       continue;
->>> > +               if (res->end < p->start)
->>> > +                       break;
->>>
->>> > +               if (p->start < res->start || p->end > res->end)
->>> > +                       return -1;      /* not completely contained */
->>>
->>> Usually we are expecting real eeror codes.
->>
->> Hmm, I just copied it from arch/powerpc/kernel/pci-common.c. The
->> function interface expects an integer returned value, not sure what a
->> real error codes look like, could you give more hints? Will change
->> accordingly.
->
-> I briefly looked at the code and error codes we have, so, my proposal
-> is one of the following
+> -----Original Message-----
+> From: Yangbo Lu [mailto:yangbo.lu@nxp.com]
+> Sent: Thursday, June 7, 2018 12:21 PM
+> To: netdev@vger.kernel.org; Madalin-cristian Bucur
+> <madalin.bucur@nxp.com>; Richard Cochran <richardcochran@gmail.com>;
+> Rob Herring <robh+dt@kernel.org>; Shawn Guo <shawnguo@kernel.org>;
+> David S . Miller <davem@davemloft.net>
+> Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org; Y.b. Lu
+> <yangbo.lu@nxp.com>
+> Subject: [v3, 00/10] Support DPAA PTP clock and timestamping
+>=20
+> This patchset is to support DPAA FMAN PTP clock and HW timestamping.
+> It had been verified on both ARM platform and PPC platform.
+> - The patch #1 to patch #5 are to support DPAA FMAN 1588 timer in
+>   ptp_qoriq driver.
+> - The patch #6 to patch #10 are to add HW timestamping support in
+>   DPAA ethernet driver.
+>=20
+> Yangbo Lu (10):
+>   fsl/fman: share the event interrupt
+>   ptp: support DPAA FMan 1588 timer in ptp_qoriq
+>   dt-binding: ptp_qoriq: add DPAA FMan support
+>   powerpc/mpc85xx: move ptp timer out of fman in dts
+>   arm64: dts: fsl: move ptp timer out of fman
+>   fsl/fman: add set_tstamp interface
+>   fsl/fman_port: support getting timestamp
+>   fsl/fman: define frame description command UPD
+>   dpaa_eth: add support for hardware timestamping
+>   dpaa_eth: add the get_ts_info interface for ethtool
+>=20
+>  Documentation/devicetree/bindings/net/fsl-fman.txt |   25 +-----
+>  .../devicetree/bindings/ptp/ptp-qoriq.txt          |   15 +++-
+>  arch/arm64/boot/dts/freescale/qoriq-fman3-0.dtsi   |   14 ++-
+>  arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi        |   14 ++-
+>  arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi        |   14 ++-
+>  arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi       |   14 ++-
+>  arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi       |   14 ++-
+>  arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi      |   14 ++-
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |   88
+> ++++++++++++++++-
+>  drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |    3 +
+>  drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |   39 ++++++++
+>  drivers/net/ethernet/freescale/fman/fman.c         |    3 +-
+>  drivers/net/ethernet/freescale/fman/fman.h         |    1 +
+>  drivers/net/ethernet/freescale/fman/fman_dtsec.c   |   27 +++++
+>  drivers/net/ethernet/freescale/fman/fman_dtsec.h   |    1 +
+>  drivers/net/ethernet/freescale/fman/fman_memac.c   |    5 +
+>  drivers/net/ethernet/freescale/fman/fman_memac.h   |    1 +
+>  drivers/net/ethernet/freescale/fman/fman_port.c    |   12 +++
+>  drivers/net/ethernet/freescale/fman/fman_port.h    |    2 +
+>  drivers/net/ethernet/freescale/fman/fman_tgec.c    |   21 ++++
+>  drivers/net/ethernet/freescale/fman/fman_tgec.h    |    1 +
+>  drivers/net/ethernet/freescale/fman/mac.c          |    3 +
+>  drivers/net/ethernet/freescale/fman/mac.h          |    1 +
+>  drivers/ptp/Kconfig                                |    2 +-
+>  drivers/ptp/ptp_qoriq.c                            |  104 ++++++++++++--=
+-----
+>  include/linux/fsl/ptp_qoriq.h                      |   38 ++++++--
+>  26 files changed, 361 insertions(+), 115 deletions(-)
 
->  - use -ECANCELED (not the best choice for first occurrence here,
-> though I can't find better)
-
-Actually -ENOTSUPP might suit the first case (although the actual
-would be something like -EOVERLAP, which we don't have)
-
->  - use positive integers (or enum), like
->   #define RES_REPARENTED 0
->   #define RES_OVERLAPPED 1
->   #define RES_NOCONFLICT 2
->
->
->>> > +               if (firstpp == NULL)
->>> > +                       firstpp = pp;
->>> > +       }
->>>
->>> > +       if (firstpp == NULL)
->>> > +               return -1;      /* didn't find any conflicting entries? */
->>>
->>> Ditto.
->
-> Ditto.
->
->>>
->>> > +}
->>> > +EXPORT_SYMBOL(reparent_resources);
->
-> --
-> With Best Regards,
-> Andy Shevchenko
-
-
-
--- 
-With Best Regards,
-Andy Shevchenko
+Acked-by: Madalin Bucur <madalin.bucur@nxp.com>
