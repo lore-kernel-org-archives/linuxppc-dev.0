@@ -1,23 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bharat.bhushan@nxp.com>
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70040.outbound.protection.outlook.com [40.107.7.40])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414Yys0H9xzF3VX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 12:40:37 +1000 (AEST)
-Date: Tue, 12 Jun 2018 12:40:32 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH kernel 5/6] powerpc/powernv: Rework TCE level allocation
-Message-ID: <20180612024032.GX2737@umbus.fritz.box>
-References: <20180608054633.18659-1-aik@ozlabs.ru>
- <20180608054633.18659-6-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414ZNT5bGxzF43B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 12:59:18 +1000 (AEST)
+From: Bharat Bhushan <bharat.bhushan@nxp.com>
+To: Diana Madalina Craciun <diana.craciun@nxp.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "oss@buserror.net"
+ <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>, Diana Madalina Craciun
+ <diana.craciun@nxp.com>
+Subject: RE: [PATCH v2 3/3] powerpc/fsl: Implement cpu_show_spectre_v1/v2 for
+ NXP PowerPC Book3E
+Date: Tue, 12 Jun 2018 02:59:11 +0000
+Message-ID: <AM5PR0401MB2545BC30FB194E4D4E42ADA89A7F0@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+References: <1528721608-15443-1-git-send-email-diana.craciun@nxp.com>
+ <1528721608-15443-4-git-send-email-diana.craciun@nxp.com>
+In-Reply-To: <1528721608-15443-4-git-send-email-diana.craciun@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="WVf18ZLo9bznw8Mz"
-In-Reply-To: <20180608054633.18659-6-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,107 +29,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Diana,
 
---WVf18ZLo9bznw8Mz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> -----Original Message-----
+> From: Diana Craciun [mailto:diana.craciun@nxp.com]
+> Sent: Monday, June 11, 2018 6:23 PM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: mpe@ellerman.id.au; oss@buserror.net; Leo Li <leoyang.li@nxp.com>;
+> Bharat Bhushan <bharat.bhushan@nxp.com>; Diana Madalina Craciun
+> <diana.craciun@nxp.com>
+> Subject: [PATCH v2 3/3] powerpc/fsl: Implement cpu_show_spectre_v1/v2 for
+> NXP PowerPC Book3E
 
-On Fri, Jun 08, 2018 at 03:46:32PM +1000, Alexey Kardashevskiy wrote:
-> This moves actual pages allocation to a separate function which is going
-> to be reused later in on-demand TCE allocation.
+Please add some description
+
 >=20
-> While we are at it, remove unnecessary level size round up as the caller
-> does this already.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
+> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 > ---
->  arch/powerpc/platforms/powernv/pci-ioda-tce.c | 30 +++++++++++++++++----=
-------
->  1 file changed, 19 insertions(+), 11 deletions(-)
+>  arch/powerpc/Kconfig           |  2 +-
+>  arch/powerpc/kernel/security.c | 15 +++++++++++++++
+>  2 files changed, 16 insertions(+), 1 deletion(-)
 >=20
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc=
-/platforms/powernv/pci-ioda-tce.c
-> index f14b282..36c2eb0 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-> @@ -31,6 +31,23 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
->  	tbl->it_type =3D TCE_PCI;
->  }
-> =20
-> +static __be64 *pnv_alloc_tce_level(int nid, unsigned int shift)
-> +{
-> +	struct page *tce_mem =3D NULL;
-> +	__be64 *addr;
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig index
+> 940c955..a781d60 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -170,7 +170,7 @@ config PPC
+>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+>  	select GENERIC_CMOS_UPDATE
+>  	select GENERIC_CPU_AUTOPROBE
+> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+> +	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64 ||
+> PPC_FSL_BOOK3E
+>  	select GENERIC_IRQ_SHOW
+>  	select GENERIC_IRQ_SHOW_LEVEL
+>  	select GENERIC_SMP_IDLE_THREAD
+> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/securit=
+y.c
+> index 797c975..aceaadc 100644
+> --- a/arch/powerpc/kernel/security.c
+> +++ b/arch/powerpc/kernel/security.c
+> @@ -183,3 +183,18 @@ ssize_t cpu_show_spectre_v2(struct device *dev,
+> struct device_attribute *attr, c  }  #endif /* CONFIG_PPC_BOOK3S_64 */
+>=20
+> +#ifdef CONFIG_PPC_FSL_BOOK3E
+> +ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute
+> +*attr, char *buf) {
+> +	if (barrier_nospec_enabled)
+> +		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
 > +
-> +	tce_mem =3D alloc_pages_node(nid, GFP_KERNEL, shift - PAGE_SHIFT);
-> +	if (!tce_mem) {
-> +		pr_err("Failed to allocate a TCE memory, level shift=3D%d\n",
-> +				shift);
-> +		return NULL;
-> +	}
-> +	addr =3D page_address(tce_mem);
-> +	memset(addr, 0, 1UL << shift);
-> +
-> +	return addr;
+> +	return sprintf(buf, "Vulnerable\n");
 > +}
 > +
->  static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx)
->  {
->  	__be64 *tmp =3D user ? tbl->it_userspace : (__be64 *) tbl->it_base;
-> @@ -165,21 +182,12 @@ static __be64 *pnv_pci_ioda2_table_do_alloc_pages(i=
-nt nid, unsigned int shift,
->  		unsigned int levels, unsigned long limit,
->  		unsigned long *current_offset, unsigned long *total_allocated)
->  {
-> -	struct page *tce_mem =3D NULL;
->  	__be64 *addr, *tmp;
-> -	unsigned int order =3D max_t(unsigned int, shift, PAGE_SHIFT) -
-> -			PAGE_SHIFT;
-> -	unsigned long allocated =3D 1UL << (order + PAGE_SHIFT);
-> +	unsigned long allocated =3D 1UL << shift;
->  	unsigned int entries =3D 1UL << (shift - 3);
->  	long i;
-> =20
-> -	tce_mem =3D alloc_pages_node(nid, GFP_KERNEL, order);
-> -	if (!tce_mem) {
-> -		pr_err("Failed to allocate a TCE memory, order=3D%d\n", order);
-> -		return NULL;
-> -	}
-> -	addr =3D page_address(tce_mem);
-> -	memset(addr, 0, allocated);
-> +	addr =3D pnv_alloc_tce_level(nid, shift);
->  	*total_allocated +=3D allocated;
-> =20
->  	--levels;
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---WVf18ZLo9bznw8Mz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlsfMqAACgkQbDjKyiDZ
-s5J5YBAArTBmdPpMI9M7iy4Fx3w6XAcZLuY4ANFjO5tJTCnw+rA/kAvCMbrmFNY/
-scLedYn77VH8yoM3jSRLOXLn+SusgyLL9q/ppewrx0/tbJfObWL/9PQ+5/YkvtUP
-v5VGmtpuPfT2W/2ewWnRy5DWoZxcWJrmUw7UeY5c/HdgivTA9T+CxqVE7qNubRui
-BMBlnnZETPzkarB/Zk1SVIyPnyC3GhRhwQtkCwmr2PJ1eI4MTlsybPSnODQebC1p
-cZAEm7HC9PBm6dbbj+XwNoMPIbwMnfD5xqij4mKuwFC8VXi0sMX7oJihIL0NC5ds
-MN3FQQeMBWYY4c6NpJFOrDG0yKwU5VPfEwPeuyZeY2y1RB3pPS2d0oKrP+ZdPMIr
-kKjYyocJKjB4edgNQJeoCn4BzJwucn2en0jT1mjdbywoyGmqAf6AmmPGuHI1sNo7
-r5bYMmdxEGDzd8ty08+iyynNxAxlV1MuRQeSnRxW4KDmoazLceooDzm3QrY7H189
-HkqdKDQwTr28m7NyU+wkiYFpGVhH0AFrjvI/yoVPDP5J5sb1utpkKgrdV33HZAKs
-6SKA6hqvTqZBSlMyENDA8if6c2KQeJ8Vi5Qzlrl7oo58IhsVoBJCOCU/Q9joONG3
-lHwIOyhWBViYjoa7eD8w1QwHMqF60/FZyAQQTg7S2792mQw2PAs=
-=2Ztk
------END PGP SIGNATURE-----
-
---WVf18ZLo9bznw8Mz--
+> +ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute
+> +*attr, char *buf) {
+> +	return sprintf(buf, "Vulnerable\n");
+> +}
+> +#endif /* CONFIG_PPC_FSL_BOOK3E */
+> +
+> --
+> 2.5.5
