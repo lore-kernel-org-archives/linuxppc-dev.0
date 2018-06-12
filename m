@@ -1,37 +1,29 @@
-Return-Path: <schmitzmic@gmail.com>
-Received: from mail-pg0-x234.google.com (mail-pg0-x234.google.com
- [IPv6:2607:f8b0:400e:c05::234])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4151Jz3sW3zF4vx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 06:12:51 +1000 (AEST)
-Received: by mail-pg0-x234.google.com with SMTP id z1-v6so87723pgv.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 13:12:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4154PT1RFNzF52Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 08:31:56 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id y8-v6so265962pfm.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 15:31:56 -0700 (PDT)
+Date: Wed, 13 Jun 2018 08:31:31 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-mm <linux-mm@kvack.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>, "Aneesh Kumar K. V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Minchan Kim <minchan@kernel.org>, Mel
+ Gorman <mgorman@techsingularity.net>, Nadav Amit <nadav.amit@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH 3/3] powerpc/64s/radix: optimise TLB flush with
+ precise TLB ranges in mmu_gather
+Message-ID: <20180613083131.139a3c34@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFzKBieD0Y3sgFQzt+x5esqb9vT6SEQ28xyCz5UWegfFVg@mail.gmail.com>
+References: <20180612071621.26775-1-npiggin@gmail.com>
+ <20180612071621.26775-4-npiggin@gmail.com>
+ <CA+55aFzKBieD0Y3sgFQzt+x5esqb9vT6SEQ28xyCz5UWegfFVg@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <6c1205cb-7d65-8b30-c4df-59a0ed041313@redhat.com>
-References: <cover.1528423341.git.fthain@telegraphics.com.au>
- <d9d626ca4e7ac9c7e81b24a34f5fbcae9d1d5046.1528423341.git.fthain@telegraphics.com.au>
- <9f015684-4d91-70e4-d2a4-89fe167ff8ab@gmail.com>
- <m2h8mc4ejw.fsf@linux-m68k.org>
- <e1006b0a-a429-4744-7525-203cb91f1d5f@gmail.com>
- <alpine.LNX.2.21.1806092140410.26@nippy.intranet>
- <3490f7d6f45ec2586858e4547e97474d93bd2d4d.camel@kernel.crashing.org>
- <alpine.LNX.2.21.1806120911370.34@nippy.intranet>
- <6c1205cb-7d65-8b30-c4df-59a0ed041313@redhat.com>
-From: Michael Schmitz <schmitzmic@gmail.com>
-Date: Wed, 13 Jun 2018 08:12:48 +1200
-Message-ID: <CAOmrzkLwv0aWna_Puru6QHvRRDO5y5v9jSvoZ+mwBh7XbJ=t7A@mail.gmail.com>
-Subject: Re: [PATCH v2 08/12] macintosh/via-pmu68k: Don't load driver on
- unsupported hardware
-To: Laurent Vivier <lvivier@redhat.com>
-Cc: Finn Thain <fthain@telegraphics.com.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Andreas Schwab <schwab@linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Linux/m68k" <linux-m68k@vger.kernel.org>,
- Linux Kernel Development <linux-kernel@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,30 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 12 Jun 2018 11:18:27 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-On Tue, Jun 12, 2018 at 6:53 PM, Laurent Vivier <lvivier@redhat.com> wrote:
-> On 12/06/2018 01:47, Finn Thain wrote:
->> On Sun, 10 Jun 2018, Benjamin Herrenschmidt wrote:
-> ...
->> I don't know what the bootloader situation is, but it looks messy...
->> http://nubus-pmac.sourceforge.net/#booters
->>
->> Laurent, does Emile work on these machines?
->>
->
-> No, Emile doesn't work on pmac-nubus, I tried to implement the switch
-> from m68k to ppc, but it has never worked.
+> On Tue, Jun 12, 2018 at 12:16 AM Nicholas Piggin <npiggin@gmail.com> wrot=
+e:
+> >
+> > This brings the number of tlbiel instructions required by a kernel
+> > compile from 33M to 25M, most avoided from exec->shift_arg_pages. =20
+>=20
+> And this shows that "page_start/end" is purely for powerpc and used
+> nowhere else.
+>=20
+> The previous patch should have been to purely powerpc page table
+> walking and not touch asm-generic/tlb.h
+>=20
+> I think you should make those changes to
+> arch/powerpc/include/asm/tlb.h. If that means you can't use the
+> generic header, then so be it.
 
-On the PowerMac 6100 that I installed Linux on many years ago, I'm
-pretty sure I used Apple's mkLinux boot loader.
+I can make it ppc specific if nobody else would use it. But at least
+mmu notifiers AFAIKS would rather use a precise range.
 
-Not sure how that would work with modern kernels and initrds though.
-Haven't got that hardware anymore so no way try.
+> Or maybe you can embed the generic case in some ppc-specific
+> structures, and use 90% of the generic code just with your added
+> wrappers for that radix invalidation on top.
 
-Cheers,
+Would you mind another arch specific ifdefs in there?
 
-  Michael
+>=20
+> But don't make other architectures do pointless work that doesn't
+> matter - or make sense - for them.
 
->
-> Laurent
+Okay sure, and this is the reason for the wide cc list. Intel does
+need it of course, from 4.10.3.1 of the dev manual:
+
+  =E2=80=94 The processor may create a PML4-cache entry even if there are no
+    translations for any linear address that might use that entry
+    (e.g., because the P flags are 0 in all entries in the referenced
+    page-directory-pointer table).
+
+But I'm sure others would not have paging structure caches at all
+(some don't even walk the page tables in hardware right?). Maybe
+they're all doing their own thing though.
+
+Thanks,
+Nick
