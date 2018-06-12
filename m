@@ -1,12 +1,12 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414h5P5wq0zF4MD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 17:16:41 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id e11-v6so11030165pgq.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 00:16:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414h5T6LkLzF4MN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 17:16:45 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id a7-v6so11352264plp.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 00:16:45 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linux-mm@kvack.org
 Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
@@ -16,9 +16,12 @@ Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  Nadav Amit <nadav.amit@gmail.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC PATCH 0/3] couple of TLB flush optimisations
-Date: Tue, 12 Jun 2018 17:16:18 +1000
-Message-Id: <20180612071621.26775-1-npiggin@gmail.com>
+Subject: [RFC PATCH 1/3] Revert "mm: always flush VMA ranges affected by
+ zap_page_range"
+Date: Tue, 12 Jun 2018 17:16:19 +1000
+Message-Id: <20180612071621.26775-2-npiggin@gmail.com>
+In-Reply-To: <20180612071621.26775-1-npiggin@gmail.com>
+References: <20180612071621.26775-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm just looking around TLB flushing and noticed a few issues with
-the core code. The first one seems pretty straightforward, unless I
-missed something, but the TLB flush pattern after the revert seems
-okay.
+This reverts commit 4647706ebeee6e50f7b9f922b095f4ec94d581c3.
 
-The second one might be a bit more interesting for other architectures
-and the big comment in include/asm-generic/tlb.h and linked mail from
-Linus gives some good context.
+Patch 99baac21e4585 ("mm: fix MADV_[FREE|DONTNEED] TLB flush miss
+problem") provides a superset of the TLB flush coverage of this
+commit, and even includes in the changelog "this patch supersedes
+'mm: Always flush VMA ranges affected by zap_page_range v2'".
 
-I suspect mmu notifiers should use this precise TLB range too, because
-I don't see how they could care about the page table structure under
-the mapping. Although I only use it in powerpc so far.
+Reverting this avoids double flushing the TLB range, and the less
+efficient flush_tlb_range() call (the mmu_gather API is more precise
+about what ranges it invalidates).
 
-Comments?
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ mm/memory.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-Thanks,
-Nick
-
-Nicholas Piggin (3):
-  Revert "mm: always flush VMA ranges affected by zap_page_range"
-  mm: mmu_gather track of invalidated TLB ranges explicitly for more
-    precise flushing
-  powerpc/64s/radix: optimise TLB flush with precise TLB ranges in
-    mmu_gather
-
- arch/powerpc/mm/tlb-radix.c |  7 +++++--
- include/asm-generic/tlb.h   | 27 +++++++++++++++++++++++++--
- mm/memory.c                 | 18 ++++--------------
- 3 files changed, 34 insertions(+), 18 deletions(-)
-
+diff --git a/mm/memory.c b/mm/memory.c
+index 7206a634270b..9d472e00fc2d 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1603,20 +1603,8 @@ void zap_page_range(struct vm_area_struct *vma, unsigned long start,
+ 	tlb_gather_mmu(&tlb, mm, start, end);
+ 	update_hiwater_rss(mm);
+ 	mmu_notifier_invalidate_range_start(mm, start, end);
+-	for ( ; vma && vma->vm_start < end; vma = vma->vm_next) {
++	for ( ; vma && vma->vm_start < end; vma = vma->vm_next)
+ 		unmap_single_vma(&tlb, vma, start, end, NULL);
+-
+-		/*
+-		 * zap_page_range does not specify whether mmap_sem should be
+-		 * held for read or write. That allows parallel zap_page_range
+-		 * operations to unmap a PTE and defer a flush meaning that
+-		 * this call observes pte_none and fails to flush the TLB.
+-		 * Rather than adding a complex API, ensure that no stale
+-		 * TLB entries exist when this call returns.
+-		 */
+-		flush_tlb_range(vma, start, end);
+-	}
+-
+ 	mmu_notifier_invalidate_range_end(mm, start, end);
+ 	tlb_finish_mmu(&tlb, start, end);
+ }
 -- 
 2.17.0
