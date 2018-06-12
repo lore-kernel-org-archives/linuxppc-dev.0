@@ -1,24 +1,23 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414ltm3j5YzF4DD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 20:07:41 +1000 (AEST)
-Date: Tue, 12 Jun 2018 12:07:37 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Bharat Bhushan <bharat.bhushan@nxp.com>
-Cc: Diana Madalina Craciun <diana.craciun@nxp.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "oss@buserror.net" <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>
-Subject: Re: [PATCH v2 3/3] powerpc/fsl: Implement cpu_show_spectre_v1/v2
- for NXP PowerPC Book3E
-Message-ID: <20180612120737.31efff1c@naga.suse.cz>
-In-Reply-To: <AM5PR0401MB2545BC30FB194E4D4E42ADA89A7F0@AM5PR0401MB2545.eurprd04.prod.outlook.com>
-References: <1528721608-15443-1-git-send-email-diana.craciun@nxp.com>
- <1528721608-15443-4-git-send-email-diana.craciun@nxp.com>
- <AM5PR0401MB2545BC30FB194E4D4E42ADA89A7F0@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+Return-Path: <bsingharora@gmail.com>
+Subject: Re: [powerpc/powervm]kernel BUG at mm/memory_hotplug.c:1864!
+To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
+ Oscar Salvador <osalvador@techadventures.net>
+Cc: sachinp <sachinp@linux.vnet.ibm.com>, linux-mm@kvack.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, nfont@linux.vnet.ibm.com,
+ Linuxppc-dev
+ <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>
+References: <6826dab0e4382380db8d11b047272bda@linux.vnet.ibm.com>
+ <20180608112823.GA20395@techadventures.net>
+ <3d1e7740df56ed35c8b56941acdb7079@linux.vnet.ibm.com>
+ <20180608121553.GA20774@techadventures.net>
+ <0aac625ee724d877b87c69bba5ac9a0e@linux.vnet.ibm.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Message-ID: <605b4df2-4cf1-2dda-3661-68b78845f8ec@gmail.com>
+Date: Tue, 12 Jun 2018 20:28:43 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <0aac625ee724d877b87c69bba5ac9a0e@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Jun 2018 02:59:11 +0000
-Bharat Bhushan <bharat.bhushan@nxp.com> wrote:
 
-> Hi Diana,
+
+On 11/06/18 17:41, vrbagal1 wrote:
+> On 2018-06-08 17:45, Oscar Salvador wrote:
+>> On Fri, Jun 08, 2018 at 05:11:24PM +0530, vrbagal1 wrote:
+>>> On 2018-06-08 16:58, Oscar Salvador wrote:
+>>> >On Fri, Jun 08, 2018 at 04:44:24PM +0530, vrbagal1 wrote:
+>>> >>Greetings!!!
+>>> >>
+>>> >>I am seeing kernel bug followed by oops message and system reboots,
+>>> >>while
+>>> >>running dlpar memory hotplug test.
+>>> >>
+>>> >>Machine Details: Power6 PowerVM Platform
+>>> >>GCC version: (gcc version 4.8.3 20140911 (Red Hat 4.8.3-7) (GCC))
+>>> >>Test case: dlpar memory hotplug test (https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py)
+>>> >>Kernel Version: Linux version 4.17.0-autotest
+>>> >>
+>>> >>I am seeing this bug on rc7 as well.
 > 
-> > -----Original Message-----
-> > From: Diana Craciun [mailto:diana.craciun@nxp.com]
-> > Sent: Monday, June 11, 2018 6:23 PM
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Cc: mpe@ellerman.id.au; oss@buserror.net; Leo Li
-> > <leoyang.li@nxp.com>; Bharat Bhushan <bharat.bhushan@nxp.com>;
-> > Diana Madalina Craciun <diana.craciun@nxp.com>
-> > Subject: [PATCH v2 3/3] powerpc/fsl: Implement
-> > cpu_show_spectre_v1/v2 for NXP PowerPC Book3E  
+> Observing similar traces on linux next kernel: 4.17.0-next-20180608-autotest
 > 
-> Please add some description
+>  Block size [0x4000000] unaligned hotplug range: start 0x220000000, size 0x1000000
 
-To me the subject is self-explanatory. It implements a kernel interface
-that was already described elsewhere.
+size < block_size in this case, why? how? Could you confirm that the block size is 64MB and your trying to remove 16MB
 
-What are you missing here?
-
-Thanks
-
-Michal
-
-> 
-> > 
-> > Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
-> > ---
-> >  arch/powerpc/Kconfig           |  2 +-
-> >  arch/powerpc/kernel/security.c | 15 +++++++++++++++
-> >  2 files changed, 16 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig index
-> > 940c955..a781d60 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -170,7 +170,7 @@ config PPC
-> >  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
-> >  	select GENERIC_CMOS_UPDATE
-> >  	select GENERIC_CPU_AUTOPROBE
-> > -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
-> > +	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
-> > || PPC_FSL_BOOK3E
-> >  	select GENERIC_IRQ_SHOW
-> >  	select GENERIC_IRQ_SHOW_LEVEL
-> >  	select GENERIC_SMP_IDLE_THREAD
-> > diff --git a/arch/powerpc/kernel/security.c
-> > b/arch/powerpc/kernel/security.c index 797c975..aceaadc 100644
-> > --- a/arch/powerpc/kernel/security.c
-> > +++ b/arch/powerpc/kernel/security.c
-> > @@ -183,3 +183,18 @@ ssize_t cpu_show_spectre_v2(struct device *dev,
-> > struct device_attribute *attr, c  }  #endif /* CONFIG_PPC_BOOK3S_64
-> > */
-> > 
-> > +#ifdef CONFIG_PPC_FSL_BOOK3E
-> > +ssize_t cpu_show_spectre_v1(struct device *dev, struct
-> > device_attribute +*attr, char *buf) {
-> > +	if (barrier_nospec_enabled)
-> > +		return sprintf(buf, "Mitigation: __user pointer
-> > sanitization\n"); +
-> > +	return sprintf(buf, "Vulnerable\n");
-> > +}
-> > +
-> > +ssize_t cpu_show_spectre_v2(struct device *dev, struct
-> > device_attribute +*attr, char *buf) {
-> > +	return sprintf(buf, "Vulnerable\n");
-> > +}
-> > +#endif /* CONFIG_PPC_FSL_BOOK3E */
-> > +
-> > --
-> > 2.5.5  
-> 
+Balbir Singh.
