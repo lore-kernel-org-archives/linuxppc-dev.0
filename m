@@ -2,9 +2,9 @@ Return-Path: <bhe@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414lDv2py5zF4CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 19:38:23 +1000 (AEST)
-Date: Tue, 12 Jun 2018 17:38:12 +0800
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414lTm3w3mzF4DN
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 19:49:32 +1000 (AEST)
+Date: Tue, 12 Jun 2018 17:49:23 +0800
 From: Baoquan He <bhe@redhat.com>
 To: Andy Shevchenko <andy.shevchenko@gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -43,7 +43,7 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH v5 1/4] resource: Move reparent_resources() to
  kernel/resource.c and make it public
-Message-ID: <20180612093812.GC1820@MiWiFi-R3L-srv>
+Message-ID: <20180612094923.GD1820@MiWiFi-R3L-srv>
 References: <20180612032831.29747-1-bhe@redhat.com>
  <20180612032831.29747-2-bhe@redhat.com>
  <CAHp75Vd6v4+RTq-5uw_BJpT6=w2KGjTfU+rEst6+8igs2cyntw@mail.gmail.com>
@@ -76,17 +76,13 @@ On 06/12/18 at 11:29am, Andy Shevchenko wrote:
 > 
 > kernel doc format, though...
 
+Will rewrite it, thanks.
+
 > 
 > > +static int reparent_resources(struct resource *parent,
 > > +                                    struct resource *res)
 > 
 > ...is it really public with static keyword?!
-
-Thanks for looking into this. This is a code bug, I copied and changed,
-but forgot merging the changing to local commit. And the error reported
-by test robot in patch 2 was changed too locally, forgot merging it to
-patch. Will repost to address this.
-
 > 
 > 
 > 
@@ -102,12 +98,6 @@ patch. Will repost to address this.
 > > +                       return -1;      /* not completely contained */
 > 
 > Usually we are expecting real eeror codes.
-
-Hmm, I just copied it from arch/powerpc/kernel/pci-common.c. The
-function interface expects an integer returned value, not sure what a
-real error codes look like, could you give more hints? Will change
-accordingly.
-
 > 
 > > +               if (firstpp == NULL)
 > > +                       firstpp = pp;
