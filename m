@@ -2,8 +2,8 @@ Return-Path: <bhe@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414b401yWHzF45g
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 13:30:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414b4M6HhCzF3GQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 13:30:27 +1000 (AEST)
 From: Baoquan He <bhe@redhat.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
  robh+dt@kernel.org, dan.j.williams@intel.com, nicolas.pitre@linaro.org,
@@ -23,13 +23,12 @@ Cc: patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
  gustavo@padovan.org, maarten.lankhorst@linux.intel.com,
  seanpaul@chromium.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Baoquan He <bhe@redhat.com>
-Subject: [PATCH v5 3/4] resource: add walk_system_ram_res_rev()
-Date: Tue, 12 Jun 2018 11:28:30 +0800
-Message-Id: <20180612032831.29747-4-bhe@redhat.com>
+Subject: [PATCH v5 4/4] kexec_file: Load kernel at top of system RAM if
+ required
+Date: Tue, 12 Jun 2018 11:28:31 +0800
+Message-Id: <20180612032831.29747-5-bhe@redhat.com>
 In-Reply-To: <20180612032831.29747-1-bhe@redhat.com>
 References: <20180612032831.29747-1-bhe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,97 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This function, being a variant of walk_system_ram_res() introduced in
-commit 8c86e70acead ("resource: provide new functions to walk through
-resources"), walks through a list of all the resources of System RAM
-in reversed order, i.e., from higher to lower.
+For kexec_file loading, if kexec_buf.top_down is 'true', the memory which
+is used to load kernel/initrd/purgatory is supposed to be allocated from
+top to down. This is what we have been doing all along in the old kexec
+loading interface and the kexec loading is still default setting in some
+distributions. However, the current kexec_file loading interface doesn't
+do likt this. The function arch_kexec_walk_mem() it calls ignores checking
+kexec_buf.top_down, but calls walk_system_ram_res() directly to go through
+all resources of System RAM from bottom to up, to try to find memory region
+which can contain the specific kexec buffer, then call locate_mem_hole_callback()
+to allocate memory in that found memory region from top to down. This brings
+confusion especially when KASLR is widely supported , users have to make clear
+why kexec/kdump kernel loading position is different between these two
+interfaces in order to exclude unnecessary noises. Hence these two interfaces
+need be unified on behaviour.
 
-It will be used in kexec_file code.
+Here add checking if kexec_buf.top_down is 'true' in arch_kexec_walk_mem(),
+if yes, call the newly added walk_system_ram_res_rev() to find memory region
+from top to down to load kernel.
 
 Signed-off-by: Baoquan He <bhe@redhat.com>
+Cc: Eric Biederman <ebiederm@xmission.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+Cc: Dave Young <dyoung@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Brijesh Singh <brijesh.singh@amd.com>
-Cc: "Jérôme Glisse" <jglisse@redhat.com>
-Cc: Borislav Petkov <bp@suse.de>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Wei Yang <richard.weiyang@gmail.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: kexec@lists.infradead.org
 ---
- include/linux/ioport.h |  3 +++
- kernel/resource.c      | 40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
+ kernel/kexec_file.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index b7456ae889dd..066cc263e2cc 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -279,6 +279,9 @@ extern int
- walk_system_ram_res(u64 start, u64 end, void *arg,
- 		    int (*func)(struct resource *, void *));
- extern int
-+walk_system_ram_res_rev(u64 start, u64 end, void *arg,
-+			int (*func)(struct resource *, void *));
-+extern int
- walk_iomem_res_desc(unsigned long desc, unsigned long flags, u64 start, u64 end,
- 		    void *arg, int (*func)(struct resource *, void *));
- 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index ef9a20b75234..3128ac938f38 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -23,6 +23,8 @@
- #include <linux/pfn.h>
- #include <linux/mm.h>
- #include <linux/resource_ext.h>
-+#include <linux/string.h>
-+#include <linux/vmalloc.h>
- #include <asm/io.h>
- 
- 
-@@ -443,6 +445,44 @@ int walk_system_ram_res(u64 start, u64 end, void *arg,
+diff --git a/kernel/kexec_file.c b/kernel/kexec_file.c
+index 75d8e7cf040e..7a66d9d5a534 100644
+--- a/kernel/kexec_file.c
++++ b/kernel/kexec_file.c
+@@ -518,6 +518,8 @@ int __weak arch_kexec_walk_mem(struct kexec_buf *kbuf,
+ 					   IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY,
+ 					   crashk_res.start, crashk_res.end,
+ 					   kbuf, func);
++	else if (kbuf->top_down)
++		return walk_system_ram_res_rev(0, ULONG_MAX, kbuf, func);
+ 	else
+ 		return walk_system_ram_res(0, ULONG_MAX, kbuf, func);
  }
- 
- /*
-+ * This function, being a variant of walk_system_ram_res(), calls the @func
-+ * callback against all memory ranges of type System RAM which are marked as
-+ * IORESOURCE_SYSTEM_RAM and IORESOUCE_BUSY in reversed order, i.e., from
-+ * higher to lower.
-+ */
-+int walk_system_ram_res_rev(u64 start, u64 end, void *arg,
-+				int (*func)(struct resource *, void *))
-+{
-+	unsigned long flags;
-+	struct resource *res;
-+	int ret = -1;
-+
-+	flags = IORESOURCE_SYSTEM_RAM | IORESOURCE_BUSY;
-+
-+	read_lock(&resource_lock);
-+	list_for_each_entry_reverse(res, &iomem_resource.child, sibling) {
-+		if (start >= end)
-+			break;
-+		if ((res->flags & flags) != flags)
-+			continue;
-+		if (res->desc != IORES_DESC_NONE)
-+			continue;
-+		if (res->end < start)
-+			break;
-+
-+		if ((res->end >= start) && (res->start < end)) {
-+			ret = (*func)(res, arg);
-+			if (ret)
-+				break;
-+		}
-+		end = res->start - 1;
-+
-+	}
-+	read_unlock(&resource_lock);
-+	return ret;
-+}
-+
-+/*
-  * This function calls the @func callback against all memory ranges, which
-  * are ranges marked as IORESOURCE_MEM and IORESOUCE_BUSY.
-  */
 -- 
 2.13.6
