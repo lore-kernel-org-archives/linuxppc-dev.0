@@ -1,12 +1,12 @@
 Return-Path: <linus971@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4155cm1L7FzF4vM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 09:26:47 +1000 (AEST)
-Received: by mail-io0-x244.google.com with SMTP id t6-v6so1389898iob.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 16:26:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4155w84mtdzF09h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 09:40:08 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id k17-v6so15510329ita.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 16:40:08 -0700 (PDT)
 MIME-Version: 1.0
 References: <20180612071621.26775-1-npiggin@gmail.com>
  <20180612071621.26775-4-npiggin@gmail.com>
@@ -14,10 +14,11 @@ References: <20180612071621.26775-1-npiggin@gmail.com>
  <20180613083131.139a3c34@roar.ozlabs.ibm.com>
  <CA+55aFyk9VBLUk8VYhfEUR55x0TXY9_QX1dE4wE0A_ias9tMNQ@mail.gmail.com>
  <20180613090950.50566245@roar.ozlabs.ibm.com>
-In-Reply-To: <20180613090950.50566245@roar.ozlabs.ibm.com>
+ <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
+In-Reply-To: <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 12 Jun 2018 16:26:33 -0700
-Message-ID: <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
+Date: Tue, 12 Jun 2018 16:39:55 -0700
+Message-ID: <CA+55aFzbYBXUDcAGaP_HoCxjTvOgkixc0+7nJqMea0yKjLSnhw@mail.gmail.com>
 Subject: Re: [RFC PATCH 3/3] powerpc/64s/radix: optimise TLB flush with
  precise TLB ranges in mmu_gather
 To: Nick Piggin <npiggin@gmail.com>
@@ -37,32 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 12, 2018 at 4:09 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+On Tue, Jun 12, 2018 at 4:26 PM Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> Sorry I mean Intel needs the existing behaviour of range flush expanded
-> to cover page table pages.... right?
+> Right.  Intel depends on the current thing, ie if a page table
+> *itself* is freed, we will will need to do a flush, but it's the exact
+> same flush as if there had been a regular page there.
+>
+> That's already handled by (for example) pud_free_tlb() doing the
+> __tlb_adjust_range().
 
-Right.  Intel depends on the current thing, ie if a page table
-*itself* is freed, we will will need to do a flush, but it's the exact
-same flush as if there had been a regular page there.
+Side note: I guess we _could_ make the "page directory" flush be
+special on x86 too.
 
-That's already handled by (for example) pud_free_tlb() doing the
-__tlb_adjust_range().
+Right now a page directory flush just counts as a range, and then a
+range that is more that a few entries just means "flush everything".
 
-Again, I may be missing entirely what you're talking about, because it
-feels like we're talking across each other.
+End result: in practice, every time you free a page directory, you
+flush the whole TLB because it looks identical to flushing a large
+range of pages.
 
-My argument is that your new patches in (2-3 in the series - patch #1
-looks ok) seem to be fundamentally specific to things that have a
-*different* tlb invalidation for the directory entries than for the
-leaf entries.
+And in _theory_, maybe you could have just used "invalpg" with a
+targeted address instead. In fact, I think a single invlpg invalidates
+_all_ caches for the associated MM, but don't quote me on that.
 
-But that's not what at least x86 has, and not what the generic code has done.
+That said, I don't think this is a common case. But I think that *if*
+you extend this to be aware of the page directory caches, and _if_ you
+extend it to cover both ppc and x86, at that point all my "this isn't
+generic" arguments go away.
 
-I think it might be fine to introduce a few new helpers that end up
-being no-ops for the traditional cases.
+Because once x86 does it, it's "common enough" that it counts as
+generic. It may be only a single other architecture, but it's the bulk
+of all the development machines, so..
 
-I just don't think it makes sense to maintain a set of range values
-that then aren't actually used in the general case.
-
-              Linus
+                 Linus
