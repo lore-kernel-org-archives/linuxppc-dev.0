@@ -1,24 +1,29 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414x4t6KjRzF4kK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 03:02:04 +1000 (AEST)
-Subject: Re: [PATCH v6 3/4] powerpc/lib: implement strlen() in assembly
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- wei.guo.simon@gmail.com, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <85de16f5629ac9f4a815230cced361908758b53a.1528791416.git.christophe.leroy@c-s.fr>
- <8b89f2e21f7e3a865105eeeeda509243db393454.1528791416.git.christophe.leroy@c-s.fr>
- <20180612145315.GJ27520@gate.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <baaf4fa9-ff0b-0bcb-8662-dafb794caab4@c-s.fr>
-Date: Tue, 12 Jun 2018 19:01:59 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414yhM2sZyzF4t6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 04:14:23 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id n7-v6so505837itn.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 11:14:23 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180612145315.GJ27520@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+References: <20180612071621.26775-1-npiggin@gmail.com>
+ <20180612071621.26775-3-npiggin@gmail.com>
+In-Reply-To: <20180612071621.26775-3-npiggin@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 12 Jun 2018 11:14:10 -0700
+Message-ID: <CA+55aFxaVyTZmKdywAGVopmWeDirb1Ou49XD_SfqGQL_ox_65Q@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/3] mm: mmu_gather track of invalidated TLB ranges
+ explicitly for more precise flushing
+To: Nick Piggin <npiggin@gmail.com>
+Cc: linux-mm <linux-mm@kvack.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>,
+ "Aneesh Kumar K. V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Minchan Kim <minchan@kernel.org>,
+ Mel Gorman <mgorman@techsingularity.net>, Nadav Amit <nadav.amit@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jun 12, 2018 at 12:16 AM Nicholas Piggin <npiggin@gmail.com> wrote:
+>
+> +static inline void __tlb_adjust_page_range(struct mmu_gather *tlb,
+> +                                     unsigned long address,
+> +                                     unsigned int range_size)
+> +{
+> +       tlb->page_start = min(tlb->page_start, address);
+> +       tlb->page_end = max(tlb->page_end, address + range_size);
+> +}
 
+Why add this unnecessary complexity for architectures where it doesn't matter?
 
-Le 12/06/2018 à 16:53, Segher Boessenkool a écrit :
-> On Tue, Jun 12, 2018 at 09:14:53AM +0000, Christophe Leroy wrote:
->> ---
->> Not tested on PPC64.
-> 
-> It won't be acceptable until that happens.  It also is likely quite bad
-> performance on all 64-bit CPUs from the last fifteen years or so.  Or you
-> did nothing to prove otherwise, at least.
+This is not "generic". This is some crazy powerpc special case. Why
+add it to generic code, and why make everybody else take the cost?
 
-Will it be as bad as the generic implementation which does it byte per 
-byte ?
-
-I don't have any 64 bits target, can someone test it using the test app 
-I have added in selftests ?
-
-Or should I just leave it as is for 64 bits and just do the 
-implementation for 32 bits until someone wants to try and do it for PPC64 ?
-
-Christophe
-
-> 
->> + * Algorigthm:
-> 
-> Typo.
-> 
-> 
-> Segher
-> 
+                    Linus
