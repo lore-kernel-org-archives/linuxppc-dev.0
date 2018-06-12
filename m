@@ -2,8 +2,8 @@ Return-Path: <bhe@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414b2n0j35zF45G
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 13:29:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414b374TQqzF45f
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 13:29:23 +1000 (AEST)
 From: Baoquan He <bhe@redhat.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
  robh+dt@kernel.org, dan.j.williams@intel.com, nicolas.pitre@linaro.org,
@@ -22,12 +22,15 @@ Cc: patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
  davem@davemloft.net, chris@zankel.net, jcmvbkbc@gmail.com,
  gustavo@padovan.org, maarten.lankhorst@linux.intel.com,
  seanpaul@chromium.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Baoquan He <bhe@redhat.com>
-Subject: [PATCH v5 0/4] resource: Use list_head to link sibling resource
-Date: Tue, 12 Jun 2018 11:28:27 +0800
-Message-Id: <20180612032831.29747-1-bhe@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ linuxppc-dev@lists.ozlabs.org, Baoquan He <bhe@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v5 1/4] resource: Move reparent_resources() to
+ kernel/resource.c and make it public
+Date: Tue, 12 Jun 2018 11:28:28 +0800
+Message-Id: <20180612032831.29747-2-bhe@redhat.com>
+In-Reply-To: <20180612032831.29747-1-bhe@redhat.com>
+References: <20180612032831.29747-1-bhe@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,54 +40,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset is doing:
-1) Replace struct resource's sibling list from singly linked list to
-list_head. Clearing out those pointer operation within singly linked
-list for better code readability.
-2) Based on list_head replacement, add a new function
-walk_system_ram_res_rev() which can does reversed iteration on
-iomem_resource's siblings.
-3) Change kexec_file loading to search system RAM top down for kernel
-loadin, using walk_system_ram_res_rev().
+reparent_resources() is duplicated in arch/microblaze/pci/pci-common.c
+and arch/powerpc/kernel/pci-common.c, so move it to kernel/resource.c
+so that it's shared. Later its code also need be updated using list_head
+to replace singly linked list.
 
-Note:
-This patchset passed testing on my kvm guest, x86_64 arch with network
-enabling. The thing we need pay attetion to is that a root resource's
-child member need be initialized specifically with LIST_HEAD_INIT() if
-statically defined or INIT_LIST_HEAD() for dynamically definition. Here
-Just like we do for iomem_resource/ioport_resource, or the change in
-get_pci_domain_busn_res().
-
-
-Links of the old post (Boris pointed out that we should use
-https://lkml.kernel.org/r/Message-ID, while it can't be opened from
-my side, so paste all of them here.):
-v4:
-https://lkml.kernel.org/r/20180507063224.24229-1-bhe@redhat.com
-https://lkml.org/lkml/2018/5/7/36
-
-v3:
-https://lkml.kernel.org/r/20180419001848.3041-1-bhe@redhat.com
-https://lkml.org/lkml/2018/4/18/767
-
-v2:
-https://lkml.kernel.org/r/20180408024724.16812-1-bhe@redhat.com
-https://lkml.org/lkml/2018/4/7/169
-
-v1:
-https://lkml.kernel.org/r/20180322033722.9279-1-bhe@redhat.com
-https://lkml.org/lkml/2018/3/21/952
-
-Changelog:
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+---
 v4->v5:
-  Add new patch 0001 to move duplicated reparent_resources() to
-  kernel/resource.c to make it be shared by different ARCH-es.
-
   Fix several code bugs reported by test robot on ARCH powerpc and
   microblaze.
+
 v3->v4:
-  Fix several bugs test robot reported. Rewrite cover letter and patch
-  log according to reviewer's comment.
+  Fix several bugs test robot reported. And change patch log.
 
 v2->v3:
   Rename resource functions first_child() and sibling() to
@@ -99,41 +71,164 @@ v2->v3:
   mention this in git log to make it more specifically, Rob suggested
   this.
 
-v1->v2:
-  Use list_head instead to link resource siblings. This is suggested by
-  Andrew.
+ arch/microblaze/pci/pci-common.c | 37 -------------------------------------
+ arch/powerpc/kernel/pci-common.c | 35 -----------------------------------
+ include/linux/ioport.h           |  1 +
+ kernel/resource.c                | 36 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 37 insertions(+), 72 deletions(-)
 
-  Rewrite walk_system_ram_res_rev() after list_head is taken to link
-  resouce siblings.
-
-Baoquan He (4):
-  resource: Move reparent_resources() to kernel/resource.c and make it
-    public
-  resource: Use list_head to link sibling resource
-  resource: add walk_system_ram_res_rev()
-  kexec_file: Load kernel at top of system RAM if required
-
- arch/arm/plat-samsung/pm-check.c            |   6 +-
- arch/microblaze/pci/pci-common.c            |  41 +----
- arch/powerpc/kernel/pci-common.c            |  39 +----
- arch/sparc/kernel/ioport.c                  |   2 +-
- arch/xtensa/include/asm/pci-bridge.h        |   4 +-
- drivers/eisa/eisa-bus.c                     |   2 +
- drivers/gpu/drm/drm_memory.c                |   3 +-
- drivers/gpu/drm/gma500/gtt.c                |   5 +-
- drivers/hv/vmbus_drv.c                      |  52 +++---
- drivers/input/joystick/iforce/iforce-main.c |   4 +-
- drivers/nvdimm/namespace_devs.c             |   6 +-
- drivers/nvdimm/nd.h                         |   5 +-
- drivers/of/address.c                        |   4 +-
- drivers/parisc/lba_pci.c                    |   4 +-
- drivers/pci/host/vmd.c                      |   8 +-
- drivers/pci/probe.c                         |   2 +
- drivers/pci/setup-bus.c                     |   2 +-
- include/linux/ioport.h                      |  21 ++-
- kernel/kexec_file.c                         |   2 +
- kernel/resource.c                           | 259 ++++++++++++++++++----------
- 20 files changed, 244 insertions(+), 227 deletions(-)
-
+diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
+index f34346d56095..7899bafab064 100644
+--- a/arch/microblaze/pci/pci-common.c
++++ b/arch/microblaze/pci/pci-common.c
+@@ -619,43 +619,6 @@ int pcibios_add_device(struct pci_dev *dev)
+ EXPORT_SYMBOL(pcibios_add_device);
+ 
+ /*
+- * Reparent resource children of pr that conflict with res
+- * under res, and make res replace those children.
+- */
+-static int __init reparent_resources(struct resource *parent,
+-				     struct resource *res)
+-{
+-	struct resource *p, **pp;
+-	struct resource **firstpp = NULL;
+-
+-	for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+-		if (p->end < res->start)
+-			continue;
+-		if (res->end < p->start)
+-			break;
+-		if (p->start < res->start || p->end > res->end)
+-			return -1;	/* not completely contained */
+-		if (firstpp == NULL)
+-			firstpp = pp;
+-	}
+-	if (firstpp == NULL)
+-		return -1;	/* didn't find any conflicting entries? */
+-	res->parent = parent;
+-	res->child = *firstpp;
+-	res->sibling = *pp;
+-	*firstpp = res;
+-	*pp = NULL;
+-	for (p = res->child; p != NULL; p = p->sibling) {
+-		p->parent = res;
+-		pr_debug("PCI: Reparented %s [%llx..%llx] under %s\n",
+-			 p->name,
+-			 (unsigned long long)p->start,
+-			 (unsigned long long)p->end, res->name);
+-	}
+-	return 0;
+-}
+-
+-/*
+  *  Handle resources of PCI devices.  If the world were perfect, we could
+  *  just allocate all the resource regions and do nothing more.  It isn't.
+  *  On the other hand, we cannot just re-allocate all devices, as it would
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index fe9733ffffaa..926035bb378d 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1088,41 +1088,6 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
+ EXPORT_SYMBOL(pcibios_align_resource);
+ 
+ /*
+- * Reparent resource children of pr that conflict with res
+- * under res, and make res replace those children.
+- */
+-static int reparent_resources(struct resource *parent,
+-				     struct resource *res)
+-{
+-	struct resource *p, **pp;
+-	struct resource **firstpp = NULL;
+-
+-	for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+-		if (p->end < res->start)
+-			continue;
+-		if (res->end < p->start)
+-			break;
+-		if (p->start < res->start || p->end > res->end)
+-			return -1;	/* not completely contained */
+-		if (firstpp == NULL)
+-			firstpp = pp;
+-	}
+-	if (firstpp == NULL)
+-		return -1;	/* didn't find any conflicting entries? */
+-	res->parent = parent;
+-	res->child = *firstpp;
+-	res->sibling = *pp;
+-	*firstpp = res;
+-	*pp = NULL;
+-	for (p = res->child; p != NULL; p = p->sibling) {
+-		p->parent = res;
+-		pr_debug("PCI: Reparented %s %pR under %s\n",
+-			 p->name, p, res->name);
+-	}
+-	return 0;
+-}
+-
+-/*
+  *  Handle resources of PCI devices.  If the world were perfect, we could
+  *  just allocate all the resource regions and do nothing more.  It isn't.
+  *  On the other hand, we cannot just re-allocate all devices, as it would
+diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+index da0ebaec25f0..dfdcd0bfe54e 100644
+--- a/include/linux/ioport.h
++++ b/include/linux/ioport.h
+@@ -192,6 +192,7 @@ extern int allocate_resource(struct resource *root, struct resource *new,
+ struct resource *lookup_resource(struct resource *root, resource_size_t start);
+ int adjust_resource(struct resource *res, resource_size_t start,
+ 		    resource_size_t size);
++int reparent_resources(struct resource *parent, struct resource *res);
+ resource_size_t resource_alignment(struct resource *res);
+ static inline resource_size_t resource_size(const struct resource *res)
+ {
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 30e1bc68503b..5e7c56d5d838 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -983,6 +983,42 @@ int adjust_resource(struct resource *res, resource_size_t start,
+ }
+ EXPORT_SYMBOL(adjust_resource);
+ 
++/*
++ * Reparent resource children of pr that conflict with res
++ * under res, and make res replace those children.
++ */
++static int reparent_resources(struct resource *parent,
++				     struct resource *res)
++{
++	struct resource *p, **pp;
++	struct resource **firstpp = NULL;
++
++	for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
++		if (p->end < res->start)
++			continue;
++		if (res->end < p->start)
++			break;
++		if (p->start < res->start || p->end > res->end)
++			return -1;	/* not completely contained */
++		if (firstpp == NULL)
++			firstpp = pp;
++	}
++	if (firstpp == NULL)
++		return -1;	/* didn't find any conflicting entries? */
++	res->parent = parent;
++	res->child = *firstpp;
++	res->sibling = *pp;
++	*firstpp = res;
++	*pp = NULL;
++	for (p = res->child; p != NULL; p = p->sibling) {
++		p->parent = res;
++		pr_debug("PCI: Reparented %s %pR under %s\n",
++			 p->name, p, res->name);
++	}
++	return 0;
++}
++EXPORT_SYMBOL(reparent_resources);
++
+ static void __init __reserve_region_with_split(struct resource *root,
+ 		resource_size_t start, resource_size_t end,
+ 		const char *name)
 -- 
 2.13.6
