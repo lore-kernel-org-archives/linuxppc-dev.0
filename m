@@ -2,29 +2,20 @@ Return-Path: <fweimer@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 414pmQ6yd1zF4Tq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 22:17:26 +1000 (AEST)
-Subject: Re: pkeys on POWER: Access rights not reset on execve
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Linux-MM <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andy Lutomirski <luto@kernel.org>, Dave Hansen <dave.hansen@intel.com>
-References: <20180603201832.GA10109@ram.oc3035372033.ibm.com>
- <4e53b91f-80a7-816a-3e9b-56d7be7cd092@redhat.com>
- <20180604140135.GA10088@ram.oc3035372033.ibm.com>
- <f2f61c24-8e8f-0d36-4e22-196a2a3f7ca7@redhat.com>
- <20180604190229.GB10088@ram.oc3035372033.ibm.com>
- <30040030-1aa2-623b-beec-dd1ceb3eb9a7@redhat.com>
- <20180608023441.GA5573@ram.oc3035372033.ibm.com>
- <2858a8eb-c9b5-42ce-5cfc-74a4b3ad6aa9@redhat.com>
- <20180611172305.GB5697@ram.oc3035372033.ibm.com>
- <30f5cb0e-e09a-15e6-f77d-a3afa422a651@redhat.com>
- <20180611200807.GA5773@ram.oc3035372033.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 414pnb6vhNzF4VB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 22:18:27 +1000 (AEST)
+Subject: Re: [PATCH 5/5] powerpc/pkeys: make protection key 0 less special
+To: Ram Pai <linuxram@us.ibm.com>, mpe@ellerman.id.au
+Cc: Ulrich.Weigand@de.ibm.com, mhocko@kernel.org, dave.hansen@intel.com,
+ aneesh.kumar@linux.vnet.ibm.com, luto@kernel.org,
+ bauerman@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+References: <1528164594-23823-1-git-send-email-linuxram@us.ibm.com>
+ <1528164594-23823-6-git-send-email-linuxram@us.ibm.com>
 From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <c2931344-d2e8-46c0-b70c-97567ae7f7a0@redhat.com>
-Date: Tue, 12 Jun 2018 14:17:21 +0200
+Message-ID: <c70afc10-9ad4-c5ec-6773-7f0ef455dced@redhat.com>
+Date: Tue, 12 Jun 2018 14:18:22 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180611200807.GA5773@ram.oc3035372033.ibm.com>
+In-Reply-To: <1528164594-23823-6-git-send-email-linuxram@us.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,22 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/2018 10:08 PM, Ram Pai wrote:
-> Ok. try this patch. This patch is on top of the 5 patches that I had
-> sent last week i.e  "[PATCH  0/5] powerpc/pkeys: fixes to pkeys"
-> 
-> The following is a draft patch though to check if it meets your
-> expectations.
-> 
-> commit fe53b5fe2dcb3139ea27ade3ae7cbbe43c4af3be
-> Author: Ram Pai<linuxram@us.ibm.com>
-> Date:   Mon Jun 11 14:57:34 2018 -0500
-> 
->      powerpc/pkeys: Deny read/write/execute by default
+On 06/05/2018 04:09 AM, Ram Pai wrote:
+> diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+> index 0409c80..d349e22 100644
+> --- a/arch/powerpc/include/asm/pkeys.h
+> +++ b/arch/powerpc/include/asm/pkeys.h
+> @@ -13,7 +13,10 @@
+>   
+>   DECLARE_STATIC_KEY_TRUE(pkey_disabled);
+>   extern int pkeys_total; /* total pkeys as per device tree */
+> -extern u32 initial_allocation_mask; /* bits set for reserved keys */
+> +extern u32 initial_allocation_mask; /*  bits set for the initially allocated keys */
+> +extern u32 reserved_allocation_mask; /* bits set for reserved keys */
+> +
+> +#define PKEY_0	0
+>   
+>   /*
+>    * Define these here temporarily so we're not dependent on patching linux/mm.h.
 
-With this patch, my existing misc/tst-pkey test in glibc passes.  The 
-in-tree version still has some incorrect assumptions on implementation 
-behavior, but those are test bugs.  The kernel behavior with your patch 
-look good to me.  Thanks.
+This part no longer applies cleanly.
 
+Thanks,
 Florian
