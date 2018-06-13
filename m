@@ -1,18 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 415NWJ6Z4fzDr9J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 20:38:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 415NWL4xSXzDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 20:38:06 +1000 (AEST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
-Message-Id: <36d753a57f26d248531ea3a6487b1b134b9b9906.1528885172.git.fthain@telegraphics.com.au>
+Message-Id: <69d26b5276c349749737d47860b9257daa79cbeb.1528885172.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1528885172.git.fthain@telegraphics.com.au>
 References: <cover.1528885172.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v3 04/12] macintosh/via-pmu: Enhance state machine with new
- 'uninitialized' state
-Date: Wed, 13 Jun 2018 06:38:01 -0400 (EDT)
+Subject: [PATCH v3 11/12] macintosh/via-pmu: Clean up interrupt statistics
+Date: Wed, 13 Jun 2018 06:38:02 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,217 +21,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 68k Macs, the via/vias pointer can't be used to determine whether
-the PMU driver has been initialized. For portability, add a new state
-to indicate that via_find_pmu() succeeded.
-
-After via_find_pmu() executes, testing vias == NULL is equivalent to
-testing via == NULL. Replace these tests with pmu_state == uninitialized
-which is simpler and more consistent. No functional change.
+Replace an open-coded ffs() with the function call.
+Simplify an if-else cascade using a switch statement.
+Correct a typo and an indentation issue.
 
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/macintosh/via-pmu.c | 44 ++++++++++++++++++++++----------------------
- 1 file changed, 22 insertions(+), 22 deletions(-)
+ drivers/macintosh/via-pmu.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
 diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 4c1bae5380c2..c4c324fb5fa6 100644
+index 38d7dd0bdb28..730c10f7fbb7 100644
 --- a/drivers/macintosh/via-pmu.c
 +++ b/drivers/macintosh/via-pmu.c
-@@ -114,6 +114,7 @@ static volatile unsigned char __iomem *via;
- #define CB1_INT		0x10		/* transition on CB1 input */
- 
- static volatile enum pmu_state {
-+	uninitialized = 0,
- 	idle,
- 	sending,
- 	intack,
-@@ -274,7 +275,7 @@ int __init find_via_pmu(void)
- 	u64 taddr;
- 	const u32 *reg;
- 
--	if (via != 0)
-+	if (pmu_state != uninitialized)
- 		return 1;
- 	vias = of_find_node_by_name(NULL, "via-pmu");
- 	if (vias == NULL)
-@@ -369,20 +370,19 @@ int __init find_via_pmu(void)
-  fail:
- 	of_node_put(vias);
- 	vias = NULL;
-+	pmu_state = uninitialized;
- 	return 0;
- }
- 
- #ifdef CONFIG_ADB
- static int pmu_probe(void)
+@@ -1392,7 +1392,8 @@ pmu_resume(void)
+ static void
+ pmu_handle_data(unsigned char *data, int len)
  {
--	return vias == NULL? -ENODEV: 0;
-+	return pmu_state == uninitialized ? -ENODEV : 0;
- }
+-	unsigned char ints, pirq;
++	unsigned char ints;
++	int idx;
+ 	int i = 0;
  
- static int pmu_init(void)
- {
--	if (vias == NULL)
--		return -ENODEV;
--	return 0;
-+	return pmu_state == uninitialized ? -ENODEV : 0;
- }
- #endif /* CONFIG_ADB */
+ 	asleep = 0;
+@@ -1414,25 +1415,24 @@ pmu_handle_data(unsigned char *data, int len)
+ 		ints &= ~(PMU_INT_ADB_AUTO | PMU_INT_AUTO_SRQ_POLL);
  
-@@ -397,7 +397,7 @@ static int __init via_pmu_start(void)
- {
- 	unsigned int irq;
+ next:
+-
+ 	if (ints == 0) {
+ 		if (i > pmu_irq_stats[10])
+ 			pmu_irq_stats[10] = i;
+ 		return;
+ 	}
+-
+-	for (pirq = 0; pirq < 8; pirq++)
+-		if (ints & (1 << pirq))
+-			break;
+-	pmu_irq_stats[pirq]++;
+ 	i++;
+-	ints &= ~(1 << pirq);
++
++	idx = ffs(ints) - 1;
++	ints &= ~BIT(idx);
++
++	pmu_irq_stats[idx]++;
  
--	if (vias == NULL)
-+	if (pmu_state == uninitialized)
- 		return -ENODEV;
- 
- 	batt_req.complete = 1;
-@@ -463,7 +463,7 @@ arch_initcall(via_pmu_start);
-  */
- static int __init via_pmu_dev_init(void)
- {
--	if (vias == NULL)
-+	if (pmu_state == uninitialized)
- 		return -ENODEV;
- 
+ 	/* Note: for some reason, we get an interrupt with len=1,
+ 	 * data[0]==0 after each normal ADB interrupt, at least
+ 	 * on the Pismo. Still investigating...  --BenH
+ 	 */
+-	if ((1 << pirq) & PMU_INT_ADB) {
++	switch (BIT(idx)) {
++	case PMU_INT_ADB:
+ 		if ((data[0] & PMU_INT_ADB_AUTO) == 0) {
+ 			struct adb_request *req = req_awaiting_reply;
+ 			if (req == 0) {
+@@ -1470,25 +1470,28 @@ pmu_handle_data(unsigned char *data, int len)
+ 				adb_input(data+1, len-1, 1);
+ #endif /* CONFIG_ADB */		
+ 		}
+-	}
++		break;
++
+ 	/* Sound/brightness button pressed */
+-	else if ((1 << pirq) & PMU_INT_SNDBRT) {
++	case PMU_INT_SNDBRT:
  #ifdef CONFIG_PMAC_BACKLIGHT
-@@ -966,7 +966,7 @@ static int pmu_send_request(struct adb_request *req, int sync)
- {
- 	int i, ret;
- 
--	if ((vias == NULL) || (!pmu_fully_inited)) {
-+	if (pmu_state == uninitialized || !pmu_fully_inited) {
- 		req->complete = 1;
- 		return -ENXIO;
+ 		if (len == 3)
+ 			pmac_backlight_set_legacy_brightness_pmu(data[1] >> 4);
+ #endif
+-	}
++		break;
++
+ 	/* Tick interrupt */
+-	else if ((1 << pirq) & PMU_INT_TICK) {
+-		/* Environement or tick interrupt, query batteries */
++	case PMU_INT_TICK:
++		/* Environment or tick interrupt, query batteries */
+ 		if (pmu_battery_count) {
+ 			if ((--query_batt_timer) == 0) {
+ 				query_battery_state();
+ 				query_batt_timer = BATTERY_POLLING_COUNT;
+ 			}
+ 		}
+-        }
+-	else if ((1 << pirq) & PMU_INT_ENVIRONMENT) {
++		break;
++
++	case PMU_INT_ENVIRONMENT:
+ 		if (pmu_battery_count)
+ 			query_battery_state();
+ 		pmu_pass_intr(data, len);
+@@ -1498,7 +1501,9 @@ pmu_handle_data(unsigned char *data, int len)
+ 			via_pmu_event(PMU_EVT_POWER, !!(data[1]&8));
+ 			via_pmu_event(PMU_EVT_LID, data[1]&1);
+ 		}
+-	} else {
++		break;
++
++	default:
+ 	       pmu_pass_intr(data, len);
  	}
-@@ -1060,7 +1060,7 @@ static int __pmu_adb_autopoll(int devs)
- 
- static int pmu_adb_autopoll(int devs)
- {
--	if ((vias == NULL) || (!pmu_fully_inited) || !pmu_has_adb)
-+	if (pmu_state == uninitialized || !pmu_fully_inited || !pmu_has_adb)
- 		return -ENXIO;
- 
- 	adb_dev_map = devs;
-@@ -1073,7 +1073,7 @@ static int pmu_adb_reset_bus(void)
- 	struct adb_request req;
- 	int save_autopoll = adb_dev_map;
- 
--	if ((vias == NULL) || (!pmu_fully_inited) || !pmu_has_adb)
-+	if (pmu_state == uninitialized || !pmu_fully_inited || !pmu_has_adb)
- 		return -ENXIO;
- 
- 	/* anyone got a better idea?? */
-@@ -1109,7 +1109,7 @@ pmu_request(struct adb_request *req, void (*done)(struct adb_request *),
- 	va_list list;
- 	int i;
- 
--	if (vias == NULL)
-+	if (pmu_state == uninitialized)
- 		return -ENXIO;
- 
- 	if (nbytes < 0 || nbytes > 32) {
-@@ -1134,7 +1134,7 @@ pmu_queue_request(struct adb_request *req)
- 	unsigned long flags;
- 	int nsend;
- 
--	if (via == NULL) {
-+	if (pmu_state == uninitialized) {
- 		req->complete = 1;
- 		return -ENXIO;
- 	}
-@@ -1247,7 +1247,7 @@ pmu_start(void)
- void
- pmu_poll(void)
- {
--	if (!via)
-+	if (pmu_state == uninitialized)
- 		return;
- 	if (disable_poll)
- 		return;
-@@ -1257,7 +1257,7 @@ pmu_poll(void)
- void
- pmu_poll_adb(void)
- {
--	if (!via)
-+	if (pmu_state == uninitialized)
- 		return;
- 	if (disable_poll)
- 		return;
-@@ -1272,7 +1272,7 @@ pmu_poll_adb(void)
- void
- pmu_wait_complete(struct adb_request *req)
- {
--	if (!via)
-+	if (pmu_state == uninitialized)
- 		return;
- 	while((pmu_state != idle && pmu_state != locked) || !req->complete)
- 		via_pmu_interrupt(0, NULL);
-@@ -1288,7 +1288,7 @@ pmu_suspend(void)
- {
- 	unsigned long flags;
- 
--	if (!via)
-+	if (pmu_state == uninitialized)
- 		return;
- 	
- 	spin_lock_irqsave(&pmu_lock, flags);
-@@ -1319,7 +1319,7 @@ pmu_resume(void)
- {
- 	unsigned long flags;
- 
--	if (!via || (pmu_suspended < 1))
-+	if (pmu_state == uninitialized || pmu_suspended < 1)
- 		return;
- 
- 	spin_lock_irqsave(&pmu_lock, flags);
-@@ -1681,7 +1681,7 @@ pmu_enable_irled(int on)
- {
- 	struct adb_request req;
- 
--	if (vias == NULL)
-+	if (pmu_state == uninitialized)
- 		return ;
- 	if (pmu_kind == PMU_KEYLARGO_BASED)
- 		return ;
-@@ -1696,7 +1696,7 @@ pmu_restart(void)
- {
- 	struct adb_request req;
- 
--	if (via == NULL)
-+	if (pmu_state == uninitialized)
- 		return;
- 
- 	local_irq_disable();
-@@ -1721,7 +1721,7 @@ pmu_shutdown(void)
- {
- 	struct adb_request req;
- 
--	if (via == NULL)
-+	if (pmu_state == uninitialized)
- 		return;
- 
- 	local_irq_disable();
-@@ -1749,7 +1749,7 @@ pmu_shutdown(void)
- int
- pmu_present(void)
- {
--	return via != 0;
-+	return pmu_state != uninitialized;
- }
- 
- #if defined(CONFIG_SUSPEND) && defined(CONFIG_PPC32)
-@@ -2415,7 +2415,7 @@ static struct miscdevice pmu_device = {
- 
- static int pmu_device_init(void)
- {
--	if (!via)
-+	if (pmu_state == uninitialized)
- 		return 0;
- 	if (misc_register(&pmu_device) < 0)
- 		printk(KERN_ERR "via-pmu: cannot register misc device.\n");
+ 	goto next;
 -- 
 2.16.4
