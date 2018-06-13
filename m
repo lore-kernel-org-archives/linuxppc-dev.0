@@ -1,15 +1,34 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415SCy372jzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:25:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64s: Report SLB multi-hit rather than parity error
-Date: Wed, 13 Jun 2018 23:24:14 +1000
-Message-Id: <20180613132414.32207-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415SmS2XBDzDr9J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:49:44 +1000 (AEST)
+Date: Wed, 13 Jun 2018 16:49:39 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Ram Pai <linuxram@us.ibm.com>, robh@kernel.org, aik@ozlabs.ru,
+ jasowang@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, cohuck@redhat.com, pawel.moll@arm.com,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ "Rustad, Mark D" <mark.d.rustad@intel.com>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180613161806-mutt-send-email-mst@kernel.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
+ <20180607052306.GA1532@infradead.org>
+ <20180607185234-mutt-send-email-mst@kernel.org>
+ <20180608063655.GA32080@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180608063655.GA32080@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,133 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we take an SLB multi-hit on bare metal, we see both the multi-hit
-and parity error bits set in DSISR. The user manuals indicates this is
-expected to always happen on Power8, whereas on Power9 it says a
-multi-hit will "usually" also cause a parity error.
+On Thu, Jun 07, 2018 at 11:36:55PM -0700, Christoph Hellwig wrote:
+> > This seems to be what was being asked for in this thread,
+> > with comments claiming IOMMU flag adds too much overhead.
+> 
+> Right now it means implementing a virtual iommu, which I agree is
+> way too much overhead.
 
-We decide what to do based on the various error tables in mce_power.c,
-and because we process them in order and only report the first, we
-currently always report a parity error but not the multi-hit, eg:
+Well not really. The flag in question will have a desired effect without
+a virtual iommu.
 
-  Severe Machine check interrupt [Recovered]
-    Initiator: CPU
-    Error type: SLB [Parity]
-      Effective address: c000000ffffd4300
+> > SEV guys report that they just set the iommu flag and then it all works.
+> > I guess if there's translation we can think of this as a kind of iommu.
+> > Maybe we should rename PLATFORM_IOMMU to PLARTFORM_TRANSLATION?
+> 
+> VIRTIO_F_BEHAVES_LIKE_A_REAL_PCI_DEVICE_DONT_TRY_TO_OUTSMART_ME
+> 
+> as said it's not just translations, it is cache coherence as well.
 
-Although this is correct, it leaves the user wondering why they got a
-parity error. It would be clearer instead if we reported the
-multi-hit because that is more likely to be simply a software bug,
-whereas a true parity error is possibly an indication of a bad core.
+Well it's only for DMA. So maybe PLATFORM_DMA.
 
-We can do that simply by reordering the error tables so that multi-hit
-appears before parity. That doesn't affect the error recovery at all,
-because we flush the SLB either way.
+I suspect people will then come and complain that they
+do *not* want cache coherence tricks because virtio is
+running on a CPU, but we'll see.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/mce_power.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+> > And apparently some people complain that just setting that flag makes
+> > qemu check translation on each access with an unacceptable performance
+> > overhead.  Forcing same behaviour for everyone on general principles
+> > even without the flag is unlikely to make them happy.
+> 
+> That sounds like a qemu implementation bug.  If qemu knowns that
+> guest physiscall == guest dma space there is no need to check.
 
-diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-index 38c5b4764bfe..1e450d0c4f72 100644
---- a/arch/powerpc/kernel/mce_power.c
-+++ b/arch/powerpc/kernel/mce_power.c
-@@ -140,12 +140,12 @@ static const struct mce_ierror_table mce_p7_ierror_table[] = {
- { 0x00000000001c0000, 0x0000000000040000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-+{ 0x00000000001c0000, 0x00000000000c0000, true,
-+  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000001c0000, 0x0000000000080000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000001c0000, 0x00000000000c0000, true,
--  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000001c0000, 0x0000000000100000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-@@ -164,12 +164,12 @@ static const struct mce_ierror_table mce_p8_ierror_table[] = {
- { 0x00000000081c0000, 0x0000000000040000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-+{ 0x00000000081c0000, 0x00000000000c0000, true,
-+  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000081c0000, 0x0000000000080000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000081c0000, 0x00000000000c0000, true,
--  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000081c0000, 0x0000000000100000, true,
-   MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-@@ -194,12 +194,12 @@ static const struct mce_ierror_table mce_p9_ierror_table[] = {
- { 0x00000000081c0000, 0x0000000000040000, true,
-   MCE_ERROR_TYPE_UE,  MCE_UE_ERROR_IFETCH,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-+{ 0x00000000081c0000, 0x00000000000c0000, true,
-+  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000081c0000, 0x0000000000080000, true,
-   MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
--{ 0x00000000081c0000, 0x00000000000c0000, true,
--  MCE_ERROR_TYPE_SLB, MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
- { 0x00000000081c0000, 0x0000000000100000, true,
-   MCE_ERROR_TYPE_ERAT,MCE_ERAT_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,  MCE_SEV_ERROR_SYNC, },
-@@ -257,12 +257,12 @@ static const struct mce_derror_table mce_p7_derror_table[] = {
- { 0x00000400, true,
-   MCE_ERROR_TYPE_TLB,  MCE_TLB_ERROR_MULTIHIT,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-+{ 0x00000080, true,
-+  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000100, true,
-   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
--{ 0x00000080, true,
--  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000040, true,
-   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_INDETERMINATE, /* BOTH */
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-@@ -290,12 +290,12 @@ static const struct mce_derror_table mce_p8_derror_table[] = {
- { 0x00000200, true,
-   MCE_ERROR_TYPE_ERAT, MCE_ERAT_ERROR_MULTIHIT, /* SECONDARY ERAT */
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-+{ 0x00000080, true,
-+  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000100, true,
-   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
--{ 0x00000080, true,
--  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0, false, 0, 0, 0, 0 } };
- 
- static const struct mce_derror_table mce_p9_derror_table[] = {
-@@ -320,12 +320,12 @@ static const struct mce_derror_table mce_p9_derror_table[] = {
- { 0x00000200, false,
-   MCE_ERROR_TYPE_USER, MCE_USER_ERROR_TLBIE,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
-+{ 0x00000080, true,
-+  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,	/* Before PARITY */
-+  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000100, true,
-   MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_PARITY,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
--{ 0x00000080, true,
--  MCE_ERROR_TYPE_SLB,  MCE_SLB_ERROR_MULTIHIT,
--  MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
- { 0x00000040, true,
-   MCE_ERROR_TYPE_RA,   MCE_RA_ERROR_LOAD,
-   MCE_INITIATOR_CPU,   MCE_SEV_ERROR_SYNC, },
+Possibly. Or it's possible it's all just theoretical, no one
+posted any numbers.
+
 -- 
-2.14.1
+MST
