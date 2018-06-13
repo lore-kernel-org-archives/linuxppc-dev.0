@@ -1,38 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415S4H4zB7zDrcd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:18:23 +1000 (AEST)
-Message-ID: <10bbd7122aaa67f51de7a8328df8154212a13f23.camel@kernel.crashing.org>
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Ram Pai <linuxram@us.ibm.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- robh@kernel.org, pawel.moll@arm.com, Tom Lendacky
- <thomas.lendacky@amd.com>, aik@ozlabs.ru,
- jasowang@redhat.com, cohuck@redhat.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, joe@perches.com, "Rustad, Mark
- D" <mark.d.rustad@intel.com>,
- david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net, Anshuman
- Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 13 Jun 2018 23:11:01 +1000
-In-Reply-To: <5dbcafa73b065bc619fd6adc9ef47eb6367b8378.camel@kernel.crashing.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <20180524072104.GD6139@ram.oc3035372033.ibm.com>
- <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
- <20180531204320-mutt-send-email-mst@kernel.org>
- <20180607052306.GA1532@infradead.org>
- <20180607185234-mutt-send-email-mst@kernel.org>
- <20180611023909.GA5726@ram.oc3035372033.ibm.com>
- <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
- <20180613074141.GA12033@infradead.org>
- <5dbcafa73b065bc619fd6adc9ef47eb6367b8378.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415SBs2HQtzDr9J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:24:05 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com,
+	paulus@samba.org
+Subject: [PATCH] powerpc/64s: Fix DT CPU features Power9 DD2.1 logic
+Date: Wed, 13 Jun 2018 23:23:56 +1000
+Message-Id: <20180613132356.29246-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,41 +20,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-06-13 at 22:25 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2018-06-13 at 00:41 -0700, Christoph Hellwig wrote:
-> > On Mon, Jun 11, 2018 at 01:29:18PM +1000, Benjamin Herrenschmidt wrote:
-> > > At the risk of repeating myself, let's just do the first pass which is
-> > > to switch virtio over to always using the DMA API in the actual data
-> > > flow code, with a hook at initialization time that replaces the DMA ops
-> > > with some home cooked "direct" ops in the case where the IOMMU flag
-> > > isn't set.
-> > > 
-> > > This will be equivalent to what we have today but avoids having 2
-> > > separate code path all over the driver.
-> > > 
-> > > Then a second stage, I think, is to replace this "hook" so that the
-> > > architecture gets a say in the matter.
-> > 
-> > I don't think we can actually use dma_direct_ops.  It still allows
-> > architectures to override parts of the dma setup, which virtio seems
-> > to blindly assume phys == dma and not cache flushing.
-> 
-> By direct ops I didn't mean *the* dma_direct_ops but a virtio-local
-> variants that effectively reproduces the existing expectations (ie,
-> virtio-dma-legacy-ops or something).
+In the device tree CPU features quirk code we want to set
+CPU_FTR_POWER9_DD2_1 on all Power9s that aren't DD2.0 or earlier. But
+we got the logic wrong and instead set it on all CPUs that aren't
+Power9 DD2.0 or earlier, ie. including Power8.
 
-Actually ... the stuff in lib/dma-direct.c seems to be just it, no ?
+Fix it by making sure we're on a Power9. This isn't a bug in practice
+because the only code that checks the feature is Power9 only to begin
+with. But we'll backport it anyway to avoid confusion.
 
-There's no cache flushing and there's no architecture hooks that I can
-see other than the AMD security stuff which is probably fine.
+Fixes: 9e9626ed3a4a ("powerpc/64s: Fix POWER9 DD2.2 and above in DT CPU features")
+Cc: stable@vger.kernel.org # v4.17+
+Reported-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/dt_cpu_ftrs.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Or am I missing something ?
-
-Cheers,
-Ben.
-> 
-> > I think the right way forward is to either add a new
-> > VIRTIO_F_IS_PCI_DEVICE (or redefine the existing iommu flag if deemed
-> > possible).  And then make sure recent qemu always sets it.
-> 
-> Ben.
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 4be1c0de9406..96dd3d871986 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -711,7 +711,8 @@ static __init void cpufeatures_cpu_quirks(void)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_HV_ASSIST;
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_XER_SO_BUG;
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+-	} else /* DD2.1 and up have DD2_1 */
++	} else if ((version & 0xffff0000) == 0x004e0000)
++		/* DD2.1 and up have DD2_1 */
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+ 
+ 	if ((version & 0xffff0000) == 0x004e0000) {
+-- 
+2.14.1
