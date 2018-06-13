@@ -1,21 +1,38 @@
-Return-Path: <helgaas@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415RyT3VK0zDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:13:20 +1000 (AEST)
-Date: Wed, 13 Jun 2018 08:13:17 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [patchV2 2/2] pci/shpchp: no claim on pcie port device
-Message-ID: <20180613131317.GA201807@bhelgaas-glaptop.roam.corp.google.com>
-References: <1528871397-17917-1-git-send-email-kernelfans@gmail.com>
- <1528871397-17917-3-git-send-email-kernelfans@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1528871397-17917-3-git-send-email-kernelfans@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415S4H4zB7zDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:18:23 +1000 (AEST)
+Message-ID: <10bbd7122aaa67f51de7a8328df8154212a13f23.camel@kernel.crashing.org>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Ram Pai <linuxram@us.ibm.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ robh@kernel.org, pawel.moll@arm.com, Tom Lendacky
+ <thomas.lendacky@amd.com>, aik@ozlabs.ru,
+ jasowang@redhat.com, cohuck@redhat.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com, "Rustad, Mark
+ D" <mark.d.rustad@intel.com>,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net, Anshuman
+ Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 13 Jun 2018 23:11:01 +1000
+In-Reply-To: <5dbcafa73b065bc619fd6adc9ef47eb6367b8378.camel@kernel.crashing.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
+ <20180607052306.GA1532@infradead.org>
+ <20180607185234-mutt-send-email-mst@kernel.org>
+ <20180611023909.GA5726@ram.oc3035372033.ibm.com>
+ <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
+ <20180613074141.GA12033@infradead.org>
+ <5dbcafa73b065bc619fd6adc9ef47eb6367b8378.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,118 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 13, 2018 at 02:29:57PM +0800, Pingfan Liu wrote:
-> The Linux Device Driver Model allows a physical device to be handled
-> by only a single driver. But at present, both shpchp and portdrv_pci
-> claim PCI_CLASS_BRIDGE_PCI, and touch devices_kset when the drivers are
-> loaded. This causes a few problems, one is the wrong shutdown seq of
-> devices, owing to the broken devices_kset. This patch keeps shpchp away
-> from pcie port device, using the extra matching method.
-
-As Christoph pointed out, something seems wrong if we add to
-devices_kset even when the probe fails.  We will call shpc_probe() for
-the device below, but there's no SHPC capability, so the probe should
-fail when shpc_init() fails.
-
-I do think the current structure where portdrv and shpchp are both
-"drivers" that claim bridges is broken.  This has caused problems
-before, e.g., some PCIe switches have performance counters, and a
-driver for those switches ought to be able to claim the device and use
-the counters, but portdrv is in the way.
-
-I think it would be better if portdrv (and maybe shpchp; not sure
-about that) were integrated into the PCIe core and did not register as
-a driver.  But this is a big project, far beyond the scope of this
-current issue.
-
-> Note:
-> I hit this bug on a Power9 machine, when "kexec -e", and see a ata-disk
-> behind a bridge can not write back buffer in flight due to the former
-> shutdown of the bridge which clears the BusMaster bit.
+On Wed, 2018-06-13 at 22:25 +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-06-13 at 00:41 -0700, Christoph Hellwig wrote:
+> > On Mon, Jun 11, 2018 at 01:29:18PM +1000, Benjamin Herrenschmidt wrote:
+> > > At the risk of repeating myself, let's just do the first pass which is
+> > > to switch virtio over to always using the DMA API in the actual data
+> > > flow code, with a hook at initialization time that replaces the DMA ops
+> > > with some home cooked "direct" ops in the case where the IOMMU flag
+> > > isn't set.
+> > > 
+> > > This will be equivalent to what we have today but avoids having 2
+> > > separate code path all over the driver.
+> > > 
+> > > Then a second stage, I think, is to replace this "hook" so that the
+> > > architecture gets a say in the matter.
+> > 
+> > I don't think we can actually use dma_direct_ops.  It still allows
+> > architectures to override parts of the dma setup, which virtio seems
+> > to blindly assume phys == dma and not cache flushing.
 > 
-> the device involved:
-> 0004:00:00.0 PCI bridge: IBM Device 04c1 (prog-if 00 [Normal decode])
->         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
->         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->         Latency: 0
->         NUMA node: 0
->         Bus: primary=00, secondary=01, subordinate=12, sec-latency=0
->         I/O behind bridge: 00000000-00000fff
->         Memory behind bridge: 80000000-ffefffff
->         Prefetchable memory behind bridge: 0006024000000000-0006027f7fffffff
->         Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
->         BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
->                 PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->         Capabilities: [40] Power Management version 3
->                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
->                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->         Capabilities: [48] Express (v2) Root Port (Slot-), MSI 00
->                 DevCap: MaxPayload 512 bytes, PhantFunc 0
->                         ExtTag- RBE+
->                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
->                         RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
->                         MaxPayload 256 bytes, MaxReadReq 128 bytes
->                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
->                 LnkCap: Port #0, Speed 8GT/s, Width x8, ASPM not supported, Exit Latency L0s <64ns, L1 <1us
->                         ClockPM- Surprise- LLActRep+ BwNot+ ASPMOptComp-
->                 LnkCtl: ASPM Disabled; RCB 128 bytes Disabled- CommClk-
->                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
->                 LnkSta: Speed 8GT/s, Width x4, TrErr- Train- SlotClk- DLActive+ BWMgmt- ABWMgmt+
->                 RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
->                 RootCap: CRSVisible-
->                 RootSta: PME ReqID 0000, PMEStatus- PMEPending-
->                 DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported ARIFwd+
->                 DevCtl2: Completion Timeout: 16ms to 55ms, TimeoutDis+, LTR-, OBFF Disabled ARIFwd+
->                 LnkCtl2: Target Link Speed: 8GT/s, EnterCompliance- SpeedDis-
->                          Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
->                          Compliance De-emphasis: -6dB
->                 LnkSta2: Current De-emphasis Level: -3.5dB, EqualizationComplete+, EqualizationPhase1+
->                          EqualizationPhase2+, EqualizationPhase3+, LinkEqualizationRequest-
->         Capabilities: [100 v1] Advanced Error Reporting
->                 UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->                 UEMsk:  DLP- SDES- TLP+ FCP- CmpltTO+ CmpltAbrt+ UnxCmplt- RxOF- MalfTLP- ECRC+ UnsupReq- ACSViol-
->                 UESvrt: DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
->                 CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
->                 CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
->                 AERCap: First Error Pointer: 00, GenCap+ CGenEn+ ChkCap+ ChkEn+
->         Capabilities: [148 v1] #19
+> By direct ops I didn't mean *the* dma_direct_ops but a virtio-local
+> variants that effectively reproduces the existing expectations (ie,
+> virtio-dma-legacy-ops or something).
+
+Actually ... the stuff in lib/dma-direct.c seems to be just it, no ?
+
+There's no cache flushing and there's no architecture hooks that I can
+see other than the AMD security stuff which is probably fine.
+
+Or am I missing something ?
+
+Cheers,
+Ben.
 > 
-> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> ---
->  drivers/pci/hotplug/shpchp_core.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
+> > I think the right way forward is to either add a new
+> > VIRTIO_F_IS_PCI_DEVICE (or redefine the existing iommu flag if deemed
+> > possible).  And then make sure recent qemu always sets it.
 > 
-> diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-> index 1f0f969..85b4665 100644
-> --- a/drivers/pci/hotplug/shpchp_core.c
-> +++ b/drivers/pci/hotplug/shpchp_core.c
-> @@ -336,6 +336,18 @@ static void shpc_remove(struct pci_dev *dev)
->  	kfree(ctrl);
->  }
->  
-> +static int shpc_extra_match(struct pci_dev *pdev)
-> +{
-> +	/* do not claim pcie port device */
-> +	if (pci_is_pcie(pdev) &&
-> +	    (pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT ||
-> +	     pci_pcie_type(pdev) == PCI_EXP_TYPE_UPSTREAM ||
-> +	     pci_pcie_type(pdev) == PCI_EXP_TYPE_DOWNSTREAM))
-> +		return -ENODEV;
-> +
-> +	return 0;
-> +}
-> +
->  static const struct pci_device_id shpcd_pci_tbl[] = {
->  	{PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_PCI << 8) | 0x00), ~0)},
->  	{ /* end: all zeroes */ }
-> @@ -345,6 +357,7 @@ MODULE_DEVICE_TABLE(pci, shpcd_pci_tbl);
->  static struct pci_driver shpc_driver = {
->  	.name =		SHPC_MODULE_NAME,
->  	.id_table =	shpcd_pci_tbl,
-> +	.extra_match =	shpc_extra_match,
->  	.probe =	shpc_probe,
->  	.remove =	shpc_remove,
->  };
-> -- 
-> 2.7.4
-> 
+> Ben.
