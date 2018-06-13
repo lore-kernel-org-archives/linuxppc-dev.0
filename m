@@ -1,22 +1,22 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-f178.google.com (mail-ot0-f178.google.com
- [74.125.82.178])
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qk0-f196.google.com (mail-qk0-f196.google.com
+ [209.85.220.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415dWs0GnSzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 06:24:24 +1000 (AEST)
-Received: by mail-ot0-f178.google.com with SMTP id c15-v6so4503435otl.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 13:24:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415hW00CR3zDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 08:38:51 +1000 (AEST)
+Received: by mail-qk0-f196.google.com with SMTP id r66-v6so2553703qkr.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 15:38:51 -0700 (PDT)
+Subject: Re: [RFC,00/12] Deal with TM on kernel entry and exit
+To: Cyril Bur <cyrilbur@gmail.com>, mikey@neuling.org, benh@kernel.crashing.org
+References: <20180220002241.29648-1-cyrilbur@gmail.com>
+From: Breno Leitao <leitao@debian.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Message-ID: <50bf94bd-1367-1a99-1331-35f6562cedd5@debian.org>
+Date: Wed, 13 Jun 2018 19:38:42 -0300
 MIME-Version: 1.0
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 13 Jun 2018 22:24:10 +0200
-Message-ID: <CA+7wUswNnhB3=_Z0cbeAzDrcHZr=xg_nE5uUZuPXEk2RKNaABA@mail.gmail.com>
-Subject: powerpc: use time64_t in read_persistent_clock
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180220002241.29648-1-cyrilbur@gmail.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd,
+Hi Cyril,
 
-In 5bfd643583b2e I can see that you changed:
+On 02/19/2018 09:22 PM, Cyril Bur wrote:
+> This is very much a proof of concept and if it isn't clear from the
+> commit names, still a work in progress.
 
-$ git show 5bfd643583b2e -- arch/powerpc/platforms/powermac/time.c
-[...]
- #ifdef CONFIG_ADB_PMU
--static unsigned long pmu_get_time(void)
-+static time64_t pmu_get_time(void)
- {
-        struct adb_request req;
--       unsigned int now;
-+       time64_t now;
+> I believe I have something that works - all the powerpc selftests
+> pass. I would like to get some eyes on it to a) see if I've missed
+> anything big and b) some opinions on if it is looking like a net
+> improvement.
 
-        if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
-                return 0;
-@@ -160,10 +151,10 @@ static unsigned long pmu_get_time(void)
-                       req.reply_len);
-        now = (req.reply[0] << 24) + (req.reply[1] << 16)
-                + (req.reply[2] << 8) + req.reply[3];
--       return ((unsigned long)now) - RTC_OFFSET;
-+       return now - RTC_OFFSET;
- }
-[...]
+I started to look at this patchset. The patchset apply cleanly on top of the
+current kernel and I started to run some tests.
 
-As far as I can tell the old function would never return a negative
-value and rely on unsigned long roll over. Now I am seeing negative
-value being returned and it seems to break later on in the rtc
-library.
+It seems there is a different behavior when there is a trap (as a illegal
+instruction or a 'trap' instruction) inside the transaction.
 
-Could you comment why you removed the cast to (unsigned long) in your commit ?
+In this case, the signal handler does not seem to be called, and and the task
+segfaults. On current upstream, the signal handler is called and the program
+can continue.
 
-Thanks
+4.17 pristine
+-------------
+	$ ./illegal
+	Failure
+
+4.17 plus your patches
+----------------------
+	$ ./illegal
+	[1]    2504 segmentation fault  ./illegal
+
+
+Here is a minimal example that is able to recreate this behaviour:
+
+	#include <stdio.h>
+	#include <signal.h>
+	
+	int htm(){
+		asm goto ("tbegin.  		\n\t"
+			  "beq %l[failure]	\n\t"
+			  "li 3, 3		\n\t"
+			  "trap 		\n\t"
+			  "tend. 		\n\t"
+			  : : : : failure);
+	
+		return 0;
+	failure:
+		printf("Failure\n");
+		return 1;
+	}
+	
+	void signal_handler(int signo, siginfo_t *si, void *data) {
+		// Do nothing
+	}
+	
+	int main(){
+		struct sigaction sa;
+	        sa.sa_flags = SA_SIGINFO;
+	        sa.sa_sigaction = signal_handler;
+	
+	        sigaction(SIGTRAP, &sa, NULL);
+	        sigaction(SIGILL,  &sa, NULL);
+	
+		return htm();
+	}
