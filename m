@@ -1,16 +1,18 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 415NWL4x8rzDrcd
+ by lists.ozlabs.org (Postfix) with ESMTP id 415NWL4R1mzDr9J
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 20:38:06 +1000 (AEST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
-Message-Id: <41d5af43b69616f4427a268af9e8568b09936afd.1528885172.git.fthain@telegraphics.com.au>
+ <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Paul Mackerras <paulus@samba.org>,, Michael Ellerman <mpe@ellerman.id.au>
+Message-Id: <f32334fa0adbfcade33806ef39ea3b65c0a6fcda.1528885172.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1528885172.git.fthain@telegraphics.com.au>
 References: <cover.1528885172.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v3 12/12] macintosh/via-pmu: Disambiguate interrupt statistics
+Subject: [PATCH v3 10/12] macintosh: Use common code to access RTC
 Date: Wed, 13 Jun 2018 06:38:02 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,126 +23,342 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of the event counters are overloaded which makes it very
-difficult to interpret their values.
+Now that the 68k Mac port has adopted the via-pmu driver, it must access
+the PMU RTC using the appropriate command format. The same code can now
+be used for both m68k and powerpc.
 
-Counter 0 is supposed to report CB1 interrupts but it can also count
-PMU_INT_WAITING_CHARGER events.
+Replace the RTC code that's duplicated in arch/powerpc and arch/m68k
+with common RTC accessors for Cuda and PMU devices.
 
-Counter 1 is supposed to report GPIO interrupts but it can also count
-other events (depending upon the value of the PMU_INT_ADB bit).
-
-Disambiguate these statistics with dedicated counters for GPIO and
-CB1 interrupts.
-
-Comments in the MkLinux source code say that the type 0 and type 1
-interrupts are model-specific. Label them as "unknown".
-
-This change to the contents of /proc/pmu/interrupts is by necessity
-visible in userland. However, packages which interact with the PMU
-(that is, pbbuttonsd, pmac-utils and pmud) don't open this file.
-AFAIK, user software has no need to poll these counters.
-
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
-The file now looks like this,
+ arch/m68k/mac/misc.c                   | 64 ++---------------------------
+ arch/powerpc/platforms/powermac/time.c | 74 +---------------------------------
+ drivers/macintosh/via-cuda.c           | 34 ++++++++++++++++
+ drivers/macintosh/via-pmu.c            | 32 +++++++++++++++
+ include/linux/cuda.h                   |  3 ++
+ include/linux/pmu.h                    |  3 ++
+ 6 files changed, 78 insertions(+), 132 deletions(-)
 
-  0:          0 (Unknown interrupt (type 0))
-  1:          0 (Unknown interrupt (type 1))
-  2:          0 (PC-Card eject button)
-  3:         23 (Sound/Brightness button)
-  4:         74 (ADB message)
-  5:          0 (Battery state change)
-  6:          0 (Environment interrupt)
-  7:        121 (Tick timer)
-  8:          0 (Ghost interrupt (zero len))
-  9:          1 (Empty interrupt (empty mask))
- 10:          2 (Max irqs in a row)
- 11:        194 (Total CB1 triggered events)
- 12:          0 (Total GPIO1 triggered events)
-
-rather than this,
-
-  0:        194 (Total CB1 triggered events)
-  1:          0 (Total GPIO1 triggered events)
-  2:          0 (PC-Card eject button)
-  3:         23 (Sound/Brightness button)
-  4:         74 (ADB message)
-  5:          0 (Battery state change)
-  6:          0 (Environment interrupt)
-  7:        121 (Tick timer)
-  8:          0 (Ghost interrupt (zero len))
-  9:          1 (Empty interrupt (empty mask))
- 10:          2 (Max irqs in a row)
-
-If some parser exists for this file, and if this change is problematic,
-we could increment the driver version number in /proc/pmu/info, to
-correspond with the format change.
----
- drivers/macintosh/via-pmu.c | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
-
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index 28090a44fa09..397f9f942a9f 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -33,34 +33,6 @@
+ static void (*rom_reset)(void);
+ 
+ #ifdef CONFIG_ADB_CUDA
+-static long cuda_read_time(void)
+-{
+-	struct adb_request req;
+-	long time;
+-
+-	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
+-		return 0;
+-	while (!req.complete)
+-		cuda_poll();
+-
+-	time = (req.reply[3] << 24) | (req.reply[4] << 16) |
+-	       (req.reply[5] << 8) | req.reply[6];
+-	return time - RTC_OFFSET;
+-}
+-
+-static void cuda_write_time(long data)
+-{
+-	struct adb_request req;
+-
+-	data += RTC_OFFSET;
+-	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
+-			 (data >> 24) & 0xFF, (data >> 16) & 0xFF,
+-			 (data >> 8) & 0xFF, data & 0xFF) < 0)
+-		return;
+-	while (!req.complete)
+-		cuda_poll();
+-}
+-
+ static __u8 cuda_read_pram(int offset)
+ {
+ 	struct adb_request req;
+@@ -86,34 +58,6 @@ static void cuda_write_pram(int offset, __u8 data)
+ #endif /* CONFIG_ADB_CUDA */
+ 
+ #ifdef CONFIG_ADB_PMU
+-static long pmu_read_time(void)
+-{
+-	struct adb_request req;
+-	long time;
+-
+-	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
+-		return 0;
+-	while (!req.complete)
+-		pmu_poll();
+-
+-	time = (req.reply[1] << 24) | (req.reply[2] << 16) |
+-	       (req.reply[3] << 8) | req.reply[4];
+-	return time - RTC_OFFSET;
+-}
+-
+-static void pmu_write_time(long data)
+-{
+-	struct adb_request req;
+-
+-	data += RTC_OFFSET;
+-	if (pmu_request(&req, NULL, 5, PMU_SET_RTC,
+-			(data >> 24) & 0xFF, (data >> 16) & 0xFF,
+-			(data >> 8) & 0xFF, data & 0xFF) < 0)
+-		return;
+-	while (!req.complete)
+-		pmu_poll();
+-}
+-
+ static __u8 pmu_read_pram(int offset)
+ {
+ 	struct adb_request req;
+@@ -635,12 +579,12 @@ int mac_hwclk(int op, struct rtc_time *t)
+ #ifdef CONFIG_ADB_CUDA
+ 		case MAC_ADB_EGRET:
+ 		case MAC_ADB_CUDA:
+-			now = cuda_read_time();
++			now = cuda_get_time();
+ 			break;
+ #endif
+ #ifdef CONFIG_ADB_PMU
+ 		case MAC_ADB_PB2:
+-			now = pmu_read_time();
++			now = pmu_get_time();
+ 			break;
+ #endif
+ 		default:
+@@ -671,12 +615,12 @@ int mac_hwclk(int op, struct rtc_time *t)
+ #ifdef CONFIG_ADB_CUDA
+ 		case MAC_ADB_EGRET:
+ 		case MAC_ADB_CUDA:
+-			cuda_write_time(now);
++			cuda_set_time(now);
+ 			break;
+ #endif
+ #ifdef CONFIG_ADB_PMU
+ 		case MAC_ADB_PB2:
+-			pmu_write_time(now);
++			pmu_set_time(now);
+ 			break;
+ #endif
+ 		default:
+diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
+index 274af6fa388e..e9c1f3dafe2f 100644
+--- a/arch/powerpc/platforms/powermac/time.c
++++ b/arch/powerpc/platforms/powermac/time.c
+@@ -42,9 +42,6 @@
+ #define DBG(x...)
+ #endif
+ 
+-/* Apparently the RTC stores seconds since 1 Jan 1904 */
+-#define RTC_OFFSET	2082844800
+-
+ /*
+  * Calibrate the decrementer frequency with the VIA timer 1.
+  */
+@@ -103,43 +100,8 @@ static unsigned long from_rtc_time(struct rtc_time *tm)
+ #endif
+ 
+ #ifdef CONFIG_ADB_CUDA
+-static unsigned long cuda_get_time(void)
+-{
+-	struct adb_request req;
+-	unsigned int now;
+-
+-	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
+-		return 0;
+-	while (!req.complete)
+-		cuda_poll();
+-	if (req.reply_len != 7)
+-		printk(KERN_ERR "cuda_get_time: got %d byte reply\n",
+-		       req.reply_len);
+-	now = (req.reply[3] << 24) + (req.reply[4] << 16)
+-		+ (req.reply[5] << 8) + req.reply[6];
+-	return ((unsigned long)now) - RTC_OFFSET;
+-}
+-
+ #define cuda_get_rtc_time(tm)	to_rtc_time(cuda_get_time(), (tm))
+-
+-static int cuda_set_rtc_time(struct rtc_time *tm)
+-{
+-	unsigned int nowtime;
+-	struct adb_request req;
+-
+-	nowtime = from_rtc_time(tm) + RTC_OFFSET;
+-	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
+-			 nowtime >> 24, nowtime >> 16, nowtime >> 8,
+-			 nowtime) < 0)
+-		return -ENXIO;
+-	while (!req.complete)
+-		cuda_poll();
+-	if ((req.reply_len != 3) && (req.reply_len != 7))
+-		printk(KERN_ERR "cuda_set_rtc_time: got %d byte reply\n",
+-		       req.reply_len);
+-	return 0;
+-}
+-
++#define cuda_set_rtc_time(tm)	cuda_set_time(from_rtc_time(tm))
+ #else
+ #define cuda_get_time()		0
+ #define cuda_get_rtc_time(tm)
+@@ -147,40 +109,8 @@ static int cuda_set_rtc_time(struct rtc_time *tm)
+ #endif
+ 
+ #ifdef CONFIG_ADB_PMU
+-static unsigned long pmu_get_time(void)
+-{
+-	struct adb_request req;
+-	unsigned int now;
+-
+-	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
+-		return 0;
+-	pmu_wait_complete(&req);
+-	if (req.reply_len != 4)
+-		printk(KERN_ERR "pmu_get_time: got %d byte reply from PMU\n",
+-		       req.reply_len);
+-	now = (req.reply[0] << 24) + (req.reply[1] << 16)
+-		+ (req.reply[2] << 8) + req.reply[3];
+-	return ((unsigned long)now) - RTC_OFFSET;
+-}
+-
+ #define pmu_get_rtc_time(tm)	to_rtc_time(pmu_get_time(), (tm))
+-
+-static int pmu_set_rtc_time(struct rtc_time *tm)
+-{
+-	unsigned int nowtime;
+-	struct adb_request req;
+-
+-	nowtime = from_rtc_time(tm) + RTC_OFFSET;
+-	if (pmu_request(&req, NULL, 5, PMU_SET_RTC, nowtime >> 24,
+-			nowtime >> 16, nowtime >> 8, nowtime) < 0)
+-		return -ENXIO;
+-	pmu_wait_complete(&req);
+-	if (req.reply_len != 0)
+-		printk(KERN_ERR "pmu_set_rtc_time: %d byte reply from PMU\n",
+-		       req.reply_len);
+-	return 0;
+-}
+-
++#define pmu_set_rtc_time(tm)	pmu_set_time(from_rtc_time(tm))
+ #else
+ #define pmu_get_time()		0
+ #define pmu_get_rtc_time(tm)
+diff --git a/drivers/macintosh/via-cuda.c b/drivers/macintosh/via-cuda.c
+index 019556136e77..8e7fb2115f10 100644
+--- a/drivers/macintosh/via-cuda.c
++++ b/drivers/macintosh/via-cuda.c
+@@ -771,3 +771,37 @@ cuda_input(unsigned char *buf, int nb)
+ 	               buf, nb, false);
+     }
+ }
++
++/* Offset between Unix time (1970-based) and Mac time (1904-based) */
++#define RTC_OFFSET	2082844800
++
++unsigned long cuda_get_time(void)
++{
++	struct adb_request req;
++	unsigned long now;
++
++	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
++		return 0;
++	while (!req.complete)
++		cuda_poll();
++	if (req.reply_len != 7)
++		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
++	now = (req.reply[3] << 24) + (req.reply[4] << 16) +
++	      (req.reply[5] << 8) + req.reply[6];
++	return now - RTC_OFFSET;
++}
++
++int cuda_set_time(unsigned long now)
++{
++	struct adb_request req;
++
++	now += RTC_OFFSET;
++	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
++			now >> 24, now >> 16, now >> 8, now) < 0)
++		return -ENXIO;
++	while (!req.complete)
++		cuda_poll();
++	if ((req.reply_len != 3) && (req.reply_len != 7))
++		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
++	return 0;
++}
 diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 730c10f7fbb7..44919b3b56e0 100644
+index 22cb7d94e3ce..38d7dd0bdb28 100644
 --- a/drivers/macintosh/via-pmu.c
 +++ b/drivers/macintosh/via-pmu.c
-@@ -172,7 +172,9 @@ static int drop_interrupts;
- static int option_lid_wakeup = 1;
- #endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
- static unsigned long async_req_locks;
--static unsigned int pmu_irq_stats[11];
+@@ -1820,6 +1820,38 @@ pmu_shutdown(void)
+ 		;
+ }
+ 
++/* Offset between Unix time (1970-based) and Mac time (1904-based) */
++#define RTC_OFFSET	2082844800
 +
-+#define NUM_IRQ_STATS 13
-+static unsigned int pmu_irq_stats[NUM_IRQ_STATS];
- 
- static struct proc_dir_entry *proc_pmu_root;
- static struct proc_dir_entry *proc_pmu_info;
-@@ -884,9 +886,9 @@ static const struct file_operations pmu_info_proc_fops = {
- static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
++unsigned long pmu_get_time(void)
++{
++	struct adb_request req;
++	unsigned long now;
++
++	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
++		return 0;
++	pmu_wait_complete(&req);
++	if (req.reply_len != 4)
++		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
++	now = (req.reply[0] << 24) + (req.reply[1] << 16) +
++	      (req.reply[2] << 8) + req.reply[3];
++	return now - RTC_OFFSET;
++}
++
++int pmu_set_time(unsigned long now)
++{
++	struct adb_request req;
++
++	now += RTC_OFFSET;
++	if (pmu_request(&req, NULL, 5, PMU_SET_RTC,
++			now >> 24, now >> 16, now >> 8, now) < 0)
++		return -ENXIO;
++	pmu_wait_complete(&req);
++	if (req.reply_len != 0)
++		pr_err("%s: got %d byte reply\n", __func__, req.reply_len);
++	return 0;
++}
++
+ int
+ pmu_present(void)
  {
- 	int i;
--	static const char *irq_names[] = {
--		"Total CB1 triggered events",
--		"Total GPIO1 triggered events",
-+	static const char *irq_names[NUM_IRQ_STATS] = {
-+		"Unknown interrupt (type 0)",
-+		"Unknown interrupt (type 1)",
- 		"PC-Card eject button",
- 		"Sound/Brightness button",
- 		"ADB message",
-@@ -895,10 +897,12 @@ static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
- 		"Tick timer",
- 		"Ghost interrupt (zero len)",
- 		"Empty interrupt (empty mask)",
--		"Max irqs in a row"
-+		"Max irqs in a row",
-+		"Total CB1 triggered events",
-+		"Total GPIO1 triggered events",
-         };
+diff --git a/include/linux/cuda.h b/include/linux/cuda.h
+index 056867f09a01..a68669f746e1 100644
+--- a/include/linux/cuda.h
++++ b/include/linux/cuda.h
+@@ -16,4 +16,7 @@ extern int cuda_request(struct adb_request *req,
+ 			void (*done)(struct adb_request *), int nbytes, ...);
+ extern void cuda_poll(void);
  
--	for (i=0; i<11; i++) {
-+	for (i = 0; i < NUM_IRQ_STATS; i++) {
- 		seq_printf(m, " %2u: %10u (%s)\n",
- 			     i, pmu_irq_stats[i], irq_names[i]);
- 	}
-@@ -1659,7 +1663,7 @@ via_pmu_interrupt(int irq, void *arg)
- 		}
- 		if (intr & CB1_INT) {
- 			adb_int_pending = 1;
--			pmu_irq_stats[0]++;
-+			pmu_irq_stats[11]++;
- 		}
- 		if (intr & SR_INT) {
- 			req = pmu_sr_intr();
-@@ -1746,7 +1750,7 @@ gpio1_interrupt(int irq, void *arg)
- 			disable_irq_nosync(gpio_irq);
- 			gpio_irq_enabled = 0;
- 		}
--		pmu_irq_stats[1]++;
-+		pmu_irq_stats[12]++;
- 		adb_int_pending = 1;
- 		spin_unlock_irqrestore(&pmu_lock, flags);
- 		via_pmu_interrupt(0, NULL);
++extern unsigned long cuda_get_time(void);
++extern int cuda_set_time(unsigned long now);
++
+ #endif /* _LINUX_CUDA_H */
+diff --git a/include/linux/pmu.h b/include/linux/pmu.h
+index 9ac8fc60ad49..feefd0bff9cf 100644
+--- a/include/linux/pmu.h
++++ b/include/linux/pmu.h
+@@ -34,6 +34,9 @@ static inline void pmu_resume(void)
+ {}
+ #endif
+ 
++extern unsigned long pmu_get_time(void);
++extern int pmu_set_time(unsigned long now);
++
+ extern void pmu_enable_irled(int on);
+ 
+ extern void pmu_restart(void);
 -- 
 2.16.4
