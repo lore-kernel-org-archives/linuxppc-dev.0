@@ -2,8 +2,8 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kB6pk0zDr1b
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kC361lzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:39 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
  "H. Peter Anvin" <hpa@zytor.com>
@@ -13,12 +13,14 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Jacob Pan <jacob.jun.pan@intel.com>,
- Dou Liyang <douly.fnst@cn.fujitsu.com>, Juergen Gross <jgross@suse.com>,
- iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 05/23] x86/msi: Add support for IRQCHIP_CAN_DELIVER_AS_NMI
-Date: Tue, 12 Jun 2018 17:57:25 -0700
-Message-Id: <1528851463-21140-6-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ Jacob Pan <jacob.jun.pan@intel.com>, Juergen Gross <jgross@suse.com>,
+ Baoquan He <bhe@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+ Dou Liyang <douly.fnst@cn.fujitsu.com>,
+ Jan Kiszka <jan.kiszka@siemens.com>, iommu@lists.linux-foundation.org
+Subject: [RFC PATCH 06/23] x86/ioapic: Add support for
+ IRQCHIP_CAN_DELIVER_AS_NMI with interrupt remapping
+Date: Tue, 12 Jun 2018 17:57:26 -0700
+Message-Id: <1528851463-21140-7-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,51 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As per the Intel 64 and IA-32 Architectures Software Developer's Manual
-Volume 3 Section 10.11.2, the delivery mode field of the interrupt message
-can be set to configure as non-maskable. Declare support to deliver non-
-maskable interrupts by adding IRQCHIP_CAN_DELIVER_AS_NMI.
+Even though there is a delivery mode field at the entries of an IO APIC's
+redirection table, the documentation of the majority of the IO APICs
+explicitly states that interrupt delivery as non-maskable is not supported.
+Thus,
 
-When composing the interrupt message, the delivery mode is obtained from
-the configuration of the interrupt data.
+However, when using an IO APIC in combination with the Intel VT-d interrupt
+remapping functionality, the delivery of the interrupt to the CPU is
+handled by the remapping hardware. In such a case, the interrupt can be
+delivered as non maskable.
+
+Thus, add the IRQCHIP_CAN_DELIVER_AS_NMI flag only when used in combination
+with interrupt remapping.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Borislav Petkov <bp@suse.de>
 Cc: Jacob Pan <jacob.jun.pan@intel.com>
-Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
 Cc: Juergen Gross <jgross@suse.com>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
+Cc: Jan Kiszka <jan.kiszka@siemens.com>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- arch/x86/kernel/apic/msi.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/x86/kernel/apic/io_apic.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/apic/msi.c b/arch/x86/kernel/apic/msi.c
-index 12202ac..68b6a04 100644
---- a/arch/x86/kernel/apic/msi.c
-+++ b/arch/x86/kernel/apic/msi.c
-@@ -29,6 +29,9 @@ static void irq_msi_compose_msg(struct irq_data *data, struct msi_msg *msg)
- {
- 	struct irq_cfg *cfg = irqd_cfg(data);
- 
-+	if (irqd_deliver_as_nmi(data))
-+		cfg->delivery_mode = dest_NMI;
-+
- 	msg->address_hi = MSI_ADDR_BASE_HI;
- 
- 	if (x2apic_enabled())
-@@ -297,7 +300,7 @@ static struct irq_chip hpet_msi_controller __ro_after_init = {
- 	.irq_retrigger = irq_chip_retrigger_hierarchy,
- 	.irq_compose_msi_msg = irq_msi_compose_msg,
- 	.irq_write_msi_msg = hpet_msi_write_msg,
--	.flags = IRQCHIP_SKIP_SET_WAKE,
-+	.flags = IRQCHIP_SKIP_SET_WAKE | IRQCHIP_CAN_DELIVER_AS_NMI,
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 10a20f8..39de91b 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1911,7 +1911,8 @@ static struct irq_chip ioapic_ir_chip __read_mostly = {
+ 	.irq_eoi		= ioapic_ir_ack_level,
+ 	.irq_set_affinity	= ioapic_set_affinity,
+ 	.irq_retrigger		= irq_chip_retrigger_hierarchy,
+-	.flags			= IRQCHIP_SKIP_SET_WAKE,
++	.flags			= IRQCHIP_SKIP_SET_WAKE |
++				  IRQCHIP_CAN_DELIVER_AS_NMI,
  };
  
- static irq_hw_number_t hpet_msi_get_hwirq(struct msi_domain_info *info,
+ static inline void init_IO_APIC_traps(void)
 -- 
 2.7.4
