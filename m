@@ -3,10 +3,10 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415FYC5QzhzDrcd
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 15:24:15 +1000 (AEST)
-Subject: Re: [RFC PATCH 16/23] watchdog/hardlockup: Add an HPET-based
- hardlockup detector
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415Fcj0KZ3zDrbK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 15:27:17 +1000 (AEST)
+Subject: Re: [RFC PATCH 22/23] watchdog/hardlockup/hpet: Only enable the HPET
+ watchdog via a boot parameter
 To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
  "H. Peter Anvin" <hpa@zytor.com>
@@ -34,12 +34,12 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-17-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <1528851463-21140-23-git-send-email-ricardo.neri-calderon@linux.intel.com>
 From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <1e5bc136-4123-328a-2d2e-e6f2faef5bf4@infradead.org>
-Date: Tue, 12 Jun 2018 22:23:47 -0700
+Message-ID: <c2edf778-79cf-009d-6617-13e54ad8b93b@infradead.org>
+Date: Tue, 12 Jun 2018 22:26:57 -0700
 MIME-Version: 1.0
-In-Reply-To: <1528851463-21140-17-git-send-email-ricardo.neri-calderon@linux.intel.com>
+In-Reply-To: <1528851463-21140-23-git-send-email-ricardo.neri-calderon@linux.intel.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -50,34 +50,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
 On 06/12/2018 05:57 PM, Ricardo Neri wrote:
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index c40c7b7..6e79833 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -828,6 +828,16 @@ config HARDLOCKUP_DETECTOR_PERF
->  	bool
->  	select SOFTLOCKUP_DETECTOR
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index f2040d4..a8833c7 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -2577,7 +2577,7 @@
+>  			Format: [state][,regs][,debounce][,die]
 >  
-> +config HARDLOCKUP_DETECTOR_HPET
-> +	bool "Use HPET Timer for Hard Lockup Detection"
-> +	select SOFTLOCKUP_DETECTOR
-> +	select HARDLOCKUP_DETECTOR
-> +	depends on HPET_TIMER && HPET
-> +	help
-> +	  Say y to enable a hardlockup detector that is driven by an High-Precision
-> +	  Event Timer. In addition to selecting this option, the command-line
-> +	  parameter nmi_watchdog option. See Documentation/admin-guide/kernel-parameters.rst
+>  	nmi_watchdog=	[KNL,BUGS=X86] Debugging features for SMP kernels
+> -			Format: [panic,][nopanic,][num]
+> +			Format: [panic,][nopanic,][num,][hpet]
+>  			Valid num: 0 or 1
+>  			0 - turn hardlockup detector in nmi_watchdog off
+>  			1 - turn hardlockup detector in nmi_watchdog on
 
-The "In addition ..." thing is a broken (incomplete) sentence.
+This says that I can use "nmi_watchdog=hpet" without using 0 or 1.
+Is that correct?
 
-> +
->  #
->  # Enables a timestamp based low pass filter to compensate for perf based
->  # hard lockup detection which runs too fast due to turbo modes.
+> @@ -2587,6 +2587,9 @@
+>  			please see 'nowatchdog'.
+>  			This is useful when you use a panic=... timeout and
+>  			need the box quickly up again.
+> +			When hpet is specified, the NMI watchdog will be driven
+> +			by an HPET timer, if available in the system. Otherwise,
+> +			the perf-based implementation will be used.
+>  
+>  			These settings can be accessed at runtime via
+>  			the nmi_watchdog and hardlockup_panic sysctls.
 
 
+thanks,
 -- 
 ~Randy
