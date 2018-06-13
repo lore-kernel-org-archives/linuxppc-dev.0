@@ -2,7 +2,7 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kD2v3vzDqsx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kD2vNszDr1b
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:40 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
@@ -18,10 +18,10 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  Kate Stewart <kstewart@linuxfoundation.org>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
  iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 09/23] x86/hpet: Reserve timer for the HPET hardlockup
- detector
-Date: Tue, 12 Jun 2018 17:57:29 -0700
-Message-Id: <1528851463-21140-10-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Subject: [RFC PATCH 08/23] x86/hpet: Calculate ticks-per-second in a separate
+ function
+Date: Tue, 12 Jun 2018 17:57:28 -0700
+Message-Id: <1528851463-21140-9-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,16 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-HPET timer 2 will be used to drive the HPET-based hardlockup detector.
-Reserve such timer to ensure it cannot be used by user space programs or
-clock events.
+It is easier to compute the expiration times of an HPET timer by using
+its frequency (i.e., the number of times it ticks in a second) than its
+period, as given in the capabilities register.
 
-When looking for MSI-capable timers for clock events, skip timer 2 if
-the HPET hardlockup detector is selected.
-
-Also, do not assign an IO APIC pin to timer 2 of the HPET. A subsequent
-changeset will handle the interrupt setup of the timer used for the
-hardlockup detector.
+In addition to the HPET char driver, the HPET-based hardlockup detector
+will also need to know the timer's frequency. Thus, create a common
+function that both can use.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
@@ -59,81 +56,83 @@ Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- arch/x86/include/asm/hpet.h |  3 +++
- arch/x86/kernel/hpet.c      | 19 ++++++++++++++++---
- 2 files changed, 19 insertions(+), 3 deletions(-)
+ drivers/char/hpet.c  | 31 +++++++++++++++++++++++++------
+ include/linux/hpet.h |  1 +
+ 2 files changed, 26 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
-index 9e0afde..3266796 100644
---- a/arch/x86/include/asm/hpet.h
-+++ b/arch/x86/include/asm/hpet.h
-@@ -61,6 +61,9 @@
-  */
- #define HPET_MIN_PERIOD		100000UL
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index be426eb..1c9584a 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -838,6 +838,29 @@ static unsigned long hpet_calibrate(struct hpets *hpetp)
+ 	return ret;
+ }
  
-+/* Timer used for the hardlockup detector */
-+#define HPET_WD_TIMER_NR 2
++u64 hpet_get_ticks_per_sec(u64 hpet_caps)
++{
++	u64 ticks_per_sec, period;
 +
- /* hpet memory map physical address */
- extern unsigned long hpet_address;
- extern unsigned long force_hpet_address;
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 3fa1d3f..b03faee 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -185,7 +185,8 @@ do {								\
- 
- /*
-  * When the hpet driver (/dev/hpet) is enabled, we need to reserve
-- * timer 0 and timer 1 in case of RTC emulation.
-+ * timer 0 and timer 1 in case of RTC emulation. Timer 2 is reserved in case
-+ * the HPET-based hardlockup detector is used.
-  */
- #ifdef CONFIG_HPET
- 
-@@ -195,7 +196,7 @@ static void hpet_reserve_platform_timers(unsigned int id)
++	period = (hpet_caps & HPET_COUNTER_CLK_PERIOD_MASK) >>
++		 HPET_COUNTER_CLK_PERIOD_SHIFT; /* fs, 10^-15 */
++
++	/*
++	 * The frequency is the reciprocal of the period. The period is given
++	 * femtoseconds per second. Thus, prepare a dividend to obtain the
++	 * frequency in ticks per second.
++	 */
++
++	/* 10^15 femtoseconds per second */
++	ticks_per_sec = 1000000000000000uLL;
++	ticks_per_sec += period >> 1; /* round */
++
++	/* The quotient is put in the dividend. We drop the remainder. */
++	do_div(ticks_per_sec, period);
++
++	return ticks_per_sec;
++}
++
+ int hpet_alloc(struct hpet_data *hdp)
  {
- 	struct hpet __iomem *hpet = hpet_virt_address;
- 	struct hpet_timer __iomem *timer = &hpet->hpet_timers[2];
--	unsigned int nrtimers, i;
-+	unsigned int nrtimers, i, start_timer;
- 	struct hpet_data hd;
+ 	u64 cap, mcfg;
+@@ -847,7 +870,6 @@ int hpet_alloc(struct hpet_data *hdp)
+ 	size_t siz;
+ 	struct hpet __iomem *hpet;
+ 	static struct hpets *last;
+-	unsigned long period;
+ 	unsigned long long temp;
+ 	u32 remainder;
  
- 	nrtimers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT) + 1;
-@@ -210,6 +211,13 @@ static void hpet_reserve_platform_timers(unsigned int id)
- 	hpet_reserve_timer(&hd, 1);
- #endif
+@@ -883,6 +905,8 @@ int hpet_alloc(struct hpet_data *hdp)
  
-+	if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_HPET)) {
-+		hpet_reserve_timer(&hd, HPET_WD_TIMER_NR);
-+		start_timer = HPET_WD_TIMER_NR + 1;
-+	} else {
-+		start_timer = HPET_WD_TIMER_NR;
-+	}
+ 	cap = readq(&hpet->hpet_cap);
+ 
++	temp = hpet_get_ticks_per_sec(cap);
 +
- 	/*
- 	 * NOTE that hd_irq[] reflects IOAPIC input pins (LEGACY_8254
- 	 * is wrong for i8259!) not the output IRQ.  Many BIOS writers
-@@ -218,7 +226,7 @@ static void hpet_reserve_platform_timers(unsigned int id)
- 	hd.hd_irq[0] = HPET_LEGACY_8254;
- 	hd.hd_irq[1] = HPET_LEGACY_RTC;
+ 	ntimer = ((cap & HPET_NUM_TIM_CAP_MASK) >> HPET_NUM_TIM_CAP_SHIFT) + 1;
  
--	for (i = 2; i < nrtimers; timer++, i++) {
-+	for (i = start_timer; i < nrtimers; timer++, i++) {
- 		hd.hd_irq[i] = (readl(&timer->hpet_config) &
- 			Tn_INT_ROUTE_CNF_MASK) >> Tn_INT_ROUTE_CNF_SHIFT;
- 	}
-@@ -630,6 +638,11 @@ static void hpet_msi_capability_lookup(unsigned int start_timer)
- 		struct hpet_dev *hdev = &hpet_devs[num_timers_used];
- 		unsigned int cfg = hpet_readl(HPET_Tn_CFG(i));
+ 	if (hpetp->hp_ntimer != ntimer) {
+@@ -899,11 +923,6 @@ int hpet_alloc(struct hpet_data *hdp)
  
-+		/* Do not use timer reserved for the HPET watchdog. */
-+		if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_HPET) &&
-+		    i == HPET_WD_TIMER_NR)
-+			continue;
-+
- 		/* Only consider HPET timer with MSI support */
- 		if (!(cfg & HPET_TN_FSB_CAP))
- 			continue;
+ 	last = hpetp;
+ 
+-	period = (cap & HPET_COUNTER_CLK_PERIOD_MASK) >>
+-		HPET_COUNTER_CLK_PERIOD_SHIFT; /* fs, 10^-15 */
+-	temp = 1000000000000000uLL; /* 10^15 femtoseconds per second */
+-	temp += period >> 1; /* round */
+-	do_div(temp, period);
+ 	hpetp->hp_tick_freq = temp; /* ticks per second */
+ 
+ 	printk(KERN_INFO "hpet%d: at MMIO 0x%lx, IRQ%s",
+diff --git a/include/linux/hpet.h b/include/linux/hpet.h
+index 8604564..e7b36bcf4 100644
+--- a/include/linux/hpet.h
++++ b/include/linux/hpet.h
+@@ -107,5 +107,6 @@ static inline void hpet_reserve_timer(struct hpet_data *hd, int timer)
+ }
+ 
+ int hpet_alloc(struct hpet_data *);
++u64 hpet_get_ticks_per_sec(u64 hpet_caps);
+ 
+ #endif				/* !__HPET__ */
 -- 
 2.7.4
