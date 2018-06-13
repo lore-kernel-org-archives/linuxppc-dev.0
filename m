@@ -1,37 +1,17 @@
-Return-Path: <julien.thierry@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 415NDl70zNzDr9J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 20:25:25 +1000 (AEST)
-Subject: Re: [RFC PATCH 03/23] genirq: Introduce IRQF_DELIVER_AS_NMI
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>,
- Randy Dunlap <rdunlap@infradead.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Marc Zyngier <marc.zyngier@arm.com>,
- Bartosz Golaszewski <brgl@bgdev.pl>, Doug Berger <opendmb@gmail.com>,
- Palmer Dabbelt <palmer@sifive.com>, iommu@lists.linux-foundation.org
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-4-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <20180613083419.GS12258@hirez.programming.kicks-ass.net>
- <26687332-ab8f-7f6d-909a-f0918dbfea86@arm.com>
- <alpine.DEB.2.21.1806131104570.2280@nanos.tec.linutronix.de>
- <344b838e-81e3-97d8-f90d-315fed7879c1@arm.com>
- <alpine.DEB.2.21.1806131149410.2280@nanos.tec.linutronix.de>
-From: Julien Thierry <julien.thierry@arm.com>
-Message-ID: <5c52d916-e405-e689-8fa1-d2dfb28ab3fd@arm.com>
-Date: Wed, 13 Jun 2018 11:25:18 +0100
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.21.1806131149410.2280@nanos.tec.linutronix.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 415NWJ6dmVzDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 20:38:04 +1000 (AEST)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
+Message-Id: <6337cdd06d5ea5828c4917ccbfd0125bb8a52cb9.1528885172.git.fthain@telegraphics.com.au>
+In-Reply-To: <cover.1528885172.git.fthain@telegraphics.com.au>
+References: <cover.1528885172.git.fthain@telegraphics.com.au>
+From: Finn Thain <fthain@telegraphics.com.au>
+Subject: [PATCH v3 02/12] macintosh/via-pmu: Add missing mmio accessors
+Date: Wed, 13 Jun 2018 06:38:01 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,42 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Add missing in_8() accessors to init_pmu() and pmu_sr_intr().
 
+This fixes several sparse warnings:
+drivers/macintosh/via-pmu.c:536:29: warning: dereference of noderef expression
+drivers/macintosh/via-pmu.c:537:33: warning: dereference of noderef expression
+drivers/macintosh/via-pmu.c:1455:17: warning: dereference of noderef expression
+drivers/macintosh/via-pmu.c:1456:69: warning: dereference of noderef expression
 
-On 13/06/18 10:57, Thomas Gleixner wrote:
-> On Wed, 13 Jun 2018, Julien Thierry wrote:
->> On 13/06/18 10:20, Thomas Gleixner wrote:
->>> Adding NMI delivery support at low level architecture irq chip level is
->>> perfectly fine, but the exposure of that needs to be restricted very
->>> much. Adding it to the generic interrupt control interfaces is not going to
->>> happen. That's doomed to begin with and a complete abuse of the interface
->>> as the handler can not ever be used for that.
->>>
->>
->> Understood, however the need would be to provide a way for a driver to request
->> an interrupt to be delivered as an NMI (if irqchip supports it).
-> 
-> s/driver/specialized code written by people who know what they are doing/
-> 
->> But from your response this would be out of the question (in the
->> interrupt/irq/irqchip definitions).
-> 
-> Adding some magic to the irq chip is fine, because that's where the low
-> level integration needs to be done, but exposing it through the generic
-> interrupt subsystem is a NONO for obvious reasons.
-> 
->> Or somehow the concerned irqchip informs the arch it supports NMI delivery and
->> it is up to the interested drivers to query the arch whether NMI delivery is
->> supported by the system?
-> 
-> Yes, we need some infrastructure for that, but that needs to be separate
-> and with very limited exposure.
-> 
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/macintosh/via-pmu.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Right, makes sense. I'll check with Marc how such an infrastructure 
-should be introduced.
-
-Thanks,
-
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index fd3c5640d586..74065ea410bd 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -532,8 +532,9 @@ init_pmu(void)
+ 	int timeout;
+ 	struct adb_request req;
+ 
+-	out_8(&via[B], via[B] | TREQ);			/* negate TREQ */
+-	out_8(&via[DIRB], (via[DIRB] | TREQ) & ~TACK);	/* TACK in, TREQ out */
++	/* Negate TREQ. Set TACK to input and TREQ to output. */
++	out_8(&via[B], in_8(&via[B]) | TREQ);
++	out_8(&via[DIRB], (in_8(&via[DIRB]) | TREQ) & ~TACK);
+ 
+ 	pmu_request(&req, NULL, 2, PMU_SET_INTR_MASK, pmu_intr_mask);
+ 	timeout =  100000;
+@@ -1455,8 +1456,8 @@ pmu_sr_intr(void)
+ 	struct adb_request *req;
+ 	int bite = 0;
+ 
+-	if (via[B] & TREQ) {
+-		printk(KERN_ERR "PMU: spurious SR intr (%x)\n", via[B]);
++	if (in_8(&via[B]) & TREQ) {
++		printk(KERN_ERR "PMU: spurious SR intr (%x)\n", in_8(&via[B]));
+ 		out_8(&via[IFR], SR_INT);
+ 		return NULL;
+ 	}
 -- 
-Julien Thierry
+2.16.4
