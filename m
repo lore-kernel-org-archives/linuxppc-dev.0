@@ -1,46 +1,20 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415Fcj0KZ3zDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 15:27:17 +1000 (AEST)
-Subject: Re: [RFC PATCH 22/23] watchdog/hardlockup/hpet: Only enable the HPET
- watchdog via a boot parameter
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, Babu Moger <babu.moger@oracle.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Byungchul Park <byungchul.park@lge.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, Waiman Long <longman@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Christoffer Dall <cdall@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-23-git-send-email-ricardo.neri-calderon@linux.intel.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <c2edf778-79cf-009d-6617-13e54ad8b93b@infradead.org>
-Date: Tue, 12 Jun 2018 22:26:57 -0700
-MIME-Version: 1.0
-In-Reply-To: <1528851463-21140-23-git-send-email-ricardo.neri-calderon@linux.intel.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415GSt1RnqzDrp0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 16:05:32 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id q4-v6so740130pgr.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 23:05:32 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH] powerpc/64s/radix: Fix MADV_[FREE|DONTNEED] TLB flush
+ miss problem with THP
+Date: Wed, 13 Jun 2018 16:05:13 +1000
+Message-Id: <20180613060513.7087-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,36 +24,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/12/2018 05:57 PM, Ricardo Neri wrote:
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index f2040d4..a8833c7 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -2577,7 +2577,7 @@
->  			Format: [state][,regs][,debounce][,die]
->  
->  	nmi_watchdog=	[KNL,BUGS=X86] Debugging features for SMP kernels
-> -			Format: [panic,][nopanic,][num]
-> +			Format: [panic,][nopanic,][num,][hpet]
->  			Valid num: 0 or 1
->  			0 - turn hardlockup detector in nmi_watchdog off
->  			1 - turn hardlockup detector in nmi_watchdog on
+The patch 99baac21e4 ("mm: fix MADV_[FREE|DONTNEED] TLB flush miss
+problem") added a force flush mode to the mmu_gather flush, which
+unconditionally flushes the entire address range being invalidated
+(even if actual ptes only covered a smaller range), to solve a problem
+with concurrent threads invalidating the same PTEs causing them to
+miss TLBs that need flushing.
 
-This says that I can use "nmi_watchdog=hpet" without using 0 or 1.
-Is that correct?
+This does not work with powerpc that invalidates mmu_gather batches
+according to page size. Have powerpc flush all possible page sizes in
+the range if it encounters the concurrency condition.
 
-> @@ -2587,6 +2587,9 @@
->  			please see 'nowatchdog'.
->  			This is useful when you use a panic=... timeout and
->  			need the box quickly up again.
-> +			When hpet is specified, the NMI watchdog will be driven
-> +			by an HPET timer, if available in the system. Otherwise,
-> +			the perf-based implementation will be used.
->  
->  			These settings can be accessed at runtime via
->  			the nmi_watchdog and hardlockup_panic sysctls.
+[ Do we need to do anything for hash? ]
 
+Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/mm/tlb-radix.c | 53 ++++++++++++++++++++++++++++++-------
+ 1 file changed, 43 insertions(+), 10 deletions(-)
 
-thanks,
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 67a6e86d3e7e..a09df0318324 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -689,22 +689,16 @@ EXPORT_SYMBOL(radix__flush_tlb_kernel_range);
+ static unsigned long tlb_single_page_flush_ceiling __read_mostly = 33;
+ static unsigned long tlb_local_single_page_flush_ceiling __read_mostly = POWER9_TLB_SETS_RADIX * 2;
+ 
+-void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
++static void __flush_tlb_range(struct mm_struct *mm, unsigned long start,
+ 		     unsigned long end)
+ 
+ {
+-	struct mm_struct *mm = vma->vm_mm;
+ 	unsigned long pid;
+ 	unsigned int page_shift = mmu_psize_defs[mmu_virtual_psize].shift;
+ 	unsigned long page_size = 1UL << page_shift;
+ 	unsigned long nr_pages = (end - start) >> page_shift;
+ 	bool local, full;
+ 
+-#ifdef CONFIG_HUGETLB_PAGE
+-	if (is_vm_hugetlb_page(vma))
+-		return radix__flush_hugetlb_tlb_range(vma, start, end);
+-#endif
+-
+ 	pid = mm->context.id;
+ 	if (unlikely(pid == MMU_NO_CONTEXT))
+ 		return;
+@@ -769,6 +763,18 @@ void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+ 	}
+ 	preempt_enable();
+ }
++
++void radix__flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
++		     unsigned long end)
++
++{
++#ifdef CONFIG_HUGETLB_PAGE
++	if (is_vm_hugetlb_page(vma))
++		return radix__flush_hugetlb_tlb_range(vma, start, end);
++#endif
++
++	__flush_tlb_range(vma->vm_mm, start, end);
++}
+ EXPORT_SYMBOL(radix__flush_tlb_range);
+ 
+ static int radix_get_mmu_psize(int page_size)
+@@ -837,6 +843,8 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	int psize = 0;
+ 	struct mm_struct *mm = tlb->mm;
+ 	int page_size = tlb->page_size;
++	unsigned long start = tlb->start;
++	unsigned long end = tlb->end;
+ 
+ 	/*
+ 	 * if page size is not something we understand, do a full mm flush
+@@ -844,18 +852,43 @@ void radix__tlb_flush(struct mmu_gather *tlb)
+ 	 * A "fullmm" flush must always do a flush_all_mm (RIC=2) flush
+ 	 * that flushes the process table entry cache upon process teardown.
+ 	 * See the comment for radix in arch_exit_mmap().
++	 *
++	 * If there is a concurrent TLB invalidation operation
+ 	 */
+ 	if (tlb->fullmm) {
+ 		__flush_all_mm(mm, true);
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	} else if (mm_tlb_flush_pending(mm)) {
++		/*
++		 * If there is a concurrent invalidation that is clearing ptes,
++		 * then it's possible this invalidation will miss one of those
++		 * cleared ptes and miss flushing the TLB. If this invalidate
++		 * returns before the other one flushes TLBs, that can result
++		 * in it returning while there are still valid TLBs inside the
++		 * range to be invalidated.
++		 *
++		 * See mm/memory.c:tlb_finish_mmu() for more details.
++		 *
++		 * The solution to this is ensure the entire range is always
++		 * flushed here. The problem for powerpc is that the flushes
++		 * are page size specific, so this "forced flush" would not
++		 * do the right thing if there are a mix of page sizes in
++		 * the range to be invalidated. So use __flush_tlb_range
++		 * which invalidates all possible page sizes in the range.
++		 *
++		 * PWC flush probably is not be required because the core code
++		 * shouldn't free page tables in this path, but accounting
++		 * for the possibility makes us a bit more robust.
++		 */
++		WARN_ON_ONCE(tlb->need_flush_all);
++		__flush_tlb_range(mm, start, end);
++#endif
+ 	} else if ( (psize = radix_get_mmu_psize(page_size)) == -1) {
+ 		if (!tlb->need_flush_all)
+ 			radix__flush_tlb_mm(mm);
+ 		else
+ 			radix__flush_all_mm(mm);
+ 	} else {
+-		unsigned long start = tlb->start;
+-		unsigned long end = tlb->end;
+-
+ 		if (!tlb->need_flush_all)
+ 			radix__flush_tlb_range_psize(mm, start, end, psize);
+ 		else
 -- 
-~Randy
+2.17.0
