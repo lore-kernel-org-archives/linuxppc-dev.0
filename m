@@ -2,8 +2,8 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kC3KvZzDr1d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kD2v3vzDqsx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:40 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
  "H. Peter Anvin" <hpa@zytor.com>
@@ -13,15 +13,15 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Jacob Pan <jacob.jun.pan@intel.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
+ Jacob Pan <jacob.jun.pan@intel.com>, Clemens Ladisch <clemens@ladisch.de>,
+ Arnd Bergmann <arnd@arndb.de>, Philippe Ombredanne <pombredanne@nexb.com>,
  Kate Stewart <kstewart@linuxfoundation.org>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
  iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 07/23] x86/hpet: Expose more functions to read and write
- registers
-Date: Tue, 12 Jun 2018 17:57:27 -0700
-Message-Id: <1528851463-21140-8-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Subject: [RFC PATCH 09/23] x86/hpet: Reserve timer for the HPET hardlockup
+ detector
+Date: Tue, 12 Jun 2018 17:57:29 -0700
+Message-Id: <1528851463-21140-10-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,26 +33,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of the registers in the HPET hardware have a width of 64 bits. 64-bit
-access functions are needed mostly to read the counter and write the
-comparator in a single read or write. Also, 64-bit accesses can be used to
-to read parameters located in the higher bits of some registers (such as
-the timer period and the IO APIC pins that can be asserted by the timer)
-without the need of masking and shifting the register values.
+HPET timer 2 will be used to drive the HPET-based hardlockup detector.
+Reserve such timer to ensure it cannot be used by user space programs or
+clock events.
 
-64-bit read and write functions are added. These functions, along with the
-existing hpet_writel(), are exposed via the HPET header to be used by other
-kernel subsystems.
+When looking for MSI-capable timers for clock events, skip timer 2 if
+the HPET hardlockup detector is selected.
 
-Thus far, the only consumer of these functions will the HPET-based
-hardlockup detector, which will only be available in 64-bit builds. Thus,
-the 64-bit access functions are wrapped in CONFIG_X86_64.
+Also, do not assign an IO APIC pin to timer 2 of the HPET. A subsequent
+changeset will handle the interrupt setup of the timer used for the
+hardlockup detector.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Borislav Petkov <bp@suse.de>
 Cc: Jacob Pan <jacob.jun.pan@intel.com>
+Cc: Clemens Ladisch <clemens@ladisch.de>
+Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Philippe Ombredanne <pombredanne@nexb.com>
 Cc: Kate Stewart <kstewart@linuxfoundation.org>
 Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
@@ -61,65 +59,81 @@ Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- arch/x86/include/asm/hpet.h | 10 ++++++++++
- arch/x86/kernel/hpet.c      | 12 +++++++++++-
- 2 files changed, 21 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/hpet.h |  3 +++
+ arch/x86/kernel/hpet.c      | 19 ++++++++++++++++---
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
-index 67385d5..9e0afde 100644
+index 9e0afde..3266796 100644
 --- a/arch/x86/include/asm/hpet.h
 +++ b/arch/x86/include/asm/hpet.h
-@@ -72,6 +72,11 @@ extern int is_hpet_enabled(void);
- extern int hpet_enable(void);
- extern void hpet_disable(void);
- extern unsigned int hpet_readl(unsigned int a);
-+extern void hpet_writel(unsigned int d, unsigned int a);
-+#ifdef CONFIG_X86_64
-+extern unsigned long hpet_readq(unsigned int a);
-+extern void hpet_writeq(unsigned long d, unsigned int a);
-+#endif
- extern void force_hpet_resume(void);
+@@ -61,6 +61,9 @@
+  */
+ #define HPET_MIN_PERIOD		100000UL
  
- struct irq_data;
-@@ -109,6 +114,11 @@ extern void hpet_unregister_irq_handler(rtc_irq_handler handler);
- static inline int hpet_enable(void) { return 0; }
- static inline int is_hpet_enabled(void) { return 0; }
- #define hpet_readl(a) 0
-+#define hpet_writel(d, a)
-+#ifdef CONFIG_X86_64
-+#define hpet_readq(a) 0
-+#define hpet_writeq(d, a)
-+#endif
- #define default_setup_hpet_msi	NULL
- 
- #endif
++/* Timer used for the hardlockup detector */
++#define HPET_WD_TIMER_NR 2
++
+ /* hpet memory map physical address */
+ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
 diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 8ce4212..3fa1d3f 100644
+index 3fa1d3f..b03faee 100644
 --- a/arch/x86/kernel/hpet.c
 +++ b/arch/x86/kernel/hpet.c
-@@ -64,12 +64,22 @@ inline unsigned int hpet_readl(unsigned int a)
- 	return readl(hpet_virt_address + a);
- }
+@@ -185,7 +185,8 @@ do {								\
  
--static inline void hpet_writel(unsigned int d, unsigned int a)
-+inline void hpet_writel(unsigned int d, unsigned int a)
+ /*
+  * When the hpet driver (/dev/hpet) is enabled, we need to reserve
+- * timer 0 and timer 1 in case of RTC emulation.
++ * timer 0 and timer 1 in case of RTC emulation. Timer 2 is reserved in case
++ * the HPET-based hardlockup detector is used.
+  */
+ #ifdef CONFIG_HPET
+ 
+@@ -195,7 +196,7 @@ static void hpet_reserve_platform_timers(unsigned int id)
  {
- 	writel(d, hpet_virt_address + a);
- }
+ 	struct hpet __iomem *hpet = hpet_virt_address;
+ 	struct hpet_timer __iomem *timer = &hpet->hpet_timers[2];
+-	unsigned int nrtimers, i;
++	unsigned int nrtimers, i, start_timer;
+ 	struct hpet_data hd;
  
- #ifdef CONFIG_X86_64
-+inline unsigned long hpet_readq(unsigned int a)
-+{
-+	return readq(hpet_virt_address + a);
-+}
-+
-+inline void hpet_writeq(unsigned long d, unsigned int a)
-+{
-+	writeq(d, hpet_virt_address + a);
-+}
-+
- #include <asm/pgtable.h>
+ 	nrtimers = ((id & HPET_ID_NUMBER) >> HPET_ID_NUMBER_SHIFT) + 1;
+@@ -210,6 +211,13 @@ static void hpet_reserve_platform_timers(unsigned int id)
+ 	hpet_reserve_timer(&hd, 1);
  #endif
  
++	if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_HPET)) {
++		hpet_reserve_timer(&hd, HPET_WD_TIMER_NR);
++		start_timer = HPET_WD_TIMER_NR + 1;
++	} else {
++		start_timer = HPET_WD_TIMER_NR;
++	}
++
+ 	/*
+ 	 * NOTE that hd_irq[] reflects IOAPIC input pins (LEGACY_8254
+ 	 * is wrong for i8259!) not the output IRQ.  Many BIOS writers
+@@ -218,7 +226,7 @@ static void hpet_reserve_platform_timers(unsigned int id)
+ 	hd.hd_irq[0] = HPET_LEGACY_8254;
+ 	hd.hd_irq[1] = HPET_LEGACY_RTC;
+ 
+-	for (i = 2; i < nrtimers; timer++, i++) {
++	for (i = start_timer; i < nrtimers; timer++, i++) {
+ 		hd.hd_irq[i] = (readl(&timer->hpet_config) &
+ 			Tn_INT_ROUTE_CNF_MASK) >> Tn_INT_ROUTE_CNF_SHIFT;
+ 	}
+@@ -630,6 +638,11 @@ static void hpet_msi_capability_lookup(unsigned int start_timer)
+ 		struct hpet_dev *hdev = &hpet_devs[num_timers_used];
+ 		unsigned int cfg = hpet_readl(HPET_Tn_CFG(i));
+ 
++		/* Do not use timer reserved for the HPET watchdog. */
++		if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_HPET) &&
++		    i == HPET_WD_TIMER_NR)
++			continue;
++
+ 		/* Only consider HPET timer with MSI support */
+ 		if (!(cfg & HPET_TN_FSB_CAP))
+ 			continue;
 -- 
 2.7.4
