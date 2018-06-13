@@ -2,7 +2,7 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kD3JbjzDr30
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kD3GR3zDr1d
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:40 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
@@ -18,10 +18,9 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  Kate Stewart <kstewart@linuxfoundation.org>,
  "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
  iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 11/23] x86/hpet: Configure the timer used by the
- hardlockup detector
-Date: Tue, 12 Jun 2018 17:57:31 -0700
-Message-Id: <1528851463-21140-12-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Subject: [RFC PATCH 10/23] x86/hpet: Relocate flag definitions to a header file
+Date: Tue, 12 Jun 2018 17:57:30 -0700
+Message-Id: <1528851463-21140-11-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,22 +32,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement the initial configuration of the timer to be used by the
-hardlockup detector. The main focus of this configuration is to provide an
-interrupt for the timer.
-
-Two types of interrupt can be assigned to the timer. First, attempt to
-assign a message-signaled interrupt. This implies creating the HPET MSI
-domain; only if it was not created when HPET timers are used for event
-timers. The data structures needed to allocate the MSI interrupt in the
-domain are also created.
-
-If message-signaled interrupts cannot be used, assign a legacy IO APIC
-interrupt via the ACPI Global System Interrupts.
-
-The resulting interrupt configuration, along with the timer instance, and
-frequency are then made available to the hardlockup detector in a struct
-via the new function hpet_hardlockup_detector_assign_timer().
+Users of HPET timers (such as the hardlockup detector) need the definitions
+of these flags to interpret the configuration of a timer as passed by
+platform code.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
@@ -65,180 +51,43 @@ Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- arch/x86/include/asm/hpet.h |  16 +++++++
- arch/x86/kernel/hpet.c      | 112 +++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 127 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/hpet.h | 6 ++++++
+ arch/x86/kernel/hpet.c      | 6 ------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
-index 9fd112a..33309b7 100644
+index 3266796..9fd112a 100644
 --- a/arch/x86/include/asm/hpet.h
 +++ b/arch/x86/include/asm/hpet.h
-@@ -118,6 +118,22 @@ extern void hpet_unregister_irq_handler(rtc_irq_handler handler);
+@@ -64,6 +64,12 @@
+ /* Timer used for the hardlockup detector */
+ #define HPET_WD_TIMER_NR 2
  
- #endif /* CONFIG_HPET_EMULATE_RTC */
- 
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR_HPET
-+struct hpet_hld_data {
-+	u32		num;
-+	u32		irq;
-+	u32		flags;
-+	u64		ticks_per_second;
-+};
++#define HPET_DEV_USED_BIT		2
++#define HPET_DEV_USED			(1 << HPET_DEV_USED_BIT)
++#define HPET_DEV_VALID			0x8
++#define HPET_DEV_FSB_CAP		0x1000
++#define HPET_DEV_PERI_CAP		0x2000
 +
-+extern struct hpet_hld_data *hpet_hardlockup_detector_assign_timer(void);
-+#else
-+static inline struct hpet_hld_data *hpet_hardlockup_detector_assign_timer(void)
-+{
-+	return NULL;
-+}
-+#endif /* CONFIG_HARDLOCKUP_DETECTOR_HPET */
-+
- #else /* CONFIG_HPET_TIMER */
- 
- static inline int hpet_enable(void) { return 0; }
+ /* hpet memory map physical address */
+ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
 diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 99d4972..fda6e19 100644
+index b03faee..99d4972 100644
 --- a/arch/x86/kernel/hpet.c
 +++ b/arch/x86/kernel/hpet.c
-@@ -5,6 +5,7 @@
- #include <linux/delay.h>
- #include <linux/errno.h>
- #include <linux/i8253.h>
-+#include <linux/acpi.h>
- #include <linux/slab.h>
- #include <linux/hpet.h>
- #include <linux/init.h>
-@@ -36,6 +37,7 @@ bool					hpet_msi_disable;
+@@ -24,12 +24,6 @@
+    NSEC = 10^-9 */
+ #define FSEC_PER_NSEC			1000000L
  
- #ifdef CONFIG_PCI_MSI
- static unsigned int			hpet_num_timers;
-+static struct irq_domain		*hpet_domain;
- #endif
- static void __iomem			*hpet_virt_address;
+-#define HPET_DEV_USED_BIT		2
+-#define HPET_DEV_USED			(1 << HPET_DEV_USED_BIT)
+-#define HPET_DEV_VALID			0x8
+-#define HPET_DEV_FSB_CAP		0x1000
+-#define HPET_DEV_PERI_CAP		0x2000
+-
+ #define HPET_MIN_CYCLES			128
+ #define HPET_MIN_PROG_DELTA		(HPET_MIN_CYCLES + (HPET_MIN_CYCLES >> 1))
  
-@@ -177,6 +179,115 @@ do {								\
- 		_hpet_print_config(__func__, __LINE__);	\
- } while (0)
- 
-+#ifdef CONFIG_HARDLOCKUP_DETECTOR_HPET
-+static
-+int hpet_hardlockup_detector_assign_legacy_irq(struct hpet_hld_data *hdata)
-+{
-+	unsigned long v;
-+	int gsi, hwirq;
-+
-+	/* Obtain interrupt pins that can be used by this timer. */
-+	v = hpet_readq(HPET_Tn_CFG(HPET_WD_TIMER_NR));
-+	v = (v & Tn_INT_ROUTE_CAP_MASK) >> Tn_INT_ROUTE_CAP_SHIFT;
-+
-+	/*
-+	 * In PIC mode, skip IRQ0-4, IRQ6-9, IRQ12-15 which is always used by
-+	 * legacy device. In IO APIC mode, we skip all the legacy IRQS.
-+	 */
-+	if (acpi_irq_model == ACPI_IRQ_MODEL_PIC)
-+		v &= ~0xf3df;
-+	else
-+		v &= ~0xffff;
-+
-+	for_each_set_bit(hwirq, &v, HPET_MAX_IRQ) {
-+		if (hwirq >= NR_IRQS) {
-+			hwirq = HPET_MAX_IRQ;
-+			break;
-+		}
-+
-+		gsi = acpi_register_gsi(NULL, hwirq, ACPI_LEVEL_SENSITIVE,
-+					ACPI_ACTIVE_LOW);
-+		if (gsi > 0)
-+			break;
-+	}
-+
-+	if (hwirq >= HPET_MAX_IRQ)
-+		return -ENODEV;
-+
-+	hdata->irq = hwirq;
-+	return 0;
-+}
-+
-+static int hpet_hardlockup_detector_assign_msi_irq(struct hpet_hld_data *hdata)
-+{
-+	struct hpet_dev *hdev;
-+	int hwirq;
-+
-+	if (hpet_msi_disable)
-+		return -ENODEV;
-+
-+	hdev = kzalloc(sizeof(*hdev), GFP_KERNEL);
-+	if (!hdev)
-+		return -ENOMEM;
-+
-+	hdev->flags |= HPET_DEV_FSB_CAP;
-+	hdev->num = hdata->num;
-+	sprintf(hdev->name, "hpet_hld");
-+
-+	/* Domain may exist if CPU does not have Always-Running APIC Timers. */
-+	if (!hpet_domain) {
-+		hpet_domain = hpet_create_irq_domain(hpet_blockid);
-+		if (!hpet_domain)
-+			return -EPERM;
-+	}
-+
-+	hwirq = hpet_assign_irq(hpet_domain, hdev, hdev->num);
-+	if (hwirq <= 0) {
-+		kfree(hdev);
-+		return -ENODEV;
-+	}
-+
-+	hdata->irq = hwirq;
-+	hdata->flags |= HPET_DEV_FSB_CAP;
-+
-+	hdev->irq = hwirq;
-+
-+	return 0;
-+}
-+
-+struct hpet_hld_data *hpet_hardlockup_detector_assign_timer(void)
-+{
-+	struct hpet_hld_data *hdata;
-+	int ret = -ENODEV;
-+	unsigned int cfg;
-+
-+	hdata = kzalloc(sizeof(*hdata), GFP_KERNEL);
-+	if (!hdata)
-+		return NULL;
-+
-+	hdata->num = HPET_WD_TIMER_NR;
-+
-+	cfg = hpet_readl(HPET_Tn_CFG(HPET_WD_TIMER_NR));
-+
-+	hdata->ticks_per_second = hpet_get_ticks_per_sec(hpet_readq(HPET_ID));
-+
-+	/* Try first an MSI interrupt or fallback to IO APIC. */
-+	if (cfg & HPET_TN_FSB_CAP)
-+		ret = hpet_hardlockup_detector_assign_msi_irq(hdata);
-+
-+	if (!ret)
-+		return hdata;
-+
-+	ret = hpet_hardlockup_detector_assign_legacy_irq(hdata);
-+	if (ret) {
-+		kfree(hdata);
-+		return NULL;
-+	}
-+
-+	return hdata;
-+}
-+#endif /* CONFIG_HARDLOCKUP_DETECTOR_HPET */
-+
- /*
-  * When the hpet driver (/dev/hpet) is enabled, we need to reserve
-  * timer 0 and timer 1 in case of RTC emulation. Timer 2 is reserved in case
-@@ -450,7 +561,6 @@ static struct clock_event_device hpet_clockevent = {
- 
- static DEFINE_PER_CPU(struct hpet_dev *, cpu_hpet_dev);
- static struct hpet_dev	*hpet_devs;
--static struct irq_domain *hpet_domain;
- 
- void hpet_msi_unmask(struct irq_data *data)
- {
 -- 
 2.7.4
