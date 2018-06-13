@@ -2,7 +2,7 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kH6ZmszDr30
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kH6JYXzDqsx
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:43 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
@@ -34,10 +34,10 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  Kai-Heng Feng <kai.heng.feng@canonical.com>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 23/23] watchdog/hardlockup: Activate the HPET-based lockup
- detector
-Date: Tue, 12 Jun 2018 17:57:43 -0700
-Message-Id: <1528851463-21140-24-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Subject: [RFC PATCH 22/23] watchdog/hardlockup/hpet: Only enable the HPET
+ watchdog via a boot parameter
+Date: Tue, 12 Jun 2018 17:57:42 -0700
+Message-Id: <1528851463-21140-23-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -49,9 +49,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that the implementation of the HPET-based hardlockup detector is
-complete, enable it. It will be used only if it can be initialized
-successfully. Otherwise, the perf-based detector will be used.
+Keep the HPET-based hardlockup detector disabled unless explicitly enabled
+via a command line argument. If such parameter is not given, the hardlockup
+detector will fallback to use the perf-based implementation.
+
+The function hardlockup_panic_setup() is updated to return 0 in order to
+to allow __setup functions of specific hardlockup detectors (in this case
+hardlockup_detector_hpet_setup()) to inspect the nmi_watchdog boot
+parameter.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
@@ -87,35 +92,93 @@ Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
----
- kernel/watchdog.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+--
+checkpatch gives the following warning:
 
+CHECK: __setup appears un-documented -- check Documentation/admin-guide/kernel-parameters.rst
++__setup("nmi_watchdog=", hardlockup_detector_hpet_setup);
+
+This is a false-positive as the option nmi_watchdog is already
+documented. The option is re-evaluated in this file as well.
+---
+ Documentation/admin-guide/kernel-parameters.txt |  5 ++++-
+ kernel/watchdog.c                               |  2 +-
+ kernel/watchdog_hld_hpet.c                      | 13 +++++++++++++
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index f2040d4..a8833c7 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2577,7 +2577,7 @@
+ 			Format: [state][,regs][,debounce][,die]
+ 
+ 	nmi_watchdog=	[KNL,BUGS=X86] Debugging features for SMP kernels
+-			Format: [panic,][nopanic,][num]
++			Format: [panic,][nopanic,][num,][hpet]
+ 			Valid num: 0 or 1
+ 			0 - turn hardlockup detector in nmi_watchdog off
+ 			1 - turn hardlockup detector in nmi_watchdog on
+@@ -2587,6 +2587,9 @@
+ 			please see 'nowatchdog'.
+ 			This is useful when you use a panic=... timeout and
+ 			need the box quickly up again.
++			When hpet is specified, the NMI watchdog will be driven
++			by an HPET timer, if available in the system. Otherwise,
++			the perf-based implementation will be used.
+ 
+ 			These settings can be accessed at runtime via
+ 			the nmi_watchdog and hardlockup_panic sysctls.
 diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index b5ce6e4..e2cc6c0 100644
+index b94bbe3..b5ce6e4 100644
 --- a/kernel/watchdog.c
 +++ b/kernel/watchdog.c
-@@ -149,6 +149,21 @@ int __weak __init watchdog_nmi_probe(void)
- {
- 	int ret = -ENODEV;
+@@ -84,7 +84,7 @@ static int __init hardlockup_panic_setup(char *str)
+ 		nmi_watchdog_user_enabled = 0;
+ 	else if (!strncmp(str, "1", 1))
+ 		nmi_watchdog_user_enabled = 1;
+-	return 1;
++	return 0;
+ }
+ __setup("nmi_watchdog=", hardlockup_panic_setup);
  
-+	/*
-+	 * Try first with the HPET hardlockup detector. It will only
-+	 * succeed if selected at build time and the nmi_watchdog
-+	 * command-line parameter is configured. This ensure that the
-+	 * perf-based detector is used by default, if selected at
-+	 * build time.
-+	 */
-+	if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_HPET))
-+		ret = hardlockup_detector_hpet_ops.init();
+diff --git a/kernel/watchdog_hld_hpet.c b/kernel/watchdog_hld_hpet.c
+index ebb820d..12e5937 100644
+--- a/kernel/watchdog_hld_hpet.c
++++ b/kernel/watchdog_hld_hpet.c
+@@ -17,6 +17,7 @@
+ #define pr_fmt(fmt) "NMI hpet watchdog: " fmt
+ 
+ static struct hpet_hld_data *hld_data;
++static bool hardlockup_use_hpet;
+ 
+ /**
+  * get_count() - Get the current count of the HPET timer
+@@ -488,6 +489,15 @@ static void hardlockup_detector_hpet_stop(void)
+ 	spin_unlock(&hld_data->lock);
+ }
+ 
++static int __init hardlockup_detector_hpet_setup(char *str)
++{
++	if (strstr(str, "hpet"))
++		hardlockup_use_hpet = true;
 +
-+	if (!ret) {
-+		nmi_wd_ops = &hardlockup_detector_hpet_ops;
-+		return ret;
-+	}
++	return 0;
++}
++__setup("nmi_watchdog=", hardlockup_detector_hpet_setup);
 +
- 	if (IS_ENABLED(CONFIG_HARDLOCKUP_DETECTOR_PERF))
- 		ret = hardlockup_detector_perf_ops.init();
+ /**
+  * hardlockup_detector_hpet_init() - Initialize the hardlockup detector
+  *
+@@ -502,6 +512,9 @@ static int __init hardlockup_detector_hpet_init(void)
+ {
+ 	int ret;
+ 
++	if (!hardlockup_use_hpet)
++		return -EINVAL;
++
+ 	if (!is_hpet_enabled())
+ 		return -ENODEV;
  
 -- 
 2.7.4
