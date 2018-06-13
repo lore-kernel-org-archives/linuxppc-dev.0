@@ -1,33 +1,26 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
+ [209.85.218.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415JPb05ndzF0lh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:32:50 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5D7Sx31075990
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 03:32:48 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jjvxdvstg-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 03:32:48 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Wed, 13 Jun 2018 03:32:47 -0400
-Subject: [PATCH V3 2/2] crypto/nx: Initialize 842 high and normal RxFIFO
- control registers
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: herbert@gondor.apana.org.au, stewart@linux.ibm.com,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415JX95yW7zDrvG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:38:33 +1000 (AEST)
+Received: by mail-oi0-f65.google.com with SMTP id 14-v6so1447858oie.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 00:38:33 -0700 (PDT)
+MIME-Version: 1.0
+References: <alpine.LRH.2.21.1806111352330.17091@math.ut.ee>
+ <CA+7wUsw_8znPDsej=j48kkmqV3vPbOuDociBE4tth53-Zj32qA@mail.gmail.com>
+ <4030b744-f99c-bdfc-5f95-c9311e31ad0c@gmail.com>
+ <CA+7wUszJ0QCMMdU06z7CN3Xg0JnV2e+xmgbZ7Wb2=-doSDrSwQ@mail.gmail.com>
+In-Reply-To: <CA+7wUszJ0QCMMdU06z7CN3Xg0JnV2e+xmgbZ7Wb2=-doSDrSwQ@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 13 Jun 2018 09:38:19 +0200
+Message-ID: <CA+7wUsz1fO8Vyz9ivEWeNuiaWSsQzTZ=cnfH0pBRLNLT_pp_vg@mail.gmail.com>
+Subject: Re: 4.17.0-10146-gf0dc7f9c6dd9: hw csum failure on powerpc+sungem
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Meelis Roos <mroos@linux.ee>,
+ Christophe LEROY <christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jun 2018 00:32:40 -0700
-Mime-Version: 1.0
-Message-Id: <1528875160.14408.6.camel@hbabu-laptop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,149 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi all,
 
-NX increments readOffset by FIFO size in receive FIFO control register
-when CRB is read. But the index in RxFIFO has to match with the
-corresponding entry in FIFO maintained by VAS in kernel. Otherwise NX
-may be processing incorrect CRBs and can cause CRB timeout.
+On Tue, Jun 12, 2018 at 10:15 AM Mathieu Malaterre <malat@debian.org> wrote:
+>
+> Hi Balbir,
+>
+> On Tue, Jun 12, 2018 at 9:39 AM Balbir Singh <bsingharora@gmail.com> wrote:
+> >
+> >
+> > On 12/06/18 06:20, Mathieu Malaterre wrote:
+> >
+> > > Hi Meelis,
+> > >
+> > > On Mon, Jun 11, 2018 at 1:21 PM Meelis Roos <mroos@linux.ee> wrote:
+> > >> I am seeing this on PowerMac G4 with sungem ethernet driver. 4.17 was
+> > >> OK, 4.17.0-10146-gf0dc7f9c6dd9 is problematic.
+> > > Same here.
+> > >
+> > >> [  140.518664] eth0: hw csum failure
+> > >> [  140.518699] CPU: 0 PID: 1237 Comm: postconf Not tainted 4.17.0-10146-gf0dc7f9c6dd9 #83
+> > >> [  140.518707] Call Trace:
+> > >> [  140.518734] [effefd90] [c03d6db8] __skb_checksum_complete+0xd8/0xdc (unreliable)
+> > >> [  140.518759] [effefdb0] [c04c1284] icmpv6_rcv+0x248/0x4ec
+> > >> [  140.518775] [effefdd0] [c049a448] ip6_input_finish.constprop.0+0x11c/0x5f4
+> > >> [  140.518786] [effefe10] [c049b1c0] ip6_mc_input+0xcc/0x100
+> > >> [  140.518807] [effefe20] [c03e110c] __netif_receive_skb_core+0x310/0x944
+> > >> [  140.518820] [effefe70] [c03e76ec] napi_gro_receive+0xd0/0xe8
+> > >> [  140.518845] [effefe80] [f3e1f66c] gem_poll+0x618/0x1274 [sungem]
+> > >> [  140.518856] [effeff30] [c03e6f0c] net_rx_action+0x198/0x374
+> > >> [  140.518872] [effeff90] [c0501a88] __do_softirq+0x120/0x278
+> > >> [  140.518890] [effeffe0] [c0036188] irq_exit+0xd8/0xdc
+> > >> [  140.518908] [effefff0] [c000f478] call_do_irq+0x24/0x3c
+> > >> [  140.518925] [d05a5d30] [c0007120] do_IRQ+0x74/0xf0
+> > >> [  140.518941] [d05a5d50] [c0012474] ret_from_except+0x0/0x14
+> > >> [  140.518960] --- interrupt: 501 at copy_page+0x40/0x90
+> > >>                    LR = copy_user_page+0x18/0x30
+> > >> [  140.518973] [d05a5e10] [d058cd80] 0xd058cd80 (unreliable)
+> > >> [  140.518989] [d05a5e20] [c00fa2bc] wp_page_copy+0xec/0x654
+> > >> [  140.519002] [d05a5e60] [c00fd3a4] do_wp_page+0xa8/0x5b4
+> > >> [  140.519013] [d05a5e90] [c00fe934] handle_mm_fault+0x564/0xa84
+> > >> [  140.519025] [d05a5f00] [c0016230] do_page_fault+0x1bc/0x7e8
+> > >> [  140.519037] [d05a5f40] [c0012300] handle_page_fault+0x14/0x40
+> > >> [  140.519048] --- interrupt: 301 at 0xb78b6864
+> > >>                    LR = 0xb78b6c54
+> > >>
+> > > For some reason if I do a git bisect it returns that:
+> > >
+> > > $ git bisect good
+> > > 3036bc45364f98515a2c446d7fac2c34dcfbeff4 is the first bad commit
+> > >
+> > > Could you also check on your side please.
+> >
+> > Don't have a G4, but the related commits look like
+> >
+> > 373e098e1e788d7b89ec0f31765a6c08e2ea0f7c and e9c4943a107b56696e4872cdffdba6b0c7277c77 Balbir
+> >
+>
+> Indeed that makes more sense. I must have messed up during my
+> git-bisect operation. Will try a simple git-revert on those and report
+> back.
 
-VAS FIFO offset is 0 when the receive window is opened during
-initialization. When the module is reloaded or in kexec boot, readOffset
-in FIFO control register may not match with VAS entry. This patch adds
-nx_coproc_init OPAL call to reset readOffset and queued entries in FIFO
-control register for both high and normal FIFOs.
+Here is what I get.
 
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
----
-Changlog:
-V2: Execute nx_coproc_init OPAL call per NX without depending on
-    FIFO priority [Stewart Smith]
+Current git HEAD is: 0c14e43a42e4e44f70963f8ccf89461290c4e4da if I do:
 
-V3: Verify OPAL call availability before using NX coproc init
-    [Michael Ellerman]
+$ git revert e9c4943a107b56696e4872cdffdba6b0c7277c77.
+$ git revert 373e098e1e788d7b89ec0f31765a6c08e2ea0f7c
+$ rm -rf g4
+$ make O=g4 ARCH=powerpc g4_defconfig
+$ make -j8 O=g4 ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- bindeb-pkg
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index d886a5b..ff61e4b 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -206,7 +206,8 @@
- #define OPAL_NPU_TL_SET				161
- #define OPAL_PCI_GET_PBCQ_TUNNEL_BAR		164
- #define OPAL_PCI_SET_PBCQ_TUNNEL_BAR		165
--#define OPAL_LAST				165
-+#define	OPAL_NX_COPROC_INIT			167
-+#define OPAL_LAST				167
- 
- /* Device tree flags */
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 7159e1a..d79eb82 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -288,6 +288,7 @@ int64_t opal_imc_counters_init(uint32_t type, uint64_t address,
- int opal_get_power_shift_ratio(u32 handle, int token, u32 *psr);
- int opal_set_power_shift_ratio(u32 handle, int token, u32 psr);
- int opal_sensor_group_clear(u32 group_hndl, int token);
-+int opal_nx_coproc_init(uint32_t chip_id, uint32_t ct);
- 
- s64 opal_signal_system_reset(s32 cpu);
- 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 3da30c2..c7541a9 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -325,3 +325,4 @@ OPAL_CALL(opal_npu_spa_clear_cache,		OPAL_NPU_SPA_CLEAR_CACHE);
- OPAL_CALL(opal_npu_tl_set,			OPAL_NPU_TL_SET);
- OPAL_CALL(opal_pci_get_pbcq_tunnel_bar,		OPAL_PCI_GET_PBCQ_TUNNEL_BAR);
- OPAL_CALL(opal_pci_set_pbcq_tunnel_bar,		OPAL_PCI_SET_PBCQ_TUNNEL_BAR);
-+OPAL_CALL(opal_nx_coproc_init,			OPAL_NX_COPROC_INIT);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 463eab8..0e479a6 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -1037,3 +1037,5 @@ void powernv_set_nmmu_ptcr(unsigned long ptcr)
- EXPORT_SYMBOL_GPL(opal_int_set_mfrr);
- EXPORT_SYMBOL_GPL(opal_int_eoi);
- EXPORT_SYMBOL_GPL(opal_error_code);
-+/* Export the below symbol for NX compression */
-+EXPORT_SYMBOL(opal_nx_coproc_init);
-diff --git a/drivers/crypto/nx/nx-842-powernv.c b/drivers/crypto/nx/nx-842-powernv.c
-index 1e87637..a401055 100644
---- a/drivers/crypto/nx/nx-842-powernv.c
-+++ b/drivers/crypto/nx/nx-842-powernv.c
-@@ -24,6 +24,8 @@
- #include <asm/icswx.h>
- #include <asm/vas.h>
- #include <asm/reg.h>
-+#include <asm/opal-api.h>
-+#include <asm/opal.h>
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-@@ -753,7 +755,7 @@ static int nx842_open_percpu_txwins(void)
- }
- 
- static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
--					int vasid)
-+					int vasid, int *ct)
- {
- 	struct vas_window *rxwin = NULL;
- 	struct vas_rx_win_attr rxattr;
-@@ -837,6 +839,15 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
- 	coproc->vas.id = vasid;
- 	nx842_add_coprocs_list(coproc, chip_id);
- 
-+	/*
-+	 * (lpid, pid, tid) combination has to be unique for each
-+	 * coprocessor instance in the system. So to make it
-+	 * unique, skiboot uses coprocessor type such as 842 or
-+	 * GZIP for pid and provides this value to kernel in pid
-+	 * device-tree property.
-+	 */
-+	*ct = pid;
-+
- 	return 0;
- 
- err_out:
-@@ -848,7 +859,7 @@ static int __init vas_cfg_coproc_info(struct device_node *dn, int chip_id,
- static int __init nx842_powernv_probe_vas(struct device_node *pn)
- {
- 	struct device_node *dn;
--	int chip_id, vasid, ret = 0;
-+	int chip_id, vasid, ct, ret = 0;
- 	int nx_fifo_found = 0;
- 
- 	chip_id = of_get_ibm_chip_id(pn);
-@@ -865,7 +876,7 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
- 
- 	for_each_child_of_node(pn, dn) {
- 		if (of_device_is_compatible(dn, "ibm,p9-nx-842")) {
--			ret = vas_cfg_coproc_info(dn, chip_id, vasid);
-+			ret = vas_cfg_coproc_info(dn, chip_id, vasid, &ct);
- 			if (ret) {
- 				of_node_put(dn);
- 				return ret;
-@@ -876,9 +887,22 @@ static int __init nx842_powernv_probe_vas(struct device_node *pn)
- 
- 	if (!nx_fifo_found) {
- 		pr_err("NX842 FIFO nodes are missing\n");
--		ret = -EINVAL;
-+		return -EINVAL;
- 	}
- 
-+	/*
-+	 * Initialize NX instance for both high and normal priority FIFOs.
-+	 */
-+	if (opal_check_token(OPAL_NX_COPROC_INIT)) {
-+		ret = opal_nx_coproc_init(chip_id, ct);
-+		if (ret) {
-+			pr_err("Failed to initialize NX for chip(%d): %d\n",
-+				chip_id, ret);
-+			ret = opal_error_code(ret);
-+		}
-+	} else
-+		pr_warn("Firmware doesn't support NX initialization\n");
-+
- 	return ret;
- }
- 
+-> I can still see the error in dmesg.
+
+> Thanks
