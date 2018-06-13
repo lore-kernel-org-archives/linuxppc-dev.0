@@ -1,20 +1,19 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
+ [IPv6:2607:f8b0:400e:c00::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415H1H3n8NzDrp0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 16:30:11 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id 31-v6so923787plc.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 23:30:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415H1K5Lt2zF0Rs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 16:30:13 +1000 (AEST)
+Received: by mail-pf0-x244.google.com with SMTP id r11-v6so843529pfl.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2018 23:30:13 -0700 (PDT)
 From: Pingfan Liu <kernelfans@gmail.com>
 To: linux-pci@vger.kernel.org
 Cc: Bjorn Helgaas <bhelgaas@google.com>, Christoph Hellwig <hch@infradead.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [patchV2 1/2] pci: introduce an extra method for matching in
- pci_driver
-Date: Wed, 13 Jun 2018 14:29:56 +0800
-Message-Id: <1528871397-17917-2-git-send-email-kernelfans@gmail.com>
+Subject: [patchV2 2/2] pci/shpchp: no claim on pcie port device
+Date: Wed, 13 Jun 2018 14:29:57 +0800
+Message-Id: <1528871397-17917-3-git-send-email-kernelfans@gmail.com>
 In-Reply-To: <1528871397-17917-1-git-send-email-kernelfans@gmail.com>
 References: <1528871397-17917-1-git-send-email-kernelfans@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,54 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In __driver_attach(), if a driver matches a device, the device will
-be appended to the tail of devices_kset, no matter what the probing
-result of the device. Hence in order to prevent a driver to append
-a probed device to devices_kset, it requires a correct matching.
+The Linux Device Driver Model allows a physical device to be handled
+by only a single driver. But at present, both shpchp and portdrv_pci
+claim PCI_CLASS_BRIDGE_PCI, and touch devices_kset when the drivers are
+loaded. This causes a few problems, one is the wrong shutdown seq of
+devices, owing to the broken devices_kset. This patch keeps shpchp away
+from pcie port device, using the extra matching method.
 
-As for pci, pci driver uses pci_device_id to match a device. But it may
-be not enough, since there is need for extra info such as pcie, which
-can not be provided in pci_device_id. Such info is driver specific, and
-this patch introduces a new method "extra_match" in pci_driver.
-This is used by next patch.
+Note:
+I hit this bug on a Power9 machine, when "kexec -e", and see a ata-disk
+behind a bridge can not write back buffer in flight due to the former
+shutdown of the bridge which clears the BusMaster bit.
+
+the device involved:
+0004:00:00.0 PCI bridge: IBM Device 04c1 (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0
+        NUMA node: 0
+        Bus: primary=00, secondary=01, subordinate=12, sec-latency=0
+        I/O behind bridge: 00000000-00000fff
+        Memory behind bridge: 80000000-ffefffff
+        Prefetchable memory behind bridge: 0006024000000000-0006027f7fffffff
+        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+        Capabilities: [40] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Express (v2) Root Port (Slot-), MSI 00
+                DevCap: MaxPayload 512 bytes, PhantFunc 0
+                        ExtTag- RBE+
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                        MaxPayload 256 bytes, MaxReadReq 128 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 8GT/s, Width x8, ASPM not supported, Exit Latency L0s <64ns, L1 <1us
+                        ClockPM- Surprise- LLActRep+ BwNot+ ASPMOptComp-
+                LnkCtl: ASPM Disabled; RCB 128 bytes Disabled- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 8GT/s, Width x4, TrErr- Train- SlotClk- DLActive+ BWMgmt- ABWMgmt+
+                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+                RootCap: CRSVisible-
+                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported ARIFwd+
+                DevCtl2: Completion Timeout: 16ms to 55ms, TimeoutDis+, LTR-, OBFF Disabled ARIFwd+
+                LnkCtl2: Target Link Speed: 8GT/s, EnterCompliance- SpeedDis-
+                         Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
+                         Compliance De-emphasis: -6dB
+                LnkSta2: Current De-emphasis Level: -3.5dB, EqualizationComplete+, EqualizationPhase1+
+                         EqualizationPhase2+, EqualizationPhase3+, LinkEqualizationRequest-
+        Capabilities: [100 v1] Advanced Error Reporting
+                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                UEMsk:  DLP- SDES- TLP+ FCP- CmpltTO+ CmpltAbrt+ UnxCmplt- RxOF- MalfTLP- ECRC+ UnsupReq- ACSViol-
+                UESvrt: DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+                AERCap: First Error Pointer: 00, GenCap+ CGenEn+ ChkCap+ ChkEn+
+        Capabilities: [148 v1] #19
 
 Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
 ---
- drivers/pci/pci-driver.c | 4 ++++
- include/linux/pci.h      | 2 ++
- 2 files changed, 6 insertions(+)
+ drivers/pci/hotplug/shpchp_core.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index b9a1311..151865f 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -273,6 +273,10 @@ static const struct pci_device_id *pci_match_device(struct pci_driver *drv,
- 	if (!found_id && dev->driver_override)
- 		found_id = &pci_device_id_any;
- 
-+	/* more strictly matching besides id_table */
-+	if (drv->extra_match && drv->extra_match(dev) < 0)
-+		found_id = NULL;
-+
- 	return found_id;
+diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
+index 1f0f969..85b4665 100644
+--- a/drivers/pci/hotplug/shpchp_core.c
++++ b/drivers/pci/hotplug/shpchp_core.c
+@@ -336,6 +336,18 @@ static void shpc_remove(struct pci_dev *dev)
+ 	kfree(ctrl);
  }
  
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 73178a2..6ed960d 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -738,10 +738,12 @@ struct pci_error_handlers {
- 
- 
- struct module;
-+typedef int (*ematch)(struct pci_dev *pdev);
- struct pci_driver {
- 	struct list_head	node;
- 	const char		*name;
- 	const struct pci_device_id *id_table;	/* Must be non-NULL for probe to be called */
-+	ematch extra_match;	/* more strictly matching besides id_table */
- 	int  (*probe)(struct pci_dev *dev, const struct pci_device_id *id);	/* New device inserted */
- 	void (*remove)(struct pci_dev *dev);	/* Device removed (NULL if not a hot-plug capable driver) */
- 	int  (*suspend)(struct pci_dev *dev, pm_message_t state);	/* Device suspended */
++static int shpc_extra_match(struct pci_dev *pdev)
++{
++	/* do not claim pcie port device */
++	if (pci_is_pcie(pdev) &&
++	    (pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT ||
++	     pci_pcie_type(pdev) == PCI_EXP_TYPE_UPSTREAM ||
++	     pci_pcie_type(pdev) == PCI_EXP_TYPE_DOWNSTREAM))
++		return -ENODEV;
++
++	return 0;
++}
++
+ static const struct pci_device_id shpcd_pci_tbl[] = {
+ 	{PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_PCI << 8) | 0x00), ~0)},
+ 	{ /* end: all zeroes */ }
+@@ -345,6 +357,7 @@ MODULE_DEVICE_TABLE(pci, shpcd_pci_tbl);
+ static struct pci_driver shpc_driver = {
+ 	.name =		SHPC_MODULE_NAME,
+ 	.id_table =	shpcd_pci_tbl,
++	.extra_match =	shpc_extra_match,
+ 	.probe =	shpc_probe,
+ 	.remove =	shpc_remove,
+ };
 -- 
 2.7.4
