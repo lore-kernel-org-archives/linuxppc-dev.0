@@ -1,38 +1,29 @@
-Return-Path: <BATV+1e44ea8f521110dda36c+5407+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=2clz=i7=c-s.fr=christophe.leroy@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415Jc82ZRSzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:42:00 +1000 (AEST)
-Date: Wed, 13 Jun 2018 00:41:41 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ram Pai <linuxram@us.ibm.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- Christoph Hellwig <hch@infradead.org>, robh@kernel.org,
- pawel.moll@arm.com, Tom Lendacky <thomas.lendacky@amd.com>,
- aik@ozlabs.ru, jasowang@redhat.com, cohuck@redhat.com,
- linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, joe@perches.com,
- "Rustad, Mark D" <mark.d.rustad@intel.com>,
- david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-Message-ID: <20180613074141.GA12033@infradead.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <20180524072104.GD6139@ram.oc3035372033.ibm.com>
- <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
- <20180531204320-mutt-send-email-mst@kernel.org>
- <20180607052306.GA1532@infradead.org>
- <20180607185234-mutt-send-email-mst@kernel.org>
- <20180611023909.GA5726@ram.oc3035372033.ibm.com>
- <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415JpD53x0zF0dd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:50:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 415JpD4J4Wz8tDv
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:50:44 +1000 (AEST)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 415JpC4fq5z9s1R
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2018 17:50:43 +1000 (AEST)
+Subject: Re: [RFC PATCH 3/4] powerpc/64s: Wire up
+ arch_trigger_cpumask_backtrace()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com
+References: <20180502130729.24077-1-mpe@ellerman.id.au>
+ <20180502130729.24077-3-mpe@ellerman.id.au>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <839167fa-d33b-51c8-e34c-28d1ac10b922@c-s.fr>
+Date: Wed, 13 Jun 2018 09:32:20 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
+In-Reply-To: <20180502130729.24077-3-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +33,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 11, 2018 at 01:29:18PM +1000, Benjamin Herrenschmidt wrote:
-> At the risk of repeating myself, let's just do the first pass which is
-> to switch virtio over to always using the DMA API in the actual data
-> flow code, with a hook at initialization time that replaces the DMA ops
-> with some home cooked "direct" ops in the case where the IOMMU flag
-> isn't set.
-> 
-> This will be equivalent to what we have today but avoids having 2
-> separate code path all over the driver.
-> 
-> Then a second stage, I think, is to replace this "hook" so that the
-> architecture gets a say in the matter.
+Hi Michael,
 
-I don't think we can actually use dma_direct_ops.  It still allows
-architectures to override parts of the dma setup, which virtio seems
-to blindly assume phys == dma and not cache flushing.
+It looks like this commit generates the following error:
 
-I think the right way forward is to either add a new
-VIRTIO_F_IS_PCI_DEVICE (or redefine the existing iommu flag if deemed
-possible).  And then make sure recent qemu always sets it.
+stacktrace.c:(.text+0x1b0): undefined reference to `.smp_send_safe_nmi_ipi'
+make[1]: *** [vmlinux] Error 1
+make: *** [sub-make] Error 2
+
+See http://kisskb.ellerman.id.au/kisskb/buildresult/13395345/ for details
+
+Seems like that function only exists when CONFIG_NMI_IPI is defined.
+
+Christophe
+
+Le 02/05/2018 à 15:07, Michael Ellerman a écrit :
+> This allows eg. the RCU stall detector, or the soft/hardlockup
+> detectors to trigger a backtrace on all CPUs.
+> 
+> We implement this by sending a "safe" NMI, which will actually only
+> send an IPI. Unfortunately the generic code prints "NMI", so that's a
+> little confusing but we can probably live with it.
+> 
+> If one of the CPUs doesn't respond to the IPI, we then print some info
+> from it's paca and do a backtrace based on its saved_r1.
+> 
+> Example output:
+> 
+>    INFO: rcu_sched detected stalls on CPUs/tasks:
+>    	2-...0: (0 ticks this GP) idle=1be/1/4611686018427387904 softirq=1055/1055 fqs=25735
+>    	(detected by 4, t=58847 jiffies, g=58, c=57, q=1258)
+>    Sending NMI from CPU 4 to CPUs 2:
+>    CPU 2 didn't respond to backtrace IPI, inspecting paca.
+>    irq_soft_mask: 0x01 in_mce: 0 in_nmi: 0 current: 3623 (bash)
+>    Back trace of paca->saved_r1 (0xc0000000e1c83ba0) (possibly stale):
+>    Call Trace:
+>    [c0000000e1c83ba0] [0000000000000014] 0x14 (unreliable)
+>    [c0000000e1c83bc0] [c000000000765798] lkdtm_do_action+0x48/0x80
+>    [c0000000e1c83bf0] [c000000000765a40] direct_entry+0x110/0x1b0
+>    [c0000000e1c83c90] [c00000000058e650] full_proxy_write+0x90/0xe0
+>    [c0000000e1c83ce0] [c0000000003aae3c] __vfs_write+0x6c/0x1f0
+>    [c0000000e1c83d80] [c0000000003ab214] vfs_write+0xd4/0x240
+>    [c0000000e1c83dd0] [c0000000003ab5cc] ksys_write+0x6c/0x110
+>    [c0000000e1c83e30] [c00000000000b860] system_call+0x58/0x6c
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>   arch/powerpc/include/asm/nmi.h   |  4 ++++
+>   arch/powerpc/kernel/stacktrace.c | 51 ++++++++++++++++++++++++++++++++++++++++
+>   2 files changed, 55 insertions(+)
+> 
+> diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
+> index 9c80939b4d14..e97f58689ca7 100644
+> --- a/arch/powerpc/include/asm/nmi.h
+> +++ b/arch/powerpc/include/asm/nmi.h
+> @@ -4,6 +4,10 @@
+>   
+>   #ifdef CONFIG_PPC_WATCHDOG
+>   extern void arch_touch_nmi_watchdog(void);
+> +extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
+> +					   bool exclude_self);
+> +#define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
+> +
+>   #else
+>   static inline void arch_touch_nmi_watchdog(void) {}
+>   #endif
+> diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+> index d534ed901538..cf4652d5df80 100644
+> --- a/arch/powerpc/kernel/stacktrace.c
+> +++ b/arch/powerpc/kernel/stacktrace.c
+> @@ -11,12 +11,15 @@
+>    */
+>   
+>   #include <linux/export.h>
+> +#include <linux/nmi.h>
+>   #include <linux/sched.h>
+>   #include <linux/sched/debug.h>
+>   #include <linux/stacktrace.h>
+>   #include <asm/ptrace.h>
+>   #include <asm/processor.h>
+>   
+> +#include <asm/paca.h>
+> +
+>   /*
+>    * Save stack-backtrace addresses into a stack_trace buffer.
+>    */
+> @@ -76,3 +79,51 @@ save_stack_trace_regs(struct pt_regs *regs, struct stack_trace *trace)
+>   	save_context_stack(trace, regs->gpr[1], current, 0);
+>   }
+>   EXPORT_SYMBOL_GPL(save_stack_trace_regs);
+> +
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +static void handle_backtrace_ipi(struct pt_regs *regs)
+> +{
+> +	nmi_cpu_backtrace(regs);
+> +}
+> +
+> +static void raise_backtrace_ipi(cpumask_t *mask)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_cpu(cpu, mask) {
+> +		if (cpu == smp_processor_id())
+> +			handle_backtrace_ipi(NULL);
+> +		else
+> +			smp_send_safe_nmi_ipi(cpu, handle_backtrace_ipi, 5 * USEC_PER_SEC);
+> +	}
+> +
+> +	for_each_cpu(cpu, mask) {
+> +		struct paca_struct *p = paca_ptrs[cpu];
+> +
+> +		cpumask_clear_cpu(cpu, mask);
+> +
+> +		pr_warn("CPU %d didn't respond to backtrace IPI, inspecting paca.\n", cpu);
+> +		if (!virt_addr_valid(p)) {
+> +			pr_warn("paca pointer appears corrupt? (%px)\n", p);
+> +			continue;
+> +		}
+> +
+> +		pr_warn("irq_soft_mask: 0x%02x in_mce: %d in_nmi: %d",
+> +			p->irq_soft_mask, p->in_mce, p->in_nmi);
+> +
+> +		if (virt_addr_valid(p->__current))
+> +			pr_cont(" current: %d (%s)\n", p->__current->pid,
+> +				p->__current->comm);
+> +		else
+> +			pr_cont(" current pointer corrupt? (%px)\n", p->__current);
+> +
+> +		pr_warn("Back trace of paca->saved_r1 (0x%016llx) (possibly stale):\n", p->saved_r1);
+> +		show_stack(p->__current, (unsigned long *)p->saved_r1);
+> +	}
+> +}
+> +
+> +void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
+> +{
+> +	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace_ipi);
+> +}
+> +#endif /* CONFIG_PPC64 */
+> 
