@@ -1,37 +1,30 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srs0=pnv8=i7=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415TX02fNqzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 00:24:00 +1000 (AEST)
-Date: Wed, 13 Jun 2018 17:23:56 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ram Pai <linuxram@us.ibm.com>, Christoph Hellwig <hch@infradead.org>,
- robh@kernel.org, pawel.moll@arm.com,
- Tom Lendacky <thomas.lendacky@amd.com>, aik@ozlabs.ru,
- jasowang@redhat.com, cohuck@redhat.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, joe@perches.com,
- "Rustad, Mark D" <mark.d.rustad@intel.com>,
- david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
- virito devices
-Message-ID: <20180613170318-mutt-send-email-mst@kernel.org>
-References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
- <20180523213703-mutt-send-email-mst@kernel.org>
- <20180524072104.GD6139@ram.oc3035372033.ibm.com>
- <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
- <20180531204320-mutt-send-email-mst@kernel.org>
- <20180607052306.GA1532@infradead.org>
- <20180607185234-mutt-send-email-mst@kernel.org>
- <20180611023909.GA5726@ram.oc3035372033.ibm.com>
- <20180611060949-mutt-send-email-mst@kernel.org>
- <59e60715f27b10bc6816193eaf324824eff69c46.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415TjP1Nh1zDrbK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 00:32:09 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 415TjM6vclz8wMC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 00:32:07 +1000 (AEST)
+Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
+ [IPv6:2607:f8b0:400e:c01::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 415TjL3QDhz9s3C
+ for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2018 00:32:06 +1000 (AEST)
+Received: by mail-pl0-x242.google.com with SMTP id z9-v6so1645225plk.11
+ for <linuxppc-dev@ozlabs.org>; Wed, 13 Jun 2018 07:32:06 -0700 (PDT)
+Date: Thu, 14 Jun 2018 00:31:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH] powerpc/64s: Fix DT CPU features Power9 DD2.1 logic
+Message-ID: <20180614003158.47156ea2@roar.ozlabs.ibm.com>
+In-Reply-To: <20180613132356.29246-1-mpe@ellerman.id.au>
+References: <20180613132356.29246-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <59e60715f27b10bc6816193eaf324824eff69c46.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,73 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 11, 2018 at 01:34:50PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2018-06-11 at 06:28 +0300, Michael S. Tsirkin wrote:
-> > 
-> > > However if the administrator
-> > > ignores/forgets/deliberatey-decides/is-constrained to NOT enable the
-> > > flag, virtio will not be able to pass control to the DMA ops associated
-> > > with the virtio devices. Which means, we have no opportunity to share
-> > > the I/O buffers with the hypervisor/qemu.
-> > > 
-> > > How do you suggest, we handle this case?
-> > 
-> > As step 1, ignore it as a user error.
+On Wed, 13 Jun 2018 23:23:56 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> In the device tree CPU features quirk code we want to set
+> CPU_FTR_POWER9_DD2_1 on all Power9s that aren't DD2.0 or earlier. But
+> we got the logic wrong and instead set it on all CPUs that aren't
+> Power9 DD2.0 or earlier, ie. including Power8.
 > 
-> Ugh ... not again. Ram, don't bring that subject back we ALREADY
-> addressed it, and requiring the *user* to do special things is just
-> utterly and completely wrong.
+> Fix it by making sure we're on a Power9. This isn't a bug in practice
+> because the only code that checks the feature is Power9 only to begin
+> with. But we'll backport it anyway to avoid confusion.
 > 
-> The *user* has no bloody idea what that stuff is, will never know to
-> set whatver magic qemu flag etc... The user will just start a a VM
-> normally and expect things to work. Requiring the *user* to know things
-> like that iommu virtio flag is complete nonsense.
+> Fixes: 9e9626ed3a4a ("powerpc/64s: Fix POWER9 DD2.2 and above in DT CPU features")
+> Cc: stable@vger.kernel.org # v4.17+
+> Reported-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-You should consider teaching QEMU that the platform has support for the
-ultravisor thing so it can set flags for you.
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
 
-That's true even if something else is done for virtio - if you don't
-have the capability right now you will come to regret it, host userspace
-is just fundamentally in charge of control-path enumeration in the KVM
-stack, I understand you want to take some of it away for security but
-trying to hide things from QEMU completely is a mistake IMHO.
-
-Just my $.02.
-
-> If by "user" you mean libvirt, then you are now requesting about 4 or 5
-> different projects to be patched to add speical cases for something
-> they know nothing about and is completely irrelevant, while it can be
-> entirely addressed with a 1-liner in virtio kernel side to allow the
-> arch to plumb alternate DMA ops.
+> ---
+>  arch/powerpc/kernel/dt_cpu_ftrs.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> So for some reason you seem to be dead set on a path that leads to
-> mountain of user pain, changes to many different projects and overall
-> havok while there is a much much simpler and elegant solution at hand
-> which I described (again) in the response to Ram I sent about 5mn ago.
-
-What you sent to Ram sounds OK to me - I only hope we do all mean
-the same thing because the 3 paragraphs above are all
-about the libvirt/QEMU split mess which linux or virtio
-should not really care about.
-
-And I'd like to stress that direct path isn't merely legacy.
-
-It's a common sense approach that when you have a hypervisor doing
-things like taking care of cache coherency, you do not want to do them
-in the guest as well. And the same guest can use a pass-through device
-where it does need to do all the coherency mess, so while it's quite
-possible to build a platform-specific way to tell guests which devices
-need which kind of treatment, people understandably chose to do it in a
-portable way through the virtio device.
-
-I understand you guys are working on a new project that is going to use
-bounce buffers anyway so what do you care about optimizations but we
-can't just slow everyone else down for your benefit.
-
-> > Further you can for example add per-device quirks in virtio so it can be
-> > switched to dma api. make extra decisions in platform code then.
-
-Isn't above exactly what you sent to Ram?
-
--- 
-MST
+> diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> index 4be1c0de9406..96dd3d871986 100644
+> --- a/arch/powerpc/kernel/dt_cpu_ftrs.c
+> +++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+> @@ -711,7 +711,8 @@ static __init void cpufeatures_cpu_quirks(void)
+>  		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_HV_ASSIST;
+>  		cur_cpu_spec->cpu_features |= CPU_FTR_P9_TM_XER_SO_BUG;
+>  		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+> -	} else /* DD2.1 and up have DD2_1 */
+> +	} else if ((version & 0xffff0000) == 0x004e0000)
+> +		/* DD2.1 and up have DD2_1 */
+>  		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+>  
+>  	if ((version & 0xffff0000) == 0x004e0000) {
