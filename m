@@ -1,39 +1,38 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <BATV+1e44ea8f521110dda36c+5407+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415Jc75zfNzF09q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:41:59 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id az12-v6so1029438plb.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 00:41:59 -0700 (PDT)
-Date: Wed, 13 Jun 2018 17:41:41 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi.kleen@intel.com>, Ashok
- Raj <ashok.raj@intel.com>, Borislav Petkov <bp@suse.de>, Tony Luck
- <tony.luck@intel.com>, "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
- x86@kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>, Don
- Zickus <dzickus@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>, Babu Moger
- <babu.moger@oracle.com>, "David S. Miller" <davem@davemloft.net>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Philippe
- Ombredanne <pombredanne@nexb.com>, Colin Ian King
- <colin.king@canonical.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>,
- iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 12/23] kernel/watchdog: Introduce a struct for NMI
- watchdog operations
-Message-ID: <20180613174141.539fc6c1@roar.ozlabs.ibm.com>
-In-Reply-To: <1528851463-21140-13-git-send-email-ricardo.neri-calderon@linux.intel.com>
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-13-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415Jc82ZRSzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:42:00 +1000 (AEST)
+Date: Wed, 13 Jun 2018 00:41:41 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ram Pai <linuxram@us.ibm.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Christoph Hellwig <hch@infradead.org>, robh@kernel.org,
+ pawel.moll@arm.com, Tom Lendacky <thomas.lendacky@amd.com>,
+ aik@ozlabs.ru, jasowang@redhat.com, cohuck@redhat.com,
+ linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ "Rustad, Mark D" <mark.d.rustad@intel.com>,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180613074141.GA12033@infradead.org>
+References: <20180522063317.20956-1-khandual@linux.vnet.ibm.com>
+ <20180523213703-mutt-send-email-mst@kernel.org>
+ <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
+ <20180607052306.GA1532@infradead.org>
+ <20180607185234-mutt-send-email-mst@kernel.org>
+ <20180611023909.GA5726@ram.oc3035372033.ibm.com>
+ <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +42,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 Jun 2018 17:57:32 -0700
-Ricardo Neri <ricardo.neri-calderon@linux.intel.com> wrote:
-
-> Instead of exposing individual functions for the operations of the NMI
-> watchdog, define a common interface that can be used across multiple
-> implementations.
+On Mon, Jun 11, 2018 at 01:29:18PM +1000, Benjamin Herrenschmidt wrote:
+> At the risk of repeating myself, let's just do the first pass which is
+> to switch virtio over to always using the DMA API in the actual data
+> flow code, with a hook at initialization time that replaces the DMA ops
+> with some home cooked "direct" ops in the case where the IOMMU flag
+> isn't set.
 > 
-> The struct nmi_watchdog_ops is defined for such operations. These initial
-> definitions include the enable, disable, start, stop, and cleanup
-> operations.
+> This will be equivalent to what we have today but avoids having 2
+> separate code path all over the driver.
 > 
-> Only a single NMI watchdog can be used in the system. The operations of
-> this NMI watchdog are accessed via the new variable nmi_wd_ops. This
-> variable is set to point the operations of the first NMI watchdog that
-> initializes successfully. Even though at this moment, the only available
-> NMI watchdog is the perf-based hardlockup detector. More implementations
-> can be added in the future.
+> Then a second stage, I think, is to replace this "hook" so that the
+> architecture gets a say in the matter.
 
-Cool, this looks pretty nice at a quick glance. sparc and powerpc at
-least have their own NMI watchdogs, it would be good to have those
-converted as well.
+I don't think we can actually use dma_direct_ops.  It still allows
+architectures to override parts of the dma setup, which virtio seems
+to blindly assume phys == dma and not cache flushing.
 
-Is hpet a cross platform thing, or just x86? We should avoid
-proliferation of files under kernel/ I think, so with these watchdog
-driver structs then maybe implementations could go in drivers/ or
-arch/
-
-Thanks,
-Nick
+I think the right way forward is to either add a new
+VIRTIO_F_IS_PCI_DEVICE (or redefine the existing iommu flag if deemed
+possible).  And then make sure recent qemu always sets it.
