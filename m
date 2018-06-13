@@ -3,12 +3,12 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2a01:7a0:2:106d:700::1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415LxW4PpDzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 19:27:11 +1000 (AEST)
-Date: Wed, 13 Jun 2018 11:26:49 +0200 (CEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415M4g2llBzDrq8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 19:33:23 +1000 (AEST)
+Date: Wed, 13 Jun 2018 11:20:34 +0200 (CEST)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Nicholas Piggin <npiggin@gmail.com>,
+To: Julien Thierry <julien.thierry@arm.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
  Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
  Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
@@ -16,26 +16,21 @@ cc: Nicholas Piggin <npiggin@gmail.com>,
  "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- Don Zickus <dzickus@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Babu Moger <babu.moger@oracle.com>,
- "David S. Miller" <davem@davemloft.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
  Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 12/23] kernel/watchdog: Introduce a struct for NMI
- watchdog operations
-In-Reply-To: <20180613084219.GT12258@hirez.programming.kicks-ass.net>
-Message-ID: <alpine.DEB.2.21.1806131121180.2280@nanos.tec.linutronix.de>
+ "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Masami Hiramatsu <mhiramat@kernel.org>,
+ Marc Zyngier <marc.zyngier@arm.com>, Bartosz Golaszewski <brgl@bgdev.pl>,
+ Doug Berger <opendmb@gmail.com>, Palmer Dabbelt <palmer@sifive.com>,
+ iommu@lists.linux-foundation.org
+Subject: Re: [RFC PATCH 03/23] genirq: Introduce IRQF_DELIVER_AS_NMI
+In-Reply-To: <26687332-ab8f-7f6d-909a-f0918dbfea86@arm.com>
+Message-ID: <alpine.DEB.2.21.1806131104570.2280@nanos.tec.linutronix.de>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-13-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <20180613174141.539fc6c1@roar.ozlabs.ibm.com>
- <20180613084219.GT12258@hirez.programming.kicks-ass.net>
+ <1528851463-21140-4-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <20180613083419.GS12258@hirez.programming.kicks-ass.net>
+ <26687332-ab8f-7f6d-909a-f0918dbfea86@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -47,51 +42,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Jun 2018, Peter Zijlstra wrote:
-> On Wed, Jun 13, 2018 at 05:41:41PM +1000, Nicholas Piggin wrote:
-> > On Tue, 12 Jun 2018 17:57:32 -0700
-> > Ricardo Neri <ricardo.neri-calderon@linux.intel.com> wrote:
+On Wed, 13 Jun 2018, Julien Thierry wrote:
+> On 13/06/18 09:34, Peter Zijlstra wrote:
+> > On Tue, Jun 12, 2018 at 05:57:23PM -0700, Ricardo Neri wrote:
+> > > diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> > > index 5426627..dbc5e02 100644
+> > > --- a/include/linux/interrupt.h
+> > > +++ b/include/linux/interrupt.h
+> > > @@ -61,6 +61,8 @@
+> > >    *                interrupt handler after suspending interrupts. For
+> > > system
+> > >    *                wakeup devices users need to implement wakeup
+> > > detection in
+> > >    *                their interrupt handlers.
+> > > + * IRQF_DELIVER_AS_NMI - Configure interrupt to be delivered as
+> > > non-maskable, if
+> > > + *                supported by the chip.
+> > >    */
 > > 
-> > > Instead of exposing individual functions for the operations of the NMI
-> > > watchdog, define a common interface that can be used across multiple
-> > > implementations.
-> > > 
-> > > The struct nmi_watchdog_ops is defined for such operations. These initial
-> > > definitions include the enable, disable, start, stop, and cleanup
-> > > operations.
-> > > 
-> > > Only a single NMI watchdog can be used in the system. The operations of
-> > > this NMI watchdog are accessed via the new variable nmi_wd_ops. This
-> > > variable is set to point the operations of the first NMI watchdog that
-> > > initializes successfully. Even though at this moment, the only available
-> > > NMI watchdog is the perf-based hardlockup detector. More implementations
-> > > can be added in the future.
+> > NAK on the first 6 patches. You really _REALLY_ don't want to expose
+> > NMIs to this level.
 > > 
-> > Cool, this looks pretty nice at a quick glance. sparc and powerpc at
-> > least have their own NMI watchdogs, it would be good to have those
-> > converted as well.
 > 
-> Yeah, agreed, this looks like half a patch.
-
-Though I'm not seeing the advantage of it. That kind of NMI watchdogs are
-low level architecture details so having yet another 'ops' data structure
-with a gazillion of callbacks, checks and indirections does not provide
-value over the currently available weak stubs.
-
-> > Is hpet a cross platform thing, or just x86? We should avoid
-> > proliferation of files under kernel/ I think, so with these watchdog
-> > driver structs then maybe implementations could go in drivers/ or
-> > arch/
+> I've been working on something similar on arm64 side, and effectively the one
+> thing that might be common to arm64 and intel is the interface to set an
+> interrupt as NMI. So I guess it would be nice to agree on the right approach
+> for this.
 > 
-> HPET is mostly an x86 thing (altough it can be found elsewhere), but the
+> The way I did it was by introducing a new irq_state and let the irqchip driver
+> handle most of the work (if it supports that state):
+> 
+> https://lkml.org/lkml/2018/5/25/181
+>
+> This has not been ACKed nor NAKed. So I am just asking whether this is a more
+> suitable approach, and if not, is there any suggestions on how to do this?
 
-On ia64 and I doubt that anyone wants to take on the task of underwater
-welding it to Itanic.
+I really didn't pay attention to that as it's burried in the GIC/ARM series
+which is usually Marc's playground.
 
-> whole thing relies on the x86 NMI mechanism and is thus firmly arch/
-> material (like the sparc and ppc thing).
-
-Right. Trying to make this 'generic' is not really solving anything.
+Adding NMI delivery support at low level architecture irq chip level is
+perfectly fine, but the exposure of that needs to be restricted very
+much. Adding it to the generic interrupt control interfaces is not going to
+happen. That's doomed to begin with and a complete abuse of the interface
+as the handler can not ever be used for that.
 
 Thanks,
 
