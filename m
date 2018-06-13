@@ -2,7 +2,7 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kB3MgnzDr1d
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kB38R3zDqsx
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:38 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
@@ -13,18 +13,12 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Jacob Pan <jacob.jun.pan@intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>,
- Randy Dunlap <rdunlap@infradead.org>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Marc Zyngier <marc.zyngier@arm.com>, Bartosz Golaszewski <brgl@bgdev.pl>,
- Doug Berger <opendmb@gmail.com>, Palmer Dabbelt <palmer@sifive.com>,
+ Jacob Pan <jacob.jun.pan@intel.com>, Joerg Roedel <joro@8bytes.org>,
  iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 03/23] genirq: Introduce IRQF_DELIVER_AS_NMI
-Date: Tue, 12 Jun 2018 17:57:23 -0700
-Message-Id: <1528851463-21140-4-git-send-email-ricardo.neri-calderon@linux.intel.com>
+Subject: [RFC PATCH 04/23] iommu/vt-d/irq_remapping: Add support for
+ IRQCHIP_CAN_DELIVER_AS_NMI
+Date: Tue, 12 Jun 2018 17:57:24 -0700
+Message-Id: <1528851463-21140-5-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,137 +30,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Certain interrupt controllers (such as APIC) are capable of delivering
-interrupts as non-maskable. Likewise, drivers or subsystems (e.g., the
-hardlockup detector) might be interested in requesting a non-maskable
-interrupt. The new flag IRQF_DELIVER_AS_NMI serves this purpose.
+The Intel IOMMU is capable of delivering remapped interrupts as non-
+maskable. Add the IRQCHIP_CAN_DELIVER_AS_NMI flag to its irq_chip
+structure to declare this capability. The delivery mode of each interrupt
+can be set separately.
 
-When setting up an interrupt, non-maskable delivery will be set in the
-interrupt state data only if supported by the underlying interrupt
-controller chips.
+By default, the deliver mode is taken from the configuration field of the
+interrupt data. If non-maskable delivery is requested in the interrupt
+state flags, the respective entry in the remapping table is updated.
 
-Interrupt controller chips can declare that they support non-maskable
-delivery by using the new flag IRQCHIP_CAN_DELIVER_AS_NMI.
+When remapping an interrupt from an IO APIC, modify the delivery
+field in the interrupt remapping table entry. When remapping an MSI
+interrupt, simply update the delivery mode when composing the message.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Borislav Petkov <bp@suse.de>
 Cc: Jacob Pan <jacob.jun.pan@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>
-Cc: Randy Dunlap <rdunlap@infradead.org>
-Cc: Masami Hiramatsu <mhiramat@kernel.org>
-Cc: Marc Zyngier <marc.zyngier@arm.com>
-Cc: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Doug Berger <opendmb@gmail.com>
-Cc: Palmer Dabbelt <palmer@sifive.com>
+Cc: Joerg Roedel <joro@8bytes.org>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- include/linux/interrupt.h |  3 +++
- include/linux/irq.h       |  3 +++
- kernel/irq/manage.c       | 22 +++++++++++++++++++++-
- 3 files changed, 27 insertions(+), 1 deletion(-)
+ drivers/iommu/intel_irq_remapping.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 5426627..dbc5e02 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -61,6 +61,8 @@
-  *                interrupt handler after suspending interrupts. For system
-  *                wakeup devices users need to implement wakeup detection in
-  *                their interrupt handlers.
-+ * IRQF_DELIVER_AS_NMI - Configure interrupt to be delivered as non-maskable, if
-+ *                supported by the chip.
-  */
- #define IRQF_SHARED		0x00000080
- #define IRQF_PROBE_SHARED	0x00000100
-@@ -74,6 +76,7 @@
- #define IRQF_NO_THREAD		0x00010000
- #define IRQF_EARLY_RESUME	0x00020000
- #define IRQF_COND_SUSPEND	0x00040000
-+#define IRQF_DELIVER_AS_NMI	0x00080000
+diff --git a/drivers/iommu/intel_irq_remapping.c b/drivers/iommu/intel_irq_remapping.c
+index 9f3a04d..b6cf7c4 100644
+--- a/drivers/iommu/intel_irq_remapping.c
++++ b/drivers/iommu/intel_irq_remapping.c
+@@ -1128,10 +1128,14 @@ static void intel_ir_reconfigure_irte(struct irq_data *irqd, bool force)
+ 	struct irte *irte = &ir_data->irte_entry;
+ 	struct irq_cfg *cfg = irqd_cfg(irqd);
  
- #define IRQF_TIMER		(__IRQF_TIMER | IRQF_NO_SUSPEND | IRQF_NO_THREAD)
- 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 7271a2c..d2520ae 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -515,6 +515,8 @@ struct irq_chip {
-  * IRQCHIP_SKIP_SET_WAKE:	Skip chip.irq_set_wake(), for this irq chip
-  * IRQCHIP_ONESHOT_SAFE:	One shot does not require mask/unmask
-  * IRQCHIP_EOI_THREADED:	Chip requires eoi() on unmask in threaded mode
-+ * IRQCHIP_CAN_DELIVER_AS_NMI	Chip can deliver interrupts it receives as non-
-+ *				maskable.
-  */
- enum {
- 	IRQCHIP_SET_TYPE_MASKED		= (1 <<  0),
-@@ -524,6 +526,7 @@ enum {
- 	IRQCHIP_SKIP_SET_WAKE		= (1 <<  4),
- 	IRQCHIP_ONESHOT_SAFE		= (1 <<  5),
- 	IRQCHIP_EOI_THREADED		= (1 <<  6),
-+	IRQCHIP_CAN_DELIVER_AS_NMI	= (1 <<  7),
- };
- 
- #include <linux/irqdesc.h>
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index e3336d9..d058aa8 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -1137,7 +1137,7 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- {
- 	struct irqaction *old, **old_ptr;
- 	unsigned long flags, thread_mask = 0;
--	int ret, nested, shared = 0;
-+	int ret, nested, shared = 0, deliver_as_nmi = 0;
- 
- 	if (!desc)
- 		return -EINVAL;
-@@ -1156,6 +1156,16 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 	if (!(new->flags & IRQF_TRIGGER_MASK))
- 		new->flags |= irqd_get_trigger_type(&desc->irq_data);
- 
-+	/* Only deliver as non-maskable interrupt if supported by chip. */
-+	if (new->flags & IRQF_DELIVER_AS_NMI) {
-+		if (desc->irq_data.chip->flags & IRQCHIP_CAN_DELIVER_AS_NMI) {
-+			irqd_set_deliver_as_nmi(&desc->irq_data);
-+			deliver_as_nmi = 1;
-+		} else {
-+			return -EINVAL;
-+		}
-+	}
++	if (irqd_deliver_as_nmi(irqd))
++		cfg->delivery_mode = dest_NMI;
 +
  	/*
- 	 * Check whether the interrupt nests into another interrupt
- 	 * thread.
-@@ -1166,6 +1176,13 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 			ret = -EINVAL;
- 			goto out_mput;
- 		}
-+
-+		/* Don't allow nesting if interrupt will be delivered as NMI. */
-+		if (deliver_as_nmi) {
-+			ret = -EINVAL;
-+			goto out_mput;
-+		}
-+
- 		/*
- 		 * Replace the primary handler which was provided from
- 		 * the driver for non nested interrupt handling by the
-@@ -1186,6 +1203,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
- 	 * thread.
+ 	 * Atomically updates the IRTE with the new destination, vector
+ 	 * and flushes the interrupt entry cache.
  	 */
- 	if (new->thread_fn && !nested) {
-+		if (deliver_as_nmi)
-+			goto out_mput;
++	irte->dlvry_mode = cfg->delivery_mode;
+ 	irte->vector = cfg->vector;
+ 	irte->dest_id = IRTE_DEST(cfg->dest_apicid);
+ 
+@@ -1182,6 +1186,9 @@ static void intel_ir_compose_msi_msg(struct irq_data *irq_data,
+ {
+ 	struct intel_ir_data *ir_data = irq_data->chip_data;
+ 
++	if (irqd_deliver_as_nmi(irq_data))
++		ir_data->irte_entry.dlvry_mode = dest_NMI;
 +
- 		ret = setup_irq_thread(new, irq, false);
- 		if (ret)
- 			goto out_mput;
+ 	*msg = ir_data->msi_entry;
+ }
+ 
+@@ -1227,6 +1234,7 @@ static struct irq_chip intel_ir_chip = {
+ 	.irq_set_affinity	= intel_ir_set_affinity,
+ 	.irq_compose_msi_msg	= intel_ir_compose_msi_msg,
+ 	.irq_set_vcpu_affinity	= intel_ir_set_vcpu_affinity,
++	.flags			= IRQCHIP_CAN_DELIVER_AS_NMI,
+ };
+ 
+ static void intel_irq_remapping_prepare_irte(struct intel_ir_data *data,
 -- 
 2.7.4
