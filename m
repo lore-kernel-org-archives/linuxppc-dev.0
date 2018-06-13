@@ -2,7 +2,7 @@ Return-Path: <ricardo.neri-calderon@linux.intel.com>
 Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4157kC361lzDqsx
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4157kC3KvZzDr1d
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 11:01:39 +1000 (AEST)
 From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
@@ -13,14 +13,15 @@ Cc: Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org,
  Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Jacob Pan <jacob.jun.pan@intel.com>, Juergen Gross <jgross@suse.com>,
- Baoquan He <bhe@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
- Dou Liyang <douly.fnst@cn.fujitsu.com>,
- Jan Kiszka <jan.kiszka@siemens.com>, iommu@lists.linux-foundation.org
-Subject: [RFC PATCH 06/23] x86/ioapic: Add support for
- IRQCHIP_CAN_DELIVER_AS_NMI with interrupt remapping
-Date: Tue, 12 Jun 2018 17:57:26 -0700
-Message-Id: <1528851463-21140-7-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ Jacob Pan <jacob.jun.pan@intel.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ iommu@lists.linux-foundation.org
+Subject: [RFC PATCH 07/23] x86/hpet: Expose more functions to read and write
+ registers
+Date: Tue, 12 Jun 2018 17:57:27 -0700
+Message-Id: <1528851463-21140-8-git-send-email-ricardo.neri-calderon@linux.intel.com>
 In-Reply-To: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,50 +33,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Even though there is a delivery mode field at the entries of an IO APIC's
-redirection table, the documentation of the majority of the IO APICs
-explicitly states that interrupt delivery as non-maskable is not supported.
-Thus,
+Some of the registers in the HPET hardware have a width of 64 bits. 64-bit
+access functions are needed mostly to read the counter and write the
+comparator in a single read or write. Also, 64-bit accesses can be used to
+to read parameters located in the higher bits of some registers (such as
+the timer period and the IO APIC pins that can be asserted by the timer)
+without the need of masking and shifting the register values.
 
-However, when using an IO APIC in combination with the Intel VT-d interrupt
-remapping functionality, the delivery of the interrupt to the CPU is
-handled by the remapping hardware. In such a case, the interrupt can be
-delivered as non maskable.
+64-bit read and write functions are added. These functions, along with the
+existing hpet_writel(), are exposed via the HPET header to be used by other
+kernel subsystems.
 
-Thus, add the IRQCHIP_CAN_DELIVER_AS_NMI flag only when used in combination
-with interrupt remapping.
+Thus far, the only consumer of these functions will the HPET-based
+hardlockup detector, which will only be available in 64-bit builds. Thus,
+the 64-bit access functions are wrapped in CONFIG_X86_64.
 
 Cc: Ashok Raj <ashok.raj@intel.com>
 Cc: Andi Kleen <andi.kleen@intel.com>
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Borislav Petkov <bp@suse.de>
 Cc: Jacob Pan <jacob.jun.pan@intel.com>
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Dou Liyang <douly.fnst@cn.fujitsu.com>
-Cc: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: Philippe Ombredanne <pombredanne@nexb.com>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 Cc: "Ravi V. Shankar" <ravi.v.shankar@intel.com>
 Cc: x86@kernel.org
 Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 ---
- arch/x86/kernel/apic/io_apic.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/hpet.h | 10 ++++++++++
+ arch/x86/kernel/hpet.c      | 12 +++++++++++-
+ 2 files changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 10a20f8..39de91b 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1911,7 +1911,8 @@ static struct irq_chip ioapic_ir_chip __read_mostly = {
- 	.irq_eoi		= ioapic_ir_ack_level,
- 	.irq_set_affinity	= ioapic_set_affinity,
- 	.irq_retrigger		= irq_chip_retrigger_hierarchy,
--	.flags			= IRQCHIP_SKIP_SET_WAKE,
-+	.flags			= IRQCHIP_SKIP_SET_WAKE |
-+				  IRQCHIP_CAN_DELIVER_AS_NMI,
- };
+diff --git a/arch/x86/include/asm/hpet.h b/arch/x86/include/asm/hpet.h
+index 67385d5..9e0afde 100644
+--- a/arch/x86/include/asm/hpet.h
++++ b/arch/x86/include/asm/hpet.h
+@@ -72,6 +72,11 @@ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
+ extern void hpet_disable(void);
+ extern unsigned int hpet_readl(unsigned int a);
++extern void hpet_writel(unsigned int d, unsigned int a);
++#ifdef CONFIG_X86_64
++extern unsigned long hpet_readq(unsigned int a);
++extern void hpet_writeq(unsigned long d, unsigned int a);
++#endif
+ extern void force_hpet_resume(void);
  
- static inline void init_IO_APIC_traps(void)
+ struct irq_data;
+@@ -109,6 +114,11 @@ extern void hpet_unregister_irq_handler(rtc_irq_handler handler);
+ static inline int hpet_enable(void) { return 0; }
+ static inline int is_hpet_enabled(void) { return 0; }
+ #define hpet_readl(a) 0
++#define hpet_writel(d, a)
++#ifdef CONFIG_X86_64
++#define hpet_readq(a) 0
++#define hpet_writeq(d, a)
++#endif
+ #define default_setup_hpet_msi	NULL
+ 
+ #endif
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 8ce4212..3fa1d3f 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -64,12 +64,22 @@ inline unsigned int hpet_readl(unsigned int a)
+ 	return readl(hpet_virt_address + a);
+ }
+ 
+-static inline void hpet_writel(unsigned int d, unsigned int a)
++inline void hpet_writel(unsigned int d, unsigned int a)
+ {
+ 	writel(d, hpet_virt_address + a);
+ }
+ 
+ #ifdef CONFIG_X86_64
++inline unsigned long hpet_readq(unsigned int a)
++{
++	return readq(hpet_virt_address + a);
++}
++
++inline void hpet_writeq(unsigned long d, unsigned int a)
++{
++	writeq(d, hpet_virt_address + a);
++}
++
+ #include <asm/pgtable.h>
+ #endif
+ 
 -- 
 2.7.4
