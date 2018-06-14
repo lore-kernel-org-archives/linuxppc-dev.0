@@ -1,22 +1,25 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qk0-f196.google.com (mail-qk0-f196.google.com
- [209.85.220.196])
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415hW00CR3zDrcd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 08:38:51 +1000 (AEST)
-Received: by mail-qk0-f196.google.com with SMTP id r66-v6so2553703qkr.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 15:38:51 -0700 (PDT)
-Subject: Re: [RFC,00/12] Deal with TM on kernel entry and exit
-To: Cyril Bur <cyrilbur@gmail.com>, mikey@neuling.org, benh@kernel.crashing.org
-References: <20180220002241.29648-1-cyrilbur@gmail.com>
-From: Breno Leitao <leitao@debian.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Message-ID: <50bf94bd-1367-1a99-1331-35f6562cedd5@debian.org>
-Date: Wed, 13 Jun 2018 19:38:42 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415kyS6NjTzDrpC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 10:29:20 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id s9-v6so4253257qtg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:29:20 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
+ Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, luto@kernel.org,
+ msuchanek@suse.de
+Subject: [PATCH v2 0/6] powerpc/pkeys: fixes to pkeys
+Date: Wed, 13 Jun 2018 17:28:58 -0700
+Message-Id: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180220002241.29648-1-cyrilbur@gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +29,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Cyril,
+Assortment of fixes to pkey.
 
-On 02/19/2018 09:22 PM, Cyril Bur wrote:
-> This is very much a proof of concept and if it isn't clear from the
-> commit names, still a work in progress.
+Patch 1  makes pkey consumable in multithreaded applications.
 
-> I believe I have something that works - all the powerpc selftests
-> pass. I would like to get some eyes on it to a) see if I've missed
-> anything big and b) some opinions on if it is looking like a net
-> improvement.
+Patch 2  fixes fork behavior to inherit the key attributes.
 
-I started to look at this patchset. The patchset apply cleanly on top of the
-current kernel and I started to run some tests.
+Patch 3  A off-by-one bug made one key unusable. Fixes it.
 
-It seems there is a different behavior when there is a trap (as a illegal
-instruction or a 'trap' instruction) inside the transaction.
+Patch 4  Execute-only key is preallocated.
 
-In this case, the signal handler does not seem to be called, and and the task
-segfaults. On current upstream, the signal handler is called and the program
-can continue.
+Patch 5  Makes pkey-0 less special.
 
-4.17 pristine
--------------
-	$ ./illegal
-	Failure
+Patch 6  Deny by default permissions on all unallocated keys.
 
-4.17 plus your patches
-----------------------
-	$ ./illegal
-	[1]    2504 segmentation fault  ./illegal
+Passes all selftests on powerpc. Also behavior verified to be correct
+by Florian.
 
+Changelog:
 
-Here is a minimal example that is able to recreate this behaviour:
+	v2: . fixed merge conflict with upstream code.
+	    . Add patch 6. Makes the behavior consistent
+	      with that on x86.
 
-	#include <stdio.h>
-	#include <signal.h>
-	
-	int htm(){
-		asm goto ("tbegin.  		\n\t"
-			  "beq %l[failure]	\n\t"
-			  "li 3, 3		\n\t"
-			  "trap 		\n\t"
-			  "tend. 		\n\t"
-			  : : : : failure);
-	
-		return 0;
-	failure:
-		printf("Failure\n");
-		return 1;
-	}
-	
-	void signal_handler(int signo, siginfo_t *si, void *data) {
-		// Do nothing
-	}
-	
-	int main(){
-		struct sigaction sa;
-	        sa.sa_flags = SA_SIGINFO;
-	        sa.sa_sigaction = signal_handler;
-	
-	        sigaction(SIGTRAP, &sa, NULL);
-	        sigaction(SIGILL,  &sa, NULL);
-	
-		return htm();
-	}
+Ram Pai (6):
+  powerpc/pkeys: Enable all user-allocatable pkeys at init.
+  powerpc/pkeys: Save the pkey registers before fork
+  powerpc/pkeys: fix calculation of total pkeys.
+  powerpc/pkeys: Preallocate execute-only key
+  powerpc/pkeys: make protection key 0 less special
+  powerpc/pkeys: Deny read/write/execute by default
+
+ arch/powerpc/include/asm/pkeys.h |   29 +++++++++--
+ arch/powerpc/kernel/process.c    |    1 +
+ arch/powerpc/mm/pkeys.c          |  102 ++++++++++++-------------------------
+ 3 files changed, 57 insertions(+), 75 deletions(-)
