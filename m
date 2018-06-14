@@ -1,49 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416Zgg4TsFzF1HG
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 19:19:26 +1000 (AEST)
-Date: Fri, 15 Jun 2018 11:19:09 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, Babu Moger <babu.moger@oracle.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Byungchul Park <byungchul.park@lge.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, Waiman Long <longman@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Christoffer Dall <cdall@linaro.org>,
- Marc Zyngier <marc.zyngier@arm.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 17/23] watchdog/hardlockup/hpet: Convert the timer's
- interrupt to NMI
-In-Reply-To: <20180615020314.GA11625@voyager>
-Message-ID: <alpine.DEB.2.21.1806151029210.2079@nanos.tec.linutronix.de>
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-18-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <alpine.DEB.2.21.1806131128570.2280@nanos.tec.linutronix.de>
- <20180615020314.GA11625@voyager>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 416b213HZXzF153
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 19:35:21 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/mm: Fix kernel crash on page table free
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180530123225.7732-1-aneesh.kumar@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <1bbbfc4d-c47c-2383-454c-430a014beb9e@c-s.fr>
+Date: Thu, 14 Jun 2018 21:54:34 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180530123225.7732-1-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,61 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Jun 2018, Ricardo Neri wrote:
-> On Wed, Jun 13, 2018 at 11:40:00AM +0200, Thomas Gleixner wrote:
-> > On Tue, 12 Jun 2018, Ricardo Neri wrote:
-> > > @@ -183,6 +184,8 @@ static irqreturn_t hardlockup_detector_irq_handler(int irq, void *data)
-> > >  	if (!(hdata->flags & HPET_DEV_PERI_CAP))
-> > >  		kick_timer(hdata);
-> > >  
-> > > +	pr_err("This interrupt should not have happened. Ensure delivery mode is NMI.\n");
-> > 
-> > Eeew.
+
+
+On 05/30/2018 12:32 PM, Aneesh Kumar K.V wrote:
+> Fix the below crash on BookE 64. pgtable_page_dtor expects struct page *arg.
 > 
-> If you don't mind me asking. What is the problem with this error message?
-
-The problem is not the error message. The problem is the abuse of
-request_irq() and the fact that this irq handler function exists in the
-first place for something which is NMI based.
-
-> > And in case that the HPET does not support periodic mode this reprogramms
-> > the timer on every NMI which means that while perf is running the watchdog
-> > will never ever detect anything.
+> Also call the destructor on non book3s platforms correctly. This free up the
+> split ptl locks correctly if we had allocated them before.
 > 
-> Yes. I see that this is wrong. With MSI interrupts, as far as I can
-> see, there is not a way to make sure that the HPET timer caused the NMI
-> perhaps the only option is to use an IO APIC interrupt and read the
-> interrupt status register.
+> Call Trace:
+> [c0000000f30c7520] [c00000000021eeec] .kmem_cache_free+0x9c/0x44c (unreliable)
+> [c0000000f30c75c0] [c0000000001ee07c] .ptlock_free+0x1c/0x30
+> [c0000000f30c7630] [c0000000001ee260] .tlb_remove_table+0xdc/0x224
+> [c0000000f30c76c0] [c0000000001ee640] .free_pgd_range+0x298/0x500
+> [c0000000f30c77d0] [c000000000232afc] .shift_arg_pages+0x10c/0x1e0
+> [c0000000f30c7910] [c000000000232dd0] .setup_arg_pages+0x200/0x25c
+> [c0000000f30c79c0] [c0000000002ad4fc] .load_elf_binary+0x450/0x16c8
+> [c0000000f30c7b10] [c000000000234914] .search_binary_handler.part.11+0x9c/0x248
+> [c0000000f30c7bb0] [c00000000023595c] .do_execveat_common.isra.13+0x868/0xc18
+> [c0000000f30c7cb0] [c00000000000184c] .run_init_process+0x34/0x4c
+> [c0000000f30c7d30] [c000000000001880] .try_to_run_init_process+0x1c/0x68
+> [c0000000f30c7db0] [c000000000002bd8] .kernel_init+0xdc/0x130
+> [c0000000f30c7e30] [c0000000000009dc] .ret_from_kernel_thread+0x58/0x7c
 > 
-> > Aside of that, reading TWO HPET registers for every NMI is insane. HPET
-> > access is horribly slow, so any high frequency perf monitoring will take a
-> > massive performance hit.
+> Fixes: 702346768 ("powerpc/mm/nohash: Remove pte fragment dependency from nohash")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/book3s/32/pgalloc.h | 1 +
+>   arch/powerpc/include/asm/nohash/32/pgalloc.h | 1 +
+>   arch/powerpc/include/asm/nohash/64/pgalloc.h | 2 +-
+>   3 files changed, 3 insertions(+), 1 deletion(-)
 > 
-> If an IO APIC interrupt is used, only HPET register (the status register)
-> would need to be read for every NMI. Would that be more acceptable? Otherwise,
-> there is no way to determine if the HPET cause the NMI.
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> index 5073cc75f1c8..6a6673907e45 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> @@ -99,6 +99,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+>   static inline void pgtable_free(void *table, unsigned index_size)
+>   {
+>   	if (!index_size) {
+> +		pgtable_page_dtor(virt_to_page(table));
 
-You need level trigger for the HPET status register to be useful at all
-because in edge mode the interrupt status bits read always 0.
+__pte_free_tlb() already calls pgtable_page_dtor(table) before calling
+pgtable_free() via pgtable_free_tlb().
 
-That means you have to fiddle with the IOAPIC acknowledge magic from NMI
-context. Brilliant idea. If the NMI hits in the middle of a regular
-io_apic_read() then the interrupted code will endup with the wrong index
-register. Not to talk about the fun which the affinity rotation from NMI
-context would bring.
+Is it normal to call it twice ?
 
-Do not even think about using IOAPIC and level for this.
+>   		free_page((unsigned long)table);
+>   	} else {
+>   		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+> diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> index 29d37bd1f3b3..1707781d2f20 100644
+> --- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> +++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> @@ -100,6 +100,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+>   static inline void pgtable_free(void *table, unsigned index_size)
+>   {
+>   	if (!index_size) {
+> +		pgtable_page_dtor(virt_to_page(table));
 
-> Alternatively, there could be a counter that skips reading the HPET status
-> register (and the detection of hardlockups) for every X NMIs. This would
-> reduce the overall frequency of HPET register reads.
+Same here
 
-Great plan. So if the watchdog is the only NMI (because perf is off) then
-you delay the watchdog detection by that count.
+Christophe
 
-You neither can do a time based check, because time might be corrupted and
-then you end up in lala land as well.
-
-Thanks,
-
-	tglx
+>   		free_page((unsigned long)table);
+>   	} else {
+>   		BUG_ON(index_size > MAX_PGTABLE_INDEX_SIZE);
+> diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> index 21624ff1f065..0e693f322cb2 100644
+> --- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> +++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> @@ -133,7 +133,7 @@ static inline void pte_free(struct mm_struct *mm, pgtable_t ptepage)
+>   static inline void pgtable_free(void *table, int shift)
+>   {
+>   	if (!shift) {
+> -		pgtable_page_dtor(table);
+> +		pgtable_page_dtor(virt_to_page(table));
+>   		free_page((unsigned long)table);
+>   	} else {
+>   		BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+> 
