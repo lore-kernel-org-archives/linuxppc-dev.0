@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415lM95DQWzF09q
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 10:47:17 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id x34-v6so4277914qtk.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:47:17 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415lMD5mPszF07t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 10:47:20 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id g14-v6so2701170qkm.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 17:47:20 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: shuahkh@osg.samsung.com,
@@ -16,10 +16,10 @@ Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  dave.hansen@intel.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
  linuxram@us.ibm.com, fweimer@redhat.com, msuchanek@suse.de,
  aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v13 15/24] selftests/vm: powerpc implementation for generic
- abstraction
-Date: Wed, 13 Jun 2018 17:45:06 -0700
-Message-Id: <1528937115-10132-16-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v13 17/24] selftests/vm: powerpc implementation to check
+ support for pkey
+Date: Wed, 13 Jun 2018 17:45:08 -0700
+Message-Id: <1528937115-10132-18-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
 References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,318 +31,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce powerpc implementation for the various
-abstractions.
+pkey subsystem is supported if the hardware and kernel has support.
+We determine that by checking if allocation of a key succeeds or not.
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 ---
- tools/testing/selftests/vm/pkey-helpers.h    |   16 ++++-
- tools/testing/selftests/vm/pkey-powerpc.h    |   91 ++++++++++++++++++++++++++
- tools/testing/selftests/vm/pkey-x86.h        |   15 ++++
- tools/testing/selftests/vm/protection_keys.c |   62 ++++++++++--------
- 4 files changed, 156 insertions(+), 28 deletions(-)
- create mode 100644 tools/testing/selftests/vm/pkey-powerpc.h
+ tools/testing/selftests/vm/pkey-helpers.h    |    2 ++
+ tools/testing/selftests/vm/pkey-powerpc.h    |   14 ++++++++++++--
+ tools/testing/selftests/vm/pkey-x86.h        |    8 ++++----
+ tools/testing/selftests/vm/protection_keys.c |    9 +++++----
+ 4 files changed, 23 insertions(+), 10 deletions(-)
 
 diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
-index 52a1152..321bbbd 100644
+index 321bbbd..288ccff 100644
 --- a/tools/testing/selftests/vm/pkey-helpers.h
 +++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -74,8 +74,13 @@ static inline void sigsafe_printf(const char *format, ...)
- 	}					\
- } while (0)
+@@ -76,6 +76,8 @@ static inline void sigsafe_printf(const char *format, ...)
  
-+__attribute__((noinline)) int read_ptr(int *ptr);
-+void expected_pkey_fault(int pkey);
-+
+ __attribute__((noinline)) int read_ptr(int *ptr);
+ void expected_pkey_fault(int pkey);
++int sys_pkey_alloc(unsigned long flags, u64 init_val);
++int sys_pkey_free(unsigned long pkey);
+ 
  #if defined(__i386__) || defined(__x86_64__) /* arch */
  #include "pkey-x86.h"
-+#elif defined(__powerpc64__) /* arch */
-+#include "pkey-powerpc.h"
- #else /* arch */
- #error Architecture not supported
- #endif /* arch */
-@@ -186,7 +191,16 @@ static inline int open_hugepage_file(int flag)
+diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
+index ec6f5d7..957f6f6 100644
+--- a/tools/testing/selftests/vm/pkey-powerpc.h
++++ b/tools/testing/selftests/vm/pkey-powerpc.h
+@@ -62,9 +62,19 @@ static inline void __write_pkey_reg(pkey_reg_t pkey_reg)
+ 			pkey_reg);
+ }
  
- static inline int get_start_key(void)
+-static inline int cpu_has_pku(void)
++static inline bool is_pkey_supported(void)
  {
 -	return 1;
-+	return 0;
-+}
++	/*
++	 * No simple way to determine this.
++	 * Lets try allocating a key and see if it succeeds.
++	 */
++	int ret = sys_pkey_alloc(0, 0);
 +
-+static inline u32 *siginfo_get_pkey_ptr(siginfo_t *si)
-+{
-+#ifdef si_pkey
-+	return &si->si_pkey;
-+#else
-+	return (u32 *)(((u8 *)si) + si_pkey_offset);
-+#endif
++	if (ret > 0) {
++		sys_pkey_free(ret);
++		return true;
++	}
++	return false;
  }
  
- #endif /* _PKEYS_HELPER_H */
-diff --git a/tools/testing/selftests/vm/pkey-powerpc.h b/tools/testing/selftests/vm/pkey-powerpc.h
-new file mode 100644
-index 0000000..ec6f5d7
---- /dev/null
-+++ b/tools/testing/selftests/vm/pkey-powerpc.h
-@@ -0,0 +1,91 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef _PKEYS_POWERPC_H
-+#define _PKEYS_POWERPC_H
-+
-+#ifndef SYS_mprotect_key
-+# define SYS_mprotect_key	386
-+#endif
-+#ifndef SYS_pkey_alloc
-+# define SYS_pkey_alloc		384
-+# define SYS_pkey_free		385
-+#endif
-+#define REG_IP_IDX		PT_NIP
-+#define REG_TRAPNO		PT_TRAP
-+#define gregs			gp_regs
-+#define fpregs			fp_regs
-+#define si_pkey_offset		0x20
-+
-+#ifndef PKEY_DISABLE_ACCESS
-+# define PKEY_DISABLE_ACCESS	0x3  /* disable read and write */
-+#endif
-+
-+#ifndef PKEY_DISABLE_WRITE
-+# define PKEY_DISABLE_WRITE	0x2
-+#endif
-+
-+#define NR_PKEYS		32
-+#define NR_RESERVED_PKEYS_4K	26
-+#define NR_RESERVED_PKEYS_64K	3
-+#define PKEY_BITS_PER_PKEY	2
-+#define HPAGE_SIZE		(1UL << 24)
-+#define PAGE_SIZE		(1UL << 16)
-+#define pkey_reg_t		u64
-+#define PKEY_REG_FMT		"%016lx"
-+#define HUGEPAGE_FILE		"/sys/kernel/mm/hugepages/hugepages-16384kB/nr_hugepages"
-+
-+static inline u32 pkey_bit_position(int pkey)
-+{
-+	return (NR_PKEYS - pkey - 1) * PKEY_BITS_PER_PKEY;
-+}
-+
-+static inline pkey_reg_t __read_pkey_reg(void)
-+{
-+	pkey_reg_t pkey_reg;
-+
-+	asm volatile("mfspr %0, 0xd" : "=r" (pkey_reg));
-+
-+	return pkey_reg;
-+}
-+
-+static inline void __write_pkey_reg(pkey_reg_t pkey_reg)
-+{
-+	pkey_reg_t eax = pkey_reg;
-+
-+	dprintf4("%s() changing "PKEY_REG_FMT" to "PKEY_REG_FMT"\n",
-+			 __func__, __read_pkey_reg(), pkey_reg);
-+
-+	asm volatile("mtspr 0xd, %0" : : "r" ((unsigned long)(eax)) : "memory");
-+
-+	dprintf4("%s() pkey register after changing "PKEY_REG_FMT" to "
-+			PKEY_REG_FMT"\n", __func__, __read_pkey_reg(),
-+			pkey_reg);
-+}
-+
-+static inline int cpu_has_pku(void)
-+{
-+	return 1;
-+}
-+
-+static inline int arch_reserved_keys(void)
-+{
-+	if (sysconf(_SC_PAGESIZE) == 4096)
-+		return NR_RESERVED_PKEYS_4K;
-+	else
-+		return NR_RESERVED_PKEYS_64K;
-+}
-+
-+void expect_fault_on_read_execonly_key(void *p1, u16 pkey)
-+{
-+	/* powerpc does not allow userspace to change permissions of exec-only
-+	 * keys since those keys are not allocated by userspace. The signal
-+	 * handler wont be able to reset the permissions, which means the code
-+	 * will infinitely continue to segfault here.
-+	 */
-+	return;
-+}
-+
-+/* 8-bytes of instruction * 16384bytes = 1 page */
-+#define __page_o_noops() asm(".rept 16384 ; nop; .endr")
-+
-+#endif /* _PKEYS_POWERPC_H */
+ static inline int arch_reserved_keys(void)
 diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
-index d5fa299..95ee952 100644
+index 95ee952..6820c10 100644
 --- a/tools/testing/selftests/vm/pkey-x86.h
 +++ b/tools/testing/selftests/vm/pkey-x86.h
-@@ -42,6 +42,7 @@
- #endif
+@@ -105,7 +105,7 @@ static inline void __cpuid(unsigned int *eax, unsigned int *ebx,
+ #define X86_FEATURE_PKU        (1<<3) /* Protection Keys for Userspace */
+ #define X86_FEATURE_OSPKE      (1<<4) /* OS Protection Keys Enable */
  
- #define NR_PKEYS		16
-+#define NR_RESERVED_PKEYS	1
- #define PKEY_BITS_PER_PKEY	2
- #define HPAGE_SIZE		(1UL<<21)
- #define PAGE_SIZE		4096
-@@ -161,4 +162,18 @@ int pkey_reg_xstate_offset(void)
- 	return xstate_offset;
+-static inline int cpu_has_pku(void)
++static inline bool is_pkey_supported(void)
+ {
+ 	unsigned int eax;
+ 	unsigned int ebx;
+@@ -118,13 +118,13 @@ static inline int cpu_has_pku(void)
+ 
+ 	if (!(ecx & X86_FEATURE_PKU)) {
+ 		dprintf2("cpu does not have PKU\n");
+-		return 0;
++		return false;
+ 	}
+ 	if (!(ecx & X86_FEATURE_OSPKE)) {
+ 		dprintf2("cpu does not have OSPKE\n");
+-		return 0;
++		return false;
+ 	}
+-	return 1;
++	return true;
  }
  
-+static inline int arch_reserved_keys(void)
-+{
-+	return NR_RESERVED_PKEYS;
-+}
-+
-+void expect_fault_on_read_execonly_key(void *p1, u16 pkey)
-+{
-+	int ptr_contents;
-+
-+	ptr_contents = read_ptr(p1);
-+	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
-+	expected_pkey_fault(pkey);
-+}
-+
- #endif /* _PKEYS_X86_H */
+ #define XSTATE_PKEY_BIT	(9)
 diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index f43a319..88dfa40 100644
+index ba184ca..cb81a47 100644
 --- a/tools/testing/selftests/vm/protection_keys.c
 +++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -197,17 +197,18 @@ void dump_mem(void *dumpme, int len_bytes)
+@@ -1393,8 +1393,8 @@ void test_mprotect_pkey_on_unsupported_cpu(int *ptr, u16 pkey)
+ 	int size = PAGE_SIZE;
+ 	int sret;
  
- int pkey_faults;
- int last_si_pkey = -1;
-+void pkey_access_allow(int pkey);
- void signal_handler(int signum, siginfo_t *si, void *vucontext)
- {
- 	ucontext_t *uctxt = vucontext;
- 	int trapno;
- 	unsigned long ip;
- 	char *fpregs;
-+#if defined(__i386__) || defined(__x86_64__) /* arch */
- 	pkey_reg_t *pkey_reg_ptr;
--	u64 siginfo_pkey;
-+#endif /* defined(__i386__) || defined(__x86_64__) */
-+	u32 siginfo_pkey;
- 	u32 *si_pkey_ptr;
--	int pkey_reg_offset;
--	fpregset_t fpregset;
- 
- 	dprint_in_signal = 1;
- 	dprintf1(">>>>===============SIGSEGV============================\n");
-@@ -217,12 +218,14 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
- 
- 	trapno = uctxt->uc_mcontext.gregs[REG_TRAPNO];
- 	ip = uctxt->uc_mcontext.gregs[REG_IP_IDX];
--	fpregset = uctxt->uc_mcontext.fpregs;
--	fpregs = (void *)fpregset;
-+	fpregs = (char *) uctxt->uc_mcontext.fpregs;
- 
- 	dprintf2("%s() trapno: %d ip: 0x%016lx info->si_code: %s/%d\n",
- 			__func__, trapno, ip, si_code_str(si->si_code),
- 			si->si_code);
-+
-+#if defined(__i386__) || defined(__x86_64__) /* arch */
-+
- #ifdef __i386__
- 	/*
- 	 * 32-bit has some extra padding so that userspace can tell whether
-@@ -230,20 +233,28 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
- 	 * state.  We just assume that it is here.
- 	 */
- 	fpregs += 0x70;
--#endif
--	pkey_reg_offset = pkey_reg_xstate_offset();
--	pkey_reg_ptr = (void *)(&fpregs[pkey_reg_offset]);
-+#endif /* __i386__ */
- 
--	dprintf1("siginfo: %p\n", si);
--	dprintf1(" fpregs: %p\n", fpregs);
-+	pkey_reg_ptr = (void *)(&fpregs[pkey_reg_xstate_offset()]);
- 	/*
--	 * If we got a PKEY fault, we *HAVE* to have at least one bit set in
-+	 * If we got a key fault, we *HAVE* to have at least one bit set in
- 	 * here.
- 	 */
- 	dprintf1("pkey_reg_xstate_offset: %d\n", pkey_reg_xstate_offset());
- 	if (DEBUG_LEVEL > 4)
- 		dump_mem(pkey_reg_ptr - 128, 256);
- 	pkey_assert(*pkey_reg_ptr);
-+#endif /* defined(__i386__) || defined(__x86_64__) */
-+
-+	dprintf1("siginfo: %p\n", si);
-+	dprintf1(" fpregs: %p\n", fpregs);
-+
-+	si_pkey_ptr = siginfo_get_pkey_ptr(si);
-+	dprintf1("si_pkey_ptr: %p\n", si_pkey_ptr);
-+	dump_mem(si_pkey_ptr - 8, 24);
-+	siginfo_pkey = *si_pkey_ptr;
-+	pkey_assert(siginfo_pkey < NR_PKEYS);
-+	last_si_pkey = siginfo_pkey;
- 
- 	if ((si->si_code == SEGV_MAPERR) ||
- 	    (si->si_code == SEGV_ACCERR) ||
-@@ -252,22 +263,21 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
- 		exit(4);
+-	if (cpu_has_pku()) {
+-		dprintf1("SKIP: %s: no CPU support\n", __func__);
++	if (is_pkey_supported()) {
++		dprintf1("SKIP: %s: no CPU/kernel support\n", __func__);
+ 		return;
  	}
  
--	si_pkey_ptr = (u32 *)(((u8 *)si) + si_pkey_offset);
--	dprintf1("si_pkey_ptr: %p\n", si_pkey_ptr);
--	dump_mem((u8 *)si_pkey_ptr - 8, 24);
--	siginfo_pkey = *si_pkey_ptr;
--	pkey_assert(siginfo_pkey < NR_PKEYS);
--	last_si_pkey = siginfo_pkey;
--
--	dprintf1("signal pkey_reg from xsave: "PKEY_REG_FMT"\n", *pkey_reg_ptr);
- 	/*
- 	 * need __read_pkey_reg() version so we do not do shadow_pkey_reg
- 	 * checking
- 	 */
- 	dprintf1("signal pkey_reg from  pkey_reg: "PKEY_REG_FMT"\n",
- 			__read_pkey_reg());
--	dprintf1("pkey from siginfo: %jx\n", siginfo_pkey);
--	*(u64 *)pkey_reg_ptr = 0x00000000;
-+#if defined(__i386__) || defined(__x86_64__) /* arch */
-+	dprintf1("signal pkey_reg from xsave: "PKEY_REG_FMT"\n", *pkey_reg_ptr);
-+	*(u64 *)pkey_reg_ptr &= clear_pkey_flags(siginfo_pkey,
-+			PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE);
-+#elif __powerpc64__
-+	pkey_access_allow(siginfo_pkey);
-+#endif
-+	shadow_pkey_reg &= clear_pkey_flags(siginfo_pkey,
-+			PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE);
- 	dprintf1("WARNING: set PKEY_REG=0 to allow faulting instruction "
- 			"to continue\n");
- 	pkey_faults++;
-@@ -1331,9 +1341,8 @@ void test_executing_on_unreadable_memory(int *ptr, u16 pkey)
- 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
- 	lots_o_noops_around_write(&scratch);
- 	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
--	ptr_contents = read_ptr(p1);
--	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
--	expected_pkey_fault(pkey);
-+
-+	expect_fault_on_read_execonly_key(p1, pkey);
- }
+@@ -1458,12 +1458,13 @@ void run_tests_once(void)
+ int main(void)
+ {
+ 	int nr_iterations = 22;
++	int pkey_supported = is_pkey_supported();
  
- void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
-@@ -1360,9 +1369,8 @@ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
- 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
- 	lots_o_noops_around_write(&scratch);
- 	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
--	ptr_contents = read_ptr(p1);
--	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
--	expected_pkey_fault(UNKNOWN_PKEY);
-+
-+	expect_fault_on_read_execonly_key(p1, UNKNOWN_PKEY);
+ 	setup_handlers();
  
- 	/*
- 	 * Put the memory back to non-PROT_EXEC.  Should clear the
+-	printf("has pkey: %d\n", cpu_has_pku());
++	printf("has pkey: %s\n", pkey_supported ? "Yes" : "No");
+ 
+-	if (!cpu_has_pku()) {
++	if (!pkey_supported) {
+ 		int size = PAGE_SIZE;
+ 		int *ptr;
+ 
 -- 
 1.7.1
