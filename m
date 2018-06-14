@@ -1,36 +1,27 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415vRz56Z0zDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 16:51:58 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id c22-v6so2736271pfi.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:51:58 -0700 (PDT)
-Date: Thu, 14 Jun 2018 16:51:46 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415vW052WczDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 16:54:36 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id z9-v6so2973076plk.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:54:36 -0700 (PDT)
+Received: from roar.ozlabs.ibm.com (59-102-70-78.tpgi.com.au. [59.102.70.78])
+ by smtp.gmail.com with ESMTPSA id
+ i4-v6sm6822518pfk.133.2018.06.13.23.54.32
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+ Wed, 13 Jun 2018 23:54:33 -0700 (PDT)
+Date: Thu, 14 Jun 2018 16:54:29 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-mm <linux-mm@kvack.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arch <linux-arch@vger.kernel.org>, "Aneesh Kumar K. V"
- <aneesh.kumar@linux.vnet.ibm.com>, Minchan Kim <minchan@kernel.org>, Mel
- Gorman <mgorman@techsingularity.net>, Nadav Amit <nadav.amit@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH 3/3] powerpc/64s/radix: optimise TLB flush with
- precise TLB ranges in mmu_gather
-Message-ID: <20180614165146.720a926d@roar.ozlabs.ibm.com>
-In-Reply-To: <CA+55aFwP-6QZ0u2ZYCjTebP6OmkeTpbUHyLT0ih-57TbvJBPxg@mail.gmail.com>
-References: <20180612071621.26775-1-npiggin@gmail.com>
- <20180612071621.26775-4-npiggin@gmail.com>
- <CA+55aFzKBieD0Y3sgFQzt+x5esqb9vT6SEQ28xyCz5UWegfFVg@mail.gmail.com>
- <20180613083131.139a3c34@roar.ozlabs.ibm.com>
- <CA+55aFyk9VBLUk8VYhfEUR55x0TXY9_QX1dE4wE0A_ias9tMNQ@mail.gmail.com>
- <20180613090950.50566245@roar.ozlabs.ibm.com>
- <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
- <CA+55aFzbYBXUDcAGaP_HoCxjTvOgkixc0+7nJqMea0yKjLSnhw@mail.gmail.com>
- <20180613101241.004fd64e@roar.ozlabs.ibm.com>
- <CA+55aFzJRknbQD6Mv3OSOvUVozQ4H8ni8jPP7UEEi9wKXmVhQA@mail.gmail.com>
- <20180614124931.703e5b54@roar.ozlabs.ibm.com>
- <CA+55aFwP-6QZ0u2ZYCjTebP6OmkeTpbUHyLT0ih-57TbvJBPxg@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc/64s/radix: Fix MADV_[FREE|DONTNEED] TLB
+ flush miss problem with THP
+Message-ID: <20180614165429.47fde12e@roar.ozlabs.ibm.com>
+In-Reply-To: <201806141310.bQbDyW9s%fengguang.wu@intel.com>
+References: <20180614032256.5440-1-npiggin@gmail.com>
+ <201806141310.bQbDyW9s%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,55 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Jun 2018 15:15:47 +0900
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 14 Jun 2018 13:51:40 +0800
+kbuild test robot <lkp@intel.com> wrote:
 
-> On Thu, Jun 14, 2018 at 11:49 AM Nicholas Piggin <npiggin@gmail.com> wrote:
-> >
-> > +#ifndef pte_free_tlb
-> >  #define pte_free_tlb(tlb, ptep, address)                       \
-> >         do {                                                    \
-> >                 __tlb_adjust_range(tlb, address, PAGE_SIZE);    \
-> >                 __pte_free_tlb(tlb, ptep, address);             \
-> >         } while (0)
-> > +#endif  
+> Hi Nicholas,
 > 
-> Do you really want to / need to take over the whole pte_free_tlb macro?
+> I love your patch! Yet something to improve:
 > 
-> I was hoping that you'd just replace the __tlv_adjust_range() instead.
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on next-20180613]
+> [cannot apply to v4.17]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 > 
-> Something like
-> 
->  - replace the
-> 
->         __tlb_adjust_range(tlb, address, PAGE_SIZE);
-> 
->    with a "page directory" version:
-> 
->         __tlb_free_directory(tlb, address, size);
-> 
->  - have the default implementation for that be the old code:
-> 
->         #ifndef __tlb_free_directory
->           #define __tlb_free_directory(tlb,addr,size)
-> __tlb_adjust_range(tlb, addr, PAGE_SIZE)
->         #endif
-> 
-> and that way architectures can now just hook into that
-> "__tlb_free_directory()" thing.
-> 
-> Hmm?
+> url:    https://github.com/0day-ci/linux/commits/Nicholas-Piggin/powerpc-64s-radix-Fix-MADV_-FREE-DONTNEED-TLB-flush-miss-problem-with-THP/20180614-114728
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: microblaze-nommu_defconfig (attached as .config)
+> compiler: microblaze-linux-gcc (GCC) 8.1.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         GCC_VERSION=8.1.0 make.cross ARCH=microblaze 
 
-Isn't it just easier and less indirection for the arch to just take
-over the pte_free_tlb instead? 
-
-I don't see what the __tlb_free_directory gets you except having to
-follow another macro -- if the arch has something special they want
-to do there, just do it in their __pte_free_tlb and call it
-pte_free_tlb instead.
-
-Thanks,
-Nick
-
-> 
->              Linus
+Ooops, absent mindedly edited a header without thinking it's not
+powerpc specific. Will fix it somehow.
