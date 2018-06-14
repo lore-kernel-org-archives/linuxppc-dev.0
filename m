@@ -1,42 +1,34 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
+Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
+ [IPv6:2607:f8b0:400e:c05::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415njH5BmgzDrnp
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 12:33:07 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id f1-v6so2621778plt.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 19:33:07 -0700 (PDT)
-Date: Thu, 14 Jun 2018 12:32:50 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415p4R0xZRzDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 12:49:41 +1000 (AEST)
+Received: by mail-pg0-x243.google.com with SMTP id p21-v6so2190952pgd.11
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 19:49:41 -0700 (PDT)
+Date: Thu, 14 Jun 2018 12:49:31 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra
- <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin"
- <hpa@zytor.com>, Andi Kleen <andi.kleen@intel.com>, Ashok Raj
- <ashok.raj@intel.com>, Borislav Petkov <bp@suse.de>, Tony Luck
- <tony.luck@intel.com>, "Ravi V. Shankar" <ravi.v.shankar@intel.com>,
- x86@kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>, Don
- Zickus <dzickus@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>, Babu Moger
- <babu.moger@oracle.com>, "David S. Miller" <davem@davemloft.net>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Andrew Morton
- <akpm@linux-foundation.org>, Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>, "Luis R. Rodriguez"
- <mcgrof@kernel.org>, iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 12/23] kernel/watchdog: Introduce a struct for NMI
- watchdog operations
-Message-ID: <20180614123250.230667f6@roar.ozlabs.ibm.com>
-In-Reply-To: <20180614013117.GC22652@voyager>
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-13-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <20180613174141.539fc6c1@roar.ozlabs.ibm.com>
- <20180613084219.GT12258@hirez.programming.kicks-ass.net>
- <alpine.DEB.2.21.1806131121180.2280@nanos.tec.linutronix.de>
- <20180613215225.2a938abc@roar.ozlabs.ibm.com>
- <20180614013117.GC22652@voyager>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-mm <linux-mm@kvack.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arch <linux-arch@vger.kernel.org>, "Aneesh Kumar K. V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Minchan Kim <minchan@kernel.org>, Mel
+ Gorman <mgorman@techsingularity.net>, Nadav Amit <nadav.amit@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH 3/3] powerpc/64s/radix: optimise TLB flush with
+ precise TLB ranges in mmu_gather
+Message-ID: <20180614124931.703e5b54@roar.ozlabs.ibm.com>
+In-Reply-To: <CA+55aFzJRknbQD6Mv3OSOvUVozQ4H8ni8jPP7UEEi9wKXmVhQA@mail.gmail.com>
+References: <20180612071621.26775-1-npiggin@gmail.com>
+ <20180612071621.26775-4-npiggin@gmail.com>
+ <CA+55aFzKBieD0Y3sgFQzt+x5esqb9vT6SEQ28xyCz5UWegfFVg@mail.gmail.com>
+ <20180613083131.139a3c34@roar.ozlabs.ibm.com>
+ <CA+55aFyk9VBLUk8VYhfEUR55x0TXY9_QX1dE4wE0A_ias9tMNQ@mail.gmail.com>
+ <20180613090950.50566245@roar.ozlabs.ibm.com>
+ <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
+ <CA+55aFzbYBXUDcAGaP_HoCxjTvOgkixc0+7nJqMea0yKjLSnhw@mail.gmail.com>
+ <20180613101241.004fd64e@roar.ozlabs.ibm.com>
+ <CA+55aFzJRknbQD6Mv3OSOvUVozQ4H8ni8jPP7UEEi9wKXmVhQA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -48,66 +40,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Jun 2018 18:31:17 -0700
-Ricardo Neri <ricardo.neri-calderon@linux.intel.com> wrote:
+On Tue, 12 Jun 2018 18:10:26 -0700
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Wed, Jun 13, 2018 at 09:52:25PM +1000, Nicholas Piggin wrote:
-> > On Wed, 13 Jun 2018 11:26:49 +0200 (CEST)
-> > Thomas Gleixner <tglx@linutronix.de> wrote:
-> >   
-> > > On Wed, 13 Jun 2018, Peter Zijlstra wrote:  
-> > > > On Wed, Jun 13, 2018 at 05:41:41PM +1000, Nicholas Piggin wrote:    
-> > > > > On Tue, 12 Jun 2018 17:57:32 -0700
-> > > > > Ricardo Neri <ricardo.neri-calderon@linux.intel.com> wrote:
-> > > > >     
-> > > > > > Instead of exposing individual functions for the operations of the NMI
-> > > > > > watchdog, define a common interface that can be used across multiple
-> > > > > > implementations.
-> > > > > > 
-> > > > > > The struct nmi_watchdog_ops is defined for such operations. These initial
-> > > > > > definitions include the enable, disable, start, stop, and cleanup
-> > > > > > operations.
-> > > > > > 
-> > > > > > Only a single NMI watchdog can be used in the system. The operations of
-> > > > > > this NMI watchdog are accessed via the new variable nmi_wd_ops. This
-> > > > > > variable is set to point the operations of the first NMI watchdog that
-> > > > > > initializes successfully. Even though at this moment, the only available
-> > > > > > NMI watchdog is the perf-based hardlockup detector. More implementations
-> > > > > > can be added in the future.    
-> > > > > 
-> > > > > Cool, this looks pretty nice at a quick glance. sparc and powerpc at
-> > > > > least have their own NMI watchdogs, it would be good to have those
-> > > > > converted as well.    
-> > > > 
-> > > > Yeah, agreed, this looks like half a patch.    
-> > > 
-> > > Though I'm not seeing the advantage of it. That kind of NMI watchdogs are
-> > > low level architecture details so having yet another 'ops' data structure
-> > > with a gazillion of callbacks, checks and indirections does not provide
-> > > value over the currently available weak stubs.  
-> > 
-> > The other way to go of course is librify the perf watchdog and make an
-> > x86 watchdog that selects between perf and hpet... I also probably
-> > prefer that for code such as this, but I wouldn't strongly object to
-> > ops struct if I'm not writing the code. It's not that bad is it?  
+> On Tue, Jun 12, 2018 at 5:12 PM Nicholas Piggin <npiggin@gmail.com> wrote:
+> > >
+> > > And in _theory_, maybe you could have just used "invalpg" with a
+> > > targeted address instead. In fact, I think a single invlpg invalidates
+> > > _all_ caches for the associated MM, but don't quote me on that.  
 > 
-> My motivation to add the ops was that the hpet and perf watchdog share
-> significant portions of code.
+> Confirmed. The SDK says
+> 
+>  "INVLPG also invalidates all entries in all paging-structure caches
+>   associated with the current PCID, regardless of the linear addresses
+>   to which they correspond"
 
-Right, a good motivation.
+Interesting, so that's very much like powerpc.
 
-> I could look into creating the library for
-> common code and relocate the hpet watchdog into arch/x86 for the hpet-
-> specific parts.
+> so if x86 wants to do this "separate invalidation for page directory
+> entryes", then it would want to
+> 
+>  (a) remove the __tlb_adjust_range() operation entirely from
+> pud_free_tlb() and friends
 
-If you can investigate that approach, that would be appreciated. I hope
-I did not misunderstand you there, Thomas.
+Revised patch below (only the generic part this time, but powerpc
+implementation gives the same result as the last patch).
 
-Basically you would have perf infrastructure and hpet infrastructure,
-and then the x86 watchdog driver will use one or the other of those. The
-generic watchdog driver will be just a simple shim that uses the perf
-infrastructure. Then hopefully the powerpc driver would require almost
-no change.
+> 
+>  (b) instead just have a single field for "invalidate_tlb_caches",
+> which could be a boolean, or could just be one of the addresses
 
-Thanks,
-Nick
+Yeah well powerpc hijacks one of the existing bools in the mmu_gather
+for exactly that, and sets it when a page table page is to be freed.
+
+> and then the logic would be that IFF no other tlb invalidate is done
+> due to an actual page range, then we look at that
+> invalidate_tlb_caches field, and do a single INVLPG instead.
+> 
+> I still am not sure if this would actually make a difference in
+> practice, but I guess it does mean that x86 could at least participate
+> in some kind of scheme where we have architecture-specific actions for
+> those page directory entries.
+
+I think it could. But yes I don't know how much it would help, I think
+x86 tlb invalidation is very fast, and I noticed this mostly at exec
+time when you probably lose all your TLBs anyway.
+
+> 
+> And we could make the default behavior - if no architecture-specific
+> tlb page directory invalidation function exists - be the current
+> "__tlb_adjust_range()" case. So the default would be to not change
+> behavior, and architectures could opt in to something like this.
+> 
+>             Linus
+
+Yep, is this a bit more to your liking?
+
+---
+ include/asm-generic/tlb.h | 17 +++++++++++++++--
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
+index faddde44de8c..fa44321bc8dd 100644
+--- a/include/asm-generic/tlb.h
++++ b/include/asm-generic/tlb.h
+@@ -262,36 +262,49 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+  * architecture to do its own odd thing, not cause pain for others
+  * http://lkml.kernel.org/r/CA+55aFzBggoXtNXQeng5d_mRoDnaMBE5Y+URs+PHR67nUpMtaw@mail.gmail.com
+  *
++ * Powerpc (Book3S 64-bit) with the radix MMU has an architected "page
++ * walk cache" that is invalidated with a specific instruction. It uses
++ * need_flush_all to issue this instruction, which is set by its own
++ * __p??_free_tlb functions.
++ *
+  * For now w.r.t page table cache, mark the range_size as PAGE_SIZE
+  */
+ 
++#ifndef pte_free_tlb
+ #define pte_free_tlb(tlb, ptep, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+ 		__pte_free_tlb(tlb, ptep, address);		\
+ 	} while (0)
++#endif
+ 
++#ifndef pmd_free_tlb
+ #define pmd_free_tlb(tlb, pmdp, address)			\
+ 	do {							\
+-		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
++		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+ 		__pmd_free_tlb(tlb, pmdp, address);		\
+ 	} while (0)
++#endif
+ 
+ #ifndef __ARCH_HAS_4LEVEL_HACK
++#ifndef pud_free_tlb
+ #define pud_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+ 		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+ 		__pud_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
++#endif
+ 
+ #ifndef __ARCH_HAS_5LEVEL_HACK
++#ifndef p4d_free_tlb
+ #define p4d_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+-		__tlb_adjust_range(tlb, address, PAGE_SIZE);		\
++		__tlb_adjust_range(tlb, address, PAGE_SIZE);	\
+ 		__p4d_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
++#endif
+ 
+ #define tlb_migrate_finish(mm) do {} while (0)
+ 
+-- 
+2.17.0
