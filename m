@@ -1,38 +1,27 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415tfV0m9FzDrpC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 16:16:01 +1000 (AEST)
-Received: by mail-it0-x241.google.com with SMTP id 16-v6so6825289itl.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:16:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 415v4w2W7fzDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2018 16:35:25 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id k1-v6so2964087plt.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2018 23:35:25 -0700 (PDT)
+Subject: Re: [PATCH kernel 6/6] powerpc/powernv/ioda: Allocate indirect TCE
+ levels on demand
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <20180608054633.18659-1-aik@ozlabs.ru>
+ <20180608054633.18659-7-aik@ozlabs.ru>
+ <20180612041700.GZ2737@umbus.fritz.box>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Message-ID: <360896bd-f3a9-530c-8144-c10502dc965b@ozlabs.ru>
+Date: Thu, 14 Jun 2018 16:35:18 +1000
 MIME-Version: 1.0
-References: <20180612071621.26775-1-npiggin@gmail.com>
- <20180612071621.26775-4-npiggin@gmail.com>
- <CA+55aFzKBieD0Y3sgFQzt+x5esqb9vT6SEQ28xyCz5UWegfFVg@mail.gmail.com>
- <20180613083131.139a3c34@roar.ozlabs.ibm.com>
- <CA+55aFyk9VBLUk8VYhfEUR55x0TXY9_QX1dE4wE0A_ias9tMNQ@mail.gmail.com>
- <20180613090950.50566245@roar.ozlabs.ibm.com>
- <CA+55aFxd97-29qi-JMxyPPoZMxw=eObQHB5XXGiLj7SNV8B-oQ@mail.gmail.com>
- <CA+55aFzbYBXUDcAGaP_HoCxjTvOgkixc0+7nJqMea0yKjLSnhw@mail.gmail.com>
- <20180613101241.004fd64e@roar.ozlabs.ibm.com>
- <CA+55aFzJRknbQD6Mv3OSOvUVozQ4H8ni8jPP7UEEi9wKXmVhQA@mail.gmail.com>
- <20180614124931.703e5b54@roar.ozlabs.ibm.com>
-In-Reply-To: <20180614124931.703e5b54@roar.ozlabs.ibm.com>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 14 Jun 2018 15:15:47 +0900
-Message-ID: <CA+55aFwP-6QZ0u2ZYCjTebP6OmkeTpbUHyLT0ih-57TbvJBPxg@mail.gmail.com>
-Subject: Re: [RFC PATCH 3/3] powerpc/64s/radix: optimise TLB flush with
- precise TLB ranges in mmu_gather
-To: Nick Piggin <npiggin@gmail.com>
-Cc: linux-mm <linux-mm@kvack.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arch <linux-arch@vger.kernel.org>,
- "Aneesh Kumar K. V" <aneesh.kumar@linux.vnet.ibm.com>,
- Minchan Kim <minchan@kernel.org>,
- Mel Gorman <mgorman@techsingularity.net>, Nadav Amit <nadav.amit@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180612041700.GZ2737@umbus.fritz.box>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,40 +31,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 14, 2018 at 11:49 AM Nicholas Piggin <npiggin@gmail.com> wrote:
->
-> +#ifndef pte_free_tlb
->  #define pte_free_tlb(tlb, ptep, address)                       \
->         do {                                                    \
->                 __tlb_adjust_range(tlb, address, PAGE_SIZE);    \
->                 __pte_free_tlb(tlb, ptep, address);             \
->         } while (0)
-> +#endif
+On 12/6/18 2:17 pm, David Gibson wrote:
+> On Fri, Jun 08, 2018 at 03:46:33PM +1000, Alexey Kardashevskiy wrote:
+>> At the moment we allocate the entire TCE table, twice (hardware part and
+>> userspace translation cache). This normally works as we normally have
+>> contigous memory and the guest will map entire RAM for 64bit DMA.
+>>
+>> However if we have sparse RAM (one example is a memory device), then
+>> we will allocate TCEs which will never be used as the guest only maps
+>> actual memory for DMA. If it is a single level TCE table, there is nothing
+>> we can really do but if it a multilevel table, we can skip allocating
+>> TCEs we know we won't need.
+>>
+>> This adds ability to allocate only first level, saving memory.
+>>
+>> This changes iommu_table::free() to avoid allocating of an extra level;
+>> iommu_table::set() will do this when needed.
+>>
+>> This adds @alloc parameter to iommu_table::exchange() to tell the callback
+>> if it can allocate an extra level; the flag is set to "false" for
+>> the realmode KVM handlers of H_PUT_TCE hcalls and the callback returns
+>> H_TOO_HARD.
+>>
+>> This still requires the entire table to be counted in mm::locked_vm.
+>>
+>> To be conservative, this only does on-demand allocation when
+>> the usespace cache table is requested which is the case of VFIO.
+>>
+>> The example math for a system replicating a powernv setup with NVLink2
+>> in a guest:
+>> 16GB RAM mapped at 0x0
+>> 128GB GPU RAM window (16GB of actual RAM) mapped at 0x244000000000
+>>
+>> the table to cover that all with 64K pages takes:
+>> (((0x244000000000 + 0x2000000000) >> 16)*8)>>20 = 4556MB
+>>
+>> If we allocate only necessary TCE levels, we will only need:
+>> (((0x400000000 + 0x400000000) >> 16)*8)>>20 = 4MB (plus some for indirect
+>> levels).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/include/asm/iommu.h              |  7 ++-
+>>  arch/powerpc/platforms/powernv/pci.h          |  6 ++-
+>>  arch/powerpc/kvm/book3s_64_vio_hv.c           |  4 +-
+>>  arch/powerpc/platforms/powernv/pci-ioda-tce.c | 69 ++++++++++++++++++++-------
+>>  arch/powerpc/platforms/powernv/pci-ioda.c     |  8 ++--
+>>  drivers/vfio/vfio_iommu_spapr_tce.c           |  2 +-
+>>  6 files changed, 69 insertions(+), 27 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index 4bdcf22..daa3ee5 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -70,7 +70,7 @@ struct iommu_table_ops {
+>>  			unsigned long *hpa,
+>>  			enum dma_data_direction *direction);
+>>  
+>> -	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index);
+>> +	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index, bool alloc);
+>>  #endif
+>>  	void (*clear)(struct iommu_table *tbl,
+>>  			long index, long npages);
+>> @@ -122,10 +122,13 @@ struct iommu_table {
+>>  	__be64 *it_userspace; /* userspace view of the table */
+>>  	struct iommu_table_ops *it_ops;
+>>  	struct kref    it_kref;
+>> +	int it_nid;
+>>  };
+>>  
+>> +#define IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry) \
+>> +		((tbl)->it_ops->useraddrptr((tbl), (entry), false))
+> 
+> Is real mode really the only case where you want to inhibit new
+> allocations?  I would have thought some paths would be read-only and
+> you wouldn't want to allocate, even in virtual mode.
 
-Do you really want to / need to take over the whole pte_free_tlb macro?
 
-I was hoping that you'd just replace the __tlv_adjust_range() instead.
+There are paths when I do not want allocation but I can figure out that
+from dma direction flag, for example, I am cleaning up the table and I do
+not want any extra  allocation to happen there and they do happen because I
+made a mistake so I'll repost. Other than that, this @alloc flag is for
+real mode only.
 
-Something like
 
- - replace the
+> 
+>>  #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+>> -		((tbl)->it_ops->useraddrptr((tbl), (entry)))
+>> +		((tbl)->it_ops->useraddrptr((tbl), (entry), true))
+>>  
+>>  /* Pure 2^n version of get_order */
+>>  static inline __attribute_const__
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>> index 5e02408..1fa5590 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -267,8 +267,10 @@ extern int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>>  		unsigned long attrs);
+>>  extern void pnv_tce_free(struct iommu_table *tbl, long index, long npages);
+>>  extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
+>> -		unsigned long *hpa, enum dma_data_direction *direction);
+>> -extern __be64 *pnv_tce_useraddrptr(struct iommu_table *tbl, long index);
+>> +		unsigned long *hpa, enum dma_data_direction *direction,
+>> +		bool alloc);
+>> +extern __be64 *pnv_tce_useraddrptr(struct iommu_table *tbl, long index,
+>> +		bool alloc);
+>>  extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
+>>  
+>>  extern long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> index db0490c..05b4865 100644
+>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> @@ -200,7 +200,7 @@ static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+>>  {
+>>  	struct mm_iommu_table_group_mem_t *mem = NULL;
+>>  	const unsigned long pgsize = 1ULL << tbl->it_page_shift;
+>> -	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+>> +	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry);
+>>  
+>>  	if (!pua)
+>>  		/* it_userspace allocation might be delayed */
+>> @@ -264,7 +264,7 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+>>  {
+>>  	long ret;
+>>  	unsigned long hpa = 0;
+>> -	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+>> +	__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry);
+>>  	struct mm_iommu_table_group_mem_t *mem;
+>>  
+>>  	if (!pua)
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+>> index 36c2eb0..a7debfb 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+>> @@ -48,7 +48,7 @@ static __be64 *pnv_alloc_tce_level(int nid, unsigned int shift)
+>>  	return addr;
+>>  }
+>>  
+>> -static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx)
+>> +static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx, bool alloc)
+>>  {
+>>  	__be64 *tmp = user ? tbl->it_userspace : (__be64 *) tbl->it_base;
+>>  	int  level = tbl->it_indirect_levels;
+>> @@ -57,7 +57,20 @@ static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx)
+>>  
+>>  	while (level) {
+>>  		int n = (idx & mask) >> (level * shift);
+>> -		unsigned long tce = be64_to_cpu(tmp[n]);
+>> +		unsigned long tce;
+>> +
+>> +		if (tmp[n] == 0) {
+>> +			__be64 *tmp2;
+>> +
+>> +			if (!alloc)
+>> +				return NULL;
+>> +
+>> +			tmp2 = pnv_alloc_tce_level(tbl->it_nid,
+>> +					ilog2(tbl->it_level_size) + 3);
+> 
+> What if the allocation fails?
 
-        __tlb_adjust_range(tlb, address, PAGE_SIZE);
 
-   with a "page directory" version:
+Fair question, this needs to be handled with at least H_TOO_HARD and real
+mode and H_HARDWARE in virtual, I'll fix.
 
-        __tlb_free_directory(tlb, address, size);
 
- - have the default implementation for that be the old code:
 
-        #ifndef __tlb_free_directory
-          #define __tlb_free_directory(tlb,addr,size)
-__tlb_adjust_range(tlb, addr, PAGE_SIZE)
-        #endif
 
-and that way architectures can now just hook into that
-"__tlb_free_directory()" thing.
-
-Hmm?
-
-             Linus
+-- 
+Alexey
