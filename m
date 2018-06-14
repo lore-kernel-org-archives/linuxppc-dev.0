@@ -1,23 +1,22 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+Return-Path: <mjeanson@efficios.com>
+Received: from mail.efficios.com (mail.efficios.com [167.114.142.138])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416FMb0P87zF09q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 06:19:22 +1000 (AEST)
-Subject: Re: [PATCH v13 00/24] selftests, powerpc, x86 : Memory Protection Keys
-To: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
- linux-kselftest@vger.kernel.org
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- dave.hansen@intel.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
-References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <c5c119b0-f5ca-4ddc-43c0-a6b597173973@redhat.com>
-Date: Thu, 14 Jun 2018 22:19:11 +0200
-MIME-Version: 1.0
-In-Reply-To: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41677M1kN3zDrnp
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 01:38:23 +1000 (AEST)
+From: Michael Jeanson <mjeanson@efficios.com>
+To: 
+Cc: Michael Jeanson <mjeanson@efficios.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Kumar Gala <galak@kernel.crashing.org>, Vakul Garg <vakul.garg@nxp.com>,
+ Scott Wood <swood@redhat.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: [PATCH] powerpc/e500mc: Set assembler machine type to e500mc
+Date: Thu, 14 Jun 2018 11:27:42 -0400
+Message-Id: <20180614152742.21075-1-mjeanson@efficios.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/14/2018 02:44 AM, Ram Pai wrote:
-> Test
-> ----
-> Verified for correctness on powerpc. Need help verifying on x86.
-> Compiles on x86.
+In binutils 2.26 a new opcode for the "wait" instruction was added for the
+POWER9 and has precedence over the one specific to the e500mc. Commit
+ebf714ff3756 ("powerpc/e500mc: Add support for the wait instruction in
+e500_idle") uses this instruction specifically on the e500mc to work around
+an erratum.
 
-It breaks make in tools/testing/selftests/x86:
+This results in an invalid instruction in idle_e500 when we build for the
+e500mc on bintutils >= 2.26 with the default assembler machine type.
 
-make: *** No rule to make target `protection_keys.c', needed by 
-`/home/linux/tools/testing/selftests/x86/protection_keys_64'.  Stop.
+Since multiplatform between e500 and non-e500 is not supported, set the
+assembler machine type globaly when CONFIG_PPC_E500MC=y.
 
-The generic implementation no longer builds 32-bit binaries.  Is this 
-the intent?
+Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
+Reviewed-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Kumar Gala <galak@kernel.crashing.org>
+CC: Vakul Garg <vakul.garg@nxp.com>
+CC: Scott Wood <swood@redhat.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+CC: stable@vger.kernel.org
+---
+ arch/powerpc/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
 
-It's possible to build 32-bit binaries with “make CC='gcc -m32'”, so 
-perhaps this is good enough?
-
-But with that, I get a warning:
-
-protection_keys.c: In function ‘dump_mem’:
-protection_keys.c:172:3: warning: format ‘%lx’ expects argument of type 
-‘long unsigned int’, but argument 4 has type ‘uint64_t’ [-Wformat=]
-    dprintf1("dump[%03d][@%p]: %016lx\n", i, ptr, *ptr);
-    ^
-
-I suppose you could use %016llx and add a cast to unsigned long long to 
-fix this.
-
-Anyway, both the 32-bit and 64-bit tests fail here:
-
-assert() at protection_keys.c::943 test_nr: 12 iteration: 1
-running abort_hooks()...
-
-I've yet checked what causes this.  It's with the kernel headers from 
-4.17, but with other userspace headers based on glibc 2.17.  I hope to 
-look into this some more before the weekend, but I eventually have to 
-return the test machine to the pool.
-
-Thanks,
-Florian
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 95813df90801..bb2523b4bd8f 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -251,6 +251,7 @@ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+ cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= -Wa,-mpower4
++cpu-as-$(CONFIG_PPC_E500MC)	+= $(call as-option,-Wa$(comma)-me500mc)
+ 
+ KBUILD_AFLAGS += $(cpu-as-y)
+ KBUILD_CFLAGS += $(cpu-as-y)
+-- 
+2.17.1
