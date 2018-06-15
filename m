@@ -1,49 +1,20 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2a01:7a0:2:106d:700::1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416cDV1dC2zF1LY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 20:29:30 +1000 (AEST)
-Date: Fri, 15 Jun 2018 12:29:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, Babu Moger <babu.moger@oracle.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Byungchul Park <byungchul.park@lge.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, Waiman Long <longman@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Christoffer Dall <cdall@linaro.org>,
- Marc Zyngier <marc.zyngier@arm.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 20/23] watchdog/hardlockup/hpet: Rotate interrupt
- among all monitored CPUs
-In-Reply-To: <20180615021629.GD11625@voyager>
-Message-ID: <alpine.DEB.2.21.1806151122070.2079@nanos.tec.linutronix.de>
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-21-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <alpine.DEB.2.21.1806131140560.2280@nanos.tec.linutronix.de>
- <20180615021629.GD11625@voyager>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 416dkm1s19zF13F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 21:37:20 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/64s: Report SLB multi-hit rather than parity error
+In-Reply-To: <20180614004036.7c71cf1b@roar.ozlabs.ibm.com>
+References: <20180613132414.32207-1-mpe@ellerman.id.au>
+ <20180614004036.7c71cf1b@roar.ozlabs.ibm.com>
+Date: Fri, 15 Jun 2018 21:37:15 +1000
+Message-ID: <87muvw9t78.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,79 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 14 Jun 2018, Ricardo Neri wrote:
-> On Wed, Jun 13, 2018 at 11:48:09AM +0200, Thomas Gleixner wrote:
-> > On Tue, 12 Jun 2018, Ricardo Neri wrote:
-> > > +	/* There are no CPUs to monitor. */
-> > > +	if (!cpumask_weight(&hdata->monitored_mask))
-> > > +		return NMI_HANDLED;
-> > > +
-> > >  	inspect_for_hardlockups(regs);
-> > >  
-> > > +	/*
-> > > +	 * Target a new CPU. Keep trying until we find a monitored CPU. CPUs
-> > > +	 * are addded and removed to this mask at cpu_up() and cpu_down(),
-> > > +	 * respectively. Thus, the interrupt should be able to be moved to
-> > > +	 * the next monitored CPU.
-> > > +	 */
-> > > +	spin_lock(&hld_data->lock);
-> > 
-> > Yuck. Taking a spinlock from NMI ...
-> 
-> I am sorry. I will look into other options for locking. Do you think rcu_lock
-> would help in this case? I need this locking because the CPUs being monitored
-> changes as CPUs come online and offline.
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Wed, 13 Jun 2018 23:24:14 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+>> When we take an SLB multi-hit on bare metal, we see both the multi-hit
+>> and parity error bits set in DSISR. The user manuals indicates this is
+>> expected to always happen on Power8, whereas on Power9 it says a
+>> multi-hit will "usually" also cause a parity error.
+>> 
+>> We decide what to do based on the various error tables in mce_power.c,
+>> and because we process them in order and only report the first, we
+>> currently always report a parity error but not the multi-hit, eg:
+>> 
+>>   Severe Machine check interrupt [Recovered]
+>>     Initiator: CPU
+>>     Error type: SLB [Parity]
+>>       Effective address: c000000ffffd4300
+>> 
+>> Although this is correct, it leaves the user wondering why they got a
+>> parity error. It would be clearer instead if we reported the
+>> multi-hit because that is more likely to be simply a software bug,
+>> whereas a true parity error is possibly an indication of a bad core.
+>> 
+>> We can do that simply by reordering the error tables so that multi-hit
+>> appears before parity. That doesn't affect the error recovery at all,
+>> because we flush the SLB either way.
+>
+> Yeah this is a good idea. I wonder if there are any other conditions
+> like this that should be reordered.
 
-Sure, but you _cannot_ take any locks in NMI context which are also taken
-in !NMI context. And RCU will not help either. How so? The NMI can hit
-exactly before the CPU bit is cleared and then the CPU goes down. So RCU
-_cannot_ protect anything.
+Yeah good point, this one just caught my eye because I was testing it.
+Ideally it wouldn't matter and we could actually report multiple, but
+that would be a bit of a bigger change.
 
-All you can do there is make sure that the TIMn_CONF is only ever accessed
-in !NMI code. Then you can stop the timer _before_ a CPU goes down and make
-sure that the eventually on the fly NMI is finished. After that you can
-fiddle with the CPU mask and restart the timer. Be aware that this is going
-to be more corner case handling that actual functionality.
+> I think the i-side should not have to be changed here because it
+> matches the value not bits, so that shouldn't matter.
 
-> > > +	for_each_cpu_wrap(cpu, &hdata->monitored_mask, smp_processor_id() + 1) {
-> > > +		if (!irq_set_affinity(hld_data->irq, cpumask_of(cpu)))
-> > > +			break;
-> > 
-> > ... and then calling into generic interrupt code which will take even more
-> > locks is completely broken.
-> 
-> I will into reworking how the destination of the interrupt is set.
+Ah OK, will check.
 
-You have to consider two cases:
+> A bit of a shame we don't report i/d side, and ideally we'd be able
+> to report multiple conditions. The reporting APIs really want to be
+> massaged a bit, but for now this is a good step.
 
- 1) !remapped mode:
+Ah snap, yep, more detail & multiple conditions would be nice.
 
-    That's reasonably simple because you just have to deal with the HPET
-    TIMERn_PROCMSG_ROUT register. But then you need to do this directly and
-    not through any of the existing interrupt facilities.
+I don't really understand the way we do the reporting now. The
+struct machine_check_event is all carefully laid out with reserved
+fields and a version number and everything as if it's an ABI. But AFAICS
+it's purely internal to the kernel.
 
- 2) remapped mode:
+And then we have struct mce_error_info, but that's a separate thing and
+struct machine_check_event doesn't contain one of them?
 
-    That's way more complex as you _cannot_ ever do anything which touches
-    the IOMMU and the related tables.
-
-    So you'd need to reserve an IOMMU remapping entry for each CPU upfront,
-    store the resulting value for the HPET TIMERn_PROCMSG_ROUT register in
-    per cpu storage and just modify that one from NMI.
-
-    Though there might be subtle side effects involved, which are related to
-    the acknowledge part. You need to talk to the IOMMU wizards first.
-
-All in all, the idea itself is interesting, but the envisioned approach of
-round robin and no fast accessible NMI reason detection is going to create
-more problems than it solves.
-
-This all could have been avoided if Intel hadn't decided to reuse the APIC
-timer registers for the TSC deadline timer. If both would be available we'd
-have a CPU local fast accessible watchdog timer when TSC deadline is used
-for general timer purposes. But why am I complaining? I've resigned to the
-fact that timers are designed^Wcobbled together by janitors long ago.
-
-Thanks,
-
-	tglx
+cheers
