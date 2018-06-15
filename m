@@ -1,29 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416Wwk1HfpzF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 17:15:30 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id g20-v6so4904742plq.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 00:15:30 -0700 (PDT)
-Subject: Re: [PATCH kernel 6/6] powerpc/powernv/ioda: Allocate indirect TCE
- levels on demand
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <20180608054633.18659-1-aik@ozlabs.ru>
- <20180608054633.18659-7-aik@ozlabs.ru>
- <20180612041700.GZ2737@umbus.fritz.box>
- <360896bd-f3a9-530c-8144-c10502dc965b@ozlabs.ru>
- <20180614123525.GB19339@umbus.fritz.box>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <74fe4fba-3cfb-ba2c-90e2-e83eb173964f@ozlabs.ru>
-Date: Fri, 15 Jun 2018 17:15:23 +1000
+Return-Path: <julien.thierry@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 416XxP5FBnzF13y
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 18:01:12 +1000 (AEST)
+From: Julien Thierry <julien.thierry@arm.com>
+Subject: Re: [RFC PATCH 03/23] genirq: Introduce IRQF_DELIVER_AS_NMI
+To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Marc Zyngier <marc.zyngier@arm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi.kleen@intel.com>,
+ Ashok Raj <ashok.raj@intel.com>, Borislav Petkov <bp@suse.de>,
+ Tony Luck <tony.luck@intel.com>, "Ravi V. Shankar"
+ <ravi.v.shankar@intel.com>, x86@kernel.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jacob Pan <jacob.jun.pan@intel.com>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Masami Hiramatsu
+ <mhiramat@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>,
+ Doug Berger <opendmb@gmail.com>, Palmer Dabbelt <palmer@sifive.com>,
+ iommu@lists.linux-foundation.org
+References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <1528851463-21140-4-git-send-email-ricardo.neri-calderon@linux.intel.com>
+ <20180613083419.GS12258@hirez.programming.kicks-ass.net>
+ <26687332-ab8f-7f6d-909a-f0918dbfea86@arm.com>
+ <alpine.DEB.2.21.1806131104570.2280@nanos.tec.linutronix.de>
+ <c000699c-7859-74ec-7944-ec484e887f60@arm.com>
+ <20180615021213.GC11625@voyager>
+Message-ID: <4eb34b18-11f8-7d70-46a5-f206d127b768@arm.com>
+Date: Fri, 15 Jun 2018 09:01:02 +0100
 MIME-Version: 1.0
-In-Reply-To: <20180614123525.GB19339@umbus.fritz.box>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180615021213.GC11625@voyager>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,102 +42,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/6/18 10:35 pm, David Gibson wrote:
-> On Thu, Jun 14, 2018 at 04:35:18PM +1000, Alexey Kardashevskiy wrote:
->> On 12/6/18 2:17 pm, David Gibson wrote:
->>> On Fri, Jun 08, 2018 at 03:46:33PM +1000, Alexey Kardashevskiy wrote:
->>>> At the moment we allocate the entire TCE table, twice (hardware part and
->>>> userspace translation cache). This normally works as we normally have
->>>> contigous memory and the guest will map entire RAM for 64bit DMA.
+Hi Ricardo,
+
+On 15/06/18 03:12, Ricardo Neri wrote:
+> On Wed, Jun 13, 2018 at 11:06:25AM +0100, Marc Zyngier wrote:
+>> On 13/06/18 10:20, Thomas Gleixner wrote:
+>>> On Wed, 13 Jun 2018, Julien Thierry wrote:
+>>>> On 13/06/18 09:34, Peter Zijlstra wrote:
+>>>>> On Tue, Jun 12, 2018 at 05:57:23PM -0700, Ricardo Neri wrote:
+>>>>>> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+>>>>>> index 5426627..dbc5e02 100644
+>>>>>> --- a/include/linux/interrupt.h
+>>>>>> +++ b/include/linux/interrupt.h
+>>>>>> @@ -61,6 +61,8 @@
+>>>>>>     *                interrupt handler after suspending interrupts. For
+>>>>>> system
+>>>>>>     *                wakeup devices users need to implement wakeup
+>>>>>> detection in
+>>>>>>     *                their interrupt handlers.
+>>>>>> + * IRQF_DELIVER_AS_NMI - Configure interrupt to be delivered as
+>>>>>> non-maskable, if
+>>>>>> + *                supported by the chip.
+>>>>>>     */
+>>>>>
+>>>>> NAK on the first 6 patches. You really _REALLY_ don't want to expose
+>>>>> NMIs to this level.
+>>>>>
 >>>>
->>>> However if we have sparse RAM (one example is a memory device), then
->>>> we will allocate TCEs which will never be used as the guest only maps
->>>> actual memory for DMA. If it is a single level TCE table, there is nothing
->>>> we can really do but if it a multilevel table, we can skip allocating
->>>> TCEs we know we won't need.
+>>>> I've been working on something similar on arm64 side, and effectively the one
+>>>> thing that might be common to arm64 and intel is the interface to set an
+>>>> interrupt as NMI. So I guess it would be nice to agree on the right approach
+>>>> for this.
 >>>>
->>>> This adds ability to allocate only first level, saving memory.
+>>>> The way I did it was by introducing a new irq_state and let the irqchip driver
+>>>> handle most of the work (if it supports that state):
 >>>>
->>>> This changes iommu_table::free() to avoid allocating of an extra level;
->>>> iommu_table::set() will do this when needed.
+>>>> https://lkml.org/lkml/2018/5/25/181
 >>>>
->>>> This adds @alloc parameter to iommu_table::exchange() to tell the callback
->>>> if it can allocate an extra level; the flag is set to "false" for
->>>> the realmode KVM handlers of H_PUT_TCE hcalls and the callback returns
->>>> H_TOO_HARD.
->>>>
->>>> This still requires the entire table to be counted in mm::locked_vm.
->>>>
->>>> To be conservative, this only does on-demand allocation when
->>>> the usespace cache table is requested which is the case of VFIO.
->>>>
->>>> The example math for a system replicating a powernv setup with NVLink2
->>>> in a guest:
->>>> 16GB RAM mapped at 0x0
->>>> 128GB GPU RAM window (16GB of actual RAM) mapped at 0x244000000000
->>>>
->>>> the table to cover that all with 64K pages takes:
->>>> (((0x244000000000 + 0x2000000000) >> 16)*8)>>20 = 4556MB
->>>>
->>>> If we allocate only necessary TCE levels, we will only need:
->>>> (((0x400000000 + 0x400000000) >> 16)*8)>>20 = 4MB (plus some for indirect
->>>> levels).
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>>  arch/powerpc/include/asm/iommu.h              |  7 ++-
->>>>  arch/powerpc/platforms/powernv/pci.h          |  6 ++-
->>>>  arch/powerpc/kvm/book3s_64_vio_hv.c           |  4 +-
->>>>  arch/powerpc/platforms/powernv/pci-ioda-tce.c | 69 ++++++++++++++++++++-------
->>>>  arch/powerpc/platforms/powernv/pci-ioda.c     |  8 ++--
->>>>  drivers/vfio/vfio_iommu_spapr_tce.c           |  2 +-
->>>>  6 files changed, 69 insertions(+), 27 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->>>> index 4bdcf22..daa3ee5 100644
->>>> --- a/arch/powerpc/include/asm/iommu.h
->>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>> @@ -70,7 +70,7 @@ struct iommu_table_ops {
->>>>  			unsigned long *hpa,
->>>>  			enum dma_data_direction *direction);
->>>>  
->>>> -	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index);
->>>> +	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index, bool alloc);
->>>>  #endif
->>>>  	void (*clear)(struct iommu_table *tbl,
->>>>  			long index, long npages);
->>>> @@ -122,10 +122,13 @@ struct iommu_table {
->>>>  	__be64 *it_userspace; /* userspace view of the table */
->>>>  	struct iommu_table_ops *it_ops;
->>>>  	struct kref    it_kref;
->>>> +	int it_nid;
->>>>  };
->>>>  
->>>> +#define IOMMU_TABLE_USERSPACE_ENTRY_RM(tbl, entry) \
->>>> +		((tbl)->it_ops->useraddrptr((tbl), (entry), false))
+>>>> This has not been ACKed nor NAKed. So I am just asking whether this is a more
+>>>> suitable approach, and if not, is there any suggestions on how to do this?
 >>>
->>> Is real mode really the only case where you want to inhibit new
->>> allocations?  I would have thought some paths would be read-only and
->>> you wouldn't want to allocate, even in virtual mode.
+>>> I really didn't pay attention to that as it's burried in the GIC/ARM series
+>>> which is usually Marc's playground.
 >>
->> There are paths when I do not want allocation but I can figure out that
->> from dma direction flag, for example, I am cleaning up the table and I do
->> not want any extra  allocation to happen there and they do happen because I
->> made a mistake so I'll repost. Other than that, this @alloc flag is for
->> real mode only.
+>> I'm working my way through it ATM now that I have some brain cycles back.
+>>
+>>> Adding NMI delivery support at low level architecture irq chip level is
+>>> perfectly fine, but the exposure of that needs to be restricted very
+>>> much. Adding it to the generic interrupt control interfaces is not going to
+>>> happen. That's doomed to begin with and a complete abuse of the interface
+>>> as the handler can not ever be used for that.
+>>
+>> I can only agree with that. Allowing random driver to use request_irq()
+>> to make anything an NMI ultimately turns it into a complete mess ("hey,
+>> NMI is *faster*, let's use that"), and a potential source of horrible
+>> deadlocks.
+>>
+>> What I'd find more palatable is a way for an irqchip to be able to
+>> prioritize some interrupts based on a set of architecturally-defined
+>> requirements, and a separate NMI requesting/handling framework that is
+>> separate from the IRQ API, as the overall requirements are likely to
+>> completely different.
+>>
+>> It shouldn't have to be nearly as complex as the IRQ API, and require
+>> much stricter requirements in terms of what you can do there (flow
+>> handling should definitely be different).
 > 
-> Hm, ok.
-> 
-> Something just occurred to me: IIRC, going from the vmalloc() to the
-> explicit table structure was to avoid allocating pages for memory
-> regions that aren't there due to sparseness.  But.. won't you get that
-> with vmalloc() anyway, if the pages for the gaps never get
-> instantiated?
+> Marc, Julien, do you plan to actively work on this? Would you mind keeping
+> me in the loop? I also need this work for this watchdog. In the meantime,
+> I will go through Julien's patches and try to adapt it to my work.
 
+We are going to work on this and of course your input is most welcome to 
+make sure we have an interface usable across different architectures.
 
-Nope, vmalloc() always allocates all the pages, these are not swapable
-(checked with Paul).
+In my patches, I'm not sure there is much to adapt to your work as most 
+of it is arch specific (although I wont say no to another pair of eyes 
+looking at them). From what I've seen of your patches, the point where 
+we converge is that need for some code to be able to tell the irqchip "I 
+want that particular interrupt line to be treated/setup as an NMI".
 
+We'll make sure to keep you in the loop for discussions/suggestions on this.
+
+Thanks,
 
 -- 
-Alexey
+Julien Thierry
