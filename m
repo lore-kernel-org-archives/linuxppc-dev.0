@@ -1,38 +1,25 @@
-Return-Path: <julien.thierry@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 416XxP5FBnzF13y
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 18:01:12 +1000 (AEST)
-From: Julien Thierry <julien.thierry@arm.com>
-Subject: Re: [RFC PATCH 03/23] genirq: Introduce IRQF_DELIVER_AS_NMI
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Marc Zyngier <marc.zyngier@arm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi.kleen@intel.com>,
- Ashok Raj <ashok.raj@intel.com>, Borislav Petkov <bp@suse.de>,
- Tony Luck <tony.luck@intel.com>, "Ravi V. Shankar"
- <ravi.v.shankar@intel.com>, x86@kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jacob Pan <jacob.jun.pan@intel.com>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Levin, Alexander (Sasha Levin)" <alexander.levin@verizon.com>,
- Randy Dunlap <rdunlap@infradead.org>, Masami Hiramatsu
- <mhiramat@kernel.org>, Bartosz Golaszewski <brgl@bgdev.pl>,
- Doug Berger <opendmb@gmail.com>, Palmer Dabbelt <palmer@sifive.com>,
- iommu@lists.linux-foundation.org
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-4-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <20180613083419.GS12258@hirez.programming.kicks-ass.net>
- <26687332-ab8f-7f6d-909a-f0918dbfea86@arm.com>
- <alpine.DEB.2.21.1806131104570.2280@nanos.tec.linutronix.de>
- <c000699c-7859-74ec-7944-ec484e887f60@arm.com>
- <20180615021213.GC11625@voyager>
-Message-ID: <4eb34b18-11f8-7d70-46a5-f206d127b768@arm.com>
-Date: Fri, 15 Jun 2018 09:01:02 +0100
+Return-Path: <hverkuil@xs4all.nl>
+Received: from lb2-smtp-cloud7.xs4all.net (lb2-smtp-cloud7.xs4all.net
+ [194.109.24.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 416YPJ26ZRzF12F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 18:21:55 +1000 (AEST)
+Subject: Re: [PATCH] media: fsl-viu: Use proper check for presence of
+ {out,in}_be32()
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1528451328-21316-1-git-send-email-geert@linux-m68k.org>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Message-ID: <5948eb0d-410d-5bc6-a0f3-ffcaa4b3f975@xs4all.nl>
+Date: Fri, 15 Jun 2018 10:10:43 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180615021213.GC11625@voyager>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1528451328-21316-1-git-send-email-geert@linux-m68k.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,88 +29,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ricardo,
-
-On 15/06/18 03:12, Ricardo Neri wrote:
-> On Wed, Jun 13, 2018 at 11:06:25AM +0100, Marc Zyngier wrote:
->> On 13/06/18 10:20, Thomas Gleixner wrote:
->>> On Wed, 13 Jun 2018, Julien Thierry wrote:
->>>> On 13/06/18 09:34, Peter Zijlstra wrote:
->>>>> On Tue, Jun 12, 2018 at 05:57:23PM -0700, Ricardo Neri wrote:
->>>>>> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
->>>>>> index 5426627..dbc5e02 100644
->>>>>> --- a/include/linux/interrupt.h
->>>>>> +++ b/include/linux/interrupt.h
->>>>>> @@ -61,6 +61,8 @@
->>>>>>     *                interrupt handler after suspending interrupts. For
->>>>>> system
->>>>>>     *                wakeup devices users need to implement wakeup
->>>>>> detection in
->>>>>>     *                their interrupt handlers.
->>>>>> + * IRQF_DELIVER_AS_NMI - Configure interrupt to be delivered as
->>>>>> non-maskable, if
->>>>>> + *                supported by the chip.
->>>>>>     */
->>>>>
->>>>> NAK on the first 6 patches. You really _REALLY_ don't want to expose
->>>>> NMIs to this level.
->>>>>
->>>>
->>>> I've been working on something similar on arm64 side, and effectively the one
->>>> thing that might be common to arm64 and intel is the interface to set an
->>>> interrupt as NMI. So I guess it would be nice to agree on the right approach
->>>> for this.
->>>>
->>>> The way I did it was by introducing a new irq_state and let the irqchip driver
->>>> handle most of the work (if it supports that state):
->>>>
->>>> https://lkml.org/lkml/2018/5/25/181
->>>>
->>>> This has not been ACKed nor NAKed. So I am just asking whether this is a more
->>>> suitable approach, and if not, is there any suggestions on how to do this?
->>>
->>> I really didn't pay attention to that as it's burried in the GIC/ARM series
->>> which is usually Marc's playground.
->>
->> I'm working my way through it ATM now that I have some brain cycles back.
->>
->>> Adding NMI delivery support at low level architecture irq chip level is
->>> perfectly fine, but the exposure of that needs to be restricted very
->>> much. Adding it to the generic interrupt control interfaces is not going to
->>> happen. That's doomed to begin with and a complete abuse of the interface
->>> as the handler can not ever be used for that.
->>
->> I can only agree with that. Allowing random driver to use request_irq()
->> to make anything an NMI ultimately turns it into a complete mess ("hey,
->> NMI is *faster*, let's use that"), and a potential source of horrible
->> deadlocks.
->>
->> What I'd find more palatable is a way for an irqchip to be able to
->> prioritize some interrupts based on a set of architecturally-defined
->> requirements, and a separate NMI requesting/handling framework that is
->> separate from the IRQ API, as the overall requirements are likely to
->> completely different.
->>
->> It shouldn't have to be nearly as complex as the IRQ API, and require
->> much stricter requirements in terms of what you can do there (flow
->> handling should definitely be different).
+On 08/06/18 11:48, Geert Uytterhoeven wrote:
+> When compile-testing on m68k or microblaze:
 > 
-> Marc, Julien, do you plan to actively work on this? Would you mind keeping
-> me in the loop? I also need this work for this watchdog. In the meantime,
-> I will go through Julien's patches and try to adapt it to my work.
+>     drivers/media/platform/fsl-viu.c:41:1: warning: "out_be32" redefined
+>     drivers/media/platform/fsl-viu.c:42:1: warning: "in_be32" redefined
+> 
+> Fix this by replacing the check for PowerPC by checks for the presence
+> of {out,in}_be32().
+> 
+> As PowerPC implements the be32 accessors using inline functions instead
+> of macros, identity definions are added for all accessors to make the
+> above checks work.
+> 
+> Fixes: 29d750686331a1a9 ("media: fsl-viu: allow building it with COMPILE_TEST")
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-We are going to work on this and of course your input is most welcome to 
-make sure we have an interface usable across different architectures.
+Reviewed-by: Hans Verkuil <hans.verkuil@cisco.com>
 
-In my patches, I'm not sure there is much to adapt to your work as most 
-of it is arch specific (although I wont say no to another pair of eyes 
-looking at them). From what I've seen of your patches, the point where 
-we converge is that need for some code to be able to tell the irqchip "I 
-want that particular interrupt line to be treated/setup as an NMI".
+Should this go through the media tree or powerpc tree? Either way works for me.
 
-We'll make sure to keep you in the loop for discussions/suggestions on this.
+Regards,
 
-Thanks,
+	Hans
 
--- 
-Julien Thierry
+> ---
+> Compile-tested on m68k, microblaze, and powerpc.
+> Assembler output before/after compared for powerpc.
+> ---
+>  arch/powerpc/include/asm/io.h    | 14 ++++++++++++++
+>  drivers/media/platform/fsl-viu.c |  4 +++-
+>  2 files changed, 17 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+> index e0331e7545685c5f..3741183ae09349f1 100644
+> --- a/arch/powerpc/include/asm/io.h
+> +++ b/arch/powerpc/include/asm/io.h
+> @@ -222,6 +222,20 @@ static inline void out_be64(volatile u64 __iomem *addr, u64 val)
+>  #endif
+>  #endif /* __powerpc64__ */
+>  
+> +#define in_be16 in_be16
+> +#define in_be32 in_be32
+> +#define in_be64 in_be64
+> +#define in_le16 in_le16
+> +#define in_le32 in_le32
+> +#define in_le64 in_le64
+> +
+> +#define out_be16 out_be16
+> +#define out_be32 out_be32
+> +#define out_be64 out_be64
+> +#define out_le16 out_le16
+> +#define out_le32 out_le32
+> +#define out_le64 out_le64
+> +
+>  /*
+>   * Low level IO stream instructions are defined out of line for now
+>   */
+> diff --git a/drivers/media/platform/fsl-viu.c b/drivers/media/platform/fsl-viu.c
+> index e41510ce69a40815..5d5e030c9c980647 100644
+> --- a/drivers/media/platform/fsl-viu.c
+> +++ b/drivers/media/platform/fsl-viu.c
+> @@ -37,8 +37,10 @@
+>  #define VIU_VERSION		"0.5.1"
+>  
+>  /* Allow building this driver with COMPILE_TEST */
+> -#ifndef CONFIG_PPC
+> +#ifndef out_be32
+>  #define out_be32(v, a)	iowrite32be(a, (void __iomem *)v)
+> +#endif
+> +#ifndef in_be32
+>  #define in_be32(a)	ioread32be((void __iomem *)a)
+>  #endif
+>  
+> 
