@@ -1,33 +1,39 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <BATV+0eb41a859d58214bb3da+5409+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416nr344ZqzF18f
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 03:42:27 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5FHcucK088357
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 13:42:25 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jmgrtaufs-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2018 13:42:24 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Fri, 15 Jun 2018 13:42:23 -0400
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Cyril Bur <cyrilbur@gmail.com>, Breno Leitao <leitao@debian.org>
-Subject: [PATCH 3/3] powerpc/tm: Remove struct thread_info param from
- tm_reclaim_thread()
-Date: Fri, 15 Jun 2018 14:42:02 -0300
-In-Reply-To: <1529084522-17034-1-git-send-email-leitao@debian.org>
-References: <1529084262-16372-1-git-send-email-leitao@debian.org>
- <1529084522-17034-1-git-send-email-leitao@debian.org>
-Message-Id: <1529084522-17034-2-git-send-email-leitao@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 416pfk4t3yzF13F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 04:19:26 +1000 (AEST)
+Date: Fri, 15 Jun 2018 02:16:24 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Ram Pai <linuxram@us.ibm.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, robh@kernel.org,
+ pawel.moll@arm.com, Tom Lendacky <thomas.lendacky@amd.com>,
+ aik@ozlabs.ru, jasowang@redhat.com, cohuck@redhat.com,
+ linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, joe@perches.com,
+ "Rustad, Mark D" <mark.d.rustad@intel.com>,
+ david@gibson.dropbear.id.au, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC V2] virtio: Add platform specific DMA API translation for
+ virito devices
+Message-ID: <20180615091624.GA1064@infradead.org>
+References: <20180524072104.GD6139@ram.oc3035372033.ibm.com>
+ <0c508eb2-08df-3f76-c260-90cf7137af80@linux.vnet.ibm.com>
+ <20180531204320-mutt-send-email-mst@kernel.org>
+ <20180607052306.GA1532@infradead.org>
+ <20180607185234-mutt-send-email-mst@kernel.org>
+ <20180611023909.GA5726@ram.oc3035372033.ibm.com>
+ <07b804fccd7373c650be79ac9fa77ae7f2375ced.camel@kernel.crashing.org>
+ <20180613074141.GA12033@infradead.org>
+ <5dbcafa73b065bc619fd6adc9ef47eb6367b8378.camel@kernel.crashing.org>
+ <10bbd7122aaa67f51de7a8328df8154212a13f23.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <10bbd7122aaa67f51de7a8328df8154212a13f23.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,54 +43,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cyril Bur <cyrilbur@gmail.com>
+On Wed, Jun 13, 2018 at 11:11:01PM +1000, Benjamin Herrenschmidt wrote:
+> Actually ... the stuff in lib/dma-direct.c seems to be just it, no ?
+> 
+> There's no cache flushing and there's no architecture hooks that I can
+> see other than the AMD security stuff which is probably fine.
+> 
+> Or am I missing something ?
 
-tm_reclaim_thread() doesn't use the parameter anymore, both callers have
-to bother getting it as they have no need for a struct thread_info
-either.
-
-It was previously used but became unused in dc3106690b20 ("powerpc: tm:
-Always use fp_state and vr_state to store live registers")
-
-Just remove it and adjust the callers.
-
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/kernel/process.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 6b73d74793c2..061a1c4cb3a8 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -860,8 +860,7 @@ static inline bool tm_enabled(struct task_struct *tsk)
- 	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
- }
- 
--static void tm_reclaim_thread(struct thread_struct *thr,
--			      struct thread_info *ti, uint8_t cause)
-+static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
- {
- 	/*
- 	 * Use the current MSR TM suspended bit to track if we have
-@@ -908,7 +907,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- void tm_reclaim_current(uint8_t cause)
- {
- 	tm_enable();
--	tm_reclaim_thread(&current->thread, current_thread_info(), cause);
-+	tm_reclaim_thread(&current->thread, cause);
- }
- 
- static inline void tm_reclaim_task(struct task_struct *tsk)
-@@ -939,7 +938,7 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 		 thr->regs->ccr, thr->regs->msr,
- 		 thr->regs->trap);
- 
--	tm_reclaim_thread(thr, task_thread_info(tsk), TM_CAUSE_RESCHED);
-+	tm_reclaim_thread(thr, TM_CAUSE_RESCHED);
- 
- 	TM_DEBUG("--- tm_reclaim on pid %d complete\n",
- 		 tsk->pid);
--- 
-2.16.3
+You are missing the __phys_to_dma arch hook that allows architectures
+to adjust the dma address.  Various systems have offsets, or even
+multiple banks with different offsets there.  Most of them don't
+use the dma-direct code yet (working on it), but there are a few
+examples in the tree already.
