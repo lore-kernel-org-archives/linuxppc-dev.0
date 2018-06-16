@@ -1,49 +1,21 @@
-Return-Path: <ricardo.neri-calderon@linux.intel.com>
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 416zQv32p4zDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 10:54:47 +1000 (AEST)
-Date: Fri, 15 Jun 2018 17:51:03 -0700
-From: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, Babu Moger <babu.moger@oracle.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Byungchul Park <byungchul.park@lge.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, Waiman Long <longman@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Randy Dunlap <rdunlap@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Christoffer Dall <cdall@linaro.org>,
- Marc Zyngier <marc.zyngier@arm.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-Subject: Re: [RFC PATCH 17/23] watchdog/hardlockup/hpet: Convert the timer's
- interrupt to NMI
-Message-ID: <20180616005103.GC6659@voyager>
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-18-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <alpine.DEB.2.21.1806131128570.2280@nanos.tec.linutronix.de>
- <20180615020314.GA11625@voyager>
- <alpine.DEB.2.21.1806151029210.2079@nanos.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.21.1806151029210.2079@nanos.tec.linutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 416zfQ1K6jzDrbK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 11:04:45 +1000 (AEST)
+Message-ID: <615a926cedadfe528cd72e4f29a4183b0a7f8c08.camel@kernel.crashing.org>
+Subject: Re: [PATCH kernel 1/2] powerpc/powernv: Reuse existing TCE code for
+ sketchy bypass
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: Alistair Popple <alistair@popple.id.au>, Russell Currey <ruscur@russell.cc>
+Date: Sat, 16 Jun 2018 11:04:32 +1000
+In-Reply-To: <20180601081028.29401-2-aik@ozlabs.ru>
+References: <20180601081028.29401-1-aik@ozlabs.ru>
+ <20180601081028.29401-2-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,73 +25,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 15, 2018 at 11:19:09AM +0200, Thomas Gleixner wrote:
-> On Thu, 14 Jun 2018, Ricardo Neri wrote:
-> > On Wed, Jun 13, 2018 at 11:40:00AM +0200, Thomas Gleixner wrote:
-> > > On Tue, 12 Jun 2018, Ricardo Neri wrote:
-> > > > @@ -183,6 +184,8 @@ static irqreturn_t hardlockup_detector_irq_handler(int irq, void *data)
-> > > >  	if (!(hdata->flags & HPET_DEV_PERI_CAP))
-> > > >  		kick_timer(hdata);
-> > > >  
-> > > > +	pr_err("This interrupt should not have happened. Ensure delivery mode is NMI.\n");
-> > > 
-> > > Eeew.
-> > 
-> > If you don't mind me asking. What is the problem with this error message?
+On Fri, 2018-06-01 at 18:10 +1000, Alexey Kardashevskiy wrote:
+> The existing sketchy bypass ignores the existing default 32bit TCE table
+> (created by default for every PE at boot time or after being used by
+> VFIO) and it allocates another table instead without updating PE DMA
+> config (pe->table_group). So if we decide to use such device for VFIO
+> later, this new table will also leak memory.
 > 
-> The problem is not the error message. The problem is the abuse of
-> request_irq() and the fact that this irq handler function exists in the
-> first place for something which is NMI based.
-
-I wanted to add this handler in case the interrupt was not configured correctly
-to be delivered as NMI (e.g., not supported by the hardware). I see your point.
-Perhaps this is not needed. There is code in place to complain when an interrupt
-that nobody was expecting happens.
-
+> This replaces adhoc table allocation and programming with the existing
+> API which handles memory leaks.
 > 
-> > > And in case that the HPET does not support periodic mode this reprogramms
-> > > the timer on every NMI which means that while perf is running the watchdog
-> > > will never ever detect anything.
-> > 
-> > Yes. I see that this is wrong. With MSI interrupts, as far as I can
-> > see, there is not a way to make sure that the HPET timer caused the NMI
-> > perhaps the only option is to use an IO APIC interrupt and read the
-> > interrupt status register.
-> > 
-> > > Aside of that, reading TWO HPET registers for every NMI is insane. HPET
-> > > access is horribly slow, so any high frequency perf monitoring will take a
-> > > massive performance hit.
-> > 
-> > If an IO APIC interrupt is used, only HPET register (the status register)
-> > would need to be read for every NMI. Would that be more acceptable? Otherwise,
-> > there is no way to determine if the HPET cause the NMI.
+> This programs the default 32bit table back to TVE#0 if configuring
+> the new table failed for some reason.
 > 
-> You need level trigger for the HPET status register to be useful at all
-> because in edge mode the interrupt status bits read always 0.
+> While we are at it, switch from the hardcoded 256MB TCEs to the biggest
+> size supported by the hardware and reported by the firmware. This allows
+> the sketchy bypass (originally made for POWER8 only) to work on POWER9
+> too assuming that PHB4 type is defined and pnv_pci_ioda_dma_64bit_bypass()
+> is called (coming next).
 
-Indeed.
+It won't work on POWER9 for other reasons. Mostly memory isn't
+contiguous there.
 
+What we shuld look into rather than removing the 32-bit table is
+exploit DD2 P9 feature allowing to overlay TVE0 and TVE1 so that 0..4G
+is in control of TVE0 and the rest goes to TVE1.
+ 
+> This does not call iommu_init_table() for the new table as the caller
+> will use &dma_nommu_ops and therefore ::it_map is not needed.
 > 
-> That means you have to fiddle with the IOAPIC acknowledge magic from NMI
-> context. Brilliant idea. If the NMI hits in the middle of a regular
-> io_apic_read() then the interrupted code will endup with the wrong index
-> register. Not to talk about the fun which the affinity rotation from NMI
-> context would bring.
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
 > 
-> Do not even think about using IOAPIC and level for this.
-
-OK. I will stay away of it and focus on MSI.
+> Tested with:
+>  	if (pe->tce_bypass_enabled) {
+>  		top = pe->tce_bypass_base + memblock_end_of_DRAM() - 1;
+> -		bypass = (dma_mask >= top);
+> +		bypass = false;//(dma_mask >= top);
+>  	}
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 71 +++++++++++++++++--------------
+>  1 file changed, 39 insertions(+), 32 deletions(-)
 > 
-> > Alternatively, there could be a counter that skips reading the HPET status
-> > register (and the detection of hardlockups) for every X NMIs. This would
-> > reduce the overall frequency of HPET register reads.
-> 
-> Great plan. So if the watchdog is the only NMI (because perf is off) then
-> you delay the watchdog detection by that count.
-
-OK. This was a bad idea. Then, is it acceptable to have an read to an HPET
-register per NMI just to check in the status register if the HPET timer
-caused the NMI?
-
-Thanks and BR,
-Ricardo
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index ceb7e64..9239142 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1791,54 +1791,61 @@ static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
+>   *
+>   * Currently this will only work on PHB3 (POWER8).
+>   */
+> +static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
+> +		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+> +		struct iommu_table **ptbl);
+> +
+> +static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+> +		int num, struct iommu_table *tbl);
+> +
+> +static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb);
+> +
+>  static int pnv_pci_ioda_dma_64bit_bypass(struct pnv_ioda_pe *pe)
+>  {
+> -	u64 window_size, table_size, tce_count, addr;
+> -	struct page *table_pages;
+> -	u64 tce_order = 28; /* 256MB TCEs */
+> -	__be64 *tces;
+> +	u64 window_size;
+>  	s64 rc;
+> +	struct iommu_table *tbl, *oldtbl = NULL;
+> +	unsigned long shift, offset;
+>  
+>  	/*
+>  	 * Window size needs to be a power of two, but needs to account for
+>  	 * shifting memory by the 4GB offset required to skip 32bit space.
+>  	 */
+> -	window_size = roundup_pow_of_two(memory_hotplug_max() + (1ULL << 32));
+> -	tce_count = window_size >> tce_order;
+> -	table_size = tce_count << 3;
+> -
+> -	if (table_size < PAGE_SIZE)
+> -		table_size = PAGE_SIZE;
+> +	window_size = roundup_pow_of_two(memory_hotplug_max() + SZ_4G);
+> +	shift = ilog2(pnv_ioda_parse_tce_sizes(pe->phb));
+> +	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0, shift, window_size,
+> +			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
+> +	if (rc) {
+> +		pe_err(pe, "Failed to create 64-bypass TCE table, err %ld", rc);
+> +		return rc;
+> +	}
+>  
+> -	table_pages = alloc_pages_node(pe->phb->hose->node, GFP_KERNEL,
+> -				       get_order(table_size));
+> -	if (!table_pages)
+> +	offset = SZ_4G >> shift;
+> +	rc = tbl->it_ops->set(tbl, offset, tbl->it_size - offset,
+> +			0 /* uaddr */, DMA_BIDIRECTIONAL, 0 /* attrs */);
+> +	if (rc)
+>  		goto err;
+>  
+> -	tces = page_address(table_pages);
+> -	if (!tces)
+> +	if (pe->table_group.tables[0]) {
+> +		oldtbl = pe->table_group.tables[0];
+> +		pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+> +	}
+> +
+> +	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+> +	if (rc != OPAL_SUCCESS) {
+> +		rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, oldtbl);
+>  		goto err;
+> +	}
+>  
+> -	memset(tces, 0, table_size);
+> +	if (oldtbl)
+> +		iommu_tce_table_put(oldtbl);
+>  
+> -	for (addr = 0; addr < memory_hotplug_max(); addr += (1 << tce_order)) {
+> -		tces[(addr + (1ULL << 32)) >> tce_order] =
+> -			cpu_to_be64(addr | TCE_PCI_READ | TCE_PCI_WRITE);
+> -	}
+> +	pe_info(pe, "Using 64-bit DMA iommu bypass (through TVE#0)\n");
+> +	return 0;
+>  
+> -	rc = opal_pci_map_pe_dma_window(pe->phb->opal_id,
+> -					pe->pe_number,
+> -					/* reconfigure window 0 */
+> -					(pe->pe_number << 1) + 0,
+> -					1,
+> -					__pa(tces),
+> -					table_size,
+> -					1 << tce_order);
+> -	if (rc == OPAL_SUCCESS) {
+> -		pe_info(pe, "Using 64-bit DMA iommu bypass (through TVE#0)\n");
+> -		return 0;
+> -	}
+>  err:
+> +	iommu_tce_table_put(tbl);
+> +
+>  	pe_err(pe, "Error configuring 64-bit DMA bypass\n");
+>  	return -EIO;
+>  }
