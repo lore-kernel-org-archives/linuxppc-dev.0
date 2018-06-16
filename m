@@ -1,27 +1,29 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
- [209.85.218.68])
+Return-Path: <jirislaby@gmail.com>
+Received: from mail-wm0-f65.google.com (mail-wm0-f65.google.com [74.125.82.65])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4177sZ213MzF0Rs
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 17:14:57 +1000 (AEST)
-Received: by mail-oi0-f68.google.com with SMTP id c6-v6so10766978oiy.0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 00:14:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4178yg6ThTzF0TM
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 18:04:26 +1000 (AEST)
+Received: by mail-wm0-f65.google.com with SMTP id r125-v6so7379788wmg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2018 01:04:26 -0700 (PDT)
+Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
+To: Michal Hocko <mhocko@kernel.org>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: steven.sistare@oracle.com, daniel.m.jordan@oracle.com,
+ benh@kernel.crashing.org, paulus@samba.org, akpm@linux-foundation.org,
+ kirill.shutemov@linux.intel.com, arbab@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, x86@kernel.org,
+ linux-kernel@vger.kernel.org, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ linux-s390@vger.kernel.org, mgorman@techsingularity.net
+References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+ <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
+From: Jiri Slaby <jslaby@suse.cz>
+Message-ID: <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
+Date: Sat, 16 Jun 2018 10:04:21 +0200
 MIME-Version: 1.0
-References: <20180615185645.8921-1-malat@debian.org>
- <fbb95c11-240c-1a11-0a62-0483908c577e@gmail.com>
-In-Reply-To: <fbb95c11-240c-1a11-0a62-0483908c577e@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Sat, 16 Jun 2018 09:14:42 +0200
-Message-ID: <CA+7wUsysaip70ARGQ7Byg1Zktfg0Y1esjEc9HxBGU4sKL8crhg@mail.gmail.com>
-Subject: Re: [PATCH] Revert "net: pskb_trim_rcsum() and CHECKSUM_COMPLETE are
- friends"
-To: eric.dumazet@gmail.com
-Cc: "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- LKML <linux-kernel@vger.kernel.org>, Christophe LEROY <christophe.leroy@c-s.fr>,
- Meelis Roos <mroos@linux.ee>, schwab@linux-m68k.org, netdev@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
+Content-Type: text/plain; charset=iso-8859-2
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +33,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Eric,
+On 11/21/2017, 08:24 AM, Michal Hocko wrote:
+> On Thu 16-11-17 20:46:01, Pavel Tatashin wrote:
+>> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
+>> as all the page initialization code is in common code.
+>>
+>> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
+>> does not really use hotplug memory functionality. So, we can remove this
+>> requirement as well.
+>>
+>> This patch allows to use deferred struct page initialization on all
+>> platforms with memblock allocator.
+>>
+>> Tested on x86, arm64, and sparc. Also, verified that code compiles on
+>> PPC with CONFIG_MEMORY_HOTPLUG disabled.
+> 
+> There is slight risk that we will encounter corner cases on some
+> architectures with weird memory layout/topology
 
-On Fri, Jun 15, 2018 at 9:14 PM Eric Dumazet <eric.dumazet@gmail.com> wrote:
->
->
->
-> On 06/15/2018 11:56 AM, Mathieu Malaterre wrote:
-> > This reverts commit 88078d98d1bb085d72af8437707279e203524fa5.
-> >
-> > It causes regressions for people using chips driven by the sungem
-> > driver. Suspicion is that the skb->csum value isn't being adjusted
-> > properly.
-> >
-> > Symptoms as seen on G4+sungem are:
-> >
-> > [   34.023281] eth0: hw csum failure
-> > [   34.023438] CPU: 0 PID: 0 Comm: swapper Not tainted 4.17.0+ #2
-> > [   34.023618] Call Trace:
-> > [   34.023707] [dffedbd0] [c069ddac] __skb_checksum_complete+0xf0/0x108 (unreliable)
-> > [   34.023948] [dffedbf0] [c0777a70] tcp_v4_rcv+0x604/0xe00
-> > [   34.024118] [dffedc70] [c0731624] ip_local_deliver_finish+0xa8/0x3c4
-> > [   34.024315] [dffedcb0] [c0732430] ip_local_deliver+0xf0/0x154
-> > [   34.024493] [dffedcf0] [c07328dc] ip_rcv+0x448/0x774
-> > [   34.024653] [dffedd50] [c06aeae0] __netif_receive_skb_core+0x5e8/0x1184
-> > [   34.024857] [dffedde0] [c06bba20] napi_gro_receive+0x160/0x22c
-> > [   34.025044] [dffede10] [e14b2590] gem_poll+0x7fc/0x1ac0 [sungem]
-> > [   34.025228] [dffedee0] [c06bacf0] net_rx_action+0x34c/0x618
-> > [   34.025402] [dffedf60] [c07fd27c] __do_softirq+0x16c/0x5f0
-> > [   34.025575] [dffedfd0] [c0064c7c] irq_exit+0x110/0x1a8
-> > [   34.025738] [dffedff0] [c0016170] call_do_irq+0x24/0x3c
-> > [   34.025903] [c0cf7e80] [c0009a84] do_IRQ+0x98/0x1a0
-> > [   34.026055] [c0cf7eb0] [c001b474] ret_from_except+0x0/0x14
-> > [   34.026225] --- interrupt: 501 at arch_cpu_idle+0x30/0x78
-> >                    LR = arch_cpu_idle+0x30/0x78
-> > [   34.026510] [c0cf7f70] [c0cf6000] 0xc0cf6000 (unreliable)
-> > [   34.026682] [c0cf7f80] [c00a3868] do_idle+0xc4/0x158
-> > [   34.026835] [c0cf7fb0] [c00a3ab0] cpu_startup_entry+0x20/0x28
-> > [   34.027013] [c0cf7fc0] [c0998820] start_kernel+0x47c/0x490
-> > [   34.027181] [c0cf7ff0] [00003444] 0x3444
-> >
-> > See commit 7ce5a27f2ef8 ("Revert "net: Handle CHECKSUM_COMPLETE more
-> > adequately in pskb_trim_rcsum()."") for previous reference.
->
-> This fix seems to hide a bug in csum functions on this architecture.
+Which x86_32-pae seems to be. Many bad page state errors are emitted
+during boot when this patch is applied:
+BUG: Bad page state in process swapper  pfn:3c01c
+page:f566c3f0 count:0 mapcount:1 mapping:00000000 index:0x0
+flags: 0x0()
+raw: 00000000 00000000 00000000 00000000 00000000 00000100 00000200 00000000
+raw: 00000000
+page dumped because: nonzero mapcount
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Tainted: G    B
+4.17.1-4.gdf028bb-pae #1 openSUSE Tumbleweed (unreleased)
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
+1.0.0-prebuilt.qemu-project.org 04/01/2014
+Call Trace:
+ dump_stack+0x7d/0xbd
+ bad_page.cold.111+0x90/0xc7
+ free_pages_check_bad+0x52/0x70
+ free_pcppages_bulk+0x37d/0x570
+ free_unref_page_commit+0x9a/0xc0
+ free_unref_page+0x6a/0xa0
+ __free_pages+0x17/0x30
+ free_highmem_page+0x1e/0x50
+ add_highpages_with_active_regions+0xd6/0x113
+ set_highmem_pages_init+0x67/0x7d
+ mem_init+0x23/0x1d9
+ start_kernel+0x1c2/0x437
+ i386_start_kernel+0x98/0x9c
+ startup_32_smp+0x164/0x168
 
-That's odd since it seems to only affect g4+sungem user. None of the
-ppc64 seems to be having it. And some ppc32 users are not even seeing
-it.
+free_pages_check_bad expects mapcount == -1, but it is 1 with this patch.
 
-> Or a bug on this NIC when receiving a small packet (less than 60 bytes).
-> Maybe the padding bytes are not included in NIC provided csum, and not 0.
+Reverting the patch makes the BUGs go away -- the config diff is then:
+@@ -617,7 +617,7 @@
+ # CONFIG_PGTABLE_MAPPING is not set
+ # CONFIG_ZSMALLOC_STAT is not set
+ CONFIG_GENERIC_EARLY_IOREMAP=y
+-CONFIG_DEFERRED_STRUCT_PAGE_INIT=y
++CONFIG_ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT=y
+ # CONFIG_IDLE_PAGE_TRACKING is not set
+ CONFIG_FRAME_VECTOR=y
+ # CONFIG_PERCPU_STATS is not set
 
-Ok in that case the bug is located in
-./drivers/net/ethernet/sun/sungem.c that seems more likely. I'll try
-to understand that code, then.
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -148,7 +148,6 @@ config PPC
+>>  	select ARCH_MIGHT_HAVE_PC_PARPORT
+>>  	select ARCH_MIGHT_HAVE_PC_SERIO
+>>  	select ARCH_SUPPORTS_ATOMIC_RMW
+>> -	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+>>  	select ARCH_USE_BUILTIN_BSWAP
+>>  	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
+>>  	select ARCH_WANT_IPC_PARSE_VERSION
+>> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+>> index 863a62a6de3c..525c2e3df6f5 100644
+>> --- a/arch/s390/Kconfig
+>> +++ b/arch/s390/Kconfig
+>> @@ -108,7 +108,6 @@ config S390
+>>  	select ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
+>>  	select ARCH_SAVE_PAGE_KEYS if HIBERNATION
+>>  	select ARCH_SUPPORTS_ATOMIC_RMW
+>> -	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+>>  	select ARCH_SUPPORTS_NUMA_BALANCING
+>>  	select ARCH_USE_BUILTIN_BSWAP
+>>  	select ARCH_USE_CMPXCHG_LOCKREF
+>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> index df3276d6bfe3..00a5446de394 100644
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -69,7 +69,6 @@ config X86
+>>  	select ARCH_MIGHT_HAVE_PC_PARPORT
+>>  	select ARCH_MIGHT_HAVE_PC_SERIO
+>>  	select ARCH_SUPPORTS_ATOMIC_RMW
+>> -	select ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+>>  	select ARCH_SUPPORTS_NUMA_BALANCING	if X86_64
+>>  	select ARCH_USE_BUILTIN_BSWAP
+>>  	select ARCH_USE_QUEUED_RWLOCKS
+>> diff --git a/mm/Kconfig b/mm/Kconfig
+>> index 9c4bdddd80c2..c6bd0309ce7a 100644
+>> --- a/mm/Kconfig
+>> +++ b/mm/Kconfig
+>> @@ -639,15 +639,10 @@ config MAX_STACK_SIZE_MB
+>>  
+>>  	  A sane initial value is 80 MB.
+>>  
+>> -# For architectures that support deferred memory initialisation
+>> -config ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+>> -	bool
+>> -
+>>  config DEFERRED_STRUCT_PAGE_INIT
+>>  	bool "Defer initialisation of struct pages to kthreads"
+>>  	default n
+>> -	depends on ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT
+>> -	depends on NO_BOOTMEM && MEMORY_HOTPLUG
+>> +	depends on NO_BOOTMEM
+>>  	depends on !FLATMEM
+>>  	help
+>>  	  Ordinarily all struct pages are initialised during early boot in a
 
-Thanks
-
->
->
->
+thanks,
+-- 
+js
+suse labs
