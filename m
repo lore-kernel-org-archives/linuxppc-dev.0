@@ -1,7 +1,7 @@
 Return-Path: <aik@ozlabs.ru>
 Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 417s7k3PfdzF0dl
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 21:14:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 417s7n5GDqzF0dl
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 21:14:45 +1000 (AEST)
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -9,10 +9,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Alex Williamson <alex.williamson@redhat.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel v2 2/6] powerpc/powernv: Move TCE manupulation code to
- its own file
-Date: Sun, 17 Jun 2018 21:14:24 +1000
-Message-Id: <20180617111428.24349-3-aik@ozlabs.ru>
+Subject: [PATCH kernel v2 4/6] powerpc/powernv: Add indirect levels to
+ it_userspace
+Date: Sun, 17 Jun 2018 21:14:26 +1000
+Message-Id: <20180617111428.24349-5-aik@ozlabs.ru>
 In-Reply-To: <20180617111428.24349-1-aik@ozlabs.ru>
 References: <20180617111428.24349-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,775 +24,408 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Right now we have allocation code in pci-ioda.c and traversing code in
-pci.c, let's keep them toghether. However both files are big enough
-already so let's move this business to a new file.
+We want to support sparse memory and therefore huge chunks of DMA windows
+do not need to be mapped. If a DMA window big enough to require 2 or more
+indirect levels, and a DMA window is used to map all RAM (which is
+a default case for 64bit window), we can actually save some memory by
+not allocation TCE for regions which we are not going to map anyway.
 
-While we at it, move the code which links IOMMU table groups to
-IOMMU tables as it is not specific to any PNV PHB model.
+The hardware tables alreary support indirect levels but we also keep
+host-physical-to-userspace translation array which is allocated by
+vmalloc() and is a flat array which might use quite some memory.
 
-These puts exported symbols from the new file together.
+This converts it_userspace from vmalloc'ed array to a multi level table.
 
-This fixes several warnings from checkpatch.pl like this:
-"WARNING: Prefer 'unsigned int' to bare use of 'unsigned'".
+As the format becomes platform dependend, this replaces the direct access
+to it_usespace with a iommu_table_ops::useraddrptr hook which returns
+a pointer to the userspace copy of a TCE; future extension will return
+NULL if the level was not allocated.
 
-As this is almost cut-n-paste, there should be no behavioral change.
+This should not change non-KVM handling of TCE tables and it_userspace
+will not be allocated for non-KVM tables.
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/Makefile       |   2 +-
- arch/powerpc/platforms/powernv/pci.h          |  41 ++--
- arch/powerpc/platforms/powernv/pci-ioda-tce.c | 313 ++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c     | 146 ------------
- arch/powerpc/platforms/powernv/pci.c          | 158 -------------
- 5 files changed, 340 insertions(+), 320 deletions(-)
- create mode 100644 arch/powerpc/platforms/powernv/pci-ioda-tce.c
+ arch/powerpc/include/asm/iommu.h              |  6 +--
+ arch/powerpc/platforms/powernv/pci.h          |  3 +-
+ arch/powerpc/kvm/book3s_64_vio_hv.c           |  8 ----
+ arch/powerpc/platforms/powernv/pci-ioda-tce.c | 65 +++++++++++++++++++++------
+ arch/powerpc/platforms/powernv/pci-ioda.c     | 31 ++++++++++---
+ drivers/vfio/vfio_iommu_spapr_tce.c           | 46 -------------------
+ 6 files changed, 81 insertions(+), 78 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 703a350..b540ce8e 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
- obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
--obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
-+obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-ioda-tce.o
- obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
- obj-$(CONFIG_EEH)	+= eeh-powernv.o
- obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 1408247..f507baf 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -202,13 +202,6 @@ struct pnv_phb {
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 803ac70..4bdcf22 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -69,6 +69,8 @@ struct iommu_table_ops {
+ 			long index,
+ 			unsigned long *hpa,
+ 			enum dma_data_direction *direction);
++
++	__be64 *(*useraddrptr)(struct iommu_table *tbl, long index);
+ #endif
+ 	void (*clear)(struct iommu_table *tbl,
+ 			long index, long npages);
+@@ -123,9 +125,7 @@ struct iommu_table {
  };
  
- extern struct pci_ops pnv_pci_ops;
--extern int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
--		unsigned long uaddr, enum dma_data_direction direction,
--		unsigned long attrs);
--extern void pnv_tce_free(struct iommu_table *tbl, long index, long npages);
--extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
--		unsigned long *hpa, enum dma_data_direction *direction);
--extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
+ #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+-		((tbl)->it_userspace ? \
+-			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
+-			NULL)
++		((tbl)->it_ops->useraddrptr((tbl), (entry)))
  
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
-@@ -218,14 +211,6 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val);
- extern struct iommu_table *pnv_pci_table_alloc(int nid);
+ /* Pure 2^n version of get_order */
+ static inline __attribute_const__
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index f507baf..5e02408 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -268,11 +268,12 @@ extern int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ extern void pnv_tce_free(struct iommu_table *tbl, long index, long npages);
+ extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
+ 		unsigned long *hpa, enum dma_data_direction *direction);
++extern __be64 *pnv_tce_useraddrptr(struct iommu_table *tbl, long index);
+ extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
  
--extern long pnv_pci_link_table_and_group(int node, int num,
--		struct iommu_table *tbl,
--		struct iommu_table_group *table_group);
--extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
--		struct iommu_table_group *table_group);
--extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
--				      void *tce_mem, u64 tce_size,
--				      u64 dma_offset, unsigned page_shift);
- extern void pnv_pci_init_ioda_hub(struct device_node *np);
- extern void pnv_pci_init_ioda2_phb(struct device_node *np);
- extern void pnv_pci_init_npu_phb(struct device_node *np);
-@@ -273,4 +258,30 @@ extern void pnv_cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
- /* phb ops (cxl switches these when enabling the kernel api on the phb) */
- extern const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops;
+ extern long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 		__u32 page_shift, __u64 window_size, __u32 levels,
+-		struct iommu_table *tbl);
++		bool alloc_userspace_copy, struct iommu_table *tbl);
+ extern void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
  
-+/* pci-ioda-tce.c */
-+#define POWERNV_IOMMU_DEFAULT_LEVELS	1
-+#define POWERNV_IOMMU_MAX_LEVELS	5
-+
-+extern int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-+		unsigned long uaddr, enum dma_data_direction direction,
-+		unsigned long attrs);
-+extern void pnv_tce_free(struct iommu_table *tbl, long index, long npages);
-+extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
-+		unsigned long *hpa, enum dma_data_direction *direction);
-+extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
-+
-+extern long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
-+		__u32 page_shift, __u64 window_size, __u32 levels,
-+		struct iommu_table *tbl);
-+extern void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
-+
-+extern long pnv_pci_link_table_and_group(int node, int num,
-+		struct iommu_table *tbl,
-+		struct iommu_table_group *table_group);
-+extern void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
-+		struct iommu_table_group *table_group);
-+extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
-+		void *tce_mem, u64 tce_size,
-+		u64 dma_offset, unsigned int page_shift);
-+
- #endif /* __POWERNV_PCI_H */
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-new file mode 100644
-index 0000000..700ceb1
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
-@@ -0,0 +1,313 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * TCE helpers for IODA PCI/PCIe on PowerNV platforms
-+ *
-+ * Copyright 2018 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/iommu.h>
-+
-+#include <asm/iommu.h>
-+#include <asm/tce.h>
-+#include "pci.h"
-+
-+void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
-+		void *tce_mem, u64 tce_size,
-+		u64 dma_offset, unsigned int page_shift)
-+{
-+	tbl->it_blocksize = 16;
-+	tbl->it_base = (unsigned long)tce_mem;
-+	tbl->it_page_shift = page_shift;
-+	tbl->it_offset = dma_offset >> tbl->it_page_shift;
-+	tbl->it_index = 0;
-+	tbl->it_size = tce_size >> 3;
-+	tbl->it_busno = 0;
-+	tbl->it_type = TCE_PCI;
-+}
-+
-+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
-+{
-+	__be64 *tmp = ((__be64 *)tbl->it_base);
-+	int  level = tbl->it_indirect_levels;
-+	const long shift = ilog2(tbl->it_level_size);
-+	unsigned long mask = (tbl->it_level_size - 1) << (level * shift);
-+
-+	while (level) {
-+		int n = (idx & mask) >> (level * shift);
-+		unsigned long tce = be64_to_cpu(tmp[n]);
-+
-+		tmp = __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
-+		idx &= ~mask;
-+		mask >>= shift;
-+		--level;
-+	}
-+
-+	return tmp + idx;
-+}
-+
-+int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-+		unsigned long uaddr, enum dma_data_direction direction,
-+		unsigned long attrs)
-+{
-+	u64 proto_tce = iommu_direction_to_tce_perm(direction);
-+	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
-+	long i;
-+
-+	if (proto_tce & TCE_PCI_WRITE)
-+		proto_tce |= TCE_PCI_READ;
-+
-+	for (i = 0; i < npages; i++) {
-+		unsigned long newtce = proto_tce |
-+			((rpn + i) << tbl->it_page_shift);
-+		unsigned long idx = index - tbl->it_offset + i;
-+
-+		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
-+	}
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_IOMMU_API
-+int pnv_tce_xchg(struct iommu_table *tbl, long index,
-+		unsigned long *hpa, enum dma_data_direction *direction)
-+{
-+	u64 proto_tce = iommu_direction_to_tce_perm(*direction);
-+	unsigned long newtce = *hpa | proto_tce, oldtce;
-+	unsigned long idx = index - tbl->it_offset;
-+
-+	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
-+
-+	if (newtce & TCE_PCI_WRITE)
-+		newtce |= TCE_PCI_READ;
-+
-+	oldtce = be64_to_cpu(xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce)));
-+	*hpa = oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
-+	*direction = iommu_tce_direction(oldtce);
-+
-+	return 0;
-+}
-+#endif
-+
-+void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
-+{
-+	long i;
-+
-+	for (i = 0; i < npages; i++) {
-+		unsigned long idx = index - tbl->it_offset + i;
-+
-+		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
-+	}
-+}
-+
-+unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
-+{
-+	return be64_to_cpu(*(pnv_tce(tbl, index - tbl->it_offset)));
-+}
-+
-+static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
-+		unsigned long size, unsigned int levels)
-+{
-+	const unsigned long addr_ul = (unsigned long) addr &
-+			~(TCE_PCI_READ | TCE_PCI_WRITE);
-+
-+	if (levels) {
-+		long i;
-+		u64 *tmp = (u64 *) addr_ul;
-+
-+		for (i = 0; i < size; ++i) {
-+			unsigned long hpa = be64_to_cpu(tmp[i]);
-+
-+			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
-+				continue;
-+
-+			pnv_pci_ioda2_table_do_free_pages(__va(hpa), size,
-+					levels - 1);
-+		}
-+	}
-+
-+	free_pages(addr_ul, get_order(size << 3));
-+}
-+
-+void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
-+{
-+	const unsigned long size = tbl->it_indirect_levels ?
-+			tbl->it_level_size : tbl->it_size;
-+
-+	if (!tbl->it_size)
-+		return;
-+
-+	pnv_pci_ioda2_table_do_free_pages((__be64 *)tbl->it_base, size,
-+			tbl->it_indirect_levels);
-+}
-+
-+static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned int shift,
-+		unsigned int levels, unsigned long limit,
-+		unsigned long *current_offset, unsigned long *total_allocated)
-+{
-+	struct page *tce_mem = NULL;
-+	__be64 *addr, *tmp;
-+	unsigned int order = max_t(unsigned int, shift, PAGE_SHIFT) -
-+			PAGE_SHIFT;
-+	unsigned long allocated = 1UL << (order + PAGE_SHIFT);
-+	unsigned int entries = 1UL << (shift - 3);
-+	long i;
-+
-+	tce_mem = alloc_pages_node(nid, GFP_KERNEL, order);
-+	if (!tce_mem) {
-+		pr_err("Failed to allocate a TCE memory, order=%d\n", order);
-+		return NULL;
-+	}
-+	addr = page_address(tce_mem);
-+	memset(addr, 0, allocated);
-+	*total_allocated += allocated;
-+
-+	--levels;
-+	if (!levels) {
-+		*current_offset += allocated;
-+		return addr;
-+	}
-+
-+	for (i = 0; i < entries; ++i) {
-+		tmp = pnv_pci_ioda2_table_do_alloc_pages(nid, shift,
-+				levels, limit, current_offset, total_allocated);
-+		if (!tmp)
-+			break;
-+
-+		addr[i] = cpu_to_be64(__pa(tmp) |
-+				TCE_PCI_READ | TCE_PCI_WRITE);
-+
-+		if (*current_offset >= limit)
-+			break;
-+	}
-+
-+	return addr;
-+}
-+
-+long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
-+		__u32 page_shift, __u64 window_size, __u32 levels,
-+		struct iommu_table *tbl)
-+{
-+	void *addr;
-+	unsigned long offset = 0, level_shift, total_allocated = 0;
-+	const unsigned int window_shift = ilog2(window_size);
-+	unsigned int entries_shift = window_shift - page_shift;
-+	unsigned int table_shift = max_t(unsigned int, entries_shift + 3,
-+			PAGE_SHIFT);
-+	const unsigned long tce_table_size = 1UL << table_shift;
-+
-+	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
-+		return -EINVAL;
-+
-+	if (!is_power_of_2(window_size))
-+		return -EINVAL;
-+
-+	/* Adjust direct table size from window_size and levels */
-+	entries_shift = (entries_shift + levels - 1) / levels;
-+	level_shift = entries_shift + 3;
-+	level_shift = max_t(unsigned int, level_shift, PAGE_SHIFT);
-+
-+	if ((level_shift - 3) * levels + page_shift >= 55)
-+		return -EINVAL;
-+
-+	/* Allocate TCE table */
-+	addr = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
-+			levels, tce_table_size, &offset, &total_allocated);
-+
-+	/* addr==NULL means that the first level allocation failed */
-+	if (!addr)
-+		return -ENOMEM;
-+
-+	/*
-+	 * First level was allocated but some lower level failed as
-+	 * we did not allocate as much as we wanted,
-+	 * release partially allocated table.
-+	 */
-+	if (offset < tce_table_size) {
-+		pnv_pci_ioda2_table_do_free_pages(addr,
-+				1ULL << (level_shift - 3), levels - 1);
-+		return -ENOMEM;
-+	}
-+
-+	/* Setup linux iommu table */
-+	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, bus_offset,
-+			page_shift);
-+	tbl->it_level_size = 1ULL << (level_shift - 3);
-+	tbl->it_indirect_levels = levels - 1;
-+	tbl->it_allocated_size = total_allocated;
-+
-+	pr_devel("Created TCE table: ws=%08llx ts=%lx @%08llx\n",
-+			window_size, tce_table_size, bus_offset);
-+
-+	return 0;
-+}
-+
-+static void pnv_iommu_table_group_link_free(struct rcu_head *head)
-+{
-+	struct iommu_table_group_link *tgl = container_of(head,
-+			struct iommu_table_group_link, rcu);
-+
-+	kfree(tgl);
-+}
-+
-+void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
-+		struct iommu_table_group *table_group)
-+{
-+	long i;
-+	bool found;
-+	struct iommu_table_group_link *tgl;
-+
-+	if (!tbl || !table_group)
-+		return;
-+
-+	/* Remove link to a group from table's list of attached groups */
-+	found = false;
-+	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
-+		if (tgl->table_group == table_group) {
-+			list_del_rcu(&tgl->next);
-+			call_rcu(&tgl->rcu, pnv_iommu_table_group_link_free);
-+			found = true;
-+			break;
-+		}
-+	}
-+	if (WARN_ON(!found))
-+		return;
-+
-+	/* Clean a pointer to iommu_table in iommu_table_group::tables[] */
-+	found = false;
-+	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-+		if (table_group->tables[i] == tbl) {
-+			table_group->tables[i] = NULL;
-+			found = true;
-+			break;
-+		}
-+	}
-+	WARN_ON(!found);
-+}
-+
-+long pnv_pci_link_table_and_group(int node, int num,
-+		struct iommu_table *tbl,
-+		struct iommu_table_group *table_group)
-+{
-+	struct iommu_table_group_link *tgl = NULL;
-+
-+	if (WARN_ON(!tbl || !table_group))
-+		return -EINVAL;
-+
-+	tgl = kzalloc_node(sizeof(struct iommu_table_group_link), GFP_KERNEL,
-+			node);
-+	if (!tgl)
-+		return -ENOMEM;
-+
-+	tgl->table_group = table_group;
-+	list_add_rcu(&tgl->next, &tbl->it_group_list);
-+
-+	table_group->tables[num] = tbl;
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index d4c60b6..9577059 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -51,12 +51,8 @@
- #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR	*/
- #define PNV_IODA1_DMA32_SEGSIZE	0x10000000
+ extern long pnv_pci_link_table_and_group(int node, int num,
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 18109f3..db0490c 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -206,10 +206,6 @@ static long kvmppc_rm_tce_iommu_mapped_dec(struct kvm *kvm,
+ 		/* it_userspace allocation might be delayed */
+ 		return H_TOO_HARD;
  
--#define POWERNV_IOMMU_DEFAULT_LEVELS	1
--#define POWERNV_IOMMU_MAX_LEVELS	5
+-	pua = (void *) vmalloc_to_phys(pua);
+-	if (WARN_ON_ONCE_RM(!pua))
+-		return H_HARDWARE;
 -
- static const char * const pnv_phb_names[] = { "IODA1", "IODA2", "NPU_NVLINK",
- 					      "NPU_OCAPI" };
--static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl);
+ 	mem = mm_iommu_lookup_rm(kvm->mm, be64_to_cpu(*pua), pgsize);
+ 	if (!mem)
+ 		return H_TOO_HARD;
+@@ -282,10 +278,6 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
+ 	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
+ 		return H_HARDWARE;
  
- void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- 			    const char *fmt, ...)
-@@ -2464,10 +2460,6 @@ void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
- 		pe->tce_bypass_enabled = enable;
+-	pua = (void *) vmalloc_to_phys(pua);
+-	if (WARN_ON_ONCE_RM(!pua))
+-		return H_HARDWARE;
+-
+ 	if (WARN_ON_ONCE_RM(mm_iommu_mapped_inc(mem)))
+ 		return H_CLOSED;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda-tce.c b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+index 700ceb1..f14b282 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda-tce.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda-tce.c
+@@ -31,9 +31,9 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 	tbl->it_type = TCE_PCI;
  }
  
--static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
--		__u32 page_shift, __u64 window_size, __u32 levels,
--		struct iommu_table *tbl);
--
- static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
- 		int num, __u32 page_shift, __u64 window_size, __u32 levels,
- 		struct iommu_table **ptbl)
-@@ -2775,144 +2767,6 @@ static void pnv_pci_ioda_setup_iommu_api(void)
- static void pnv_pci_ioda_setup_iommu_api(void) { };
+-static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
++static __be64 *pnv_tce(struct iommu_table *tbl, bool user, long idx)
+ {
+-	__be64 *tmp = ((__be64 *)tbl->it_base);
++	__be64 *tmp = user ? tbl->it_userspace : (__be64 *) tbl->it_base;
+ 	int  level = tbl->it_indirect_levels;
+ 	const long shift = ilog2(tbl->it_level_size);
+ 	unsigned long mask = (tbl->it_level_size - 1) << (level * shift);
+@@ -67,7 +67,7 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 			((rpn + i) << tbl->it_page_shift);
+ 		unsigned long idx = index - tbl->it_offset + i;
+ 
+-		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
++		*(pnv_tce(tbl, false, idx)) = cpu_to_be64(newtce);
+ 	}
+ 
+ 	return 0;
+@@ -86,12 +86,21 @@ int pnv_tce_xchg(struct iommu_table *tbl, long index,
+ 	if (newtce & TCE_PCI_WRITE)
+ 		newtce |= TCE_PCI_READ;
+ 
+-	oldtce = be64_to_cpu(xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce)));
++	oldtce = be64_to_cpu(xchg(pnv_tce(tbl, false, idx),
++				  cpu_to_be64(newtce)));
+ 	*hpa = oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
+ 	*direction = iommu_tce_direction(oldtce);
+ 
+ 	return 0;
+ }
++
++__be64 *pnv_tce_useraddrptr(struct iommu_table *tbl, long index)
++{
++	if (WARN_ON_ONCE(!tbl->it_userspace))
++		return NULL;
++
++	return pnv_tce(tbl, true, index - tbl->it_offset);
++}
  #endif
  
--static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned shift,
--		unsigned levels, unsigned long limit,
--		unsigned long *current_offset, unsigned long *total_allocated)
--{
--	struct page *tce_mem = NULL;
--	__be64 *addr, *tmp;
--	unsigned order = max_t(unsigned, shift, PAGE_SHIFT) - PAGE_SHIFT;
--	unsigned long allocated = 1UL << (order + PAGE_SHIFT);
--	unsigned entries = 1UL << (shift - 3);
--	long i;
--
--	tce_mem = alloc_pages_node(nid, GFP_KERNEL, order);
--	if (!tce_mem) {
--		pr_err("Failed to allocate a TCE memory, order=%d\n", order);
--		return NULL;
--	}
--	addr = page_address(tce_mem);
--	memset(addr, 0, allocated);
--	*total_allocated += allocated;
--
--	--levels;
--	if (!levels) {
--		*current_offset += allocated;
--		return addr;
--	}
--
--	for (i = 0; i < entries; ++i) {
--		tmp = pnv_pci_ioda2_table_do_alloc_pages(nid, shift,
--				levels, limit, current_offset, total_allocated);
--		if (!tmp)
--			break;
--
--		addr[i] = cpu_to_be64(__pa(tmp) |
--				TCE_PCI_READ | TCE_PCI_WRITE);
--
--		if (*current_offset >= limit)
--			break;
--	}
--
--	return addr;
--}
--
--static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
--		unsigned long size, unsigned level);
--
--static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
--		__u32 page_shift, __u64 window_size, __u32 levels,
+ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+@@ -101,13 +110,15 @@ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+ 	for (i = 0; i < npages; i++) {
+ 		unsigned long idx = index - tbl->it_offset + i;
+ 
+-		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
++		*(pnv_tce(tbl, false, idx)) = cpu_to_be64(0);
+ 	}
+ }
+ 
+ unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+ {
+-	return be64_to_cpu(*(pnv_tce(tbl, index - tbl->it_offset)));
++	__be64 *ptce = pnv_tce(tbl, false, index - tbl->it_offset);
++
++	return be64_to_cpu(*ptce);
+ }
+ 
+ static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
+@@ -144,6 +155,10 @@ void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
+ 
+ 	pnv_pci_ioda2_table_do_free_pages((__be64 *)tbl->it_base, size,
+ 			tbl->it_indirect_levels);
++	if (tbl->it_userspace) {
++		pnv_pci_ioda2_table_do_free_pages(tbl->it_userspace, size,
++				tbl->it_indirect_levels);
++	}
+ }
+ 
+ static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned int shift,
+@@ -191,10 +206,11 @@ static __be64 *pnv_pci_ioda2_table_do_alloc_pages(int nid, unsigned int shift,
+ 
+ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 		__u32 page_shift, __u64 window_size, __u32 levels,
 -		struct iommu_table *tbl)
--{
++		bool alloc_userspace_copy, struct iommu_table *tbl)
+ {
 -	void *addr;
--	unsigned long offset = 0, level_shift, total_allocated = 0;
--	const unsigned window_shift = ilog2(window_size);
--	unsigned entries_shift = window_shift - page_shift;
--	unsigned table_shift = max_t(unsigned, entries_shift + 3, PAGE_SHIFT);
--	const unsigned long tce_table_size = 1UL << table_shift;
--
--	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
--		return -EINVAL;
--
--	if (!is_power_of_2(window_size))
--		return -EINVAL;
--
--	/* Adjust direct table size from window_size and levels */
--	entries_shift = (entries_shift + levels - 1) / levels;
--	level_shift = entries_shift + 3;
--	level_shift = max_t(unsigned, level_shift, PAGE_SHIFT);
--
--	if ((level_shift - 3) * levels + page_shift >= 55)
--		return -EINVAL;
--
--	/* Allocate TCE table */
--	addr = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
--			levels, tce_table_size, &offset, &total_allocated);
--
--	/* addr==NULL means that the first level allocation failed */
--	if (!addr)
--		return -ENOMEM;
--
--	/*
--	 * First level was allocated but some lower level failed as
--	 * we did not allocate as much as we wanted,
--	 * release partially allocated table.
--	 */
++	void *addr, *uas = NULL;
+ 	unsigned long offset = 0, level_shift, total_allocated = 0;
++	unsigned long total_allocated_uas = 0;
+ 	const unsigned int window_shift = ilog2(window_size);
+ 	unsigned int entries_shift = window_shift - page_shift;
+ 	unsigned int table_shift = max_t(unsigned int, entries_shift + 3,
+@@ -228,10 +244,20 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 	 * we did not allocate as much as we wanted,
+ 	 * release partially allocated table.
+ 	 */
 -	if (offset < tce_table_size) {
 -		pnv_pci_ioda2_table_do_free_pages(addr,
 -				1ULL << (level_shift - 3), levels - 1);
 -		return -ENOMEM;
--	}
--
--	/* Setup linux iommu table */
--	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, bus_offset,
--			page_shift);
--	tbl->it_level_size = 1ULL << (level_shift - 3);
--	tbl->it_indirect_levels = levels - 1;
--	tbl->it_allocated_size = total_allocated;
--
++	if (offset < tce_table_size)
++		goto free_tces_exit;
++
++	/* Allocate userspace view of the TCE table */
++	if (alloc_userspace_copy) {
++		offset = 0;
++		uas = pnv_pci_ioda2_table_do_alloc_pages(nid, level_shift,
++				levels, tce_table_size, &offset,
++				&total_allocated_uas);
++		if (!uas)
++			goto free_tces_exit;
++		if (offset < tce_table_size ||
++				total_allocated_uas != total_allocated)
++			goto free_uas_exit;
+ 	}
+ 
+ 	/* Setup linux iommu table */
+@@ -240,11 +266,22 @@ long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
+ 	tbl->it_level_size = 1ULL << (level_shift - 3);
+ 	tbl->it_indirect_levels = levels - 1;
+ 	tbl->it_allocated_size = total_allocated;
++	tbl->it_userspace = uas;
+ 
 -	pr_devel("Created TCE table: ws=%08llx ts=%lx @%08llx\n",
 -			window_size, tce_table_size, bus_offset);
--
--	return 0;
--}
--
--static void pnv_pci_ioda2_table_do_free_pages(__be64 *addr,
--		unsigned long size, unsigned level)
--{
--	const unsigned long addr_ul = (unsigned long) addr &
--			~(TCE_PCI_READ | TCE_PCI_WRITE);
--
--	if (level) {
--		long i;
--		u64 *tmp = (u64 *) addr_ul;
--
--		for (i = 0; i < size; ++i) {
--			unsigned long hpa = be64_to_cpu(tmp[i]);
--
--			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
--				continue;
--
--			pnv_pci_ioda2_table_do_free_pages(__va(hpa), size,
--					level - 1);
--		}
--	}
--
--	free_pages(addr_ul, get_order(size << 3));
--}
--
--static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
--{
--	const unsigned long size = tbl->it_indirect_levels ?
--			tbl->it_level_size : tbl->it_size;
--
--	if (!tbl->it_size)
--		return;
--
--	pnv_pci_ioda2_table_do_free_pages((__be64 *)tbl->it_base, size,
--			tbl->it_indirect_levels);
--}
--
- static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
- {
- 	struct pci_controller *hose = phb->hose;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index b265ecc..13aef23 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -802,85 +802,6 @@ struct pci_ops pnv_pci_ops = {
- 	.write = pnv_pci_write_config,
- };
++	pr_debug("Created TCE table: ws=%08llx ts=%lx @%08llx base=%lx uas=%p levels=%d\n",
++			window_size, tce_table_size, bus_offset, tbl->it_base,
++			tbl->it_userspace, levels);
  
--static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
--{
--	__be64 *tmp = ((__be64 *)tbl->it_base);
--	int  level = tbl->it_indirect_levels;
--	const long shift = ilog2(tbl->it_level_size);
--	unsigned long mask = (tbl->it_level_size - 1) << (level * shift);
--
--	while (level) {
--		int n = (idx & mask) >> (level * shift);
--		unsigned long tce = be64_to_cpu(tmp[n]);
--
--		tmp = __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
--		idx &= ~mask;
--		mask >>= shift;
--		--level;
--	}
--
--	return tmp + idx;
--}
--
--int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
--		unsigned long uaddr, enum dma_data_direction direction,
--		unsigned long attrs)
--{
--	u64 proto_tce = iommu_direction_to_tce_perm(direction);
--	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
--	long i;
--
--	if (proto_tce & TCE_PCI_WRITE)
--		proto_tce |= TCE_PCI_READ;
--
--	for (i = 0; i < npages; i++) {
--		unsigned long newtce = proto_tce |
--			((rpn + i) << tbl->it_page_shift);
--		unsigned long idx = index - tbl->it_offset + i;
--
--		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
--	}
--
--	return 0;
--}
--
--#ifdef CONFIG_IOMMU_API
--int pnv_tce_xchg(struct iommu_table *tbl, long index,
--		unsigned long *hpa, enum dma_data_direction *direction)
--{
--	u64 proto_tce = iommu_direction_to_tce_perm(*direction);
--	unsigned long newtce = *hpa | proto_tce, oldtce;
--	unsigned long idx = index - tbl->it_offset;
--
--	BUG_ON(*hpa & ~IOMMU_PAGE_MASK(tbl));
--
--	if (newtce & TCE_PCI_WRITE)
--		newtce |= TCE_PCI_READ;
--
--	oldtce = be64_to_cpu(xchg(pnv_tce(tbl, idx), cpu_to_be64(newtce)));
--	*hpa = oldtce & ~(TCE_PCI_READ | TCE_PCI_WRITE);
--	*direction = iommu_tce_direction(oldtce);
--
--	return 0;
--}
--#endif
--
--void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
--{
--	long i;
--
--	for (i = 0; i < npages; i++) {
--		unsigned long idx = index - tbl->it_offset + i;
--
--		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
--	}
--}
--
--unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
--{
--	return be64_to_cpu(*(pnv_tce(tbl, index - tbl->it_offset)));
--}
--
- struct iommu_table *pnv_pci_table_alloc(int nid)
- {
- 	struct iommu_table *tbl;
-@@ -895,85 +816,6 @@ struct iommu_table *pnv_pci_table_alloc(int nid)
- 	return tbl;
+ 	return 0;
++
++free_uas_exit:
++	pnv_pci_ioda2_table_do_free_pages(uas,
++			1ULL << (level_shift - 3), levels - 1);
++free_tces_exit:
++	pnv_pci_ioda2_table_do_free_pages(addr,
++			1ULL << (level_shift - 3), levels - 1);
++
++	return -ENOMEM;
  }
  
--long pnv_pci_link_table_and_group(int node, int num,
--		struct iommu_table *tbl,
--		struct iommu_table_group *table_group)
+ static void pnv_iommu_table_group_link_free(struct rcu_head *head)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 9577059..c61c04d 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2043,6 +2043,7 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda1_tce_xchg,
+ 	.exchange_rm = pnv_ioda1_tce_xchg_rm,
++	.useraddrptr = pnv_tce_useraddrptr,
+ #endif
+ 	.clear = pnv_ioda1_tce_free,
+ 	.get = pnv_tce_get,
+@@ -2207,6 +2208,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+ #ifdef CONFIG_IOMMU_API
+ 	.exchange = pnv_ioda2_tce_xchg,
+ 	.exchange_rm = pnv_ioda2_tce_xchg_rm,
++	.useraddrptr = pnv_tce_useraddrptr,
+ #endif
+ 	.clear = pnv_ioda2_tce_free,
+ 	.get = pnv_tce_get,
+@@ -2460,9 +2462,9 @@ void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+ 		pe->tce_bypass_enabled = enable;
+ }
+ 
+-static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
++static long pnv_pci_ioda2_do_create_table(struct iommu_table_group *table_group,
+ 		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+-		struct iommu_table **ptbl)
++		bool alloc_userspace_copy, struct iommu_table **ptbl)
+ {
+ 	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
+ 			table_group);
+@@ -2479,7 +2481,7 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
+ 
+ 	ret = pnv_pci_ioda2_table_alloc_pages(nid,
+ 			bus_offset, page_shift, window_size,
+-			levels, tbl);
++			levels, alloc_userspace_copy, tbl);
+ 	if (ret) {
+ 		iommu_tce_table_put(tbl);
+ 		return ret;
+@@ -2599,7 +2601,24 @@ static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+ 				tce_table_size, direct_table_size);
+ 	}
+ 
+-	return bytes;
++	return bytes + bytes; /* one for HW table, one for userspace copy */
++}
++
++static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
++		int num, __u32 page_shift, __u64 window_size, __u32 levels,
++		struct iommu_table **ptbl)
++{
++	return pnv_pci_ioda2_do_create_table(table_group,
++			num, page_shift, window_size, levels, false, ptbl);
++}
++
++static long pnv_pci_ioda2_create_table_userspace(
++		struct iommu_table_group *table_group,
++		int num, __u32 page_shift, __u64 window_size, __u32 levels,
++		struct iommu_table **ptbl)
++{
++	return pnv_pci_ioda2_do_create_table(table_group,
++			num, page_shift, window_size, levels, true, ptbl);
+ }
+ 
+ static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
+@@ -2628,7 +2647,7 @@ static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
+ 
+ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+ 	.get_table_size = pnv_pci_ioda2_get_table_size,
+-	.create_table = pnv_pci_ioda2_create_table,
++	.create_table = pnv_pci_ioda2_create_table_userspace,
+ 	.set_window = pnv_pci_ioda2_set_window,
+ 	.unset_window = pnv_pci_ioda2_unset_window,
+ 	.take_ownership = pnv_ioda2_take_ownership,
+@@ -2733,7 +2752,7 @@ static void pnv_ioda2_npu_take_ownership(struct iommu_table_group *table_group)
+ 
+ static struct iommu_table_group_ops pnv_pci_ioda2_npu_ops = {
+ 	.get_table_size = pnv_pci_ioda2_get_table_size,
+-	.create_table = pnv_pci_ioda2_create_table,
++	.create_table = pnv_pci_ioda2_create_table_userspace,
+ 	.set_window = pnv_pci_ioda2_npu_set_window,
+ 	.unset_window = pnv_pci_ioda2_npu_unset_window,
+ 	.take_ownership = pnv_ioda2_npu_take_ownership,
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 8283a4a..833f926 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -212,44 +212,6 @@ static long tce_iommu_register_pages(struct tce_container *container,
+ 	return 0;
+ }
+ 
+-static long tce_iommu_userspace_view_alloc(struct iommu_table *tbl,
+-		struct mm_struct *mm)
 -{
--	struct iommu_table_group_link *tgl = NULL;
+-	unsigned long cb = _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
+-			tbl->it_size, PAGE_SIZE);
+-	unsigned long *uas;
+-	long ret;
 -
--	if (WARN_ON(!tbl || !table_group))
--		return -EINVAL;
+-	BUG_ON(tbl->it_userspace);
 -
--	tgl = kzalloc_node(sizeof(struct iommu_table_group_link), GFP_KERNEL,
--			node);
--	if (!tgl)
+-	ret = try_increment_locked_vm(mm, cb >> PAGE_SHIFT);
+-	if (ret)
+-		return ret;
+-
+-	uas = vzalloc(cb);
+-	if (!uas) {
+-		decrement_locked_vm(mm, cb >> PAGE_SHIFT);
 -		return -ENOMEM;
--
--	tgl->table_group = table_group;
--	list_add_rcu(&tgl->next, &tbl->it_group_list);
--
--	table_group->tables[num] = tbl;
+-	}
+-	tbl->it_userspace = (__be64 *) uas;
 -
 -	return 0;
 -}
 -
--static void pnv_iommu_table_group_link_free(struct rcu_head *head)
+-static void tce_iommu_userspace_view_free(struct iommu_table *tbl,
+-		struct mm_struct *mm)
 -{
--	struct iommu_table_group_link *tgl = container_of(head,
--			struct iommu_table_group_link, rcu);
+-	unsigned long cb = _ALIGN_UP(sizeof(tbl->it_userspace[0]) *
+-			tbl->it_size, PAGE_SIZE);
 -
--	kfree(tgl);
--}
--
--void pnv_pci_unlink_table_and_group(struct iommu_table *tbl,
--		struct iommu_table_group *table_group)
--{
--	long i;
--	bool found;
--	struct iommu_table_group_link *tgl;
--
--	if (!tbl || !table_group)
+-	if (!tbl->it_userspace)
 -		return;
 -
--	/* Remove link to a group from table's list of attached groups */
--	found = false;
--	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
--		if (tgl->table_group == table_group) {
--			list_del_rcu(&tgl->next);
--			call_rcu(&tgl->rcu, pnv_iommu_table_group_link_free);
--			found = true;
--			break;
--		}
--	}
--	if (WARN_ON(!found))
--		return;
--
--	/* Clean a pointer to iommu_table in iommu_table_group::tables[] */
--	found = false;
--	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
--		if (table_group->tables[i] == tbl) {
--			table_group->tables[i] = NULL;
--			found = true;
--			break;
--		}
--	}
--	WARN_ON(!found);
+-	vfree(tbl->it_userspace);
+-	tbl->it_userspace = NULL;
+-	decrement_locked_vm(mm, cb >> PAGE_SHIFT);
 -}
 -
--void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
--			       void *tce_mem, u64 tce_size,
--			       u64 dma_offset, unsigned page_shift)
--{
--	tbl->it_blocksize = 16;
--	tbl->it_base = (unsigned long)tce_mem;
--	tbl->it_page_shift = page_shift;
--	tbl->it_offset = dma_offset >> tbl->it_page_shift;
--	tbl->it_index = 0;
--	tbl->it_size = tce_size >> 3;
--	tbl->it_busno = 0;
--	tbl->it_type = TCE_PCI;
--}
--
- void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
+ static bool tce_page_is_contained(unsigned long hpa, unsigned page_shift)
  {
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+ 	struct page *page = __va(realmode_pfn_to_page(hpa >> PAGE_SHIFT));
+@@ -604,12 +566,6 @@ static long tce_iommu_build_v2(struct tce_container *container,
+ 	unsigned long hpa;
+ 	enum dma_data_direction dirtmp;
+ 
+-	if (!tbl->it_userspace) {
+-		ret = tce_iommu_userspace_view_alloc(tbl, container->mm);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	for (i = 0; i < pages; ++i) {
+ 		struct mm_iommu_table_group_mem_t *mem = NULL;
+ 		__be64 *pua = IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry + i);
+@@ -689,7 +645,6 @@ static void tce_iommu_free_table(struct tce_container *container,
+ {
+ 	unsigned long pages = tbl->it_allocated_size >> PAGE_SHIFT;
+ 
+-	tce_iommu_userspace_view_free(tbl, container->mm);
+ 	iommu_tce_table_put(tbl);
+ 	decrement_locked_vm(container->mm, pages);
+ }
+@@ -1204,7 +1159,6 @@ static void tce_iommu_release_ownership(struct tce_container *container,
+ 			continue;
+ 
+ 		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
+-		tce_iommu_userspace_view_free(tbl, container->mm);
+ 		if (tbl->it_map)
+ 			iommu_release_ownership(tbl);
+ 
 -- 
 2.11.0
