@@ -1,30 +1,17 @@
-Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <diana.craciun@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418VQZ2fsbzF0tP
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 22:14:46 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5ICEKme122881
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 08:14:44 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jpacw5gef-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 08:14:42 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 18 Jun 2018 13:14:40 +0100
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-To: andrew.donnellan@au1.ibm.com, alastair@d-silva.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.ibm.com, vaibhav@linux.ibm.com
-Subject: [PATCH] ocxl: Fix page fault handler in case of fault on dying process
-Date: Mon, 18 Jun 2018 14:14:36 +0200
-Message-Id: <20180618121436.20479-1-fbarrat@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418VV52VVNzF0gL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 22:17:48 +1000 (AEST)
+From: Diana Craciun <diana.craciun@nxp.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, oss@buserror.net, leoyang.li@nxp.com,
+ bharat.bhushan@nxp.com, Diana Craciun <diana.craciun@nxp.com>
+Subject: [PATCH] powerpc/fsl: Sanitize the syscall table for NXP PowerPC 32
+ bit platforms
+Date: Mon, 18 Jun 2018 15:17:41 +0300
+Message-Id: <1529324261-19633-1-git-send-email-diana.craciun@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,86 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a process exits without doing proper cleanup, there's a window
-where an opencapi device can try to access the memory of the dying
-process and may trigger a page fault. That's an expected scenario and
-the ocxl driver holds a reference on the mm_struct of the process
-until the opencapi device is notified of the process exiting.
-However, if mm_users is already at 0, i.e. the address space of the
-process has already been destroyed, the driver shouldn't try resolving
-the page fault, as it will fail, but it can also try accessing already
-freed data.
+Used barrier_nospec to sanitize the syscall table.
 
-It is fixed by only calling the bottom half of the page fault handler
-if mm_users is greater than 0 and get a reference on mm_users instead
-of mm_count. Otherwise, we can safely return a translation fault to
-the device, as its associated memory context is being removed. The
-opencapi device will be properly cleaned up shortly after when closing
-the file descriptors.
-
-Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-Cc: stable@vger.kernel.org # v4.16+
-Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- drivers/misc/ocxl/link.c | 24 +++++++++++++++---------
- 1 file changed, 15 insertions(+), 9 deletions(-)
+ arch/powerpc/kernel/entry_32.S | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
-index f30790582dc0..2aeaf34e7eda 100644
---- a/drivers/misc/ocxl/link.c
-+++ b/drivers/misc/ocxl/link.c
-@@ -136,7 +136,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
- 	int rc;
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index eb8d01b..e3ff9ace 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -33,6 +33,7 @@
+ #include <asm/unistd.h>
+ #include <asm/ptrace.h>
+ #include <asm/export.h>
++#include <asm/barrier.h>
  
- 	/*
--	 * We need to release a reference on the mm whenever exiting this
-+	 * We must release a reference on mm_users whenever exiting this
- 	 * function (taken in the memory fault interrupt handler)
- 	 */
- 	rc = copro_handle_mm_fault(fault->pe_data.mm, fault->dar, fault->dsisr,
-@@ -172,7 +172,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
- 	}
- 	r = RESTART;
- ack:
--	mmdrop(fault->pe_data.mm);
-+	mmput(fault->pe_data.mm);
- 	ack_irq(spa, r);
- }
- 
-@@ -184,6 +184,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
- 	struct pe_data *pe_data;
- 	struct ocxl_process_element *pe;
- 	int lpid, pid, tid;
-+	bool schedule = false;
- 
- 	read_irq(spa, &dsisr, &dar, &pe_handle);
- 	trace_ocxl_fault(spa->spa_mem, pe_handle, dsisr, dar, -1);
-@@ -226,14 +227,19 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
- 	}
- 	WARN_ON(pe_data->mm->context.id != pid);
- 
--	spa->xsl_fault.pe = pe_handle;
--	spa->xsl_fault.dar = dar;
--	spa->xsl_fault.dsisr = dsisr;
--	spa->xsl_fault.pe_data = *pe_data;
--	mmgrab(pe_data->mm); /* mm count is released by bottom half */
--
-+	if (mmget_not_zero(pe_data->mm)) {
-+			spa->xsl_fault.pe = pe_handle;
-+			spa->xsl_fault.dar = dar;
-+			spa->xsl_fault.dsisr = dsisr;
-+			spa->xsl_fault.pe_data = *pe_data;
-+			schedule = true;
-+			/* mm_users count released by bottom half */
-+	}
- 	rcu_read_unlock();
--	schedule_work(&spa->xsl_fault.fault_work);
-+	if (schedule)
-+		schedule_work(&spa->xsl_fault.fault_work);
-+	else
-+		ack_irq(spa, ADDRESS_ERROR);
- 	return IRQ_HANDLED;
- }
- 
+ /*
+  * MSR_KERNEL is > 0x10000 on 4xx/Book-E since it include MSR_CE.
+@@ -358,6 +359,15 @@ syscall_dotrace_cont:
+ 	ori	r10,r10,sys_call_table@l
+ 	slwi	r0,r0,2
+ 	bge-	66f
++
++	barrier_nospec_asm
++	/*
++	 * Prevent the load of the handler below (based on the user-passed
++	 * system call number) being speculatively executed until the test
++	 * against NR_syscalls and branch to .66f above has
++	 * committed.
++	 */
++
+ 	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
+ 	mtlr	r10
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
 -- 
-2.17.1
+2.5.5
