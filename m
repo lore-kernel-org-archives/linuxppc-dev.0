@@ -1,38 +1,24 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418GT130wJzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 13:16:05 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5I3EU1j048006
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 23:16:02 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jp47n0qp9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 23:16:02 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Sun, 17 Jun 2018 21:16:01 -0600
-Subject: Re: [powerpc/powervmc]kernel BUG at
- arch/powerpc/mm/pgtable-book3s64.c:414!
-To: Venkat Rao B <vrbagal1@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-References: <4ca83e8bdd7d9f573a51837fc66a2c45@linux.vnet.ibm.com>
- <87h8m49nb7.fsf@concordia.ellerman.id.au>
- <4d3ad051-2423-3570-7ef6-90f47a83f157@linux.vnet.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Mon, 18 Jun 2018 08:45:55 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418HF12ptxzDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 13:50:45 +1000 (AEST)
+Date: Mon, 18 Jun 2018 13:50:41 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, David Miller
+ <davem@davemloft.net>, Networking <netdev@vger.kernel.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: build failure in Linus' tree
+Message-ID: <20180618135041.5b661a2c@canb.auug.org.au>
+In-Reply-To: <20180612122640.534118ed@canb.auug.org.au>
+References: <20180612122640.534118ed@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <4d3ad051-2423-3570-7ef6-90f47a83f157@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <384d55cf-f2e0-f1be-fb17-587d2f189da7@linux.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/lwvCwP46zO1EbN+lvHavvXu"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,37 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2018 01:22 PM, Venkat Rao B wrote:
-> 
-> 
-> On Friday 15 June 2018 07:14 PM, Michael Ellerman wrote:
->> vrbagal1 <vrbagal1@linux.vnet.ibm.com> writes:
->>
->>> Hi,
->>>
->>> Observing kernel bug followed by kernel oops and system reboots, while
->>> running kselftest on Power8 LPAR.
->>>
->>> Machine Details: Power8 LPAR
->>> Git Tree:
->>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
->>> Commit ID: f5b7769eb0400ec5217a47e41148a9f816ca1f9f
->>> Kernel version: 4.17.0-autotest
->>> GCC version: (gcc version 6.3.1 20161221 (Red Hat 6.3.1-1) (GCC))
->>>
->>
->> This is fixed by your patch Aneesh?
->>
->> http://patchwork.ozlabs.org/patch/929325/
-> 
-> Yes, this patch fixes the issue.
-> 
+--Sig_/lwvCwP46zO1EbN+lvHavvXu
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I missed adding Reported-by:Venkat Rao B <vrbagal1@linux.vnet.ibm.com> 
-and Tested-by:Venkat Rao B <vrbagal1@linux.vnet.ibm.com>
+Hi all,
 
-Michael,
+On Tue, 12 Jun 2018 12:26:40 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> Building Linus' tree, today's linux-next build (powerpc allyesconfig)
+> failed like this:
+>=20
+> ld: net/bpfilter/bpfilter_umh.o: compiled for a little endian system and =
+target is big endian
+> ld: failed to merge target specific data of file net/bpfilter/bpfilter_um=
+h.o
+>=20
+> This has come to light since I started using a native compiler (i.e. one
+> that can build executables, not just the kernel) for my PowerPC builds
+> on a powerpcle host.
+>=20
+> I have switched back to my limited compiler.
 
-Can you add that when applying the patch?
+Any progress on this?
+--=20
+Cheers,
+Stephen Rothwell
 
--aneesh
+--Sig_/lwvCwP46zO1EbN+lvHavvXu
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlsnLBEACgkQAVBC80lX
+0Gxiigf/TavmN8fnRIYbvk8WFY9glYBpJkMjz/X3ZUJBrKAW7V46laetFyUZtkib
+7W3oVrAWPwg0SUXY/q7kPhp/D3wXu2RVUlJh9LIsHBaf5kpNqlSb2rreDqIwoOWB
+qn4lJkhE10AfmbBxbppaNOyNIwpbzWW9gZIxAGUe0pYZqtUBZnAIF5QSFNET6sml
+fLdgNk/dXDCxuEUjdrnQxhoti0NTKuerjnfjRg//TdSHriRLmKHJBK9MezdnNuth
+7qpT/IoTv/JD/EtYFYH8VZ1uxaYHRxAzCHGkKkOMhe18j2E+/u9XeNA09u0iRNfw
+EuNiDaipfXBk+zKeDbiFZBPYf4lcVw==
+=dP4B
+-----END PGP SIGNATURE-----
+
+--Sig_/lwvCwP46zO1EbN+lvHavvXu--
