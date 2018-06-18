@@ -1,23 +1,24 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418MvS0492zF0f7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:20:51 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/cell: fix build failure by disabling
- attribute-alias warning
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- arnd@arndb.de
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Burton <paul.burton@mips.com>
-References: <dec3cf2521a8e5dfc78953363b1f55aaa261a052.1527609833.git.christophe.leroy@c-s.fr>
-Message-ID: <87114f89-0f42-8aa4-f780-dd5832994065@c-s.fr>
-Date: Mon, 18 Jun 2018 09:20:47 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418NBg3NChzF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:34:03 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Constant ata messages on console with commit 28361c403683 ("libata:
+ add extra internal command") (was Re: [GIT PULL 2/2] libata changes for
+ v4.18-rc1)
+In-Reply-To: <20180605191525.GF1351649@devbig577.frc2.facebook.com>
+References: <20180605190807.GE1351649@devbig577.frc2.facebook.com>
+ <20180605191525.GF1351649@devbig577.frc2.facebook.com>
+Date: Mon, 18 Jun 2018 17:33:57 +1000
+Message-ID: <87bmc8a6qi.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <dec3cf2521a8e5dfc78953363b1f55aaa261a052.1527609833.git.christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,101 +28,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Tejun Heo <tj@kernel.org> writes:
+...
+> Jens Axboe (10):
+>       libata: introduce notion of separate hardware tags
+>       libata: convert core and drivers to ->hw_tag usage
+>       libata: bump ->qc_active to a 64-bit type
+>       libata: use ata_tag_internal() consistently
+>       libata: remove assumption that ATA_MAX_QUEUE - 1 is the max
+>       sata_nv: set host can_queue count appropriately
+>       libata: add extra internal command
+
+Replying here because I can't find the original mail.
+
+The above commit is causing one of my machines to constantly spew ata
+messages on the console, according to bisect:
+
+# first bad commit: [28361c403683c2b00d4f5e76045f3ccd299bf99d] libata: add extra internal command
+
+To get it to boot I have to also apply:
+
+  88e10092f6a6 ("sata_fsl: use the right type for tag bitshift")
 
 
-Le 29/05/2018 à 18:06, Christophe Leroy a écrit :
-> Latest GCC version emit the following warnings
-> 
-> As arch/powerpc code is built with -Werror, this breaks build with
-> GCC 8.1
-> 
-> This patch inhibits those warnings
-> 
->    CC      arch/powerpc/platforms/cell/spu_syscalls.o
-> In file included from arch/powerpc/platforms/cell/spu_syscalls.c:26:
-> ./include/linux/syscalls.h:233:18: error: 'sys_spu_create' alias between functions of incompatible types 'long int(const char *, unsigned int,  umode_t,  int)' {aka 'long int(const char *, unsigned int,  short unsigned int,  int)'} and 'long int(long int,  long int,  long int,  long int)' [-Werror=attribute-alias]
->    asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
->                    ^~~
-> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
->    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
->    ^~~~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:214:36: note: in expansion of macro 'SYSCALL_DEFINEx'
->   #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
->                                      ^~~~~~~~~~~~~~~
-> arch/powerpc/platforms/cell/spu_syscalls.c:70:1: note: in expansion of macro 'SYSCALL_DEFINE4'
->   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
->   ^~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:238:18: note: aliased declaration here
->    asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
->                    ^~~~~~~~
-> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
->    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
->    ^~~~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:214:36: note: in expansion of macro 'SYSCALL_DEFINEx'
->   #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
->                                      ^~~~~~~~~~~~~~~
-> arch/powerpc/platforms/cell/spu_syscalls.c:70:1: note: in expansion of macro 'SYSCALL_DEFINE4'
->   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
->   ^~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:233:18: error: 'sys_spu_run' alias between functions of incompatible types 'long int(int,  __u32 *, __u32 *)' {aka 'long int(int,  unsigned int *, unsigned int *)'} and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
->    asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
->                    ^~~
-> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
->    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
->    ^~~~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
->   #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
->                                      ^~~~~~~~~~~~~~~
-> arch/powerpc/platforms/cell/spu_syscalls.c:94:1: note: in expansion of macro 'SYSCALL_DEFINE3'
->   SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
->   ^~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:238:18: note: aliased declaration here
->    asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
->                    ^~~~~~~~
-> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
->    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
->    ^~~~~~~~~~~~~~~~~
-> ./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
->   #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
->                                      ^~~~~~~~~~~~~~~
-> arch/powerpc/platforms/cell/spu_syscalls.c:94:1: note: in expansion of macro 'SYSCALL_DEFINE3'
->   SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
->   ^~~~~~~~~~~~~~~
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+The system boots OK and seems fine, except that it's just printing
+multiple of these per second:
 
-If the serie from Paul Burton 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=50442 
-goes in, this patch won't be necessary.
+  ata2: Signature Update detected @ 0 msecs
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata2.00: configured for UDMA/100
+  ata2: Signature Update detected @ 0 msecs
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata2.00: configured for UDMA/100
+  ata2: Signature Update detected @ 0 msecs
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata2.00: configured for UDMA/100
+  ata2: Signature Update detected @ 0 msecs
+  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+  ata2.00: configured for UDMA/100
+  ata2: Signature Update detected @ 0 msecs
 
-Christophe
+And it never seems to stop.
 
-> ---
-> v2: added '#pragma GCC diagnostic ignored "-Wpragmas"' to avoid build failure on old GCC
-> 
->   arch/powerpc/platforms/cell/spu_syscalls.c | 4 ++++
->   1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
-> index 263413a34823..7862279a82e4 100644
-> --- a/arch/powerpc/platforms/cell/spu_syscalls.c
-> +++ b/arch/powerpc/platforms/cell/spu_syscalls.c
-> @@ -67,6 +67,9 @@ static inline void spufs_calls_put(struct spufs_calls *calls) { }
->   
->   #endif /* CONFIG_SPU_FS_MODULE */
->   
-> +#pragma GCC diagnostic push
-> +#pragma GCC diagnostic ignored "-Wpragmas"
-> +#pragma GCC diagnostic ignored "-Wattribute-alias"
->   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
->   	umode_t, mode, int, neighbor_fd)
->   {
-> @@ -111,6 +114,7 @@ SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
->   	spufs_calls_put(calls);
->   	return ret;
->   }
-> +#pragma GCC diagnostic pop
->   
->   #ifdef CONFIG_COREDUMP
->   int elf_coredump_extra_notes_size(void)
-> 
+The machine is a Freescale/NXP P5020ds, using the sata_fsl driver
+presumably. Any ideas?
+
+cheers
