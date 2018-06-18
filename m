@@ -1,35 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vrbagal1@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418MTb0wqQzF0n5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:01:55 +1000 (AEST)
-Subject: Re: [PATCH 3/3] Revert "powerpc: fix build failure by disabling
- attribute-alias warning in pci_32"
-To: Paul Burton <paul.burton@mips.com>, linux-kbuild@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, linux-mips@linux-mips.org,
- Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@kernel.org>,
- Matthew Wilcox <matthew@wil.cx>, Thomas Gleixner <tglx@linutronix.de>,
- Douglas Anderson <dianders@chromium.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Matthias Kaehlcke <mka@chromium.org>, He Zhe <zhe.he@windriver.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michal Marek <michal.lkml@markovi.net>, Khem Raj <raj.khem@gmail.com>,
- Al Viro <viro@zeniv.linux.org.uk>, Stafford Horne <shorne@gmail.com>,
- Gideon Israel Dsouza <gidisrael@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-References: <20180616005323.7938-1-paul.burton@mips.com>
- <20180616005323.7938-4-paul.burton@mips.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <14ef00cd-088c-d165-f4b2-b63eb2f3866b@c-s.fr>
-Date: Mon, 18 Jun 2018 09:01:50 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418Mqd3Tr9zF09q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:17:33 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5I7DxWV146006
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 03:17:31 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jp6c0uk2q-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 03:17:30 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vrbagal1@linux.vnet.ibm.com>;
+ Mon, 18 Jun 2018 03:17:29 -0400
+Subject: Re: [PATCH] powerpc/eeh: Avoid misleading message "EEH: no capable
+ adapters found"
+To: Russell Currey <ruscur@russell.cc>,
+ "Mauro S. M. Rodrigues" <maurosr@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ paulus@samba.org, mpe@ellerman.id.au
+Cc: kernel@gpiccoli.net
+References: <1521771052-5973-1-git-send-email-maurosr@linux.vnet.ibm.com>
+ <1524789288.2096.0.camel@russell.cc>
+From: Venkat Rao B <vrbagal1@linux.vnet.ibm.com>
+Date: Mon, 18 Jun 2018 12:47:23 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180616005323.7938-4-paul.burton@mips.com>
+In-Reply-To: <1524789288.2096.0.camel@russell.cc>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <353bdc35-1573-7608-82a3-4463368fbd0c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,66 +44,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 16/06/2018 à 02:53, Paul Burton a écrit :
-> With SYSCALL_DEFINEx() disabling -Wattribute-alias generically, there's
-> no need to duplicate that for PowerPC's pciconfig_iobase syscall.
+On Friday 27 April 2018 06:04 AM, Russell Currey wrote:
+> On Thu, 2018-03-22 at 23:10 -0300, Mauro S. M. Rodrigues wrote:
+>> Due to recent refactoring in EEH in:
+>> commit b9fde58db7e5 ("powerpc/powernv: Rework EEH initialization on
+>> powernv")
+>> a misleading message was seen in the kernel message buffer:
+>>
+>> [    0.108431] EEH: PowerNV platform initialized
+>> [    0.589979] EEH: No capable adapters found
+>>
+>> This happened due to the removal of the initialization delay for
+>> powernv
+>> platform.
+>>
+>> Even though the EEH infrastructure for the devices is eventually
+>> initialized and still works just fine the eeh device probe step is
+>> postponed in order to assure the PEs are created. Later
+>> pnv_eeh_post_init does the probe devices job but at that point the
+>> message was already shown right after eeh_init flow.
+>>
+>> This patch introduces a new flag EEH_POSTPONED_PROBE to represent
+>> that
+>> temporary state and avoid the message mentioned above and showing the
+>> follow one instead:
+>>
+>> [    0.107724] EEH: PowerNV platform initialized
+>> [    4.844825] EEH: PCI Enhanced I/O Error Handling Enabled
+>>
+>> Signed-off-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
 > 
-> This reverts commit 415520373975 ("powerpc: fix build failure by
-> disabling attribute-alias warning in pci_32").
+> Good idea, thanks for the patch.
 > 
-> Signed-off-by: Paul Burton <paul.burton@mips.com>
-> Cc: Michal Marek <michal.lkml@markovi.net>
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Douglas Anderson <dianders@chromium.org>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> Cc: Matthew Wilcox <matthew@wil.cx>
-> Cc: Matthias Kaehlcke <mka@chromium.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Josh Poimboeuf <jpoimboe@redhat.com>
-> Cc: Kees Cook <keescook@chromium.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Gideon Israel Dsouza <gidisrael@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@c-s.fr>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Stafford Horne <shorne@gmail.com>
-> Cc: Khem Raj <raj.khem@gmail.com>
-> Cc: He Zhe <zhe.he@windriver.com>
-> Cc: linux-kbuild@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-mips@linux-mips.org
-> Cc: linuxppc-dev@lists.ozlabs.org
+> Acked-by: Russell Currey <ruscur@russell.cc>
+>
 
-Acked-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-> 
-> ---
-> 
->   arch/powerpc/kernel/pci_32.c | 4 ----
->   1 file changed, 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
-> index 4f861055a852..d63b488d34d7 100644
-> --- a/arch/powerpc/kernel/pci_32.c
-> +++ b/arch/powerpc/kernel/pci_32.c
-> @@ -285,9 +285,6 @@ pci_bus_to_hose(int bus)
->    * Note that the returned IO or memory base is a physical address
->    */
->   
-> -#pragma GCC diagnostic push
-> -#pragma GCC diagnostic ignored "-Wpragmas"
-> -#pragma GCC diagnostic ignored "-Wattribute-alias"
->   SYSCALL_DEFINE3(pciconfig_iobase, long, which,
->   		unsigned long, bus, unsigned long, devfn)
->   {
-> @@ -313,4 +310,3 @@ SYSCALL_DEFINE3(pciconfig_iobase, long, which,
->   
->   	return result;
->   }
-> -#pragma GCC diagnostic pop
-> 
+Hi Mauro,
+
+I got a chance to test your patch, I applied your patch on top of 
+mainline kernel commit:8efcf34a263965e471e3999904f94d1f6799d42a and 
+booted and I don't see the message "No capable adapters found" instead I 
+see "EEH: PCI Enhanced I/O Error Handling Enabled" as desired. But I 
+have not injected any EEH.Hope this should qualify your patch.
+
+Tested-by:Venkat Rao B <vrbagal1@linux.vnet.ibm.com>
+
+Regards,
+Venkat.
