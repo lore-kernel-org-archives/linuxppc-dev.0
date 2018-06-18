@@ -1,28 +1,23 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pg0-x244.google.com (mail-pg0-x244.google.com
- [IPv6:2607:f8b0:400e:c05::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418Mty3XD6zF09q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:20:24 +1000 (AEST)
-Received: by mail-pg0-x244.google.com with SMTP id d2-v6so7095076pga.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 00:20:24 -0700 (PDT)
-Date: Mon, 18 Jun 2018 17:20:14 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Russell Currey <ruscur@russell.cc>
-Subject: Re: [PATCH kernel 2/2] powerpc/powernv: Define PHB4 type and enable
- sketchy bypass on POWER9
-Message-ID: <20180618172014.2bba467d@aik.ozlabs.ibm.com>
-In-Reply-To: <82ebaedf4279dce05a7cd6bdb0d9b84bdf232a02.camel@kernel.crashing.org>
-References: <20180601081028.29401-1-aik@ozlabs.ru>
- <20180601081028.29401-3-aik@ozlabs.ru>
- <fa34ce6fa30554e7cede85a5d71fa822dcdfeb01.camel@kernel.crashing.org>
- <20180618121307.199cd998@aik.ozlabs.ibm.com>
- <82ebaedf4279dce05a7cd6bdb0d9b84bdf232a02.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418MvS0492zF0f7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:20:51 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/cell: fix build failure by disabling
+ attribute-alias warning
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ arnd@arndb.de
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Burton <paul.burton@mips.com>
+References: <dec3cf2521a8e5dfc78953363b1f55aaa261a052.1527609833.git.christophe.leroy@c-s.fr>
+Message-ID: <87114f89-0f42-8aa4-f780-dd5832994065@c-s.fr>
+Date: Mon, 18 Jun 2018 09:20:47 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <dec3cf2521a8e5dfc78953363b1f55aaa261a052.1527609833.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,96 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 18 Jun 2018 14:44:56 +1000
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> On Mon, 2018-06-18 at 12:13 +1000, Alexey Kardashevskiy wrote:
-> > On Sat, 16 Jun 2018 11:05:19 +1000
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >   
-> > > On Fri, 2018-06-01 at 18:10 +1000, Alexey Kardashevskiy wrote:  
-> > > > These are found in POWER9 chips. Right now these PHBs have unknown type
-> > > > so changing it to PHB4 won't make much of a difference except enabling
-> > > > sketchy bypass for POWER9 as this does below.    
-> > > 
-> > > And that will break on multi-chip systems since P9 doesn't have the
-> > > memory contiguous (it has the chip ID in the top bits).  
-> > 
-> > 
-> > This did not break mine and it is hard to see why it would break at all
-> > if we use 1G pages and the maximum we need to cover is 48 bits (this
-> > is what we are trying to support here - all these gpus, right?), or is
-> > it more now? If so, I have posted v2 of tce multilevel dynamic
-> > allocation which helps with enormous tce tables.  
+
+Le 29/05/2018 à 18:06, Christophe Leroy a écrit :
+> Latest GCC version emit the following warnings
 > 
-> The whole point of sketchy bypass is to deal with devices with small
-> amount of DMA bits... most Radeon's have 40 for example. So that won't
-> work terribly well.
-
-
-40 with 1GB pages needs 40-30=10 bits i.e. (1<<10)*8 = 8KB for the
-entire TCE table. I am definitely missing something here, what is it?
-
-
-
+> As arch/powerpc code is built with -Werror, this breaks build with
+> GCC 8.1
 > 
-> Cheers,
-> Ben.
+> This patch inhibits those warnings
 > 
-> > 
-> >   
-> > > 
-> > > Russell is working on a different implementation that should be much
-> > > more imune to the system physical memory layout.
-> > >   
-> > > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > > > ---
-> > > >  arch/powerpc/platforms/powernv/pci.h      | 1 +
-> > > >  arch/powerpc/platforms/powernv/pci-ioda.c | 5 ++++-
-> > > >  2 files changed, 5 insertions(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> > > > index eada4b6..1408247 100644
-> > > > --- a/arch/powerpc/platforms/powernv/pci.h
-> > > > +++ b/arch/powerpc/platforms/powernv/pci.h
-> > > > @@ -23,6 +23,7 @@ enum pnv_phb_model {
-> > > >  	PNV_PHB_MODEL_UNKNOWN,
-> > > >  	PNV_PHB_MODEL_P7IOC,
-> > > >  	PNV_PHB_MODEL_PHB3,
-> > > > +	PNV_PHB_MODEL_PHB4,
-> > > >  	PNV_PHB_MODEL_NPU,
-> > > >  	PNV_PHB_MODEL_NPU2,
-> > > >  };
-> > > > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > > index 9239142..66c2804 100644
-> > > > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > > @@ -1882,7 +1882,8 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
-> > > >  		if (dma_mask >> 32 &&
-> > > >  		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
-> > > >  		    pnv_pci_ioda_pe_single_vendor(pe) &&
-> > > > -		    phb->model == PNV_PHB_MODEL_PHB3) {
-> > > > +		    (phb->model == PNV_PHB_MODEL_PHB3 ||
-> > > > +		     phb->model == PNV_PHB_MODEL_PHB4)) {
-> > > >  			/* Configure the bypass mode */
-> > > >  			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
-> > > >  			if (rc)
-> > > > @@ -3930,6 +3931,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
-> > > >  		phb->model = PNV_PHB_MODEL_P7IOC;
-> > > >  	else if (of_device_is_compatible(np, "ibm,power8-pciex"))
-> > > >  		phb->model = PNV_PHB_MODEL_PHB3;
-> > > > +	else if (of_device_is_compatible(np, "ibm,power9-pciex"))
-> > > > +		phb->model = PNV_PHB_MODEL_PHB4;
-> > > >  	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
-> > > >  		phb->model = PNV_PHB_MODEL_NPU;
-> > > >  	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))    
-> > 
-> > 
-> > 
-> > --
-> > Alexey  
+>    CC      arch/powerpc/platforms/cell/spu_syscalls.o
+> In file included from arch/powerpc/platforms/cell/spu_syscalls.c:26:
+> ./include/linux/syscalls.h:233:18: error: 'sys_spu_create' alias between functions of incompatible types 'long int(const char *, unsigned int,  umode_t,  int)' {aka 'long int(const char *, unsigned int,  short unsigned int,  int)'} and 'long int(long int,  long int,  long int,  long int)' [-Werror=attribute-alias]
+>    asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
+>                    ^~~
+> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
+>    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+>    ^~~~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:214:36: note: in expansion of macro 'SYSCALL_DEFINEx'
+>   #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+>                                      ^~~~~~~~~~~~~~~
+> arch/powerpc/platforms/cell/spu_syscalls.c:70:1: note: in expansion of macro 'SYSCALL_DEFINE4'
+>   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
+>   ^~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:238:18: note: aliased declaration here
+>    asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
+>                    ^~~~~~~~
+> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
+>    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+>    ^~~~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:214:36: note: in expansion of macro 'SYSCALL_DEFINEx'
+>   #define SYSCALL_DEFINE4(name, ...) SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+>                                      ^~~~~~~~~~~~~~~
+> arch/powerpc/platforms/cell/spu_syscalls.c:70:1: note: in expansion of macro 'SYSCALL_DEFINE4'
+>   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
+>   ^~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:233:18: error: 'sys_spu_run' alias between functions of incompatible types 'long int(int,  __u32 *, __u32 *)' {aka 'long int(int,  unsigned int *, unsigned int *)'} and 'long int(long int,  long int,  long int)' [-Werror=attribute-alias]
+>    asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__)) \
+>                    ^~~
+> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
+>    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+>    ^~~~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
+>   #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
+>                                      ^~~~~~~~~~~~~~~
+> arch/powerpc/platforms/cell/spu_syscalls.c:94:1: note: in expansion of macro 'SYSCALL_DEFINE3'
+>   SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
+>   ^~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:238:18: note: aliased declaration here
+>    asmlinkage long __se_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__)) \
+>                    ^~~~~~~~
+> ./include/linux/syscalls.h:222:2: note: in expansion of macro '__SYSCALL_DEFINEx'
+>    __SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
+>    ^~~~~~~~~~~~~~~~~
+> ./include/linux/syscalls.h:213:36: note: in expansion of macro 'SYSCALL_DEFINEx'
+>   #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
+>                                      ^~~~~~~~~~~~~~~
+> arch/powerpc/platforms/cell/spu_syscalls.c:94:1: note: in expansion of macro 'SYSCALL_DEFINE3'
+>   SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
+>   ^~~~~~~~~~~~~~~
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
+If the serie from Paul Burton 
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=50442 
+goes in, this patch won't be necessary.
 
+Christophe
 
---
-Alexey
+> ---
+> v2: added '#pragma GCC diagnostic ignored "-Wpragmas"' to avoid build failure on old GCC
+> 
+>   arch/powerpc/platforms/cell/spu_syscalls.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
+> index 263413a34823..7862279a82e4 100644
+> --- a/arch/powerpc/platforms/cell/spu_syscalls.c
+> +++ b/arch/powerpc/platforms/cell/spu_syscalls.c
+> @@ -67,6 +67,9 @@ static inline void spufs_calls_put(struct spufs_calls *calls) { }
+>   
+>   #endif /* CONFIG_SPU_FS_MODULE */
+>   
+> +#pragma GCC diagnostic push
+> +#pragma GCC diagnostic ignored "-Wpragmas"
+> +#pragma GCC diagnostic ignored "-Wattribute-alias"
+>   SYSCALL_DEFINE4(spu_create, const char __user *, name, unsigned int, flags,
+>   	umode_t, mode, int, neighbor_fd)
+>   {
+> @@ -111,6 +114,7 @@ SYSCALL_DEFINE3(spu_run,int, fd, __u32 __user *, unpc, __u32 __user *, ustatus)
+>   	spufs_calls_put(calls);
+>   	return ret;
+>   }
+> +#pragma GCC diagnostic pop
+>   
+>   #ifdef CONFIG_COREDUMP
+>   int elf_coredump_extra_notes_size(void)
+> 
