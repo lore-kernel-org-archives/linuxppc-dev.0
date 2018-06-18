@@ -1,24 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-f195.google.com (mail-ua0-f195.google.com
+ [209.85.217.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418NBg3NChzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:34:03 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
- Linus Torvalds <torvalds@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Constant ata messages on console with commit 28361c403683 ("libata:
- add extra internal command") (was Re: [GIT PULL 2/2] libata changes for
- v4.18-rc1)
-In-Reply-To: <20180605191525.GF1351649@devbig577.frc2.facebook.com>
-References: <20180605190807.GE1351649@devbig577.frc2.facebook.com>
- <20180605191525.GF1351649@devbig577.frc2.facebook.com>
-Date: Mon, 18 Jun 2018 17:33:57 +1000
-Message-ID: <87bmc8a6qi.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418Ql304ZgzF0XQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 19:28:46 +1000 (AEST)
+Received: by mail-ua0-f195.google.com with SMTP id s13-v6so10243688uad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 02:28:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <20180618091729.11091-1-geert@linux-m68k.org>
+In-Reply-To: <20180618091729.11091-1-geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 18 Jun 2018 11:28:32 +0200
+Message-ID: <CAMuHMdULmiArTvYsEqnyg5SB6PqjZnNANLAyYcqqYeYmHKJ5Dw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.18-rc1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ sparclinux <sparclinux@vger.kernel.org>, linux-ia64@vger.kernel.org,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tejun Heo <tj@kernel.org> writes:
-...
-> Jens Axboe (10):
->       libata: introduce notion of separate hardware tags
->       libata: convert core and drivers to ->hw_tag usage
->       libata: bump ->qc_active to a 64-bit type
->       libata: use ata_tag_internal() consistently
->       libata: remove assumption that ATA_MAX_QUEUE - 1 is the max
->       sata_nv: set host can_queue count appropriately
->       libata: add extra internal command
+On Mon, Jun 18, 2018 at 11:18 AM Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v4.18-rc1[1] compared to v4.17[2].
+>
+> Summarized:
+>   - build errors: +11/-1
 
-Replying here because I can't find the original mail.
+> [1] http://kisskb.ellerman.id.au/kisskb/head/ce397d215ccd07b8ae3f71db689a=
+edb85d56ab40/ (233 out of 244 configs)
+> [2] http://kisskb.ellerman.id.au/kisskb/head/29dcea88779c856c7dc92040a0c0=
+1233263101d4/ (all 244 configs)
 
-The above commit is causing one of my machines to constantly spew ata
-messages on the console, according to bisect:
+> 11 error regressions:
+>   + /kisskb/src/drivers/ata/pata_ali.c: error: implicit declaration of fu=
+nction 'pci_domain_nr' [-Werror=3Dimplicit-function-declaration]:  =3D> 469=
+:38
 
-# first bad commit: [28361c403683c2b00d4f5e76045f3ccd299bf99d] libata: add extra internal command
+sparc64/sparc-allmodconfig
 
-To get it to boot I have to also apply:
+>   + /kisskb/src/mm/memblock.c: error: redefinition of 'memblock_virt_allo=
+c_try_nid':  =3D> 1413:15
+>   + /kisskb/src/mm/memblock.c: error: redefinition of 'memblock_virt_allo=
+c_try_nid_nopanic':  =3D> 1377:15
+>   + /kisskb/src/mm/memblock.c: error: redefinition of 'memblock_virt_allo=
+c_try_nid_raw':  =3D> 1340:15
 
-  88e10092f6a6 ("sata_fsl: use the right type for tag bitshift")
+ia64/ia64-defconfig
+mips/bigsur_defconfig
+mips/cavium_octeon_defconfig
+mips/ip22_defconfig
+mips/ip27_defconfig
+mips/ip32_defconfig
+mips/malta_defconfig
+mips/mips-allmodconfig
+mips/mips-allnoconfig
+mips/mips-defconfig
+mipsel/mips-allmodconfig
+mipsel/mips-allnoconfig
+mipsel/mips-defconfig
 
+>   + error: ".radix__flush_pwc_lpid" [arch/powerpc/kvm/kvm-hv.ko] undefine=
+d!:  =3D> N/A
+>   + error: ".radix__flush_tlb_lpid_page" [arch/powerpc/kvm/kvm-hv.ko] und=
+efined!:  =3D> N/A
+>   + error: ".radix__local_flush_tlb_lpid_guest" [arch/powerpc/kvm/kvm-hv.=
+ko] undefined!:  =3D> N/A
+>   + error: "radix__flush_pwc_lpid" [arch/powerpc/kvm/kvm-hv.ko] undefined=
+!:  =3D> N/A
+>   + error: "radix__flush_tlb_lpid_page" [arch/powerpc/kvm/kvm-hv.ko] unde=
+fined!:  =3D> N/A
+>   + error: "radix__local_flush_tlb_lpid_guest" [arch/powerpc/kvm/kvm-hv.k=
+o] undefined!:  =3D> N/A
 
-The system boots OK and seems fine, except that it's just printing
-multiple of these per second:
+powerpc/ppc64_defconfig+NO_RADIX
+ppc64le/powernv_defconfig+NO_RADIX (what's in a name ;-)
 
-  ata2: Signature Update detected @ 0 msecs
-  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-  ata2.00: configured for UDMA/100
-  ata2: Signature Update detected @ 0 msecs
-  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-  ata2.00: configured for UDMA/100
-  ata2: Signature Update detected @ 0 msecs
-  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-  ata2.00: configured for UDMA/100
-  ata2: Signature Update detected @ 0 msecs
-  ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-  ata2.00: configured for UDMA/100
-  ata2: Signature Update detected @ 0 msecs
+>   + {standard input}: Error: offset to unaligned destination:  =3D> 2268,=
+ 2316, 1691, 1362, 1455, 1598, 2502, 1645, 1988, 1927, 1409, 2615, 1548, 24=
+09, 1268, 2363, 1314, 1208, 1785, 2034, 2222, 2661, 1880, 2552, 1161, 2082,=
+ 1833, 2455, 2176, 2129, 1501, 1738
 
-And it never seems to stop.
+sh4/sh-randconfig (doesn't seem to be a new issue, seen before on v4.12-rc3=
+)
 
-The machine is a Freescale/NXP P5020ds, using the sata_fsl driver
-presumably. Any ideas?
+Gr{oetje,eeting}s,
 
-cheers
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
