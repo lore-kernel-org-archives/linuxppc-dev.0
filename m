@@ -1,32 +1,32 @@
 Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418ml45ckWzF0ph
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 09:00:00 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418ml84wZkzF0tr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 09:00:04 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5IMxVLb146400
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 18:59:58 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jpjdgyd5a-1
+ w5IMxXdh006089
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 19:00:01 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jpfyvn9th-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 18:59:58 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 19:00:00 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Mon, 18 Jun 2018 18:59:57 -0400
+ Mon, 18 Jun 2018 18:59:59 -0400
 From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Cyril Bur <cyrilbur@gmail.com>, Breno Leitao <leitao@debian.org>
-Subject: [PATCH v2 3/4] powerpc/tm: Adjust tm_reclaim_thread() parameters
-Date: Mon, 18 Jun 2018 19:59:43 -0300
+Cc: Breno Leitao <leitao@debian.org>
+Subject: [PATCH v2 4/4] powerpc/tm: Do not recheckpoint non-tm task
+Date: Mon, 18 Jun 2018 19:59:44 -0300
 In-Reply-To: <1529362784-14194-1-git-send-email-leitao@debian.org>
 References: <201806160346.lDndh49W%fengguang.wu@intel.com>
  <1529362784-14194-1-git-send-email-leitao@debian.org>
-Message-Id: <1529362784-14194-3-git-send-email-leitao@debian.org>
+Message-Id: <1529362784-14194-4-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,55 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Cyril Bur <cyrilbur@gmail.com>
+If __switch_to() tries to context switch from task A to task B, and task A
+ had task->thread->regs->msr[TM] enabled, then __switch_to_tm() will call
+tm_recheckpoint_new_task(), which will call trecheckpoint, for task B, which
+ is clearly wrong since task B might not be an active TM user.
 
-tm_reclaim_thread() doesn't use the parameter anymore, both callers have
-to bother getting it as they have no need for a struct thread_info
-either.
+This does not cause a lot of damage because tm_recheckpoint() will abort
+the call since it realize that the current task does not have msr[TM] bit
+set.
 
-It was previously used but became unused in commit
-dc3106690b20 ("powerpc: tm: Always use fp_state and vr_state to store live
-registers")
-
-Just remove it and adjust the callers.
-
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
- arch/powerpc/kernel/process.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/process.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 9ef4aea9fffe..f8beee03f00a 100644
+index f8beee03f00a..d26a150766ef 100644
 --- a/arch/powerpc/kernel/process.c
 +++ b/arch/powerpc/kernel/process.c
-@@ -866,8 +866,7 @@ static inline bool tm_enabled(struct task_struct *tsk)
- 	return tsk && tsk->thread.regs && (tsk->thread.regs->msr & MSR_TM);
+@@ -1036,7 +1036,8 @@ static inline void __switch_to_tm(struct task_struct *prev,
+ 				prev->thread.regs->msr &= ~MSR_TM;
+ 		}
+ 
+-		tm_recheckpoint_new_task(new);
++		if (tm_enabled(new))
++			tm_recheckpoint_new_task(new);
+ 	}
  }
  
--static void tm_reclaim_thread(struct thread_struct *thr,
--			      struct thread_info *ti, uint8_t cause)
-+static void tm_reclaim_thread(struct thread_struct *thr, uint8_t cause)
- {
- 	/*
- 	 * Use the current MSR TM suspended bit to track if we have
-@@ -914,7 +913,7 @@ static void tm_reclaim_thread(struct thread_struct *thr,
- void tm_reclaim_current(uint8_t cause)
- {
- 	tm_enable();
--	tm_reclaim_thread(&current->thread, current_thread_info(), cause);
-+	tm_reclaim_thread(&current->thread, cause);
- }
- 
- static inline void tm_reclaim_task(struct task_struct *tsk)
-@@ -945,7 +944,7 @@ static inline void tm_reclaim_task(struct task_struct *tsk)
- 		 thr->regs->ccr, thr->regs->msr,
- 		 thr->regs->trap);
- 
--	tm_reclaim_thread(thr, task_thread_info(tsk), TM_CAUSE_RESCHED);
-+	tm_reclaim_thread(thr, TM_CAUSE_RESCHED);
- 
- 	TM_DEBUG("--- tm_reclaim on pid %d complete\n",
- 		 tsk->pid);
 -- 
 2.16.3
