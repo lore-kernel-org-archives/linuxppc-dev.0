@@ -1,19 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <fbarrat@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418RhG5XV3zF0gL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 20:11:26 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: y2038@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>,
- Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: xmon: use ktime_get_coarse_boottime64
-Date: Mon, 18 Jun 2018 11:56:24 +0200
-Message-Id: <20180618095653.1538471-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418VQZ2fsbzF0tP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 22:14:46 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5ICEKme122881
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 08:14:44 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jpacw5gef-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 08:14:42 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
+ Mon, 18 Jun 2018 13:14:40 +0100
+From: Frederic Barrat <fbarrat@linux.ibm.com>
+To: andrew.donnellan@au1.ibm.com, alastair@d-silva.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.ibm.com, vaibhav@linux.ibm.com
+Subject: [PATCH] ocxl: Fix page fault handler in case of fault on dying process
+Date: Mon, 18 Jun 2018 14:14:36 +0200
+Message-Id: <20180618121436.20479-1-fbarrat@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +34,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-get_monotonic_boottime() is deprecated, and may not be safe to call in
-every context, as it has to read a hardware clocksource.
+If a process exits without doing proper cleanup, there's a window
+where an opencapi device can try to access the memory of the dying
+process and may trigger a page fault. That's an expected scenario and
+the ocxl driver holds a reference on the mm_struct of the process
+until the opencapi device is notified of the process exiting.
+However, if mm_users is already at 0, i.e. the address space of the
+process has already been destroyed, the driver shouldn't try resolving
+the page fault, as it will fail, but it can also try accessing already
+freed data.
 
-This changes xmon to print the time using ktime_get_coarse_boottime64()
-instead, which avoids the old timespec type and the HW access.
+It is fixed by only calling the bottom half of the page fault handler
+if mm_users is greater than 0 and get a reference on mm_users instead
+of mm_count. Otherwise, we can safely return a translation fault to
+the device, as its associated memory context is being removed. The
+opencapi device will be properly cleaned up shortly after when closing
+the file descriptors.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+Cc: stable@vger.kernel.org # v4.16+
+Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 ---
- arch/powerpc/xmon/xmon.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/misc/ocxl/link.c | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 47166ad2a669..45e3d0ec1246 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -918,13 +918,13 @@ static void remove_cpu_bpts(void)
- static void
- show_uptime(void)
- {
--	struct timespec uptime;
-+	struct timespec64 uptime;
+diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+index f30790582dc0..2aeaf34e7eda 100644
+--- a/drivers/misc/ocxl/link.c
++++ b/drivers/misc/ocxl/link.c
+@@ -136,7 +136,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+ 	int rc;
  
- 	if (setjmp(bus_error_jmp) == 0) {
- 		catch_memory_errors = 1;
- 		sync();
+ 	/*
+-	 * We need to release a reference on the mm whenever exiting this
++	 * We must release a reference on mm_users whenever exiting this
+ 	 * function (taken in the memory fault interrupt handler)
+ 	 */
+ 	rc = copro_handle_mm_fault(fault->pe_data.mm, fault->dar, fault->dsisr,
+@@ -172,7 +172,7 @@ static void xsl_fault_handler_bh(struct work_struct *fault_work)
+ 	}
+ 	r = RESTART;
+ ack:
+-	mmdrop(fault->pe_data.mm);
++	mmput(fault->pe_data.mm);
+ 	ack_irq(spa, r);
+ }
  
--		get_monotonic_boottime(&uptime);
-+		ktime_get_coarse_boottime_ts64(&uptime);
- 		printf("Uptime: %lu.%.2lu seconds\n", (unsigned long)uptime.tv_sec,
- 			((unsigned long)uptime.tv_nsec / (NSEC_PER_SEC/100)));
+@@ -184,6 +184,7 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+ 	struct pe_data *pe_data;
+ 	struct ocxl_process_element *pe;
+ 	int lpid, pid, tid;
++	bool schedule = false;
+ 
+ 	read_irq(spa, &dsisr, &dar, &pe_handle);
+ 	trace_ocxl_fault(spa->spa_mem, pe_handle, dsisr, dar, -1);
+@@ -226,14 +227,19 @@ static irqreturn_t xsl_fault_handler(int irq, void *data)
+ 	}
+ 	WARN_ON(pe_data->mm->context.id != pid);
+ 
+-	spa->xsl_fault.pe = pe_handle;
+-	spa->xsl_fault.dar = dar;
+-	spa->xsl_fault.dsisr = dsisr;
+-	spa->xsl_fault.pe_data = *pe_data;
+-	mmgrab(pe_data->mm); /* mm count is released by bottom half */
+-
++	if (mmget_not_zero(pe_data->mm)) {
++			spa->xsl_fault.pe = pe_handle;
++			spa->xsl_fault.dar = dar;
++			spa->xsl_fault.dsisr = dsisr;
++			spa->xsl_fault.pe_data = *pe_data;
++			schedule = true;
++			/* mm_users count released by bottom half */
++	}
+ 	rcu_read_unlock();
+-	schedule_work(&spa->xsl_fault.fault_work);
++	if (schedule)
++		schedule_work(&spa->xsl_fault.fault_work);
++	else
++		ack_irq(spa, ADDRESS_ERROR);
+ 	return IRQ_HANDLED;
+ }
  
 -- 
-2.9.0
+2.17.1
