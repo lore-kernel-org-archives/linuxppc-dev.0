@@ -1,22 +1,30 @@
-Return-Path: <danielwa@cisco.com>
-Received: from alln-iport-4.cisco.com (alln-iport-4.cisco.com [173.37.142.91])
- (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418cx41N37zF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 03:08:07 +1000 (AEST)
-From: Daniel Walker <danielwa@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: xe-kernel@external.cisco.com,
- "Guilherme G . Piccoli" <gpiccoli@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] arch: powerpc: pci-common: fix wrong return value check on
- phd_id
-Date: Mon, 18 Jun 2018 09:57:06 -0700
-Message-Id: <20180618165706.42679-1-danielwa@cisco.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418dz35S9PzF09q
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 03:54:54 +1000 (AEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Christophe LEROY <christophe.leroy@c-s.fr>, Meelis Roos <mroos@linux.ee>,
+ netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] Revert "net: pskb_trim_rcsum() and CHECKSUM_COMPLETE are
+ friends"
+References: <20180615185645.8921-1-malat@debian.org>
+ <fbb95c11-240c-1a11-0a62-0483908c577e@gmail.com>
+ <CA+7wUsysaip70ARGQ7Byg1Zktfg0Y1esjEc9HxBGU4sKL8crhg@mail.gmail.com>
+ <9d88677a-f2be-2089-79df-15df4e9a5dd6@gmail.com>
+ <m2tvq1672p.fsf@linux-m68k.org>
+ <e1a9b126-3226-72d0-82b2-b69ca5f59ccb@gmail.com>
+Date: Mon, 18 Jun 2018 19:54:47 +0200
+In-Reply-To: <e1a9b126-3226-72d0-82b2-b69ca5f59ccb@gmail.com> (Eric Dumazet's
+ message of "Sun, 17 Jun 2018 15:54:48 -0700")
+Message-ID: <87o9g8geu0.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cisco has a couple platforms which depend on the domain values getting
-set a certain way. We discovered our machines not detecting the pci
-devices, and traced it back to this commit,
+On Jun 17 2018, Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-63a7228 powerpc/pci: Assign fixed PHB number based on device-tree
-properties
+> Oh this is silly, please try :
+>
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index c642304f178ce0a4e1358d59e45032a39f76fb3f..54dd9c18ecad817812898d6f335e1794a07dabbe 100644
+> --- a/net/core/skbuff.c
+> +++ b/net/core/skbuff.c
+> @@ -1845,10 +1845,9 @@ EXPORT_SYMBOL(___pskb_trim);
+>  int pskb_trim_rcsum_slow(struct sk_buff *skb, unsigned int len)
+>  {
+>         if (skb->ip_summed == CHECKSUM_COMPLETE) {
+> -               int delta = skb->len - len;
+> +               __wsum csumdiff = skb_checksum(skb, len, skb->len - len, 0);
+>  
+> -               skb->csum = csum_sub(skb->csum,
+> -                                    skb_checksum(skb, len, delta, 0));
+> +               skb->csum = csum_block_sub(skb->csum, csumdiff, len);
+>         }
+>         return __pskb_trim(skb, len);
+>  }
 
-It seems that the code is expecting the return value of of_property_read_u64()
-to be the opposite of what it actually is.. It returns zero on success, and a
-negative return value on error. So if you only check when it's non-zero your
-going to set Opal for all platforms but Opal, which I assume is not what was
-expected.
+That doesn't help either.
 
-Fix is just to negate the ret value.
+Andreas.
 
-Cc: xe-kernel@external.cisco.com
-Cc: Guilherme G. Piccoli <gpiccoli@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Cc: Ian Munsie <imunsie@au1.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Fixes: 63a72284b159 ("powerpc/pci: Assign fixed PHB number based on device-tree properties")
-Signed-off-by: Daniel Walker <danielwa@cisco.com>
----
- arch/powerpc/kernel/pci-common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index fe9733f..0a1bcbe 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -89,7 +89,7 @@ static int get_phb_number(struct device_node *dn)
- 	 * reading "ibm,opal-phbid", only present in OPAL environment.
- 	 */
- 	ret = of_property_read_u64(dn, "ibm,opal-phbid", &prop);
--	if (ret) {
-+	if (!ret) {
- 		ret = of_property_read_u32_index(dn, "reg", 1, &prop_32);
- 		prop = prop_32;
- 	}
 -- 
-2.10.3.dirty
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
