@@ -1,31 +1,26 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
- [IPv6:2607:f8b0:400e:c00::241])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4188gd4V3vzF0jD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 08:54:52 +1000 (AEST)
-Received: by mail-pf0-x241.google.com with SMTP id a22-v6so7209662pfo.12
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 15:54:52 -0700 (PDT)
-Subject: Re: [PATCH] Revert "net: pskb_trim_rcsum() and CHECKSUM_COMPLETE are
- friends"
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Mathieu Malaterre <malat@debian.org>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Christophe LEROY <christophe.leroy@c-s.fr>, Meelis Roos <mroos@linux.ee>,
- netdev@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20180615185645.8921-1-malat@debian.org>
- <fbb95c11-240c-1a11-0a62-0483908c577e@gmail.com>
- <CA+7wUsysaip70ARGQ7Byg1Zktfg0Y1esjEc9HxBGU4sKL8crhg@mail.gmail.com>
- <9d88677a-f2be-2089-79df-15df4e9a5dd6@gmail.com>
- <m2tvq1672p.fsf@linux-m68k.org>
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Message-ID: <e1a9b126-3226-72d0-82b2-b69ca5f59ccb@gmail.com>
-Date: Sun, 17 Jun 2018 15:54:48 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418F4d44zDzDrbK
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 12:13:19 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id f1-v6so8152418plt.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2018 19:13:19 -0700 (PDT)
+Date: Mon, 18 Jun 2018 12:13:07 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
+ Russell Currey <ruscur@russell.cc>
+Subject: Re: [PATCH kernel 2/2] powerpc/powernv: Define PHB4 type and enable
+ sketchy bypass on POWER9
+Message-ID: <20180618121307.199cd998@aik.ozlabs.ibm.com>
+In-Reply-To: <fa34ce6fa30554e7cede85a5d71fa822dcdfeb01.camel@kernel.crashing.org>
+References: <20180601081028.29401-1-aik@ozlabs.ru>
+ <20180601081028.29401-3-aik@ozlabs.ru>
+ <fa34ce6fa30554e7cede85a5d71fa822dcdfeb01.camel@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <m2tvq1672p.fsf@linux-m68k.org>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, 16 Jun 2018 11:05:19 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+
+> On Fri, 2018-06-01 at 18:10 +1000, Alexey Kardashevskiy wrote:
+> > These are found in POWER9 chips. Right now these PHBs have unknown type
+> > so changing it to PHB4 won't make much of a difference except enabling
+> > sketchy bypass for POWER9 as this does below.  
+> 
+> And that will break on multi-chip systems since P9 doesn't have the
+> memory contiguous (it has the chip ID in the top bits).
 
 
-On 06/17/2018 03:27 AM, Andreas Schwab wrote:
+This did not break mine and it is hard to see why it would break at all
+if we use 1G pages and the maximum we need to cover is 48 bits (this
+is what we are trying to support here - all these gpus, right?), or is
+it more now? If so, I have posted v2 of tce multilevel dynamic
+allocation which helps with enormous tce tables.
+
+
 
 > 
-> That doesn't change anything.
+> Russell is working on a different implementation that should be much
+> more imune to the system physical memory layout.
+> 
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > ---
+> >  arch/powerpc/platforms/powernv/pci.h      | 1 +
+> >  arch/powerpc/platforms/powernv/pci-ioda.c | 5 ++++-
+> >  2 files changed, 5 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> > index eada4b6..1408247 100644
+> > --- a/arch/powerpc/platforms/powernv/pci.h
+> > +++ b/arch/powerpc/platforms/powernv/pci.h
+> > @@ -23,6 +23,7 @@ enum pnv_phb_model {
+> >  	PNV_PHB_MODEL_UNKNOWN,
+> >  	PNV_PHB_MODEL_P7IOC,
+> >  	PNV_PHB_MODEL_PHB3,
+> > +	PNV_PHB_MODEL_PHB4,
+> >  	PNV_PHB_MODEL_NPU,
+> >  	PNV_PHB_MODEL_NPU2,
+> >  };
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 9239142..66c2804 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -1882,7 +1882,8 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+> >  		if (dma_mask >> 32 &&
+> >  		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
+> >  		    pnv_pci_ioda_pe_single_vendor(pe) &&
+> > -		    phb->model == PNV_PHB_MODEL_PHB3) {
+> > +		    (phb->model == PNV_PHB_MODEL_PHB3 ||
+> > +		     phb->model == PNV_PHB_MODEL_PHB4)) {
+> >  			/* Configure the bypass mode */
+> >  			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
+> >  			if (rc)
+> > @@ -3930,6 +3931,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+> >  		phb->model = PNV_PHB_MODEL_P7IOC;
+> >  	else if (of_device_is_compatible(np, "ibm,power8-pciex"))
+> >  		phb->model = PNV_PHB_MODEL_PHB3;
+> > +	else if (of_device_is_compatible(np, "ibm,power9-pciex"))
+> > +		phb->model = PNV_PHB_MODEL_PHB4;
+> >  	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
+> >  		phb->model = PNV_PHB_MODEL_NPU;
+> >  	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))  
 
-OK, thanks !
 
-Oh this is silly, please try :
 
-diff --git a/net/core/skbuff.c b/net/core/skbuff.c
-index c642304f178ce0a4e1358d59e45032a39f76fb3f..54dd9c18ecad817812898d6f335e1794a07dabbe 100644
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -1845,10 +1845,9 @@ EXPORT_SYMBOL(___pskb_trim);
- int pskb_trim_rcsum_slow(struct sk_buff *skb, unsigned int len)
- {
-        if (skb->ip_summed == CHECKSUM_COMPLETE) {
--               int delta = skb->len - len;
-+               __wsum csumdiff = skb_checksum(skb, len, skb->len - len, 0);
- 
--               skb->csum = csum_sub(skb->csum,
--                                    skb_checksum(skb, len, delta, 0));
-+               skb->csum = csum_block_sub(skb->csum, csumdiff, len);
-        }
-        return __pskb_trim(skb, len);
- }
+--
+Alexey
