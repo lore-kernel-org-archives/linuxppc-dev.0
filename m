@@ -1,24 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418JRg5r7XzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 14:45:03 +1000 (AEST)
-Message-ID: <82ebaedf4279dce05a7cd6bdb0d9b84bdf232a02.camel@kernel.crashing.org>
-Subject: Re: [PATCH kernel 2/2] powerpc/powernv: Define PHB4 type and enable
- sketchy bypass on POWER9
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alistair Popple <alistair@popple.id.au>,
- Russell Currey <ruscur@russell.cc>
-Date: Mon, 18 Jun 2018 14:44:56 +1000
-In-Reply-To: <20180618121307.199cd998@aik.ozlabs.ibm.com>
-References: <20180601081028.29401-1-aik@ozlabs.ru>
- <20180601081028.29401-3-aik@ozlabs.ru>
- <fa34ce6fa30554e7cede85a5d71fa822dcdfeb01.camel@kernel.crashing.org>
- <20180618121307.199cd998@aik.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418MSD6zsyzF09q
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 17:00:42 +1000 (AEST)
+Subject: Re: [PATCH 0/3] Resolve -Wattribute-alias warnings from
+ SYSCALL_DEFINEx()
+To: Paul Burton <paul.burton@mips.com>, linux-kbuild@vger.kernel.org
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, linux-mips@linux-mips.org,
+ Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@kernel.org>,
+ Matthew Wilcox <matthew@wil.cx>, Thomas Gleixner <tglx@linutronix.de>,
+ Douglas Anderson <dianders@chromium.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Matthias Kaehlcke <mka@chromium.org>, He Zhe <zhe.he@windriver.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michal Marek <michal.lkml@markovi.net>, Khem Raj <raj.khem@gmail.com>,
+ Al Viro <viro@zeniv.linux.org.uk>, Stafford Horne <shorne@gmail.com>,
+ Gideon Israel Dsouza <gidisrael@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+References: <20180616005323.7938-1-paul.burton@mips.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <f9b53b28-7961-d970-3c6c-570ec595d29f@c-s.fr>
+Date: Mon, 18 Jun 2018 09:00:37 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180616005323.7938-1-paul.burton@mips.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,81 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-06-18 at 12:13 +1000, Alexey Kardashevskiy wrote:
-> On Sat, 16 Jun 2018 11:05:19 +1000
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > On Fri, 2018-06-01 at 18:10 +1000, Alexey Kardashevskiy wrote:
-> > > These are found in POWER9 chips. Right now these PHBs have unknown type
-> > > so changing it to PHB4 won't make much of a difference except enabling
-> > > sketchy bypass for POWER9 as this does below.  
-> > 
-> > And that will break on multi-chip systems since P9 doesn't have the
-> > memory contiguous (it has the chip ID in the top bits).
-> 
-> 
-> This did not break mine and it is hard to see why it would break at all
-> if we use 1G pages and the maximum we need to cover is 48 bits (this
-> is what we are trying to support here - all these gpus, right?), or is
-> it more now? If so, I have posted v2 of tce multilevel dynamic
-> allocation which helps with enormous tce tables.
 
-The whole point of sketchy bypass is to deal with devices with small
-amount of DMA bits... most Radeon's have 40 for example. So that won't
-work terribly well.
 
-Cheers,
-Ben.
+Le 16/06/2018 à 02:53, Paul Burton a écrit :
+> This series introduces infrastructure allowing compiler diagnostics to
+> be disabled or their severity modified for specific pieces of code, with
+> suitable abstractions to prevent that code from becoming tied to a
+> specific compiler.
+> 
+> This infrastructure is then used to disable the -Wattribute-alias
+> warning around syscall definitions, which rely on type mismatches to
+> sanitize arguments.
+> 
+> Finally PowerPC-specific #pragma's are removed now that the generic code
+> is handling this.
+> 
+> The series takes Arnd's RFC patches & addresses the review comments they
+> received. The most notable effect of this series to to avoid warnings &
+> build failures caused by -Wattribute-alias when compiling the kernel
+> with GCC 8.
+> 
+> Applies cleanly atop master as of 9215310cf13b ("Merge
+> git://git.kernel.org/pub/scm/linux/kernel/git/davem/net").
+> 
+> Thanks,
+>      Paul
+> 
+> Arnd Bergmann (2):
+>    kbuild: add macro for controlling warnings to linux/compiler.h
+>    disable -Wattribute-alias warning for SYSCALL_DEFINEx()
+> 
+> Paul Burton (1):
+>    Revert "powerpc: fix build failure by disabling attribute-alias
+>      warning in pci_32"
+> 
+>   arch/powerpc/kernel/pci_32.c   |  4 ---
+>   include/linux/compat.h         |  8 ++++-
+>   include/linux/compiler-gcc.h   | 66 ++++++++++++++++++++++++++++++++++
+>   include/linux/compiler_types.h | 18 ++++++++++
+>   include/linux/syscalls.h       |  4 +++
+>   5 files changed, 95 insertions(+), 5 deletions(-)
+> 
 
-> 
-> 
-> > 
-> > Russell is working on a different implementation that should be much
-> > more imune to the system physical memory layout.
-> > 
-> > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> > > ---
-> > >  arch/powerpc/platforms/powernv/pci.h      | 1 +
-> > >  arch/powerpc/platforms/powernv/pci-ioda.c | 5 ++++-
-> > >  2 files changed, 5 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> > > index eada4b6..1408247 100644
-> > > --- a/arch/powerpc/platforms/powernv/pci.h
-> > > +++ b/arch/powerpc/platforms/powernv/pci.h
-> > > @@ -23,6 +23,7 @@ enum pnv_phb_model {
-> > >  	PNV_PHB_MODEL_UNKNOWN,
-> > >  	PNV_PHB_MODEL_P7IOC,
-> > >  	PNV_PHB_MODEL_PHB3,
-> > > +	PNV_PHB_MODEL_PHB4,
-> > >  	PNV_PHB_MODEL_NPU,
-> > >  	PNV_PHB_MODEL_NPU2,
-> > >  };
-> > > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > index 9239142..66c2804 100644
-> > > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > @@ -1882,7 +1882,8 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
-> > >  		if (dma_mask >> 32 &&
-> > >  		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
-> > >  		    pnv_pci_ioda_pe_single_vendor(pe) &&
-> > > -		    phb->model == PNV_PHB_MODEL_PHB3) {
-> > > +		    (phb->model == PNV_PHB_MODEL_PHB3 ||
-> > > +		     phb->model == PNV_PHB_MODEL_PHB4)) {
-> > >  			/* Configure the bypass mode */
-> > >  			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
-> > >  			if (rc)
-> > > @@ -3930,6 +3931,8 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
-> > >  		phb->model = PNV_PHB_MODEL_P7IOC;
-> > >  	else if (of_device_is_compatible(np, "ibm,power8-pciex"))
-> > >  		phb->model = PNV_PHB_MODEL_PHB3;
-> > > +	else if (of_device_is_compatible(np, "ibm,power9-pciex"))
-> > > +		phb->model = PNV_PHB_MODEL_PHB4;
-> > >  	else if (of_device_is_compatible(np, "ibm,power8-npu-pciex"))
-> > >  		phb->model = PNV_PHB_MODEL_NPU;
-> > >  	else if (of_device_is_compatible(np, "ibm,power9-npu-pciex"))  
-> 
-> 
-> 
-> --
-> Alexey
+Works well, thanks.
+
+You can then also revert 	2479bfc9bc600dcce7f932d52dcfa8d677c41f93
+("powerpc: Fix build by disabling attribute-alias warning for 
+SYSCALL_DEFINEx")
+
+Christophe
