@@ -1,16 +1,20 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419P934s9fzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:11 +1000 (AEST)
-In-Reply-To: <20180613132356.29246-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419P951yTVzF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:13 +1000 (AEST)
+In-Reply-To: <20180614152742.21075-1-mjeanson@efficios.com>
+To: Michael Jeanson <mjeanson@efficios.com>, 
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org, npiggin@gmail.com
-Subject: Re: powerpc/64s: Fix DT CPU features Power9 DD2.1 logic
-Message-Id: <419P9343Byz9s4b@ozlabs.org>
-Date: Wed, 20 Jun 2018 09:21:11 +1000 (AEST)
+Cc: stable@vger.kernel.org, Michael Jeanson <mjeanson@efficios.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Vakul Garg <vakul.garg@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ Scott Wood <swood@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/e500mc: Set assembler machine type to e500mc
+Message-Id: <419P944XMVz9s3C@ozlabs.org>
+Date: Wed, 20 Jun 2018 09:21:12 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,24 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-06-13 at 13:23:56 UTC, Michael Ellerman wrote:
-> In the device tree CPU features quirk code we want to set
-> CPU_FTR_POWER9_DD2_1 on all Power9s that aren't DD2.0 or earlier. But
-> we got the logic wrong and instead set it on all CPUs that aren't
-> Power9 DD2.0 or earlier, ie. including Power8.
+On Thu, 2018-06-14 at 15:27:42 UTC, Michael Jeanson wrote:
+> In binutils 2.26 a new opcode for the "wait" instruction was added for the
+> POWER9 and has precedence over the one specific to the e500mc. Commit
+> ebf714ff3756 ("powerpc/e500mc: Add support for the wait instruction in
+> e500_idle") uses this instruction specifically on the e500mc to work around
+> an erratum.
 > 
-> Fix it by making sure we're on a Power9. This isn't a bug in practice
-> because the only code that checks the feature is Power9 only to begin
-> with. But we'll backport it anyway to avoid confusion.
+> This results in an invalid instruction in idle_e500 when we build for the
+> e500mc on bintutils >= 2.26 with the default assembler machine type.
 > 
-> Fixes: 9e9626ed3a4a ("powerpc/64s: Fix POWER9 DD2.2 and above in DT CPU features")
-> Cc: stable@vger.kernel.org # v4.17+
-> Reported-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+> Since multiplatform between e500 and non-e500 is not supported, set the
+> assembler machine type globaly when CONFIG_PPC_E500MC=y.
+> 
+> Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
+> Reviewed-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Michael Ellerman <mpe@ellerman.id.au>
+> CC: Kumar Gala <galak@kernel.crashing.org>
+> CC: Vakul Garg <vakul.garg@nxp.com>
+> CC: Scott Wood <swood@redhat.com>
+> CC: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> CC: linuxppc-dev@lists.ozlabs.org
+> CC: linux-kernel@vger.kernel.org
+> CC: stable@vger.kernel.org
 
-Applied to powerpc fixes.
+Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/749a0278c2177b2d16da5d8b135ba7
+https://git.kernel.org/powerpc/c/69a8405999aa1c489de4b8d349468f
 
 cheers
