@@ -1,14 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419NpS1LvXzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:05:04 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/64s: Fix build failures with CONFIG_NMI_IPI=n
-Date: Wed, 20 Jun 2018 09:04:54 +1000
-Message-Id: <20180619230454.8881-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419P925WbVzF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:10 +1000 (AEST)
+In-Reply-To: <20180519043554.26640-2-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [1/3] powerpc/64: hard disable irqs in panic_smp_self_stop
+Message-Id: <419P924Rh2z9s47@ozlabs.org>
+Date: Wed, 20 Jun 2018 09:21:10 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,53 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I broke the build when CONFIG_NMI_IPI=n with my recent commit to add
-arch_trigger_cpumask_backtrace(), eg:
+On Sat, 2018-05-19 at 04:35:52 UTC, Nicholas Piggin wrote:
+> Similarly to commit 855bfe0de1 ("powerpc: hard disable irqs in
+> smp_send_stop loop"), irqs should be hard disabled by
+> panic_smp_self_stop.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-  stacktrace.c:(.text+0x1b0): undefined reference to `.smp_send_safe_nmi_ipi'
+Series applied to powerpc fixes, thanks.
 
-We should rework the CONFIG symbols here in future to avoid these
-double barrelled ifdefs but for now they fix the build.
+https://git.kernel.org/powerpc/c/8c1aef6a682f87a059f10ab606cc1e
 
-Fixes: 5cc05910f26e ("powerpc/64s: Wire up arch_trigger_cpumask_backtrace()")
-Reported-by: Christophe LEROY <christophe.leroy@c-s.fr>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/nmi.h   | 2 +-
- arch/powerpc/kernel/stacktrace.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
-index 0f571e0ebca1..bd9ba8defd72 100644
---- a/arch/powerpc/include/asm/nmi.h
-+++ b/arch/powerpc/include/asm/nmi.h
-@@ -8,7 +8,7 @@ extern void arch_touch_nmi_watchdog(void);
- static inline void arch_touch_nmi_watchdog(void) {}
- #endif
- 
--#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_STACKTRACE)
-+#if defined(CONFIG_NMI_IPI) && defined(CONFIG_STACKTRACE)
- extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
- 					   bool exclude_self);
- #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
-diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
-index 07e97f289c52..e2c50b55138f 100644
---- a/arch/powerpc/kernel/stacktrace.c
-+++ b/arch/powerpc/kernel/stacktrace.c
-@@ -196,7 +196,7 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
- EXPORT_SYMBOL_GPL(save_stack_trace_tsk_reliable);
- #endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
- 
--#ifdef CONFIG_PPC_BOOK3S_64
-+#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI)
- static void handle_backtrace_ipi(struct pt_regs *regs)
- {
- 	nmi_cpu_backtrace(regs);
-@@ -242,4 +242,4 @@ void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
- {
- 	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace_ipi);
- }
--#endif /* CONFIG_PPC64 */
-+#endif /* defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI) */
--- 
-2.14.1
+cheers
