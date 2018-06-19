@@ -1,32 +1,14 @@
-Return-Path: <srs0=sfmu=jf=gmail.com=linus971@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419Ng829qqzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 08:58:44 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 419Ng81LmRz8t2S
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 08:58:44 +1000 (AEST)
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 419Ng71yBnz9s3M
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2018 08:58:42 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id l25-v6so1736856ioh.12
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2018 15:58:42 -0700 (PDT)
-MIME-Version: 1.0
-References: <1281327087.2168.67.camel@pasglop>
-In-Reply-To: <1281327087.2168.67.camel@pasglop>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 20 Jun 2018 07:58:30 +0900
-Message-ID: <CA+55aFxRyp4G4niZ=aMk+epdSbu5MB1oJg_h4NhLkxsM+f+SLQ@mail.gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419NpS1LvXzF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:05:04 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/64s: Fix build failures with CONFIG_NMI_IPI=n
+Date: Wed, 20 Jun 2018 09:04:54 +1000
+Message-Id: <20180619230454.8881-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +18,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2018 at 5:23 AM Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+I broke the build when CONFIG_NMI_IPI=n with my recent commit to add
+arch_trigger_cpumask_backtrace(), eg:
 
-I love the alleged line removal, but there's nothing in that 'merge'
-branch. It points to an ancient powerpc commit from 2016.
+  stacktrace.c:(.text+0x1b0): undefined reference to `.smp_send_safe_nmi_ipi'
 
-And please, signed tags. I know you do them, because you used to send me them.
+We should rework the CONFIG symbols here in future to avoid these
+double barrelled ifdefs but for now they fix the build.
 
-             Linus
+Fixes: 5cc05910f26e ("powerpc/64s: Wire up arch_trigger_cpumask_backtrace()")
+Reported-by: Christophe LEROY <christophe.leroy@c-s.fr>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/nmi.h   | 2 +-
+ arch/powerpc/kernel/stacktrace.c | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/nmi.h b/arch/powerpc/include/asm/nmi.h
+index 0f571e0ebca1..bd9ba8defd72 100644
+--- a/arch/powerpc/include/asm/nmi.h
++++ b/arch/powerpc/include/asm/nmi.h
+@@ -8,7 +8,7 @@ extern void arch_touch_nmi_watchdog(void);
+ static inline void arch_touch_nmi_watchdog(void) {}
+ #endif
+ 
+-#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_STACKTRACE)
++#if defined(CONFIG_NMI_IPI) && defined(CONFIG_STACKTRACE)
+ extern void arch_trigger_cpumask_backtrace(const cpumask_t *mask,
+ 					   bool exclude_self);
+ #define arch_trigger_cpumask_backtrace arch_trigger_cpumask_backtrace
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index 07e97f289c52..e2c50b55138f 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -196,7 +196,7 @@ save_stack_trace_tsk_reliable(struct task_struct *tsk,
+ EXPORT_SYMBOL_GPL(save_stack_trace_tsk_reliable);
+ #endif /* CONFIG_HAVE_RELIABLE_STACKTRACE */
+ 
+-#ifdef CONFIG_PPC_BOOK3S_64
++#if defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI)
+ static void handle_backtrace_ipi(struct pt_regs *regs)
+ {
+ 	nmi_cpu_backtrace(regs);
+@@ -242,4 +242,4 @@ void arch_trigger_cpumask_backtrace(const cpumask_t *mask, bool exclude_self)
+ {
+ 	nmi_trigger_cpumask_backtrace(mask, exclude_self, raise_backtrace_ipi);
+ }
+-#endif /* CONFIG_PPC64 */
++#endif /* defined(CONFIG_PPC_BOOK3S_64) && defined(CONFIG_NMI_IPI) */
+-- 
+2.14.1
