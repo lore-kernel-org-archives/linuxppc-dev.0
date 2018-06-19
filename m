@@ -1,34 +1,22 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4193nr5McqzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 20:18:23 +1000 (AEST)
-Received: by mail-lf0-x243.google.com with SMTP id a13-v6so9176280lfk.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 03:18:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41955x0MhwzF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 21:17:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/mm/hash/4k: Free hugetlb page table caches
+ correctly.
+In-Reply-To: <20180614103152.7344-1-aneesh.kumar@linux.ibm.com>
+References: <20180614103152.7344-1-aneesh.kumar@linux.ibm.com>
+Date: Tue, 19 Jun 2018 21:17:20 +1000
+Message-ID: <87o9g7xby7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <87efh3hndq.fsf@igel.home>
-References: <20180618140518.2920804-1-arnd@arndb.de>
- <CA+7wUswcgxLz_GAqkyVLpdAmTNEPUZ-cXJ8Ej7Xx9+OgjGUo=Q@mail.gmail.com>
- <87efh3hndq.fsf@igel.home>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 19 Jun 2018 12:18:19 +0200
-Message-ID: <CAK8P3a1_3UfYGnTcWJ7GS_gO+_WOhS90pUoC97yVAgkox9sQeg@mail.gmail.com>
-Subject: Re: [PATCH 1/3] powerpc: mac: fix rtc read functions
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Mathieu Malaterre <malat@debian.org>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Geert Uytterhoeven <geert@linux-m68k.org>, funaho@jurai.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Ungerer <gerg@linux-m68k.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>, Meelis Roos <mroos@linux.ee>,
- Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +26,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2018 at 10:04 PM, Andreas Schwab <schwab@linux-m68k.org> wrote:
-> On Jun 18 2018, Mathieu Malaterre <malat@debian.org> wrote:
->
->> Sadly, trying again today does not work anymore. Adding some printk
->> just before WARN_ON:
->>
->> +printk(KERN_ERR " rtc DBG pmu_get_time1: %lld %d %lld \n", now,
->> RTC_OFFSET, now - RTC_OFFSET );
->> +printk(KERN_ERR " rtc DBG pmu_get_time2: %x %x %x %x %d \n",
->> req.reply[0], req.reply[1], req.reply[2], req.reply[3] ,
->> req.reply_len);
->>
->> leads to:
->>
->> [    0.000000]  rtc DBG pmu_get_time1: 14096662 2082844800 -2068748138
->> [    0.000000]  rtc DBG pmu_get_time2: 0 d7 19 16 4
->
-> A good value would have 0xd7 in the first byte.  The problem is that
-> pmu_set_rtc_time is also broken, and leads to an invalid time value
-> stored in the RTC.  Since pmu_request is a varargs function passing
-> values of type time64_t without casting won't work.
->
-> You need to reset your RTC before you can continue.
->
-> I think the right fix is to change nowtime in pmu_set_rtc_time and
-> cuda_set_rtc_time back to unsigned int (or to u32).
+"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
 
-Thanks for the additional analysis. I'll do it like you suggest and send
-an updated patch.
+> With 4k page size for hugetlb we allocate hugepage directories from its o=
+n slab
+> cache. With patch 0c4d26802 ("powerpc/book3s64/mm: Simplify the rcu callb=
+ack for page table free")
+> we missed to free these allocated hugepd tables.
+>
+> Update pgtable_free to handle hugetlb hugepd directory table.
+>
+> Fixes:  0c4d26802 ("powerpc/book3s64/mm: Simplify the rcu callback for pa=
+ge table free")
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/32/pgalloc.h  |  1 +
+>  .../include/asm/book3s/64/pgtable-4k.h        | 21 +++++++++++++++++++
+>  .../include/asm/book3s/64/pgtable-64k.h       |  9 ++++++++
+>  arch/powerpc/include/asm/book3s/64/pgtable.h  |  5 +++++
+>  arch/powerpc/include/asm/nohash/32/pgalloc.h  |  1 +
+>  arch/powerpc/include/asm/nohash/64/pgalloc.h  |  1 +
+>  arch/powerpc/mm/hugetlbpage.c                 |  3 ++-
+>  arch/powerpc/mm/pgtable-book3s64.c            | 12 +++++++++++
 
-       Arnd
+Fails with 4K=3Dy HUGETLBFS=3Dn:
+
+  arch/powerpc/mm/pgtable-book3s64.c:415:16: error: =E2=80=98H_16M_CACHE_IN=
+DEX=E2=80=99 undeclared (first use in this function); did you mean =E2=80=
+=98H_PUD_CACHE_INDEX=E2=80=99?
+
+...
+
+> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable=
+-book3s64.c
+> index c1f4ca45c93a..468c3d83a2aa 100644
+> --- a/arch/powerpc/mm/pgtable-book3s64.c
+> +++ b/arch/powerpc/mm/pgtable-book3s64.c
+> @@ -409,6 +409,18 @@ static inline void pgtable_free(void *table, int ind=
+ex)
+>  	case PUD_INDEX:
+>  		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
+>  		break;
+> +#ifdef CONFIG_PPC_4K_PAGES
+> +		/* 16M hugepd directory at pud level */
+> +	case HTLB_16M_INDEX:
+> +		BUILD_BUG_ON(H_16M_CACHE_INDEX <=3D 0);
+> +		kmem_cache_free(PGT_CACHE(H_16M_CACHE_INDEX), table);
+> +		break;
+> +		/* 16G hugepd directory at the pgd level */
+> +	case HTLB_16G_INDEX:
+> +		BUILD_BUG_ON(H_16G_CACHE_INDEX <=3D 0);
+> +		kmem_cache_free(PGT_CACHE(H_16G_CACHE_INDEX), table);
+> +		break;
+> +#endif
+
+Because this isn't protected by CONFIG_HUGETLBFS.
+
+I assume this is correct?
+
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-b=
+ook3s64.c
+index 468c3d83a2aa..9b7007fd075e 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -409,7 +409,7 @@ static inline void pgtable_free(void *table, int index)
+ 	case PUD_INDEX:
+ 		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
+ 		break;
+-#ifdef CONFIG_PPC_4K_PAGES
++#if defined(CONFIG_PPC_4K_PAGES) && defined (CONFIG_HUGETLBFS)
+ 		/* 16M hugepd directory at pud level */
+ 	case HTLB_16M_INDEX:
+ 		BUILD_BUG_ON(H_16M_CACHE_INDEX <=3D 0);
+
+
+cheers
