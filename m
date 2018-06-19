@@ -1,22 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41955x0MhwzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 21:17:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41961Z2hZMzF0fX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 21:58:42 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/mm/hash/4k: Free hugetlb page table caches
- correctly.
-In-Reply-To: <20180614103152.7344-1-aneesh.kumar@linux.ibm.com>
-References: <20180614103152.7344-1-aneesh.kumar@linux.ibm.com>
-Date: Tue, 19 Jun 2018 21:17:20 +1000
-Message-ID: <87o9g7xby7.fsf@concordia.ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: stacktrace.c:(.text+0x1b0): undefined reference to
+ `.smp_send_safe_nmi_ipi'
+In-Reply-To: <0ae99ba5-e721-dada-8d94-b223e41977e9@c-s.fr>
+References: <0ae99ba5-e721-dada-8d94-b223e41977e9@c-s.fr>
+Date: Tue, 19 Jun 2018 21:58:40 +1000
+Message-ID: <87lgbbxa1b.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,78 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-> With 4k page size for hugetlb we allocate hugepage directories from its o=
-n slab
-> cache. With patch 0c4d26802 ("powerpc/book3s64/mm: Simplify the rcu callb=
-ack for page table free")
-> we missed to free these allocated hugepd tables.
+> See http://kisskb.ellerman.id.au/kisskb/buildresult/13395345/ for details
 >
-> Update pgtable_free to handle hugetlb hugepd directory table.
+> Seems like that function only exists when CONFIG_NMI_IPI is defined.
 >
-> Fixes:  0c4d26802 ("powerpc/book3s64/mm: Simplify the rcu callback for pa=
-ge table free")
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/book3s/32/pgalloc.h  |  1 +
->  .../include/asm/book3s/64/pgtable-4k.h        | 21 +++++++++++++++++++
->  .../include/asm/book3s/64/pgtable-64k.h       |  9 ++++++++
->  arch/powerpc/include/asm/book3s/64/pgtable.h  |  5 +++++
->  arch/powerpc/include/asm/nohash/32/pgalloc.h  |  1 +
->  arch/powerpc/include/asm/nohash/64/pgalloc.h  |  1 +
->  arch/powerpc/mm/hugetlbpage.c                 |  3 ++-
->  arch/powerpc/mm/pgtable-book3s64.c            | 12 +++++++++++
+> Problem introduced by commit 5cc05910f26e6fd6da15f052f86f6150e4b91664 
+> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/arch/powerpc/kernel/stacktrace.c?h=next-20180614&id=5cc05910f26e6fd6da15f052f86f6150e4b91664
+>
+>
+> What do you recommend to fix that ?
 
-Fails with 4K=3Dy HUGETLBFS=3Dn:
+It should just use CONFIG_NMI_IPI instead of CONFIG_PPC_BOOK3S_64 I
+think.
 
-  arch/powerpc/mm/pgtable-book3s64.c:415:16: error: =E2=80=98H_16M_CACHE_IN=
-DEX=E2=80=99 undeclared (first use in this function); did you mean =E2=80=
-=98H_PUD_CACHE_INDEX=E2=80=99?
-
-...
-
-> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable=
--book3s64.c
-> index c1f4ca45c93a..468c3d83a2aa 100644
-> --- a/arch/powerpc/mm/pgtable-book3s64.c
-> +++ b/arch/powerpc/mm/pgtable-book3s64.c
-> @@ -409,6 +409,18 @@ static inline void pgtable_free(void *table, int ind=
-ex)
->  	case PUD_INDEX:
->  		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
->  		break;
-> +#ifdef CONFIG_PPC_4K_PAGES
-> +		/* 16M hugepd directory at pud level */
-> +	case HTLB_16M_INDEX:
-> +		BUILD_BUG_ON(H_16M_CACHE_INDEX <=3D 0);
-> +		kmem_cache_free(PGT_CACHE(H_16M_CACHE_INDEX), table);
-> +		break;
-> +		/* 16G hugepd directory at the pgd level */
-> +	case HTLB_16G_INDEX:
-> +		BUILD_BUG_ON(H_16G_CACHE_INDEX <=3D 0);
-> +		kmem_cache_free(PGT_CACHE(H_16G_CACHE_INDEX), table);
-> +		break;
-> +#endif
-
-Because this isn't protected by CONFIG_HUGETLBFS.
-
-I assume this is correct?
-
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-b=
-ook3s64.c
-index 468c3d83a2aa..9b7007fd075e 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -409,7 +409,7 @@ static inline void pgtable_free(void *table, int index)
- 	case PUD_INDEX:
- 		kmem_cache_free(PGT_CACHE(PUD_CACHE_INDEX), table);
- 		break;
--#ifdef CONFIG_PPC_4K_PAGES
-+#if defined(CONFIG_PPC_4K_PAGES) && defined (CONFIG_HUGETLBFS)
- 		/* 16M hugepd directory at pud level */
- 	case HTLB_16M_INDEX:
- 		BUILD_BUG_ON(H_16M_CACHE_INDEX <=3D 0);
-
+I'll do a patch.
 
 cheers
