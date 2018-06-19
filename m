@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419P925WbVzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:10 +1000 (AEST)
-In-Reply-To: <20180519043554.26640-2-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419P934s9fzF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:11 +1000 (AEST)
+In-Reply-To: <20180613132356.29246-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [1/3] powerpc/64: hard disable irqs in panic_smp_self_stop
-Message-Id: <419P924Rh2z9s47@ozlabs.org>
-Date: Wed, 20 Jun 2018 09:21:10 +1000 (AEST)
+Cc: paulus@samba.org, npiggin@gmail.com
+Subject: Re: powerpc/64s: Fix DT CPU features Power9 DD2.1 logic
+Message-Id: <419P9343Byz9s4b@ozlabs.org>
+Date: Wed, 20 Jun 2018 09:21:11 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,15 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2018-05-19 at 04:35:52 UTC, Nicholas Piggin wrote:
-> Similarly to commit 855bfe0de1 ("powerpc: hard disable irqs in
-> smp_send_stop loop"), irqs should be hard disabled by
-> panic_smp_self_stop.
+On Wed, 2018-06-13 at 13:23:56 UTC, Michael Ellerman wrote:
+> In the device tree CPU features quirk code we want to set
+> CPU_FTR_POWER9_DD2_1 on all Power9s that aren't DD2.0 or earlier. But
+> we got the logic wrong and instead set it on all CPUs that aren't
+> Power9 DD2.0 or earlier, ie. including Power8.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Fix it by making sure we're on a Power9. This isn't a bug in practice
+> because the only code that checks the feature is Power9 only to begin
+> with. But we'll backport it anyway to avoid confusion.
+> 
+> Fixes: 9e9626ed3a4a ("powerpc/64s: Fix POWER9 DD2.2 and above in DT CPU features")
+> Cc: stable@vger.kernel.org # v4.17+
+> Reported-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc fixes, thanks.
+Applied to powerpc fixes.
 
-https://git.kernel.org/powerpc/c/8c1aef6a682f87a059f10ab606cc1e
+https://git.kernel.org/powerpc/c/749a0278c2177b2d16da5d8b135ba7
 
 cheers
