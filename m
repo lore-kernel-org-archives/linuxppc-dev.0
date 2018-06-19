@@ -1,21 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4196xG59QDzF0nB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:40:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4196xP2CdDzF0wb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:40:09 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Florian Weimer <fweimer@redhat.com>, Ram Pai <linuxram@us.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
  aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, Ulrich.Weigand@de.ibm.com,
- luto@kernel.org, msuchanek@suse.de
-Subject: Re: [PATCH v2 0/6] powerpc/pkeys: fixes to pkeys
-In-Reply-To: <8812c879-5761-ef62-dd15-3ceef46d9653@redhat.com>
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
+ Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, luto@kernel.org,
+ msuchanek@suse.de
+Subject: Re: [PATCH v2 5/6] powerpc/pkeys: make protection key 0 less special
+In-Reply-To: <1528936144-6696-6-git-send-email-linuxram@us.ibm.com>
 References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <8812c879-5761-ef62-dd15-3ceef46d9653@redhat.com>
-Date: Tue, 19 Jun 2018 22:40:01 +1000
-Message-ID: <874lhzx84e.fsf@concordia.ellerman.id.au>
+ <1528936144-6696-6-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 19 Jun 2018 22:40:08 +1000
+Message-ID: <8736xjx847.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,49 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Florian Weimer <fweimer@redhat.com> writes:
-> On 06/14/2018 02:28 AM, Ram Pai wrote:
->> Assortment of fixes to pkey.
->> 
->> Patch 1  makes pkey consumable in multithreaded applications.
->> 
->> Patch 2  fixes fork behavior to inherit the key attributes.
->> 
->> Patch 3  A off-by-one bug made one key unusable. Fixes it.
->> 
->> Patch 4  Execute-only key is preallocated.
->> 
->> Patch 5  Makes pkey-0 less special.
->> 
->> Patch 6  Deny by default permissions on all unallocated keys.
->> 
->> Passes all selftests on powerpc. Also behavior verified to be correct
->> by Florian.
->> 
->> Changelog:
->> 
->> 	v2: . fixed merge conflict with upstream code.
->> 	    . Add patch 6. Makes the behavior consistent
->> 	      with that on x86.
+Ram Pai <linuxram@us.ibm.com> writes:
+> Applications need the ability to associate an address-range with some
+> key and latter revert to its initial default key. Pkey-0 comes close to
+> providing this function but falls short, because the current
+> implementation disallows applications to explicitly associate pkey-0 to
+> the address range.
 >
-> (Except signal handling, but I agree with Ram that the POWER behavior is 
-> the correct one.)
+> Lets make pkey-0 less special and treat it almost like any other key.
+> Thus it can be explicitly associated with any address range, and can be
+> freed. This gives the application more flexibility and power.  The
+> ability to free pkey-0 must be used responsibily, since pkey-0 is
+> associated with almost all address-range by default.
 >
->> Ram Pai (6):
->>    powerpc/pkeys: Enable all user-allocatable pkeys at init.
->>    powerpc/pkeys: Save the pkey registers before fork
->>    powerpc/pkeys: fix calculation of total pkeys.
->>    powerpc/pkeys: Preallocate execute-only key
->>    powerpc/pkeys: make protection key 0 less special
->>    powerpc/pkeys: Deny read/write/execute by default
+> Even with this change pkey-0 continues to be slightly more special
+> from the following point of view.
+> (a) it is implicitly allocated.
+> (b) it is the default key assigned to any address-range.
+> (c) its permissions cannot be modified by userspace.
 >
-> I tested the whole series with the new selftests, with the printamr.c 
-> program I posted earlier, and the glibc test for pkey_alloc &c.  The 
-> latter required some test fixes, but now passes as well.  As far as I 
-> can tell, everything looks good now.
->
-> Tested-By: Florian Weimer <fweimer@redhat.com>
+> NOTE: (c) is specific to powerpc only. pkey-0 is associated by default
+> with all pages including kernel pages, and pkeys are also active in
+> kernel mode. If any permission is denied on pkey-0, the kernel running
+> in the context of the application will be unable to operate.
 
-Thanks. I'll add that to each patch I guess, if you're happy with that?
+We could fix that by saving/restoring the AMR when we come into the
+kernel, and switching to a kernel-AMR with all keys accessible.
+
+We'd then need to think about copy_to/from_user() gup etc. So maybe we
+don't want to do that. But it's not set in stone.
+
+Are we calling this a bug fix?
 
 cheers
