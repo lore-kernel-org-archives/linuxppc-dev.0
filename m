@@ -1,40 +1,27 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <danielwa@cisco.com>
+Received: from alln-iport-2.cisco.com (alln-iport-2.cisco.com [173.37.142.89])
+ (using TLSv1.2 with cipher DHE-RSA-SEED-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419DDN16wlzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 02:38:27 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5JGYFxl078545
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 12:38:25 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jq1sju2nq-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 12:38:25 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 19 Jun 2018 17:38:22 +0100
-Date: Tue, 19 Jun 2018 09:38:13 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, luto@kernel.org,
- msuchanek@suse.de
-Subject: Re: [PATCH v2 4/6] powerpc/pkeys: Preallocate execute-only key
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <1528936144-6696-5-git-send-email-linuxram@us.ibm.com>
- <871sd3x842.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419Df84MGbzF0fX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 02:57:20 +1000 (AEST)
+Subject: Re: [PATCH] arch: powerpc: pci-common: fix wrong return value check
+ on phd_id
+To: "Guilherme G. Piccoli" <guilherme@gpiccoli.net>, mpe@ellerman.id.au,
+ benh@kernel.crashing.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, xe-kernel@external.cisco.com,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Mauro Rodrigues <maurosr@linux.vnet.ibm.com>, linux-pci@vger.kernel.org
+References: <20180618165706.42679-1-danielwa@cisco.com>
+ <CALJn8nPbTy3Ne2a7L71c2YZ06Ccr2j0zs6TdptfRc7O-N9u=Yg@mail.gmail.com>
+ <c56f43f5-7902-f7c8-20e1-955ad064c4d0@cisco.com>
+ <CALJn8nM+S7STs+_MTje1qVCpa6MvnROS2+b5_GDz2wYs8etapA@mail.gmail.com>
+From: Daniel Walker <danielwa@cisco.com>
+Message-ID: <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
+Date: Tue, 19 Jun 2018 09:57:15 -0700
 MIME-Version: 1.0
-In-Reply-To: <871sd3x842.fsf@concordia.ellerman.id.au>
-Message-Id: <20180619163813.GG5294@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALJn8nM+S7STs+_MTje1qVCpa6MvnROS2+b5_GDz2wYs8etapA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,39 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 19, 2018 at 10:40:13PM +1000, Michael Ellerman wrote:
-> Ram Pai <linuxram@us.ibm.com> writes:
-> 
-> > execute-only key is allocated dynamically. This is a problem.  When a
-> > thread implicitly creates a execute-only key, and resets UAMOR for that
-> > key, the UAMOR value does not percolate to all the other threads.  Any
-> > other thread may ignorantly change the permissions on the key.  This can
-> > cause the key to be not execute-only for that thread.
-> >
-> > Preallocate the execute-only key and ensure that no thread can change
-> > the permission of the key, by resetting the corresponding bit in UAMOR.
-> 
-> OK this is a non-ABI changing bug fix AFAICS.
-> 
-> I'll add:
-> 
->   Fixes: 5586cf61e108 ("powerpc: introduce execute-only pkey")
->   Cc: stable@vger.kernel.org # v4.16+
-> 
-> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> > index b681bec..1f2389f 100644
-> > --- a/arch/powerpc/mm/pkeys.c
-> > +++ b/arch/powerpc/mm/pkeys.c
-> > @@ -25,6 +25,7 @@
-> >  #define IAMR_EX_BIT 0x1UL
-> >  #define PKEY_REG_BITS (sizeof(u64)*8)
-> >  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
-> > +#define EXECUTE_ONLY_KEY 2
-> 
-> Do we ensure we have at least 3 keys anywhere?
+On 06/19/2018 09:26 AM, Guilherme G. Piccoli wrote:
+>> [...]
+>> What your doing is changing the phb_id to some transformation of "reg" for
+>> all platforms except which have "ibm,opal-phbid". This is what we observe.
+>> This is a radical altering of the prior phb_id selection before your patch.
+>>
+>> The question is, was that your intent ? We are expecting these numbers
+>> aren't getting altered in this way, this is why we have the patch. Your
+>> patch description appears to suggest you want this type of selection for
+>> "... pSeries and PowerNV cases)." , so I am assuming you did this by
+>> mistake. Also I don't see a reason to make this change for all platforms.
+> It was the intent - whenever we have device-tree information, the idea is to
+> use it to have more consistent numbering across reboots and PCI hotplugs.
+> The reason to change that originally is hotplugging a PCI device added
+> the device with a different PHB/Domain value, and network predictable naming
+> messed-up interfaces' names, leading to a machine without networking.
 
-No. Good to add. Can this be different patch?
+Ok ..
 
-However we do not have any systems with less than 16keys AFAICT.
+>
+>
+>> [...]
+>>
+>> We have already done this, that is how we determined your patch was changing
+>> the domain values. There isn't much to tell w.r.t this issue on our side, we
+>> are expecting the domain numbers are set a specific way and they aren't
+>> getting set that way. The drivers which are looking for PCI devices are not
+>> in kernel space, and the PCI domain values are getting taken from userspace.
+>>
+> Oh okay, I imagined it was some crazy userspace-based PCI domain scheme
+> that led you to report the issue - confirmed heheh
+> So, you expect the old behavior right? Incremental PHB numbering.
+> I think we could have a kernel config option to allow that, this way
+> you could rebuild your kernel with that option and keep the old behavior.
+>
+> This idea needs to be validated by the maintainers, or perhaps they could
+> propose another way to keep the old behavior to interested parties.
+>
+> [Looping linux-pci too - original thread at:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-June/174760.html]
 
-RP
+I didn't look into changing the behavior on our side because it didn't 
+look like the intent of the patch was to make a global change. I can 
+take a look at changing this behavior on our side , given that this was 
+intended by your changes.
+
+However, they're may be other platforms or drivers which depend on these 
+numbers getting set a certain way, so there may be other userspace 
+dependencies on these values.
+
+Daniel
