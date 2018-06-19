@@ -1,26 +1,30 @@
-Return-Path: <jrdr.linux@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
+ [209.85.218.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 418wxX5KMbzF0wM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 15:09:36 +1000 (AEST)
-Received: by mail-lf0-x243.google.com with SMTP id v84-v6so4914496lfa.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 22:09:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 418xnn23F7zDrcd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 15:47:56 +1000 (AEST)
+Received: by mail-oi0-f67.google.com with SMTP id a141-v6so17073189oii.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2018 22:47:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <5c6942da-c847-c53a-a571-4ec96f2a993d@linux.ibm.com>
-References: <20180611202904.GA25538@jordon-HP-15-Notebook-PC>
- <5c6942da-c847-c53a-a571-4ec96f2a993d@linux.ibm.com>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Tue, 19 Jun 2018 10:39:32 +0530
-Message-ID: <CAFqt6zY=rpak3NGUMcCupvLp_RCwLMCtwfnBBjLfSc+U2vQ3OQ@mail.gmail.com>
-Subject: Re: [PATCH] misc: ocxl: Change return type for fault handler
-To: Frederic Barrat <fbarrat@linux.ibm.com>
-Cc: Matthew Wilcox <willy@infradead.org>, fbarrat@linux.vnet.ibm.com,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg KH <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Sabyasachi Gupta <sabyasachi.linux@gmail.com>,
- brajeswar.linux@gmail.com
+References: <20180618140518.2920804-1-arnd@arndb.de>
+ <CA+7wUswcgxLz_GAqkyVLpdAmTNEPUZ-cXJ8Ej7Xx9+OgjGUo=Q@mail.gmail.com>
+ <87efh3hndq.fsf@igel.home>
+In-Reply-To: <87efh3hndq.fsf@igel.home>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 19 Jun 2018 07:47:41 +0200
+Message-ID: <CA+7wUsx+M1PE_ZcyT0JokY3r8hFLZfufUyFGX7kYX-fAZ524Fw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] powerpc: mac: fix rtc read functions
+To: schwab@linux-m68k.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, funaho@jurai.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, gerg@linux-m68k.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, y2038@lists.linaro.org,
+ Meelis Roos <mroos@linux.ee>,
+ Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,33 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 14, 2018 at 9:36 PM, Frederic Barrat <fbarrat@linux.ibm.com> wr=
-ote:
+On Mon, Jun 18, 2018 at 10:04 PM Andreas Schwab <schwab@linux-m68k.org> wrote:
 >
+> On Jun 18 2018, Mathieu Malaterre <malat@debian.org> wrote:
 >
-> Le 11/06/2018 =C3=A0 22:29, Souptick Joarder a =C3=A9crit :
->>
->> Use new return type vm_fault_t for fault handler. For
->> now, this is just documenting that the function returns
->> a VM_FAULT value rather than an errno. Once all instances
->> are converted, vm_fault_t will become a distinct type.
->>
->> Ref-> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
->>
->> There is an existing bug when vm_insert_pfn() can return
->> ENOMEM which was ignored and VM_FAULT_NOPAGE returned as
->> default. The new inline vmf_insert_pfn() has removed
->> this inefficiency by returning correct vm_fault_ type.
->>
->> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
->> ---
+> > Sadly, trying again today does not work anymore. Adding some printk
+> > just before WARN_ON:
+> >
+> > +printk(KERN_ERR " rtc DBG pmu_get_time1: %lld %d %lld \n", now,
+> > RTC_OFFSET, now - RTC_OFFSET );
+> > +printk(KERN_ERR " rtc DBG pmu_get_time2: %x %x %x %x %d \n",
+> > req.reply[0], req.reply[1], req.reply[2], req.reply[3] ,
+> > req.reply_len);
+> >
+> > leads to:
+> >
+> > [    0.000000]  rtc DBG pmu_get_time1: 14096662 2082844800 -2068748138
+> > [    0.000000]  rtc DBG pmu_get_time2: 0 d7 19 16 4
 >
+> A good value would have 0xd7 in the first byte.  The problem is that
+> pmu_set_rtc_time is also broken, and leads to an invalid time value
+> stored in the RTC.  Since pmu_request is a varargs function passing
+> values of type time64_t without casting won't work.
 >
-> Thanks!
->
-> Tested and
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->
->
+> You need to reset your RTC before you can continue.
 
-Frederic, is this patch queued for 4.19 ?
+Indeed that was silly, I was not paying attention. I'll try again tonight.
+
+> I think the right fix is to change nowtime in pmu_set_rtc_time and
+> cuda_set_rtc_time back to unsigned int (or to u32).
+>
+> Andreas.
+>
+> --
+> Andreas Schwab, schwab@linux-m68k.org
+> GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+> "And now for something completely different."
