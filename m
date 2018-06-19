@@ -1,12 +1,12 @@
 Return-Path: <Joakim.Tjernlund@infinera.com>
 Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 419D3P29FVzF0wQ
+ by lists.ozlabs.org (Postfix) with ESMTP id 419D3P2MxHzF0wf
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 02:30:41 +1000 (AEST)
 From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
 To: York Sun <york.sun@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] QE GPIO: Add qe_gpio_set_multiple
-Date: Tue, 19 Jun 2018 18:22:16 +0200
-Message-Id: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
+Subject: [PATCH] spi/fsl-espi: Add missing cell-index OF property
+Date: Tue, 19 Jun 2018 18:23:04 +0200
+Message-Id: <20180619162304.20125-1-joakim.tjernlund@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,59 +16,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This cousin to gpio-mpc8xxx was lacking a multiple pins method,
-add one.
+espi does not look for a OF cell-index property which
+makes the bus numbering dynamic only. This add an
+optional cell-index.
 
 Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
 ---
- drivers/soc/fsl/qe/gpio.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/spi/spi-fsl-espi.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 3b27075c21a7..819bed0f5667 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -83,6 +83,33 @@ static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- }
+diff --git a/drivers/spi/spi-fsl-espi.c b/drivers/spi/spi-fsl-espi.c
+index 1d332e23f6ed..56b71c5e2f10 100644
+--- a/drivers/spi/spi-fsl-espi.c
++++ b/drivers/spi/spi-fsl-espi.c
+@@ -672,6 +672,14 @@ static int fsl_espi_probe(struct device *dev, struct resource *mem,
  
-+static void qe_gpio_set_multiple(struct gpio_chip *gc,
-+				 unsigned long *mask, unsigned long *bits)
-+{
-+	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-+	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
-+	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	unsigned long flags;
-+	int i;
+ 	dev_set_drvdata(dev, master);
+ 
++	if (dev->of_node) {
++		u32 cell_index;
 +
-+	spin_lock_irqsave(&qe_gc->lock, flags);
-+
-+	for (i = 0; i < gc->ngpio; i++) {
-+		if (*mask == 0)
-+			break;
-+		if (__test_and_clear_bit(i, mask)) {
-+			if (test_bit(i, bits))
-+				qe_gc->cpdata |= (1U << (QE_PIO_PINS - 1 - i));
-+			else
-+				qe_gc->cpdata &= ~(1U << (QE_PIO_PINS - 1 - i));
-+		}
++		if (!of_property_read_u32(dev->of_node, "cell-index",
++					  &cell_index))
++			master->bus_num = cell_index;
 +	}
 +
-+	out_be32(&regs->cpdata, qe_gc->cpdata);
-+
-+	spin_unlock_irqrestore(&qe_gc->lock, flags);
-+}
-+
- static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
- 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
-@@ -298,6 +325,7 @@ static int __init qe_add_gpiochips(void)
- 		gc->direction_output = qe_gpio_dir_out;
- 		gc->get = qe_gpio_get;
- 		gc->set = qe_gpio_set;
-+		gc->set_multiple = qe_gpio_set_multiple;
- 
- 		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
- 		if (ret)
+ 	master->mode_bits = SPI_RX_DUAL | SPI_CPOL | SPI_CPHA | SPI_CS_HIGH |
+ 			    SPI_LSB_FIRST | SPI_LOOP;
+ 	master->dev.of_node = dev->of_node;
 -- 
 2.13.6
