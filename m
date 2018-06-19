@@ -1,45 +1,24 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4198Wy1BmpzF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 23:51:35 +1000 (AEST)
-Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
- by aserp2130.oracle.com (8.16.0.22/8.16.0.22) with SMTP id w5JDiFgC017662
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 13:51:31 GMT
-Received: from aserv0021.oracle.com (aserv0021.oracle.com [141.146.126.233])
- by aserp2130.oracle.com with ESMTP id 2jmr2mgcks-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 13:51:31 +0000
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
- by aserv0021.oracle.com (8.14.4/8.14.4) with ESMTP id w5JDpUkk021572
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 13:51:30 GMT
-Received: from abhmp0014.oracle.com (abhmp0014.oracle.com [141.146.116.20])
- by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id w5JDpTIS028783
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 13:51:29 GMT
-Received: by mail-oi0-f54.google.com with SMTP id t133-v6so18197540oif.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 06:51:29 -0700 (PDT)
-MIME-Version: 1.0
-References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
- <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
- <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
-In-Reply-To: <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Tue, 19 Jun 2018 09:50:52 -0400
-Message-ID: <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
-Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
-To: jslaby@suse.cz
-Cc: mhocko@kernel.org, Steven Sistare <steven.sistare@oracle.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, benh@kernel.crashing.org,
- paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>,
- kirill.shutemov@linux.intel.com, Reza Arbab <arbab@linux.vnet.ibm.com>,
- schwidefsky@de.ibm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
- x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- Linux Memory Management List <linux-mm@kvack.org>,
- linux-s390@vger.kernel.org, mgorman@techsingularity.net
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4198pb6D16zF0fX
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 00:04:23 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Joshua Thompson <funaho@jurai.org>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ y2038@lists.linaro.org, Meelis Roos <mroos@linux.ee>,
+ Andreas Schwab <schwab@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 2/3] [v2] m68k: mac: use time64_t in RTC handling
+Date: Tue, 19 Jun 2018 16:02:28 +0200
+Message-Id: <20180619140229.3615110-2-arnd@arndb.de>
+In-Reply-To: <20180619140229.3615110-1-arnd@arndb.de>
+References: <20180619140229.3615110-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,40 +28,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 16, 2018 at 4:04 AM Jiri Slaby <jslaby@suse.cz> wrote:
->
-> On 11/21/2017, 08:24 AM, Michal Hocko wrote:
-> > On Thu 16-11-17 20:46:01, Pavel Tatashin wrote:
-> >> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
-> >> as all the page initialization code is in common code.
-> >>
-> >> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
-> >> does not really use hotplug memory functionality. So, we can remove this
-> >> requirement as well.
-> >>
-> >> This patch allows to use deferred struct page initialization on all
-> >> platforms with memblock allocator.
-> >>
-> >> Tested on x86, arm64, and sparc. Also, verified that code compiles on
-> >> PPC with CONFIG_MEMORY_HOTPLUG disabled.
-> >
-> > There is slight risk that we will encounter corner cases on some
-> > architectures with weird memory layout/topology
->
-> Which x86_32-pae seems to be. Many bad page state errors are emitted
-> during boot when this patch is applied:
+The real-time clock on m68k (and powerpc) mac systems uses an unsigned
+32-bit value starting in 1904, which overflows in 2040, about two years
+later than everyone else, but this gets wrapped around in the Linux
+code in 2038 already because of the deprecated usage of time_t and/or
+long in the conversion.
 
-Hi Jiri,
+Getting rid of the deprecated interfaces makes it work until 2040 as
+documented, and it could be easily extended by reinterpreting
+the resulting time64_t as a positive number. For the moment, I'm
+adding a WARN_ON() that triggers if we encounter a time before 1970
+or after 2040 (the two are indistinguishable).
 
-Thank you for reporting this bug.
+This brings it in line with the corresponding code that we have on
+powerpc macintosh.
 
-Because 32-bit systems are limited in the maximum amount of physical
-memory, they don't need deferred struct pages. So, we can add depends
-on 64BIT to DEFERRED_STRUCT_PAGE_INIT in mm/Kconfig.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+v2: Fix varargs passing bug pointed out by Andreas Schwab
+    Fix a typo that caused a build regression
+---
+ arch/m68k/mac/misc.c | 62 +++++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 39 insertions(+), 23 deletions(-)
 
-However, before we do this, I want to try reproducing this problem and
-root cause it, as it might expose a general problem that is not 32-bit
-specific.
-
-Thank you,
-Pavel
+diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
+index c68054361615..0a2572a6bfe5 100644
+--- a/arch/m68k/mac/misc.c
++++ b/arch/m68k/mac/misc.c
+@@ -26,33 +26,39 @@
+ 
+ #include <asm/machdep.h>
+ 
+-/* Offset between Unix time (1970-based) and Mac time (1904-based) */
++/* Offset between Unix time (1970-based) and Mac time (1904-based). Cuda and PMU
++ * times wrap in 2040. If we need to handle later times, the read_time functions
++ * need to be changed to interpret wrapped times as post-2040. */
+ 
+ #define RTC_OFFSET 2082844800
+ 
+ static void (*rom_reset)(void);
+ 
+ #ifdef CONFIG_ADB_CUDA
+-static long cuda_read_time(void)
++static time64_t cuda_read_time(void)
+ {
+ 	struct adb_request req;
+-	long time;
++	time64_t time;
+ 
+ 	if (cuda_request(&req, NULL, 2, CUDA_PACKET, CUDA_GET_TIME) < 0)
+ 		return 0;
+ 	while (!req.complete)
+ 		cuda_poll();
+ 
+-	time = (req.reply[3] << 24) | (req.reply[4] << 16) |
+-	       (req.reply[5] << 8) | req.reply[6];
++	time = (u32)((req.reply[3] << 24) | (req.reply[4] << 16) |
++		     (req.reply[5] << 8) | req.reply[6]);
++
++	/* it's either after year 2040, or the RTC has gone backwards */
++	WARN_ON(time < RTC_OFFSET);
++
+ 	return time - RTC_OFFSET;
+ }
+ 
+-static void cuda_write_time(long data)
++static void cuda_write_time(time64_t time)
+ {
+ 	struct adb_request req;
++	u32 data = lower_32_bits(time + RTC_OFFSET);
+ 
+-	data += RTC_OFFSET;
+ 	if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
+ 			 (data >> 24) & 0xFF, (data >> 16) & 0xFF,
+ 			 (data >> 8) & 0xFF, data & 0xFF) < 0)
+@@ -86,26 +92,30 @@ static void cuda_write_pram(int offset, __u8 data)
+ #endif /* CONFIG_ADB_CUDA */
+ 
+ #ifdef CONFIG_ADB_PMU68K
+-static long pmu_read_time(void)
++static time64_t pmu_read_time(void)
+ {
+ 	struct adb_request req;
+-	long time;
++	time64_t time;
+ 
+ 	if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
+ 		return 0;
+ 	while (!req.complete)
+ 		pmu_poll();
+ 
+-	time = (req.reply[1] << 24) | (req.reply[2] << 16) |
+-	       (req.reply[3] << 8) | req.reply[4];
++	time = (u32)((req.reply[1] << 24) | (req.reply[2] << 16) |
++		     (req.reply[3] << 8) | req.reply[4]);
++
++	/* it's either after year 2040, or the RTC has gone backwards */
++	WARN_ON(time < RTC_OFFSET);
++
+ 	return time - RTC_OFFSET;
+ }
+ 
+-static void pmu_write_time(long data)
++static void pmu_write_time(time64_t time)
+ {
+ 	struct adb_request req;
++	u32 data = lower_32_bits(time + RTC_OFFSET);
+ 
+-	data += RTC_OFFSET;
+ 	if (pmu_request(&req, NULL, 5, PMU_SET_RTC,
+ 			(data >> 24) & 0xFF, (data >> 16) & 0xFF,
+ 			(data >> 8) & 0xFF, data & 0xFF) < 0)
+@@ -269,8 +279,12 @@ static long via_read_time(void)
+ 		via_pram_command(0x89, &result.cdata[1]);
+ 		via_pram_command(0x8D, &result.cdata[0]);
+ 
+-		if (result.idata == last_result.idata)
++		if (result.idata == last_result.idata) {
++			if (result.idata < RTC_OFFSET)
++				result.idata += 0x100000000ull;
++
+ 			return result.idata - RTC_OFFSET;
++		}
+ 
+ 		if (++count > 10)
+ 			break;
+@@ -291,11 +305,11 @@ static long via_read_time(void)
+  * is basically any machine with Mac II-style ADB.
+  */
+ 
+-static void via_write_time(long time)
++static void via_write_time(time64_t time)
+ {
+ 	union {
+ 		__u8 cdata[4];
+-		long idata;
++		__u32 idata;
+ 	} data;
+ 	__u8 temp;
+ 
+@@ -585,12 +599,15 @@ void mac_reset(void)
+  * This function translates seconds since 1970 into a proper date.
+  *
+  * Algorithm cribbed from glibc2.1, __offtime().
++ *
++ * This is roughly same as rtc_time64_to_tm(), which we should probably
++ * use here, but it's only available when CONFIG_RTC_LIB is enabled.
+  */
+ #define SECS_PER_MINUTE (60)
+ #define SECS_PER_HOUR  (SECS_PER_MINUTE * 60)
+ #define SECS_PER_DAY   (SECS_PER_HOUR * 24)
+ 
+-static void unmktime(unsigned long time, long offset,
++static void unmktime(time64_t time, long offset,
+ 		     int *yearp, int *monp, int *dayp,
+ 		     int *hourp, int *minp, int *secp)
+ {
+@@ -602,11 +619,10 @@ static void unmktime(unsigned long time, long offset,
+ 		/* Leap years.  */
+ 		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+ 	};
+-	long int days, rem, y, wday, yday;
++	int days, rem, y, wday, yday;
+ 	const unsigned short int *ip;
+ 
+-	days = time / SECS_PER_DAY;
+-	rem = time % SECS_PER_DAY;
++	days = div_u64_rem(time, SECS_PER_DAY, &rem);
+ 	rem += offset;
+ 	while (rem < 0) {
+ 		rem += SECS_PER_DAY;
+@@ -657,7 +673,7 @@ static void unmktime(unsigned long time, long offset,
+ 
+ int mac_hwclk(int op, struct rtc_time *t)
+ {
+-	unsigned long now;
++	time64_t now;
+ 
+ 	if (!op) { /* read */
+ 		switch (macintosh_config->adb_type) {
+@@ -693,8 +709,8 @@ int mac_hwclk(int op, struct rtc_time *t)
+ 		         __func__, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+ 		         t->tm_hour, t->tm_min, t->tm_sec);
+ 
+-		now = mktime(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
+-			     t->tm_hour, t->tm_min, t->tm_sec);
++		now = mktime64(t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
++			       t->tm_hour, t->tm_min, t->tm_sec);
+ 
+ 		switch (macintosh_config->adb_type) {
+ 		case MAC_ADB_IOP:
+-- 
+2.9.0
