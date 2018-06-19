@@ -1,17 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419P952vS7zF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:21:13 +1000 (AEST)
-In-Reply-To: <20180615013837.21710-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v3] powerpc/64s/radix: Fix MADV_[FREE|DONTNEED] TLB flush miss
- problem with THP
-Message-Id: <419P951xwlz9s5c@ozlabs.org>
-Date: Wed, 20 Jun 2018 09:21:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419PV10sR3zF0dj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 09:35:53 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Jens Axboe <axboe@kernel.dk>, Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Constant ata messages on console with commit 28361c403683
+ ("libata: add extra internal command") (was Re: [GIT PULL 2/2] libata changes
+ for v4.18-rc1)
+In-Reply-To: <f82edaa2-4b1a-c747-3d58-ec86ceb4ee7e@kernel.dk>
+References: <20180605190807.GE1351649@devbig577.frc2.facebook.com>
+ <20180605191525.GF1351649@devbig577.frc2.facebook.com>
+ <87bmc8a6qi.fsf@concordia.ellerman.id.au>
+ <ddef9feb-2764-6959-3a36-e97fbe377931@kernel.dk>
+ <87sh5jxmif.fsf@concordia.ellerman.id.au>
+ <f82edaa2-4b1a-c747-3d58-ec86ceb4ee7e@kernel.dk>
+Date: Wed, 20 Jun 2018 09:35:51 +1000
+Message-ID: <87r2l2wdrc.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +32,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-06-15 at 01:38:37 UTC, Nicholas Piggin wrote:
-> The patch 99baac21e4 ("mm: fix MADV_[FREE|DONTNEED] TLB flush miss
-> problem") added a force flush mode to the mmu_gather flush, which
-> unconditionally flushes the entire address range being invalidated
-> (even if actual ptes only covered a smaller range), to solve a problem
-> with concurrent threads invalidating the same PTEs causing them to
-> miss TLBs that need flushing.
-> 
-> This does not work with powerpc that invalidates mmu_gather batches
-> according to page size. Have powerpc flush all possible page sizes in
-> the range if it encounters this concurrency condition.
-> 
-> Patch 4647706ebe ("mm: always flush VMA ranges affected by
-> zap_page_range") does add a TLB flush for all page sizes on powerpc for
-> the zap_page_range case, but that is to be removed and replaced with
-> the mmu_gather flush to avoid redundant flushing. It is also thought to
-> not cover other obscure race conditions:
-> 
-> https://lkml.kernel.org/r/BD3A0EBE-ECF4-41D4-87FA-C755EA9AB6BD@gmail.com
-> 
-> Hash does not have a problem because it invalidates TLBs inside the
-> page table locks.
-> 
-> Reported-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Jens Axboe <axboe@kernel.dk> writes:
+> On 6/19/18 1:29 AM, Michael Ellerman wrote:
+>> Jens Axboe <axboe@kernel.dk> writes:
+>>> On 6/18/18 1:33 AM, Michael Ellerman wrote:
+>>>> Tejun Heo <tj@kernel.org> writes:
+>>>> ...
+>>>>> Jens Axboe (10):
+>>>>>       libata: introduce notion of separate hardware tags
+>>>>>       libata: convert core and drivers to ->hw_tag usage
+>>>>>       libata: bump ->qc_active to a 64-bit type
+>>>>>       libata: use ata_tag_internal() consistently
+>>>>>       libata: remove assumption that ATA_MAX_QUEUE - 1 is the max
+>>>>>       sata_nv: set host can_queue count appropriately
+>>>>>       libata: add extra internal command
+>>>>
+>>>> Replying here because I can't find the original mail.
+>>>>
+>>>> The above commit is causing one of my machines to constantly spew ata
+>>>> messages on the console, according to bisect:
+>>>>
+>>>> # first bad commit: [28361c403683c2b00d4f5e76045f3ccd299bf99d] libata: add extra internal command
+>>>>
+>>>> To get it to boot I have to also apply:
+>>>>
+>>>>   88e10092f6a6 ("sata_fsl: use the right type for tag bitshift")
+>>>>
+>>>>
+>>>> The system boots OK and seems fine, except that it's just printing
+>>>> multiple of these per second:
+>>>>
+>>>>   ata2: Signature Update detected @ 0 msecs
+>>>>   ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>>>   ata2.00: configured for UDMA/100
+>>>>   ata2: Signature Update detected @ 0 msecs
+>>>>   ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>>>   ata2.00: configured for UDMA/100
+>>>>   ata2: Signature Update detected @ 0 msecs
+>>>>   ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>>>   ata2.00: configured for UDMA/100
+>>>>   ata2: Signature Update detected @ 0 msecs
+>>>>   ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>>>>   ata2.00: configured for UDMA/100
+>>>>   ata2: Signature Update detected @ 0 msecs
+...
+>
+> Actually, just try this one on top of current -git.
 
-Applied to powerpc fixes, thanks.
+Yep that fixes it.
 
-https://git.kernel.org/powerpc/c/02390f66bd2362df114a0a0770d80e
+No more message spam, and when I try to mount sr0 it says "no medium".
+
+I'll have to go into the office to actually put a disc in the drive
+to check it's really working, but it seems likely.
+
+Thanks for debugging it, here's a tested-by if you like:
+
+Tested-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
+
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index b8d9cfc60374..4007a9ae650d 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -395,12 +395,6 @@ static inline unsigned int sata_fsl_tag(unsigned int tag,
+>  {
+>  	/* We let libATA core do actual (queue) tag allocation */
+>  
+> -	/* all non NCQ/queued commands should have tag#0 */
+> -	if (ata_tag_internal(tag)) {
+> -		DPRINTK("mapping internal cmds to tag#0\n");
+> -		return 0;
+> -	}
+> -
+>  	if (unlikely(tag >= SATA_FSL_QUEUE_DEPTH)) {
+>  		DPRINTK("tag %d invalid : out of range\n", tag);
+>  		return 0;
+> @@ -1229,7 +1223,7 @@ static void sata_fsl_host_intr(struct ata_port *ap)
+>  
+>  	/* Workaround for data length mismatch errata */
+>  	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+> -		for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
+> +		for (tag = 0; tag <= ATA_MAX_QUEUE; tag++) {
+>  			qc = ata_qc_from_tag(ap, tag);
+>  			if (qc && ata_is_atapi(qc->tf.protocol)) {
+>  				u32 hcontrol;
+>
+> -- 
+> Jens Axboe
