@@ -1,9 +1,9 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4196x660TrzF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:39:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4196x94fLSzF0jD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:39:57 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ram Pai <linuxram@us.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
@@ -11,13 +11,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, luto@kernel.org,
  msuchanek@suse.de
-Subject: Re: [PATCH v2 1/6] powerpc/pkeys: Enable all user-allocatable pkeys
- at init.
-In-Reply-To: <1528936144-6696-2-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [PATCH v2 2/6] powerpc/pkeys: Save the pkey registers before fork
+In-Reply-To: <1528936144-6696-3-git-send-email-linuxram@us.ibm.com>
 References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <1528936144-6696-2-git-send-email-linuxram@us.ibm.com>
-Date: Tue, 19 Jun 2018 22:39:52 +1000
-Message-ID: <878t7bx84n.fsf@concordia.ellerman.id.au>
+ <1528936144-6696-3-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 19 Jun 2018 22:39:56 +1000
+Message-ID: <877emvx84j.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,41 +30,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Ram Pai <linuxram@us.ibm.com> writes:
 
-> In a multithreaded application, a key allocated by one thread must
-> be activate and usable on all threads.
+> When a thread forks the contents of AMR, IAMR, UAMOR registers in the
+> newly forked thread are not inherited.
 >
-> Currently this is not the case, because the UAMOR bits for all keys are
-> disabled by default. When a new key is allocated in one thread, though
-> the corresponding UAMOR bits for that thread get enabled, the UAMOR bits
-> for all other existing threads continue to have their bits disabled.
-> Other threads have no way to set permissions on the key, effectively
-> making the key useless.
-
-This all seems a bit strongly worded to me. It's arguable whether a key
-should be usable by the thread that allocated it or all threads.
-
-You could conceivably have a design where threads are blocked from using
-a key until they're given permission to do so by the thread that
-allocated the key.
-
-But we're changing the behaviour to match x86 and because we don't have
-an API to grant another thread access to a key. Right?
-
-> Enable the UAMOR bits for all keys, at process creation. Since the
-> contents of UAMOR are inherited at fork, all threads are capable of
-> modifying the permissions on any key.
+> Save the registers before forking, for content of those
+> registers to be automatically copied into the new thread.
 >
-> BTW: changing the permission on unallocated keys has no effect, till
-> those keys are not associated with any PTEs. The kernel will anyway
-> disallow to association of unallocated keys with PTEs.
+> CC: Michael Ellerman <mpe@ellerman.id.au>
+> CC: Florian Weimer <fweimer@redhat.com>
+> CC: Andy Lutomirski <luto@kernel.org>
+> CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 
-This is an ABI change, which is bad, but I guess we call it a bug fix
-because things didn't really work previously?
+Again this is an ABI change but we'll call it a bug fix I guess.
 
-I'll tag it:
+I'll add:
 
   Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
   Cc: stable@vger.kernel.org # v4.16+
 
 
 cheers
+
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 9ef4aea..991d097 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -583,6 +583,7 @@ static void save_all(struct task_struct *tsk)
+>  		__giveup_spe(tsk);
+>  
+>  	msr_check_and_clear(msr_all_available);
+> +	thread_pkey_regs_save(&tsk->thread);
+>  }
+>  
+>  void flush_all_to_thread(struct task_struct *tsk)
+> -- 
+> 1.7.1
