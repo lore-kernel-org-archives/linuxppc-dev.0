@@ -1,31 +1,46 @@
-Return-Path: <pedromfc@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <pasha.tatashin@oracle.com>
+Received: from aserp2130.oracle.com (aserp2130.oracle.com [141.146.126.79])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419Jc51nmjzF0wj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 05:55:49 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5JJtiXB085130
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 15:55:46 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jq7jwhy3t-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 15:55:45 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pedromfc@linux.vnet.ibm.com>;
- Tue, 19 Jun 2018 13:54:39 -0600
-From: Pedro Franco de Carvalho <pedromfc@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH 1/2] powerpc: Flush checkpointed gpr state for 32-bit
- processes in ptrace
-Date: Tue, 19 Jun 2018 16:54:28 -0300
-In-Reply-To: <87d0wvtolp.fsf@concordia.ellerman.id.au>
-References: <87d0wvtolp.fsf@concordia.ellerman.id.au>
-Message-Id: <20180619195429.22925-1-pedromfc@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419JdP2K32zF0tm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 05:56:56 +1000 (AEST)
+Received: from pps.filterd (aserp2130.oracle.com [127.0.0.1])
+ by aserp2130.oracle.com (8.16.0.22/8.16.0.22) with SMTP id w5JJrNtw091598
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 19:56:52 GMT
+Received: from userv0021.oracle.com (userv0021.oracle.com [156.151.31.71])
+ by aserp2130.oracle.com with ESMTP id 2jmr2mhu1r-1
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 19:56:52 +0000
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+ by userv0021.oracle.com (8.14.4/8.14.4) with ESMTP id w5JJuo6I015726
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 19:56:51 GMT
+Received: from abhmp0012.oracle.com (abhmp0012.oracle.com [141.146.116.18])
+ by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id w5JJuoQx024945
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 19:56:50 GMT
+Received: by mail-ot0-f177.google.com with SMTP id q17-v6so1092548otg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 12:56:50 -0700 (PDT)
+MIME-Version: 1.0
+References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
+ <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
+ <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
+ <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
+In-Reply-To: <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
+From: Pavel Tatashin <pasha.tatashin@oracle.com>
+Date: Tue, 19 Jun 2018 15:56:13 -0400
+Message-ID: <CAGM2reYcwyOcKrO=WhB3Cf0FNL3ZearC=KvxmTNUU6rkWviQOg@mail.gmail.com>
+Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
+To: jslaby@suse.cz
+Cc: mhocko@kernel.org, Steven Sistare <steven.sistare@oracle.com>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>, benh@kernel.crashing.org,
+ paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>,
+ kirill.shutemov@linux.intel.com, Reza Arbab <arbab@linux.vnet.ibm.com>,
+ schwidefsky@de.ibm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ x86@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ linux-s390@vger.kernel.org, mgorman@techsingularity.net
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,89 +50,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Would something like this be ok?
+On Tue, Jun 19, 2018 at 9:50 AM Pavel Tatashin
+<pasha.tatashin@oracle.com> wrote:
+>
+> On Sat, Jun 16, 2018 at 4:04 AM Jiri Slaby <jslaby@suse.cz> wrote:
+> >
+> > On 11/21/2017, 08:24 AM, Michal Hocko wrote:
+> > > On Thu 16-11-17 20:46:01, Pavel Tatashin wrote:
+> > >> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
+> > >> as all the page initialization code is in common code.
+> > >>
+> > >> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
+> > >> does not really use hotplug memory functionality. So, we can remove this
+> > >> requirement as well.
+> > >>
+> > >> This patch allows to use deferred struct page initialization on all
+> > >> platforms with memblock allocator.
+> > >>
+> > >> Tested on x86, arm64, and sparc. Also, verified that code compiles on
+> > >> PPC with CONFIG_MEMORY_HOTPLUG disabled.
+> > >
+> > > There is slight risk that we will encounter corner cases on some
+> > > architectures with weird memory layout/topology
+> >
+> > Which x86_32-pae seems to be. Many bad page state errors are emitted
+> > during boot when this patch is applied:
+>
+> Hi Jiri,
+>
+> Thank you for reporting this bug.
+>
+> Because 32-bit systems are limited in the maximum amount of physical
+> memory, they don't need deferred struct pages. So, we can add depends
+> on 64BIT to DEFERRED_STRUCT_PAGE_INIT in mm/Kconfig.
+>
+> However, before we do this, I want to try reproducing this problem and
+> root cause it, as it might expose a general problem that is not 32-bit
+> specific.
 
-I factored out the calls to flush_fp_to_thread and flush_altivec_to_thread,
-although I don't really understand why these are necessary. The tm_cvsx_get/set
-functions also calls flush_vsx_to_thread (outside of the helper function).
+Hi Jiri,
 
-I also noticed that tm_ppr/dscr/tar_get/set functions don't flush the tm
-state. Should they do it, and if so, should they also flush the fp and altivec
-state?
+Could you please attach your config and full qemu arguments that you
+used to reproduce this bug.
 
-Thanks!
-Pedro
+Thank you,
+Pavel
 
--- >8 --
-Currently ptrace doesn't flush the register state when the
-checkpointed GPRs of a 32-bit thread are accessed. This can cause core
-dumps to have stale data in the checkpointed GPR note.
 
-This patch adds a helper function to flush the TM, fpu and altivec
-state and calls it from the tm_cgpr32_get/set functions.
-
-Signed-off-by: Pedro Franco de Carvalho <pedromfc@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/ptrace.c | 33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
-
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 9667666eb18e..0d56857e1e89 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -778,6 +778,29 @@ static int evr_set(struct task_struct *target, const struct user_regset *regset,
- 
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- /**
-+ * tm_flush_if_active - flush TM, fpu and altivec state if TM active
-+ * @target:	The target task.
-+ *
-+ * This function flushes the TM, fpu and altivec state to the target
-+ * task and returns 0 if TM is available and active in the target, and
-+ * returns an error code suitable for ptrace otherwise.
-+ */
-+static int tm_flush_if_active (struct task_struct *target)
-+{
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	flush_tmregs_to_thread(target);
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+
-+	return 0;
-+}
-+
-+/**
-  * tm_cgpr_active - get active number of registers in CGPR
-  * @target:	The target task.
-  * @regset:	The user regset structure.
-@@ -2124,6 +2147,11 @@ static int tm_cgpr32_get(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     void *kbuf, void __user *ubuf)
- {
-+	int ret = tm_flush_if_active(target);
-+
-+	if (ret)
-+		return ret;
-+
- 	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf,
- 			&target->thread.ckpt_regs.gpr[0]);
- }
-@@ -2133,6 +2161,11 @@ static int tm_cgpr32_set(struct task_struct *target,
- 		     unsigned int pos, unsigned int count,
- 		     const void *kbuf, const void __user *ubuf)
- {
-+	int ret = tm_flush_if_active(target);
-+
-+	if (ret)
-+		return ret;
-+
- 	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf,
- 			&target->thread.ckpt_regs.gpr[0]);
- }
--- 
-2.13.6
+>
+> Thank you,
+> Pavel
