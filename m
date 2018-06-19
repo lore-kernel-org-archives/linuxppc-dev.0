@@ -1,19 +1,12 @@
-Return-Path: <york.sun@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0073.outbound.protection.outlook.com [104.47.2.73])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419D2Q0ymYzF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 02:29:42 +1000 (AEST)
-From: York Sun <york.sun@nxp.com>
-To: "jocke@infinera.com" <joakim.tjernlund@infinera.com>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>, "broonie@kernel.org" <broonie@kernel.org>
-Subject: Re: [PATCH] spi/fsl-espi: Add missing cell-index OF property
-Date: Tue, 19 Jun 2018 16:29:35 +0000
-Message-ID: <VI1PR04MB20782A7BE6789A3AE441DB359A700@VI1PR04MB2078.eurprd04.prod.outlook.com>
-References: <20180619162304.20125-1-joakim.tjernlund@infinera.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Return-Path: <Joakim.Tjernlund@infinera.com>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 419D3P29FVzF0wQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 02:30:41 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+To: York Sun <york.sun@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] QE GPIO: Add qe_gpio_set_multiple
+Date: Tue, 19 Jun 2018 18:22:16 +0200
+Message-Id: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joakim,=0A=
-=0A=
-I am not the maintainer for this driver. Adding Mark Brown.=0A=
-=0A=
-York=0A=
-=0A=
-On 06/19/2018 09:23 AM, Joakim Tjernlund wrote:=0A=
-> espi does not look for a OF cell-index property which=0A=
-> makes the bus numbering dynamic only. This add an=0A=
-> optional cell-index.=0A=
-> =0A=
-> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>=0A=
-> ---=0A=
->  drivers/spi/spi-fsl-espi.c | 8 ++++++++=0A=
->  1 file changed, 8 insertions(+)=0A=
-> =0A=
-> diff --git a/drivers/spi/spi-fsl-espi.c b/drivers/spi/spi-fsl-espi.c=0A=
-> index 1d332e23f6ed..56b71c5e2f10 100644=0A=
-> --- a/drivers/spi/spi-fsl-espi.c=0A=
-> +++ b/drivers/spi/spi-fsl-espi.c=0A=
-> @@ -672,6 +672,14 @@ static int fsl_espi_probe(struct device *dev, struct=
- resource *mem,=0A=
->  =0A=
->  	dev_set_drvdata(dev, master);=0A=
->  =0A=
-> +	if (dev->of_node) {=0A=
-> +		u32 cell_index;=0A=
-> +=0A=
-> +		if (!of_property_read_u32(dev->of_node, "cell-index",=0A=
-> +					  &cell_index))=0A=
-> +			master->bus_num =3D cell_index;=0A=
-> +	}=0A=
-> +=0A=
->  	master->mode_bits =3D SPI_RX_DUAL | SPI_CPOL | SPI_CPHA | SPI_CS_HIGH |=
-=0A=
->  			    SPI_LSB_FIRST | SPI_LOOP;=0A=
->  	master->dev.of_node =3D dev->of_node;=0A=
-> =0A=
-=0A=
+This cousin to gpio-mpc8xxx was lacking a multiple pins method,
+add one.
+
+Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>
+---
+ drivers/soc/fsl/qe/gpio.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 3b27075c21a7..819bed0f5667 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -83,6 +83,33 @@ static void qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ }
+ 
++static void qe_gpio_set_multiple(struct gpio_chip *gc,
++				 unsigned long *mask, unsigned long *bits)
++{
++	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	unsigned long flags;
++	int i;
++
++	spin_lock_irqsave(&qe_gc->lock, flags);
++
++	for (i = 0; i < gc->ngpio; i++) {
++		if (*mask == 0)
++			break;
++		if (__test_and_clear_bit(i, mask)) {
++			if (test_bit(i, bits))
++				qe_gc->cpdata |= (1U << (QE_PIO_PINS - 1 - i));
++			else
++				qe_gc->cpdata &= ~(1U << (QE_PIO_PINS - 1 - i));
++		}
++	}
++
++	out_be32(&regs->cpdata, qe_gc->cpdata);
++
++	spin_unlock_irqrestore(&qe_gc->lock, flags);
++}
++
+ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ {
+ 	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+@@ -298,6 +325,7 @@ static int __init qe_add_gpiochips(void)
+ 		gc->direction_output = qe_gpio_dir_out;
+ 		gc->get = qe_gpio_get;
+ 		gc->set = qe_gpio_set;
++		gc->set_multiple = qe_gpio_set_multiple;
+ 
+ 		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
+ 		if (ret)
+-- 
+2.13.6
