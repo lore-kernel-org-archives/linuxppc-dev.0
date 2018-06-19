@@ -1,10 +1,10 @@
 Return-Path: <Paul.Burton@mips.com>
 Received: from 9pmail.ess.barracuda.com (9pmail.ess.barracuda.com
- [64.235.150.224])
+ [64.235.150.225])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419K3q2THVzF0fX
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 06:16:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419K4N6BH4zF0jD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 06:16:52 +1000 (AEST)
 From: Paul Burton <paul.burton@mips.com>
 To: <linux-kbuild@vger.kernel.org>
 CC: Mauro Carvalho Chehab <mchehab@kernel.org>, <linux-mips@linux-mips.org>,
@@ -21,10 +21,9 @@ CC: Mauro Carvalho Chehab <mchehab@kernel.org>, <linux-mips@linux-mips.org>,
  Ellerman <mpe@ellerman.id.au>, Heiko Carstens <heiko.carstens@de.ibm.com>,
  <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
  <linuxppc-dev@lists.ozlabs.org>, Paul Burton <paul.burton@mips.com>
-Subject: [PATCH v2 1/3] kbuild: add macro for controlling warnings to
- linux/compiler.h
-Date: Tue, 19 Jun 2018 13:14:56 -0700
-Message-ID: <20180619201458.4559-2-paul.burton@mips.com>
+Subject: [PATCH v2 2/3] disable -Wattribute-alias warning for SYSCALL_DEFINEx()
+Date: Tue, 19 Jun 2018 13:14:57 -0700
+Message-ID: <20180619201458.4559-3-paul.burton@mips.com>
 In-Reply-To: <20180619201458.4559-1-paul.burton@mips.com>
 References: <20180619190225.7eguhiw3ixaiwpgl@pburton-laptop>
  <20180619201458.4559-1-paul.burton@mips.com>
@@ -41,78 +40,43 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-I have occasionally run into a situation where it would make sense to
-control a compiler warning from a source file rather than doing so from
-a Makefile using the $(cc-disable-warning, ...) or $(cc-option, ...)
-helpers.
+gcc-8 warns for every single definition of a system call entry
+point, e.g.:
 
-The approach here is similar to what glibc uses, using __diag() and
-related macros to encapsulate a _Pragma("GCC diagnostic ...") statement
-that gets turned into the respective "#pragma GCC diagnostic ..." by
-the preprocessor when the macro gets expanded.
+include/linux/compat.h:56:18: error: 'compat_sys_rt_sigprocmask' alias between functions of incompatible types 'long int(int,  compat_sigset_t *, compat_sigset_t *, compat_size_t)' {aka 'long int(int,  struct <anonymous> *, struct <anonymous> *, unsigned int)'} and 'long int(long int,  long int,  long int,  long int)' [-Werror=attribute-alias]
+  asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))\
+                  ^~~~~~~~~~
+include/linux/compat.h:45:2: note: in expansion of macro 'COMPAT_SYSCALL_DEFINEx'
+  COMPAT_SYSCALL_DEFINEx(4, _##name, __VA_ARGS__)
+  ^~~~~~~~~~~~~~~~~~~~~~
+kernel/signal.c:2601:1: note: in expansion of macro 'COMPAT_SYSCALL_DEFINE4'
+ COMPAT_SYSCALL_DEFINE4(rt_sigprocmask, int, how, compat_sigset_t __user *, nset,
+ ^~~~~~~~~~~~~~~~~~~~~~
+include/linux/compat.h:60:18: note: aliased declaration here
+  asmlinkage long compat_SyS##name(__MAP(x,__SC_LONG,__VA_ARGS__))\
+                  ^~~~~~~~~~
 
-Like glibc, I also have an argument to pass the affected compiler
-version, but decided to actually evaluate that one. For now, this
-supports GCC_4_6, GCC_4_7, GCC_4_8, GCC_4_9, GCC_5, GCC_6, GCC_7,
-GCC_8 and GCC_9. Adding support for CLANG_5 and other interesting
-versions is straightforward here. GNU compilers starting with gcc-4.2
-could support it in principle, but "#pragma GCC diagnostic push"
-was only added in gcc-4.6, so it seems simpler to not deal with those
-at all. The same versions show a large number of warnings already,
-so it seems easier to just leave it at that and not do a more
-fine-grained control for them.
+The new warning seems reasonable in principle, but it doesn't
+help us here, since we rely on the type mismatch to sanitize the
+system call arguments. After I reported this as GCC PR82435, a new
+-Wno-attribute-alias option was added that could be used to turn the
+warning off globally on the command line, but I'd prefer to do it a
+little more fine-grained.
 
-The use cases I found so far include:
-
-- turning off the gcc-8 -Wattribute-alias warning inside of the
-  SYSCALL_DEFINEx() macro without having to do it globally.
-
-- Reducing the build time for a simple re-make after a change,
-  once we move the warnings from ./Makefile and
-  ./scripts/Makefile.extrawarn into linux/compiler.h
-
-- More control over the warnings based on other configurations,
-  using preprocessor syntax instead of Makefile syntax. This should make
-  it easier for the average developer to understand and change things.
-
-- Adding an easy way to turn the W=1 option on unconditionally
-  for a subdirectory or a specific file. This has been requested
-  by several developers in the past that want to have their subsystems
-  W=1 clean.
-
-- Integrating clang better into the build systems. Clang supports
-  more warnings than GCC, and we probably want to classify them
-  as default, W=1, W=2 etc, but there are cases in which the
-  warnings should be classified differently due to excessive false
-  positives from one or the other compiler.
-
-- Adding a way to turn the default warnings into errors (e.g. using
-  a new "make E=0" tag) while not also turning the W=1 warnings into
-  errors.
-
-This patch for now just adds the minimal infrastructure in order to
-do the first of the list above. As the #pragma GCC diagnostic
-takes precedence over command line options, the next step would be
-to convert a lot of the individual Makefiles that set nonstandard
-options to use __diag() instead.
+Interestingly, turning a warning off and on again inside of
+a single macro doesn't always work, in this case I had to add
+an extra statement inbetween and decided to copy the __SC_TEST
+one from the native syscall to the compat syscall macro.  See
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83256 for more details
+about this.
 
 [paul.burton@mips.com:
   - Rebase atop current master.
-  - Add __diag_GCC, or more generally __diag_<compiler>, abstraction to
-    avoid code outside of linux/compiler-gcc.h needing to duplicate
-    knowledge about different GCC versions.
-  - Add a comment argument to __diag_{ignore,warn,error} which isn't
-    used in the expansion of the macros but serves to push people to
-    document the reason for using them - per feedback from Kees Cook.
-  - Translate severity to GCC-specific pragmas in linux/compiler-gcc.h
-    rather than using GCC-specific in linux/compiler_types.h.
-  - Drop all but GCC 8 macros, since we only need to define macros for
-    versions that we need to introduce pragmas for, and as of this
-    series that's just GCC 8.
-  - Capitalize comments in linux/compiler-gcc.h to match the style of
-    the rest of the file.
-  - Line up macro definitions with tabs in linux/compiler-gcc.h.]
+  - Split GCC & version arguments to __diag_ignore() in order to match
+    changes to the preceding patch.
+  - Add the comment argument to match the preceding patch.]
 
+Link: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82435
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Paul Burton <paul.burton@mips.com>
 Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
@@ -143,87 +107,62 @@ Cc: linux-kbuild@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mips@linux-mips.org
 Cc: linuxppc-dev@lists.ozlabs.org
-
 ---
 
-Changes in v2:
-- Add version argument to fallback __diag_GCC definition.
-- Translate severity from generic ignore,warn,error to GCC-specific
-  pragma content ignored,warning,error in linux/compiler-gcc.h in order
-  to keep linux/compiler_types.h generic per feedback from Masahiro
-  Yamada.
-- Drop all but GCC 8 macros, since we only need to define macros for
-  versions that we need to introduce pragmas for, and as of this series
-  that's just GCC 8.
-- Capitalize comments in linux/compiler-gcc.h to match the style of the
-  rest of the file.
-- Line up macro definitions with tabs in linux/compiler-gcc.h.
+Changes in v2: None
 
- include/linux/compiler-gcc.h   | 27 +++++++++++++++++++++++++++
- include/linux/compiler_types.h | 18 ++++++++++++++++++
- 2 files changed, 45 insertions(+)
+ include/linux/compat.h   | 8 +++++++-
+ include/linux/syscalls.h | 4 ++++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index f1a7492a5cc8..5067a90af9c3 100644
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -347,3 +347,30 @@
- #if GCC_VERSION >= 50100
- #define COMPILER_HAS_GENERIC_BUILTIN_OVERFLOW 1
- #endif
-+
-+/*
-+ * Turn individual warnings and errors on and off locally, depending
-+ * on version.
-+ */
-+#define __diag_GCC(version, severity, s) \
-+	__diag_GCC_ ## version(__diag_GCC_ ## severity s)
-+
-+/* Severity used in pragma directives */
-+#define __diag_GCC_ignore	ignored
-+#define __diag_GCC_warn		warning
-+#define __diag_GCC_error	error
-+
-+/* Compilers before gcc-4.6 do not understand "#pragma GCC diagnostic push" */
-+#if GCC_VERSION >= 40600
-+#define __diag_str1(s)		#s
-+#define __diag_str(s)		__diag_str1(s)
-+#define __diag(s)		_Pragma(__diag_str(GCC diagnostic s))
-+#else
-+#define __diag(s)
-+#endif
-+
-+#if GCC_VERSION >= 80000
-+#define __diag_GCC_8(s)		__diag(s)
-+#else
-+#define __diag_GCC_8(s)
-+#endif
-diff --git a/include/linux/compiler_types.h b/include/linux/compiler_types.h
-index 6b79a9bba9a7..a8ba6b04152c 100644
---- a/include/linux/compiler_types.h
-+++ b/include/linux/compiler_types.h
-@@ -271,4 +271,22 @@ struct ftrace_likely_data {
- # define __native_word(t) (sizeof(t) == sizeof(char) || sizeof(t) == sizeof(short) || sizeof(t) == sizeof(int) || sizeof(t) == sizeof(long))
- #endif
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index b1a5562b3215..c68acc47da57 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -72,6 +72,9 @@
+  */
+ #ifndef COMPAT_SYSCALL_DEFINEx
+ #define COMPAT_SYSCALL_DEFINEx(x, name, ...)					\
++	__diag_push();								\
++	__diag_ignore(GCC, 8, "-Wattribute-alias",				\
++		      "Type aliasing is used to sanitize syscall arguments");\
+ 	asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__));	\
+ 	asmlinkage long compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
+ 		__attribute__((alias(__stringify(__se_compat_sys##name))));	\
+@@ -80,8 +83,11 @@
+ 	asmlinkage long __se_compat_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__));	\
+ 	asmlinkage long __se_compat_sys##name(__MAP(x,__SC_LONG,__VA_ARGS__))	\
+ 	{									\
+-		return __do_compat_sys##name(__MAP(x,__SC_DELOUSE,__VA_ARGS__));\
++		long ret = __do_compat_sys##name(__MAP(x,__SC_DELOUSE,__VA_ARGS__));\
++		__MAP(x,__SC_TEST,__VA_ARGS__);					\
++		return ret;							\
+ 	}									\
++	__diag_pop();								\
+ 	static inline long __do_compat_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
+ #endif /* COMPAT_SYSCALL_DEFINEx */
  
-+#ifndef __diag
-+#define __diag(string)
-+#endif
-+
-+#ifndef __diag_GCC
-+#define __diag_GCC(version, severity, string)
-+#endif
-+
-+#define __diag_push()	__diag(push)
-+#define __diag_pop()	__diag(pop)
-+
-+#define __diag_ignore(compiler, version, option, comment) \
-+	__diag_ ## compiler(version, ignore, option)
-+#define __diag_warn(compiler, version, option, comment) \
-+	__diag_ ## compiler(version, warn, option)
-+#define __diag_error(compiler, version, option, comment) \
-+	__diag_ ## compiler(version, error, option)
-+
- #endif /* __LINUX_COMPILER_TYPES_H */
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 73810808cdf2..a368a68cb667 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -231,6 +231,9 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+  */
+ #ifndef __SYSCALL_DEFINEx
+ #define __SYSCALL_DEFINEx(x, name, ...)					\
++	__diag_push();							\
++	__diag_ignore(GCC, 8, "-Wattribute-alias",			\
++		      "Type aliasing is used to sanitize syscall arguments");\
+ 	asmlinkage long sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))	\
+ 		__attribute__((alias(__stringify(__se_sys##name))));	\
+ 	ALLOW_ERROR_INJECTION(sys##name, ERRNO);			\
+@@ -243,6 +246,7 @@ static inline int is_syscall_trace_event(struct trace_event_call *tp_event)
+ 		__PROTECT(x, ret,__MAP(x,__SC_ARGS,__VA_ARGS__));	\
+ 		return ret;						\
+ 	}								\
++	__diag_pop();							\
+ 	static inline long __do_sys##name(__MAP(x,__SC_DECL,__VA_ARGS__))
+ #endif /* __SYSCALL_DEFINEx */
+ 
 -- 
 2.17.1
