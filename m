@@ -1,9 +1,9 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4196xP2CdDzF0wb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:40:09 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4196xW0jR1zF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:40:15 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Ram Pai <linuxram@us.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
@@ -11,12 +11,12 @@ Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
  mhocko@kernel.org, bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, luto@kernel.org,
  msuchanek@suse.de
-Subject: Re: [PATCH v2 5/6] powerpc/pkeys: make protection key 0 less special
-In-Reply-To: <1528936144-6696-6-git-send-email-linuxram@us.ibm.com>
+Subject: Re: [PATCH v2 4/6] powerpc/pkeys: Preallocate execute-only key
+In-Reply-To: <1528936144-6696-5-git-send-email-linuxram@us.ibm.com>
 References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <1528936144-6696-6-git-send-email-linuxram@us.ibm.com>
-Date: Tue, 19 Jun 2018 22:40:08 +1000
-Message-ID: <8736xjx847.fsf@concordia.ellerman.id.au>
+ <1528936144-6696-5-git-send-email-linuxram@us.ibm.com>
+Date: Tue, 19 Jun 2018 22:40:13 +1000
+Message-ID: <871sd3x842.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,35 +29,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Ram Pai <linuxram@us.ibm.com> writes:
-> Applications need the ability to associate an address-range with some
-> key and latter revert to its initial default key. Pkey-0 comes close to
-> providing this function but falls short, because the current
-> implementation disallows applications to explicitly associate pkey-0 to
-> the address range.
->
-> Lets make pkey-0 less special and treat it almost like any other key.
-> Thus it can be explicitly associated with any address range, and can be
-> freed. This gives the application more flexibility and power.  The
-> ability to free pkey-0 must be used responsibily, since pkey-0 is
-> associated with almost all address-range by default.
->
-> Even with this change pkey-0 continues to be slightly more special
-> from the following point of view.
-> (a) it is implicitly allocated.
-> (b) it is the default key assigned to any address-range.
-> (c) its permissions cannot be modified by userspace.
->
-> NOTE: (c) is specific to powerpc only. pkey-0 is associated by default
-> with all pages including kernel pages, and pkeys are also active in
-> kernel mode. If any permission is denied on pkey-0, the kernel running
-> in the context of the application will be unable to operate.
 
-We could fix that by saving/restoring the AMR when we come into the
-kernel, and switching to a kernel-AMR with all keys accessible.
+> execute-only key is allocated dynamically. This is a problem.  When a
+> thread implicitly creates a execute-only key, and resets UAMOR for that
+> key, the UAMOR value does not percolate to all the other threads.  Any
+> other thread may ignorantly change the permissions on the key.  This can
+> cause the key to be not execute-only for that thread.
+>
+> Preallocate the execute-only key and ensure that no thread can change
+> the permission of the key, by resetting the corresponding bit in UAMOR.
 
-We'd then need to think about copy_to/from_user() gup etc. So maybe we
-don't want to do that. But it's not set in stone.
+OK this is a non-ABI changing bug fix AFAICS.
 
-Are we calling this a bug fix?
+I'll add:
+
+  Fixes: 5586cf61e108 ("powerpc: introduce execute-only pkey")
+  Cc: stable@vger.kernel.org # v4.16+
+
+> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> index b681bec..1f2389f 100644
+> --- a/arch/powerpc/mm/pkeys.c
+> +++ b/arch/powerpc/mm/pkeys.c
+> @@ -25,6 +25,7 @@
+>  #define IAMR_EX_BIT 0x1UL
+>  #define PKEY_REG_BITS (sizeof(u64)*8)
+>  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
+> +#define EXECUTE_ONLY_KEY 2
+
+Do we ensure we have at least 3 keys anywhere?
 
 cheers
