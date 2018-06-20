@@ -1,22 +1,27 @@
-Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
- [IPv6:2607:f8b0:400d:c09::242])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419YSL1nr9zF0vb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 15:34:58 +1000 (AEST)
-Received: by mail-qk0-x242.google.com with SMTP id q70-v6so1236537qke.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:34:57 -0700 (PDT)
-Sender: Ram Pai <ram.n.pai@gmail.com>
-From: Ram Pai <linuxram@us.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
- Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: [PATCH] powerpc/pkeys: preallocate execute_only key only if the key
- is available.
-Date: Tue, 19 Jun 2018 22:34:22 -0700
-Message-Id: <1529472862-26506-1-git-send-email-linuxram@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419bjm2cb7zF0mQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 17:16:44 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id h79-v6so2088215oig.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 00:16:43 -0700 (PDT)
+MIME-Version: 1.0
+References: <20180619140229.3615110-1-arnd@arndb.de>
+In-Reply-To: <20180619140229.3615110-1-arnd@arndb.de>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 20 Jun 2018 09:16:30 +0200
+Message-ID: <CA+7wUsyN_gru4rW0y3ZzXzYwhfaA=uHKaOG=z5bprnYq6oVfMg@mail.gmail.com>
+Subject: Re: [PATCH 1/3] [v2] powerpc: mac: fix rtc read/write functions
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, funaho@jurai.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, gerg@linux-m68k.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>, y2038@lists.linaro.org,
+ Meelis Roos <mroos@linux.ee>, schwab@linux-m68k.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +31,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Key 2 is preallocated and reserved for execute-only key. In rare
-cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
-incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
+On Tue, Jun 19, 2018 at 4:04 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> As Mathieu pointed out, my conversion to time64_t was incorrect and resulted
+> in negative times to be read from the RTC. The problem is that during the
+> conversion from a byte array to a time64_t, the 'unsigned char' variable
+> holding the top byte gets turned into a negative signed 32-bit integer
+> before being assigned to the 64-bit variable for any times after 1972.
+>
+> This changes the logic to cast to an unsigned 32-bit number first for
+> the Macintosh time and then convert that to the Unix time, which then gives
+> us a time in the documented 1904..2040 year range. I decided not to use
+> the longer 1970..2106 range that other drivers use, for consistency with
+> the literal interpretation of the register, but that could be easily
+> changed if we decide we want to support any Mac after 2040.
+>
+> Just to be on the safe side, I'm also adding a WARN_ON that will trigger
+> if either the year 2040 has come and is observed by this driver, or we
+> run into an RTC that got set back to a pre-1970 date for some reason
+> (the two are indistinguishable).
+>
+> For the RTC write functions, Andreas found another problem: both
+> pmu_request() and cuda_request() are varargs functions, so changing
+> the type of the arguments passed into them from 32 bit to 64 bit
+> breaks the API for the set_rtc_time functions. This changes it
+> back to 32 bits.
+>
+> The same code exists in arch/m68k/ and is patched in an identical way now
+> in a separate patch.
+>
+> Fixes: 5bfd643583b2 ("powerpc: use time64_t in read_persistent_clock")
+> Reported-by: Mathieu Malaterre <malat@debian.org>
+> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Ensure key 2 is available for preallocation before reserving it for
-execute_only purpose.
+Doing a reboot on Debian sets the hardware clock from system clock and
+upon reboot everything is back in shape:
 
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- arch/powerpc/mm/pkeys.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+[    5.645082] rtc-generic rtc-generic: setting system clock to
+2018-06-20 07:12:04 UTC (1529478724)
 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index cec990c..2013ef0 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -19,6 +19,7 @@
- u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
-+u32  execute_only_key = 2;
- 
- #define AMR_BITS_PER_PKEY 2
- #define AMR_RD_BIT 0x1UL
-@@ -26,7 +27,6 @@
- #define IAMR_EX_BIT 0x1UL
- #define PKEY_REG_BITS (sizeof(u64)*8)
- #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
--#define EXECUTE_ONLY_KEY 2
- 
- static void scan_pkey_feature(void)
- {
-@@ -122,8 +122,12 @@ int pkey_initialize(void)
- #else
- 	os_reserved = 0;
- #endif
-+
-+	if ((pkeys_total - os_reserved) <= execute_only_key)
-+		execute_only_key = -1;
-+
- 	/* Bits are in LE format. */
--	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
-+	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
- 	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
- 
- 	/* register mask is in BE format */
-@@ -132,11 +136,11 @@ int pkey_initialize(void)
- 
- 	pkey_iamr_mask = ~0x0ul;
- 	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
--	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	pkey_uamor_mask = ~0x0ul;
- 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
--	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-+	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++)
- 		pkey_uamor_mask &= ~(0x3ul << pkeyshift(i));
-@@ -151,7 +155,7 @@ void pkey_mm_init(struct mm_struct *mm)
- 	if (static_branch_likely(&pkey_disabled))
- 		return;
- 	mm_pkey_allocation_map(mm) = initial_allocation_mask;
--	mm->context.execute_only_pkey = EXECUTE_ONLY_KEY;
-+	mm->context.execute_only_pkey = execute_only_key;
- }
- 
- static inline u64 read_amr(void)
--- 
-1.7.1
+
+Tested-by: Mathieu Malaterre <malat@debian.org>
+
+Thanks!
+> ---
+>  arch/powerpc/platforms/powermac/time.c | 29 ++++++++++++++++++++---------
+>  1 file changed, 20 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platforms/powermac/time.c
+> index 7c968e46736f..12e6e4d30602 100644
+> --- a/arch/powerpc/platforms/powermac/time.c
+> +++ b/arch/powerpc/platforms/powermac/time.c
+> @@ -42,7 +42,11 @@
+>  #define DBG(x...)
+>  #endif
+>
+> -/* Apparently the RTC stores seconds since 1 Jan 1904 */
+> +/*
+> + * Offset between Unix time (1970-based) and Mac time (1904-based). Cuda and PMU
+> + * times wrap in 2040. If we need to handle later times, the read_time functions
+> + * need to be changed to interpret wrapped times as post-2040.
+> + */
+>  #define RTC_OFFSET     2082844800
+>
+>  /*
+> @@ -97,8 +101,11 @@ static time64_t cuda_get_time(void)
+>         if (req.reply_len != 7)
+>                 printk(KERN_ERR "cuda_get_time: got %d byte reply\n",
+>                        req.reply_len);
+> -       now = (req.reply[3] << 24) + (req.reply[4] << 16)
+> -               + (req.reply[5] << 8) + req.reply[6];
+> +       now = (u32)((req.reply[3] << 24) + (req.reply[4] << 16) +
+> +                   (req.reply[5] << 8) + req.reply[6]);
+> +       /* it's either after year 2040, or the RTC has gone backwards */
+> +       WARN_ON(now < RTC_OFFSET);
+> +
+>         return now - RTC_OFFSET;
+>  }
+>
+> @@ -106,10 +113,10 @@ static time64_t cuda_get_time(void)
+>
+>  static int cuda_set_rtc_time(struct rtc_time *tm)
+>  {
+> -       time64_t nowtime;
+> +       u32 nowtime;
+>         struct adb_request req;
+>
+> -       nowtime = rtc_tm_to_time64(tm) + RTC_OFFSET;
+> +       nowtime = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
+>         if (cuda_request(&req, NULL, 6, CUDA_PACKET, CUDA_SET_TIME,
+>                          nowtime >> 24, nowtime >> 16, nowtime >> 8,
+>                          nowtime) < 0)
+> @@ -140,8 +147,12 @@ static time64_t pmu_get_time(void)
+>         if (req.reply_len != 4)
+>                 printk(KERN_ERR "pmu_get_time: got %d byte reply from PMU\n",
+>                        req.reply_len);
+> -       now = (req.reply[0] << 24) + (req.reply[1] << 16)
+> -               + (req.reply[2] << 8) + req.reply[3];
+> +       now = (u32)((req.reply[0] << 24) + (req.reply[1] << 16) +
+> +                   (req.reply[2] << 8) + req.reply[3]);
+> +
+> +       /* it's either after year 2040, or the RTC has gone backwards */
+> +       WARN_ON(now < RTC_OFFSET);
+> +
+>         return now - RTC_OFFSET;
+>  }
+>
+> @@ -149,10 +160,10 @@ static time64_t pmu_get_time(void)
+>
+>  static int pmu_set_rtc_time(struct rtc_time *tm)
+>  {
+> -       time64_t nowtime;
+> +       u32 nowtime;
+>         struct adb_request req;
+>
+> -       nowtime = rtc_tm_to_time64(tm) + RTC_OFFSET;
+> +       nowtime = lower_32_bits(rtc_tm_to_time64(tm) + RTC_OFFSET);
+>         if (pmu_request(&req, NULL, 5, PMU_SET_RTC, nowtime >> 24,
+>                         nowtime >> 16, nowtime >> 8, nowtime) < 0)
+>                 return -ENXIO;
+> --
+> 2.9.0
+>
