@@ -1,38 +1,22 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419XjN1D2LzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 15:01:11 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5K4x1nL045491
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 01:01:09 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jqeedkmth-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 01:01:09 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 20 Jun 2018 01:01:08 -0400
-Date: Wed, 20 Jun 2018 10:31:03 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org, rjw@rjwysocki.net, svaidy@linux.vnet.ibm.com,
- ego@linux.vnet.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au
-Subject: Re: [PATCH 3/3] powernv/cpuidle: Use parsed device tree values for
- cpuidle_init
-Reply-To: ego@linux.vnet.ibm.com
-References: <1529384668-27548-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1529384668-27548-4-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1529384668-27548-4-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Message-Id: <20180620050103.GC21984@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419YSL1nr9zF0vb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 15:34:58 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id q70-v6so1236537qke.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 22:34:57 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
+ Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
+Subject: [PATCH] powerpc/pkeys: preallocate execute_only key only if the key
+ is available.
+Date: Tue, 19 Jun 2018 22:34:22 -0700
+Message-Id: <1529472862-26506-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,183 +26,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Akshay,
+Key 2 is preallocated and reserved for execute-only key. In rare
+cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
+incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
 
-On Tue, Jun 19, 2018 at 10:34:28AM +0530, Akshay Adiga wrote:
-> Export pnv_idle_states and nr_pnv_idle_states so that its accessible to
-> cpuidle driver. Use properties from pnv_idle_states structure for powernv
-> cpuidle_init.
-> 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/cpuidle.h |  2 ++
->  drivers/cpuidle/cpuidle-powernv.c  | 49 +++++++++++++++++++++++---------------
->  2 files changed, 32 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-> index 55ee7e3..1446747 100644
-> --- a/arch/powerpc/include/asm/cpuidle.h
-> +++ b/arch/powerpc/include/asm/cpuidle.h
-> @@ -93,6 +93,8 @@ struct pnv_idle_states_t {
->  	u32 flags;
->  };
-> 
-> +extern struct pnv_idle_states_t *pnv_idle_states;
-> +extern int nr_pnv_idle_states;
->  extern u32 pnv_fastsleep_workaround_at_entry[];
->  extern u32 pnv_fastsleep_workaround_at_exit[];
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index d29e4f0..de8ba26 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -285,6 +285,11 @@ static int powernv_add_idle_states(void)
->  		goto out;
->  	}
-> 
-> +	if (nr_pnv_idle_states <= 0) {
-> +		pr_warn("opal: No idle states found\n");
+Ensure key 2 is available for preallocation before reserving it for
+execute_only purpose.
 
-We would have a warning of this type in the powernv/idle.c right ? We
-don't need to warn again. Or at least have a different warning
-something like: 
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/powerpc/mm/pkeys.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
-      	         pr_warn("cpuidle: Only snooze state is available\n");
-> +		goto out;
-> +	}
-
-> +
->  	/* Read values of any property to determine the num of idle states */
->  	dt_idle_states = of_property_count_u32_elems(power_mgt, "ibm,cpu-idle-state-flags");
-
-
-We don't need to get dt_idle_states from the device tree now that we
-have nr_pnv_idle_states. 
-
-
->  	if (dt_idle_states < 0) {
-> @@ -338,7 +343,7 @@ static int powernv_add_idle_states(void)
->  	 * If the idle states use stop instruction, probe for psscr values
->  	 * and psscr mask which are necessary to specify required stop level.
->  	 */
-> -	has_stop_states = (flags[0] &
-> +	has_stop_states = (pnv_idle_states[0].flags &
->  			   (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP));
->  	if (has_stop_states) {
->  		count = of_property_count_u64_elems(power_mgt,
-> @@ -387,51 +392,55 @@ static int powernv_add_idle_states(void)
->  						residency_ns, dt_idle_states);
->  	}
-> 
-> -	for (i = 0; i < dt_idle_states; i++) {
-> +	for (i = 0; i < nr_pnv_idle_states; i++) {
->  		unsigned int exit_latency, target_residency;
->  		bool stops_timebase = false;
-> +		struct pnv_idle_states_t *state = &pnv_idle_states[i];
-> 
->  		/*
->  		 * Skip the platform idle state whose flag isn't in
-> -		 * the supported_cpuidle_states flag mask.
-> +		 * the supported_pnv_idle_states flag mask.
->  		 */
-> -		if ((flags[i] & supported_flags) != flags[i])
-> +		if ((state->flags & supported_flags) !=
-> +				state->flags)
->  			continue;
->  		/*
->  		 * If an idle state has exit latency beyond
->  		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
->  		 * in cpu-idle.
->  		 */
-> -		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
-> +		if (state->latency_ns > POWERNV_THRESHOLD_LATENCY_NS)
->  			continue;
->  		/*
->  		 * Firmware passes residency and latency values in ns.
->  		 * cpuidle expects it in us.
->  		 */
-> -		exit_latency = DIV_ROUND_UP(latency_ns[i], 1000);
-> +		exit_latency = DIV_ROUND_UP(state->latency_ns, 1000);
->  		if (!rc)
-> -			target_residency = DIV_ROUND_UP(residency_ns[i], 1000);
-> +			target_residency = DIV_ROUND_UP(state->residency_ns, 1000);
->  		else
->  			target_residency = 0;
-> 
->  		if (has_stop_states) {
-> -			int err = validate_psscr_val_mask(&psscr_val[i],
-> -							  &psscr_mask[i],
-> -							  flags[i]);
-
-> +			int err;
-> +			err = validate_psscr_val_mask(&state->pm_ctrl_reg_val,
-> +						      &state->pm_ctrl_reg_mask,
-> +						      state->flags);
->  			if (err) {
-> -				report_invalid_psscr_val(psscr_val[i], err);
-> +				report_invalid_psscr_val(state->pm_ctrl_reg_val,
-> +							 err);
->  				continue;
->  			}
-
-We have already validated the states once. We should simply use the
-result here.
-
-
->  		}
-> 
-> -		if (flags[i] & OPAL_PM_TIMEBASE_STOP)
-> +		if (state->flags & OPAL_PM_TIMEBASE_STOP)
->  			stops_timebase = true;
-> 
->  		/*
->  		 * For nap and fastsleep, use default target_residency
->  		 * values if f/w does not expose it.
->  		 */
-> -		if (flags[i] & OPAL_PM_NAP_ENABLED) {
-> +		if (state->flags & OPAL_PM_NAP_ENABLED) {
->  			if (!rc)
->  				target_residency = 100;
->  			/* Add NAP state */
-> @@ -439,10 +448,11 @@ static int powernv_add_idle_states(void)
->  					  CPUIDLE_FLAG_NONE, nap_loop,
->  					  target_residency, exit_latency, 0, 0);
->  		} else if (has_stop_states && !stops_timebase) {
-> -			add_powernv_state(nr_idle_states, names[i],
-> +			add_powernv_state(nr_idle_states, state->name,
->  					  CPUIDLE_FLAG_NONE, stop_loop,
->  					  target_residency, exit_latency,
-> -					  psscr_val[i], psscr_mask[i]);
-> +					  state->pm_ctrl_reg_val,
-> +					  state->pm_ctrl_reg_mask);
->  		}
-> 
->  		/*
-> @@ -450,8 +460,8 @@ static int powernv_add_idle_states(void)
->  		 * within this config dependency check.
->  		 */
->  #ifdef CONFIG_TICK_ONESHOT
-> -		else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-> -			 flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
-> +		else if (state->flags & OPAL_PM_SLEEP_ENABLED ||
-> +			 state->flags & OPAL_PM_SLEEP_ENABLED_ER1) {
->  			if (!rc)
->  				target_residency = 300000;
->  			/* Add FASTSLEEP state */
-> @@ -460,10 +470,11 @@ static int powernv_add_idle_states(void)
->  					  fastsleep_loop,
->  					  target_residency, exit_latency, 0, 0);
->  		} else if (has_stop_states && stops_timebase) {
-> -			add_powernv_state(nr_idle_states, names[i],
-> +			add_powernv_state(nr_idle_states, state->name,
->  					  CPUIDLE_FLAG_TIMER_STOP, stop_loop,
->  					  target_residency, exit_latency,
-> -					  psscr_val[i], psscr_mask[i]);
-> +					  state->pm_ctrl_reg_val,
-> +					  state->pm_ctrl_reg_mask);
->  		}
->  #endif
->  		else
-> -- 
-> 2.5.5
-> 
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index cec990c..2013ef0 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -19,6 +19,7 @@
+ u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
+ u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
+ u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
++u32  execute_only_key = 2;
+ 
+ #define AMR_BITS_PER_PKEY 2
+ #define AMR_RD_BIT 0x1UL
+@@ -26,7 +27,6 @@
+ #define IAMR_EX_BIT 0x1UL
+ #define PKEY_REG_BITS (sizeof(u64)*8)
+ #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
+-#define EXECUTE_ONLY_KEY 2
+ 
+ static void scan_pkey_feature(void)
+ {
+@@ -122,8 +122,12 @@ int pkey_initialize(void)
+ #else
+ 	os_reserved = 0;
+ #endif
++
++	if ((pkeys_total - os_reserved) <= execute_only_key)
++		execute_only_key = -1;
++
+ 	/* Bits are in LE format. */
+-	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
++	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
+ 	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
+ 
+ 	/* register mask is in BE format */
+@@ -132,11 +136,11 @@ int pkey_initialize(void)
+ 
+ 	pkey_iamr_mask = ~0x0ul;
+ 	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
+-	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
++	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
+ 
+ 	pkey_uamor_mask = ~0x0ul;
+ 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
+-	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
++	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
+ 
+ 	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++)
+ 		pkey_uamor_mask &= ~(0x3ul << pkeyshift(i));
+@@ -151,7 +155,7 @@ void pkey_mm_init(struct mm_struct *mm)
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return;
+ 	mm_pkey_allocation_map(mm) = initial_allocation_mask;
+-	mm->context.execute_only_pkey = EXECUTE_ONLY_KEY;
++	mm->context.execute_only_pkey = execute_only_key;
+ }
+ 
+ static inline u64 read_amr(void)
+-- 
+1.7.1
