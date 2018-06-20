@@ -1,34 +1,23 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <broonie@sirena.org.uk>
+Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
+ [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419fhc67Y4zF0l6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 19:30:56 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5K9SqoG076369
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 05:30:54 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jqk3du2kp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 05:30:53 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 20 Jun 2018 05:30:53 -0400
-Subject: Re: [PATCH V2] powerpc/mm: Initialize kernel pagetable memory for PTE
- fragments
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20180620092255.19393-1-khandual@linux.vnet.ibm.com>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Wed, 20 Jun 2018 15:00:46 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419h8d5nc1zF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:36:46 +1000 (AEST)
+Date: Wed, 20 Jun 2018 11:36:38 +0100
+From: Mark Brown <broonie@kernel.org>
+To: York Sun <york.sun@nxp.com>
+Cc: "jocke@infinera.com" <joakim.tjernlund@infinera.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] spi/fsl-espi: Add missing cell-index OF property
+Message-ID: <20180620103638.GB6242@sirena.org.uk>
+References: <20180619162304.20125-1-joakim.tjernlund@infinera.com>
+ <VI1PR04MB20782A7BE6789A3AE441DB359A700@VI1PR04MB2078.eurprd04.prod.outlook.com>
 MIME-Version: 1.0
-In-Reply-To: <20180620092255.19393-1-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <6440f9eb-6b2d-bd8d-f9b7-8593873c9315@linux.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+ protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
+In-Reply-To: <VI1PR04MB20782A7BE6789A3AE441DB359A700@VI1PR04MB2078.eurprd04.prod.outlook.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,75 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/20/2018 02:52 PM, Anshuman Khandual wrote:
-> Kernel pagetable pages for PTE fragments never go through the standard init
-> sequence which can cause inaccuracies in utilization statistics reported at
-> places like /proc and /sysfs interfaces etc. Also the allocated page misses
-> out on pagetable lock and page flag init as well. Fix it by making sure all
-> pages allocated for either user process or kernel PTE fragments go through
-> same initialization.
-> 
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> ---
-> Changes in V2:
-> 
-> - Call the destructor function during free for all cases
-> 
->   arch/powerpc/mm/pgtable-book3s64.c | 27 ++++++++++++---------------
->   1 file changed, 12 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-> index c1f4ca4..a820ee6 100644
-> --- a/arch/powerpc/mm/pgtable-book3s64.c
-> +++ b/arch/powerpc/mm/pgtable-book3s64.c
-> @@ -335,23 +335,21 @@ static pte_t *get_pte_from_cache(struct mm_struct *mm)
->   
->   static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
->   {
-> +	gfp_t gfp_mask = PGALLOC_GFP;
->   	void *ret = NULL;
->   	struct page *page;
->   
-> -	if (!kernel) {
-> -		page = alloc_page(PGALLOC_GFP | __GFP_ACCOUNT);
-> -		if (!page)
-> -			return NULL;
-> -		if (!pgtable_page_ctor(page)) {
-> -			__free_page(page);
-> -			return NULL;
-> -		}
-> -	} else {
-> -		page = alloc_page(PGALLOC_GFP);
-> -		if (!page)
-> -			return NULL;
-> -	}
-> +	if (!kernel)
-> +		gfp_mask |= __GFP_ACCOUNT;
->   
-> +	page = alloc_page(gfp_mask);
-> +	if (!page)
-> +		return NULL;
-> +
-> +	if (!pgtable_page_ctor(page)) {
-> +		__free_page(page);
-> +		return NULL;
-> +	}
->   
->   	ret = page_address(page);
->   	/*
-> @@ -391,8 +389,7 @@ void pte_fragment_free(unsigned long *table, int kernel)
->   	struct page *page = virt_to_page(table);
->   
->   	if (put_page_testzero(page)) {
-> -		if (!kernel)
-> -			pgtable_page_dtor(page);
-> +		pgtable_page_dtor(page);
->   		free_unref_page(page);
->   	}
->   }
-> 
 
-If we really are going to do this, may be we can  do it as 
-alloc_for_pmdcache, kill the kernel arg and compare against init_mm?
+--uQr8t48UFsdbeI+V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--aneesh
+On Tue, Jun 19, 2018 at 04:29:35PM +0000, York Sun wrote:
+> Joakim,
+>=20
+> I am not the maintainer for this driver. Adding Mark Brown.
+>=20
+> York
+>=20
+> On 06/19/2018 09:23 AM, Joakim Tjernlund wrote:
+> > espi does not look for a OF cell-index property which
+> > makes the bus numbering dynamic only. This add an
+
+As documented in SubmittingPatches please send patches to the=20
+maintainers for the code you would like to change.  The normal kernel
+workflow is that people apply patches from their inboxes, if they aren't
+copied they are likely to not see the patch at all and it is much more
+difficult to apply patches.
+
+--uQr8t48UFsdbeI+V
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlsqLjUACgkQJNaLcl1U
+h9DMWgf/beW4ZZlIb58GQDm4I5tcHlCxT6wvmndRx/zshRthJLObKXyJgjra50YX
+GOBhhlhPqylKb4v53WGXfb2PSvkN1zzsQXzgfAPJoScH6spJwjvcS+teT7PsLCJo
+RfEenDqlhwZ1R2zPxgY4ddVppagCaQHCHECDiKycYqWOJeOpzC1iXyPUPTeyRF+i
+/ZKIcs/ymSeJVIFK4OkLA58H89VsQdwEnphWJ6HFhrHwOvrN+qfVIg6YSoCa+XtA
+02DeeMPS2206c+tu3s8No37lRYtmOAfdeDpnPc7BDVf/OrqjkR7WOGbiGWfR3Yf3
+qtDxfj7sqFnwp7EMtZwjtiRxQIHN0g==
+=jyjT
+-----END PGP SIGNATURE-----
+
+--uQr8t48UFsdbeI+V--
