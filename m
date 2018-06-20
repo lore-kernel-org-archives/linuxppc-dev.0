@@ -1,52 +1,24 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419Qc22gKWzF0dj
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 10:26:10 +1000 (AEST)
-Subject: Re: [RFC PATCH 17/23] watchdog/hardlockup/hpet: Convert the timer's
- interrupt to NMI
-To: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Andi Kleen <andi.kleen@intel.com>, Ashok Raj <ashok.raj@intel.com>,
- Borislav Petkov <bp@suse.de>, Tony Luck <tony.luck@intel.com>,
- "Ravi V. Shankar" <ravi.v.shankar@intel.com>, x86@kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@intel.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Don Zickus <dzickus@redhat.com>, Nicholas Piggin <npiggin@gmail.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Frederic Weisbecker <frederic@kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, Babu Moger <babu.moger@oracle.com>,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, Peter Zijlstra
- <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Colin Ian King <colin.king@canonical.com>,
- Byungchul Park <byungchul.park@lge.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- "Luis R. Rodriguez" <mcgrof@kernel.org>, Waiman Long <longman@redhat.com>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Davidlohr Bueso <dave@stgolabs.net>,
- Christoffer Dall <cdall@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>,
- Kai-Heng Feng <kai.heng.feng@canonical.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- David Rientjes <rientjes@google.com>, iommu@lists.linux-foundation.org
-References: <1528851463-21140-1-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <1528851463-21140-18-git-send-email-ricardo.neri-calderon@linux.intel.com>
- <alpine.DEB.2.21.1806131128570.2280@nanos.tec.linutronix.de>
- <20180615020314.GA11625@voyager>
- <alpine.DEB.2.21.1806151029210.2079@nanos.tec.linutronix.de>
- <20180616005103.GC6659@voyager>
- <alpine.DEB.2.21.1806161517050.1582@nanos.tec.linutronix.de>
- <20180620001535.GA27531@voyager>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <c040d4e7-f33b-9c93-6f5a-6bf960943e36@infradead.org>
-Date: Tue, 19 Jun 2018 17:25:09 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419R5V3kwJzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 10:48:14 +1000 (AEST)
+Date: Wed, 20 Jun 2018 10:42:21 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel 1/2] vfio/spapr: Use IOMMU pageshift rather than
+ pagesize
+Message-ID: <20180620004220.GF3546@umbus.fritz.box>
+References: <20180619084414.808-1-aik@ozlabs.ru>
+ <20180619084414.808-2-aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20180620001535.GA27531@voyager>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="6v9BRtpmy+umdQlo"
+In-Reply-To: <20180619084414.808-2-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -56,46 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2018 05:15 PM, Ricardo Neri wrote:
-> On Sat, Jun 16, 2018 at 03:24:49PM +0200, Thomas Gleixner wrote:
->> On Fri, 15 Jun 2018, Ricardo Neri wrote:
->>> On Fri, Jun 15, 2018 at 11:19:09AM +0200, Thomas Gleixner wrote:
->>>> On Thu, 14 Jun 2018, Ricardo Neri wrote:
->>>>> Alternatively, there could be a counter that skips reading the HPET status
->>>>> register (and the detection of hardlockups) for every X NMIs. This would
->>>>> reduce the overall frequency of HPET register reads.
->>>>
->>>> Great plan. So if the watchdog is the only NMI (because perf is off) then
->>>> you delay the watchdog detection by that count.
->>>
->>> OK. This was a bad idea. Then, is it acceptable to have an read to an HPET
->>> register per NMI just to check in the status register if the HPET timer
->>> caused the NMI?
->>
->> The status register is useless in case of MSI. MSI is edge triggered ....
->>
->> The only register which gives you proper information is the counter
->> register itself. That adds an massive overhead to each NMI, because the
->> counter register access is synchronized to the HPET clock with hardware
->> magic. Plus on larger systems, the HPET access is cross node and even
->> slower.
-> 
-> It starts to sound that the HPET is too slow to drive the hardlockup detector.
-> 
-> Would it be possible to envision a variant of this implementation? In this
-> variant, the HPET only targets a single CPU. The actual hardlockup detector
-> is implemented by this single CPU sending interprocessor interrupts to the
-> rest of the CPUs.
-> 
-> In this manner only one CPU has to deal with the slowness of the HPET; the
-> rest of the CPUs don't have to read or write any HPET registers. A sysfs
-> entry could be added to configure which CPU will have to deal with the HPET
-> timer. However, profiling could not be done accurately on such CPU.
 
-Please forgive my simple question:
+--6v9BRtpmy+umdQlo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What happens when this one CPU is the one that locks up?
+On Tue, Jun 19, 2018 at 06:44:13PM +1000, Alexey Kardashevskiy wrote:
+> The size is always equal to 1 page so let's use this. Later on this will
+> be used for other checks which use page shifts to check the granularity
+> of access.
+>=20
+> This should cause no behavioral change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-thnx,
--- 
-~Randy
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
+u_spapr_tce.c
+> index 759a5bd..2da5f05 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_contain=
+er *container,
+>  }
+> =20
+>  static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+> -		unsigned long tce, unsigned long size,
+> +		unsigned long tce, unsigned long shift,
+>  		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+>  {
+>  	long ret =3D 0;
+>  	struct mm_iommu_table_group_mem_t *mem;
+> =20
+> -	mem =3D mm_iommu_lookup(container->mm, tce, size);
+> +	mem =3D mm_iommu_lookup(container->mm, tce, 1ULL << shift);
+>  	if (!mem)
+>  		return -EINVAL;
+> =20
+> @@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_contai=
+ner *container,
+>  	if (!pua)
+>  		return;
+> =20
+> -	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl=
+),
+> +	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
+>  			&hpa, &mem);
+>  	if (ret)
+>  		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
+> @@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *=
+container,
+>  				entry + i);
+> =20
+>  		ret =3D tce_iommu_prereg_ua_to_hpa(container,
+> -				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
+> +				tce, tbl->it_page_shift, &hpa, &mem);
+>  		if (ret)
+>  			break;
+> =20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--6v9BRtpmy+umdQlo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlspouoACgkQbDjKyiDZ
+s5L5/RAAs00ywsrdFkfGSZAjNzj/GtSLnODR96CGrsgQxaNPt+nNPMVWcZ/B4vts
+l+QkYi+TS2G3iRWKznWYdlgoJimm95WJQr0gy3kvOZdaIeK7BgyNqttZpwJgMIWc
+8yWCmng3Z7z3Jlh4Vwffjd9qMCFOcZvUib93q9HJfz9rBZk1NAXRNNGi6VtAH4+N
+tH3no4yIODIpGR2ueG2WPDd7q834+dRTLxdxR1vBFad37VCKdnl4Mah6x9gzjZYV
+SNBb57WEXCyUNby2gke20VoyVUztLgEkYhgJ3heKj2Uwl9kQ0DN3CDsgPtKw3lxT
+FYNIfG7ILiyfuRXGLY5+bHqDF0PwuJq8AwvO/szSZn59vOLkYw2rEIeixFLGqSaI
+Yp+W8oe48Qch7hhV5F9fzrpYI4HIYZCFlYljdTgO6HXwy4dRYx6AdyV2dbpUXK3g
++U28syhEK5UeAqyO5vKvm3mwNeVoVCiDhQ+p1paAg70vPiRB4yhFtoiT/FeJv6yZ
+9K0+y+PTaqva9wRFYVwhk71CpmeolT9uoc3F/RROUyhbrejhOn0ZQmAJIG6t8aki
+cfKWMDlUAIA/MLhmg3cpitlk6oHMV5wnUpp4QC6zDcfRJVrjh6UkoB6Vo1dxTA3O
+BJyOYbeHESfNjuajLfalySDDhDXNn3lkq1/qlq6hFW9i8cX5iOQ=
+=jxrq
+-----END PGP SIGNATURE-----
+
+--6v9BRtpmy+umdQlo--
