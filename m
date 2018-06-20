@@ -1,24 +1,25 @@
-Return-Path: <fweimer@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dave.hansen@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419pBK0B2ZzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 01:08:41 +1000 (AEST)
-Subject: Re: [PATCH v2 0/6] powerpc/pkeys: fixes to pkeys
-To: Michael Ellerman <mpe@ellerman.id.au>, Ram Pai <linuxram@us.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
- aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, Ulrich.Weigand@de.ibm.com,
- luto@kernel.org, msuchanek@suse.de
-References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <8812c879-5761-ef62-dd15-3ceef46d9653@redhat.com>
- <874lhzx84e.fsf@concordia.ellerman.id.au>
-From: Florian Weimer <fweimer@redhat.com>
-Message-ID: <34669c66-ce2f-e8a0-1d18-43086bad3faa@redhat.com>
-Date: Wed, 20 Jun 2018 17:08:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419pC10Mz4zF0wk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 01:09:16 +1000 (AEST)
+Subject: Re: [PATCH v13 17/24] selftests/vm: powerpc implementation to check
+ support for pkey
+To: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
+ linux-kselftest@vger.kernel.org
+References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
+ <1528937115-10132-18-git-send-email-linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
+ msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <20bc9696-3ae9-4eb9-40ce-9c477a8aaea2@intel.com>
+Date: Wed, 20 Jun 2018 08:09:12 -0700
 MIME-Version: 1.0
-In-Reply-To: <874lhzx84e.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <1528937115-10132-18-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2018 02:40 PM, Michael Ellerman wrote:
->> I tested the whole series with the new selftests, with the printamr.c
->> program I posted earlier, and the glibc test for pkey_alloc &c.  The
->> latter required some test fixes, but now passes as well.  As far as I
->> can tell, everything looks good now.
->>
->> Tested-By: Florian Weimer<fweimer@redhat.com>
-> Thanks. I'll add that to each patch I guess, if you're happy with that?
+> -	if (cpu_has_pku()) {
+> -		dprintf1("SKIP: %s: no CPU support\n", __func__);
+> +	if (is_pkey_supported()) {
+> +		dprintf1("SKIP: %s: no CPU/kernel support\n", __func__);
+>  		return;
+>  	}
 
-Sure, but I only tested the whole series as a whole.
-
-Thanks,
-Florian
+I actually kinda wanted a specific message for when the *CPU* doesn't
+support the feature.
