@@ -1,24 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alastair@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419R5V3kwJzF0kx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 10:48:14 +1000 (AEST)
-Date: Wed, 20 Jun 2018 10:42:21 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel 1/2] vfio/spapr: Use IOMMU pageshift rather than
- pagesize
-Message-ID: <20180620004220.GF3546@umbus.fritz.box>
-References: <20180619084414.808-1-aik@ozlabs.ru>
- <20180619084414.808-2-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="6v9BRtpmy+umdQlo"
-In-Reply-To: <20180619084414.808-2-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419SDq2jLTzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 11:39:36 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5K1dMnt132058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 21:39:33 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jq71h5fjd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2018 21:39:33 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alastair@au1.ibm.com>;
+ Wed, 20 Jun 2018 02:39:32 +0100
+Subject: Re: [PATCH] ocxl: Fix page fault handler in case of fault on dying
+ process
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, andrew.donnellan@au1.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.ibm.com, vaibhav@linux.ibm.com
+Date: Wed, 20 Jun 2018 11:39:24 +1000
+In-Reply-To: <20180618121436.20479-1-fbarrat@linux.ibm.com>
+References: <20180618121436.20479-1-fbarrat@linux.ibm.com>
+Mime-Version: 1.0
+Message-Id: <2590ccd230153b95aabb8e9e6a2335915448780a.camel@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,95 +39,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---6v9BRtpmy+umdQlo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Jun 19, 2018 at 06:44:13PM +1000, Alexey Kardashevskiy wrote:
-> The size is always equal to 1 page so let's use this. Later on this will
-> be used for other checks which use page shifts to check the granularity
-> of access.
->=20
-> This should cause no behavioral change.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
+On Mon, 2018-06-18 at 14:14 +0200, Frederic Barrat wrote:
+> If a process exits without doing proper cleanup, there's a window
+> where an opencapi device can try to access the memory of the dying
+> process and may trigger a page fault. That's an expected scenario and
+> the ocxl driver holds a reference on the mm_struct of the process
+> until the opencapi device is notified of the process exiting.
+> However, if mm_users is already at 0, i.e. the address space of the
+> process has already been destroyed, the driver shouldn't try
+> resolving
+> the page fault, as it will fail, but it can also try accessing
+> already
+> freed data.
+> 
+> It is fixed by only calling the bottom half of the page fault handler
+> if mm_users is greater than 0 and get a reference on mm_users instead
+> of mm_count. Otherwise, we can safely return a translation fault to
+> the device, as its associated memory context is being removed. The
+> opencapi device will be properly cleaned up shortly after when
+> closing
+> the file descriptors.
+> 
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi
+> devices")
+> Cc: stable@vger.kernel.org # v4.16+
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 > ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 759a5bd..2da5f05 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_contain=
-er *container,
+>  drivers/misc/ocxl/link.c | 24 +++++++++++++++---------
+>  1 file changed, 15 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/misc/ocxl/link.c b/drivers/misc/ocxl/link.c
+> index f30790582dc0..2aeaf34e7eda 100644
+> --- a/drivers/misc/ocxl/link.c
+> +++ b/drivers/misc/ocxl/link.c
+> @@ -136,7 +136,7 @@ static void xsl_fault_handler_bh(struct
+> work_struct *fault_work)
+>  	int rc;
+>  
+>  	/*
+> -	 * We need to release a reference on the mm whenever exiting
+> this
+> +	 * We must release a reference on mm_users whenever exiting
+> this
+>  	 * function (taken in the memory fault interrupt handler)
+>  	 */
+>  	rc = copro_handle_mm_fault(fault->pe_data.mm, fault->dar,
+> fault->dsisr,
+> @@ -172,7 +172,7 @@ static void xsl_fault_handler_bh(struct
+> work_struct *fault_work)
+>  	}
+>  	r = RESTART;
+>  ack:
+> -	mmdrop(fault->pe_data.mm);
+> +	mmput(fault->pe_data.mm);
+>  	ack_irq(spa, r);
 >  }
-> =20
->  static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
-> -		unsigned long tce, unsigned long size,
-> +		unsigned long tce, unsigned long shift,
->  		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
->  {
->  	long ret =3D 0;
->  	struct mm_iommu_table_group_mem_t *mem;
-> =20
-> -	mem =3D mm_iommu_lookup(container->mm, tce, size);
-> +	mem =3D mm_iommu_lookup(container->mm, tce, 1ULL << shift);
->  	if (!mem)
->  		return -EINVAL;
-> =20
-> @@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_contai=
-ner *container,
->  	if (!pua)
->  		return;
-> =20
-> -	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl=
-),
-> +	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
->  			&hpa, &mem);
->  	if (ret)
->  		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
-> @@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *=
-container,
->  				entry + i);
-> =20
->  		ret =3D tce_iommu_prereg_ua_to_hpa(container,
-> -				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
-> +				tce, tbl->it_page_shift, &hpa, &mem);
->  		if (ret)
->  			break;
-> =20
+>  
+> @@ -184,6 +184,7 @@ static irqreturn_t xsl_fault_handler(int irq,
+> void *data)
+>  	struct pe_data *pe_data;
+>  	struct ocxl_process_element *pe;
+>  	int lpid, pid, tid;
+> +	bool schedule = false;
+>  
+>  	read_irq(spa, &dsisr, &dar, &pe_handle);
+>  	trace_ocxl_fault(spa->spa_mem, pe_handle, dsisr, dar, -1);
+> @@ -226,14 +227,19 @@ static irqreturn_t xsl_fault_handler(int irq,
+> void *data)
+>  	}
+>  	WARN_ON(pe_data->mm->context.id != pid);
+>  
+> -	spa->xsl_fault.pe = pe_handle;
+> -	spa->xsl_fault.dar = dar;
+> -	spa->xsl_fault.dsisr = dsisr;
+> -	spa->xsl_fault.pe_data = *pe_data;
+> -	mmgrab(pe_data->mm); /* mm count is released by bottom half
+> */
+> -
+> +	if (mmget_not_zero(pe_data->mm)) {
+> +			spa->xsl_fault.pe = pe_handle;
+> +			spa->xsl_fault.dar = dar;
+> +			spa->xsl_fault.dsisr = dsisr;
+> +			spa->xsl_fault.pe_data = *pe_data;
+> +			schedule = true;
+> +			/* mm_users count released by bottom half */
+> +	}
+>  	rcu_read_unlock();
+> -	schedule_work(&spa->xsl_fault.fault_work);
+> +	if (schedule)
+> +		schedule_work(&spa->xsl_fault.fault_work);
+> +	else
+> +		ack_irq(spa, ADDRESS_ERROR);
+>  	return IRQ_HANDLED;
+>  }
+>  
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Reviewed-By: Alastair D'Silva <alastair@d-silva.org>
 
---6v9BRtpmy+umdQlo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAlspouoACgkQbDjKyiDZ
-s5L5/RAAs00ywsrdFkfGSZAjNzj/GtSLnODR96CGrsgQxaNPt+nNPMVWcZ/B4vts
-l+QkYi+TS2G3iRWKznWYdlgoJimm95WJQr0gy3kvOZdaIeK7BgyNqttZpwJgMIWc
-8yWCmng3Z7z3Jlh4Vwffjd9qMCFOcZvUib93q9HJfz9rBZk1NAXRNNGi6VtAH4+N
-tH3no4yIODIpGR2ueG2WPDd7q834+dRTLxdxR1vBFad37VCKdnl4Mah6x9gzjZYV
-SNBb57WEXCyUNby2gke20VoyVUztLgEkYhgJ3heKj2Uwl9kQ0DN3CDsgPtKw3lxT
-FYNIfG7ILiyfuRXGLY5+bHqDF0PwuJq8AwvO/szSZn59vOLkYw2rEIeixFLGqSaI
-Yp+W8oe48Qch7hhV5F9fzrpYI4HIYZCFlYljdTgO6HXwy4dRYx6AdyV2dbpUXK3g
-+U28syhEK5UeAqyO5vKvm3mwNeVoVCiDhQ+p1paAg70vPiRB4yhFtoiT/FeJv6yZ
-9K0+y+PTaqva9wRFYVwhk71CpmeolT9uoc3F/RROUyhbrejhOn0ZQmAJIG6t8aki
-cfKWMDlUAIA/MLhmg3cpitlk6oHMV5wnUpp4QC6zDcfRJVrjh6UkoB6Vo1dxTA3O
-BJyOYbeHESfNjuajLfalySDDhDXNn3lkq1/qlq6hFW9i8cX5iOQ=
-=jxrq
------END PGP SIGNATURE-----
-
---6v9BRtpmy+umdQlo--
+-- 
+Alastair D'Silva
+Open Source Developer
+Linux Technology Centre, IBM Australia
+mob: 0423 762 819
