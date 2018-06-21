@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BQvW5CNKzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 01:43:03 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BQvl5Pk3zF0wQ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 01:43:15 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5LFYWts091936
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 11:43:01 -0400
+ w5LFYWCP081581
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 11:43:13 -0400
 Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jrctr69fr-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jrertrcjd-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 11:43:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 11:43:12 -0400
 Received: from localhost
  by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 21 Jun 2018 09:42:53 -0600
+ Thu, 21 Jun 2018 09:43:12 -0600
 Subject: Re: [PATCH 2/2] powerpc/mm: Increase MAX_PHYSMEM_BITS to 128TB with
  SPARSEMEM_VMEMMAP config
 To: Balbir Singh <bsingharora@gmail.com>
@@ -30,11 +30,11 @@ References: <20180621083158.30849-1-aneesh.kumar@linux.ibm.com>
  <20180621083158.30849-2-aneesh.kumar@linux.ibm.com>
  <CAKTCnz=qh7fLAuor9YNm5LH5ZKETTP9RjKv_SpR4c=wX37VTEA@mail.gmail.com>
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Thu, 21 Jun 2018 21:12:45 +0530
+Date: Thu, 21 Jun 2018 21:13:03 +0530
 MIME-Version: 1.0
 In-Reply-To: <CAKTCnz=qh7fLAuor9YNm5LH5ZKETTP9RjKv_SpR4c=wX37VTEA@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <dc90c44d-7bff-6154-b797-5658a2feaa4c@linux.ibm.com>
+Message-Id: <bed4cc14-f6da-b416-92be-2d796fa346cd@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,8 +57,8 @@ On 06/21/2018 05:02 PM, Balbir Singh wrote:
 > 1PB directly (50 bits)?
 > 
 
-That will impact config with VMEMMAP_EXTREME with no real immediate 
-benefit. We could possibly make MAX_PHYSMEM_BITS a Kconfig variable. 
-s390 do that. Not sure we want to do that.
+That will impact config with VMEMMAP_EXTREME disabled with no real 
+immediate benefit. We could possibly make MAX_PHYSMEM_BITS a Kconfig 
+variable. s390 do that. Not sure we want to do that.
 
 -aneesh
