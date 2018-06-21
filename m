@@ -1,28 +1,25 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B2cB0Qz8zF0wQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:28:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B2cJ1nM2zF0xv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:28:32 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Daniel Walker <danielwa@cisco.com>,
- "Guilherme G. Piccoli" <guilherme@gpiccoli.net>, benh@kernel.crashing.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, xe-kernel@external.cisco.com,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Mauro Rodrigues <maurosr@linux.vnet.ibm.com>,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH] arch: powerpc: pci-common: fix wrong return value check
- on phd_id
-In-Reply-To: <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
-References: <20180618165706.42679-1-danielwa@cisco.com>
- <CALJn8nPbTy3Ne2a7L71c2YZ06Ccr2j0zs6TdptfRc7O-N9u=Yg@mail.gmail.com>
- <c56f43f5-7902-f7c8-20e1-955ad064c4d0@cisco.com>
- <CALJn8nM+S7STs+_MTje1qVCpa6MvnROS2+b5_GDz2wYs8etapA@mail.gmail.com>
- <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
-Date: Thu, 21 Jun 2018 10:28:22 +1000
-Message-ID: <87in6dvv89.fsf@concordia.ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, Ulrich.Weigand@de.ibm.com,
+ fweimer@redhat.com, luto@kernel.org, msuchanek@suse.de
+Subject: Re: [PATCH v2 4/6] powerpc/pkeys: Preallocate execute-only key
+In-Reply-To: <20180619163813.GG5294@ram.oc3035372033.ibm.com>
+References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
+ <1528936144-6696-5-git-send-email-linuxram@us.ibm.com>
+ <871sd3x842.fsf@concordia.ellerman.id.au>
+ <20180619163813.GG5294@ram.oc3035372033.ibm.com>
+Date: Thu, 21 Jun 2018 10:28:31 +1000
+Message-ID: <87h8lxvv80.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Daniel,
-
-Sorry we broke things for you.
-
-Daniel Walker <danielwa@cisco.com> writes:
-> On 06/19/2018 09:26 AM, Guilherme G. Piccoli wrote:
->>> [...]
->>> What your doing is changing the phb_id to some transformation of "reg" for
->>> all platforms except which have "ibm,opal-phbid". This is what we observe.
->>> This is a radical altering of the prior phb_id selection before your patch.
-...
+Ram Pai <linuxram@us.ibm.com> writes:
+> On Tue, Jun 19, 2018 at 10:40:13PM +1000, Michael Ellerman wrote:
+>> Ram Pai <linuxram@us.ibm.com> writes:
+>>=20
+>> > execute-only key is allocated dynamically. This is a problem.  When a
+>> > thread implicitly creates a execute-only key, and resets UAMOR for that
+>> > key, the UAMOR value does not percolate to all the other threads.  Any
+>> > other thread may ignorantly change the permissions on the key.  This c=
+an
+>> > cause the key to be not execute-only for that thread.
+>> >
+>> > Preallocate the execute-only key and ensure that no thread can change
+>> > the permission of the key, by resetting the corresponding bit in UAMOR.
+>>=20
+>> OK this is a non-ABI changing bug fix AFAICS.
+>>=20
+>> I'll add:
+>>=20
+>>   Fixes: 5586cf61e108 ("powerpc: introduce execute-only pkey")
+>>   Cc: stable@vger.kernel.org # v4.16+
+>>=20
+>> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+>> > index b681bec..1f2389f 100644
+>> > --- a/arch/powerpc/mm/pkeys.c
+>> > +++ b/arch/powerpc/mm/pkeys.c
+>> > @@ -25,6 +25,7 @@
+>> >  #define IAMR_EX_BIT 0x1UL
+>> >  #define PKEY_REG_BITS (sizeof(u64)*8)
+>> >  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKE=
+Y))
+>> > +#define EXECUTE_ONLY_KEY 2
+>>=20
+>> Do we ensure we have at least 3 keys anywhere?
 >
-> I didn't look into changing the behavior on our side because it didn't 
-> look like the intent of the patch was to make a global change. I can 
-> take a look at changing this behavior on our side , given that this was 
-> intended by your changes.
+> No. Good to add. Can this be different patch?
 
-You're right the change log and the patch are a bit out of sync, that
-was probably my fault.
+Yes please.
 
-> However, they're may be other platforms or drivers which depend on these 
-> numbers getting set a certain way, so there may be other userspace 
-> dependencies on these values.
+> However we do not have any systems with less than 16keys AFAICT.
 
-That's true, though I think yours is the first report we've had of
-problems.
+It's controllable by firmware so we have between 0 and =E2=88=9E keys :)
 
-The old behaviour relied on device tree ordering in nearly all cases, so
-you basically get whatever order your firmware happened to flatten the
-device tree in.
-
-That tends to be consistent on a single system or with a single firmware
-version, but it's not stable in general. If your firmware changes, or
-you kexec then the ordering can change.
-
-So I'd definitely prefer we didn't go back to that behaviour, because
-it's basically "random order".
-
-If there's anything you can do on your end to cope with the new ordering
-that would be great.
+But yeah you're right it's unlikely to be a bug anyone hits in practice.
 
 cheers
