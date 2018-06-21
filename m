@@ -1,42 +1,37 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BVBD0rZ4zF0wq
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 04:10:59 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5LI9YEU018119
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 14:10:57 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jrdyrgfhk-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BX673WY3zF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 05:37:34 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5LJaJE2103340
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:37:30 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jrh1nayh8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 14:10:56 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:37:29 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Thu, 21 Jun 2018 19:10:55 +0100
-Date: Thu, 21 Jun 2018 11:10:45 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com,
- bsingharora@gmail.com, hbabu@us.ibm.com, mhocko@kernel.org,
- bauerman@linux.vnet.ibm.com, Ulrich.Weigand@de.ibm.com,
- luto@kernel.org, msuchanek@suse.de
-Subject: Re: [PATCH v2 0/6] powerpc/pkeys: fixes to pkeys
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <8812c879-5761-ef62-dd15-3ceef46d9653@redhat.com>
- <874lhzx84e.fsf@concordia.ellerman.id.au>
- <34669c66-ce2f-e8a0-1d18-43086bad3faa@redhat.com>
- <878t78fn6o.fsf@concordia.ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 21 Jun 2018 13:37:29 -0600
+Subject: Re: [PATCH v04 9/9] hotplug/pmt: Update topology after PMT
+To: kbuild test robot <lkp@intel.com>
+Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>, kbuild-all@01.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+References: <71195eb3-e11c-f586-d359-7026bdfd9a8a@linux.vnet.ibm.com>
+ <201806211048.moFJfljN%fengguang.wu@intel.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Thu, 21 Jun 2018 14:37:25 -0500
 MIME-Version: 1.0
-In-Reply-To: <878t78fn6o.fsf@concordia.ellerman.id.au>
-Message-Id: <20180621181045.GL5294@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201806211048.moFJfljN%fengguang.wu@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <f9eac29d-3774-eb60-1169-6a9a937df157@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,29 +41,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 21, 2018 at 08:28:47PM +1000, Michael Ellerman wrote:
-> Florian Weimer <fweimer@redhat.com> writes:
-> 
-> > On 06/19/2018 02:40 PM, Michael Ellerman wrote:
-> >>> I tested the whole series with the new selftests, with the printamr.c
-> >>> program I posted earlier, and the glibc test for pkey_alloc &c.  The
-> >>> latter required some test fixes, but now passes as well.  As far as I
-> >>> can tell, everything looks good now.
-> >>>
-> >>> Tested-By: Florian Weimer<fweimer@redhat.com>
-> >> Thanks. I'll add that to each patch I guess, if you're happy with that?
-> >
-> > Sure, but I only tested the whole series as a whole.
-> 
-> Yeah OK. We don't have a good way to express that, other than using a
-> merge which I'd prefer to avoid.
-> 
-> So I've tagged them all with your Tested-by. If any of them turn out to
-> have bugs you can blame me :)
+I posted the wrong copy of the file the first time.
+That is what broke here.  I posted the correction almost
+immediately to the list.  The correct one has
 
-I just tested the patches incrementally using the pkey selftests.
+Message ID <8c437fe5-632c-a7ed-1f11-66c4578a1d93@linux.vnet.ibm.com>
 
-So I feel confident these patches are not bugs. I will take the blame
-if the blame lands on Mpe  :)
+Sorry for the inconvenience.
+Michael
 
-RP
+On 06/20/2018 09:13 PM, kbuild test robot wrote:
+> Hi Michael,
+> 
+> Thank you for the patch! Yet something to improve:
+> 
+> [auto build test ERROR on powerpc/next]
+> [also build test ERROR on v4.18-rc1 next-20180620]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Michael-Bringmann/powerpc-hotplug-Update-affinity-for-migrated-CPUs/20180621-085543
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+> config: powerpc-defconfig (attached as .config)
+> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    arch/powerpc/platforms/pseries/dlpar.c: In function 'dlpar_pmt':
+>>> arch/powerpc/platforms/pseries/dlpar.c:453:2: error: implicit declaration of function 'rebuild_sched_domains' [-Werror=implicit-function-declaration]
+>      rebuild_sched_domains();
+>      ^~~~~~~~~~~~~~~~~~~~~
+>    cc1: all warnings being treated as errors
+> 
+> vim +/rebuild_sched_domains +453 arch/powerpc/platforms/pseries/dlpar.c
+> 
+>    435	
+>    436	static int dlpar_pmt(struct pseries_hp_errorlog *work)
+>    437	{
+>    438		struct list_head *pos, *q;
+>    439	
+>    440		ssleep(15);
+>    441	
+>    442		list_for_each_safe(pos, q, &dlpar_delayed_list) {
+>    443			struct pseries_hp_errorlog *tmp;
+>    444	
+>    445			tmp = list_entry(pos, struct pseries_hp_errorlog, list);
+>    446			handle_dlpar_errorlog(tmp);
+>    447	
+>    448			list_del(pos);
+>    449			kfree(tmp);
+>    450		}
+>    451	
+>    452		ssleep(5);
+>  > 453		rebuild_sched_domains();
+>    454	
+>    455		return 0;
+>    456	}
+>    457	
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> 
+
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
