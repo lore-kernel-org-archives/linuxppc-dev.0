@@ -1,19 +1,31 @@
-Return-Path: <qiang.zhao@nxp.com>
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30064.outbound.protection.outlook.com [40.107.3.64])
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0085.outbound.protection.outlook.com [104.47.2.85])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B5W71VCtzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 12:39:06 +1000 (AEST)
-From: Qiang Zhao <qiang.zhao@nxp.com>
-To: "jocke@infinera.com" <joakim.tjernlund@infinera.com>, York Sun
- <york.sun@nxp.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] QE GPIO: Add qe_gpio_set_multiple
-Date: Thu, 21 Jun 2018 02:38:58 +0000
-Message-ID: <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
-References: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
-In-Reply-To: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
-Content-Type: text/plain; charset="gb2312"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B7Hy0dVXzF0mQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 13:59:36 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: "robin.murphy@arm.com" <robin.murphy@arm.com>, "will.deacon@arm.com"
+ <will.deacon@arm.com>, "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>
+CC: "hch@lst.de" <hch@lst.de>, "joro@8bytes.org" <joro@8bytes.org>,
+ "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, "frowand.list@gmail.com" <frowand.list@gmail.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
+Subject: RE: [PATCH 0/7 v5] Support for fsl-mc bus and its devices in SMMU
+Date: Thu, 21 Jun 2018 03:59:27 +0000
+Message-ID: <HE1PR0401MB24250CEFBC0B7CC919C4388AE6760@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
+In-Reply-To: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,40 +36,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gMDYvMTkvMjAxOCAwOToyMiBBTSwgSm9ha2ltIFRqZXJubHVuZCB3cm90ZToNCi0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1k
-ZXYtYm91bmNlcytxaWFuZy56aGFvPW54cC5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxm
-IE9mIEpvYWtpbSBUamVybmx1bmQNClNlbnQ6IDIwMTjE6jbUwjIwyNUgMDoyMg0KVG86IFlvcmsg
-U3VuIDx5b3JrLnN1bkBueHAuY29tPjsgbGludXhwcGMtZGV2IDxsaW51eHBwYy1kZXZAbGlzdHMu
-b3psYWJzLm9yZz4NClN1YmplY3Q6IFtQQVRDSF0gUUUgR1BJTzogQWRkIHFlX2dwaW9fc2V0X211
-bHRpcGxlDQoNClRoaXMgY291c2luIHRvIGdwaW8tbXBjOHh4eCB3YXMgbGFja2luZyBhIG11bHRp
-cGxlIHBpbnMgbWV0aG9kLCBhZGQgb25lLg0KDQpTaWduZWQtb2ZmLWJ5OiBKb2FraW0gVGplcm5s
-dW5kIDxqb2FraW0udGplcm5sdW5kQGluZmluZXJhLmNvbT4NCi0tLQ0KIGRyaXZlcnMvc29jL2Zz
-bC9xZS9ncGlvLmMgfCAyOCArKysrKysrKysrKysrKysrKysrKysrKysrKysrDQogMSBmaWxlIGNo
-YW5nZWQsIDI4IGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvc29jL2ZzbC9x
-ZS9ncGlvLmMgYi9kcml2ZXJzL3NvYy9mc2wvcWUvZ3Bpby5jIGluZGV4IDNiMjcwNzVjMjFhNy4u
-ODE5YmVkMGY1NjY3IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9zb2MvZnNsL3FlL2dwaW8uYw0KKysr
-IGIvZHJpdmVycy9zb2MvZnNsL3FlL2dwaW8uYw0KQEAgLTgzLDYgKzgzLDMzIEBAIHN0YXRpYyB2
-b2lkIHFlX2dwaW9fc2V0KHN0cnVjdCBncGlvX2NoaXAgKmdjLCB1bnNpZ25lZCBpbnQgZ3Bpbywg
-aW50IHZhbCkNCiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcWVfZ2MtPmxvY2ssIGZsYWdzKTsg
-IH0NCiANCitzdGF0aWMgdm9pZCBxZV9ncGlvX3NldF9tdWx0aXBsZShzdHJ1Y3QgZ3Bpb19jaGlw
-ICpnYywNCisJCQkJIHVuc2lnbmVkIGxvbmcgKm1hc2ssIHVuc2lnbmVkIGxvbmcgKmJpdHMpIHsN
-CisJc3RydWN0IG9mX21tX2dwaW9fY2hpcCAqbW1fZ2MgPSB0b19vZl9tbV9ncGlvX2NoaXAoZ2Mp
-Ow0KKwlzdHJ1Y3QgcWVfZ3Bpb19jaGlwICpxZV9nYyA9IGdwaW9jaGlwX2dldF9kYXRhKGdjKTsN
-CisJc3RydWN0IHFlX3Bpb19yZWdzIF9faW9tZW0gKnJlZ3MgPSBtbV9nYy0+cmVnczsNCisJdW5z
-aWduZWQgbG9uZyBmbGFnczsNCisJaW50IGk7DQorDQorCXNwaW5fbG9ja19pcnFzYXZlKCZxZV9n
-Yy0+bG9jaywgZmxhZ3MpOw0KKw0KKwlmb3IgKGkgPSAwOyBpIDwgZ2MtPm5ncGlvOyBpKyspIHsN
-CisJCWlmICgqbWFzayA9PSAwKQ0KKwkJCWJyZWFrOw0KKwkJaWYgKF9fdGVzdF9hbmRfY2xlYXJf
-Yml0KGksIG1hc2spKSB7DQorCQkJaWYgKHRlc3RfYml0KGksIGJpdHMpKQ0KKwkJCQlxZV9nYy0+
-Y3BkYXRhIHw9ICgxVSA8PCAoUUVfUElPX1BJTlMgLSAxIC0gaSkpOw0KKwkJCWVsc2UNCisJCQkJ
-cWVfZ2MtPmNwZGF0YSAmPSB+KDFVIDw8IChRRV9QSU9fUElOUyAtIDEgLSBpKSk7DQorCQl9DQor
-CX0NCisNCisJb3V0X2JlMzIoJnJlZ3MtPmNwZGF0YSwgcWVfZ2MtPmNwZGF0YSk7DQorDQorCXNw
-aW5fdW5sb2NrX2lycXJlc3RvcmUoJnFlX2djLT5sb2NrLCBmbGFncyk7IH0NCisNCiBzdGF0aWMg
-aW50IHFlX2dwaW9fZGlyX2luKHN0cnVjdCBncGlvX2NoaXAgKmdjLCB1bnNpZ25lZCBpbnQgZ3Bp
-bykgIHsNCiAJc3RydWN0IG9mX21tX2dwaW9fY2hpcCAqbW1fZ2MgPSB0b19vZl9tbV9ncGlvX2No
-aXAoZ2MpOyBAQCAtMjk4LDYgKzMyNSw3IEBAIHN0YXRpYyBpbnQgX19pbml0IHFlX2FkZF9ncGlv
-Y2hpcHModm9pZCkNCiAJCWdjLT5kaXJlY3Rpb25fb3V0cHV0ID0gcWVfZ3Bpb19kaXJfb3V0Ow0K
-IAkJZ2MtPmdldCA9IHFlX2dwaW9fZ2V0Ow0KIAkJZ2MtPnNldCA9IHFlX2dwaW9fc2V0Ow0KKwkJ
-Z2MtPnNldF9tdWx0aXBsZSA9IHFlX2dwaW9fc2V0X211bHRpcGxlOw0KIA0KIAkJcmV0ID0gb2Zf
-bW1fZ3Bpb2NoaXBfYWRkX2RhdGEobnAsIG1tX2djLCBxZV9nYyk7DQogCQlpZiAocmV0KQ0KDQpS
-ZXZpZXdlZC1ieTogUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPg0KDQo=
+Hi Robin/Greg k-h,
+
+Will this patch-set be taken for the next kernel release (and via which tre=
+e)?
+
+Thanks,
+Nipun
+
+> -----Original Message-----
+> From: Nipun Gupta
+> Sent: Sunday, May 20, 2018 7:20 PM
+> To: robin.murphy@arm.com; will.deacon@arm.com; robh+dt@kernel.org;
+> robh@kernel.org; mark.rutland@arm.com; catalin.marinas@arm.com;
+> gregkh@linuxfoundation.org; Laurentiu Tudor <laurentiu.tudor@nxp.com>;
+> bhelgaas@google.com
+> Cc: hch@lst.de; joro@8bytes.org; m.szyprowski@samsung.com;
+> shawnguo@kernel.org; frowand.list@gmail.com; iommu@lists.linux-
+> foundation.org; linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org; linu=
+x-
+> pci@vger.kernel.org; Bharat Bhushan <bharat.bhushan@nxp.com>;
+> stuyoder@gmail.com; Leo Li <leoyang.li@nxp.com>; Nipun Gupta
+> <nipun.gupta@nxp.com>
+> Subject: [PATCH 0/7 v5] Support for fsl-mc bus and its devices in SMMU
+>=20
+> This patchset defines IOMMU DT binding for fsl-mc bus and adds
+> support in SMMU for fsl-mc bus.
+>=20
+> The patch series is based on top of dma-mapping tree (for-next branch):
+> http://git.infradead.org/users/hch/dma-mapping.git
+>=20
+> These patches
+>   - Define property 'iommu-map' for fsl-mc bus (patch 1)
+>   - Integrates the fsl-mc bus with the SMMU using this
+>     IOMMU binding (patch 2,3,4)
+>   - Adds the dma configuration support for fsl-mc bus (patch 5, 6)
+>   - Updates the fsl-mc device node with iommu/dma related changes (patch =
+7)
+>=20
+> Changes in v2:
+>   - use iommu-map property for fsl-mc bus
+>   - rebase over patchset https://patchwork.kernel.org/patch/10317337/
+>     and make corresponding changes for dma configuration of devices on
+>     fsl-mc bus
+>=20
+> Changes in v3:
+>   - move of_map_rid in drivers/of/address.c
+>=20
+> Changes in v4:
+>   - move of_map_rid in drivers/of/base.c
+>=20
+> Changes in v5:
+>   - break patch 5 in two separate patches (now patch 5/7 and patch 6/7)
+>   - add changelog text in patch 3/7 and patch 5/7
+>   - typo fix
+>=20
+> Nipun Gupta (7):
+>   Docs: dt: add fsl-mc iommu-map device-tree binding
+>   iommu: of: make of_pci_map_rid() available for other devices too
+>   iommu: support iommu configuration for fsl-mc devices
+>   iommu: arm-smmu: Add support for the fsl-mc bus
+>   bus: fsl-mc: support dma configure for devices on fsl-mc bus
+>   bus: fsl-mc: set coherent dma mask for devices on fsl-mc bus
+>   arm64: dts: ls208xa: comply with the iommu map binding for fsl_mc
+>=20
+>  .../devicetree/bindings/misc/fsl,qoriq-mc.txt      |  39 ++++++++
+>  arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi     |   6 +-
+>  drivers/bus/fsl-mc/fsl-mc-bus.c                    |  16 +++-
+>  drivers/iommu/arm-smmu.c                           |   7 ++
+>  drivers/iommu/iommu.c                              |  21 +++++
+>  drivers/iommu/of_iommu.c                           |  25 ++++-
+>  drivers/of/base.c                                  | 102 +++++++++++++++=
+++++++
+>  drivers/of/irq.c                                   |   5 +-
+>  drivers/pci/of.c                                   | 101 ---------------=
+-----
+>  include/linux/fsl/mc.h                             |   8 ++
+>  include/linux/iommu.h                              |   2 +
+>  include/linux/of.h                                 |  11 +++
+>  include/linux/of_pci.h                             |  10 --
+>  13 files changed, 231 insertions(+), 122 deletions(-)
+>=20
+> --
+> 1.9.1
