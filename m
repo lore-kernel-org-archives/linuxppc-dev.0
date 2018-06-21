@@ -1,23 +1,23 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B2lq67kszF13x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:35:03 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B2ly31kfzF0wq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:35:10 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5L0XgnT126343
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:35:01 -0400
+ w5L0Xhxd115903
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:35:07 -0400
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jqy6tvcdk-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jr01jtt1v-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:35:01 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:35:07 -0400
 Received: from localhost
  by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 20 Jun 2018 18:35:00 -0600
+ Wed, 20 Jun 2018 18:35:06 -0600
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
@@ -26,11 +26,11 @@ Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 In-Reply-To: <c7b0c1e5-7adf-299b-646f-6988b1fa0f8b@linux.vnet.ibm.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH 1/3] powerpc/drmem: Export 'dynamic-memory' loader
-Date: Wed, 20 Jun 2018 19:34:54 -0500
+Subject: [PATCH 2/3] migration/memory: Evaluate LMB assoc changes
+Date: Wed, 20 Jun 2018 19:34:58 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <f227f295-9c6d-13e6-3bb2-14fd8315162a@linux.vnet.ibm.com>
+Message-Id: <8e886b24-1226-756e-369a-ceca2e30c620@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,248 +40,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/drmem: Export many of the functions of DRMEM to parse
-"ibm,dynamic-memory" and "ibm,dynamic-memory-v2" during hotplug
-operations and for Post Migration events.
+migration/memory: This patch adds code that recognizes changes to
+the associativity of memory blocks described by the device-tree
+properties in order to drive equivalent 'hotplug' operations to
+update local and general kernel data structures to reflect those
+changes.  These differences may include:
 
-Also modify the DRMEM initialization code to allow it to,
+* Evaluating 'ibm,dynamic-memory' properties when processing the
+  topology of LPARS in Post Migration events.  Previous efforts
+  only recognized whether a memory block's assignment had changed
+  in the property.  Changes here include checking the aa_index
+  values for each drc_index of the old/new LMBs and to 'readd'
+  any block for which the setting has changed.
 
-* Be called after system initialization
-* Provide a separate user copy of the LMB array that is produces
-* Free the user copy upon request
+* In an LPAR migration scenario, the "ibm,associativity-lookup-arrays"
+  property may change.  In the event that a row of the array differs,
+  locate all assigned memory blocks with that 'aa_index' and 're-add'
+  them to the system memory block data structures.  In the process of
+  the 're-add', the system routines will update the corresponding entry
+  for the memory in the LMB structures and any other relevant kernel
+  data structures.
 
-In addition, a couple of changes were made to make the creation
-of additional copies of the LMB array more useful including,
+A number of previous extensions made to the DRMEM code for scanning
+device-tree properties and creating LMB arrays were used here to
+ensure that the resulting code was simpler and more usable:
 
-* Add new iterator to work through a pair of drmem_info arrays.
-* Modify DRMEM code to replace usages of dt_root_addr_cells, and
-  dt_mem_next_cell, as these are only available at first boot.
+* Use new paired list iterator for the DRMEM LMB info arrays to find
+  differences in old and new versions of properties.
+* Use new iterator for copies of the DRMEM info arrays to evaluate
+  completely new structures.
+* Combine common code for parsing and evaluating memory description
+  properties based on the DRMEM LMB array model to greatly simplify
+  extension from the older property 'ibm,dynamic-memory' to the new
+  property model of 'ibm,dynamic-memory-v2'.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/drmem.h |   15 ++++++++
- arch/powerpc/mm/drmem.c          |   75 ++++++++++++++++++++++++++++----------
- 2 files changed, 70 insertions(+), 20 deletions(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  161 ++++++++++++++++++-----
+ 1 file changed, 127 insertions(+), 34 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index ce242b9..b0e70fd 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -35,6 +35,18 @@ struct drmem_lmb_info {
- 		&drmem_info->lmbs[0],				\
- 		&drmem_info->lmbs[drmem_info->n_lmbs - 1])
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index c1578f5..2573b87 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -561,8 +561,11 @@ static int dlpar_memory_readd_by_index(u32 drc_index)
+ 		}
+ 	}
  
-+#define for_each_dinfo_lmb(dinfo, lmb)				\
-+	for_each_drmem_lmb_in_range((lmb),			\
-+		&dinfo->lmbs[0],				\
-+		&dinfo->lmbs[dinfo->n_lmbs - 1])
-+
-+#define for_each_pair_dinfo_lmb(dinfo1, lmb1, dinfo2, lmb2)	\
-+	for ((lmb1) = (&dinfo1->lmbs[0]),			\
-+	     (lmb2) = (&dinfo2->lmbs[0]);			\
-+	     ((lmb1) <= (&dinfo1->lmbs[dinfo1->n_lmbs - 1])) &&	\
-+	     ((lmb2) <= (&dinfo2->lmbs[dinfo2->n_lmbs - 1]));	\
-+	     (lmb1)++, (lmb2)++)
-+
- /*
-  * The of_drconf_cell_v1 struct defines the layout of the LMB data
-  * specified in the ibm,dynamic-memory device tree property.
-@@ -94,6 +106,9 @@ void __init walk_drmem_lmbs(struct device_node *dn,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
- int drmem_update_dt(void);
+-	if (!lmb_found)
+-		rc = -EINVAL;
++	if (!lmb_found) {
++		pr_info("Failed to update memory for drc index %lx\n",
++			(unsigned long) drc_index);
++		return -EINVAL;
++	}
  
-+struct drmem_lmb_info *drmem_lmbs_init(struct property *prop);
-+void drmem_lmbs_free(struct drmem_lmb_info *dinfo);
-+
- #ifdef CONFIG_PPC_PSERIES
- void __init walk_drmem_lmbs_early(unsigned long node,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
-diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 3f18036..13d2abb 100644
---- a/arch/powerpc/mm/drmem.c
-+++ b/arch/powerpc/mm/drmem.c
-@@ -20,6 +20,7 @@
+ 	if (rc)
+ 		pr_info("Failed to update memory at %llx\n",
+@@ -994,13 +997,11 @@ static int pseries_add_mem_node(struct device_node *np)
+ 	return (ret < 0) ? -EINVAL : 0;
+ }
  
- static struct drmem_lmb_info __drmem_info;
- struct drmem_lmb_info *drmem_info = &__drmem_info;
-+static int n_root_addr_cells;
- 
- u64 drmem_lmb_memory_max(void)
+-static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
++static int pseries_update_drconf_memory(struct drmem_lmb_info *new_dinfo)
  {
-@@ -193,12 +194,13 @@ int drmem_update_dt(void)
+-	struct of_drconf_cell_v1 *new_drmem, *old_drmem;
++	struct drmem_lmb *old_lmb, *new_lmb;
+ 	unsigned long memblock_size;
+-	u32 entries;
+-	__be32 *p;
+-	int i, rc = -EINVAL;
++	int rc = 0;
+ 
+ 	if (rtas_hp_event)
+ 		return 0;
+@@ -1009,42 +1010,126 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
+ 	if (!memblock_size)
+ 		return -EINVAL;
+ 
+-	p = (__be32 *) pr->old_prop->value;
+-	if (!p)
+-		return -EINVAL;
+-
+-	/* The first int of the property is the number of lmb's described
+-	 * by the property. This is followed by an array of of_drconf_cell
+-	 * entries. Get the number of entries and skip to the array of
+-	 * of_drconf_cell's.
+-	 */
+-	entries = be32_to_cpu(*p++);
+-	old_drmem = (struct of_drconf_cell_v1 *)p;
++	/* Arrays should have the same size and DRC indexes */
++	for_each_pair_dinfo_lmb(drmem_info, old_lmb, new_dinfo, new_lmb) {
+ 
+-	p = (__be32 *)pr->prop->value;
+-	p++;
+-	new_drmem = (struct of_drconf_cell_v1 *)p;
++		if (new_lmb->drc_index != old_lmb->drc_index)
++			continue;
+ 
+-	for (i = 0; i < entries; i++) {
+-		if ((be32_to_cpu(old_drmem[i].flags) & DRCONF_MEM_ASSIGNED) &&
+-		    (!(be32_to_cpu(new_drmem[i].flags) & DRCONF_MEM_ASSIGNED))) {
++		if ((old_lmb->flags & DRCONF_MEM_ASSIGNED) &&
++		    (!(new_lmb->flags & DRCONF_MEM_ASSIGNED))) {
+ 			rc = pseries_remove_memblock(
+-				be64_to_cpu(old_drmem[i].base_addr),
+-						     memblock_size);
++				old_lmb->base_addr, memblock_size);
+ 			break;
+-		} else if ((!(be32_to_cpu(old_drmem[i].flags) &
+-			    DRCONF_MEM_ASSIGNED)) &&
+-			    (be32_to_cpu(new_drmem[i].flags) &
+-			    DRCONF_MEM_ASSIGNED)) {
+-			rc = memblock_add(be64_to_cpu(old_drmem[i].base_addr),
+-					  memblock_size);
++		} else if ((!(old_lmb->flags & DRCONF_MEM_ASSIGNED)) &&
++			   (new_lmb->flags & DRCONF_MEM_ASSIGNED)) {
++			rc = memblock_add(old_lmb->base_addr,
++					memblock_size);
+ 			rc = (rc < 0) ? -EINVAL : 0;
+ 			break;
++		} else if ((old_lmb->aa_index != new_lmb->aa_index) &&
++			   (new_lmb->flags & DRCONF_MEM_ASSIGNED)) {
++			dlpar_queue_action(
++					PSERIES_HP_ELOG_RESOURCE_MEM,
++					PSERIES_HP_ELOG_ACTION_READD,
++					new_lmb->drc_index);
+ 		}
+ 	}
  	return rc;
  }
  
--static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
-+static void read_drconf_v1_cell(struct drmem_lmb *lmb,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
--	lmb->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	lmb->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	lmb->drc_index = of_read_number(p++, 1);
- 
- 	p++; /* skip reserved field */
-@@ -209,7 +211,7 @@ static void __init read_drconf_v1_cell(struct drmem_lmb *lmb,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
-+static void __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
- 			void (*func)(struct drmem_lmb *, const __be32 **))
- {
- 	struct drmem_lmb lmb;
-@@ -225,13 +227,14 @@ static void __init __walk_drmem_v1_lmbs(const __be32 *prop, const __be32 *usm,
- 	}
- }
- 
--static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
-+static void read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 				       const __be32 **prop)
- {
- 	const __be32 *p = *prop;
- 
- 	dr_cell->seq_lmbs = of_read_number(p++, 1);
--	dr_cell->base_addr = dt_mem_next_cell(dt_root_addr_cells, &p);
-+	dr_cell->base_addr = of_read_number(p, n_root_addr_cells);
-+	p += n_root_addr_cells;
- 	dr_cell->drc_index = of_read_number(p++, 1);
- 	dr_cell->aa_index = of_read_number(p++, 1);
- 	dr_cell->flags = of_read_number(p++, 1);
-@@ -239,7 +242,7 @@ static void __init read_drconf_v2_cell(struct of_drconf_cell_v2 *dr_cell,
- 	*prop = p;
- }
- 
--static void __init __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
-+static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
- 			void (*func)(struct drmem_lmb *, const __be32 **))
- {
- 	struct of_drconf_cell_v2 dr_cell;
-@@ -275,6 +278,9 @@ void __init walk_drmem_lmbs_early(unsigned long node,
- 	const __be32 *prop, *usm;
- 	int len;
- 
-+	if (n_root_addr_cells == 0)
-+		n_root_addr_cells = dt_root_addr_cells;
-+
- 	prop = of_get_flat_dt_prop(node, "ibm,lmb-size", &len);
- 	if (!prop || len < dt_root_size_cells * sizeof(__be32))
- 		return;
-@@ -353,24 +359,26 @@ void __init walk_drmem_lmbs(struct device_node *dn,
- 	}
- }
- 
--static void __init init_drmem_v1_lmbs(const __be32 *prop)
-+static void init_drmem_v1_lmbs(const __be32 *prop,
-+				struct drmem_lmb_info *dinfo)
- {
- 	struct drmem_lmb *lmb;
- 
--	drmem_info->n_lmbs = of_read_number(prop++, 1);
--	if (drmem_info->n_lmbs == 0)
-+	dinfo->n_lmbs = of_read_number(prop++, 1);
-+	if (dinfo->n_lmbs == 0)
- 		return;
- 
--	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
-+	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
- 				   GFP_KERNEL);
--	if (!drmem_info->lmbs)
-+	if (!dinfo->lmbs)
- 		return;
- 
--	for_each_drmem_lmb(lmb)
-+	for_each_dinfo_lmb(dinfo, lmb)
- 		read_drconf_v1_cell(lmb, &prop);
- }
- 
--static void __init init_drmem_v2_lmbs(const __be32 *prop)
-+static void init_drmem_v2_lmbs(const __be32 *prop,
-+				struct drmem_lmb_info *dinfo)
- {
- 	struct drmem_lmb *lmb;
- 	struct of_drconf_cell_v2 dr_cell;
-@@ -386,12 +394,12 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
- 	p = prop;
- 	for (i = 0; i < lmb_sets; i++) {
- 		read_drconf_v2_cell(&dr_cell, &p);
--		drmem_info->n_lmbs += dr_cell.seq_lmbs;
-+		dinfo->n_lmbs += dr_cell.seq_lmbs;
- 	}
- 
--	drmem_info->lmbs = kcalloc(drmem_info->n_lmbs, sizeof(*lmb),
-+	dinfo->lmbs = kcalloc(dinfo->n_lmbs, sizeof(*lmb),
- 				   GFP_KERNEL);
--	if (!drmem_info->lmbs)
-+	if (!dinfo->lmbs)
- 		return;
- 
- 	/* second pass, read in the LMB information */
-@@ -402,10 +410,10 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
- 		read_drconf_v2_cell(&dr_cell, &p);
- 
- 		for (j = 0; j < dr_cell.seq_lmbs; j++) {
--			lmb = &drmem_info->lmbs[lmb_index++];
-+			lmb = &dinfo->lmbs[lmb_index++];
- 
- 			lmb->base_addr = dr_cell.base_addr;
--			dr_cell.base_addr += drmem_info->lmb_size;
-+			dr_cell.base_addr += dinfo->lmb_size;
- 
- 			lmb->drc_index = dr_cell.drc_index;
- 			dr_cell.drc_index++;
-@@ -416,11 +424,38 @@ static void __init init_drmem_v2_lmbs(const __be32 *prop)
- 	}
- }
- 
-+void drmem_lmbs_free(struct drmem_lmb_info *dinfo)
++static void pseries_update_ala_memory_aai(int aa_index)
 +{
-+	if (dinfo) {
-+		kfree(dinfo->lmbs);
-+		kfree(dinfo);
++	struct drmem_lmb *lmb;
++
++	/* Readd all LMBs which were previously using the
++	 * specified aa_index value.
++	 */
++	for_each_drmem_lmb(lmb) {
++		if ((lmb->aa_index == aa_index) &&
++			(lmb->flags & DRCONF_MEM_ASSIGNED)) {
++			dlpar_queue_action(
++					PSERIES_HP_ELOG_RESOURCE_MEM,
++					PSERIES_HP_ELOG_ACTION_READD,
++					lmb->drc_index);
++		}
 +	}
 +}
 +
-+struct drmem_lmb_info *drmem_lmbs_init(struct property *prop)
++struct assoc_arrays {
++	u32 n_arrays;
++	u32 array_sz;
++	const __be32 *arrays;
++};
++
++static int pseries_update_ala_memory(struct of_reconfig_data *pr)
 +{
-+	struct drmem_lmb_info *dinfo;
++	struct assoc_arrays new_ala, old_ala;
++	__be32 *p;
++	int i, lim;
 +
-+	dinfo = kzalloc(sizeof(*dinfo), GFP_KERNEL);
-+	if (!dinfo)
-+		return NULL;
++	if (rtas_hp_event)
++		return 0;
 +
-+	if (!strcmp("ibm,dynamic-memory", prop->name))
-+		init_drmem_v1_lmbs(prop->value, dinfo);
-+	else if (!strcmp("ibm,dynamic-memory-v2", prop->name))
-+		init_drmem_v2_lmbs(prop->value, dinfo);
++	/*
++	 * The layout of the ibm,associativity-lookup-arrays
++	 * property is a number N indicating the number of
++	 * associativity arrays, followed by a number M
++	 * indicating the size of each associativity array,
++	 * followed by a list of N associativity arrays.
++	 */
 +
-+	return dinfo;
++	p = (__be32 *) pr->old_prop->value;
++	if (!p)
++		return -EINVAL;
++	old_ala.n_arrays = of_read_number(p++, 1);
++	old_ala.array_sz = of_read_number(p++, 1);
++	old_ala.arrays = p;
++
++	p = (__be32 *) pr->prop->value;
++	if (!p)
++		return -EINVAL;
++	new_ala.n_arrays = of_read_number(p++, 1);
++	new_ala.array_sz = of_read_number(p++, 1);
++	new_ala.arrays = p;
++
++	lim = (new_ala.n_arrays > old_ala.n_arrays) ? old_ala.n_arrays :
++			new_ala.n_arrays;
++
++	if (old_ala.array_sz == new_ala.array_sz) {
++
++		/* Reset any entries where the old and new rows
++		 * the array have changed.
++		 */
++		for (i = 0; i < lim; i++) {
++			int index = (i * new_ala.array_sz);
++
++			if (!memcmp(&old_ala.arrays[index],
++				&new_ala.arrays[index],
++				new_ala.array_sz))
++				continue;
++
++			pseries_update_ala_memory_aai(i);
++		}
++
++		/* Reset any entries representing the extra rows.
++		 * There shouldn't be any, but just in case ...
++		 */
++		for (i = lim; i < new_ala.n_arrays; i++)
++			pseries_update_ala_memory_aai(i);
++
++	} else {
++		/* Update all entries representing these rows;
++		 * as all rows have different sizes, none can
++		 * have equivalent values.
++		 */
++		for (i = 0; i < lim; i++)
++			pseries_update_ala_memory_aai(i);
++	}
++
++	return 0;
 +}
 +
- static int __init drmem_init(void)
+ static int pseries_memory_notifier(struct notifier_block *nb,
+ 				   unsigned long action, void *data)
  {
- 	struct device_node *dn;
- 	const __be32 *prop;
- 
-+	if (n_root_addr_cells == 0)
-+		n_root_addr_cells = dt_root_addr_cells;
-+
- 	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
- 	if (!dn) {
- 		pr_info("No dynamic reconfiguration memory found\n");
-@@ -434,11 +469,11 @@ static int __init drmem_init(void)
- 
- 	prop = of_get_property(dn, "ibm,dynamic-memory", NULL);
- 	if (prop) {
--		init_drmem_v1_lmbs(prop);
-+		init_drmem_v1_lmbs(prop, drmem_info);
- 	} else {
- 		prop = of_get_property(dn, "ibm,dynamic-memory-v2", NULL);
- 		if (prop)
--			init_drmem_v2_lmbs(prop);
-+			init_drmem_v2_lmbs(prop, drmem_info);
+@@ -1059,8 +1144,16 @@ static int pseries_memory_notifier(struct notifier_block *nb,
+ 		err = pseries_remove_mem_node(rd->dn);
+ 		break;
+ 	case OF_RECONFIG_UPDATE_PROPERTY:
+-		if (!strcmp(rd->prop->name, "ibm,dynamic-memory"))
+-			err = pseries_update_drconf_memory(rd);
++		if (!strcmp(rd->prop->name, "ibm,dynamic-memory")) {
++			struct drmem_lmb_info *dinfo =
++				drmem_lmbs_init(rd->prop);
++			if (!dinfo)
++				return -EINVAL;
++			err = pseries_update_drconf_memory(dinfo);
++			drmem_lmbs_free(dinfo);
++		} else if (!strcmp(rd->prop->name,
++				"ibm,associativity-lookup-arrays"))
++			err = pseries_update_ala_memory(rd);
+ 		break;
  	}
- 
- 	of_node_put(dn);
+ 	return notifier_from_errno(err);
