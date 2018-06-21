@@ -3,35 +3,36 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BX673WY3zF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 05:37:34 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BX6h4Jl1zF0x7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 05:38:04 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5LJaJE2103340
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:37:30 -0400
+ w5LJYpSN101864
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:38:02 -0400
 Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jrh1nayh8-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jrfbf7b5f-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:37:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 15:38:01 -0400
 Received: from localhost
  by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Thu, 21 Jun 2018 13:37:29 -0600
+ Thu, 21 Jun 2018 13:38:01 -0600
 Subject: Re: [PATCH v04 9/9] hotplug/pmt: Update topology after PMT
 To: kbuild test robot <lkp@intel.com>
-Cc: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>, kbuild-all@01.org,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: kbuild-all@01.org, linuxppc-dev@lists.ozlabs.org,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
 References: <71195eb3-e11c-f586-d359-7026bdfd9a8a@linux.vnet.ibm.com>
  <201806211048.moFJfljN%fengguang.wu@intel.com>
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Thu, 21 Jun 2018 14:37:25 -0500
+Date: Thu, 21 Jun 2018 14:37:57 -0500
 MIME-Version: 1.0
 In-Reply-To: <201806211048.moFJfljN%fengguang.wu@intel.com>
 Content-Type: text/plain; charset=windows-1252
-Message-Id: <f9eac29d-3774-eb60-1169-6a9a937df157@linux.vnet.ibm.com>
+Message-Id: <6508b229-80fe-6dcd-1afe-e85b8cbc48d6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
