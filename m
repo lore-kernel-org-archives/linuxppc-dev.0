@@ -1,27 +1,35 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Bqbs3XqtzF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:15:53 +1000 (AEST)
-Received: by mail-oi0-f66.google.com with SMTP id k190-v6so5258426oib.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 00:15:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Br0X2QNjzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:33:48 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5M7TKq8003484
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:33:45 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jruuv2bmd-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:33:45 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Fri, 22 Jun 2018 08:33:43 +0100
+Subject: Re: [PATCH] ocxl: Fix page fault handler in case of fault on dying
+ process
+To: Frederic Barrat <fbarrat@linux.ibm.com>, alastair@d-silva.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: clombard@linux.ibm.com, vaibhav@linux.ibm.com
+References: <20180618121436.20479-1-fbarrat@linux.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 21 Jun 2018 18:07:26 +1000
 MIME-Version: 1.0
-References: <20180408194821.19682-1-malat@debian.org>
- <20180620190038.3250-1-malat@debian.org>
- <87602cfkh5.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87602cfkh5.fsf@concordia.ellerman.id.au>
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 22 Jun 2018 09:15:39 +0200
-Message-ID: <CA+7wUswdBvm+XCi6r6ewGFuSTAaV9FWmhUyV9vNKatCnurvL-A@mail.gmail.com>
-Subject: Re: [PATCH v3] powerpc/32: Remove left over function prototypes
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20180618121436.20479-1-fbarrat@linux.ibm.com>
+Message-Id: <1df943c8-88f8-91e2-e133-d6d578d1bb77@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 21, 2018 at 1:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> Mathieu Malaterre <malat@debian.org> writes:
->
-> > In commit 4aea909eeba3 ("powerpc: Add missing prototypes in setup_32.c")
->
-> I don't have that commit ^ ?
->
-> That might be because I squashed some of your fixes together or something?
+On 18/06/18 22:14, Frederic Barrat wrote:
+> If a process exits without doing proper cleanup, there's a window
+> where an opencapi device can try to access the memory of the dying
+> process and may trigger a page fault. That's an expected scenario and
+> the ocxl driver holds a reference on the mm_struct of the process
+> until the opencapi device is notified of the process exiting.
+> However, if mm_users is already at 0, i.e. the address space of the
+> process has already been destroyed, the driver shouldn't try resolving
+> the page fault, as it will fail, but it can also try accessing already
+> freed data.
+> 
+> It is fixed by only calling the bottom half of the page fault handler
+> if mm_users is greater than 0 and get a reference on mm_users instead
+> of mm_count. Otherwise, we can safely return a translation fault to
+> the device, as its associated memory context is being removed. The
+> opencapi device will be properly cleaned up shortly after when closing
+> the file descriptors.
+> 
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+> Cc: stable@vger.kernel.org # v4.16+
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
-I am doing an awful lots of mistakes these days. Indeed you've changed
-one of my patch:
+I think I understand what's going on here and it looks right.
 
-https://patchwork.kernel.org/patch/10240997/
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-This one appeared after a git rebase on my side.
-
-> > diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
-> > index 35ca309848d7..829ed66f0a40 100644
-> > --- a/arch/powerpc/kernel/setup.h
-> > +++ b/arch/powerpc/kernel/setup.h
-> > @@ -19,9 +19,6 @@ void irqstack_early_init(void);
-> >  void setup_power_save(void);
-> >  unsigned long __init early_init(unsigned long dt_ptr);
-> >  void __init machine_init(u64 dt_ptr);
-> > -int __init ppc_setup_l2cr(char *str);
-> > -int __init ppc_setup_l3cr(char *str);
-> > -int __init ppc_init(void);
-> >  #else
-> >  static inline void setup_power_save(void) { };
-> >  #endif
->
-> I have:
->
-> #ifdef CONFIG_PPC32
-> void setup_power_save(void);
-> #else
-> static inline void setup_power_save(void) { };
-> #endif
-
-Correct.
-
-Sorry for the noise.
-
->
-> cheers
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
