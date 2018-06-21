@@ -1,39 +1,28 @@
-Return-Path: <Paul.Burton@mips.com>
-Received: from 9pmail.ess.barracuda.com (9pmail.ess.barracuda.com
- [64.235.154.210])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B22c65J4zF0wQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:02:47 +1000 (AEST)
-Date: Wed, 20 Jun 2018 17:02:23 -0700
-From: Paul Burton <paul.burton@mips.com>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-CC: Arnd Bergmann <arnd@arndb.de>, Linux Kbuild mailing list
- <linux-kbuild@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@kernel.org>,
- Linux-MIPS <linux-mips@linux-mips.org>, Ingo Molnar <mingo@kernel.org>,
- Matthew Wilcox <matthew@wil.cx>, Thomas Gleixner <tglx@linutronix.de>,
- Douglas Anderson <dianders@chromium.org>, Josh Poimboeuf
- <jpoimboe@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Matthias
- Kaehlcke <mka@chromium.org>, He Zhe <zhe.he@windriver.com>, Benjamin
- Herrenschmidt <benh@kernel.crashing.org>, Michal Marek
- <michal.lkml@markovi.net>, Khem Raj <raj.khem@gmail.com>, Christophe Leroy
- <christophe.leroy@c-s.fr>, Al Viro <viro@zeniv.linux.org.uk>, Stafford Horne
- <shorne@gmail.com>, Gideon Israel Dsouza <gidisrael@gmail.com>, Kees Cook
- <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>, Heiko
- Carstens <heiko.carstens@de.ibm.com>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 1/3] kbuild: add macro for controlling warnings to
- linux/compiler.h
-Message-ID: <20180621000223.lpiilk2f6zosouuu@pburton-laptop>
-References: <20180616005323.7938-1-paul.burton@mips.com>
- <20180616005323.7938-2-paul.burton@mips.com>
- <CAK7LNASvCha27kU4ipn23uOpNuxkzJrNzWBwYcxN4n=3xtv8SA@mail.gmail.com>
- <20180619190225.7eguhiw3ixaiwpgl@pburton-laptop>
- <CAK7LNAQRu0p8_8DqEdmUUPfc4gC60SSj90vTpz3iKaiE596-TA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B2cB0Qz8zF0wQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:28:26 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Daniel Walker <danielwa@cisco.com>,
+ "Guilherme G. Piccoli" <guilherme@gpiccoli.net>, benh@kernel.crashing.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, xe-kernel@external.cisco.com,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Mauro Rodrigues <maurosr@linux.vnet.ibm.com>,
+ linux-pci@vger.kernel.org
+Subject: Re: [PATCH] arch: powerpc: pci-common: fix wrong return value check
+ on phd_id
+In-Reply-To: <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
+References: <20180618165706.42679-1-danielwa@cisco.com>
+ <CALJn8nPbTy3Ne2a7L71c2YZ06Ccr2j0zs6TdptfRc7O-N9u=Yg@mail.gmail.com>
+ <c56f43f5-7902-f7c8-20e1-955ad064c4d0@cisco.com>
+ <CALJn8nM+S7STs+_MTje1qVCpa6MvnROS2+b5_GDz2wYs8etapA@mail.gmail.com>
+ <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
+Date: Thu, 21 Jun 2018 10:28:22 +1000
+Message-ID: <87in6dvv89.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <CAK7LNAQRu0p8_8DqEdmUUPfc4gC60SSj90vTpz3iKaiE596-TA@mail.gmail.com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,18 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Masahiro,
+Hi Daniel,
 
-On Thu, Jun 21, 2018 at 08:21:01AM +0900, Masahiro Yamada wrote:
-> V2 is good except one nit.
-> (I left a comment in it)
+Sorry we broke things for you.
 
-Thanks, and yes I agree with your comment that the GCC<4.6 __diag()
-definition can be removed.
+Daniel Walker <danielwa@cisco.com> writes:
+> On 06/19/2018 09:26 AM, Guilherme G. Piccoli wrote:
+>>> [...]
+>>> What your doing is changing the phb_id to some transformation of "reg" for
+>>> all platforms except which have "ibm,opal-phbid". This is what we observe.
+>>> This is a radical altering of the prior phb_id selection before your patch.
+...
+>
+> I didn't look into changing the behavior on our side because it didn't 
+> look like the intent of the patch was to make a global change. I can 
+> take a look at changing this behavior on our side , given that this was 
+> intended by your changes.
 
-> I can fix it up locally if it is tedious to re-spin, though.
+You're right the change log and the patch are a bit out of sync, that
+was probably my fault.
 
-If you wouldn't mind that'd be great :)
+> However, they're may be other platforms or drivers which depend on these 
+> numbers getting set a certain way, so there may be other userspace 
+> dependencies on these values.
 
-Thanks,
-    Paul
+That's true, though I think yours is the first report we've had of
+problems.
+
+The old behaviour relied on device tree ordering in nearly all cases, so
+you basically get whatever order your firmware happened to flatten the
+device tree in.
+
+That tends to be consistent on a single system or with a single firmware
+version, but it's not stable in general. If your firmware changes, or
+you kexec then the ordering can change.
+
+So I'd definitely prefer we didn't go back to that behaviour, because
+it's basically "random order".
+
+If there's anything you can do on your end to cope with the new ordering
+that would be great.
+
+cheers
