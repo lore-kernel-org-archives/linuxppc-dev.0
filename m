@@ -1,29 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B2rY19GDzF12T
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:39:08 +1000 (AEST)
-Message-ID: <c03e5e63fb64d2bf503bb2e00101bf352e396ceb.camel@kernel.crashing.org>
-Subject: Re: [PATCH] arch: powerpc: pci-common: fix wrong return value check
- on phd_id
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>, Daniel Walker <danielwa@cisco.com>,
- "Guilherme G. Piccoli" <guilherme@gpiccoli.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, xe-kernel@external.cisco.com,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Mauro Rodrigues
- <maurosr@linux.vnet.ibm.com>, linux-pci@vger.kernel.org
-Date: Thu, 21 Jun 2018 10:38:46 +1000
-In-Reply-To: <87in6dvv89.fsf@concordia.ellerman.id.au>
-References: <20180618165706.42679-1-danielwa@cisco.com>
- <CALJn8nPbTy3Ne2a7L71c2YZ06Ccr2j0zs6TdptfRc7O-N9u=Yg@mail.gmail.com>
- <c56f43f5-7902-f7c8-20e1-955ad064c4d0@cisco.com>
- <CALJn8nM+S7STs+_MTje1qVCpa6MvnROS2+b5_GDz2wYs8etapA@mail.gmail.com>
- <6d321d8a-432d-d41d-cc08-144764d644b2@cisco.com>
- <87in6dvv89.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B351405nzF132
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:49:57 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5L0nD6x058326
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:49:55 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jqyxm37km-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:49:55 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Wed, 20 Jun 2018 18:49:54 -0600
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <71195eb3-e11c-f586-d359-7026bdfd9a8a@linux.vnet.ibm.com>
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH v04 9/9] hotplug/pmt: Update topology after PMT
+Date: Wed, 20 Jun 2018 19:49:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <8c437fe5-632c-a7ed-1f11-66c4578a1d93@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-06-21 at 10:28 +1000, Michael Ellerman wrote:
-> 
-> That's true, though I think yours is the first report we've had of
-> problems.
-> 
-> The old behaviour relied on device tree ordering in nearly all cases, so
-> you basically get whatever order your firmware happened to flatten the
-> device tree in.
-> 
-> That tends to be consistent on a single system or with a single firmware
-> version, but it's not stable in general. If your firmware changes, or
-> you kexec then the ordering can change.
-> 
-> So I'd definitely prefer we didn't go back to that behaviour, because
-> it's basically "random order".
-> 
-> If there's anything you can do on your end to cope with the ne
+[Sorry.  File error.  Previous copy was older version of file.]
 
-I think the numbering change has to be coped with. However:
+hotplug/pmt: Call rebuild_sched_domains after applying changes
+to update CPU associativity i.e. 'readd' CPUs.  This is to
+ensure that the deferred calls to arch_update_cpu_topology are
+now reflected in the system data structures.
 
-The main issue I see is that it somewhat hard wires that "reg"
-is a 64-bit property with the "interesting" bits in the bottom,
-and that "interesting" part somewhat happens to fit in 16-bits.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-It would have been better to get the full address out of reg (using the
-appropriate size specified in the parent #address-cells) and hash it.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 4b43fec..74b6287 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -16,6 +16,7 @@
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/cpu.h>
++#include <linux/cpuset.h>
+ #include <linux/slab.h>
+ #include <linux/of.h>
+ 
+@@ -449,6 +450,9 @@ static int dlpar_pmt(struct pseries_hp_errorlog *work)
+ 		kfree(tmp);
+ 	}
+ 
++	ssleep(5);
++	rebuild_sched_domains();
++
+ 	return 0;
+ }
+ 
