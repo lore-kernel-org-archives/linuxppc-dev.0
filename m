@@ -1,32 +1,25 @@
-Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR01-DB5-obe.outbound.protection.outlook.com
- (mail-db5eur01on0085.outbound.protection.outlook.com [104.47.2.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B7Hy0dVXzF0mQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 13:59:36 +1000 (AEST)
-From: Nipun Gupta <nipun.gupta@nxp.com>
-To: "robin.murphy@arm.com" <robin.murphy@arm.com>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>
-CC: "hch@lst.de" <hch@lst.de>, "joro@8bytes.org" <joro@8bytes.org>,
- "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "shawnguo@kernel.org"
- <shawnguo@kernel.org>, "frowand.list@gmail.com" <frowand.list@gmail.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
- "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
-Subject: RE: [PATCH 0/7 v5] Support for fsl-mc bus and its devices in SMMU
-Date: Thu, 21 Jun 2018 03:59:27 +0000
-Message-ID: <HE1PR0401MB24250CEFBC0B7CC919C4388AE6760@HE1PR0401MB2425.eurprd04.prod.outlook.com>
-References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
-In-Reply-To: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B7c92Wn0zF0mQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 14:13:45 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, dave.hansen@intel.com,
+ aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, Ulrich.Weigand@de.ibm.com,
+ fweimer@redhat.com, luto@kernel.org, msuchanek@suse.de
+Subject: Re: [PATCH v2 2/6] powerpc/pkeys: Save the pkey registers before fork
+In-Reply-To: <20180619142811.GD5294@ram.oc3035372033.ibm.com>
+References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
+ <1528936144-6696-3-git-send-email-linuxram@us.ibm.com>
+ <877emvx84j.fsf@concordia.ellerman.id.au>
+ <20180619142811.GD5294@ram.oc3035372033.ibm.com>
+Date: Thu, 21 Jun 2018 14:13:40 +1000
+Message-ID: <87a7rowzd7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,87 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Robin/Greg k-h,
+Ram Pai <linuxram@us.ibm.com> writes:
 
-Will this patch-set be taken for the next kernel release (and via which tre=
-e)?
+> On Tue, Jun 19, 2018 at 10:39:56PM +1000, Michael Ellerman wrote:
+>> Ram Pai <linuxram@us.ibm.com> writes:
+>> 
+>> > When a thread forks the contents of AMR, IAMR, UAMOR registers in the
+>> > newly forked thread are not inherited.
+>> >
+>> > Save the registers before forking, for content of those
+>> > registers to be automatically copied into the new thread.
+>> >
+>> > CC: Michael Ellerman <mpe@ellerman.id.au>
+>> > CC: Florian Weimer <fweimer@redhat.com>
+>> > CC: Andy Lutomirski <luto@kernel.org>
+>> > CC: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+>> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+>> 
+>> Again this is an ABI change but we'll call it a bug fix I guess.
+>
+> yes. the same defense here too. its a behaviorial change for the better.
+> Single threaded applications will not see any behaviorial change.
+> Multithreaded apps, which were unable to consume, the behavior will now be
+> able to do so.
 
-Thanks,
-Nipun
+Well threads is one thing, but this also affects processes.
 
-> -----Original Message-----
-> From: Nipun Gupta
-> Sent: Sunday, May 20, 2018 7:20 PM
-> To: robin.murphy@arm.com; will.deacon@arm.com; robh+dt@kernel.org;
-> robh@kernel.org; mark.rutland@arm.com; catalin.marinas@arm.com;
-> gregkh@linuxfoundation.org; Laurentiu Tudor <laurentiu.tudor@nxp.com>;
-> bhelgaas@google.com
-> Cc: hch@lst.de; joro@8bytes.org; m.szyprowski@samsung.com;
-> shawnguo@kernel.org; frowand.list@gmail.com; iommu@lists.linux-
-> foundation.org; linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
-> linux-arm-kernel@lists.infradead.org; linuxppc-dev@lists.ozlabs.org; linu=
-x-
-> pci@vger.kernel.org; Bharat Bhushan <bharat.bhushan@nxp.com>;
-> stuyoder@gmail.com; Leo Li <leoyang.li@nxp.com>; Nipun Gupta
-> <nipun.gupta@nxp.com>
-> Subject: [PATCH 0/7 v5] Support for fsl-mc bus and its devices in SMMU
->=20
-> This patchset defines IOMMU DT binding for fsl-mc bus and adds
-> support in SMMU for fsl-mc bus.
->=20
-> The patch series is based on top of dma-mapping tree (for-next branch):
-> http://git.infradead.org/users/hch/dma-mapping.git
->=20
-> These patches
->   - Define property 'iommu-map' for fsl-mc bus (patch 1)
->   - Integrates the fsl-mc bus with the SMMU using this
->     IOMMU binding (patch 2,3,4)
->   - Adds the dma configuration support for fsl-mc bus (patch 5, 6)
->   - Updates the fsl-mc device node with iommu/dma related changes (patch =
-7)
->=20
-> Changes in v2:
->   - use iommu-map property for fsl-mc bus
->   - rebase over patchset https://patchwork.kernel.org/patch/10317337/
->     and make corresponding changes for dma configuration of devices on
->     fsl-mc bus
->=20
-> Changes in v3:
->   - move of_map_rid in drivers/of/address.c
->=20
-> Changes in v4:
->   - move of_map_rid in drivers/of/base.c
->=20
-> Changes in v5:
->   - break patch 5 in two separate patches (now patch 5/7 and patch 6/7)
->   - add changelog text in patch 3/7 and patch 5/7
->   - typo fix
->=20
-> Nipun Gupta (7):
->   Docs: dt: add fsl-mc iommu-map device-tree binding
->   iommu: of: make of_pci_map_rid() available for other devices too
->   iommu: support iommu configuration for fsl-mc devices
->   iommu: arm-smmu: Add support for the fsl-mc bus
->   bus: fsl-mc: support dma configure for devices on fsl-mc bus
->   bus: fsl-mc: set coherent dma mask for devices on fsl-mc bus
->   arm64: dts: ls208xa: comply with the iommu map binding for fsl_mc
->=20
->  .../devicetree/bindings/misc/fsl,qoriq-mc.txt      |  39 ++++++++
->  arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi     |   6 +-
->  drivers/bus/fsl-mc/fsl-mc-bus.c                    |  16 +++-
->  drivers/iommu/arm-smmu.c                           |   7 ++
->  drivers/iommu/iommu.c                              |  21 +++++
->  drivers/iommu/of_iommu.c                           |  25 ++++-
->  drivers/of/base.c                                  | 102 +++++++++++++++=
-++++++
->  drivers/of/irq.c                                   |   5 +-
->  drivers/pci/of.c                                   | 101 ---------------=
------
->  include/linux/fsl/mc.h                             |   8 ++
->  include/linux/iommu.h                              |   2 +
->  include/linux/of.h                                 |  11 +++
->  include/linux/of_pci.h                             |  10 --
->  13 files changed, 231 insertions(+), 122 deletions(-)
->=20
-> --
-> 1.9.1
+And actually without this fix it's possible that a child process could
+fault on a region protected in the parent, if the value in the AMR in
+the thread struct happens to block access at the time of fork(). The
+value in the thread struct would be whatever was in the AMR the last
+time the parent was scheduled in. I think?
+
+cheers
