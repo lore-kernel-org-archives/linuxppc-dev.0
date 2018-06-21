@@ -1,23 +1,23 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41B2dw1dZbzF132
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:29:55 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41B2f22Sv0zF145
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2018 10:30:02 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5L0SvvC019380
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:29:53 -0400
+ w5L0SsN5105707
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:29:59 -0400
 Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jqyxm2rp4-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jr01jtnw8-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:29:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2018 20:29:59 -0400
 Received: from localhost
  by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 20 Jun 2018 18:29:52 -0600
+ Wed, 20 Jun 2018 18:29:58 -0600
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
@@ -25,12 +25,12 @@ Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Subject: [PATCH v04 3/9] hotplug/cpu: Provide CPU readd operation
+Subject: [PATCH v04 4/9] mobility/numa: Ensure numa update does not overlap
 In-Reply-To: <0425b353-54b0-6ccd-fbb6-3d26d9448bb5@linux.vnet.ibm.com>
-Date: Wed, 20 Jun 2018 19:29:47 -0500
+Date: Wed, 20 Jun 2018 19:29:52 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <a211493e-cd68-35b6-1e30-d60ce9d95f11@linux.vnet.ibm.com>
+Message-Id: <3afa2079-7a00-34cb-8bc0-6e6dff25d8a8@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,123 +40,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/dlpar: Provide hotplug CPU 'readd by index' operation to
-support LPAR Post Migration state updates.  When such changes are
-invoked by the PowerPC 'mobility' code, they will be queued up so
-that modifications to CPU properties will take place after the new
-property value is written to the device-tree.
+mobility/numa: Ensure that numa_update_cpu_topology() can not be
+entered multiple times concurrently.  It may be accessed through
+many different paths / concurrent work functions, and the lock
+ordering may be difficult to ensure otherwise.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
-Changes in patch:
-  -- Add CPU validity check to pseries_smp_notifier
-  -- Improve check on 'ibm,associativity' property
-  -- Add check for cpu type to new update property entry
----
- arch/powerpc/platforms/pseries/hotplug-cpu.c |   58 ++++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/mobility.c    |    2 -
- 2 files changed, 59 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/numa.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-index 3632db2..8f28160 100644
---- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-@@ -305,6 +305,36 @@ static int pseries_add_processor(struct device_node *np)
- 	return err;
- }
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 8802e7d..d4543b3 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1079,6 +1079,7 @@ struct topology_update_data {
+ static int topology_timer_secs = 1;
+ static int topology_inited;
+ static int topology_update_needed;
++static struct mutex topology_update_lock;
  
-+static int pseries_update_processor(struct of_reconfig_data *pr)
-+{
-+	int old_entries, new_entries, rc = 0;
-+	__be32 *old_assoc, *new_assoc;
-+
-+	/* We only handle changes due to 'ibm,associativity' property
-+	 */
-+	old_assoc = pr->old_prop->value;
-+	old_entries = be32_to_cpu(*old_assoc++);
-+
-+	new_assoc = pr->prop->value;
-+	new_entries = be32_to_cpu(*new_assoc++);
-+
-+	if (old_entries == new_entries) {
-+		int sz = old_entries * sizeof(int);
-+
-+		if (memcmp(old_assoc, new_assoc, sz))
-+			rc = dlpar_queue_action(
-+					PSERIES_HP_ELOG_RESOURCE_CPU,
-+					PSERIES_HP_ELOG_ACTION_READD,
-+					pr->dn->phandle);
-+	} else {
-+		rc = dlpar_queue_action(PSERIES_HP_ELOG_RESOURCE_CPU,
-+					PSERIES_HP_ELOG_ACTION_READD,
-+					pr->dn->phandle);
+ /*
+  * Change polling interval for associativity changes.
+@@ -1320,6 +1321,11 @@ int numa_update_cpu_topology(bool cpus_locked)
+ 	if (!updates)
+ 		return 0;
+ 
++	if (!mutex_trylock(&topology_update_lock)) {
++		kfree(updates);
++		return 0;
 +	}
 +
-+	return rc;
-+}
-+
- /*
-  * Update the present map for a cpu node which is going away, and set
-  * the hard id in the paca(s) to -1 to be consistent with boot time
-@@ -649,6 +679,26 @@ static int dlpar_cpu_remove_by_index(u32 drc_index, bool release_drc)
- 	return rc;
+ 	cpumask_clear(&updated_cpus);
+ 
+ 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
+@@ -1424,6 +1430,7 @@ int numa_update_cpu_topology(bool cpus_locked)
+ out:
+ 	kfree(updates);
+ 	topology_update_needed = 0;
++	mutex_unlock(&topology_update_lock);
+ 	return changed;
  }
  
-+static int dlpar_cpu_readd_by_index(u32 drc_index)
-+{
-+	int rc = 0;
-+
-+	pr_info("Attempting to re-add CPU, drc index %x\n", drc_index);
-+
-+	rc = dlpar_cpu_remove_by_index(drc_index, false);
-+	if (!rc)
-+		rc = dlpar_cpu_add(drc_index, false);
-+
-+	if (rc)
-+		pr_info("Failed to update cpu at drc_index %lx\n",
-+				(unsigned long int)drc_index);
-+	else
-+		pr_info("CPU at drc_index %lx was updated\n",
-+				(unsigned long int)drc_index);
-+
-+	return rc;
-+}
-+
- static int find_dlpar_cpus_to_remove(u32 *cpu_drcs, int cpus_to_remove)
+@@ -1598,6 +1605,8 @@ static ssize_t topology_write(struct file *file, const char __user *buf,
+ 
+ static int topology_update_init(void)
  {
- 	struct device_node *dn;
-@@ -839,6 +889,9 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
- 		else
- 			rc = -EINVAL;
- 		break;
-+	case PSERIES_HP_ELOG_ACTION_READD:
-+		rc = dlpar_cpu_readd_by_index(drc_index);
-+		break;
- 	default:
- 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
- 		rc = -EINVAL;
-@@ -902,6 +955,11 @@ static int pseries_smp_notifier(struct notifier_block *nb,
- 	case OF_RECONFIG_DETACH_NODE:
- 		pseries_remove_processor(rd->dn);
- 		break;
-+	case OF_RECONFIG_UPDATE_PROPERTY:
-+		if (!strcmp(rd->dn->type, "cpu") &&
-+		    !strcmp(rd->prop->name, "ibm,associativity"))
-+			pseries_update_processor(rd);
-+		break;
- 	}
- 	return notifier_from_errno(err);
- }
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index a96c13b..e57ab6b 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -377,7 +377,7 @@ static ssize_t migration_store(struct class *class,
- 	post_mobility_fixup();
- 
- 	/* Apply any necessary changes identified during fixup */
--	dlpar_schedule_delayed_queue();
-+	dlpar_queued_actions_run();
- 
- 	return count;
- }
++	mutex_init(&topology_update_lock);
++
+ 	/* Do not poll for changes if disabled at boot */
+ 	if (topology_updates_enabled)
+ 		start_topology_update();
