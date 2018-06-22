@@ -1,40 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Bnfg03dRzF0xS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 15:48:10 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5M5iGT4096799
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 01:48:07 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jru3ug9md-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 01:48:07 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 22 Jun 2018 06:48:06 +0100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Matthew Wilcox <willy@infradead.org>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Ram Pai <linuxram@us.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 13/26] ppc: Convert mmu context allocation to new IDA API
-In-Reply-To: <20180622043815.GA31255@bombadil.infradead.org>
-References: <20180621212835.5636-1-willy@infradead.org>
- <20180621212835.5636-14-willy@infradead.org>
- <20180622121511.00ae9d00@roar.ozlabs.ibm.com>
- <20180622043815.GA31255@bombadil.infradead.org>
-Date: Fri, 22 Jun 2018 11:17:59 +0530
-MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87tvpvbcds.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BpFX59dTzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 16:14:56 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org,
+	mikey@neuling.org
+Subject: [PATCH 2/2] powerpc: Document issues with TM on POWER9
+Date: Fri, 22 Jun 2018 16:14:52 +1000
+Message-Id: <20180622061452.19016-2-mikey@neuling.org>
+In-Reply-To: <20180622061452.19016-1-mikey@neuling.org>
+References: <20180622061452.19016-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,12 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Matthew Wilcox <willy@infradead.org> writes:
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ .../powerpc/transactional_memory.txt          | 44 +++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
-
-
-> this situation from occurring (like, oh i don't know, this function only
-> being called on process exit, so implicitly only called once per context).
->
-
-That is correct.
+diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
+index e32fdbb4c9..b254eab517 100644
+--- a/Documentation/powerpc/transactional_memory.txt
++++ b/Documentation/powerpc/transactional_memory.txt
+@@ -198,3 +198,47 @@ presented).  The transaction cannot then be continued and will take the failure
+ handler route.  Furthermore, the transactional 2nd register state will be
+ inaccessible.  GDB can currently be used on programs using TM, but not sensibly
+ in parts within transactions.
++
++POWER9
++======
++
++TM on POWER9 has issues with storing the complete register state. This
++is described in this commit:
++
++    commit 4bb3c7a0208fc13ca70598efd109901a7cd45ae7
++    Author: Paul Mackerras <paulus@ozlabs.org>
++    Date:   Wed Mar 21 21:32:01 2018 +1100
++    KVM: PPC: Book3S HV: Work around transactional memory bugs in POWER9
++
++To account for this different POWER9 chips have TM enabled in
++different ways.
++
++On POWER9N DD2.01 and below, TM is disabled. ie
++HWCAP2[PPC_FEATURE2_HTM] is not set.
++
++On POWER9N DD2.1 TM is configured by firmware to always abort a
++transaction when tm suspend occurs. So tsuspend will cause a
++transaction to be aborted and rolled back. Kernel exceptions will also
++cause the transaction to be aborted and rolled back and the exception
++will not occur. If userspace constructs a sigcontext that enables TM
++suspend, the sigcontext will be rejected by the kernel. This mode is
++advertised to users with HWCAP2[PPC_FEATURE2_HTM_NO_SUSPEND] set.
++HWCAP2[PPC_FEATURE2_HTM] is not set in this mode.
++
++On POWER9N DD2.2 and above, KVM and POWERVM emulate TM for guests (as
++descibed in commit 4bb3c7a0208f), hence TM is enabled for guests
++ie. HWCAP2[PPC_FEATURE2_HTM] is set for guest userspace. Guests that
++makes heavy use of TM suspend (tsuspend or kernel suspend) will result
++in traps into the hypervisor and hence will suffer a performance
++degredation. Host userspace has TM disabled
++ie. HWCAP2[PPC_FEATURE2_HTM] is not set. (although we make enable it
++at some point in the future if we bring the emulation into host
++userspace context switching).
++
++POWER9C DD1.2 and above are only avaliable with POWERNV and hence
++Linux only runs as a guest. On these systems TM is emulated like on
++POWER9N DD2.2.
++
++Guest migration from POWER8 to POWER9 will work with POWER9N DD2.2 and
++POWER9C DD1.2. Since earlier POWER9 processors don't support TM
++emulation, migration from POWER8 to POWER9 is not supported there.
+-- 
+2.17.1
