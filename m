@@ -1,28 +1,27 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
- [IPv6:2a00:1450:400c:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <al.dunsmuir@sympatico.ca>
+Received: from mtlfep03.bell.net (belmont94srvr.owm.bell.net [184.150.200.94])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41C7rb6HZCzF13G
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 05:27:59 +1000 (AEST)
-Received: by mail-wm0-x241.google.com with SMTP id p126-v6so3234976wmb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 12:27:59 -0700 (PDT)
-Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
-From: Mathieu Malaterre <malat@debian.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Kate Stewart <kstewart@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] =?UTF-8?q?powerpc/mm:=20remove=20warning=20about=20?=
- =?UTF-8?q?=E2=80=98type=E2=80=99=20being=20set?=
-Date: Fri, 22 Jun 2018 21:27:47 +0200
-Message-Id: <20180622192749.24954-1-malat@debian.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41CB3w1KmlzF132
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 07:07:54 +1000 (AEST)
+Received: from bell.net mtlfep02 184.150.200.30 by mtlfep02.bell.net with ESMTP
+ id <20180622210147.SKDI8528.mtlfep02.bell.net@mtlspm01.bell.net>
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:01:47 -0400
+Date: Fri, 22 Jun 2018 17:01:45 -0400
+From: Al Dunsmuir <al.dunsmuir@sympatico.ca>
+Message-ID: <56894976.20180622170145@sympatico.ca>
+To: Paul Clarke <pc@us.ibm.com>, Breno Leitao <leitao@debian.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH] selftests/powerpc: Fix strncpy usage
+In-Reply-To: <12953a47-a6a7-5f70-a46c-c95f8c424d11@us.ibm.com>
+References: <1529535071-14555-1-git-send-email-leitao@debian.org>
+ <20180621231856.GO16221@gate.crashing.org>
+ <1dc025d5-366c-ae13-259e-dae543e6ec52@debian.org>
+ <12953a47-a6a7-5f70-a46c-c95f8c424d11@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-‘type’ is only used when CONFIG_DEBUG_HIGHMEM is set. So add a possibly
-unused tag to variable. Remove warning treated as error with W=1:
+On Friday, June 22, 2018, 11:15:29 AM, Paul Clarke wrote:
+> On 06/22/2018 09:43 AM, Breno Leitao wrote:
+>> If you don't mind, I would solve this problem slightly different, as it seems
+>> to be more readable.
+>> 
+>> -       strncpy(prog, argv[0], strlen(argv[0]));
+>> +       if (strlen(argv[0]) >= LEN_MAX){
+>> +               fprintf(stderr, "Very big executable name: %s\n", argv[0]);
 
-  arch/powerpc/mm/highmem.c:59:6: error: variable ‘type’ set but not used [-Werror=unused-but-set-variable]
+> "Very big" is an observation.  "Too big" indicates a problem
+> better.  Or, more explicitly "Executable name is too long".
 
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- arch/powerpc/mm/highmem.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Or even better, display the limit that is being exceeded, in case that
+value changes over time.  Something like.
 
-diff --git a/arch/powerpc/mm/highmem.c b/arch/powerpc/mm/highmem.c
-index 668e87d03f9e..82a0e37557a5 100644
---- a/arch/powerpc/mm/highmem.c
-+++ b/arch/powerpc/mm/highmem.c
-@@ -56,7 +56,7 @@ EXPORT_SYMBOL(kmap_atomic_prot);
- void __kunmap_atomic(void *kvaddr)
- {
- 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
--	int type;
-+	int type __maybe_unused;
- 
- 	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
- 		pagefault_enable();
--- 
-2.11.0
+-       strncpy(prog, argv[0], strlen(argv[0]));
++       if (strlen(argv[0]) >= LEN_MAX){
++                fprintf(stderr, "Executable name exceeds limit (%d): %s\n",
++                        LEN_MAX,
++                        argv[0]);
