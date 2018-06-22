@@ -2,17 +2,15 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BpFX59dTzF0Vt
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BpFX5YHrzF0dT
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 16:14:56 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
 	mikey@neuling.org
-Subject: [PATCH 2/2] powerpc: Document issues with TM on POWER9
-Date: Fri, 22 Jun 2018 16:14:52 +1000
-Message-Id: <20180622061452.19016-2-mikey@neuling.org>
-In-Reply-To: <20180622061452.19016-1-mikey@neuling.org>
-References: <20180622061452.19016-1-mikey@neuling.org>
+Subject: [PATCH 1/2] powerpc: Document issues with the DAWR on POWER9
+Date: Fri, 22 Jun 2018 16:14:51 +1000
+Message-Id: <20180622061452.19016-1-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +22,73 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- .../powerpc/transactional_memory.txt          | 44 +++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ Documentation/powerpc/DAWR-POWER9.txt | 58 +++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+ create mode 100644 Documentation/powerpc/DAWR-POWER9.txt
 
-diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
-index e32fdbb4c9..b254eab517 100644
---- a/Documentation/powerpc/transactional_memory.txt
-+++ b/Documentation/powerpc/transactional_memory.txt
-@@ -198,3 +198,47 @@ presented).  The transaction cannot then be continued and will take the failure
- handler route.  Furthermore, the transactional 2nd register state will be
- inaccessible.  GDB can currently be used on programs using TM, but not sensibly
- in parts within transactions.
+diff --git a/Documentation/powerpc/DAWR-POWER9.txt b/Documentation/powerpc/DAWR-POWER9.txt
+new file mode 100644
+index 0000000000..cc6e69b69b
+--- /dev/null
++++ b/Documentation/powerpc/DAWR-POWER9.txt
+@@ -0,0 +1,58 @@
++DAWR issues on POWER9
++============================
 +
-+POWER9
-+======
++On POWER9 the DAWR can cause a checkstop if it points to cache
++inhibited (CI) memory. Currently Linux has no way to disinguish CI
++memory when configuring the DAWR, so (for now) the DAWR is disabled by
++this commit:
 +
-+TM on POWER9 has issues with storing the complete register state. This
-+is described in this commit:
++    commit 9654153158d3e0684a1bdb76dbababdb7111d5a0
++    Author: Michael Neuling <mikey@neuling.org>
++    Date:   Tue Mar 27 15:37:24 2018 +1100
++    powerpc: Disable DAWR in the base POWER9 CPU features
 +
-+    commit 4bb3c7a0208fc13ca70598efd109901a7cd45ae7
-+    Author: Paul Mackerras <paulus@ozlabs.org>
-+    Date:   Wed Mar 21 21:32:01 2018 +1100
-+    KVM: PPC: Book3S HV: Work around transactional memory bugs in POWER9
++Technical Details:
++============================
 +
-+To account for this different POWER9 chips have TM enabled in
-+different ways.
++DAWR has 6 different ways of being set.
++1) ptrace
++2) h_set_mode(DAWR)
++3) h_set_dabr()
++4) kvmppc_set_one_reg()
++5) xmon
 +
-+On POWER9N DD2.01 and below, TM is disabled. ie
-+HWCAP2[PPC_FEATURE2_HTM] is not set.
++For ptrace, we now advertise zero breakpoints on POWER9 via the
++PPC_PTRACE_GETHWDBGINFO call. This results in GDB falling back to
++software emulation of the watchpoint (which is slow).
 +
-+On POWER9N DD2.1 TM is configured by firmware to always abort a
-+transaction when tm suspend occurs. So tsuspend will cause a
-+transaction to be aborted and rolled back. Kernel exceptions will also
-+cause the transaction to be aborted and rolled back and the exception
-+will not occur. If userspace constructs a sigcontext that enables TM
-+suspend, the sigcontext will be rejected by the kernel. This mode is
-+advertised to users with HWCAP2[PPC_FEATURE2_HTM_NO_SUSPEND] set.
-+HWCAP2[PPC_FEATURE2_HTM] is not set in this mode.
++h_set_mode(DAWR) and h_set_dabr() will now return an error to the
++guest on a POWER9 host. Current Linux guests ignore this error, so
++they will silently not get the DAWR.
 +
-+On POWER9N DD2.2 and above, KVM and POWERVM emulate TM for guests (as
-+descibed in commit 4bb3c7a0208f), hence TM is enabled for guests
-+ie. HWCAP2[PPC_FEATURE2_HTM] is set for guest userspace. Guests that
-+makes heavy use of TM suspend (tsuspend or kernel suspend) will result
-+in traps into the hypervisor and hence will suffer a performance
-+degredation. Host userspace has TM disabled
-+ie. HWCAP2[PPC_FEATURE2_HTM] is not set. (although we make enable it
-+at some point in the future if we bring the emulation into host
-+userspace context switching).
++kvmppc_set_one_reg() will store the value in the vcpu but won't
++actually set it on POWER9 hardware. This is done so we don't break
++migration from POWER8 to POWER9, at the cost of silently losing the
++DAWR on the migration.
 +
-+POWER9C DD1.2 and above are only avaliable with POWERNV and hence
-+Linux only runs as a guest. On these systems TM is emulated like on
-+POWER9N DD2.2.
++For xmon, the 'bd' command will return an error on P9.
 +
-+Guest migration from POWER8 to POWER9 will work with POWER9N DD2.2 and
-+POWER9C DD1.2. Since earlier POWER9 processors don't support TM
-+emulation, migration from POWER8 to POWER9 is not supported there.
++Consequences for users
++============================
++
++For GDB watchpoints (ie 'watch' command) on POWER9 bare metal , GDB
++will accept the command. Unfortunatley since there is no hardware
++support for the watchpoint, GDB will software emulate the watchpoint
++making it run very slowly.
++
++The same will also be true for any guests started on a POWER9
++host. The watchpoint will fail and GDB will fall back to software
++emulation.
++
++If a guest is started on a POWER8 host, GDB will accept the watchpoint
++and configure the hardware to use the DAWR. This will run at full
++speed since it can use the hardware emualation. Unfortnatley if this
++guest is migrated to a POWER9 host, the watchpoint will be lost on the
++POWER9. Loads and stores to the watchpoint locations will not be
++trapped in GDB. The watchpoint is remembered, so if the guest is
++migrated back to the POWER8 host, it will start working again.
++
 -- 
 2.17.1
