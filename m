@@ -1,23 +1,27 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x242.google.com (mail-wm0-x242.google.com
- [IPv6:2a00:1450:400c:c09::242])
+Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
+ [IPv6:2a00:1450:400c:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41C7qb3J7KzF132
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 05:27:07 +1000 (AEST)
-Received: by mail-wm0-x242.google.com with SMTP id p11-v6so3757944wmc.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 12:27:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41C7r60zVQzF152
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 05:27:34 +1000 (AEST)
+Received: by mail-wm0-x244.google.com with SMTP id r15-v6so3224100wmc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 12:27:33 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Mathieu Malaterre <malat@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: include setup.h header file to fix warnings
-Date: Fri, 22 Jun 2018 21:26:53 +0200
-Message-Id: <20180622192655.23464-1-malat@debian.org>
+ Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Breno Leitao <leitao@debian.org>, Yisheng Xie <xieyisheng1@huawei.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] =?UTF-8?q?powerpc/xmon:=20avoid=20warnings=20about=20vari?=
+ =?UTF-8?q?ables=20that=20might=20be=20clobbered=20by=20=E2=80=98longjmp?=
+ =?UTF-8?q?=E2=80=99?=
+Date: Fri, 22 Jun 2018 21:27:17 +0200
+Message-Id: <20180622192718.24242-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,35 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Make sure to include setup.h to provide the following prototypes:
+Move initialization of variables after data definitions. This silence
+warnings treated as error with W=1:
 
-- irqstack_early_init
-- setup_power_save
-- initialize_cache_info
-
-Fix the following warnings (treated as error in W=1):
-
-  arch/powerpc/kernel/setup_32.c:198:13: error: no previous prototype for ‘irqstack_early_init’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/setup_32.c:238:13: error: no previous prototype for ‘setup_power_save’ [-Werror=missing-prototypes]
-  arch/powerpc/kernel/setup_32.c:253:13: error: no previous prototype for ‘initialize_cache_info’ [-Werror=missing-prototypes]
+  arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+  arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/kernel/setup_32.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/xmon/xmon.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index 74457485574b..9827b6b3aaaa 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -41,6 +41,8 @@
- #include <asm/cpu_has_feature.h>
- #include <asm/asm-prototypes.h>
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 47166ad2a669..982848c784ff 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3097,10 +3097,11 @@ static void show_pte(unsigned long addr)
+ static void show_tasks(void)
+ {
+ 	unsigned long tskv;
+-	struct task_struct *tsk = NULL;
++	struct task_struct *tsk;
  
-+#include "setup.h"
-+
- #define DBG(fmt...)
+ 	printf("     task_struct     ->thread.ksp    PID   PPID S  P CMD\n");
  
- extern void bootx_init(unsigned long r4, unsigned long phys);
++	tsk = NULL;
+ 	if (scanhex(&tskv))
+ 		tsk = (struct task_struct *)tskv;
+ 
+@@ -3386,10 +3387,11 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
+ 			      const char *after)
+ {
+ 	char *modname;
+-	const char *name = NULL;
++	const char *name;
+ 	unsigned long offset, size;
+ 
+ 	printf(REG, address);
++	name = NULL;
+ 	if (setjmp(bus_error_jmp) == 0) {
+ 		catch_memory_errors = 1;
+ 		sync();
 -- 
 2.11.0
