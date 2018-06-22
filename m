@@ -1,26 +1,26 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-f194.google.com (mail-ot0-f194.google.com
- [74.125.82.194])
+Received: from mail-ot0-f193.google.com (mail-ot0-f193.google.com
+ [74.125.82.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Btzg687rzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 19:48:15 +1000 (AEST)
-Received: by mail-ot0-f194.google.com with SMTP id 101-v6so6859329oth.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 02:48:15 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Bv1k4GzhzF0tm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 19:50:02 +1000 (AEST)
+Received: by mail-ot0-f193.google.com with SMTP id v24-v6so6832272otk.13
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 02:50:02 -0700 (PDT)
 MIME-Version: 1.0
-References: <20180328193307.978-1-malat@debian.org>
- <20180404200836.27446-1-malat@debian.org>
-In-Reply-To: <20180404200836.27446-1-malat@debian.org>
+References: <20180322202007.23088-1-malat@debian.org>
+ <20180322202007.23088-17-malat@debian.org>
+In-Reply-To: <20180322202007.23088-17-malat@debian.org>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 22 Jun 2018 11:48:02 +0200
-Message-ID: <CA+7wUswQGhQS6FTdRkGhhJKFbfoVpmzwWdT_9GoOicEF0OXFPQ@mail.gmail.com>
-Subject: Re: [PATCH v3 03/19] powerpc: Move `path` variable inside DEBUG_PROM
+Date: Fri, 22 Jun 2018 11:49:49 +0200
+Message-ID: <CA+7wUsxFJqjnygdg0a84QYktFGMUYeSiGD6=Ld3O06QsZkgG9g@mail.gmail.com>
+Subject: Re: [PATCH 16/19] powerpc/powermac: Add missing include of header
+ pmac.h
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+ LKML <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,62 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This one should be ok.
+This one is also ok.
 
-On Wed, Apr 4, 2018 at 10:08 PM Mathieu Malaterre <malat@debian.org> wrote:
+On Thu, Mar 22, 2018 at 9:21 PM Mathieu Malaterre <malat@debian.org> wrote:
 >
-> Add gcc attribute unused for two variables. Fix warnings treated as error=
-s
-> with W=3D1:
+> The header `pmac.h` was not included, leading to the following warnings,
+> treated as error with W=3D1:
 >
->   arch/powerpc/kernel/prom_init.c:1388:8: error: variable =E2=80=98path=
-=E2=80=99 set but not used [-Werror=3Dunused-but-set-variable]
+>   arch/powerpc/platforms/powermac/time.c:69:13: error: no previous protot=
+ype for =E2=80=98pmac_time_init=E2=80=99 [-Werror=3Dmissing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:207:15: error: no previous proto=
+type for =E2=80=98pmac_get_boot_time=E2=80=99 [-Werror=3Dmissing-prototypes=
+]
+>   arch/powerpc/platforms/powermac/time.c:222:6: error: no previous protot=
+ype for =E2=80=98pmac_get_rtc_time=E2=80=99 [-Werror=3Dmissing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:240:5: error: no previous protot=
+ype for =E2=80=98pmac_set_rtc_time=E2=80=99 [-Werror=3Dmissing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:259:12: error: no previous proto=
+type for =E2=80=98via_calibrate_decr=E2=80=99 [-Werror=3Dmissing-prototypes=
+]
+>   arch/powerpc/platforms/powermac/time.c:311:13: error: no previous proto=
+type for =E2=80=98pmac_calibrate_decr=E2=80=99 [-Werror=3Dmissing-prototype=
+s]
 >
-> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> The function `via_calibrate_decr` was made static to silence a warning.
+>
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 > ---
-> v3: really move path within ifdef DEBUG_PROM
-> v2: move path within ifdef DEBUG_PROM
+>  arch/powerpc/platforms/powermac/time.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
->  arch/powerpc/kernel/prom_init.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
+> diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platfo=
+rms/powermac/time.c
+> index 274af6fa388e..5cc6fa40fcc4 100644
+> --- a/arch/powerpc/platforms/powermac/time.c
+> +++ b/arch/powerpc/platforms/powermac/time.c
+> @@ -34,6 +34,8 @@
+>  #include <asm/nvram.h>
+>  #include <asm/smu.h>
 >
-> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_i=
-nit.c
-> index acf4b2e0530c..223b35acbbdd 100644
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -603,7 +603,7 @@ static void __init early_cmdline_parse(void)
->         const char *opt;
+> +#include "pmac.h"
+> +
+>  #undef DEBUG
 >
->         char *p;
-> -       int l =3D 0;
-> +       int l __maybe_unused =3D 0;
->
->         prom_cmd_line[0] =3D 0;
->         p =3D prom_cmd_line;
-> @@ -1385,7 +1385,10 @@ static void __init reserve_mem(u64 base, u64 size)
->  static void __init prom_init_mem(void)
+>  #ifdef DEBUG
+> @@ -256,7 +258,7 @@ int pmac_set_rtc_time(struct rtc_time *tm)
+>   * Calibrate the decrementer register using VIA timer 1.
+>   * This is used both on powermacs and CHRP machines.
+>   */
+> -int __init via_calibrate_decr(void)
+> +static int __init via_calibrate_decr(void)
 >  {
->         phandle node;
-> -       char *path, type[64];
-> +#ifdef DEBUG_PROM
-> +       char *path;
-> +#endif
-> +       char type[64];
->         unsigned int plen;
->         cell_t *p, *endp;
->         __be32 val;
-> @@ -1406,7 +1409,9 @@ static void __init prom_init_mem(void)
->         prom_debug("root_size_cells: %x\n", rsc);
->
->         prom_debug("scanning memory:\n");
-> +#ifdef DEBUG_PROM
->         path =3D prom_scratch;
-> +#endif
->
->         for (node =3D 0; prom_next_node(&node); ) {
->                 type[0] =3D 0;
+>         struct device_node *vias;
+>         volatile unsigned char __iomem *via;
 > --
 > 2.11.0
 >
