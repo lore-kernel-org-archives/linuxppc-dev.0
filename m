@@ -1,16 +1,33 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <stewart@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41BpFX5YHrzF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 16:14:56 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	mikey@neuling.org
-Subject: [PATCH 1/2] powerpc: Document issues with the DAWR on POWER9
-Date: Fri, 22 Jun 2018 16:14:51 +1000
-Message-Id: <20180622061452.19016-1-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BqFw5hPBzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:00:20 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5M6x3vh097119
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:00:18 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jrp9fkhg1-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:00:17 -0400
+Received: from localhost
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
+ Fri, 22 Jun 2018 03:00:16 -0400
+From: Stewart Smith <stewart@linux.ibm.com>
+To: Michael Neuling <mikey@neuling.org>, mpe@ellerman.id.au
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc: Document issues with the DAWR on POWER9
+In-Reply-To: <20180622061452.19016-1-mikey@neuling.org>
+References: <20180622061452.19016-1-mikey@neuling.org>
+Date: Fri, 22 Jun 2018 17:00:11 +1000
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87woure26c.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,75 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- Documentation/powerpc/DAWR-POWER9.txt | 58 +++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
- create mode 100644 Documentation/powerpc/DAWR-POWER9.txt
+Michael Neuling <mikey@neuling.org> writes:
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  Documentation/powerpc/DAWR-POWER9.txt | 58 +++++++++++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+>  create mode 100644 Documentation/powerpc/DAWR-POWER9.txt
 
-diff --git a/Documentation/powerpc/DAWR-POWER9.txt b/Documentation/powerpc/DAWR-POWER9.txt
-new file mode 100644
-index 0000000000..cc6e69b69b
---- /dev/null
-+++ b/Documentation/powerpc/DAWR-POWER9.txt
-@@ -0,0 +1,58 @@
-+DAWR issues on POWER9
-+============================
-+
-+On POWER9 the DAWR can cause a checkstop if it points to cache
-+inhibited (CI) memory. Currently Linux has no way to disinguish CI
-+memory when configuring the DAWR, so (for now) the DAWR is disabled by
-+this commit:
-+
-+    commit 9654153158d3e0684a1bdb76dbababdb7111d5a0
-+    Author: Michael Neuling <mikey@neuling.org>
-+    Date:   Tue Mar 27 15:37:24 2018 +1100
-+    powerpc: Disable DAWR in the base POWER9 CPU features
-+
-+Technical Details:
-+============================
-+
-+DAWR has 6 different ways of being set.
-+1) ptrace
-+2) h_set_mode(DAWR)
-+3) h_set_dabr()
-+4) kvmppc_set_one_reg()
-+5) xmon
-+
-+For ptrace, we now advertise zero breakpoints on POWER9 via the
-+PPC_PTRACE_GETHWDBGINFO call. This results in GDB falling back to
-+software emulation of the watchpoint (which is slow).
-+
-+h_set_mode(DAWR) and h_set_dabr() will now return an error to the
-+guest on a POWER9 host. Current Linux guests ignore this error, so
-+they will silently not get the DAWR.
-+
-+kvmppc_set_one_reg() will store the value in the vcpu but won't
-+actually set it on POWER9 hardware. This is done so we don't break
-+migration from POWER8 to POWER9, at the cost of silently losing the
-+DAWR on the migration.
-+
-+For xmon, the 'bd' command will return an error on P9.
-+
-+Consequences for users
-+============================
-+
-+For GDB watchpoints (ie 'watch' command) on POWER9 bare metal , GDB
-+will accept the command. Unfortunatley since there is no hardware
-+support for the watchpoint, GDB will software emulate the watchpoint
-+making it run very slowly.
-+
-+The same will also be true for any guests started on a POWER9
-+host. The watchpoint will fail and GDB will fall back to software
-+emulation.
-+
-+If a guest is started on a POWER8 host, GDB will accept the watchpoint
-+and configure the hardware to use the DAWR. This will run at full
-+speed since it can use the hardware emualation. Unfortnatley if this
-+guest is migrated to a POWER9 host, the watchpoint will be lost on the
-+POWER9. Loads and stores to the watchpoint locations will not be
-+trapped in GDB. The watchpoint is remembered, so if the guest is
-+migrated back to the POWER8 host, it will start working again.
-+
+Acked-by: Stewart Smith <stewart@linux.ibm.com>
+
 -- 
-2.17.1
+Stewart Smith
+OPAL Architect, IBM.
