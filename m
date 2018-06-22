@@ -1,27 +1,26 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-wm0-x244.google.com (mail-wm0-x244.google.com
- [IPv6:2a00:1450:400c:c09::244])
+Received: from mail-wm0-x241.google.com (mail-wm0-x241.google.com
+ [IPv6:2a00:1450:400c:c09::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41C7r60zVQzF152
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 05:27:34 +1000 (AEST)
-Received: by mail-wm0-x244.google.com with SMTP id r15-v6so3224100wmc.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 12:27:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41C7rb6HZCzF13G
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 05:27:59 +1000 (AEST)
+Received: by mail-wm0-x241.google.com with SMTP id p126-v6so3234976wmb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 12:27:59 -0700 (PDT)
 Sender: Mathieu Malaterre <mathieu.malaterre@gmail.com>
 From: Mathieu Malaterre <malat@debian.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Mathieu Malaterre <malat@debian.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Balbir Singh <bsingharora@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Breno Leitao <leitao@debian.org>, Yisheng Xie <xieyisheng1@huawei.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] =?UTF-8?q?powerpc/xmon:=20avoid=20warnings=20about=20vari?=
- =?UTF-8?q?ables=20that=20might=20be=20clobbered=20by=20=E2=80=98longjmp?=
- =?UTF-8?q?=E2=80=99?=
-Date: Fri, 22 Jun 2018 21:27:17 +0200
-Message-Id: <20180622192718.24242-1-malat@debian.org>
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] =?UTF-8?q?powerpc/mm:=20remove=20warning=20about=20?=
+ =?UTF-8?q?=E2=80=98type=E2=80=99=20being=20set?=
+Date: Fri, 22 Jun 2018 21:27:47 +0200
+Message-Id: <20180622192749.24954-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,46 +32,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move initialization of variables after data definitions. This silence
-warnings treated as error with W=1:
+‘type’ is only used when CONFIG_DEBUG_HIGHMEM is set. So add a possibly
+unused tag to variable. Remove warning treated as error with W=1:
 
-  arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
-  arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+  arch/powerpc/mm/highmem.c:59:6: error: variable ‘type’ set but not used [-Werror=unused-but-set-variable]
 
 Signed-off-by: Mathieu Malaterre <malat@debian.org>
 ---
- arch/powerpc/xmon/xmon.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/highmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 47166ad2a669..982848c784ff 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3097,10 +3097,11 @@ static void show_pte(unsigned long addr)
- static void show_tasks(void)
+diff --git a/arch/powerpc/mm/highmem.c b/arch/powerpc/mm/highmem.c
+index 668e87d03f9e..82a0e37557a5 100644
+--- a/arch/powerpc/mm/highmem.c
++++ b/arch/powerpc/mm/highmem.c
+@@ -56,7 +56,7 @@ EXPORT_SYMBOL(kmap_atomic_prot);
+ void __kunmap_atomic(void *kvaddr)
  {
- 	unsigned long tskv;
--	struct task_struct *tsk = NULL;
-+	struct task_struct *tsk;
+ 	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+-	int type;
++	int type __maybe_unused;
  
- 	printf("     task_struct     ->thread.ksp    PID   PPID S  P CMD\n");
- 
-+	tsk = NULL;
- 	if (scanhex(&tskv))
- 		tsk = (struct task_struct *)tskv;
- 
-@@ -3386,10 +3387,11 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
- 			      const char *after)
- {
- 	char *modname;
--	const char *name = NULL;
-+	const char *name;
- 	unsigned long offset, size;
- 
- 	printf(REG, address);
-+	name = NULL;
- 	if (setjmp(bus_error_jmp) == 0) {
- 		catch_memory_errors = 1;
- 		sync();
+ 	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
+ 		pagefault_enable();
 -- 
 2.11.0
