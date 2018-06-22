@@ -1,35 +1,34 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Br0X2QNjzF0Vt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:33:48 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5M7TKq8003484
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:33:45 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jruuv2bmd-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 03:33:45 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 22 Jun 2018 08:33:43 +0100
-Subject: Re: [PATCH] ocxl: Fix page fault handler in case of fault on dying
- process
-To: Frederic Barrat <fbarrat@linux.ibm.com>, alastair@d-silva.org,
- linuxppc-dev@lists.ozlabs.org
-Cc: clombard@linux.ibm.com, vaibhav@linux.ibm.com
-References: <20180618121436.20479-1-fbarrat@linux.ibm.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Thu, 21 Jun 2018 18:07:26 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Bsnw5dBWzF0dT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 18:54:43 +1000 (AEST)
+Received: by mail-lf0-x243.google.com with SMTP id q11-v6so7994920lfc.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 01:54:43 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180618121436.20479-1-fbarrat@linux.ibm.com>
-Message-Id: <1df943c8-88f8-91e2-e133-d6d578d1bb77@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <alpine.LNX.2.21.1806221455570.14@nippy.intranet>
+References: <20180619140229.3615110-1-arnd@arndb.de>
+ <20180619140229.3615110-2-arnd@arndb.de>
+ <alpine.LNX.2.21.1806221455570.14@nippy.intranet>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 22 Jun 2018 10:54:39 +0200
+Message-ID: <CAK8P3a2chXVhz+UJ+ujg8QMqyMmJ4zGj9XKuFZ+MsJ=dGqb3eg@mail.gmail.com>
+Subject: Re: [PATCH 2/3] [v2] m68k: mac: use time64_t in RTC handling
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Joshua Thompson <funaho@jurai.org>, Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Meelis Roos <mroos@linux.ee>, Andreas Schwab <schwab@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,32 +38,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18/06/18 22:14, Frederic Barrat wrote:
-> If a process exits without doing proper cleanup, there's a window
-> where an opencapi device can try to access the memory of the dying
-> process and may trigger a page fault. That's an expected scenario and
-> the ocxl driver holds a reference on the mm_struct of the process
-> until the opencapi device is notified of the process exiting.
-> However, if mm_users is already at 0, i.e. the address space of the
-> process has already been destroyed, the driver shouldn't try resolving
-> the page fault, as it will fail, but it can also try accessing already
-> freed data.
-> 
-> It is fixed by only calling the bottom half of the page fault handler
-> if mm_users is greater than 0 and get a reference on mm_users instead
-> of mm_count. Otherwise, we can safely return a translation fault to
-> the device, as its associated memory context is being removed. The
-> opencapi device will be properly cleaned up shortly after when closing
-> the file descriptors.
-> 
-> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-> Cc: stable@vger.kernel.org # v4.16+
-> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+On Fri, Jun 22, 2018 at 7:26 AM, Finn Thain <fthain@telegraphics.com.au> wrote:
+> On Tue, 19 Jun 2018, Arnd Bergmann wrote:
+>
+>> The real-time clock on m68k (and powerpc) mac systems uses an unsigned
+>> 32-bit value starting in 1904, which overflows in 2040, about two years
+>> later than everyone else, but this gets wrapped around in the Linux code
+>> in 2038 already because of the deprecated usage of time_t and/or long in
+>> the conversion.
+>>
+>> Getting rid of the deprecated interfaces makes it work until 2040 as
+>> documented, and it could be easily extended by reinterpreting the
+>> resulting time64_t as a positive number. For the moment, I'm adding a
+>> WARN_ON() that triggers if we encounter a time before 1970 or after 2040
+>> (the two are indistinguishable).
+>>
+>
+> I really don't like the WARN_ON(), but I'd prefer to address that in a
+> separate patch rather than impede the progress of this patch (or of this
+> series, since 3/3 seems to be unrelated).
+>
+> BTW, have you considered using the same wrap-around test (i.e. YY < 70)
+> that we use for the year register in the other RTC chips?
 
-I think I understand what's going on here and it looks right.
+That wrap-around test would have the same effect as the my original
+version (aside from the two bugs I now fixed), doing rougly
 
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+-        return time - RTC_OFFSET;
++        return (u32)(time - RTC_OFFSET);
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+or some other variation of that will give us an RTC that supports all dates
+between 1970 and 2106. I don't think anyone so far had a strong
+preference here, so I went with what Mathieu suggested and kept the
+original Mac behavior, but added the WARN_ON().
+
+>> This brings it in line with the corresponding code that we have on
+>> powerpc macintosh.
+>>
+>
+> Your recent patches to the Mac RTC routines (which are duplicated under
+> arch/m68k and arch/powerpc) conflict with my recent patch that
+> deduplicates the same code. So I will rebase and resubmit after someone
+> merges these fixes.
+>
+> Apparently the PowerMac routines work now, which is sufficient testing for
+> me; the PowerMac routines will get tested on m68k Macs when that code gets
+> deduplicated again.
+
+Sorry about introducing that conflict, and thanks for bearing with me on the
+rebase. One thing to watch out for (if you haven't noticed already) is that the
+powerpc version now depends on rtc_time64_to_tm/rtc_tm_to_time64 which
+are only available if CONFIG_RTC_LIB is enabled but simplifies the code a
+bit. I did not want to introduce that as a global dependency on m68k which
+is rather limited on code size already, but it probably doesn't hurt to require
+RTC_LIB on m68k-mac.
+
+        Arnd
