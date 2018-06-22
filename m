@@ -1,26 +1,26 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-f193.google.com (mail-ot0-f193.google.com
- [74.125.82.193])
+Received: from mail-ot0-f194.google.com (mail-ot0-f194.google.com
+ [74.125.82.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Bv1k4GzhzF0tm
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 19:50:02 +1000 (AEST)
-Received: by mail-ot0-f193.google.com with SMTP id v24-v6so6832272otk.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 02:50:02 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41BxDF2ZWkzF0Vt
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 21:29:16 +1000 (AEST)
+Received: by mail-ot0-f194.google.com with SMTP id 92-v6so7115843otw.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 04:29:16 -0700 (PDT)
 MIME-Version: 1.0
-References: <20180322202007.23088-1-malat@debian.org>
- <20180322202007.23088-17-malat@debian.org>
-In-Reply-To: <20180322202007.23088-17-malat@debian.org>
+References: <20180322202007.23088-8-malat@debian.org>
+ <20180328193935.1338-1-malat@debian.org>
+In-Reply-To: <20180328193935.1338-1-malat@debian.org>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 22 Jun 2018 11:49:49 +0200
-Message-ID: <CA+7wUsxFJqjnygdg0a84QYktFGMUYeSiGD6=Ld3O06QsZkgG9g@mail.gmail.com>
-Subject: Re: [PATCH 16/19] powerpc/powermac: Add missing include of header
- pmac.h
+Date: Fri, 22 Jun 2018 13:29:03 +0200
+Message-ID: <CA+7wUsxL=r6hip9hwt9xsrFYAZeqqFBmf89N37sPVeMdOsJjGw@mail.gmail.com>
+Subject: Re: [PATCH v2 07/19] powerpc/powermac: Make some functions static
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, kvm-ppc@vger.kernel.org
+ LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,59 +31,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This one is also ok.
+This one should also be good to go.
 
-On Thu, Mar 22, 2018 at 9:21 PM Mathieu Malaterre <malat@debian.org> wrote:
+On Wed, Mar 28, 2018 at 9:39 PM Mathieu Malaterre <malat@debian.org> wrote:
 >
-> The header `pmac.h` was not included, leading to the following warnings,
-> treated as error with W=3D1:
+> These functions can all be static, make it so. Fix warnings treated as
+> errors with W=3D1:
 >
->   arch/powerpc/platforms/powermac/time.c:69:13: error: no previous protot=
-ype for =E2=80=98pmac_time_init=E2=80=99 [-Werror=3Dmissing-prototypes]
->   arch/powerpc/platforms/powermac/time.c:207:15: error: no previous proto=
-type for =E2=80=98pmac_get_boot_time=E2=80=99 [-Werror=3Dmissing-prototypes=
+>   arch/powerpc/platforms/powermac/pci.c:1022:6: error: no previous protot=
+ype for =E2=80=98pmac_pci_fixup_ohci=E2=80=99 [-Werror=3Dmissing-prototypes=
 ]
->   arch/powerpc/platforms/powermac/time.c:222:6: error: no previous protot=
-ype for =E2=80=98pmac_get_rtc_time=E2=80=99 [-Werror=3Dmissing-prototypes]
->   arch/powerpc/platforms/powermac/time.c:240:5: error: no previous protot=
-ype for =E2=80=98pmac_set_rtc_time=E2=80=99 [-Werror=3Dmissing-prototypes]
->   arch/powerpc/platforms/powermac/time.c:259:12: error: no previous proto=
-type for =E2=80=98via_calibrate_decr=E2=80=99 [-Werror=3Dmissing-prototypes=
-]
->   arch/powerpc/platforms/powermac/time.c:311:13: error: no previous proto=
-type for =E2=80=98pmac_calibrate_decr=E2=80=99 [-Werror=3Dmissing-prototype=
-s]
+>   arch/powerpc/platforms/powermac/pci.c:1057:6: error: no previous protot=
+ype for =E2=80=98pmac_pci_fixup_cardbus=E2=80=99 [-Werror=3Dmissing-prototy=
+pes]
+>   arch/powerpc/platforms/powermac/pci.c:1094:6: error: no previous protot=
+ype for =E2=80=98pmac_pci_fixup_pciata=E2=80=99 [-Werror=3Dmissing-prototyp=
+es]
 >
-> The function `via_calibrate_decr` was made static to silence a warning.
+> Remove has_address declaration and assignment since not used. Also add gc=
+c
+> attribute unused to fix a warning treated as error with W=3D1:
 >
+>   arch/powerpc/platforms/powermac/pci.c:784:19: error: variable =E2=80=98=
+has_address=E2=80=99 set but not used [-Werror=3Dunused-but-set-variable]
+>   arch/powerpc/platforms/powermac/pci.c:907:22: error: variable =E2=80=98=
+ht=E2=80=99 set but not used [-Werror=3Dunused-but-set-variable]
+>
+> Suggested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 > ---
->  arch/powerpc/platforms/powermac/time.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> v2: remove has_address variable since not used
+>  arch/powerpc/platforms/powermac/pci.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 >
-> diff --git a/arch/powerpc/platforms/powermac/time.c b/arch/powerpc/platfo=
-rms/powermac/time.c
-> index 274af6fa388e..5cc6fa40fcc4 100644
-> --- a/arch/powerpc/platforms/powermac/time.c
-> +++ b/arch/powerpc/platforms/powermac/time.c
-> @@ -34,6 +34,8 @@
->  #include <asm/nvram.h>
->  #include <asm/smu.h>
+> diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platfor=
+ms/powermac/pci.c
+> index 0b8174a79993..67c497093e0a 100644
+> --- a/arch/powerpc/platforms/powermac/pci.c
+> +++ b/arch/powerpc/platforms/powermac/pci.c
+> @@ -781,12 +781,12 @@ static int __init pmac_add_bridge(struct device_nod=
+e *dev)
+>         struct resource rsrc;
+>         char *disp_name;
+>         const int *bus_range;
+> -       int primary =3D 1, has_address =3D 0;
+> +       int primary =3D 1;
 >
-> +#include "pmac.h"
-> +
->  #undef DEBUG
+>         DBG("Adding PCI host bridge %pOF\n", dev);
 >
->  #ifdef DEBUG
-> @@ -256,7 +258,7 @@ int pmac_set_rtc_time(struct rtc_time *tm)
->   * Calibrate the decrementer register using VIA timer 1.
->   * This is used both on powermacs and CHRP machines.
->   */
-> -int __init via_calibrate_decr(void)
-> +static int __init via_calibrate_decr(void)
+>         /* Fetch host bridge registers address */
+> -       has_address =3D (of_address_to_resource(dev, 0, &rsrc) =3D=3D 0);
+> +       of_address_to_resource(dev, 0, &rsrc);
+>
+>         /* Get bus range if any */
+>         bus_range =3D of_get_property(dev, "bus-range", &len);
+> @@ -904,7 +904,7 @@ static int pmac_pci_root_bridge_prepare(struct pci_ho=
+st_bridge *bridge)
+>  void __init pmac_pci_init(void)
 >  {
->         struct device_node *vias;
->         volatile unsigned char __iomem *via;
+>         struct device_node *np, *root;
+> -       struct device_node *ht =3D NULL;
+> +       struct device_node *ht __maybe_unused =3D NULL;
+>
+>         pci_set_flags(PCI_CAN_SKIP_ISA_ALIGN);
+>
+> @@ -1019,7 +1019,7 @@ static bool pmac_pci_enable_device_hook(struct pci_=
+dev *dev)
+>         return true;
+>  }
+>
+> -void pmac_pci_fixup_ohci(struct pci_dev *dev)
+> +static void pmac_pci_fixup_ohci(struct pci_dev *dev)
+>  {
+>         struct device_node *node =3D pci_device_to_OF_node(dev);
+>
+> @@ -1054,7 +1054,7 @@ void __init pmac_pcibios_after_init(void)
+>         }
+>  }
+>
+> -void pmac_pci_fixup_cardbus(struct pci_dev* dev)
+> +static void pmac_pci_fixup_cardbus(struct pci_dev *dev)
+>  {
+>         if (!machine_is(powermac))
+>                 return;
+> @@ -1091,7 +1091,7 @@ void pmac_pci_fixup_cardbus(struct pci_dev* dev)
+>
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_TI, PCI_ANY_ID, pmac_pci_fixup_car=
+dbus);
+>
+> -void pmac_pci_fixup_pciata(struct pci_dev* dev)
+> +static void pmac_pci_fixup_pciata(struct pci_dev *dev)
+>  {
+>         u8 progif =3D 0;
+>
 > --
 > 2.11.0
 >
