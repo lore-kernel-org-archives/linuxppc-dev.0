@@ -2,22 +2,24 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ChVw0xrpzF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 02:59:34 +1000 (AEST)
-Subject: =?UTF-8?Q?Re:_[PATCH]_powerpc/xmon:_avoid_warnings_about_variables_?=
- =?UTF-8?Q?that_might_be_clobbered_by_=e2=80=98longjmp=e2=80=99?=
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Chp31gQgzF0dT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 03:12:43 +1000 (AEST)
+Subject: =?UTF-8?Q?Re:_[PATCH]_powerpc/mm:_remove_warning_about_=e2=80=98typ?=
+ =?UTF-8?Q?e=e2=80=99_being_set?=
 To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Yisheng Xie <xieyisheng1@huawei.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
- linuxppc-dev@lists.ozlabs.org
-References: <20180622192718.24242-1-malat@debian.org>
+Cc: Kate Stewart <kstewart@linuxfoundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+References: <20180622192749.24954-1-malat@debian.org>
 From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
-Date: Sat, 23 Jun 2018 18:59:27 +0200
+Message-ID: <c182ca65-f41e-4a1c-95ee-6cb979a6e76b@c-s.fr>
+Date: Sat, 23 Jun 2018 19:12:37 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180622192718.24242-1-malat@debian.org>
+In-Reply-To: <20180622192749.24954-1-malat@debian.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,57 +33,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 Le 22/06/2018 à 21:27, Mathieu Malaterre a écrit :
-> Move initialization of variables after data definitions. This silence
-> warnings treated as error with W=1:
+> ‘type’ is only used when CONFIG_DEBUG_HIGHMEM is set. So add a possibly
+> unused tag to variable. Remove warning treated as error with W=1:
 > 
->    arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
->    arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+>    arch/powerpc/mm/highmem.c:59:6: error: variable ‘type’ set but not used [-Werror=unused-but-set-variable]
 
-Is that an invalid warning ?
+Is type neeeded at all when CONFIG_DEBUG_HIGHMEM is not set ?
 
-If so, please explain in the commit log.
+The call 	type = kmap_atomic_idx();          seems useless when 
+CONFIG_DEBUG_HIGHMEM isn't set. Couldn't we just most type definition 
+and setting inside the CONFIG_DEBUG_HIGHMEM {} below ?
 
-Otherwise, I'd expect one to fix the warning, not just cheat on GCC.
+Alternatively, maybe you could replace the #ifdef CONFIG_DEBUG_HIGHMEM 
+by an    if (IS_ENABLED(CONFIG_DEBUG_HIGHMEM)) ?
 
 Christophe
-
 
 > 
 > Signed-off-by: Mathieu Malaterre <malat@debian.org>
 > ---
->   arch/powerpc/xmon/xmon.c | 6 ++++--
->   1 file changed, 4 insertions(+), 2 deletions(-)
+>   arch/powerpc/mm/highmem.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-> index 47166ad2a669..982848c784ff 100644
-> --- a/arch/powerpc/xmon/xmon.c
-> +++ b/arch/powerpc/xmon/xmon.c
-> @@ -3097,10 +3097,11 @@ static void show_pte(unsigned long addr)
->   static void show_tasks(void)
+> diff --git a/arch/powerpc/mm/highmem.c b/arch/powerpc/mm/highmem.c
+> index 668e87d03f9e..82a0e37557a5 100644
+> --- a/arch/powerpc/mm/highmem.c
+> +++ b/arch/powerpc/mm/highmem.c
+> @@ -56,7 +56,7 @@ EXPORT_SYMBOL(kmap_atomic_prot);
+>   void __kunmap_atomic(void *kvaddr)
 >   {
->   	unsigned long tskv;
-> -	struct task_struct *tsk = NULL;
-> +	struct task_struct *tsk;
+>   	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
+> -	int type;
+> +	int type __maybe_unused;
 >   
->   	printf("     task_struct     ->thread.ksp    PID   PPID S  P CMD\n");
->   
-> +	tsk = NULL;
->   	if (scanhex(&tskv))
->   		tsk = (struct task_struct *)tskv;
->   
-> @@ -3386,10 +3387,11 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
->   			      const char *after)
->   {
->   	char *modname;
-> -	const char *name = NULL;
-> +	const char *name;
->   	unsigned long offset, size;
->   
->   	printf(REG, address);
-> +	name = NULL;
->   	if (setjmp(bus_error_jmp) == 0) {
->   		catch_memory_errors = 1;
->   		sync();
+>   	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
+>   		pagefault_enable();
 > 
 
 ---
