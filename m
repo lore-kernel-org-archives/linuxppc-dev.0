@@ -1,26 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Chp31gQgzF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 03:12:43 +1000 (AEST)
-Subject: =?UTF-8?Q?Re:_[PATCH]_powerpc/mm:_remove_warning_about_=e2=80=98typ?=
- =?UTF-8?Q?e=e2=80=99_being_set?=
-To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Kate Stewart <kstewart@linuxfoundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-References: <20180622192749.24954-1-malat@debian.org>
-From: christophe leroy <christophe.leroy@c-s.fr>
-Message-ID: <c182ca65-f41e-4a1c-95ee-6cb979a6e76b@c-s.fr>
-Date: Sat, 23 Jun 2018 19:12:37 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180622192749.24954-1-malat@debian.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41CmF43vTHzF14Y
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 05:47:52 +1000 (AEST)
+Date: Sat, 23 Jun 2018 14:47:16 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Yisheng Xie <xieyisheng1@huawei.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/xmon: =?utf-8?Q?avoid_?=
+ =?utf-8?Q?warnings_about_variables_that_might_be_clobbered_by_=E2=80=98lo?=
+ =?utf-8?B?bmdqbXDigJk=?=
+Message-ID: <20180623194716.GY16221@gate.crashing.org>
+References: <20180622192718.24242-1-malat@debian.org>
+ <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 22/06/2018 à 21:27, Mathieu Malaterre a écrit :
-> ‘type’ is only used when CONFIG_DEBUG_HIGHMEM is set. So add a possibly
-> unused tag to variable. Remove warning treated as error with W=1:
+On Sat, Jun 23, 2018 at 06:59:27PM +0200, christophe leroy wrote:
 > 
->    arch/powerpc/mm/highmem.c:59:6: error: variable ‘type’ set but not used [-Werror=unused-but-set-variable]
-
-Is type neeeded at all when CONFIG_DEBUG_HIGHMEM is not set ?
-
-The call 	type = kmap_atomic_idx();          seems useless when 
-CONFIG_DEBUG_HIGHMEM isn't set. Couldn't we just most type definition 
-and setting inside the CONFIG_DEBUG_HIGHMEM {} below ?
-
-Alternatively, maybe you could replace the #ifdef CONFIG_DEBUG_HIGHMEM 
-by an    if (IS_ENABLED(CONFIG_DEBUG_HIGHMEM)) ?
-
-Christophe
-
 > 
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
->   arch/powerpc/mm/highmem.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Le 22/06/2018 à 21:27, Mathieu Malaterre a écrit :
+> >Move initialization of variables after data definitions. This silence
+> >warnings treated as error with W=1:
+> >
+> >   arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be 
+> >   clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+> >   arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be 
+> >   clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
 > 
-> diff --git a/arch/powerpc/mm/highmem.c b/arch/powerpc/mm/highmem.c
-> index 668e87d03f9e..82a0e37557a5 100644
-> --- a/arch/powerpc/mm/highmem.c
-> +++ b/arch/powerpc/mm/highmem.c
-> @@ -56,7 +56,7 @@ EXPORT_SYMBOL(kmap_atomic_prot);
->   void __kunmap_atomic(void *kvaddr)
->   {
->   	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
-> -	int type;
-> +	int type __maybe_unused;
->   
->   	if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
->   		pagefault_enable();
-> 
+> Is that an invalid warning ?
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+No, both are correct warnings.  GCC can not see which functions it only
+has a declaration of can call longjmp.
+
+> Otherwise, I'd expect one to fix the warning, not just cheat on GCC.
+
+Yes, the patch seems to change the code in such a way that some versions
+of GCC will no longer warn.  Which does not make to code any more correct.
+
+Either restructure the code, or make the var non-automatic, or make it
+volatile.
+
+
+Segher
