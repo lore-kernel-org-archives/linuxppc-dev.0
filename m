@@ -1,28 +1,18 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tpearson@raptorengineering.com>
+Received: from mail.rptsys.com (mail.rptsys.com [192.119.205.245])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41CmF43vTHzF14Y
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 05:47:52 +1000 (AEST)
-Date: Sat, 23 Jun 2018 14:47:16 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Cc: Mathieu Malaterre <malat@debian.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Yisheng Xie <xieyisheng1@huawei.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/xmon: =?utf-8?Q?avoid_?=
- =?utf-8?Q?warnings_about_variables_that_might_be_clobbered_by_=E2=80=98lo?=
- =?utf-8?B?bmdqbXDigJk=?=
-Message-ID: <20180623194716.GY16221@gate.crashing.org>
-References: <20180622192718.24242-1-malat@debian.org>
- <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Csp71VDdzF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 09:58:23 +1000 (AEST)
+Date: Sat, 23 Jun 2018 18:52:02 -0500 (CDT)
+From: Timothy Pearson <tpearson@raptorengineering.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Message-ID: <1564865529.2569245.1529797922226.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: [PATCH 0/7] Add initial version of "cognitive DMA"
+MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,30 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 23, 2018 at 06:59:27PM +0200, christophe leroy wrote:
-> 
-> 
-> Le 22/06/2018 à 21:27, Mathieu Malaterre a écrit :
-> >Move initialization of variables after data definitions. This silence
-> >warnings treated as error with W=1:
-> >
-> >   arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be 
-> >   clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
-> >   arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be 
-> >   clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
-> 
-> Is that an invalid warning ?
+POWER9 (PHB4) requires all peripherals using DMA to be either restricted
+to 32-bit windows or capable of accessing the entire 64 bits of memory
+space.  Some devices, such as most GPUs, can only address up to a certain
+number of bits (approximately 40, in many cases), while at the same time
+it is highly desireable to use a larger DMA space than the fallback 32 bits.
 
-No, both are correct warnings.  GCC can not see which functions it only
-has a declaration of can call longjmp.
+This series adds something called "cognitive DMA", which is a form of dynamic
+TCE allocation.  This allows the peripheral to DMA to host addresses mapped in
+1G (PHB4) or 256M (PHB3) chunks, and is transparent to the peripheral and its
+driver stack.
 
-> Otherwise, I'd expect one to fix the warning, not just cheat on GCC.
+This series has been tested on a Talos II server with a Radeon WX4100 and
+a wide range of OpenGL applications.  While there is still work, notably
+involving what happens if a peripheral attempts to DMA close to a TCE
+window boundary, this series greatly improves functionality for AMD GPUs
+on POWER9 devices over the existing 32-bit DMA support.
 
-Yes, the patch seems to change the code in such a way that some versions
-of GCC will no longer warn.  Which does not make to code any more correct.
+Russell Currey (4):
+  powerpc/powernv/pci: Track largest available TCE order per PHB
+  powerpc/powernv: DMA operations for discontiguous allocation
+  powerpc/powernv/pci: Track DMA and TCE tables in debugfs
+  powerpc/powernv/pci: Safety fixes for pseudobypass TCE allocation
 
-Either restructure the code, or make the var non-automatic, or make it
-volatile.
+Timothy Pearson (3):
+  powerpc/powernv/pci: Export pnv_pci_ioda2_tce_invalidate_pe
+  powerpc/powernv/pci: Invalidate TCE cache after DMA map setup
+  powerpc/powernv/pci: Don't use the lower 4G TCEs in pseudo-DMA mode
 
+ arch/powerpc/include/asm/dma-mapping.h    |   1 +
+ arch/powerpc/platforms/powernv/Makefile   |   2 +-
+ arch/powerpc/platforms/powernv/pci-dma.c  | 320 ++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 169 ++++++++----
+ arch/powerpc/platforms/powernv/pci.h      |  11 +
+ 5 files changed, 452 insertions(+), 51 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/pci-dma.c
 
-Segher
+-- 
+2.17.1
