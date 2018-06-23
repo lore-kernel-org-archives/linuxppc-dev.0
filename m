@@ -2,15 +2,15 @@ Return-Path: <tpearson@raptorengineering.com>
 Received: from mail.rptsys.com (mail.rptsys.com [192.119.205.245])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Csvy3cklzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 10:03:26 +1000 (AEST)
-Date: Sat, 23 Jun 2018 18:54:16 -0500 (CDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Csw00TcXzF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 10:03:28 +1000 (AEST)
+Date: Sat, 23 Jun 2018 18:54:58 -0500 (CDT)
 From: Timothy Pearson <tpearson@raptorengineering.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <225890156.2569252.1529798056341.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH 5/7] powerpc/powernv/pci: Export
+Message-ID: <698112983.2569254.1529798098017.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: [PATCH 7/7] powerpc/powernv/pci: Don't use the lower 4G TCEs in
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,42 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- pnv_pci_ioda2_tce_invalidate_pe
+ pseudo-DMA mode
 
-Pseudo DMA support requires a method to invalidate the TCE cache
-Export pnv_pci_ioda2_tce_invalidate_pe for use by the pseudo DMA
-mapper.
+Four TCEs are reserved for legacy 32-bit DMA mappings in psuedo DMA
+mode.  Mark these with an invalid address to avoid their use by
+the TCE cache mapper.
 
 Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
- arch/powerpc/platforms/powernv/pci.h      | 1 +
- 2 files changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 55f0f7b885bc..a6097dd323f8 100644
+index a6097dd323f8..e8a1333f6b3e 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2102,7 +2102,7 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
- 	}
- }
+@@ -1783,7 +1783,7 @@ static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
  
--static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
-+void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+ static int pnv_pci_pseudo_bypass_setup(struct pnv_ioda_pe *pe)
  {
- 	struct pnv_phb *phb = pe->phb;
+-	u64 tce_count, table_size, window_size;
++	u64 i, tce_count, table_size, window_size;
+ 	struct pnv_phb *p = pe->phb;
+ 	struct page *table_pages;
+ 	__be64 *tces;
+@@ -1835,6 +1835,12 @@ static int pnv_pci_pseudo_bypass_setup(struct pnv_ioda_pe *pe)
+ 	/* mark the first 4GB as reserved so this can still be used for 32bit */
+ 	bitmap_set(pe->tce_bitmap, 0, 1ULL << (32 - p->ioda.max_tce_order));
  
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 83492aba90f1..8d3849e76be3 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -264,6 +264,7 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
- /* Nvlink functions */
- extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
- extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
-+extern void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe);
- extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
- extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
- 		struct iommu_table *tbl);
++	/* make sure reserved first 4GB TCEs are not used by the mapper
++	 * set each address to -1, which will never match an incoming request
++	 */
++	for (i = 0; i < 4; i++)
++		pe->tce_tracker[i * 2] = -1;
++
+ 	pe_info(pe, "pseudo-bypass sizes: tracker %d bitmap %d TCEs %lld\n",
+ 		tracker_entries, bitmap_size, tce_count);
+ 
 -- 
 2.17.1
