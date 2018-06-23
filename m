@@ -2,15 +2,15 @@ Return-Path: <tpearson@raptorengineering.com>
 Received: from mail.rptsys.com (mail.rptsys.com [192.119.205.245])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Csw00TcXzF0Pd
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Csw03nSmzF14f
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 10:03:28 +1000 (AEST)
-Date: Sat, 23 Jun 2018 18:54:58 -0500 (CDT)
+Date: Sat, 23 Jun 2018 18:53:28 -0500 (CDT)
 From: Timothy Pearson <tpearson@raptorengineering.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <698112983.2569254.1529798098017.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH 7/7] powerpc/powernv/pci: Don't use the lower 4G TCEs in
+Message-ID: <1820986268.2569250.1529798008396.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: [PATCH 3/7] powerpc/powernv/pci: Track DMA and TCE tables in debugfs
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,42 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- pseudo-DMA mode
 
-Four TCEs are reserved for legacy 32-bit DMA mappings in psuedo DMA
-mode.  Mark these with an invalid address to avoid their use by
-the TCE cache mapper.
+Add a new debugfs entry to trigger dumping out the tracking table and
+TCEs for a given PE, for example PE 0x4 of PHB 2:
 
-Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
+echo 0x4 > /sys/kernel/debug/powerpc/PCI0002/sketchy
+
+This will result in the table being dumped out in dmesg.
+
+Signed-off-by: Russell Currey <ruscur@russell.cc>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 43 +++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index a6097dd323f8..e8a1333f6b3e 100644
+index 7ecc186493ca..55f0f7b885bc 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1783,7 +1783,7 @@ static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
+@@ -3342,6 +3342,47 @@ static int pnv_pci_diag_data_set(void *data, u64 val)
+ DEFINE_SIMPLE_ATTRIBUTE(pnv_pci_diag_data_fops, NULL,
+ 			pnv_pci_diag_data_set, "%llu\n");
  
- static int pnv_pci_pseudo_bypass_setup(struct pnv_ioda_pe *pe)
- {
--	u64 tce_count, table_size, window_size;
-+	u64 i, tce_count, table_size, window_size;
- 	struct pnv_phb *p = pe->phb;
- 	struct page *table_pages;
- 	__be64 *tces;
-@@ -1835,6 +1835,12 @@ static int pnv_pci_pseudo_bypass_setup(struct pnv_ioda_pe *pe)
- 	/* mark the first 4GB as reserved so this can still be used for 32bit */
- 	bitmap_set(pe->tce_bitmap, 0, 1ULL << (32 - p->ioda.max_tce_order));
- 
-+	/* make sure reserved first 4GB TCEs are not used by the mapper
-+	 * set each address to -1, which will never match an incoming request
-+	 */
-+	for (i = 0; i < 4; i++)
-+		pe->tce_tracker[i * 2] = -1;
++static int pnv_pci_sketchy_set(void *data, u64 val)
++{
++	struct pci_controller *hose;
++	struct pnv_ioda_pe *pe;
++	struct pnv_phb *phb;
++	u64 entry1, entry2;
++	int i;
 +
- 	pe_info(pe, "pseudo-bypass sizes: tracker %d bitmap %d TCEs %lld\n",
- 		tracker_entries, bitmap_size, tce_count);
++	hose = (struct pci_controller *)data;
++	if (!hose || !hose->private_data)
++		return -ENODEV;
++
++	phb = hose->private_data;
++	pe = &phb->ioda.pe_array[val];
++
++	if (!pe)
++		return -EINVAL;
++
++	if (!pe->tces || !pe->tce_tracker)
++		return -EIO;
++
++	for (i = 0; i < pe->tce_count; i++) {
++		if (i > 16 && pe->tces[i] == 0)
++			break;
++		pr_info("%3d: %016llx\n", i, be64_to_cpu(pe->tces[i]));
++	}
++
++	for (i = 0; i < pe->tce_count; i++) {
++		entry1 = pe->tce_tracker[i * 2];
++		entry2 = pe->tce_tracker[i * 2 + 1];
++		if (!entry1)
++			break;
++		pr_info("%3d: %016llx %016llx\n", i, entry1, entry2);
++	}
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(pnv_pci_sketchy_fops, NULL,
++			pnv_pci_sketchy_set, "%llu\n");
++
++
+ #endif /* CONFIG_DEBUG_FS */
  
+ static void pnv_pci_ioda_create_dbgfs(void)
+@@ -3367,6 +3408,8 @@ static void pnv_pci_ioda_create_dbgfs(void)
+ 
+ 		debugfs_create_file("dump_diag_regs", 0200, phb->dbgfs, hose,
+ 				    &pnv_pci_diag_data_fops);
++		debugfs_create_file("sketchy", 0200, phb->dbgfs, hose,
++				    &pnv_pci_sketchy_fops);
+ 	}
+ #endif /* CONFIG_DEBUG_FS */
+ }
 -- 
 2.17.1
