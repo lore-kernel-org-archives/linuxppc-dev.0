@@ -2,15 +2,15 @@ Return-Path: <tpearson@raptorengineering.com>
 Received: from mail.rptsys.com (mail.rptsys.com [192.119.205.245])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Csvx4wRHzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 10:03:25 +1000 (AEST)
-Date: Sat, 23 Jun 2018 18:54:36 -0500 (CDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Csvy3cklzF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 10:03:26 +1000 (AEST)
+Date: Sat, 23 Jun 2018 18:54:16 -0500 (CDT)
 From: Timothy Pearson <tpearson@raptorengineering.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Message-ID: <1298010887.2569253.1529798076885.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH 6/7] powerpc/powernv/pci: Invalidate TCE cache after DMA map
+Message-ID: <225890156.2569252.1529798056341.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: [PATCH 5/7] powerpc/powernv/pci: Export
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,30 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- setup
+ pnv_pci_ioda2_tce_invalidate_pe
 
-Per the IODA2, TCEs must be invalidated after their settings
-have been changed.  Invalidate the cache after the address
-is changed during TCE allocation when using pseudo DMA.
+Pseudo DMA support requires a method to invalidate the TCE cache
+Export pnv_pci_ioda2_tce_invalidate_pe for use by the pseudo DMA
+mapper.
 
 Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
 ---
- arch/powerpc/platforms/powernv/pci-dma.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+ arch/powerpc/platforms/powernv/pci.h      | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-dma.c b/arch/powerpc/platforms/powernv/pci-dma.c
-index 237940a2a052..060dbc168401 100644
---- a/arch/powerpc/platforms/powernv/pci-dma.c
-+++ b/arch/powerpc/platforms/powernv/pci-dma.c
-@@ -42,8 +42,7 @@ static int dma_pseudo_bypass_select_tce(struct pnv_ioda_pe *pe, phys_addr_t addr
- 	new = cpu_to_be64(addr | TCE_PCI_READ | TCE_PCI_WRITE);
- 	pe->tces[tce] = new;
- 	mb();
--	pe_info(pe, "allocating TCE %i 0x%016llx (old 0x%016llx)\n",
--		tce, new, old);
-+	pnv_pci_ioda2_tce_invalidate_pe(pe);
- 	spin_unlock_irqrestore(&pe->tce_alloc_lock, flags);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 55f0f7b885bc..a6097dd323f8 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -2102,7 +2102,7 @@ static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+ 	}
+ }
  
- 	return tce;
+-static inline void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
++void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+ {
+ 	struct pnv_phb *phb = pe->phb;
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 83492aba90f1..8d3849e76be3 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -264,6 +264,7 @@ extern void pe_level_printk(const struct pnv_ioda_pe *pe, const char *level,
+ /* Nvlink functions */
+ extern void pnv_npu_try_dma_set_bypass(struct pci_dev *gpdev, bool bypass);
+ extern void pnv_pci_ioda2_tce_invalidate_entire(struct pnv_phb *phb, bool rm);
++extern void pnv_pci_ioda2_tce_invalidate_pe(struct pnv_ioda_pe *pe);
+ extern struct pnv_ioda_pe *pnv_pci_npu_setup_iommu(struct pnv_ioda_pe *npe);
+ extern long pnv_npu_set_window(struct pnv_ioda_pe *npe, int num,
+ 		struct iommu_table *tbl);
 -- 
 2.17.1
