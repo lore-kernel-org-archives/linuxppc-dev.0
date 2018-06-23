@@ -1,27 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41CdwJ0nn5zF0dT
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 01:02:56 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: Florian Weimer <fweimer@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- dave.hansen@intel.com, aneesh.kumar@linux.vnet.ibm.com, bsingharora@gmail.com,
- hbabu@us.ibm.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- Ulrich.Weigand@de.ibm.com, luto@kernel.org, msuchanek@suse.de
-Subject: Re: [PATCH v2 0/6] powerpc/pkeys: fixes to pkeys
-In-Reply-To: <20180621181045.GL5294@ram.oc3035372033.ibm.com>
-References: <1528936144-6696-1-git-send-email-linuxram@us.ibm.com>
- <8812c879-5761-ef62-dd15-3ceef46d9653@redhat.com>
- <874lhzx84e.fsf@concordia.ellerman.id.au>
- <34669c66-ce2f-e8a0-1d18-43086bad3faa@redhat.com>
- <878t78fn6o.fsf@concordia.ellerman.id.au>
- <20180621181045.GL5294@ram.oc3035372033.ibm.com>
-Date: Sun, 24 Jun 2018 01:02:50 +1000
-Message-ID: <87in69eeat.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ChVw0xrpzF0dT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 02:59:34 +1000 (AEST)
+Subject: =?UTF-8?Q?Re:_[PATCH]_powerpc/xmon:_avoid_warnings_about_variables_?=
+ =?UTF-8?Q?that_might_be_clobbered_by_=e2=80=98longjmp=e2=80=99?=
+To: Mathieu Malaterre <malat@debian.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Yisheng Xie <xieyisheng1@huawei.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev@lists.ozlabs.org
+References: <20180622192718.24242-1-malat@debian.org>
+From: christophe leroy <christophe.leroy@c-s.fr>
+Message-ID: <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
+Date: Sat, 23 Jun 2018 18:59:27 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180622192718.24242-1-malat@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +28,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ram Pai <linuxram@us.ibm.com> writes:
-> On Thu, Jun 21, 2018 at 08:28:47PM +1000, Michael Ellerman wrote:
->> Florian Weimer <fweimer@redhat.com> writes:
->> > On 06/19/2018 02:40 PM, Michael Ellerman wrote:
->> >>> I tested the whole series with the new selftests, with the printamr.c
->> >>> program I posted earlier, and the glibc test for pkey_alloc &c.  The
->> >>> latter required some test fixes, but now passes as well.  As far as I
->> >>> can tell, everything looks good now.
->> >>>
->> >>> Tested-By: Florian Weimer<fweimer@redhat.com>
->> >> Thanks. I'll add that to each patch I guess, if you're happy with that?
->> >
->> > Sure, but I only tested the whole series as a whole.
->> 
->> Yeah OK. We don't have a good way to express that, other than using a
->> merge which I'd prefer to avoid.
->> 
->> So I've tagged them all with your Tested-by. If any of them turn out to
->> have bugs you can blame me :)
->
-> I just tested the patches incrementally using the pkey selftests.
->
-> So I feel confident these patches are not bugs. I will take the blame
-> if the blame lands on Mpe  :)
-
-Did you run core-pkey and ptrace-pkey?
-
-The pkey selftests that are in tools/testing/selftests/powerpc/ptrace ?
-
-Because those are failing for me:
-
-  test: core_pkey
-  tags: git_version:c899d94
-  [FAIL] Test FAILED on line 245
-  [Core Read (Running)]          AMR: 3fcfffffffffffff IAMR: 1105555555555555 UAMOR: 33cfffffffffffff
-  failure: core_pkey
-  
-  test: ptrace_pkey
-  tags: git_version:c899d94
-  [FAIL] Test FAILED on line 214
-  [Ptrace Read (Running)]        AMR: 3fcfffffffffffff IAMR: 1105555555555555 UAMOR: 33cfffffffffffff
-  [User Write (Running)]         AMR: 3fffffffffffffff pkey1: 3 pkey2: 4 pkey3: 5
-  failure: ptrace_pkey
 
 
-Some of which is presumably test case bugs, but there's at least one
-kernel bug with the UAMOR handling.
+Le 22/06/2018 à 21:27, Mathieu Malaterre a écrit :
+> Move initialization of variables after data definitions. This silence
+> warnings treated as error with W=1:
+> 
+>    arch/powerpc/xmon/xmon.c:3389:14: error: variable ‘name’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+>    arch/powerpc/xmon/xmon.c:3100:22: error: variable ‘tsk’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
 
-So this series will have to wait until next week :/
+Is that an invalid warning ?
 
-cheers
+If so, please explain in the commit log.
+
+Otherwise, I'd expect one to fix the warning, not just cheat on GCC.
+
+Christophe
+
+
+> 
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> ---
+>   arch/powerpc/xmon/xmon.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+> index 47166ad2a669..982848c784ff 100644
+> --- a/arch/powerpc/xmon/xmon.c
+> +++ b/arch/powerpc/xmon/xmon.c
+> @@ -3097,10 +3097,11 @@ static void show_pte(unsigned long addr)
+>   static void show_tasks(void)
+>   {
+>   	unsigned long tskv;
+> -	struct task_struct *tsk = NULL;
+> +	struct task_struct *tsk;
+>   
+>   	printf("     task_struct     ->thread.ksp    PID   PPID S  P CMD\n");
+>   
+> +	tsk = NULL;
+>   	if (scanhex(&tskv))
+>   		tsk = (struct task_struct *)tskv;
+>   
+> @@ -3386,10 +3387,11 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
+>   			      const char *after)
+>   {
+>   	char *modname;
+> -	const char *name = NULL;
+> +	const char *name;
+>   	unsigned long offset, size;
+>   
+>   	printf(REG, address);
+> +	name = NULL;
+>   	if (setjmp(bus_error_jmp) == 0) {
+>   		catch_memory_errors = 1;
+>   		sync();
+> 
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+https://www.avast.com/antivirus
