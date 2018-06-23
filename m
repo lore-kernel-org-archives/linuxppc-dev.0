@@ -1,27 +1,23 @@
-Return-Path: <al.dunsmuir@sympatico.ca>
-Received: from mtlfep03.bell.net (belmont94srvr.owm.bell.net [184.150.200.94])
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41CB3w1KmlzF132
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 07:07:54 +1000 (AEST)
-Received: from bell.net mtlfep02 184.150.200.30 by mtlfep02.bell.net with ESMTP
- id <20180622210147.SKDI8528.mtlfep02.bell.net@mtlspm01.bell.net>
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2018 17:01:47 -0400
-Date: Fri, 22 Jun 2018 17:01:45 -0400
-From: Al Dunsmuir <al.dunsmuir@sympatico.ca>
-Message-ID: <56894976.20180622170145@sympatico.ca>
-To: Paul Clarke <pc@us.ibm.com>, Breno Leitao <leitao@debian.org>,
- Segher Boessenkool <segher@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41CHDS5zpKzF13P
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2018 11:00:40 +1000 (AEST)
+Date: Fri, 22 Jun 2018 20:00:23 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe LEROY <christophe.leroy@c-s.fr>
+Cc: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Subject: Re: [PATCH] selftests/powerpc: Fix strncpy usage
-In-Reply-To: <12953a47-a6a7-5f70-a46c-c95f8c424d11@us.ibm.com>
+Message-ID: <20180623010023.GW16221@gate.crashing.org>
 References: <1529535071-14555-1-git-send-email-leitao@debian.org>
  <20180621231856.GO16221@gate.crashing.org>
  <1dc025d5-366c-ae13-259e-dae543e6ec52@debian.org>
- <12953a47-a6a7-5f70-a46c-c95f8c424d11@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ <9cd93c1d-c067-3a18-bfd8-fef1ef443739@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <9cd93c1d-c067-3a18-bfd8-fef1ef443739@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, June 22, 2018, 11:15:29 AM, Paul Clarke wrote:
-> On 06/22/2018 09:43 AM, Breno Leitao wrote:
->> If you don't mind, I would solve this problem slightly different, as it seems
->> to be more readable.
->> 
->> -       strncpy(prog, argv[0], strlen(argv[0]));
->> +       if (strlen(argv[0]) >= LEN_MAX){
->> +               fprintf(stderr, "Very big executable name: %s\n", argv[0]);
+On Fri, Jun 22, 2018 at 04:51:21PM +0200, Christophe LEROY wrote:
+> Le 22/06/2018 à 16:43, Breno Leitao a écrit :
+> >+               fprintf(stderr, "Very big executable name: %s\n", argv[0]);
+> >+               return 1;
+> >+       }
+> >+
+> >+       strncpy(prog, argv[0], sizeof(prog) - 1);
+> 
+> You have checked before that argv[0] is not too long, so you should not 
+> need to use strncpy(), strcpy() would do it.
 
-> "Very big" is an observation.  "Too big" indicates a problem
-> better.  Or, more explicitly "Executable name is too long".
+If you don't care about the bytes of prog after the first zero byte, sure.
 
-Or even better, display the limit that is being exceeded, in case that
-value changes over time.  Something like.
 
--       strncpy(prog, argv[0], strlen(argv[0]));
-+       if (strlen(argv[0]) >= LEN_MAX){
-+                fprintf(stderr, "Executable name exceeds limit (%d): %s\n",
-+                        LEN_MAX,
-+                        argv[0]);
+Segher
