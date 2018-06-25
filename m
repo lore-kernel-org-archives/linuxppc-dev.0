@@ -1,25 +1,22 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x241.google.com (mail-pg0-x241.google.com
+ [IPv6:2607:f8b0:400e:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41DYn00GZYzF14h
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 12:59:46 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id k3-v6so11095794iog.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 19:59:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41DZ1Z0X35zF16W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 13:10:39 +1000 (AEST)
+Received: by mail-pg0-x241.google.com with SMTP id r21-v6so5422587pgv.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 20:10:39 -0700 (PDT)
+Date: Mon, 25 Jun 2018 13:10:30 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Timothy Pearson <tpearson@raptorengineering.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/7] powerpc/powernv/pci: Track largest available TCE order
+Message-ID: <20180625131030.7aeb2446@aik.ozlabs.ibm.com>
+In-Reply-To: <77952537.2569246.1529797950974.JavaMail.zimbra@raptorengineeringinc.com>
+References: <77952537.2569246.1529797950974.JavaMail.zimbra@raptorengineeringinc.com>
 MIME-Version: 1.0
-References: <1528871397-17917-1-git-send-email-kernelfans@gmail.com>
- <1528871397-17917-3-git-send-email-kernelfans@gmail.com>
- <20180613131317.GA201807@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20180613131317.GA201807@bhelgaas-glaptop.roam.corp.google.com>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Mon, 25 Jun 2018 10:59:31 +0800
-Message-ID: <CAFgQCTukvm+dqTPG=SbNY6zvxg7EoPuqEBOKV0GZFO2obxu7kA@mail.gmail.com>
-Subject: Re: [patchV2 2/2] pci/shpchp: no claim on pcie port device
-To: helgaas@kernel.org
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- Christoph Hellwig <hch@infradead.org>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,126 +26,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 13, 2018 at 9:13 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> On Wed, Jun 13, 2018 at 02:29:57PM +0800, Pingfan Liu wrote:
-> > The Linux Device Driver Model allows a physical device to be handled
-> > by only a single driver. But at present, both shpchp and portdrv_pci
-> > claim PCI_CLASS_BRIDGE_PCI, and touch devices_kset when the drivers are
-> > loaded. This causes a few problems, one is the wrong shutdown seq of
-> > devices, owing to the broken devices_kset. This patch keeps shpchp away
-> > from pcie port device, using the extra matching method.
->
-> As Christoph pointed out, something seems wrong if we add to
-> devices_kset even when the probe fails.  We will call shpc_probe() for
-> the device below, but there's no SHPC capability, so the probe should
-> fail when shpc_init() fails.
->
-> I do think the current structure where portdrv and shpchp are both
-> "drivers" that claim bridges is broken.  This has caused problems
-> before, e.g., some PCIe switches have performance counters, and a
-> driver for those switches ought to be able to claim the device and use
-> the counters, but portdrv is in the way.
->
-> I think it would be better if portdrv (and maybe shpchp; not sure
-> about that) were integrated into the PCIe core and did not register as
-> a driver.  But this is a big project, far beyond the scope of this
-> current issue.
->
-Yes, I agree. But just leaving this for later fix, and try to bring
-out a fix in drivers/core firstly.
+On Sat, 23 Jun 2018 18:52:30 -0500 (CDT)
+Timothy Pearson <tpearson@raptorengineering.com> wrote:
 
-Regards,
-Pingfan
+>  per PHB
+> 
+> Knowing the largest possible TCE size of a PHB is useful, so get it out
+> of the device tree.  This relies on the property being added in OPAL.
+> 
+> It is assumed that any PHB4 or later machine would be running firmware
+> that implemented this property, and otherwise assumed to be PHB3, which
+> has a maximum TCE order of 28 bits or 256MB TCEs.
+> 
+> This is used later in the series.
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 16 ++++++++++++++++
+>  arch/powerpc/platforms/powernv/pci.h      |  3 +++
+>  2 files changed, 19 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 5bd0eb6681bc..bcb3bfce072a 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -3873,11 +3873,13 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	struct resource r;
+>  	const __be64 *prop64;
+>  	const __be32 *prop32;
+> +	struct property *prop;
+>  	int len;
+>  	unsigned int segno;
+>  	u64 phb_id;
+>  	void *aux;
+>  	long rc;
+> +	u32 val;
+>  
+>  	if (!of_device_is_available(np))
+>  		return;
+> @@ -4016,6 +4018,20 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>  	}
+>  	phb->ioda.pe_array = aux + pemap_off;
+>  
+> +	phb->ioda.max_tce_order = 0;
+> +	// Get TCE order from the DT.  If it's not present, assume P8
+> +	if (!of_get_property(np, "ibm,supported-tce-sizes", NULL)) {
+> +		phb->ioda.max_tce_order = 28; // assume P8 256mb TCEs
+> +	} else {
+> +		of_property_for_each_u32(np, "ibm,supported-tce-sizes", prop,
+> +					 prop32, val) {
+> +			if (val > phb->ioda.max_tce_order)
+> +				phb->ioda.max_tce_order = val;
+> +		}
+> +		pr_debug("PHB%llx Found max TCE order of %d bits\n",
+> +			 phb->opal_id, phb->ioda.max_tce_order);
+> +	}
+> +
 
-> > Note:
-> > I hit this bug on a Power9 machine, when "kexec -e", and see a ata-disk
-> > behind a bridge can not write back buffer in flight due to the former
-> > shutdown of the bridge which clears the BusMaster bit.
-> >
-> > the device involved:
-> > 0004:00:00.0 PCI bridge: IBM Device 04c1 (prog-if 00 [Normal decode])
-> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx-
-> >         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-> >         Latency: 0
-> >         NUMA node: 0
-> >         Bus: primary=00, secondary=01, subordinate=12, sec-latency=0
-> >         I/O behind bridge: 00000000-00000fff
-> >         Memory behind bridge: 80000000-ffefffff
-> >         Prefetchable memory behind bridge: 0006024000000000-0006027f7fffffff
-> >         Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
-> >         BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-> >                 PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-> >         Capabilities: [40] Power Management version 3
-> >                 Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-> >                 Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
-> >         Capabilities: [48] Express (v2) Root Port (Slot-), MSI 00
-> >                 DevCap: MaxPayload 512 bytes, PhantFunc 0
-> >                         ExtTag- RBE+
-> >                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
-> >                         RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
-> >                         MaxPayload 256 bytes, MaxReadReq 128 bytes
-> >                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
-> >                 LnkCap: Port #0, Speed 8GT/s, Width x8, ASPM not supported, Exit Latency L0s <64ns, L1 <1us
-> >                         ClockPM- Surprise- LLActRep+ BwNot+ ASPMOptComp-
-> >                 LnkCtl: ASPM Disabled; RCB 128 bytes Disabled- CommClk-
-> >                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-> >                 LnkSta: Speed 8GT/s, Width x4, TrErr- Train- SlotClk- DLActive+ BWMgmt- ABWMgmt+
-> >                 RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
-> >                 RootCap: CRSVisible-
-> >                 RootSta: PME ReqID 0000, PMEStatus- PMEPending-
-> >                 DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR-, OBFF Not Supported ARIFwd+
-> >                 DevCtl2: Completion Timeout: 16ms to 55ms, TimeoutDis+, LTR-, OBFF Disabled ARIFwd+
-> >                 LnkCtl2: Target Link Speed: 8GT/s, EnterCompliance- SpeedDis-
-> >                          Transmit Margin: Normal Operating Range, EnterModifiedCompliance- ComplianceSOS-
-> >                          Compliance De-emphasis: -6dB
-> >                 LnkSta2: Current De-emphasis Level: -3.5dB, EqualizationComplete+, EqualizationPhase1+
-> >                          EqualizationPhase2+, EqualizationPhase3+, LinkEqualizationRequest-
-> >         Capabilities: [100 v1] Advanced Error Reporting
-> >                 UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-> >                 UEMsk:  DLP- SDES- TLP+ FCP- CmpltTO+ CmpltAbrt+ UnxCmplt- RxOF- MalfTLP- ECRC+ UnsupReq- ACSViol-
-> >                 UESvrt: DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-> >                 CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
-> >                 CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
-> >                 AERCap: First Error Pointer: 00, GenCap+ CGenEn+ ChkCap+ ChkEn+
-> >         Capabilities: [148 v1] #19
-> >
-> > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> > ---
-> >  drivers/pci/hotplug/shpchp_core.c | 13 +++++++++++++
-> >  1 file changed, 13 insertions(+)
-> >
-> > diff --git a/drivers/pci/hotplug/shpchp_core.c b/drivers/pci/hotplug/shpchp_core.c
-> > index 1f0f969..85b4665 100644
-> > --- a/drivers/pci/hotplug/shpchp_core.c
-> > +++ b/drivers/pci/hotplug/shpchp_core.c
-> > @@ -336,6 +336,18 @@ static void shpc_remove(struct pci_dev *dev)
-> >       kfree(ctrl);
-> >  }
-> >
-> > +static int shpc_extra_match(struct pci_dev *pdev)
-> > +{
-> > +     /* do not claim pcie port device */
-> > +     if (pci_is_pcie(pdev) &&
-> > +         (pci_pcie_type(pdev) == PCI_EXP_TYPE_ROOT_PORT ||
-> > +          pci_pcie_type(pdev) == PCI_EXP_TYPE_UPSTREAM ||
-> > +          pci_pcie_type(pdev) == PCI_EXP_TYPE_DOWNSTREAM))
-> > +             return -ENODEV;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> >  static const struct pci_device_id shpcd_pci_tbl[] = {
-> >       {PCI_DEVICE_CLASS(((PCI_CLASS_BRIDGE_PCI << 8) | 0x00), ~0)},
-> >       { /* end: all zeroes */ }
-> > @@ -345,6 +357,7 @@ MODULE_DEVICE_TABLE(pci, shpcd_pci_tbl);
-> >  static struct pci_driver shpc_driver = {
-> >       .name =         SHPC_MODULE_NAME,
-> >       .id_table =     shpcd_pci_tbl,
-> > +     .extra_match =  shpc_extra_match,
-> >       .probe =        shpc_probe,
-> >       .remove =       shpc_remove,
-> >  };
-> > --
-> > 2.7.4
-> >
+
+7ef73cd39b4e28 stores this in pe->table_group.pgsizes, why duplicate
+this?
+
+
+
+>  	/*
+>  	 * Choose PE number for root bus, which shouldn't have
+>  	 * M64 resources consumed by its child devices. To pick
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index eada4b6068cb..c9952def5e93 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -173,6 +173,9 @@ struct pnv_phb {
+>  		struct list_head	pe_list;
+>  		struct mutex            pe_list_mutex;
+>  
+> +		/* Largest supported TCE order bits */
+> +		uint8_t			max_tce_order;
+> +
+>  		/* Reverse map of PEs, indexed by {bus, devfn} */
+>  		unsigned int		pe_rmap[0x10000];
+>  	} ioda;
+> -- 
+> 2.17.1
+
+
+
+--
+Alexey
