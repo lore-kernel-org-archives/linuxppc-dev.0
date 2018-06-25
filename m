@@ -1,26 +1,33 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt0-f196.google.com (mail-qt0-f196.google.com
- [209.85.216.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41F2DG1TmlzF1BP
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 07:21:33 +1000 (AEST)
-Received: by mail-qt0-f196.google.com with SMTP id y31-v6so13342626qty.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 14:21:33 -0700 (PDT)
-Subject: Re: [PATCH] selftests/powerpc: Fix strncpy usage
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-References: <1529535071-14555-1-git-send-email-leitao@debian.org>
- <20180621231856.GO16221@gate.crashing.org>
- <1dc025d5-366c-ae13-259e-dae543e6ec52@debian.org>
- <20180623011009.GX16221@gate.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41F2R81knGzF1JL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 07:30:59 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5PLUcB9144055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 17:30:57 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ju8cer0g6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 17:30:57 -0400
+Received: from localhost
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Mon, 25 Jun 2018 15:30:56 -0600
 From: Breno Leitao <leitao@debian.org>
-Message-ID: <ed94efce-10cb-5ea3-7bdf-5e544cd25bf7@debian.org>
-Date: Mon, 25 Jun 2018 18:21:24 -0300
-MIME-Version: 1.0
-In-Reply-To: <20180623011009.GX16221@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: [PATCH v2] selftests/powerpc: Fix strncpy usage
+Date: Mon, 25 Jun 2018 18:30:49 -0300
+In-Reply-To: <1529535071-14555-1-git-send-email-leitao@debian.org>
+References: <1529535071-14555-1-git-send-email-leitao@debian.org>
+Message-Id: <1529962249-24774-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hi Segher,
+There is a buffer overflow in dscr_inherit_test.c test. In main(), strncpy()'s
+third argument is the length of the source, not the size of the destination
+buffer, which makes strncpy() behaves like strcpy(), causing a buffer overflow
+if argv[0] is bigger than LEN_MAX (100).
 
-On 06/22/2018 10:10 PM, Segher Boessenkool wrote:
->> -       strncpy(prog, argv[0], strlen(argv[0]));
->> +       if (strlen(argv[0]) >= LEN_MAX){
->> +               fprintf(stderr, "Very big executable name: %s\n", argv[0]);
->> +               return 1;
->> +       }
->> +
->> +       strncpy(prog, argv[0], sizeof(prog) - 1);
-> 
-> The strlen reads all of argv[0], which can be very big in theory.  It won't
-> matter in this test file -- program arguments cannot be super long, for one
-> thing -- but it's not a good idea in general (that is one of the problems
-> of strlcpy, btw).
-> 
-> Best of course is to avoid string length restrictions completely, if you can.
+This patch allocates 'prog' according to the argv[0] length, avoiding LEN_MAX
+restriction.
 
-Right, I was thinking about this problem and there is no motivation to have a
-statically allocated and limited region.
+CC: Segher Boessenkool <segher@kernel.crashing.org>
+CC: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-I will send a v2 where 'prog' and avoid this restriction completely.
-
-Thanks
+diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+index 08a8b95e3bc1..ecac4900c7dd 100644
+--- a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
++++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+@@ -19,7 +19,7 @@
+  */
+ #include "dscr.h"
+ 
+-static char prog[LEN_MAX];
++static char *prog;
+ 
+ static void do_exec(unsigned long parent_dscr)
+ {
+@@ -104,6 +104,13 @@ int main(int argc, char *argv[])
+ 		exit(1);
+ 	}
+ 
+-	strncpy(prog, argv[0], strlen(argv[0]));
++	prog = malloc(strlen(argv[0]) + 1);
++	if (prog == NULL) {
++		fprintf(stderr, "Unable to allocate enough memory\n");
++		exit(1);
++	}
++
++	strcpy(prog, argv[0]);
++
+ 	return test_harness(dscr_inherit_exec, "dscr_inherit_exec_test");
+ }
+-- 
+2.16.3
