@@ -1,22 +1,25 @@
-Return-Path: <Joakim.Tjernlund@infinera.com>
-Received: from NAM04-CO1-obe.outbound.protection.outlook.com
- (mail-eopbgr690087.outbound.protection.outlook.com [40.107.69.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41DlCV6R76zDrq6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 20:04:53 +1000 (AEST)
-From: Joakim Tjernlund <Joakim.Tjernlund@infinera.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "qiang.zhao@nxp.com" <qiang.zhao@nxp.com>, "york.sun@nxp.com"
- <york.sun@nxp.com>
-Subject: Re: [PATCH] QE GPIO: Add qe_gpio_set_multiple
-Date: Mon, 25 Jun 2018 10:04:46 +0000
-Message-ID: <fef3d759a1f6677ec713b120b4b1f4ab1eb4946b.camel@infinera.com>
-References: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
-In-Reply-To: <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Dm640f83zDrq6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 20:45:15 +1000 (AEST)
+Date: Mon, 25 Jun 2018 18:45:05 +0800
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Pingfan Liu <kernelfans@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>,
+ Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCHv2 2/2] drivers/base: reorder consumer and its children
+ behind suppliers
+Message-ID: <20180625104505.GA3058@kroah.com>
+References: <1529912859-10475-1-git-send-email-kernelfans@gmail.com>
+ <1529912859-10475-3-git-send-email-kernelfans@gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1529912859-10475-3-git-send-email-kernelfans@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +29,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gVGh1LCAyMDE4LTA2LTIxIGF0IDAyOjM4ICswMDAwLCBRaWFuZyBaaGFvIHdyb3RlOg0KPiAN
-Cj4gT24gMDYvMTkvMjAxOCAwOToyMiBBTSwgSm9ha2ltIFRqZXJubHVuZCB3cm90ZToNCj4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFttYWlsdG86bGlu
-dXhwcGMtZGV2LWJvdW5jZXMrcWlhbmcuemhhbz1ueHAuY29tQGxpc3RzLm96bGFicy5vcmddIE9u
-IEJlaGFsZiBPZiBKb2FraW0gVGplcm5sdW5kDQo+IFNlbnQ6IDIwMTjlubQ25pyIMjDml6UgMDoy
-Mg0KPiBUbzogWW9yayBTdW4gPHlvcmsuc3VuQG54cC5jb20+OyBsaW51eHBwYy1kZXYgPGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPg0KPiBTdWJqZWN0OiBbUEFUQ0hdIFFFIEdQSU86IEFk
-ZCBxZV9ncGlvX3NldF9tdWx0aXBsZQ0KPiANCj4gVGhpcyBjb3VzaW4gdG8gZ3Bpby1tcGM4eHh4
-IHdhcyBsYWNraW5nIGEgbXVsdGlwbGUgcGlucyBtZXRob2QsIGFkZCBvbmUuDQo+IA0KPiBTaWdu
-ZWQtb2ZmLWJ5OiBKb2FraW0gVGplcm5sdW5kIDxqb2FraW0udGplcm5sdW5kQGluZmluZXJhLmNv
-bT4NCj4gLS0tDQo+ICBkcml2ZXJzL3NvYy9mc2wvcWUvZ3Bpby5jIHwgMjggKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKw0KPiAgMSBmaWxlIGNoYW5nZWQsIDI4IGluc2VydGlvbnMoKykNCj4g
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3NvYy9mc2wvcWUvZ3Bpby5jIGIvZHJpdmVycy9zb2Mv
-ZnNsL3FlL2dwaW8uYyBpbmRleCAzYjI3MDc1YzIxYTcuLjgxOWJlZDBmNTY2NyAxMDA2NDQNCj4g
-LS0tIGEvZHJpdmVycy9zb2MvZnNsL3FlL2dwaW8uYw0KPiArKysgYi9kcml2ZXJzL3NvYy9mc2wv
-cWUvZ3Bpby5jDQo+IEBAIC04Myw2ICs4MywzMyBAQCBzdGF0aWMgdm9pZCBxZV9ncGlvX3NldChz
-dHJ1Y3QgZ3Bpb19jaGlwICpnYywgdW5zaWduZWQgaW50IGdwaW8sIGludCB2YWwpDQo+ICAgICAg
-ICAgc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcWVfZ2MtPmxvY2ssIGZsYWdzKTsgIH0NCj4gDQo+
-ICtzdGF0aWMgdm9pZCBxZV9ncGlvX3NldF9tdWx0aXBsZShzdHJ1Y3QgZ3Bpb19jaGlwICpnYywN
-Cj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdW5zaWduZWQgbG9uZyAqbWFzaywg
-dW5zaWduZWQgbG9uZyAqYml0cykgew0KPiArICAgICAgIHN0cnVjdCBvZl9tbV9ncGlvX2NoaXAg
-Km1tX2djID0gdG9fb2ZfbW1fZ3Bpb19jaGlwKGdjKTsNCj4gKyAgICAgICBzdHJ1Y3QgcWVfZ3Bp
-b19jaGlwICpxZV9nYyA9IGdwaW9jaGlwX2dldF9kYXRhKGdjKTsNCj4gKyAgICAgICBzdHJ1Y3Qg
-cWVfcGlvX3JlZ3MgX19pb21lbSAqcmVncyA9IG1tX2djLT5yZWdzOw0KPiArICAgICAgIHVuc2ln
-bmVkIGxvbmcgZmxhZ3M7DQo+ICsgICAgICAgaW50IGk7DQo+ICsNCj4gKyAgICAgICBzcGluX2xv
-Y2tfaXJxc2F2ZSgmcWVfZ2MtPmxvY2ssIGZsYWdzKTsNCj4gKw0KPiArICAgICAgIGZvciAoaSA9
-IDA7IGkgPCBnYy0+bmdwaW87IGkrKykgew0KPiArICAgICAgICAgICAgICAgaWYgKCptYXNrID09
-IDApDQo+ICsgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOw0KPiArICAgICAgICAgICAgICAg
-aWYgKF9fdGVzdF9hbmRfY2xlYXJfYml0KGksIG1hc2spKSB7DQo+ICsgICAgICAgICAgICAgICAg
-ICAgICAgIGlmICh0ZXN0X2JpdChpLCBiaXRzKSkNCj4gKyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICBxZV9nYy0+Y3BkYXRhIHw9ICgxVSA8PCAoUUVfUElPX1BJTlMgLSAxIC0gaSkpOw0K
-PiArICAgICAgICAgICAgICAgICAgICAgICBlbHNlDQo+ICsgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgcWVfZ2MtPmNwZGF0YSAmPSB+KDFVIDw8IChRRV9QSU9fUElOUyAtIDEgLSBpKSk7
-DQo+ICsgICAgICAgICAgICAgICB9DQo+ICsgICAgICAgfQ0KPiArDQo+ICsgICAgICAgb3V0X2Jl
-MzIoJnJlZ3MtPmNwZGF0YSwgcWVfZ2MtPmNwZGF0YSk7DQo+ICsNCj4gKyAgICAgICBzcGluX3Vu
-bG9ja19pcnFyZXN0b3JlKCZxZV9nYy0+bG9jaywgZmxhZ3MpOyB9DQo+ICsNCj4gIHN0YXRpYyBp
-bnQgcWVfZ3Bpb19kaXJfaW4oc3RydWN0IGdwaW9fY2hpcCAqZ2MsIHVuc2lnbmVkIGludCBncGlv
-KSAgew0KPiAgICAgICAgIHN0cnVjdCBvZl9tbV9ncGlvX2NoaXAgKm1tX2djID0gdG9fb2ZfbW1f
-Z3Bpb19jaGlwKGdjKTsgQEAgLTI5OCw2ICszMjUsNyBAQCBzdGF0aWMgaW50IF9faW5pdCBxZV9h
-ZGRfZ3Bpb2NoaXBzKHZvaWQpDQo+ICAgICAgICAgICAgICAgICBnYy0+ZGlyZWN0aW9uX291dHB1
-dCA9IHFlX2dwaW9fZGlyX291dDsNCj4gICAgICAgICAgICAgICAgIGdjLT5nZXQgPSBxZV9ncGlv
-X2dldDsNCj4gICAgICAgICAgICAgICAgIGdjLT5zZXQgPSBxZV9ncGlvX3NldDsNCj4gKyAgICAg
-ICAgICAgICAgIGdjLT5zZXRfbXVsdGlwbGUgPSBxZV9ncGlvX3NldF9tdWx0aXBsZTsNCj4gDQo+
-ICAgICAgICAgICAgICAgICByZXQgPSBvZl9tbV9ncGlvY2hpcF9hZGRfZGF0YShucCwgbW1fZ2Ms
-IHFlX2djKTsNCj4gICAgICAgICAgICAgICAgIGlmIChyZXQpDQo+IA0KPiBSZXZpZXdlZC1ieTog
-UWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29tPg0KPiANCg0KV2hvIHBpY2tzIHVwIHRoaXMg
-cGF0Y2ggPyBJcyBpdCBxdWV1ZWQgc29tZXdoZXJlIGFscmVhZHk/DQoNCiAgSm9ja2U=
+On Mon, Jun 25, 2018 at 03:47:39PM +0800, Pingfan Liu wrote:
+> commit 52cdbdd49853 ("driver core: correct device's shutdown order")
+> introduces supplier<-consumer order in devices_kset. The commit tries
+> to cleverly maintain both parent<-child and supplier<-consumer order by
+> reordering a device when probing. This method makes things simple and
+> clean, but unfortunately, breaks parent<-child order in some case,
+> which is described in next patch in this series.
+
+There is no "next patch in this series" :(
+
+> Here this patch tries to resolve supplier<-consumer by only reordering a
+> device when it has suppliers, and takes care of the following scenario:
+>     [consumer, children] [ ... potential ... ] supplier
+>                          ^                   ^
+> After moving the consumer and its children after the supplier, the
+> potentail section may contain consumers whose supplier is inside
+> children, and this poses the requirement to dry out all consumpers in
+> the section recursively.
+> 
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Bjorn Helgaas <helgaas@kernel.org>
+> Cc: Dave Young <dyoung@redhat.com>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> ---
+> note: there is lock issue in this patch, should be fixed in next version
+
+Please send patches that you know are correct, why would I want to
+review this if you know it is not correct?
+
+And if the original commit is causing problems for you, why not just
+revert that instead of adding this much-increased complexity?
+
+
+
+> 
+> ---
+>  drivers/base/core.c | 132 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 129 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 66f06ff..db30e86 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -123,12 +123,138 @@ static int device_is_dependent(struct device *dev, void *target)
+>  	return ret;
+>  }
+>  
+> -/* a temporary place holder to mark out the root cause of the bug.
+> - * The proposal algorithm will come in next patch
+> +struct pos_info {
+> +	struct device *pos;
+> +	struct device *tail;
+> +};
+> +
+> +/* caller takes the devices_kset->list_lock */
+> +static int descendants_reorder_after_pos(struct device *dev,
+> +	void *data)
+
+Why are you wrapping lines that do not need to be wrapped?
+
+What does this function do?
+
+> +{
+> +	struct device *pos;
+> +	struct pos_info *p = data;
+> +
+> +	pos = p->pos;
+> +	pr_debug("devices_kset: Moving %s after %s\n",
+> +		 dev_name(dev), dev_name(pos));
+
+You have a device, use it for debugging, i.e. dev_dbg().
+
+> +	device_for_each_child(dev, p, descendants_reorder_after_pos);
+
+Recursive?
+
+> +	/* children at the tail */
+> +	list_move(&dev->kobj.entry, &pos->kobj.entry);
+> +	/* record the right boundary of the section */
+> +	if (p->tail == NULL)
+> +		p->tail = dev;
+> +	return 0;
+> +}
+
+I really do not understand what the above code is supposed to be doing :(
+
+> +
+> +/* iterate over an open section */
+> +#define list_opensect_for_each_reverse(cur, left, right)	\
+> +	for (cur = right->prev; cur == left; cur = cur->prev)
+> +
+> +static bool is_consumer(struct device *query, struct device *supplier)
+> +{
+> +	struct device_link *link;
+> +	/* todo, lock protection */
+
+Always run checkpatch.pl on patches so you do not get grumpy maintainers
+telling you to run checkpatch.pl :(
+
+> +	list_for_each_entry(link, &supplier->links.consumers, s_node)
+> +		if (link->consumer == query)
+> +			return true;
+> +	return false;
+> +}
+> +
+> +/* recursively move the potential consumers in open section (left, right)
+> + * after the barrier
+
+What barrier?
+
+I'm stopping here as I have no idea what is going on, and this needs a
+lot more work at the basic level of "it handles locking correctly"...
+
+If you are working on this for power9, I'm guessing you work for IBM?
+If so, please run this through your internal patch review process before
+sending it out again...
+
+thanks,
+
+greg k-h
