@@ -1,30 +1,33 @@
 Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41DvdD5PkFzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 02:24:16 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5PGO1oK092804
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 12:24:13 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ju322te1v-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41DvdG0J1qzF0Pd
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 02:24:17 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5PGO2Z7095391
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 12:24:15 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ju3rngajf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 12:24:12 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 12:24:15 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 25 Jun 2018 17:24:11 +0100
+ Mon, 25 Jun 2018 17:24:12 +0100
 From: Frederic Barrat <fbarrat@linux.ibm.com>
 To: alastair@au1.ibm.com, andrew.donnellan@au1.ibm.com, vaibhav@linux.ibm.com,
  clombard@linux.ibm.com, felix@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
 Cc: huyn@mellanox.com
-Subject: [PATCH 00/10] cxl: Remove abandonned capi support for the Mellanox CX4
-Date: Mon, 25 Jun 2018 18:23:56 +0200
-Message-Id: <20180625162406.10813-1-fbarrat@linux.ibm.com>
+Subject: [PATCH 01/10] Revert "cxl: Add kernel API to allow a context to
+ operate with relocate disabled"
+Date: Mon, 25 Jun 2018 18:23:57 +0200
+In-Reply-To: <20180625162406.10813-1-fbarrat@linux.ibm.com>
+References: <20180625162406.10813-1-fbarrat@linux.ibm.com>
+Message-Id: <20180625162406.10813-2-fbarrat@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,68 +37,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An attempt was made to add capi support for the Mellanox CX4 card, so
-that it could operate in "traditional" PCI mode or capi mode. The
-project ended up being canceled and a different approach was taken for
-CX5. Mellanox never upstreamed any capi support in their CX4 driver.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-CX4 was not following exactly the CAIA 1.0 model, so some CX4-specific
-code was added. That code is now dead and hasn't been tested for a
-while, so it's probably broken anyway. Let's remove it. It has been
-agreed with engineers at Mellanox, of course.
+Remove abandonned capi support for the Mellanox CX4.
+The symbol 'cxl_set_translation_mode' is never called, so
+ctx->real_mode is always false.
 
-No user API is affected. Some (unused) symbols exported by cxl are removed.
+This reverts commit 7a0d85d313c2066712e530e668bc02bb741a685c.
+---
+ drivers/misc/cxl/api.c    | 19 -------------------
+ drivers/misc/cxl/cxl.h    |  1 -
+ drivers/misc/cxl/guest.c  |  3 ---
+ drivers/misc/cxl/native.c |  3 ++-
+ include/misc/cxl.h        |  8 --------
+ 5 files changed, 2 insertions(+), 32 deletions(-)
 
-Most of the patch set consists of reverts of older patches, with
-sometimes very minor tweaking. The last patch aggregates a few changes
-where reverting was not possible easily.
-
-Tests run to prevent regressions:
--  memcpy tests on POWER8 and POWER9
--  Mellanox CX5, which uses a different code path, based on cxllib
--  cxlflash tests on POWER8
-
-
-Alastair D'Silva (7):
-  Revert "cxl: Add kernel API to allow a context to operate with
-    relocate disabled"
-  Revert "cxl: Add support for interrupts on the Mellanox CX4"
-  Revert "cxl: Add preliminary workaround for CX4 interrupt limitation"
-  Revert "cxl: Add kernel APIs to get & set the max irqs per context"
-  Revert "cxl: Add cxl_check_and_switch_mode() API to switch bi-modal
-    cards"
-  Revert "cxl: Add support for using the kernel API with a real PHB"
-  Revert "powerpc/powernv: Add support for the cxl kernel api on the
-    real phb"
-
-Frederic Barrat (3):
-  Revert "cxl: Add cxl_slot_is_supported API"
-  Revert "cxl: Allow a default context to be associated with an external
-    pci_dev"
-  cxl: Remove abandonned capi support for the Mellanox CX4, final
-    cleanup
-
- arch/powerpc/include/asm/pnv-pci.h        |   7 -
- arch/powerpc/platforms/powernv/pci-cxl.c  | 199 ------------
- arch/powerpc/platforms/powernv/pci-ioda.c |  22 +-
- arch/powerpc/platforms/powernv/pci.h      |  15 -
- drivers/misc/cxl/Kconfig                  |   8 -
- drivers/misc/cxl/Makefile                 |   2 +-
- drivers/misc/cxl/api.c                    | 132 --------
- drivers/misc/cxl/base.c                   |  83 -----
- drivers/misc/cxl/context.c                |   3 +-
- drivers/misc/cxl/cxl.h                    |  33 --
- drivers/misc/cxl/debugfs.c                |   5 -
- drivers/misc/cxl/guest.c                  |   3 -
- drivers/misc/cxl/main.c                   |   5 -
- drivers/misc/cxl/native.c                 |   3 +-
- drivers/misc/cxl/pci.c                    | 351 ++--------------------
- drivers/misc/cxl/phb.c                    |  44 ---
- drivers/misc/cxl/vphb.c                   |  46 +--
- include/misc/cxl-base.h                   |  10 -
- include/misc/cxl.h                        |  68 -----
- 19 files changed, 58 insertions(+), 981 deletions(-)
- delete mode 100644 drivers/misc/cxl/phb.c
-
+diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+index 753b1a698fc4..21d620e29fea 100644
+--- a/drivers/misc/cxl/api.c
++++ b/drivers/misc/cxl/api.c
+@@ -324,7 +324,6 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
+ 	if (task) {
+ 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
+ 		kernel = false;
+-		ctx->real_mode = false;
+ 
+ 		/* acquire a reference to the task's mm */
+ 		ctx->mm = get_task_mm(current);
+@@ -388,24 +387,6 @@ void cxl_set_master(struct cxl_context *ctx)
+ }
+ EXPORT_SYMBOL_GPL(cxl_set_master);
+ 
+-int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode)
+-{
+-	if (ctx->status == STARTED) {
+-		/*
+-		 * We could potentially update the PE and issue an update LLCMD
+-		 * to support this, but it doesn't seem to have a good use case
+-		 * since it's trivial to just create a second kernel context
+-		 * with different translation modes, so until someone convinces
+-		 * me otherwise:
+-		 */
+-		return -EBUSY;
+-	}
+-
+-	ctx->real_mode = real_mode;
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(cxl_set_translation_mode);
+-
+ /* wrappers around afu_* file ops which are EXPORTED */
+ int cxl_fd_open(struct inode *inode, struct file *file)
+ {
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 918d4fb742d1..af8794719956 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -613,7 +613,6 @@ struct cxl_context {
+ 	bool pe_inserted;
+ 	bool master;
+ 	bool kernel;
+-	bool real_mode;
+ 	bool pending_irq;
+ 	bool pending_fault;
+ 	bool pending_afu_err;
+diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
+index 4644f16606a3..f5dc740fcd13 100644
+--- a/drivers/misc/cxl/guest.c
++++ b/drivers/misc/cxl/guest.c
+@@ -623,9 +623,6 @@ static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u
+ {
+ 	pr_devel("in %s\n", __func__);
+ 
+-	if (ctx->real_mode)
+-		return -EPERM;
+-
+ 	ctx->kernel = kernel;
+ 	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
+ 		return attach_afu_directed(ctx, wed, amr);
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 98f867fcef24..c9d5d82dce8e 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -605,6 +605,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+ 		sr |= CXL_PSL_SR_An_TC;
++
+ 	if (kernel) {
+ 		if (!real_mode)
+ 			sr |= CXL_PSL_SR_An_R;
+@@ -629,7 +630,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+ 
+ static u64 calculate_sr(struct cxl_context *ctx)
+ {
+-	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
++	return cxl_calculate_sr(ctx->master, ctx->kernel, false,
+ 				cxl_is_power9());
+ }
+ 
+diff --git a/include/misc/cxl.h b/include/misc/cxl.h
+index b712be544f8c..82cc6ffafe2d 100644
+--- a/include/misc/cxl.h
++++ b/include/misc/cxl.h
+@@ -173,14 +173,6 @@ int cxl_afu_reset(struct cxl_context *ctx);
+  */
+ void cxl_set_master(struct cxl_context *ctx);
+ 
+-/*
+- * Sets the context to use real mode memory accesses to operate with
+- * translation disabled. Note that this only makes sense for kernel contexts
+- * under bare metal, and will not work with virtualisation. May only be
+- * performed on stopped contexts.
+- */
+-int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode);
+-
+ /*
+  * Map and unmap the AFU Problem Space area. The amount and location mapped
+  * depends on if this context is a master or slave.
 -- 
 2.17.1
