@@ -1,20 +1,21 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41D9FK5crFzF0Pd
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2018 21:34:29 +1000 (AEST)
-Date: Sun, 24 Jun 2018 21:35:18 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Michael Schmitz <schmitzmic@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-m68k@lists.linux-m68k.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 00/12] macintosh: Resolve various PMU driver
- problems
-In-Reply-To: <cover.1528885172.git.fthain@telegraphics.com.au>
-Message-ID: <alpine.LNX.2.21.1806242119180.34@nippy.intranet>
-References: <cover.1528885172.git.fthain@telegraphics.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <ruscur@russell.cc>
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41DWLP6ft9zF15L
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 11:09:59 +1000 (AEST)
+Message-ID: <4b2ca540d0784bddd9e901fdd50eb73033290823.camel@russell.cc>
+Subject: Re: [PATCH 0/7] Add initial version of "cognitive DMA"
+From: Russell Currey <ruscur@russell.cc>
+To: Timothy Pearson <tpearson@raptorengineering.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>
+Date: Mon, 25 Jun 2018 11:09:52 +1000
+In-Reply-To: <1564865529.2569245.1529797922226.JavaMail.zimbra@raptorengineeringinc.com>
+References: <1564865529.2569245.1529797922226.JavaMail.zimbra@raptorengineeringinc.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 Jun 2018, I wrote:
+On Sat, 2018-06-23 at 18:52 -0500, Timothy Pearson wrote:
 
-> Finn Thain (12):
->   macintosh/via-pmu: Fix section mismatch warning
->   macintosh/via-pmu: Add missing mmio accessors
->   macintosh/via-pmu: Don't clear shift register interrupt flag twice
->   macintosh/via-pmu: Enhance state machine with new 'uninitialized'
->     state
->   macintosh/via-pmu: Replace via pointer with via1 and via2 pointers
->   macintosh/via-pmu: Add support for m68k PowerBooks
->   macintosh/via-pmu: Make CONFIG_PPC_PMAC Kconfig deps explicit
->   macintosh/via-pmu68k: Don't load driver on unsupported hardware
->   macintosh/via-pmu: Replace via-pmu68k driver with via-pmu driver
->   macintosh: Use common code to access RTC
->   macintosh/via-pmu: Clean up interrupt statistics
->   macintosh/via-pmu: Disambiguate interrupt statistics
+There's still more to do and this shouldn't be merged yet - would
+encourage anyone with suitable hardware to test though.
+
+> POWER9 (PHB4) requires all peripherals using DMA to be either
+> restricted
+> to 32-bit windows or capable of accessing the entire 64 bits of
+> memory
+> space.  Some devices, such as most GPUs, can only address up to a
+> certain
+> number of bits (approximately 40, in many cases), while at the same
+> time
+> it is highly desireable to use a larger DMA space than the fallback
+> 32 bits.
 > 
-
-Patch 10/12 ("macintosh: Use common code to access RTC") conflicts with 
-Arnd's RTC work, but the rest of this series can still be reviewed and 
-merged as-is.
-
-I will rewrite patch 10/12 after Arnd's fixes and this series have all 
-made their way through both powerpc and m68k trees, and submit it 
-separately.
-
-Thanks.
-
--- 
+> This series adds something called "cognitive DMA", which is a form of
+> dynamic
+> TCE allocation.  This allows the peripheral to DMA to host addresses
+> mapped in
+> 1G (PHB4) or 256M (PHB3) chunks, and is transparent to the peripheral
+> and its
+> driver stack.
+> 
+> This series has been tested on a Talos II server with a Radeon WX4100
+> and
+> a wide range of OpenGL applications.  While there is still work,
+> notably
+> involving what happens if a peripheral attempts to DMA close to a TCE
+> window boundary, this series greatly improves functionality for AMD
+> GPUs
+> on POWER9 devices over the existing 32-bit DMA support.
+> 
+> Russell Currey (4):
+>   powerpc/powernv/pci: Track largest available TCE order per PHB
+>   powerpc/powernv: DMA operations for discontiguous allocation
+>   powerpc/powernv/pci: Track DMA and TCE tables in debugfs
+>   powerpc/powernv/pci: Safety fixes for pseudobypass TCE allocation
+> 
+> Timothy Pearson (3):
+>   powerpc/powernv/pci: Export pnv_pci_ioda2_tce_invalidate_pe
+>   powerpc/powernv/pci: Invalidate TCE cache after DMA map setup
+>   powerpc/powernv/pci: Don't use the lower 4G TCEs in pseudo-DMA mode
+> 
+>  arch/powerpc/include/asm/dma-mapping.h    |   1 +
+>  arch/powerpc/platforms/powernv/Makefile   |   2 +-
+>  arch/powerpc/platforms/powernv/pci-dma.c  | 320
+> ++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 169 ++++++++----
+>  arch/powerpc/platforms/powernv/pci.h      |  11 +
+>  5 files changed, 452 insertions(+), 51 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/pci-dma.c
+> 
