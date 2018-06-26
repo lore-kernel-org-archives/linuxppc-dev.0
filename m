@@ -1,27 +1,24 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qk0-f194.google.com (mail-qk0-f194.google.com
+ [209.85.220.194])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FPb85Lt1zF1D8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 21:54:11 +1000 (AEST)
-Date: Tue, 26 Jun 2018 19:54:02 +0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>,
- Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCHv2 2/2] drivers/base: reorder consumer and its children
- behind suppliers
-Message-ID: <20180626115402.GB30256@kroah.com>
-References: <1529912859-10475-1-git-send-email-kernelfans@gmail.com>
- <1529912859-10475-3-git-send-email-kernelfans@gmail.com>
- <20180625104505.GA3058@kroah.com>
- <CAFgQCTt6MTwXbbcQCcJroM3wGdx+5c7A+eVy+dXJscu1JtfA-w@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41FRLP1NwhzF1GF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 23:13:17 +1000 (AEST)
+Received: by mail-qk0-f194.google.com with SMTP id c131-v6so9441932qkb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 06:13:17 -0700 (PDT)
+Subject: Re: [PATCH v2] selftests/powerpc: Fix strncpy usage
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+References: <1529535071-14555-1-git-send-email-leitao@debian.org>
+ <1529962249-24774-1-git-send-email-leitao@debian.org>
+ <87lgb286iq.fsf@concordia.ellerman.id.au>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <564b7724-c081-9c09-e500-b010c2117415@debian.org>
+Date: Tue, 26 Jun 2018 10:13:07 -0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAFgQCTt6MTwXbbcQCcJroM3wGdx+5c7A+eVy+dXJscu1JtfA-w@mail.gmail.com>
+In-Reply-To: <87lgb286iq.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 26, 2018 at 11:29:48AM +0800, Pingfan Liu wrote:
-> On Mon, Jun 25, 2018 at 6:45 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Mon, Jun 25, 2018 at 03:47:39PM +0800, Pingfan Liu wrote:
-> > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > > introduces supplier<-consumer order in devices_kset. The commit tries
-> > > to cleverly maintain both parent<-child and supplier<-consumer order by
-> > > reordering a device when probing. This method makes things simple and
-> > > clean, but unfortunately, breaks parent<-child order in some case,
-> > > which is described in next patch in this series.
-> >
-> > There is no "next patch in this series" :(
-> >
-> Oh, re-arrange the patches, and forget the comment in log
+
+
+On 06/26/2018 02:24 AM, Michael Ellerman wrote:
+> Breno Leitao <leitao@debian.org> writes:
 > 
-> > > Here this patch tries to resolve supplier<-consumer by only reordering a
-> > > device when it has suppliers, and takes care of the following scenario:
-> > >     [consumer, children] [ ... potential ... ] supplier
-> > >                          ^                   ^
-> > > After moving the consumer and its children after the supplier, the
-> > > potentail section may contain consumers whose supplier is inside
-> > > children, and this poses the requirement to dry out all consumpers in
-> > > the section recursively.
-> > >
-> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> > > Cc: Christoph Hellwig <hch@infradead.org>
-> > > Cc: Bjorn Helgaas <helgaas@kernel.org>
-> > > Cc: Dave Young <dyoung@redhat.com>
-> > > Cc: linux-pci@vger.kernel.org
-> > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> > > ---
-> > > note: there is lock issue in this patch, should be fixed in next version
-> >
-> > Please send patches that you know are correct, why would I want to
-> > review this if you know it is not correct?
-> >
-> > And if the original commit is causing problems for you, why not just
-> > revert that instead of adding this much-increased complexity?
-> >
-> Revert the original commit, then it will expose the error  order
-> "consumer <- supplier" again.
-> This patch tries to resolve the error and fix the following scenario:
-> step0:  before the consumer device's probing,  (note child_a is a
-> supplier of consumer_a, etc)
-> [ consumer-X,  child_a, ...., child_z]     [.... consumer_a, ...,
-> consumer_z, ....]    supplier-X
->                                                              ^^^
-> affected range during moving^^^
-> step1: When probing, moving consumer-X after supplier-X
-> [ child_a, ...., child_z]     [.... consumer_a, ...,     consumer_z,
-> ....]   supplier-X, consumer-X
-> But it breaks "parent <-child" seq now, and should be fixed like:
-> step2:
-> [.... consumer_a, ...,     consumer_z, ....]  supplier-X  [
-> consumer-X,  child_a, ...., child_z]    <---
-> descendants_reorder_after_pos() does it.
-> Again, the seq "consumer_a <- child_a" breaks the "supplier<-consumer"
->  order, should be fixed like:
-> step3:
-> [....  consumer_z, .....]  supplier-X  [ consumer-X,  child_a,
-> consumer_a ...., child_z]   <--- __device_reorder_consumer() does it.
-> ^^ affected range^^
-> The moving of consumer_a brings us to face the same scenario of step1,
-> hence we need an external recursion.
+>> There is a buffer overflow in dscr_inherit_test.c test. In main(), strncpy()'s
+>> third argument is the length of the source, not the size of the destination
+>> buffer, which makes strncpy() behaves like strcpy(), causing a buffer overflow
+>> if argv[0] is bigger than LEN_MAX (100).
+>>
+>> This patch allocates 'prog' according to the argv[0] length, avoiding LEN_MAX
+>> restriction.
+>>
+>> CC: Segher Boessenkool <segher@kernel.crashing.org>
+>> CC: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> Signed-off-by: Breno Leitao <leitao@debian.org>
+>> ---
+>>  tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c | 11 +++++++++--
+>>  1 file changed, 9 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+>> index 08a8b95e3bc1..ecac4900c7dd 100644
+>> --- a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+>> +++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+>> @@ -19,7 +19,7 @@
+>>   */
+>>  #include "dscr.h"
+>>  
+>> -static char prog[LEN_MAX];
+>> +static char *prog;
+>>  
+>>  static void do_exec(unsigned long parent_dscr)
+>>  {
+>> @@ -104,6 +104,13 @@ int main(int argc, char *argv[])
+>>  		exit(1);
+>>  	}
+>>  
+>> -	strncpy(prog, argv[0], strlen(argv[0]));
+>> +	prog = malloc(strlen(argv[0]) + 1);
+>> +	if (prog == NULL) {
+>> +		fprintf(stderr, "Unable to allocate enough memory\n");
+>> +		exit(1);
+>> +	}
+>> +
+>> +	strcpy(prog, argv[0]);
+> 
+> Why do we need to copy it at all?
 
-Something really got messed up here, and this all does not make any
-sense :(
+We do not. Pointing proj to argv[0], as you proposed, should be the best
+solution for this problem.
 
-Can you try again?
-
-Also, please cc: Rafael on all of this, as he wrote all of this
-consumer/supplier logic and I am not that familiar with it at all.
-
-thanks,
-
-greg k-h
+Thanks!
