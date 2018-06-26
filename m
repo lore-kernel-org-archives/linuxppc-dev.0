@@ -1,43 +1,32 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ard.biesheuvel@linaro.org>
+Received: from mail-wr0-x242.google.com (mail-wr0-x242.google.com
+ [IPv6:2a00:1450:400c:c0c::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FXY568BDzF1Dt
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 03:07:53 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5QEsVGi104617
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 10:55:00 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jup1g57pn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 10:55:00 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 26 Jun 2018 08:54:59 -0600
-Subject: Re: [powerpc/powervm]kernel BUG at mm/memory_hotplug.c:1864!
-To: Balbir Singh <bsingharora@gmail.com>,
- vrbagal1 <vrbagal1@linux.vnet.ibm.com>,
- Oscar Salvador <osalvador@techadventures.net>
-Cc: sachinp <sachinp@linux.vnet.ibm.com>, Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>,
- linux-mm@kvack.org, linux-next <linux-next@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <6826dab0e4382380db8d11b047272bda@linux.vnet.ibm.com>
- <20180608112823.GA20395@techadventures.net>
- <3d1e7740df56ed35c8b56941acdb7079@linux.vnet.ibm.com>
- <20180608121553.GA20774@techadventures.net>
- <0aac625ee724d877b87c69bba5ac9a0e@linux.vnet.ibm.com>
- <605b4df2-4cf1-2dda-3661-68b78845f8ec@gmail.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Tue, 26 Jun 2018 09:54:53 -0500
-MIME-Version: 1.0
-In-Reply-To: <605b4df2-4cf1-2dda-3661-68b78845f8ec@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <345785ef-5da2-b2e8-78b8-2391b54c6141@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41FZLN4tk5zF1Gt
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 04:28:43 +1000 (AEST)
+Received: by mail-wr0-x242.google.com with SMTP id a12-v6so18234720wro.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 11:28:43 -0700 (PDT)
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <jmorris@namei.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: [PATCH v9 0/6] add support for relative references in special sections
+Date: Tue, 26 Jun 2018 20:27:55 +0200
+Message-Id: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,89 +36,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/12/2018 05:28 AM, Balbir Singh wrote:
-> 
-> 
-> On 11/06/18 17:41, vrbagal1 wrote:
->> On 2018-06-08 17:45, Oscar Salvador wrote:
->>> On Fri, Jun 08, 2018 at 05:11:24PM +0530, vrbagal1 wrote:
->>>> On 2018-06-08 16:58, Oscar Salvador wrote:
->>>>> On Fri, Jun 08, 2018 at 04:44:24PM +0530, vrbagal1 wrote:
->>>>>> Greetings!!!
->>>>>>
->>>>>> I am seeing kernel bug followed by oops message and system reboots,
->>>>>> while
->>>>>> running dlpar memory hotplug test.
->>>>>>
->>>>>> Machine Details: Power6 PowerVM Platform
->>>>>> GCC version: (gcc version 4.8.3 20140911 (Red Hat 4.8.3-7) (GCC))
->>>>>> Test case: dlpar memory hotplug test (https://github.com/avocado-framework-tests/avocado-misc-tests/blob/master/memory/memhotplug.py)
->>>>>> Kernel Version: Linux version 4.17.0-autotest
->>>>>>
->>>>>> I am seeing this bug on rc7 as well.
->>
->> Observing similar traces on linux next kernel: 4.17.0-next-20180608-autotest
->>
->>  Block size [0x4000000] unaligned hotplug range: start 0x220000000, size 0x1000000
-> 
-> size < block_size in this case, why? how? Could you confirm that the block size is 64MB and your trying to remove 16MB
-> 
+This adds support for emitting special sections such as initcall arrays,
+PCI fixups and tracepoints as relative references rather than absolute
+references. This reduces the size by 50% on 64-bit architectures, but
+more importantly, it removes the need for carrying relocation metadata
+for these sections in relocatable kernels (e.g., for KASLR) that needs
+to be fixed up at boot time. On arm64, this reduces the vmlinux footprint
+of such a reference by 8x (8 byte absolute reference + 24 byte RELA entry
+vs 4 byte relative reference)
 
-I was not able to re-create this failure exactly ( I don't have a Power6 system)
-but was able to get a similar re-create on a Power 9 with a few modifications.
+Patch #3 was sent out before as a single patch. This series supersedes
+the previous submission. This version makes relative ksymtab entries
+dependent on the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS rather
+than trying to infer from kbuild test robot replies for which architectures
+it should be blacklisted.
 
-I think the issue you're seeing is due to a change in the validation of memory
-done in remove_memory to ensure the amount of memory being removed spans
-entire memory block. The pseries memory remove code, see pseries_remove_memblock,
-tries to remove each section of a memory block instead of the entire memory block.
+Patch #1 introduces the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS,
+and sets it for the main architectures that are expected to benefit the
+most from this feature, i.e., 64-bit architectures or ones that use
+runtime relocations.
 
-Could you try the patch below that updates the pseries code to remove the entire
-memory block instead of doing it one section at a time.
+Patch #2 add support for #define'ing __DISABLE_EXPORTS to get rid of
+ksymtab/kcrctab sections in decompressor and EFI stub objects when
+rebuilding existing C files to run in a different context.
 
--Nathan
----
+Patches #4 - #6 implement relative references for initcalls, PCI fixups
+and tracepoints, respectively, all of which produce sections with order
+~1000 entries on an arm64 defconfig kernel with tracing enabled. This
+means we save about 28 KB of vmlinux space for each of these patches.
 
- arch/powerpc/platforms/pseries/hotplug-memory.c |   18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+[From the v7 series blurb, which included the jump_label patches as well]:
+  For the arm64 kernel, all patches combined reduce the memory footprint of
+  vmlinux by about 1.3 MB (using a config copied from Ubuntu that has KASLR
+  enabled), of which ~1 MB is the size reduction of the RELA section in .init,
+  and the remaining 300 KB is reduction of .text/.data.
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index c1578f54c626..6072efc793e1 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -316,11 +316,11 @@ static int dlpar_offline_lmb(struct drmem_lmb *lmb)
- 	return dlpar_change_lmb_state(lmb, false);
- }
- 
--static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
-+static int pseries_remove_memblock(unsigned long base,
-+				   unsigned int memblock_sz)
- {
--	unsigned long block_sz, start_pfn;
--	int sections_per_block;
--	int i, nid;
-+	unsigned long start_pfn;
-+	int nid;
- 
- 	start_pfn = base >> PAGE_SHIFT;
- 
-@@ -329,18 +329,12 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
- 	if (!pfn_valid(start_pfn))
- 		goto out;
- 
--	block_sz = pseries_memory_block_size();
--	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
- 	nid = memory_add_physaddr_to_nid(base);
--
--	for (i = 0; i < sections_per_block; i++) {
--		remove_memory(nid, base, MIN_MEMORY_BLOCK_SIZE);
--		base += MIN_MEMORY_BLOCK_SIZE;
--	}
-+	remove_memory(nid, base, memblock_sz);
- 
- out:
- 	/* Update memory regions for memory remove */
--	memblock_remove(base, memblock_size);
-+	memblock_remove(base, memblock_sz);
- 	unlock_device_hotplug();
- 	return 0;
- }
+Branch:
+git://git.kernel.org/pub/scm/linux/kernel/git/ardb/linux.git relative-special-sections-v9
+
+Changes since v8:
+- add Nico's ack (#2)
+- drop 'const' qualifier from __ADDRESSABLE(sym) to prevent mismatching
+  attributes for the .discard section (#3)
+- drop all uses of VMLINUX_SYMBOL_STR(), which is on its way out (#3 - #6)
+
+Changes since v7:
+- dropped the jump_label patches, these will be revisited in a separate series
+- reorder __DISABLE_EXPORTS with __KSYM_DEPS__ check in #2
+- use offset_to_ptr() helper function to abstract the relative pointer
+  conversion [int *off -> (ulong)off + *off] (#3 - #6)
+- rebase onto v4.16-rc3
+
+Changes since v6:
+- drop S390 from patch #1 introducing HAVE_ARCH_PREL32_RELOCATIONS: kbuild
+  robot threw me some s390 curveballs, and given that s390 does not define
+  CONFIG_RELOCATABLE in the first place, it does not benefit as much from
+  relative references as arm64, x86 and power do
+- add patch to allow symbol exports to be disabled at compilation unit
+  granularity (#2)
+- get rid of arm64 vmlinux.lds.S hunk to ensure code generated by __ADDRESSABLE
+  gets discarded from the EFI stub - it is no longer needed after adding #2 (#1)
+- change _ADDRESSABLE() to emit a data reference, not a code reference - this
+  is another simplification made possible by patch #2 (#3)
+- add Steven's ack to #6
+- split x86 jump_label patch into two (#9, #10)
+
+Changes since v5:
+- add missing jump_label prototypes to s390 jump_label.h (#6)
+- fix inverted condition in call to jump_entry_is_module_init() (#6)
+
+Changes since v4:
+- add patches to convert x86 and arm64 to use relative references for jump
+  tables (#6 - #8)
+- rename PCI patch and add Bjorn's ack (#4)
+- rebase onto v4.15-rc5
+
+Changes since v3:
+- fix module unload issue in patch #5 reported by Jessica, by reusing the
+  updated routine for_each_tracepoint_range() for the quiescent check at
+  module unload time; this requires this routine to be moved before
+  tracepoint_module_going() in kernel/tracepoint.c
+- add Jessica's ack to #2
+- rebase onto v4.14-rc1
+
+Changes since v2:
+- Revert my slightly misguided attempt to appease checkpatch, which resulted
+  in needless churn and worse code. This v3 is based on v1 with a few tweaks
+  that were actually reasonable checkpatch warnings: unnecessary braces (as
+  pointed out by Ingo) and other minor whitespace misdemeanors.
+
+Changes since v1:
+- Remove checkpatch errors to the extent feasible: in some cases, this
+  involves moving extern declarations into C files, and switching to
+  struct definitions rather than typedefs. Some errors are impossible
+  to fix: please find the remaining ones after the diffstat.
+- Used 'int' instead if 'signed int' for the various offset fields: there
+  is no ambiguity between architectures regarding its signedness (unlike
+  'char')
+- Refactor the different patches to be more uniform in the way they define
+  the section entry type and accessors in the .h file, and avoid the need to
+  add #ifdefs to the C code.
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: James Morris <jmorris@namei.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Nicolas Pitre <nico@linaro.org>
+Cc: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jessica Yu <jeyu@kernel.org>
+
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: x86@kernel.org
+
+Ard Biesheuvel (6):
+  arch: enable relative relocations for arm64, power and x86
+  module: allow symbol exports to be disabled
+  module: use relative references for __ksymtab entries
+  init: allow initcall tables to be emitted using relative references
+  PCI: Add support for relative addressing in quirk tables
+  kernel: tracepoints: add support for relative references
+
+ arch/Kconfig                          | 10 ++++
+ arch/arm64/Kconfig                    |  1 +
+ arch/powerpc/Kconfig                  |  1 +
+ arch/x86/Kconfig                      |  1 +
+ arch/x86/boot/compressed/kaslr.c      |  5 +-
+ arch/x86/include/asm/Kbuild           |  1 +
+ arch/x86/include/asm/export.h         |  5 --
+ drivers/firmware/efi/libstub/Makefile |  3 +-
+ drivers/pci/quirks.c                  | 12 +++--
+ include/asm-generic/export.h          | 12 ++++-
+ include/linux/compiler.h              | 19 +++++++
+ include/linux/export.h                | 57 +++++++++++++++-----
+ include/linux/init.h                  | 44 +++++++++++----
+ include/linux/pci.h                   | 20 +++++++
+ include/linux/tracepoint.h            | 19 +++++--
+ init/main.c                           | 32 +++++------
+ kernel/module.c                       | 32 ++++++++---
+ kernel/printk/printk.c                | 16 +++---
+ kernel/tracepoint.c                   | 49 +++++++++--------
+ security/security.c                   | 17 +++---
+ 20 files changed, 255 insertions(+), 101 deletions(-)
+ delete mode 100644 arch/x86/include/asm/export.h
+
+-- 
+2.11.0
