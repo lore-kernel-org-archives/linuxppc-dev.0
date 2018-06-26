@@ -3,20 +3,22 @@ Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
  [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41F8mb5pdGzF1D5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 12:16:31 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id 92-v6so9409288qta.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 19:16:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41F8md37HzzF1D5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 12:16:33 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id i18-v6so13843583qtp.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 19:16:33 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: [PATCH 1/2] powerpc/pkeys: preallocate execute_only key only if the
- key is available.
-Date: Mon, 25 Jun 2018 19:16:13 -0700
-Message-Id: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH 2/2] powerpc/pkeys: key allocation/deallocation must not
+ change pkey registers
+Date: Mon, 25 Jun 2018 19:16:14 -0700
+Message-Id: <1529979376-7292-2-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
+References: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,74 +28,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Key 2 is preallocated and reserved for execute-only key. In rare
-cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
-incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
+Key allocation and deallocation has the side effect of programming the
+UAMOR/AMR/IAMR registers. This is wrong, since its the responsibility of
+the application and not that of the kernel, to modify the permission on
+the key.
 
-Ensure key 2 is available for preallocation before reserving it for
-execute_only purpose.  Problem noticed by Michael Ellermen.
+Do not modify the pkey registers at key allocation/deallocation.
+
+This patch also fixes a bug where a sys_pkey_free() resets the UAMOR
+bits of the key, thus making its permissions unmodifiable from user
+space.  Latter if the same key gets reallocated from a different thread
+this thread will no longer be able to change the permissions on the key.
+
+Problem noticed/reported by Michael Ellermen while running
+selftests/core-pkeys
 
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
 ---
- arch/powerpc/mm/pkeys.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/pkeys.h |   11 -----------
+ arch/powerpc/mm/pkeys.c          |   27 ---------------------------
+ 2 files changed, 0 insertions(+), 38 deletions(-)
 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index cec990c..0b03914 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -19,6 +19,7 @@
- u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
-+int  execute_only_key = 2;
- 
- #define AMR_BITS_PER_PKEY 2
- #define AMR_RD_BIT 0x1UL
-@@ -26,7 +27,6 @@
- #define IAMR_EX_BIT 0x1UL
- #define PKEY_REG_BITS (sizeof(u64)*8)
- #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
--#define EXECUTE_ONLY_KEY 2
- 
- static void scan_pkey_feature(void)
- {
-@@ -122,8 +122,12 @@ int pkey_initialize(void)
- #else
- 	os_reserved = 0;
- #endif
-+
-+	if ((pkeys_total - os_reserved) <= execute_only_key)
-+		execute_only_key = -1;
-+
- 	/* Bits are in LE format. */
--	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
-+	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
- 	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
- 
- 	/* register mask is in BE format */
-@@ -132,11 +136,11 @@ int pkey_initialize(void)
- 
- 	pkey_iamr_mask = ~0x0ul;
- 	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
--	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	pkey_uamor_mask = ~0x0ul;
- 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
--	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-+	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++)
- 		pkey_uamor_mask &= ~(0x3ul << pkeyshift(i));
-@@ -151,7 +155,7 @@ void pkey_mm_init(struct mm_struct *mm)
- 	if (static_branch_likely(&pkey_disabled))
- 		return;
- 	mm_pkey_allocation_map(mm) = initial_allocation_mask;
--	mm->context.execute_only_pkey = EXECUTE_ONLY_KEY;
-+	mm->context.execute_only_pkey = execute_only_key;
+diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
+index c824528..92a9962 100644
+--- a/arch/powerpc/include/asm/pkeys.h
++++ b/arch/powerpc/include/asm/pkeys.h
+@@ -101,8 +101,6 @@ static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
+ 	return __mm_pkey_is_allocated(mm, pkey);
  }
  
- static inline u64 read_amr(void)
+-extern void __arch_activate_pkey(int pkey);
+-extern void __arch_deactivate_pkey(int pkey);
+ /*
+  * Returns a positive, 5-bit key on success, or -1 on failure.
+  * Relies on the mmap_sem to protect against concurrency in mm_pkey_alloc() and
+@@ -131,11 +129,6 @@ static inline int mm_pkey_alloc(struct mm_struct *mm)
+ 	ret = ffz((u32)mm_pkey_allocation_map(mm));
+ 	__mm_pkey_allocated(mm, ret);
+ 
+-	/*
+-	 * Enable the key in the hardware
+-	 */
+-	if (ret > 0)
+-		__arch_activate_pkey(ret);
+ 	return ret;
+ }
+ 
+@@ -147,10 +140,6 @@ static inline int mm_pkey_free(struct mm_struct *mm, int pkey)
+ 	if (!mm_pkey_is_allocated(mm, pkey))
+ 		return -EINVAL;
+ 
+-	/*
+-	 * Disable the key in the hardware
+-	 */
+-	__arch_deactivate_pkey(pkey);
+ 	__mm_pkey_free(mm, pkey);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index 0b03914..27ac7f0 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -224,33 +224,6 @@ static inline void init_iamr(int pkey, u8 init_bits)
+ 	write_iamr(old_iamr | new_iamr_bits);
+ }
+ 
+-static void pkey_status_change(int pkey, bool enable)
+-{
+-	u64 old_uamor;
+-
+-	/* Reset the AMR and IAMR bits for this key */
+-	init_amr(pkey, 0x0);
+-	init_iamr(pkey, 0x0);
+-
+-	/* Enable/disable key */
+-	old_uamor = read_uamor();
+-	if (enable)
+-		old_uamor |= (0x3ul << pkeyshift(pkey));
+-	else
+-		old_uamor &= ~(0x3ul << pkeyshift(pkey));
+-	write_uamor(old_uamor);
+-}
+-
+-void __arch_activate_pkey(int pkey)
+-{
+-	pkey_status_change(pkey, true);
+-}
+-
+-void __arch_deactivate_pkey(int pkey)
+-{
+-	pkey_status_change(pkey, false);
+-}
+-
+ /*
+  * Set the access rights in AMR IAMR and UAMOR registers for @pkey to that
+  * specified in @init_val.
 -- 
 1.7.1
