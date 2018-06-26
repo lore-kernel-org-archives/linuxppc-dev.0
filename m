@@ -1,21 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FDxB5fD9zF1Hv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 15:24:14 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Breno Leitao <leitao@debian.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] selftests/powerpc: Fix strncpy usage
-In-Reply-To: <1529962249-24774-1-git-send-email-leitao@debian.org>
-References: <1529535071-14555-1-git-send-email-leitao@debian.org>
- <1529962249-24774-1-git-send-email-leitao@debian.org>
-Date: Tue, 26 Jun 2018 15:24:13 +1000
-Message-ID: <87lgb286iq.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41FFl90FWCzF1Dg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 16:00:36 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: [PATCH kernel v2 0/2] KVM: PPC: Check if IOMMU page is contained in
+ the pinned physical page
+Date: Tue, 26 Jun 2018 15:59:24 +1000
+Message-Id: <20180626055926.27703-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,53 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Breno Leitao <leitao@debian.org> writes:
 
-> There is a buffer overflow in dscr_inherit_test.c test. In main(), strncpy()'s
-> third argument is the length of the source, not the size of the destination
-> buffer, which makes strncpy() behaves like strcpy(), causing a buffer overflow
-> if argv[0] is bigger than LEN_MAX (100).
->
-> This patch allocates 'prog' according to the argv[0] length, avoiding LEN_MAX
-> restriction.
->
-> CC: Segher Boessenkool <segher@kernel.crashing.org>
-> CC: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> ---
->  tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
->
-> diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-> index 08a8b95e3bc1..ecac4900c7dd 100644
-> --- a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-> +++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-> @@ -19,7 +19,7 @@
->   */
->  #include "dscr.h"
->  
-> -static char prog[LEN_MAX];
-> +static char *prog;
->  
->  static void do_exec(unsigned long parent_dscr)
->  {
-> @@ -104,6 +104,13 @@ int main(int argc, char *argv[])
->  		exit(1);
->  	}
->  
-> -	strncpy(prog, argv[0], strlen(argv[0]));
-> +	prog = malloc(strlen(argv[0]) + 1);
-> +	if (prog == NULL) {
-> +		fprintf(stderr, "Unable to allocate enough memory\n");
-> +		exit(1);
-> +	}
-> +
-> +	strcpy(prog, argv[0]);
 
-Why do we need to copy it at all?
+This is to improve page boundaries checking and should probably
+be cc:stable. I came accross this while debugging nvlink2 passthrough
+but the lack of checking might be exploited by the existing userspace.
 
-Can't we just save a pointer it? ie, prog = argv[0];
+Changes:
+v2:
+* 2/2: explicitly check for compound pages before calling compound_order()
 
-What am I missing?
 
-cheers
+Please comment. Thanks.
+
+
+
+Alexey Kardashevskiy (2):
+  vfio/spapr: Use IOMMU pageshift rather than pagesize
+  KVM: PPC: Check if IOMMU page is contained in the pinned physical page
+
+ arch/powerpc/include/asm/mmu_context.h |  4 ++--
+ arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
+ arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
+ arch/powerpc/mm/mmu_context_iommu.c    | 20 +++++++++++++++++---
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 10 +++++-----
+ 5 files changed, 29 insertions(+), 13 deletions(-)
+
+-- 
+2.11.0
