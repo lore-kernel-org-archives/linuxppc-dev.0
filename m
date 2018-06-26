@@ -1,31 +1,29 @@
 Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-ot0-f194.google.com (mail-ot0-f194.google.com
- [74.125.82.194])
+Received: from mail-ot0-f196.google.com (mail-ot0-f196.google.com
+ [74.125.82.196])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FGJS294fzF1H5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 16:25:59 +1000 (AEST)
-Received: by mail-ot0-f194.google.com with SMTP id l15-v6so17799431oth.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 23:25:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41FGL075T9zF1PD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 16:27:20 +1000 (AEST)
+Received: by mail-ot0-f196.google.com with SMTP id l15-v6so17802540oth.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2018 23:27:20 -0700 (PDT)
 MIME-Version: 1.0
-References: <20180622192749.24954-1-malat@debian.org>
- <c182ca65-f41e-4a1c-95ee-6cb979a6e76b@c-s.fr>
-In-Reply-To: <c182ca65-f41e-4a1c-95ee-6cb979a6e76b@c-s.fr>
+References: <20180622192718.24242-1-malat@debian.org>
+ <b41b244e-78b8-c85f-9122-427ad04cccf8@c-s.fr>
+ <20180623194716.GY16221@gate.crashing.org>
+In-Reply-To: <20180623194716.GY16221@gate.crashing.org>
 From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 26 Jun 2018 08:25:44 +0200
-Message-ID: <CA+7wUsy9j8Zfxs1dB-bR-dYrzWjpNRm=BZYqkvEH5c1UzHrZMA@mail.gmail.com>
-Subject: =?UTF-8?Q?Re=3A_=5BPATCH=5D_powerpc=2Fmm=3A_remove_warning_about_=E2=80=98type?=
- =?UTF-8?Q?=E2=80=99_being_set?=
-To: a.p.zijlstra@chello.nl
+Date: Tue, 26 Jun 2018 08:27:06 +0200
+Message-ID: <CA+7wUsx4wpiP+q7NusNgFYfAM3gbnvOOPgrjq4QV7iA510noCg@mail.gmail.com>
+Subject: =?UTF-8?Q?Re=3A_=5BPATCH=5D_powerpc=2Fxmon=3A_avoid_warnings_about_varia?=
+ =?UTF-8?Q?bles_that_might_be_clobbered_by_=E2=80=98longjmp=E2=80=99?=
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
  Michael Ellerman <mpe@ellerman.id.au>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Philippe Ombredanne <pombredanne@nexb.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>
+ Yisheng Xie <xieyisheng1@huawei.com>, Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Breno Leitao <leitao@debian.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,63 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jun 23, 2018 at 7:12 PM christophe leroy
-<christophe.leroy@c-s.fr> wrote:
+On Sat, Jun 23, 2018 at 9:47 PM Segher Boessenkool
+<segher@kernel.crashing.org> wrote:
 >
->
->
-> Le 22/06/2018 =C3=A0 21:27, Mathieu Malaterre a =C3=A9crit :
-> > =E2=80=98type=E2=80=99 is only used when CONFIG_DEBUG_HIGHMEM is set. S=
-o add a possibly
-> > unused tag to variable. Remove warning treated as error with W=3D1:
+> On Sat, Jun 23, 2018 at 06:59:27PM +0200, christophe leroy wrote:
 > >
-> >    arch/powerpc/mm/highmem.c:59:6: error: variable =E2=80=98type=E2=80=
-=99 set but not used [-Werror=3Dunused-but-set-variable]
+> >
+> > Le 22/06/2018 =C3=A0 21:27, Mathieu Malaterre a =C3=A9crit :
+> > >Move initialization of variables after data definitions. This silence
+> > >warnings treated as error with W=3D1:
+> > >
+> > >   arch/powerpc/xmon/xmon.c:3389:14: error: variable =E2=80=98name=E2=
+=80=99 might be
+> > >   clobbered by =E2=80=98longjmp=E2=80=99 or =E2=80=98vfork=E2=80=99 [=
+-Werror=3Dclobbered]
+> > >   arch/powerpc/xmon/xmon.c:3100:22: error: variable =E2=80=98tsk=E2=
+=80=99 might be
+> > >   clobbered by =E2=80=98longjmp=E2=80=99 or =E2=80=98vfork=E2=80=99 [=
+-Werror=3Dclobbered]
+> >
+> > Is that an invalid warning ?
 >
-> Is type neeeded at all when CONFIG_DEBUG_HIGHMEM is not set ?
->
-> The call        type =3D kmap_atomic_idx();          seems useless when
-> CONFIG_DEBUG_HIGHMEM isn't set. Couldn't we just most type definition
-> and setting inside the CONFIG_DEBUG_HIGHMEM {} below ?
->
-> Alternatively, maybe you could replace the #ifdef CONFIG_DEBUG_HIGHMEM
-> by an    if (IS_ENABLED(CONFIG_DEBUG_HIGHMEM)) ?
+> No, both are correct warnings.  GCC can not see which functions it only
+> has a declaration of can call longjmp.
 
-I am not familiar with this code. But starring at other arch
-implementations (eg. `arch/x86/mm/highmem_32.c`), it feels like
-powerpc is skipping `pte_clear(&init_mm, vaddr, kmap_pte-idx);` unless
-`CONFIG_DEBUG_HIGHMEM=3Dy`. Could someone please confirm this is the
-correct behavior ?
+I assumed those were false positive warnings, given how easy it was to
+defeat them. Let give it another try.
 
-Or else I can rewrite the code a bit like `arch/arm/mm/highmem.c`
-which skips `set_fixmap_pte(idx, __pte(0));` unless
-`CONFIG_DEBUG_HIGHMEM=3Dy`.
-
-> Christophe
+> > Otherwise, I'd expect one to fix the warning, not just cheat on GCC.
 >
-> >
-> > Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> > ---
-> >   arch/powerpc/mm/highmem.c | 2 +-
-> >   1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/powerpc/mm/highmem.c b/arch/powerpc/mm/highmem.c
-> > index 668e87d03f9e..82a0e37557a5 100644
-> > --- a/arch/powerpc/mm/highmem.c
-> > +++ b/arch/powerpc/mm/highmem.c
-> > @@ -56,7 +56,7 @@ EXPORT_SYMBOL(kmap_atomic_prot);
-> >   void __kunmap_atomic(void *kvaddr)
-> >   {
-> >       unsigned long vaddr =3D (unsigned long) kvaddr & PAGE_MASK;
-> > -     int type;
-> > +     int type __maybe_unused;
-> >
-> >       if (vaddr < __fix_to_virt(FIX_KMAP_END)) {
-> >               pagefault_enable();
-> >
+> Yes, the patch seems to change the code in such a way that some versions
+> of GCC will no longer warn.  Which does not make to code any more correct=
+.
 >
-> ---
-> L'absence de virus dans ce courrier =C3=A9lectronique a =C3=A9t=C3=A9 v=
-=C3=A9rifi=C3=A9e par le logiciel antivirus Avast.
-> https://www.avast.com/antivirus
+> Either restructure the code, or make the var non-automatic, or make it
+> volatile.
 >
+>
+> Segher
