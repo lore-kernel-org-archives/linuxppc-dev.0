@@ -1,29 +1,29 @@
-Return-Path: <mchehab@smtp.s-opensource.com>
-Received: from osg.samsung.com (osg.samsung.com [64.30.133.232])
- by lists.ozlabs.org (Postfix) with ESMTP id 41FM286HkczF1Gj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 19:58:56 +1000 (AEST)
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
- Mauro Carvalho Chehab <mchehab@infradead.org>,
- linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
- Jacek Anaszewski <jacek.anaszewski@gmail.com>, devicetree@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-kernel@zh-kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linux-leds@vger.kernel.org,
- intel-wired-lan@lists.osuosl.org, Mark Rutland <mark.rutland@arm.com>,
- linux-gpio@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- James Morris <james.morris@microsoft.com>,
- Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
- Changbin Du <changbin.du@intel.com>,
- Masami Hiramatsu <mhiramat@kernel.org>, netdev@vger.kernel.org,
- Steven Rostedt <rostedt@goodmis.org>, linux-input@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org,
- kvm@vger.kernel.org, virtualization@lists.linux-foundation.org,
- Andy Whitcroft <apw@canonical.com>, Joe Perches <joe@perches.com>
-Subject: [PATCH 0/9] Fix references for some missing documentation files
-Date: Tue, 26 Jun 2018 06:49:02 -0300
-Message-Id: <cover.1530005114.git.mchehab+samsung@kernel.org>
-Sender: Mauro Carvalho Chehab <mchehab@smtp.s-opensource.com>
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
+ [IPv6:2607:f8b0:4001:c0b::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Fn7c4fN0zF1Cl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 12:35:08 +1000 (AEST)
+Received: by mail-it0-x242.google.com with SMTP id 128-v6so5308106itf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2018 19:35:08 -0700 (PDT)
+MIME-Version: 1.0
+References: <1529904187-18673-3-git-send-email-kernelfans@gmail.com>
+ <20180626074426.hzunfbvwbubt3t3p@mwanda>
+In-Reply-To: <20180626074426.hzunfbvwbubt3t3p@mwanda>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Wed, 27 Jun 2018 10:34:54 +0800
+Message-ID: <CAFgQCTsCFP_6znUaFKnczuUJjMMA1Hq_Qrk6CUVs+EFEBZgTMQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] drivers/base: reorder consumer and its children
+ behind suppliers
+To: dan.carpenter@oracle.com
+Cc: kbuild@01.org, kbuild-all@01.org, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,87 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Having nothing to do while waiting for my plane to arrive while
-returning back from Japan, I ended by writing a small series of 
-patches meant to reduce the number of bad Documentation/* 
-links that are detected by:
-	./scripts/documentation-file-ref-check
+Hi Dan,
 
-I ended by rebasing this patch series against linux-next, because
-of those two patches:
-	3b0c3ebe2a42 Documentation: e100: Fix docs build error
-	805f16a5f12f Documentation: e1000: Fix docs build error
+Thanks for your hints, see the comment in lines.
 
-They basically fix documentation builds with upstream Kernel. Both
-got merged on -rc2.
+On Tue, Jun 26, 2018 at 3:44 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
+>
+> [ There is a bug with kbuild where it's not showing the Smatch warnings
+>   but I can probably guess...  - dan ]
+>
+> Hi Pingfan,
+>
+> Thank you for the patch! Perhaps something to improve:
+>
+> url:    https://github.com/0day-ci/linux/commits/Pingfan-Liu/drivers-base-bugfix-for-supplier-consumer-ordering-in-device_kset/20180625-132702
+>
+>
+> # https://github.com/0day-ci/linux/commit/1b2a1e63898baf80e8e830991284e1534bc54766
+> git remote add linux-review https://github.com/0day-ci/linux
+> git remote update linux-review
+> git checkout 1b2a1e63898baf80e8e830991284e1534bc54766
+> vim +/ret +245 drivers/base/core.c
+>
+> 1b2a1e63 Pingfan Liu 2018-06-25  216
+> 1b2a1e63 Pingfan Liu 2018-06-25  217  /* When reodering, take care of the range of (old_pos(dev), new_pos(dev)),
+> 1b2a1e63 Pingfan Liu 2018-06-25  218   * there may be requirement to recursively move item.
+> 1b2a1e63 Pingfan Liu 2018-06-25  219   */
+> 1b2a1e63 Pingfan Liu 2018-06-25  220  int device_reorder_consumer(struct device *dev)
+> 1b2a1e63 Pingfan Liu 2018-06-25  221  {
+> 1b2a1e63 Pingfan Liu 2018-06-25  222    struct list_head *iter, *left, *right;
+> 1b2a1e63 Pingfan Liu 2018-06-25  223    struct device *cur_dev;
+> 1b2a1e63 Pingfan Liu 2018-06-25  224    struct pos_info info;
+> 1b2a1e63 Pingfan Liu 2018-06-25  225    int ret, idx;
+> 1b2a1e63 Pingfan Liu 2018-06-25  226
+> 1b2a1e63 Pingfan Liu 2018-06-25  227    idx = device_links_read_lock();
+> 1b2a1e63 Pingfan Liu 2018-06-25  228    if (list_empty(&dev->links.suppliers)) {
+> 1b2a1e63 Pingfan Liu 2018-06-25  229            device_links_read_unlock(idx);
+> 1b2a1e63 Pingfan Liu 2018-06-25  230            return 0;
+> 1b2a1e63 Pingfan Liu 2018-06-25  231    }
+> 1b2a1e63 Pingfan Liu 2018-06-25  232    spin_lock(&devices_kset->list_lock);
+> 1b2a1e63 Pingfan Liu 2018-06-25  233    list_for_each_prev(iter, &devices_kset->list) {
+> 1b2a1e63 Pingfan Liu 2018-06-25  234            cur_dev = list_entry(iter, struct device, kobj.entry);
+> 1b2a1e63 Pingfan Liu 2018-06-25  235            ret = find_last_supplier(dev, cur_dev);
+> 1b2a1e63 Pingfan Liu 2018-06-25  236            switch (ret) {
+> 1b2a1e63 Pingfan Liu 2018-06-25  237            case -1:
+> 1b2a1e63 Pingfan Liu 2018-06-25  238                    goto unlock;
+> 1b2a1e63 Pingfan Liu 2018-06-25  239            case 1:
+> 1b2a1e63 Pingfan Liu 2018-06-25  240                    break;
+> 1b2a1e63 Pingfan Liu 2018-06-25  241            case 0:
+> 1b2a1e63 Pingfan Liu 2018-06-25  242                    continue;
+>
+> The break breaks from the switch and the continue continues the loop so
+> they're equivalent.  Perhaps you intended to break from the loop?
+>
+Yes, you are right.
 
-The first two patches in this series makes the script to ignore some
-false positives.
+> 1b2a1e63 Pingfan Liu 2018-06-25  243            }
+> 1b2a1e63 Pingfan Liu 2018-06-25  244    }
+> 1b2a1e63 Pingfan Liu 2018-06-25 @245    BUG_ON(!ret);
+>
+> If the list is empty then "ret" can be unitialized.  We test a different
+> list "dev->links.suppliers" to see if that's empty.  I wrote a bunch of
+> code to make Smatch try to understand about empty lists, but I don't
+> think it works...
+>
+Yes, if list_empty, then the code can not touch ret. But ret is
+useless in this scene. Does it matter?
 
-Patches 3 to 6 corrects the location of some documentation files.
+Thanks and regards,
+Pingfan
 
-Patches 7 and 8 were actually two patches meant to fix the build
-error. I ended by rebasing them over linux-next, as they fix some
-troubles with the ReST syntax with causes warnings.
-
-Patch 9 converts Documentation/trace/histogram.txt to ReST
-syntax. It also had to be rebased against linux-next, due to some minor
-conflicts with:
-    064f35a95224 ("tracing: Fix some errors in histogram documentation")
-
-After this series, the script still produces 16 warnings:
-
-Documentation/devicetree/bindings/input/mtk-pmic-keys.txt: Documentation/devicetree/bindings/input/keys.txt
-Documentation/devicetree/bindings/input/mtk-pmic-keys.txt: Documentation/devicetree/bindings/input/keys.txt
-Documentation/devicetree/bindings/regulator/rohm,bd71837-regulator.txt: Documentation/devicetree/bindings/mfd/rohm,bd71837-pmic.txt
-Documentation/devicetree/dynamic-resolution-notes.txt: Documentation/devicetree/dt-object-internal.txt
-Documentation/scsi/scsi_mid_low_api.txt: Documentation/Configure.help
-Documentation/translations/zh_CN/HOWTO: Documentation/DocBook/
-Documentation/translations/zh_CN/basic_profiling.txt: Documentation/basic_profiling
-Documentation/translations/zh_CN/basic_profiling.txt: Documentation/basic_profiling
-MAINTAINERS: Documentation/fpga/
-MAINTAINERS: Documentation/devicetree/bindings/rng/samsung,exynos5250-trng.txt
-arch/powerpc/Kconfig: Documentation/vm/protection-keys.rst
-drivers/isdn/mISDN/dsp_core.c: Documentation/isdn/mISDN.cert
-drivers/scsi/Kconfig: file:Documentation/scsi/tmscsim.txt
-drivers/vhost/vhost.c: Documentation/virtual/lguest/lguest.c
-include/linux/fs_context.h: Documentation/filesystems/mounting.txt
-include/linux/lsm_hooks.h: Documentation/filesystems/mounting.txt
-
-IMHO, the above should be fixed by the corresponding maintainers.
-
-The ones that scarry me most are the DT binding documentation, as
-the binding documentation for some stuff are likely broken.
-
-Btw, two of the above are new on linux-next (include/linux/fs_context.h
-and include/linux/lsm_hooks.h) . That makes me wander that we should
-likely add some logic (or run the detect script) at checkpatch.pl or make
-it to call ./scripts/documentation-file-ref-check.
-
-Mauro Carvalho Chehab (9):
-  scripts/documentation-file-ref-check: remove some false positives
-  scripts/documentation-file-ref-check: ignore sched-pelt false positive
-  docs: zh_CN: fix location of oops-tracing.txt
-  devicectree: bindings: fix location of leds common file
-  MAINTAINERS: fix location of ina2xx.txt device tree file
-  gpio.h: fix location of gpio legacy documentation
-  networking: e100.rst: Get rid of Sphinx warnings
-  networking: e1000.rst: Get rid of Sphinx warnings
-  docs: histogram.txt: convert it to ReST file format
-
- .../devicetree/bindings/leds/common.txt       |    2 +-
- Documentation/networking/e100.rst             |   27 +-
- Documentation/networking/e1000.rst            |  187 ++-
- Documentation/trace/events.rst                |    2 +-
- .../trace/{histogram.txt => histogram.rst}    | 1242 +++++++++--------
- Documentation/trace/index.rst                 |    1 +
- .../translations/zh_CN/oops-tracing.txt       |    4 +-
- MAINTAINERS                                   |    2 +-
- include/linux/gpio.h                          |    2 +-
- kernel/trace/Kconfig                          |    2 +-
- scripts/documentation-file-ref-check          |    6 +
- 11 files changed, 767 insertions(+), 710 deletions(-)
- rename Documentation/trace/{histogram.txt => histogram.rst} (73%)
-
--- 
-2.17.1
+> 1b2a1e63 Pingfan Liu 2018-06-25  246
+> 1b2a1e63 Pingfan Liu 2018-06-25  247    /* record the affected open section */
+> 1b2a1e63 Pingfan Liu 2018-06-25  248    left = dev->kobj.entry.prev;
+> 1b2a1e63 Pingfan Liu 2018-06-25  249    right = iter;
+> 1b2a1e63 Pingfan Liu 2018-06-25  250    info.pos = list_entry(iter, struct device, kobj.entry);
+> 1b2a1e63 Pingfan Liu 2018-06-25  251    info.tail = NULL;
+> 1b2a1e63 Pingfan Liu 2018-06-25  252    /* dry out the consumers in (left,right) */
+> 1b2a1e63 Pingfan Liu 2018-06-25  253    __device_reorder_consumer(dev, left, right, &info);
+> 1b2a1e63 Pingfan Liu 2018-06-25  254
+> 1b2a1e63 Pingfan Liu 2018-06-25  255  unlock:
+> 1b2a1e63 Pingfan Liu 2018-06-25  256    spin_unlock(&devices_kset->list_lock);
+> 1b2a1e63 Pingfan Liu 2018-06-25  257    device_links_read_unlock(idx);
+> 1b2a1e63 Pingfan Liu 2018-06-25  258    return 0;
+> 1b2a1e63 Pingfan Liu 2018-06-25  259  }
+> 1b2a1e63 Pingfan Liu 2018-06-25  260
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
