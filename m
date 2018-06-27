@@ -1,18 +1,12 @@
-Return-Path: <sergey.senozhatsky@gmail.com>
-Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
- [IPv6:2607:f8b0:400e:c05::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41G4p94DGXzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 00:20:58 +1000 (AEST)
-Received: by mail-pg0-x242.google.com with SMTP id c10-v6so988308pgu.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 07:20:58 -0700 (PDT)
-Date: Wed, 27 Jun 2018 23:20:53 +0900
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Return-Path: <will.deacon@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41G5yC08rZzDrbK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 01:13:05 +1000 (AEST)
+Date: Wed, 27 Jun 2018 16:13:39 +0100
+From: Will Deacon <will.deacon@arm.com>
 To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
+ Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
  "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -25,15 +19,16 @@ Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v9 4/6] init: allow initcall tables to be emitted using
- relative references
-Message-ID: <20180627142053.GB477@tigerII.localdomain>
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
+ Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v9 3/6] module: use relative references for __ksymtab
+ entries
+Message-ID: <20180627151339.GD30631@arm.com>
 References: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
- <20180626182802.19932-5-ard.biesheuvel@linaro.org>
+ <20180626182802.19932-4-ard.biesheuvel@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180626182802.19932-5-ard.biesheuvel@linaro.org>
+In-Reply-To: <20180626182802.19932-4-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,46 +38,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (06/26/18 20:27), Ard Biesheuvel wrote:
->  /*
-> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> index 247808333ba4..688a27b0888c 100644
-> --- a/kernel/printk/printk.c
-> +++ b/kernel/printk/printk.c
-> @@ -2772,7 +2772,8 @@ EXPORT_SYMBOL(unregister_console);
->  void __init console_init(void)
->  {
->  	int ret;
-> -	initcall_t *call;
-> +	initcall_t call;
-> +	initcall_entry_t *ce;
+Hi Ard,
+
+On Tue, Jun 26, 2018 at 08:27:58PM +0200, Ard Biesheuvel wrote:
+> An ordinary arm64 defconfig build has ~64 KB worth of __ksymtab
+> entries, each consisting of two 64-bit fields containing absolute
+> references, to the symbol itself and to a char array containing
+> its name, respectively.
+
+[...]
+
+> diff --git a/include/linux/export.h b/include/linux/export.h
+> index ea7df303d68d..ae072bc5aacf 100644
+> --- a/include/linux/export.h
+> +++ b/include/linux/export.h
+> @@ -18,12 +18,6 @@
+>  #define VMLINUX_SYMBOL_STR(x) __VMLINUX_SYMBOL_STR(x)
 >  
->  	/* Setup the default TTY line discipline. */
->  	n_tty_init();
-> @@ -2781,13 +2782,14 @@ void __init console_init(void)
->  	 * set up the console device so that later boot sequences can
->  	 * inform about problems etc..
->  	 */
-> -	call = __con_initcall_start;
-> +	ce = __con_initcall_start;
->  	trace_initcall_level("console");
-> -	while (call < __con_initcall_end) {
-> -		trace_initcall_start((*call));
-> -		ret = (*call)();
-> -		trace_initcall_finish((*call), ret);
-> -		call++;
-> +	while (ce < __con_initcall_end) {
-> +		call = initcall_from_entry(ce);
-> +		trace_initcall_start(call);
-> +		ret = call();
-> +		trace_initcall_finish(call, ret);
-> +		ce++;
->  	}
->  }
+>  #ifndef __ASSEMBLY__
+> -struct kernel_symbol
+> -{
+> -	unsigned long value;
+> -	const char *name;
+> -};
+> -
+>  #ifdef MODULE
+>  extern struct module __this_module;
+>  #define THIS_MODULE (&__this_module)
+> @@ -54,17 +48,47 @@ extern struct module __this_module;
+>  #define __CRC_SYMBOL(sym, sec)
+>  #endif
+>  
+> +#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
+> +#include <linux/compiler.h>
+> +/*
+> + * Emit the ksymtab entry as a pair of relative references: this reduces
+> + * the size by half on 64-bit architectures, and eliminates the need for
+> + * absolute relocations that require runtime processing on relocatable
+> + * kernels.
+> + */
+> +#define __KSYMTAB_ENTRY(sym, sec)					\
+> +	__ADDRESSABLE(sym)						\
+> +	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
+> +	    "	.balign	8					\n"	\
 
-printk bits look OK to me.
-The patch set works fine on my x86_64 and does reduce the size of vmlinux.
+Can we use KSYM_ALIGN here instead of 8, or do we need the 8-byte alignment
+even on 32-bit architectures?
 
-Acked-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-
-	-ss
+Will
