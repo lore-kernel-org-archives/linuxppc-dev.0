@@ -1,23 +1,31 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Fqks4mMKzF158
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 14:32:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Fs5w6hwGzF164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 15:33:56 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>
-Cc: Mathieu Malaterre <malat@debian.org>,
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, linux-kernel@vger.kernel.org
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
+ Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
+ Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Ungerer <gerg@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- y2038@lists.linaro.org, Meelis Roos <mroos@linux.ee>,
- Andreas Schwab <schwab@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/3] [v2] powerpc: mac: fix rtc read/write functions
-In-Reply-To: <20180619140229.3615110-1-arnd@arndb.de>
-References: <20180619140229.3615110-1-arnd@arndb.de>
-Date: Wed, 27 Jun 2018 14:32:17 +1000
-Message-ID: <87y3f06e9a.fsf@concordia.ellerman.id.au>
+ Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Petr Mladek <pmladek@suse.com>,
+ Ingo Molnar <mingo@redhat.com>, James Morris <jmorris@namei.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
+ Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org
+Subject: Re: [PATCH v9 0/6] add support for relative references in special
+ sections
+In-Reply-To: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
+References: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
+Date: Wed, 27 Jun 2018 15:33:44 +1000
+Message-ID: <87r2ks6bev.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,46 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arnd Bergmann <arnd@arndb.de> writes:
+Ard Biesheuvel <ard.biesheuvel@linaro.org> writes:
+> This adds support for emitting special sections such as initcall arrays,
+> PCI fixups and tracepoints as relative references rather than absolute
+> references. This reduces the size by 50% on 64-bit architectures, but
+> more importantly, it removes the need for carrying relocation metadata
+> for these sections in relocatable kernels (e.g., for KASLR) that needs
+> to be fixed up at boot time. On arm64, this reduces the vmlinux footprint
+> of such a reference by 8x (8 byte absolute reference + 24 byte RELA entry
+> vs 4 byte relative reference)
+...
+>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Kees Cook <keescook@chromium.org>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
 
-> As Mathieu pointed out, my conversion to time64_t was incorrect and resulted
-> in negative times to be read from the RTC. The problem is that during the
-> conversion from a byte array to a time64_t, the 'unsigned char' variable
-> holding the top byte gets turned into a negative signed 32-bit integer
-> before being assigned to the 64-bit variable for any times after 1972.
->
-> This changes the logic to cast to an unsigned 32-bit number first for
-> the Macintosh time and then convert that to the Unix time, which then gives
-> us a time in the documented 1904..2040 year range. I decided not to use
-> the longer 1970..2106 range that other drivers use, for consistency with
-> the literal interpretation of the register, but that could be easily
-> changed if we decide we want to support any Mac after 2040.
->
-> Just to be on the safe side, I'm also adding a WARN_ON that will trigger
-> if either the year 2040 has come and is observed by this driver, or we
-> run into an RTC that got set back to a pre-1970 date for some reason
-> (the two are indistinguishable).
->
-> For the RTC write functions, Andreas found another problem: both
-> pmu_request() and cuda_request() are varargs functions, so changing
-> the type of the arguments passed into them from 32 bit to 64 bit
-> breaks the API for the set_rtc_time functions. This changes it
-> back to 32 bits.
->
-> The same code exists in arch/m68k/ and is patched in an identical way now
-> in a separate patch.
->
-> Fixes: 5bfd643583b2 ("powerpc: use time64_t in read_persistent_clock")
-> Reported-by: Mathieu Malaterre <malat@debian.org>
-> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  arch/powerpc/platforms/powermac/time.c | 29 ++++++++++++++++++++---------
->  1 file changed, 20 insertions(+), 9 deletions(-)
+This seems to be working on powerpc.
 
-So I think I can take this patch in isolation via the powerpc tree as a
-fix for 4.18.
+It boots on a couple of machines with no obvious badness.
 
-I'll leave the other two alone.
+And there's some size reduction with a random config I had lying around:
+
+  Total: Before=14820494, After=14673313, chg -0.99%
+
+
+It can get some more testing once it's in linux-next as far as I'm
+concerned.
+
+  Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
 
 cheers
