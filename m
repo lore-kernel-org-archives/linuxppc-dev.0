@@ -1,8 +1,8 @@
 Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41G5yC08rZzDrbK
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 01:13:05 +1000 (AEST)
-Date: Wed, 27 Jun 2018 16:13:39 +0100
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41G5zv3CHQzF1KG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 01:14:34 +1000 (AEST)
+Date: Wed, 27 Jun 2018 16:15:11 +0100
 From: Will Deacon <will.deacon@arm.com>
 To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
@@ -19,16 +19,14 @@ Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
  Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org,
- Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v9 3/6] module: use relative references for __ksymtab
- entries
-Message-ID: <20180627151339.GD30631@arm.com>
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org
+Subject: Re: [PATCH v9 0/6] add support for relative references in special
+ sections
+Message-ID: <20180627151510.GE30631@arm.com>
 References: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
- <20180626182802.19932-4-ard.biesheuvel@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180626182802.19932-4-ard.biesheuvel@linaro.org>
+In-Reply-To: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,49 +38,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Ard,
 
-On Tue, Jun 26, 2018 at 08:27:58PM +0200, Ard Biesheuvel wrote:
-> An ordinary arm64 defconfig build has ~64 KB worth of __ksymtab
-> entries, each consisting of two 64-bit fields containing absolute
-> references, to the symbol itself and to a char array containing
-> its name, respectively.
+On Tue, Jun 26, 2018 at 08:27:55PM +0200, Ard Biesheuvel wrote:
+> This adds support for emitting special sections such as initcall arrays,
+> PCI fixups and tracepoints as relative references rather than absolute
+> references. This reduces the size by 50% on 64-bit architectures, but
+> more importantly, it removes the need for carrying relocation metadata
+> for these sections in relocatable kernels (e.g., for KASLR) that needs
+> to be fixed up at boot time. On arm64, this reduces the vmlinux footprint
+> of such a reference by 8x (8 byte absolute reference + 24 byte RELA entry
+> vs 4 byte relative reference)
+> 
+> Patch #3 was sent out before as a single patch. This series supersedes
+> the previous submission. This version makes relative ksymtab entries
+> dependent on the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS rather
+> than trying to infer from kbuild test robot replies for which architectures
+> it should be blacklisted.
+> 
+> Patch #1 introduces the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS,
+> and sets it for the main architectures that are expected to benefit the
+> most from this feature, i.e., 64-bit architectures or ones that use
+> runtime relocations.
+> 
+> Patch #2 add support for #define'ing __DISABLE_EXPORTS to get rid of
+> ksymtab/kcrctab sections in decompressor and EFI stub objects when
+> rebuilding existing C files to run in a different context.
 
-[...]
+I had a small question on patch 3, but it's really for my understanding.
+So, for patches 1-3:
 
-> diff --git a/include/linux/export.h b/include/linux/export.h
-> index ea7df303d68d..ae072bc5aacf 100644
-> --- a/include/linux/export.h
-> +++ b/include/linux/export.h
-> @@ -18,12 +18,6 @@
->  #define VMLINUX_SYMBOL_STR(x) __VMLINUX_SYMBOL_STR(x)
->  
->  #ifndef __ASSEMBLY__
-> -struct kernel_symbol
-> -{
-> -	unsigned long value;
-> -	const char *name;
-> -};
-> -
->  #ifdef MODULE
->  extern struct module __this_module;
->  #define THIS_MODULE (&__this_module)
-> @@ -54,17 +48,47 @@ extern struct module __this_module;
->  #define __CRC_SYMBOL(sym, sec)
->  #endif
->  
-> +#ifdef CONFIG_HAVE_ARCH_PREL32_RELOCATIONS
-> +#include <linux/compiler.h>
-> +/*
-> + * Emit the ksymtab entry as a pair of relative references: this reduces
-> + * the size by half on 64-bit architectures, and eliminates the need for
-> + * absolute relocations that require runtime processing on relocatable
-> + * kernels.
-> + */
-> +#define __KSYMTAB_ENTRY(sym, sec)					\
-> +	__ADDRESSABLE(sym)						\
-> +	asm("	.section \"___ksymtab" sec "+" #sym "\", \"a\"	\n"	\
-> +	    "	.balign	8					\n"	\
+Reviewed-by: Will Deacon <will.deacon@arm.com>
 
-Can we use KSYM_ALIGN here instead of 8, or do we need the 8-byte alignment
-even on 32-bit architectures?
+Thanks,
 
 Will
