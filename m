@@ -1,35 +1,21 @@
-Return-Path: <pmladek@suse.com>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41G69G2kdjzF1DM
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 01:22:37 +1000 (AEST)
-Date: Wed, 27 Jun 2018 17:22:32 +0200
-From: Petr Mladek <pmladek@suse.com>
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>, Will Deacon <will.deacon@arm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- "Serge E. Hallyn" <serge@hallyn.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Ingo Molnar <mingo@redhat.com>, James Morris <jmorris@namei.org>,
- Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@linaro.org>,
- Josh Poimboeuf <jpoimboe@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: Re: [PATCH v9 4/6] init: allow initcall tables to be emitted using
- relative references
-Message-ID: <20180627152232.7kelnwelhfhgwf2v@pathway.suse.cz>
-References: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
- <20180626182802.19932-5-ard.biesheuvel@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180626182802.19932-5-ard.biesheuvel@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41GGZC3Gx5zF1Dg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 07:41:23 +1000 (AEST)
+In-Reply-To: <20180619140229.3615110-1-arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Arnd Bergmann <arnd@arndb.de>, Mathieu Malaterre <malat@debian.org>,
+ Meelis Roos <mroos@linux.ee>, linux-kernel@vger.kernel.org,
+ y2038@lists.linaro.org, linux-m68k@lists.linux-m68k.org,
+ Andreas Schwab <schwab@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ Greg Ungerer <gerg@linux-m68k.org>
+Subject: Re: [1/3,v2] powerpc: mac: fix rtc read/write functions
+Message-Id: <41GGZC26Lyz9s1R@ozlabs.org>
+Date: Thu, 28 Jun 2018 07:41:23 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue 2018-06-26 20:27:59, Ard Biesheuvel wrote:
-> Allow the initcall tables to be emitted using relative references that
-> are only half the size on 64-bit architectures and don't require fixups
-> at runtime on relocatable kernels.
+On Tue, 2018-06-19 at 14:02:27 UTC, Arnd Bergmann wrote:
+> As Mathieu pointed out, my conversion to time64_t was incorrect and resulted
+> in negative times to be read from the RTC. The problem is that during the
+> conversion from a byte array to a time64_t, the 'unsigned char' variable
+> holding the top byte gets turned into a negative signed 32-bit integer
+> before being assigned to the 64-bit variable for any times after 1972.
 > 
-> Cc: Petr Mladek <pmladek@suse.com>
-> Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: "Serge E. Hallyn" <serge@hallyn.com>
-> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-> ---
->  include/linux/init.h   | 44 +++++++++++++++-----
->  init/main.c            | 32 +++++++-------
->  kernel/printk/printk.c | 16 +++----
->  security/security.c    | 17 ++++----
->  4 files changed, 68 insertions(+), 41 deletions(-)
+> This changes the logic to cast to an unsigned 32-bit number first for
+> the Macintosh time and then convert that to the Unix time, which then gives
+> us a time in the documented 1904..2040 year range. I decided not to use
+> the longer 1970..2106 range that other drivers use, for consistency with
+> the literal interpretation of the register, but that could be easily
+> changed if we decide we want to support any Mac after 2040.
+> 
+> Just to be on the safe side, I'm also adding a WARN_ON that will trigger
+> if either the year 2040 has come and is observed by this driver, or we
+> run into an RTC that got set back to a pre-1970 date for some reason
+> (the two are indistinguishable).
+> 
+> For the RTC write functions, Andreas found another problem: both
+> pmu_request() and cuda_request() are varargs functions, so changing
+> the type of the arguments passed into them from 32 bit to 64 bit
+> breaks the API for the set_rtc_time functions. This changes it
+> back to 32 bits.
+> 
+> The same code exists in arch/m68k/ and is patched in an identical way now
+> in a separate patch.
+> 
+> Fixes: 5bfd643583b2 ("powerpc: use time64_t in read_persistent_clock")
+> Reported-by: Mathieu Malaterre <malat@debian.org>
+> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Tested-by: Mathieu Malaterre <malat@debian.org>
 
-For the printk stuff:
+Applied to powerpc fixes, thanks.
 
-Acked-by: Petr Mladek <pmladek@suse.com>
+https://git.kernel.org/powerpc/c/22db552b50fa11d8c1d171de908a1f
 
-Best Regards,
-Petr
+cheers
