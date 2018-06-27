@@ -1,23 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41FpK32xK8zF1Kr
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 13:28:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Fqks4mMKzF158
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 14:32:21 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3] powerpc/32: Remove left over function prototypes
-In-Reply-To: <CA+7wUswdBvm+XCi6r6ewGFuSTAaV9FWmhUyV9vNKatCnurvL-A@mail.gmail.com>
-References: <20180408194821.19682-1-malat@debian.org>
- <20180620190038.3250-1-malat@debian.org>
- <87602cfkh5.fsf@concordia.ellerman.id.au>
- <CA+7wUswdBvm+XCi6r6ewGFuSTAaV9FWmhUyV9vNKatCnurvL-A@mail.gmail.com>
-Date: Wed, 27 Jun 2018 13:28:22 +1000
-Message-ID: <871scs7vs9.fsf@concordia.ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Joshua Thompson <funaho@jurai.org>
+Cc: Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ y2038@lists.linaro.org, Meelis Roos <mroos@linux.ee>,
+ Andreas Schwab <schwab@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/3] [v2] powerpc: mac: fix rtc read/write functions
+In-Reply-To: <20180619140229.3615110-1-arnd@arndb.de>
+References: <20180619140229.3615110-1-arnd@arndb.de>
+Date: Wed, 27 Jun 2018 14:32:17 +1000
+Message-ID: <87y3f06e9a.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,50 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mathieu Malaterre <malat@debian.org> writes:
-> On Thu, Jun 21, 2018 at 1:27 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Mathieu Malaterre <malat@debian.org> writes:
->>
->> > In commit 4aea909eeba3 ("powerpc: Add missing prototypes in setup_32.c")
->>
->> I don't have that commit ^ ?
->>
->> That might be because I squashed some of your fixes together or something?
->
-> I am doing an awful lots of mistakes these days. Indeed you've changed
-> one of my patch:
->
-> https://patchwork.kernel.org/patch/10240997/
->
-> This one appeared after a git rebase on my side.
->
->> > diff --git a/arch/powerpc/kernel/setup.h b/arch/powerpc/kernel/setup.h
->> > index 35ca309848d7..829ed66f0a40 100644
->> > --- a/arch/powerpc/kernel/setup.h
->> > +++ b/arch/powerpc/kernel/setup.h
->> > @@ -19,9 +19,6 @@ void irqstack_early_init(void);
->> >  void setup_power_save(void);
->> >  unsigned long __init early_init(unsigned long dt_ptr);
->> >  void __init machine_init(u64 dt_ptr);
->> > -int __init ppc_setup_l2cr(char *str);
->> > -int __init ppc_setup_l3cr(char *str);
->> > -int __init ppc_init(void);
->> >  #else
->> >  static inline void setup_power_save(void) { };
->> >  #endif
->>
->> I have:
->>
->> #ifdef CONFIG_PPC32
->> void setup_power_save(void);
->> #else
->> static inline void setup_power_save(void) { };
->> #endif
->
-> Correct.
->
-> Sorry for the noise.
+Arnd Bergmann <arnd@arndb.de> writes:
 
-OK, no worries. Thanks for persisting.
+> As Mathieu pointed out, my conversion to time64_t was incorrect and resulted
+> in negative times to be read from the RTC. The problem is that during the
+> conversion from a byte array to a time64_t, the 'unsigned char' variable
+> holding the top byte gets turned into a negative signed 32-bit integer
+> before being assigned to the 64-bit variable for any times after 1972.
+>
+> This changes the logic to cast to an unsigned 32-bit number first for
+> the Macintosh time and then convert that to the Unix time, which then gives
+> us a time in the documented 1904..2040 year range. I decided not to use
+> the longer 1970..2106 range that other drivers use, for consistency with
+> the literal interpretation of the register, but that could be easily
+> changed if we decide we want to support any Mac after 2040.
+>
+> Just to be on the safe side, I'm also adding a WARN_ON that will trigger
+> if either the year 2040 has come and is observed by this driver, or we
+> run into an RTC that got set back to a pre-1970 date for some reason
+> (the two are indistinguishable).
+>
+> For the RTC write functions, Andreas found another problem: both
+> pmu_request() and cuda_request() are varargs functions, so changing
+> the type of the arguments passed into them from 32 bit to 64 bit
+> breaks the API for the set_rtc_time functions. This changes it
+> back to 32 bits.
+>
+> The same code exists in arch/m68k/ and is patched in an identical way now
+> in a separate patch.
+>
+> Fixes: 5bfd643583b2 ("powerpc: use time64_t in read_persistent_clock")
+> Reported-by: Mathieu Malaterre <malat@debian.org>
+> Reported-by: Andreas Schwab <schwab@linux-m68k.org>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  arch/powerpc/platforms/powermac/time.c | 29 ++++++++++++++++++++---------
+>  1 file changed, 20 insertions(+), 9 deletions(-)
+
+So I think I can take this patch in isolation via the powerpc tree as a
+fix for 4.18.
+
+I'll leave the other two alone.
 
 cheers
