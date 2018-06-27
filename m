@@ -1,31 +1,33 @@
-Return-Path: <schmitzmic@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Fy0C2nY0zF153
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 19:14:19 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id u23-v6so1200141ioc.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 02:14:19 -0700 (PDT)
-Subject: Re: [PATCH v3 00/12] macintosh: Resolve various PMU driver problems
-To: Gabriel Paubert <paubert@iram.es>
-References: <cover.1528885172.git.fthain@telegraphics.com.au>
- <alpine.LNX.2.21.1806242119180.34@nippy.intranet>
- <874lhp6i4d.fsf@concordia.ellerman.id.au>
- <cacaecac00c1ac941a78da772bbcfb05142df87d.camel@kernel.crashing.org>
- <5d4d7ca4-1d2f-268f-e5d2-eddb213e894d@gmail.com>
- <20180627090022.rij2owx5durbc4e6@lt-gp.iram.es>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Finn Thain <fthain@telegraphics.com.au>, geert@linux-m68k.org,
- linux-m68k@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-From: Michael Schmitz <schmitzmic@gmail.com>
-Message-ID: <b699a590-2fad-2dd4-f85b-75c771af25f2@gmail.com>
-Date: Wed, 27 Jun 2018 21:14:08 +1200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Fzqd3jbdzF153
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 20:37:00 +1000 (AEST)
+Received: by mail-lj1-x244.google.com with SMTP id x3-v6so1208180ljj.10
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 03:37:00 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180627090022.rij2owx5durbc4e6@lt-gp.iram.es>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <87y3f06e9a.fsf@concordia.ellerman.id.au>
+References: <20180619140229.3615110-1-arnd@arndb.de>
+ <87y3f06e9a.fsf@concordia.ellerman.id.au>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 27 Jun 2018 12:36:56 +0200
+Message-ID: <CAK8P3a2HwOe2D4LXgFsfhFXpeUBpHZiB5PCk0nkAwqX3NKCmFA@mail.gmail.com>
+Subject: Re: [PATCH 1/3] [v2] powerpc: mac: fix rtc read/write functions
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Joshua Thompson <funaho@jurai.org>, Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Meelis Roos <mroos@linux.ee>, Andreas Schwab <schwab@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,41 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gabriel,
-
-Am 27.06.2018 um 21:00 schrieb Gabriel Paubert:
-> On Wed, Jun 27, 2018 at 05:39:15PM +1200, Michael Schmitz wrote:
->> Ben,
->>
->> Am 27.06.2018 um 15:27 schrieb Benjamin Herrenschmidt:
->>> On Wed, 2018-06-27 at 13:08 +1000, Michael Ellerman wrote:
->>>>> I will rewrite patch 10/12 after Arnd's fixes and this series have all
->>>>> made their way through both powerpc and m68k trees, and submit it
->>>>> separately.
->>>>
->>>> drivers/macintosh is supposedly maintained by Ben, but I'm not sure this
->>>> series is high on his todo list.
->>>
->>> We need at least to pull out a couple of powerbooks we have sitting in
->>> drawers and try it out.
->>
->> No need to root around in drawers - I'm sitting in front of one (G3
->> Titanium) writing this. Let me know if that would help (I've forgotten most
->> of what I knew about powerpc kernels).
+On Wed, Jun 27, 2018 at 6:32 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> A very rare model, all G3 I've seen were plastic, all Titanium were G4 :-)
-
-Right you are - the G3 was the earlier one I used (which was stolen from 
-my office). G4 it is, then.
-
-Cheers,
-
-	Michael
-
-
+> So I think I can take this patch in isolation via the powerpc tree as a
+> fix for 4.18.
 >
-> 	Cheers,
-> 	Gabriel
-> 	(still using my Pismo from time to time, but much less since
-> 	sleep was broken)
+> I'll leave the other two alone.
 >
+
+Yes, that is what I had intended with this series but should have made
+clearer. The two m68k patches are 4.19 material.
+
+      Arnd
