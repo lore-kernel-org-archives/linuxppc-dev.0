@@ -3,34 +3,34 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41GxPk4XnNzF1PM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 09:51:22 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41GxSS54yHzF1Pm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 09:53:44 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
  by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5SNnMxS042412
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:51:20 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jw89eamwg-1
+ w5SNnNsD043828
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:53:40 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jw8hja5k1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:51:20 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:53:40 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 29 Jun 2018 00:51:18 +0100
-Subject: Re: [PATCH v2 09/10] Revert "cxl: Allow a default context to be
- associated with an external pci_dev"
+ Fri, 29 Jun 2018 00:53:38 +0100
+Subject: Re: [PATCH v2 10/10] cxl: Remove abandonned capi support for the
+ Mellanox CX4, final cleanup
 To: Frederic Barrat <fbarrat@linux.ibm.com>, alastair@au1.ibm.com,
  vaibhav@linux.ibm.com, clombard@linux.ibm.com, felix@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Cc: huyn@mellanox.com
 References: <20180628100509.17413-1-fbarrat@linux.ibm.com>
- <20180628100509.17413-10-fbarrat@linux.ibm.com>
+ <20180628100509.17413-11-fbarrat@linux.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 29 Jun 2018 09:51:11 +1000
+Date: Fri, 29 Jun 2018 09:53:31 +1000
 MIME-Version: 1.0
-In-Reply-To: <20180628100509.17413-10-fbarrat@linux.ibm.com>
-Message-Id: <ac5eb4db-0656-7a32-d0e0-954a90ac4cc4@au1.ibm.com>
+In-Reply-To: <20180628100509.17413-11-fbarrat@linux.ibm.com>
+Message-Id: <66074ed2-227f-57c2-33d6-a62460e0be69@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,252 +42,203 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 28/06/18 20:05, Frederic Barrat wrote:
-> Remove abandonned capi support for the Mellanox CX4.
-> 
-> This reverts commit a19bd79e31769626d288cc016e21a31b6f47bf6f.
+> Remove a few XSL/CX4 oddities which are no longer needed. A simple
+> revert of the initial commits was not possible (or not worth it) due
+> to the history of the code.
 > 
 > Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
 
 Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 > ---
->   drivers/misc/cxl/Makefile |  2 +-
->   drivers/misc/cxl/base.c   | 35 -------------------------------
->   drivers/misc/cxl/cxl.h    |  6 ------
->   drivers/misc/cxl/main.c   |  2 --
->   drivers/misc/cxl/phb.c    | 44 ---------------------------------------
->   drivers/misc/cxl/vphb.c   | 30 +++++++++++++++++++++++---
->   include/misc/cxl-base.h   |  6 ------
->   7 files changed, 28 insertions(+), 97 deletions(-)
->   delete mode 100644 drivers/misc/cxl/phb.c
+>   drivers/misc/cxl/context.c |  2 +-
+>   drivers/misc/cxl/cxl.h     | 12 ------
+>   drivers/misc/cxl/debugfs.c |  5 ---
+>   drivers/misc/cxl/pci.c     | 75 +++-----------------------------------
+>   4 files changed, 7 insertions(+), 87 deletions(-)
 > 
-> diff --git a/drivers/misc/cxl/Makefile b/drivers/misc/cxl/Makefile
-> index 502d41fc9ea5..5eea61b9584f 100644
-> --- a/drivers/misc/cxl/Makefile
-> +++ b/drivers/misc/cxl/Makefile
-> @@ -4,7 +4,7 @@ ccflags-$(CONFIG_PPC_WERROR)	+= -Werror
->   
->   cxl-y				+= main.o file.o irq.o fault.o native.o
->   cxl-y				+= context.o sysfs.o pci.o trace.o
-> -cxl-y				+= vphb.o phb.o api.o cxllib.o
-> +cxl-y				+= vphb.o api.o cxllib.o
->   cxl-$(CONFIG_PPC_PSERIES)	+= flash.o guest.o of.o hcalls.o
->   cxl-$(CONFIG_DEBUG_FS)		+= debugfs.o
->   obj-$(CONFIG_CXL)		+= cxl.o
-> diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-> index e1e80cb99ad9..7557835cdfcd 100644
-> --- a/drivers/misc/cxl/base.c
-> +++ b/drivers/misc/cxl/base.c
-> @@ -106,41 +106,6 @@ int cxl_update_properties(struct device_node *dn,
->   }
->   EXPORT_SYMBOL_GPL(cxl_update_properties);
->   
-> -/*
-> - * API calls into the driver that may be called from the PHB code and must be
-> - * built in.
-> - */
-> -bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
-> -{
-> -	bool ret;
-> -	struct cxl_calls *calls;
-> -
-> -	calls = cxl_calls_get();
-> -	if (!calls)
-> -		return false;
-> -
-> -	ret = calls->cxl_pci_associate_default_context(dev, afu);
-> -
-> -	cxl_calls_put(calls);
-> -
-> -	return ret;
-> -}
-> -EXPORT_SYMBOL_GPL(cxl_pci_associate_default_context);
-> -
-> -void cxl_pci_disable_device(struct pci_dev *dev)
-> -{
-> -	struct cxl_calls *calls;
-> -
-> -	calls = cxl_calls_get();
-> -	if (!calls)
-> -		return;
-> -
-> -	calls->cxl_pci_disable_device(dev);
-> -
-> -	cxl_calls_put(calls);
-> -}
-> -EXPORT_SYMBOL_GPL(cxl_pci_disable_device);
-> -
->   static int __init cxl_base_init(void)
->   {
->   	struct device_node *np;
+> diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+> index 0355d42d367f..5fe529b43ebe 100644
+> --- a/drivers/misc/cxl/context.c
+> +++ b/drivers/misc/cxl/context.c
+> @@ -95,7 +95,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master)
+>   	 */
+>   	mutex_lock(&afu->contexts_lock);
+>   	idr_preload(GFP_KERNEL);
+> -	i = idr_alloc(&ctx->afu->contexts_idr, ctx, ctx->afu->adapter->min_pe,
+> +	i = idr_alloc(&ctx->afu->contexts_idr, ctx, 0,
+>   		      ctx->afu->num_procs, GFP_NOWAIT);
+>   	idr_preload_end();
+>   	mutex_unlock(&afu->contexts_lock);
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index d95c2c98f2ab..aa453448201d 100644
+> index aa453448201d..44bcfafbb579 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -867,15 +867,9 @@ static inline bool cxl_is_power9_dd1(void)
->   ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
->   				loff_t off, size_t count);
+> @@ -93,11 +93,6 @@ static const cxl_p1_reg_t CXL_PSL_FIR_CNTL  = {0x0148};
+>   static const cxl_p1_reg_t CXL_PSL_DSNDCTL   = {0x0150};
+>   static const cxl_p1_reg_t CXL_PSL_SNWRALLOC = {0x0158};
+>   static const cxl_p1_reg_t CXL_PSL_TRACE     = {0x0170};
+> -/* XSL registers (Mellanox CX4) */
+> -static const cxl_p1_reg_t CXL_XSL_Timebase  = {0x0100};
+> -static const cxl_p1_reg_t CXL_XSL_TB_CTLSTAT = {0x0108};
+> -static const cxl_p1_reg_t CXL_XSL_FEC       = {0x0158};
+> -static const cxl_p1_reg_t CXL_XSL_DSNCTL    = {0x0168};
+>   /* PSL registers - CAIA 2 */
+>   static const cxl_p1_reg_t CXL_PSL9_CONTROL  = {0x0020};
+>   static const cxl_p1_reg_t CXL_XSL9_INV      = {0x0110};
+> @@ -695,7 +690,6 @@ struct cxl {
+>   	struct bin_attribute cxl_attr;
+>   	int adapter_num;
+>   	int user_irqs;
+> -	int min_pe;
+>   	u64 ps_size;
+>   	u16 psl_rev;
+>   	u16 base_image;
+> @@ -934,7 +928,6 @@ int cxl_debugfs_afu_add(struct cxl_afu *afu);
+>   void cxl_debugfs_afu_remove(struct cxl_afu *afu);
+>   void cxl_debugfs_add_adapter_regs_psl9(struct cxl *adapter, struct dentry *dir);
+>   void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir);
+> -void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir);
+>   void cxl_debugfs_add_afu_regs_psl9(struct cxl_afu *afu, struct dentry *dir);
+>   void cxl_debugfs_add_afu_regs_psl8(struct cxl_afu *afu, struct dentry *dir);
 >   
-> -/* Internal functions wrapped in cxl_base to allow PHB to call them */
-> -bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
-> -void _cxl_pci_disable_device(struct pci_dev *dev);
->   
->   struct cxl_calls {
->   	void (*cxl_slbia)(struct mm_struct *mm);
-> -	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
-> -	void (*cxl_pci_disable_device)(struct pci_dev *dev);
-> -
->   	struct module *owner;
->   };
->   int register_cxl_calls(struct cxl_calls *calls);
-> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-> index a7e83624034b..334223b802ee 100644
-> --- a/drivers/misc/cxl/main.c
-> +++ b/drivers/misc/cxl/main.c
-> @@ -104,8 +104,6 @@ static inline void cxl_slbia_core(struct mm_struct *mm)
->   
->   static struct cxl_calls cxl_calls = {
->   	.cxl_slbia = cxl_slbia_core,
-> -	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
-> -	.cxl_pci_disable_device = _cxl_pci_disable_device,
->   	.owner = THIS_MODULE,
->   };
->   
-> diff --git a/drivers/misc/cxl/phb.c b/drivers/misc/cxl/phb.c
-> deleted file mode 100644
-> index 6ec69ada19f4..000000000000
-> --- a/drivers/misc/cxl/phb.c
-> +++ /dev/null
-> @@ -1,44 +0,0 @@
-> -/*
-> - * Copyright 2014-2016 IBM Corp.
-> - *
-> - * This program is free software; you can redistribute it and/or
-> - * modify it under the terms of the GNU General Public License
-> - * as published by the Free Software Foundation; either version
-> - * 2 of the License, or (at your option) any later version.
-> - */
-> -
-> -#include <linux/pci.h>
-> -#include "cxl.h"
-> -
-> -bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu)
-> -{
-> -	struct cxl_context *ctx;
-> -
-> -	/*
-> -	 * Allocate a context to do cxl things to. This is used for interrupts
-> -	 * in the peer model using a real phb, and if we eventually do DMA ops
-> -	 * in the virtual phb, we'll need a default context to attach them to.
-> -	 */
-> -	ctx = cxl_dev_context_init(dev);
-> -	if (IS_ERR(ctx))
-> -		return false;
-> -	dev->dev.archdata.cxl_ctx = ctx;
-> -
-> -	return (cxl_ops->afu_check_and_enable(afu) == 0);
-> -}
-> -/* exported via cxl_base */
-> -
-> -void _cxl_pci_disable_device(struct pci_dev *dev)
-> -{
-> -	struct cxl_context *ctx = cxl_get_context(dev);
-> -
-> -	if (ctx) {
-> -		if (ctx->status == STARTED) {
-> -			dev_err(&dev->dev, "Default context started\n");
-> -			return;
-> -		}
-> -		dev->dev.archdata.cxl_ctx = NULL;
-> -		cxl_release_context(ctx);
-> -	}
-> -}
-> -/* exported via cxl_base */
-> diff --git a/drivers/misc/cxl/vphb.c b/drivers/misc/cxl/vphb.c
-> index 1a99c9c7a6fb..7908633d9204 100644
-> --- a/drivers/misc/cxl/vphb.c
-> +++ b/drivers/misc/cxl/vphb.c
-> @@ -44,6 +44,7 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
+> @@ -977,11 +970,6 @@ static inline void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter,
 >   {
->   	struct pci_controller *phb;
->   	struct cxl_afu *afu;
-> +	struct cxl_context *ctx;
->   
->   	phb = pci_bus_to_host(dev->bus);
->   	afu = (struct cxl_afu *)phb->private_data;
-> @@ -56,7 +57,30 @@ static bool cxl_pci_enable_device_hook(struct pci_dev *dev)
->   	set_dma_ops(&dev->dev, &dma_nommu_ops);
->   	set_dma_offset(&dev->dev, PAGE_OFFSET);
->   
-> -	return _cxl_pci_associate_default_context(dev, afu);
-> +	/*
-> +	 * Allocate a context to do cxl things too.  If we eventually do real
-> +	 * DMA ops, we'll need a default context to attach them to
-> +	 */
-> +	ctx = cxl_dev_context_init(dev);
-> +	if (IS_ERR(ctx))
-> +		return false;
-> +	dev->dev.archdata.cxl_ctx = ctx;
-> +
-> +	return (cxl_ops->afu_check_and_enable(afu) == 0);
-> +}
-> +
-> +static void cxl_pci_disable_device(struct pci_dev *dev)
-> +{
-> +	struct cxl_context *ctx = cxl_get_context(dev);
-> +
-> +	if (ctx) {
-> +		if (ctx->status == STARTED) {
-> +			dev_err(&dev->dev, "Default context started\n");
-> +			return;
-> +		}
-> +		dev->dev.archdata.cxl_ctx = NULL;
-> +		cxl_release_context(ctx);
-> +	}
 >   }
 >   
->   static resource_size_t cxl_pci_window_alignment(struct pci_bus *bus,
-> @@ -190,8 +214,8 @@ static struct pci_controller_ops cxl_pci_controller_ops =
->   {
->   	.probe_mode = cxl_pci_probe_mode,
->   	.enable_device_hook = cxl_pci_enable_device_hook,
-> -	.disable_device = _cxl_pci_disable_device,
-> -	.release_device = _cxl_pci_disable_device,
-> +	.disable_device = cxl_pci_disable_device,
-> +	.release_device = cxl_pci_disable_device,
->   	.window_alignment = cxl_pci_window_alignment,
->   	.reset_secondary_bus = cxl_pci_reset_secondary_bus,
->   	.setup_msi_irqs = cxl_setup_msi_irqs,
-> diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
-> index bb7e629ae492..f53808fa638a 100644
-> --- a/include/misc/cxl-base.h
-> +++ b/include/misc/cxl-base.h
-> @@ -10,8 +10,6 @@
->   #ifndef _MISC_CXL_BASE_H
->   #define _MISC_CXL_BASE_H
->   
-> -#include <misc/cxl.h>
+> -static inline void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter,
+> -						    struct dentry *dir)
+> -{
+> -}
 > -
->   #ifdef CONFIG_CXL_BASE
+>   static inline void cxl_debugfs_add_afu_regs_psl9(struct cxl_afu *afu, struct dentry *dir)
+>   {
+>   }
+> diff --git a/drivers/misc/cxl/debugfs.c b/drivers/misc/cxl/debugfs.c
+> index 1643850d2302..a1921d81593a 100644
+> --- a/drivers/misc/cxl/debugfs.c
+> +++ b/drivers/misc/cxl/debugfs.c
+> @@ -58,11 +58,6 @@ void cxl_debugfs_add_adapter_regs_psl8(struct cxl *adapter, struct dentry *dir)
+>   	debugfs_create_io_x64("trace", S_IRUSR | S_IWUSR, dir, _cxl_p1_addr(adapter, CXL_PSL_TRACE));
+>   }
 >   
->   #define CXL_IRQ_RANGES 4
-> @@ -41,8 +39,6 @@ static inline void cxl_ctx_put(void)
->   struct cxl_afu *cxl_afu_get(struct cxl_afu *afu);
->   void cxl_afu_put(struct cxl_afu *afu);
->   void cxl_slbia(struct mm_struct *mm);
-> -bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
-> -void cxl_pci_disable_device(struct pci_dev *dev);
+> -void cxl_debugfs_add_adapter_regs_xsl(struct cxl *adapter, struct dentry *dir)
+> -{
+> -	debugfs_create_io_x64("fec", S_IRUSR, dir, _cxl_p1_addr(adapter, CXL_XSL_FEC));
+> -}
+> -
+>   int cxl_debugfs_adapter_add(struct cxl *adapter)
+>   {
+>   	struct dentry *dir;
+> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> index 0ca818396524..6dfb4ed345d3 100644
+> --- a/drivers/misc/cxl/pci.c
+> +++ b/drivers/misc/cxl/pci.c
+> @@ -593,27 +593,7 @@ static int init_implementation_adapter_regs_psl8(struct cxl *adapter, struct pci
+>   	return 0;
+>   }
 >   
->   #else /* CONFIG_CXL_BASE */
+> -static int init_implementation_adapter_regs_xsl(struct cxl *adapter, struct pci_dev *dev)
+> -{
+> -	u64 xsl_dsnctl;
+> -	u64 chipid;
+> -	u32 phb_index;
+> -	u64 capp_unit_id;
+> -	int rc;
+> -
+> -	rc = cxl_calc_capp_routing(dev, &chipid, &phb_index, &capp_unit_id);
+> -	if (rc)
+> -		return rc;
+> -
+> -	/* Tell XSL where to route data to */
+> -	xsl_dsnctl = 0x0000600000000000ULL | (chipid << (63-5));
+> -	xsl_dsnctl |= (capp_unit_id << (63-13));
+> -	cxl_p1_write(adapter, CXL_XSL_DSNCTL, xsl_dsnctl);
+> -
+> -	return 0;
+> -}
+> -
+> -/* PSL & XSL */
+> +/* PSL */
+>   #define TBSYNC_CAL(n) (((u64)n & 0x7) << (63-3))
+>   #define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
+>   /* For the PSL this is a multiple for 0 < n <= 7: */
+> @@ -625,21 +605,6 @@ static void write_timebase_ctrl_psl8(struct cxl *adapter)
+>   		     TBSYNC_CNT(2 * PSL_2048_250MHZ_CYCLES));
+>   }
 >   
-> @@ -50,8 +46,6 @@ static inline bool cxl_ctx_in_use(void) { return false; }
->   static inline struct cxl_afu *cxl_afu_get(struct cxl_afu *afu) { return NULL; }
->   static inline void cxl_afu_put(struct cxl_afu *afu) {}
->   static inline void cxl_slbia(struct mm_struct *mm) {}
-> -static inline bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu) { return false; }
-> -static inline void cxl_pci_disable_device(struct pci_dev *dev) {}
+> -/* XSL */
+> -#define TBSYNC_ENA (1ULL << 63)
+> -/* For the XSL this is 2**n * 2000 clocks for 0 < n <= 6: */
+> -#define XSL_2000_CLOCKS 1
+> -#define XSL_4000_CLOCKS 2
+> -#define XSL_8000_CLOCKS 3
+> -
+> -static void write_timebase_ctrl_xsl(struct cxl *adapter)
+> -{
+> -	cxl_p1_write(adapter, CXL_XSL_TB_CTLSTAT,
+> -		     TBSYNC_ENA |
+> -		     TBSYNC_CAL(3) |
+> -		     TBSYNC_CNT(XSL_4000_CLOCKS));
+> -}
+> -
+>   static u64 timebase_read_psl9(struct cxl *adapter)
+>   {
+>   	return cxl_p1_read(adapter, CXL_PSL9_Timebase);
+> @@ -650,11 +615,6 @@ static u64 timebase_read_psl8(struct cxl *adapter)
+>   	return cxl_p1_read(adapter, CXL_PSL_Timebase);
+>   }
 >   
->   #endif /* CONFIG_CXL_BASE */
+> -static u64 timebase_read_xsl(struct cxl *adapter)
+> -{
+> -	return cxl_p1_read(adapter, CXL_XSL_Timebase);
+> -}
+> -
+>   static void cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *dev)
+>   {
+>   	struct device_node *np;
+> @@ -1671,37 +1631,14 @@ static const struct cxl_service_layer_ops psl8_ops = {
+>   	.needs_reset_before_disable = true,
+>   };
+>   
+> -static const struct cxl_service_layer_ops xsl_ops = {
+> -	.adapter_regs_init = init_implementation_adapter_regs_xsl,
+> -	.invalidate_all = cxl_invalidate_all_psl8,
+> -	.sanitise_afu_regs = sanitise_afu_regs_psl8,
+> -	.handle_interrupt = cxl_irq_psl8,
+> -	.fail_irq = cxl_fail_irq_psl,
+> -	.activate_dedicated_process = cxl_activate_dedicated_process_psl8,
+> -	.attach_afu_directed = cxl_attach_afu_directed_psl8,
+> -	.attach_dedicated_process = cxl_attach_dedicated_process_psl8,
+> -	.update_dedicated_ivtes = cxl_update_dedicated_ivtes_psl8,
+> -	.debugfs_add_adapter_regs = cxl_debugfs_add_adapter_regs_xsl,
+> -	.write_timebase_ctrl = write_timebase_ctrl_xsl,
+> -	.timebase_read = timebase_read_xsl,
+> -	.capi_mode = OPAL_PHB_CAPI_MODE_DMA,
+> -};
+> -
+>   static void set_sl_ops(struct cxl *adapter, struct pci_dev *dev)
+>   {
+> -	if (dev->vendor == PCI_VENDOR_ID_MELLANOX && dev->device == 0x1013) {
+> -		/* Mellanox CX-4 */
+> -		dev_info(&dev->dev, "Device uses an XSL\n");
+> -		adapter->native->sl_ops = &xsl_ops;
+> -		adapter->min_pe = 1; /* Workaround for CX-4 hardware bug */
+> +	if (cxl_is_power8()) {
+> +		dev_info(&dev->dev, "Device uses a PSL8\n");
+> +		adapter->native->sl_ops = &psl8_ops;
+>   	} else {
+> -		if (cxl_is_power8()) {
+> -			dev_info(&dev->dev, "Device uses a PSL8\n");
+> -			adapter->native->sl_ops = &psl8_ops;
+> -		} else {
+> -			dev_info(&dev->dev, "Device uses a PSL9\n");
+> -			adapter->native->sl_ops = &psl9_ops;
+> -		}
+> +		dev_info(&dev->dev, "Device uses a PSL9\n");
+> +		adapter->native->sl_ops = &psl9_ops;
+>   	}
+>   }
 >   
 > 
 
