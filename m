@@ -1,43 +1,45 @@
 Return-Path: <srs0=tbmk=jo=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Gcb4757wzF1Pm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:13:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Gcbl4n2hzF1Qn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:13:55 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41Gcb46MnTz8w0H
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:13:20 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41Gcbl4BHjz8w0H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:13:55 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41Gcb4236fz9ryt
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 21:13:20 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 41Gcbk5Qh2z9s31
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 21:13:54 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5SBA8Zl054741
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:13:18 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2jvujn0cgn-1
+ w5SBDowv004551
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:13:52 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jvveue9he-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:13:17 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:13:52 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 28 Jun 2018 12:13:15 +0100
-Subject: [PATCH v4 5/6] powerpc/pseries: Display machine check error details.
+ Thu, 28 Jun 2018 12:13:39 +0100
+Subject: [PATCH v4 6/6] powerpc/pseries: Dump the SLB contents on SLB MCE
+ errors.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Thu, 28 Jun 2018 16:43:10 +0530
+Date: Thu, 28 Jun 2018 16:43:33 +0530
 In-Reply-To: <153018397703.31589.3105355336278825912.stgit@jupiter.in.ibm.com>
 References: <153018397703.31589.3105355336278825912.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <153018431583.31589.600957625998028221.stgit@jupiter.in.ibm.com>
+Message-Id: <153018439792.31589.664597042276659623.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,185 +51,197 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Extract the MCE error details from RTAS extended log and display it to
-console.
+If we get a machine check exceptions due to SLB errors then dump the
+current SLB contents which will be very much helpful in debugging the
+root cause of SLB errors. Introduce an exclusive buffer per cpu to hold
+faulty SLB entries. In real mode mce handler saves the old SLB contents
+into this buffer accessible through paca and print it out later in virtual
+mode.
 
-With this patch you should now see mce logs like below:
+With this patch the console will log SLB contents like below on SLB MCE
+errors:
 
-[  142.371818] Severe Machine check interrupt [Recovered]
-[  142.371822]   NIP [d00000000ca301b8]: init_module+0x1b8/0x338 [bork_kernel]
-[  142.371822]   Initiator: CPU
-[  142.371823]   Error type: SLB [Multihit]
-[  142.371824]     Effective address: d00000000ca70000
+[ 3022.938065] SLB contents of cpu 0x3
+[ 3022.938066] 00 c000000008000000 400ea1b217000500
+[ 3022.938067]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
+[ 3022.938068] 01 d000000008000000 400d43642f000510
+[ 3022.938069]   1T  ESID=   d00000  VSID=      d43642f LLP:110
+[ 3022.938070] 05 f000000008000000 400a86c85f000500
+[ 3022.938071]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
+[ 3022.938072] 06 00007f0008000000 400a628b13000d90
+[ 3022.938073]   1T  ESID=       7f  VSID=      a628b13 LLP:110
+[ 3022.938074] 07 0000000018000000 000b7979f523fd90
+[ 3022.938075]  256M ESID=        1  VSID=   b7979f523f LLP:110
+[ 3022.938076] 08 c000000008000000 400ea1b217000510
+[ 3022.938076]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
+[ 3022.938077] 09 c000000008000000 400ea1b217000510
+[ 3022.938078]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
 
+Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h      |    5 +
- arch/powerpc/platforms/pseries/ras.c |  131 ++++++++++++++++++++++++++++++++++
- 2 files changed, 136 insertions(+)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +++
+ arch/powerpc/include/asm/paca.h               |    1 
+ arch/powerpc/mm/slb.c                         |   57 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/ras.c          |   10 ++++
+ arch/powerpc/platforms/pseries/setup.c        |   10 ++++
+ 5 files changed, 84 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index ceeed2dd489b..26bc3d5c4992 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -197,6 +197,11 @@ static inline uint8_t rtas_error_extended(const struct rtas_error_log *elog)
- 	return (elog->byte1 & 0x04) >> 2;
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index cc00a7088cf3..5a3fe282076d 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -485,9 +485,16 @@ static inline void hpte_init_pseries(void) { }
+ 
+ extern void hpte_init_native(void);
+ 
++struct slb_entry {
++	u64	esid;
++	u64	vsid;
++};
++
+ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
+ extern void slb_flush_and_rebolt_realmode(void);
++extern void slb_save_contents(struct slb_entry *slb_ptr);
++extern void slb_dump_contents(struct slb_entry *slb_ptr);
+ 
+ extern void slb_vmalloc_update(void);
+ extern void slb_set_size(u16 size);
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index b441fef53077..653f87c69423 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -253,6 +253,7 @@ struct paca_struct {
+ #endif
+ #ifdef CONFIG_PPC_PSERIES
+ 	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
++	struct slb_entry *mce_faulty_slbs;
+ #endif /* CONFIG_PPC_PSERIES */
+ } ____cacheline_aligned;
+ 
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 5b1813b98358..476ab0b1d4e8 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -151,6 +151,63 @@ void slb_flush_and_rebolt_realmode(void)
+ 	get_paca()->slb_cache_ptr = 0;
  }
  
-+static inline uint8_t rtas_error_initiator(const struct rtas_error_log *elog)
++void slb_save_contents(struct slb_entry *slb_ptr)
 +{
-+	return (elog->byte2 & 0xf0) >> 4;
++	int i;
++	unsigned long e, v;
++
++	if (!slb_ptr)
++		return;
++
++	for (i = 0; i < mmu_slb_size; i++) {
++		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
++		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
++		slb_ptr->esid = e;
++		slb_ptr->vsid = v;
++		slb_ptr++;
++	}
 +}
 +
- #define rtas_error_type(x)	((x)->byte3)
- 
- static inline
++void slb_dump_contents(struct slb_entry *slb_ptr)
++{
++	int i;
++	unsigned long e, v;
++	unsigned long llp;
++
++	if (!slb_ptr)
++		return;
++
++	pr_err("SLB contents of cpu 0x%x\n", smp_processor_id());
++
++	for (i = 0; i < mmu_slb_size; i++) {
++		e = slb_ptr->esid;
++		v = slb_ptr->vsid;
++		slb_ptr++;
++
++		if (!e && !v)
++			continue;
++
++		pr_err("%02d %016lx %016lx\n", i, e, v);
++
++		if (!(e & SLB_ESID_V)) {
++			pr_err("\n");
++			continue;
++		}
++		llp = v & SLB_VSID_LLP;
++		if (v & SLB_VSID_B_1T) {
++			pr_err("  1T  ESID=%9lx  VSID=%13lx LLP:%3lx\n",
++				GET_ESID_1T(e),
++				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT_1T,
++				llp);
++		} else {
++			pr_err(" 256M ESID=%9lx  VSID=%13lx LLP:%3lx\n",
++				GET_ESID(e),
++				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT,
++				llp);
++		}
++	}
++}
++
+ void slb_vmalloc_update(void)
+ {
+ 	unsigned long vflags;
 diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index ae08263daa24..be665eeb97df 100644
+index be665eeb97df..58254d713e89 100644
 --- a/arch/powerpc/platforms/pseries/ras.c
 +++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -428,6 +428,135 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
- 	return 0; /* need to perform reset */
+@@ -516,6 +516,10 @@ static void pseries_print_mce_info(struct pt_regs *regs,
+ 		break;
+ 	}
+ 
++	/* Display faulty slb contents for SLB errors. */
++	if (error_type == PSERIES_MC_ERROR_TYPE_SLB)
++		slb_dump_contents(local_paca->mce_faulty_slbs);
++
+ 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
+ 		disposition == RTAS_DISP_FULLY_RECOVERED ?
+ 		"Recovered" : "Not recovered");
+@@ -576,7 +580,11 @@ static int mce_handle_error(struct rtas_error_log *errp)
+ 
+ 	if ((disposition == RTAS_DISP_NOT_RECOVERED) &&
+ 			(error_type == PSERIES_MC_ERROR_TYPE_SLB)) {
+-		/* Store the old slb content someplace. */
++		/*
++		 * Store the old slb content in paca before flushing. Print
++		 * this when we go to virtual mode.
++		 */
++		slb_save_contents(local_paca->mce_faulty_slbs);
+ 		slb_flush_and_rebolt_realmode();
+ 		disposition = RTAS_DISP_FULLY_RECOVERED;
+ 		rtas_set_disposition_recovered(errp);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 249b02bc5c41..76d15e46a152 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -105,6 +105,9 @@ static void __init fwnmi_init(void)
+ 	u8 *mce_data_buf;
+ 	unsigned int i;
+ 	int nr_cpus = num_possible_cpus();
++	struct slb_entry *slb_ptr;
++	size_t size;
++
+ 
+ 	int ibm_nmi_register = rtas_token("ibm,nmi-register");
+ 	if (ibm_nmi_register == RTAS_UNKNOWN_SERVICE)
+@@ -130,6 +133,13 @@ static void __init fwnmi_init(void)
+ 		paca_ptrs[i]->mce_data_buf = mce_data_buf +
+ 						(RTAS_ERROR_LOG_MAX * i);
+ 	}
++
++	/* Allocate per cpu slb area to save old slb contents during MCE */
++	size = sizeof(struct slb_entry) * mmu_slb_size * nr_cpus;
++	slb_ptr = __va(memblock_alloc_base(size, sizeof(struct slb_entry),
++							ppc64_rma_size));
++	for_each_possible_cpu(i)
++		paca_ptrs[i]->mce_faulty_slbs = slb_ptr + (mmu_slb_size * i);
  }
  
-+#define VAL_TO_STRING(ar, val)	((val < ARRAY_SIZE(ar)) ? ar[val] : "Unknown")
-+
-+static void pseries_print_mce_info(struct pt_regs *regs,
-+						struct rtas_error_log *errp)
-+{
-+	const char *level, *sevstr;
-+	struct pseries_errorlog *pseries_log;
-+	struct pseries_mc_errorlog *mce_log;
-+	uint8_t error_type, err_sub_type;
-+	uint64_t addr;
-+	uint8_t initiator = rtas_error_initiator(errp);
-+	int disposition = rtas_error_disposition(errp);
-+
-+	static const char * const initiators[] = {
-+		"Unknown",
-+		"CPU",
-+		"PCI",
-+		"ISA",
-+		"Memory",
-+		"Power Mgmt",
-+	};
-+	static const char * const mc_err_types[] = {
-+		"UE",
-+		"SLB",
-+		"ERAT",
-+		"TLB",
-+		"D-Cache",
-+		"Unknown",
-+		"I-Cache",
-+	};
-+	static const char * const mc_ue_types[] = {
-+		"Indeterminate",
-+		"Instruction fetch",
-+		"Page table walk ifetch",
-+		"Load/Store",
-+		"Page table walk Load/Store",
-+	};
-+
-+	/* SLB sub errors valid values are 0x0, 0x1, 0x2 */
-+	static const char * const mc_slb_types[] = {
-+		"Parity",
-+		"Multihit",
-+		"Indeterminate",
-+	};
-+
-+	/* TLB and ERAT sub errors valid values are 0x1, 0x2, 0x3 */
-+	static const char * const mc_soft_types[] = {
-+		"Unknown",
-+		"Parity",
-+		"Multihit",
-+		"Indeterminate",
-+	};
-+
-+	if (!rtas_error_extended(errp)) {
-+		pr_err("Machine check interrupt: Missing extended error log\n");
-+		return;
-+	}
-+
-+	pseries_log = get_pseries_errorlog(errp, PSERIES_ELOG_SECT_ID_MCE);
-+	if (pseries_log == NULL)
-+		return;
-+
-+	mce_log = (struct pseries_mc_errorlog *)pseries_log->data;
-+
-+	error_type = rtas_mc_error_type(mce_log);
-+	err_sub_type = rtas_mc_error_sub_type(mce_log);
-+
-+	switch (rtas_error_severity(errp)) {
-+	case RTAS_SEVERITY_NO_ERROR:
-+		level = KERN_INFO;
-+		sevstr = "Harmless";
-+		break;
-+	case RTAS_SEVERITY_WARNING:
-+		level = KERN_WARNING;
-+		sevstr = "";
-+		break;
-+	case RTAS_SEVERITY_ERROR:
-+	case RTAS_SEVERITY_ERROR_SYNC:
-+		level = KERN_ERR;
-+		sevstr = "Severe";
-+		break;
-+	case RTAS_SEVERITY_FATAL:
-+	default:
-+		level = KERN_ERR;
-+		sevstr = "Fatal";
-+		break;
-+	}
-+
-+	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
-+		disposition == RTAS_DISP_FULLY_RECOVERED ?
-+		"Recovered" : "Not recovered");
-+	if (user_mode(regs)) {
-+		printk("%s  NIP: [%016lx] PID: %d Comm: %s\n", level,
-+			regs->nip, current->pid, current->comm);
-+	} else {
-+		printk("%s  NIP [%016lx]: %pS\n", level, regs->nip,
-+			(void *)regs->nip);
-+	}
-+	printk("%s  Initiator: %s\n", level,
-+				VAL_TO_STRING(initiators, initiator));
-+
-+	switch (error_type) {
-+	case PSERIES_MC_ERROR_TYPE_UE:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_ue_types, err_sub_type));
-+		break;
-+	case PSERIES_MC_ERROR_TYPE_SLB:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_slb_types, err_sub_type));
-+		break;
-+	case PSERIES_MC_ERROR_TYPE_ERAT:
-+	case PSERIES_MC_ERROR_TYPE_TLB:
-+		printk("%s  Error type: %s [%s]\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type),
-+			VAL_TO_STRING(mc_soft_types, err_sub_type));
-+		break;
-+	default:
-+		printk("%s  Error type: %s\n", level,
-+			VAL_TO_STRING(mc_err_types, error_type));
-+		break;
-+	}
-+
-+	addr = rtas_mc_get_effective_addr(mce_log);
-+	if (addr)
-+		printk("%s    Effective address: %016llx\n", level, addr);
-+}
-+
- static int mce_handle_error(struct rtas_error_log *errp)
- {
- 	struct pseries_errorlog *pseries_log;
-@@ -482,6 +611,8 @@ static int recover_mce(struct pt_regs *regs, struct rtas_error_log *err)
- 	int recovered = 0;
- 	int disposition = rtas_error_disposition(err);
- 
-+	pseries_print_mce_info(regs, err);
-+
- 	if (!(regs->msr & MSR_RI)) {
- 		/* If MSR_RI isn't set, we cannot recover */
- 		recovered = 0;
+ static void pseries_8259_cascade(struct irq_desc *desc)
