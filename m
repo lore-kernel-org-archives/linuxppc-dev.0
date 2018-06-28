@@ -1,36 +1,36 @@
 Return-Path: <andrew.donnellan@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41GxGW6wgzzF1LS
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 09:45:07 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5SNiPtm007859
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:45:04 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jw94hrvq0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41GxGp3GVDzF1LS
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 09:45:21 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5SNiOQ1098262
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:45:19 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jw8y0sfms-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:45:04 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 19:45:19 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Fri, 29 Jun 2018 00:45:03 +0100
-Subject: Re: [PATCH v2 01/10] Revert "cxl: Add kernel API to allow a context
- to operate with relocate disabled"
+ Fri, 29 Jun 2018 00:45:17 +0100
+Subject: Re: [PATCH v2 02/10] Revert "cxl: Add support for interrupts on the
+ Mellanox CX4"
 To: Frederic Barrat <fbarrat@linux.ibm.com>, alastair@au1.ibm.com,
  vaibhav@linux.ibm.com, clombard@linux.ibm.com, felix@linux.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 Cc: huyn@mellanox.com
 References: <20180628100509.17413-1-fbarrat@linux.ibm.com>
- <20180628100509.17413-2-fbarrat@linux.ibm.com>
+ <20180628100509.17413-3-fbarrat@linux.ibm.com>
 From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Fri, 29 Jun 2018 09:44:56 +1000
+Date: Fri, 29 Jun 2018 09:45:09 +1000
 MIME-Version: 1.0
-In-Reply-To: <20180628100509.17413-2-fbarrat@linux.ibm.com>
-Message-Id: <c15bb248-5cb1-c79d-5f52-47048fa80394@au1.ibm.com>
+In-Reply-To: <20180628100509.17413-3-fbarrat@linux.ibm.com>
+Message-Id: <a3836c67-a522-6063-dde4-0ba46dd993de@au1.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -45,126 +45,335 @@ On 28/06/18 20:05, Frederic Barrat wrote:
 > From: Alastair D'Silva <alastair@d-silva.org>
 > 
 > Remove abandonned capi support for the Mellanox CX4.
-> The symbol 'cxl_set_translation_mode' is never called, so
-> ctx->real_mode is always false.
 > 
-> This reverts commit 7a0d85d313c2066712e530e668bc02bb741a685c.
+> This reverts commit a2f67d5ee8d950caaa7a6144cf0bfb256500b73e.
 > 
 > Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 
 Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
 > ---
->   drivers/misc/cxl/api.c    | 19 -------------------
->   drivers/misc/cxl/cxl.h    |  1 -
->   drivers/misc/cxl/guest.c  |  3 ---
->   drivers/misc/cxl/native.c |  3 ++-
->   include/misc/cxl.h        |  8 --------
->   5 files changed, 2 insertions(+), 32 deletions(-)
+>   arch/powerpc/platforms/powernv/pci-cxl.c  | 84 -----------------------
+>   arch/powerpc/platforms/powernv/pci-ioda.c |  4 --
+>   arch/powerpc/platforms/powernv/pci.h      |  2 -
+>   drivers/misc/cxl/api.c                    | 71 -------------------
+>   drivers/misc/cxl/base.c                   | 31 ---------
+>   drivers/misc/cxl/cxl.h                    |  4 --
+>   drivers/misc/cxl/main.c                   |  2 -
+>   include/misc/cxl-base.h                   |  4 --
+>   8 files changed, 202 deletions(-)
 > 
-> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-> index 753b1a698fc4..21d620e29fea 100644
-> --- a/drivers/misc/cxl/api.c
-> +++ b/drivers/misc/cxl/api.c
-> @@ -324,7 +324,6 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
->   	if (task) {
->   		ctx->pid = get_task_pid(task, PIDTYPE_PID);
->   		kernel = false;
-> -		ctx->real_mode = false;
+> diff --git a/arch/powerpc/platforms/powernv/pci-cxl.c b/arch/powerpc/platforms/powernv/pci-cxl.c
+> index cee003de63af..c447b7f03c09 100644
+> --- a/arch/powerpc/platforms/powernv/pci-cxl.c
+> +++ b/arch/powerpc/platforms/powernv/pci-cxl.c
+> @@ -8,7 +8,6 @@
+>    */
 >   
->   		/* acquire a reference to the task's mm */
->   		ctx->mm = get_task_mm(current);
-> @@ -388,24 +387,6 @@ void cxl_set_master(struct cxl_context *ctx)
+>   #include <linux/module.h>
+> -#include <linux/msi.h>
+>   #include <asm/pci-bridge.h>
+>   #include <asm/pnv-pci.h>
+>   #include <asm/opal.h>
+> @@ -292,86 +291,3 @@ void pnv_cxl_disable_device(struct pci_dev *dev)
+>   	cxl_pci_disable_device(dev);
+>   	cxl_afu_put(afu);
 >   }
->   EXPORT_SYMBOL_GPL(cxl_set_master);
->   
-> -int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode)
+> -
+> -/*
+> - * This is a special version of pnv_setup_msi_irqs for cards in cxl mode. This
+> - * function handles setting up the IVTE entries for the XSL to use.
+> - *
+> - * We are currently not filling out the MSIX table, since the only currently
+> - * supported adapter (CX4) uses a custom MSIX table format in cxl mode and it
+> - * is up to their driver to fill that out. In the future we may fill out the
+> - * MSIX table (and change the IVTE entries to be an index to the MSIX table)
+> - * for adapters implementing the Full MSI-X mode described in the CAIA.
+> - */
+> -int pnv_cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
 > -{
-> -	if (ctx->status == STARTED) {
-> -		/*
-> -		 * We could potentially update the PE and issue an update LLCMD
-> -		 * to support this, but it doesn't seem to have a good use case
-> -		 * since it's trivial to just create a second kernel context
-> -		 * with different translation modes, so until someone convinces
-> -		 * me otherwise:
-> -		 */
-> -		return -EBUSY;
+> -	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> -	struct pnv_phb *phb = hose->private_data;
+> -	struct msi_desc *entry;
+> -	struct cxl_context *ctx = NULL;
+> -	unsigned int virq;
+> -	int hwirq;
+> -	int afu_irq = 0;
+> -	int rc;
+> -
+> -	if (WARN_ON(!phb) || !phb->msi_bmp.bitmap)
+> -		return -ENODEV;
+> -
+> -	if (pdev->no_64bit_msi && !phb->msi32_support)
+> -		return -ENODEV;
+> -
+> -	rc = cxl_cx4_setup_msi_irqs(pdev, nvec, type);
+> -	if (rc)
+> -		return rc;
+> -
+> -	for_each_pci_msi_entry(entry, pdev) {
+> -		if (!entry->msi_attrib.is_64 && !phb->msi32_support) {
+> -			pr_warn("%s: Supports only 64-bit MSIs\n",
+> -				pci_name(pdev));
+> -			return -ENXIO;
+> -		}
+> -
+> -		hwirq = cxl_next_msi_hwirq(pdev, &ctx, &afu_irq);
+> -		if (WARN_ON(hwirq <= 0))
+> -			return (hwirq ? hwirq : -ENOMEM);
+> -
+> -		virq = irq_create_mapping(NULL, hwirq);
+> -		if (!virq) {
+> -			pr_warn("%s: Failed to map cxl mode MSI to linux irq\n",
+> -				pci_name(pdev));
+> -			return -ENOMEM;
+> -		}
+> -
+> -		rc = pnv_cxl_ioda_msi_setup(pdev, hwirq, virq);
+> -		if (rc) {
+> -			pr_warn("%s: Failed to setup cxl mode MSI\n", pci_name(pdev));
+> -			irq_dispose_mapping(virq);
+> -			return rc;
+> -		}
+> -
+> -		irq_set_msi_desc(virq, entry);
 > -	}
 > -
-> -	ctx->real_mode = real_mode;
 > -	return 0;
 > -}
-> -EXPORT_SYMBOL_GPL(cxl_set_translation_mode);
 > -
->   /* wrappers around afu_* file ops which are EXPORTED */
->   int cxl_fd_open(struct inode *inode, struct file *file)
+> -void pnv_cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
+> -{
+> -	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> -	struct pnv_phb *phb = hose->private_data;
+> -	struct msi_desc *entry;
+> -	irq_hw_number_t hwirq;
+> -
+> -	if (WARN_ON(!phb))
+> -		return;
+> -
+> -	for_each_pci_msi_entry(entry, pdev) {
+> -		if (!entry->irq)
+> -			continue;
+> -		hwirq = virq_to_hw(entry->irq);
+> -		irq_set_msi_desc(entry->irq, NULL);
+> -		irq_dispose_mapping(entry->irq);
+> -	}
+> -
+> -	cxl_cx4_teardown_msi_irqs(pdev);
+> -}
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 5bd0eb6681bc..41f8f0ff4a55 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -3847,10 +3847,6 @@ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+>   const struct pci_controller_ops pnv_cxl_cx4_ioda_controller_ops = {
+>   	.dma_dev_setup		= pnv_pci_dma_dev_setup,
+>   	.dma_bus_setup		= pnv_pci_dma_bus_setup,
+> -#ifdef CONFIG_PCI_MSI
+> -	.setup_msi_irqs		= pnv_cxl_cx4_setup_msi_irqs,
+> -	.teardown_msi_irqs	= pnv_cxl_cx4_teardown_msi_irqs,
+> -#endif
+>   	.enable_device_hook	= pnv_cxl_enable_device_hook,
+>   	.disable_device		= pnv_cxl_disable_device,
+>   	.release_device		= pnv_pci_release_device,
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index eada4b6068cb..ba41913c7e21 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -265,8 +265,6 @@ extern int pnv_npu2_init(struct pnv_phb *phb);
+>   /* cxl functions */
+>   extern bool pnv_cxl_enable_device_hook(struct pci_dev *dev);
+>   extern void pnv_cxl_disable_device(struct pci_dev *dev);
+> -extern int pnv_cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+> -extern void pnv_cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
+>   
+>   
+>   /* phb ops (cxl switches these when enabling the kernel api on the phb) */
+> diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
+> index 21d620e29fea..2e5862b7a074 100644
+> --- a/drivers/misc/cxl/api.c
+> +++ b/drivers/misc/cxl/api.c
+> @@ -11,7 +11,6 @@
+>   #include <linux/slab.h>
+>   #include <linux/file.h>
+>   #include <misc/cxl.h>
+> -#include <linux/msi.h>
+>   #include <linux/module.h>
+>   #include <linux/mount.h>
+>   #include <linux/sched/mm.h>
+> @@ -595,73 +594,3 @@ int cxl_get_max_irqs_per_process(struct pci_dev *dev)
+>   	return afu->irqs_max;
+>   }
+>   EXPORT_SYMBOL_GPL(cxl_get_max_irqs_per_process);
+> -
+> -/*
+> - * This is a special interrupt allocation routine called from the PHB's MSI
+> - * setup function. When capi interrupts are allocated in this manner they must
+> - * still be associated with a running context, but since the MSI APIs have no
+> - * way to specify this we use the default context associated with the device.
+> - *
+> - * The Mellanox CX4 has a hardware limitation that restricts the maximum AFU
+> - * interrupt number, so in order to overcome this their driver informs us of
+> - * the restriction by setting the maximum interrupts per context, and we
+> - * allocate additional contexts as necessary so that we can keep the AFU
+> - * interrupt number within the supported range.
+> - */
+> -int _cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+> -{
+> -	struct cxl_context *ctx, *new_ctx, *default_ctx;
+> -	int remaining;
+> -	int rc;
+> -
+> -	ctx = default_ctx = cxl_get_context(pdev);
+> -	if (WARN_ON(!default_ctx))
+> -		return -ENODEV;
+> -
+> -	remaining = nvec;
+> -	while (remaining > 0) {
+> -		rc = cxl_allocate_afu_irqs(ctx, min(remaining, ctx->afu->irqs_max));
+> -		if (rc) {
+> -			pr_warn("%s: Failed to find enough free MSIs\n", pci_name(pdev));
+> -			return rc;
+> -		}
+> -		remaining -= ctx->afu->irqs_max;
+> -
+> -		if (ctx != default_ctx && default_ctx->status == STARTED) {
+> -			WARN_ON(cxl_start_context(ctx,
+> -				be64_to_cpu(default_ctx->elem->common.wed),
+> -				NULL));
+> -		}
+> -
+> -		if (remaining > 0) {
+> -			new_ctx = cxl_dev_context_init(pdev);
+> -			if (IS_ERR(new_ctx)) {
+> -				pr_warn("%s: Failed to allocate enough contexts for MSIs\n", pci_name(pdev));
+> -				return -ENOSPC;
+> -			}
+> -			list_add(&new_ctx->extra_irq_contexts, &ctx->extra_irq_contexts);
+> -			ctx = new_ctx;
+> -		}
+> -	}
+> -
+> -	return 0;
+> -}
+> -/* Exported via cxl_base */
+> -
+> -void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
+> -{
+> -	struct cxl_context *ctx, *pos, *tmp;
+> -
+> -	ctx = cxl_get_context(pdev);
+> -	if (WARN_ON(!ctx))
+> -		return;
+> -
+> -	cxl_free_afu_irqs(ctx);
+> -	list_for_each_entry_safe(pos, tmp, &ctx->extra_irq_contexts, extra_irq_contexts) {
+> -		cxl_stop_context(pos);
+> -		cxl_free_afu_irqs(pos);
+> -		list_del(&pos->extra_irq_contexts);
+> -		cxl_release_context(pos);
+> -	}
+> -}
+> -/* Exported via cxl_base */
+> diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
+> index cd54ce6f6230..fe90f895bb10 100644
+> --- a/drivers/misc/cxl/base.c
+> +++ b/drivers/misc/cxl/base.c
+> @@ -158,37 +158,6 @@ int cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_
+>   }
+>   EXPORT_SYMBOL_GPL(cxl_next_msi_hwirq);
+>   
+> -int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+> -{
+> -	int ret;
+> -	struct cxl_calls *calls;
+> -
+> -	calls = cxl_calls_get();
+> -	if (!calls)
+> -		return false;
+> -
+> -	ret = calls->cxl_cx4_setup_msi_irqs(pdev, nvec, type);
+> -
+> -	cxl_calls_put(calls);
+> -
+> -	return ret;
+> -}
+> -EXPORT_SYMBOL_GPL(cxl_cx4_setup_msi_irqs);
+> -
+> -void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev)
+> -{
+> -	struct cxl_calls *calls;
+> -
+> -	calls = cxl_calls_get();
+> -	if (!calls)
+> -		return;
+> -
+> -	calls->cxl_cx4_teardown_msi_irqs(pdev);
+> -
+> -	cxl_calls_put(calls);
+> -}
+> -EXPORT_SYMBOL_GPL(cxl_cx4_teardown_msi_irqs);
+> -
+>   static int __init cxl_base_init(void)
 >   {
+>   	struct device_node *np;
 > diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index 918d4fb742d1..af8794719956 100644
+> index af8794719956..9688fe8b4d80 100644
 > --- a/drivers/misc/cxl/cxl.h
 > +++ b/drivers/misc/cxl/cxl.h
-> @@ -613,7 +613,6 @@ struct cxl_context {
->   	bool pe_inserted;
->   	bool master;
->   	bool kernel;
-> -	bool real_mode;
->   	bool pending_irq;
->   	bool pending_fault;
->   	bool pending_afu_err;
-> diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-> index 4644f16606a3..f5dc740fcd13 100644
-> --- a/drivers/misc/cxl/guest.c
-> +++ b/drivers/misc/cxl/guest.c
-> @@ -623,9 +623,6 @@ static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u
->   {
->   	pr_devel("in %s\n", __func__);
+> @@ -879,16 +879,12 @@ ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+>   bool _cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
+>   void _cxl_pci_disable_device(struct pci_dev *dev);
+>   int _cxl_next_msi_hwirq(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
+> -int _cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+> -void _cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
 >   
-> -	if (ctx->real_mode)
-> -		return -EPERM;
-> -
->   	ctx->kernel = kernel;
->   	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
->   		return attach_afu_directed(ctx, wed, amr);
-> diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-> index 98f867fcef24..c9d5d82dce8e 100644
-> --- a/drivers/misc/cxl/native.c
-> +++ b/drivers/misc/cxl/native.c
-> @@ -605,6 +605,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
->   		sr |= CXL_PSL_SR_An_MP;
->   	if (mfspr(SPRN_LPCR) & LPCR_TC)
->   		sr |= CXL_PSL_SR_An_TC;
-> +
->   	if (kernel) {
->   		if (!real_mode)
->   			sr |= CXL_PSL_SR_An_R;
-> @@ -629,7 +630,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
+>   struct cxl_calls {
+>   	void (*cxl_slbia)(struct mm_struct *mm);
+>   	bool (*cxl_pci_associate_default_context)(struct pci_dev *dev, struct cxl_afu *afu);
+>   	void (*cxl_pci_disable_device)(struct pci_dev *dev);
+>   	int (*cxl_next_msi_hwirq)(struct pci_dev *pdev, struct cxl_context **ctx, int *afu_irq);
+> -	int (*cxl_cx4_setup_msi_irqs)(struct pci_dev *pdev, int nvec, int type);
+> -	void (*cxl_cx4_teardown_msi_irqs)(struct pci_dev *pdev);
 >   
->   static u64 calculate_sr(struct cxl_context *ctx)
->   {
-> -	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
-> +	return cxl_calculate_sr(ctx->master, ctx->kernel, false,
->   				cxl_is_power9());
->   }
+>   	struct module *owner;
+>   };
+> diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
+> index c1ba0d42cbc8..59a904efd104 100644
+> --- a/drivers/misc/cxl/main.c
+> +++ b/drivers/misc/cxl/main.c
+> @@ -107,8 +107,6 @@ static struct cxl_calls cxl_calls = {
+>   	.cxl_pci_associate_default_context = _cxl_pci_associate_default_context,
+>   	.cxl_pci_disable_device = _cxl_pci_disable_device,
+>   	.cxl_next_msi_hwirq = _cxl_next_msi_hwirq,
+> -	.cxl_cx4_setup_msi_irqs = _cxl_cx4_setup_msi_irqs,
+> -	.cxl_cx4_teardown_msi_irqs = _cxl_cx4_teardown_msi_irqs,
+>   	.owner = THIS_MODULE,
+>   };
 >   
-> diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-> index b712be544f8c..82cc6ffafe2d 100644
-> --- a/include/misc/cxl.h
-> +++ b/include/misc/cxl.h
-> @@ -173,14 +173,6 @@ int cxl_afu_reset(struct cxl_context *ctx);
->    */
->   void cxl_set_master(struct cxl_context *ctx);
+> diff --git a/include/misc/cxl-base.h b/include/misc/cxl-base.h
+> index b2ebc91fe09a..bb7e629ae492 100644
+> --- a/include/misc/cxl-base.h
+> +++ b/include/misc/cxl-base.h
+> @@ -43,8 +43,6 @@ void cxl_afu_put(struct cxl_afu *afu);
+>   void cxl_slbia(struct mm_struct *mm);
+>   bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu);
+>   void cxl_pci_disable_device(struct pci_dev *dev);
+> -int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type);
+> -void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev);
 >   
-> -/*
-> - * Sets the context to use real mode memory accesses to operate with
-> - * translation disabled. Note that this only makes sense for kernel contexts
-> - * under bare metal, and will not work with virtualisation. May only be
-> - * performed on stopped contexts.
-> - */
-> -int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode);
-> -
->   /*
->    * Map and unmap the AFU Problem Space area. The amount and location mapped
->    * depends on if this context is a master or slave.
+>   #else /* CONFIG_CXL_BASE */
+>   
+> @@ -54,8 +52,6 @@ static inline void cxl_afu_put(struct cxl_afu *afu) {}
+>   static inline void cxl_slbia(struct mm_struct *mm) {}
+>   static inline bool cxl_pci_associate_default_context(struct pci_dev *dev, struct cxl_afu *afu) { return false; }
+>   static inline void cxl_pci_disable_device(struct pci_dev *dev) {}
+> -static inline int cxl_cx4_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type) { return -ENODEV; }
+> -static inline void cxl_cx4_teardown_msi_irqs(struct pci_dev *pdev) {}
+>   
+>   #endif /* CONFIG_CXL_BASE */
+>   
 > 
 
 -- 
