@@ -1,33 +1,40 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-oi0-x244.google.com (mail-oi0-x244.google.com
- [IPv6:2607:f8b0:4003:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=r7us=jo=linux.ibm.com=hbathini@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41GSQM04xDzF1Mm
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 15:05:11 +1000 (AEST)
-Received: by mail-oi0-x244.google.com with SMTP id y207-v6so3975907oie.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2018 22:05:11 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-To: Matthew Wilcox <mawilcox@microsoft.com>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Christoph Lameter <cl@linux.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?=
- <jglisse@redhat.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Pekka Enberg <penberg@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Regression in 4.18 - 32-bit PowerPC crashes on boot - bisected to
- commit 1d40a5ea01d5
-Message-ID: <5a98ad6b-e209-a9dc-98db-1745ef5b7f87@lwfinger.net>
-Date: Thu, 28 Jun 2018 00:05:07 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41GSlX0nxSzF1NW
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 15:20:08 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41GSlX0GYzz8t63
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 15:20:08 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41GSlW3dkGz9s29
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 15:20:07 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5S5J7Vb029310
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 01:20:05 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jvrwvsf1y-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 01:20:05 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
+ Thu, 28 Jun 2018 06:20:02 +0100
+Subject: [PATCH] powerpc/kdump: handle crashkernel memory reservation failure
+From: Hari Bathini <hbathini@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Dave Young <dyoung@redhat.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, dgibson@redhat.com
+Date: Thu, 28 Jun 2018 10:49:56 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153016319642.8584.7868984232962915832.stgit@hbathini.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +44,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-My PowerBook G4 Aluminum crashes on boot with 4.18-rcX kernels with a kernel BUG 
-at include/linux/page-flags.h:700! The problem was bisected to commit 
-1d40a5ea01d5 ("mm: mark pages in use for page tables"). It is not possible to 
-capture the bug with anything other than a camera. The first few lines of the 
-traceback are as follows:
+Memory reservation for crashkernel could fail if there are holes around
+kdump kernel offset (128M). Fail gracefully in such cases and print an
+error message.
 
-free_pgd_range+0x19c/0x30c (unreliable)
-free_pgtables_0xa0/0xb0
-exit_pmap+0xf4/0x16c
-mmput+0x64/0xf0
-do_exit+0x33c/0x89c
-oops_end+0x13c/0x144
-_exception_pkey+0x58/0x128
-ret_from_except_full+0x0/0x4
---- interrupt: 700 at free_pgd_range+0x19c/0x30c
-     LR = free_pgd_range+0x19c/0x30c
-free_pgtables+0xa/0xb
-exit_mnap+0xf4/0x16c
-mmput+0x64/0xf0
-flush_old_exec+0x490/0x550
+Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+---
+ arch/powerpc/kernel/machine_kexec.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-I have a PDF of the complete dump, but I hesitate to send this to the entire group.
-
-Thanks,
-
-Larry
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 936c7e2..6181442 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -188,7 +188,12 @@ void __init reserve_crashkernel(void)
+ 			(unsigned long)(crashk_res.start >> 20),
+ 			(unsigned long)(memblock_phys_mem_size() >> 20));
+ 
+-	memblock_reserve(crashk_res.start, crash_size);
++	if (!memblock_is_region_memory(crashk_res.start, crash_size) ||
++	    memblock_reserve(crashk_res.start, crash_size)) {
++		printk(KERN_ERR "Failed to reserve memory for crashkernel!\n");
++		crashk_res.start = crashk_res.end = 0;
++		return;
++	}
+ }
+ 
+ int overlaps_crashkernel(unsigned long start, unsigned long size)
