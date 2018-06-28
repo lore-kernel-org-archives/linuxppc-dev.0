@@ -1,33 +1,44 @@
-Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <srs0=tbmk=jo=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41GcX14lHLzF1LK
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:10:41 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41GcX13WzVz8w0H
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 21:10:41 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41GbBP43c4zF1QW
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 20:10:21 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5SA3mkL060972
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 06:10:19 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jvv3bvegb-1
+ by ozlabs.org (Postfix) with ESMTPS id 41GcX105Jgz9s31
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 21:10:40 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5SB9sg8051306
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:10:38 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jvtseb6px-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 06:10:18 -0400
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2018 07:10:37 -0400
 Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Thu, 28 Jun 2018 11:05:17 +0100
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-To: alastair@au1.ibm.com, andrew.donnellan@au1.ibm.com, vaibhav@linux.ibm.com,
- clombard@linux.ibm.com, felix@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: huyn@mellanox.com
-Subject: [PATCH v2 01/10] Revert "cxl: Add kernel API to allow a context to
- operate with relocate disabled"
-Date: Thu, 28 Jun 2018 12:05:00 +0200
-In-Reply-To: <20180628100509.17413-1-fbarrat@linux.ibm.com>
-References: <20180628100509.17413-1-fbarrat@linux.ibm.com>
-Message-Id: <20180628100509.17413-2-fbarrat@linux.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 28 Jun 2018 12:10:35 +0100
+Subject: [PATCH v4 0/6] powerpc/pseries: Machien check handler improvements.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ stable@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Thu, 28 Jun 2018 16:40:29 +0530
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153018397703.31589.3105355336278825912.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,125 +48,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+This patch series includes some improvement to Machine check handler
+for pseries. Patch 1 fixes an issue where machine check handler crashes
+kernel while accessing vmalloc-ed buffer while in nmi context.
+Patch 2 fixes endain bug while restoring of r3 in MCE handler.
+Patch 4 implements a real mode mce handler and flushes the SLBs on SLB error.
+Patch 5 display's the MCE error details on console.
+Patch 6 saves and dumps the SLB contents on SLB MCE errors to improve the
+debugability.
 
-Remove abandonned capi support for the Mellanox CX4.
-The symbol 'cxl_set_translation_mode' is never called, so
-ctx->real_mode is always false.
+Change in V4:
+- Flush the SLBs in real mode mce handler to handle SLB errors for entry 0.
+- Allocate buffers per cpu to hold rtas error log and old slb contents.
+- Defer the logging of rtas error log to irq work queue.
 
-This reverts commit 7a0d85d313c2066712e530e668bc02bb741a685c.
+Change in V3:
+- Moved patch 5 to patch 2
 
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+Change in V2:
+- patch 3: Display additional info (NIP and task info) in MCE error details.
+- patch 5: Fix endain bug while restoring of r3 in MCE handler.
+
+
 ---
- drivers/misc/cxl/api.c    | 19 -------------------
- drivers/misc/cxl/cxl.h    |  1 -
- drivers/misc/cxl/guest.c  |  3 ---
- drivers/misc/cxl/native.c |  3 ++-
- include/misc/cxl.h        |  8 --------
- 5 files changed, 2 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/misc/cxl/api.c b/drivers/misc/cxl/api.c
-index 753b1a698fc4..21d620e29fea 100644
---- a/drivers/misc/cxl/api.c
-+++ b/drivers/misc/cxl/api.c
-@@ -324,7 +324,6 @@ int cxl_start_context(struct cxl_context *ctx, u64 wed,
- 	if (task) {
- 		ctx->pid = get_task_pid(task, PIDTYPE_PID);
- 		kernel = false;
--		ctx->real_mode = false;
- 
- 		/* acquire a reference to the task's mm */
- 		ctx->mm = get_task_mm(current);
-@@ -388,24 +387,6 @@ void cxl_set_master(struct cxl_context *ctx)
- }
- EXPORT_SYMBOL_GPL(cxl_set_master);
- 
--int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode)
--{
--	if (ctx->status == STARTED) {
--		/*
--		 * We could potentially update the PE and issue an update LLCMD
--		 * to support this, but it doesn't seem to have a good use case
--		 * since it's trivial to just create a second kernel context
--		 * with different translation modes, so until someone convinces
--		 * me otherwise:
--		 */
--		return -EBUSY;
--	}
--
--	ctx->real_mode = real_mode;
--	return 0;
--}
--EXPORT_SYMBOL_GPL(cxl_set_translation_mode);
--
- /* wrappers around afu_* file ops which are EXPORTED */
- int cxl_fd_open(struct inode *inode, struct file *file)
- {
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 918d4fb742d1..af8794719956 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -613,7 +613,6 @@ struct cxl_context {
- 	bool pe_inserted;
- 	bool master;
- 	bool kernel;
--	bool real_mode;
- 	bool pending_irq;
- 	bool pending_fault;
- 	bool pending_afu_err;
-diff --git a/drivers/misc/cxl/guest.c b/drivers/misc/cxl/guest.c
-index 4644f16606a3..f5dc740fcd13 100644
---- a/drivers/misc/cxl/guest.c
-+++ b/drivers/misc/cxl/guest.c
-@@ -623,9 +623,6 @@ static int guest_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u
- {
- 	pr_devel("in %s\n", __func__);
- 
--	if (ctx->real_mode)
--		return -EPERM;
--
- 	ctx->kernel = kernel;
- 	if (ctx->afu->current_mode == CXL_MODE_DIRECTED)
- 		return attach_afu_directed(ctx, wed, amr);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index 98f867fcef24..c9d5d82dce8e 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -605,6 +605,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
- 		sr |= CXL_PSL_SR_An_MP;
- 	if (mfspr(SPRN_LPCR) & LPCR_TC)
- 		sr |= CXL_PSL_SR_An_TC;
-+
- 	if (kernel) {
- 		if (!real_mode)
- 			sr |= CXL_PSL_SR_An_R;
-@@ -629,7 +630,7 @@ u64 cxl_calculate_sr(bool master, bool kernel, bool real_mode, bool p9)
- 
- static u64 calculate_sr(struct cxl_context *ctx)
- {
--	return cxl_calculate_sr(ctx->master, ctx->kernel, ctx->real_mode,
-+	return cxl_calculate_sr(ctx->master, ctx->kernel, false,
- 				cxl_is_power9());
- }
- 
-diff --git a/include/misc/cxl.h b/include/misc/cxl.h
-index b712be544f8c..82cc6ffafe2d 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl.h
-@@ -173,14 +173,6 @@ int cxl_afu_reset(struct cxl_context *ctx);
-  */
- void cxl_set_master(struct cxl_context *ctx);
- 
--/*
-- * Sets the context to use real mode memory accesses to operate with
-- * translation disabled. Note that this only makes sense for kernel contexts
-- * under bare metal, and will not work with virtualisation. May only be
-- * performed on stopped contexts.
-- */
--int cxl_set_translation_mode(struct cxl_context *ctx, bool real_mode);
--
- /*
-  * Map and unmap the AFU Problem Space area. The amount and location mapped
-  * depends on if this context is a master or slave.
--- 
-2.17.1
+Mahesh Salgaonkar (6):
+      powerpc/pseries: Defer the logging of rtas error to irq work queue.
+      powerpc/pseries: Fix endainness while restoring of r3 in MCE handler.
+      powerpc/pseries: Define MCE error event section.
+      powerpc/pseries: flush SLB contents on SLB MCE errors.
+      powerpc/pseries: Display machine check error details.
+      powerpc/pseries: Dump the SLB contents on SLB MCE errors.
+
+
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    8 +
+ arch/powerpc/include/asm/machdep.h            |    1 
+ arch/powerpc/include/asm/paca.h               |    4 
+ arch/powerpc/include/asm/rtas.h               |  116 ++++++++++++
+ arch/powerpc/kernel/exceptions-64s.S          |   42 ++++
+ arch/powerpc/kernel/mce.c                     |   16 +-
+ arch/powerpc/mm/slb.c                         |   63 +++++++
+ arch/powerpc/platforms/powernv/opal.c         |    1 
+ arch/powerpc/platforms/pseries/pseries.h      |    1 
+ arch/powerpc/platforms/pseries/ras.c          |  236 +++++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/setup.c        |   27 +++
+ 11 files changed, 497 insertions(+), 18 deletions(-)
+
+--
+Signature
