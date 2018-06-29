@@ -1,22 +1,33 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pg0-x243.google.com (mail-pg0-x243.google.com
- [IPv6:2607:f8b0:400e:c05::243])
+Return-Path: <larry.finger@gmail.com>
+Received: from mail-ot0-x242.google.com (mail-ot0-x242.google.com
+ [IPv6:2607:f8b0:4003:c0f::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HQlp6TQlzF1nL
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 04:53:42 +1000 (AEST)
-Received: by mail-pg0-x243.google.com with SMTP id n2-v6so4363847pgq.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 11:53:42 -0700 (PDT)
-Date: Fri, 29 Jun 2018 11:53:39 -0700
-From: Kees Cook <keescook@chromium.org>
-To: Anatolij Gustschin <agust@denx.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: mpc5200: Remove VLA usage
-Message-ID: <20180629185339.GA37582@beast>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41HT945tDdzF1NW
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 06:42:16 +1000 (AEST)
+Received: by mail-ot0-x242.google.com with SMTP id n24-v6so11272884otl.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 13:42:16 -0700 (PDT)
+Sender: Larry Finger <larry.finger@gmail.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: [Update] Regression in 4.18 - 32-bit PowerPC crashes on boot -
+ bisected to commit 1d40a5ea01d5
+To: Matthew Wilcox <willy@infradead.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Christoph Lameter <cl@linux.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?=
+ <jglisse@redhat.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <99169786-61dd-b19c-ac81-84bcd0a67de4@lwfinger.net>
+Date: Fri, 29 Jun 2018 15:42:12 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the quest to remove all stack VLA usage from the kernel[1], this
-switches to using a stack size large enough for the saved routine and
-adds a sanity check.
+My PowerBook G4 Aluminum crashes on boot with 4.18-rcX kernels with a kernel BUG 
+at include/linux/page-flags.h:700! The problem was bisected to commit 
+1d40a5ea01d5 ("mm: mark pages in use for page tables"). It is not possible to 
+capture the bug with anything other than a camera. The first few lines of the 
+traceback are as follows:
 
-[1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+free_pgd_range+0x19c/0x30c (unreliable)
+free_pgtables_0xa0/0xb0
+exit_pmap+0xf4/0x16c
+mmput+0x64/0xf0
+do_exit+0x33c/0x89c
+oops_end+0x13c/0x144
+_exception_pkey+0x58/0x128
+ret_from_except_full+0x0/0x4
+--- interrupt: 700 at free_pgd_range+0x19c/0x30c
+     LR = free_pgd_range+0x19c/0x30c
+free_pgtables+0xa/0xb
+exit_mnap+0xf4/0x16c
+mmput+0x64/0xf0
+flush_old_exec+0x490/0x550
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/powerpc/platforms/52xx/mpc52xx_pm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+I have more information regarding this BUG. Line 700 of page-flags.h is the 
+macro PAGE_TYPE_OPS(Table, table). For further debugging, I manually expanded 
+the macro, and found that the bug line is VM_BUG_ON_PAGE(!PageTable(page), page) 
+in routine __ClearPageTable(), which is called from pgtable_page_dtor() in 
+include/linux/mm.h. I also added a printk call to PageTable() that logs 
+page->page_type. The routine was called twice. The first had page_type of 
+0xfffffbff, which would have been expected for a . The second call had 
+0xffffffff, which led to the BUG.
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-index 31d3515672f3..b23da85fa73c 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -117,7 +117,10 @@ int mpc52xx_pm_enter(suspend_state_t state)
- 	u32 intr_main_mask;
- 	void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
- 	unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
--	char saved_0x500[mpc52xx_ds_cached_size];
-+	char saved_0x500[256];
-+
-+	if (WARN_ON(mpc52xx_ds_cached_size > sizeof(saved_0x500)))
-+		return -ENOMEM;
- 
- 	/* disable all interrupts in PIC */
- 	intr_main_mask = in_be32(&intr->main_mask);
--- 
-2.17.1
-
-
--- 
-Kees Cook
-Pixel Security
+Larry
