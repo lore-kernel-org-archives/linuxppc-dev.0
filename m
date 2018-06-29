@@ -1,26 +1,38 @@
-Return-Path: <keescook@google.com>
-Received: from mail-yw0-x242.google.com (mail-yw0-x242.google.com
- [IPv6:2607:f8b0:4002:c05::242])
+Return-Path: <kirill@shutemov.name>
+Received: from mail-lf0-x244.google.com (mail-lf0-x244.google.com
+ [IPv6:2a00:1450:4010:c07::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HVY703PpzF1dk
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 07:44:35 +1000 (AEST)
-Received: by mail-yw0-x242.google.com with SMTP id j68-v6so528613ywg.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:44:35 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <CAK8P3a3zrXii=bxBm1zHWMHWgYLCQ0rpo460zmKyfsf_-nxxhQ@mail.gmail.com>
-References: <20180629185339.GA37582@beast>
- <CAK8P3a3zrXii=bxBm1zHWMHWgYLCQ0rpo460zmKyfsf_-nxxhQ@mail.gmail.com>
-From: Kees Cook <keescook@chromium.org>
-Date: Fri, 29 Jun 2018 14:44:32 -0700
-Message-ID: <CAGXu5jJz0zP_DvGqZsBjKZ_vY0=xKoUxCLVxXgUPAbcXS6aMNg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: mpc5200: Remove VLA usage
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Anatolij Gustschin <agust@denx.de>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41HVbk4xxXzF1nG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 07:46:54 +1000 (AEST)
+Received: by mail-lf0-x244.google.com with SMTP id j26-v6so7780602lfb.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:46:54 -0700 (PDT)
+Date: Sat, 30 Jun 2018 00:46:48 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+ Matthew Wilcox <willy@infradead.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Christoph Lameter <cl@linux.com>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Jerome Glisse <jglisse@redhat.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
+ Andrey Ryabinin <aryabinin@virtuozzo.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [Update] Regression in 4.18 - 32-bit PowerPC crashes on boot -
+ bisected to commit 1d40a5ea01d5
+Message-ID: <20180629214647.mkgpni6hxj7aore4@kshutemo-mobl1>
+References: <99169786-61dd-b19c-ac81-84bcd0a67de4@lwfinger.net>
+ <CA+55aFzZ7PND2Xvz9wB1jaCmp0rBMTSmJtKiFwSeOWy9iLSd8Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFzZ7PND2Xvz9wB1jaCmp0rBMTSmJtKiFwSeOWy9iLSd8Q@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,62 +42,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 29, 2018 at 2:02 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Fri, Jun 29, 2018 at 8:53 PM, Kees Cook <keescook@chromium.org> wrote:
->> In the quest to remove all stack VLA usage from the kernel[1], this
->> switches to using a stack size large enough for the saved routine and
->> adds a sanity check.
->>
->> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
->>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
->
-> This seems particularly nice, not only avoids it the dynamic stack
-> allocation, it
-> also makes sure the new 0x500 handler doesn't overflow into the 0x600
-> exception handler.
->
-> It would help to explain how you arrived at that '256 byte' number in
-> the changelog though.
+On Fri, Jun 29, 2018 at 02:01:46PM -0700, Linus Torvalds wrote:
+> On Fri, Jun 29, 2018 at 1:42 PM Larry Finger <Larry.Finger@lwfinger.net> wrote:
+> >
+> > I have more information regarding this BUG. Line 700 of page-flags.h is the
+> > macro PAGE_TYPE_OPS(Table, table). For further debugging, I manually expanded
+> > the macro, and found that the bug line is VM_BUG_ON_PAGE(!PageTable(page), page)
+> > in routine __ClearPageTable(), which is called from pgtable_page_dtor() in
+> > include/linux/mm.h. I also added a printk call to PageTable() that logs
+> > page->page_type. The routine was called twice. The first had page_type of
+> > 0xfffffbff, which would have been expected for a . The second call had
+> > 0xffffffff, which led to the BUG.
+> 
+> So it looks to me like the tear-down of the page tables first found a
+> page that is indeed a page table, and cleared the page table bit
+> (well, it set it - the bits are reversed).
+> 
+> Then it took an exception (that "interrupt: 700") and that causes
+> do_exit() again, and it tries to free the same page table - and now
+> it's no longer marked as a page table, because it already went through
+> the __ClearPageTable() dance once.
+> 
+> So on the second path through, it catches that "the bit already said
+> it wasn't a page table" and does the BUG.
+> 
+> But the real question is what the problem was the *first* time around.
 
-Honestly, I just counted instructions, multiplied by 8 and rounded up
-to the next nearest power of 2, and the result felt right for giving
-some level of flexibility for code growth before tripping the WARN. :P
++Aneesh.
 
-I'm happy to adjust, of course. :)
+Looks like pgtable_page_dtor() gets called in __pte_free_tlb() path twice.
+Once in __pte_free_tlb() itself and the second time in pgtable_free().
 
--Kees
+Would this help?
 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
-
-Thanks!
-
--Kees
-
->
->> ---
->>  arch/powerpc/platforms/52xx/mpc52xx_pm.c | 5 ++++-
->>  1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
->> index 31d3515672f3..b23da85fa73c 100644
->> --- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
->> +++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
->> @@ -117,7 +117,10 @@ int mpc52xx_pm_enter(suspend_state_t state)
->>         u32 intr_main_mask;
->>         void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
->>         unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
->> -       char saved_0x500[mpc52xx_ds_cached_size];
->> +       char saved_0x500[256];
->> +
->> +       if (WARN_ON(mpc52xx_ds_cached_size > sizeof(saved_0x500)))
->> +               return -ENOMEM;
->>
->>         /* disable all interrupts in PIC */
->>         intr_main_mask = in_be32(&intr->main_mask);
-
-
-
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 6a6673907e45..e7a2f0e6b695 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -137,7 +137,6 @@ static inline void pgtable_free_tlb(struct mmu_gather *tlb,
+ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+-	pgtable_page_dtor(table);
+ 	pgtable_free_tlb(tlb, page_address(table), 0);
+ }
+ #endif /* _ASM_POWERPC_BOOK3S_32_PGALLOC_H */
+diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+index 1707781d2f20..30a13b80fd58 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+@@ -139,7 +139,6 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
+ 				  unsigned long address)
+ {
+ 	tlb_flush_pgtable(tlb, address);
+-	pgtable_page_dtor(table);
+ 	pgtable_free_tlb(tlb, page_address(table), 0);
+ }
+ #endif /* _ASM_POWERPC_PGALLOC_32_H */
 -- 
-Kees Cook
-Pixel Security
+ Kirill A. Shutemov
