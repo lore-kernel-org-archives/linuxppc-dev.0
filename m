@@ -1,36 +1,36 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HWB20PKdzF2Z7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 08:13:13 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5TM9Abk054173
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 18:13:11 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jws618gu0-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41HWB66zxrzF29m
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 08:13:18 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5TM8frl064169
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 18:13:16 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jwujkbdp2-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 18:13:11 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 18:13:16 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 29 Jun 2018 18:13:10 -0400
+ Fri, 29 Jun 2018 18:13:15 -0400
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
  Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH v02 2/5] powerpc/drmem: Add internal_flags feature
 To: linuxppc-dev@lists.ozlabs.org
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: [PATCH v02 3/5] migration/memory: Add hotplug READD_MULTIPLE
 In-Reply-To: <adc67a97-b800-b533-7993-516fc254b6a2@linux.vnet.ibm.com>
-Date: Fri, 29 Jun 2018 17:13:06 -0500
+Date: Fri, 29 Jun 2018 17:13:11 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <7c84dea4-fd73-9598-0bb6-0008a5c8fcab@linux.vnet.ibm.com>
+Message-Id: <6cf5f4c0-7784-8437-eb0b-dbe6e0d22d49@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,73 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc/drmem: Add internal_flags field to each LMB to allow
-marking of kernel software-specific operations that need not
-be exported to other users.  For instance, if information about
-selected LMBs needs to be maintained for subsequent passes
-through the system, it can be encoded into the LMB array itself
-without requiring the allocation and maintainance of additional
-data structures.
+migration/memory: This patch adds a new pseries hotplug action
+for CPU and memory operations, PSERIES_HP_ELOG_ACTION_READD_MULTIPLE.
+This is a variant of the READD operation which performs the action
+upon multiple instances of the resource at one time.  The operation
+is to be triggered by device-tree analysis of updates by RTAS events
+analyzed by 'migation_store' during post-migration processing.  It
+will be used for memory updates, initially.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/drmem.h |   18 ++++++++++++++++++
- arch/powerpc/mm/drmem.c          |    2 ++
- 2 files changed, 20 insertions(+)
+ arch/powerpc/include/asm/rtas.h |    1 +
+ arch/powerpc/mm/drmem.c         |    1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/drmem.h b/arch/powerpc/include/asm/drmem.h
-index b0e70fd..acb6539 100644
---- a/arch/powerpc/include/asm/drmem.h
-+++ b/arch/powerpc/include/asm/drmem.h
-@@ -17,6 +17,7 @@ struct drmem_lmb {
- 	u32     drc_index;
- 	u32     aa_index;
- 	u32     flags;
-+	u32     internal_flags;
- };
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 4ab605a..bb4294b 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -322,6 +322,7 @@ struct pseries_hp_errorlog {
+ #define PSERIES_HP_ELOG_ACTION_ADD	1
+ #define PSERIES_HP_ELOG_ACTION_REMOVE	2
+ #define PSERIES_HP_ELOG_ACTION_READD	3
++#define PSERIES_HP_ELOG_ACTION_READD_MULTIPLE	4
  
- struct drmem_lmb_info {
-@@ -101,6 +102,23 @@ static inline bool drmem_lmb_reserved(struct drmem_lmb *lmb)
- 	return lmb->flags & DRMEM_LMB_RESERVED;
- }
- 
-+#define DRMEM_LMBINT_UPDATE	0x00000001
-+
-+static inline void drmem_mark_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags |= DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline void drmem_remove_lmb_update(struct drmem_lmb *lmb)
-+{
-+	lmb->internal_flags &= ~DRMEM_LMBINT_UPDATE;
-+}
-+
-+static inline bool drmem_lmb_update(struct drmem_lmb *lmb)
-+{
-+	return lmb->internal_flags & DRMEM_LMBINT_UPDATE;
-+}
-+
- u64 drmem_lmb_memory_max(void);
- void __init walk_drmem_lmbs(struct device_node *dn,
- 			void (*func)(struct drmem_lmb *, const __be32 **));
+ #define PSERIES_HP_ELOG_ID_DRC_NAME	1
+ #define PSERIES_HP_ELOG_ID_DRC_INDEX	2
 diff --git a/arch/powerpc/mm/drmem.c b/arch/powerpc/mm/drmem.c
-index 13d2abb..fd2cae92 100644
+index fd2cae92..2228586 100644
 --- a/arch/powerpc/mm/drmem.c
 +++ b/arch/powerpc/mm/drmem.c
-@@ -207,6 +207,7 @@ static void read_drconf_v1_cell(struct drmem_lmb *lmb,
+@@ -422,6 +422,7 @@ static void init_drmem_v2_lmbs(const __be32 *prop,
  
- 	lmb->aa_index = of_read_number(p++, 1);
- 	lmb->flags = of_read_number(p++, 1);
-+	lmb->internal_flags = 0;
- 
- 	*prop = p;
- }
-@@ -265,6 +266,7 @@ static void __walk_drmem_v2_lmbs(const __be32 *prop, const __be32 *usm,
- 
- 			lmb.aa_index = dr_cell.aa_index;
- 			lmb.flags = dr_cell.flags;
-+			lmb.internal_flags = 0;
- 
- 			func(&lmb, &usm);
+ 			lmb->aa_index = dr_cell.aa_index;
+ 			lmb->flags = dr_cell.flags;
++			lmb->internal_flags = 0;
  		}
+ 	}
+ }
