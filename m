@@ -1,24 +1,46 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=ztko=jp=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41H3Fh3jkzzF1RL
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:14:48 +1000 (AEST)
-Date: Fri, 29 Jun 2018 14:14:38 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH kernel v2 0/2] KVM: PPC: Check if IOMMU page is contained
- in the pinned physical page
-Message-ID: <20180629041438.GD3422@umbus.fritz.box>
-References: <20180626055926.27703-1-aik@ozlabs.ru>
- <877emiwe3n.fsf@concordia.ellerman.id.au>
- <20180629130007.1b78e168@aik.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41H3xz0zQ6zF1BP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:46:15 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41H3xz0JQLz8vwc
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:46:15 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41H3xy3Qbmz9ryk
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2018 14:46:14 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5T4iVOj082862
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2018 00:46:12 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2jwdtg0enj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2018 00:46:11 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 29 Jun 2018 05:41:09 +0100
+Subject: Re: [PATCH v4 1/6] powerpc/pseries: Defer the logging of rtas error
+ to irq work queue.
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: stable@vger.kernel.org, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+References: <153018397703.31589.3105355336278825912.stgit@jupiter.in.ibm.com>
+ <153018423713.31589.14195888319570120941.stgit@jupiter.in.ibm.com>
+ <b26f14a3-9f08-798d-1bf9-eb7530f040c0@linux.vnet.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 29 Jun 2018 10:11:04 +0530
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="SO98HVl1bnMOfKZd"
-In-Reply-To: <20180629130007.1b78e168@aik.ozlabs.ibm.com>
+In-Reply-To: <b26f14a3-9f08-798d-1bf9-eb7530f040c0@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <e471e695-d712-0ee5-0103-80220374152f@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,80 +50,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/28/2018 06:49 PM, Laurent Dufour wrote:
+> On 28/06/2018 13:10, Mahesh J Salgaonkar wrote:
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> rtas_log_buf is a buffer to hold RTAS event data that are communicated
+>> to kernel by hypervisor. This buffer is then used to pass RTAS event
+>> data to user through proc fs. This buffer is allocated from vmalloc
+>> (non-linear mapping) area.
+>>
+>> On Machine check interrupt, register r3 points to RTAS extended event
+>> log passed by hypervisor that contains the MCE event. The pseries
+>> machine check handler then logs this error into rtas_log_buf. The
+>> rtas_log_buf is a vmalloc-ed (non-linear) buffer we end up taking up a
+>> page fault (vector 0x300) while accessing it. Since machine check
+>> interrupt handler runs in NMI context we can not afford to take any
+>> page fault. Page faults are not honored in NMI context and causes
+>> kernel panic. Apart from that, as Nick pointed out, pSeries_log_error()
+>> also takes a spin_lock while logging error which is not safe in NMI
+>> context. It may endup in deadlock if we get another MCE before releasing
+>> the lock. Fix this by deferring the logging of rtas error to irq work queue.
+>>
+>> Current implementation uses two different buffers to hold rtas error log
+>> depending on whether extended log is provided or not. This makes bit
+>> difficult to identify which buffer has valid data that needs to logged
+>> later in irq work. Simplify this using single buffer, one per paca, and
+>> copy rtas log to it irrespective of whether extended log is provided or
+>> not. Allocate this buffer below RMA region so that it can be accessed
+>> in real mode mce handler.
+>>
+>> Fixes: b96672dd840f ("powerpc: Machine check interrupt is a non-maskable interrupt")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/paca.h        |    3 ++
+>>  arch/powerpc/platforms/pseries/ras.c   |   39 +++++++++++++++++++++-----------
+>>  arch/powerpc/platforms/pseries/setup.c |   16 +++++++++++++
+>>  3 files changed, 45 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+>> index 3f109a3e3edb..b441fef53077 100644
+>> --- a/arch/powerpc/include/asm/paca.h
+>> +++ b/arch/powerpc/include/asm/paca.h
+>> @@ -251,6 +251,9 @@ struct paca_struct {
+>>  	void *rfi_flush_fallback_area;
+>>  	u64 l1d_flush_size;
+>>  #endif
+>> +#ifdef CONFIG_PPC_PSERIES
+>> +	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
+>> +#endif /* CONFIG_PPC_PSERIES */
+>>  } ____cacheline_aligned;
+>>
+>>  extern void copy_mm_to_paca(struct mm_struct *mm);
+>> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+>> index 5e1ef9150182..f6ba9a2a4f84 100644
+>> --- a/arch/powerpc/platforms/pseries/ras.c
+>> +++ b/arch/powerpc/platforms/pseries/ras.c
+>> @@ -22,6 +22,7 @@
+>>  #include <linux/of.h>
+>>  #include <linux/fs.h>
+>>  #include <linux/reboot.h>
+>> +#include <linux/irq_work.h>
+>>
+>>  #include <asm/machdep.h>
+>>  #include <asm/rtas.h>
+>> @@ -32,11 +33,13 @@
+>>  static unsigned char ras_log_buf[RTAS_ERROR_LOG_MAX];
+>>  static DEFINE_SPINLOCK(ras_log_buf_lock);
+>>
+>> -static char global_mce_data_buf[RTAS_ERROR_LOG_MAX];
+>> -static DEFINE_PER_CPU(__u64, mce_data_buf);
+>> -
+>>  static int ras_check_exception_token;
+>>
+>> +static void mce_process_errlog_event(struct irq_work *work);
+>> +static struct irq_work mce_errlog_process_work = {
+>> +	.func = mce_process_errlog_event,
+>> +};
+>> +
+>>  #define EPOW_SENSOR_TOKEN	9
+>>  #define EPOW_SENSOR_INDEX	0
+>>
+>> @@ -336,10 +339,9 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
+>>   * the actual r3 if possible, and a ptr to the error log entry
+>>   * will be returned if found.
+>>   *
+>> - * If the RTAS error is not of the extended type, then we put it in a per
+>> - * cpu 64bit buffer. If it is the extended type we use global_mce_data_buf.
+>> + * Use one buffer mce_data_buf per cpu to store RTAS error.
+>>   *
+>> - * The global_mce_data_buf does not have any locks or protection around it,
+>> + * The mce_data_buf does not have any locks or protection around it,
+>>   * if a second machine check comes in, or a system reset is done
+>>   * before we have logged the error, then we will get corruption in the
+>>   * error log.  This is preferable over holding off on calling
+>> @@ -362,20 +364,19 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+>>  	savep = __va(regs->gpr[3]);
+>>  	regs->gpr[3] = savep[0];	/* restore original r3 */
+>>
+>> -	/* If it isn't an extended log we can use the per cpu 64bit buffer */
+>>  	h = (struct rtas_error_log *)&savep[1];
+>> +	/* Use the per cpu buffer from paca to store rtas error log */
+>> +	memset(local_paca->mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
+>>  	if (!rtas_error_extended(h)) {
+>> -		memcpy(this_cpu_ptr(&mce_data_buf), h, sizeof(__u64));
+>> -		errhdr = (struct rtas_error_log *)this_cpu_ptr(&mce_data_buf);
+>> +		memcpy(local_paca->mce_data_buf, h, sizeof(__u64));
+>>  	} else {
+>>  		int len, error_log_length;
+>>
+>>  		error_log_length = 8 + rtas_error_extended_log_length(h);
+>>  		len = max_t(int, error_log_length, RTAS_ERROR_LOG_MAX);
+>> -		memset(global_mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
+>> -		memcpy(global_mce_data_buf, h, len);
+>> -		errhdr = (struct rtas_error_log *)global_mce_data_buf;
+>> +		memcpy(local_paca->mce_data_buf, h, len);
+>>  	}
+>> +	errhdr = (struct rtas_error_log *)local_paca->mce_data_buf;
+> 
+> You should drop errhdr in this function and simply do
+> 	return (struct rtas_error_log *)local_paca->mce_data_buf;
 
---SO98HVl1bnMOfKZd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+sure, will do that in next revision.
 
-On Fri, Jun 29, 2018 at 01:00:07PM +1000, Alexey Kardashevskiy wrote:
-> On Fri, 29 Jun 2018 11:55:40 +1000
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
->=20
-> > Alexey Kardashevskiy <aik@ozlabs.ru> writes:
-> >=20
-> > > This is to improve page boundaries checking and should probably
-> > > be cc:stable. I came accross this while debugging nvlink2 passthrough
-> > > but the lack of checking might be exploited by the existing userspace=
-=2E =20
-> >=20
-> > Do you really mean "exploited" ? As in there's a security issue?
-> >=20
-> > Your change log for patch 2 sort of suggests that but then says that
-> > without the fix you just hit an error in vfio code.
->=20
->=20
-> The bug is that I can easily make unmodified guest use 16MB IOMMU pages
-> while guest RAM is backed with system 64K pages so unless the guest RAM
-> is allocated contigously (which is unlikely), a 16MB TCE will provide
-> the hardware access to the host physical memory it is not supposed to
-> have access to, which is 16MB minus first 64K.
->=20
-> There is a fast path for H_PUT_TCE - via KVM - there is no contained
-> test.
->=20
-> There is a slow path for H_PUT_TCE - via VFIO ioctl() - there is a
-> contained test.
->=20
-> Because of a different feature of VFIO on sPAPR (it stores an array of
-> userspace addresses which we received from QEMU and translated to host
-> physical addresses and programmed those to the TCE table) we do not take
-> the fast path on the very first H_PUT_TCE (because I allocate the
-> array when the slow path is taken the very first time), fail there,
-> pass the failure to the guest the guest decides that is over.
->=20
-> But a modified guest could ignore that initial H_PUT_TCE failure and
-> simply repeat H_PUT_TCE again - this time it will take the fast path
-> and allow the bad mapping.
-
-In short, yes, it's an exploitable security hole in the host.  An
-unmodified Linux guest kernel just doesn't happen to exploit it, even
-if the guest userspace tries to get it to.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---SO98HVl1bnMOfKZd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAls1si4ACgkQbDjKyiDZ
-s5IYLw/7Bz2PH9lR1Ge2RjN55xehA0nikTHvWjE23LUtouUApyoSe8PmT2uAgq3O
-7nEpoGrhaGb0+8t9pTWnaxoMRQJmQz0bgxbeeM7EJ/FXL1xgypDEmEmTsRw/Jq8B
-zLtM7CBGAL230RB6N+uPOK91FuORsP3P1QgjnvkFX9P1JT37xhK4rB4cvjLE6t2E
-qR4mLgJcXuYw3HTmGVYgy+OpJ+H2UDBb77udQL/bzPRLUqNkhE237WBA0uNSVlzn
-xw8EalfYWZj9OTCoLd7RWZf7aSy0vE8VT4bh/f84go9AcQ+4mbI+C5adybPa6igM
-IToCKmwuzEltMOnLZ/uKb1GKwilip4tJPGQHHspvk5ZEowqfTRw3owbNuKzrX7Wd
-79TDbymH/y83LJ13+kL1e02HfT2AHQ04Ha9SqeuXrejXL1MUkWcO86ceGoHrxa5E
-UN2tuV64fmhwtgHd3qVp/7Gnhv9ksPbFK8u5xI404SPbZcO1rHXskkYixQR+Vo3Q
-qejI2gcIuRMA1KokxXGFhI/UHRBMiltabYXC6ZdpCqbDPsV8VQ4cvXrIr4yDaskR
-OafHrf+6+V7kvwaucQiaaHehYWg8vbwwmIL0dxF/COU+501RVjEqzreZjNbyttzr
-KtXzqIs9OdzZD5Yoec/Pu6o+hbarXTWQGNv9YtK8AT1nrqrMjgU=
-=lbnw
------END PGP SIGNATURE-----
-
---SO98HVl1bnMOfKZd--
+Thanks,
+-Mahesh.
