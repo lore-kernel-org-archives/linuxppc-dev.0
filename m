@@ -1,36 +1,26 @@
-Return-Path: <bauerman@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg0-x242.google.com (mail-pg0-x242.google.com
+ [IPv6:2607:f8b0:400e:c05::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41H1Wl1bCQzF1d1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 12:56:47 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w5T2sIqr139548
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 22:56:45 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jwbrgs846-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 22:56:45 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 28 Jun 2018 22:56:44 -0400
-References: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-To: Ram Pai <linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: Re: [PATCH 1/2] powerpc/pkeys: preallocate execute_only key only if
- the key is available.
-In-reply-to: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
-Date: Thu, 28 Jun 2018 23:56:34 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41H1bl1Z8mzF1Pn
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 13:00:18 +1000 (AEST)
+Received: by mail-pg0-x242.google.com with SMTP id a14-v6so3328569pgw.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 20:00:18 -0700 (PDT)
+Date: Fri, 29 Jun 2018 13:00:07 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson
+ <alex.williamson@redhat.com>, kvm-ppc@vger.kernel.org, David Gibson
+ <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v2 0/2] KVM: PPC: Check if IOMMU page is
+ contained in the pinned physical page
+Message-ID: <20180629130007.1b78e168@aik.ozlabs.ibm.com>
+In-Reply-To: <877emiwe3n.fsf@concordia.ellerman.id.au>
+References: <20180626055926.27703-1-aik@ozlabs.ru>
+ <877emiwe3n.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87fu16xpul.fsf@morokweng.localdomain>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,82 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 29 Jun 2018 11:55:40 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-Hello,
+> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+> 
+> > This is to improve page boundaries checking and should probably
+> > be cc:stable. I came accross this while debugging nvlink2 passthrough
+> > but the lack of checking might be exploited by the existing userspace.  
+> 
+> Do you really mean "exploited" ? As in there's a security issue?
+> 
+> Your change log for patch 2 sort of suggests that but then says that
+> without the fix you just hit an error in vfio code.
 
-Ram Pai <linuxram@us.ibm.com> writes:
 
-> Key 2 is preallocated and reserved for execute-only key. In rare
-> cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
-> incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
->
-> Ensure key 2 is available for preallocation before reserving it for
-> execute_only purpose.  Problem noticed by Michael Ellermen.
+The bug is that I can easily make unmodified guest use 16MB IOMMU pages
+while guest RAM is backed with system 64K pages so unless the guest RAM
+is allocated contigously (which is unlikely), a 16MB TCE will provide
+the hardware access to the host physical memory it is not supposed to
+have access to, which is 16MB minus first 64K.
 
-Since "powerpc/pkeys: Preallocate execute-only key" isn't upstream yet,
-this patch could be squashed into it.
+There is a fast path for H_PUT_TCE - via KVM - there is no contained
+test.
 
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  arch/powerpc/mm/pkeys.c |   14 +++++++++-----
->  1 files changed, 9 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> index cec990c..0b03914 100644
-> --- a/arch/powerpc/mm/pkeys.c
-> +++ b/arch/powerpc/mm/pkeys.c
-> @@ -19,6 +19,7 @@
->  u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
->  u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
->  u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
-> +int  execute_only_key = 2;
->
->  #define AMR_BITS_PER_PKEY 2
->  #define AMR_RD_BIT 0x1UL
-> @@ -26,7 +27,6 @@
->  #define IAMR_EX_BIT 0x1UL
->  #define PKEY_REG_BITS (sizeof(u64)*8)
->  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
-> -#define EXECUTE_ONLY_KEY 2
->
->  static void scan_pkey_feature(void)
->  {
-> @@ -122,8 +122,12 @@ int pkey_initialize(void)
->  #else
->  	os_reserved = 0;
->  #endif
-> +
-> +	if ((pkeys_total - os_reserved) <= execute_only_key)
-> +		execute_only_key = -1;
-> +
->  	/* Bits are in LE format. */
-> -	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
-> +	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
+There is a slow path for H_PUT_TCE - via VFIO ioctl() - there is a
+contained test.
 
-My understanding is that left-shifting by a negative amount is undefined
-behavior in C. A quick test tells me that at least on the couple of
-machines I tested, 1 < -1 = 0. Does GCC guarantee that behavior? If so,
-a comment pointing this out would make this less confusing.
+Because of a different feature of VFIO on sPAPR (it stores an array of
+userspace addresses which we received from QEMU and translated to host
+physical addresses and programmed those to the TCE table) we do not take
+the fast path on the very first H_PUT_TCE (because I allocate the
+array when the slow path is taken the very first time), fail there,
+pass the failure to the guest the guest decides that is over.
 
->  	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
->
->  	/* register mask is in BE format */
-> @@ -132,11 +136,11 @@ int pkey_initialize(void)
->
->  	pkey_iamr_mask = ~0x0ul;
->  	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-> -	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-> +	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
->
->  	pkey_uamor_mask = ~0x0ul;
->  	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-> -	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-> +	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
+But a modified guest could ignore that initial H_PUT_TCE failure and
+simply repeat H_PUT_TCE again - this time it will take the fast path
+and allow the bad mapping.
 
-Here the behaviour is undefined in C as well, given that pkeyshift(-1) =
-64, which is the total number of bits in the left operand. Does GCC
-guarantee that the result will be 0 here as well?
+
+> So I'm not clear on what the exposure is.
+> 
+> cheers
+
+
 
 --
-Thiago Jung Bauermann
-IBM Linux Technology Center
+Alexey
