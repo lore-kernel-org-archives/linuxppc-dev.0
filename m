@@ -2,17 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41H0CH1YQmzF1dh
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 11:57:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41H1VN3hD4zF1PM
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 12:55:40 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Reduce upper limit for DMA
- window size
-In-Reply-To: <20180601080616.29279-1-aik@ozlabs.ru>
-References: <20180601080616.29279-1-aik@ozlabs.ru>
-Date: Fri, 29 Jun 2018 11:57:30 +1000
-Message-ID: <874lhmwe0l.fsf@concordia.ellerman.id.au>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, malat@debian.org,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/mm: fix always true/false warning in slice.c
+In-Reply-To: <63b696ab7be8b941fa1e1589f28260320d12a32a.1529589640.git.christophe.leroy@c-s.fr>
+References: <63b696ab7be8b941fa1e1589f28260320d12a32a.1529589640.git.christophe.leroy@c-s.fr>
+Date: Fri, 29 Jun 2018 12:55:39 +1000
+Message-ID: <871scqwbbo.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,49 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> We use PHB in mode1 which uses bit 59 to select a correct DMA window.
-> However there is mode2 which uses bits 59:55 and allows up to 32 DMA
-> windows per a PE.
-
-Do we ever use mode2?
-
-> Even though documentation does not clearly specify that, it seems that
-> the actual hardware does not support bits 59:55 even in mode1, in other
-> words we can create a window as big as 1<<58 but DMA simply won't work.
-
-Can we get anything more solid than "seems that" ?
-
-Is this documented somewhere to not work or you just found this by
-testing?
-
-> This reduces the upper limit from 59 to 55 bits to let the userspace know
-> about the hardware limits.
+> This patch fixes the following warnings (obtained with make W=1).
 >
-> Fixes: 7aafac11e3 "powerpc/powernv/ioda2: Gracefully fail if too many TCE levels requested"
+> arch/powerpc/mm/slice.c: In function 'slice_range_to_mask':
+> arch/powerpc/mm/slice.c:73:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+>   if (start < SLICE_LOW_TOP) {
 
-Stable?
+Presumably only on 32-bit ?
+
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index 9530c6db406a..17c57760e06c 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -79,7 +86,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+>  			- (1u << GET_LOW_SLICE_INDEX(start));
+>  	}
+>  
+> -	if ((start + len) > SLICE_LOW_TOP) {
+> +	if (!slice_addr_is_low(end)) {
+>  		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+>  		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+>  		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+
+This worries me.
+
+By casting before the comparison in the helper you squash the compiler
+warning, but the code is still broken if (start + len) overflows.
+
+Presumably that "never happens", but it just seems fishy.
+
+The other similar check in that file does:
+
+  if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
+
+Where SLICE_NUM_HIGH == 0 on 32-bit.
+
+
+Could we fix the less than comparisons with SLICE_LOW_TOP with something
+similar, eg:
+
+	if (!SLICE_NUM_HIGH || start < SLICE_LOW_TOP) {
+
+ie. limit them to the 64-bit code?
 
 cheers
-
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 92ca662..50e21d7 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2839,7 +2839,7 @@ static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
->  	level_shift = entries_shift + 3;
->  	level_shift = max_t(unsigned, level_shift, PAGE_SHIFT);
->  
-> -	if ((level_shift - 3) * levels + page_shift >= 60)
-> +	if ((level_shift - 3) * levels + page_shift >= 55)
->  		return -EINVAL;
->  
->  	/* Allocate TCE table */
-> -- 
-> 2.11.0
