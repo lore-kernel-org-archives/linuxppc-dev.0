@@ -1,32 +1,23 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
+ [IPv6:2a00:1450:4864:20::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HTbr1hhFzF1LM
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 07:01:59 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id l16-v6so4690883ita.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:01:59 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41HTcG3jZQzF1g2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 07:02:20 +1000 (AEST)
+Received: by mail-lj1-x244.google.com with SMTP id t7-v6so8300376ljj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 14:02:20 -0700 (PDT)
 MIME-Version: 1.0
-References: <99169786-61dd-b19c-ac81-84bcd0a67de4@lwfinger.net>
-In-Reply-To: <99169786-61dd-b19c-ac81-84bcd0a67de4@lwfinger.net>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 29 Jun 2018 14:01:46 -0700
-Message-ID: <CA+55aFzZ7PND2Xvz9wB1jaCmp0rBMTSmJtKiFwSeOWy9iLSd8Q@mail.gmail.com>
-Subject: Re: [Update] Regression in 4.18 - 32-bit PowerPC crashes on boot -
- bisected to commit 1d40a5ea01d5
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Matthew Wilcox <willy@infradead.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Vlastimil Babka <vbabka@suse.cz>,
- Christoph Lameter <cl@linux.com>, Dave Hansen <dave.hansen@linux.intel.com>,
- Jerome Glisse <jglisse@redhat.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Pekka Enberg <penberg@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180629185339.GA37582@beast>
+References: <20180629185339.GA37582@beast>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 29 Jun 2018 23:02:15 +0200
+Message-ID: <CAK8P3a3zrXii=bxBm1zHWMHWgYLCQ0rpo460zmKyfsf_-nxxhQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: mpc5200: Remove VLA usage
+To: Kees Cook <keescook@chromium.org>
+Cc: Anatolij Gustschin <agust@denx.de>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,46 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 29, 2018 at 1:42 PM Larry Finger <Larry.Finger@lwfinger.net> wrote:
+On Fri, Jun 29, 2018 at 8:53 PM, Kees Cook <keescook@chromium.org> wrote:
+> In the quest to remove all stack VLA usage from the kernel[1], this
+> switches to using a stack size large enough for the saved routine and
+> adds a sanity check.
 >
-> I have more information regarding this BUG. Line 700 of page-flags.h is the
-> macro PAGE_TYPE_OPS(Table, table). For further debugging, I manually expanded
-> the macro, and found that the bug line is VM_BUG_ON_PAGE(!PageTable(page), page)
-> in routine __ClearPageTable(), which is called from pgtable_page_dtor() in
-> include/linux/mm.h. I also added a printk call to PageTable() that logs
-> page->page_type. The routine was called twice. The first had page_type of
-> 0xfffffbff, which would have been expected for a . The second call had
-> 0xffffffff, which led to the BUG.
+> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-So it looks to me like the tear-down of the page tables first found a
-page that is indeed a page table, and cleared the page table bit
-(well, it set it - the bits are reversed).
+This seems particularly nice, not only avoids it the dynamic stack
+allocation, it
+also makes sure the new 0x500 handler doesn't overflow into the 0x600
+exception handler.
 
-Then it took an exception (that "interrupt: 700") and that causes
-do_exit() again, and it tries to free the same page table - and now
-it's no longer marked as a page table, because it already went through
-the __ClearPageTable() dance once.
+It would help to explain how you arrived at that '256 byte' number in
+the changelog though.
 
-So on the second path through, it catches that "the bit already said
-it wasn't a page table" and does the BUG.
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
-But the real question is what the problem was the *first* time around.
-I assume that has scrolled off the screen? This part:
-
-  _exception_pkey+0x58/0x128
-  ret_from_except_full+0x0/0x4
-  --- interrupt: 700 at free_pgd_range+0x19c/0x30c
-       LR = free_pgd_range+0x19c/0x30c
-  free_pgtables+0xa/0xb
-  exit_mnap+0xf4/0x16c
-  mmput+0x64/0xf0
-
-Does reverting that commit 1d40a5ea01d5 make everything work for you?
-Because if so, judging by the deafening silence on this so far, I
-think that's what we should do.
-
-That said, can some ppc person who knows the 32-bit ppc code and maybe
-knows what that "interrupt: 700" means talk about that oddity in the
-trace, please?
-
-                    Linus
+> ---
+>  arch/powerpc/platforms/52xx/mpc52xx_pm.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
+> index 31d3515672f3..b23da85fa73c 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
+> @@ -117,7 +117,10 @@ int mpc52xx_pm_enter(suspend_state_t state)
+>         u32 intr_main_mask;
+>         void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
+>         unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
+> -       char saved_0x500[mpc52xx_ds_cached_size];
+> +       char saved_0x500[256];
+> +
+> +       if (WARN_ON(mpc52xx_ds_cached_size > sizeof(saved_0x500)))
+> +               return -ENOMEM;
+>
+>         /* disable all interrupts in PIC */
+>         intr_main_mask = in_be32(&intr->main_mask);
