@@ -1,22 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bauerman@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41H1VN3hD4zF1PM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 12:55:40 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, malat@debian.org,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm: fix always true/false warning in slice.c
-In-Reply-To: <63b696ab7be8b941fa1e1589f28260320d12a32a.1529589640.git.christophe.leroy@c-s.fr>
-References: <63b696ab7be8b941fa1e1589f28260320d12a32a.1529589640.git.christophe.leroy@c-s.fr>
-Date: Fri, 29 Jun 2018 12:55:39 +1000
-Message-ID: <871scqwbbo.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41H1Wl1bCQzF1d1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 12:56:47 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w5T2sIqr139548
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 22:56:45 -0400
+Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2jwbrgs846-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2018 22:56:45 -0400
+Received: from localhost
+ by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Thu, 28 Jun 2018 22:56:44 -0400
+References: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: Ram Pai <linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
+Subject: Re: [PATCH 1/2] powerpc/pkeys: preallocate execute_only key only if
+ the key is available.
+In-reply-to: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
+Date: Thu, 28 Jun 2018 23:56:34 -0300
 MIME-Version: 1.0
 Content-Type: text/plain
+Message-Id: <87fu16xpul.fsf@morokweng.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +40,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe Leroy <christophe.leroy@c-s.fr> writes:
 
-> This patch fixes the following warnings (obtained with make W=1).
+Hello,
+
+Ram Pai <linuxram@us.ibm.com> writes:
+
+> Key 2 is preallocated and reserved for execute-only key. In rare
+> cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
+> incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
 >
-> arch/powerpc/mm/slice.c: In function 'slice_range_to_mask':
-> arch/powerpc/mm/slice.c:73:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
->   if (start < SLICE_LOW_TOP) {
+> Ensure key 2 is available for preallocation before reserving it for
+> execute_only purpose.  Problem noticed by Michael Ellermen.
 
-Presumably only on 32-bit ?
+Since "powerpc/pkeys: Preallocate execute-only key" isn't upstream yet,
+this patch could be squashed into it.
 
-> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-> index 9530c6db406a..17c57760e06c 100644
-> --- a/arch/powerpc/mm/slice.c
-> +++ b/arch/powerpc/mm/slice.c
-> @@ -79,7 +86,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
->  			- (1u << GET_LOW_SLICE_INDEX(start));
->  	}
->  
-> -	if ((start + len) > SLICE_LOW_TOP) {
-> +	if (!slice_addr_is_low(end)) {
->  		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
->  		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
->  		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> ---
+>  arch/powerpc/mm/pkeys.c |   14 +++++++++-----
+>  1 files changed, 9 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> index cec990c..0b03914 100644
+> --- a/arch/powerpc/mm/pkeys.c
+> +++ b/arch/powerpc/mm/pkeys.c
+> @@ -19,6 +19,7 @@
+>  u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
+>  u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
+>  u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
+> +int  execute_only_key = 2;
+>
+>  #define AMR_BITS_PER_PKEY 2
+>  #define AMR_RD_BIT 0x1UL
+> @@ -26,7 +27,6 @@
+>  #define IAMR_EX_BIT 0x1UL
+>  #define PKEY_REG_BITS (sizeof(u64)*8)
+>  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
+> -#define EXECUTE_ONLY_KEY 2
+>
+>  static void scan_pkey_feature(void)
+>  {
+> @@ -122,8 +122,12 @@ int pkey_initialize(void)
+>  #else
+>  	os_reserved = 0;
+>  #endif
+> +
+> +	if ((pkeys_total - os_reserved) <= execute_only_key)
+> +		execute_only_key = -1;
+> +
+>  	/* Bits are in LE format. */
+> -	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
+> +	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
 
-This worries me.
+My understanding is that left-shifting by a negative amount is undefined
+behavior in C. A quick test tells me that at least on the couple of
+machines I tested, 1 < -1 = 0. Does GCC guarantee that behavior? If so,
+a comment pointing this out would make this less confusing.
 
-By casting before the comparison in the helper you squash the compiler
-warning, but the code is still broken if (start + len) overflows.
+>  	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
+>
+>  	/* register mask is in BE format */
+> @@ -132,11 +136,11 @@ int pkey_initialize(void)
+>
+>  	pkey_iamr_mask = ~0x0ul;
+>  	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
+> -	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
+> +	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
+>
+>  	pkey_uamor_mask = ~0x0ul;
+>  	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
+> -	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
+> +	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
 
-Presumably that "never happens", but it just seems fishy.
+Here the behaviour is undefined in C as well, given that pkeyshift(-1) =
+64, which is the total number of bits in the left operand. Does GCC
+guarantee that the result will be 0 here as well?
 
-The other similar check in that file does:
-
-  if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
-
-Where SLICE_NUM_HIGH == 0 on 32-bit.
-
-
-Could we fix the less than comparisons with SLICE_LOW_TOP with something
-similar, eg:
-
-	if (!SLICE_NUM_HIGH || start < SLICE_LOW_TOP) {
-
-ie. limit them to the 64-bit code?
-
-cheers
+--
+Thiago Jung Bauermann
+IBM Linux Technology Center
