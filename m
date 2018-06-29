@@ -1,20 +1,22 @@
-Return-Path: <bharat.bhushan@nxp.com>
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-eopbgr60056.outbound.protection.outlook.com [40.107.6.56])
+Return-Path: <diana.craciun@nxp.com>
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10043.outbound.protection.outlook.com [40.107.1.43])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HCYP03rLzF1LP
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 20:28:53 +1000 (AEST)
-From: Bharat Bhushan <Bharat.Bhushan@nxp.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- robh@kernel.org, geoff@infradead.org, tyreld@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Bharat Bhushan <Bharat.Bhushan@nxp.com>
-Subject: [PATCH] powerpc/mpic: Cleanup irq vector accounting
-Date: Fri, 29 Jun 2018 15:54:32 +0530
-Message-Id: <1530267872-31244-1-git-send-email-Bharat.Bhushan@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41HK0c5JF6zF1Nf
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 00:34:22 +1000 (AEST)
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+CC: "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "oss@buserror.net"
+ <oss@buserror.net>, Leo Li <leoyang.li@nxp.com>, Bharat Bhushan
+ <bharat.bhushan@nxp.com>
+Subject: Re: [PATCH v2 0/3] powerpc/fsl: Speculation barrier for NXP PowerPC
+ Book3E
+Date: Fri, 29 Jun 2018 14:34:15 +0000
+Message-ID: <VI1PR0401MB24635C491443351EB2A2326CFF4E0@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <1528721608-15443-1-git-send-email-diana.craciun@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,49 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Available vector space accounts ipis and timer interrupts
-while spurious vector was not accounted. Also later
-mpic_setup_error_int() escape one more vector, seemingly it
-assumes one spurious vector.
-
-Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
----
- arch/powerpc/sysdev/fsl_mpic_err.c | 2 +-
- arch/powerpc/sysdev/mpic.c         | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_mpic_err.c b/arch/powerpc/sysdev/fsl_mpic_err.c
-index 488ec45..2a98837 100644
---- a/arch/powerpc/sysdev/fsl_mpic_err.c
-+++ b/arch/powerpc/sysdev/fsl_mpic_err.c
-@@ -76,7 +76,7 @@ int mpic_setup_error_int(struct mpic *mpic, int intvec)
- 	mpic->flags |= MPIC_FSL_HAS_EIMR;
- 	/* allocate interrupt vectors for error interrupts */
- 	for (i = MPIC_MAX_ERR - 1; i >= 0; i--)
--		mpic->err_int_vecs[i] = --intvec;
-+		mpic->err_int_vecs[i] = intvec--;
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 1d4e0ef6..e098d1e 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1380,12 +1380,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		 * global vector number space, as in case of ipis
- 		 * and timer interrupts.
- 		 *
--		 * Available vector space = intvec_top - 12, where 12
-+		 * Available vector space = intvec_top - 13, where 13
- 		 * is the number of vectors which have been consumed by
--		 * ipis and timer interrupts.
-+		 * ipis, timer interrupts and spurious.
- 		 */
- 		if (fsl_version >= 0x401) {
--			ret = mpic_setup_error_int(mpic, intvec_top - 12);
-+			ret = mpic_setup_error_int(mpic, intvec_top - 13);
- 			if (ret)
- 				return NULL;
- 		}
--- 
-1.9.3
+Hi,=0A=
+=0A=
+Should I rebase the series on top of the latest kernel?=0A=
+=0A=
+Diana=0A=
+=0A=
+On 6/11/2018 3:53 PM, Diana Craciun wrote:=0A=
+> Implement barrier_nospec for NXP PowerPC Book3E processors. =0A=
+>=0A=
+> Diana Craciun (3):=0A=
+>   Disable the speculation barrier from the command line=0A=
+>   Add barrier_nospec implementation for NXP PowerPC Book3E=0A=
+>   Implement cpu_show_spectre_v1/v2 for NXP PowerPC Book3E=0A=
+>=0A=
+>  arch/powerpc/Kconfig               |  2 +-=0A=
+>  arch/powerpc/include/asm/barrier.h | 10 +++++++++=0A=
+>  arch/powerpc/include/asm/setup.h   |  2 +-=0A=
+>  arch/powerpc/kernel/Makefile       |  2 +-=0A=
+>  arch/powerpc/kernel/module.c       |  5 +++--=0A=
+>  arch/powerpc/kernel/security.c     | 42 ++++++++++++++++++++++++++++++++=
++++++-=0A=
+>  arch/powerpc/kernel/setup_32.c     |  5 +++++=0A=
+>  arch/powerpc/kernel/setup_64.c     |  6 ++++++=0A=
+>  arch/powerpc/kernel/vmlinux.lds.S  |  4 +++-=0A=
+>  arch/powerpc/lib/feature-fixups.c  | 35 ++++++++++++++++++++++++++++++-=
+=0A=
+>  10 files changed, 105 insertions(+), 8 deletions(-)=0A=
+>=0A=
+> --=0A=
+> History:=0A=
+>=0A=
+> v1 --> v2=0A=
+> - added implementation for cpu_show_spectre_x functions=0A=
+> - the mitigation is no longer enabled through device tree options=0A=
+> 2.5.5=0A=
+>=0A=
+>=0A=
+=0A=
