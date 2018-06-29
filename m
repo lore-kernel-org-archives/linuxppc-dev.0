@@ -1,24 +1,30 @@
-Return-Path: <paubert@iram.es>
-Received: from telmad-lavadora-l1mail1v.puc.rediris.es (unknown
- [IPv6:2001:720:418:ca03::78])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41H5mk002xzF1Qt
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 16:08:20 +1000 (AEST)
-Date: Fri, 29 Jun 2018 08:07:15 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Cc: Ram Pai <linuxram@us.ibm.com>, fweimer@redhat.com, mhocko@kernel.org,
- Ulrich.Weigand@de.ibm.com, bauerman@linux.vnet.ibm.com,
- msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/pkeys: preallocate execute_only key only if
- the key is available.
-Message-ID: <20180629060715.36xlai5mayyx6j34@lt-gp.iram.es>
-References: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
- <87fu16xpul.fsf@morokweng.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41H75k5tZNzF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 17:08:10 +1000 (AEST)
+Received: by mail-it0-x241.google.com with SMTP id a195-v6so1483761itd.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2018 00:08:10 -0700 (PDT)
+Date: Fri, 29 Jun 2018 17:07:47 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, Alex Williamson
+ <alex.williamson@redhat.com>, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel v2 2/2] KVM: PPC: Check if IOMMU page is
+ contained in the pinned physical page
+Message-ID: <20180629170747.471bea35@aik.ozlabs.ibm.com>
+In-Reply-To: <20180629151820.461ae112@aik.ozlabs.ibm.com>
+References: <20180626055926.27703-1-aik@ozlabs.ru>
+ <20180626055926.27703-3-aik@ozlabs.ru>
+ <20180629041241.GC3422@umbus.fritz.box>
+ <20180629145121.5d03e067@aik.ozlabs.ibm.com>
+ <20180629045702.GI3422@umbus.fritz.box>
+ <20180629151820.461ae112@aik.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87fu16xpul.fsf@morokweng.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/hGI8wVS8s4_mjGla=aLBSJH"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,106 +34,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 28, 2018 at 11:56:34PM -0300, Thiago Jung Bauermann wrote:
-> 
-> Hello,
-> 
-> Ram Pai <linuxram@us.ibm.com> writes:
-> 
-> > Key 2 is preallocated and reserved for execute-only key. In rare
-> > cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
-> > incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
-> >
-> > Ensure key 2 is available for preallocation before reserving it for
-> > execute_only purpose.  Problem noticed by Michael Ellermen.
-> 
-> Since "powerpc/pkeys: Preallocate execute-only key" isn't upstream yet,
-> this patch could be squashed into it.
-> 
-> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> > ---
-> >  arch/powerpc/mm/pkeys.c |   14 +++++++++-----
-> >  1 files changed, 9 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-> > index cec990c..0b03914 100644
-> > --- a/arch/powerpc/mm/pkeys.c
-> > +++ b/arch/powerpc/mm/pkeys.c
-> > @@ -19,6 +19,7 @@
-> >  u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
-> >  u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
-> >  u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
-> > +int  execute_only_key = 2;
-> >
-> >  #define AMR_BITS_PER_PKEY 2
-> >  #define AMR_RD_BIT 0x1UL
-> > @@ -26,7 +27,6 @@
-> >  #define IAMR_EX_BIT 0x1UL
-> >  #define PKEY_REG_BITS (sizeof(u64)*8)
-> >  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
-> > -#define EXECUTE_ONLY_KEY 2
-> >
-> >  static void scan_pkey_feature(void)
-> >  {
-> > @@ -122,8 +122,12 @@ int pkey_initialize(void)
-> >  #else
-> >  	os_reserved = 0;
-> >  #endif
-> > +
-> > +	if ((pkeys_total - os_reserved) <= execute_only_key)
-> > +		execute_only_key = -1;
-> > +
-> >  	/* Bits are in LE format. */
-> > -	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
-> > +	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
-> 
-> My understanding is that left-shifting by a negative amount is undefined
-> behavior in C. A quick test tells me that at least on the couple of
-> machines I tested, 1 < -1 = 0. Does GCC guarantee that behavior? 
+--Sig_/hGI8wVS8s4_mjGla=aLBSJH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Not in general. It probably always works on Power because of the definition 
-of the machine instruction for shifts with variable amount (consider the 
-shift amount unsigned and take it modulo twice the width of the operand), 
-but for example it fails on x86 (1<<-1 gives 0x80000000).
+On Fri, 29 Jun 2018 15:18:20 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> If so, a comment pointing this out would make this less confusing.
+> On Fri, 29 Jun 2018 14:57:02 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+>=20
+> > On Fri, Jun 29, 2018 at 02:51:21PM +1000, Alexey Kardashevskiy wrote: =
+=20
+> > > On Fri, 29 Jun 2018 14:12:41 +1000
+> > > David Gibson <david@gibson.dropbear.id.au> wrote:
+> > >    =20
+> > > > On Tue, Jun 26, 2018 at 03:59:26PM +1000, Alexey Kardashevskiy wrot=
+e:   =20
+> > > > > We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c th=
+at
+> > > > > an IOMMU page is contained in the physical page so the PCI hardwa=
+re won't
+> > > > > get access to unassigned host memory.
+> > > > >=20
+> > > > > However we do not have this check in KVM fastpath (H_PUT_TCE acce=
+lerated
+> > > > > code) so the user space can pin memory backed with 64k pages and =
+create
+> > > > > a hardware TCE table with a bigger page size. We were lucky so fa=
+r and
+> > > > > did not hit this yet as the very first time the mapping happens
+> > > > > we do not have tbl::it_userspace allocated yet and fall back to
+> > > > > the userspace which in turn calls VFIO IOMMU driver and that fails
+> > > > > because of the check in vfio_iommu_spapr_tce.c which is really
+> > > > > sustainable solution.
+> > > > >=20
+> > > > > This stores the smallest preregistered page size in the preregist=
+ered
+> > > > > region descriptor and changes the mm_iommu_xxx API to check this =
+against
+> > > > > the IOMMU page size.
+> > > > >=20
+> > > > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > > > > ---
+> > > > > Changes:
+> > > > > v2:
+> > > > > * explicitly check for compound pages before calling compound_ord=
+er()
+> > > > >=20
+> > > > > ---
+> > > > > The bug is: run QEMU _without_ hugepages (no -mempath) and tell i=
+t to
+> > > > > advertise 16MB pages to the guest; a typical pseries guest will u=
+se 16MB
+> > > > > for IOMMU pages without checking the mmu pagesize and this will f=
+ail
+> > > > > at https://git.qemu.org/?p=3Dqemu.git;a=3Dblob;f=3Dhw/vfio/common=
+.c;h=3Dfb396cf00ac40eb35967a04c9cc798ca896eed57;hb=3Drefs/heads/master#l256
+> > > > >=20
+> > > > > With the change, mapping will fail in KVM and the guest will prin=
+t:
+> > > > >=20
+> > > > > mlx5_core 0000:00:00.0: ibm,create-pe-dma-window(2027) 0 8000000 =
+20000000 18 1f returned 0 (liobn =3D 0x80000001 starting addr =3D 8000000 0)
+> > > > > mlx5_core 0000:00:00.0: created tce table LIOBN 0x80000001 for /p=
+ci@800000020000000/ethernet@0
+> > > > > mlx5_core 0000:00:00.0: failed to map direct window for
+> > > > > /pci@800000020000000/ethernet@0: -1     =20
+> > > >=20
+> > > > [snip]   =20
+> > > > > @@ -124,7 +125,7 @@ long mm_iommu_get(struct mm_struct *mm, unsig=
+ned long ua, unsigned long entries,
+> > > > >  		struct mm_iommu_table_group_mem_t **pmem)
+> > > > >  {
+> > > > >  	struct mm_iommu_table_group_mem_t *mem;
+> > > > > -	long i, j, ret =3D 0, locked_entries =3D 0;
+> > > > > +	long i, j, ret =3D 0, locked_entries =3D 0, pageshift;
+> > > > >  	struct page *page =3D NULL;
+> > > > > =20
+> > > > >  	mutex_lock(&mem_list_mutex);
+> > > > > @@ -166,6 +167,8 @@ long mm_iommu_get(struct mm_struct *mm, unsig=
+ned long ua, unsigned long entries,
+> > > > >  		goto unlock_exit;
+> > > > >  	}
+> > > > > =20
+> > >  > > +	mem->pageshift =3D 30; /* start from 1G pages - the biggest we=
+ have */     =20
+> > > >=20
+> > > > What about 16G pages on an HPT system?   =20
+> > >=20
+> > >=20
+> > > Below in the loop mem->pageshift will reduce to the biggest actual si=
+ze
+> > > which will be 16mb/64k/4k. Or remain 1GB if no memory is actually
+> > > pinned, no loss there.   =20
+> >=20
+> > Are you saying that 16G IOMMU pages aren't supported?  Or that there's
+> > some reason a guest can never use them? =20
+>=20
+>=20
+> ah, 16_G_, not _M_. My bad. I just never tried such huge pages, I will
+> lift the limit up to 64 then, easier this way.
 
-Unless I miss something, this code is run once at boot, so its
-performance is irrelevant.
 
-In this case simply rewrite it as:
+Ah, no, rather this as the upper limit:
 
-	reserved_allocation_mask = 0x1 << 1;
-	if ( (pkeys_total - os_reserved) <= execute_only_key) {
-		execute_only_key = -1;
-	} else {
-		reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
-	}
+mem->pageshift =3D ilog2(entries) + PAGE_SHIFT;
 
-Caveat, I have assumed that the code will either:
-- only run once,
-- pkeys_total and os_reserved are int, not unsigned
 
-> 
-> >  	initial_allocation_mask  = reserved_allocation_mask | (0x1 << PKEY_0);
-> >
-> >  	/* register mask is in BE format */
-> > @@ -132,11 +136,11 @@ int pkey_initialize(void)
-> >
-> >  	pkey_iamr_mask = ~0x0ul;
-> >  	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-> > -	pkey_iamr_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-> > +	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
-> >
-> >  	pkey_uamor_mask = ~0x0ul;
-> >  	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
-> > -	pkey_uamor_mask &= ~(0x3ul << pkeyshift(EXECUTE_ONLY_KEY));
-> > +	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
-> 
-> Here the behaviour is undefined in C as well, given that pkeyshift(-1) =
-> 64, which is the total number of bits in the left operand. Does GCC
-> guarantee that the result will be 0 here as well?
+@entries here is a number of system pages being pinned in that
+function.
 
-Same answer: very likely on Power, not portable.
 
-	Gabriel
+
+>=20
+> >  =20
+> > > > >  	for (i =3D 0; i < entries; ++i) {
+> > > > >  		if (1 !=3D get_user_pages_fast(ua + (i << PAGE_SHIFT),
+> > > > >  					1/* pages */, 1/* iswrite */, &page)) {
+> > > > > @@ -199,6 +202,11 @@ long mm_iommu_get(struct mm_struct *mm, unsi=
+gned long ua, unsigned long entries,
+> > > > >  			}
+> > > > >  		}
+> > > > >  populate:
+> > > > > +		pageshift =3D PAGE_SHIFT;
+> > > > > +		if (PageCompound(page))
+> > > > > +			pageshift +=3D compound_order(compound_head(page));
+> > > > > +		mem->pageshift =3D min_t(unsigned int, mem->pageshift, pageshi=
+ft);     =20
+> > > >=20
+> > > > Why not make mem->pageshift and pageshift local the same type to av=
+oid
+> > > > the min_t() ?   =20
+> > >=20
+> > > I was under impression min() is deprecated (misinterpret checkpatch.pl
+> > > may be) and therefore did not pay attention to it. I can fix this and
+> > > repost if there is no other question.   =20
+> >=20
+> > Hm, it's possible. =20
+>=20
+> Nah, tried min(), compiles fine.
+
+
+
+--
+Alexey
+
+--Sig_/hGI8wVS8s4_mjGla=aLBSJH
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEECIb1sawlPgRl/px9ze7KtGKK020FAls12sMACgkQze7KtGKK
+023tCw/6A8ouuQ8IK7MBx4OQsDSlzyTbVh8F5KEBXWonwSiA5saab4QUVb4KTx3S
+s1usBhBNc9yJ3llKeGcgTZQoY1jux9pcysXKrbmKrmT7ONsZ4FlBh2rtO57A3/kn
+/pjASycvd9aj7IYNjz4WE4H92nNvugirKOujopj12ao5tz81uN3pSQRKBw8jNAzh
+I0rX0wlo+mpCvGYPyM+RQiHbOuFydaQkj7vP/5U7E64aXVJJ1UoPZjjvNdmY9ECd
+CBP8KIlHGWwYT7z1mn13aC/WO9d7kcSRoHsOqP4hT2pDXU8fi/Hbb/fC8I/SGZIO
+PDeSQ4S17u3Z+1aSgWiSm+vhdPm8DW8mT2dYdYK6KpoYuYAxXP4UAlAWdJbDHgrt
+NdTxPaF4NSAexkIlFqPpOZkS6YcSaM3BMYQx3jhZn5gJ52IonnUFVR1Z8/Wy2Rge
+KUaE1KL7x6dji8ZuwSpOlMYKCLUsp4VySZK97nRHudyhUHl2Wh0bXyzhehVIhWou
+Sp0bkC4CNqX4XuRfeZ2wgYVvbC8QKiqkfcvjXPcx1PDe2bqs0RZeqVphrR6pZZPT
+qWcFmX6dkzWSE6qADKdyHJtgVmx/K0by/vXunZtgv6zKPkchYnRzVYxh74jkPW0K
++bXT2BoroFZ8HDfyTpM8D3K/gXxBB2xkQ5nOSZUp4dhBc3kqzCM=
+=Luig
+-----END PGP SIGNATURE-----
+
+--Sig_/hGI8wVS8s4_mjGla=aLBSJH--
