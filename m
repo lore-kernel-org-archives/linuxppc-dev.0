@@ -1,18 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Hc1f1GkZzF1LJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 11:51:18 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: aneesh.kumar@linux.ibm.com, arnd@arndb.de, hch@lst.de, leitao@debian.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.18-3 tag
-Date: Sat, 30 Jun 2018 11:51:16 +1000
-Message-ID: <87lgaxm48b.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Hc4F2JywzF1LK
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 11:53:33 +1000 (AEST)
+Date: Fri, 29 Jun 2018 20:53:29 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ mpe@ellerman.id.au, bhelgaas@google.com, bryantly@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 1/1] powerpc/pseries: fix EEH recovery of some IOV
+ devices
+Message-ID: <20180630015329.GM40928@bhelgaas-glaptop.roam.corp.google.com>
+References: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,71 +25,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA256
+On Fri, May 25, 2018 at 10:31:36AM +1000, Sam Bobroff wrote:
+> EEH recovery currently fails on pSeries for some IOV capable PCI
+> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
+> certain device tree properties for the device. (Found on an IOV
+> capable device using the ipr driver.)
+> 
+> Recovery fails in pci_enable_resources() at the check on r->parent,
+> because r->flags is set and r->parent is not.  This state is due to
+> sriov_init() setting the start, end and flags members of the IOV BARs
+> but the parent not being set later in
+> pseries_pci_fixup_iov_resources(), because the
+> "ibm,open-sriov-vf-bar-info" property is missing.
+> 
+> Correct this by zeroing the resource flags for IOV BARs when they
+> can't be configured.
+> 
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
-Hi Linus,
+I assume this will be handled by the powerpc folks, since it doesn't touch
+drivers/pci.  Let me know if you need something from me.
 
-Please pull some more powerpc fixes for 4.18:
-
-The following changes since commit fadd03c615922d8521a2e76d4ba2335891cb2790:
-
-  powerpc/mm/hash/4k: Free hugetlb page table caches correctly. (2018-06-20 09:13:25 +1000)
-
-are available in the git repository at:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.18-3
-
-for you to fetch changes up to 22db552b50fa11d8c1d171de908a1f9ef62172b7:
-
-  powerpc/powermac: Fix rtc read/write functions (2018-06-27 13:48:49 +1000)
-
-- ------------------------------------------------------------------
-powerpc fixes for 4.18 #3
-
-Two regression fixes, and a new syscall wire-up.
-
-A fix for the recent conversion to time64_t in the powermac RTC routines, which
-caused time to go backward.
-
-Another fix for fallout from the split PMD PTL conversion.
-
-Wire up the new io_pgetevents() syscall.
-
-Thanks to:
-  Aneesh Kumar K.V, Arnd Bergmann, Breno Leitao, Mathieu Malaterre.
-
-- ------------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/mm/32: Fix pgtable_page_dtor call
-
-Arnd Bergmann (1):
-      powerpc/powermac: Fix rtc read/write functions
-
-Breno Leitao (1):
-      powerpc: Wire up io_pgetevents
-
-
- arch/powerpc/include/asm/book3s/32/pgalloc.h |  1 -
- arch/powerpc/include/asm/nohash/32/pgalloc.h |  1 -
- arch/powerpc/include/asm/systbl.h            |  1 +
- arch/powerpc/include/asm/unistd.h            |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h       |  1 +
- arch/powerpc/platforms/powermac/time.c       | 29 +++++++++++++++++++---------
- 6 files changed, 23 insertions(+), 12 deletions(-)
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJbNuG+AAoJEFHr6jzI4aWA1EAP/RdhBfhErOfaR6CN9hB7JT0f
-4ibdfYQzfGLhml40w70BnSR1rJZtQLk3TZUeT4bhjWb9GRLmakXf1iwp0yGle6gX
-Y+r54Jy3lqD8dHEn1cONQYAOdADBAv1OFZ54cCnch1yvjOxnFTDn4jR0jjLnM8Jk
-fD1VBRgCTJT5lkNpfIP2UtbEcy2Y9E4QCCUDCRaAYTPwJQqjIBcuNmxahObvawhe
-U1k9FhPcqwUPD0jjEbEBvwnaPEZzvHOnqU4G2elBmHjBSPCFXVWQ+4AdDlAHK67J
-qEx3q6Xycw8ATmonwPxxv8eu7Lq0XgSYXB/zUmjp1pvcOCMdYZ0Lei0yyPJfcFWA
-PX9RtlENuMbhz6Pm1INhtcm+yxV9v+nzHAI40kVHh+yZLQTK2zt8jZiqFs3ZHOm5
-NY55XIWW1ATnKB9T0Teu/efEDTBHtDtTQ5hmJW88UB3Fd9OVjTspz6aWVlTB4VRr
-jxT0VedPt3B/zTwEpIeA6W3/WgveIhK8VZ49ntMqAINw4tsc4gc7a6A98riZ9Oxw
-YQ9pPqejx9Jw/2AeYhZ1RA/hV9REICIicX6fxR98fkx2ViqNF8OC3YzvQXNJWe3L
-EyRx1TLj/8lb0o5A92rOeeL/5QQK+H5PGoIY9gY6NhsDDSAadtHu1oAhftscVopZ
-k94DXR9yFZg+aoU2lWDp
-=NS+i
------END PGP SIGNATURE-----
+> ---
+> Hi,
+> 
+> This is a fix to allow EEH recovery to succeed in a specific situation,
+> which I've tried to explain in the commit message.
+> 
+> As with the RFC version, the IOV BARs are disabled by setting the resource
+> flags to 0 but the other fields are now left as-is because that is what is done
+> elsewhere (see sriov_init() and __pci_read_base()).
+> 
+> I've also examined the concern raised by Bjorn Helgaas, that VFs could be
+> enabled later after the BARs are disabled, and it already seems safe: enabling
+> VFs (on pseries) depends on another device tree property,
+> "ibm,number-of-configurable-vfs" as well as support for the RTAS function
+> "ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
+> seems unlikely that we would ever see some of them but not all. (None are
+> currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
+> recovery failure was discovered doesn't even seem to have SR-IOV support so it
+> certainly can't enable VFs.)
+> 
+> Cheers,
+> Sam.
+> ====== v1 -> v2: ======
+> 
+> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
+> * Moved the BAR disabling code to a function.
+> * Also check in pseries_pci_fixup_resources().
+> 
+> ====== v1: ======
+> 
+> Patch 1/1: powerpc/pseries: fix EEH recovery of IOV devices
+> 
+>  arch/powerpc/platforms/pseries/setup.c | 25 +++++++++++++++++--------
+>  1 file changed, 17 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index b55ad4286dc7..0a9e4243ae1d 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -645,6 +645,15 @@ void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
+>  	}
+>  }
+>  
+> +static void pseries_disable_sriov_resources(struct pci_dev *pdev)
+> +{
+> +	int i;
+> +
+> +	pci_warn(pdev, "No hypervisor support for SR-IOV on this device, IOV BARs disabled.\n");
+> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
+> +		pdev->resource[i + PCI_IOV_RESOURCES].flags = 0;
+> +}
+> +
+>  static void pseries_pci_fixup_resources(struct pci_dev *pdev)
+>  {
+>  	const int *indexes;
+> @@ -652,10 +661,10 @@ static void pseries_pci_fixup_resources(struct pci_dev *pdev)
+>  
+>  	/*Firmware must support open sriov otherwise dont configure*/
+>  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> -	if (!indexes)
+> -		return;
+> -	/* Assign the addresses from device tree*/
+> -	of_pci_set_vf_bar_size(pdev, indexes);
+> +	if (indexes)
+> +		of_pci_set_vf_bar_size(pdev, indexes);
+> +	else
+> +		pseries_disable_sriov_resources(pdev);
+>  }
+>  
+>  static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
+> @@ -667,10 +676,10 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
+>  		return;
+>  	/*Firmware must support open sriov otherwise dont configure*/
+>  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> -	if (!indexes)
+> -		return;
+> -	/* Assign the addresses from device tree*/
+> -	of_pci_parse_iov_addrs(pdev, indexes);
+> +	if (indexes)
+> +		of_pci_parse_iov_addrs(pdev, indexes);
+> +	else
+> +		pseries_disable_sriov_resources(pdev);
+>  }
+>  
+>  static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
+> -- 
+> 2.16.1.74.g9b0b1f47b
+> 
