@@ -1,37 +1,26 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
- [IPv6:2607:f8b0:4003:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paubert@iram.es>
+Received: from cica-lavadora-l1mail3.puc.rediris.es
+ (ci-l1mail3-out04a.puc.rediris.es [IPv6:2001:720:418:ca02::30])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41HzRK2FW7zF20w
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2018 02:25:19 +1000 (AEST)
-Received: by mail-oi0-x242.google.com with SMTP id c2-v6so11156079oic.1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2018 09:25:19 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Subject: Re: [Update] Regression in 4.18 - 32-bit PowerPC crashes on boot -
- bisected to commit 1d40a5ea01d5
-To: christophe leroy <christophe.leroy@c-s.fr>,
- Matthew Wilcox <willy@infradead.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Christoph Lameter <cl@linux.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?=
- <jglisse@redhat.com>, Lai Jiangshan <jiangshanlai@gmail.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Pekka Enberg <penberg@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
-References: <99169786-61dd-b19c-ac81-84bcd0a67de4@lwfinger.net>
- <1a73e92a-f77d-ba1e-ebf8-b469db3c465e@c-s.fr>
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Message-ID: <b721b0c9-a802-2296-fc82-5c11c2698327@lwfinger.net>
-Date: Sat, 30 Jun 2018 11:25:15 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41J06y4llszF29m
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2018 02:57:13 +1000 (AEST)
+Date: Sat, 30 Jun 2018 18:56:49 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: Ram Pai <linuxram@us.ibm.com>, fweimer@redhat.com, mhocko@kernel.org,
+ Ulrich.Weigand@de.ibm.com, bauerman@linux.vnet.ibm.com,
+ msuchanek@suse.de, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/pkeys: preallocate execute_only key only if
+ the key is available.
+Message-ID: <20180630165636.rw3s365dy5dkcpee@lt-gp.iram.es>
+References: <1529979376-7292-1-git-send-email-linuxram@us.ibm.com>
+ <87fu16xpul.fsf@morokweng.localdomain>
+ <20180629060715.36xlai5mayyx6j34@lt-gp.iram.es>
+ <8736x5yts2.fsf@morokweng.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <1a73e92a-f77d-ba1e-ebf8-b469db3c465e@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <8736x5yts2.fsf@morokweng.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,47 +30,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/30/2018 04:31 AM, christophe leroy wrote:
+On Fri, Jun 29, 2018 at 09:58:37PM -0300, Thiago Jung Bauermann wrote:
 > 
+> Gabriel Paubert <paubert@iram.es> writes:
 > 
-> Le 29/06/2018 à 22:42, Larry Finger a écrit :
->> My PowerBook G4 Aluminum crashes on boot with 4.18-rcX kernels with a kernel 
->> BUG at include/linux/page-flags.h:700! The problem was bisected to commit 
->> 1d40a5ea01d5 ("mm: mark pages in use for page tables"). It is not possible to 
->> capture the bug with anything other than a camera. The first few lines of the 
->> traceback are as follows:
->>
->> free_pgd_range+0x19c/0x30c (unreliable)
->> free_pgtables_0xa0/0xb0
->> exit_pmap+0xf4/0x16c
->> mmput+0x64/0xf0
->> do_exit+0x33c/0x89c
->> oops_end+0x13c/0x144
->> _exception_pkey+0x58/0x128
->> ret_from_except_full+0x0/0x4
->> --- interrupt: 700 at free_pgd_range+0x19c/0x30c
->>      LR = free_pgd_range+0x19c/0x30c
->> free_pgtables+0xa/0xb
->> exit_mnap+0xf4/0x16c
->> mmput+0x64/0xf0
->> flush_old_exec+0x490/0x550
->>
->> I have more information regarding this BUG. Line 700 of page-flags.h is the 
->> macro PAGE_TYPE_OPS(Table, table). For further debugging, I manually expanded 
->> the macro, and found that the bug line is VM_BUG_ON_PAGE(!PageTable(page), 
->> page) in routine __ClearPageTable(), which is called from pgtable_page_dtor() 
->> in include/linux/mm.h. I also added a printk call to PageTable() that logs 
->> page->page_type. The routine was called twice. The first had page_type of 
->> 0xfffffbff, which would have been expected for a . The second call had 
->> 0xffffffff, which led to the BUG.
->>
+> > On Thu, Jun 28, 2018 at 11:56:34PM -0300, Thiago Jung Bauermann wrote:
+> >>
+> >> Hello,
+> >>
+> >> Ram Pai <linuxram@us.ibm.com> writes:
+> >>
+> >> > Key 2 is preallocated and reserved for execute-only key. In rare
+> >> > cases if key-2 is unavailable, mprotect(PROT_EXEC) will behave
+> >> > incorrectly. NOTE: mprotect(PROT_EXEC) uses execute-only key.
+> >> >
+> >> > Ensure key 2 is available for preallocation before reserving it for
+> >> > execute_only purpose.  Problem noticed by Michael Ellermen.
+> >>
+> >> Since "powerpc/pkeys: Preallocate execute-only key" isn't upstream yet,
+> >> this patch could be squashed into it.
+> >>
+> >> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> >> > ---
+> >> >  arch/powerpc/mm/pkeys.c |   14 +++++++++-----
+> >> >  1 files changed, 9 insertions(+), 5 deletions(-)
+> >> >
+> >> > diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+> >> > index cec990c..0b03914 100644
+> >> > --- a/arch/powerpc/mm/pkeys.c
+> >> > +++ b/arch/powerpc/mm/pkeys.c
+> >> > @@ -19,6 +19,7 @@
+> >> >  u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
+> >> >  u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
+> >> >  u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
+> >> > +int  execute_only_key = 2;
+> >> >
+> >> >  #define AMR_BITS_PER_PKEY 2
+> >> >  #define AMR_RD_BIT 0x1UL
+> >> > @@ -26,7 +27,6 @@
+> >> >  #define IAMR_EX_BIT 0x1UL
+> >> >  #define PKEY_REG_BITS (sizeof(u64)*8)
+> >> >  #define pkeyshift(pkey) (PKEY_REG_BITS - ((pkey+1) * AMR_BITS_PER_PKEY))
+> >> > -#define EXECUTE_ONLY_KEY 2
+> >> >
+> >> >  static void scan_pkey_feature(void)
+> >> >  {
+> >> > @@ -122,8 +122,12 @@ int pkey_initialize(void)
+> >> >  #else
+> >> >  	os_reserved = 0;
+> >> >  #endif
+> >> > +
+> >> > +	if ((pkeys_total - os_reserved) <= execute_only_key)
+> >> > +		execute_only_key = -1;
+> >> > +
+> >> >  	/* Bits are in LE format. */
+> >> > -	reserved_allocation_mask = (0x1 << 1) | (0x1 << EXECUTE_ONLY_KEY);
+> >> > +	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
+> >>
+> >> My understanding is that left-shifting by a negative amount is undefined
+> >> behavior in C. A quick test tells me that at least on the couple of
+> >> machines I tested, 1 < -1 = 0. Does GCC guarantee that behavior?
+> >
+> > Not in general. It probably always works on Power because of the definition
+> > of the machine instruction for shifts with variable amount (consider the
+> > shift amount unsigned and take it modulo twice the width of the operand),
 > 
-> Oh, seems to be the one I noticed and told Aneesh about 
-> (https://patchwork.ozlabs.org/patch/922771/)
+> Ok, thanks for confirming.
 > 
-> Aneesh provided the patch https://patchwork.ozlabs.org/patch/934111/ for it, 
-> does it help ?
+> > but for example it fails on x86 (1<<-1 gives 0x80000000).
+> 
+> Strange, this works on my laptop with an Intel(R) Core(TM) i5-7300U CPU:
+> 
+> $ cat blah.c
+> #include <stdio.h>
+> 
+> int main(int argc, char *argv[])
+> {
+>         printf("1 << -1 = %llx\n", (unsigned long long) 1 << -1);
+>         return 0;
+> }
+> $ make blah
+> cc     blah.c   -o blah
+> blah.c: In function 'main':
+> blah.c:5:52: warning: left shift count is negative [-Wshift-count-negative]
+>   printf("1 << -1 = %llx\n", (unsigned long long) 1 << -1);
+>                                                     ^~
+> $ ./blah
+> 1 << -1 = 0
+> 
+> Even if I change the cast and printf format to int, the result is the
+> same. Or am I doing it wrong?
 
-Yes, those changes fix the problem.
+Try something more dynamic, 1 << -1 is evaluated at compile time by gcc,
+and when you get a warning, the compile time expression evaluation does
+not always give the same result as the run time machine instructions.
 
-Larry
+To test this I wrote (yes, the error checking is approximate, it would
+be better to use strtol):
+
+/***************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv)
+{
+	int val, amount, valid;
+	if (argc != 3) {
+		printf("Needs 2 arguments!\n");
+		return EXIT_FAILURE;
+	}
+	valid = sscanf(argv[1], "%d", &val);
+	if (valid == 1) {
+		valid = sscanf(argv[2], "%d", &amount);
+	}
+	if (valid == 1) {
+		printf("%d shifted by %d is %d\n", val, amount, val<<amount);
+		return EXIT_SUCCESS;
+	} else {
+		printf("Both arguments must be integers!\n");
+		return EXIT_FAILURE;
+	}
+}
+/***************************************************************************/
+
+Compile it, and then run it with 1 and -1 as parameters. The result is
+not the same on PPC and x86.
+
+
+> 
+> >> If so, a comment pointing this out would make this less confusing.
+> >
+> > Unless I miss something, this code is run once at boot, so its
+> > performance is irrelevant.
+> >
+> > In this case simply rewrite it as:
+> >
+> > 	reserved_allocation_mask = 0x1 << 1;
+> > 	if ( (pkeys_total - os_reserved) <= execute_only_key) {
+> > 		execute_only_key = -1;
+> > 	} else {
+> > 		reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
+> > 	}
+> 
+> I agree it's clearer and more robust code (except that the first
+> line should be inside the if block).
+
+Indeed, sorry for this.
+
+	Gabriel
+
+> 
+> >
+> > Caveat, I have assumed that the code will either:
+> > - only run once,
+> > - pkeys_total and os_reserved are int, not unsigned
+> 
+> Both of the above are true.
+> 
+> --
+> Thiago Jung Bauermann
+> IBM Linux Technology Center
+> 
