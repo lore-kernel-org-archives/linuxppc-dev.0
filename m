@@ -1,23 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41J46G3FgTzF2Z7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2018 05:56:53 +1000 (AEST)
-Date: Sat, 30 Jun 2018 13:56:48 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, David Gibson
- <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org, Paul Mackerras
- <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel v2 1/2] vfio/spapr: Use IOMMU pageshift rather
- than pagesize
-Message-ID: <20180630135648.2e717432@t450s.home>
-In-Reply-To: <20180626055926.27703-2-aik@ozlabs.ru>
-References: <20180626055926.27703-1-aik@ozlabs.ru>
- <20180626055926.27703-2-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41JR8C2KTBzF1Gt
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2018 20:14:51 +1000 (AEST)
+Subject: Patch "powerpc/e500mc: Set assembler machine type to e500mc" has been
+ added to the 4.17-stable tree
+To: benh@kernel.crashing.org, galak@kernel.crashing.org,
+ gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
+ mathieu.desnoyers@efficios.com, mjeanson@efficios.com, mpe@ellerman.id.au,
+ paulus@samba.org, swood@redhat.com, vakul.garg@nxp.com
+Cc: <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Sun, 01 Jul 2018 12:09:25 +0200
+Message-ID: <15304397655494@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 26 Jun 2018 15:59:25 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-> The size is always equal to 1 page so let's use this. Later on this will
-> be used for other checks which use page shifts to check the granularity
-> of access.
-> 
-> This should cause no behavioral change.
-> 
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+This is a note to let you know that I've just added the patch titled
 
-I assume a v3+ will go in through the ppc tree since the bulk of the
-series is there.  For this,
+    powerpc/e500mc: Set assembler machine type to e500mc
 
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
+to the 4.17-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 759a5bd..2da5f05 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_container *container,
->  }
->  
->  static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
-> -		unsigned long tce, unsigned long size,
-> +		unsigned long tce, unsigned long shift,
->  		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
->  {
->  	long ret = 0;
->  	struct mm_iommu_table_group_mem_t *mem;
->  
-> -	mem = mm_iommu_lookup(container->mm, tce, size);
-> +	mem = mm_iommu_lookup(container->mm, tce, 1ULL << shift);
->  	if (!mem)
->  		return -EINVAL;
->  
-> @@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_container *container,
->  	if (!pua)
->  		return;
->  
-> -	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl),
-> +	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
->  			&hpa, &mem);
->  	if (ret)
->  		pr_debug("%s: tce %lx at #%lx was not cached, ret=%d\n",
-> @@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *container,
->  				entry + i);
->  
->  		ret = tce_iommu_prereg_ua_to_hpa(container,
-> -				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
-> +				tce, tbl->it_page_shift, &hpa, &mem);
->  		if (ret)
->  			break;
->  
+The filename of the patch is:
+     powerpc-e500mc-set-assembler-machine-type-to-e500mc.patch
+and it can be found in the queue-4.17 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+>From 69a8405999aa1c489de4b8d349468f0c2b83f093 Mon Sep 17 00:00:00 2001
+From: Michael Jeanson <mjeanson@efficios.com>
+Date: Thu, 14 Jun 2018 11:27:42 -0400
+Subject: powerpc/e500mc: Set assembler machine type to e500mc
+
+From: Michael Jeanson <mjeanson@efficios.com>
+
+commit 69a8405999aa1c489de4b8d349468f0c2b83f093 upstream.
+
+In binutils 2.26 a new opcode for the "wait" instruction was added for the
+POWER9 and has precedence over the one specific to the e500mc. Commit
+ebf714ff3756 ("powerpc/e500mc: Add support for the wait instruction in
+e500_idle") uses this instruction specifically on the e500mc to work around
+an erratum.
+
+This results in an invalid instruction in idle_e500 when we build for the
+e500mc on bintutils >= 2.26 with the default assembler machine type.
+
+Since multiplatform between e500 and non-e500 is not supported, set the
+assembler machine type globaly when CONFIG_PPC_E500MC=y.
+
+Signed-off-by: Michael Jeanson <mjeanson@efficios.com>
+Reviewed-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Kumar Gala <galak@kernel.crashing.org>
+CC: Vakul Garg <vakul.garg@nxp.com>
+CC: Scott Wood <swood@redhat.com>
+CC: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+CC: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+CC: stable@vger.kernel.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ arch/powerpc/Makefile |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -251,6 +251,7 @@ cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+ cpu-as-$(CONFIG_ALTIVEC)	+= $(call as-option,-Wa$(comma)-maltivec)
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+ cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= -Wa,-mpower4
++cpu-as-$(CONFIG_PPC_E500MC)	+= $(call as-option,-Wa$(comma)-me500mc)
+ 
+ KBUILD_AFLAGS += $(cpu-as-y)
+ KBUILD_CFLAGS += $(cpu-as-y)
+
+
+Patches currently in stable-queue which might be from mjeanson@efficios.com are
+
+queue-4.17/powerpc-e500mc-set-assembler-machine-type-to-e500mc.patch
