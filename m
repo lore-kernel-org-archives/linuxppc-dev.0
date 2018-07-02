@@ -1,39 +1,21 @@
-Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Jd1Z64kPzF1Hj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 03:39:46 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id q19-v6so5415975ioh.11
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Jul 2018 10:39:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Jpms6SDYzF1LP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 10:59:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org
+Cc: bhelgaas@google.com, bryantly@linux.vnet.ibm.com
+Subject: Re: [PATCH v2 1/1] powerpc/pseries: fix EEH recovery of some IOV
+ devices
+In-Reply-To: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
+References: <7598ffeb48c16c88a34937ad93b18f806222b8df.1527208281.git.sbobroff@linux.ibm.com>
+Date: Mon, 02 Jul 2018 10:59:24 +1000
+Message-ID: <87in5ymp03.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180627151510.GE30631@arm.com>
-References: <20180626182802.19932-1-ard.biesheuvel@linaro.org>
- <20180627151510.GE30631@arm.com>
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Sun, 1 Jul 2018 19:39:43 +0200
-Message-ID: <CAKv+Gu-dkVEtRmvZwiAUpxPSHrkTVvzeGhCwczEmxRjcgfd+LQ@mail.gmail.com>
-Subject: Re: [PATCH v9 0/6] add support for relative references in special
- sections
-To: Thomas Gleixner <tglx@linutronix.de>,
- "the arch/x86 maintainers" <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Kees Cook <keescook@chromium.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Thomas Garnier <thgarnie@google.com>, "Serge E. Hallyn" <serge@hallyn.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Russell King <linux@armlinux.org.uk>, Paul Mackerras <paulus@samba.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Petr Mladek <pmladek@suse.com>,
- James Morris <jmorris@namei.org>, Andrew Morton <akpm@linux-foundation.org>,
- Nicolas Pitre <nico@linaro.org>, Josh Poimboeuf <jpoimboe@redhat.com>,
- Steven Rostedt <rostedt@goodmis.org>,
- Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Jessica Yu <jeyu@kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Will Deacon <will.deacon@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,64 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27 June 2018 at 17:15, Will Deacon <will.deacon@arm.com> wrote:
-> Hi Ard,
+Sam Bobroff <sbobroff@linux.ibm.com> writes:
+
+> EEH recovery currently fails on pSeries for some IOV capable PCI
+> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
+> certain device tree properties for the device. (Found on an IOV
+> capable device using the ipr driver.)
 >
-> On Tue, Jun 26, 2018 at 08:27:55PM +0200, Ard Biesheuvel wrote:
->> This adds support for emitting special sections such as initcall arrays,
->> PCI fixups and tracepoints as relative references rather than absolute
->> references. This reduces the size by 50% on 64-bit architectures, but
->> more importantly, it removes the need for carrying relocation metadata
->> for these sections in relocatable kernels (e.g., for KASLR) that needs
->> to be fixed up at boot time. On arm64, this reduces the vmlinux footprint
->> of such a reference by 8x (8 byte absolute reference + 24 byte RELA entry
->> vs 4 byte relative reference)
->>
->> Patch #3 was sent out before as a single patch. This series supersedes
->> the previous submission. This version makes relative ksymtab entries
->> dependent on the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS rather
->> than trying to infer from kbuild test robot replies for which architectures
->> it should be blacklisted.
->>
->> Patch #1 introduces the new Kconfig symbol HAVE_ARCH_PREL32_RELOCATIONS,
->> and sets it for the main architectures that are expected to benefit the
->> most from this feature, i.e., 64-bit architectures or ones that use
->> runtime relocations.
->>
->> Patch #2 add support for #define'ing __DISABLE_EXPORTS to get rid of
->> ksymtab/kcrctab sections in decompressor and EFI stub objects when
->> rebuilding existing C files to run in a different context.
+> Recovery fails in pci_enable_resources() at the check on r->parent,
+> because r->flags is set and r->parent is not.  This state is due to
+> sriov_init() setting the start, end and flags members of the IOV BARs
+> but the parent not being set later in
+> pseries_pci_fixup_iov_resources(), because the
+> "ibm,open-sriov-vf-bar-info" property is missing.
 >
-> I had a small question on patch 3, but it's really for my understanding.
-> So, for patches 1-3:
+> Correct this by zeroing the resource flags for IOV BARs when they
+> can't be configured.
 >
-> Reviewed-by: Will Deacon <will.deacon@arm.com>
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> ---
+> Hi,
 >
+> This is a fix to allow EEH recovery to succeed in a specific situation,
+> which I've tried to explain in the commit message.
+>
+> As with the RFC version, the IOV BARs are disabled by setting the resource
+> flags to 0 but the other fields are now left as-is because that is what is done
+> elsewhere (see sriov_init() and __pci_read_base()).
+>
+> I've also examined the concern raised by Bjorn Helgaas, that VFs could be
+> enabled later after the BARs are disabled, and it already seems safe: enabling
+> VFs (on pseries) depends on another device tree property,
+> "ibm,number-of-configurable-vfs" as well as support for the RTAS function
+> "ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
+> seems unlikely that we would ever see some of them but not all. (None are
+> currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
+> recovery failure was discovered doesn't even seem to have SR-IOV support so it
+> certainly can't enable VFs.)
 
-Thanks all.
+Can you fold/reword the above into the change log, it seems like useful
+detail.
 
-Thomas, Ingo,
-
-Except for the below tweak against patch #3 for powerpc, which may
-apparently get confused by an input section called .discard without
-any suffixes, this series is good to go, but requires your ack to
-proceed, so I would like to ask you to share your comments and/or
-objections. Also, any suggestions or recommendations regarding the
-route these patches should take are highly appreciated.
-
-Ard.
-
-
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
-index 2d9c63f41031..61c844d4ab48 100644
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -287,7 +287,7 @@ unsigned long read_word_at_a_time(const void *addr)
-  * visible to the compiler.
-  */
- #define __ADDRESSABLE(sym) \
--       static void * __attribute__((section(".discard"), used))        \
-+       static void * __attribute__((section(".discard.addressable"), used)) \
-                __PASTE(__addressable_##sym, __LINE__) = (void *)&sym;
-
- /**
+cheers
