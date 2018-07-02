@@ -1,16 +1,16 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41K0Zq6fVVzF1LR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 18:21:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 41K0Zr2QqSzF1Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 18:21:24 +1000 (AEST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
-Message-Id: <6bbc912e17bcb92b4c0b7499d270f579a42a796f.1530519301.git.fthain@telegraphics.com.au>
+Message-Id: <4387790ecb4e8aab19582e7560f43500099982d6.1530519301.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1530519301.git.fthain@telegraphics.com.au>
 References: <cover.1530519301.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v4 06/11] macintosh/via-pmu: Add support for m68k PowerBooks
+Subject: [PATCH v4 11/11] macintosh/via-pmu: Disambiguate interrupt statistics
 Date: Mon,  2 Jul 2018 04:21:19 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,307 +21,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Put #ifdefs around the Open Firmware, xmon, interrupt dispatch,
-battery and suspend code. Add the necessary interrupt handling to
-support m68k PowerBooks.
+Some of the event counters are overloaded which makes it very
+difficult to interpret their values.
 
-The pmu_kind value is available to userspace using the
-PMU_IOC_GET_MODEL ioctl. It is not clear yet what hardware classes
-are be needed to describe m68k PowerBook models, so pmu_kind is given
-the provisional value PMU_UNKNOWN.
+Counter 0 is supposed to report CB1 interrupts but it can also count
+PMU_INT_WAITING_CHARGER events.
 
-To find out about the hardware, user programs can use /proc/bootinfo
-or /proc/hardware, or send the PMU_GET_VERSION command using /dev/adb.
+Counter 1 is supposed to report GPIO interrupts but it can also count
+other events (depending upon the value of the PMU_INT_ADB bit).
+
+Disambiguate these statistics with dedicated counters for GPIO and
+CB1 interrupts.
+
+Comments in the MkLinux source code say that the type 0 and type 1
+interrupts are model-specific. Label them as "unknown".
+
+This change to the contents of /proc/pmu/interrupts is by necessity
+visible in userland. However, packages which interact with the PMU
+(that is, pbbuttonsd, pmac-utils and pmud) don't open this file.
+AFAIK, user software has no need to poll these counters.
 
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 ---
- drivers/macintosh/Kconfig   |   2 +-
- drivers/macintosh/via-pmu.c | 101 +++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 91 insertions(+), 12 deletions(-)
+The file now looks like this,
 
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 97a420c11eed..9c6452b38c36 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -65,7 +65,7 @@ config ADB_CUDA
- 	  If unsure say Y.
- 
- config ADB_PMU
--	bool "Support for PMU  based PowerMacs"
-+	bool "Support for PMU based PowerMacs and PowerBooks"
- 	depends on PPC_PMAC
- 	help
- 	  On PowerBooks, iBooks, and recent iMacs and Power Macintoshes, the
+  0:          0 (Unknown interrupt (type 0))
+  1:          0 (Unknown interrupt (type 1))
+  2:          0 (PC-Card eject button)
+  3:         23 (Sound/Brightness button)
+  4:         74 (ADB message)
+  5:          0 (Battery state change)
+  6:          0 (Environment interrupt)
+  7:        121 (Tick timer)
+  8:          0 (Ghost interrupt (zero len))
+  9:          1 (Empty interrupt (empty mask))
+ 10:          2 (Max irqs in a row)
+ 11:        194 (Total CB1 triggered events)
+ 12:          0 (Total GPIO1 triggered events)
+
+rather than this,
+
+  0:        194 (Total CB1 triggered events)
+  1:          0 (Total GPIO1 triggered events)
+  2:          0 (PC-Card eject button)
+  3:         23 (Sound/Brightness button)
+  4:         74 (ADB message)
+  5:          0 (Battery state change)
+  6:          0 (Environment interrupt)
+  7:        121 (Tick timer)
+  8:          0 (Ghost interrupt (zero len))
+  9:          1 (Empty interrupt (empty mask))
+ 10:          2 (Max irqs in a row)
+
+If some parser exists for this file, and if this change is problematic,
+we could increment the driver version number in /proc/pmu/info, to
+correspond with the format change.
+---
+ drivers/macintosh/via-pmu.c | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
 diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index 2557f3e49f18..a68e7a6f00cc 100644
+index 3da5d40309d4..d72c450aebe5 100644
 --- a/drivers/macintosh/via-pmu.c
 +++ b/drivers/macintosh/via-pmu.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0
- /*
-- * Device driver for the via-pmu on Apple Powermacs.
-+ * Device driver for the PMU in Apple PowerBooks and PowerMacs.
-  *
-  * The VIA (versatile interface adapter) interfaces to the PMU,
-  * a 6805 microprocessor core whose primary function is to control
-@@ -49,20 +49,26 @@
- #include <linux/compat.h>
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
--#include <asm/prom.h>
-+#include <linux/uaccess.h>
- #include <asm/machdep.h>
- #include <asm/io.h>
- #include <asm/pgtable.h>
- #include <asm/sections.h>
- #include <asm/irq.h>
-+#ifdef CONFIG_PPC_PMAC
- #include <asm/pmac_feature.h>
- #include <asm/pmac_pfunc.h>
- #include <asm/pmac_low_i2c.h>
--#include <linux/uaccess.h>
-+#include <asm/prom.h>
- #include <asm/mmu_context.h>
- #include <asm/cputable.h>
- #include <asm/time.h>
- #include <asm/backlight.h>
-+#else
-+#include <asm/macintosh.h>
-+#include <asm/macints.h>
-+#include <asm/mac_via.h>
-+#endif
+@@ -172,7 +172,9 @@ static int drop_interrupts;
+ static int option_lid_wakeup = 1;
+ #endif /* CONFIG_SUSPEND && CONFIG_PPC32 */
+ static unsigned long async_req_locks;
+-static unsigned int pmu_irq_stats[11];
++
++#define NUM_IRQ_STATS 13
++static unsigned int pmu_irq_stats[NUM_IRQ_STATS];
  
- #include "via-pmu-event.h"
- 
-@@ -97,8 +103,13 @@ static DEFINE_MUTEX(pmu_info_proc_mutex);
- #define ANH		(15*RS)		/* A-side data, no handshake */
- 
- /* Bits in B data register: both active low */
-+#ifdef CONFIG_PPC_PMAC
- #define TACK		0x08		/* Transfer acknowledge (input) */
- #define TREQ		0x10		/* Transfer request (output) */
-+#else
-+#define TACK		0x02
-+#define TREQ		0x04
-+#endif
- 
- /* Bits in ACR */
- #define SR_CTRL		0x1c		/* Shift register control bits */
-@@ -140,13 +151,15 @@ static int data_index;
- static int data_len;
- static volatile int adb_int_pending;
- static volatile int disable_poll;
--static struct device_node *vias;
- static int pmu_kind = PMU_UNKNOWN;
- static int pmu_fully_inited;
- static int pmu_has_adb;
-+#ifdef CONFIG_PPC_PMAC
- static volatile unsigned char __iomem *via1;
- static volatile unsigned char __iomem *via2;
-+static struct device_node *vias;
- static struct device_node *gpio_node;
-+#endif
- static unsigned char __iomem *gpio_reg;
- static int gpio_irq = 0;
- static int gpio_irq_enabled = -1;
-@@ -273,6 +286,7 @@ static char *pbook_type[] = {
- 
- int __init find_via_pmu(void)
+ static struct proc_dir_entry *proc_pmu_root;
+ static struct proc_dir_entry *proc_pmu_info;
+@@ -873,9 +875,9 @@ static int pmu_info_proc_show(struct seq_file *m, void *v)
+ static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
  {
-+#ifdef CONFIG_PPC_PMAC
- 	u64 taddr;
- 	const u32 *reg;
+ 	int i;
+-	static const char *irq_names[] = {
+-		"Total CB1 triggered events",
+-		"Total GPIO1 triggered events",
++	static const char *irq_names[NUM_IRQ_STATS] = {
++		"Unknown interrupt (type 0)",
++		"Unknown interrupt (type 1)",
+ 		"PC-Card eject button",
+ 		"Sound/Brightness button",
+ 		"ADB message",
+@@ -884,10 +886,12 @@ static int pmu_irqstats_proc_show(struct seq_file *m, void *v)
+ 		"Tick timer",
+ 		"Ghost interrupt (zero len)",
+ 		"Empty interrupt (empty mask)",
+-		"Max irqs in a row"
++		"Max irqs in a row",
++		"Total CB1 triggered events",
++		"Total GPIO1 triggered events",
+         };
  
-@@ -355,9 +369,6 @@ int __init find_via_pmu(void)
- 	if (!init_pmu())
- 		goto fail_init;
- 
--	printk(KERN_INFO "PMU driver v%d initialized for %s, firmware: %02x\n",
--	       PMU_DRIVER_VERSION, pbook_type[pmu_kind], pmu_version);
--	       
- 	sys_ctrler = SYS_CTRLER_PMU;
- 	
- 	return 1;
-@@ -373,6 +384,30 @@ int __init find_via_pmu(void)
- 	vias = NULL;
- 	pmu_state = uninitialized;
- 	return 0;
-+#else
-+	if (macintosh_config->adb_type != MAC_ADB_PB2)
-+		return 0;
-+
-+	pmu_kind = PMU_UNKNOWN;
-+
-+	spin_lock_init(&pmu_lock);
-+
-+	pmu_has_adb = 1;
-+
-+	pmu_intr_mask =	PMU_INT_PCEJECT |
-+			PMU_INT_SNDBRT |
-+			PMU_INT_ADB |
-+			PMU_INT_TICK;
-+
-+	pmu_state = idle;
-+
-+	if (!init_pmu()) {
-+		pmu_state = uninitialized;
-+		return 0;
-+	}
-+
-+	return 1;
-+#endif /* !CONFIG_PPC_PMAC */
- }
- 
- #ifdef CONFIG_ADB
-@@ -396,13 +431,14 @@ static int pmu_init(void)
-  */
- static int __init via_pmu_start(void)
- {
--	unsigned int irq;
-+	unsigned int __maybe_unused irq;
- 
- 	if (pmu_state == uninitialized)
- 		return -ENODEV;
- 
- 	batt_req.complete = 1;
- 
-+#ifdef CONFIG_PPC_PMAC
- 	irq = irq_of_parse_and_map(vias, 0);
- 	if (!irq) {
- 		printk(KERN_ERR "via-pmu: can't map interrupt\n");
-@@ -439,6 +475,19 @@ static int __init via_pmu_start(void)
- 
- 	/* Enable interrupts */
- 	out_8(&via1[IER], IER_SET | SR_INT | CB1_INT);
-+#else
-+	if (request_irq(IRQ_MAC_ADB_SR, via_pmu_interrupt, IRQF_NO_SUSPEND,
-+			"VIA-PMU-SR", NULL)) {
-+		pr_err("%s: couldn't get SR irq\n", __func__);
-+		return -ENODEV;
-+	}
-+	if (request_irq(IRQ_MAC_ADB_CL, via_pmu_interrupt, IRQF_NO_SUSPEND,
-+			"VIA-PMU-CL", NULL)) {
-+		pr_err("%s: couldn't get CL irq\n", __func__);
-+		free_irq(IRQ_MAC_ADB_SR, NULL);
-+		return -ENODEV;
-+	}
-+#endif /* !CONFIG_PPC_PMAC */
- 
- 	pmu_fully_inited = 1;
- 
-@@ -589,6 +638,10 @@ init_pmu(void)
- 			       option_server_mode ? "enabled" : "disabled");
- 		}
+-	for (i=0; i<11; i++) {
++	for (i = 0; i < NUM_IRQ_STATS; i++) {
+ 		seq_printf(m, " %2u: %10u (%s)\n",
+ 			     i, pmu_irq_stats[i], irq_names[i]);
  	}
-+
-+	printk(KERN_INFO "PMU driver v%d initialized for %s, firmware: %02x\n",
-+	       PMU_DRIVER_VERSION, pbook_type[pmu_kind], pmu_version);
-+
- 	return 1;
- }
- 
-@@ -627,6 +680,7 @@ static void pmu_set_server_mode(int server_mode)
- static void
- done_battery_state_ohare(struct adb_request* req)
- {
-+#ifdef CONFIG_PPC_PMAC
- 	/* format:
- 	 *  [0]    :  flags
- 	 *    0x01 :  AC indicator
-@@ -708,6 +762,7 @@ done_battery_state_ohare(struct adb_request* req)
- 	pmu_batteries[pmu_cur_battery].amperage = amperage;
- 	pmu_batteries[pmu_cur_battery].voltage = voltage;
- 	pmu_batteries[pmu_cur_battery].time_remaining = time;
-+#endif /* CONFIG_PPC_PMAC */
- 
- 	clear_bit(0, &async_req_locks);
- }
-@@ -1356,6 +1411,7 @@ pmu_handle_data(unsigned char *data, int len)
- 			}
- 			pmu_done(req);
- 		} else {
-+#ifdef CONFIG_XMON
- 			if (len == 4 && data[1] == 0x2c) {
- 				extern int xmon_wants_key, xmon_adb_keycode;
- 				if (xmon_wants_key) {
-@@ -1363,6 +1419,7 @@ pmu_handle_data(unsigned char *data, int len)
- 					return;
- 				}
- 			}
-+#endif /* CONFIG_XMON */
- #ifdef CONFIG_ADB
- 			/*
- 			 * XXX On the [23]400 the PMU gives us an up
-@@ -1530,7 +1587,25 @@ via_pmu_interrupt(int irq, void *arg)
- 	++disable_poll;
- 	
- 	for (;;) {
--		intr = in_8(&via1[IFR]) & (SR_INT | CB1_INT);
-+		/* On 68k Macs, VIA interrupts are dispatched individually.
-+		 * Unless we are polling, the relevant IRQ flag has already
-+		 * been cleared.
-+		 */
-+		intr = 0;
-+		if (IS_ENABLED(CONFIG_PPC_PMAC) || !irq) {
-+			intr = in_8(&via1[IFR]) & (SR_INT | CB1_INT);
-+			out_8(&via1[IFR], intr);
-+		}
-+#ifndef CONFIG_PPC_PMAC
-+		switch (irq) {
-+		case IRQ_MAC_ADB_CL:
-+			intr = CB1_INT;
-+			break;
-+		case IRQ_MAC_ADB_SR:
-+			intr = SR_INT;
-+			break;
-+		}
-+#endif
- 		if (intr == 0)
- 			break;
- 		handled = 1;
-@@ -1540,7 +1615,6 @@ via_pmu_interrupt(int irq, void *arg)
- 			       intr, in_8(&via1[IER]), pmu_state);
- 			break;
+@@ -1622,7 +1626,7 @@ via_pmu_interrupt(int irq, void *arg)
  		}
--		out_8(&via1[IFR], intr);
  		if (intr & CB1_INT) {
  			adb_int_pending = 1;
- 			pmu_irq_stats[0]++;
-@@ -1550,6 +1624,9 @@ via_pmu_interrupt(int irq, void *arg)
- 			if (req)
- 				break;
+-			pmu_irq_stats[0]++;
++			pmu_irq_stats[11]++;
  		}
-+#ifndef CONFIG_PPC_PMAC
-+		break;
-+#endif
- 	}
- 
- recheck:
-@@ -1616,7 +1693,7 @@ pmu_unlock(void)
- }
- 
- 
--static irqreturn_t
-+static __maybe_unused irqreturn_t
- gpio1_interrupt(int irq, void *arg)
- {
- 	unsigned long flags;
-@@ -2250,6 +2327,7 @@ static int pmu_ioctl(struct file *filp,
- 	int error = -EINVAL;
- 
- 	switch (cmd) {
-+#ifdef CONFIG_PPC_PMAC
- 	case PMU_IOC_SLEEP:
- 		if (!capable(CAP_SYS_ADMIN))
- 			return -EACCES;
-@@ -2259,6 +2337,7 @@ static int pmu_ioctl(struct file *filp,
- 			return put_user(0, argp);
- 		else
- 			return put_user(1, argp);
-+#endif
- 
- #ifdef CONFIG_PMAC_BACKLIGHT_LEGACY
- 	/* Compatibility ioctl's for backlight */
+ 		if (intr & SR_INT) {
+ 			req = pmu_sr_intr();
+@@ -1709,7 +1713,7 @@ gpio1_interrupt(int irq, void *arg)
+ 			disable_irq_nosync(gpio_irq);
+ 			gpio_irq_enabled = 0;
+ 		}
+-		pmu_irq_stats[1]++;
++		pmu_irq_stats[12]++;
+ 		adb_int_pending = 1;
+ 		spin_unlock_irqrestore(&pmu_lock, flags);
+ 		via_pmu_interrupt(0, NULL);
 -- 
 2.16.4
