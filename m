@@ -1,46 +1,34 @@
-Return-Path: <srs0=9r9h=js=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Jx9S5dvXzF1Nj
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 15:47:40 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41Jx9S4p7Nz8wD8
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 15:47:40 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41Jx9S1Fqvz9s1B
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2018 15:47:39 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w625iUWu020189
- for <linuxppc-dev@ozlabs.org>; Mon, 2 Jul 2018 01:47:38 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2jy68turss-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 02 Jul 2018 01:47:38 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 2 Jul 2018 06:47:36 +0100
-Subject: [PATCH v5 7/7] powerpc/pseries: Dump the SLB contents on SLB MCE
- errors.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>
-Date: Mon, 02 Jul 2018 11:17:30 +0530
-In-Reply-To: <153051022088.30541.5610525713141009848.stgit@jupiter.in.ibm.com>
-References: <153051022088.30541.5610525713141009848.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Jy9P1jrjzF1BP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 16:32:40 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id 16-v6so10599423itl.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Jul 2018 23:32:40 -0700 (PDT)
+Date: Mon, 2 Jul 2018 16:32:27 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, Alex Williamson
+ <alex.williamson@redhat.com>, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel v2 2/2] KVM: PPC: Check if IOMMU page is
+ contained in the pinned physical page
+Message-ID: <20180702163227.0a4f0ea8@aik.ozlabs.ibm.com>
+In-Reply-To: <20180702045243.GX3422@umbus.fritz.box>
+References: <20180626055926.27703-1-aik@ozlabs.ru>
+ <20180626055926.27703-3-aik@ozlabs.ru>
+ <20180629041241.GC3422@umbus.fritz.box>
+ <20180629145121.5d03e067@aik.ozlabs.ibm.com>
+ <20180629045702.GI3422@umbus.fritz.box>
+ <20180629151820.461ae112@aik.ozlabs.ibm.com>
+ <20180629170747.471bea35@aik.ozlabs.ibm.com>
+ <20180702040852.GW3422@umbus.fritz.box>
+ <20180702143244.3a08ebe2@aik.ozlabs.ibm.com>
+ <20180702045243.GX3422@umbus.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153051044592.30541.11982872561593100879.stgit@jupiter.in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/ochY/qdZg6TbFbV6FV1Paaj"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,199 +38,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+--Sig_/ochY/qdZg6TbFbV6FV1Paaj
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-If we get a machine check exceptions due to SLB errors then dump the
-current SLB contents which will be very much helpful in debugging the
-root cause of SLB errors. Introduce an exclusive buffer per cpu to hold
-faulty SLB entries. In real mode mce handler saves the old SLB contents
-into this buffer accessible through paca and print it out later in virtual
-mode.
+On Mon, 2 Jul 2018 14:52:43 +1000
+David Gibson <david@gibson.dropbear.id.au> wrote:
 
-With this patch the console will log SLB contents like below on SLB MCE
-errors:
+> On Mon, Jul 02, 2018 at 02:33:30PM +1000, Alexey Kardashevskiy wrote:
+> > On Mon, 2 Jul 2018 14:08:52 +1000
+> > David Gibson <david@gibson.dropbear.id.au> wrote:
+> >  =20
+> > > On Fri, Jun 29, 2018 at 05:07:47PM +1000, Alexey Kardashevskiy wrote:=
+ =20
+> > > > On Fri, 29 Jun 2018 15:18:20 +1000
+> > > > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> > > >    =20
+> > > > > On Fri, 29 Jun 2018 14:57:02 +1000
+> > > > > David Gibson <david@gibson.dropbear.id.au> wrote:
+> > > > >    =20
+> > > > > > On Fri, Jun 29, 2018 at 02:51:21PM +1000, Alexey Kardashevskiy =
+wrote:     =20
+> > > > > > > On Fri, 29 Jun 2018 14:12:41 +1000
+> > > > > > > David Gibson <david@gibson.dropbear.id.au> wrote:
+> > > > > > >        =20
+> > > > > > > > On Tue, Jun 26, 2018 at 03:59:26PM +1000, Alexey Kardashevs=
+kiy wrote:       =20
+> > > > > > > > > We already have a check in drivers/vfio/vfio_iommu_spapr_=
+tce.c that
+> > > > > > > > > an IOMMU page is contained in the physical page so the PC=
+I hardware won't
+> > > > > > > > > get access to unassigned host memory.
+> > > > > > > > >=20
+> > > > > > > > > However we do not have this check in KVM fastpath (H_PUT_=
+TCE accelerated
+> > > > > > > > > code) so the user space can pin memory backed with 64k pa=
+ges and create
+> > > > > > > > > a hardware TCE table with a bigger page size. We were luc=
+ky so far and
+> > > > > > > > > did not hit this yet as the very first time the mapping h=
+appens
+> > > > > > > > > we do not have tbl::it_userspace allocated yet and fall b=
+ack to
+> > > > > > > > > the userspace which in turn calls VFIO IOMMU driver and t=
+hat fails
+> > > > > > > > > because of the check in vfio_iommu_spapr_tce.c which is r=
+eally
+> > > > > > > > > sustainable solution.
+> > > > > > > > >=20
+> > > > > > > > > This stores the smallest preregistered page size in the p=
+reregistered
+> > > > > > > > > region descriptor and changes the mm_iommu_xxx API to che=
+ck this against
+> > > > > > > > > the IOMMU page size.
+> > > > > > > > >=20
+> > > > > > > > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > > > > > > > > ---
+> > > > > > > > > Changes:
+> > > > > > > > > v2:
+> > > > > > > > > * explicitly check for compound pages before calling comp=
+ound_order()
+> > > > > > > > >=20
+> > > > > > > > > ---
+> > > > > > > > > The bug is: run QEMU _without_ hugepages (no -mempath) an=
+d tell it to
+> > > > > > > > > advertise 16MB pages to the guest; a typical pseries gues=
+t will use 16MB
+> > > > > > > > > for IOMMU pages without checking the mmu pagesize and thi=
+s will fail
+> > > > > > > > > at https://git.qemu.org/?p=3Dqemu.git;a=3Dblob;f=3Dhw/vfi=
+o/common.c;h=3Dfb396cf00ac40eb35967a04c9cc798ca896eed57;hb=3Drefs/heads/mas=
+ter#l256
+> > > > > > > > >=20
+> > > > > > > > > With the change, mapping will fail in KVM and the guest w=
+ill print:
+> > > > > > > > >=20
+> > > > > > > > > mlx5_core 0000:00:00.0: ibm,create-pe-dma-window(2027) 0 =
+8000000 20000000 18 1f returned 0 (liobn =3D 0x80000001 starting addr =3D 8=
+000000 0)
+> > > > > > > > > mlx5_core 0000:00:00.0: created tce table LIOBN 0x8000000=
+1 for /pci@800000020000000/ethernet@0
+> > > > > > > > > mlx5_core 0000:00:00.0: failed to map direct window for
+> > > > > > > > > /pci@800000020000000/ethernet@0: -1         =20
+> > > > > > > >=20
+> > > > > > > > [snip]       =20
+> > > > > > > > > @@ -124,7 +125,7 @@ long mm_iommu_get(struct mm_struct *m=
+m, unsigned long ua, unsigned long entries,
+> > > > > > > > >  		struct mm_iommu_table_group_mem_t **pmem)
+> > > > > > > > >  {
+> > > > > > > > >  	struct mm_iommu_table_group_mem_t *mem;
+> > > > > > > > > -	long i, j, ret =3D 0, locked_entries =3D 0;
+> > > > > > > > > +	long i, j, ret =3D 0, locked_entries =3D 0, pageshift;
+> > > > > > > > >  	struct page *page =3D NULL;
+> > > > > > > > > =20
+> > > > > > > > >  	mutex_lock(&mem_list_mutex);
+> > > > > > > > > @@ -166,6 +167,8 @@ long mm_iommu_get(struct mm_struct *m=
+m, unsigned long ua, unsigned long entries,
+> > > > > > > > >  		goto unlock_exit;
+> > > > > > > > >  	}
+> > > > > > > > > =20
+> > > > > > >  > > +	mem->pageshift =3D 30; /* start from 1G pages - the bi=
+ggest we have */         =20
+> > > > > > > >=20
+> > > > > > > > What about 16G pages on an HPT system?       =20
+> > > > > > >=20
+> > > > > > >=20
+> > > > > > > Below in the loop mem->pageshift will reduce to the biggest a=
+ctual size
+> > > > > > > which will be 16mb/64k/4k. Or remain 1GB if no memory is actu=
+ally
+> > > > > > > pinned, no loss there.       =20
+> > > > > >=20
+> > > > > > Are you saying that 16G IOMMU pages aren't supported?  Or that =
+there's
+> > > > > > some reason a guest can never use them?     =20
+> > > > >=20
+> > > > >=20
+> > > > > ah, 16_G_, not _M_. My bad. I just never tried such huge pages, I=
+ will
+> > > > > lift the limit up to 64 then, easier this way.   =20
+> > > >=20
+> > > >=20
+> > > > Ah, no, rather this as the upper limit:
+> > > >=20
+> > > > mem->pageshift =3D ilog2(entries) + PAGE_SHIFT;   =20
+> > >=20
+> > > I can't make sense of this comment in context.  I see how you're
+> > > computing the minimum page size in the reserved region.
+> > >=20
+> > > My question is about what the  is - the starting
+> > > value from which you calculate.  Currently it's 1G, but I can't
+> > > immediately see a reason that 16G is impossible here. =20
+> >=20
+> >=20
+> > 16GB is impossible if the chunk we are preregistering here is smaller
+> > than that, for example, the entire guest ram is 4GB. =20
+>=20
+> Of course.  Just like it was for 1GiB if you had a 512MiB guest, for
+> example.  I'm talking about a case where you have a guest that's
+> >=3D16GiB and you *have* allocated 16GiB hugepages to back it. =20
 
-[ 3022.938065] SLB contents of cpu 0x3
-[ 3022.938066] 00 c000000008000000 400ea1b217000500
-[ 3022.938067]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
-[ 3022.938068] 01 d000000008000000 400d43642f000510
-[ 3022.938069]   1T  ESID=   d00000  VSID=      d43642f LLP:110
-[ 3022.938070] 05 f000000008000000 400a86c85f000500
-[ 3022.938071]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
-[ 3022.938072] 06 00007f0008000000 400a628b13000d90
-[ 3022.938073]   1T  ESID=       7f  VSID=      a628b13 LLP:110
-[ 3022.938074] 07 0000000018000000 000b7979f523fd90
-[ 3022.938075]  256M ESID=        1  VSID=   b7979f523f LLP:110
-[ 3022.938076] 08 c000000008000000 400ea1b217000510
-[ 3022.938076]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
-[ 3022.938077] 09 c000000008000000 400ea1b217000510
-[ 3022.938078]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
 
-Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +++
- arch/powerpc/include/asm/paca.h               |    1 
- arch/powerpc/mm/slb.c                         |   57 +++++++++++++++++++++++++
- arch/powerpc/platforms/pseries/ras.c          |   10 ++++
- arch/powerpc/platforms/pseries/setup.c        |   10 ++++
- 5 files changed, 84 insertions(+), 1 deletion(-)
+Then, assuming we are preregistering entire RAM as a single chunk, the
+"maximum minimum" will be initialized as ">=3D16GiB" (but floor-aligned
+to power of two) before the pinning loop and then reduce to the actual
+page size, inside the loop. I feel like I am missing something in the
+question, what is that?
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index cc00a7088cf3..5a3fe282076d 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -485,9 +485,16 @@ static inline void hpte_init_pseries(void) { }
- 
- extern void hpte_init_native(void);
- 
-+struct slb_entry {
-+	u64	esid;
-+	u64	vsid;
-+};
-+
- extern void slb_initialize(void);
- extern void slb_flush_and_rebolt(void);
- extern void slb_flush_and_rebolt_realmode(void);
-+extern void slb_save_contents(struct slb_entry *slb_ptr);
-+extern void slb_dump_contents(struct slb_entry *slb_ptr);
- 
- extern void slb_vmalloc_update(void);
- extern void slb_set_size(u16 size);
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index b441fef53077..653f87c69423 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -253,6 +253,7 @@ struct paca_struct {
- #endif
- #ifdef CONFIG_PPC_PSERIES
- 	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
-+	struct slb_entry *mce_faulty_slbs;
- #endif /* CONFIG_PPC_PSERIES */
- } ____cacheline_aligned;
- 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 5b1813b98358..476ab0b1d4e8 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -151,6 +151,63 @@ void slb_flush_and_rebolt_realmode(void)
- 	get_paca()->slb_cache_ptr = 0;
- }
- 
-+void slb_save_contents(struct slb_entry *slb_ptr)
-+{
-+	int i;
-+	unsigned long e, v;
-+
-+	if (!slb_ptr)
-+		return;
-+
-+	for (i = 0; i < mmu_slb_size; i++) {
-+		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
-+		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
-+		slb_ptr->esid = e;
-+		slb_ptr->vsid = v;
-+		slb_ptr++;
-+	}
-+}
-+
-+void slb_dump_contents(struct slb_entry *slb_ptr)
-+{
-+	int i;
-+	unsigned long e, v;
-+	unsigned long llp;
-+
-+	if (!slb_ptr)
-+		return;
-+
-+	pr_err("SLB contents of cpu 0x%x\n", smp_processor_id());
-+
-+	for (i = 0; i < mmu_slb_size; i++) {
-+		e = slb_ptr->esid;
-+		v = slb_ptr->vsid;
-+		slb_ptr++;
-+
-+		if (!e && !v)
-+			continue;
-+
-+		pr_err("%02d %016lx %016lx\n", i, e, v);
-+
-+		if (!(e & SLB_ESID_V)) {
-+			pr_err("\n");
-+			continue;
-+		}
-+		llp = v & SLB_VSID_LLP;
-+		if (v & SLB_VSID_B_1T) {
-+			pr_err("  1T  ESID=%9lx  VSID=%13lx LLP:%3lx\n",
-+				GET_ESID_1T(e),
-+				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT_1T,
-+				llp);
-+		} else {
-+			pr_err(" 256M ESID=%9lx  VSID=%13lx LLP:%3lx\n",
-+				GET_ESID(e),
-+				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT,
-+				llp);
-+		}
-+	}
-+}
-+
- void slb_vmalloc_update(void)
- {
- 	unsigned long vflags;
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 7d4d2b8bc019..d33c88e65fa1 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -515,6 +515,10 @@ static void pseries_print_mce_info(struct pt_regs *regs,
- 		break;
- 	}
- 
-+	/* Display faulty slb contents for SLB errors. */
-+	if (error_type == PSERIES_MC_ERROR_TYPE_SLB)
-+		slb_dump_contents(local_paca->mce_faulty_slbs);
-+
- 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
- 		disposition == RTAS_DISP_FULLY_RECOVERED ?
- 		"Recovered" : "Not recovered");
-@@ -575,7 +579,11 @@ static int mce_handle_error(struct rtas_error_log *errp)
- 
- 	if ((disposition == RTAS_DISP_NOT_RECOVERED) &&
- 			(error_type == PSERIES_MC_ERROR_TYPE_SLB)) {
--		/* Store the old slb content someplace. */
-+		/*
-+		 * Store the old slb content in paca before flushing. Print
-+		 * this when we go to virtual mode.
-+		 */
-+		slb_save_contents(local_paca->mce_faulty_slbs);
- 		slb_flush_and_rebolt_realmode();
- 		disposition = RTAS_DISP_FULLY_RECOVERED;
- 		rtas_set_disposition_recovered(errp);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 249b02bc5c41..76d15e46a152 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -105,6 +105,9 @@ static void __init fwnmi_init(void)
- 	u8 *mce_data_buf;
- 	unsigned int i;
- 	int nr_cpus = num_possible_cpus();
-+	struct slb_entry *slb_ptr;
-+	size_t size;
-+
- 
- 	int ibm_nmi_register = rtas_token("ibm,nmi-register");
- 	if (ibm_nmi_register == RTAS_UNKNOWN_SERVICE)
-@@ -130,6 +133,13 @@ static void __init fwnmi_init(void)
- 		paca_ptrs[i]->mce_data_buf = mce_data_buf +
- 						(RTAS_ERROR_LOG_MAX * i);
- 	}
-+
-+	/* Allocate per cpu slb area to save old slb contents during MCE */
-+	size = sizeof(struct slb_entry) * mmu_slb_size * nr_cpus;
-+	slb_ptr = __va(memblock_alloc_base(size, sizeof(struct slb_entry),
-+							ppc64_rma_size));
-+	for_each_possible_cpu(i)
-+		paca_ptrs[i]->mce_faulty_slbs = slb_ptr + (mmu_slb_size * i);
- }
- 
- static void pseries_8259_cascade(struct irq_desc *desc)
+
+
+
+--
+Alexey
+
+--Sig_/ochY/qdZg6TbFbV6FV1Paaj
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEECIb1sawlPgRl/px9ze7KtGKK020FAls5xvsACgkQze7KtGKK
+021rUxAAnFAV+MIHXAxCUxd6Hu2fSUkIwQNgl2XuKeabpm8+LZsPUWf874OV2nF+
+yBNMZJtt1B9u99C0cAcwbG0z3dWBBq4/KpR90ezQ19CTfwewtKVuPnZ5/ZcOHJPg
+pgWlTjDd412sYojW9/NA/TIFOljpDiCpB2lQ+3lYjgrC2Zg33aICgraGsKWRT00R
+2MAaseAcEWYMtsq+rcYdMSc9SWvXNt3FPoa1reWA9N5w56C/yMBOFogL018mpF//
+Oc+oQkpR0/xFS57m/zClXZep0gj5C/yjR2yXJ1gYFup5scHOivjGeNEnlxe15mOY
+A/u6ZgaQnzORWo/owzDWoHuVymfJwbpRewi2uoFAnOqdP/3xLczOHHHzRmYRpHqC
+iZ/XffQh8rBpSwqeMLLkqJybaLyM6S50CUkaFl9doGe4ORn5Kehx+PO57i1PZxsy
+/6w8Fc3Ud5VXtBv8rH+GkCJuu6kTixaB6qy37lY7/PshglVAz8+fShr6FfZ22ADb
+g1Ywx4bh9v5OCfJpSJ91+hFtGHrJh+lgRI/Mv5Zk/KF+8azvUEyL+3xRN4vj9lkJ
+wxsfBA5Du3ORQCgDhtCzhe25A62rFK6+2/4WO6gih055jddpbqUSqwHYEdyiOyBl
+aGJrcKKFuc4Sj3h0D0/3sGDhAVUU4/2bxNQDfBvsottlpaVvXwI=
+=ucqg
+-----END PGP SIGNATURE-----
+
+--Sig_/ochY/qdZg6TbFbV6FV1Paaj--
