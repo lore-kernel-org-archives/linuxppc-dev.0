@@ -1,19 +1,25 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41K0Zr33q2zF1LQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 18:21:24 +1000 (AEST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Message-Id: <03e778fa5a025ac72f6d11c519939c5f8dbc6b8c.1530519301.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1530519301.git.fthain@telegraphics.com.au>
-References: <cover.1530519301.git.fthain@telegraphics.com.au>
-From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v4 09/11] macintosh/via-pmu: Replace via-pmu68k driver with
- via-pmu driver
-Date: Mon,  2 Jul 2018 04:21:19 -0400 (EDT)
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41K19h2yB5zF0X5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 18:48:07 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id h19-v6so2622203itf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jul 2018 01:48:07 -0700 (PDT)
+Date: Mon, 2 Jul 2018 18:47:56 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Russell Currey <ruscur@russell.cc>
+Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ alistair@popple.id.au, tpearson@raptorengineering.com
+Subject: Re: [PATCH 2/3] powerpc/powernv: DMA operations for discontiguous
+ allocation
+Message-ID: <20180702184756.72cfde38@aik.ozlabs.ibm.com>
+In-Reply-To: <20180629073437.4060-3-ruscur@russell.cc>
+References: <20180629073437.4060-1-ruscur@russell.cc>
+ <20180629073437.4060-3-ruscur@russell.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,1099 +29,543 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that the PowerMac via-pmu driver supports m68k PowerBooks,
-switch over to that driver and remove the via-pmu68k driver.
+On Fri, 29 Jun 2018 17:34:36 +1000
+Russell Currey <ruscur@russell.cc> wrote:
 
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Tested-by: Stan Johnson <userm57@yahoo.com>
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
----
- arch/m68k/configs/mac_defconfig   |   2 +-
- arch/m68k/configs/multi_defconfig |   2 +-
- arch/m68k/mac/config.c            |   2 +-
- arch/m68k/mac/misc.c              |  48 +--
- drivers/macintosh/Kconfig         |  13 +-
- drivers/macintosh/Makefile        |   1 -
- drivers/macintosh/adb.c           |   2 +-
- drivers/macintosh/via-pmu68k.c    | 846 --------------------------------------
- include/uapi/linux/pmu.h          |   2 +-
- 9 files changed, 14 insertions(+), 904 deletions(-)
- delete mode 100644 drivers/macintosh/via-pmu68k.c
+> DMA pseudo-bypass is a new set of DMA operations that solve some issues for
+> devices that want to address more than 32 bits but can't address the 59
+> bits required to enable direct DMA.
+> 
+> The previous implementation for POWER8/PHB3 worked around this by
+> configuring a bypass from the default 32-bit address space into 64-bit
+> address space.  This approach does not work for POWER9/PHB4 because
+> regions of memory are discontiguous and many devices will be unable to
+> address memory beyond the first node.
+> 
+> Instead, implement a new set of DMA operations that allocate TCEs as DMA
+> mappings are requested so that all memory is addressable even when a
+> one-to-one mapping between real addresses and DMA addresses isn't
+> possible.  These TCEs are the maximum size available on the platform,
+> which is 256M on PHB3 and 1G on PHB4.
+> 
+> Devices can now map any region of memory up to the maximum amount they can
+> address according to the DMA mask set, in chunks of the largest available
+> TCE size.
+> 
+> This implementation replaces the need for the existing PHB3 solution and
+> should be compatible with future PHB versions.
+> 
+> It is, however, rather naive.  There is no unmapping, and as a result
+> devices can eventually run out of space if they address their entire
+> DMA mask worth of TCEs.  An implementation with unmap() will come in
+> future (and requires a much more complex implementation), but this is a
+> good start due to the drastic performance improvement.
 
-diff --git a/arch/m68k/configs/mac_defconfig b/arch/m68k/configs/mac_defconfig
-index b52e597899eb..087ca15e32f1 100644
---- a/arch/m68k/configs/mac_defconfig
-+++ b/arch/m68k/configs/mac_defconfig
-@@ -369,7 +369,7 @@ CONFIG_TCM_PSCSI=m
- CONFIG_ADB=y
- CONFIG_ADB_MACII=y
- CONFIG_ADB_IOP=y
--CONFIG_ADB_PMU68K=y
-+CONFIG_ADB_PMU=y
- CONFIG_ADB_CUDA=y
- CONFIG_INPUT_ADBHID=y
- CONFIG_MAC_EMUMOUSEBTN=y
-diff --git a/arch/m68k/configs/multi_defconfig b/arch/m68k/configs/multi_defconfig
-index 2a84eeec5b02..3f9334084d55 100644
---- a/arch/m68k/configs/multi_defconfig
-+++ b/arch/m68k/configs/multi_defconfig
-@@ -402,7 +402,7 @@ CONFIG_TCM_PSCSI=m
- CONFIG_ADB=y
- CONFIG_ADB_MACII=y
- CONFIG_ADB_IOP=y
--CONFIG_ADB_PMU68K=y
-+CONFIG_ADB_PMU=y
- CONFIG_ADB_CUDA=y
- CONFIG_INPUT_ADBHID=y
- CONFIG_MAC_EMUMOUSEBTN=y
-diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-index e522307db47c..92e80cf0d8aa 100644
---- a/arch/m68k/mac/config.c
-+++ b/arch/m68k/mac/config.c
-@@ -891,7 +891,7 @@ static void __init mac_identify(void)
- #ifdef CONFIG_ADB_CUDA
- 	find_via_cuda();
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 	find_via_pmu();
- #endif
- }
-diff --git a/arch/m68k/mac/misc.c b/arch/m68k/mac/misc.c
-index 7ccb799eeb57..28090a44fa09 100644
---- a/arch/m68k/mac/misc.c
-+++ b/arch/m68k/mac/misc.c
-@@ -85,7 +85,7 @@ static void cuda_write_pram(int offset, __u8 data)
- }
- #endif /* CONFIG_ADB_CUDA */
- 
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- static long pmu_read_time(void)
- {
- 	struct adb_request req;
-@@ -136,7 +136,7 @@ static void pmu_write_pram(int offset, __u8 data)
- 	while (!req.complete)
- 		pmu_poll();
- }
--#endif /* CONFIG_ADB_PMU68K */
-+#endif /* CONFIG_ADB_PMU */
- 
- /*
-  * VIA PRAM/RTC access routines
-@@ -367,38 +367,6 @@ static void cuda_shutdown(void)
- }
- #endif /* CONFIG_ADB_CUDA */
- 
--#ifdef CONFIG_ADB_PMU68K
--
--void pmu_restart(void)
--{
--	struct adb_request req;
--	if (pmu_request(&req, NULL,
--			2, PMU_SET_INTR_MASK, PMU_INT_ADB|PMU_INT_TICK) < 0)
--		return;
--	while (!req.complete)
--		pmu_poll();
--	if (pmu_request(&req, NULL, 1, PMU_RESET) < 0)
--		return;
--	while (!req.complete)
--		pmu_poll();
--}
--
--void pmu_shutdown(void)
--{
--	struct adb_request req;
--	if (pmu_request(&req, NULL,
--			2, PMU_SET_INTR_MASK, PMU_INT_ADB|PMU_INT_TICK) < 0)
--		return;
--	while (!req.complete)
--		pmu_poll();
--	if (pmu_request(&req, NULL, 5, PMU_SHUTDOWN, 'M', 'A', 'T', 'T') < 0)
--		return;
--	while (!req.complete)
--		pmu_poll();
--}
--
--#endif
--
- /*
-  *-------------------------------------------------------------------
-  * Below this point are the generic routines; they'll dispatch to the
-@@ -423,7 +391,7 @@ void mac_pram_read(int offset, __u8 *buffer, int len)
- 		func = cuda_read_pram;
- 		break;
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 	case MAC_ADB_PB2:
- 		func = pmu_read_pram;
- 		break;
-@@ -453,7 +421,7 @@ void mac_pram_write(int offset, __u8 *buffer, int len)
- 		func = cuda_write_pram;
- 		break;
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 	case MAC_ADB_PB2:
- 		func = pmu_write_pram;
- 		break;
-@@ -477,7 +445,7 @@ void mac_poweroff(void)
- 	           macintosh_config->adb_type == MAC_ADB_CUDA) {
- 		cuda_shutdown();
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 	} else if (macintosh_config->adb_type == MAC_ADB_PB2) {
- 		pmu_shutdown();
- #endif
-@@ -518,7 +486,7 @@ void mac_reset(void)
- 	           macintosh_config->adb_type == MAC_ADB_CUDA) {
- 		cuda_restart();
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 	} else if (macintosh_config->adb_type == MAC_ADB_PB2) {
- 		pmu_restart();
- #endif
-@@ -670,7 +638,7 @@ int mac_hwclk(int op, struct rtc_time *t)
- 			now = cuda_read_time();
- 			break;
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 		case MAC_ADB_PB2:
- 			now = pmu_read_time();
- 			break;
-@@ -706,7 +674,7 @@ int mac_hwclk(int op, struct rtc_time *t)
- 			cuda_write_time(now);
- 			break;
- #endif
--#ifdef CONFIG_ADB_PMU68K
-+#ifdef CONFIG_ADB_PMU
- 		case MAC_ADB_PB2:
- 			pmu_write_time(now);
- 			break;
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 26abae4c899d..47c350cdfb12 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -39,17 +39,6 @@ config ADB_IOP
- 	  <http://www.angelfire.com/ca2/dev68k/iopdesc.html> to enable direct
- 	  support for it, say 'Y' here.
- 
--config ADB_PMU68K
--	bool "Include PMU (Powerbook) ADB driver"
--	depends on ADB && MAC
--	help
--	  Say Y here if want your kernel to support the m68k based Powerbooks.
--	  This includes the PowerBook 140, PowerBook 145, PowerBook 150,
--	  PowerBook 160, PowerBook 165, PowerBook 165c, PowerBook 170,
--	  PowerBook 180, PowerBook, 180c, PowerBook 190cs, PowerBook 520,
--	  PowerBook Duo 210, PowerBook Duo 230, PowerBook Duo 250,
--	  PowerBook Duo 270c, PowerBook Duo 280 and PowerBook Duo 280c.
--
- # we want to change this to something like CONFIG_SYSCTRL_CUDA/PMU
- config ADB_CUDA
- 	bool "Support for Cuda/Egret based Macs and PowerMacs"
-@@ -66,7 +55,7 @@ config ADB_CUDA
- 
- config ADB_PMU
- 	bool "Support for PMU based PowerMacs and PowerBooks"
--	depends on PPC_PMAC
-+	depends on PPC_PMAC || MAC
- 	help
- 	  On PowerBooks, iBooks, and recent iMacs and Power Macintoshes, the
- 	  PMU is an embedded microprocessor whose primary function is to
-diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
-index ee803638e595..49819b1b6f20 100644
---- a/drivers/macintosh/Makefile
-+++ b/drivers/macintosh/Makefile
-@@ -22,7 +22,6 @@ obj-$(CONFIG_PMAC_SMU)		+= smu.o
- obj-$(CONFIG_ADB)		+= adb.o
- obj-$(CONFIG_ADB_MACII)		+= via-macii.o
- obj-$(CONFIG_ADB_IOP)		+= adb-iop.o
--obj-$(CONFIG_ADB_PMU68K)	+= via-pmu68k.o
- obj-$(CONFIG_ADB_MACIO)		+= macio-adb.o
- 
- obj-$(CONFIG_THERM_WINDTUNNEL)	+= therm_windtunnel.o
-diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 4c8097e0e6fe..76e98f0f7a3e 100644
---- a/drivers/macintosh/adb.c
-+++ b/drivers/macintosh/adb.c
-@@ -65,7 +65,7 @@ static struct adb_driver *adb_driver_list[] = {
- #ifdef CONFIG_ADB_IOP
- 	&adb_iop_driver,
- #endif
--#if defined(CONFIG_ADB_PMU) || defined(CONFIG_ADB_PMU68K)
-+#ifdef CONFIG_ADB_PMU
- 	&via_pmu_driver,
- #endif
- #ifdef CONFIG_ADB_MACIO
-diff --git a/drivers/macintosh/via-pmu68k.c b/drivers/macintosh/via-pmu68k.c
-deleted file mode 100644
-index bec8e1837d7d..000000000000
---- a/drivers/macintosh/via-pmu68k.c
-+++ /dev/null
-@@ -1,846 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0
--/*
-- * Device driver for the PMU on 68K-based Apple PowerBooks
-- *
-- * The VIA (versatile interface adapter) interfaces to the PMU,
-- * a 6805 microprocessor core whose primary function is to control
-- * battery charging and system power on the PowerBooks.
-- * The PMU also controls the ADB (Apple Desktop Bus) which connects
-- * to the keyboard and mouse, as well as the non-volatile RAM
-- * and the RTC (real time clock) chip.
-- *
-- * Adapted for 68K PMU by Joshua M. Thompson
-- *
-- * Based largely on the PowerMac PMU code by Paul Mackerras and
-- * Fabio Riccardi.
-- *
-- * Also based on the PMU driver from MkLinux by Apple Computer, Inc.
-- * and the Open Software Foundation, Inc.
-- */
--
--#include <stdarg.h>
--#include <linux/types.h>
--#include <linux/errno.h>
--#include <linux/kernel.h>
--#include <linux/delay.h>
--#include <linux/miscdevice.h>
--#include <linux/blkdev.h>
--#include <linux/pci.h>
--#include <linux/init.h>
--#include <linux/interrupt.h>
--
--#include <linux/adb.h>
--#include <linux/pmu.h>
--#include <linux/cuda.h>
--
--#include <asm/macintosh.h>
--#include <asm/macints.h>
--#include <asm/mac_via.h>
--
--#include <asm/pgtable.h>
--#include <asm/irq.h>
--#include <linux/uaccess.h>
--
--/* Misc minor number allocated for /dev/pmu */
--#define PMU_MINOR	154
--
--/* VIA registers - spaced 0x200 bytes apart */
--#define RS		0x200		/* skip between registers */
--#define B		0		/* B-side data */
--#define A		RS		/* A-side data */
--#define DIRB		(2*RS)		/* B-side direction (1=output) */
--#define DIRA		(3*RS)		/* A-side direction (1=output) */
--#define T1CL		(4*RS)		/* Timer 1 ctr/latch (low 8 bits) */
--#define T1CH		(5*RS)		/* Timer 1 counter (high 8 bits) */
--#define T1LL		(6*RS)		/* Timer 1 latch (low 8 bits) */
--#define T1LH		(7*RS)		/* Timer 1 latch (high 8 bits) */
--#define T2CL		(8*RS)		/* Timer 2 ctr/latch (low 8 bits) */
--#define T2CH		(9*RS)		/* Timer 2 counter (high 8 bits) */
--#define SR		(10*RS)		/* Shift register */
--#define ACR		(11*RS)		/* Auxiliary control register */
--#define PCR		(12*RS)		/* Peripheral control register */
--#define IFR		(13*RS)		/* Interrupt flag register */
--#define IER		(14*RS)		/* Interrupt enable register */
--#define ANH		(15*RS)		/* A-side data, no handshake */
--
--/* Bits in B data register: both active low */
--#define TACK		0x02		/* Transfer acknowledge (input) */
--#define TREQ		0x04		/* Transfer request (output) */
--
--/* Bits in ACR */
--#define SR_CTRL		0x1c		/* Shift register control bits */
--#define SR_EXT		0x0c		/* Shift on external clock */
--#define SR_OUT		0x10		/* Shift out if 1 */
--
--/* Bits in IFR and IER */
--#define SR_INT		0x04		/* Shift register full/empty */
--#define CB1_INT		0x10		/* transition on CB1 input */
--
--static enum pmu_state {
--	idle,
--	sending,
--	intack,
--	reading,
--	reading_intr,
--} pmu_state;
--
--static struct adb_request *current_req;
--static struct adb_request *last_req;
--static struct adb_request *req_awaiting_reply;
--static unsigned char interrupt_data[32];
--static unsigned char *reply_ptr;
--static int data_index;
--static int data_len;
--static int adb_int_pending;
--static int pmu_adb_flags;
--static int adb_dev_map;
--static struct adb_request bright_req_1, bright_req_2, bright_req_3;
--static int pmu_kind = PMU_UNKNOWN;
--static int pmu_fully_inited;
--
--int asleep;
--
--static int pmu_probe(void);
--static int pmu_init(void);
--static void pmu_start(void);
--static irqreturn_t pmu_interrupt(int irq, void *arg);
--static int pmu_send_request(struct adb_request *req, int sync);
--static int pmu_autopoll(int devs);
--void pmu_poll(void);
--static int pmu_reset_bus(void);
--
--static int init_pmu(void);
--static void pmu_start(void);
--static void send_byte(int x);
--static void recv_byte(void);
--static void pmu_done(struct adb_request *req);
--static void pmu_handle_data(unsigned char *data, int len);
--static void set_volume(int level);
--static void pmu_enable_backlight(int on);
--static void pmu_set_brightness(int level);
--
--struct adb_driver via_pmu_driver = {
--	.name         = "68K PMU",
--	.probe        = pmu_probe,
--	.init         = pmu_init,
--	.send_request = pmu_send_request,
--	.autopoll     = pmu_autopoll,
--	.poll         = pmu_poll,
--	.reset_bus    = pmu_reset_bus,
--};
--
--/*
-- * This table indicates for each PMU opcode:
-- * - the number of data bytes to be sent with the command, or -1
-- *   if a length byte should be sent,
-- * - the number of response bytes which the PMU will return, or
-- *   -1 if it will send a length byte.
-- */
--static s8 pmu_data_len[256][2] = {
--/*	   0	   1	   2	   3	   4	   5	   6	   7  */
--/*00*/	{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*08*/	{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*10*/	{ 1, 0},{ 1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*18*/	{ 0, 1},{ 0, 1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{ 0, 0},
--/*20*/	{-1, 0},{ 0, 0},{ 2, 0},{ 1, 0},{ 1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*28*/	{ 0,-1},{ 0,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{ 0,-1},
--/*30*/	{ 4, 0},{20, 0},{-1, 0},{ 3, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*38*/	{ 0, 4},{ 0,20},{ 2,-1},{ 2, 1},{ 3,-1},{-1,-1},{-1,-1},{ 4, 0},
--/*40*/	{ 1, 0},{ 1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*48*/	{ 0, 1},{ 0, 1},{-1,-1},{ 1, 0},{ 1, 0},{-1,-1},{-1,-1},{-1,-1},
--/*50*/	{ 1, 0},{ 0, 0},{ 2, 0},{ 2, 0},{-1, 0},{ 1, 0},{ 3, 0},{ 1, 0},
--/*58*/	{ 0, 1},{ 1, 0},{ 0, 2},{ 0, 2},{ 0,-1},{-1,-1},{-1,-1},{-1,-1},
--/*60*/	{ 2, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*68*/	{ 0, 3},{ 0, 3},{ 0, 2},{ 0, 8},{ 0,-1},{ 0,-1},{-1,-1},{-1,-1},
--/*70*/	{ 1, 0},{ 1, 0},{ 1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*78*/	{ 0,-1},{ 0,-1},{-1,-1},{-1,-1},{-1,-1},{ 5, 1},{ 4, 1},{ 4, 1},
--/*80*/	{ 4, 0},{-1, 0},{ 0, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*88*/	{ 0, 5},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*90*/	{ 1, 0},{ 2, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*98*/	{ 0, 1},{ 0, 1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*a0*/	{ 2, 0},{ 2, 0},{ 2, 0},{ 4, 0},{-1, 0},{ 0, 0},{-1, 0},{-1, 0},
--/*a8*/	{ 1, 1},{ 1, 0},{ 3, 0},{ 2, 0},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*b0*/	{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*b8*/	{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*c0*/	{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*c8*/	{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--/*d0*/	{ 0, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*d8*/	{ 1, 1},{ 1, 1},{-1,-1},{-1,-1},{ 0, 1},{ 0,-1},{-1,-1},{-1,-1},
--/*e0*/	{-1, 0},{ 4, 0},{ 0, 1},{-1, 0},{-1, 0},{ 4, 0},{-1, 0},{-1, 0},
--/*e8*/	{ 3,-1},{-1,-1},{ 0, 1},{-1,-1},{ 0,-1},{-1,-1},{-1,-1},{ 0, 0},
--/*f0*/	{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},{-1, 0},
--/*f8*/	{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},{-1,-1},
--};
--
--int __init find_via_pmu(void)
--{
--	switch (macintosh_config->adb_type) {
--	case MAC_ADB_PB2:
--		pmu_kind = PMU_68K_V2;
--		break;
--	default:
--		pmu_kind = PMU_UNKNOWN;
--		return -ENODEV;
--	}
--
--	pmu_state = idle;
--
--	if (!init_pmu())
--		goto fail_init;
--
--	pr_info("adb: PMU 68K driver v0.5 for Unified ADB\n");
--
--	return 1;
--
--fail_init:
--	pmu_kind = PMU_UNKNOWN;
--	return 0;
--}
--
--static int pmu_probe(void)
--{
--	if (pmu_kind == PMU_UNKNOWN)
--		return -ENODEV;
--	return 0;
--}
--
--static int pmu_init(void)
--{
--	if (pmu_kind == PMU_UNKNOWN)
--		return -ENODEV;
--	return 0;
--}
--
--static int __init via_pmu_start(void)
--{
--	if (pmu_kind == PMU_UNKNOWN)
--		return -ENODEV;
--
--	if (request_irq(IRQ_MAC_ADB_SR, pmu_interrupt, 0, "PMU_SR",
--			pmu_interrupt)) {
--		pr_err("%s: can't get SR irq\n", __func__);
--		return -ENODEV;
--	}
--	if (request_irq(IRQ_MAC_ADB_CL, pmu_interrupt, 0, "PMU_CL",
--			pmu_interrupt)) {
--		pr_err("%s: can't get CL irq\n", __func__);
--		free_irq(IRQ_MAC_ADB_SR, pmu_interrupt);
--		return -ENODEV;
--	}
--
--	pmu_fully_inited = 1;
--
--	/* Enable backlight */
--	pmu_enable_backlight(1);
--
--	return 0;
--}
--
--arch_initcall(via_pmu_start);
--
--static int __init init_pmu(void)
--{
--	int timeout;
--	volatile struct adb_request req;
--
--	via2[B] |= TREQ;				/* negate TREQ */
--	via2[DIRB] = (via2[DIRB] | TREQ) & ~TACK;	/* TACK in, TREQ out */
--
--	pmu_request((struct adb_request *) &req, NULL, 2, PMU_SET_INTR_MASK, PMU_INT_ADB);
--	timeout =  100000;
--	while (!req.complete) {
--		if (--timeout < 0) {
--			printk(KERN_ERR "pmu_init: no response from PMU\n");
--			return -EAGAIN;
--		}
--		udelay(10);
--		pmu_poll();
--	}
--
--	/* ack all pending interrupts */
--	timeout = 100000;
--	interrupt_data[0] = 1;
--	while (interrupt_data[0] || pmu_state != idle) {
--		if (--timeout < 0) {
--			printk(KERN_ERR "pmu_init: timed out acking intrs\n");
--			return -EAGAIN;
--		}
--		if (pmu_state == idle) {
--			adb_int_pending = 1;
--			pmu_interrupt(0, NULL);
--		}
--		pmu_poll();
--		udelay(10);
--	}
--
--	pmu_request((struct adb_request *) &req, NULL, 2, PMU_SET_INTR_MASK,
--			PMU_INT_ADB_AUTO|PMU_INT_SNDBRT|PMU_INT_ADB);
--	timeout =  100000;
--	while (!req.complete) {
--		if (--timeout < 0) {
--			printk(KERN_ERR "pmu_init: no response from PMU\n");
--			return -EAGAIN;
--		}
--		udelay(10);
--		pmu_poll();
--	}
--
--	bright_req_1.complete = 1;
--	bright_req_2.complete = 1;
--	bright_req_3.complete = 1;
--
--	return 1;
--}
--
--int
--pmu_get_model(void)
--{
--	return pmu_kind;
--}
--
--/* Send an ADB command */
--static int 
--pmu_send_request(struct adb_request *req, int sync)
--{
--    int i, ret;
--
--    if (!pmu_fully_inited)
--    {
-- 	req->complete = 1;
--   	return -ENXIO;
--   }
--
--    ret = -EINVAL;
--	
--    switch (req->data[0]) {
--    case PMU_PACKET:
--		for (i = 0; i < req->nbytes - 1; ++i)
--			req->data[i] = req->data[i+1];
--		--req->nbytes;
--		if (pmu_data_len[req->data[0]][1] != 0) {
--			req->reply[0] = ADB_RET_OK;
--			req->reply_len = 1;
--		} else
--			req->reply_len = 0;
--		ret = pmu_queue_request(req);
--		break;
--    case CUDA_PACKET:
--		switch (req->data[1]) {
--		case CUDA_GET_TIME:
--			if (req->nbytes != 2)
--				break;
--			req->data[0] = PMU_READ_RTC;
--			req->nbytes = 1;
--			req->reply_len = 3;
--			req->reply[0] = CUDA_PACKET;
--			req->reply[1] = 0;
--			req->reply[2] = CUDA_GET_TIME;
--			ret = pmu_queue_request(req);
--			break;
--		case CUDA_SET_TIME:
--			if (req->nbytes != 6)
--				break;
--			req->data[0] = PMU_SET_RTC;
--			req->nbytes = 5;
--			for (i = 1; i <= 4; ++i)
--				req->data[i] = req->data[i+1];
--			req->reply_len = 3;
--			req->reply[0] = CUDA_PACKET;
--			req->reply[1] = 0;
--			req->reply[2] = CUDA_SET_TIME;
--			ret = pmu_queue_request(req);
--			break;
--		case CUDA_GET_PRAM:
--			if (req->nbytes != 4)
--				break;
--			req->data[0] = PMU_READ_NVRAM;
--			req->data[1] = req->data[2];
--			req->data[2] = req->data[3];
--			req->nbytes = 3;
--			req->reply_len = 3;
--			req->reply[0] = CUDA_PACKET;
--			req->reply[1] = 0;
--			req->reply[2] = CUDA_GET_PRAM;
--			ret = pmu_queue_request(req);
--			break;
--		case CUDA_SET_PRAM:
--			if (req->nbytes != 5)
--				break;
--			req->data[0] = PMU_WRITE_NVRAM;
--			req->data[1] = req->data[2];
--			req->data[2] = req->data[3];
--			req->data[3] = req->data[4];
--			req->nbytes = 4;
--			req->reply_len = 3;
--			req->reply[0] = CUDA_PACKET;
--			req->reply[1] = 0;
--			req->reply[2] = CUDA_SET_PRAM;
--			ret = pmu_queue_request(req);
--			break;
--		}
--		break;
--    case ADB_PACKET:
--		for (i = req->nbytes - 1; i > 1; --i)
--			req->data[i+2] = req->data[i];
--		req->data[3] = req->nbytes - 2;
--		req->data[2] = pmu_adb_flags;
--		/*req->data[1] = req->data[1];*/
--		req->data[0] = PMU_ADB_CMD;
--		req->nbytes += 2;
--		req->reply_expected = 1;
--		req->reply_len = 0;
--		ret = pmu_queue_request(req);
--		break;
--    }
--    if (ret)
--    {
--    	req->complete = 1;
--    	return ret;
--    }
--    	
--    if (sync) {
--	while (!req->complete)
--		pmu_poll();
--    }
--
--    return 0;
--}
--
--/* Enable/disable autopolling */
--static int 
--pmu_autopoll(int devs)
--{
--	struct adb_request req;
--
--	if (!pmu_fully_inited) return -ENXIO;
--
--	if (devs) {
--		adb_dev_map = devs;
--		pmu_request(&req, NULL, 5, PMU_ADB_CMD, 0, 0x86,
--			    adb_dev_map >> 8, adb_dev_map);
--		pmu_adb_flags = 2;
--	} else {
--		pmu_request(&req, NULL, 1, PMU_ADB_POLL_OFF);
--		pmu_adb_flags = 0;
--	}
--	while (!req.complete)
--		pmu_poll();
--	return 0;
--}
--
--/* Reset the ADB bus */
--static int 
--pmu_reset_bus(void)
--{
--	struct adb_request req;
--	long timeout;
--	int save_autopoll = adb_dev_map;
--
--	if (!pmu_fully_inited) return -ENXIO;
--
--	/* anyone got a better idea?? */
--	pmu_autopoll(0);
--
--	req.nbytes = 5;
--	req.done = NULL;
--	req.data[0] = PMU_ADB_CMD;
--	req.data[1] = 0;
--	req.data[2] = 3; /* ADB_BUSRESET ??? */
--	req.data[3] = 0;
--	req.data[4] = 0;
--	req.reply_len = 0;
--	req.reply_expected = 1;
--	if (pmu_queue_request(&req) != 0)
--	{
--		printk(KERN_ERR "pmu_adb_reset_bus: pmu_queue_request failed\n");
--		return -EIO;
--	}
--	while (!req.complete)
--		pmu_poll();
--	timeout = 100000;
--	while (!req.complete) {
--		if (--timeout < 0) {
--			printk(KERN_ERR "pmu_adb_reset_bus (reset): no response from PMU\n");
--			return -EIO;
--		}
--		udelay(10);
--		pmu_poll();
--	}
--
--	if (save_autopoll != 0)
--		pmu_autopoll(save_autopoll);
--		
--	return 0;
--}
--
--/* Construct and send a pmu request */
--int 
--pmu_request(struct adb_request *req, void (*done)(struct adb_request *),
--	    int nbytes, ...)
--{
--	va_list list;
--	int i;
--
--	if (nbytes < 0 || nbytes > 32) {
--		printk(KERN_ERR "pmu_request: bad nbytes (%d)\n", nbytes);
--		req->complete = 1;
--		return -EINVAL;
--	}
--	req->nbytes = nbytes;
--	req->done = done;
--	va_start(list, nbytes);
--	for (i = 0; i < nbytes; ++i)
--		req->data[i] = va_arg(list, int);
--	va_end(list);
--	if (pmu_data_len[req->data[0]][1] != 0) {
--		req->reply[0] = ADB_RET_OK;
--		req->reply_len = 1;
--	} else
--		req->reply_len = 0;
--	req->reply_expected = 0;
--	return pmu_queue_request(req);
--}
--
--int
--pmu_queue_request(struct adb_request *req)
--{
--	unsigned long flags;
--	int nsend;
--
--	if (req->nbytes <= 0) {
--		req->complete = 1;
--		return 0;
--	}
--	nsend = pmu_data_len[req->data[0]][0];
--	if (nsend >= 0 && req->nbytes != nsend + 1) {
--		req->complete = 1;
--		return -EINVAL;
--	}
--
--	req->next = NULL;
--	req->sent = 0;
--	req->complete = 0;
--	local_irq_save(flags);
--
--	if (current_req != 0) {
--		last_req->next = req;
--		last_req = req;
--	} else {
--		current_req = req;
--		last_req = req;
--		if (pmu_state == idle)
--			pmu_start();
--	}
--
--	local_irq_restore(flags);
--	return 0;
--}
--
--static void 
--send_byte(int x)
--{
--	via1[ACR] |= SR_CTRL;
--	via1[SR] = x;
--	via2[B] &= ~TREQ;		/* assert TREQ */
--}
--
--static void 
--recv_byte(void)
--{
--	char c;
--
--	via1[ACR] = (via1[ACR] | SR_EXT) & ~SR_OUT;
--	c = via1[SR];		/* resets SR */
--	via2[B] &= ~TREQ;
--}
--
--static void 
--pmu_start(void)
--{
--	unsigned long flags;
--	struct adb_request *req;
--
--	/* assert pmu_state == idle */
--	/* get the packet to send */
--	local_irq_save(flags);
--	req = current_req;
--	if (req == 0 || pmu_state != idle
--	    || (req->reply_expected && req_awaiting_reply))
--		goto out;
--
--	pmu_state = sending;
--	data_index = 1;
--	data_len = pmu_data_len[req->data[0]][0];
--
--	/* set the shift register to shift out and send a byte */
--	send_byte(req->data[0]);
--
--out:
--	local_irq_restore(flags);
--}
--
--void 
--pmu_poll(void)
--{
--	unsigned long flags;
--
--	local_irq_save(flags);
--	if (via1[IFR] & SR_INT) {
--		via1[IFR] = SR_INT;
--		pmu_interrupt(IRQ_MAC_ADB_SR, NULL);
--	}
--	if (via1[IFR] & CB1_INT) {
--		via1[IFR] = CB1_INT;
--		pmu_interrupt(IRQ_MAC_ADB_CL, NULL);
--	}
--	local_irq_restore(flags);
--}
--
--static irqreturn_t
--pmu_interrupt(int irq, void *dev_id)
--{
--	struct adb_request *req;
--	int timeout, bite = 0;	/* to prevent compiler warning */
--
--#if 0
--	printk("pmu_interrupt: irq %d state %d acr %02X, b %02X data_index %d/%d adb_int_pending %d\n",
--		irq, pmu_state, (uint) via1[ACR], (uint) via2[B], data_index, data_len, adb_int_pending);
--#endif
--
--	if (irq == IRQ_MAC_ADB_CL) {		/* CB1 interrupt */
--		adb_int_pending = 1;
--	} else if (irq == IRQ_MAC_ADB_SR) {	/* SR interrupt  */
--		if (via2[B] & TACK) {
--			printk(KERN_DEBUG "PMU: SR_INT but ack still high! (%x)\n", via2[B]);
--		}
--
--		/* if reading grab the byte */
--		if ((via1[ACR] & SR_OUT) == 0) bite = via1[SR];
--
--		/* reset TREQ and wait for TACK to go high */
--		via2[B] |= TREQ;
--		timeout = 3200;
--		while (!(via2[B] & TACK)) {
--			if (--timeout < 0) {
--				printk(KERN_ERR "PMU not responding (!ack)\n");
--				goto finish;
--			}
--			udelay(10);
--		}
--
--		switch (pmu_state) {
--		case sending:
--			req = current_req;
--			if (data_len < 0) {
--				data_len = req->nbytes - 1;
--				send_byte(data_len);
--				break;
--			}
--			if (data_index <= data_len) {
--				send_byte(req->data[data_index++]);
--				break;
--			}
--			req->sent = 1;
--			data_len = pmu_data_len[req->data[0]][1];
--			if (data_len == 0) {
--				pmu_state = idle;
--				current_req = req->next;
--				if (req->reply_expected)
--					req_awaiting_reply = req;
--				else
--					pmu_done(req);
--			} else {
--				pmu_state = reading;
--				data_index = 0;
--				reply_ptr = req->reply + req->reply_len;
--				recv_byte();
--			}
--			break;
--
--		case intack:
--			data_index = 0;
--			data_len = -1;
--			pmu_state = reading_intr;
--			reply_ptr = interrupt_data;
--			recv_byte();
--			break;
--
--		case reading:
--		case reading_intr:
--			if (data_len == -1) {
--				data_len = bite;
--				if (bite > 32)
--					printk(KERN_ERR "PMU: bad reply len %d\n",
--					       bite);
--			} else {
--				reply_ptr[data_index++] = bite;
--			}
--			if (data_index < data_len) {
--				recv_byte();
--				break;
--			}
--
--			if (pmu_state == reading_intr) {
--				pmu_handle_data(interrupt_data, data_index);
--			} else {
--				req = current_req;
--				current_req = req->next;
--				req->reply_len += data_index;
--				pmu_done(req);
--			}
--			pmu_state = idle;
--
--			break;
--
--		default:
--			printk(KERN_ERR "pmu_interrupt: unknown state %d?\n",
--			       pmu_state);
--		}
--	}
--finish:
--	if (pmu_state == idle) {
--		if (adb_int_pending) {
--			pmu_state = intack;
--			send_byte(PMU_INT_ACK);
--			adb_int_pending = 0;
--		} else if (current_req) {
--			pmu_start();
--		}
--	}
--
--#if 0
--	printk("pmu_interrupt: exit state %d acr %02X, b %02X data_index %d/%d adb_int_pending %d\n",
--		pmu_state, (uint) via1[ACR], (uint) via2[B], data_index, data_len, adb_int_pending);
--#endif
--	return IRQ_HANDLED;
--}
--
--static void 
--pmu_done(struct adb_request *req)
--{
--	req->complete = 1;
--	if (req->done)
--		(*req->done)(req);
--}
--
--/* Interrupt data could be the result data from an ADB cmd */
--static void 
--pmu_handle_data(unsigned char *data, int len)
--{
--	static int show_pmu_ints = 1;
--
--	asleep = 0;
--	if (len < 1) {
--		adb_int_pending = 0;
--		return;
--	}
--	if (data[0] & PMU_INT_ADB) {
--		if ((data[0] & PMU_INT_ADB_AUTO) == 0) {
--			struct adb_request *req = req_awaiting_reply;
--			if (req == 0) {
--				printk(KERN_ERR "PMU: extra ADB reply\n");
--				return;
--			}
--			req_awaiting_reply = NULL;
--			if (len <= 2)
--				req->reply_len = 0;
--			else {
--				memcpy(req->reply, data + 1, len - 1);
--				req->reply_len = len - 1;
--			}
--			pmu_done(req);
--		} else {
--			adb_input(data+1, len-1, 1);
--		}
--	} else {
--		if (data[0] == 0x08 && len == 3) {
--			/* sound/brightness buttons pressed */
--			pmu_set_brightness(data[1] >> 3);
--			set_volume(data[2]);
--		} else if (show_pmu_ints
--			   && !(data[0] == PMU_INT_TICK && len == 1)) {
--			int i;
--			printk(KERN_DEBUG "pmu intr");
--			for (i = 0; i < len; ++i)
--				printk(" %.2x", data[i]);
--			printk("\n");
--		}
--	}
--}
--
--static int backlight_level = -1;
--static int backlight_enabled = 0;
--
--#define LEVEL_TO_BRIGHT(lev)	((lev) < 1? 0x7f: 0x4a - ((lev) << 1))
--
--static void 
--pmu_enable_backlight(int on)
--{
--	struct adb_request req;
--
--	if (on) {
--	    /* first call: get current backlight value */
--	    if (backlight_level < 0) {
--		switch(pmu_kind) {
--		    case PMU_68K_V2:
--			pmu_request(&req, NULL, 3, PMU_READ_NVRAM, 0x14, 0xe);
--			while (!req.complete)
--				pmu_poll();
--			printk(KERN_DEBUG "pmu: nvram returned bright: %d\n", (int)req.reply[1]);
--			backlight_level = req.reply[1];
--			break;
--		    default:
--		        backlight_enabled = 0;
--		        return;
--		}
--	    }
--	    pmu_request(&req, NULL, 2, PMU_BACKLIGHT_BRIGHT,
--	    	LEVEL_TO_BRIGHT(backlight_level));
--	    while (!req.complete)
--		pmu_poll();
--	}
--	pmu_request(&req, NULL, 2, PMU_POWER_CTRL,
--	    PMU_POW_BACKLIGHT | (on ? PMU_POW_ON : PMU_POW_OFF));
--	while (!req.complete)
--		pmu_poll();
--	backlight_enabled = on;
--}
--
--static void 
--pmu_set_brightness(int level)
--{
--	int bright;
--
--	backlight_level = level;
--	bright = LEVEL_TO_BRIGHT(level);
--	if (!backlight_enabled)
--		return;
--	if (bright_req_1.complete)
--		pmu_request(&bright_req_1, NULL, 2, PMU_BACKLIGHT_BRIGHT,
--		    bright);
--	if (bright_req_2.complete)
--		pmu_request(&bright_req_2, NULL, 2, PMU_POWER_CTRL,
--		    PMU_POW_BACKLIGHT | (bright < 0x7f ? PMU_POW_ON : PMU_POW_OFF));
--}
--
--void 
--pmu_enable_irled(int on)
--{
--	struct adb_request req;
--
--	pmu_request(&req, NULL, 2, PMU_POWER_CTRL, PMU_POW_IRLED |
--	    (on ? PMU_POW_ON : PMU_POW_OFF));
--	while (!req.complete)
--		pmu_poll();
--}
--
--static void 
--set_volume(int level)
--{
--}
--
--int
--pmu_present(void)
--{
--	return (pmu_kind != PMU_UNKNOWN);
--}
-diff --git a/include/uapi/linux/pmu.h b/include/uapi/linux/pmu.h
-index e128f609281a..97256f90e6df 100644
---- a/include/uapi/linux/pmu.h
-+++ b/include/uapi/linux/pmu.h
-@@ -94,7 +94,7 @@ enum {
- 	PMU_PADDINGTON_BASED,	/* 1999 PowerBook G3 */
- 	PMU_KEYLARGO_BASED,	/* Core99 motherboard (PMU99) */
- 	PMU_68K_V1,		/* Unused/deprecated */
--	PMU_68K_V2, 		/* 68K PMU, version 2 */
-+	PMU_68K_V2,		/* Unused/deprecated */
- };
- 
- /* PMU PMU_POWER_EVENTS commands */
--- 
-2.16.4
+
+Why does not dma_iommu_ops work in this case? I keep asking and yet no
+comment in the commit log or mails...
+
+
+> 
+> Signed-off-by: Russell Currey <ruscur@russell.cc>
+> ---
+>  arch/powerpc/include/asm/dma-mapping.h    |   1 +
+>  arch/powerpc/platforms/powernv/Makefile   |   2 +-
+>  arch/powerpc/platforms/powernv/pci-dma.c  | 243 ++++++++++++++++++++++
+>  arch/powerpc/platforms/powernv/pci-ioda.c |  82 +++-----
+>  arch/powerpc/platforms/powernv/pci.h      |   7 +
+>  5 files changed, 281 insertions(+), 54 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/powernv/pci-dma.c
+
+Too generic file name for such a hack.
+
+
+> 
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index 8fa394520af6..354f435160f3 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -74,6 +74,7 @@ static inline unsigned long device_to_mask(struct device *dev)
+>  extern struct dma_map_ops dma_iommu_ops;
+>  #endif
+>  extern const struct dma_map_ops dma_nommu_ops;
+> +extern const struct dma_map_ops dma_pseudo_bypass_ops;
+>  
+>  static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+>  {
+> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> index 703a350a7f4e..2467bdab3c13 100644
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -6,7 +6,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-irqchip.o
+>  obj-y			+= opal-kmsg.o opal-powercap.o opal-psr.o opal-sensor-groups.o
+>  
+>  obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+> -obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o
+> +obj-$(CONFIG_PCI)	+= pci.o pci-ioda.o npu-dma.o pci-dma.o
+>  obj-$(CONFIG_CXL_BASE)	+= pci-cxl.o
+>  obj-$(CONFIG_EEH)	+= eeh-powernv.o
+>  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+> diff --git a/arch/powerpc/platforms/powernv/pci-dma.c b/arch/powerpc/platforms/powernv/pci-dma.c
+> new file mode 100644
+> index 000000000000..79382627c7be
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/pci-dma.c
+> @@ -0,0 +1,243 @@
+> +/*
+> + * DMA operations supporting pseudo-bypass for PHB3+
+> + *
+> + * Author: Russell Currey <ruscur@russell.cc>
+> + *
+> + * Copyright 2018 IBM Corporation.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by the
+> + * Free Software Foundation; either version 2 of the License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/export.h>
+> +#include <linux/memblock.h>
+> +#include <linux/device.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/hash.h>
+> +
+> +#include <asm/pci-bridge.h>
+> +#include <asm/ppc-pci.h>
+> +#include <asm/pnv-pci.h>
+> +#include <asm/tce.h>
+> +
+> +#include "pci.h"
+> +
+> +/*
+> + * This is a naive implementation that directly operates on TCEs, allocating
+> + * on demand.  There is no locking or refcounts since no TCEs are ever removed
+> + * and unmap does nothing.
+> + */
+> +static dma_addr_t dma_pseudo_bypass_get_address(struct device *dev,
+> +					    phys_addr_t addr)
+> +{
+> +	struct pci_dev *pdev = container_of(dev, struct pci_dev, dev);
+> +	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> +	struct pnv_phb *phb = hose->private_data;
+> +	struct pnv_ioda_pe *pe;
+> +	u64 i, tce, ret, offset;
+> +	__be64 entry;
+> +
+> +	offset = addr & ((1 << phb->ioda.max_tce_order) - 1);
+> +
+> +	pe = &phb->ioda.pe_array[pci_get_pdn(pdev)->pe_number];
+> +
+> +	/* look through the tracking table for a free entry */
+> +	for (i = 0; i < pe->tce_count; i++) {
+> +		/* skip between 2GB and 4GB */
+> +		if ((i << phb->ioda.max_tce_order) >= 0x80000000 &&
+> +		    (i << phb->ioda.max_tce_order) < 0x100000000)
+> +			continue;
+> +
+> +		tce = be64_to_cpu(pe->tces[i]);
+> +
+> +		/* if the TCE is already valid (read + write) */
+> +		if ((tce & 3) == 3) {
+> +			/* check if we're already allocated, if not move on */
+> +			if (tce >> phb->ioda.max_tce_order ==
+> +			    addr >> phb->ioda.max_tce_order) {
+> +				/* wait for the lock bit to clear */
+> +				while (be64_to_cpu(pe->tces[i]) & 4)
+> +					cpu_relax();
+> +
+> +				return (i << phb->ioda.max_tce_order) | offset;
+> +			}
+> +
+> +			continue;
+> +		}
+> +
+> +		/*
+> +		 * The TCE isn't being used, so let's try and allocate it.
+> +		 * Bits 0 and 1 are read/write, and we use bit 2 as a "lock"
+> +		 * bit.  This is to prevent any race where the value is set in
+> +		 * the TCE table but the invalidate/mb() hasn't finished yet.
+> +		 */
+> +		entry = cpu_to_be64((addr - offset) | 7);
+> +		ret = cmpxchg(&pe->tces[i], tce, entry);
+> +		if (ret != tce) {
+> +			/* conflict, start looking again just in case */
+> +			i--;
+> +			continue;
+> +		}
+> +		pnv_pci_phb3_tce_invalidate(pe, 0, 0, addr - offset, 1);
+> +		mb();
+> +		/* clear the lock bit now that we know it's active */
+> +		ret = cmpxchg(&pe->tces[i], entry, cpu_to_be64((addr - offset) | 3));
+> +		if (ret != entry) {
+> +			/* conflict, start looking again just in case */
+> +			i--;
+> +			continue;
+> +		}
+> +
+> +		return (i << phb->ioda.max_tce_order) | offset;
+> +	}
+> +	/* If we get here, the table must be full, so error out. */
+> +	return -1ULL;
+> +}
+> +
+> +/*
+> + * For now, don't actually do anything on unmap.
+> + */
+> +static void dma_pseudo_bypass_unmap_address(struct device *dev, dma_addr_t dma_addr)
+> +{
+> +}
+> +
+> +static int dma_pseudo_bypass_dma_supported(struct device *dev, u64 mask)
+> +{
+> +	/*
+> +	 * Normally dma_supported() checks if the mask is capable of addressing
+> +	 * all of memory.  Since we map physical memory in chunks that the
+> +	 * device can address, the device will be able to address whatever it
+> +	 * wants - just not all at once.
+> +	 */
+> +	return 1;
+> +}
+> +
+> +static void *dma_pseudo_bypass_alloc_coherent(struct device *dev,
+> +					  size_t size,
+> +					  dma_addr_t *dma_handle,
+> +					  gfp_t flag,
+> +					  unsigned long attrs)
+> +{
+> +	void *ret;
+> +	struct page *page;
+> +	int node = dev_to_node(dev);
+> +
+> +	/* ignore region specifiers */
+> +	flag &= ~(__GFP_HIGHMEM);
+> +
+> +	page = alloc_pages_node(node, flag, get_order(size));
+> +	if (page == NULL)
+> +		return NULL;
+> +	ret = page_address(page);
+> +	memset(ret, 0, size);
+> +	*dma_handle = dma_pseudo_bypass_get_address(dev, __pa(ret));
+> +
+> +	return ret;
+> +}
+> +
+> +static void dma_pseudo_bypass_free_coherent(struct device *dev,
+> +					 size_t size,
+> +					 void *vaddr,
+> +					 dma_addr_t dma_handle,
+> +					 unsigned long attrs)
+> +{
+> +	free_pages((unsigned long)vaddr, get_order(size));
+> +}
+> +
+> +static int dma_pseudo_bypass_mmap_coherent(struct device *dev,
+> +				       struct vm_area_struct *vma,
+> +				       void *cpu_addr,
+> +				       dma_addr_t handle,
+> +				       size_t size,
+> +				       unsigned long attrs)
+> +{
+> +	unsigned long pfn = page_to_pfn(virt_to_page(cpu_addr));
+> +
+> +	return remap_pfn_range(vma, vma->vm_start,
+> +			       pfn + vma->vm_pgoff,
+> +			       vma->vm_end - vma->vm_start,
+> +			       vma->vm_page_prot);
+> +}
+> +
+> +static inline dma_addr_t dma_pseudo_bypass_map_page(struct device *dev,
+> +						struct page *page,
+> +						unsigned long offset,
+> +						size_t size,
+> +						enum dma_data_direction dir,
+> +						unsigned long attrs)
+> +{
+> +	BUG_ON(dir == DMA_NONE);
+> +
+> +	return dma_pseudo_bypass_get_address(dev, page_to_phys(page) + offset);
+> +}
+> +
+> +static inline void dma_pseudo_bypass_unmap_page(struct device *dev,
+> +					 dma_addr_t dma_address,
+> +					 size_t size,
+> +					 enum dma_data_direction direction,
+> +					 unsigned long attrs)
+> +{
+> +	dma_pseudo_bypass_unmap_address(dev, dma_address);
+> +}
+> +
+> +
+> +static int dma_pseudo_bypass_map_sg(struct device *dev, struct scatterlist *sgl,
+> +			     int nents, enum dma_data_direction direction,
+> +			     unsigned long attrs)
+> +{
+> +	struct scatterlist *sg;
+> +	int i;
+> +
+> +
+> +	for_each_sg(sgl, sg, nents, i) {
+> +		sg->dma_address = dma_pseudo_bypass_get_address(dev, sg_phys(sg));
+> +		sg->dma_length = sg->length;
+> +
+> +		__dma_sync_page(sg_page(sg), sg->offset, sg->length, direction);
+> +	}
+> +
+> +	return nents;
+> +}
+> +
+> +static void dma_pseudo_bypass_unmap_sg(struct device *dev, struct scatterlist *sgl,
+> +				int nents, enum dma_data_direction direction,
+> +				unsigned long attrs)
+> +{
+> +	struct scatterlist *sg;
+> +	int i;
+> +
+> +	for_each_sg(sgl, sg, nents, i) {
+> +		dma_pseudo_bypass_unmap_address(dev, sg->dma_address);
+> +	}
+> +}
+> +
+> +static u64 dma_pseudo_bypass_get_required_mask(struct device *dev)
+> +{
+> +	/*
+> +	 * there's no limitation on our end, the driver should just call
+> +	 * set_mask() with as many bits as the device can address.
+> +	 */
+> +	return -1ULL;
+> +}
+> +
+> +static int dma_pseudo_bypass_mapping_error(struct device *dev, dma_addr_t dma_addr)
+> +{
+> +	return dma_addr == -1ULL;
+
+
+
+
+> +}
+> +
+> +
+> +const struct dma_map_ops dma_pseudo_bypass_ops = {
+> +	.alloc				= dma_pseudo_bypass_alloc_coherent,
+> +	.free				= dma_pseudo_bypass_free_coherent,
+> +	.mmap				= dma_pseudo_bypass_mmap_coherent,
+> +	.map_sg				= dma_pseudo_bypass_map_sg,
+> +	.unmap_sg			= dma_pseudo_bypass_unmap_sg,
+> +	.dma_supported			= dma_pseudo_bypass_dma_supported,
+> +	.map_page			= dma_pseudo_bypass_map_page,
+> +	.unmap_page			= dma_pseudo_bypass_unmap_page,
+> +	.get_required_mask		= dma_pseudo_bypass_get_required_mask,
+> +	.mapping_error			= dma_pseudo_bypass_mapping_error,
+> +};
+> +EXPORT_SYMBOL(dma_pseudo_bypass_ops);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 17c590087279..d2ca214610fd 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1088,6 +1088,7 @@ static struct pnv_ioda_pe *pnv_ioda_setup_dev_PE(struct pci_dev *dev)
+>  	pe->pbus = NULL;
+>  	pe->mve_number = -1;
+>  	pe->rid = dev->bus->number << 8 | pdn->devfn;
+> +	pe->tces = NULL;
+>  
+>  	pe_info(pe, "Associated device to PE\n");
+>  
+> @@ -1569,6 +1570,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>  		pe->mve_number = -1;
+>  		pe->rid = (pci_iov_virtfn_bus(pdev, vf_index) << 8) |
+>  			   pci_iov_virtfn_devfn(pdev, vf_index);
+> +		pe->tces = NULL;
+>  
+>  		pe_info(pe, "VF %04d:%02d:%02d.%d associated with PE#%x\n",
+>  			hose->global_number, pdev->bus->number,
+> @@ -1774,43 +1776,22 @@ static bool pnv_pci_ioda_pe_single_vendor(struct pnv_ioda_pe *pe)
+>  	return true;
+>  }
+>  
+> -/*
+> - * Reconfigure TVE#0 to be usable as 64-bit DMA space.
+> - *
+> - * The first 4GB of virtual memory for a PE is reserved for 32-bit accesses.
+> - * Devices can only access more than that if bit 59 of the PCI address is set
+> - * by hardware, which indicates TVE#1 should be used instead of TVE#0.
+> - * Many PCI devices are not capable of addressing that many bits, and as a
+> - * result are limited to the 4GB of virtual memory made available to 32-bit
+> - * devices in TVE#0.
+> - *
+> - * In order to work around this, reconfigure TVE#0 to be suitable for 64-bit
+> - * devices by configuring the virtual memory past the first 4GB inaccessible
+> - * by 64-bit DMAs.  This should only be used by devices that want more than
+> - * 4GB, and only on PEs that have no 32-bit devices.
+> - *
+> - * Currently this will only work on PHB3 (POWER8).
+> - */
+> -static int pnv_pci_ioda_dma_64bit_bypass(struct pnv_ioda_pe *pe)
+> +static int pnv_pci_pseudo_bypass_setup(struct pnv_ioda_pe *pe)
+>  {
+> -	u64 window_size, table_size, tce_count, addr;
+> +	u64 tce_count, table_size, window_size;
+> +	struct pnv_phb *p = pe->phb;
+>  	struct page *table_pages;
+> -	u64 tce_order = 28; /* 256MB TCEs */
+>  	__be64 *tces;
+> -	s64 rc;
+> +	int rc = -ENOMEM;
+>  
+> -	/*
+> -	 * Window size needs to be a power of two, but needs to account for
+> -	 * shifting memory by the 4GB offset required to skip 32bit space.
+> -	 */
+> -	window_size = roundup_pow_of_two(memory_hotplug_max() + (1ULL << 32));
+> -	tce_count = window_size >> tce_order;
+> +	window_size = roundup_pow_of_two(memory_hotplug_max());
+> +	tce_count = window_size >> p->ioda.max_tce_order;
+>  	table_size = tce_count << 3;
+>  
+>  	if (table_size < PAGE_SIZE)
+>  		table_size = PAGE_SIZE;
+>  
+> -	table_pages = alloc_pages_node(pe->phb->hose->node, GFP_KERNEL,
+> +	table_pages = alloc_pages_node(p->hose->node, GFP_KERNEL,
+>  				       get_order(table_size));
+
+
+pnv_pci_ioda2_create_table() allocates the table, why does not it work for this task?
+
+
+>  	if (!table_pages)
+>  		goto err;
+> @@ -1821,26 +1802,23 @@ static int pnv_pci_ioda_dma_64bit_bypass(struct pnv_ioda_pe *pe)
+>  
+>  	memset(tces, 0, table_size);
+>  
+> -	for (addr = 0; addr < memory_hotplug_max(); addr += (1 << tce_order)) {
+> -		tces[(addr + (1ULL << 32)) >> tce_order] =
+> -			cpu_to_be64(addr | TCE_PCI_READ | TCE_PCI_WRITE);
+> -	}
+> +	pe->tces = tces;
+> +	pe->tce_count = tce_count;
+>  
+>  	rc = opal_pci_map_pe_dma_window(pe->phb->opal_id,
+>  					pe->pe_number,
+> -					/* reconfigure window 0 */
+>  					(pe->pe_number << 1) + 0,
+>  					1,
+>  					__pa(tces),
+>  					table_size,
+> -					1 << tce_order);
+> +					1 << p->ioda.max_tce_order);
+>  	if (rc == OPAL_SUCCESS) {
+> -		pe_info(pe, "Using 64-bit DMA iommu bypass (through TVE#0)\n");
+> +		pe_info(pe, "TCE tables configured for pseudo-bypass\n");
+>  		return 0;
+>  	}
+>  err:
+> -	pe_err(pe, "Error configuring 64-bit DMA bypass\n");
+> -	return -EIO;
+> +	pe_err(pe, "error configuring pseudo-bypass\n");
+> +	return rc;
+>  }
+>  
+>  static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+> @@ -1851,7 +1829,6 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+>  	struct pnv_ioda_pe *pe;
+>  	uint64_t top;
+>  	bool bypass = false;
+> -	s64 rc;
+>  
+>  	if (WARN_ON(!pdn || pdn->pe_number == IODA_INVALID_PE))
+>  		return -ENODEV;
+> @@ -1868,21 +1845,15 @@ static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
+>  	} else {
+>  		/*
+>  		 * If the device can't set the TCE bypass bit but still wants
+> -		 * to access 4GB or more, on PHB3 we can reconfigure TVE#0 to
+> -		 * bypass the 32-bit region and be usable for 64-bit DMAs.
+> -		 * The device needs to be able to address all of this space.
+> +		 * to access 4GB or more, we need to use a different set of DMA
+> +		 * operations with an indirect mapping.
+>  		 */
+>  		if (dma_mask >> 32 &&
+> -		    dma_mask > (memory_hotplug_max() + (1ULL << 32)) &&
+> -		    pnv_pci_ioda_pe_single_vendor(pe) &&
+> -		    phb->model == PNV_PHB_MODEL_PHB3) {
+> -			/* Configure the bypass mode */
+> -			rc = pnv_pci_ioda_dma_64bit_bypass(pe);
+> -			if (rc)
+> -				return rc;
+> -			/* 4GB offset bypasses 32-bit space */
+> -			set_dma_offset(&pdev->dev, (1ULL << 32));
+> -			set_dma_ops(&pdev->dev, &dma_nommu_ops);
+> +		    phb->model != PNV_PHB_MODEL_P7IOC &&
+> +		    pnv_pci_ioda_pe_single_vendor(pe)) {
+> +			if (!pe->tces)
+> +				pnv_pci_pseudo_bypass_setup(pe);
+> +			set_dma_ops(&pdev->dev, &dma_pseudo_bypass_ops);
+>  		} else if (dma_mask >> 32 && dma_mask != DMA_BIT_MASK(64)) {
+>  			/*
+>  			 * Fail the request if a DMA mask between 32 and 64 bits
+> @@ -2071,7 +2042,7 @@ static inline void pnv_pci_phb3_tce_invalidate_pe(struct pnv_ioda_pe *pe)
+>  	__raw_writeq_be(val, invalidate);
+>  }
+>  
+> -static void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+> +void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+>  					unsigned shift, unsigned long index,
+>  					unsigned long npages)
+>  {
+> @@ -2611,10 +2582,15 @@ static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+>  static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
+>  {
+>  	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
+> -						table_group);
+> +					      table_group);
+> +
+>  	/* Store @tbl as pnv_pci_ioda2_unset_window() resets it */
+>  	struct iommu_table *tbl = pe->table_group.tables[0];
+>  
+> +	if (pe->tces)
+> +		free_pages((unsigned long)pe->tces,
+> +			   get_order(pe->tce_count << 3));
+> +
+>  	pnv_pci_ioda2_set_bypass(pe, false);
+>  	pnv_pci_ioda2_unset_window(&pe->table_group, 0);
+>  	if (pe->pbus)
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index c9952def5e93..56846ddc76a2 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -70,6 +70,10 @@ struct pnv_ioda_pe {
+>  	bool			tce_bypass_enabled;
+>  	uint64_t		tce_bypass_base;
+>  
+> +	/* TCE tables for DMA pseudo-bypass */
+> +	__be64			*tces;
+> +	u64			tce_count;
+
+
+pnv_ioda_pe::table_group::tables[0] has a pointer to pages, a table size in entries and a page size, why duplicate all of this again?
+
+
+> +
+>  	/* MSIs. MVE index is identical for for 32 and 64 bit MSI
+>  	 * and -1 if not supported. (It's actually identical to the
+>  	 * PE number)
+> @@ -211,6 +215,9 @@ extern void pnv_tce_free(struct iommu_table *tbl, long index, long npages);
+>  extern int pnv_tce_xchg(struct iommu_table *tbl, long index,
+>  		unsigned long *hpa, enum dma_data_direction *direction);
+>  extern unsigned long pnv_tce_get(struct iommu_table *tbl, long index);
+> +extern void pnv_pci_phb3_tce_invalidate(struct pnv_ioda_pe *pe, bool rm,
+> +					unsigned shift, unsigned long index,
+> +					unsigned long npages);
+>  
+>  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+>  				unsigned char *log_buff);
+> -- 
+> 2.17.1
+> 
+
+
+
+--
+Alexey
