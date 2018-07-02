@@ -1,17 +1,16 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41K0Zq6fpYzF1LS
+ by lists.ozlabs.org (Postfix) with ESMTP id 41K0Zq73nrzF1Lb
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 18:21:23 +1000 (AEST)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Michael Schmitz <schmitzmic@gmail.com>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-m68k@lists.linux-m68k.org>, <linux-kernel@vger.kernel.org>
-Message-Id: <5fd5279d30eeb82c753985aa672c71bd37a062fa.1530519301.git.fthain@telegraphics.com.au>
+Message-Id: <3aaf05c25cc54ee3335bae315ffe181d5c751e55.1530519301.git.fthain@telegraphics.com.au>
 In-Reply-To: <cover.1530519301.git.fthain@telegraphics.com.au>
 References: <cover.1530519301.git.fthain@telegraphics.com.au>
 From: Finn Thain <fthain@telegraphics.com.au>
-Subject: [PATCH v4 07/11] macintosh/via-pmu: Explicitly specify
- CONFIG_PPC_PMAC dependencies
+Subject: [PATCH v4 10/11] macintosh/via-pmu: Clean up interrupt statistics
 Date: Mon,  2 Jul 2018 04:21:19 -0400 (EDT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,38 +21,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At present, CONFIG_ADB_PMU depends on CONFIG_PPC_PMAC. When this gets
-relaxed to CONFIG_PPC_PMAC || CONFIG_MAC, those Kconfig symbols with
-implicit deps on PPC_PMAC will need explicit deps. Add them now.
-No functional change.
+Replace an open-coded ffs() with the function call.
+Simplify an if-else cascade using a switch statement.
+Correct a typo and an indentation issue.
 
 Tested-by: Stan Johnson <userm57@yahoo.com>
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/macintosh/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/macintosh/via-pmu.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
-index 9c6452b38c36..26abae4c899d 100644
---- a/drivers/macintosh/Kconfig
-+++ b/drivers/macintosh/Kconfig
-@@ -79,7 +79,7 @@ config ADB_PMU
+diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
+index a68e7a6f00cc..3da5d40309d4 100644
+--- a/drivers/macintosh/via-pmu.c
++++ b/drivers/macintosh/via-pmu.c
+@@ -1355,7 +1355,8 @@ pmu_resume(void)
+ static void
+ pmu_handle_data(unsigned char *data, int len)
+ {
+-	unsigned char ints, pirq;
++	unsigned char ints;
++	int idx;
+ 	int i = 0;
  
- config ADB_PMU_LED
- 	bool "Support for the Power/iBook front LED"
--	depends on ADB_PMU
-+	depends on PPC_PMAC && ADB_PMU
- 	select NEW_LEDS
- 	select LEDS_CLASS
- 	help
-@@ -122,7 +122,7 @@ config PMAC_MEDIABAY
+ 	asleep = 0;
+@@ -1377,25 +1378,24 @@ pmu_handle_data(unsigned char *data, int len)
+ 		ints &= ~(PMU_INT_ADB_AUTO | PMU_INT_AUTO_SRQ_POLL);
  
- config PMAC_BACKLIGHT
- 	bool "Backlight control for LCD screens"
--	depends on ADB_PMU && FB = y && (BROKEN || !PPC64)
-+	depends on PPC_PMAC && ADB_PMU && FB = y && (BROKEN || !PPC64)
- 	select FB_BACKLIGHT
- 	help
- 	  Say Y here to enable Macintosh specific extensions of the generic
+ next:
+-
+ 	if (ints == 0) {
+ 		if (i > pmu_irq_stats[10])
+ 			pmu_irq_stats[10] = i;
+ 		return;
+ 	}
+-
+-	for (pirq = 0; pirq < 8; pirq++)
+-		if (ints & (1 << pirq))
+-			break;
+-	pmu_irq_stats[pirq]++;
+ 	i++;
+-	ints &= ~(1 << pirq);
++
++	idx = ffs(ints) - 1;
++	ints &= ~BIT(idx);
++
++	pmu_irq_stats[idx]++;
+ 
+ 	/* Note: for some reason, we get an interrupt with len=1,
+ 	 * data[0]==0 after each normal ADB interrupt, at least
+ 	 * on the Pismo. Still investigating...  --BenH
+ 	 */
+-	if ((1 << pirq) & PMU_INT_ADB) {
++	switch (BIT(idx)) {
++	case PMU_INT_ADB:
+ 		if ((data[0] & PMU_INT_ADB_AUTO) == 0) {
+ 			struct adb_request *req = req_awaiting_reply;
+ 			if (!req) {
+@@ -1433,25 +1433,28 @@ pmu_handle_data(unsigned char *data, int len)
+ 				adb_input(data+1, len-1, 1);
+ #endif /* CONFIG_ADB */		
+ 		}
+-	}
++		break;
++
+ 	/* Sound/brightness button pressed */
+-	else if ((1 << pirq) & PMU_INT_SNDBRT) {
++	case PMU_INT_SNDBRT:
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ 		if (len == 3)
+ 			pmac_backlight_set_legacy_brightness_pmu(data[1] >> 4);
+ #endif
+-	}
++		break;
++
+ 	/* Tick interrupt */
+-	else if ((1 << pirq) & PMU_INT_TICK) {
+-		/* Environement or tick interrupt, query batteries */
++	case PMU_INT_TICK:
++		/* Environment or tick interrupt, query batteries */
+ 		if (pmu_battery_count) {
+ 			if ((--query_batt_timer) == 0) {
+ 				query_battery_state();
+ 				query_batt_timer = BATTERY_POLLING_COUNT;
+ 			}
+ 		}
+-        }
+-	else if ((1 << pirq) & PMU_INT_ENVIRONMENT) {
++		break;
++
++	case PMU_INT_ENVIRONMENT:
+ 		if (pmu_battery_count)
+ 			query_battery_state();
+ 		pmu_pass_intr(data, len);
+@@ -1461,7 +1464,9 @@ pmu_handle_data(unsigned char *data, int len)
+ 			via_pmu_event(PMU_EVT_POWER, !!(data[1]&8));
+ 			via_pmu_event(PMU_EVT_LID, data[1]&1);
+ 		}
+-	} else {
++		break;
++
++	default:
+ 	       pmu_pass_intr(data, len);
+ 	}
+ 	goto next;
 -- 
 2.16.4
