@@ -1,23 +1,25 @@
-Return-Path: <keescook@chromium.org>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KBgt1PHrzF1LR
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 01:56:26 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id j3-v6so7703860pfh.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jul 2018 08:56:26 -0700 (PDT)
-Date: Mon, 2 Jul 2018 08:56:21 -0700
-From: Kees Cook <keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KDSh0km6zF1LS
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 03:16:51 +1000 (AEST)
+Date: Mon, 2 Jul 2018 12:16:31 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc: mpc5200: Remove VLA usage
-Message-ID: <20180702155621.GA16047@beast>
-MIME-Version: 1.0
+Cc: Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Paul Mackerras <paulus@samba.org>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] powerpc: mpc5200: Remove VLA usage
+Message-ID: <20180702171631.GA16221@gate.crashing.org>
+References: <20180629185339.GA37582@beast>
+ <CAK8P3a3zrXii=bxBm1zHWMHWgYLCQ0rpo460zmKyfsf_-nxxhQ@mail.gmail.com>
+ <CAGXu5jJz0zP_DvGqZsBjKZ_vY0=xKoUxCLVxXgUPAbcXS6aMNg@mail.gmail.com>
+ <87fu12mnf7.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87fu12mnf7.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In the quest to remove all stack VLA usage from the kernel[1], this
-switches to using a stack size large enough for the saved routine and
-adds a sanity check making sure the routine doesn't overflow into the
-0x600 exception handler.
+On Mon, Jul 02, 2018 at 11:33:32AM +1000, Michael Ellerman wrote:
+> What if we write it:
+> 
+>        char saved_0x500[0x600 - 0x500];
+> 
+> Hopefully the compiler is smart enough not to generate a VLA for that :)
 
-[1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+It is a VLA if the array size is not an integer constant expression.  This
+is defined by C; the compiler has nothing to do with it.  0x600-0x500 is
+an integer constant expression, so this is not a VLA.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Reviewed-by: Arnd Bergmann <arnd@arndb.de>
----
-v2: use "0x600-0x500" for size calculation to illustrate handler sizes
----
- arch/powerpc/platforms/52xx/mpc52xx_pm.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+But if you meant if GCC will ever do a dynamic stack allocation for a fixed
+size local variable: yes indeed, I hope not!
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-index 31d3515672f3..b1d208ded981 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -117,7 +117,10 @@ int mpc52xx_pm_enter(suspend_state_t state)
- 	u32 intr_main_mask;
- 	void __iomem * irq_0x500 = (void __iomem *)CONFIG_KERNEL_START + 0x500;
- 	unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
--	char saved_0x500[mpc52xx_ds_cached_size];
-+	char saved_0x500[0x600-0x500];
-+
-+	if (WARN_ON(mpc52xx_ds_cached_size > sizeof(saved_0x500)))
-+		return -ENOMEM;
- 
- 	/* disable all interrupts in PIC */
- 	intr_main_mask = in_be32(&intr->main_mask);
--- 
-2.17.1
+(Sometimes GCC can avoid this even with VLAs; but in this example we do
+not even have a VLA, so it's easier than that :-) )
 
 
--- 
-Kees Cook
-Pixel Security
+Segher
