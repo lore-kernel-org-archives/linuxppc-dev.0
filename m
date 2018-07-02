@@ -1,23 +1,17 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41K5ZS19fWzF1LR
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 22:06:23 +1000 (AEST)
-Date: Mon, 2 Jul 2018 22:07:29 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Mathieu Malaterre <malat@debian.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Schmitz <schmitzmic@gmail.com>, linux-m68k@lists.linux-m68k.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 01/11] macintosh/via-pmu: Fix section mismatch warning
-In-Reply-To: <CA+7wUsyfkC3FvbFyt9JRdBas3s+52tp7OH8h2jiJM9z+ynoyyw@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1807022143570.13@nippy.intranet>
-References: <cover.1530519301.git.fthain@telegraphics.com.au>
- <720e9899186bed184fb9b5cce070e2dc519f9665.1530519301.git.fthain@telegraphics.com.au>
- <CA+7wUsyfkC3FvbFyt9JRdBas3s+52tp7OH8h2jiJM9z+ynoyyw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <hofrat@osadl.org>
+Received: from www.osadl.org (www.osadl.org [62.245.132.105])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41K1hV23yKzF1BP
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2018 19:11:21 +1000 (AEST)
+From: Nicholas Mc Guire <hofrat@osadl.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@osadl.org>
+Subject: [PATCH] powerpc: hwrng; fix missing of_node_put()
+Date: Mon,  2 Jul 2018 11:08:16 +0200
+Message-Id: <1530522496-14816-1-git-send-email-hofrat@osadl.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jul 2018, Mathieu Malaterre wrote:
+ The call to of_find_compatible_node() returns a node pointer with refcount
+incremented thus it must be explicitly decremented here before returning.
 
-> On Mon, Jul 2, 2018 at 10:25 AM Finn Thain <fthain@telegraphics.com.au> 
-> wrote:
-> >
-> > The pmu_init() function has the __init qualifier, but the ops struct 
-> > that holds a pointer to it does not. This causes a build warning. The 
-> > driver works fine because the pointer is only dereferenced early.
-> >
-> > The function is so small that there's negligible benefit from using 
-> > the __init qualifier. Remove it to fix the warning, consistent with 
-> > the other ADB drivers.
-> 
-> Would you mind copy/pasting the warning you are seeing.
-> 
-> Make sure you have:
-> 
-> 58935176ad17 powerpc/via-pmu: Fix section mismatch warning
-> 
-> Thanks
-> 
+Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+Fixes: commit a489043f4626 ("powerpc/pseries: Implement arch_get_random_long() based on H_RANDOM")
+---
+Problem found with experimental coccinelle script
 
-It's true, the section mismatch warning from 'make' has disappeared since 
-I wrote this patch, but that doesn't mean it is wrong.
+Patch was compiletested with: ppc64_defconfig (implies CONFIG_PPC_PSERIES=y)
+with some unrelated sparse warnings (which I did not understand)
+./arch/powerpc/include/asm/head-64.h:13:36: warning: Unknown escape '('
+./arch/powerpc/include/asm/head-64.h:16:36: warning: Unknown escape '('
+./arch/powerpc/include/asm/head-64.h:19:36: warning: Unknown escape '('
 
-Before this patch:
+Patch is aginst 4.18-rc2 (localversion-next is next-20180702)
 
-$ powerpc-linux-gnu-objdump -xda vmlinux |egrep -w "via_pmu_driver|pmu_init"
-c0711c84 l     F .init.text     0000001c pmu_init
-c05eb408 g     O .rodata        00000028 via_pmu_driver
-c0711c84 <pmu_init>:
-$ 
+ arch/powerpc/platforms/pseries/rng.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-After:
-
-$ powerpc-linux-gnu-objdump -xda vmlinux |egrep -w "via_pmu_driver|pmu_init"
-c038e42c l     F .text  0000001c pmu_init
-c05e1e58 g     O .rodata        00000028 via_pmu_driver
-c038e42c <pmu_init>:
-$
-
-I gather that commit 58935176ad17 ("powerpc/via-pmu: Fix section mismatch 
-warning") has moved via_pmu_driver from .data to .rodata, but I'm afraid I 
-don't see the point of that change. The commit log entry doesn't explain 
-it either.
-
-If .rodata is not discarded then the dangling pointer remains, right?
-
+diff --git a/arch/powerpc/platforms/pseries/rng.c b/arch/powerpc/platforms/pseries/rng.c
+index 31ca557..262b8c5 100644
+--- a/arch/powerpc/platforms/pseries/rng.c
++++ b/arch/powerpc/platforms/pseries/rng.c
+@@ -40,6 +40,7 @@ static __init int rng_init(void)
+ 
+ 	ppc_md.get_random_seed = pseries_get_random_long;
+ 
++	of_node_put(dn);
+ 	return 0;
+ }
+ machine_subsys_initcall(pseries, rng_init);
 -- 
+2.1.4
