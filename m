@@ -1,30 +1,20 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f51.google.com (mail-oi0-f51.google.com
+ [209.85.218.51])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Kdzj4stMzF1RC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 19:26:41 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id q9-v6so1101238ioj.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 02:26:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KfHT5PbSzF1LK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 19:40:21 +1000 (AEST)
+Received: by mail-oi0-f51.google.com with SMTP id w126-v6so2498639oie.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 02:40:21 -0700 (PDT)
 MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <1530600642-25090-3-git-send-email-kernelfans@gmail.com>
- <20180703075106.GA21136@wunner.de>
-In-Reply-To: <20180703075106.GA21136@wunner.de>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Tue, 3 Jul 2018 17:26:27 +0800
-Message-ID: <CAFgQCTt0M=+AQKXFXcOkxppjnDK9EAyNxHN=2F+n_NvyN=rQqg@mail.gmail.com>
-Subject: Re: [PATCHv3 2/4] drivers/base: utilize device tree info to shutdown
- devices
-To: lukas@wunner.de
-Cc: linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 3 Jul 2018 11:40:07 +0200
+Message-ID: <CA+7wUsxznwK8fztA+2TAWJL9nEHek_tyUcDm9HCvy-4MdvpAWQ@mail.gmail.com>
+Subject: CONFIG_LD_DEAD_CODE_DATA_ELIMINATION: Section mismatch in reference
+ from the variable via_pmu_driver to the function .init.text:pmu_init()
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,26 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 3, 2018 at 3:51 PM Lukas Wunner <lukas@wunner.de> wrote:
->
-> On Tue, Jul 03, 2018 at 02:50:40PM +0800, Pingfan Liu wrote:
-> > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > places an assumption of supplier<-consumer order on the process of probe.
-> > But it turns out to break down the parent <- child order in some scene.
-> > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
-> > have been probed. Then comes the bridge's module, which enables extra
-> > feature(such as hotplug) on this bridge. This will break the
-> > parent<-children order and cause failure when "kexec -e" in some scenario.
-> >
-> > The detailed description of the scenario:
-> > An IBM Power9 machine on which, two drivers portdrv_pci and shpchp(a mod)
-> > match the PCI_CLASS_BRIDGE_PCI, but neither of them success to probe due
-> > to some issue. For this case, the bridge is moved after its children in
-> > devices_kset. Then, when "kexec -e", a ata-disk behind the bridge can not
-> > write back buffer in flight due to the former shutdown of the bridge which
-> > clears the BusMaster bit.
->
-> If you revert commit cc27b735ad3a ("PCI/portdrv: Turn off PCIe services
-> during shutdown"), does the issue go away?
+Hi Nick,
 
-Yes, it is gone.
+Would you consider this a bug:
+
+$ touch drivers/macintosh/via-pmu.c
+$ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=n make ARCH=powerpc
+CROSS_COMPILE=powerpc-linux-gnu-
+...
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.data+0x216018): Section mismatch in reference from
+the variable via_pmu_driver to the function .init.text:pmu_init()
+The variable via_pmu_driver references
+the function __init pmu_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+
+While:
+
+$ touch drivers/macintosh/via-pmu.c
+$ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y make ARCH=powerpc
+CROSS_COMPILE=powerpc-linux-gnu-
+...
+  AR      init/built-in.a
+  AR      built-in.a
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+  KSYM    .tmp_kallsyms1.o
+  KSYM    .tmp_kallsyms2.o
+  LD      vmlinux
+  SORTEX  vmlinux
+  SYSMAP  System.map
+...
+
+Thanks for comment
