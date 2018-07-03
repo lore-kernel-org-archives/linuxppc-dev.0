@@ -1,27 +1,58 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41KmzS12gyzF1R4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 00:41:55 +1000 (AEST)
-Subject: Re: [PATCH 2/7 v5] iommu: of: make of_pci_map_rid() available for
- other devices too
-To: Nipun Gupta <nipun.gupta@nxp.com>, will.deacon@arm.com,
- robh+dt@kernel.org, robh@kernel.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, gregkh@linuxfoundation.org,
- laurentiu.tudor@nxp.com, bhelgaas@google.com
-Cc: hch@lst.de, joro@8bytes.org, m.szyprowski@samsung.com,
- shawnguo@kernel.org, frowand.list@gmail.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, leoyang.li@nxp.com
-References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
- <1526824191-7000-3-git-send-email-nipun.gupta@nxp.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <ba5b3055-da3f-0efc-efe9-44270dcf1420@arm.com>
-Date: Tue, 3 Jul 2018 15:41:49 +0100
+Return-Path: <bhe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KnGq1K6tzF1Mm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 00:55:14 +1000 (AEST)
+Date: Tue, 3 Jul 2018 22:55:03 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ kbuild test robot <fengguang.wu@intel.com>, Borislav Petkov <bp@suse.de>,
+ Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
+ David Airlie <airlied@linux.ie>, KY Srinivasan <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Frank Rowand <frowand.list@gmail.com>, Keith Busch <keith.busch@intel.com>,
+ Jon Derrick <jonathan.derrick@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, brijesh.singh@amd.com,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ baiyaowei@cmss.chinamobile.com, richard.weiyang@gmail.com,
+ devel@linuxdriverproject.org, linux-input <linux-input@vger.kernel.org>,
+ linux-nvdimm@lists.01.org, devicetree <devicetree@vger.kernel.org>,
+ linux-pci@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
+ Yinghai Lu <yinghai@kernel.org>, kexec@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, "David S. Miller" <davem@davemloft.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Gustavo Padovan <gustavo@padovan.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Sean Paul <seanpaul@chromium.org>, linux-parisc@vger.kernel.org,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v5 1/4] resource: Move reparent_resources() to
+ kernel/resource.c and make it public
+Message-ID: <20180703145503.GA1225@MiWiFi-R3L-srv>
+References: <20180612032831.29747-1-bhe@redhat.com>
+ <20180612032831.29747-2-bhe@redhat.com>
+ <CAHp75Vd6v4+RTq-5uw_BJpT6=w2KGjTfU+rEst6+8igs2cyntw@mail.gmail.com>
+ <20180612093812.GC1820@MiWiFi-R3L-srv>
+ <CAHp75Vf_kBLkE6v=JyOdfNoWktWEfKs7JzRP1XEc4TeuT5xqfw@mail.gmail.com>
+ <CAHp75Vdaqj+n=F7wSB9PFGpf9Ok2XZzKcq_H0DzmtjmN-4UUfw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1526824191-7000-3-git-send-email-nipun.gupta@nxp.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAHp75Vdaqj+n=F7wSB9PFGpf9Ok2XZzKcq_H0DzmtjmN-4UUfw@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,343 +62,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/05/18 14:49, Nipun Gupta wrote:
-> iommu-map property is also used by devices with fsl-mc. This
-> patch moves the of_pci_map_rid to generic location, so that it
-> can be used by other busses too.
-> 
-> 'of_pci_map_rid' is renamed here to 'of_map_rid' and there is no
-> functional change done in the API.
+Hi Andy,
 
-Reviewed-by: Robin Murphy <robin.murphy@arm.com>
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->   drivers/iommu/of_iommu.c |   5 +--
->   drivers/of/base.c        | 102 +++++++++++++++++++++++++++++++++++++++++++++++
->   drivers/of/irq.c         |   5 +--
->   drivers/pci/of.c         | 101 ----------------------------------------------
->   include/linux/of.h       |  11 +++++
->   include/linux/of_pci.h   |  10 -----
->   6 files changed, 117 insertions(+), 117 deletions(-)
+On 06/12/18 at 05:24pm, Andy Shevchenko wrote:
+> On Tue, Jun 12, 2018 at 5:20 PM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+> >> Hmm, I just copied it from arch/powerpc/kernel/pci-common.c. The
+> >> function interface expects an integer returned value, not sure what a
+> >> real error codes look like, could you give more hints? Will change
+> >> accordingly.
+> >
+> > I briefly looked at the code and error codes we have, so, my proposal
+> > is one of the following
 > 
-> diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
-> index 5c36a8b..811e160 100644
-> --- a/drivers/iommu/of_iommu.c
-> +++ b/drivers/iommu/of_iommu.c
-> @@ -149,9 +149,8 @@ static int of_pci_iommu_init(struct pci_dev *pdev, u16 alias, void *data)
->   	struct of_phandle_args iommu_spec = { .args_count = 1 };
->   	int err;
->   
-> -	err = of_pci_map_rid(info->np, alias, "iommu-map",
-> -			     "iommu-map-mask", &iommu_spec.np,
-> -			     iommu_spec.args);
-> +	err = of_map_rid(info->np, alias, "iommu-map", "iommu-map-mask",
-> +			 &iommu_spec.np, iommu_spec.args);
->   	if (err)
->   		return err == -ENODEV ? NO_IOMMU : err;
->   
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index 848f549..c7aac81 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -1995,3 +1995,105 @@ int of_find_last_cache_level(unsigned int cpu)
->   
->   	return cache_level;
->   }
-> +
-> +/**
-> + * of_map_rid - Translate a requester ID through a downstream mapping.
-> + * @np: root complex device node.
-> + * @rid: device requester ID to map.
-> + * @map_name: property name of the map to use.
-> + * @map_mask_name: optional property name of the mask to use.
-> + * @target: optional pointer to a target device node.
-> + * @id_out: optional pointer to receive the translated ID.
-> + *
-> + * Given a device requester ID, look up the appropriate implementation-defined
-> + * platform ID and/or the target device which receives transactions on that
-> + * ID, as per the "iommu-map" and "msi-map" bindings. Either of @target or
-> + * @id_out may be NULL if only the other is required. If @target points to
-> + * a non-NULL device node pointer, only entries targeting that node will be
-> + * matched; if it points to a NULL value, it will receive the device node of
-> + * the first matching target phandle, with a reference held.
-> + *
-> + * Return: 0 on success or a standard error code on failure.
-> + */
-> +int of_map_rid(struct device_node *np, u32 rid,
-> +	       const char *map_name, const char *map_mask_name,
-> +	       struct device_node **target, u32 *id_out)
-> +{
-> +	u32 map_mask, masked_rid;
-> +	int map_len;
-> +	const __be32 *map = NULL;
-> +
-> +	if (!np || !map_name || (!target && !id_out))
-> +		return -EINVAL;
-> +
-> +	map = of_get_property(np, map_name, &map_len);
-> +	if (!map) {
-> +		if (target)
-> +			return -ENODEV;
-> +		/* Otherwise, no map implies no translation */
-> +		*id_out = rid;
-> +		return 0;
-> +	}
-> +
-> +	if (!map_len || map_len % (4 * sizeof(*map))) {
-> +		pr_err("%pOF: Error: Bad %s length: %d\n", np,
-> +			map_name, map_len);
-> +		return -EINVAL;
-> +	}
-> +
-> +	/* The default is to select all bits. */
-> +	map_mask = 0xffffffff;
-> +
-> +	/*
-> +	 * Can be overridden by "{iommu,msi}-map-mask" property.
-> +	 * If of_property_read_u32() fails, the default is used.
-> +	 */
-> +	if (map_mask_name)
-> +		of_property_read_u32(np, map_mask_name, &map_mask);
-> +
-> +	masked_rid = map_mask & rid;
-> +	for ( ; map_len > 0; map_len -= 4 * sizeof(*map), map += 4) {
-> +		struct device_node *phandle_node;
-> +		u32 rid_base = be32_to_cpup(map + 0);
-> +		u32 phandle = be32_to_cpup(map + 1);
-> +		u32 out_base = be32_to_cpup(map + 2);
-> +		u32 rid_len = be32_to_cpup(map + 3);
-> +
-> +		if (rid_base & ~map_mask) {
-> +			pr_err("%pOF: Invalid %s translation - %s-mask (0x%x) ignores rid-base (0x%x)\n",
-> +				np, map_name, map_name,
-> +				map_mask, rid_base);
-> +			return -EFAULT;
-> +		}
-> +
-> +		if (masked_rid < rid_base || masked_rid >= rid_base + rid_len)
-> +			continue;
-> +
-> +		phandle_node = of_find_node_by_phandle(phandle);
-> +		if (!phandle_node)
-> +			return -ENODEV;
-> +
-> +		if (target) {
-> +			if (*target)
-> +				of_node_put(phandle_node);
-> +			else
-> +				*target = phandle_node;
-> +
-> +			if (*target != phandle_node)
-> +				continue;
-> +		}
-> +
-> +		if (id_out)
-> +			*id_out = masked_rid - rid_base + out_base;
-> +
-> +		pr_debug("%pOF: %s, using mask %08x, rid-base: %08x, out-base: %08x, length: %08x, rid: %08x -> %08x\n",
-> +			np, map_name, map_mask, rid_base, out_base,
-> +			rid_len, rid, masked_rid - rid_base + out_base);
-> +		return 0;
-> +	}
-> +
-> +	pr_err("%pOF: Invalid %s translation - no match for rid 0x%x on %pOF\n",
-> +		np, map_name, rid, target && *target ? *target : NULL);
-> +	return -EFAULT;
-> +}
-> +EXPORT_SYMBOL_GPL(of_map_rid);
-> diff --git a/drivers/of/irq.c b/drivers/of/irq.c
-> index 02ad93a..e1f6f39 100644
-> --- a/drivers/of/irq.c
-> +++ b/drivers/of/irq.c
-> @@ -22,7 +22,6 @@
->   #include <linux/module.h>
->   #include <linux/of.h>
->   #include <linux/of_irq.h>
-> -#include <linux/of_pci.h>
->   #include <linux/string.h>
->   #include <linux/slab.h>
->   
-> @@ -588,8 +587,8 @@ static u32 __of_msi_map_rid(struct device *dev, struct device_node **np,
->   	 * "msi-map" property.
->   	 */
->   	for (parent_dev = dev; parent_dev; parent_dev = parent_dev->parent)
-> -		if (!of_pci_map_rid(parent_dev->of_node, rid_in, "msi-map",
-> -				    "msi-map-mask", np, &rid_out))
-> +		if (!of_map_rid(parent_dev->of_node, rid_in, "msi-map",
-> +				"msi-map-mask", np, &rid_out))
->   			break;
->   	return rid_out;
->   }
-> diff --git a/drivers/pci/of.c b/drivers/pci/of.c
-> index a28355c..d2cebbe 100644
-> --- a/drivers/pci/of.c
-> +++ b/drivers/pci/of.c
-> @@ -362,107 +362,6 @@ int of_pci_get_host_bridge_resources(struct device_node *dev,
->   EXPORT_SYMBOL_GPL(of_pci_get_host_bridge_resources);
->   #endif /* CONFIG_OF_ADDRESS */
->   
-> -/**
-> - * of_pci_map_rid - Translate a requester ID through a downstream mapping.
-> - * @np: root complex device node.
-> - * @rid: PCI requester ID to map.
-> - * @map_name: property name of the map to use.
-> - * @map_mask_name: optional property name of the mask to use.
-> - * @target: optional pointer to a target device node.
-> - * @id_out: optional pointer to receive the translated ID.
-> - *
-> - * Given a PCI requester ID, look up the appropriate implementation-defined
-> - * platform ID and/or the target device which receives transactions on that
-> - * ID, as per the "iommu-map" and "msi-map" bindings. Either of @target or
-> - * @id_out may be NULL if only the other is required. If @target points to
-> - * a non-NULL device node pointer, only entries targeting that node will be
-> - * matched; if it points to a NULL value, it will receive the device node of
-> - * the first matching target phandle, with a reference held.
-> - *
-> - * Return: 0 on success or a standard error code on failure.
-> - */
-> -int of_pci_map_rid(struct device_node *np, u32 rid,
-> -		   const char *map_name, const char *map_mask_name,
-> -		   struct device_node **target, u32 *id_out)
-> -{
-> -	u32 map_mask, masked_rid;
-> -	int map_len;
-> -	const __be32 *map = NULL;
-> -
-> -	if (!np || !map_name || (!target && !id_out))
-> -		return -EINVAL;
-> -
-> -	map = of_get_property(np, map_name, &map_len);
-> -	if (!map) {
-> -		if (target)
-> -			return -ENODEV;
-> -		/* Otherwise, no map implies no translation */
-> -		*id_out = rid;
-> -		return 0;
-> -	}
-> -
-> -	if (!map_len || map_len % (4 * sizeof(*map))) {
-> -		pr_err("%pOF: Error: Bad %s length: %d\n", np,
-> -			map_name, map_len);
-> -		return -EINVAL;
-> -	}
-> -
-> -	/* The default is to select all bits. */
-> -	map_mask = 0xffffffff;
-> -
-> -	/*
-> -	 * Can be overridden by "{iommu,msi}-map-mask" property.
-> -	 * If of_property_read_u32() fails, the default is used.
-> -	 */
-> -	if (map_mask_name)
-> -		of_property_read_u32(np, map_mask_name, &map_mask);
-> -
-> -	masked_rid = map_mask & rid;
-> -	for ( ; map_len > 0; map_len -= 4 * sizeof(*map), map += 4) {
-> -		struct device_node *phandle_node;
-> -		u32 rid_base = be32_to_cpup(map + 0);
-> -		u32 phandle = be32_to_cpup(map + 1);
-> -		u32 out_base = be32_to_cpup(map + 2);
-> -		u32 rid_len = be32_to_cpup(map + 3);
-> -
-> -		if (rid_base & ~map_mask) {
-> -			pr_err("%pOF: Invalid %s translation - %s-mask (0x%x) ignores rid-base (0x%x)\n",
-> -				np, map_name, map_name,
-> -				map_mask, rid_base);
-> -			return -EFAULT;
-> -		}
-> -
-> -		if (masked_rid < rid_base || masked_rid >= rid_base + rid_len)
-> -			continue;
-> -
-> -		phandle_node = of_find_node_by_phandle(phandle);
-> -		if (!phandle_node)
-> -			return -ENODEV;
-> -
-> -		if (target) {
-> -			if (*target)
-> -				of_node_put(phandle_node);
-> -			else
-> -				*target = phandle_node;
-> -
-> -			if (*target != phandle_node)
-> -				continue;
-> -		}
-> -
-> -		if (id_out)
-> -			*id_out = masked_rid - rid_base + out_base;
-> -
-> -		pr_debug("%pOF: %s, using mask %08x, rid-base: %08x, out-base: %08x, length: %08x, rid: %08x -> %08x\n",
-> -			np, map_name, map_mask, rid_base, out_base,
-> -			rid_len, rid, masked_rid - rid_base + out_base);
-> -		return 0;
-> -	}
-> -
-> -	pr_err("%pOF: Invalid %s translation - no match for rid 0x%x on %pOF\n",
-> -		np, map_name, rid, target && *target ? *target : NULL);
-> -	return -EFAULT;
-> -}
-> -
->   #if IS_ENABLED(CONFIG_OF_IRQ)
->   /**
->    * of_irq_parse_pci - Resolve the interrupt for a PCI device
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 4d25e4f..f4251c3 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -545,6 +545,10 @@ const __be32 *of_prop_next_u32(struct property *prop, const __be32 *cur,
->   
->   extern int of_cpu_node_to_id(struct device_node *np);
->   
-> +int of_map_rid(struct device_node *np, u32 rid,
-> +	       const char *map_name, const char *map_mask_name,
-> +	       struct device_node **target, u32 *id_out);
-> +
->   #else /* CONFIG_OF */
->   
->   static inline void of_core_init(void)
-> @@ -931,6 +935,13 @@ static inline int of_cpu_node_to_id(struct device_node *np)
->   	return -ENODEV;
->   }
->   
-> +static inline int of_map_rid(struct device_node *np, u32 rid,
-> +			     const char *map_name, const char *map_mask_name,
-> +			     struct device_node **target, u32 *id_out)
-> +{
-> +	return -EINVAL;
-> +}
-> +
->   #define of_match_ptr(_ptr)	NULL
->   #define of_match_node(_matches, _node)	NULL
->   #endif /* CONFIG_OF */
-> diff --git a/include/linux/of_pci.h b/include/linux/of_pci.h
-> index 091033a..a23b44a 100644
-> --- a/include/linux/of_pci.h
-> +++ b/include/linux/of_pci.h
-> @@ -17,9 +17,6 @@ struct device_node *of_pci_find_child_device(struct device_node *parent,
->   int of_get_pci_domain_nr(struct device_node *node);
->   int of_pci_get_max_link_speed(struct device_node *node);
->   void of_pci_check_probe_only(void);
-> -int of_pci_map_rid(struct device_node *np, u32 rid,
-> -		   const char *map_name, const char *map_mask_name,
-> -		   struct device_node **target, u32 *id_out);
->   #else
->   static inline struct device_node *of_pci_find_child_device(struct device_node *parent,
->   					     unsigned int devfn)
-> @@ -44,13 +41,6 @@ static inline int of_pci_get_devfn(struct device_node *np)
->   	return -1;
->   }
->   
-> -static inline int of_pci_map_rid(struct device_node *np, u32 rid,
-> -			const char *map_name, const char *map_mask_name,
-> -			struct device_node **target, u32 *id_out)
-> -{
-> -	return -EINVAL;
-> -}
-> -
->   static inline int
->   of_pci_get_max_link_speed(struct device_node *node)
->   {
+> >  - use -ECANCELED (not the best choice for first occurrence here,
+> > though I can't find better)
 > 
+> Actually -ENOTSUPP might suit the first case (although the actual
+> would be something like -EOVERLAP, which we don't have)
+
+Sorry for late reply, and many thanks for your great suggestion.
+
+I am fine to use -ENOTSUPP as the first returned value, and -ECANCELED
+for the 2nd one. Or define an enum as you suggested inside the function
+or in header file.
+
+Or use -EBUSY for the first case because existing resource is
+overlapping but not fully contained by 'res'; and -EINVAL for
+the 2nd case since didn't find any one resources which is contained by
+'res', means we passed in a invalid resource. 
+
+All is fine to me, I can repost with each of them.
+
+Thanks
+Baoquan
+
+> 
+> >  - use positive integers (or enum), like
+> >   #define RES_REPARENTED 0
+> >   #define RES_OVERLAPPED 1
+> >   #define RES_NOCONFLICT 2
+> >
+> >
+> >>> > +               if (firstpp == NULL)
+> >>> > +                       firstpp = pp;
+> >>> > +       }
+> >>>
+> >>> > +       if (firstpp == NULL)
+> >>> > +               return -1;      /* didn't find any conflicting entries? */
+> >>>
+> >>> Ditto.
+> >
+> > Ditto.
+> >
+> >>>
+> >>> > +}
+> >>> > +EXPORT_SYMBOL(reparent_resources);
+> >
+> > --
+> > With Best Regards,
+> > Andy Shevchenko
+> 
+> 
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
