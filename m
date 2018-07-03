@@ -1,21 +1,40 @@
-Return-Path: <mathieu.malaterre@gmail.com>
-Received: from mail-oi0-f51.google.com (mail-oi0-f51.google.com
- [209.85.218.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KfHT5PbSzF1LK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 19:40:21 +1000 (AEST)
-Received: by mail-oi0-f51.google.com with SMTP id w126-v6so2498639oie.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 02:40:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KfQt47KvzF1LM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 19:46:46 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w639kN9H120209
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2018 05:46:43 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2k06t5g0f5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 05:46:43 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 3 Jul 2018 05:46:43 -0400
+Date: Tue, 3 Jul 2018 15:16:36 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pm@vger.kernel.org, rjw@rjwysocki.net,
+ stewart@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com,
+ mpe@ellerman.id.au
+Subject: Re: [PATCH v3 1/2] powernv/cpuidle: Parse dt idle properties into
+ global structure
+Reply-To: ego@linux.vnet.ibm.com
+References: <1530609656-13301-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1530609656-13301-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 MIME-Version: 1.0
-From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 3 Jul 2018 11:40:07 +0200
-Message-ID: <CA+7wUsxznwK8fztA+2TAWJL9nEHek_tyUcDm9HCvy-4MdvpAWQ@mail.gmail.com>
-Subject: CONFIG_LD_DEAD_CODE_DATA_ELIMINATION: Section mismatch in reference
- from the variable via_pmu_driver to the function .init.text:pmu_init()
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1530609656-13301-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Message-Id: <20180703094636.GA24693@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +44,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nick,
+Hi Akshay,
 
-Would you consider this a bug:
+On Tue, Jul 03, 2018 at 02:50:55PM +0530, Akshay Adiga wrote:
+> Device-tree parsing happens twice, once while deciding idle state to be
+> used for hotplug and once during cpuidle init. Hence, parsing the device
+> tree and caching it will reduce code duplication. Parsing code has been
+> moved to pnv_parse_cpuidle_dt() from pnv_probe_idle_states(). In addition
+> to the properties in the device tree the number of available states is
+> also required.
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-$ touch drivers/macintosh/via-pmu.c
-$ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=n make ARCH=powerpc
-CROSS_COMPILE=powerpc-linux-gnu-
-...
-  LD      vmlinux.o
-  MODPOST vmlinux.o
-WARNING: vmlinux.o(.data+0x216018): Section mismatch in reference from
-the variable via_pmu_driver to the function .init.text:pmu_init()
-The variable via_pmu_driver references
-the function __init pmu_init()
-If the reference is valid then annotate the
-variable with __init* or __refdata (see linux/init.h) or name the variable:
-*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
-
-While:
-
-$ touch drivers/macintosh/via-pmu.c
-$ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y make ARCH=powerpc
-CROSS_COMPILE=powerpc-linux-gnu-
-...
-  AR      init/built-in.a
-  AR      built-in.a
-  LD      vmlinux.o
-  MODPOST vmlinux.o
-  KSYM    .tmp_kallsyms1.o
-  KSYM    .tmp_kallsyms2.o
-  LD      vmlinux
-  SORTEX  vmlinux
-  SYSMAP  System.map
-...
-
-Thanks for comment
+Looks good.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
