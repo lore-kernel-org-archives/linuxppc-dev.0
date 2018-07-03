@@ -1,27 +1,27 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41KqVv3g6RzF1MY
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 02:35:49 +1000 (AEST)
-Subject: Re: [PATCH 7/7 v5] arm64: dts: ls208xa: comply with the iommu map
- binding for fsl_mc
-To: Nipun Gupta <nipun.gupta@nxp.com>, will.deacon@arm.com,
- robh+dt@kernel.org, robh@kernel.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, gregkh@linuxfoundation.org,
- laurentiu.tudor@nxp.com, bhelgaas@google.com
-Cc: hch@lst.de, joro@8bytes.org, m.szyprowski@samsung.com,
- shawnguo@kernel.org, frowand.list@gmail.com,
- iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bharat.bhushan@nxp.com, stuyoder@gmail.com, leoyang.li@nxp.com
-References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
- <1526824191-7000-8-git-send-email-nipun.gupta@nxp.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <88626adc-6f5b-86df-88a0-620d258f8053@arm.com>
-Date: Tue, 3 Jul 2018 17:35:42 +0100
+Return-Path: <leoyang.li@nxp.com>
+Received: from EUR02-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr10051.outbound.protection.outlook.com [40.107.1.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KqWC54DTzF1MY
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 02:36:03 +1000 (AEST)
+From: Leo Li <leoyang.li@nxp.com>
+To: York Sun <york.sun@nxp.com>, "jocke@infinera.com"
+ <joakim.tjernlund@infinera.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, Qiang Zhao <qiang.zhao@nxp.com>
+Subject: RE: [PATCH] QE GPIO: Add qe_gpio_set_multiple
+Date: Tue, 3 Jul 2018 16:35:57 +0000
+Message-ID: <AM4PR0401MB1699AFF424BDFAE1BC65E1FA8F420@AM4PR0401MB1699.eurprd04.prod.outlook.com>
+References: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
+ <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
+ <fef3d759a1f6677ec713b120b4b1f4ab1eb4946b.camel@infinera.com>
+ <87a7rh7ji2.fsf@concordia.ellerman.id.au>
+ <b7c4d55627e474a868ad7284672fbbd14dcf8d39.camel@infinera.com>
+ <VI1PR04MB2078C55EBFAEED9BC3FCE1989A420@VI1PR04MB2078.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR04MB2078C55EBFAEED9BC3FCE1989A420@VI1PR04MB2078.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-In-Reply-To: <1526824191-7000-8-git-send-email-nipun.gupta@nxp.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,59 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20/05/18 14:49, Nipun Gupta wrote:
-> fsl-mc bus support the new iommu-map property. Comply to this binding
-> for fsl_mc bus.
-> 
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> Reviewed-by: Laurentiu Tudor <laurentiu.tudor@nxp.com>
-> ---
->   arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi | 6 +++++-
->   1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-> index 137ef4d..6010505 100644
-> --- a/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/fsl-ls208xa.dtsi
-> @@ -184,6 +184,7 @@
->   		#address-cells = <2>;
->   		#size-cells = <2>;
->   		ranges;
-> +		dma-ranges = <0x0 0x0 0x0 0x0 0x10000 0x00000000>;
->   
->   		clockgen: clocking@1300000 {
->   			compatible = "fsl,ls2080a-clockgen";
-> @@ -357,6 +358,8 @@
->   			reg = <0x00000008 0x0c000000 0 0x40>,	 /* MC portal base */
->   			      <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
->   			msi-parent = <&its>;
-> +			iommu-map = <0 &smmu 0 0>;	/* This is fixed-up by u-boot */
-> +			dma-coherent;
->   			#address-cells = <3>;
->   			#size-cells = <1>;
->   
-> @@ -460,6 +463,8 @@
->   			compatible = "arm,mmu-500";
->   			reg = <0 0x5000000 0 0x800000>;
->   			#global-interrupts = <12>;
-> +			#iommu-cells = <1>;
-> +			stream-match-mask = <0x7C00>;
->   			interrupts = <0 13 4>, /* global secure fault */
->   				     <0 14 4>, /* combined secure interrupt */
->   				     <0 15 4>, /* global non-secure fault */
-> @@ -502,7 +507,6 @@
->   				     <0 204 4>, <0 205 4>,
->   				     <0 206 4>, <0 207 4>,
->   				     <0 208 4>, <0 209 4>;
-> -			mmu-masters = <&fsl_mc 0x300 0>;
-
-Since we're in here, is the SMMU itself also coherent? If it is, you 
-probably want to say so and avoid the overhead of pointlessly cleaning 
-cache lines on every page table update.
-
-Robin.
-
->   		};
->   
->   		dspi: dspi@2100000 {
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWW9yayBTdW4NCj4gU2Vu
+dDogVHVlc2RheSwgSnVseSAzLCAyMDE4IDEwOjI3IEFNDQo+IFRvOiBqb2NrZUBpbmZpbmVyYS5j
+b20gPGpvYWtpbS50amVybmx1bmRAaW5maW5lcmEuY29tPjsgTGVvIExpDQo+IDxsZW95YW5nLmxp
+QG54cC5jb20+DQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbXBlQGVsbGVy
+bWFuLmlkLmF1OyBRaWFuZyBaaGFvDQo+IDxxaWFuZy56aGFvQG54cC5jb20+DQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0hdIFFFIEdQSU86IEFkZCBxZV9ncGlvX3NldF9tdWx0aXBsZQ0KPiANCj4gK0xl
+bw0KPiANCj4gT24gMDcvMDMvMjAxOCAwMzozMCBBTSwgSm9ha2ltIFRqZXJubHVuZCB3cm90ZToN
+Cj4gPiBPbiBUdWUsIDIwMTgtMDYtMjYgYXQgMjM6NDEgKzEwMDAsIE1pY2hhZWwgRWxsZXJtYW4g
+d3JvdGU6DQo+ID4+DQo+ID4+IEpvYWtpbSBUamVybmx1bmQgPEpvYWtpbS5UamVybmx1bmRAaW5m
+aW5lcmEuY29tPiB3cml0ZXM6DQo+ID4+PiBPbiBUaHUsIDIwMTgtMDYtMjEgYXQgMDI6MzggKzAw
+MDAsIFFpYW5nIFpoYW8gd3JvdGU6DQo+ID4+Pj4gT24gMDYvMTkvMjAxOCAwOToyMiBBTSwgSm9h
+a2ltIFRqZXJubHVuZCB3cm90ZToNCj4gPj4+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiA+Pj4+IEZyb206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gYm91bmNl
+cytxaWFuZy56aGFvPW54cC5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIEpvYWtp
+bQ0KPiBUamVybmx1bmQNCj4gPj4+PiBTZW50OiAyMDE4xOo21MIyMMjVIDA6MjINCj4gPj4+PiBU
+bzogWW9yayBTdW4gPHlvcmsuc3VuQG54cC5jb20+OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0K
+PiBkZXZAbGlzdHMub3psYWJzLm9yZz4NCj4gPj4+PiBTdWJqZWN0OiBbUEFUQ0hdIFFFIEdQSU86
+IEFkZCBxZV9ncGlvX3NldF9tdWx0aXBsZQ0KPiA+Pj4+DQo+ID4+Pj4gVGhpcyBjb3VzaW4gdG8g
+Z3Bpby1tcGM4eHh4IHdhcyBsYWNraW5nIGEgbXVsdGlwbGUgcGlucyBtZXRob2QsIGFkZA0KPiBv
+bmUuDQo+ID4+Pj4NCj4gPj4+PiBTaWduZWQtb2ZmLWJ5OiBKb2FraW0gVGplcm5sdW5kIDxqb2Fr
+aW0udGplcm5sdW5kQGluZmluZXJhLmNvbT4NCj4gPj4+PiAtLS0NCj4gPj4+PiAgZHJpdmVycy9z
+b2MvZnNsL3FlL2dwaW8uYyB8IDI4ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPj4+
+PiAgMSBmaWxlIGNoYW5nZWQsIDI4IGluc2VydGlvbnMoKykNCj4gPj4NCj4gPj4gLi4uDQo+ID4+
+Pj4gIHN0YXRpYyBpbnQgcWVfZ3Bpb19kaXJfaW4oc3RydWN0IGdwaW9fY2hpcCAqZ2MsIHVuc2ln
+bmVkIGludCBncGlvKSAgew0KPiA+Pj4+ICAgICAgICAgc3RydWN0IG9mX21tX2dwaW9fY2hpcCAq
+bW1fZ2MgPSB0b19vZl9tbV9ncGlvX2NoaXAoZ2MpOyBAQCAtDQo+IDI5OCw2ICszMjUsNyBAQCBz
+dGF0aWMgaW50IF9faW5pdCBxZV9hZGRfZ3Bpb2NoaXBzKHZvaWQpDQo+ID4+Pj4gICAgICAgICAg
+ICAgICAgIGdjLT5kaXJlY3Rpb25fb3V0cHV0ID0gcWVfZ3Bpb19kaXJfb3V0Ow0KPiA+Pj4+ICAg
+ICAgICAgICAgICAgICBnYy0+Z2V0ID0gcWVfZ3Bpb19nZXQ7DQo+ID4+Pj4gICAgICAgICAgICAg
+ICAgIGdjLT5zZXQgPSBxZV9ncGlvX3NldDsNCj4gPj4+PiArICAgICAgICAgICAgICAgZ2MtPnNl
+dF9tdWx0aXBsZSA9IHFlX2dwaW9fc2V0X211bHRpcGxlOw0KPiA+Pj4+DQo+ID4+Pj4gICAgICAg
+ICAgICAgICAgIHJldCA9IG9mX21tX2dwaW9jaGlwX2FkZF9kYXRhKG5wLCBtbV9nYywgcWVfZ2Mp
+Ow0KPiA+Pj4+ICAgICAgICAgICAgICAgICBpZiAocmV0KQ0KPiA+Pj4+DQo+ID4+Pj4gUmV2aWV3
+ZWQtYnk6IFFpYW5nIFpoYW8gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPj4+Pg0KPiA+Pj4NCj4g
+Pj4+IFdobyBwaWNrcyB1cCB0aGlzIHBhdGNoID8gSXMgaXQgcXVldWVkIHNvbWV3aGVyZSBhbHJl
+YWR5Pw0KPiA+Pg0KPiA+PiBOb3QgbWUuDQo+ID4NCj4gPiBZb3JrPyBZb3Ugc2VlbSB0byBiZSB0
+aGUgb25seSBvbmUgbGVmdC4NCj4gPg0KPiANCj4gSSBhbSBub3QgYSBMaW51eCBtYWludGFpbmVy
+LiBFdmVuIEkgd2FudCB0bywgSSBjYW4ndCBtZXJnZSB0aGlzIHBhdGNoLg0KPiANCj4gTGVvLCB3
+aG8gY2FuIG1lcmdlIHRoaXMgcGF0Y2ggYW5kIHJlcXVlc3QgYSBwdWxsPw0KDQpTaW5jZSBpdCBm
+YWxscyB1bmRlciB0aGUgZHJpdmVyL3NvYy9mc2wvIGZvbGRlci4gIEkgY2FuIHRha2UgaXQuDQoN
+ClJlZ2FyZHMsDQpMZW8NCg==
