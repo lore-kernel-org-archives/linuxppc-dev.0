@@ -1,22 +1,22 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KbFm2SlLzF1Nr
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 17:23:39 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id j17-v6so570876pfn.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 00:23:39 -0700 (PDT)
-Date: Tue, 3 Jul 2018 17:23:32 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: 83a092cf95f28: powerpc: Link warning for orphan sections
-Message-ID: <20180703172332.7210ec7a@roar.ozlabs.ibm.com>
-In-Reply-To: <CA+7wUsz6AWY63hCwax2YSUPawRQbLfyje23qWKNGVUGM=OxM4Q@mail.gmail.com>
-References: <CA+7wUsz6AWY63hCwax2YSUPawRQbLfyje23qWKNGVUGM=OxM4Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KbJN5pkMzF1Pm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 17:25:56 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Diana Craciun <diana.craciun@nxp.com>, linuxppc-dev@lists.ozlabs.org
+Cc: oss@buserror.net, leoyang.li@nxp.com, bharat.bhushan@nxp.com,
+ Diana Craciun <diana.craciun@nxp.com>
+Subject: Re: [PATCH v2 1/3] powerpc/fsl: Disable the speculation barrier from
+ the command line
+In-Reply-To: <1528721608-15443-2-git-send-email-diana.craciun@nxp.com>
+References: <1528721608-15443-1-git-send-email-diana.craciun@nxp.com>
+ <1528721608-15443-2-git-send-email-diana.craciun@nxp.com>
+Date: Tue, 03 Jul 2018 17:25:55 +1000
+Message-ID: <87woucg4qk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Jul 2018 09:03:46 +0200
-Mathieu Malaterre <malat@debian.org> wrote:
+Diana Craciun <diana.craciun@nxp.com> writes:
 
-> Hi Nick,
-> 
-> I am building my kernel (ppc32) with both
-> CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y and CONFIG_UBSAN=y. This leads
-> to ~316428 warnings such as:
-> 
-> + powerpc-linux-gnu-ld -EB -m elf32ppc -Bstatic --orphan-handling=warn
-> --build-id --gc-sections -X -o .tmp_vmlinux1 -T
-> ./arch/powerpc/kernel/vmlinux.lds --who
-> le-archive built-in.a --no-whole-archive --start-group lib/lib.a --end-group
-> powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data393'
-> from `init/main.o' being placed in section `.data..Lubsan_data393'.
-> powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data394'
-> from `init/main.o' being placed in section `.data..Lubsan_data394'.
-> powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data395'
-> from `init/main.o' being placed in section `.data..Lubsan_data395'.
-> powerpc-linux-gnu-ld: warning: orphan section `.data..Lubsan_data396'
-> from `init/main.o' being placed in section `.data..Lubsan_data396'.
-> ...
-> 
-> What would you recommend to reduce the number of warnings produced ? I
-> tried `--warn-once` but that only affect undefined symbols.
+> The speculation barrier can be disabled from the command line
+> with the parameter: "nospectre_v1".
 
-I'm not sure if the linker can be quietened. You could try putting
-*(.data..Lubsan_data*) into the .data section in
-powerpc/kernel/vmlinux.lds.S
+Can you please send another patch adding it to Documentation/admin-guide/kernel-parameters.txt
 
-Thanks,
-Nick
+You should mark it as "PPC" only for now.
+
+cheers
