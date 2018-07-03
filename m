@@ -3,21 +3,20 @@ Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
  [66.111.4.25])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KY9h1WWRzF1LM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 15:49:58 +1000 (AEST)
-Message-ID: <8e6ab216ef609df96087d01e9e0dd69906e6e9ee.camel@russell.cc>
-Subject: Re: [PATCH 1/3] powerpc/powernv/pci: Track largest available TCE
- order per PHB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KYcn5cfdzF1LK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 16:10:01 +1000 (AEST)
+Message-ID: <0db2832f46cf183619e648c11e26458445eba847.camel@russell.cc>
+Subject: Re: [PATCH 2/3] powerpc/powernv: DMA operations for discontiguous
+ allocation
 From: Russell Currey <ruscur@russell.cc>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
  alistair@popple.id.au, tpearson@raptorengineering.com
-Date: Tue, 03 Jul 2018 15:49:47 +1000
-In-Reply-To: <20180702173426.1254ecd0@aik.ozlabs.ibm.com>
+Date: Tue, 03 Jul 2018 16:09:53 +1000
+In-Reply-To: <20180702184756.72cfde38@aik.ozlabs.ibm.com>
 References: <20180629073437.4060-1-ruscur@russell.cc>
- <20180629073437.4060-2-ruscur@russell.cc>
- <20180702173256.67254e00@aik.ozlabs.ibm.com>
- <20180702173426.1254ecd0@aik.ozlabs.ibm.com>
+ <20180629073437.4060-3-ruscur@russell.cc>
+ <20180702184756.72cfde38@aik.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,85 +28,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-02 at 17:34 +1000, Alexey Kardashevskiy wrote:
-> On Mon, 2 Jul 2018 17:32:56 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+On Mon, 2018-07-02 at 18:47 +1000, Alexey Kardashevskiy wrote:
+> On Fri, 29 Jun 2018 17:34:36 +1000
+> Russell Currey <ruscur@russell.cc> wrote:
 > 
-> > On Fri, 29 Jun 2018 17:34:35 +1000
-> > Russell Currey <ruscur@russell.cc> wrote:
+> > DMA pseudo-bypass is a new set of DMA operations that solve some
+> > issues for
+> > devices that want to address more than 32 bits but can't address
+> > the 59
+> > bits required to enable direct DMA.
 > > 
-> > > Knowing the largest possible TCE size of a PHB is useful, so get
-> > > it
-> > > out of the device tree.  This relies on the property being added
-> > > in
-> > > OPAL.
-> > > 
-> > > It is assumed that any PHB4 or later machine would be running
-> > > firmware that implemented this property, and otherwise assumed to
-> > > be PHB3, which has a maximum TCE order of 28 bits or 256MB TCEs.
-> > > 
-> > > This is used later in the series.
-> > > 
-> > > Signed-off-by: Russell Currey <ruscur@russell.cc>
-> > > ---
-> > >  arch/powerpc/platforms/powernv/pci-ioda.c | 16 ++++++++++++++++
-> > >  arch/powerpc/platforms/powernv/pci.h      |  3 +++
-> > >  2 files changed, 19 insertions(+)
-> > > 
-> > > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> > > b/arch/powerpc/platforms/powernv/pci-ioda.c index
-> > > 5bd0eb6681bc..17c590087279 100644 ---
-> > > a/arch/powerpc/platforms/powernv/pci-ioda.c +++
-> > > b/arch/powerpc/platforms/powernv/pci-ioda.c @@ -3873,11 +3873,13
-> > > @@
-> > > static void __init pnv_pci_init_ioda_phb(struct device_node *np,
-> > > struct resource r; const __be64 *prop64;
-> > >  	const __be32 *prop32;
-> > > +	struct property *prop;
-> > >  	int len;
-> > >  	unsigned int segno;
-> > >  	u64 phb_id;
-> > >  	void *aux;
-> > >  	long rc;
-> > > +	u32 val;
-> > >  
-> > >  	if (!of_device_is_available(np))
-> > >  		return;
-> > > @@ -4016,6 +4018,20 @@ static void __init
-> > > pnv_pci_init_ioda_phb(struct device_node *np, }
-> > >  	phb->ioda.pe_array = aux + pemap_off;
-> > >  
-> > > +	phb->ioda.max_tce_order = 0;
-> > > +	/* Get TCE order from the DT.  If it's not present,
-> > > assume
-> > > P8 */
-> > > +	if (!of_get_property(np, "ibm,supported-tce-sizes",
-> > > NULL))
-> > > {
-> > > +		phb->ioda.max_tce_order = 28; /* assume P8 256mb
-> > > TCEs */
-> > > +	} else {
-> > > +		of_property_for_each_u32(np,
-> > > "ibm,supported-tce-sizes", prop,
-> > > +					 prop32, val) {
-> > > +			if (val > phb->ioda.max_tce_order)
-> > > +				phb->ioda.max_tce_order = val;
-> > > +		}
-> > > +		pr_debug("PHB%llx Found max TCE order of %d
-> > > bits\n",
-> > > +			 phb->opal_id, phb->ioda.max_tce_order);
-> > > +	}  
+> > The previous implementation for POWER8/PHB3 worked around this by
+> > configuring a bypass from the default 32-bit address space into 64-
+> > bit
+> > address space.  This approach does not work for POWER9/PHB4 because
+> > regions of memory are discontiguous and many devices will be unable
+> > to
+> > address memory beyond the first node.
 > > 
+> > Instead, implement a new set of DMA operations that allocate TCEs
+> > as DMA
+> > mappings are requested so that all memory is addressable even when
+> > a
+> > one-to-one mapping between real addresses and DMA addresses isn't
+> > possible.  These TCEs are the maximum size available on the
+> > platform,
+> > which is 256M on PHB3 and 1G on PHB4.
 > > 
-> > pnv_ioda_parse_tce_sizes() does this, use it. It even reports 256MB
-> > pages for P8 as in v4.18-rc3.
+> > Devices can now map any region of memory up to the maximum amount
+> > they can
+> > address according to the DMA mask set, in chunks of the largest
+> > available
+> > TCE size.
+> > 
+> > This implementation replaces the need for the existing PHB3
+> > solution and
+> > should be compatible with future PHB versions.
+> > 
+> > It is, however, rather naive.  There is no unmapping, and as a
+> > result
+> > devices can eventually run out of space if they address their
+> > entire
+> > DMA mask worth of TCEs.  An implementation with unmap() will come
+> > in
+> > future (and requires a much more complex implementation), but this
+> > is a
+> > good start due to the drastic performance improvement.
 > 
 > 
-> ah, not, not in rc3, my bad. I'll post it soon.
+> Why does not dma_iommu_ops work in this case? I keep asking and yet
+> no
+> comment in the commit log or mails...
 
-Sure, whatever works, no need for duplication
+Yes, I should cover this in the commit message.
 
-> 
-> 
-> --
-> Alexey
+So the primary reason that the IOMMU doesn't work for this case is the
+TCE allocation - the IOMMU doesn't have a refcount and will allocate
+(in this case on P9) 1GB TCEs to each map which will quickly fail.
+
+This isn't intended to be a replacement for the IOMMU, it's a
+roundabout way of achieving what the direct ops do (like NVIDIA devices
+on P8 can do today).
