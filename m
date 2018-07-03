@@ -1,25 +1,27 @@
-Return-Path: <york.sun@nxp.com>
-Received: from EUR04-VI1-obe.outbound.protection.outlook.com
- (mail-eopbgr80087.outbound.protection.outlook.com [40.107.8.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Knz76bCWzF1Mm
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 01:26:43 +1000 (AEST)
-From: York Sun <york.sun@nxp.com>
-To: "jocke@infinera.com" <joakim.tjernlund@infinera.com>, Leo Li
- <leoyang.li@nxp.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, Qiang Zhao <qiang.zhao@nxp.com>
-Subject: Re: [PATCH] QE GPIO: Add qe_gpio_set_multiple
-Date: Tue, 3 Jul 2018 15:26:37 +0000
-Message-ID: <VI1PR04MB2078C55EBFAEED9BC3FCE1989A420@VI1PR04MB2078.eurprd04.prod.outlook.com>
-References: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
- <fef3d759a1f6677ec713b120b4b1f4ab1eb4946b.camel@infinera.com>
- <87a7rh7ji2.fsf@concordia.ellerman.id.au>
- <b7c4d55627e474a868ad7284672fbbd14dcf8d39.camel@infinera.com>
-Content-Type: text/plain; charset="iso-2022-jp"
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41Kp3l63kkzF1Mm
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 01:30:42 +1000 (AEST)
+Subject: Re: [PATCH 3/7 v5] iommu: support iommu configuration for fsl-mc
+ devices
+To: Nipun Gupta <nipun.gupta@nxp.com>, will.deacon@arm.com,
+ robh+dt@kernel.org, robh@kernel.org, mark.rutland@arm.com,
+ catalin.marinas@arm.com, gregkh@linuxfoundation.org,
+ laurentiu.tudor@nxp.com, bhelgaas@google.com
+Cc: hch@lst.de, joro@8bytes.org, m.szyprowski@samsung.com,
+ shawnguo@kernel.org, frowand.list@gmail.com,
+ iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ bharat.bhushan@nxp.com, stuyoder@gmail.com, leoyang.li@nxp.com
+References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
+ <1526824191-7000-4-git-send-email-nipun.gupta@nxp.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <947a6e16-98ff-9389-b15c-d3025b7be4be@arm.com>
+Date: Tue, 3 Jul 2018 16:30:35 +0100
 MIME-Version: 1.0
+In-Reply-To: <1526824191-7000-4-git-send-email-nipun.gupta@nxp.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+Leo=0A=
-=0A=
-On 07/03/2018 03:30 AM, Joakim Tjernlund wrote:=0A=
-> On Tue, 2018-06-26 at 23:41 +1000, Michael Ellerman wrote:=0A=
->>=0A=
->> Joakim Tjernlund <Joakim.Tjernlund@infinera.com> writes:=0A=
->>> On Thu, 2018-06-21 at 02:38 +0000, Qiang Zhao wrote:=0A=
->>>> On 06/19/2018 09:22 AM, Joakim Tjernlund wrote:=0A=
->>>> -----Original Message-----=0A=
->>>> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+qiang.zhao=3Dnxp.com@l=
-ists.ozlabs.org] On Behalf Of Joakim Tjernlund=0A=
->>>> Sent: 2018=1B$BG/=1B(B6=1B$B7n=1B(B20=1B$BF|=1B(B 0:22=0A=
->>>> To: York Sun <york.sun@nxp.com>; linuxppc-dev <linuxppc-dev@lists.ozla=
-bs.org>=0A=
->>>> Subject: [PATCH] QE GPIO: Add qe_gpio_set_multiple=0A=
->>>>=0A=
->>>> This cousin to gpio-mpc8xxx was lacking a multiple pins method, add on=
-e.=0A=
->>>>=0A=
->>>> Signed-off-by: Joakim Tjernlund <joakim.tjernlund@infinera.com>=0A=
->>>> ---=0A=
->>>>  drivers/soc/fsl/qe/gpio.c | 28 ++++++++++++++++++++++++++++=0A=
->>>>  1 file changed, 28 insertions(+)=0A=
->>=0A=
->> ...=0A=
->>>>  static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)  {=
-=0A=
->>>>         struct of_mm_gpio_chip *mm_gc =3D to_of_mm_gpio_chip(gc); @@ -=
-298,6 +325,7 @@ static int __init qe_add_gpiochips(void)=0A=
->>>>                 gc->direction_output =3D qe_gpio_dir_out;=0A=
->>>>                 gc->get =3D qe_gpio_get;=0A=
->>>>                 gc->set =3D qe_gpio_set;=0A=
->>>> +               gc->set_multiple =3D qe_gpio_set_multiple;=0A=
->>>>=0A=
->>>>                 ret =3D of_mm_gpiochip_add_data(np, mm_gc, qe_gc);=0A=
->>>>                 if (ret)=0A=
->>>>=0A=
->>>> Reviewed-by: Qiang Zhao <qiang.zhao@nxp.com>=0A=
->>>>=0A=
->>>=0A=
->>> Who picks up this patch ? Is it queued somewhere already?=0A=
->>=0A=
->> Not me.=0A=
-> =0A=
-> York? You seem to be the only one left.=0A=
-> =0A=
-=0A=
-I am not a Linux maintainer. Even I want to, I can't merge this patch.=0A=
-=0A=
-Leo, who can merge this patch and request a pull?=0A=
-=0A=
-York=0A=
+On 20/05/18 14:49, Nipun Gupta wrote:
+> With of_pci_map_rid available for all the busses, use the function
+> for configuration of devices on fsl-mc bus
+
+FWIW I had a quick hack at factoring out the commonality with 
+of_pci_iommu_init(), at which point I reckon this change is easier to 
+follow as-is for the moment, so:
+
+Reviewed-by: Robin Murphy <robin.murphy@arm.com>
+
+> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+> ---
+>   drivers/iommu/of_iommu.c | 20 ++++++++++++++++++++
+>   1 file changed, 20 insertions(+)
+> 
+> diff --git a/drivers/iommu/of_iommu.c b/drivers/iommu/of_iommu.c
+> index 811e160..284474d 100644
+> --- a/drivers/iommu/of_iommu.c
+> +++ b/drivers/iommu/of_iommu.c
+> @@ -24,6 +24,7 @@
+>   #include <linux/of_iommu.h>
+>   #include <linux/of_pci.h>
+>   #include <linux/slab.h>
+> +#include <linux/fsl/mc.h>
+>   
+>   #define NO_IOMMU	1
+>   
+> @@ -159,6 +160,23 @@ static int of_pci_iommu_init(struct pci_dev *pdev, u16 alias, void *data)
+>   	return err;
+>   }
+>   
+> +static int of_fsl_mc_iommu_init(struct fsl_mc_device *mc_dev,
+> +				struct device_node *master_np)
+> +{
+> +	struct of_phandle_args iommu_spec = { .args_count = 1 };
+> +	int err;
+> +
+> +	err = of_map_rid(master_np, mc_dev->icid, "iommu-map",
+> +			 "iommu-map-mask", &iommu_spec.np,
+> +			 iommu_spec.args);
+> +	if (err)
+> +		return err == -ENODEV ? NO_IOMMU : err;
+> +
+> +	err = of_iommu_xlate(&mc_dev->dev, &iommu_spec);
+> +	of_node_put(iommu_spec.np);
+> +	return err;
+> +}
+> +
+>   const struct iommu_ops *of_iommu_configure(struct device *dev,
+>   					   struct device_node *master_np)
+>   {
+> @@ -190,6 +208,8 @@ const struct iommu_ops *of_iommu_configure(struct device *dev,
+>   
+>   		err = pci_for_each_dma_alias(to_pci_dev(dev),
+>   					     of_pci_iommu_init, &info);
+> +	} else if (dev_is_fsl_mc(dev)) {
+> +		err = of_fsl_mc_iommu_init(to_fsl_mc_device(dev), master_np);
+>   	} else {
+>   		struct of_phandle_args iommu_spec;
+>   		int idx = 0;
+> 
