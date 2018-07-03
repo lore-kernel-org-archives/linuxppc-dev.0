@@ -1,43 +1,20 @@
-Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <wak@google.com>
+Received: from mail-lf0-x230.google.com (mail-lf0-x230.google.com
+ [IPv6:2a00:1450:4010:c07::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KsDz25n4zF1LZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 03:53:54 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w63HnWhx055309
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2018 13:53:52 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2k0dpcrjs6-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 13:53:52 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Tue, 3 Jul 2018 13:53:51 -0400
-Date: Tue, 3 Jul 2018 14:53:46 -0300
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [v2 PATCH 2/2] powerpc: Enable CPU_FTR_ASYM_SMT for interleaved
- big-cores
-References: <cover.1530609795.git.ego@linux.vnet.ibm.com>
- <573a559dff87da1d68a55bf6ada97b7697102909.1530609795.git.ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KszM6j20zF1QL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 04:27:10 +1000 (AEST)
+Received: by mail-lf0-x230.google.com with SMTP id n24-v6so2381010lfh.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 11:27:10 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <573a559dff87da1d68a55bf6ada97b7697102909.1530609795.git.ego@linux.vnet.ibm.com>
-Message-Id: <20180703175346.GB6474@kermit-br-ibm-com.br.ibm.com>
+From: William Kennington <wak@google.com>
+Date: Tue, 3 Jul 2018 11:26:55 -0700
+Message-ID: <CAPnigKnVTg5UiEfou=ABL2DH31rFyGZ_1qtqevJqPPw-V-E6-A@mail.gmail.com>
+Subject: GCC strcmp optimizations causing valgrind uninitialized conditional
+ jumps
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,145 +24,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 03, 2018 at 04:33:51PM +0530, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> A pair of IBM POWER9 SMT4 cores can be fused together to form a big-core
-> with 8 SMT threads. This can be discovered via the "ibm,thread-groups"
-> CPU property in the device tree which will indicate which group of
-> threads that share the L1 cache, translation cache and instruction data
-> flow. If there are multiple such group of threads, then the core is a
-> big-core.
-> 
-> Furthermore, if the thread-ids of the threads of the big-core can be
-> obtained by interleaving the thread-ids of the thread-groups
-> (component small core), then such a big-core is called an interleaved
-> big-core.
-> 
-> Eg: Threads in the pair of component SMT4 cores of an interleaved
-> big-core are numbered {0,2,4,6} and {1,3,5,7} respectively.
-> 
-> The SMT4 cores forming a big-core are more or less independent
-> units. Thus when multiple tasks are scheduled to run on the fused
-> core, we get the best performance when the tasks are spread across the
-> pair of SMT4 cores.
-> 
-> This patch enables CPU_FTR_ASYM_SMT bit in the cpu-features on
-> detecting the presence of interleaved big-cores at boot up. This will
-> will bias the load-balancing of tasks on smaller numbered threads,
-> which will automatically result in spreading the tasks uniformly
-> across the associated pair of SMT4 cores.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/setup-common.c | 67 +++++++++++++++++++++++++++++++++++++-
->  1 file changed, 66 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-> index a78ec66..f63d797 100644
-> --- a/arch/powerpc/kernel/setup-common.c
-> +++ b/arch/powerpc/kernel/setup-common.c
-> @@ -537,6 +537,56 @@ int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
->  	return -1;
->  }
->  
-> +/*
-> + * check_interleaved_big_core - Checks if the thread group tg
-> + * corresponds to a big-core whose threads are interleavings of the
-> + * threads of the component small cores.
-> + *
-> + * @tg: A thread-group struct for the core.
-> + *
-> + * Returns true if the core is a interleaved big-core.
-> + * Returns false otherwise.
-> + */
-> +static inline bool check_interleaved_big_core(struct thread_groups *tg)
-> +{
-> +	int nr_groups;
-> +	int threads_per_group;
-> +	int cur_cpu, next_cpu, i, j;
-> +
-> +	nr_groups = tg->nr_groups;
-> +	threads_per_group = tg->threads_per_group;
-> +
-> +	if (tg->property != 1)
-> +		return false;
-> +
-> +	if (nr_groups < 2 || threads_per_group < 2)
-> +		return false;
-> +
-> +	/*
-> +	 * In case of an interleaved big-core, the thread-ids of the
-> +	 * big-core can be obtained by interleaving the the thread-ids
-> +	 * of the component small
-> +	 *
-> +	 * Eg: On a 8-thread big-core with two SMT4 small cores, the
-> +	 * threads of the two component small cores will be
-> +	 * {0, 2, 4, 6} and {1, 3, 5, 7}.
-> +	 */
-> +	for (i = 0; i < nr_groups; i++) {
-> +		int group_start = i * threads_per_group;
-> +
-> +		for (j = 0; j < threads_per_group - 1; j++) {
-> +			int cur_idx = group_start + j;
-> +
-> +			cur_cpu = tg->thread_list[cur_idx];
-> +			next_cpu = tg->thread_list[cur_idx + 1];
-> +			if (next_cpu != cur_cpu + nr_groups)
-> +				return false;
-> +		}
-> +	}
-> +
-> +	return true;
-> +}
-> +
->  /**
->   * setup_cpu_maps - initialize the following cpu maps:
->   *                  cpu_possible_mask
-> @@ -560,6 +610,7 @@ void __init smp_setup_cpu_maps(void)
->  	struct device_node *dn;
->  	int cpu = 0;
->  	int nthreads = 1;
-> +	bool has_interleaved_big_core = true;
->  
->  	DBG("smp_setup_cpu_maps()\n");
->  
-> @@ -613,6 +664,12 @@ void __init smp_setup_cpu_maps(void)
->  		if (parse_thread_groups(dn, &tg) ||
->  		    tg.nr_groups < 1 || tg.property != 1) {
->  			has_big_cores = false;
-> +			has_interleaved_big_core = false;
-> +		}
-> +
-> +		if (has_interleaved_big_core) {
-> +			has_interleaved_big_core =
-> +				check_interleaved_big_core(&tg);
->  		}
->  
->  		if (cpu >= nr_cpu_ids) {
-> @@ -669,7 +726,15 @@ void __init smp_setup_cpu_maps(void)
->  	vdso_data->processorCount = num_present_cpus();
->  #endif /* CONFIG_PPC64 */
->  
-> -        /* Initialize CPU <=> thread mapping/
-> +	if (has_interleaved_big_core) {
-> +		int key = __builtin_ctzl(CPU_FTR_ASYM_SMT);
-> +
-> +		cur_cpu_spec->cpu_features |= CPU_FTR_ASYM_SMT;
-> +		static_branch_enable(&cpu_feature_keys[key]);
-> +		pr_info("Detected interleaved big-cores\n");
-> +	}
+Hi,
 
-Shouldn't we use cpu_has_feature(CPU_FTR_ASYM_SMT) before setting it?
+I've noticed while trying to do some valgrind testing on code linked
+against system libraries that have inlined strcmps that valgrind is
+unhappy about branches depending on uninitialized memory. I've read
+through the generated inline assembly, and it looks like the assembly
+will always produce the correct result regardless of the intermediate
+compare using uninitialized data. I'm trying to figure out what to do
+as next steps since it's non-trivial to suppress this inlined code.
 
-> +
-> +	/* Initialize CPU <=> thread mapping/
->  	 *
->  	 * WARNING: We assume that the number of threads is the same for
->  	 * every CPU in the system. If that is not the case, then some code
-> -- 
-> 1.9.4
-> 
+Using the following simple test case which generates the optmizations
+using gcc 7.3.0 and gcc 9 devel. This is reproducible using `gcc -O2
+-o test test.c` with the following code.
 
--- 
-Murilo
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main()
+{
+        char *heap_str = malloc(16);
+        strcpy(heap_str, "RandString");
+        int res = strcmp("RandString", heap_str) == 0;
+        free(heap_str);
+        return res;
+}
+
+A snippet of the inline assembly causing issues is, valgrind correctly
+identifies a branch taken based on uninitialized memory for the first
+`bne` in `.L7` since it's reading bytes 8-16 from the 11 byte string:
+ # test.c:9:    int res = strcmp("RandString", heap_str) == 0;
+        .loc 1 9 12 view .LVU20
+        li 8,0           # tmp172,
+        cmpb 3,9,10      # tmp169, tmp133, tmp134
+        cmpb 8,9,8       # tmp170, tmp133, tmp172
+        orc 3,8,3        #, tmp169, tmp170, tmp169
+        cntlzd 3,3       # tmp171, tmp169
+        addi 3,3,8       # tmp171, tmp171,
+        rldcl 9,9,3,56   # tmp171, tmp174, tmp133,
+        rldcl 3,10,3,56  # tmp171, tmp176, tmp134,
+        subf 3,3,9       # tmp132, tmp176, tmp174
+        b .L2            #
+.L7:
+        addi 9,5,8       # tmp190, tmp126,
+        addi 10,30,8     # tmp191, heap_str,
+        ldbrx 9,0,9      # tmp133, MEM[(void *)"RandString"]
+        ldbrx 10,0,10    # tmp134, MEM[(void *)heap_str_5]
+        subf. 3,10,9     # tmp132, tmp134, tmp133
+        bne 0,.L4        #
+        cmpb 10,9,3      # tmp140, tmp133, tmp132
+        cmpdi 7,10,0     #, tmp141, tmp140
+        bne 7,.L2
+
+Sample valgrind output looks like:
+==63162== Memcheck, a memory error detector
+==63162== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==63162== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==63162== Command: ./test
+==63162==
+==63162== Conditional jump or move depends on uninitialised value(s)
+==63162==    at 0x100005D4: main (test.c:9)
+==63162==  Uninitialised value was created by a heap allocation
+==63162==    at 0x4093F00: malloc (in
+/usr/lib/valgrind/vgpreload_memcheck-ppc64le-linux.so)
+==63162==    by 0x10000513: main (test.c:7)
+==63162==
+==63162== Conditional jump or move depends on uninitialised value(s)
+==63162==    at 0x100005E0: main (test.c:9)
+==63162==  Uninitialised value was created by a heap allocation
+==63162==    at 0x4093F00: malloc (in
+/usr/lib/valgrind/vgpreload_memcheck-ppc64le-linux.so)
+==63162==    by 0x10000513: main (test.c:7)
+==63162==
+==63162== Syscall param exit_group(status) contains uninitialised byte(s)
+==63162==    at 0x41E8C2C: _Exit (_exit.c:31)
+==63162==    by 0x4132C67: __run_exit_handlers (exit.c:132)
+==63162==    by 0x4104423: generic_start_main.isra.0 (libc-start.c:344)
+==63162==    by 0x4104617: (below main) (libc-start.c:116)
+==63162==  Uninitialised value was created by a heap allocation
+==63162==    at 0x4093F00: malloc (in
+/usr/lib/valgrind/vgpreload_memcheck-ppc64le-linux.so)
+==63162==    by 0x10000513: main (test.c:7)
+==63162==
+==63162==
+==63162== HEAP SUMMARY:
+==63162==     in use at exit: 0 bytes in 0 blocks
+==63162==   total heap usage: 1 allocs, 1 frees, 16 bytes allocated
+==63162==
+==63162== All heap blocks were freed -- no leaks are possible
+==63162==
+==63162== For counts of detected and suppressed errors, rerun with: -v
+==63162== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+
+Any ideas on how to workaround / fix this?
+
+Best,
+William
