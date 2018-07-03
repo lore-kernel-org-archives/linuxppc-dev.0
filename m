@@ -1,26 +1,21 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Kjkz3W9CzF1RK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 22:15:54 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id d10-v6so959335plo.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 05:15:54 -0700 (PDT)
-Date: Tue, 3 Jul 2018 22:15:46 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christophe LEROY
- <christophe.leroy@c-s.fr>
-Subject: Re: CONFIG_LD_DEAD_CODE_DATA_ELIMINATION: Section mismatch in
- reference from the variable via_pmu_driver to the function
- .init.text:pmu_init()
-Message-ID: <20180703221546.0d6bb8e5@roar.ozlabs.ibm.com>
-In-Reply-To: <CA+7wUswfXaECaN5EiU9sNsO+YbgTOggVfsbMC4azStB7Xx9hPw@mail.gmail.com>
-References: <CA+7wUsxznwK8fztA+2TAWJL9nEHek_tyUcDm9HCvy-4MdvpAWQ@mail.gmail.com>
- <CA+7wUswfXaECaN5EiU9sNsO+YbgTOggVfsbMC4azStB7Xx9hPw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Kl9Y3my8zF1MY
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 23:20:31 +1000 (AEST)
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Segher Boessenkool <segher@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: How is this possible - Register r30 contains 0xc2236400 instead of
+ 0xc6236400
+Message-ID: <09ae0460-11e7-c893-5a5f-55e55a3ef372@c-s.fr>
+Date: Tue, 3 Jul 2018 15:20:28 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Jul 2018 13:40:55 +0200
-Mathieu Malaterre <malat@debian.org> wrote:
+Kernel Oops at 0xc0334d5c for reading at address 0xc2236450 which 
+corresponds to r30 + 80
 
-> On Tue, Jul 3, 2018 at 11:40 AM Mathieu Malaterre <malat@debian.org> wrote:
-> >
-> > Hi Nick,
-> >
-> > Would you consider this a bug:
-> >
-> > $ touch drivers/macintosh/via-pmu.c
-> > $ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=n make ARCH=powerpc
-> > CROSS_COMPILE=powerpc-linux-gnu-
-> > ...
-> >   LD      vmlinux.o
-> >   MODPOST vmlinux.o
-> > WARNING: vmlinux.o(.data+0x216018): Section mismatch in reference from
-> > the variable via_pmu_driver to the function .init.text:pmu_init()
-> > The variable via_pmu_driver references
-> > the function __init pmu_init()
-> > If the reference is valid then annotate the
-> > variable with __init* or __refdata (see linux/init.h) or name the variable:
-> > *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
-> >
-> > While:
-> >
-> > $ touch drivers/macintosh/via-pmu.c
-> > $ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y make ARCH=powerpc
-> > CROSS_COMPILE=powerpc-linux-gnu-
-> > ...
-> >   AR      init/built-in.a
-> >   AR      built-in.a
-> >   LD      vmlinux.o
-> >   MODPOST vmlinux.o
-> >   KSYM    .tmp_kallsyms1.o
-> >   KSYM    .tmp_kallsyms2.o
-> >   LD      vmlinux
-> >   SORTEX  vmlinux
-> >   SYSMAP  System.map
-> > ...
-> >
-> > Thanks for comment  
-> 
-> Just to clarify I reverted 58935176ad17976b7a7f6ea25c0ceb2ca4308a30
-> just as to reproduce a warning. So my question (rephrased):
-> 
-> Is this expected that CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y inhibit
-> the behavior of  CONFIG_DEBUG_SECTION_MISMATCH=y ?
+But r30 should contain what's at r3 + 16 that is at 0xc619ec10 so r30 
+should be c6236400 as shown below (print_hex_dump(regs->gpr[3]) added at 
+end of __die() )
 
-Well that's a good question actually. Section mismatch
-analysis is done on the throwaway vmlinux.o which is not linked
-with --gc-sections (and is not a final link), so the via_pmu_driver
-symbol should exist and be picked up.
+So how can r30 contain 0xc2236400 instead ?
 
-I wonder if something about the  -ffunction-sections is breaking
-the reference detection.
+And this is not random, it happens at most if not every startup.
 
-Thanks,
-Nick
+c0334d44 <sock_wfree>:
+c0334d44:       7c 08 02 a6     mflr    r0
+c0334d48:       94 21 ff f0     stwu    r1,-16(r1)
+c0334d4c:       bf c1 00 08     stmw    r30,8(r1)
+c0334d50:       90 01 00 14     stw     r0,20(r1)
+c0334d54:       83 c3 00 10     lwz     r30,16(r3)
+c0334d58:       81 23 00 a8     lwz     r9,168(r3)
+c0334d5c:       81 5e 00 50     lwz     r10,80(r30)
+
+
+[  152.288237] Unable to handle kernel paging request for data at 
+address 0xc2236450
+[  152.295444] Faulting instruction address: 0xc0334d5c
+[  152.300369] Oops: Kernel access of bad area, sig: 11 [#1]
+[  152.305665] BE PREEMPT DEBUG_PAGEALLOC CMPC885
+[  152.313630] CPU: 0 PID: 269 Comm: in:imuxsock Not tainted 
+4.14.52-00025-g5bada429cf-dirty #36
+[  152.322729] task: c623e100 task.stack: c650c000
+[  152.327202] NIP:  c0334d5c LR: c043602c CTR: c0435fb8
+[  152.332200] REGS: c650dc00 TRAP: 0300   Not tainted 
+(4.14.52-00025-g5bada429cf-dirty)
+[  152.340699] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 28002822 XER: 20000000
+[  152.347333] DAR: c2236450 DSISR: c0000000
+[  152.347333] GPR00: c043602c c650dcb0 c623e100 c619ec00 c642c060 
+00000008 00000018 c650dd4c
+[  152.347333] GPR08: c0435fb8 000002b0 c068d830 00000004 28004822 
+100d4208 00000000 7780c848
+[  152.347333] GPR16: 0ff58398 777674b0 1024b050 1024b0a8 1005ddbc 
+0ff5a7bc 000003e8 00000000
+[  152.347333] GPR24: 0000008e c5011650 c650deb8 0000008e c619ec00 
+00000040 c2236400 c619ec00
+[  152.385015] NIP [c0334d5c] sock_wfree+0x18/0xa4
+[  152.389458] LR [c043602c] unix_destruct_scm+0x74/0x88
+[  152.394399] Call Trace:
+[  152.396868] [c650dcb0] [c006348c] ns_to_timeval+0x4c/0x7c (unreliable)
+[  152.403305] [c650dcc0] [c043602c] unix_destruct_scm+0x74/0x88
+[  152.408999] [c650dcf0] [c033a10c] skb_release_head_state+0x8c/0x110
+[  152.415184] [c650dd00] [c033a3c4] skb_release_all+0x18/0x50
+[  152.420690] [c650dd10] [c033a7cc] consume_skb+0x38/0xec
+[  152.425869] [c650dd20] [c0342d7c] skb_free_datagram+0x1c/0x68
+[  152.431535] [c650dd30] [c0435c8c] unix_dgram_recvmsg+0x19c/0x4ac
+[  152.437476] [c650ddb0] [c0331370] ___sys_recvmsg+0x98/0x138
+[  152.442984] [c650deb0] [c0333280] __sys_recvmsg+0x40/0x84
+[  152.448321] [c650df10] [c0333680] SyS_socketcall+0xb8/0x1d4
+[  152.453832] [c650df40] [c000d1ac] ret_from_syscall+0x0/0x38
+[  152.459286] Instruction dump:
+[  152.462225] 41beffac 4bffff58 38800003 4bffffa0 38800001 4bffff98 
+7c0802a6 9421fff0
+[  152.469881] bfc10008 90010014 83c30010 812300a8 <815e0050> 3bfe00e0 
+71480200 4082003c
+[  152.477739] c619ec00: 00 00 00 00 00 00 00 00 00 00 00 23 6f d9 b1 65
+[  152.484100] c619ec10: c6 23 64 00 00 00 00 00 c6 42 c0 60 00 00 03 e8
+[  152.490471] c619ec20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[  152.496837] c619ec30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[  152.503205] c619ec40: 00 00 00 00 00 00 00 00 00 00 00 00 c0 43 5f b8
+[  152.509575] c619ec50: 00 00 00 00 00 00 00 00 00 00 00 8e 00 00 00 00
+[  152.515943] c619ec60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[  152.522311] c619ec70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[  152.528680] c619ec80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+[  152.535048] c619ec90: 00 00 ff ff 00 00 ff ff c6 42 30 8e c6 42 31 50
+[  152.541417] c619eca0: c6 42 30 00 c6 42 30 00 00 00 02 b0 00 00 00 01
+[  152.547781] ---[ end trace 0710a9d231876a27 ]---
+
+Christophe
