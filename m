@@ -1,40 +1,21 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KfSW31JDzF1LQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 19:48:11 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w639iOpP141878
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2018 05:48:08 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k04xcd1vr-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 05:48:08 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 3 Jul 2018 05:48:06 -0400
-Date: Tue, 3 Jul 2018 15:17:59 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org, rjw@rjwysocki.net,
- stewart@linux.vnet.ibm.com, benh@kernel.crashing.org,
- svaidy@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, npiggin@gmail.com,
- mpe@ellerman.id.au
-Subject: Re: [PATCH v3 2/2] powernv/cpuidle: Use parsed device tree values
- for cpuidle_init
-Reply-To: ego@linux.vnet.ibm.com
-References: <1530609656-13301-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1530609656-13301-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41KftS28x0zF1LM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 20:07:12 +1000 (AEST)
+Subject: Re: CONFIG_LD_DEAD_CODE_DATA_ELIMINATION: Section mismatch in
+ reference from the variable via_pmu_driver to the function
+ .init.text:pmu_init()
+To: Mathieu Malaterre <malat@debian.org>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <CA+7wUsxznwK8fztA+2TAWJL9nEHek_tyUcDm9HCvy-4MdvpAWQ@mail.gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <3c0e6f6a-8d95-c76b-3496-bb135f54ef8d@c-s.fr>
+Date: Tue, 3 Jul 2018 12:07:08 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1530609656-13301-3-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Message-Id: <20180703094759.GB24693@in.ibm.com>
+In-Reply-To: <CA+7wUsxznwK8fztA+2TAWJL9nEHek_tyUcDm9HCvy-4MdvpAWQ@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,33 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Akshay,
 
-On Tue, Jul 03, 2018 at 02:50:56PM +0530, Akshay Adiga wrote:
-> Export pnv_idle_states and nr_pnv_idle_states so that its accessible to
-> cpuidle driver. Use properties from pnv_idle_states structure for powernv
-> cpuidle_init.
+
+Le 03/07/2018 à 11:40, Mathieu Malaterre a écrit :
+> Hi Nick,
 > 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
+> Would you consider this a bug:
 
-[..snip..]
+Looks more like a feature ...
+
+In /drivers/macintosh/adb.c you have, and it's the only place 
+via_pmu_driver is used.
+
+#if defined(CONFIG_ADB_PMU) || defined(CONFIG_ADB_PMU68K)
+	&via_pmu_driver,
+#endif
+
+Is one of those defined in your .config ? If not then via_pmu_driver 
+gets eliminated hence nothing to warn on.
+
+
+Christophe
+
 
 > 
->  		/*
->  		 * For nap and fastsleep, use default target_residency
->  		 * values if f/w does not expose it.
->  		 */
-
-This comment can also go, since we are no longer hard-coding the
-residency values in the kernel.
-
-Otherwise looks good to me.
-
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
-
---
-Thanks and Regards
-gautham.
+> $ touch drivers/macintosh/via-pmu.c
+> $ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=n make ARCH=powerpc
+> CROSS_COMPILE=powerpc-linux-gnu-
+> ...
+>    LD      vmlinux.o
+>    MODPOST vmlinux.o
+> WARNING: vmlinux.o(.data+0x216018): Section mismatch in reference from
+> the variable via_pmu_driver to the function .init.text:pmu_init()
+> The variable via_pmu_driver references
+> the function __init pmu_init()
+> If the reference is valid then annotate the
+> variable with __init* or __refdata (see linux/init.h) or name the variable:
+> *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+> 
+> While:
+> 
+> $ touch drivers/macintosh/via-pmu.c
+> $ CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y make ARCH=powerpc
+> CROSS_COMPILE=powerpc-linux-gnu-
+> ...
+>    AR      init/built-in.a
+>    AR      built-in.a
+>    LD      vmlinux.o
+>    MODPOST vmlinux.o
+>    KSYM    .tmp_kallsyms1.o
+>    KSYM    .tmp_kallsyms2.o
+>    LD      vmlinux
+>    SORTEX  vmlinux
+>    SYSMAP  System.map
+> ...
+> 
+> Thanks for comment
+> 
