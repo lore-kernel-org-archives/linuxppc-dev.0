@@ -1,33 +1,32 @@
-Return-Path: <srs0=n6ax=jt=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andy.shevchenko@gmail.com>
+Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
+ [IPv6:2607:f8b0:400c:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41KgZ439L3zF1LQ
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 20:38:04 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41KgZ42XCZz8t4k
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 20:38:04 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41KgZ34CQ3z9s1b
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2018 20:38:03 +1000 (AEST)
-Date: Tue, 3 Jul 2018 12:37:58 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 5/7] powerpc/pseries: flush SLB contents on SLB MCE
- errors.
-Message-ID: <20180703123758.7705260b@naga.suse.cz>
-In-Reply-To: <20180703080814.5a57f52b@roar.ozlabs.ibm.com>
-References: <153051022088.30541.5610525713141009848.stgit@jupiter.in.ibm.com>
- <153051042206.30541.2156877677180900261.stgit@jupiter.in.ibm.com>
- <20180703080814.5a57f52b@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Kh2F4vH2zF1Ld
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2018 20:59:01 +1000 (AEST)
+Received: by mail-vk0-x244.google.com with SMTP id 125-v6so824340vke.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 03:59:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1530600642-25090-3-git-send-email-kernelfans@gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <1530600642-25090-3-git-send-email-kernelfans@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Date: Tue, 3 Jul 2018 13:58:58 +0300
+Message-ID: <CAHp75VfEVT7cMOQD71dBkwzuQhZQ8YGik+TWSnf9=pkiUxJO6A@mail.gmail.com>
+Subject: Re: [PATCHv3 2/4] drivers/base: utilize device tree info to shutdown
+ devices
+To: Pingfan Liu <kernelfans@gmail.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,64 +36,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 3 Jul 2018 08:08:14 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
+I think Pavel would be interested to see this as well (he is doing
+some parallel device shutdown stuff)
 
-> On Mon, 02 Jul 2018 11:17:06 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> 
-> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > 
-> > On pseries, as of today system crashes if we get a machine check
-> > exceptions due to SLB errors. These are soft errors and can be
-> > fixed by flushing the SLBs so the kernel can continue to function
-> > instead of system crash. We do this in real mode before turning on
-> > MMU. Otherwise we would run into nested machine checks. This patch
-> > now fetches the rtas error log in real mode and flushes the SLBs on
-> > SLB errors.
-> > 
-> > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1 
-> >  arch/powerpc/include/asm/machdep.h            |    1 
-> >  arch/powerpc/kernel/exceptions-64s.S          |   42
-> > +++++++++++++++++++++ arch/powerpc/kernel/mce.c
-> > |   16 +++++++- arch/powerpc/mm/slb.c                         |
-> > 6 +++ arch/powerpc/platforms/powernv/opal.c         |    1 
-> >  arch/powerpc/platforms/pseries/pseries.h      |    1 
-> >  arch/powerpc/platforms/pseries/ras.c          |   51
-> > +++++++++++++++++++++++++
-> > arch/powerpc/platforms/pseries/setup.c        |    1 9 files
-> > changed, 116 insertions(+), 4 deletions(-) 
-> 
-> 
-> > +TRAMP_REAL_BEGIN(machine_check_pSeries_early)
-> > +BEGIN_FTR_SECTION
-> > +	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-> > +	mr	r10,r1			/* Save r1 */
-> > +	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency
-> > stack */
-> > +	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack
-> > frame		*/
-> > +	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-> > +	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
-> > +	EXCEPTION_PROLOG_COMMON_1()
-> > +	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-> > +	EXCEPTION_PROLOG_COMMON_3(0x200)
-> > +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> > +	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call
-> > ABI */  
-> 
-> Is there any reason you can't use the existing
-> machine_check_powernv_early code to do all this?
+On Tue, Jul 3, 2018 at 9:50 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
+> commit 52cdbdd49853 ("driver core: correct device's shutdown order")
+> places an assumption of supplier<-consumer order on the process of probe.
+> But it turns out to break down the parent <- child order in some scene.
+> E.g in pci, a bridge is enabled by pci core, and behind it, the devices
+> have been probed. Then comes the bridge's module, which enables extra
+> feature(such as hotplug) on this bridge. This will break the
+> parent<-children order and cause failure when "kexec -e" in some scenario.
+>
+> The detailed description of the scenario:
+> An IBM Power9 machine on which, two drivers portdrv_pci and shpchp(a mod)
+> match the PCI_CLASS_BRIDGE_PCI, but neither of them success to probe due
+> to some issue. For this case, the bridge is moved after its children in
+> devices_kset. Then, when "kexec -e", a ata-disk behind the bridge can not
+> write back buffer in flight due to the former shutdown of the bridge which
+> clears the BusMaster bit.
+>
+> It is a little hard to impose both "parent<-child" and "supplier<-consumer"
+> order on devices_kset. Take the following scene:
+> step0: before a consumer's probing, (note child_a is supplier of consumer_a)
+>   [ consumer-X, child_a, ...., child_z] [... consumer_a, ..., consumer_z, ...] supplier-X
+>                                          ^^^^^^^^^^ affected range ^^^^^^^^^^
+> step1: when probing, moving consumer-X after supplier-X
+>   [ child_a, ...., child_z] [.... consumer_a, ..., consumer_z, ...] supplier-X, consumer-X
+> step2: the children of consumer-X should be re-ordered to maintain the seq
+>   [... consumer_a, ..., consumer_z, ....] supplier-X  [consumer-X, child_a, ...., child_z]
+> step3: the consumer_a should be re-ordered to maintain the seq
+>   [... consumer_z, ...] supplier-X [ consumer-X, child_a, consumer_a ..., child_z]
+>
+> It requires two nested recursion to drain out all out-of-order item in
+> "affected range". To avoid such complicated code, this patch suggests
+> to utilize the info in device tree, instead of using the order of
+> devices_kset during shutdown. It iterates the device tree, and firstly
+> shutdown a device's children and consumers. After this patch, the buggy
+> commit is hollow and left to clean.
+>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Bjorn Helgaas <helgaas@kernel.org>
+> Cc: Dave Young <dyoung@redhat.com>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> ---
+>  drivers/base/core.c    | 48 +++++++++++++++++++++++++++++++++++++++++++-----
+>  include/linux/device.h |  1 +
+>  2 files changed, 44 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index a48868f..684b994 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1446,6 +1446,7 @@ void device_initialize(struct device *dev)
+>         INIT_LIST_HEAD(&dev->links.consumers);
+>         INIT_LIST_HEAD(&dev->links.suppliers);
+>         dev->links.status = DL_DEV_NO_DRIVER;
+> +       dev->shutdown = false;
+>  }
+>  EXPORT_SYMBOL_GPL(device_initialize);
+>
+> @@ -2811,7 +2812,6 @@ static void __device_shutdown(struct device *dev)
+>          * lock is to be held
+>          */
+>         parent = get_device(dev->parent);
+> -       get_device(dev);
+>         /*
+>          * Make sure the device is off the kset list, in the
+>          * event that dev->*->shutdown() doesn't remove it.
+> @@ -2842,23 +2842,60 @@ static void __device_shutdown(struct device *dev)
+>                         dev_info(dev, "shutdown\n");
+>                 dev->driver->shutdown(dev);
+>         }
+> -
+> +       dev->shutdown = true;
+>         device_unlock(dev);
+>         if (parent)
+>                 device_unlock(parent);
+>
+> -       put_device(dev);
+>         put_device(parent);
+>         spin_lock(&devices_kset->list_lock);
+>  }
+>
+> +/* shutdown dev's children and consumer firstly, then itself */
+> +static int device_for_each_child_shutdown(struct device *dev)
+> +{
+> +       struct klist_iter i;
+> +       struct device *child;
+> +       struct device_link *link;
+> +
+> +       /* already shutdown, then skip this sub tree */
+> +       if (dev->shutdown)
+> +               return 0;
+> +
+> +       if (!dev->p)
+> +               goto check_consumers;
+> +
+> +       /* there is breakage of lock in __device_shutdown(), and the redundant
+> +        * ref++ on srcu protected consumer is harmless since shutdown is not
+> +        * hot path.
+> +        */
+> +       get_device(dev);
+> +
+> +       klist_iter_init(&dev->p->klist_children, &i);
+> +       while ((child = next_device(&i)))
+> +               device_for_each_child_shutdown(child);
+> +       klist_iter_exit(&i);
+> +
+> +check_consumers:
+> +       list_for_each_entry_rcu(link, &dev->links.consumers, s_node) {
+> +               if (!link->consumer->shutdown)
+> +                       device_for_each_child_shutdown(link->consumer);
+> +       }
+> +
+> +       __device_shutdown(dev);
+> +       put_device(dev);
+> +       return 0;
+> +}
+> +
+>  /**
+>   * device_shutdown - call ->shutdown() on each device to shutdown.
+>   */
+>  void device_shutdown(void)
+>  {
+>         struct device *dev;
+> +       int idx;
+>
+> +       idx = device_links_read_lock();
+>         spin_lock(&devices_kset->list_lock);
+>         /*
+>          * Walk the devices list backward, shutting down each in turn.
+> @@ -2866,11 +2903,12 @@ void device_shutdown(void)
+>          * devices offline, even as the system is shutting down.
+>          */
+>         while (!list_empty(&devices_kset->list)) {
+> -               dev = list_entry(devices_kset->list.prev, struct device,
+> +               dev = list_entry(devices_kset->list.next, struct device,
+>                                 kobj.entry);
+> -               __device_shutdown(dev);
+> +               device_for_each_child_shutdown(dev);
+>         }
+>         spin_unlock(&devices_kset->list_lock);
+> +       device_links_read_unlock(idx);
+>  }
+>
+>  /*
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 055a69d..8a0f784 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -1003,6 +1003,7 @@ struct device {
+>         bool                    offline:1;
+>         bool                    of_node_reused:1;
+>         bool                    dma_32bit_limit:1;
+> +       bool                    shutdown:1; /* one direction: false->true */
+>  };
+>
+>  static inline struct device *kobj_to_dev(struct kobject *kobj)
+> --
+> 2.7.4
+>
 
-Code sharing is nice but if we envision this going to stable kernels
-butchering the existing handler is going to be a nightmare. The code is
-quite a bit different between kernel versions.
 
-This code as is requires the bit that introduces
-EXCEPTION_PROLOG_COMMON_1 and then should work on Linux 3.14+
 
-Thanks
-
-Michal
+-- 
+With Best Regards,
+Andy Shevchenko
