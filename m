@@ -1,42 +1,15 @@
-Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LSpY5ccHzF1RT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:36:37 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w64HSxoL099762
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jul 2018 13:36:35 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k129w8x0x-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 13:36:35 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Wed, 4 Jul 2018 13:36:33 -0400
-Date: Wed, 4 Jul 2018 14:36:29 -0300
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [v2 PATCH 2/2] powerpc: Enable CPU_FTR_ASYM_SMT for interleaved
- big-cores
-References: <cover.1530609795.git.ego@linux.vnet.ibm.com>
- <573a559dff87da1d68a55bf6ada97b7697102909.1530609795.git.ego@linux.vnet.ibm.com>
- <20180703175346.GB6474@kermit-br-ibm-com.br.ibm.com>
- <20180704081505.GB1007@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180704081505.GB1007@in.ibm.com>
-Message-Id: <20180704173629.GA21119@kermit-br-ibm-com>
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41LT6M0f4dzF0X5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:50:18 +1000 (AEST)
+From: Robin Murphy <robin.murphy@arm.com>
+To: hch@lst.de,
+	m.szyprowski@samsung.com
+Cc: iommu@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org,
+ linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [RFC PATCH 1/2] dma-mapping: Clean up dma_set_*mask() hooks
+Date: Wed,  4 Jul 2018 18:50:11 +0100
+Message-Id: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,63 +19,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 04, 2018 at 01:45:05PM +0530, Gautham R Shenoy wrote:
-> Hi Murilo,
-> 
-> Thanks for the review.
-> 
-> On Tue, Jul 03, 2018 at 02:53:46PM -0300, Murilo Opsfelder Araujo wrote:
-> [..snip..]
-> 
-> > > -        /* Initialize CPU <=> thread mapping/
-> > > +	if (has_interleaved_big_core) {
-> > > +		int key = __builtin_ctzl(CPU_FTR_ASYM_SMT);
-> > > +
-> > > +		cur_cpu_spec->cpu_features |= CPU_FTR_ASYM_SMT;
-> > > +		static_branch_enable(&cpu_feature_keys[key]);
-> > > +		pr_info("Detected interleaved big-cores\n");
-> > > +	}
-> > 
-> > Shouldn't we use cpu_has_feature(CPU_FTR_ASYM_SMT) before setting
-> > > it?
-> 
-> 
-> Are you suggesting that we do the following?
-> 
->     if (has_interleaved_big_core &&
->         !cpu_has_feature(CPU_FTR_ASYM_SMT)) {
-> 	...
->     }
->     
-> Currently CPU_FTR_ASYM_SMT is set at compile time for only POWER7
-> where running the tasks on lower numbered threads give us the benefit
-> of SMT thread folding. Interleaved big core is a feature introduced
-> only on POWER9. Thus, we know that CPU_FTR_ASYM_SMT is not set in
-> cpu_features at this point.
+Arch-specific implementions for dma_set_{coherent_,}mask() currently
+rely on an inconsistent mix of arch-defined Kconfig symbols and macro
+overrides. Now that we have a nice centralised home for DMA API gubbins,
+let's consolidate these loose ends under consistent config options.
 
-Since we're setting CPU_FTR_ASYM_SMT, it doesn't make sense to use
-cpu_has_feature(CPU_FTR_ASYM_SMT).  I thought cpu_has_feature() held all
-available features (not necessarily enabled) that we could check before
-setting or enabling such feature.  I think I misread it.  Sorry.
+Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+---
 
-> 
-> > 
-> > > +
-> > > +	/* Initialize CPU <=> thread mapping/
-> > >  	 *
-> > >  	 * WARNING: We assume that the number of threads is the same for
-> > >  	 * every CPU in the system. If that is not the case, then some code
-> > > -- 
-> > > 1.9.4
-> > > 
-> > 
-> > -- 
-> > Murilo
-> 
-> --
-> Thanks and Regards
-> gautham.
-> 
+Here's hoping the buildbot comes by to point out what I've inevitably
+missed, although I did check a cursory cross-compile of ppc64_defconfig
+to iron out the obvious howlers.
 
+The motivation here is that I'm looking at adding set_mask overrides
+for arm64, and having discovered a bit of a mess it seemed prudent to
+clean up before ingraining it any more.
+
+Robin.
+
+
+ arch/arm/Kconfig                       | 3 ---
+ arch/powerpc/Kconfig                   | 4 +---
+ arch/powerpc/include/asm/dma-mapping.h | 3 ---
+ include/linux/dma-mapping.h            | 4 +++-
+ kernel/dma/Kconfig                     | 6 ++++++
+ 5 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 843edfd000be..ab0c081b6ec2 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -227,9 +227,6 @@ config ZONE_DMA
+ config ARCH_SUPPORTS_UPROBES
+ 	def_bool y
+ 
+-config ARCH_HAS_DMA_SET_COHERENT_MASK
+-	bool
+-
+ config GENERIC_ISA_DMA
+ 	bool
+ 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 9f2b75fe2c2d..08d85412d783 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -119,9 +119,6 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
+ 
+-config ARCH_HAS_DMA_SET_COHERENT_MASK
+-        bool
+-
+ config PPC
+ 	bool
+ 	default y
+@@ -129,6 +126,7 @@ config PPC
+ 	# Please keep this list sorted alphabetically.
+ 	#
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
++	select ARCH_HAS_DMA_SET_MASK
+ 	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_FORTIFY_SOURCE
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 8fa394520af6..fe912c4367f2 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -107,9 +107,6 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ 		dev->archdata.dma_offset = off;
+ }
+ 
+-#define HAVE_ARCH_DMA_SET_MASK 1
+-extern int dma_set_mask(struct device *dev, u64 dma_mask);
+-
+ extern u64 __dma_get_required_mask(struct device *dev);
+ 
+ #define ARCH_HAS_DMA_MMAP_COHERENT
+diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
+index ffeca3ab59c0..30fe0c900420 100644
+--- a/include/linux/dma-mapping.h
++++ b/include/linux/dma-mapping.h
+@@ -596,7 +596,9 @@ static inline int dma_supported(struct device *dev, u64 mask)
+ 	return ops->dma_supported(dev, mask);
+ }
+ 
+-#ifndef HAVE_ARCH_DMA_SET_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
++int dma_set_mask(struct device *dev, u64 mask);
++#else
+ static inline int dma_set_mask(struct device *dev, u64 mask)
+ {
+ 	if (!dev->dma_mask || !dma_supported(dev, mask))
+diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
+index 9bd54304446f..01001371d892 100644
+--- a/kernel/dma/Kconfig
++++ b/kernel/dma/Kconfig
+@@ -16,6 +16,12 @@ config ARCH_DMA_ADDR_T_64BIT
+ config HAVE_GENERIC_DMA_COHERENT
+ 	bool
+ 
++config ARCH_HAS_DMA_SET_MASK
++        bool
++
++config ARCH_HAS_DMA_SET_COHERENT_MASK
++        bool
++
+ config ARCH_HAS_SYNC_DMA_FOR_DEVICE
+ 	bool
+ 
 -- 
-Murilo
+2.17.1.dirty
