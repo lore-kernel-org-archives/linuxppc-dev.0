@@ -1,12 +1,12 @@
 Return-Path: <ard.biesheuvel@linaro.org>
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com
- [IPv6:2a00:1450:4864:20::544])
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com
+ [IPv6:2a00:1450:4864:20::543])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LDt25HTMzF1Sn
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 18:38:50 +1000 (AEST)
-Received: by mail-ed1-x544.google.com with SMTP id g12-v6so3452860edi.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 01:38:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LDt42wpdzF1SJ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 18:38:52 +1000 (AEST)
+Received: by mail-ed1-x543.google.com with SMTP id w14-v6so3466360eds.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 01:38:51 -0700 (PDT)
 From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
@@ -24,10 +24,9 @@ Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Arnd Bergmann <arnd@arndb.de>,
  Linus Torvalds <torvalds@linux-foundation.org>,
  Jessica Yu <jeyu@kernel.org>, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Subject: [PATCH v10 1/6] arch: enable relative relocations for arm64,
- power and x86
-Date: Wed,  4 Jul 2018 10:36:46 +0200
-Message-Id: <20180704083651.24360-2-ard.biesheuvel@linaro.org>
+Subject: [PATCH v10 2/6] module: allow symbol exports to be disabled
+Date: Wed,  4 Jul 2018 10:36:47 +0200
+Message-Id: <20180704083651.24360-3-ard.biesheuvel@linaro.org>
 In-Reply-To: <20180704083651.24360-1-ard.biesheuvel@linaro.org>
 References: <20180704083651.24360-1-ard.biesheuvel@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,78 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before updating certain subsystems to use place relative 32-bit
-relocations in special sections, to save space and reduce the
-number of absolute relocations that need to be processed at runtime
-by relocatable kernels, introduce the Kconfig symbol and define it
-for some architectures that should be able to support and benefit
-from it.
+To allow existing C code to be incorporated into the decompressor or
+the UEFI stub, introduce a CPP macro that turns all EXPORT_SYMBOL_xxx
+declarations into nops, and #define it in places where such exports
+are undesirable. Note that this gets rid of a rather dodgy redefine
+of linux/export.h's header guard.
 
+Acked-by: Nicolas Pitre <nico@linaro.org>
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 Reviewed-by: Will Deacon <will.deacon@arm.com>
 Acked-by: Ingo Molnar <mingo@kernel.org>
 Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- arch/Kconfig         | 10 ++++++++++
- arch/arm64/Kconfig   |  1 +
- arch/powerpc/Kconfig |  1 +
- arch/x86/Kconfig     |  1 +
- 4 files changed, 13 insertions(+)
+ arch/x86/boot/compressed/kaslr.c      |  5 +----
+ drivers/firmware/efi/libstub/Makefile |  3 ++-
+ include/linux/export.h                | 11 ++++++++++-
+ 3 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index 1aa59063f1fd..2b8b70820002 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -971,4 +971,14 @@ config REFCOUNT_FULL
- 	  against various use-after-free conditions that can be used in
- 	  security flaw exploits.
+diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+index b87a7582853d..ed7a123bba42 100644
+--- a/arch/x86/boot/compressed/kaslr.c
++++ b/arch/x86/boot/compressed/kaslr.c
+@@ -23,11 +23,8 @@
+  * _ctype[] in lib/ctype.c is needed by isspace() of linux/ctype.h.
+  * While both lib/ctype.c and lib/cmdline.c will bring EXPORT_SYMBOL
+  * which is meaningless and will cause compiling error in some cases.
+- * So do not include linux/export.h and define EXPORT_SYMBOL(sym)
+- * as empty.
+  */
+-#define _LINUX_EXPORT_H
+-#define EXPORT_SYMBOL(sym)
++#define __DISABLE_EXPORTS
  
-+config HAVE_ARCH_PREL32_RELOCATIONS
-+	bool
-+	help
-+	  May be selected by an architecture if it supports place-relative
-+	  32-bit relocations, both in the toolchain and in the module loader,
-+	  in which case relative references can be used in special sections
-+	  for PCI fixup, initcalls etc which are only half the size on 64 bit
-+	  architectures, and don't require runtime relocation on relocatable
-+	  kernels.
+ #include "misc.h"
+ #include "error.h"
+diff --git a/drivers/firmware/efi/libstub/Makefile b/drivers/firmware/efi/libstub/Makefile
+index a34e9290a699..0d0d3483241c 100644
+--- a/drivers/firmware/efi/libstub/Makefile
++++ b/drivers/firmware/efi/libstub/Makefile
+@@ -20,7 +20,8 @@ cflags-$(CONFIG_EFI_ARMSTUB)	+= -I$(srctree)/scripts/dtc/libfdt
+ KBUILD_CFLAGS			:= $(cflags-y) -DDISABLE_BRANCH_PROFILING \
+ 				   -D__NO_FORTIFY \
+ 				   $(call cc-option,-ffreestanding) \
+-				   $(call cc-option,-fno-stack-protector)
++				   $(call cc-option,-fno-stack-protector) \
++				   -D__DISABLE_EXPORTS
+ 
+ GCOV_PROFILE			:= n
+ KASAN_SANITIZE			:= n
+diff --git a/include/linux/export.h b/include/linux/export.h
+index b768d6dd3c90..ea7df303d68d 100644
+--- a/include/linux/export.h
++++ b/include/linux/export.h
+@@ -66,7 +66,16 @@ extern struct module __this_module;
+ 	__attribute__((section("___ksymtab" sec "+" #sym), used))	\
+ 	= { (unsigned long)&sym, __kstrtab_##sym }
+ 
+-#if defined(__KSYM_DEPS__)
++#if defined(__DISABLE_EXPORTS)
 +
- source "kernel/gcov/Kconfig"
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 42c090cf0292..1940c6405d04 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -95,6 +95,7 @@ config ARM64
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS if COMPAT
-+	select HAVE_ARCH_PREL32_RELOCATIONS
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_THREAD_STRUCT_WHITELIST
- 	select HAVE_ARCH_TRACEHOOK
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9f2b75fe2c2d..e4fe19789b8b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -177,6 +177,7 @@ config PPC
- 	select HAVE_ARCH_KGDB
- 	select HAVE_ARCH_MMAP_RND_BITS
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if COMPAT
-+	select HAVE_ARCH_PREL32_RELOCATIONS
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_CBPF_JIT			if !PPC64
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f1dbb4ee19d7..e10a3542db7e 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -123,6 +123,7 @@ config X86
- 	select HAVE_ARCH_MMAP_RND_BITS		if MMU
- 	select HAVE_ARCH_MMAP_RND_COMPAT_BITS	if MMU && COMPAT
- 	select HAVE_ARCH_COMPAT_MMAP_BASES	if MMU && COMPAT
-+	select HAVE_ARCH_PREL32_RELOCATIONS
- 	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_ARCH_THREAD_STRUCT_WHITELIST
- 	select HAVE_ARCH_TRACEHOOK
++/*
++ * Allow symbol exports to be disabled completely so that C code may
++ * be reused in other execution contexts such as the UEFI stub or the
++ * decompressor.
++ */
++#define __EXPORT_SYMBOL(sym, sec)
++
++#elif defined(__KSYM_DEPS__)
+ 
+ /*
+  * For fine grained build dependencies, we want to tell the build system
 -- 
 2.17.1
