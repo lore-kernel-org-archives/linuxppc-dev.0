@@ -1,60 +1,29 @@
-Return-Path: <bhe@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
+ [IPv6:2607:f8b0:4001:c0b::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41L75w2ZVSzF1Qp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 14:18:44 +1000 (AEST)
-Date: Wed, 4 Jul 2018 12:18:34 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Nicolas Pitre <nicolas.pitre@linaro.org>,
- Josh Triplett <josh@joshtriplett.org>,
- kbuild test robot <fengguang.wu@intel.com>, Borislav Petkov <bp@suse.de>,
- Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
- David Airlie <airlied@linux.ie>, KY Srinivasan <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Frank Rowand <frowand.list@gmail.com>, Keith Busch <keith.busch@intel.com>,
- Jon Derrick <jonathan.derrick@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, brijesh.singh@amd.com,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- baiyaowei@cmss.chinamobile.com, richard.weiyang@gmail.com,
- devel@linuxdriverproject.org, linux-input <linux-input@vger.kernel.org>,
- linux-nvdimm@lists.01.org, devicetree <devicetree@vger.kernel.org>,
- linux-pci@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Yinghai Lu <yinghai@kernel.org>, kexec@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
- Gustavo Padovan <gustavo@padovan.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Sean Paul <seanpaul@chromium.org>, linux-parisc@vger.kernel.org,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v5 1/4] resource: Move reparent_resources() to
- kernel/resource.c and make it public
-Message-ID: <20180704041834.GA2762@MiWiFi-R3L-srv>
-References: <20180612032831.29747-1-bhe@redhat.com>
- <20180612032831.29747-2-bhe@redhat.com>
- <CAHp75Vd6v4+RTq-5uw_BJpT6=w2KGjTfU+rEst6+8igs2cyntw@mail.gmail.com>
- <20180612093812.GC1820@MiWiFi-R3L-srv>
- <CAHp75Vf_kBLkE6v=JyOdfNoWktWEfKs7JzRP1XEc4TeuT5xqfw@mail.gmail.com>
- <CAHp75Vdaqj+n=F7wSB9PFGpf9Ok2XZzKcq_H0DzmtjmN-4UUfw@mail.gmail.com>
- <20180703145503.GA1225@MiWiFi-R3L-srv>
- <CAHp75VeEjhcYF4Fy4O_srdv_nEGGjGwAHhZufscB_tiLQVQ=FQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41L7Zv5b7TzF0ZD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 14:40:23 +1000 (AEST)
+Received: by mail-it0-x244.google.com with SMTP id p185-v6so6235667itp.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 21:40:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAHp75VeEjhcYF4Fy4O_srdv_nEGGjGwAHhZufscB_tiLQVQ=FQ@mail.gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <1530600642-25090-4-git-send-email-kernelfans@gmail.com>
+ <3375966.ydPZj5TMVj@aspire.rjw.lan>
+In-Reply-To: <3375966.ydPZj5TMVj@aspire.rjw.lan>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Wed, 4 Jul 2018 12:40:09 +0800
+Message-ID: <CAFgQCTtu7jaUfWV4xq8CfWb7vuS5=+HuNpNxeMm9UawoUZ2CBg@mail.gmail.com>
+Subject: Re: [PATCHv3 3/4] drivers/base: clean up the usage of
+ devices_kset_move_last()
+To: rjw@rjwysocki.net
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christoph Hellwig <hch@infradead.org>,
+ Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,48 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/18 at 11:57pm, Andy Shevchenko wrote:
-> On Tue, Jul 3, 2018 at 5:55 PM, Baoquan He <bhe@redhat.com> wrote:
-> > On 06/12/18 at 05:24pm, Andy Shevchenko wrote:
-> >> On Tue, Jun 12, 2018 at 5:20 PM, Andy Shevchenko
-> >> <andy.shevchenko@gmail.com> wrote:
-> 
-> >> > I briefly looked at the code and error codes we have, so, my proposal
-> >> > is one of the following
-> >>
-> >> >  - use -ECANCELED (not the best choice for first occurrence here,
-> >> > though I can't find better)
-> >>
-> >> Actually -ENOTSUPP might suit the first case (although the actual
-> >> would be something like -EOVERLAP, which we don't have)
+On Tue, Jul 3, 2018 at 10:28 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Tuesday, July 3, 2018 8:50:41 AM CEST Pingfan Liu wrote:
+> > Clean up the referring to the code in commit 52cdbdd49853 ("driver core:
+> > correct device's shutdown order"). So later we can revert it safely.
 > >
-> > Sorry for late reply, and many thanks for your great suggestion.
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> > Cc: Christoph Hellwig <hch@infradead.org>
+> > Cc: Bjorn Helgaas <helgaas@kernel.org>
+> > Cc: Dave Young <dyoung@redhat.com>
+> > Cc: linux-pci@vger.kernel.org
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> > ---
+> >  drivers/base/core.c | 7 -------
+> >  1 file changed, 7 deletions(-)
 > >
-> 
-> > I am fine to use -ENOTSUPP as the first returned value, and -ECANCELED
-> > for the 2nd one.
-> 
-> I have no strong opinion, but I like (slightly better) this approach ^^^
+> > diff --git a/drivers/base/core.c b/drivers/base/core.c
+> > index 684b994..db3deb8 100644
+> > --- a/drivers/base/core.c
+> > +++ b/drivers/base/core.c
+> > @@ -127,13 +127,6 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
+> >  {
+> >       struct device_link *link;
+> >
+> > -     /*
+> > -      * Devices that have not been registered yet will be put to the ends
+> > -      * of the lists during the registration, so skip them here.
+> > -      */
+> > -     if (device_is_registered(dev))
+> > -             devices_kset_move_last(dev);
+> > -
+> >       if (device_pm_initialized(dev))
+> >               device_pm_move_last(dev);
+>
+> You can't do this.
+>
+> If you do it, that will break power management in some situations.
+>
+Could you shed light on it? I had a quick browsing of pm code, but it
+is a big function, and I got lost in it.
+If the above code causes failure, then does it imply that the seq in
+devices_kset should be the same as dpm_list? But in device_shutdown(),
+it only intersect with pm by
+pm_runtime_get_noresume(dev) and pm_runtime_barrier(dev). How do these
+function affect the seq in dpm_list? Need your help to see how to
+handle this issue.
 
-Done, post v6 in this way, many thanks.
-
-> 
-> > Or define an enum as you suggested inside the function
-> > or in header file.
-> 
-> >
-> > Or use -EBUSY for the first case because existing resource is
-> > overlapping but not fully contained by 'res'; and -EINVAL for
-> > the 2nd case since didn't find any one resources which is contained by
-> > 'res', means we passed in a invalid resource.
-> >
-> > All is fine to me, I can repost with each of them.
-> 
-> >> >  - use positive integers (or enum), like
-> >> >   #define RES_REPARENTED 0
-> >> >   #define RES_OVERLAPPED 1
-> >> >   #define RES_NOCONFLICT 2
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
+Thanks and regards,
+Pingfan
