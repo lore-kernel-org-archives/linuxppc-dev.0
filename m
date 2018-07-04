@@ -1,26 +1,42 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41LSnT22lvzF0ZD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:35:39 +1000 (AEST)
-Date: Wed, 4 Jul 2018 18:36:15 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Laura Abbott <labbott@redhat.com>
-Cc: mjw@fedoraproject.org, "H . J . Lu" <hjl.tools@gmail.com>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Andy Lutomirski <luto@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- X86 ML <x86@kernel.org>, linux-kernel@vger.kernel.org,
- Nick Clifton <nickc@redhat.com>, Cary Coutant <ccoutant@gmail.com>,
- linux-kbuild@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCHv5 4/4] arm64: Add build salt to the vDSO
-Message-ID: <20180704173615.GC9668@arm.com>
-References: <20180703233430.14416-1-labbott@redhat.com>
- <20180703233430.14416-5-labbott@redhat.com>
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LSpY5ccHzF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:36:37 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w64HSxoL099762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jul 2018 13:36:35 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k129w8x0x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 13:36:35 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Wed, 4 Jul 2018 13:36:33 -0400
+Date: Wed, 4 Jul 2018 14:36:29 -0300
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [v2 PATCH 2/2] powerpc: Enable CPU_FTR_ASYM_SMT for interleaved
+ big-cores
+References: <cover.1530609795.git.ego@linux.vnet.ibm.com>
+ <573a559dff87da1d68a55bf6ada97b7697102909.1530609795.git.ego@linux.vnet.ibm.com>
+ <20180703175346.GB6474@kermit-br-ibm-com.br.ibm.com>
+ <20180704081505.GB1007@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180703233430.14416-5-labbott@redhat.com>
+In-Reply-To: <20180704081505.GB1007@in.ibm.com>
+Message-Id: <20180704173629.GA21119@kermit-br-ibm-com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +46,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 03, 2018 at 04:34:30PM -0700, Laura Abbott wrote:
+On Wed, Jul 04, 2018 at 01:45:05PM +0530, Gautham R Shenoy wrote:
+> Hi Murilo,
 > 
-> The vDSO needs to have a unique build id in a similar manner
-> to the kernel and modules. Use the build salt macro.
+> Thanks for the review.
 > 
-> Signed-off-by: Laura Abbott <labbott@redhat.com>
-> ---
-> v5: I was previously focused on x86 only but since powerpc gave a patch,
-> I figured I would do arm64 since the changes were also fairly simple.
-> ---
->  arch/arm64/kernel/vdso/note.S | 3 +++
->  1 file changed, 3 insertions(+)
-
-If you drop the trailing semicolon, then:
-
-Acked-by: Will Deacon <will.deacon@arm.com>
-
-Will
-
-> diff --git a/arch/arm64/kernel/vdso/note.S b/arch/arm64/kernel/vdso/note.S
-> index b82c85e5d972..2c429dfd3f45 100644
-> --- a/arch/arm64/kernel/vdso/note.S
-> +++ b/arch/arm64/kernel/vdso/note.S
-> @@ -22,7 +22,10 @@
->  #include <linux/uts.h>
->  #include <linux/version.h>
->  #include <linux/elfnote.h>
-> +#include <linux/build-salt.h>
->  
->  ELFNOTE_START(Linux, 0, "a")
->  	.long LINUX_VERSION_CODE
->  ELFNOTE_END
-> +
-> +BUILD_SALT;
-> -- 
-> 2.17.1
+> On Tue, Jul 03, 2018 at 02:53:46PM -0300, Murilo Opsfelder Araujo wrote:
+> [..snip..]
 > 
+> > > -        /* Initialize CPU <=> thread mapping/
+> > > +	if (has_interleaved_big_core) {
+> > > +		int key = __builtin_ctzl(CPU_FTR_ASYM_SMT);
+> > > +
+> > > +		cur_cpu_spec->cpu_features |= CPU_FTR_ASYM_SMT;
+> > > +		static_branch_enable(&cpu_feature_keys[key]);
+> > > +		pr_info("Detected interleaved big-cores\n");
+> > > +	}
+> > 
+> > Shouldn't we use cpu_has_feature(CPU_FTR_ASYM_SMT) before setting
+> > > it?
+> 
+> 
+> Are you suggesting that we do the following?
+> 
+>     if (has_interleaved_big_core &&
+>         !cpu_has_feature(CPU_FTR_ASYM_SMT)) {
+> 	...
+>     }
+>     
+> Currently CPU_FTR_ASYM_SMT is set at compile time for only POWER7
+> where running the tasks on lower numbered threads give us the benefit
+> of SMT thread folding. Interleaved big core is a feature introduced
+> only on POWER9. Thus, we know that CPU_FTR_ASYM_SMT is not set in
+> cpu_features at this point.
+
+Since we're setting CPU_FTR_ASYM_SMT, it doesn't make sense to use
+cpu_has_feature(CPU_FTR_ASYM_SMT).  I thought cpu_has_feature() held all
+available features (not necessarily enabled) that we could check before
+setting or enabling such feature.  I think I misread it.  Sorry.
+
+> 
+> > 
+> > > +
+> > > +	/* Initialize CPU <=> thread mapping/
+> > >  	 *
+> > >  	 * WARNING: We assume that the number of threads is the same for
+> > >  	 * every CPU in the system. If that is not the case, then some code
+> > > -- 
+> > > 1.9.4
+> > > 
+> > 
+> > -- 
+> > Murilo
+> 
+> --
+> Thanks and Regards
+> gautham.
+> 
+
+-- 
+Murilo
