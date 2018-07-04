@@ -1,29 +1,19 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-it0-x244.google.com (mail-it0-x244.google.com
- [IPv6:2607:f8b0:4001:c0b::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41L7Zv5b7TzF0ZD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 14:40:23 +1000 (AEST)
-Received: by mail-it0-x244.google.com with SMTP id p185-v6so6235667itp.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2018 21:40:23 -0700 (PDT)
-MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <1530600642-25090-4-git-send-email-kernelfans@gmail.com>
- <3375966.ydPZj5TMVj@aspire.rjw.lan>
-In-Reply-To: <3375966.ydPZj5TMVj@aspire.rjw.lan>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Wed, 4 Jul 2018 12:40:09 +0800
-Message-ID: <CAFgQCTtu7jaUfWV4xq8CfWb7vuS5=+HuNpNxeMm9UawoUZ2CBg@mail.gmail.com>
-Subject: Re: [PATCHv3 3/4] drivers/base: clean up the usage of
- devices_kset_move_last()
-To: rjw@rjwysocki.net
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Christoph Hellwig <hch@infradead.org>,
- Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41L82m0XBwzF0ZD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 15:01:03 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
+Subject: [PATCH kernel v3 1/2] vfio/spapr: Use IOMMU pageshift rather than
+ pagesize
+Date: Wed,  4 Jul 2018 15:00:51 +1000
+Message-Id: <20180704050052.20045-2-aik@ozlabs.ru>
+In-Reply-To: <20180704050052.20045-1-aik@ozlabs.ru>
+References: <20180704050052.20045-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 3, 2018 at 10:28 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, July 3, 2018 8:50:41 AM CEST Pingfan Liu wrote:
-> > Clean up the referring to the code in commit 52cdbdd49853 ("driver core:
-> > correct device's shutdown order"). So later we can revert it safely.
-> >
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> > Cc: Christoph Hellwig <hch@infradead.org>
-> > Cc: Bjorn Helgaas <helgaas@kernel.org>
-> > Cc: Dave Young <dyoung@redhat.com>
-> > Cc: linux-pci@vger.kernel.org
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> > ---
-> >  drivers/base/core.c | 7 -------
-> >  1 file changed, 7 deletions(-)
-> >
-> > diff --git a/drivers/base/core.c b/drivers/base/core.c
-> > index 684b994..db3deb8 100644
-> > --- a/drivers/base/core.c
-> > +++ b/drivers/base/core.c
-> > @@ -127,13 +127,6 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
-> >  {
-> >       struct device_link *link;
-> >
-> > -     /*
-> > -      * Devices that have not been registered yet will be put to the ends
-> > -      * of the lists during the registration, so skip them here.
-> > -      */
-> > -     if (device_is_registered(dev))
-> > -             devices_kset_move_last(dev);
-> > -
-> >       if (device_pm_initialized(dev))
-> >               device_pm_move_last(dev);
->
-> You can't do this.
->
-> If you do it, that will break power management in some situations.
->
-Could you shed light on it? I had a quick browsing of pm code, but it
-is a big function, and I got lost in it.
-If the above code causes failure, then does it imply that the seq in
-devices_kset should be the same as dpm_list? But in device_shutdown(),
-it only intersect with pm by
-pm_runtime_get_noresume(dev) and pm_runtime_barrier(dev). How do these
-function affect the seq in dpm_list? Need your help to see how to
-handle this issue.
+The size is always equal to 1 page so let's use this. Later on this will
+be used for other checks which use page shifts to check the granularity
+of access.
 
-Thanks and regards,
-Pingfan
+This should cause no behavioral change.
+
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+As Alex suggested, this should go via the ppc tree which the next patch
+is going to (which is ppc-kvm, probably?).
+
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 759a5bd..2da5f05 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_container *container,
+ }
+ 
+ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+-		unsigned long tce, unsigned long size,
++		unsigned long tce, unsigned long shift,
+ 		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
+-	mem = mm_iommu_lookup(container->mm, tce, size);
++	mem = mm_iommu_lookup(container->mm, tce, 1ULL << shift);
+ 	if (!mem)
+ 		return -EINVAL;
+ 
+@@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_container *container,
+ 	if (!pua)
+ 		return;
+ 
+-	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl),
++	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
+ 			&hpa, &mem);
+ 	if (ret)
+ 		pr_debug("%s: tce %lx at #%lx was not cached, ret=%d\n",
+@@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *container,
+ 				entry + i);
+ 
+ 		ret = tce_iommu_prereg_ua_to_hpa(container,
+-				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
++				tce, tbl->it_page_shift, &hpa, &mem);
+ 		if (ret)
+ 			break;
+ 
+-- 
+2.11.0
