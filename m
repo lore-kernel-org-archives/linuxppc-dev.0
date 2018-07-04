@@ -2,44 +2,45 @@ Return-Path: <srs0=y3wq=ju=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LTKz2L6PzF1Rp
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 04:00:23 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41LTKz0zQdz8w1w
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 04:00:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LTLK46vNzF1RT
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 04:00:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41LTLK2RHwz8sft
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 04:00:41 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41LTKy4XLrz9s4c
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2018 04:00:22 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 41LTLJ5PKxz9s29
+ for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2018 04:00:40 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w64Hx6Kh026240
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2018 14:00:20 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k0xkw2evc-1
+ w64I0THq103922
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Jul 2018 14:00:39 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k10vgmet1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 04 Jul 2018 14:00:20 -0400
+ for <linuxppc-dev@ozlabs.org>; Wed, 04 Jul 2018 14:00:36 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 4 Jul 2018 19:00:18 +0100
-Subject: [PATCH v6 8/8] powernv/pseries: consolidate code for mce early
- handling.
+ Wed, 4 Jul 2018 18:59:29 +0100
+Subject: [PATCH v6 7/8] powerpc/pseries: Dump the SLB contents on SLB MCE
+ errors.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Laurent Dufour <ldufour@linux.vnet.ibm.com>,
  Michal Suchanek <msuchanek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 04 Jul 2018 23:30:12 +0530
+Date: Wed, 04 Jul 2018 23:29:25 +0530
 In-Reply-To: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
 References: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <153072717270.29016.18207683951100257477.stgit@jupiter.in.ibm.com>
+Message-Id: <153072713361.29016.11319893310114370009.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,128 +52,197 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Now that other platforms also implements real mode mce handler,
-lets consolidate the code by sharing existing powernv machine check
-early code. Rename machine_check_powernv_early to
-machine_check_common_early and reuse the code.
+If we get a machine check exceptions due to SLB errors then dump the
+current SLB contents which will be very much helpful in debugging the
+root cause of SLB errors. Introduce an exclusive buffer per cpu to hold
+faulty SLB entries. In real mode mce handler saves the old SLB contents
+into this buffer accessible through paca and print it out later in virtual
+mode.
 
+With this patch the console will log SLB contents like below on SLB MCE
+errors:
+
+[ 3022.938065] SLB contents of cpu 0x3
+[ 3022.938066] 00 c000000008000000 400ea1b217000500
+[ 3022.938067]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
+[ 3022.938068] 01 d000000008000000 400d43642f000510
+[ 3022.938069]   1T  ESID=   d00000  VSID=      d43642f LLP:110
+[ 3022.938070] 05 f000000008000000 400a86c85f000500
+[ 3022.938071]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
+[ 3022.938072] 06 00007f0008000000 400a628b13000d90
+[ 3022.938073]   1T  ESID=       7f  VSID=      a628b13 LLP:110
+[ 3022.938074] 07 0000000018000000 000b7979f523fd90
+[ 3022.938075]  256M ESID=        1  VSID=   b7979f523f LLP:110
+[ 3022.938076] 08 c000000008000000 400ea1b217000510
+[ 3022.938076]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
+[ 3022.938077] 09 c000000008000000 400ea1b217000510
+[ 3022.938078]   1T  ESID=   c00000  VSID=      ea1b217 LLP:110
+
+Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   56 +++++++---------------------------
- 1 file changed, 11 insertions(+), 45 deletions(-)
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +++
+ arch/powerpc/include/asm/paca.h               |    1 
+ arch/powerpc/mm/slb.c                         |   57 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/ras.c          |   10 ++++
+ arch/powerpc/platforms/pseries/setup.c        |   10 ++++
+ 5 files changed, 84 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 0038596b7906..3e877ec55d50 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -243,14 +243,13 @@ EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
- 	SET_SCRATCH0(r13)		/* save r13 */
- 	EXCEPTION_PROLOG_0(PACA_EXMC)
- BEGIN_FTR_SECTION
--	b	machine_check_powernv_early
-+	b	machine_check_common_early
- FTR_SECTION_ELSE
- 	b	machine_check_pSeries_0
- ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
- EXC_REAL_END(machine_check, 0x200, 0x100)
- EXC_VIRT_NONE(0x4200, 0x100)
--TRAMP_REAL_BEGIN(machine_check_powernv_early)
--BEGIN_FTR_SECTION
-+TRAMP_REAL_BEGIN(machine_check_common_early)
- 	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
- 	/*
- 	 * Register contents:
-@@ -306,7 +305,9 @@ BEGIN_FTR_SECTION
- 	/* Save r9 through r13 from EXMC save area to stack frame. */
- 	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
- 	mfmsr	r11			/* get MSR value */
-+BEGIN_FTR_SECTION
- 	ori	r11,r11,MSR_ME		/* turn on ME bit */
-+END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	ori	r11,r11,MSR_RI		/* turn on RI bit */
- 	LOAD_HANDLER(r12, machine_check_handle_early)
- 1:	mtspr	SPRN_SRR0,r12
-@@ -325,7 +326,6 @@ BEGIN_FTR_SECTION
- 	andc	r11,r11,r10		/* Turn off MSR_ME */
- 	b	1b
- 	b	.	/* prevent speculative execution */
--END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+index cc00a7088cf3..5a3fe282076d 100644
+--- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+@@ -485,9 +485,16 @@ static inline void hpte_init_pseries(void) { }
  
- TRAMP_REAL_BEGIN(machine_check_pSeries)
- 	.globl machine_check_fwnmi
-@@ -333,7 +333,7 @@ machine_check_fwnmi:
- 	SET_SCRATCH0(r13)		/* save r13 */
- 	EXCEPTION_PROLOG_0(PACA_EXMC)
- BEGIN_FTR_SECTION
--	b	machine_check_pSeries_early
-+	b	machine_check_common_early
- END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
- machine_check_pSeries_0:
- 	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
-@@ -346,45 +346,6 @@ machine_check_pSeries_0:
+ extern void hpte_init_native(void);
  
- TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
++struct slb_entry {
++	u64	esid;
++	u64	vsid;
++};
++
+ extern void slb_initialize(void);
+ extern void slb_flush_and_rebolt(void);
+ extern void slb_flush_and_rebolt_realmode(void);
++extern void slb_save_contents(struct slb_entry *slb_ptr);
++extern void slb_dump_contents(struct slb_entry *slb_ptr);
  
--TRAMP_REAL_BEGIN(machine_check_pSeries_early)
--BEGIN_FTR_SECTION
--	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
--	mr	r10,r1			/* Save r1 */
--	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
--	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
--	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
--	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
--	EXCEPTION_PROLOG_COMMON_1()
--	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
--	EXCEPTION_PROLOG_COMMON_3(0x200)
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI */
--
--	/* Move original SRR0 and SRR1 into the respective regs */
--	ld	r9,_MSR(r1)
--	mtspr	SPRN_SRR1,r9
--	ld	r3,_NIP(r1)
--	mtspr	SPRN_SRR0,r3
--	ld	r9,_CTR(r1)
--	mtctr	r9
--	ld	r9,_XER(r1)
--	mtxer	r9
--	ld	r9,_LINK(r1)
--	mtlr	r9
--	REST_GPR(0, r1)
--	REST_8GPRS(2, r1)
--	REST_GPR(10, r1)
--	ld	r11,_CCR(r1)
--	mtcr	r11
--	REST_GPR(11, r1)
--	REST_2GPRS(12, r1)
--	/* restore original r1. */
--	ld	r1,GPR1(r1)
--	SET_SCRATCH0(r13)		/* save r13 */
--	EXCEPTION_PROLOG_0(PACA_EXMC)
--	b	machine_check_pSeries_0
--END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
--
- EXC_COMMON_BEGIN(machine_check_common)
- 	/*
- 	 * Machine check is different because we use a different
-@@ -483,6 +444,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 	bl	machine_check_early
- 	std	r3,RESULT(r1)	/* Save result */
- 	ld	r12,_MSR(r1)
-+BEGIN_FTR_SECTION
-+	bne	9f			/* pSeries: continue to V mode. */
-+END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+ extern void slb_vmalloc_update(void);
+ extern void slb_set_size(u16 size);
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index b441fef53077..653f87c69423 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -253,6 +253,7 @@ struct paca_struct {
+ #endif
+ #ifdef CONFIG_PPC_PSERIES
+ 	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
++	struct slb_entry *mce_faulty_slbs;
+ #endif /* CONFIG_PPC_PSERIES */
+ } ____cacheline_aligned;
  
- #ifdef	CONFIG_PPC_P7_NAP
- 	/*
-@@ -564,7 +528,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
- 9:
- 	/* Deliver the machine check to host kernel in V mode. */
- 	MACHINE_CHECK_HANDLER_WINDUP
--	b	machine_check_pSeries
-+	SET_SCRATCH0(r13)		/* save r13 */
-+	EXCEPTION_PROLOG_0(PACA_EXMC)
-+	b	machine_check_pSeries_0
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 5b1813b98358..476ab0b1d4e8 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -151,6 +151,63 @@ void slb_flush_and_rebolt_realmode(void)
+ 	get_paca()->slb_cache_ptr = 0;
+ }
  
- EXC_COMMON_BEGIN(unrecover_mce)
- 	/* Invoke machine_check_exception to print MCE event and panic. */
++void slb_save_contents(struct slb_entry *slb_ptr)
++{
++	int i;
++	unsigned long e, v;
++
++	if (!slb_ptr)
++		return;
++
++	for (i = 0; i < mmu_slb_size; i++) {
++		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
++		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
++		slb_ptr->esid = e;
++		slb_ptr->vsid = v;
++		slb_ptr++;
++	}
++}
++
++void slb_dump_contents(struct slb_entry *slb_ptr)
++{
++	int i;
++	unsigned long e, v;
++	unsigned long llp;
++
++	if (!slb_ptr)
++		return;
++
++	pr_err("SLB contents of cpu 0x%x\n", smp_processor_id());
++
++	for (i = 0; i < mmu_slb_size; i++) {
++		e = slb_ptr->esid;
++		v = slb_ptr->vsid;
++		slb_ptr++;
++
++		if (!e && !v)
++			continue;
++
++		pr_err("%02d %016lx %016lx\n", i, e, v);
++
++		if (!(e & SLB_ESID_V)) {
++			pr_err("\n");
++			continue;
++		}
++		llp = v & SLB_VSID_LLP;
++		if (v & SLB_VSID_B_1T) {
++			pr_err("  1T  ESID=%9lx  VSID=%13lx LLP:%3lx\n",
++				GET_ESID_1T(e),
++				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT_1T,
++				llp);
++		} else {
++			pr_err(" 256M ESID=%9lx  VSID=%13lx LLP:%3lx\n",
++				GET_ESID(e),
++				(v & ~SLB_VSID_B) >> SLB_VSID_SHIFT,
++				llp);
++		}
++	}
++}
++
+ void slb_vmalloc_update(void)
+ {
+ 	unsigned long vflags;
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 252792f238b6..056ac57afb55 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -515,6 +515,10 @@ static void pseries_print_mce_info(struct pt_regs *regs,
+ 		break;
+ 	}
+ 
++	/* Display faulty slb contents for SLB errors. */
++	if (error_type == PSERIES_MC_ERROR_TYPE_SLB)
++		slb_dump_contents(local_paca->mce_faulty_slbs);
++
+ 	printk("%s%s Machine check interrupt [%s]\n", level, sevstr,
+ 		disposition == RTAS_DISP_FULLY_RECOVERED ?
+ 		"Recovered" : "Not recovered");
+@@ -575,7 +579,11 @@ static int mce_handle_error(struct rtas_error_log *errp)
+ 
+ 	if ((disposition == RTAS_DISP_NOT_RECOVERED) &&
+ 			(error_type == PSERIES_MC_ERROR_TYPE_SLB)) {
+-		/* Store the old slb content someplace. */
++		/*
++		 * Store the old slb content in paca before flushing. Print
++		 * this when we go to virtual mode.
++		 */
++		slb_save_contents(local_paca->mce_faulty_slbs);
+ 		slb_flush_and_rebolt_realmode();
+ 		disposition = RTAS_DISP_FULLY_RECOVERED;
+ 		rtas_set_disposition_recovered(errp);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 249b02bc5c41..76d15e46a152 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -105,6 +105,9 @@ static void __init fwnmi_init(void)
+ 	u8 *mce_data_buf;
+ 	unsigned int i;
+ 	int nr_cpus = num_possible_cpus();
++	struct slb_entry *slb_ptr;
++	size_t size;
++
+ 
+ 	int ibm_nmi_register = rtas_token("ibm,nmi-register");
+ 	if (ibm_nmi_register == RTAS_UNKNOWN_SERVICE)
+@@ -130,6 +133,13 @@ static void __init fwnmi_init(void)
+ 		paca_ptrs[i]->mce_data_buf = mce_data_buf +
+ 						(RTAS_ERROR_LOG_MAX * i);
+ 	}
++
++	/* Allocate per cpu slb area to save old slb contents during MCE */
++	size = sizeof(struct slb_entry) * mmu_slb_size * nr_cpus;
++	slb_ptr = __va(memblock_alloc_base(size, sizeof(struct slb_entry),
++							ppc64_rma_size));
++	for_each_possible_cpu(i)
++		paca_ptrs[i]->mce_faulty_slbs = slb_ptr + (mmu_slb_size * i);
+ }
+ 
+ static void pseries_8259_cascade(struct irq_desc *desc)
