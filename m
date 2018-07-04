@@ -1,22 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@gate.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LMGr5MvszF1NW
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 23:27:16 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bharat Bhushan <Bharat.Bhushan@nxp.com>, benh@kernel.crashing.org,
- paulus@samba.org, robh@kernel.org, geoff@infradead.org,
- tyreld@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: Bharat Bhushan <Bharat.Bhushan@nxp.com>
-Subject: Re: [PATCH] powerpc/mpic: Cleanup irq vector accounting
-In-Reply-To: <1530267872-31244-1-git-send-email-Bharat.Bhushan@nxp.com>
-References: <1530267872-31244-1-git-send-email-Bharat.Bhushan@nxp.com>
-Date: Wed, 04 Jul 2018 23:27:15 +1000
-Message-ID: <87efgjku6k.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LMhX113HzF1NW
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 23:46:03 +1000 (AEST)
+Date: Wed, 4 Jul 2018 08:45:15 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Re: How is this possible - Register r30 contains 0xc2236400 instead
+ of 0xc6236400
+Message-ID: <20180704134515.GI16221@gate.crashing.org>
+References: <09ae0460-11e7-c893-5a5f-55e55a3ef372@c-s.fr>
+ <87k1qbkuw0.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87k1qbkuw0.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bharat Bhushan <Bharat.Bhushan@nxp.com> writes:
+On Wed, Jul 04, 2018 at 11:11:59PM +1000, Michael Ellerman wrote:
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> 
+> > Kernel Oops at 0xc0334d5c for reading at address 0xc2236450 which 
+> > corresponds to r30 + 80
+> >
+> > But r30 should contain what's at r3 + 16 that is at 0xc619ec10 so r30 
+> > should be c6236400 as shown below (print_hex_dump(regs->gpr[3]) added at 
+> > end of __die() )
+> >
+> > So how can r30 contain 0xc2236400 instead ?
+> 
+> The simplest answer is that memory was modified between the time we
+> loaded it into r30 and when you print it.
+> 
+> So it did contain 0xc2236400 but has since been modified to now contain
+> 0xc6236400.
+> 
+> The thing that makes me less certain, is that c6 would be the correct
+> value (I think?), so it's been modified back to the correct value, which
+> seems lucky.
+> 
+> Mysterious.
 
-> Available vector space accounts ipis and timer interrupts
-> while spurious vector was not accounted.
+That depends.  Is this reproducible at all?  It is a single bit flip.
 
-OK. What is the symptom of that? Nothing? Total system crash?
 
-Looks like this can be tagged:
-
-Fixes: 0a4081641d72 ("powerpc/mpic: FSL MPIC error interrupt support.")
-
-Which added the code that uses "12".
-
-> Also later
-> mpic_setup_error_int() escape one more vector, seemingly it
-> assumes one spurious vector.
-
-Ah right, I get it now.
-
-So there is no bug. It's just a disagreement about whether the "intvec"
-argument to mpic_setup_error_int() indicates the first number that's
-free to use or the last number that has been allocated.
-
-Right?
-
-cheers
-
-> Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
-> ---
->  arch/powerpc/sysdev/fsl_mpic_err.c | 2 +-
->  arch/powerpc/sysdev/mpic.c         | 6 +++---
->  2 files changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/fsl_mpic_err.c b/arch/powerpc/sysdev/fsl_mpic_err.c
-> index 488ec45..2a98837 100644
-> --- a/arch/powerpc/sysdev/fsl_mpic_err.c
-> +++ b/arch/powerpc/sysdev/fsl_mpic_err.c
-> @@ -76,7 +76,7 @@ int mpic_setup_error_int(struct mpic *mpic, int intvec)
->  	mpic->flags |= MPIC_FSL_HAS_EIMR;
->  	/* allocate interrupt vectors for error interrupts */
->  	for (i = MPIC_MAX_ERR - 1; i >= 0; i--)
-> -		mpic->err_int_vecs[i] = --intvec;
-> +		mpic->err_int_vecs[i] = intvec--;
->  
->  	return 0;
->  }
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 1d4e0ef6..e098d1e 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1380,12 +1380,12 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  		 * global vector number space, as in case of ipis
->  		 * and timer interrupts.
->  		 *
-> -		 * Available vector space = intvec_top - 12, where 12
-> +		 * Available vector space = intvec_top - 13, where 13
->  		 * is the number of vectors which have been consumed by
-> -		 * ipis and timer interrupts.
-> +		 * ipis, timer interrupts and spurious.
->  		 */
->  		if (fsl_version >= 0x401) {
-> -			ret = mpic_setup_error_int(mpic, intvec_top - 12);
-> +			ret = mpic_setup_error_int(mpic, intvec_top - 13);
->  			if (ret)
->  				return NULL;
->  		}
-> -- 
-> 1.9.3
+Segher
