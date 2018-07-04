@@ -1,27 +1,28 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pf0-f195.google.com (mail-pf0-f195.google.com
+ [209.85.192.195])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LWrd499fzF1QP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 05:53:34 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id j3-v6so3362767pfh.11
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 12:53:34 -0700 (PDT)
-Date: Wed, 4 Jul 2018 12:53:26 -0700
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: Timur Tabi <timur@kernel.org>, Xiubo Li <Xiubo.Lee@gmail.com>,
- Fabio Estevam <fabio.estevam@nxp.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, alsa-devel@alsa-project.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_spdif: Use 64-bit arithmetic
- instead of 32-bit
-Message-ID: <20180704195325.GA7800@Asurada>
-References: <20180704141833.GA6702@embeddedor.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LZGy56S5zDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 07:43:06 +1000 (AEST)
+Received: by mail-pf0-f195.google.com with SMTP id s21-v6so3531251pfm.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 14:43:06 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH v2 2/2] hwmon: ibmpowernv: Add attributes to
+ enable/disable sensor groups
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
+References: <1530695793-4584-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1530695793-4584-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <e3a013fb-eaf0-8d45-2f23-3be8b3e5640b@roeck-us.net>
+ <c7e1272a-c9c8-a120-632f-7693cef3fd22@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <f0b3384f-02fb-f4f2-0f89-378183a1fad9@roeck-us.net>
+Date: Wed, 4 Jul 2018 14:42:56 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180704141833.GA6702@embeddedor.com>
+In-Reply-To: <c7e1272a-c9c8-a120-632f-7693cef3fd22@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 04, 2018 at 09:18:33AM -0500, Gustavo A. R. Silva wrote:
-> Add suffix ULL to constant 64 in order to give the compiler complete
-> information about the proper arithmetic to use.
+On 07/04/2018 09:53 AM, Shilpasri G Bhat wrote:
+> Hi Guenter,
 > 
-> Notice that such constant is used in a context that expects an
-> expression of type u64 (64 bits, unsigned) and the following
-> expression is currently being evaluated using 32-bit arithmetic:
+> Thanks for reviewing the patch.
+> On 07/04/2018 08:16 PM, Guenter Roeck wrote:
+>>> +        /* Disable if last sensor in the group */
+>>> +        send_command = true;
+>>> +        for (i = 0; i < sg->nr_sensor; i++) {
+>>> +            struct sensor_data *sd = sg->sensors[i];
+>>> +
+>>> +            if (sd->enable) {
+>>> +                send_command = false;
+>>> +                break;
+>>> +            }
+>>
+>> This is weird. So there are situations where a request to disable
+>> a sensor is accepted, but effectively ignored ? Shouldn't that
+>> return, say, -EBUSY ?
 > 
-> rate[index] * txclk_df * 64
+> This is because we do not support per-sensor enable/disable. We can only
+> enable/disable at a sensor-group level.
 > 
-> Addresses-Coverity-ID: 1222129 ("Unintentional integer overflow")
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+> This patch follows the semantic to disable a sensor group iff all the sensors
+> belonging to that group have been disabled. Otherwise the sensor alone is marked
+> to be disabled and returns -ENODATA on reading it.
+> 
+> And a sensor group will be enabled if any of the sensor in that group is enabled.
+> 
 
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
+In similar situations, where setting one attribute affects others, a common solution
+is to make only the first attribute writable and have it affect all the others.
+I think that would make sense here as well, and it would be much simpler to implement.
 
-Thanks.
+Guenter
 
-> ---
->  sound/soc/fsl/fsl_spdif.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> I will make changes to the remaining code according to your suggestion.
 > 
-> diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-> index 9b59d87..740b90d 100644
-> --- a/sound/soc/fsl/fsl_spdif.c
-> +++ b/sound/soc/fsl/fsl_spdif.c
-> @@ -1118,7 +1118,7 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
->  
->  	for (sysclk_df = sysclk_dfmin; sysclk_df <= sysclk_dfmax; sysclk_df++) {
->  		for (txclk_df = 1; txclk_df <= 128; txclk_df++) {
-> -			rate_ideal = rate[index] * txclk_df * 64;
-> +			rate_ideal = rate[index] * txclk_df * 64ULL;
->  			if (round)
->  				rate_actual = clk_round_rate(clk, rate_ideal);
->  			else
-> -- 
-> 2.7.4
+> Thanks and Regards,
+> Shilpa
 > 
-> _______________________________________________
-> Alsa-devel mailing list
-> Alsa-devel@alsa-project.org
-> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-hwmon" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
