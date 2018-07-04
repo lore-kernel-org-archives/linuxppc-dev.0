@@ -1,15 +1,17 @@
 Return-Path: <robin.murphy@arm.com>
 Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41LT6M0f4dzF0X5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:50:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 41LT6N2hyHzF0X5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 03:50:19 +1000 (AEST)
 From: Robin Murphy <robin.murphy@arm.com>
 To: hch@lst.de,
 	m.szyprowski@samsung.com
 Cc: iommu@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org,
  linux-ia64@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 1/2] dma-mapping: Clean up dma_set_*mask() hooks
-Date: Wed,  4 Jul 2018 18:50:11 +0100
-Message-Id: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
+Subject: [RFC PATCH 2/2] dma-mapping: Clean up dma_get_required_mask() hooks
+Date: Wed,  4 Jul 2018 18:50:12 +0100
+Message-Id: <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
+In-Reply-To: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
+References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,113 +21,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Arch-specific implementions for dma_set_{coherent_,}mask() currently
-rely on an inconsistent mix of arch-defined Kconfig symbols and macro
-overrides. Now that we have a nice centralised home for DMA API gubbins,
-let's consolidate these loose ends under consistent config options.
+As for the other mask-related hooks, standardise the arch override into
+a Kconfig option, and also pull the generic implementation into the DMA
+mapping code rather than having it hide away in the platform bus code.
 
 Signed-off-by: Robin Murphy <robin.murphy@arm.com>
 ---
+ arch/ia64/Kconfig                   |  1 +
+ arch/ia64/include/asm/dma-mapping.h |  2 --
+ arch/powerpc/Kconfig                |  1 +
+ arch/powerpc/include/asm/device.h   |  2 --
+ drivers/base/platform.c             | 23 -----------------------
+ drivers/pci/controller/vmd.c        |  4 ++--
+ include/linux/dma-mapping.h         |  2 +-
+ kernel/dma/Kconfig                  |  3 +++
+ kernel/dma/mapping.c                | 23 +++++++++++++++++++++++
+ 9 files changed, 31 insertions(+), 30 deletions(-)
 
-Here's hoping the buildbot comes by to point out what I've inevitably
-missed, although I did check a cursory cross-compile of ppc64_defconfig
-to iron out the obvious howlers.
-
-The motivation here is that I'm looking at adding set_mask overrides
-for arm64, and having discovered a bit of a mess it seemed prudent to
-clean up before ingraining it any more.
-
-Robin.
-
-
- arch/arm/Kconfig                       | 3 ---
- arch/powerpc/Kconfig                   | 4 +---
- arch/powerpc/include/asm/dma-mapping.h | 3 ---
- include/linux/dma-mapping.h            | 4 +++-
- kernel/dma/Kconfig                     | 6 ++++++
- 5 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 843edfd000be..ab0c081b6ec2 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -227,9 +227,6 @@ config ZONE_DMA
- config ARCH_SUPPORTS_UPROBES
- 	def_bool y
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index ff861420b8f5..a6274e79b155 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -12,6 +12,7 @@ menu "Processor type and features"
  
--config ARCH_HAS_DMA_SET_COHERENT_MASK
--	bool
--
- config GENERIC_ISA_DMA
+ config IA64
  	bool
++	select ARCH_HAS_DMA_GET_REQUIRED_MASK
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select PCI if (!IA64_HP_SIM)
+diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+index 76e4d6632d68..522745ae67bb 100644
+--- a/arch/ia64/include/asm/dma-mapping.h
++++ b/arch/ia64/include/asm/dma-mapping.h
+@@ -10,8 +10,6 @@
+ #include <linux/scatterlist.h>
+ #include <linux/dma-debug.h>
  
+-#define ARCH_HAS_DMA_GET_REQUIRED_MASK
+-
+ extern const struct dma_map_ops *dma_ops;
+ extern struct ia64_machine_vector ia64_mv;
+ extern void set_iommu_machvec(void);
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9f2b75fe2c2d..08d85412d783 100644
+index 08d85412d783..3581c576c762 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -119,9 +119,6 @@ config GENERIC_HWEIGHT
- 	bool
- 	default y
- 
--config ARCH_HAS_DMA_SET_COHERENT_MASK
--        bool
--
- config PPC
- 	bool
- 	default y
-@@ -129,6 +126,7 @@ config PPC
+@@ -126,6 +126,7 @@ config PPC
  	# Please keep this list sorted alphabetically.
  	#
  	select ARCH_HAS_DEVMEM_IS_ALLOWED
-+	select ARCH_HAS_DMA_SET_MASK
++	select ARCH_HAS_DMA_GET_REQUIRED_MASK
+ 	select ARCH_HAS_DMA_SET_MASK
  	select ARCH_HAS_DMA_SET_COHERENT_MASK
  	select ARCH_HAS_ELF_RANDOMIZE
- 	select ARCH_HAS_FORTIFY_SOURCE
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 8fa394520af6..fe912c4367f2 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -107,9 +107,6 @@ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
- 		dev->archdata.dma_offset = off;
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 0245bfcaac32..17cceab5ccf9 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -54,6 +54,4 @@ struct pdev_archdata {
+ 	u64 dma_mask;
+ };
+ 
+-#define ARCH_HAS_DMA_GET_REQUIRED_MASK
+-
+ #endif /* _ASM_POWERPC_DEVICE_H */
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index dff82a3c2caa..dae427a77b0a 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -16,7 +16,6 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/bootmem.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ #include <linux/pm_runtime.h>
+@@ -1179,28 +1178,6 @@ int __init platform_bus_init(void)
+ 	return error;
  }
  
--#define HAVE_ARCH_DMA_SET_MASK 1
--extern int dma_set_mask(struct device *dev, u64 dma_mask);
+-#ifndef ARCH_HAS_DMA_GET_REQUIRED_MASK
+-u64 dma_get_required_mask(struct device *dev)
+-{
+-	u32 low_totalram = ((max_pfn - 1) << PAGE_SHIFT);
+-	u32 high_totalram = ((max_pfn - 1) >> (32 - PAGE_SHIFT));
+-	u64 mask;
 -
- extern u64 __dma_get_required_mask(struct device *dev);
+-	if (!high_totalram) {
+-		/* convert to mask just covering totalram */
+-		low_totalram = (1 << (fls(low_totalram) - 1));
+-		low_totalram += low_totalram - 1;
+-		mask = low_totalram;
+-	} else {
+-		high_totalram = (1 << (fls(high_totalram) - 1));
+-		high_totalram += high_totalram - 1;
+-		mask = (((u64)high_totalram) << 32) + 0xffffffff;
+-	}
+-	return mask;
+-}
+-EXPORT_SYMBOL_GPL(dma_get_required_mask);
+-#endif
+-
+ static __initdata LIST_HEAD(early_platform_driver_list);
+ static __initdata LIST_HEAD(early_platform_device_list);
  
- #define ARCH_HAS_DMA_MMAP_COHERENT
+diff --git a/drivers/pci/controller/vmd.c b/drivers/pci/controller/vmd.c
+index 942b64fc7f1f..9dd721d36783 100644
+--- a/drivers/pci/controller/vmd.c
++++ b/drivers/pci/controller/vmd.c
+@@ -393,7 +393,7 @@ static int vmd_dma_supported(struct device *dev, u64 mask)
+ 	return vmd_dma_ops(dev)->dma_supported(to_vmd_dev(dev), mask);
+ }
+ 
+-#ifdef ARCH_HAS_DMA_GET_REQUIRED_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_GET_REQUIRED_MASK
+ static u64 vmd_get_required_mask(struct device *dev)
+ {
+ 	return vmd_dma_ops(dev)->get_required_mask(to_vmd_dev(dev));
+@@ -439,7 +439,7 @@ static void vmd_setup_dma_ops(struct vmd_dev *vmd)
+ 	ASSIGN_VMD_DMA_OPS(source, dest, sync_sg_for_device);
+ 	ASSIGN_VMD_DMA_OPS(source, dest, mapping_error);
+ 	ASSIGN_VMD_DMA_OPS(source, dest, dma_supported);
+-#ifdef ARCH_HAS_DMA_GET_REQUIRED_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_GET_REQUIRED_MASK
+ 	ASSIGN_VMD_DMA_OPS(source, dest, get_required_mask);
+ #endif
+ 	add_dma_domain(domain);
 diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index ffeca3ab59c0..30fe0c900420 100644
+index 30fe0c900420..788d7a609dd8 100644
 --- a/include/linux/dma-mapping.h
 +++ b/include/linux/dma-mapping.h
-@@ -596,7 +596,9 @@ static inline int dma_supported(struct device *dev, u64 mask)
- 	return ops->dma_supported(dev, mask);
- }
- 
--#ifndef HAVE_ARCH_DMA_SET_MASK
-+#ifdef CONFIG_ARCH_HAS_DMA_SET_MASK
-+int dma_set_mask(struct device *dev, u64 mask);
-+#else
- static inline int dma_set_mask(struct device *dev, u64 mask)
- {
- 	if (!dev->dma_mask || !dma_supported(dev, mask))
+@@ -130,7 +130,7 @@ struct dma_map_ops {
+ 			enum dma_data_direction direction);
+ 	int (*mapping_error)(struct device *dev, dma_addr_t dma_addr);
+ 	int (*dma_supported)(struct device *dev, u64 mask);
+-#ifdef ARCH_HAS_DMA_GET_REQUIRED_MASK
++#ifdef CONFIG_ARCH_HAS_DMA_GET_REQUIRED_MASK
+ 	u64 (*get_required_mask)(struct device *dev);
+ #endif
+ };
 diff --git a/kernel/dma/Kconfig b/kernel/dma/Kconfig
-index 9bd54304446f..01001371d892 100644
+index 01001371d892..cb12bb2d270a 100644
 --- a/kernel/dma/Kconfig
 +++ b/kernel/dma/Kconfig
-@@ -16,6 +16,12 @@ config ARCH_DMA_ADDR_T_64BIT
+@@ -16,6 +16,9 @@ config ARCH_DMA_ADDR_T_64BIT
  config HAVE_GENERIC_DMA_COHERENT
  	bool
  
-+config ARCH_HAS_DMA_SET_MASK
++config ARCH_HAS_DMA_GET_REQUIRED_MASK
 +        bool
 +
-+config ARCH_HAS_DMA_SET_COHERENT_MASK
-+        bool
-+
- config ARCH_HAS_SYNC_DMA_FOR_DEVICE
- 	bool
+ config ARCH_HAS_DMA_SET_MASK
+         bool
  
+diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
+index d2a92ddaac4d..fdadc9524cb2 100644
+--- a/kernel/dma/mapping.c
++++ b/kernel/dma/mapping.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/acpi.h>
++#include <linux/bootmem.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/export.h>
+ #include <linux/gfp.h>
+@@ -198,6 +199,28 @@ EXPORT_SYMBOL(dmam_release_declared_memory);
+ 
+ #endif
+ 
++#ifndef CONFIG_ARCH_HAS_DMA_GET_REQUIRED_MASK
++u64 dma_get_required_mask(struct device *dev)
++{
++	u32 low_totalram = ((max_pfn - 1) << PAGE_SHIFT);
++	u32 high_totalram = ((max_pfn - 1) >> (32 - PAGE_SHIFT));
++	u64 mask;
++
++	if (!high_totalram) {
++		/* convert to mask just covering totalram */
++		low_totalram = (1 << (fls(low_totalram) - 1));
++		low_totalram += low_totalram - 1;
++		mask = low_totalram;
++	} else {
++		high_totalram = (1 << (fls(high_totalram) - 1));
++		high_totalram += high_totalram - 1;
++		mask = (((u64)high_totalram) << 32) + 0xffffffff;
++	}
++	return mask;
++}
++EXPORT_SYMBOL_GPL(dma_get_required_mask);
++#endif
++
+ /*
+  * Create scatter-list for the already allocated DMA buffer.
+  */
 -- 
 2.17.1.dirty
