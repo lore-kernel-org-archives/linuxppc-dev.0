@@ -1,28 +1,31 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
- [79.96.170.134])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex@ghiti.fr>
+Received: from slow1-d.mail.gandi.net (mslow2.mail.gandi.net [217.70.178.242])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LHBc3ff2zF0ZD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 20:23:19 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Pingfan Liu <kernelfans@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-Date: Wed, 04 Jul 2018 12:21:52 +0200
-Message-ID: <6281446.GoJLz6Hq6C@aspire.rjw.lan>
-In-Reply-To: <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan>
- <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41L9xs4pClzF1Rp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 16:26:56 +1000 (AEST)
+Received: from relay5-d.mail.gandi.net (unknown [217.70.183.197])
+ by slow1-d.mail.gandi.net (Postfix) with ESMTP id CB7353A3B44
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2018 07:52:47 +0200 (CEST)
+From: Alexandre Ghiti <alex@ghiti.fr>
+To: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, ysato@users.sourceforge.jp, dalias@libc.org,
+ davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+ x86@kernel.org, arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
+Cc: Alexandre Ghiti <alex@ghiti.fr>
+Subject: [PATCH 01/11] hugetlb: Harmonize hugetlb.h arch specific defines with
+ pgtable.h
+Date: Wed,  4 Jul 2018 05:51:57 +0000
+Message-Id: <20180704055207.27978-2-alex@ghiti.fr>
+In-Reply-To: <20180704055207.27978-1-alex@ghiti.fr>
+References: <20180704055207.27978-1-alex@ghiti.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +35,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, July 4, 2018 4:47:07 AM CEST Pingfan Liu wrote:
-> On Tue, Jul 3, 2018 at 10:36 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >
-> > On Tuesday, July 3, 2018 8:50:38 AM CEST Pingfan Liu wrote:
-> > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > > places an assumption of supplier<-consumer order on the process of probe.
-> > > But it turns out to break down the parent <- child order in some scene.
-> > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
-> > > have been probed. Then comes the bridge's module, which enables extra
-> > > feature(such as hotplug) on this bridge.
-> >
-> > So what *exactly* does happen in that case?
-> >
-> I saw the  shpc_probe() is called on the bridge, although the probing
-> failed on that bare-metal. But if it success, then it will enable the
-> hotplug feature on the bridge.
+asm-generic/hugetlb.h proposes generic implementations of hugetlb
+related functions: use __HAVE_ARCH_HUGE* defines in order to make arch
+specific implementations of hugetlb functions consistent with pgtable.h
+scheme.
 
-I don't understand what you are saying here, sorry.
+Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
+---
+ arch/arm64/include/asm/hugetlb.h | 2 +-
+ include/asm-generic/hugetlb.h    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-device_reorder_to_tail() walks the entire device hierarchy below the target
-and moves all of the children in there *after* their parents.
-
-How can it break "the parent <- child order" then?
-
-Thanks,
-Rafael
+diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+index e73f68569624..3fcf14663dfa 100644
+--- a/arch/arm64/include/asm/hugetlb.h
++++ b/arch/arm64/include/asm/hugetlb.h
+@@ -81,9 +81,9 @@ extern void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 				    unsigned long addr, pte_t *ptep);
+ extern void huge_ptep_clear_flush(struct vm_area_struct *vma,
+ 				  unsigned long addr, pte_t *ptep);
++#define __HAVE_ARCH_HUGE_PTE_CLEAR
+ extern void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
+ 			   pte_t *ptep, unsigned long sz);
+-#define huge_pte_clear huge_pte_clear
+ extern void set_huge_swap_pte_at(struct mm_struct *mm, unsigned long addr,
+ 				 pte_t *ptep, pte_t pte, unsigned long sz);
+ #define set_huge_swap_pte_at set_huge_swap_pte_at
+diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
+index 9d0cde8ab716..3da7cff52360 100644
+--- a/include/asm-generic/hugetlb.h
++++ b/include/asm-generic/hugetlb.h
+@@ -32,7 +32,7 @@ static inline pte_t huge_pte_modify(pte_t pte, pgprot_t newprot)
+ 	return pte_modify(pte, newprot);
+ }
+ 
+-#ifndef huge_pte_clear
++#ifndef __HAVE_ARCH_HUGE_PTE_CLEAR
+ static inline void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, unsigned long sz)
+ {
+-- 
+2.16.2
