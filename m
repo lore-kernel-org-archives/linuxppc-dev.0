@@ -1,31 +1,21 @@
-Return-Path: <lkp@intel.com>
-Received: from mga12.intel.com (mga12.intel.com [192.55.52.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LrfG5sCqzF0x5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 18:30:42 +1000 (AEST)
-Date: Thu, 5 Jul 2018 16:29:43 +0800
-From: kbuild test robot <lkp@intel.com>
-To: Alexandre Ghiti <alex@ghiti.fr>
-Cc: kbuild-all@01.org, linux@armlinux.org.uk, catalin.marinas@arm.com,
- will.deacon@arm.com, tony.luck@intel.com, fenghua.yu@intel.com,
- ralf@linux-mips.org, paul.burton@mips.com, jhogan@kernel.org,
- jejb@parisc-linux.org, deller@gmx.de, benh@kernel.crashing.org,
- paulus@samba.org, mpe@ellerman.id.au, ysato@users.sourceforge.jp,
- dalias@libc.org, davem@davemloft.net, tglx@linutronix.de,
- mingo@redhat.com, hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, Alexandre Ghiti <alex@ghiti.fr>
-Subject: Re: [PATCH v3 02/11] hugetlb: Introduce generic version of
- hugetlb_free_pgd_range
-Message-ID: <201807051622.dY8S5PXo%fengguang.wu@intel.com>
-References: <20180705051640.790-3-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Ls1F6Lb4zF1LY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 18:47:12 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id y24-v6so4762645pfe.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 01:47:12 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/64s: remove POWER9 DD1 support
+Date: Thu,  5 Jul 2018 18:47:00 +1000
+Message-Id: <20180705084700.4410-1-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="NzB8fVQJ5HfG6fxh"
-In-Reply-To: <20180705051640.790-3-alex@ghiti.fr>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,283 +25,1305 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+POWER9 DD1 was never a product. It is no longer supported by upstream
+firmware, and it is not effectively supported in Linux due to lack of
+testing.
 
---NzB8fVQJ5HfG6fxh
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi Alexandre,
-
-Thank you for the patch! Yet something to improve:
-
-[auto build test ERROR on linus/master]
-[also build test ERROR on v4.18-rc3 next-20180704]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Alexandre-Ghiti/hugetlb-Factorize-hugetlb-architecture-primitives/20180705-135909
-config: powerpc-mpc8540_ads_defconfig (attached as .config)
-compiler: powerpc-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-reproduce:
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
-
-All error/warnings (new ones prefixed by >>):
-
-   In file included from arch/powerpc/kernel/setup-common.c:37:0:
->> include/linux/hugetlb.h:191:65: error: expected identifier or '(' before '{' token
-    #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
-                                                                    ^
->> include/asm-generic/hugetlb.h:44:20: note: in expansion of macro 'hugetlb_free_pgd_range'
-    static inline void hugetlb_free_pgd_range(struct mmu_gather *tlb,
-                       ^~~~~~~~~~~~~~~~~~~~~~
-
-vim +191 include/linux/hugetlb.h
-
-^1da177e Linus Torvalds    2005-04-16  172  
-87ffc118 Andrea Arcangeli  2017-02-22  173  #define follow_hugetlb_page(m,v,p,vs,a,b,i,w,n)	({ BUG(); 0; })
-^1da177e Linus Torvalds    2005-04-16  174  #define follow_huge_addr(mm, addr, write)	ERR_PTR(-EINVAL)
-^1da177e Linus Torvalds    2005-04-16  175  #define copy_hugetlb_page_range(src, dst, vma)	({ BUG(); 0; })
-e1759c21 Alexey Dobriyan   2008-10-15  176  static inline void hugetlb_report_meminfo(struct seq_file *m)
-e1759c21 Alexey Dobriyan   2008-10-15  177  {
-e1759c21 Alexey Dobriyan   2008-10-15  178  }
-^1da177e Linus Torvalds    2005-04-16  179  #define hugetlb_report_node_meminfo(n, buf)	0
-949f7ec5 David Rientjes    2013-04-29  180  static inline void hugetlb_show_meminfo(void)
-949f7ec5 David Rientjes    2013-04-29  181  {
-949f7ec5 David Rientjes    2013-04-29  182  }
-4dc71451 Aneesh Kumar K.V  2017-07-06  183  #define follow_huge_pd(vma, addr, hpd, flags, pdshift) NULL
-e66f17ff Naoya Horiguchi   2015-02-11  184  #define follow_huge_pmd(mm, addr, pmd, flags)	NULL
-e66f17ff Naoya Horiguchi   2015-02-11  185  #define follow_huge_pud(mm, addr, pud, flags)	NULL
-faaa5b62 Anshuman Khandual 2017-07-06  186  #define follow_huge_pgd(mm, addr, pgd, flags)	NULL
-a5516438 Andi Kleen        2008-07-23  187  #define prepare_hugepage_range(file, addr, len)	(-EINVAL)
-^1da177e Linus Torvalds    2005-04-16  188  #define pmd_huge(x)	0
-ceb86879 Andi Kleen        2008-07-23  189  #define pud_huge(x)	0
-^1da177e Linus Torvalds    2005-04-16  190  #define is_hugepage_only_range(mm, addr, len)	0
-9da61aef David Gibson      2006-03-22 @191  #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
-788c7df4 Hugh Dickins      2009-06-23  192  #define hugetlb_fault(mm, vma, addr, flags)	({ BUG(); 0; })
-8fb5debc Mike Kravetz      2017-02-22  193  #define hugetlb_mcopy_atomic_pte(dst_mm, dst_pte, dst_vma, dst_addr, \
-8fb5debc Mike Kravetz      2017-02-22  194  				src_addr, pagep)	({ BUG(); 0; })
-7868a208 Punit Agrawal     2017-07-06  195  #define huge_pte_offset(mm, address, sz)	0
-24669e58 Aneesh Kumar K.V  2012-07-31  196  
-
-:::::: The code at line 191 was first introduced by commit
-:::::: 9da61aef0fd5b17dd4bf4baf33db12c470def774 [PATCH] hugepage: Fix hugepage logic in free_pgtables()
-
-:::::: TO: David Gibson <david@gibson.dropbear.id.au>
-:::::: CC: Linus Torvalds <torvalds@g5.osdl.org>
-
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Since RFC:
+- Change xive comments to explain why the DD1 cases are being
+  kept, from Ben. 
 
---NzB8fVQJ5HfG6fxh
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+ arch/powerpc/include/asm/book3s/64/hugetlb.h  | 15 +----
+ arch/powerpc/include/asm/book3s/64/pgtable.h  |  5 +-
+ arch/powerpc/include/asm/book3s/64/radix.h    | 35 ++---------
+ .../include/asm/book3s/64/tlbflush-radix.h    |  2 -
+ arch/powerpc/include/asm/cputable.h           | 13 ++--
+ arch/powerpc/include/asm/paca.h               |  5 --
+ arch/powerpc/kernel/asm-offsets.c             |  1 -
+ arch/powerpc/kernel/cputable.c                | 19 ------
+ arch/powerpc/kernel/dt_cpu_ftrs.c             |  4 +-
+ arch/powerpc/kernel/exceptions-64s.S          |  4 +-
+ arch/powerpc/kernel/idle_book3s.S             | 50 ----------------
+ arch/powerpc/kernel/process.c                 | 10 +---
+ arch/powerpc/kvm/book3s_64_mmu_radix.c        | 15 +----
+ arch/powerpc/kvm/book3s_hv.c                  | 10 ----
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S       | 16 +----
+ arch/powerpc/kvm/book3s_xive_template.c       | 39 ++++--------
+ arch/powerpc/mm/hash_utils_64.c               | 30 ----------
+ arch/powerpc/mm/hugetlbpage.c                 |  9 +--
+ arch/powerpc/mm/mmu_context_book3s64.c        | 12 +---
+ arch/powerpc/mm/pgtable-radix.c               | 60 +------------------
+ arch/powerpc/mm/tlb-radix.c                   | 18 ------
+ arch/powerpc/perf/core-book3s.c               | 34 -----------
+ arch/powerpc/perf/isa207-common.c             | 12 ++--
+ arch/powerpc/perf/isa207-common.h             |  5 --
+ arch/powerpc/perf/power9-pmu.c                | 54 +----------------
+ arch/powerpc/platforms/powernv/idle.c         | 28 ---------
+ arch/powerpc/platforms/powernv/smp.c          | 27 +--------
+ arch/powerpc/sysdev/xive/common.c             |  8 +--
+ arch/powerpc/xmon/xmon.c                      |  1 -
+ drivers/misc/cxl/cxl.h                        |  8 ---
+ drivers/misc/cxl/cxllib.c                     |  4 --
+ drivers/misc/cxl/pci.c                        | 41 +++++--------
+ 32 files changed, 67 insertions(+), 527 deletions(-)
 
-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
-pBxW4BnkQPk/jjxRWmCmAAA=
-
---NzB8fVQJ5HfG6fxh--
+diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+index c459f937d484..8000aa4990d2 100644
+--- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
++++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
+@@ -36,20 +36,7 @@ static inline int hstate_get_psize(struct hstate *hstate)
+ static inline pte_t arch_make_huge_pte(pte_t entry, struct vm_area_struct *vma,
+ 				       struct page *page, int writable)
+ {
+-	unsigned long page_shift;
+-
+-	if (!cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		return entry;
+-
+-	page_shift = huge_page_shift(hstate_vma(vma));
+-	/*
+-	 * We don't support 1G hugetlb pages yet.
+-	 */
+-	VM_WARN_ON(page_shift == mmu_psize_defs[MMU_PAGE_1G].shift);
+-	if (page_shift == mmu_psize_defs[MMU_PAGE_2M].shift)
+-		return __pte(pte_val(entry) | R_PAGE_LARGE);
+-	else
+-		return entry;
++	return entry;
+ }
+ 
+ #ifdef CONFIG_ARCH_HAS_GIGANTIC_PAGE
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 42aafba7a308..676118743a06 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -479,9 +479,8 @@ static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm,
+ {
+ 	if (full && radix_enabled()) {
+ 		/*
+-		 * Let's skip the DD1 style pte update here. We know that
+-		 * this is a full mm pte clear and hence can be sure there is
+-		 * no parallel set_pte.
++		 * We know that this is a full mm pte clear and
++		 * hence can be sure there is no parallel set_pte.
+ 		 */
+ 		return radix__ptep_get_and_clear_full(mm, addr, ptep, full);
+ 	}
+diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
+index ef9f96742ce1..3ab3f7aef022 100644
+--- a/arch/powerpc/include/asm/book3s/64/radix.h
++++ b/arch/powerpc/include/asm/book3s/64/radix.h
+@@ -12,12 +12,6 @@
+ #include <asm/book3s/64/radix-4k.h>
+ #endif
+ 
+-/*
+- * For P9 DD1 only, we need to track whether the pte's huge.
+- */
+-#define R_PAGE_LARGE	_RPAGE_RSV1
+-
+-
+ #ifndef __ASSEMBLY__
+ #include <asm/book3s/64/tlbflush-radix.h>
+ #include <asm/cpu_has_feature.h>
+@@ -154,20 +148,7 @@ static inline unsigned long radix__pte_update(struct mm_struct *mm,
+ {
+ 	unsigned long old_pte;
+ 
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-
+-		unsigned long new_pte;
+-
+-		old_pte = __radix_pte_update(ptep, ~0ul, 0);
+-		/*
+-		 * new value of pte
+-		 */
+-		new_pte = (old_pte | set) & ~clr;
+-		radix__flush_tlb_pte_p9_dd1(old_pte, mm, addr);
+-		if (new_pte)
+-			__radix_pte_update(ptep, 0, new_pte);
+-	} else
+-		old_pte = __radix_pte_update(ptep, clr, set);
++	old_pte = __radix_pte_update(ptep, clr, set);
+ 	if (!huge)
+ 		assert_pte_locked(mm, addr);
+ 
+@@ -253,8 +234,6 @@ static inline int radix__pmd_trans_huge(pmd_t pmd)
+ 
+ static inline pmd_t radix__pmd_mkhuge(pmd_t pmd)
+ {
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		return __pmd(pmd_val(pmd) | _PAGE_PTE | R_PAGE_LARGE);
+ 	return __pmd(pmd_val(pmd) | _PAGE_PTE);
+ }
+ 
+@@ -285,18 +264,14 @@ static inline unsigned long radix__get_tree_size(void)
+ 	unsigned long rts_field;
+ 	/*
+ 	 * We support 52 bits, hence:
+-	 *  DD1    52-28 = 24, 0b11000
+-	 *  Others 52-31 = 21, 0b10101
++	 * bits 52 - 31 = 21, 0b10101
+ 	 * RTS encoding details
+ 	 * bits 0 - 3 of rts -> bits 6 - 8 unsigned long
+ 	 * bits 4 - 5 of rts -> bits 62 - 63 of unsigned long
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		rts_field = (0x3UL << 61);
+-	else {
+-		rts_field = (0x5UL << 5); /* 6 - 8 bits */
+-		rts_field |= (0x2UL << 61);
+-	}
++	rts_field = (0x5UL << 5); /* 6 - 8 bits */
++	rts_field |= (0x2UL << 61);
++
+ 	return rts_field;
+ }
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+index ef5c3f2994c9..1154a6dc6d26 100644
+--- a/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
++++ b/arch/powerpc/include/asm/book3s/64/tlbflush-radix.h
+@@ -48,8 +48,6 @@ extern void radix__flush_tlb_page_psize(struct mm_struct *mm, unsigned long vmad
+ extern void radix__flush_tlb_pwc(struct mmu_gather *tlb, unsigned long addr);
+ extern void radix__flush_tlb_collapsed_pmd(struct mm_struct *mm, unsigned long addr);
+ extern void radix__flush_tlb_all(void);
+-extern void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+-					unsigned long address);
+ 
+ extern void radix__flush_tlb_lpid_page(unsigned int lpid,
+ 					unsigned long addr,
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 9c0a3083571b..f980f91cad8a 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -210,7 +210,6 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0000008000000000)
+ #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0000010000000000)
+ #define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x0000020000000000)
+-#define CPU_FTR_POWER9_DD1		LONG_ASM_CONST(0x0000040000000000)
+ #define CPU_FTR_POWER9_DD2_1		LONG_ASM_CONST(0x0000080000000000)
+ #define CPU_FTR_P9_TM_HV_ASSIST		LONG_ASM_CONST(0x0000100000000000)
+ #define CPU_FTR_P9_TM_XER_SO_BUG	LONG_ASM_CONST(0x0000200000000000)
+@@ -464,8 +463,6 @@ static inline void cpu_feature_keys_init(void) { }
+ 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_ARCH_207S | \
+ 	    CPU_FTR_TM_COMP | CPU_FTR_ARCH_300 | CPU_FTR_PKEY | \
+ 	    CPU_FTR_P9_TLBIE_BUG | CPU_FTR_P9_TIDR)
+-#define CPU_FTRS_POWER9_DD1 ((CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD1) & \
+-			     (~CPU_FTR_SAO))
+ #define CPU_FTRS_POWER9_DD2_0 CPU_FTRS_POWER9
+ #define CPU_FTRS_POWER9_DD2_1 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1)
+ #define CPU_FTRS_POWER9_DD2_2 (CPU_FTRS_POWER9 | CPU_FTR_POWER9_DD2_1 | \
+@@ -489,16 +486,14 @@ static inline void cpu_feature_keys_init(void) { }
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
+ 	     CPU_FTRS_POWER8_DD1 | CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | \
+-	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
+-	     CPU_FTRS_POWER9_DD2_2)
++	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2)
+ #else
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
+ 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
+ 	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
+ 	     CPU_FTRS_PA6T | CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | \
+-	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
+-	     CPU_FTRS_POWER9_DD2_2)
++	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD2_1 | CPU_FTRS_POWER9_DD2_2)
+ #endif /* CONFIG_CPU_LITTLE_ENDIAN */
+ #endif
+ #else
+@@ -567,7 +562,7 @@ enum {
+ #define CPU_FTRS_ALWAYS \
+ 	    (CPU_FTRS_POSSIBLE & ~CPU_FTR_HVMODE & CPU_FTRS_POWER7 & \
+ 	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & CPU_FTRS_POWER8_DD1 & \
+-	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
++	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD2_1 & \
+ 	     CPU_FTRS_DT_CPU_BASE)
+ #else
+ #define CPU_FTRS_ALWAYS		\
+@@ -575,7 +570,7 @@ enum {
+ 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
+ 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
+ 	     CPU_FTRS_POWER8_DD1 & ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
+-	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
++	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD2_1 & \
+ 	     CPU_FTRS_DT_CPU_BASE)
+ #endif /* CONFIG_CPU_LITTLE_ENDIAN */
+ #endif
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 6d34bd71139d..4e9cede5a7e7 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -187,11 +187,6 @@ struct paca_struct {
+ 	u8 subcore_sibling_mask;
+ 	/* Flag to request this thread not to stop */
+ 	atomic_t dont_stop;
+-	/*
+-	 * Pointer to an array which contains pointer
+-	 * to the sibling threads' paca.
+-	 */
+-	struct paca_struct **thread_sibling_pacas;
+ 	/* The PSSCR value that the kernel requested before going to stop */
+ 	u64 requested_psscr;
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 0a0544335950..89cf15566c4e 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -766,7 +766,6 @@ int main(void)
+ 	OFFSET(PACA_THREAD_IDLE_STATE, paca_struct, thread_idle_state);
+ 	OFFSET(PACA_THREAD_MASK, paca_struct, thread_mask);
+ 	OFFSET(PACA_SUBCORE_SIBLING_MASK, paca_struct, subcore_sibling_mask);
+-	OFFSET(PACA_SIBLING_PACA_PTRS, paca_struct, thread_sibling_pacas);
+ 	OFFSET(PACA_REQ_PSSCR, paca_struct, requested_psscr);
+ 	OFFSET(PACA_DONT_STOP, paca_struct, dont_stop);
+ #define STOP_SPR(x, f)	OFFSET(x, paca_struct, stop_sprs.f)
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index c8fc9691f8c7..bc75a2908a7e 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -485,25 +485,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.machine_check_early	= __machine_check_early_realmode_p8,
+ 		.platform		= "power8",
+ 	},
+-	{	/* Power9 DD1*/
+-		.pvr_mask		= 0xffffff00,
+-		.pvr_value		= 0x004e0100,
+-		.cpu_name		= "POWER9 (raw)",
+-		.cpu_features		= CPU_FTRS_POWER9_DD1,
+-		.cpu_user_features	= COMMON_USER_POWER9,
+-		.cpu_user_features2	= COMMON_USER2_POWER9,
+-		.mmu_features		= MMU_FTRS_POWER9,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 6,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/power9",
+-		.oprofile_type		= PPC_OPROFILE_INVALID,
+-		.cpu_setup		= __setup_cpu_power9,
+-		.cpu_restore		= __restore_cpu_power9,
+-		.machine_check_early	= __machine_check_early_realmode_p9,
+-		.platform		= "power9",
+-	},
+ 	{	/* Power9 DD2.0 */
+ 		.pvr_mask		= 0xffffefff,
+ 		.pvr_value		= 0x004e0200,
+diff --git a/arch/powerpc/kernel/dt_cpu_ftrs.c b/arch/powerpc/kernel/dt_cpu_ftrs.c
+index 96dd3d871986..f432054234a4 100644
+--- a/arch/powerpc/kernel/dt_cpu_ftrs.c
++++ b/arch/powerpc/kernel/dt_cpu_ftrs.c
+@@ -701,9 +701,7 @@ static __init void cpufeatures_cpu_quirks(void)
+ 	/*
+ 	 * Not all quirks can be derived from the cpufeatures device tree.
+ 	 */
+-	if ((version & 0xffffff00) == 0x004e0100)
+-		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD1;
+-	else if ((version & 0xffffefff) == 0x004e0200)
++	if ((version & 0xffffefff) == 0x004e0200)
+ 		; /* DD2.0 has no feature flag */
+ 	else if ((version & 0xffffefff) == 0x004e0201)
+ 		cur_cpu_spec->cpu_features |= CPU_FTR_POWER9_DD2_1;
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 285c6465324a..76a14702cb9c 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -276,9 +276,7 @@ BEGIN_FTR_SECTION
+ 	 *
+ 	 * This interrupt can wake directly from idle. If that is the case,
+ 	 * the machine check is handled then the idle wakeup code is called
+-	 * to restore state. In that case, the POWER9 DD1 idle PACA workaround
+-	 * is not applied in the early machine check code, which will cause
+-	 * bugs.
++	 * to restore state.
+ 	 */
+ 	mr	r11,r1			/* Save r1 */
+ 	lhz	r10,PACA_IN_MCE(r13)
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index e734f6e45abc..d85d5515a091 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -466,43 +466,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_P9_TM_XER_SO_BUG)
+ 	blr		/* return 0 for wakeup cause / SRR1 value */
+ #endif
+ 
+-/*
+- * On waking up from stop 0,1,2 with ESL=1 on POWER9 DD1,
+- * HSPRG0 will be set to the HSPRG0 value of one of the
+- * threads in this core. Thus the value we have in r13
+- * may not be this thread's paca pointer.
+- *
+- * Fortunately, the TIR remains invariant. Since this thread's
+- * paca pointer is recorded in all its sibling's paca, we can
+- * correctly recover this thread's paca pointer if we
+- * know the index of this thread in the core.
+- *
+- * This index can be obtained from the TIR.
+- *
+- * i.e, thread's position in the core = TIR.
+- * If this value is i, then this thread's paca is
+- * paca->thread_sibling_pacas[i].
+- */
+-power9_dd1_recover_paca:
+-	mfspr	r4, SPRN_TIR
+-	/*
+-	 * Since each entry in thread_sibling_pacas is 8 bytes
+-	 * we need to left-shift by 3 bits. Thus r4 = i * 8
+-	 */
+-	sldi	r4, r4, 3
+-	/* Get &paca->thread_sibling_pacas[0] in r5 */
+-	ld	r5, PACA_SIBLING_PACA_PTRS(r13)
+-	/* Load paca->thread_sibling_pacas[i] into r13 */
+-	ldx	r13, r4, r5
+-	SET_PACA(r13)
+-	/*
+-	 * Indicate that we have lost NVGPR state
+-	 * which needs to be restored from the stack.
+-	 */
+-	li	r3, 1
+-	stb	r3,PACA_NAPSTATELOST(r13)
+-	blr
+-
+ /*
+  * Called from machine check handler for powersave wakeups.
+  * Low level machine check processing has already been done. Now just
+@@ -537,9 +500,6 @@ pnv_powersave_wakeup:
+ 	ld	r2, PACATOC(r13)
+ 
+ BEGIN_FTR_SECTION
+-BEGIN_FTR_SECTION_NESTED(70)
+-	bl	power9_dd1_recover_paca
+-END_FTR_SECTION_NESTED_IFSET(CPU_FTR_POWER9_DD1, 70)
+ 	bl	pnv_restore_hyp_resource_arch300
+ FTR_SECTION_ELSE
+ 	bl	pnv_restore_hyp_resource_arch207
+@@ -602,22 +562,12 @@ END_FTR_SECTION_IFCLR(CPU_FTR_POWER9_DD2_1)
+ 	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
+ 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
+ 
+-BEGIN_FTR_SECTION_NESTED(71)
+-	/*
+-	 * Assume that we are waking up from the state
+-	 * same as the Requested Level (RL) in the PSSCR
+-	 * which are Bits 60-63
+-	 */
+-	ld	r5,PACA_REQ_PSSCR(r13)
+-	rldicl  r5,r5,0,60
+-FTR_SECTION_ELSE_NESTED(71)
+ 	/*
+ 	 * 0-3 bits correspond to Power-Saving Level Status
+ 	 * which indicates the idle state we are waking up from
+ 	 */
+ 	mfspr	r5, SPRN_PSSCR
+ 	rldicl  r5,r5,4,60
+-ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_POWER9_DD1, 71)
+ 	li	r0, 0		/* clear requested_psscr to say we're awake */
+ 	std	r0, PACA_REQ_PSSCR(r13)
+ 	cmpd	cr4,r5,r4
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 9ef4aea9fffe..27f0caee55ea 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1250,17 +1250,9 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ 		 * mappings. If the new process has the foreign real address
+ 		 * mappings, we must issue a cp_abort to clear any state and
+ 		 * prevent snooping, corruption or a covert channel.
+-		 *
+-		 * DD1 allows paste into normal system memory so we do an
+-		 * unpaired copy, rather than cp_abort, to clear the buffer,
+-		 * since cp_abort is quite expensive.
+ 		 */
+-		if (current_thread_info()->task->thread.used_vas) {
++		if (current_thread_info()->task->thread.used_vas)
+ 			asm volatile(PPC_CP_ABORT);
+-		} else if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-			asm volatile(PPC_COPY(%0, %1)
+-					: : "r"(dummy_copy_buffer), "r"(0));
+-		}
+ 	}
+ #endif /* CONFIG_PPC_BOOK3S_64 */
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 176f911ee983..0af1c0aea1fe 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -66,10 +66,7 @@ int kvmppc_mmu_radix_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 	bits = root & RPDS_MASK;
+ 	root = root & RPDB_MASK;
+ 
+-	/* P9 DD1 interprets RTS (radix tree size) differently */
+ 	offset = rts + 31;
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		offset -= 3;
+ 
+ 	/* current implementations only support 52-bit space */
+ 	if (offset != 52)
+@@ -160,17 +157,7 @@ static unsigned long kvmppc_radix_update_pte(struct kvm *kvm, pte_t *ptep,
+ 				      unsigned long clr, unsigned long set,
+ 				      unsigned long addr, unsigned int shift)
+ {
+-	unsigned long old = 0;
+-
+-	if (!(clr & _PAGE_PRESENT) && cpu_has_feature(CPU_FTR_POWER9_DD1) &&
+-	    pte_present(*ptep)) {
+-		/* have to invalidate it first */
+-		old = __radix_pte_update(ptep, _PAGE_PRESENT, 0);
+-		kvmppc_radix_tlbie_page(kvm, addr, shift);
+-		set |= _PAGE_PRESENT;
+-		old &= _PAGE_PRESENT;
+-	}
+-	return __radix_pte_update(ptep, clr, set) | old;
++	return __radix_pte_update(ptep, clr, set);
+ }
+ 
+ void kvmppc_radix_set_pte_at(struct kvm *kvm, unsigned long addr,
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index de686b340f4a..b568582120a3 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1693,14 +1693,6 @@ static int kvmppc_set_one_reg_hv(struct kvm_vcpu *vcpu, u64 id,
+ 		r = set_vpa(vcpu, &vcpu->arch.dtl, addr, len);
+ 		break;
+ 	case KVM_REG_PPC_TB_OFFSET:
+-		/*
+-		 * POWER9 DD1 has an erratum where writing TBU40 causes
+-		 * the timebase to lose ticks.  So we don't let the
+-		 * timebase offset be changed on P9 DD1.  (It is
+-		 * initialized to zero.)
+-		 */
+-		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-			break;
+ 		/* round up to multiple of 2^24 */
+ 		vcpu->arch.vcore->tb_offset =
+ 			ALIGN(set_reg_val(id, *val), 1UL << 24);
+@@ -2026,8 +2018,6 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
+ 	/*
+ 	 * Set the default HFSCR for the guest from the host value.
+ 	 * This value is only used on POWER9.
+-	 * On POWER9 DD1, TM doesn't work, so we make sure to
+-	 * prevent the guest from using it.
+ 	 * On POWER9, we want to virtualize the doorbell facility, so we
+ 	 * turn off the HFSCR bit, which causes those instructions to trap.
+ 	 */
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 153988d878e8..6e4554b273f1 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -916,9 +916,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_DAWR)
+ 	mtspr	SPRN_BESCR, r6
+ 	mtspr	SPRN_PID, r7
+ 	mtspr	SPRN_WORT, r8
+-BEGIN_FTR_SECTION
+-	PPC_INVALIDATE_ERAT
+-END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
+ BEGIN_FTR_SECTION
+ 	/* POWER8-only registers */
+ 	ld	r5, VCPU_TCSCR(r4)
+@@ -1912,7 +1909,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	ld	r5, VCPU_KVM(r9)
+ 	lbz	r0, KVM_RADIX(r5)
+ 	cmpwi	cr2, r0, 0
+-	beq	cr2, 4f
++	beq	cr2, 2f
+ 
+ 	/*
+ 	 * Radix: do eieio; tlbsync; ptesync sequence in case we
+@@ -1952,11 +1949,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
+ 	bdnz	1b
+ 	ptesync
+ 
+-2:	/* Flush the ERAT on radix P9 DD1 guest exit */
+-BEGIN_FTR_SECTION
+-	PPC_INVALIDATE_ERAT
+-END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
+-4:
++2:
+ #endif /* CONFIG_PPC_RADIX_MMU */
+ 
+ 	/*
+@@ -3367,11 +3360,6 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_300)
+ 	mtspr	SPRN_CIABR, r0
+ 	mtspr	SPRN_DAWRX, r0
+ 
+-	/* Flush the ERAT on radix P9 DD1 guest exit */
+-BEGIN_FTR_SECTION
+-	PPC_INVALIDATE_ERAT
+-END_FTR_SECTION_IFSET(CPU_FTR_POWER9_DD1)
+-
+ BEGIN_MMU_FTR_SECTION
+ 	b	4f
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_TYPE_RADIX)
+diff --git a/arch/powerpc/kvm/book3s_xive_template.c b/arch/powerpc/kvm/book3s_xive_template.c
+index 6e41ba7ec8f4..4171ede8722b 100644
+--- a/arch/powerpc/kvm/book3s_xive_template.c
++++ b/arch/powerpc/kvm/book3s_xive_template.c
+@@ -25,18 +25,6 @@ static void GLUE(X_PFX,ack_pending)(struct kvmppc_xive_vcpu *xc)
+ 	 */
+ 	eieio();
+ 
+-	/*
+-	 * DD1 bug workaround: If PIPR is less favored than CPPR
+-	 * ignore the interrupt or we might incorrectly lose an IPB
+-	 * bit.
+-	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		__be64 qw1 = __x_readq(__x_tima + TM_QW1_OS);
+-		u8 pipr = be64_to_cpu(qw1) & 0xff;
+-		if (pipr >= xc->hw_cppr)
+-			return;
+-	}
+-
+ 	/* Perform the acknowledge OS to register cycle. */
+ 	ack = be16_to_cpu(__x_readw(__x_tima + TM_SPC_ACK_OS_REG));
+ 
+@@ -89,8 +77,15 @@ static void GLUE(X_PFX,source_eoi)(u32 hw_irq, struct xive_irq_data *xd)
+ 	/* If the XIVE supports the new "store EOI facility, use it */
+ 	if (xd->flags & XIVE_IRQ_FLAG_STORE_EOI)
+ 		__x_writeq(0, __x_eoi_page(xd) + XIVE_ESB_STORE_EOI);
+-	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW) {
++	else if (hw_irq && xd->flags & XIVE_IRQ_FLAG_EOI_FW)
+ 		opal_int_eoi(hw_irq);
++	else if (xd->flags & XIVE_IRQ_FLAG_LSI) {
++		/*
++		 * For LSIs the HW EOI cycle is used rather than PQ bits,
++		 * as they are automatically re-triggred in HW when still
++		 * pending.
++		 */
++		__x_readq(__x_eoi_page(xd) + XIVE_ESB_LOAD_EOI);
+ 	} else {
+ 		uint64_t eoi_val;
+ 
+@@ -102,20 +97,12 @@ static void GLUE(X_PFX,source_eoi)(u32 hw_irq, struct xive_irq_data *xd)
+ 		 *
+ 		 * This allows us to then do a re-trigger if Q was set
+ 		 * rather than synthetizing an interrupt in software
+-		 *
+-		 * For LSIs, using the HW EOI cycle works around a problem
+-		 * on P9 DD1 PHBs where the other ESB accesses don't work
+-		 * properly.
+ 		 */
+-		if (xd->flags & XIVE_IRQ_FLAG_LSI)
+-			__x_readq(__x_eoi_page(xd) + XIVE_ESB_LOAD_EOI);
+-		else {
+-			eoi_val = GLUE(X_PFX,esb_load)(xd, XIVE_ESB_SET_PQ_00);
+-
+-			/* Re-trigger if needed */
+-			if ((eoi_val & 1) && __x_trig_page(xd))
+-				__x_writeq(0, __x_trig_page(xd));
+-		}
++		eoi_val = GLUE(X_PFX,esb_load)(xd, XIVE_ESB_SET_PQ_00);
++
++		/* Re-trigger if needed */
++		if ((eoi_val & 1) && __x_trig_page(xd))
++			__x_writeq(0, __x_trig_page(xd));
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8318716e5075..5a72e980e25a 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -808,31 +808,6 @@ int hash__remove_section_mapping(unsigned long start, unsigned long end)
+ }
+ #endif /* CONFIG_MEMORY_HOTPLUG */
+ 
+-static void update_hid_for_hash(void)
+-{
+-	unsigned long hid0;
+-	unsigned long rb = 3UL << PPC_BITLSHIFT(53); /* IS = 3 */
+-
+-	asm volatile("ptesync": : :"memory");
+-	/* prs = 0, ric = 2, rs = 0, r = 1 is = 3 */
+-	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+-		     : : "r"(rb), "i"(0), "i"(0), "i"(2), "r"(0) : "memory");
+-	asm volatile("eieio; tlbsync; ptesync; isync; slbia": : :"memory");
+-	trace_tlbie(0, 0, rb, 0, 2, 0, 0);
+-
+-	/*
+-	 * now switch the HID
+-	 */
+-	hid0  = mfspr(SPRN_HID0);
+-	hid0 &= ~HID0_POWER9_RADIX;
+-	mtspr(SPRN_HID0, hid0);
+-	asm volatile("isync": : :"memory");
+-
+-	/* Wait for it to happen */
+-	while ((mfspr(SPRN_HID0) & HID0_POWER9_RADIX))
+-		cpu_relax();
+-}
+-
+ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 					     unsigned long htab_size)
+ {
+@@ -845,8 +820,6 @@ static void __init hash_init_partition_table(phys_addr_t hash_table,
+ 	htab_size =  __ilog2(htab_size) - 18;
+ 	mmu_partition_table_set_entry(0, hash_table | htab_size, 0);
+ 	pr_info("Partition table %p\n", partition_tb);
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		update_hid_for_hash();
+ }
+ 
+ static void __init htab_initialize(void)
+@@ -1077,9 +1050,6 @@ void hash__early_init_mmu_secondary(void)
+ 	/* Initialize hash table for that CPU */
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 
+-		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-			update_hid_for_hash();
+-
+ 		if (!cpu_has_feature(CPU_FTR_ARCH_300))
+ 			mtspr(SPRN_SDR1, _SDR1);
+ 		else
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 8a9a49c13865..f425b5b37d58 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -621,15 +621,12 @@ static int __init add_huge_page_size(unsigned long long size)
+ 	 * firmware we only add hugetlb support for page sizes that can be
+ 	 * supported by linux page table layout.
+ 	 * For now we have
+-	 * Radix: 2M
++	 * Radix: 2M and 1G
+ 	 * Hash: 16M and 16G
+ 	 */
+ 	if (radix_enabled()) {
+-		if (mmu_psize != MMU_PAGE_2M) {
+-			if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
+-			    (mmu_psize != MMU_PAGE_1G))
+-				return -EINVAL;
+-		}
++		if (mmu_psize != MMU_PAGE_2M && mmu_psize != MMU_PAGE_1G)
++			return -EINVAL;
+ 	} else {
+ 		if (mmu_psize != MMU_PAGE_16M && mmu_psize != MMU_PAGE_16G)
+ 			return -EINVAL;
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index f3d4b4a0e561..39e9ef0eb78b 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -273,15 +273,7 @@ void arch_exit_mmap(struct mm_struct *mm)
+ #ifdef CONFIG_PPC_RADIX_MMU
+ void radix__switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ {
+-
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		isync();
+-		mtspr(SPRN_PID, next->context.id);
+-		isync();
+-		asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
+-	} else {
+-		mtspr(SPRN_PID, next->context.id);
+-		isync();
+-	}
++	mtspr(SPRN_PID, next->context.id);
++	isync();
+ }
+ #endif
+diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+index 96f68c5aa1f5..bba168d02235 100644
+--- a/arch/powerpc/mm/pgtable-radix.c
++++ b/arch/powerpc/mm/pgtable-radix.c
+@@ -226,16 +226,6 @@ void radix__mark_rodata_ro(void)
+ {
+ 	unsigned long start, end;
+ 
+-	/*
+-	 * mark_rodata_ro() will mark itself as !writable at some point.
+-	 * Due to DD1 workaround in radix__pte_update(), we'll end up with
+-	 * an invalid pte and the system will crash quite severly.
+-	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		pr_warn("Warning: Unable to mark rodata read only on P9 DD1\n");
+-		return;
+-	}
+-
+ 	start = (unsigned long)_stext;
+ 	end = (unsigned long)__init_begin;
+ 
+@@ -533,35 +523,6 @@ void __init radix__early_init_devtree(void)
+ 	return;
+ }
+ 
+-static void update_hid_for_radix(void)
+-{
+-	unsigned long hid0;
+-	unsigned long rb = 3UL << PPC_BITLSHIFT(53); /* IS = 3 */
+-
+-	asm volatile("ptesync": : :"memory");
+-	/* prs = 0, ric = 2, rs = 0, r = 1 is = 3 */
+-	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+-		     : : "r"(rb), "i"(1), "i"(0), "i"(2), "r"(0) : "memory");
+-	/* prs = 1, ric = 2, rs = 0, r = 1 is = 3 */
+-	asm volatile(PPC_TLBIE_5(%0, %4, %3, %2, %1)
+-		     : : "r"(rb), "i"(1), "i"(1), "i"(2), "r"(0) : "memory");
+-	asm volatile("eieio; tlbsync; ptesync; isync; slbia": : :"memory");
+-	trace_tlbie(0, 0, rb, 0, 2, 0, 1);
+-	trace_tlbie(0, 0, rb, 0, 2, 1, 1);
+-
+-	/*
+-	 * now switch the HID
+-	 */
+-	hid0  = mfspr(SPRN_HID0);
+-	hid0 |= HID0_POWER9_RADIX;
+-	mtspr(SPRN_HID0, hid0);
+-	asm volatile("isync": : :"memory");
+-
+-	/* Wait for it to happen */
+-	while (!(mfspr(SPRN_HID0) & HID0_POWER9_RADIX))
+-		cpu_relax();
+-}
+-
+ static void radix_init_amor(void)
+ {
+ 	/*
+@@ -576,22 +537,12 @@ static void radix_init_amor(void)
+ 
+ static void radix_init_iamr(void)
+ {
+-	unsigned long iamr;
+-
+-	/*
+-	 * The IAMR should set to 0 on DD1.
+-	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		iamr = 0;
+-	else
+-		iamr = (1ul << 62);
+-
+ 	/*
+ 	 * Radix always uses key0 of the IAMR to determine if an access is
+ 	 * allowed. We set bit 0 (IBM bit 1) of key0, to prevent instruction
+ 	 * fetch.
+ 	 */
+-	mtspr(SPRN_IAMR, iamr);
++	mtspr(SPRN_IAMR, (1ul << 62));
+ }
+ 
+ void __init radix__early_init_mmu(void)
+@@ -644,8 +595,6 @@ void __init radix__early_init_mmu(void)
+ 
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		radix_init_native();
+-		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-			update_hid_for_radix();
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+ 		radix_init_partition_table();
+@@ -671,10 +620,6 @@ void radix__early_init_mmu_secondary(void)
+ 	 * update partition table control register and UPRT
+ 	 */
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+-
+-		if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-			update_hid_for_radix();
+-
+ 		lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr | LPCR_UPRT | LPCR_HR);
+ 
+@@ -1095,8 +1040,7 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
+ 	 * To avoid NMMU hang while relaxing access, we need mark
+ 	 * the pte invalid in between.
+ 	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1) ||
+-	    atomic_read(&mm->context.copros) > 0) {
++	if (atomic_read(&mm->context.copros) > 0) {
+ 		unsigned long old_pte, new_pte;
+ 
+ 		old_pte = __radix_pte_update(ptep, ~0, 0);
+diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
+index 1135b43a597c..fef3e1eb3a19 100644
+--- a/arch/powerpc/mm/tlb-radix.c
++++ b/arch/powerpc/mm/tlb-radix.c
+@@ -1048,24 +1048,6 @@ void radix__flush_tlb_all(void)
+ 	asm volatile("eieio; tlbsync; ptesync": : :"memory");
+ }
+ 
+-void radix__flush_tlb_pte_p9_dd1(unsigned long old_pte, struct mm_struct *mm,
+-				 unsigned long address)
+-{
+-	/*
+-	 * We track page size in pte only for DD1, So we can
+-	 * call this only on DD1.
+-	 */
+-	if (!cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		VM_WARN_ON(1);
+-		return;
+-	}
+-
+-	if (old_pte & R_PAGE_LARGE)
+-		radix__flush_tlb_page_psize(mm, address, MMU_PAGE_2M);
+-	else
+-		radix__flush_tlb_page_psize(mm, address, mmu_virtual_psize);
+-}
+-
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ extern void radix_kvm_prefetch_workaround(struct mm_struct *mm)
+ {
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 3f66fcf8ad99..01f92c4a9f02 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -128,10 +128,6 @@ static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
+ static void power_pmu_sched_task(struct perf_event_context *ctx, bool sched_in) {}
+ static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
+ static void pmao_restore_workaround(bool ebb) { }
+-static bool use_ic(u64 event)
+-{
+-	return false;
+-}
+ #endif /* CONFIG_PPC32 */
+ 
+ static bool regs_use_siar(struct pt_regs *regs)
+@@ -714,14 +710,6 @@ static void pmao_restore_workaround(bool ebb)
+ 	mtspr(SPRN_PMC6, pmcs[5]);
+ }
+ 
+-static bool use_ic(u64 event)
+-{
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1) &&
+-			(event == 0x200f2 || event == 0x300f2))
+-		return true;
+-
+-	return false;
+-}
+ #endif /* CONFIG_PPC64 */
+ 
+ static void perf_event_interrupt(struct pt_regs *regs);
+@@ -1046,7 +1034,6 @@ static u64 check_and_compute_delta(u64 prev, u64 val)
+ static void power_pmu_read(struct perf_event *event)
+ {
+ 	s64 val, delta, prev;
+-	struct cpu_hw_events *cpuhw = this_cpu_ptr(&cpu_hw_events);
+ 
+ 	if (event->hw.state & PERF_HES_STOPPED)
+ 		return;
+@@ -1056,13 +1043,6 @@ static void power_pmu_read(struct perf_event *event)
+ 
+ 	if (is_ebb_event(event)) {
+ 		val = read_pmc(event->hw.idx);
+-		if (use_ic(event->attr.config)) {
+-			val = mfspr(SPRN_IC);
+-			if (val > cpuhw->ic_init)
+-				val = val - cpuhw->ic_init;
+-			else
+-				val = val + (0 - cpuhw->ic_init);
+-		}
+ 		local64_set(&event->hw.prev_count, val);
+ 		return;
+ 	}
+@@ -1076,13 +1056,6 @@ static void power_pmu_read(struct perf_event *event)
+ 		prev = local64_read(&event->hw.prev_count);
+ 		barrier();
+ 		val = read_pmc(event->hw.idx);
+-		if (use_ic(event->attr.config)) {
+-			val = mfspr(SPRN_IC);
+-			if (val > cpuhw->ic_init)
+-				val = val - cpuhw->ic_init;
+-			else
+-				val = val + (0 - cpuhw->ic_init);
+-		}
+ 		delta = check_and_compute_delta(prev, val);
+ 		if (!delta)
+ 			return;
+@@ -1535,13 +1508,6 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
+ 					event->attr.branch_sample_type);
+ 	}
+ 
+-	/*
+-	 * Workaround for POWER9 DD1 to use the Instruction Counter
+-	 * register value for instruction counting
+-	 */
+-	if (use_ic(event->attr.config))
+-		cpuhw->ic_init = mfspr(SPRN_IC);
+-
+ 	perf_pmu_enable(event->pmu);
+ 	local_irq_restore(flags);
+ 	return ret;
+diff --git a/arch/powerpc/perf/isa207-common.c b/arch/powerpc/perf/isa207-common.c
+index 2efee3f196f5..177de814286f 100644
+--- a/arch/powerpc/perf/isa207-common.c
++++ b/arch/powerpc/perf/isa207-common.c
+@@ -59,7 +59,7 @@ static bool is_event_valid(u64 event)
+ {
+ 	u64 valid_mask = EVENT_VALID_MASK;
+ 
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) && !cpu_has_feature(CPU_FTR_POWER9_DD1))
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		valid_mask = p9_EVENT_VALID_MASK;
+ 
+ 	return !(event & ~valid_mask);
+@@ -86,8 +86,6 @@ static void mmcra_sdar_mode(u64 event, unsigned long *mmcra)
+ 	 * Incase of Power9:
+ 	 * Marked event: MMCRA[SDAR_MODE] will be set to 0b00 ('No Updates'),
+ 	 *               or if group already have any marked events.
+-	 * Non-Marked events (for DD1):
+-	 *	MMCRA[SDAR_MODE] will be set to 0b01
+ 	 * For rest
+ 	 *	MMCRA[SDAR_MODE] will be set from event code.
+ 	 *      If sdar_mode from event is zero, default to 0b01. Hardware
+@@ -96,7 +94,7 @@ static void mmcra_sdar_mode(u64 event, unsigned long *mmcra)
+ 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+ 		if (is_event_marked(event) || (*mmcra & MMCRA_SAMPLE_ENABLE))
+ 			*mmcra &= MMCRA_SDAR_MODE_NO_UPDATES;
+-		else if (!cpu_has_feature(CPU_FTR_POWER9_DD1) && p9_SDAR_MODE(event))
++		else if (p9_SDAR_MODE(event))
+ 			*mmcra |=  p9_SDAR_MODE(event) << MMCRA_SDAR_MODE_SHIFT;
+ 		else
+ 			*mmcra |= MMCRA_SDAR_MODE_DCACHE;
+@@ -106,7 +104,7 @@ static void mmcra_sdar_mode(u64 event, unsigned long *mmcra)
+ 
+ static u64 thresh_cmp_val(u64 value)
+ {
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) && !cpu_has_feature(CPU_FTR_POWER9_DD1))
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		return value << p9_MMCRA_THR_CMP_SHIFT;
+ 
+ 	return value << MMCRA_THR_CMP_SHIFT;
+@@ -114,7 +112,7 @@ static u64 thresh_cmp_val(u64 value)
+ 
+ static unsigned long combine_from_event(u64 event)
+ {
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) && !cpu_has_feature(CPU_FTR_POWER9_DD1))
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		return p9_EVENT_COMBINE(event);
+ 
+ 	return EVENT_COMBINE(event);
+@@ -122,7 +120,7 @@ static unsigned long combine_from_event(u64 event)
+ 
+ static unsigned long combine_shift(unsigned long pmc)
+ {
+-	if (cpu_has_feature(CPU_FTR_ARCH_300) && !cpu_has_feature(CPU_FTR_POWER9_DD1))
++	if (cpu_has_feature(CPU_FTR_ARCH_300))
+ 		return p9_MMCR1_COMBINE_SHIFT(pmc);
+ 
+ 	return MMCR1_COMBINE_SHIFT(pmc);
+diff --git a/arch/powerpc/perf/isa207-common.h b/arch/powerpc/perf/isa207-common.h
+index 6a0b586c935a..0028f4b9490d 100644
+--- a/arch/powerpc/perf/isa207-common.h
++++ b/arch/powerpc/perf/isa207-common.h
+@@ -158,11 +158,6 @@
+ 	CNST_PMC_VAL(1) | CNST_PMC_VAL(2) | CNST_PMC_VAL(3) | \
+ 	CNST_PMC_VAL(4) | CNST_PMC_VAL(5) | CNST_PMC_VAL(6) | CNST_NC_VAL
+ 
+-/*
+- * Lets restrict use of PMC5 for instruction counting.
+- */
+-#define P9_DD1_TEST_ADDER	(ISA207_TEST_ADDER | CNST_PMC_VAL(5))
+-
+ /* Bits in MMCR1 for PowerISA v2.07 */
+ #define MMCR1_UNIT_SHIFT(pmc)		(60 - (4 * ((pmc) - 1)))
+ #define MMCR1_COMBINE_SHIFT(pmc)	(35 - ((pmc) - 1))
+diff --git a/arch/powerpc/perf/power9-pmu.c b/arch/powerpc/perf/power9-pmu.c
+index 2ca0b33b4efb..e012b1030a5b 100644
+--- a/arch/powerpc/perf/power9-pmu.c
++++ b/arch/powerpc/perf/power9-pmu.c
+@@ -219,12 +219,6 @@ static struct attribute_group power9_pmu_events_group = {
+ 	.attrs = power9_events_attr,
+ };
+ 
+-static const struct attribute_group *power9_isa207_pmu_attr_groups[] = {
+-	&isa207_pmu_format_group,
+-	&power9_pmu_events_group,
+-	NULL,
+-};
+-
+ PMU_FORMAT_ATTR(event,		"config:0-51");
+ PMU_FORMAT_ATTR(pmcxsel,	"config:0-7");
+ PMU_FORMAT_ATTR(mark,		"config:8");
+@@ -267,17 +261,6 @@ static const struct attribute_group *power9_pmu_attr_groups[] = {
+ 	NULL,
+ };
+ 
+-static int power9_generic_events_dd1[] = {
+-	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
+-	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_ICT_NOSLOT_CYC,
+-	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PM_CMPLU_STALL,
+-	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_DISP,
+-	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BR_CMPL_ALT,
+-	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
+-	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
+-	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1_FIN,
+-};
+-
+ static int power9_generic_events[] = {
+ 	[PERF_COUNT_HW_CPU_CYCLES] =			PM_CYC,
+ 	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PM_ICT_NOSLOT_CYC,
+@@ -439,25 +422,6 @@ static int power9_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 
+ #undef C
+ 
+-static struct power_pmu power9_isa207_pmu = {
+-	.name			= "POWER9",
+-	.n_counter		= MAX_PMU_COUNTERS,
+-	.add_fields		= ISA207_ADD_FIELDS,
+-	.test_adder		= P9_DD1_TEST_ADDER,
+-	.compute_mmcr		= isa207_compute_mmcr,
+-	.config_bhrb		= power9_config_bhrb,
+-	.bhrb_filter_map	= power9_bhrb_filter_map,
+-	.get_constraint		= isa207_get_constraint,
+-	.get_alternatives	= power9_get_alternatives,
+-	.disable_pmc		= isa207_disable_pmc,
+-	.flags			= PPMU_NO_SIAR | PPMU_ARCH_207S,
+-	.n_generic		= ARRAY_SIZE(power9_generic_events_dd1),
+-	.generic_events		= power9_generic_events_dd1,
+-	.cache_events		= &power9_cache_events,
+-	.attr_groups		= power9_isa207_pmu_attr_groups,
+-	.bhrb_nr		= 32,
+-};
+-
+ static struct power_pmu power9_pmu = {
+ 	.name			= "POWER9",
+ 	.n_counter		= MAX_PMU_COUNTERS,
+@@ -500,23 +464,7 @@ static int __init init_power9_pmu(void)
+ 		}
+ 	}
+ 
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		/*
+-		 * Since PM_INST_CMPL may not provide right counts in all
+-		 * sampling scenarios in power9 DD1, instead use PM_INST_DISP.
+-		 */
+-		EVENT_VAR(PM_INST_CMPL, _g).id = PM_INST_DISP;
+-		/*
+-		 * Power9 DD1 should use PM_BR_CMPL_ALT event code for
+-		 * "branches" to provide correct counter value.
+-		 */
+-		EVENT_VAR(PM_BR_CMPL, _g).id = PM_BR_CMPL_ALT;
+-		EVENT_VAR(PM_BR_CMPL, _c).id = PM_BR_CMPL_ALT;
+-		rc = register_power_pmu(&power9_isa207_pmu);
+-	} else {
+-		rc = register_power_pmu(&power9_pmu);
+-	}
+-
++	rc = register_power_pmu(&power9_pmu);
+ 	if (rc)
+ 		return rc;
+ 
+diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
+index 1c5d0675b43c..12f13acee1f6 100644
+--- a/arch/powerpc/platforms/powernv/idle.c
++++ b/arch/powerpc/platforms/powernv/idle.c
+@@ -177,11 +177,6 @@ static void pnv_alloc_idle_core_states(void)
+ 			paca_ptrs[cpu]->core_idle_state_ptr = core_idle_state;
+ 			paca_ptrs[cpu]->thread_idle_state = PNV_THREAD_RUNNING;
+ 			paca_ptrs[cpu]->thread_mask = 1 << j;
+-			if (!cpu_has_feature(CPU_FTR_POWER9_DD1))
+-				continue;
+-			paca_ptrs[cpu]->thread_sibling_pacas =
+-				kmalloc_node(paca_ptr_array_size,
+-					     GFP_KERNEL, node);
+ 		}
+ 	}
+ 
+@@ -805,29 +800,6 @@ static int __init pnv_init_idle_states(void)
+ 
+ 	pnv_alloc_idle_core_states();
+ 
+-	/*
+-	 * For each CPU, record its PACA address in each of it's
+-	 * sibling thread's PACA at the slot corresponding to this
+-	 * CPU's index in the core.
+-	 */
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		int cpu;
+-
+-		pr_info("powernv: idle: Saving PACA pointers of all CPUs in their thread sibling PACA\n");
+-		for_each_present_cpu(cpu) {
+-			int base_cpu = cpu_first_thread_sibling(cpu);
+-			int idx = cpu_thread_in_core(cpu);
+-			int i;
+-
+-			for (i = 0; i < threads_per_core; i++) {
+-				int j = base_cpu + i;
+-
+-				paca_ptrs[j]->thread_sibling_pacas[idx] =
+-					paca_ptrs[cpu];
+-			}
+-		}
+-	}
+-
+ 	if (supported_cpuidle_states & OPAL_PM_NAP_ENABLED)
+ 		ppc_md.power_save = power7_idle;
+ 
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index b80909957792..0d354e19ef92 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -283,23 +283,6 @@ static void pnv_cause_ipi(int cpu)
+ 	ic_cause_ipi(cpu);
+ }
+ 
+-static void pnv_p9_dd1_cause_ipi(int cpu)
+-{
+-	int this_cpu = get_cpu();
+-
+-	/*
+-	 * POWER9 DD1 has a global addressed msgsnd, but for now we restrict
+-	 * IPIs to same core, because it requires additional synchronization
+-	 * for inter-core doorbells which we do not implement.
+-	 */
+-	if (cpumask_test_cpu(cpu, cpu_sibling_mask(this_cpu)))
+-		doorbell_global_ipi(cpu);
+-	else
+-		ic_cause_ipi(cpu);
+-
+-	put_cpu();
+-}
+-
+ static void __init pnv_smp_probe(void)
+ {
+ 	if (xive_enabled())
+@@ -311,14 +294,10 @@ static void __init pnv_smp_probe(void)
+ 		ic_cause_ipi = smp_ops->cause_ipi;
+ 		WARN_ON(!ic_cause_ipi);
+ 
+-		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+-			if (cpu_has_feature(CPU_FTR_POWER9_DD1))
+-				smp_ops->cause_ipi = pnv_p9_dd1_cause_ipi;
+-			else
+-				smp_ops->cause_ipi = doorbell_global_ipi;
+-		} else {
++		if (cpu_has_feature(CPU_FTR_ARCH_300))
++			smp_ops->cause_ipi = doorbell_global_ipi;
++		else
+ 			smp_ops->cause_ipi = pnv_cause_ipi;
+-		}
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/sysdev/xive/common.c b/arch/powerpc/sysdev/xive/common.c
+index 3459015092fa..4758173df426 100644
+--- a/arch/powerpc/sysdev/xive/common.c
++++ b/arch/powerpc/sysdev/xive/common.c
+@@ -319,7 +319,7 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+ 		 * The FW told us to call it. This happens for some
+ 		 * interrupt sources that need additional HW whacking
+ 		 * beyond the ESB manipulation. For example LPC interrupts
+-		 * on P9 DD1.0 need a latch to be clared in the LPC bridge
++		 * on P9 DD1.0 needed a latch to be clared in the LPC bridge
+ 		 * itself. The Firmware will take care of it.
+ 		 */
+ 		if (WARN_ON_ONCE(!xive_ops->eoi))
+@@ -337,9 +337,9 @@ void xive_do_source_eoi(u32 hw_irq, struct xive_irq_data *xd)
+ 		 * This allows us to then do a re-trigger if Q was set
+ 		 * rather than synthesizing an interrupt in software
+ 		 *
+-		 * For LSIs, using the HW EOI cycle works around a problem
+-		 * on P9 DD1 PHBs where the other ESB accesses don't work
+-		 * properly.
++		 * For LSIs the HW EOI cycle is used rather than PQ bits,
++		 * as they are automatically re-triggred in HW when still
++		 * pending.
+ 		 */
+ 		if (xd->flags & XIVE_IRQ_FLAG_LSI)
+ 			xive_esb_read(xd, XIVE_ESB_LOAD_EOI);
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 47166ad2a669..21119cfe8474 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2429,7 +2429,6 @@ static void dump_one_paca(int cpu)
+ 	DUMP(p, thread_idle_state, "%#-*x");
+ 	DUMP(p, thread_mask, "%#-*x");
+ 	DUMP(p, subcore_sibling_mask, "%#-*x");
+-	DUMP(p, thread_sibling_pacas, "%-*px");
+ 	DUMP(p, requested_psscr, "%#-*llx");
+ 	DUMP(p, stop_sprs.pid, "%#-*llx");
+ 	DUMP(p, stop_sprs.ldbar, "%#-*llx");
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 918d4fb742d1..505f973e13f3 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -865,14 +865,6 @@ static inline bool cxl_is_power9(void)
+ 	return false;
+ }
+ 
+-static inline bool cxl_is_power9_dd1(void)
+-{
+-	if ((pvr_version_is(PVR_POWER9)) &&
+-	    cpu_has_feature(CPU_FTR_POWER9_DD1))
+-		return true;
+-	return false;
+-}
+-
+ ssize_t cxl_pci_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+ 				loff_t off, size_t count);
+ 
+diff --git a/drivers/misc/cxl/cxllib.c b/drivers/misc/cxl/cxllib.c
+index 0bc7c31cf739..5a3f91255258 100644
+--- a/drivers/misc/cxl/cxllib.c
++++ b/drivers/misc/cxl/cxllib.c
+@@ -102,10 +102,6 @@ int cxllib_get_xsl_config(struct pci_dev *dev, struct cxllib_xsl_config *cfg)
+ 	rc = cxl_get_xsl9_dsnctl(dev, capp_unit_id, &cfg->dsnctl);
+ 	if (rc)
+ 		return rc;
+-	if (cpu_has_feature(CPU_FTR_POWER9_DD1)) {
+-		/* workaround for DD1 - nbwind = capiind */
+-		cfg->dsnctl |= ((u64)0x02 << (63-47));
+-	}
+ 
+ 	cfg->version  = CXL_XSL_CONFIG_CURRENT_VERSION;
+ 	cfg->log_bar_size = CXL_CAPI_WINDOW_LOG_SIZE;
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 429d6de1dde7..2af0d4c47b76 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -465,23 +465,21 @@ int cxl_get_xsl9_dsnctl(struct pci_dev *dev, u64 capp_unit_id, u64 *reg)
+ 	/* nMMU_ID Defaults to: b’000001001’*/
+ 	xsl_dsnctl |= ((u64)0x09 << (63-28));
+ 
+-	if (!(cxl_is_power9_dd1())) {
+-		/*
+-		 * Used to identify CAPI packets which should be sorted into
+-		 * the Non-Blocking queues by the PHB. This field should match
+-		 * the PHB PBL_NBW_CMPM register
+-		 * nbwind=0x03, bits [57:58], must include capi indicator.
+-		 * Not supported on P9 DD1.
+-		 */
+-		xsl_dsnctl |= (nbwind << (63-55));
++	/*
++	 * Used to identify CAPI packets which should be sorted into
++	 * the Non-Blocking queues by the PHB. This field should match
++	 * the PHB PBL_NBW_CMPM register
++	 * nbwind=0x03, bits [57:58], must include capi indicator.
++	 * Not supported on P9 DD1.
++	 */
++	xsl_dsnctl |= (nbwind << (63-55));
+ 
+-		/*
+-		 * Upper 16b address bits of ASB_Notify messages sent to the
+-		 * system. Need to match the PHB’s ASN Compare/Mask Register.
+-		 * Not supported on P9 DD1.
+-		 */
+-		xsl_dsnctl |= asnind;
+-	}
++	/*
++	 * Upper 16b address bits of ASB_Notify messages sent to the
++	 * system. Need to match the PHB’s ASN Compare/Mask Register.
++	 * Not supported on P9 DD1.
++	 */
++	xsl_dsnctl |= asnind;
+ 
+ 	*reg = xsl_dsnctl;
+ 	return 0;
+@@ -539,15 +537,8 @@ static int init_implementation_adapter_regs_psl9(struct cxl *adapter,
+ 	/* Snoop machines */
+ 	cxl_p1_write(adapter, CXL_PSL9_APCDEDALLOC, 0x800F000200000000ULL);
+ 
+-	if (cxl_is_power9_dd1()) {
+-		/* Disabling deadlock counter CAR */
+-		cxl_p1_write(adapter, CXL_PSL9_GP_CT, 0x0020000000000001ULL);
+-		/* Enable NORST */
+-		cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0x8000000000000000ULL);
+-	} else {
+-		/* Enable NORST and DD2 features */
+-		cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0xC000000000000000ULL);
+-	}
++	/* Enable NORST and DD2 features */
++	cxl_p1_write(adapter, CXL_PSL9_DEBUG, 0xC000000000000000ULL);
+ 
+ 	/*
+ 	 * Check if PSL has data-cache. We need to flush adapter datacache
+-- 
+2.17.0
