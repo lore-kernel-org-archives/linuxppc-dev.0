@@ -1,19 +1,29 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 41Lr0k6P7HzF0gF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 18:01:42 +1000 (AEST)
+Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
+ [IPv6:2607:f8b0:4001:c0b::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Lr4Q41c9zF1Gj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 18:04:54 +1000 (AEST)
+Received: by mail-it0-x241.google.com with SMTP id d191-v6so1660512ite.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 01:04:54 -0700 (PDT)
+Date: Thu, 5 Jul 2018 18:04:41 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH kernel v4 2/2] KVM: PPC: Check if IOMMU page is contained in
- the pinned physical page
-Date: Thu,  5 Jul 2018 18:01:33 +1000
-Message-Id: <20180705080133.18690-3-aik@ozlabs.ru>
-In-Reply-To: <20180705080133.18690-1-aik@ozlabs.ru>
-References: <20180705080133.18690-1-aik@ozlabs.ru>
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, Alex Williamson
+ <alex.williamson@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul
+ Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel v3 2/2] KVM: PPC: Check if IOMMU page is
+ contained in the pinned physical page
+Message-ID: <20180705180441.79f8e395@aik.ozlabs.ibm.com>
+In-Reply-To: <20180705151904.17de7322@aik.ozlabs.ibm.com>
+References: <20180704050052.20045-1-aik@ozlabs.ru>
+ <20180704050052.20045-3-aik@ozlabs.ru>
+ <20180705024220.GF3450@umbus.fritz.box>
+ <20180705151904.17de7322@aik.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/g/InkliHpbLwtL1NTEpMe9w"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,218 +33,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A VM which has:
- - a DMA capable device passed through to it (eg. network card);
- - running a malicious kernel that ignores H_PUT_TCE failure;
- - capability of using IOMMU pages bigger that physical pages
-can create an IOMMU mapping that exposes (for example) 16MB of
-the host physical memory to the device when only 64K was allocated to
-the VM.
+--Sig_/g/InkliHpbLwtL1NTEpMe9w
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The remaining 16MB - 64K will be some other content of host memory,
-possibly including pages of the VM, but also pages of host kernel memory,
-host programs or other VMs.
+On Thu, 5 Jul 2018 15:19:04 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-The attacking VM does not control the location of the page it can map,
-and is only allowed to map as many pages as it has pages of RAM.
+> On Thu, 5 Jul 2018 12:42:20 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+>=20
+> > On Wed, Jul 04, 2018 at 03:00:52PM +1000, Alexey Kardashevskiy wrote: =
+=20
+> > > A VM which has:
+> > >  - a DMA capable device passed through to it (eg. network card);
+> > >  - running a malicious kernel that ignores H_PUT_TCE failure;
+> > >  - capability of using IOMMU pages bigger that physical pages
+> > > can create an IOMMU mapping that exposes (for example) 16MB of
+> > > the host physical memory to the device when only 64K was allocated to=
+ the VM.
+> > >=20
+> > > The remaining 16MB - 64K will be some other content of host memory, p=
+ossibly
+> > > including pages of the VM, but also pages of host kernel memory, host
+> > > programs or other VMs.
+> > >=20
+> > > The attacking VM does not control the location of the page it can map,
+> > > and is only allowed to map as many pages as it has pages of RAM.
+> > >=20
+> > > We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
+> > > an IOMMU page is contained in the physical page so the PCI hardware w=
+on't
+> > > get access to unassigned host memory; however this check is missing in
+> > > the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far a=
+nd
+> > > did not hit this yet as the very first time when the mapping happens
+> > > we do not have tbl::it_userspace allocated yet and fall back to
+> > > the userspace which in turn calls VFIO IOMMU driver, this fails and
+> > > the guest does not retry,
+> > >=20
+> > > This stores the smallest preregistered page size in the preregistered
+> > > region descriptor and changes the mm_iommu_xxx API to check this agai=
+nst
+> > > the IOMMU page size. This only allows huge pages use if the entire
+> > > preregistered block is backed with huge pages which are completely
+> > > contained the preregistered chunk; otherwise this defaults to PAGE_SI=
+ZE.
+> > >=20
+> > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>   =20
+> >=20
+> > Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >=20
+> > On the grounds that I think this version is safe, which the old one
+> > wasn't.  However it still has some flaws..
+> >=20
+> > [snip] =20
+> > > @@ -125,7 +126,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned =
+long ua, unsigned long entries,
+> > >  {
+> > >  	struct mm_iommu_table_group_mem_t *mem;
+> > >  	long i, j, ret =3D 0, locked_entries =3D 0;
+> > > -	struct page *page =3D NULL;
+> > > +	unsigned int pageshift;
+> > > +	struct page *page =3D NULL, *head =3D NULL;
+> > > =20
+> > >  	mutex_lock(&mem_list_mutex);
+> > > =20
+> > > @@ -159,6 +161,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned =
+long ua, unsigned long entries,
+> > >  		goto unlock_exit;
+> > >  	}
+> > > =20
+> > > +	mem->pageshift =3D 64;
+> > >  	mem->hpas =3D vzalloc(array_size(entries, sizeof(mem->hpas[0])));
+> > >  	if (!mem->hpas) {
+> > >  		kfree(mem);
+> > > @@ -199,9 +202,35 @@ long mm_iommu_get(struct mm_struct *mm, unsigned=
+ long ua, unsigned long entries,
+> > >  			}
+> > >  		}
+> > >  populate:
+> > > +		pageshift =3D PAGE_SHIFT;
+> > > +		if (PageCompound(page)) {
+> > > +			/* Make sure huge page is contained completely */
+> > > +			struct page *tmphead =3D compound_head(page);
+> > > +			unsigned int n =3D compound_order(tmphead);
+> > > +
+> > > +			if (!head) {
+> > > +				/* Is it a head of a huge page? */
+> > > +				if (page =3D=3D tmphead) {
+> > > +					head =3D tmphead;
+> > > +					pageshift +=3D n;
+> > > +				}
+> > > +			} else if (head =3D=3D tmphead) {
+> > > +				/* Still same huge page, good */
+> > > +				pageshift +=3D n;
+> > > +
+> > > +				/* End of the huge page */
+> > > +				if (page - head =3D=3D (1UL << n) - 1)
+> > > +					head =3D NULL;
+> > > +			}
+> > > +		}
+> > > +		mem->pageshift =3D min(mem->pageshift, pageshift);
+> > >  		mem->hpas[i] =3D page_to_pfn(page) << PAGE_SHIFT;
+> > >  	}
+> > > =20
+> > > +	/* We have an incomplete huge page, default to PAGE_SHIFT */
+> > > +	if (head)
+> > > +		mem->pageshift =3D PAGE_SHIFT;
+> > > +   =20
+> >=20
+> > So, if the user attempts to prereg a region which starts or ends in
+> > the middle of a hugepage, this logic will clamp the region's max page
+> > shift down to PAGE_SHIFT.  That's safe, but not optimal.
+> >=20
+> > Suppose userspace had an area backed with 16MiB hugepages, and wanted
+> > to pre-reg a window that was 2MiB aligned, but not 16MiB aligned.  It
+> > would still be safe to allow 2MiB TCEs, but the code above would clamp
+> > it down to 64kiB (or 4kiB).
+> >=20
+> > The code to do it is also pretty convoluted.
+> >=20
+> > I think you'd be better off initializing mem->pageshift to the largest
+> > possible natural alignment of the region:
+> > 	mem->pageshift =3D ctz64(ua | (entries << PAGE_SHIFT));
+> >=20
+> > Then it should just be sufficient to clamp pageshift down to
+> > compound_order() + PAGE_SHIFT for each entry. =20
+>=20
+>=20
+> I like this better, just one question - does hugetlbfs guarantee the @ua
+> alignment if backed with an actual huge page?
 
-We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
-an IOMMU page is contained in the physical page so the PCI hardware won't
-get access to unassigned host memory; however this check is missing in
-the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far and
-did not hit this yet as the very first time when the mapping happens
-we do not have tbl::it_userspace allocated yet and fall back to
-the userspace which in turn calls VFIO IOMMU driver, this fails and
-the guest does not retry,
 
-This stores the smallest preregistered page size in the preregistered
-region descriptor and changes the mm_iommu_xxx API to check this against
-the IOMMU page size. This calculates maximum page size as a minimum of
-the natural region alignment and compound page size.
+Turns out it does, never mind, posted v4. Cheers.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v4:
-* reimplemented max pageshift calculation
 
-v3:
-* fixed upper limit for the page size
-* added checks that we don't register parts of a huge page
 
-v2:
-* explicitely check for compound pages before calling compound_order()
+--
+Alexey
 
----
-The bug is: run QEMU _without_ hugepages (no -mempath) and tell it to
-advertise 16MB pages to the guest; a typical pseries guest will use 16MB
-for IOMMU pages without checking the mmu pagesize and this will fail
-at https://git.qemu.org/?p=qemu.git;a=blob;f=hw/vfio/common.c;h=fb396cf00ac40eb35967a04c9cc798ca896eed57;hb=refs/heads/master#l256
+--Sig_/g/InkliHpbLwtL1NTEpMe9w
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-With the change, mapping will fail in KVM and the guest will print:
+-----BEGIN PGP SIGNATURE-----
 
-mlx5_core 0000:00:00.0: ibm,create-pe-dma-window(2027) 0 8000000 20000000 18 1f returned 0 (liobn = 0x80000001 starting addr = 8000000 0)
-mlx5_core 0000:00:00.0: created tce table LIOBN 0x80000001 for /pci@800000020000000/ethernet@0
-mlx5_core 0000:00:00.0: failed to map direct window for /pci@800000020000000/ethernet@0: -1
----
- arch/powerpc/include/asm/mmu_context.h |  4 ++--
- arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
- arch/powerpc/mm/mmu_context_iommu.c    | 23 ++++++++++++++++++++---
- drivers/vfio/vfio_iommu_spapr_tce.c    |  2 +-
- 5 files changed, 28 insertions(+), 9 deletions(-)
+iQIzBAEBCAAdFiEECIb1sawlPgRl/px9ze7KtGKK020FAls90RkACgkQze7KtGKK
+023Ovg/+IeR3b4L/P9GKn3eEfziWx8SGBE5OYXtrBOY7i7qDbteKh4jzBSXSyQH6
+FoL536+jRVcn6FJA63qqI8icXHzb0t/mtBtM3e1vwFfmbVP2QMizoGHqTl7vBwJ5
+HdRS+Ry2aZ6kTuWc1AtJ39ST9FtT6iCOWhXVjhD2lcGtLsZhrqpf5LYyf/mgp0Hf
+drGtiZq0AMVeyKg1lNqPTdpH/ZpBndnX/Wlk5/UbyG2J8mTzXmalx+XYrc2LtEfl
+CyGSTaBiwBBPx9unqMKVMMYaklYACEAsFNMo5lqN6r1lFbA6dbfcq7In0r32u1WB
++EzZuwZttWu7FBkxSWCauNLB6BdjwRwT6AcW8gTxXXRdm+dUuxe+wPL6liu+Qt5u
+4WGTL+3t2zXf+nnLzorYHKTXi0nCLxevbPR9vFw5cnifXyvlHhxjFGCliqs1gOzX
+9YtV2HuM4y9QlGcliQf/zg/N8seatgMQvt9NSNTahh3sbjklk9urYVQofAJ6iEHz
+fz4jboh98E8CQ7uYesiEUBBh3LihdjvG4kd8jXSrNizp7OGr+toyv4r0n4HSsRpw
+mB+3OPm9XX5KCBC1zwSP+uiS+0D35JnyJWjx+octAI6w3QQ+9iA+YjhmpbeCL2nR
+uhq/eBp4pfUavDKf3uBZtotoghBu2MBfqn58s2wdxpeXt6995UQ=
+=TI9V
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 896efa5..79d570c 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -35,9 +35,9 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa);
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
- extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa);
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
- #endif
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index d066e37..8c456fa 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -449,7 +449,7 @@ long kvmppc_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 		/* This only handles v2 IOMMU type, v1 is handled via ioctl() */
- 		return H_TOO_HARD;
- 
--	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
-+	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, tbl->it_page_shift, &hpa)))
- 		return H_HARDWARE;
- 
- 	if (mm_iommu_mapped_inc(mem))
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index 925fc31..5b298f5 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -279,7 +279,8 @@ static long kvmppc_rm_tce_iommu_do_map(struct kvm *kvm, struct iommu_table *tbl,
- 	if (!mem)
- 		return H_TOO_HARD;
- 
--	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
-+	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, tbl->it_page_shift,
-+			&hpa)))
- 		return H_HARDWARE;
- 
- 	pua = (void *) vmalloc_to_phys(pua);
-@@ -469,7 +470,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 
- 		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
- 		if (mem)
--			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
-+			prereg = mm_iommu_ua_to_hpa_rm(mem, ua,
-+					IOMMU_PAGE_SHIFT_4K, &tces) == 0;
- 	}
- 
- 	if (!prereg) {
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index abb4364..11e1029 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -27,6 +27,7 @@ struct mm_iommu_table_group_mem_t {
- 	struct rcu_head rcu;
- 	unsigned long used;
- 	atomic64_t mapped;
-+	unsigned int pageshift;
- 	u64 ua;			/* userspace address */
- 	u64 entries;		/* number of entries in hpas[] */
- 	u64 *hpas;		/* vmalloc'ed */
-@@ -125,7 +126,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- {
- 	struct mm_iommu_table_group_mem_t *mem;
- 	long i, j, ret = 0, locked_entries = 0;
--	struct page *page = NULL;
-+	unsigned int pageshift;
-+	struct page *page = NULL, *head = NULL;
- 
- 	mutex_lock(&mem_list_mutex);
- 
-@@ -159,6 +161,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		goto unlock_exit;
- 	}
- 
-+	mem->pageshift = __builtin_ctzl(ua | (entries << PAGE_SHIFT));
- 	mem->hpas = vzalloc(array_size(entries, sizeof(mem->hpas[0])));
- 	if (!mem->hpas) {
- 		kfree(mem);
-@@ -199,9 +202,17 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 			}
- 		}
- populate:
-+		pageshift = PAGE_SHIFT;
-+		if (PageCompound(page))
-+			pageshift += compound_order(compound_head(page));
-+		mem->pageshift = min(mem->pageshift, pageshift);
- 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
- 	}
- 
-+	/* We have an incomplete huge page, default to PAGE_SHIFT */
-+	if (head)
-+		mem->pageshift = PAGE_SHIFT;
-+
- 	atomic64_set(&mem->mapped, 1);
- 	mem->used = 1;
- 	mem->ua = ua;
-@@ -349,7 +360,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- EXPORT_SYMBOL_GPL(mm_iommu_find);
- 
- long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa)
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
- 	u64 *va = &mem->hpas[entry];
-@@ -357,6 +368,9 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 	if (entry >= mem->entries)
- 		return -EFAULT;
- 
-+	if (pageshift > mem->pageshift)
-+		return -EFAULT;
-+
- 	*hpa = *va | (ua & ~PAGE_MASK);
- 
- 	return 0;
-@@ -364,7 +378,7 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
- 
- long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa)
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
- 	void *va = &mem->hpas[entry];
-@@ -373,6 +387,9 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
- 	if (entry >= mem->entries)
- 		return -EFAULT;
- 
-+	if (pageshift > mem->pageshift)
-+		return -EFAULT;
-+
- 	pa = (void *) vmalloc_to_phys(va);
- 	if (!pa)
- 		return -EFAULT;
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 2da5f05..7cd63b0 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -467,7 +467,7 @@ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
- 	if (!mem)
- 		return -EINVAL;
- 
--	ret = mm_iommu_ua_to_hpa(mem, tce, phpa);
-+	ret = mm_iommu_ua_to_hpa(mem, tce, shift, phpa);
- 	if (ret)
- 		return -EINVAL;
- 
--- 
-2.11.0
+--Sig_/g/InkliHpbLwtL1NTEpMe9w--
