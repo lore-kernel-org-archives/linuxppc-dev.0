@@ -1,26 +1,26 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
- [IPv6:2607:f8b0:400e:c00::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bharat.bhushan@nxp.com>
+Received: from EUR01-DB5-obe.outbound.protection.outlook.com
+ (mail-db5eur01on0086.outbound.protection.outlook.com [104.47.2.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M26n5nG7zF1nF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 01:37:37 +1000 (AEST)
-Received: by mail-pf0-x242.google.com with SMTP id z24-v6so5760756pfe.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 08:37:37 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Subject: Re: [PATCH v3 2/3] hwmon: ibmpowernv: Add attributes to
- enable/disable sensor groups
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
-References: <1530798689-27742-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1530798689-27742-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <9b55f78a-1d29-4391-c43e-124772b7aa9f@roeck-us.net>
-Date: Thu, 5 Jul 2018 08:37:33 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M2Dq3bmLzF1sY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 01:42:50 +1000 (AEST)
+From: Bharat Bhushan <bharat.bhushan@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "robh@kernel.org" <robh@kernel.org>, "geoff@infradead.org"
+ <geoff@infradead.org>, "tyreld@linux.vnet.ibm.com"
+ <tyreld@linux.vnet.ibm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] powerpc/mpic: Cleanup irq vector accounting
+Date: Thu, 5 Jul 2018 15:42:44 +0000
+Message-ID: <AM5PR0401MB2545E56D1B38A07D1FB9D2499A400@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+References: <1530267872-31244-1-git-send-email-Bharat.Bhushan@nxp.com>
+ <87efgjku6k.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87efgjku6k.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1530798689-27742-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,351 +30,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2018 06:51 AM, Shilpasri G Bhat wrote:
-> On-Chip-Controller(OCC) is an embedded micro-processor in POWER9 chip
-> which measures various system and chip level sensors. These sensors
-> comprises of environmental sensors (like power, temperature, current
-> and voltage) and performance sensors (like utilization, frequency).
-> All these sensors are copied to main memory at a regular interval of
-> 100ms. OCC provides a way to select a group of sensors that is copied
-> to the main memory to increase the update frequency of selected sensor
-> groups. When a sensor-group is disabled, OCC will not copy it to main
-> memory and those sensors read 0 values.
-> 
-> This patch provides support for enabling/disabling the sensor groups
-> like power, temperature, current and voltage. This patch adds new
-> per-senor sysfs attribute to disable and enable them.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> Changes from v2:
-> - Writes to first 'enable' attribute of the sensor group will affect all the
->    sensors in the group
-> - Removed global mutex and made it per sensor-group
-> 
->   drivers/hwmon/ibmpowernv.c | 184 ++++++++++++++++++++++++++++++++++++++-------
->   1 file changed, 155 insertions(+), 29 deletions(-)
-> 
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index f829dad..9c6adee 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -73,6 +73,10 @@ enum sensors {
->   	struct attribute_group group;
->   	u32 attr_count;
->   	u32 hwmon_index;
-> +	struct mutex mutex;
-> +	u32 *gid;
-> +	u32 nr_gid;
-> +	bool enable;
->   } sensor_groups[] = {
->   	{ "fan"   },
->   	{ "temp"  },
-> @@ -105,6 +109,9 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
->   	ssize_t ret;
->   	u64 x;
->   
-> +	if (!sensor_groups[sdata->type].enable)
-> +		return -ENODATA;
-> +
->   	ret =  opal_get_sensor_data_u64(sdata->id, &x);
->   
->   	if (ret)
-> @@ -120,6 +127,46 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
->   	return sprintf(buf, "%llu\n", x);
->   }
->   
-> +static ssize_t show_enable(struct device *dev,
-> +			   struct device_attribute *devattr, char *buf)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +
-> +	return sprintf(buf, "%u\n", sensor_groups[sdata->type].enable);
-> +}
-> +
-> +static ssize_t store_enable(struct device *dev,
-> +			    struct device_attribute *devattr,
-> +			    const char *buf, size_t count)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +	struct sensor_group *sg = &sensor_groups[sdata->type];
-> +	int ret, i;
-> +	bool data;
-> +
-> +	ret = kstrtobool(buf, &data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = mutex_lock_interruptible(&sg->mutex);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (data != sg->enable)
-> +		for (i = 0; i < sg->nr_gid && !ret; i++)
-> +			ret =  sensor_group_enable(sg->gid[i], data);
-> +
 
-Wouldn't it be better to have a separate attribute for each of the
-affected groups if there can be more than one ? Just wondering.
 
-The idea was to widen the scope to a point where there is a 1:1 match
-between the hardware capabilities and attributes. Clearly having
-a separate attribute for all sensors was inappropriate, but the code
-above now suggests that a single attribute for all sensors may have
-widened the scope too much (because the hardware can do better than
-this).
+> -----Original Message-----
+> From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> Sent: Wednesday, July 4, 2018 6:57 PM
+> To: Bharat Bhushan <bharat.bhushan@nxp.com>;
+> benh@kernel.crashing.org; paulus@samba.org; robh@kernel.org;
+> geoff@infradead.org; tyreld@linux.vnet.ibm.com; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
+> Cc: Bharat Bhushan <bharat.bhushan@nxp.com>
+> Subject: Re: [PATCH] powerpc/mpic: Cleanup irq vector accounting
+>=20
+> Bharat Bhushan <Bharat.Bhushan@nxp.com> writes:
+>=20
+> > Available vector space accounts ipis and timer interrupts while
+> > spurious vector was not accounted.
+>=20
+> OK. What is the symptom of that? Nothing? Total system crash?
+>=20
+> Looks like this can be tagged:
+>=20
+> Fixes: 0a4081641d72 ("powerpc/mpic: FSL MPIC error interrupt support.")
+>=20
+> Which added the code that uses "12".
+>=20
+> > Also later
+> > mpic_setup_error_int() escape one more vector, seemingly it assumes
+> > one spurious vector.
+>=20
+> Ah right, I get it now.
+>=20
+> So there is no bug. It's just a disagreement about whether the "intvec"
+> argument to mpic_setup_error_int() indicates the first number that's free=
+ to
+> use or the last number that has been allocated.
+>=20
+> Right?
 
-Thanks,
-Guenter
+Yes, it is not any bug fix. This is minor cleanup where passing rather than=
+ passing "last intvec used" to "intvec to be used" in mpic_setup_error_int(=
+).
 
-> +	if (!ret) {
-> +		sg->enable = data;
-> +		ret = count;
-> +	}
-> +
-> +	mutex_unlock(&sg->mutex);
-> +	return ret;
-> +}
-> +
->   static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
->   			  char *buf)
->   {
-> @@ -292,13 +339,68 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
->   	return ++sensor_groups[sdata->type].hwmon_index;
->   }
->   
-> +static int init_sensor_group_data(struct platform_device *pdev)
-> +{
-> +	struct device_node *groups, *sg;
-> +	enum sensors type;
-> +	int ret = 0, i;
-> +
-> +	for (i = 0; i < MAX_SENSOR_TYPE; i++) {
-> +		sensor_groups[i].nr_gid = 0;
-> +		sensor_groups[i].enable = true;
-> +	}
-> +
-> +	groups = of_find_node_by_path("/ibm,opal/sensor-groups");
-> +	if (!groups)
-> +		return ret;
-> +
-> +	for (i = 0; i < MAX_SENSOR_TYPE; i++) {
-> +		u32 gid[256];
-> +		u32 id, size;
-> +
-> +		for_each_child_of_node(groups, sg) {
-> +			type = get_sensor_type(sg);
-> +			if (type != i)
-> +				continue;
-> +
-> +			if (of_property_read_u32(sg, "sensor-group-id", &id))
-> +				continue;
-> +
-> +			gid[sensor_groups[i].nr_gid++] = id;
-> +		}
-> +
-> +		if (!sensor_groups[i].nr_gid)
-> +			continue;
-> +
-> +		size = sensor_groups[i].nr_gid * sizeof(u32);
-> +		sensor_groups[i].gid = devm_kzalloc(&pdev->dev, size,
-> +						    GFP_KERNEL);
-> +		if (!sensor_groups[i].gid) {
-> +			ret = -ENOMEM;
-> +			break;
-> +		}
-> +
-> +		memcpy(sensor_groups[i].gid, gid, size);
-> +		sensor_groups[i].enable = false;
-> +		mutex_init(&sensor_groups[i].mutex);
-> +	}
-> +
-> +	of_node_put(groups);
-> +	return ret;
-> +}
-> +
->   static int populate_attr_groups(struct platform_device *pdev)
->   {
->   	struct platform_data *pdata = platform_get_drvdata(pdev);
->   	const struct attribute_group **pgroups = pdata->attr_groups;
->   	struct device_node *opal, *np;
-> +	int ret;
->   	enum sensors type;
->   
-> +	ret = init_sensor_group_data(pdev);
-> +	if (ret)
-> +		return ret;
-> +
->   	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	for_each_child_of_node(opal, np) {
->   		const char *label;
-> @@ -313,7 +415,7 @@ static int populate_attr_groups(struct platform_device *pdev)
->   		sensor_groups[type].attr_count++;
->   
->   		/*
-> -		 * add attributes for labels, min and max
-> +		 * add attributes for labels, min, max and enable
->   		 */
->   		if (!of_property_read_string(np, "label", &label))
->   			sensor_groups[type].attr_count++;
-> @@ -321,6 +423,8 @@ static int populate_attr_groups(struct platform_device *pdev)
->   			sensor_groups[type].attr_count++;
->   		if (of_find_property(np, "sensor-data-max", NULL))
->   			sensor_groups[type].attr_count++;
-> +		if (sensor_groups[type].nr_gid)
-> +			sensor_groups[type].attr_count++;
->   	}
->   
->   	of_node_put(opal);
-> @@ -344,7 +448,10 @@ static int populate_attr_groups(struct platform_device *pdev)
->   static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
->   			      ssize_t (*show)(struct device *dev,
->   					      struct device_attribute *attr,
-> -					      char *buf))
-> +					      char *buf),
-> +			    ssize_t (*store)(struct device *dev,
-> +					     struct device_attribute *attr,
-> +					     const char *buf, size_t count))
->   {
->   	snprintf(sdata->name, MAX_ATTR_LEN, "%s%d_%s",
->   		 sensor_groups[sdata->type].name, sdata->hwmon_index,
-> @@ -352,8 +459,13 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
->   
->   	sysfs_attr_init(&sdata->dev_attr.attr);
->   	sdata->dev_attr.attr.name = sdata->name;
-> -	sdata->dev_attr.attr.mode = S_IRUGO;
->   	sdata->dev_attr.show = show;
-> +	if (store) {
-> +		sdata->dev_attr.store = store;
-> +		sdata->dev_attr.attr.mode = 0664;
-> +	} else {
-> +		sdata->dev_attr.attr.mode = 0444;
-> +	}
->   }
->   
->   static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
-> @@ -361,13 +473,16 @@ static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
->   			    const struct attribute_group *pgroup,
->   			    ssize_t (*show)(struct device *dev,
->   					    struct device_attribute *attr,
-> -					    char *buf))
-> +					    char *buf),
-> +			    ssize_t (*store)(struct device *dev,
-> +					     struct device_attribute *attr,
-> +					     const char *buf, size_t count))
->   {
->   	sdata->id = sid;
->   	sdata->type = type;
->   	sdata->opal_index = od;
->   	sdata->hwmon_index = hd;
-> -	create_hwmon_attr(sdata, attr_name, show);
-> +	create_hwmon_attr(sdata, attr_name, show, store);
->   	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
->   }
->   
-> @@ -408,18 +523,16 @@ static int create_device_attrs(struct platform_device *pdev)
->   	u32 count = 0;
->   	int err = 0;
->   
-> -	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	sdata = devm_kcalloc(&pdev->dev,
->   			     pdata->sensors_count, sizeof(*sdata),
->   			     GFP_KERNEL);
-> -	if (!sdata) {
-> -		err = -ENOMEM;
-> -		goto exit_put_node;
-> -	}
-> +	if (!sdata)
-> +		return -ENOMEM;
->   
-> +	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	for_each_child_of_node(opal, np) {
->   		const char *attr_name;
-> -		u32 opal_index;
-> +		u32 opal_index, hw_id;
->   		const char *label;
->   
->   		if (np->name == NULL)
-> @@ -456,14 +569,11 @@ static int create_device_attrs(struct platform_device *pdev)
->   			opal_index = INVALID_INDEX;
->   		}
->   
-> -		sdata[count].opal_index = opal_index;
-> -		sdata[count].hwmon_index =
-> -			get_sensor_hwmon_index(&sdata[count], sdata, count);
-> -
-> -		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
-> -
-> -		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> -				&sdata[count++].dev_attr.attr;
-> +		hw_id = get_sensor_hwmon_index(&sdata[count], sdata, count);
-> +		populate_sensor(&sdata[count], opal_index, hw_id, sensor_id,
-> +				attr_name, type, pgroups[type], show_sensor,
-> +				NULL);
-> +		count++;
->   
->   		if (!of_property_read_string(np, "label", &label)) {
->   			/*
-> @@ -474,33 +584,49 @@ static int create_device_attrs(struct platform_device *pdev)
->   			 */
->   
->   			make_sensor_label(np, &sdata[count], label);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, "label", type, pgroups[type],
-> -					show_label);
-> +					show_label, NULL);
->   			count++;
->   		}
->   
->   		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
->   			attr_name = get_max_attr(type);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, attr_name, type,
-> -					pgroups[type], show_sensor);
-> +					pgroups[type], show_sensor, NULL);
->   			count++;
->   		}
->   
->   		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
->   			attr_name = get_min_attr(type);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, attr_name, type,
-> -					pgroups[type], show_sensor);
-> +					pgroups[type], show_sensor, NULL);
->   			count++;
->   		}
-> +
-> +		if (sensor_groups[type].nr_gid) {
-> +			ssize_t (*store)(struct device *dev,
-> +					 struct device_attribute *attr,
-> +					 const char *buf, size_t count);
-> +
-> +			if (!sensor_groups[type].enable) {
-> +				sensor_groups[type].enable = true;
-> +				store = store_enable;
-> +			} else {
-> +				store = NULL;
-> +			}
-> +
-> +			sensor_groups[type].enable = true;
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
-> +					sensor_id, "enable", type,
-> +					pgroups[type], show_enable, store);
-> +			count++;
-> +		}
-> +
->   	}
->   
-> -exit_put_node:
->   	of_node_put(opal);
->   	return err;
->   }
-> 
+Thanks
+-Bharat
+
+>=20
+> cheers
+>=20
+> > Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
+> > ---
+> >  arch/powerpc/sysdev/fsl_mpic_err.c | 2 +-
+> >  arch/powerpc/sysdev/mpic.c         | 6 +++---
+> >  2 files changed, 4 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/arch/powerpc/sysdev/fsl_mpic_err.c
+> > b/arch/powerpc/sysdev/fsl_mpic_err.c
+> > index 488ec45..2a98837 100644
+> > --- a/arch/powerpc/sysdev/fsl_mpic_err.c
+> > +++ b/arch/powerpc/sysdev/fsl_mpic_err.c
+> > @@ -76,7 +76,7 @@ int mpic_setup_error_int(struct mpic *mpic, int
+> intvec)
+> >  	mpic->flags |=3D MPIC_FSL_HAS_EIMR;
+> >  	/* allocate interrupt vectors for error interrupts */
+> >  	for (i =3D MPIC_MAX_ERR - 1; i >=3D 0; i--)
+> > -		mpic->err_int_vecs[i] =3D --intvec;
+> > +		mpic->err_int_vecs[i] =3D intvec--;
+> >
+> >  	return 0;
+> >  }
+> > diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> > index 1d4e0ef6..e098d1e 100644
+> > --- a/arch/powerpc/sysdev/mpic.c
+> > +++ b/arch/powerpc/sysdev/mpic.c
+> > @@ -1380,12 +1380,12 @@ struct mpic * __init mpic_alloc(struct
+> device_node *node,
+> >  		 * global vector number space, as in case of ipis
+> >  		 * and timer interrupts.
+> >  		 *
+> > -		 * Available vector space =3D intvec_top - 12, where 12
+> > +		 * Available vector space =3D intvec_top - 13, where 13
+> >  		 * is the number of vectors which have been consumed by
+> > -		 * ipis and timer interrupts.
+> > +		 * ipis, timer interrupts and spurious.
+> >  		 */
+> >  		if (fsl_version >=3D 0x401) {
+> > -			ret =3D mpic_setup_error_int(mpic, intvec_top - 12);
+> > +			ret =3D mpic_setup_error_int(mpic, intvec_top - 13);
+> >  			if (ret)
+> >  				return NULL;
+> >  		}
+> > --
+> > 1.9.3
