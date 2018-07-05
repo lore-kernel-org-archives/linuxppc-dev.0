@@ -1,30 +1,31 @@
 Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
- [IPv6:2607:f8b0:4001:c06::242])
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Lhj2139nzDqHx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 12:32:37 +1000 (AEST)
-Received: by mail-io0-x242.google.com with SMTP id q9-v6so6313030ioj.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 19:32:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LhzV3lzTzDqHx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 12:45:10 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id s7-v6so9928057itb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 19:45:10 -0700 (PDT)
 MIME-Version: 1.0
 References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <3375966.ydPZj5TMVj@aspire.rjw.lan>
- <CAFgQCTtu7jaUfWV4xq8CfWb7vuS5=+HuNpNxeMm9UawoUZ2CBg@mail.gmail.com>
- <2842715.a5PfnD4e6X@aspire.rjw.lan>
-In-Reply-To: <2842715.a5PfnD4e6X@aspire.rjw.lan>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+In-Reply-To: <6281446.GoJLz6Hq6C@aspire.rjw.lan>
 From: Pingfan Liu <kernelfans@gmail.com>
-Date: Thu, 5 Jul 2018 10:32:23 +0800
-Message-ID: <CAFgQCTvZ8yGjrbxhYB4=Nxx+-JZC6BAUXCZ-DFz4wAh-Q8UjLw@mail.gmail.com>
-Subject: Re: [PATCHv3 3/4] drivers/base: clean up the usage of
- devices_kset_move_last()
+Date: Thu, 5 Jul 2018 10:44:57 +0800
+Message-ID: <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
 To: rjw@rjwysocki.net
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, linux-kernel@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Christoph Hellwig <hch@infradead.org>,
- Bjorn Helgaas <helgaas@kernel.org>, Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pm@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,79 +36,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 4, 2018 at 6:18 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On Wed, Jul 4, 2018 at 6:23 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 >
-> On Wednesday, July 4, 2018 6:40:09 AM CEST Pingfan Liu wrote:
-> > On Tue, Jul 3, 2018 at 10:28 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, July 4, 2018 4:47:07 AM CEST Pingfan Liu wrote:
+> > On Tue, Jul 3, 2018 at 10:36 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > > >
-> > > On Tuesday, July 3, 2018 8:50:41 AM CEST Pingfan Liu wrote:
-> > > > Clean up the referring to the code in commit 52cdbdd49853 ("driver core:
-> > > > correct device's shutdown order"). So later we can revert it safely.
-> > > >
-> > > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> > > > Cc: Christoph Hellwig <hch@infradead.org>
-> > > > Cc: Bjorn Helgaas <helgaas@kernel.org>
-> > > > Cc: Dave Young <dyoung@redhat.com>
-> > > > Cc: linux-pci@vger.kernel.org
-> > > > Cc: linuxppc-dev@lists.ozlabs.org
-> > > > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> > > > ---
-> > > >  drivers/base/core.c | 7 -------
-> > > >  1 file changed, 7 deletions(-)
-> > > >
-> > > > diff --git a/drivers/base/core.c b/drivers/base/core.c
-> > > > index 684b994..db3deb8 100644
-> > > > --- a/drivers/base/core.c
-> > > > +++ b/drivers/base/core.c
-> > > > @@ -127,13 +127,6 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
-> > > >  {
-> > > >       struct device_link *link;
-> > > >
-> > > > -     /*
-> > > > -      * Devices that have not been registered yet will be put to the ends
-> > > > -      * of the lists during the registration, so skip them here.
-> > > > -      */
-> > > > -     if (device_is_registered(dev))
-> > > > -             devices_kset_move_last(dev);
-> > > > -
-> > > >       if (device_pm_initialized(dev))
-> > > >               device_pm_move_last(dev);
+> > > On Tuesday, July 3, 2018 8:50:38 AM CEST Pingfan Liu wrote:
+> > > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
+> > > > places an assumption of supplier<-consumer order on the process of probe.
+> > > > But it turns out to break down the parent <- child order in some scene.
+> > > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
+> > > > have been probed. Then comes the bridge's module, which enables extra
+> > > > feature(such as hotplug) on this bridge.
 > > >
-> > > You can't do this.
+> > > So what *exactly* does happen in that case?
 > > >
-> > > If you do it, that will break power management in some situations.
-> > >
-> > Could you shed light on it? I had a quick browsing of pm code, but it
-> > is a big function, and I got lost in it.
-> > If the above code causes failure, then does it imply that the seq in
-> > devices_kset should be the same as dpm_list?
+> > I saw the  shpc_probe() is called on the bridge, although the probing
+> > failed on that bare-metal. But if it success, then it will enable the
+> > hotplug feature on the bridge.
 >
-> Generally, yes it should.
+> I don't understand what you are saying here, sorry.
 >
-> > But in device_shutdown(), it only intersect with pm by
-> > pm_runtime_get_noresume(dev) and pm_runtime_barrier(dev). How do these
-> > function affect the seq in dpm_list?
->
-> They are not related to dpm_list directly.
->
-> However, if you shut down a supplier device before its consumer and that
-> involves power management, then the consumer shutdown may fail and lock up
-> the system
->
-Ah, get your point. The patch in this series "[PATCHv3 2/4]
-drivers/base: utilize device tree info to shutdown devices" still obey
-the shutdown order "parent<-child" and "supplier<-consumer". It just
-utilizes device-tree info to achieve this, since it turns out not easy
-to maintain such order in devices_kset. As I described in the commit
-log of [2/4], it needs two nested recursion, and should consider the
-breakage of devices_kset's spinlock.
+On the system, I observe the following:
+[    2.114986] devices_kset: Moving 0004:00:00.0 to end of list
+<---pcie port drive's probe, but it failed
+[    2.115192] devices_kset: Moving 0004:01:00.0 to end of list
+[    2.115591] devices_kset: Moving 0004:02:02.0 to end of list
+[    2.115923] devices_kset: Moving 0004:02:0a.0 to end of list
+[    2.116141] devices_kset: Moving 0004:02:0b.0 to end of list
+[    2.116358] devices_kset: Moving 0004:02:0c.0 to end of list
+[    3.181860] devices_kset: Moving 0004:03:00.0 to end of list
+<---the ata disk controller which sits behind the bridge
+[   10.267081] devices_kset: Moving 0004:00:00.0 to end of list
+ <---shpc_probe() on this bridge, failed too.
 
-> I asked you elsewhere to clearly describe the problem you are trying to
-> address.  Please do that in the first place.
->
-OK, I will reply your question in [0/4]
+As you can the the parent device "0004:00:00.0" is moved twice, and
+finally, it is after the "0004:03:00.0", this will break the
+"parent<-child" order in devices_kset. This is caused by the code
+really_probe()->devices_kset_move_last(). Apparently, it makes
+assumption that child device's probing comes after its parent's. But
+it does not stand up in the case.
 
-Thanks,
+> device_reorder_to_tail() walks the entire device hierarchy below the target
+> and moves all of the children in there *after* their parents.
+>
+As described, the bug is not related with device_reorder_to_tail(), it
+is related with really_probe()->devices_kset_move_last(). So [2/4]
+uses different method to achieve the "parent<-child" and
+"supplier<-consumer" order. The [3/4] clean up some code in
+device_reorder_to_tail(), since I need to revert the commit.
+
+> How can it break "the parent <- child order" then?
+>
+As described, it does not, just not be in use any longer.
+
+Thanks and regards,
 Pingfan
