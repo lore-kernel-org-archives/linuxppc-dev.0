@@ -1,33 +1,21 @@
-Return-Path: <labbott@redhat.com>
-Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
- [209.85.216.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M7411FnzzF1vq
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 05:20:32 +1000 (AEST)
-Received: by mail-qt0-f193.google.com with SMTP id b15-v6so8046154qtp.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 12:20:32 -0700 (PDT)
-Subject: Re: [PATCHv5 1/4] kbuild: Add build salt to the kernel and modules
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Mark Wielaard <mjw@fedoraproject.org>,
- "H . J . Lu" <hjl.tools@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>,
- X86 ML <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nick Clifton <nickc@redhat.com>, Cary Coutant <ccoutant@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-References: <20180703233430.14416-1-labbott@redhat.com>
- <20180703233430.14416-2-labbott@redhat.com>
- <CAK7LNAS7XBwDidNaLKC1wD+G30AyAvTHG5GN=UAiP5zz1EO8JA@mail.gmail.com>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <5e3ce0f4-0c4b-e0aa-2b21-9bf4b5bce9e2@redhat.com>
-Date: Thu, 5 Jul 2018 12:20:27 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M7Qh4f8qzF204
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 05:36:43 +1000 (AEST)
+Date: Thu, 5 Jul 2018 21:37:38 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: hch@lst.de, m.szyprowski@samsung.com, iommu@lists.linux-foundation.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 1/2] dma-mapping: Clean up dma_set_*mask() hooks
+Message-ID: <20180705193738.GB28905@lst.de>
+References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAK7LNAS7XBwDidNaLKC1wD+G30AyAvTHG5GN=UAiP5zz1EO8JA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,60 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2018 08:59 PM, Masahiro Yamada wrote:
-> Hi.
+On Wed, Jul 04, 2018 at 06:50:11PM +0100, Robin Murphy wrote:
+> Arch-specific implementions for dma_set_{coherent_,}mask() currently
+> rely on an inconsistent mix of arch-defined Kconfig symbols and macro
+> overrides. Now that we have a nice centralised home for DMA API gubbins,
+> let's consolidate these loose ends under consistent config options.
 > 
-> Thanks for the update.
+> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+> ---
 > 
-> 
-> 2018-07-04 8:34 GMT+09:00 Laura Abbott <labbott@redhat.com>:
->>
->> The build id generated from --build-id can be generated in several different
->> ways, with the default being the sha1 on the output of the linked file. For
->> distributions, it can be useful to make sure this ID is unique, even if the
->> actual file contents don't change. The easiest way to do this is to insert
->> a section with some data.
->>
->> Add an ELF note to both the kernel and module which contains some data based
->> off of a config option.
->>
->> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
->> Signed-off-by: Laura Abbott <labbott@redhat.com>
->> ---
->> v5: I used S-o-b here since the majority of the code was written
->> already.
-> 
-> 
-> I think Suggested-by is good enough.
-> S-o-b is appended as a patch is passed from people to people.
-> 
-> Anyway, this looks good except one bike-shed.
-> 
->> Please feel free to change the tag if you think it's not
->> appropriate. I also tweaked this to take an ascii string instead of just
->> a hex value since this makes things much easier on the distribution
->> side.
->> ---
-> 
-> 
->> diff --git a/init/Kconfig b/init/Kconfig
->> index 041f3a022122..8de789f40db9 100644
->> --- a/init/Kconfig
->> +++ b/init/Kconfig
->> @@ -107,6 +107,15 @@ config LOCALVERSION_AUTO
->>
->>            which is done within the script "scripts/setlocalversion".)
->>
->> +config BUILD_SALT
->> +       string "Build ID Salt"
->> +       default "Linux"
-> 
-> 
-> How about empty string ""
-> for default?
-> 
+> Here's hoping the buildbot comes by to point out what I've inevitably
+> missed, although I did check a cursory cross-compile of ppc64_defconfig
+> to iron out the obvious howlers.
 
-Sure, seems to work fine.
+The patch looks sensible to me, although I was hoping to get rid of these
+hooks in this or the next merge window as they are a horrible bad idea.
 
-Thanks,
-Laura
+> The motivation here is that I'm looking at adding set_mask overrides
+> for arm64, and having discovered a bit of a mess it seemed prudent to
+> clean up before ingraining it any more.
+
+What are you trying to do?  I really don't want to see more users of
+the hooks as they are are a horribly bad idea.
