@@ -1,32 +1,24 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
- [IPv6:2607:f8b0:4001:c0b::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LhzV3lzTzDqHx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 12:45:10 +1000 (AEST)
-Received: by mail-it0-x243.google.com with SMTP id s7-v6so9928057itb.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Jul 2018 19:45:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41LjtY3rpczDqHx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 13:25:57 +1000 (AEST)
+Date: Thu, 5 Jul 2018 12:42:20 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel v3 2/2] KVM: PPC: Check if IOMMU page is contained
+ in the pinned physical page
+Message-ID: <20180705024220.GF3450@umbus.fritz.box>
+References: <20180704050052.20045-1-aik@ozlabs.ru>
+ <20180704050052.20045-3-aik@ozlabs.ru>
 MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan>
- <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan>
-In-Reply-To: <6281446.GoJLz6Hq6C@aspire.rjw.lan>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Thu, 5 Jul 2018 10:44:57 +0800
-Message-ID: <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-To: rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="KJY2Ze80yH5MUxol"
+In-Reply-To: <20180704050052.20045-3-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,59 +28,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 4, 2018 at 6:23 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Wednesday, July 4, 2018 4:47:07 AM CEST Pingfan Liu wrote:
-> > On Tue, Jul 3, 2018 at 10:36 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > >
-> > > On Tuesday, July 3, 2018 8:50:38 AM CEST Pingfan Liu wrote:
-> > > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > > > places an assumption of supplier<-consumer order on the process of probe.
-> > > > But it turns out to break down the parent <- child order in some scene.
-> > > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
-> > > > have been probed. Then comes the bridge's module, which enables extra
-> > > > feature(such as hotplug) on this bridge.
-> > >
-> > > So what *exactly* does happen in that case?
-> > >
-> > I saw the  shpc_probe() is called on the bridge, although the probing
-> > failed on that bare-metal. But if it success, then it will enable the
-> > hotplug feature on the bridge.
->
-> I don't understand what you are saying here, sorry.
->
-On the system, I observe the following:
-[    2.114986] devices_kset: Moving 0004:00:00.0 to end of list
-<---pcie port drive's probe, but it failed
-[    2.115192] devices_kset: Moving 0004:01:00.0 to end of list
-[    2.115591] devices_kset: Moving 0004:02:02.0 to end of list
-[    2.115923] devices_kset: Moving 0004:02:0a.0 to end of list
-[    2.116141] devices_kset: Moving 0004:02:0b.0 to end of list
-[    2.116358] devices_kset: Moving 0004:02:0c.0 to end of list
-[    3.181860] devices_kset: Moving 0004:03:00.0 to end of list
-<---the ata disk controller which sits behind the bridge
-[   10.267081] devices_kset: Moving 0004:00:00.0 to end of list
- <---shpc_probe() on this bridge, failed too.
 
-As you can the the parent device "0004:00:00.0" is moved twice, and
-finally, it is after the "0004:03:00.0", this will break the
-"parent<-child" order in devices_kset. This is caused by the code
-really_probe()->devices_kset_move_last(). Apparently, it makes
-assumption that child device's probing comes after its parent's. But
-it does not stand up in the case.
+--KJY2Ze80yH5MUxol
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> device_reorder_to_tail() walks the entire device hierarchy below the target
-> and moves all of the children in there *after* their parents.
->
-As described, the bug is not related with device_reorder_to_tail(), it
-is related with really_probe()->devices_kset_move_last(). So [2/4]
-uses different method to achieve the "parent<-child" and
-"supplier<-consumer" order. The [3/4] clean up some code in
-device_reorder_to_tail(), since I need to revert the commit.
+On Wed, Jul 04, 2018 at 03:00:52PM +1000, Alexey Kardashevskiy wrote:
+> A VM which has:
+>  - a DMA capable device passed through to it (eg. network card);
+>  - running a malicious kernel that ignores H_PUT_TCE failure;
+>  - capability of using IOMMU pages bigger that physical pages
+> can create an IOMMU mapping that exposes (for example) 16MB of
+> the host physical memory to the device when only 64K was allocated to the=
+ VM.
+>=20
+> The remaining 16MB - 64K will be some other content of host memory, possi=
+bly
+> including pages of the VM, but also pages of host kernel memory, host
+> programs or other VMs.
+>=20
+> The attacking VM does not control the location of the page it can map,
+> and is only allowed to map as many pages as it has pages of RAM.
+>=20
+> We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
+> an IOMMU page is contained in the physical page so the PCI hardware won't
+> get access to unassigned host memory; however this check is missing in
+> the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far and
+> did not hit this yet as the very first time when the mapping happens
+> we do not have tbl::it_userspace allocated yet and fall back to
+> the userspace which in turn calls VFIO IOMMU driver, this fails and
+> the guest does not retry,
+>=20
+> This stores the smallest preregistered page size in the preregistered
+> region descriptor and changes the mm_iommu_xxx API to check this against
+> the IOMMU page size. This only allows huge pages use if the entire
+> preregistered block is backed with huge pages which are completely
+> contained the preregistered chunk; otherwise this defaults to PAGE_SIZE.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-> How can it break "the parent <- child order" then?
->
-As described, it does not, just not be in use any longer.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-Thanks and regards,
-Pingfan
+On the grounds that I think this version is safe, which the old one
+wasn't.  However it still has some flaws..
+
+[snip]
+> @@ -125,7 +126,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long=
+ ua, unsigned long entries,
+>  {
+>  	struct mm_iommu_table_group_mem_t *mem;
+>  	long i, j, ret =3D 0, locked_entries =3D 0;
+> -	struct page *page =3D NULL;
+> +	unsigned int pageshift;
+> +	struct page *page =3D NULL, *head =3D NULL;
+> =20
+>  	mutex_lock(&mem_list_mutex);
+> =20
+> @@ -159,6 +161,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long=
+ ua, unsigned long entries,
+>  		goto unlock_exit;
+>  	}
+> =20
+> +	mem->pageshift =3D 64;
+>  	mem->hpas =3D vzalloc(array_size(entries, sizeof(mem->hpas[0])));
+>  	if (!mem->hpas) {
+>  		kfree(mem);
+> @@ -199,9 +202,35 @@ long mm_iommu_get(struct mm_struct *mm, unsigned lon=
+g ua, unsigned long entries,
+>  			}
+>  		}
+>  populate:
+> +		pageshift =3D PAGE_SHIFT;
+> +		if (PageCompound(page)) {
+> +			/* Make sure huge page is contained completely */
+> +			struct page *tmphead =3D compound_head(page);
+> +			unsigned int n =3D compound_order(tmphead);
+> +
+> +			if (!head) {
+> +				/* Is it a head of a huge page? */
+> +				if (page =3D=3D tmphead) {
+> +					head =3D tmphead;
+> +					pageshift +=3D n;
+> +				}
+> +			} else if (head =3D=3D tmphead) {
+> +				/* Still same huge page, good */
+> +				pageshift +=3D n;
+> +
+> +				/* End of the huge page */
+> +				if (page - head =3D=3D (1UL << n) - 1)
+> +					head =3D NULL;
+> +			}
+> +		}
+> +		mem->pageshift =3D min(mem->pageshift, pageshift);
+>  		mem->hpas[i] =3D page_to_pfn(page) << PAGE_SHIFT;
+>  	}
+> =20
+> +	/* We have an incomplete huge page, default to PAGE_SHIFT */
+> +	if (head)
+> +		mem->pageshift =3D PAGE_SHIFT;
+> +
+
+So, if the user attempts to prereg a region which starts or ends in
+the middle of a hugepage, this logic will clamp the region's max page
+shift down to PAGE_SHIFT.  That's safe, but not optimal.
+
+Suppose userspace had an area backed with 16MiB hugepages, and wanted
+to pre-reg a window that was 2MiB aligned, but not 16MiB aligned.  It
+would still be safe to allow 2MiB TCEs, but the code above would clamp
+it down to 64kiB (or 4kiB).
+
+The code to do it is also pretty convoluted.
+
+I think you'd be better off initializing mem->pageshift to the largest
+possible natural alignment of the region:
+	mem->pageshift =3D ctz64(ua | (entries << PAGE_SHIFT));
+
+Then it should just be sufficient to clamp pageshift down to
+compound_order() + PAGE_SHIFT for each entry.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--KJY2Ze80yH5MUxol
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAls9hYkACgkQbDjKyiDZ
+s5Ii9hAAtzZcY8dGHrdVR9BF3S2V7i6O4Z9KpPaQA7Z2xMSx7Bl+cUwfJyhF1+9q
+7D6RNY8ZzVb7buMvk9x4kkSI/Dc/prG7raqNCt22eFQNVLPOiYVzWR1F5e3OuiMv
+LCQaJSnn1a2QeaXU4peJQR2WOCQqncsq/RRDg08mhfsKZgDJ6jIce4LtW+oUZxac
+oQd5Iv4kcMDP77kocve23nXHCzAWMisyueeh34kg5XK7ezeVeuJstZvERm2/5TB8
+LfR/mNiSZjZT/pUyfxSpEfBgcxNULhPVLtC4ZxmfhDdUqhADdzCscFj9zAfGqp9T
+kg1Rz1sLFzFWPPGK2FHfN82WanbvPrdy+2+PhVOPRQn24i9JFKwyK97nVix6d2ck
+ea4hoTBBx9dUOEHUrgkhLqvxsc6nO1R3wIlKhW8Lp2zOy8PzasoGpWWojbTB+7pq
+dh1Ni4moUsj3Ui7FsvG0yMuD0cbj4vsWWrWdfJZlo/RbuJAuiXY6tn91zA2nQ5kf
+QZVivNr+391OnDan9DckBr2bxMvQxF5iQR1mrjZu4py5+OOK+ruZwwmamEKfd6xb
+ri/B1nd+/6vOEHVsgxFlE+V2RARufclm5tuRLh/MVvtQFBuMBPhP/let2dP4nHkg
+zcHDH+X7Mc18D7+ZFVC23CAg/yu/mTsKYHtXN0Qk0FrSgPgAHrc=
+=5RH7
+-----END PGP SIGNATURE-----
+
+--KJY2Ze80yH5MUxol--
