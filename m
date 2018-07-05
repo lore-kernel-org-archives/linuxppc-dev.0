@@ -2,18 +2,17 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M39l19G5zF219
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:14 +1000 (AEST)
-Message-Id: <a8fa6d397c3a4c45ba5663ee7048fb3fafebd92a.1530807556.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M39n1Z3DzF1wr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:16 +1000 (AEST)
+Message-Id: <820e0ab274673d336c49ea47273aae18e5723af5.1530807556.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1530807556.git.christophe.leroy@c-s.fr>
 References: <cover.1530807556.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 11/16] powerpc/nohash: fix hash related comments in
- pgtable.h
+Subject: [PATCH v3 12/16] powerpc/44x: remove page.h from mmu-44x.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  5 Jul 2018 16:25:11 +0000 (UTC)
+Date: Thu,  5 Jul 2018 16:25:13 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,83 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+mmu-44x.h doesn't need asm/page.h if PAGE_SHIFT are replaced by CONFIG_PPC_XX_PAGES
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h |  4 ----
- arch/powerpc/include/asm/nohash/64/pgtable.h | 18 ++++--------------
- 2 files changed, 4 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/mmu-44x.h | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index 79805e0dad27..a507a65b0866 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -223,10 +223,6 @@ static inline unsigned long long pte_update(pte_t *p,
- }
- #endif /* CONFIG_PTE_64BIT */
- 
--/*
-- * 2.6 calls this without flushing the TLB entry; this is wrong
-- * for our hash-based implementation, we fix that up here.
-- */
- #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
- static inline int __ptep_test_and_clear_young(unsigned int context, unsigned long addr, pte_t *ptep)
- {
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index fe05b3e03cf1..7cd6809f4d33 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -3,7 +3,7 @@
- #define _ASM_POWERPC_NOHASH_64_PGTABLE_H
- /*
-  * This file contains the functions and defines necessary to modify and use
-- * the ppc64 hashed page table.
-+ * the ppc64 non-hashed page table.
+diff --git a/arch/powerpc/include/asm/mmu-44x.h b/arch/powerpc/include/asm/mmu-44x.h
+index 9bdbe1d1c9b9..295b3dbb2698 100644
+--- a/arch/powerpc/include/asm/mmu-44x.h
++++ b/arch/powerpc/include/asm/mmu-44x.h
+@@ -5,7 +5,6 @@
+  * PPC440 support
   */
  
- #include <asm/nohash/64/pgtable-4k.h>
-@@ -38,7 +38,7 @@
+-#include <asm/page.h>
+ #include <asm/asm-const.h>
  
- /*
-  * The vmalloc space starts at the beginning of that region, and
-- * occupies half of it on hash CPUs and a quarter of it on Book3E
-+ * occupies a quarter of it on Book3E
-  * (we keep a quarter for the virtual memmap)
-  */
- #define VMALLOC_START	KERN_VIRT_START
-@@ -78,7 +78,7 @@
+ #define PPC44x_MMUCR_TID	0x000000ff
+@@ -125,19 +124,19 @@ typedef struct {
+ /* Size of the TLBs used for pinning in lowmem */
+ #define PPC_PIN_SIZE	(1 << 28)	/* 256M */
  
- /*
-  * Defines the address of the vmemap area, in its own region on
-- * hash table CPUs and after the vmalloc space on Book3E
-+ * after the vmalloc space on Book3E
-  */
- #define VMEMMAP_BASE		VMALLOC_END
- #define VMEMMAP_END		KERN_IO_START
-@@ -248,14 +248,6 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
- 	pte_update(mm, addr, ptep, _PAGE_RW, 0, 1);
- }
- 
--/*
-- * We currently remove entries from the hashtable regardless of whether
-- * the entry was young or dirty. The generic routines only flush if the
-- * entry was young or dirty which is not good enough.
-- *
-- * We should be more intelligent about this but for the moment we override
-- * these functions and force a tlb flush unconditionally
-- */
- #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
- #define ptep_clear_flush_young(__vma, __address, __ptep)		\
- ({									\
-@@ -279,9 +271,7 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
- }
- 
- 
--/* Set the dirty and/or accessed bits atomically in a linux PTE, this
-- * function doesn't need to flush the hash entry
-- */
-+/* Set the dirty and/or accessed bits atomically in a linux PTE */
- static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   pte_t *ptep, pte_t entry,
- 					   unsigned long address,
+-#if (PAGE_SHIFT == 12)
++#if defined(CONFIG_PPC_4K_PAGES)
+ #define PPC44x_TLBE_SIZE	PPC44x_TLB_4K
+ #define PPC47x_TLBE_SIZE	PPC47x_TLB0_4K
+ #define mmu_virtual_psize	MMU_PAGE_4K
+-#elif (PAGE_SHIFT == 14)
++#elif defined(CONFIG_PPC_16K_PAGES)
+ #define PPC44x_TLBE_SIZE	PPC44x_TLB_16K
+ #define PPC47x_TLBE_SIZE	PPC47x_TLB0_16K
+ #define mmu_virtual_psize	MMU_PAGE_16K
+-#elif (PAGE_SHIFT == 16)
++#elif defined(CONFIG_PPC_64K_PAGES)
+ #define PPC44x_TLBE_SIZE	PPC44x_TLB_64K
+ #define PPC47x_TLBE_SIZE	PPC47x_TLB0_64K
+ #define mmu_virtual_psize	MMU_PAGE_64K
+-#elif (PAGE_SHIFT == 18)
++#elif defined(CONFIG_PPC_256K_PAGES)
+ #define PPC44x_TLBE_SIZE	PPC44x_TLB_256K
+ #define mmu_virtual_psize	MMU_PAGE_256K
+ #else
 -- 
 2.13.3
