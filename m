@@ -1,27 +1,31 @@
-Return-Path: <diana.craciun@nxp.com>
-Received: from EUR01-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur01on0607.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe1e::607])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LzCm36czzF1g4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 23:26:43 +1000 (AEST)
-From: Diana Madalina Craciun <diana.craciun@nxp.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, =?iso-8859-1?Q?Michal_Such=E1nek?=
- <msuchanek@suse.de>, Bharat Bhushan <bharat.bhushan@nxp.com>
-CC: "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, Leo Li <leoyang.li@nxp.com>
-Subject: Re: [PATCH v2 3/3] powerpc/fsl: Implement cpu_show_spectre_v1/v2 for
- NXP PowerPC Book3E
-Date: Thu, 5 Jul 2018 13:26:36 +0000
-Message-ID: <VI1PR0401MB246338310F4EECEDEE6757A6FF400@VI1PR0401MB2463.eurprd04.prod.outlook.com>
-References: <1528721608-15443-1-git-send-email-diana.craciun@nxp.com>
- <1528721608-15443-4-git-send-email-diana.craciun@nxp.com>
- <AM5PR0401MB2545BC30FB194E4D4E42ADA89A7F0@AM5PR0401MB2545.eurprd04.prod.outlook.com>
- <20180612120737.31efff1c@naga.suse.cz>
- <87va9wg4qe.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Lzmg2tRVzF1gR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 23:51:47 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w65DnDZN033922
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2018 09:51:44 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k1k6fc2pu-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 09:51:44 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 5 Jul 2018 14:51:42 +0100
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: linux@roeck-us.net, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org,
+ ego@linux.vnet.ibm.com
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/3] hwmon: Add attributes to enable/disable sensors
+Date: Thu,  5 Jul 2018 19:21:26 +0530
+Message-Id: <1530798689-27742-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/03/2018 10:26 AM, Michael Ellerman wrote:=0A=
-> Michal Such=E1nek <msuchanek@suse.de> writes:=0A=
->> On Tue, 12 Jun 2018 02:59:11 +0000=0A=
->> Bharat Bhushan <bharat.bhushan@nxp.com> wrote:=0A=
->>=0A=
->>> Hi Diana,=0A=
->>>=0A=
->>>> -----Original Message-----=0A=
->>>> From: Diana Craciun [mailto:diana.craciun@nxp.com]=0A=
->>>> Sent: Monday, June 11, 2018 6:23 PM=0A=
->>>> To: linuxppc-dev@lists.ozlabs.org=0A=
->>>> Cc: mpe@ellerman.id.au; oss@buserror.net; Leo Li=0A=
->>>> <leoyang.li@nxp.com>; Bharat Bhushan <bharat.bhushan@nxp.com>;=0A=
->>>> Diana Madalina Craciun <diana.craciun@nxp.com>=0A=
->>>> Subject: [PATCH v2 3/3] powerpc/fsl: Implement=0A=
->>>> cpu_show_spectre_v1/v2 for NXP PowerPC Book3E  =0A=
->>> Please add some description=0A=
->> To me the subject is self-explanatory. It implements a kernel interface=
-=0A=
->> that was already described elsewhere.=0A=
->>=0A=
->> What are you missing here?=0A=
-> It should at least explain why it's reimplementing a function that=0A=
-> already exists for powerpc. ie. Why can't the existing version be used?=
-=0A=
->=0A=
-> cheers=0A=
->=0A=
-OK. I think I can use the cpu_show_spectre_v1 and for now I can use=0A=
-cpu_show_spectre_v2 as well (the patches are under development for=0A=
-mitigating Spectre v2). But I cannot use cpu_show_meltdown because it=0A=
-uses references to variables that are specific to BOOK3S_64. But I do=0A=
-not need a special implementation for cpu_show_meltdown because our=0A=
-platform is not vulnerable to Meltdown. So, I will just ifdef the=0A=
-cpu_show_meltdown and leave the default implementation.=0A=
-=0A=
-Diana=0A=
-=0A=
-=0A=
-=0A=
-=0A=
+This patch series adds new attribute to enable or disable a sensor in
+runtime.
+
+v2 : https://lkml.org/lkml/2018/7/4/263
+v1 : https://lkml.org/lkml/2018/3/22/214
+
+Shilpasri G Bhat (3):
+  powernv:opal-sensor-groups: Add support to enable sensor groups
+  hwmon: ibmpowernv: Add attributes to enable/disable sensor groups
+  hwmon: Document the sensor enable attribute and update ibmpowernv
+
+ Documentation/hwmon/ibmpowernv                     |  35 +++-
+ Documentation/hwmon/sysfs-interface                |  82 +++++++++
+ arch/powerpc/include/asm/opal-api.h                |   1 +
+ arch/powerpc/include/asm/opal.h                    |   2 +
+ .../powerpc/platforms/powernv/opal-sensor-groups.c |  28 ++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
+ drivers/hwmon/ibmpowernv.c                         | 184 +++++++++++++++++----
+ 7 files changed, 302 insertions(+), 31 deletions(-)
+
+-- 
+1.8.3.1
