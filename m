@@ -1,25 +1,25 @@
 Return-Path: <groeck7@gmail.com>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M1zg10QZzF1Ry
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 01:31:26 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id e10-v6so5756336pfn.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 08:31:26 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M26n5nG7zF1nF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 01:37:37 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id z24-v6so5760756pfe.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 08:37:37 -0700 (PDT)
 Sender: Guenter Roeck <groeck7@gmail.com>
-Subject: Re: [PATCH v3 3/3] hwmon: Document the sensor enable attribute and
- update ibmpowernv
+Subject: Re: [PATCH v3 2/3] hwmon: ibmpowernv: Add attributes to
+ enable/disable sensor groups
 To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au,
  linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
  linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
 References: <1530798689-27742-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1530798689-27742-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1530798689-27742-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <4355fd2a-8cd1-ffff-e308-dcd621baad53@roeck-us.net>
-Date: Thu, 5 Jul 2018 08:31:23 -0700
+Message-ID: <9b55f78a-1d29-4391-c43e-124772b7aa9f@roeck-us.net>
+Date: Thu, 5 Jul 2018 08:37:33 -0700
 MIME-Version: 1.0
-In-Reply-To: <1530798689-27742-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <1530798689-27742-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,200 +31,350 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 07/05/2018 06:51 AM, Shilpasri G Bhat wrote:
+> On-Chip-Controller(OCC) is an embedded micro-processor in POWER9 chip
+> which measures various system and chip level sensors. These sensors
+> comprises of environmental sensors (like power, temperature, current
+> and voltage) and performance sensors (like utilization, frequency).
+> All these sensors are copied to main memory at a regular interval of
+> 100ms. OCC provides a way to select a group of sensors that is copied
+> to the main memory to increase the update frequency of selected sensor
+> groups. When a sensor-group is disabled, OCC will not copy it to main
+> memory and those sensors read 0 values.
+> 
+> This patch provides support for enabling/disabling the sensor groups
+> like power, temperature, current and voltage. This patch adds new
+> per-senor sysfs attribute to disable and enable them.
+> 
 > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 > ---
->   Documentation/hwmon/ibmpowernv      | 35 +++++++++++++++-
->   Documentation/hwmon/sysfs-interface | 82 +++++++++++++++++++++++++++++++++++++
+> Changes from v2:
+> - Writes to first 'enable' attribute of the sensor group will affect all the
+>    sensors in the group
+> - Removed global mutex and made it per sensor-group
+> 
+>   drivers/hwmon/ibmpowernv.c | 184 ++++++++++++++++++++++++++++++++++++++-------
+>   1 file changed, 155 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+> index f829dad..9c6adee 100644
+> --- a/drivers/hwmon/ibmpowernv.c
+> +++ b/drivers/hwmon/ibmpowernv.c
+> @@ -73,6 +73,10 @@ enum sensors {
+>   	struct attribute_group group;
+>   	u32 attr_count;
+>   	u32 hwmon_index;
+> +	struct mutex mutex;
+> +	u32 *gid;
+> +	u32 nr_gid;
+> +	bool enable;
+>   } sensor_groups[] = {
+>   	{ "fan"   },
+>   	{ "temp"  },
+> @@ -105,6 +109,9 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
+>   	ssize_t ret;
+>   	u64 x;
+>   
+> +	if (!sensor_groups[sdata->type].enable)
+> +		return -ENODATA;
+> +
+>   	ret =  opal_get_sensor_data_u64(sdata->id, &x);
+>   
+>   	if (ret)
+> @@ -120,6 +127,46 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
+>   	return sprintf(buf, "%llu\n", x);
+>   }
+>   
+> +static ssize_t show_enable(struct device *dev,
+> +			   struct device_attribute *devattr, char *buf)
+> +{
+> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
+> +						 dev_attr);
+> +
+> +	return sprintf(buf, "%u\n", sensor_groups[sdata->type].enable);
+> +}
+> +
+> +static ssize_t store_enable(struct device *dev,
+> +			    struct device_attribute *devattr,
+> +			    const char *buf, size_t count)
+> +{
+> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
+> +						 dev_attr);
+> +	struct sensor_group *sg = &sensor_groups[sdata->type];
+> +	int ret, i;
+> +	bool data;
+> +
+> +	ret = kstrtobool(buf, &data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = mutex_lock_interruptible(&sg->mutex);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (data != sg->enable)
+> +		for (i = 0; i < sg->nr_gid && !ret; i++)
+> +			ret =  sensor_group_enable(sg->gid[i], data);
+> +
 
-I guess I wasn't specific enough. The sysfs ABI change must be a separate patch,
-independent of the driver (and driver documentation) changes. If you want to document
-the driver changes with the same patch as the driver or in a separate patch is up
-to you, but I'll want the ABI changes in a separate patch.
+Wouldn't it be better to have a separate attribute for each of the
+affected groups if there can be more than one ? Just wondering.
 
+The idea was to widen the scope to a point where there is a 1:1 match
+between the hardware capabilities and attributes. Clearly having
+a separate attribute for all sensors was inappropriate, but the code
+above now suggests that a single attribute for all sensors may have
+widened the scope too much (because the hardware can do better than
+this).
+
+Thanks,
 Guenter
 
->   2 files changed, 115 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/hwmon/ibmpowernv b/Documentation/hwmon/ibmpowernv
-> index 8826ba2..77ddba7 100644
-> --- a/Documentation/hwmon/ibmpowernv
-> +++ b/Documentation/hwmon/ibmpowernv
-> @@ -33,9 +33,40 @@ fanX_input		Measured RPM value.
->   fanX_min		Threshold RPM for alert generation.
->   fanX_fault		0: No fail condition
->   			1: Failing fan
+> +	if (!ret) {
+> +		sg->enable = data;
+> +		ret = count;
+> +	}
 > +
->   tempX_input		Measured ambient temperature.
->   tempX_max		Threshold ambient temperature for alert generation.
-> -inX_input		Measured power supply voltage
-> +tempX_highest		Historical maximum temperature
-> +tempX_lowest		Historical minimum temperature
-> +temp1_enable		Enable/disable all temperature sensors
-> +			1: Enable
-> +			0: Disable
-> +temp[2-N]_enable	State of the sensor (enabled/disabled)
+> +	mutex_unlock(&sg->mutex);
+> +	return ret;
+> +}
 > +
-> +inX_input		Measured power supply voltage (millivolt)
->   inX_fault		0: No fail condition.
->   			1: Failing power supply.
-> -power1_input		System power consumption (microWatt)
-> +inX_highest		Historical maximum voltage
-> +inX_lowest		Historical minimum voltage
-> +in1_enable		Enable/disable all voltage sensors
-> +			1: Enable
-> +			0: Disable
-> +in[2-N]_enable		State of the sensor (enabled/disabled)
+>   static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
+>   			  char *buf)
+>   {
+> @@ -292,13 +339,68 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
+>   	return ++sensor_groups[sdata->type].hwmon_index;
+>   }
+>   
+> +static int init_sensor_group_data(struct platform_device *pdev)
+> +{
+> +	struct device_node *groups, *sg;
+> +	enum sensors type;
+> +	int ret = 0, i;
 > +
-> +powerX_input		Power consumption (microWatt)
-> +powerX_input_highest	Historical maximum power
-> +powerX_input_lowest	Historical minimum power
-> +power1_enable		Enable/disable all power sensors
-> +			1: Enable
-> +			0: Disable
-> +power[2-N]_enable	State of the sensor (enabled/disabled)
+> +	for (i = 0; i < MAX_SENSOR_TYPE; i++) {
+> +		sensor_groups[i].nr_gid = 0;
+> +		sensor_groups[i].enable = true;
+> +	}
 > +
-> +currX_input		Measured current (milliampere)
-> +currX_highest		Historical maximum current
-> +currX_lowest		Historical minimum current
-> +curr1_enable		Enable/disable all current sensors
-> +			1: Enable
-> +			0: Disable
-> +curr[2-N]_enable	State of the sensor (enabled/disabled)
+> +	groups = of_find_node_by_path("/ibm,opal/sensor-groups");
+> +	if (!groups)
+> +		return ret;
 > +
-> +energyX_input		Cumulative energy (microJoule)
-> diff --git a/Documentation/hwmon/sysfs-interface b/Documentation/hwmon/sysfs-interface
-> index fc337c3..d81109c 100644
-> --- a/Documentation/hwmon/sysfs-interface
-> +++ b/Documentation/hwmon/sysfs-interface
-> @@ -171,6 +171,17 @@ in[0-*]_label	Suggested voltage channel label.
->   		user-space.
->   		RO
->   
-> +in[0-*]_enable
-> +		Enable or disable the sensor.
-> +		When disabled the sensor read will return -ENODATA. For chips
-> +		which do not have the capability to disable/enable single sensor
-> +		but have support for sensor-group disable/enable, will only have
-> +		the first attribute with write permission. In such cases write
-> +		to the first attribute will affect all the sensors of this type.
-> +		1: Enable
-> +		0: Disable
-> +		RW/RO
+> +	for (i = 0; i < MAX_SENSOR_TYPE; i++) {
+> +		u32 gid[256];
+> +		u32 id, size;
 > +
->   cpu[0-*]_vid	CPU core reference voltage.
->   		Unit: millivolt
->   		RO
-> @@ -236,6 +247,17 @@ fan[1-*]_label	Suggested fan channel label.
->   		In all other cases, the label is provided by user-space.
->   		RO
->   
-> +fan[1-*]_enable
-> +		Enable or disable the sensor.
-> +		When disabled the sensor read will return -ENODATA. For chips
-> +		which do not have the capability to disable/enable single sensor
-> +		but have support for sensor-group disable/enable, will only have
-> +		the first attribute with write permission. In such cases write
-> +		to the first attribute will affect all the sensors of this type.
-> +		1: Enable
-> +		0: Disable
-> +		RW/RO
+> +		for_each_child_of_node(groups, sg) {
+> +			type = get_sensor_type(sg);
+> +			if (type != i)
+> +				continue;
 > +
->   Also see the Alarms section for status flags associated with fans.
->   
->   
-> @@ -409,6 +431,17 @@ temp_reset_history
->   		Reset temp_lowest and temp_highest for all sensors
->   		WO
->   
-> +temp[1-*]_enable
-> +		Enable or disable the sensor.
-> +		When disabled the sensor read will return -ENODATA. For chips
-> +		which do not have the capability to disable/enable single sensor
-> +		but have support for sensor-group disable/enable, will only have
-> +		the first attribute with write permission. In such cases write
-> +		to the first attribute will affect all the sensors of this type.
-> +		1: Enable
-> +		0: Disable
-> +		RW/RO
+> +			if (of_property_read_u32(sg, "sensor-group-id", &id))
+> +				continue;
 > +
->   Some chips measure temperature using external thermistors and an ADC, and
->   report the temperature measurement as a voltage. Converting this voltage
->   back to a temperature (or the other way around for limits) requires
-> @@ -468,6 +501,17 @@ curr_reset_history
->   		Reset currX_lowest and currX_highest for all sensors
->   		WO
->   
-> +curr[1-*]_enable
-> +		Enable or disable the sensor.
-> +		When disabled the sensor read will return -ENODATA. For chips
-> +		which do not have the capability to disable/enable single sensor
-> +		but have support for sensor-group disable/enable, will only have
-> +		the first attribute with write permission. In such cases write
-> +		to the first attribute will affect all the sensors of this type.
-> +		1: Enable
-> +		0: Disable
-> +		RW/RO
+> +			gid[sensor_groups[i].nr_gid++] = id;
+> +		}
 > +
->   Also see the Alarms section for status flags associated with currents.
->   
->   *********
-> @@ -566,6 +610,19 @@ power[1-*]_crit			Critical maximum power.
->   				Unit: microWatt
->   				RW
->   
-> +power[1-*]_enable		Enable or disable the sensor.
-> +				When disabled the sensor read will return
-> +				-ENODATA. For chips which do not have the
-> +				capability to disable/enable single sensor but
-> +				have support for sensor-group disable/enable,
-> +				will only have the first attribute with write
-> +				permission. In such cases write	to the first
-> +				attribute will affect all the sensors of this
-> +				type.
-> +				1: Enable
-> +				0: Disable
-> +				RW/RO
+> +		if (!sensor_groups[i].nr_gid)
+> +			continue;
 > +
->   Also see the Alarms section for status flags associated with power readings.
->   
->   **********
-> @@ -576,6 +633,18 @@ energy[1-*]_input		Cumulative energy use
->   				Unit: microJoule
->   				RO
->   
-> +energy[1-*]_enable		Enable or disable the sensor.
-> +				When disabled the sensor read will return
-> +				-ENODATA. For chips which do not have the
-> +				capability to disable/enable single sensor but
-> +				have support for sensor-group disable/enable,
-> +				will only have the first attribute with write
-> +				permission. In such cases write	to the first
-> +				attribute will affect all the sensors of this
-> +				type.
-> +				1: Enable
-> +				0: Disable
-> +				RW/RO
->   
->   ************
->   * Humidity *
-> @@ -586,6 +655,19 @@ humidity[1-*]_input		Humidity
->   				RO
->   
->   
-> +humidity[1-*]_enable		Enable or disable the sensor.
-> +				When disabled the sensor read will return
-> +				-ENODATA. For chips which do not have the
-> +				capability to disable/enable single sensor but
-> +				have support for sensor-group disable/enable,
-> +				will only have the first attribute with write
-> +				permission. In such cases write	to the first
-> +				attribute will affect all the sensors of this
-> +				type.
-> +				1: Enable
-> +				0: Disable
-> +				RW/RO
+> +		size = sensor_groups[i].nr_gid * sizeof(u32);
+> +		sensor_groups[i].gid = devm_kzalloc(&pdev->dev, size,
+> +						    GFP_KERNEL);
+> +		if (!sensor_groups[i].gid) {
+> +			ret = -ENOMEM;
+> +			break;
+> +		}
 > +
->   **********
->   * Alarms *
->   **********
+> +		memcpy(sensor_groups[i].gid, gid, size);
+> +		sensor_groups[i].enable = false;
+> +		mutex_init(&sensor_groups[i].mutex);
+> +	}
+> +
+> +	of_node_put(groups);
+> +	return ret;
+> +}
+> +
+>   static int populate_attr_groups(struct platform_device *pdev)
+>   {
+>   	struct platform_data *pdata = platform_get_drvdata(pdev);
+>   	const struct attribute_group **pgroups = pdata->attr_groups;
+>   	struct device_node *opal, *np;
+> +	int ret;
+>   	enum sensors type;
+>   
+> +	ret = init_sensor_group_data(pdev);
+> +	if (ret)
+> +		return ret;
+> +
+>   	opal = of_find_node_by_path("/ibm,opal/sensors");
+>   	for_each_child_of_node(opal, np) {
+>   		const char *label;
+> @@ -313,7 +415,7 @@ static int populate_attr_groups(struct platform_device *pdev)
+>   		sensor_groups[type].attr_count++;
+>   
+>   		/*
+> -		 * add attributes for labels, min and max
+> +		 * add attributes for labels, min, max and enable
+>   		 */
+>   		if (!of_property_read_string(np, "label", &label))
+>   			sensor_groups[type].attr_count++;
+> @@ -321,6 +423,8 @@ static int populate_attr_groups(struct platform_device *pdev)
+>   			sensor_groups[type].attr_count++;
+>   		if (of_find_property(np, "sensor-data-max", NULL))
+>   			sensor_groups[type].attr_count++;
+> +		if (sensor_groups[type].nr_gid)
+> +			sensor_groups[type].attr_count++;
+>   	}
+>   
+>   	of_node_put(opal);
+> @@ -344,7 +448,10 @@ static int populate_attr_groups(struct platform_device *pdev)
+>   static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
+>   			      ssize_t (*show)(struct device *dev,
+>   					      struct device_attribute *attr,
+> -					      char *buf))
+> +					      char *buf),
+> +			    ssize_t (*store)(struct device *dev,
+> +					     struct device_attribute *attr,
+> +					     const char *buf, size_t count))
+>   {
+>   	snprintf(sdata->name, MAX_ATTR_LEN, "%s%d_%s",
+>   		 sensor_groups[sdata->type].name, sdata->hwmon_index,
+> @@ -352,8 +459,13 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
+>   
+>   	sysfs_attr_init(&sdata->dev_attr.attr);
+>   	sdata->dev_attr.attr.name = sdata->name;
+> -	sdata->dev_attr.attr.mode = S_IRUGO;
+>   	sdata->dev_attr.show = show;
+> +	if (store) {
+> +		sdata->dev_attr.store = store;
+> +		sdata->dev_attr.attr.mode = 0664;
+> +	} else {
+> +		sdata->dev_attr.attr.mode = 0444;
+> +	}
+>   }
+>   
+>   static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
+> @@ -361,13 +473,16 @@ static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
+>   			    const struct attribute_group *pgroup,
+>   			    ssize_t (*show)(struct device *dev,
+>   					    struct device_attribute *attr,
+> -					    char *buf))
+> +					    char *buf),
+> +			    ssize_t (*store)(struct device *dev,
+> +					     struct device_attribute *attr,
+> +					     const char *buf, size_t count))
+>   {
+>   	sdata->id = sid;
+>   	sdata->type = type;
+>   	sdata->opal_index = od;
+>   	sdata->hwmon_index = hd;
+> -	create_hwmon_attr(sdata, attr_name, show);
+> +	create_hwmon_attr(sdata, attr_name, show, store);
+>   	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
+>   }
+>   
+> @@ -408,18 +523,16 @@ static int create_device_attrs(struct platform_device *pdev)
+>   	u32 count = 0;
+>   	int err = 0;
+>   
+> -	opal = of_find_node_by_path("/ibm,opal/sensors");
+>   	sdata = devm_kcalloc(&pdev->dev,
+>   			     pdata->sensors_count, sizeof(*sdata),
+>   			     GFP_KERNEL);
+> -	if (!sdata) {
+> -		err = -ENOMEM;
+> -		goto exit_put_node;
+> -	}
+> +	if (!sdata)
+> +		return -ENOMEM;
+>   
+> +	opal = of_find_node_by_path("/ibm,opal/sensors");
+>   	for_each_child_of_node(opal, np) {
+>   		const char *attr_name;
+> -		u32 opal_index;
+> +		u32 opal_index, hw_id;
+>   		const char *label;
+>   
+>   		if (np->name == NULL)
+> @@ -456,14 +569,11 @@ static int create_device_attrs(struct platform_device *pdev)
+>   			opal_index = INVALID_INDEX;
+>   		}
+>   
+> -		sdata[count].opal_index = opal_index;
+> -		sdata[count].hwmon_index =
+> -			get_sensor_hwmon_index(&sdata[count], sdata, count);
+> -
+> -		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
+> -
+> -		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+> -				&sdata[count++].dev_attr.attr;
+> +		hw_id = get_sensor_hwmon_index(&sdata[count], sdata, count);
+> +		populate_sensor(&sdata[count], opal_index, hw_id, sensor_id,
+> +				attr_name, type, pgroups[type], show_sensor,
+> +				NULL);
+> +		count++;
+>   
+>   		if (!of_property_read_string(np, "label", &label)) {
+>   			/*
+> @@ -474,33 +584,49 @@ static int create_device_attrs(struct platform_device *pdev)
+>   			 */
+>   
+>   			make_sensor_label(np, &sdata[count], label);
+> -			populate_sensor(&sdata[count], opal_index,
+> -					sdata[count - 1].hwmon_index,
+> +			populate_sensor(&sdata[count], opal_index, hw_id,
+>   					sensor_id, "label", type, pgroups[type],
+> -					show_label);
+> +					show_label, NULL);
+>   			count++;
+>   		}
+>   
+>   		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
+>   			attr_name = get_max_attr(type);
+> -			populate_sensor(&sdata[count], opal_index,
+> -					sdata[count - 1].hwmon_index,
+> +			populate_sensor(&sdata[count], opal_index, hw_id,
+>   					sensor_id, attr_name, type,
+> -					pgroups[type], show_sensor);
+> +					pgroups[type], show_sensor, NULL);
+>   			count++;
+>   		}
+>   
+>   		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
+>   			attr_name = get_min_attr(type);
+> -			populate_sensor(&sdata[count], opal_index,
+> -					sdata[count - 1].hwmon_index,
+> +			populate_sensor(&sdata[count], opal_index, hw_id,
+>   					sensor_id, attr_name, type,
+> -					pgroups[type], show_sensor);
+> +					pgroups[type], show_sensor, NULL);
+>   			count++;
+>   		}
+> +
+> +		if (sensor_groups[type].nr_gid) {
+> +			ssize_t (*store)(struct device *dev,
+> +					 struct device_attribute *attr,
+> +					 const char *buf, size_t count);
+> +
+> +			if (!sensor_groups[type].enable) {
+> +				sensor_groups[type].enable = true;
+> +				store = store_enable;
+> +			} else {
+> +				store = NULL;
+> +			}
+> +
+> +			sensor_groups[type].enable = true;
+> +			populate_sensor(&sdata[count], opal_index, hw_id,
+> +					sensor_id, "enable", type,
+> +					pgroups[type], show_enable, store);
+> +			count++;
+> +		}
+> +
+>   	}
+>   
+> -exit_put_node:
+>   	of_node_put(opal);
+>   	return err;
+>   }
 > 
