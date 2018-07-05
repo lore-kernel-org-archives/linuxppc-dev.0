@@ -1,32 +1,32 @@
 Return-Path: <labbott@redhat.com>
-Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
- [209.85.216.195])
+Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
+ [209.85.216.193])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M6pB3TrSzF1kV
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 05:08:34 +1000 (AEST)
-Received: by mail-qt0-f195.google.com with SMTP id h4-v6so8029212qtj.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 12:08:34 -0700 (PDT)
-Subject: Re: [PATCHv5 2/4] x86: Add build salt to the vDSO
-To: Andy Lutomirski <luto@kernel.org>
-Cc: Mark Wielaard <mjw@fedoraproject.org>, "H . J . Lu"
- <hjl.tools@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, X86 ML <x86@kernel.org>,
- LKML <linux-kernel@vger.kernel.org>, Nick Clifton <nickc@redhat.com>,
- Cary Coutant <ccoutant@gmail.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M7411FnzzF1vq
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 05:20:32 +1000 (AEST)
+Received: by mail-qt0-f193.google.com with SMTP id b15-v6so8046154qtp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 12:20:32 -0700 (PDT)
+Subject: Re: [PATCHv5 1/4] kbuild: Add build salt to the kernel and modules
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Andy Lutomirski <luto@kernel.org>, Mark Wielaard <mjw@fedoraproject.org>,
+ "H . J . Lu" <hjl.tools@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+ X86 ML <x86@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Nick Clifton <nickc@redhat.com>, Cary Coutant <ccoutant@gmail.com>,
  Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, linux-arm-kernel@lists.infradead.org
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 References: <20180703233430.14416-1-labbott@redhat.com>
- <20180703233430.14416-3-labbott@redhat.com>
- <CALCETrVZi2WYbBSifaNV4wajj52PyG-w7z9DekfJvSuZAKi1nA@mail.gmail.com>
+ <20180703233430.14416-2-labbott@redhat.com>
+ <CAK7LNAS7XBwDidNaLKC1wD+G30AyAvTHG5GN=UAiP5zz1EO8JA@mail.gmail.com>
 From: Laura Abbott <labbott@redhat.com>
-Message-ID: <2abd8138-0f62-79a5-5a2c-8e08aee171b8@redhat.com>
-Date: Thu, 5 Jul 2018 12:08:28 -0700
+Message-ID: <5e3ce0f4-0c4b-e0aa-2b21-9bf4b5bce9e2@redhat.com>
+Date: Thu, 5 Jul 2018 12:20:27 -0700
 MIME-Version: 1.0
-In-Reply-To: <CALCETrVZi2WYbBSifaNV4wajj52PyG-w7z9DekfJvSuZAKi1nA@mail.gmail.com>
+In-Reply-To: <CAK7LNAS7XBwDidNaLKC1wD+G30AyAvTHG5GN=UAiP5zz1EO8JA@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,66 +37,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2018 08:58 AM, Andy Lutomirski wrote:
-> On Tue, Jul 3, 2018 at 4:34 PM, Laura Abbott <labbott@redhat.com> wrote:
->>
->> The vDSO needs to have a unique build id in a similar manner
->> to the kernel and modules. Use the build salt macro.
->>
+On 07/03/2018 08:59 PM, Masahiro Yamada wrote:
+> Hi.
 > 
-> Looks good to me.  I have no idea whose tree these would go through.
+> Thanks for the update.
 > 
-
-I was intending this to go through kbuild tree. Can I take this
-as an Ack?
-
+> 
+> 2018-07-04 8:34 GMT+09:00 Laura Abbott <labbott@redhat.com>:
+>>
+>> The build id generated from --build-id can be generated in several different
+>> ways, with the default being the sha1 on the output of the linked file. For
+>> distributions, it can be useful to make sure this ID is unique, even if the
+>> actual file contents don't change. The easiest way to do this is to insert
+>> a section with some data.
+>>
+>> Add an ELF note to both the kernel and module which contains some data based
+>> off of a config option.
+>>
+>> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 >> Signed-off-by: Laura Abbott <labbott@redhat.com>
 >> ---
->> v5: Switched to using the single line BUILD_SALT macro
+>> v5: I used S-o-b here since the majority of the code was written
+>> already.
+> 
+> 
+> I think Suggested-by is good enough.
+> S-o-b is appended as a patch is passed from people to people.
+> 
+> Anyway, this looks good except one bike-shed.
+> 
+>> Please feel free to change the tag if you think it's not
+>> appropriate. I also tweaked this to take an ascii string instead of just
+>> a hex value since this makes things much easier on the distribution
+>> side.
 >> ---
->>   arch/x86/entry/vdso/vdso-note.S   | 3 +++
->>   arch/x86/entry/vdso/vdso32/note.S | 3 +++
->>   2 files changed, 6 insertions(+)
+> 
+> 
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index 041f3a022122..8de789f40db9 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -107,6 +107,15 @@ config LOCALVERSION_AUTO
 >>
->> diff --git a/arch/x86/entry/vdso/vdso-note.S b/arch/x86/entry/vdso/vdso-note.S
->> index 79a071e4357e..79423170118f 100644
->> --- a/arch/x86/entry/vdso/vdso-note.S
->> +++ b/arch/x86/entry/vdso/vdso-note.S
->> @@ -3,6 +3,7 @@
->>    * Here we can supply some information useful to userland.
->>    */
+>>            which is done within the script "scripts/setlocalversion".)
 >>
->> +#include <linux/build-salt.h>
->>   #include <linux/uts.h>
->>   #include <linux/version.h>
->>   #include <linux/elfnote.h>
->> @@ -10,3 +11,5 @@
->>   ELFNOTE_START(Linux, 0, "a")
->>          .long LINUX_VERSION_CODE
->>   ELFNOTE_END
->> +
->> +BUILD_SALT
->> diff --git a/arch/x86/entry/vdso/vdso32/note.S b/arch/x86/entry/vdso/vdso32/note.S
->> index 9fd51f206314..e78047d119f6 100644
->> --- a/arch/x86/entry/vdso/vdso32/note.S
->> +++ b/arch/x86/entry/vdso/vdso32/note.S
->> @@ -4,6 +4,7 @@
->>    * Here we can supply some information useful to userland.
->>    */
->>
->> +#include <linux/build-salt.h>
->>   #include <linux/version.h>
->>   #include <linux/elfnote.h>
->>
->> @@ -14,6 +15,8 @@ ELFNOTE_START(Linux, 0, "a")
->>          .long LINUX_VERSION_CODE
->>   ELFNOTE_END
->>
->> +BUILD_SALT
->> +
->>   #ifdef CONFIG_XEN
->>   /*
->>    * Add a special note telling glibc's dynamic linker a fake hardware
->> --
->> 2.17.1
->>
+>> +config BUILD_SALT
+>> +       string "Build ID Salt"
+>> +       default "Linux"
+> 
+> 
+> How about empty string ""
+> for default?
+> 
+
+Sure, seems to work fine.
+
+Thanks,
+Laura
