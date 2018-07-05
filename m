@@ -2,17 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M39j1gw9zF204
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:12 +1000 (AEST)
-Message-Id: <974766be9a476b4e8cbf5702af7575961c468e64.1530807556.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M39l19G5zF219
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:14 +1000 (AEST)
+Message-Id: <a8fa6d397c3a4c45ba5663ee7048fb3fafebd92a.1530807556.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1530807556.git.christophe.leroy@c-s.fr>
 References: <cover.1530807556.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 10/16] powerpc: fix includes in asm/processor.h
+Subject: [PATCH v3 11/16] powerpc/nohash: fix hash related comments in
+ pgtable.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  5 Jul 2018 16:25:09 +0000 (UTC)
+Date: Thu,  5 Jul 2018 16:25:11 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,42 +23,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove superflous includes and add missing ones
-
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/hw_breakpoint.h | 1 +
- arch/powerpc/include/asm/processor.h     | 5 ++---
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h |  4 ----
+ arch/powerpc/include/asm/nohash/64/pgtable.h | 18 ++++--------------
+ 2 files changed, 4 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index 8e7b09703ca4..3637588d3f6d 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -55,6 +55,7 @@ struct arch_hw_breakpoint {
- struct perf_event;
- struct pmu;
- struct perf_sample_data;
-+struct task_struct;
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 79805e0dad27..a507a65b0866 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -223,10 +223,6 @@ static inline unsigned long long pte_update(pte_t *p,
+ }
+ #endif /* CONFIG_PTE_64BIT */
  
- #define HW_BREAKPOINT_ALIGN 0x7
+-/*
+- * 2.6 calls this without flushing the TLB entry; this is wrong
+- * for our hash-based implementation, we fix that up here.
+- */
+ #define __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
+ static inline int __ptep_test_and_clear_young(unsigned int context, unsigned long addr, pte_t *ptep)
+ {
+diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
+index fe05b3e03cf1..7cd6809f4d33 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
+@@ -3,7 +3,7 @@
+ #define _ASM_POWERPC_NOHASH_64_PGTABLE_H
+ /*
+  * This file contains the functions and defines necessary to modify and use
+- * the ppc64 hashed page table.
++ * the ppc64 non-hashed page table.
+  */
  
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 5debe337ea9d..52fadded5c1e 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -39,10 +39,9 @@
- #endif /* CONFIG_PPC64 */
+ #include <asm/nohash/64/pgtable-4k.h>
+@@ -38,7 +38,7 @@
  
- #ifndef __ASSEMBLY__
--#include <linux/compiler.h>
--#include <linux/cache.h>
-+#include <linux/types.h>
-+#include <asm/thread_info.h>
- #include <asm/ptrace.h>
--#include <asm/types.h>
- #include <asm/hw_breakpoint.h>
+ /*
+  * The vmalloc space starts at the beginning of that region, and
+- * occupies half of it on hash CPUs and a quarter of it on Book3E
++ * occupies a quarter of it on Book3E
+  * (we keep a quarter for the virtual memmap)
+  */
+ #define VMALLOC_START	KERN_VIRT_START
+@@ -78,7 +78,7 @@
  
- /* We do _not_ want to define new machine types at all, those must die
+ /*
+  * Defines the address of the vmemap area, in its own region on
+- * hash table CPUs and after the vmalloc space on Book3E
++ * after the vmalloc space on Book3E
+  */
+ #define VMEMMAP_BASE		VMALLOC_END
+ #define VMEMMAP_END		KERN_IO_START
+@@ -248,14 +248,6 @@ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 	pte_update(mm, addr, ptep, _PAGE_RW, 0, 1);
+ }
+ 
+-/*
+- * We currently remove entries from the hashtable regardless of whether
+- * the entry was young or dirty. The generic routines only flush if the
+- * entry was young or dirty which is not good enough.
+- *
+- * We should be more intelligent about this but for the moment we override
+- * these functions and force a tlb flush unconditionally
+- */
+ #define __HAVE_ARCH_PTEP_CLEAR_YOUNG_FLUSH
+ #define ptep_clear_flush_young(__vma, __address, __ptep)		\
+ ({									\
+@@ -279,9 +271,7 @@ static inline void pte_clear(struct mm_struct *mm, unsigned long addr,
+ }
+ 
+ 
+-/* Set the dirty and/or accessed bits atomically in a linux PTE, this
+- * function doesn't need to flush the hash entry
+- */
++/* Set the dirty and/or accessed bits atomically in a linux PTE */
+ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   pte_t *ptep, pte_t entry,
+ 					   unsigned long address,
 -- 
 2.13.3
