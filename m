@@ -1,25 +1,53 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from heliosphere.sirena.org.uk (heliosphere.sirena.org.uk
- [IPv6:2a01:7e01::f03c:91ff:fed4:a3b6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41LtqV47sgzF1S2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 20:08:52 +1000 (AEST)
-From: Mark Brown <broonie@kernel.org>
-To: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Cc: Nicolin Chen <nicoleotsuka@gmail.com>, Mark Brown <broonie@kernel.org>,
- Timur Tabi <timur@kernel.org>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>,
- alsa-devel@alsa-project.org
-Subject: Applied "ASoC: fsl_spdif: Use 64-bit arithmetic instead of 32-bit" to
- the asoc tree
-In-Reply-To: <20180704141833.GA6702@embeddedor.com>
-Message-Id: <E1fb1Bn-0002vz-Tf@debutante>
-Date: Thu, 05 Jul 2018 11:08:39 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Ltrc36KczF1S8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 20:09:52 +1000 (AEST)
+Date: Thu, 5 Jul 2018 18:09:39 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+ Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Josh Triplett <josh@joshtriplett.org>,
+ kbuild test robot <fengguang.wu@intel.com>, Borislav Petkov <bp@suse.de>,
+ Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
+ David Airlie <airlied@linux.ie>, KY Srinivasan <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+ Frank Rowand <frowand.list@gmail.com>, Keith Busch <keith.busch@intel.com>,
+ Jon Derrick <jonathan.derrick@intel.com>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>, brijesh.singh@amd.com,
+ =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ baiyaowei@cmss.chinamobile.com, richard.weiyang@gmail.com,
+ devel@linuxdriverproject.org, linux-input <linux-input@vger.kernel.org>,
+ linux-nvdimm@lists.01.org, devicetree <devicetree@vger.kernel.org>,
+ linux-pci@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
+ Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
+ Yinghai Lu <yinghai@kernel.org>, kexec@lists.infradead.org,
+ Michal Simek <monstr@monstr.eu>, "David S. Miller" <davem@davemloft.net>,
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ Gustavo Padovan <gustavo@padovan.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Sean Paul <seanpaul@chromium.org>, linux-parisc@vger.kernel.org,
+ "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v6 1/4] resource: Move reparent_resources() to
+ kernel/resource.c and make it public
+Message-ID: <20180705100939.GD1225@MiWiFi-R3L-srv>
+References: <20180704041038.8190-1-bhe@redhat.com>
+ <20180704041038.8190-2-bhe@redhat.com>
+ <CAHp75VfWLcQq4XGM3RyfO_ENx=3=WrCEhtOw+a0Sfwz_OpQ0UQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAHp75VfWLcQq4XGM3RyfO_ENx=3=WrCEhtOw+a0Sfwz_OpQ0UQ@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +57,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch
+On 07/04/18 at 07:46pm, Andy Shevchenko wrote:
+> On Wed, Jul 4, 2018 at 7:10 AM, Baoquan He <bhe@redhat.com> wrote:
+> > reparent_resources() is duplicated in arch/microblaze/pci/pci-common.c
+> > and arch/powerpc/kernel/pci-common.c, so move it to kernel/resource.c
+> > so that it's shared.
+> 
+> With couple of comments below,
 
-   ASoC: fsl_spdif: Use 64-bit arithmetic instead of 32-bit
+Sure, will fix these and repost with your reviewed-by, thanks. Should be
+after I reproduce and fix those issues reported by test robot.
 
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
->From b999a7a9e72bd2d37b5d03772cedfc4dd45875bf Mon Sep 17 00:00:00 2001
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Wed, 4 Jul 2018 09:18:33 -0500
-Subject: [PATCH] ASoC: fsl_spdif: Use 64-bit arithmetic instead of 32-bit
-
-Add suffix ULL to constant 64 in order to give the compiler complete
-information about the proper arithmetic to use.
-
-Notice that such constant is used in a context that expects an
-expression of type u64 (64 bits, unsigned) and the following
-expression is currently being evaluated using 32-bit arithmetic:
-
-rate[index] * txclk_df * 64
-
-Addresses-Coverity-ID: 1222129 ("Unintentional integer overflow")
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Acked-by: Nicolin Chen <nicoleotsuka@gmail.com>
-Signed-off-by: Mark Brown <broonie@kernel.org>
----
- sound/soc/fsl/fsl_spdif.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/sound/soc/fsl/fsl_spdif.c b/sound/soc/fsl/fsl_spdif.c
-index 9b59d87b61bf..740b90df44bb 100644
---- a/sound/soc/fsl/fsl_spdif.c
-+++ b/sound/soc/fsl/fsl_spdif.c
-@@ -1118,7 +1118,7 @@ static u32 fsl_spdif_txclk_caldiv(struct fsl_spdif_priv *spdif_priv,
- 
- 	for (sysclk_df = sysclk_dfmin; sysclk_df <= sysclk_dfmax; sysclk_df++) {
- 		for (txclk_df = 1; txclk_df <= 128; txclk_df++) {
--			rate_ideal = rate[index] * txclk_df * 64;
-+			rate_ideal = rate[index] * txclk_df * 64ULL;
- 			if (round)
- 				rate_actual = clk_round_rate(clk, rate_ideal);
- 			else
--- 
-2.18.0.rc2
+> 
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> 
+> P.S. In some commit message in this series you used 'likt' instead of 'like'.
+> 
+> >
+> > Signed-off-by: Baoquan He <bhe@redhat.com>
+> > ---
+> >  arch/microblaze/pci/pci-common.c | 37 -------------------------------------
+> >  arch/powerpc/kernel/pci-common.c | 35 -----------------------------------
+> >  include/linux/ioport.h           |  1 +
+> >  kernel/resource.c                | 39 +++++++++++++++++++++++++++++++++++++++
+> >  4 files changed, 40 insertions(+), 72 deletions(-)
+> >
+> > diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
+> > index f34346d56095..7899bafab064 100644
+> > --- a/arch/microblaze/pci/pci-common.c
+> > +++ b/arch/microblaze/pci/pci-common.c
+> > @@ -619,43 +619,6 @@ int pcibios_add_device(struct pci_dev *dev)
+> >  EXPORT_SYMBOL(pcibios_add_device);
+> >
+> >  /*
+> > - * Reparent resource children of pr that conflict with res
+> > - * under res, and make res replace those children.
+> > - */
+> > -static int __init reparent_resources(struct resource *parent,
+> > -                                    struct resource *res)
+> > -{
+> > -       struct resource *p, **pp;
+> > -       struct resource **firstpp = NULL;
+> > -
+> > -       for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+> > -               if (p->end < res->start)
+> > -                       continue;
+> > -               if (res->end < p->start)
+> > -                       break;
+> > -               if (p->start < res->start || p->end > res->end)
+> > -                       return -1;      /* not completely contained */
+> > -               if (firstpp == NULL)
+> > -                       firstpp = pp;
+> > -       }
+> > -       if (firstpp == NULL)
+> > -               return -1;      /* didn't find any conflicting entries? */
+> > -       res->parent = parent;
+> > -       res->child = *firstpp;
+> > -       res->sibling = *pp;
+> > -       *firstpp = res;
+> > -       *pp = NULL;
+> > -       for (p = res->child; p != NULL; p = p->sibling) {
+> > -               p->parent = res;
+> > -               pr_debug("PCI: Reparented %s [%llx..%llx] under %s\n",
+> > -                        p->name,
+> > -                        (unsigned long long)p->start,
+> > -                        (unsigned long long)p->end, res->name);
+> > -       }
+> > -       return 0;
+> > -}
+> > -
+> > -/*
+> >   *  Handle resources of PCI devices.  If the world were perfect, we could
+> >   *  just allocate all the resource regions and do nothing more.  It isn't.
+> >   *  On the other hand, we cannot just re-allocate all devices, as it would
+> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> > index fe9733ffffaa..926035bb378d 100644
+> > --- a/arch/powerpc/kernel/pci-common.c
+> > +++ b/arch/powerpc/kernel/pci-common.c
+> > @@ -1088,41 +1088,6 @@ resource_size_t pcibios_align_resource(void *data, const struct resource *res,
+> >  EXPORT_SYMBOL(pcibios_align_resource);
+> >
+> >  /*
+> > - * Reparent resource children of pr that conflict with res
+> > - * under res, and make res replace those children.
+> > - */
+> > -static int reparent_resources(struct resource *parent,
+> > -                                    struct resource *res)
+> > -{
+> > -       struct resource *p, **pp;
+> > -       struct resource **firstpp = NULL;
+> > -
+> > -       for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+> > -               if (p->end < res->start)
+> > -                       continue;
+> > -               if (res->end < p->start)
+> > -                       break;
+> > -               if (p->start < res->start || p->end > res->end)
+> > -                       return -1;      /* not completely contained */
+> > -               if (firstpp == NULL)
+> > -                       firstpp = pp;
+> > -       }
+> > -       if (firstpp == NULL)
+> > -               return -1;      /* didn't find any conflicting entries? */
+> > -       res->parent = parent;
+> > -       res->child = *firstpp;
+> > -       res->sibling = *pp;
+> > -       *firstpp = res;
+> > -       *pp = NULL;
+> > -       for (p = res->child; p != NULL; p = p->sibling) {
+> > -               p->parent = res;
+> > -               pr_debug("PCI: Reparented %s %pR under %s\n",
+> > -                        p->name, p, res->name);
+> > -       }
+> > -       return 0;
+> > -}
+> > -
+> > -/*
+> >   *  Handle resources of PCI devices.  If the world were perfect, we could
+> >   *  just allocate all the resource regions and do nothing more.  It isn't.
+> >   *  On the other hand, we cannot just re-allocate all devices, as it would
+> > diff --git a/include/linux/ioport.h b/include/linux/ioport.h
+> > index da0ebaec25f0..dfdcd0bfe54e 100644
+> > --- a/include/linux/ioport.h
+> > +++ b/include/linux/ioport.h
+> > @@ -192,6 +192,7 @@ extern int allocate_resource(struct resource *root, struct resource *new,
+> >  struct resource *lookup_resource(struct resource *root, resource_size_t start);
+> >  int adjust_resource(struct resource *res, resource_size_t start,
+> >                     resource_size_t size);
+> > +int reparent_resources(struct resource *parent, struct resource *res);
+> >  resource_size_t resource_alignment(struct resource *res);
+> >  static inline resource_size_t resource_size(const struct resource *res)
+> >  {
+> > diff --git a/kernel/resource.c b/kernel/resource.c
+> > index 30e1bc68503b..d1cbf4b50e17 100644
+> > --- a/kernel/resource.c
+> > +++ b/kernel/resource.c
+> > @@ -983,6 +983,45 @@ int adjust_resource(struct resource *res, resource_size_t start,
+> >  }
+> >  EXPORT_SYMBOL(adjust_resource);
+> >
+> > +/*
+> 
+> /** ?
+> 
+> > + * reparent_resources - reparent resource children of parent that res covers
+> > + * @parent: parent resource descriptor
+> > + * @res: resource descriptor desired by caller
+> > + *
+> > + * Reparent resource children of 'parent' that conflict with 'res'
+> > + * under 'res', and make 'res' replace those children.
+> 
+> Describe error codes, please.
+> 
+> > + */
+> > +int reparent_resources(struct resource *parent, struct resource *res)
+> > +{
+> > +       struct resource *p, **pp;
+> > +       struct resource **firstpp = NULL;
+> > +
+> > +       for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
+> > +               if (p->end < res->start)
+> > +                       continue;
+> > +               if (res->end < p->start)
+> > +                       break;
+> > +               if (p->start < res->start || p->end > res->end)
+> > +                       return -ENOTSUPP;       /* not completely contained */
+> > +               if (firstpp == NULL)
+> > +                       firstpp = pp;
+> > +       }
+> > +       if (firstpp == NULL)
+> > +               return -ECANCELED; /* didn't find any conflicting entries? */
+> > +       res->parent = parent;
+> > +       res->child = *firstpp;
+> > +       res->sibling = *pp;
+> > +       *firstpp = res;
+> > +       *pp = NULL;
+> > +       for (p = res->child; p != NULL; p = p->sibling) {
+> > +               p->parent = res;
+> > +               pr_debug("PCI: Reparented %s %pR under %s\n",
+> > +                        p->name, p, res->name);
+> > +       }
+> > +       return 0;
+> > +}
+> > +EXPORT_SYMBOL(reparent_resources);
+> > +
+> >  static void __init __reserve_region_with_split(struct resource *root,
+> >                 resource_size_t start, resource_size_t end,
+> >                 const char *name)
+> > --
+> > 2.13.6
+> >
+> 
+> 
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
