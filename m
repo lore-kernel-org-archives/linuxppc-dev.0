@@ -2,23 +2,21 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M3Kt1XD7zF26Y
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:32:17 +1000 (AEST)
-Subject: Re: [RFC PATCH v1] powerpc/radix/kasan: KASAN support for Radix
-To: Balbir Singh <bsingharora@gmail.com>,
- Andrey Ryabinin <aryabinin@virtuozzo.com>
-Cc: kasan-dev@googlegroups.com, linux-mm <linux-mm@kvack.org>,
- Alexander Potapenko <glider@google.com>,
- "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)"
- <linuxppc-dev@lists.ozlabs.org>, Dmitry Vyukov <dvyukov@google.com>
-References: <20170729140901.5887-1-bsingharora@gmail.com>
- <d00f364a-1683-7981-f912-7014d48dc9ad@virtuozzo.com>
- <CAKTCnznzKtZWD25pYysGosns6GQLOnqAOS-BV90FtLOuLwS36Q@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M3Lw6BngzF26p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:33:12 +1000 (AEST)
+Subject: Re: [PATCH V2 00/10] KASan ppc64 support
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAPAsAGyMBnGJyBCoq2n9YSgC73GXr9-w3SjCTVdfz++drzOVGw@mail.gmail.com>
+ <87k2sic6pw.fsf@linux.vnet.ibm.com>
 From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <269e0e4b-7eb2-6f89-4a52-4cf2d114b4b0@c-s.fr>
-Date: Thu, 5 Jul 2018 18:32:12 +0200
+Message-ID: <7d459964-ce68-db1c-3d28-ae206d5ebdb0@c-s.fr>
+Date: Thu, 5 Jul 2018 18:33:08 +0200
 MIME-Version: 1.0
-In-Reply-To: <CAKTCnznzKtZWD25pYysGosns6GQLOnqAOS-BV90FtLOuLwS36Q@mail.gmail.com>
+In-Reply-To: <87k2sic6pw.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,97 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Balbir,
+Hi Aneesh,
 
-Are you still working on KASAN support ?
+Are you still working on support for KASan for ppc64 ?
 
 Thanks,
 Christophe
 
-Le 08/08/2017 à 03:18, Balbir Singh a écrit :
-> On Mon, Aug 7, 2017 at 10:30 PM, Andrey Ryabinin
-> <aryabinin@virtuozzo.com> wrote:
->> On 07/29/2017 05:09 PM, Balbir Singh wrote:
->>> This is the first attempt to implement KASAN for radix
->>> on powerpc64. Aneesh Kumar implemented KASAN for hash 64
->>> in limited mode (support only for kernel linear mapping)
->>> (https://lwn.net/Articles/655642/)
->>>
->>> This patch does the following:
->>> 1. Defines its own zero_page,pte,pmd and pud because
->>> the generic PTRS_PER_PTE, etc are variables on ppc64
->>> book3s. Since the implementation is for radix, we use
->>> the radix constants. This patch uses ARCH_DEFINES_KASAN_ZERO_PTE
->>> for that purpose
->>> 2. There is a new function check_return_arch_not_ready()
->>> which is defined for ppc64/book3s/radix and overrides the
->>> checks in check_memory_region_inline() until the arch has
->>> done kasan setup is done for the architecture. This is needed
->>> for powerpc. A lot of functions are called in real mode prior
->>> to MMU paging init, we could fix some of this by using
->>> the kasan_early_init() bits, but that just maps the zero
->>> page and does not do useful reporting. For this RFC we
->>> just delay the checks in mem* functions till kasan_init()
->>
->> check_return_arch_not_ready() works only for outline instrumentation
->> and without stack instrumentation.
->>
->> I guess this works for you only because CONFIG_KASAN_SHADOW_OFFSET is not defined.
->> Therefore test for CFLAGS_KASAN can't pass, as '-fasan-shadow-offset= ' is invalid option,
->> so CFLAGS_KASAN_MINIMAL is used instead. Or maybe you just used gcc 4.9.x which don't have
->> full kasan support.
->> This is also the reason why some tests doesn't pass for you.
->>
->> For stack instrumentation you'll have to implement kasan_early_init() and define CONFIG_KASAN_SHADOW_OFFSET.
+
+Le 26/08/2015 à 19:14, Aneesh Kumar K.V a écrit :
+> Andrey Ryabinin <ryabinin.a.a@gmail.com> writes:
 > 
-> Yep, I noticed that a little later when reading the build log,
-> scripts/Makefile.kasan does
-> print a warning. I guess we'll need to do early_init() because
-> kasan_init() can happen only
-> once we've setup our memblocks after parsing the device-tree.
-> 
->>
->>> 3. This patch renames memcpy/memset/memmove to their
->>> equivalent __memcpy/__memset/__memmove and for files
->>> that skip KASAN via KASAN_SANITIZE, we use the __
->>> variants. This is largely based on Aneesh's patchset
->>> mentioned above
->>> 4. In paca.c, some explicit memcpy inserted by the
->>> compiler/linker is replaced via explicit memcpy
->>> for structure content copying
->>> 5. prom_init and a few other files have KASAN_SANITIZE
->>> set to n, I think with the delayed checks (#2 above)
->>> we might be able to work around many of them
->>> 6. Resizing of virtual address space is done a little
->>> aggressively the size is reduced to 1/4 and totally
->>> to 1/2. For the RFC it was considered OK, since this
->>> is just a debug tool for developers. This can be revisited
->>> in the final implementation
+>> 2015-08-26 11:26 GMT+03:00 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
+>>> Hi,
 >>>
->>> Tests:
+>>> This patchset implements kernel address sanitizer for ppc64.
+>>> Since ppc64 virtual address range is divided into different regions,
+>>> we can't have one contigous area for the kasan shadow range. Hence
+>>> we don't support the INLINE kasan instrumentation. With Outline
+>>> instrumentation, we override the shadow_to_mem and mem_to_shadow
+>>> callbacks, so that we map only the kernel linear range (ie,
+>>> region with ID 0xc). For region with ID 0xd and 0xf (vmalloc
+>>> and vmemmap ) we return the address of the zero page. This
+>>> works because kasan doesn't track both vmemmap and vmalloc address.
 >>>
->>> I ran test_kasan.ko and it reported errors for all test
->>> cases except for
->>>
->>> kasan test: memcg_accounted_kmem_cache allocate memcg accounted object
->>> kasan test: kasan_stack_oob out-of-bounds on stack
->>> kasan test: kasan_global_oob out-of-bounds global variable
->>> kasan test: use_after_scope_test use-after-scope on int
->>> kasan test: use_after_scope_test use-after-scope on array
->>>
->>> Based on my understanding of the test, which is an expected
->>> kasan bug report after each test starting with a "===" line.
+>>> Known issues:
+>>> * Kasan is not yet enabled for arch/powerpc/kvm
+>>> * kexec hang
+>>> * outline stack and global support
 >>>
 >>
->> Right, with exception of memc_accounted_kmem_cache test.
->> The rest are expected to produce the kasan report unless CLFAGS_KASAN_MINIMAL
->> used.
->> use_after_scope tests also require fresh gcc 7.
+>> Is there any problem with globals or you just didn't try it yet?
+>> I think it should just work. You need only to add  --param
+>> asan-globals=0 to KBUILD_CFLAGS_MODULE
+>> to disable it for modules.
 > 
+> I am hitting BUG_ON in early vmalloc code. I still haven't got time to
+> debug it further. Should get to that soon.
 > 
-> Yep, Thanks for the review!
+> -aneesh
 > 
-> I'll work on a v2 and resend the patches
-> 
-> Balbir Singh.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
