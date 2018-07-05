@@ -2,17 +2,18 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M39s2X4SzF22j
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:21 +1000 (AEST)
-Message-Id: <d880539cae1cfb4b61cdea5aafc81af9493b194d.1530807556.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M39v0JWmzF1wr
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 02:25:22 +1000 (AEST)
+Message-Id: <2940336694008357af53e183791f1d7abff4d757.1530807556.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1530807556.git.christophe.leroy@c-s.fr>
 References: <cover.1530807556.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 14/16] powerpc: Split synch.h in two parts
+Subject: [PATCH v3 15/16] powerpc: remove unnecessary inclusion of
+ asm/tlbflush.h
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  5 Jul 2018 16:25:17 +0000 (UTC)
+Date: Thu,  5 Jul 2018 16:25:19 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,182 +23,301 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-move feature-fixups related stuff from synch.h to synch-ftr.h
+asm/tlbflush.h is only needed for:
+- using functions xxx_flush_tlb_xxx()
+- using MMU_NO_CONTEXT
+- including asm-generic/pgtable.h
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/atomic.h                 |  1 +
- arch/powerpc/include/asm/barrier.h                |  1 +
- arch/powerpc/include/asm/bitops.h                 |  1 +
- arch/powerpc/include/asm/cmpxchg.h                |  1 +
- arch/powerpc/include/asm/spinlock.h               |  1 +
- arch/powerpc/include/asm/{synch.h => synch-ftr.h} | 22 +++--------------
- arch/powerpc/include/asm/synch.h                  | 30 -----------------------
- arch/powerpc/lib/feature-fixups-test.S            |  1 +
- 8 files changed, 9 insertions(+), 49 deletions(-)
- copy arch/powerpc/include/asm/{synch.h => synch-ftr.h} (66%)
+ arch/powerpc/include/asm/highmem.h    | 2 +-
+ arch/powerpc/include/asm/tlb.h        | 1 -
+ arch/powerpc/kvm/book3s.c             | 1 -
+ arch/powerpc/kvm/book3s_32_mmu.c      | 1 -
+ arch/powerpc/kvm/book3s_64_mmu.c      | 1 -
+ arch/powerpc/kvm/book3s_64_mmu_hv.c   | 1 -
+ arch/powerpc/kvm/book3s_64_vio.c      | 1 -
+ arch/powerpc/kvm/book3s_64_vio_hv.c   | 1 -
+ arch/powerpc/kvm/book3s_hv.c          | 1 -
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c   | 1 -
+ arch/powerpc/kvm/book3s_pr.c          | 1 -
+ arch/powerpc/kvm/e500.c               | 1 -
+ arch/powerpc/kvm/e500mc.c             | 1 -
+ arch/powerpc/kvm/powerpc.c            | 1 -
+ arch/powerpc/mm/fault.c               | 1 -
+ arch/powerpc/mm/hash_native_64.c      | 1 -
+ arch/powerpc/mm/hash_utils_64.c       | 1 -
+ arch/powerpc/mm/mmu_context_hash32.c  | 1 -
+ arch/powerpc/mm/mmu_decl.h            | 1 -
+ arch/powerpc/mm/subpage-prot.c        | 1 -
+ arch/powerpc/platforms/pseries/lpar.c | 1 -
+ arch/powerpc/sysdev/cpm1.c            | 1 -
+ 22 files changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
-index cbdb0b7e60a3..49a929ec5435 100644
---- a/arch/powerpc/include/asm/atomic.h
-+++ b/arch/powerpc/include/asm/atomic.h
-@@ -11,6 +11,7 @@
- #include <asm/cmpxchg.h>
- #include <asm/barrier.h>
- #include <asm/asm-405.h>
-+#include <asm/synch-ftr.h>
+diff --git a/arch/powerpc/include/asm/highmem.h b/arch/powerpc/include/asm/highmem.h
+index cec820f961da..a4b65b186ec6 100644
+--- a/arch/powerpc/include/asm/highmem.h
++++ b/arch/powerpc/include/asm/highmem.h
+@@ -25,7 +25,7 @@
  
- #define ATOMIC_INIT(i)		{ (i) }
+ #include <linux/interrupt.h>
+ #include <asm/kmap_types.h>
+-#include <asm/tlbflush.h>
++#include <asm/cacheflush.h>
+ #include <asm/page.h>
+ #include <asm/fixmap.h>
  
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index de1316874e45..d90a1463967b 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -6,6 +6,7 @@
- #define _ASM_POWERPC_BARRIER_H
+diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+index 9138baccebb0..6d2ba7c779dc 100644
+--- a/arch/powerpc/include/asm/tlb.h
++++ b/arch/powerpc/include/asm/tlb.h
+@@ -17,7 +17,6 @@
+ #include <asm/pgtable.h>
+ #endif
+ #include <asm/pgalloc.h>
+-#include <asm/tlbflush.h>
+ #ifndef __powerpc64__
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index edaf4720d156..87348e498c89 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -28,7 +28,6 @@
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+-#include <asm/tlbflush.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/kvm_ppc.h>
+diff --git a/arch/powerpc/kvm/book3s_32_mmu.c b/arch/powerpc/kvm/book3s_32_mmu.c
+index 45c8ea4a0487..612169988a3d 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu.c
++++ b/arch/powerpc/kvm/book3s_32_mmu.c
+@@ -23,7 +23,6 @@
+ #include <linux/kvm_host.h>
+ #include <linux/highmem.h>
  
- #include <asm/asm-const.h>
-+#include <asm/synch-ftr.h>
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ 
+diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
+index cf9d686e8162..c92dd25bed23 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu.c
++++ b/arch/powerpc/kvm/book3s_64_mmu.c
+@@ -23,7 +23,6 @@
+ #include <linux/kvm_host.h>
+ #include <linux/highmem.h>
+ 
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/book3s/64/mmu-hash.h>
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index 7f3a8cf5d66f..3c0e8fb2b773 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -29,7 +29,6 @@
+ #include <linux/file.h>
+ #include <linux/debugfs.h>
+ 
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/book3s/64/mmu-hash.h>
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index d066e37551ec..b3c1935229b0 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -31,7 +31,6 @@
+ #include <linux/iommu.h>
+ #include <linux/file.h>
+ 
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/book3s/64/mmu-hash.h>
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 80d50d67b8c5..3315a56b6737 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -28,7 +28,6 @@
+ #include <linux/list.h>
+ #include <linux/stringify.h>
+ 
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+ #include <asm/book3s/64/mmu-hash.h>
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index de686b340f4a..b4a5cc8525a0 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -53,7 +53,6 @@
+ #include <asm/disassemble.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+-#include <asm/tlbflush.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/kvm_ppc.h>
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 1f22d9e977d4..a67cf1cdeda4 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -14,7 +14,6 @@
+ #include <linux/module.h>
+ #include <linux/log2.h>
+ 
+-#include <asm/tlbflush.h>
+ #include <asm/trace.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/kvm_book3s.h>
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index c3b8006f0eac..47ee43bbd696 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -27,7 +27,6 @@
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+ #include <asm/cacheflush.h>
+-#include <asm/tlbflush.h>
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/kvm_ppc.h>
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index f9f6468f4171..afd3c255a427 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -21,7 +21,6 @@
+ 
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ 
+ #include "../mm/mmu_decl.h"
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index d0b6b5788afc..d31645491a93 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -21,7 +21,6 @@
+ 
+ #include <asm/reg.h>
+ #include <asm/cputable.h>
+-#include <asm/tlbflush.h>
+ #include <asm/kvm_ppc.h>
+ #include <asm/dbell.h>
+ 
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 0e8c20c5eaac..3ccc386b380d 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -33,7 +33,6 @@
+ #include <asm/cputable.h>
+ #include <linux/uaccess.h>
+ #include <asm/kvm_ppc.h>
+-#include <asm/tlbflush.h>
+ #include <asm/cputhreads.h>
+ #include <asm/irqflags.h>
+ #include <asm/iommu.h>
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index b1ca7a0974e3..7d262c6437c4 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -42,7 +42,6 @@
+ #include <asm/pgtable.h>
+ #include <asm/mmu.h>
+ #include <asm/mmu_context.h>
+-#include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ #include <asm/debug.h>
+ 
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 1baabc74c4ae..4958f2a4f1d5 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -23,7 +23,6 @@
+ #include <asm/mmu.h>
+ #include <asm/mmu_context.h>
+ #include <asm/pgtable.h>
+-#include <asm/tlbflush.h>
+ #include <asm/trace.h>
+ #include <asm/tlb.h>
+ #include <asm/cputable.h>
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8318716e5075..af6c70dfe140 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -48,7 +48,6 @@
+ #include <linux/uaccess.h>
+ #include <asm/machdep.h>
+ #include <asm/prom.h>
+-#include <asm/tlbflush.h>
+ #include <asm/io.h>
+ #include <asm/eeh.h>
+ #include <asm/tlb.h>
+diff --git a/arch/powerpc/mm/mmu_context_hash32.c b/arch/powerpc/mm/mmu_context_hash32.c
+index aa5a7fd89461..921c1e33e941 100644
+--- a/arch/powerpc/mm/mmu_context_hash32.c
++++ b/arch/powerpc/mm/mmu_context_hash32.c
+@@ -27,7 +27,6 @@
+ #include <linux/export.h>
+ 
+ #include <asm/mmu_context.h>
+-#include <asm/tlbflush.h>
  
  /*
-  * Memory barrier.
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index ff71566dadee..b8bf2f5b75ce 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -44,6 +44,7 @@
+  * On 32-bit PowerPC 6xx/7xx/7xxx CPUs, we use a set of 16 VSIDs
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index c4c0a09a7775..e5d779eed181 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -19,7 +19,6 @@
+  *
+  */
+ #include <linux/mm.h>
+-#include <asm/tlbflush.h>
+ #include <asm/mmu.h>
  
- #include <linux/compiler.h>
- #include <asm/asm-compat.h>
-+#include <asm/synch-ftr.h>
- #include <asm/synch.h>
- #include <asm/asm-405.h>
+ #ifdef CONFIG_PPC_MMU_NOHASH
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index 9d16ee251fc0..3327551c8b47 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -17,7 +17,6 @@
  
-diff --git a/arch/powerpc/include/asm/cmpxchg.h b/arch/powerpc/include/asm/cmpxchg.h
-index 27183871eb3b..d94a67a1a574 100644
---- a/arch/powerpc/include/asm/cmpxchg.h
-+++ b/arch/powerpc/include/asm/cmpxchg.h
-@@ -4,6 +4,7 @@
+ #include <asm/pgtable.h>
+ #include <linux/uaccess.h>
+-#include <asm/tlbflush.h>
  
- #ifdef __KERNEL__
- #include <linux/compiler.h>
-+#include <asm/synch-ftr.h>
- #include <asm/synch.h>
- #include <linux/bug.h>
- #include <asm/asm-405.h>
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 685c72310f5d..182f950a4c5d 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -24,6 +24,7 @@
- #include <asm/paca.h>
- #include <asm/hvcall.h>
- #endif
-+#include <asm/synch-ftr.h>
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
- #include <asm/asm-405.h>
-diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch-ftr.h
-similarity index 66%
-copy from arch/powerpc/include/asm/synch.h
-copy to arch/powerpc/include/asm/synch-ftr.h
-index aca70fb43147..f86c536bd351 100644
---- a/arch/powerpc/include/asm/synch.h
-+++ b/arch/powerpc/include/asm/synch-ftr.h
-@@ -1,27 +1,11 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--#ifndef _ASM_POWERPC_SYNCH_H 
--#define _ASM_POWERPC_SYNCH_H 
-+#ifndef _ASM_POWERPC_SYNCH_FTR_H
-+#define _ASM_POWERPC_SYNCH_FTR_H
- #ifdef __KERNEL__
- 
- #include <asm/feature-fixups.h>
- #include <asm/asm-const.h>
- 
--#ifndef __ASSEMBLY__
--extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
--extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
--			     void *fixup_end);
--
--static inline void eieio(void)
--{
--	__asm__ __volatile__ ("eieio" : : : "memory");
--}
--
--static inline void isync(void)
--{
--	__asm__ __volatile__ ("isync" : : : "memory");
--}
--#endif /* __ASSEMBLY__ */
--
- #if defined(__powerpc64__)
- #    define LWSYNC	lwsync
- #elif defined(CONFIG_E500)
-@@ -50,4 +34,4 @@ static inline void isync(void)
- #endif
- 
- #endif /* __KERNEL__ */
--#endif	/* _ASM_POWERPC_SYNCH_H */
-+#endif	/* _ASM_POWERPC_SYNCH_FTR_H */
-diff --git a/arch/powerpc/include/asm/synch.h b/arch/powerpc/include/asm/synch.h
-index aca70fb43147..48b23168ea9e 100644
---- a/arch/powerpc/include/asm/synch.h
-+++ b/arch/powerpc/include/asm/synch.h
-@@ -3,9 +3,6 @@
- #define _ASM_POWERPC_SYNCH_H 
- #ifdef __KERNEL__
- 
--#include <asm/feature-fixups.h>
--#include <asm/asm-const.h>
--
- #ifndef __ASSEMBLY__
- extern unsigned int __start___lwsync_fixup, __stop___lwsync_fixup;
- extern void do_lwsync_fixups(unsigned long value, void *fixup_start,
-@@ -22,32 +19,5 @@ static inline void isync(void)
- }
- #endif /* __ASSEMBLY__ */
- 
--#if defined(__powerpc64__)
--#    define LWSYNC	lwsync
--#elif defined(CONFIG_E500)
--#    define LWSYNC					\
--	START_LWSYNC_SECTION(96);			\
--	sync;						\
--	MAKE_LWSYNC_SECTION_ENTRY(96, __lwsync_fixup);
--#else
--#    define LWSYNC	sync
--#endif
--
--#ifdef CONFIG_SMP
--#define __PPC_ACQUIRE_BARRIER				\
--	START_LWSYNC_SECTION(97);			\
--	isync;						\
--	MAKE_LWSYNC_SECTION_ENTRY(97, __lwsync_fixup);
--#define PPC_ACQUIRE_BARRIER	 "\n" stringify_in_c(__PPC_ACQUIRE_BARRIER)
--#define PPC_RELEASE_BARRIER	 stringify_in_c(LWSYNC) "\n"
--#define PPC_ATOMIC_ENTRY_BARRIER "\n" stringify_in_c(sync) "\n"
--#define PPC_ATOMIC_EXIT_BARRIER	 "\n" stringify_in_c(sync) "\n"
--#else
--#define PPC_ACQUIRE_BARRIER
--#define PPC_RELEASE_BARRIER
--#define PPC_ATOMIC_ENTRY_BARRIER
--#define PPC_ATOMIC_EXIT_BARRIER
--#endif
--
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_SYNCH_H */
-diff --git a/arch/powerpc/lib/feature-fixups-test.S b/arch/powerpc/lib/feature-fixups-test.S
-index ee7c5fd5fc64..8c781b2e467b 100644
---- a/arch/powerpc/lib/feature-fixups-test.S
-+++ b/arch/powerpc/lib/feature-fixups-test.S
-@@ -10,6 +10,7 @@
- 
- #include <asm/feature-fixups.h>
- #include <asm/ppc_asm.h>
-+#include <asm/synch-ftr.h>
- #include <asm/synch.h>
- #include <asm/asm-compat.h>
- 
+ /*
+  * Free all pages allocated for subpage protection maps and pointers.
+diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
+index 5a392e40f3d2..bc50f1dcc430 100644
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -36,7 +36,6 @@
+ #include <asm/machdep.h>
+ #include <asm/mmu_context.h>
+ #include <asm/iommu.h>
+-#include <asm/tlbflush.h>
+ #include <asm/tlb.h>
+ #include <asm/prom.h>
+ #include <asm/cputable.h>
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index 5240d3a74a10..4f8dcf124828 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -38,7 +38,6 @@
+ #include <asm/8xx_immap.h>
+ #include <asm/cpm1.h>
+ #include <asm/io.h>
+-#include <asm/tlbflush.h>
+ #include <asm/rheap.h>
+ #include <asm/prom.h>
+ #include <asm/cpm.h>
 -- 
 2.13.3
