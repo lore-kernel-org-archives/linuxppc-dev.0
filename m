@@ -1,12 +1,11 @@
 Return-Path: <alex@ghiti.fr>
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net
- [217.70.183.201])
+Received: from relay11.mail.gandi.net (relay11.mail.gandi.net [217.70.178.231])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Lmq14vmnzDqHx
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 15:38:04 +1000 (AEST)
-Subject: Re: [PATCH v2 06/11] hugetlb: Introduce generic version of
- huge_pte_none
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Lmqp17Q1zDqHx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2018 15:38:45 +1000 (AEST)
+Subject: Re: [PATCH 05/11] hugetlb: Introduce generic version of
+ huge_ptep_clear_flush
 To: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
  tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
  paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
@@ -18,13 +17,13 @@ To: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
  linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
  sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20180705050323.301-1-alex@ghiti.fr>
- <20180705051242.694-1-alex@ghiti.fr> <20180705051242.694-6-alex@ghiti.fr>
+References: <20180705045847.32575-1-alex@ghiti.fr>
+ <20180705045847.32575-6-alex@ghiti.fr>
 From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <92f84f1e-652c-6442-fafa-acfa63607601@ghiti.fr>
-Date: Thu, 5 Jul 2018 05:37:54 +0000
+Message-ID: <319ae759-f6b1-0b75-cfd5-35f956afba13@ghiti.fr>
+Date: Thu, 5 Jul 2018 05:38:31 +0000
 MIME-Version: 1.0
-In-Reply-To: <20180705051242.694-6-alex@ghiti.fr>
+In-Reply-To: <20180705045847.32575-6-alex@ghiti.fr>
 Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,177 +37,156 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Please drop this serie, sorry for the noise.
 
 
-On 07/05/2018 05:12 AM, Alexandre Ghiti wrote:
-> arm, arm64, ia64, parisc, powerpc, sh, sparc, x86 architectures
-> use the same version of huge_pte_none, so move this generic
-> implementation into asm-generic/hugetlb.h.
+On 07/05/2018 04:58 AM, Alexandre Ghiti wrote:
+> arm, x86 architectures use the same version of
+> huge_ptep_clear_flush, so move this generic implementation into
+> asm-generic/hugetlb.h.
 >
 > Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
 > ---
->   arch/arm/include/asm/hugetlb.h     | 5 -----
->   arch/arm64/include/asm/hugetlb.h   | 5 -----
->   arch/ia64/include/asm/hugetlb.h    | 5 -----
->   arch/mips/include/asm/hugetlb.h    | 1 +
->   arch/parisc/include/asm/hugetlb.h  | 5 -----
->   arch/powerpc/include/asm/hugetlb.h | 5 -----
->   arch/sh/include/asm/hugetlb.h      | 5 -----
->   arch/sparc/include/asm/hugetlb.h   | 5 -----
->   arch/x86/include/asm/hugetlb.h     | 5 -----
->   include/asm-generic/hugetlb.h      | 7 +++++++
->   10 files changed, 8 insertions(+), 40 deletions(-)
+>   arch/arm/include/asm/hugetlb-3level.h | 6 ------
+>   arch/arm64/include/asm/hugetlb.h      | 1 +
+>   arch/ia64/include/asm/hugetlb.h       | 1 +
+>   arch/mips/include/asm/hugetlb.h       | 1 +
+>   arch/parisc/include/asm/hugetlb.h     | 1 +
+>   arch/powerpc/include/asm/hugetlb.h    | 1 +
+>   arch/sh/include/asm/hugetlb.h         | 1 +
+>   arch/sparc/include/asm/hugetlb.h      | 1 +
+>   arch/x86/include/asm/hugetlb.h        | 6 ------
+>   include/asm-generic/hugetlb.h         | 8 ++++++++
+>   10 files changed, 15 insertions(+), 12 deletions(-)
 >
-> diff --git a/arch/arm/include/asm/hugetlb.h b/arch/arm/include/asm/hugetlb.h
-> index 047b893ef95d..3d2ce4dbc145 100644
-> --- a/arch/arm/include/asm/hugetlb.h
-> +++ b/arch/arm/include/asm/hugetlb.h
-> @@ -43,11 +43,6 @@ static inline int prepare_hugepage_range(struct file *file,
->   	return 0;
+> diff --git a/arch/arm/include/asm/hugetlb-3level.h b/arch/arm/include/asm/hugetlb-3level.h
+> index ad36e84b819a..b897541520ef 100644
+> --- a/arch/arm/include/asm/hugetlb-3level.h
+> +++ b/arch/arm/include/asm/hugetlb-3level.h
+> @@ -37,12 +37,6 @@ static inline pte_t huge_ptep_get(pte_t *ptep)
+>   	return retval;
 >   }
 >   
-> -static inline int huge_pte_none(pte_t pte)
+> -static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+> -					 unsigned long addr, pte_t *ptep)
 > -{
-> -	return pte_none(pte);
+> -	ptep_clear_flush(vma, addr, ptep);
 > -}
 > -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
+>   static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>   					   unsigned long addr, pte_t *ptep)
 >   {
->   	return pte_wrprotect(pte);
 > diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-> index 4c8dd488554d..49247c6f94db 100644
+> index 6ae0bcafe162..4c8dd488554d 100644
 > --- a/arch/arm64/include/asm/hugetlb.h
 > +++ b/arch/arm64/include/asm/hugetlb.h
-> @@ -42,11 +42,6 @@ static inline int prepare_hugepage_range(struct file *file,
->   	return 0;
->   }
->   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
->   {
->   	return pte_wrprotect(pte);
+> @@ -71,6 +71,7 @@ extern pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
+>   				     unsigned long addr, pte_t *ptep);
+>   extern void huge_ptep_set_wrprotect(struct mm_struct *mm,
+>   				    unsigned long addr, pte_t *ptep);
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   extern void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   				  unsigned long addr, pte_t *ptep);
+>   #define __HAVE_ARCH_HUGE_PTE_CLEAR
 > diff --git a/arch/ia64/include/asm/hugetlb.h b/arch/ia64/include/asm/hugetlb.h
-> index 41b5f6adeee4..bf573500b3c4 100644
+> index 6719c74da0de..41b5f6adeee4 100644
 > --- a/arch/ia64/include/asm/hugetlb.h
 > +++ b/arch/ia64/include/asm/hugetlb.h
-> @@ -26,11 +26,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   {
+> @@ -20,6 +20,7 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
+>   		REGION_NUMBER((addr)+(len)-1) == RGN_HPAGE);
 >   }
 >   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
 >   {
->   	return pte_wrprotect(pte);
 > diff --git a/arch/mips/include/asm/hugetlb.h b/arch/mips/include/asm/hugetlb.h
-> index 7df1f116a3cc..1c9c4531376c 100644
+> index 0959cc5a41fa..7df1f116a3cc 100644
 > --- a/arch/mips/include/asm/hugetlb.h
 > +++ b/arch/mips/include/asm/hugetlb.h
-> @@ -55,6 +55,7 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   	flush_tlb_page(vma, addr & huge_page_mask(hstate_vma(vma)));
+> @@ -48,6 +48,7 @@ static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
+>   	return pte;
 >   }
 >   
-> +#define __HAVE_ARCH_HUGE_PTE_NONE
->   static inline int huge_pte_none(pte_t pte)
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
 >   {
->   	unsigned long val = pte_val(pte) & ~_PAGE_GLOBAL;
 > diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-> index 9afff26747a1..c09d8c74553c 100644
+> index 6e281e1bb336..9afff26747a1 100644
 > --- a/arch/parisc/include/asm/hugetlb.h
 > +++ b/arch/parisc/include/asm/hugetlb.h
-> @@ -38,11 +38,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   {
->   }
->   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
->   {
->   	return pte_wrprotect(pte);
-> diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-> index de0769f0b5b2..530b817e097c 100644
-> --- a/arch/powerpc/include/asm/hugetlb.h
-> +++ b/arch/powerpc/include/asm/hugetlb.h
-> @@ -152,11 +152,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   	flush_hugetlb_page(vma, addr);
->   }
->   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
->   {
->   	return pte_wrprotect(pte);
-> diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
-> index 9abf9c86b769..a9f8266f33cf 100644
-> --- a/arch/sh/include/asm/hugetlb.h
-> +++ b/arch/sh/include/asm/hugetlb.h
-> @@ -31,11 +31,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   {
->   }
->   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
->   {
->   	return pte_wrprotect(pte);
-> diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
-> index 651a9593fcee..11115bbd712e 100644
-> --- a/arch/sparc/include/asm/hugetlb.h
-> +++ b/arch/sparc/include/asm/hugetlb.h
-> @@ -48,11 +48,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
->   {
->   }
->   
-> -static inline int huge_pte_none(pte_t pte)
-> -{
-> -	return pte_none(pte);
-> -}
-> -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
->   {
->   	return pte_wrprotect(pte);
-> diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-> index 8347d5abf882..c5fdc53b6e41 100644
-> --- a/arch/x86/include/asm/hugetlb.h
-> +++ b/arch/x86/include/asm/hugetlb.h
-> @@ -27,11 +27,6 @@ static inline int prepare_hugepage_range(struct file *file,
+> @@ -32,6 +32,7 @@ static inline int prepare_hugepage_range(struct file *file,
 >   	return 0;
 >   }
 >   
-> -static inline int huge_pte_none(pte_t pte)
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
+>   {
+> diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+> index ec3e0c2e78f8..de0769f0b5b2 100644
+> --- a/arch/powerpc/include/asm/hugetlb.h
+> +++ b/arch/powerpc/include/asm/hugetlb.h
+> @@ -143,6 +143,7 @@ static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
+>   #endif
+>   }
+>   
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
+>   {
+> diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
+> index 08ee6c00b5e9..9abf9c86b769 100644
+> --- a/arch/sh/include/asm/hugetlb.h
+> +++ b/arch/sh/include/asm/hugetlb.h
+> @@ -25,6 +25,7 @@ static inline int prepare_hugepage_range(struct file *file,
+>   	return 0;
+>   }
+>   
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
+>   {
+> diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
+> index 944e3a4bfaff..651a9593fcee 100644
+> --- a/arch/sparc/include/asm/hugetlb.h
+> +++ b/arch/sparc/include/asm/hugetlb.h
+> @@ -42,6 +42,7 @@ static inline int prepare_hugepage_range(struct file *file,
+>   	return 0;
+>   }
+>   
+> +#define __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+>   static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+>   					 unsigned long addr, pte_t *ptep)
+>   {
+> diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
+> index 48b8d9b13cc6..8347d5abf882 100644
+> --- a/arch/x86/include/asm/hugetlb.h
+> +++ b/arch/x86/include/asm/hugetlb.h
+> @@ -27,12 +27,6 @@ static inline int prepare_hugepage_range(struct file *file,
+>   	return 0;
+>   }
+>   
+> -static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+> -					 unsigned long addr, pte_t *ptep)
 > -{
-> -	return pte_none(pte);
+> -	ptep_clear_flush(vma, addr, ptep);
 > -}
 > -
->   static inline pte_t huge_pte_wrprotect(pte_t pte)
+>   static inline int huge_pte_none(pte_t pte)
 >   {
->   	return pte_wrprotect(pte);
+>   	return pte_none(pte);
 > diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
-> index ffa63fd8388d..2fc3d68424e9 100644
+> index 0f6f151780dd..ffa63fd8388d 100644
 > --- a/include/asm-generic/hugetlb.h
 > +++ b/include/asm-generic/hugetlb.h
-> @@ -73,4 +73,11 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+> @@ -65,4 +65,12 @@ static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
 >   }
 >   #endif
 >   
-> +#ifndef __HAVE_ARCH_HUGE_PTE_NONE
-> +static inline int huge_pte_none(pte_t pte)
+> +#ifndef __HAVE_ARCH_HUGE_PTEP_CLEAR_FLUSH
+> +static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
+> +		unsigned long addr, pte_t *ptep)
 > +{
-> +	return pte_none(pte);
+> +	ptep_clear_flush(vma, addr, ptep);
 > +}
 > +#endif
 > +
