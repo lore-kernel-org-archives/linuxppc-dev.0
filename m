@@ -1,23 +1,20 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rdunlap@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41M7Rz3c59zF2WT
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 05:37:51 +1000 (AEST)
-Date: Thu, 5 Jul 2018 21:38:46 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: hch@lst.de, m.szyprowski@samsung.com, iommu@lists.linux-foundation.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 2/2] dma-mapping: Clean up dma_get_required_mask()
- hooks
-Message-ID: <20180705193846.GC28905@lst.de>
-References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
- <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41M9xx4pRWzF266
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 07:30:29 +1000 (AEST)
+To: linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
+Message-ID: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+Date: Thu, 5 Jul 2018 14:30:24 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 04, 2018 at 06:50:12PM +0100, Robin Murphy wrote:
-> As for the other mask-related hooks, standardise the arch override into
-> a Kconfig option, and also pull the generic implementation into the DMA
-> mapping code rather than having it hide away in the platform bus code.
+Hi,
 
-Heh, I have a somewhat similar patch in my queue.  I didn't want it out
-because dma_get_required_mask is rather ill defined at the moment and
-I wanted to clean that up first.  But I guess I could apply this first
-and clean up later.
+Is there a good way (or a shortcut) to do something like:
 
-I just fear you might be wanting to add an arm64 user, so I'd really like
-to understand why and how.
+$ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+  to get a PPC32/32BIT allmodconfig
+
+and also be able to do:
+
+$make ARCH=powerpc O=PPC64 [other_options] allmodconfig
+  to get a PPC64/64BIT allmodconfig?
+
+
+Note that arch/x86, arch/sh, and arch/sparc have ways to do
+some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
+sh and sparc based on a recent "fix" patch from me):
+
+x86: i386 for 32 bit, x86_64 for 64 bit
+sh: sh for 32 bit, sh64 for 64 bit
+sparc: sparc32 for 32 bit, sparc64 for 64 bit
+
+
+thanks,
+-- 
+~Randy
