@@ -1,35 +1,29 @@
-Return-Path: <srs0=+src=jw=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rjw@rjwysocki.net>
+Received: from cloudserver094114.home.pl (cloudserver094114.home.pl
+ [79.96.170.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MV8T49QczDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 19:40:41 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41MV8T2w1gz8wKK
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 19:40:41 +1000 (AEST)
-Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
- [IPv6:2607:f8b0:400e:c01::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41MV8S4yrqz9s1B
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2018 19:40:40 +1000 (AEST)
-Received: by mail-pl0-x244.google.com with SMTP id s24-v6so2634872plq.6
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2018 02:40:40 -0700 (PDT)
-Date: Fri, 6 Jul 2018 19:40:24 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Laurent Dufour
- <ldufour@linux.vnet.ibm.com>, Michal Suchanek <msuchanek@suse.com>, Michael
- Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v6 8/8] powernv/pseries: consolidate code for mce early
- handling.
-Message-ID: <20180706194024.5282bf74@roar.ozlabs.ibm.com>
-In-Reply-To: <153072717270.29016.18207683951100257477.stgit@jupiter.in.ibm.com>
-References: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
- <153072717270.29016.18207683951100257477.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41MVSq3LFvzDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 19:54:49 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Pingfan Liu <kernelfans@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCHv3 2/4] drivers/base: utilize device tree info to shutdown
+ devices
+Date: Fri, 06 Jul 2018 11:53:15 +0200
+Message-ID: <2067910.hkxRV6zLYm@aspire.rjw.lan>
+In-Reply-To: <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <2108146.dv4EAOf6IP@aspire.rjw.lan>
+ <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,141 +33,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 04 Jul 2018 23:30:12 +0530
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On Friday, July 6, 2018 5:02:15 AM CEST Pingfan Liu wrote:
+> On Thu, Jul 5, 2018 at 6:13 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > On Tuesday, July 3, 2018 8:50:40 AM CEST Pingfan Liu wrote:
+> > > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
+> > > places an assumption of supplier<-consumer order on the process of probe.
+> > > But it turns out to break down the parent <- child order in some scene.
+> > > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
+> > > have been probed. Then comes the bridge's module, which enables extra
+> > > feature(such as hotplug) on this bridge. This will break the
+> > > parent<-children order and cause failure when "kexec -e" in some scenario.
+> > >
+> > > The detailed description of the scenario:
+> > > An IBM Power9 machine on which, two drivers portdrv_pci and shpchp(a mod)
+> > > match the PCI_CLASS_BRIDGE_PCI, but neither of them success to probe due
+> > > to some issue. For this case, the bridge is moved after its children in
+> > > devices_kset. Then, when "kexec -e", a ata-disk behind the bridge can not
+> > > write back buffer in flight due to the former shutdown of the bridge which
+> > > clears the BusMaster bit.
+> > >
+> > > It is a little hard to impose both "parent<-child" and "supplier<-consumer"
+> > > order on devices_kset. Take the following scene:
+> > > step0: before a consumer's probing, (note child_a is supplier of consumer_a)
+> > >   [ consumer-X, child_a, ...., child_z] [... consumer_a, ..., consumer_z, ...] supplier-X
+> > >                                          ^^^^^^^^^^ affected range ^^^^^^^^^^
+> > > step1: when probing, moving consumer-X after supplier-X
+> > >   [ child_a, ...., child_z] [.... consumer_a, ..., consumer_z, ...] supplier-X, consumer-X
+> > > step2: the children of consumer-X should be re-ordered to maintain the seq
+> > >   [... consumer_a, ..., consumer_z, ....] supplier-X  [consumer-X, child_a, ...., child_z]
+> > > step3: the consumer_a should be re-ordered to maintain the seq
+> > >   [... consumer_z, ...] supplier-X [ consumer-X, child_a, consumer_a ..., child_z]
+> > >
+> > > It requires two nested recursion to drain out all out-of-order item in
+> > > "affected range". To avoid such complicated code, this patch suggests
+> > > to utilize the info in device tree, instead of using the order of
+> > > devices_kset during shutdown. It iterates the device tree, and firstly
+> > > shutdown a device's children and consumers. After this patch, the buggy
+> > > commit is hollow and left to clean.
+> > >
+> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> > > Cc: Christoph Hellwig <hch@infradead.org>
+> > > Cc: Bjorn Helgaas <helgaas@kernel.org>
+> > > Cc: Dave Young <dyoung@redhat.com>
+> > > Cc: linux-pci@vger.kernel.org
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
+> > > ---
+> > >  drivers/base/core.c    | 48 +++++++++++++++++++++++++++++++++++++++++++-----
+> > >  include/linux/device.h |  1 +
+> > >  2 files changed, 44 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/drivers/base/core.c b/drivers/base/core.c
+> > > index a48868f..684b994 100644
+> > > --- a/drivers/base/core.c
+> > > +++ b/drivers/base/core.c
+> > > @@ -1446,6 +1446,7 @@ void device_initialize(struct device *dev)
+> > >       INIT_LIST_HEAD(&dev->links.consumers);
+> > >       INIT_LIST_HEAD(&dev->links.suppliers);
+> > >       dev->links.status = DL_DEV_NO_DRIVER;
+> > > +     dev->shutdown = false;
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(device_initialize);
+> > >
+> > > @@ -2811,7 +2812,6 @@ static void __device_shutdown(struct device *dev)
+> > >        * lock is to be held
+> > >        */
+> > >       parent = get_device(dev->parent);
+> > > -     get_device(dev);
+> >
+> > Why is the get_/put_device() not needed any more?
+> >
+> They are moved upper layer into device_for_each_child_shutdown().
+> Since there is lock breakage in __device_shutdown(), resorting to
+> ref++ to protect the ancestor.  And I think the
+> get_device(dev->parent) can be deleted either.
 
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Wouldn't that break USB?
+
+> > >       /*
+> > >        * Make sure the device is off the kset list, in the
+> > >        * event that dev->*->shutdown() doesn't remove it.
+> > > @@ -2842,23 +2842,60 @@ static void __device_shutdown(struct device *dev)
+> > >                       dev_info(dev, "shutdown\n");
+> > >               dev->driver->shutdown(dev);
+> > >       }
+> > > -
+> > > +     dev->shutdown = true;
+> > >       device_unlock(dev);
+> > >       if (parent)
+> > >               device_unlock(parent);
+> > >
+> > > -     put_device(dev);
+> > >       put_device(parent);
+> > >       spin_lock(&devices_kset->list_lock);
+> > >  }
+> > >
+> > > +/* shutdown dev's children and consumer firstly, then itself */
+> > > +static int device_for_each_child_shutdown(struct device *dev)
+> >
+> > Confusing name.
+> >
+> > What about device_shutdown_subordinate()?
+> >
+> Fine. My understanding of words is not exact.
 > 
-> Now that other platforms also implements real mode mce handler,
-> lets consolidate the code by sharing existing powernv machine check
-> early code. Rename machine_check_powernv_early to
-> machine_check_common_early and reuse the code.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/exceptions-64s.S |   56 +++++++---------------------------
->  1 file changed, 11 insertions(+), 45 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 0038596b7906..3e877ec55d50 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -243,14 +243,13 @@ EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
->  	SET_SCRATCH0(r13)		/* save r13 */
->  	EXCEPTION_PROLOG_0(PACA_EXMC)
->  BEGIN_FTR_SECTION
-> -	b	machine_check_powernv_early
-> +	b	machine_check_common_early
->  FTR_SECTION_ELSE
->  	b	machine_check_pSeries_0
->  ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
->  EXC_REAL_END(machine_check, 0x200, 0x100)
->  EXC_VIRT_NONE(0x4200, 0x100)
-> -TRAMP_REAL_BEGIN(machine_check_powernv_early)
-> -BEGIN_FTR_SECTION
-> +TRAMP_REAL_BEGIN(machine_check_common_early)
->  	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
->  	/*
->  	 * Register contents:
-> @@ -306,7 +305,9 @@ BEGIN_FTR_SECTION
->  	/* Save r9 through r13 from EXMC save area to stack frame. */
->  	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
->  	mfmsr	r11			/* get MSR value */
-> +BEGIN_FTR_SECTION
->  	ori	r11,r11,MSR_ME		/* turn on ME bit */
-> +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->  	ori	r11,r11,MSR_RI		/* turn on RI bit */
->  	LOAD_HANDLER(r12, machine_check_handle_early)
->  1:	mtspr	SPRN_SRR0,r12
-> @@ -325,7 +326,6 @@ BEGIN_FTR_SECTION
->  	andc	r11,r11,r10		/* Turn off MSR_ME */
->  	b	1b
->  	b	.	/* prevent speculative execution */
-> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->  
->  TRAMP_REAL_BEGIN(machine_check_pSeries)
->  	.globl machine_check_fwnmi
-> @@ -333,7 +333,7 @@ machine_check_fwnmi:
->  	SET_SCRATCH0(r13)		/* save r13 */
->  	EXCEPTION_PROLOG_0(PACA_EXMC)
->  BEGIN_FTR_SECTION
-> -	b	machine_check_pSeries_early
-> +	b	machine_check_common_early
->  END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->  machine_check_pSeries_0:
->  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
-> @@ -346,45 +346,6 @@ machine_check_pSeries_0:
->  
->  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
->  
-> -TRAMP_REAL_BEGIN(machine_check_pSeries_early)
-> -BEGIN_FTR_SECTION
-> -	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-> -	mr	r10,r1			/* Save r1 */
-> -	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
-> -	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
-> -	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-> -	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
-> -	EXCEPTION_PROLOG_COMMON_1()
-> -	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-> -	EXCEPTION_PROLOG_COMMON_3(0x200)
-> -	addi	r3,r1,STACK_FRAME_OVERHEAD
-> -	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI */
-> -
-> -	/* Move original SRR0 and SRR1 into the respective regs */
-> -	ld	r9,_MSR(r1)
-> -	mtspr	SPRN_SRR1,r9
-> -	ld	r3,_NIP(r1)
-> -	mtspr	SPRN_SRR0,r3
-> -	ld	r9,_CTR(r1)
-> -	mtctr	r9
-> -	ld	r9,_XER(r1)
-> -	mtxer	r9
-> -	ld	r9,_LINK(r1)
-> -	mtlr	r9
-> -	REST_GPR(0, r1)
-> -	REST_8GPRS(2, r1)
-> -	REST_GPR(10, r1)
-> -	ld	r11,_CCR(r1)
-> -	mtcr	r11
-> -	REST_GPR(11, r1)
-> -	REST_2GPRS(12, r1)
-> -	/* restore original r1. */
-> -	ld	r1,GPR1(r1)
-> -	SET_SCRATCH0(r13)		/* save r13 */
-> -	EXCEPTION_PROLOG_0(PACA_EXMC)
-> -	b	machine_check_pSeries_0
-> -END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
-> -
->  EXC_COMMON_BEGIN(machine_check_common)
->  	/*
->  	 * Machine check is different because we use a different
-> @@ -483,6 +444,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->  	bl	machine_check_early
->  	std	r3,RESULT(r1)	/* Save result */
->  	ld	r12,_MSR(r1)
-> +BEGIN_FTR_SECTION
-> +	bne	9f			/* pSeries: continue to V mode. */
-> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+> > > +{
+> > > +     struct klist_iter i;
+> > > +     struct device *child;
+> > > +     struct device_link *link;
+> > > +
+> > > +     /* already shutdown, then skip this sub tree */
+> > > +     if (dev->shutdown)
+> > > +             return 0;
+> > > +
+> > > +     if (!dev->p)
+> > > +             goto check_consumers;
+> > > +
+> > > +     /* there is breakage of lock in __device_shutdown(), and the redundant
+> > > +      * ref++ on srcu protected consumer is harmless since shutdown is not
+> > > +      * hot path.
+> > > +      */
+> > > +     get_device(dev);
+> > > +
+> > > +     klist_iter_init(&dev->p->klist_children, &i);
+> > > +     while ((child = next_device(&i)))
+> > > +             device_for_each_child_shutdown(child);
+> >
+> > Why don't you use device_for_each_child() here?
+> >
+> OK, I will try use it.
 
-Should this be "b 9f" ? Although...
+Well, hold on.
 
->  
->  #ifdef	CONFIG_PPC_P7_NAP
->  	/*
-> @@ -564,7 +528,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->  9:
->  	/* Deliver the machine check to host kernel in V mode. */
->  	MACHINE_CHECK_HANDLER_WINDUP
-> -	b	machine_check_pSeries
-> +	SET_SCRATCH0(r13)		/* save r13 */
-> +	EXCEPTION_PROLOG_0(PACA_EXMC)
-> +	b	machine_check_pSeries_0
+> > > +     klist_iter_exit(&i);
+> > > +
+> > > +check_consumers:
+> > > +     list_for_each_entry_rcu(link, &dev->links.consumers, s_node) {
+> > > +             if (!link->consumer->shutdown)
+> > > +                     device_for_each_child_shutdown(link->consumer);
+> > > +     }
+> > > +
+> > > +     __device_shutdown(dev);
+> > > +     put_device(dev);
+> >
+> > Possible reference counter imbalance AFAICS.
+> >
+> Yes, get_device() should be ahead of "if (!dev->p)". Is anything  else I miss?
 
-I'm not sure that's quite right. You're missing out testing the result
-of the early handler call? Is this buggy in existing code too? We
-should be testing that result in all cases, shouldn't we? But it doesn't
-seem like we are.
+Yes, that's it.
+
+> > > +     return 0;
+> > > +}
+> >
+> > Well, instead of doing this dance, we might as well walk dpm_list here as it
+> > is in the right order.
+> >
+> Sorry, do you mean that using the same way to manage the dpm_list?
+
+No, I mean to use dpm_list instead of devices_kset for shutdown.
+
+They should be in the same order anyway if all is correct.
+
+> > Of course, that would require dpm_list to be available for CONFIG_PM unset,
+> > but it may be a better approach long term.
+> >
+> > > +
+> > >  /**
+> > >   * device_shutdown - call ->shutdown() on each device to shutdown.
+> > >   */
+> > >  void device_shutdown(void)
+> > >  {
+> > >       struct device *dev;
+> > > +     int idx;
+> > >
+> > > +     idx = device_links_read_lock();
+> > >       spin_lock(&devices_kset->list_lock);
+> > >       /*
+> > >        * Walk the devices list backward, shutting down each in turn.
+> > > @@ -2866,11 +2903,12 @@ void device_shutdown(void)
+> > >        * devices offline, even as the system is shutting down.
+> > >        */
+> > >       while (!list_empty(&devices_kset->list)) {
+> > > -             dev = list_entry(devices_kset->list.prev, struct device,
+> > > +             dev = list_entry(devices_kset->list.next, struct device,
+> > >                               kobj.entry);
+> > > -             __device_shutdown(dev);
+> > > +             device_for_each_child_shutdown(dev);
+> > >       }
+> > >       spin_unlock(&devices_kset->list_lock);
+> > > +     device_links_read_unlock(idx);
+> > >  }
+> > >
+> > >  /*
+> > > diff --git a/include/linux/device.h b/include/linux/device.h
+> > > index 055a69d..8a0f784 100644
+> > > --- a/include/linux/device.h
+> > > +++ b/include/linux/device.h
+> > > @@ -1003,6 +1003,7 @@ struct device {
+> > >       bool                    offline:1;
+> > >       bool                    of_node_reused:1;
+> > >       bool                    dma_32bit_limit:1;
+> > > +     bool                    shutdown:1; /* one direction: false->true */
+> > >  };
+> > >
+> > >  static inline struct device *kobj_to_dev(struct kobject *kobj)
+> > >
+> >
+> > If the device_kset_move_last() in really_probe() is the only problem,
+> > I'd rather try to fix that one in the first place.
+> >
+> > Why is it needed?
+> >
+> I had tried, but it turns out not easy to archive. The code is
+> https://patchwork.kernel.org/patch/10485195/. And I make a detailed
+> description of the algorithm in this patch's commit log. To be more
+> detailed, we face the potential out of order issue in really_probe()
+> like : 0th. [ consumer-X, child_a, ...., child_z] [... consumer_a,
+> ..., consumer_z, ...] supplier-X //(note child_a is supplier of
+> consumer_a).  To address all the potential out of order item in the
+> affected section [... consumer_a, ..., consumer_z, ...],  it will
+> incur two nested recursions.  1st, moving  consumer-X and its
+> descendants after supplier-X,  2nd, moving consumer_a after child_a,
+> 3rd. the 2nd step may pose the same situation of 0th.  Besides the two
+> interleaved recursion,  the breakage of spin lock requires more effort
+> to protect the item from disappearing in linked-list  (which I did not
+> implement in the https://patchwork.kernel.org/patch/10485195/). Hence
+> I turn to this cheap method.
+
+So I think that we simply need to drop the devices_kset_move_last() call
+from really_probe() as it is plain incorrect and the use case for it is
+questionable at best.
+
+And the use case it is supposed to address should be addressed differently.
 
 Thanks,
-Nick
+Rafael
