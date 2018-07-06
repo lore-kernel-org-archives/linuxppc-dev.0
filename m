@@ -1,24 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41McCX1v8FzDqnn
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 00:13:43 +1000 (AEST)
-Subject: Re: [PATCH V2 00/10] KASan ppc64 support
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Andrey Ryabinin <ryabinin.a.a@gmail.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
-References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <CAPAsAGyMBnGJyBCoq2n9YSgC73GXr9-w3SjCTVdfz++drzOVGw@mail.gmail.com>
- <87k2sic6pw.fsf@linux.vnet.ibm.com>
- <7d459964-ce68-db1c-3d28-ae206d5ebdb0@c-s.fr>
- <87h8lch2t2.fsf@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <22bcc719-daeb-4e82-9e9e-e8a82ad72a1e@c-s.fr>
-Date: Fri, 6 Jul 2018 16:13:37 +0200
+Return-Path: <robin.murphy@arm.com>
+Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41McMZ2XqHzDqHw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 00:20:41 +1000 (AEST)
+Subject: Re: [RFC PATCH 1/2] dma-mapping: Clean up dma_set_*mask() hooks
+To: Christoph Hellwig <hch@lst.de>
+Cc: m.szyprowski@samsung.com, iommu@lists.linux-foundation.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
+ <20180705193738.GB28905@lst.de>
+From: Robin Murphy <robin.murphy@arm.com>
+Message-ID: <33175bb1-d198-a9fd-ff37-e8c4132f47f8@arm.com>
+Date: Fri, 6 Jul 2018 15:20:34 +0100
 MIME-Version: 1.0
-In-Reply-To: <87h8lch2t2.fsf@linux.vnet.ibm.com>
+In-Reply-To: <20180705193738.GB28905@lst.de>
 Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,24 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 06/07/2018 à 16:11, Aneesh Kumar K.V a écrit :
-> Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> 
->> Hi Aneesh,
+On 05/07/18 20:37, Christoph Hellwig wrote:
+> On Wed, Jul 04, 2018 at 06:50:11PM +0100, Robin Murphy wrote:
+>> Arch-specific implementions for dma_set_{coherent_,}mask() currently
+>> rely on an inconsistent mix of arch-defined Kconfig symbols and macro
+>> overrides. Now that we have a nice centralised home for DMA API gubbins,
+>> let's consolidate these loose ends under consistent config options.
 >>
->> Are you still working on support for KASan for ppc64 ?
+>> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+>> ---
 >>
+>> Here's hoping the buildbot comes by to point out what I've inevitably
+>> missed, although I did check a cursory cross-compile of ppc64_defconfig
+>> to iron out the obvious howlers.
 > 
-> Haven't got time to work on this. The hash memory layout makes it
-> a bit complicated to implement this.
+> The patch looks sensible to me, although I was hoping to get rid of these
+> hooks in this or the next merge window as they are a horrible bad idea.
 > 
+>> The motivation here is that I'm looking at adding set_mask overrides
+>> for arm64, and having discovered a bit of a mess it seemed prudent to
+>> clean up before ingraining it any more.
+> 
+> What are you trying to do?  I really don't want to see more users of
+> the hooks as they are are a horribly bad idea.
 
-Ok, maybe would be easier to start with nohash.
+I really need to fix the ongoing problem we have where, due to funky 
+integrations, devices suffer some downstream addressing limit (described 
+by DT dma-ranges or ACPI IORT/_DMA) which we carefully set up in 
+dma_configure(), but then just gets lost when the driver probes and 
+innocently calls dma_set_mask() with something wider. I think it's 
+effectively the generalised case of the VIA 32-bit quirk, if I 
+understand that one correctly.
 
-Is there some literature somewhere about what an arch has to implement 
-to use KAsan ?
+The approach that seemed to me to be safest is largely based on the one 
+proposed in a thread from ages ago[1]; namely to make dma_configure() 
+better at distinguishing firmware-specified masks from bus defaults, 
+capture the firmware mask in dev->archdata during arch_setup_dma_ops(), 
+then use the custom set_mask routines to ensure any subsequent updates 
+never exceed that. It doesn't seem possible to make this work robustly 
+without storing *some* additional per-device data, and for that archdata 
+is a lesser evil than struct device itself. Plus even though it's not 
+actually an arch-specific issue it feels like there's such a risk of 
+breaking other platforms that I'm reticent to even try handling it 
+entirely in generic code.
 
-Thanks,
-Christophe
+Robin.
+
+[1] 
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1306507.html
