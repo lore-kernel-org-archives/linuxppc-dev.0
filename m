@@ -1,25 +1,37 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-oi0-x242.google.com (mail-oi0-x242.google.com
+ [IPv6:2607:f8b0:4003:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MPbp1zxYzDqFG
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 16:15:34 +1000 (AEST)
-Date: Fri, 6 Jul 2018 16:15:28 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: Re: [PATCH kernel v4 2/2] KVM: PPC: Check if IOMMU page is contained
- in the pinned physical page
-Message-ID: <20180706061528.GR3450@umbus.fritz.box>
-References: <20180705080133.18690-1-aik@ozlabs.ru>
- <20180705080133.18690-3-aik@ozlabs.ru>
- <874lhclx8h.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41MSzF198lzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 18:47:35 +1000 (AEST)
+Received: by mail-oi0-x242.google.com with SMTP id v8-v6so22107809oie.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 01:47:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="U5J2I87mWnf1KeOw"
-In-Reply-To: <874lhclx8h.fsf@concordia.ellerman.id.au>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <20180706083603.GA9063@wunner.de>
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+ <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Fri, 6 Jul 2018 10:47:32 +0200
+Message-ID: <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pingfan Liu <kernelfans@gmail.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>, Linux PCI <linux-pci@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux PM <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,84 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> [cc += Kishon Vijay Abraham]
+>
+> On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+>> OK, so calling devices_kset_move_last() from really_probe() clearly is
+>> a mistake.
+>>
+>> I'm not really sure what the intention of it was as the changelog of
+>> commit 52cdbdd49853d doesn't really explain that (why would it be
+>> insufficient without that change?)
+>
+> It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+> whose reset pin needs to be driven high on shutdown, lest the MMC
+> won't be found on the next boot.
+>
+> The boards' devicetrees use a kludge wherein the reset pin is modelled
+> as a regulator.  The regulator is enabled when the MMC probes and
+> disabled on driver unbind and shutdown.  As a result, the pin is driven
+> low on shutdown and the MMC is not found on the next boot.
+>
+> To fix this, another kludge was invented wherein the GPIO expander
+> driving the reset pin unconditionally drives all its pins high on
+> shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+> (commit adc284755055, "gpio: pcf857x: restore the initial line state
+> of all pcf lines").
+>
+> For this kludge to work, the GPIO expander's ->shutdown hook needs to
+> be executed after the MMC expander's ->shutdown hook.
+>
+> Commit 52cdbdd49853d achieved that by reordering devices_kset according
+> to the probe order.  Apparently the MMC probes after the GPIO expander,
+> possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+> available yet, see mmc_regulator_get_supply().
+>
+> Note, I'm just piecing the information together from git history,
+> I'm not responsible for these kludges.  (I'm innocent!)
 
---U5J2I87mWnf1KeOw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sure enough. :-)
 
-On Fri, Jul 06, 2018 at 04:00:30PM +1000, Michael Ellerman wrote:
-> Alexey Kardashevskiy <aik@ozlabs.ru> writes:
->=20
-> > diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_=
-context_iommu.c
-> > index abb4364..11e1029 100644
-> > --- a/arch/powerpc/mm/mmu_context_iommu.c
-> > +++ b/arch/powerpc/mm/mmu_context_iommu.c
-> > @@ -159,6 +161,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned lo=
-ng ua, unsigned long entries,
-> >  		goto unlock_exit;
-> >  	}
-> > =20
-> > +	mem->pageshift =3D __builtin_ctzl(ua | (entries << PAGE_SHIFT));
->=20
-> __builtin_ctzl(0) is undefined, so are we guaranteed that
-> (ua | (entries << PAGE_SHIFT)) is never zero? I couldn't convince
-> myself.
+In any case, calling devices_kset_move_last() in really_probe() is
+plain broken and if its only purpose was to address a single, arguably
+kludgy, use case, let's just get rid of it in the first place IMO.
 
-We certainly don't need to care about that case, since registering a
-zero-length region (entries =3D=3D 0) is no-op.  But maybe we need to
-filter it above.
+> @Pingfan Liu, if you just remove the call to devices_kset_move_last()
+> from really_probe(), does the issue go away?
 
-> > @@ -199,9 +202,17 @@ long mm_iommu_get(struct mm_struct *mm, unsigned l=
-ong ua, unsigned long entries,
-> >  			}
-> >  		}
-> >  populate:
-> > +		pageshift =3D PAGE_SHIFT;
-> > +		if (PageCompound(page))
-> > +			pageshift +=3D compound_order(compound_head(page));
-> > +		mem->pageshift =3D min(mem->pageshift, pageshift);
-> >  		mem->hpas[i] =3D page_to_pfn(page) << PAGE_SHIFT;
-> >  	}
-> > =20
-> > +	/* We have an incomplete huge page, default to PAGE_SHIFT */
-> > +	if (head)
-> > +		mem->pageshift =3D PAGE_SHIFT;
-> > +
->=20
-> You never set head AFIACS? (other than in the initialiser)
+I would think so from the description of the problem (elsewhere in this thread).
 
-That looks like a leftover from the previous version.
-
->=20
-> cheers
->=20
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---U5J2I87mWnf1KeOw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAls/CP0ACgkQbDjKyiDZ
-s5Ky0w//RqIEhp0lUVry33Myak4z86/4FjOln7Mbf8/TgR+OtpdBUlDzBgDZm9IW
-jRNE228Lycm9ZQ5a5ncBjjfLGvQFK38y9U7IVKQoe1l33QlkJaB5C2WReF8hcXQo
-L4nXMVnNVYcSjRVP2uNbPrqgRedgEkebryr9+y+cYQ7Rsze9+5GkZW7XyBgJwy9Q
-0sQtLonpjOZYxOj3J1S55z9cVZ0raz56Jej8itMfRogvSHSoclKx4fnMQ0As2SBD
-oV8uvXYue5Kbb0jvvoNMF6ZtCyvn1pea4TArm9YAbv8GEKWcaPdYNA3X1/4z/za9
-zDQB1YWc2EIVk9SKqyfrQl7snIVNO1Jyy4/5s4ZbWw+hLQdQRs3tL77nCposdl5T
-WYwiWZlYP/rHnQVXbRYSK5vH2QQMMi/VwuAkAvOHfTyCpYMNW3scCKaMluaPYVDB
-3BFHzKicMiuBmE2F90dWtU2+ESiI7uTlBgu4r2N4/5ad9uDSAk5nmahLSeZT13Kt
-OElVteM500MY50uF7S9n5GV1NFMhgA6noWiW/nfpQGkgUnJ3h7J6z2iFmDTP0AM5
-MiPBx0oAVEOKPBX3vcoffUOaKCuHgIusYod42jCzizgWSastsFsL9xhYEGHYAei4
-jXXA/50EpTKfrxklno5kJ/RWYGwtdLcQaMIZJ35QZysUUmu9S4Y=
-=tHd1
------END PGP SIGNATURE-----
-
---U5J2I87mWnf1KeOw--
+Thanks,
+Rafael
