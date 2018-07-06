@@ -1,31 +1,26 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-it0-x242.google.com (mail-it0-x242.google.com
- [IPv6:2607:f8b0:4001:c0b::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MKK10JbSzF2Q3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 13:02:28 +1000 (AEST)
-Received: by mail-it0-x242.google.com with SMTP id u4-v6so14747665itg.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2018 20:02:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41MNDG56pTzF2Wl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 15:13:34 +1000 (AEST)
+Date: Fri, 6 Jul 2018 15:06:59 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH kernel v3 2/2] KVM: PPC: Check if IOMMU page is contained
+ in the pinned physical page
+Message-ID: <20180706050659.GO3450@umbus.fritz.box>
+References: <20180704050052.20045-1-aik@ozlabs.ru>
+ <20180704050052.20045-3-aik@ozlabs.ru>
+ <20180705024220.GF3450@umbus.fritz.box>
+ <20180705151904.17de7322@aik.ozlabs.ibm.com>
 MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <1530600642-25090-3-git-send-email-kernelfans@gmail.com>
- <2108146.dv4EAOf6IP@aspire.rjw.lan>
-In-Reply-To: <2108146.dv4EAOf6IP@aspire.rjw.lan>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Fri, 6 Jul 2018 11:02:15 +0800
-Message-ID: <CAFgQCTsGC8NH+5kXYD7vykJeUsaAzCAjgxSP-R0EqA3YvgsY0w@mail.gmail.com>
-Subject: Re: [PATCHv3 2/4] drivers/base: utilize device tree info to shutdown
- devices
-To: rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="c2gYorpyS4gG0T74"
+In-Reply-To: <20180705151904.17de7322@aik.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,224 +30,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 5, 2018 at 6:13 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Tuesday, July 3, 2018 8:50:40 AM CEST Pingfan Liu wrote:
-> > commit 52cdbdd49853 ("driver core: correct device's shutdown order")
-> > places an assumption of supplier<-consumer order on the process of probe.
-> > But it turns out to break down the parent <- child order in some scene.
-> > E.g in pci, a bridge is enabled by pci core, and behind it, the devices
-> > have been probed. Then comes the bridge's module, which enables extra
-> > feature(such as hotplug) on this bridge. This will break the
-> > parent<-children order and cause failure when "kexec -e" in some scenario.
-> >
-> > The detailed description of the scenario:
-> > An IBM Power9 machine on which, two drivers portdrv_pci and shpchp(a mod)
-> > match the PCI_CLASS_BRIDGE_PCI, but neither of them success to probe due
-> > to some issue. For this case, the bridge is moved after its children in
-> > devices_kset. Then, when "kexec -e", a ata-disk behind the bridge can not
-> > write back buffer in flight due to the former shutdown of the bridge which
-> > clears the BusMaster bit.
-> >
-> > It is a little hard to impose both "parent<-child" and "supplier<-consumer"
-> > order on devices_kset. Take the following scene:
-> > step0: before a consumer's probing, (note child_a is supplier of consumer_a)
-> >   [ consumer-X, child_a, ...., child_z] [... consumer_a, ..., consumer_z, ...] supplier-X
-> >                                          ^^^^^^^^^^ affected range ^^^^^^^^^^
-> > step1: when probing, moving consumer-X after supplier-X
-> >   [ child_a, ...., child_z] [.... consumer_a, ..., consumer_z, ...] supplier-X, consumer-X
-> > step2: the children of consumer-X should be re-ordered to maintain the seq
-> >   [... consumer_a, ..., consumer_z, ....] supplier-X  [consumer-X, child_a, ...., child_z]
-> > step3: the consumer_a should be re-ordered to maintain the seq
-> >   [... consumer_z, ...] supplier-X [ consumer-X, child_a, consumer_a ..., child_z]
-> >
-> > It requires two nested recursion to drain out all out-of-order item in
-> > "affected range". To avoid such complicated code, this patch suggests
-> > to utilize the info in device tree, instead of using the order of
-> > devices_kset during shutdown. It iterates the device tree, and firstly
-> > shutdown a device's children and consumers. After this patch, the buggy
-> > commit is hollow and left to clean.
-> >
-> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> > Cc: Christoph Hellwig <hch@infradead.org>
-> > Cc: Bjorn Helgaas <helgaas@kernel.org>
-> > Cc: Dave Young <dyoung@redhat.com>
-> > Cc: linux-pci@vger.kernel.org
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Signed-off-by: Pingfan Liu <kernelfans@gmail.com>
-> > ---
-> >  drivers/base/core.c    | 48 +++++++++++++++++++++++++++++++++++++++++++-----
-> >  include/linux/device.h |  1 +
-> >  2 files changed, 44 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/base/core.c b/drivers/base/core.c
-> > index a48868f..684b994 100644
-> > --- a/drivers/base/core.c
-> > +++ b/drivers/base/core.c
-> > @@ -1446,6 +1446,7 @@ void device_initialize(struct device *dev)
-> >       INIT_LIST_HEAD(&dev->links.consumers);
-> >       INIT_LIST_HEAD(&dev->links.suppliers);
-> >       dev->links.status = DL_DEV_NO_DRIVER;
-> > +     dev->shutdown = false;
-> >  }
-> >  EXPORT_SYMBOL_GPL(device_initialize);
-> >
-> > @@ -2811,7 +2812,6 @@ static void __device_shutdown(struct device *dev)
-> >        * lock is to be held
-> >        */
-> >       parent = get_device(dev->parent);
-> > -     get_device(dev);
->
-> Why is the get_/put_device() not needed any more?
->
-They are moved upper layer into device_for_each_child_shutdown().
-Since there is lock breakage in __device_shutdown(), resorting to
-ref++ to protect the ancestor.  And I think the
-get_device(dev->parent) can be deleted either.
 
-> >       /*
-> >        * Make sure the device is off the kset list, in the
-> >        * event that dev->*->shutdown() doesn't remove it.
-> > @@ -2842,23 +2842,60 @@ static void __device_shutdown(struct device *dev)
-> >                       dev_info(dev, "shutdown\n");
-> >               dev->driver->shutdown(dev);
-> >       }
-> > -
-> > +     dev->shutdown = true;
-> >       device_unlock(dev);
-> >       if (parent)
-> >               device_unlock(parent);
-> >
-> > -     put_device(dev);
-> >       put_device(parent);
-> >       spin_lock(&devices_kset->list_lock);
-> >  }
-> >
-> > +/* shutdown dev's children and consumer firstly, then itself */
-> > +static int device_for_each_child_shutdown(struct device *dev)
->
-> Confusing name.
->
-> What about device_shutdown_subordinate()?
->
-Fine. My understanding of words is not exact.
+--c2gYorpyS4gG0T74
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > +{
-> > +     struct klist_iter i;
-> > +     struct device *child;
-> > +     struct device_link *link;
-> > +
-> > +     /* already shutdown, then skip this sub tree */
-> > +     if (dev->shutdown)
-> > +             return 0;
-> > +
-> > +     if (!dev->p)
-> > +             goto check_consumers;
-> > +
-> > +     /* there is breakage of lock in __device_shutdown(), and the redundant
-> > +      * ref++ on srcu protected consumer is harmless since shutdown is not
-> > +      * hot path.
-> > +      */
-> > +     get_device(dev);
-> > +
-> > +     klist_iter_init(&dev->p->klist_children, &i);
-> > +     while ((child = next_device(&i)))
-> > +             device_for_each_child_shutdown(child);
->
-> Why don't you use device_for_each_child() here?
->
-OK, I will try use it.
+On Thu, Jul 05, 2018 at 03:19:04PM +1000, Alexey Kardashevskiy wrote:
+> On Thu, 5 Jul 2018 12:42:20 +1000
+> David Gibson <david@gibson.dropbear.id.au> wrote:
+>=20
+> > On Wed, Jul 04, 2018 at 03:00:52PM +1000, Alexey Kardashevskiy wrote:
+> > > A VM which has:
+> > >  - a DMA capable device passed through to it (eg. network card);
+> > >  - running a malicious kernel that ignores H_PUT_TCE failure;
+> > >  - capability of using IOMMU pages bigger that physical pages
+> > > can create an IOMMU mapping that exposes (for example) 16MB of
+> > > the host physical memory to the device when only 64K was allocated to=
+ the VM.
+> > >=20
+> > > The remaining 16MB - 64K will be some other content of host memory, p=
+ossibly
+> > > including pages of the VM, but also pages of host kernel memory, host
+> > > programs or other VMs.
+> > >=20
+> > > The attacking VM does not control the location of the page it can map,
+> > > and is only allowed to map as many pages as it has pages of RAM.
+> > >=20
+> > > We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
+> > > an IOMMU page is contained in the physical page so the PCI hardware w=
+on't
+> > > get access to unassigned host memory; however this check is missing in
+> > > the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far a=
+nd
+> > > did not hit this yet as the very first time when the mapping happens
+> > > we do not have tbl::it_userspace allocated yet and fall back to
+> > > the userspace which in turn calls VFIO IOMMU driver, this fails and
+> > > the guest does not retry,
+> > >=20
+> > > This stores the smallest preregistered page size in the preregistered
+> > > region descriptor and changes the mm_iommu_xxx API to check this agai=
+nst
+> > > the IOMMU page size. This only allows huge pages use if the entire
+> > > preregistered block is backed with huge pages which are completely
+> > > contained the preregistered chunk; otherwise this defaults to PAGE_SI=
+ZE.
+> > >=20
+> > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru> =20
+> >=20
+> > Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >=20
+> > On the grounds that I think this version is safe, which the old one
+> > wasn't.  However it still has some flaws..
+> >=20
+> > [snip]
+> > > @@ -125,7 +126,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned =
+long ua, unsigned long entries,
+> > >  {
+> > >  	struct mm_iommu_table_group_mem_t *mem;
+> > >  	long i, j, ret =3D 0, locked_entries =3D 0;
+> > > -	struct page *page =3D NULL;
+> > > +	unsigned int pageshift;
+> > > +	struct page *page =3D NULL, *head =3D NULL;
+> > > =20
+> > >  	mutex_lock(&mem_list_mutex);
+> > > =20
+> > > @@ -159,6 +161,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned =
+long ua, unsigned long entries,
+> > >  		goto unlock_exit;
+> > >  	}
+> > > =20
+> > > +	mem->pageshift =3D 64;
+> > >  	mem->hpas =3D vzalloc(array_size(entries, sizeof(mem->hpas[0])));
+> > >  	if (!mem->hpas) {
+> > >  		kfree(mem);
+> > > @@ -199,9 +202,35 @@ long mm_iommu_get(struct mm_struct *mm, unsigned=
+ long ua, unsigned long entries,
+> > >  			}
+> > >  		}
+> > >  populate:
+> > > +		pageshift =3D PAGE_SHIFT;
+> > > +		if (PageCompound(page)) {
+> > > +			/* Make sure huge page is contained completely */
+> > > +			struct page *tmphead =3D compound_head(page);
+> > > +			unsigned int n =3D compound_order(tmphead);
+> > > +
+> > > +			if (!head) {
+> > > +				/* Is it a head of a huge page? */
+> > > +				if (page =3D=3D tmphead) {
+> > > +					head =3D tmphead;
+> > > +					pageshift +=3D n;
+> > > +				}
+> > > +			} else if (head =3D=3D tmphead) {
+> > > +				/* Still same huge page, good */
+> > > +				pageshift +=3D n;
+> > > +
+> > > +				/* End of the huge page */
+> > > +				if (page - head =3D=3D (1UL << n) - 1)
+> > > +					head =3D NULL;
+> > > +			}
+> > > +		}
+> > > +		mem->pageshift =3D min(mem->pageshift, pageshift);
+> > >  		mem->hpas[i] =3D page_to_pfn(page) << PAGE_SHIFT;
+> > >  	}
+> > > =20
+> > > +	/* We have an incomplete huge page, default to PAGE_SHIFT */
+> > > +	if (head)
+> > > +		mem->pageshift =3D PAGE_SHIFT;
+> > > + =20
+> >=20
+> > So, if the user attempts to prereg a region which starts or ends in
+> > the middle of a hugepage, this logic will clamp the region's max page
+> > shift down to PAGE_SHIFT.  That's safe, but not optimal.
+> >=20
+> > Suppose userspace had an area backed with 16MiB hugepages, and wanted
+> > to pre-reg a window that was 2MiB aligned, but not 16MiB aligned.  It
+> > would still be safe to allow 2MiB TCEs, but the code above would clamp
+> > it down to 64kiB (or 4kiB).
+> >=20
+> > The code to do it is also pretty convoluted.
+> >=20
+> > I think you'd be better off initializing mem->pageshift to the largest
+> > possible natural alignment of the region:
+> > 	mem->pageshift =3D ctz64(ua | (entries << PAGE_SHIFT));
+> >=20
+> > Then it should just be sufficient to clamp pageshift down to
+> > compound_order() + PAGE_SHIFT for each entry.
+>=20
+>=20
+> I like this better, just one question - does hugetlbfs guarantee the @ua
+> alignment if backed with an actual huge page?
 
-> > +     klist_iter_exit(&i);
-> > +
-> > +check_consumers:
-> > +     list_for_each_entry_rcu(link, &dev->links.consumers, s_node) {
-> > +             if (!link->consumer->shutdown)
-> > +                     device_for_each_child_shutdown(link->consumer);
-> > +     }
-> > +
-> > +     __device_shutdown(dev);
-> > +     put_device(dev);
->
-> Possible reference counter imbalance AFAICS.
->
-Yes, get_device() should be ahead of "if (!dev->p)". Is anything  else I miss?
+So, yeah it does, as you determined.  And it has to - I don't know of
+any MMU that allows for large pages that aren't naturally aligned, so
+the uas would have to be aligned to actually map the pages into
+userspace.
 
-> > +     return 0;
-> > +}
->
-> Well, instead of doing this dance, we might as well walk dpm_list here as it
-> is in the right order.
->
-Sorry, do you mean that using the same way to manage the dpm_list?
+But... there's another more subtle case that I'm less sure about.
+What you're actually checking for here is a compound page on the
+physical side.  A hugetlbfs mapping in userspace is the main case
+where I'd expect that, but, I'm not absolutely certain there can't be
+some other case where a compound page is used to back a normal 64k
+mapping in a user process.  If that is possible, it would probably
+also be possible for the UA to end up misaligned with the compound
+page's natural alignment.
 
-> Of course, that would require dpm_list to be available for CONFIG_PM unset,
-> but it may be a better approach long term.
->
-> > +
-> >  /**
-> >   * device_shutdown - call ->shutdown() on each device to shutdown.
-> >   */
-> >  void device_shutdown(void)
-> >  {
-> >       struct device *dev;
-> > +     int idx;
-> >
-> > +     idx = device_links_read_lock();
-> >       spin_lock(&devices_kset->list_lock);
-> >       /*
-> >        * Walk the devices list backward, shutting down each in turn.
-> > @@ -2866,11 +2903,12 @@ void device_shutdown(void)
-> >        * devices offline, even as the system is shutting down.
-> >        */
-> >       while (!list_empty(&devices_kset->list)) {
-> > -             dev = list_entry(devices_kset->list.prev, struct device,
-> > +             dev = list_entry(devices_kset->list.next, struct device,
-> >                               kobj.entry);
-> > -             __device_shutdown(dev);
-> > +             device_for_each_child_shutdown(dev);
-> >       }
-> >       spin_unlock(&devices_kset->list_lock);
-> > +     device_links_read_unlock(idx);
-> >  }
-> >
-> >  /*
-> > diff --git a/include/linux/device.h b/include/linux/device.h
-> > index 055a69d..8a0f784 100644
-> > --- a/include/linux/device.h
-> > +++ b/include/linux/device.h
-> > @@ -1003,6 +1003,7 @@ struct device {
-> >       bool                    offline:1;
-> >       bool                    of_node_reused:1;
-> >       bool                    dma_32bit_limit:1;
-> > +     bool                    shutdown:1; /* one direction: false->true */
-> >  };
-> >
-> >  static inline struct device *kobj_to_dev(struct kobject *kobj)
-> >
->
-> If the device_kset_move_last() in really_probe() is the only problem,
-> I'd rather try to fix that one in the first place.
->
-> Why is it needed?
->
-I had tried, but it turns out not easy to archive. The code is
-https://patchwork.kernel.org/patch/10485195/. And I make a detailed
-description of the algorithm in this patch's commit log. To be more
-detailed, we face the potential out of order issue in really_probe()
-like : 0th. [ consumer-X, child_a, ...., child_z] [... consumer_a,
-..., consumer_z, ...] supplier-X //(note child_a is supplier of
-consumer_a).  To address all the potential out of order item in the
-affected section [... consumer_a, ..., consumer_z, ...],  it will
-incur two nested recursions.  1st, moving  consumer-X and its
-descendants after supplier-X,  2nd, moving consumer_a after child_a,
-3rd. the 2nd step may pose the same situation of 0th.  Besides the two
-interleaved recursion,  the breakage of spin lock requires more effort
-to protect the item from disappearing in linked-list  (which I did not
-implement in the https://patchwork.kernel.org/patch/10485195/). Hence
-I turn to this cheap method.
+I don't know of any case where that could happen, but I'm far from
+confident it doesn't exist.  Things to consider:
+   - mapping hugetlbfs, then mremap()ing part of it
+   - a SHARED mapping, where it's aligned in one process and gets
+     THPed, but is not aligned in the other
+   - mmap() from a device or subsystem that provides some kind
+     of IO or special memory that's handled with compound pages on the
+     kernel side, but is just mapped into userspace with regular 64k
+     PTEs
+   - One process mapping libhugetlbfs, then another (say a debugger_
+     attempting to map the first process's address space via
+     /proc/pid/mem)
+   - ..and that's just the ones I could think of quickly
 
-Thanks,
-Pingfan
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--c2gYorpyS4gG0T74
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEdfRlhq5hpmzETofcbDjKyiDZs5IFAls++PEACgkQbDjKyiDZ
+s5J4Vg/9EpeUZpkUwOZetSgQXKVhBcW7UCnk9xafFoL2EHomsDH4jKjB4SZr6qmc
+UCizgEpMjXVDa9P1QIlDfE3HWaqy4UTPaxOyy6svNMtZy+BXCLPlSURZ9r8RqO0y
+DewB/dOdAfUoSrIUcd78mZ7Mgnt/Rz5xiWCFz+9UQ4M0N4CSiyC1W8lJDFS7Cx5p
+sJ0wZYsK+g1euycQjeRNE1Pe7ZBoSMOx939OcKXRY43hRZzAMkeaLkGSYwKra3Qr
+jJcduCZwQloo7rQftQnhngtUDJhvXetUpCcaZwbWP0DmteKkqqod0zt0MO98rzhT
+N3QxQjc99Oi2SNjUr8HMVPh4pSs2UOPj+Rb4uDfCfloiyPSY5JRr7bXqwJlhQrjb
+npqmdlStUPuct0lAg7gTtqd4wZ+2TQ4o09PpB9rzVM0Agxm9d1pRJUNTKNL2hUqL
+0yZQfGGVY3ptTRwwIZkeVOO2WYwRMxdD9p23aAIqtla5XFYRKC06Jr+sdFsGRGqQ
+2zgvosNaAYiTI+5iV876lgh6RKEsyg277g9Lru7MBFBQ2+AYOtDZV4uvp2biCPnE
+aRdprixZdRvl5FuJCmMGywCCIwEBpe/pYr2GIFSQnoAY9JluliQBxQpYudFmOlws
+5TSsyJoLJigjHbQlqTJOZZLWaljO262o8BEVuHJ9EeuCFbjApzc=
+=z7Db
+-----END PGP SIGNATURE-----
+
+--c2gYorpyS4gG0T74--
