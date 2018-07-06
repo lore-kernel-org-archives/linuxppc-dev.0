@@ -1,36 +1,38 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MbqH4bzJzDqkX
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 23:56:11 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id z20-v6so10939601iol.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 06:56:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Mc913cwKzDqJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 00:11:32 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w66E8axO082258
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2018 10:11:30 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k285uw1qk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 10:11:30 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 6 Jul 2018 15:11:27 +0100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH V2 00/10] KASan ppc64 support
+In-Reply-To: <7d459964-ce68-db1c-3d28-ae206d5ebdb0@c-s.fr>
+References: <1440577578-15813-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <CAPAsAGyMBnGJyBCoq2n9YSgC73GXr9-w3SjCTVdfz++drzOVGw@mail.gmail.com>
+ <87k2sic6pw.fsf@linux.vnet.ibm.com>
+ <7d459964-ce68-db1c-3d28-ae206d5ebdb0@c-s.fr>
+Date: Fri, 06 Jul 2018 19:41:21 +0530
 MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan>
- <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan>
- <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
- <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
- <20180706083603.GA9063@wunner.de>
- <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Fri, 6 Jul 2018 21:55:57 +0800
-Message-ID: <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-To: rafael@kernel.org
-Cc: lukas@wunner.de, linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org, kishon@ti.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
+Message-Id: <87h8lch2t2.fsf@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,59 +42,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > [cc += Kishon Vijay Abraham]
-> >
-> > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
-> >> OK, so calling devices_kset_move_last() from really_probe() clearly is
-> >> a mistake.
-> >>
-> >> I'm not really sure what the intention of it was as the changelog of
-> >> commit 52cdbdd49853d doesn't really explain that (why would it be
-> >> insufficient without that change?)
-> >
-> > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
-> > whose reset pin needs to be driven high on shutdown, lest the MMC
-> > won't be found on the next boot.
-> >
-> > The boards' devicetrees use a kludge wherein the reset pin is modelled
-> > as a regulator.  The regulator is enabled when the MMC probes and
-> > disabled on driver unbind and shutdown.  As a result, the pin is driven
-> > low on shutdown and the MMC is not found on the next boot.
-> >
-> > To fix this, another kludge was invented wherein the GPIO expander
-> > driving the reset pin unconditionally drives all its pins high on
-> > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
-> > (commit adc284755055, "gpio: pcf857x: restore the initial line state
-> > of all pcf lines").
-> >
-> > For this kludge to work, the GPIO expander's ->shutdown hook needs to
-> > be executed after the MMC expander's ->shutdown hook.
-> >
-> > Commit 52cdbdd49853d achieved that by reordering devices_kset according
-> > to the probe order.  Apparently the MMC probes after the GPIO expander,
-> > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
-> > available yet, see mmc_regulator_get_supply().
-> >
-> > Note, I'm just piecing the information together from git history,
-> > I'm not responsible for these kludges.  (I'm innocent!)
->
-> Sure enough. :-)
->
-> In any case, calling devices_kset_move_last() in really_probe() is
-> plain broken and if its only purpose was to address a single, arguably
-> kludgy, use case, let's just get rid of it in the first place IMO.
->
-Yes, if it is only used for a single use case.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-> > @Pingfan Liu, if you just remove the call to devices_kset_move_last()
-> > from really_probe(), does the issue go away?
+> Hi Aneesh,
 >
-> I would think so from the description of the problem (elsewhere in this thread).
+> Are you still working on support for KASan for ppc64 ?
 >
-Yes.
 
-Thanks,
-Pingfan
+Haven't got time to work on this. The hash memory layout makes it
+a bit complicated to implement this.
+
+-aneesh
