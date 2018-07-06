@@ -1,33 +1,37 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nipun.gupta@nxp.com>
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-eopbgr60066.outbound.protection.outlook.com [40.107.6.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MY9C15cKzDqJk
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 21:56:30 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w66BsB39076950
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2018 07:56:27 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k23vr26m5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 07:56:27 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Fri, 6 Jul 2018 12:56:25 +0100
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: linux@roeck-us.net, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v4 3/3] hwmon: Document the sensor enable attribute
-Date: Fri,  6 Jul 2018 17:26:06 +0530
-In-Reply-To: <1530878166-12589-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1530878166-12589-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Message-Id: <1530878166-12589-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41MYV54S26zDqBW
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 22:11:08 +1000 (AEST)
+From: Nipun Gupta <nipun.gupta@nxp.com>
+To: Robin Murphy <robin.murphy@arm.com>, "will.deacon@arm.com"
+ <will.deacon@arm.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "robh@kernel.org" <robh@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Laurentiu Tudor
+ <laurentiu.tudor@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>
+CC: "hch@lst.de" <hch@lst.de>, "joro@8bytes.org" <joro@8bytes.org>,
+ "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "shawnguo@kernel.org"
+ <shawnguo@kernel.org>, "frowand.list@gmail.com" <frowand.list@gmail.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
+Subject: RE: [PATCH 1/7 v5] Docs: dt: add fsl-mc iommu-map device-tree binding
+Date: Fri, 6 Jul 2018 12:10:53 +0000
+Message-ID: <HE1PR0401MB2425F74655E5DFE4DDE38EE3E6470@HE1PR0401MB2425.eurprd04.prod.outlook.com>
+References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
+ <1526824191-7000-2-git-send-email-nipun.gupta@nxp.com>
+ <cd70dc56-ce6a-f6ef-1362-143d9c31bb46@arm.com>
+In-Reply-To: <cd70dc56-ce6a-f6ef-1362-143d9c31bb46@arm.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,125 +41,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
- Documentation/hwmon/sysfs-interface | 62 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 62 insertions(+)
-
-diff --git a/Documentation/hwmon/sysfs-interface b/Documentation/hwmon/sysfs-interface
-index fc337c3..f865dd7 100644
---- a/Documentation/hwmon/sysfs-interface
-+++ b/Documentation/hwmon/sysfs-interface
-@@ -171,6 +171,15 @@ in[0-*]_label	Suggested voltage channel label.
- 		user-space.
- 		RO
- 
-+in[0-*]_enable
-+		Enable or disable the sensors.
-+		When disabled the sensor read will return -ENODATA. This
-+		attribute can be used as per-sensor or per-sub-group attribute
-+		depending on what is supported by the hardware.
-+		1: Enable
-+		0: Disable
-+		RW
-+
- cpu[0-*]_vid	CPU core reference voltage.
- 		Unit: millivolt
- 		RO
-@@ -236,6 +245,15 @@ fan[1-*]_label	Suggested fan channel label.
- 		In all other cases, the label is provided by user-space.
- 		RO
- 
-+fan[1-*]_enable
-+		Enable or disable the sensors.
-+		When disabled the sensor read will return -ENODATA. This
-+		attribute can be used as per-sensor or per-sub-group attribute
-+		depending on what is supported by the hardware.
-+		1: Enable
-+		0: Disable
-+		RW
-+
- Also see the Alarms section for status flags associated with fans.
- 
- 
-@@ -409,6 +427,15 @@ temp_reset_history
- 		Reset temp_lowest and temp_highest for all sensors
- 		WO
- 
-+temp[1-*]_enable
-+		Enable or disable the sensors.
-+		When disabled the sensor read will return -ENODATA. This
-+		attribute can be used as per-sensor or per-sub-group attribute
-+		depending on what is supported by the hardware.
-+		1: Enable
-+		0: Disable
-+		RW
-+
- Some chips measure temperature using external thermistors and an ADC, and
- report the temperature measurement as a voltage. Converting this voltage
- back to a temperature (or the other way around for limits) requires
-@@ -468,6 +495,15 @@ curr_reset_history
- 		Reset currX_lowest and currX_highest for all sensors
- 		WO
- 
-+curr[1-*]_enable
-+		Enable or disable the sensors.
-+		When disabled the sensor read will return -ENODATA. This
-+		attribute can be used as per-sensor or per-sub-group attribute
-+		depending on what is supported by the hardware.
-+		1: Enable
-+		0: Disable
-+		RW
-+
- Also see the Alarms section for status flags associated with currents.
- 
- *********
-@@ -566,6 +602,15 @@ power[1-*]_crit			Critical maximum power.
- 				Unit: microWatt
- 				RW
- 
-+power[1-*]_enable		Enable or disable the sensors.
-+				When disabled the sensor read will return
-+				-ENODATA. This attribute can be used as
-+				per-sensor or per-sub-group attribute depending
-+				on what is supported by the hardware.
-+				1: Enable
-+				0: Disable
-+				RW
-+
- Also see the Alarms section for status flags associated with power readings.
- 
- **********
-@@ -576,6 +621,14 @@ energy[1-*]_input		Cumulative energy use
- 				Unit: microJoule
- 				RO
- 
-+energy[1-*]_enable		Enable or disable the sensors.
-+				When disabled the sensor read will return
-+				-ENODATA. This attribute can be used as
-+				per-sensor or per-sub-group attribute depending
-+				on what is supported by the hardware.
-+				1: Enable
-+				0: Disable
-+				RW
- 
- ************
- * Humidity *
-@@ -586,6 +639,15 @@ humidity[1-*]_input		Humidity
- 				RO
- 
- 
-+humidity[1-*]_enable		Enable or disable the sensors
-+				When disabled the sensor read will return
-+				-ENODATA. This attribute can be used as
-+				per-sensor or per-sub-group attribute depending
-+				on what is supported by the hardware.
-+				1: Enable
-+				0: Disable
-+				RW
-+
- **********
- * Alarms *
- **********
--- 
-1.8.3.1
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUm9iaW4gTXVycGh5IFtt
+YWlsdG86cm9iaW4ubXVycGh5QGFybS5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEp1bHkgMywgMjAx
+OCA4OjEwIFBNDQo+IFRvOiBOaXB1biBHdXB0YSA8bmlwdW4uZ3VwdGFAbnhwLmNvbT47IHdpbGwu
+ZGVhY29uQGFybS5jb207DQo+IHJvYmgrZHRAa2VybmVsLm9yZzsgcm9iaEBrZXJuZWwub3JnOyBt
+YXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gY2F0YWxpbi5tYXJpbmFzQGFybS5jb207IGdyZWdraEBs
+aW51eGZvdW5kYXRpb24ub3JnOyBMYXVyZW50aXUgVHVkb3INCj4gPGxhdXJlbnRpdS50dWRvckBu
+eHAuY29tPjsgYmhlbGdhYXNAZ29vZ2xlLmNvbQ0KPiBDYzogaGNoQGxzdC5kZTsgam9yb0A4Ynl0
+ZXMub3JnOyBtLnN6eXByb3dza2lAc2Ftc3VuZy5jb207DQo+IHNoYXduZ3VvQGtlcm5lbC5vcmc7
+IGZyb3dhbmQubGlzdEBnbWFpbC5jb207IGlvbW11QGxpc3RzLmxpbnV4LQ0KPiBmb3VuZGF0aW9u
+Lm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5l
+bC5vcmc7DQo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBwY2lAdmdlci5rZXJuZWwub3JnOyBCaGFy
+YXQgQmh1c2hhbiA8YmhhcmF0LmJodXNoYW5AbnhwLmNvbT47DQo+IHN0dXlvZGVyQGdtYWlsLmNv
+bTsgTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS83
+IHY1XSBEb2NzOiBkdDogYWRkIGZzbC1tYyBpb21tdS1tYXAgZGV2aWNlLXRyZWUNCj4gYmluZGlu
+Zw0KPiANCj4gT24gMjAvMDUvMTggMTQ6NDksIE5pcHVuIEd1cHRhIHdyb3RlOg0KPiA+IFRoZSBl
+eGlzdGluZyBJT01NVSBiaW5kaW5ncyBjYW5ub3QgYmUgdXNlZCB0byBzcGVjaWZ5IHRoZSByZWxh
+dGlvbnNoaXANCj4gPiBiZXR3ZWVuIGZzbC1tYyBkZXZpY2VzIGFuZCBJT01NVXMuIFRoaXMgcGF0
+Y2ggYWRkcyBhIGdlbmVyaWMgYmluZGluZyBmb3INCj4gPiBtYXBwaW5nIGZzbC1tYyBkZXZpY2Vz
+IHRvIElPTU1VcywgdXNpbmcgaW9tbXUtbWFwIHByb3BlcnR5Lg0KPiA+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogTmlwdW4gR3VwdGEgPG5pcHVuLmd1cHRhQG54cC5jb20+DQo+ID4gUmV2aWV3ZWQtYnk6
+IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+ID4gLS0tDQo+ID4gICAuLi4vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9taXNjL2ZzbCxxb3JpcS1tYy50eHQgICAgICB8IDM5DQo+ICsrKysrKysr
+KysrKysrKysrKysrKysNCj4gPiAgIDEgZmlsZSBjaGFuZ2VkLCAzOSBpbnNlcnRpb25zKCspDQo+
+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21p
+c2MvZnNsLHFvcmlxLW1jLnR4dA0KPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9taXNjL2ZzbCxxb3JpcS1tYy50eHQNCj4gPiBpbmRleCA2NjExYTdjLi44Y2JlZDRmIDEwMDY0
+NA0KPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9taXNjL2ZzbCxx
+b3JpcS1tYy50eHQNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+bWlzYy9mc2wscW9yaXEtbWMudHh0DQo+ID4gQEAgLTksNiArOSwyNSBAQCBibG9ja3MgdGhhdCBj
+YW4gYmUgdXNlZCB0byBjcmVhdGUgZnVuY3Rpb25hbCBoYXJkd2FyZQ0KPiBvYmplY3RzL2Rldmlj
+ZXMNCj4gPiAgIHN1Y2ggYXMgbmV0d29yayBpbnRlcmZhY2VzLCBjcnlwdG8gYWNjZWxlcmF0b3Ig
+aW5zdGFuY2VzLCBMMiBzd2l0Y2hlcywNCj4gPiAgIGV0Yy4NCj4gPg0KPiA+ICtGb3IgYW4gb3Zl
+cnZpZXcgb2YgdGhlIERQQUEyIGFyY2hpdGVjdHVyZSBhbmQgZnNsLW1jIGJ1cyBzZWU6DQo+ID4g
+K2RyaXZlcnMvc3RhZ2luZy9mc2wtbWMvUkVBRE1FLnR4dA0KPiANCj4gTml0OiBMb29rcyBsaWtl
+IHRoYXQncyBEb2N1bWVudGF0aW9uL25ldHdvcmtpbmcvZHBhYTIvb3ZlcnZpZXcucnN0IG5vdy4N
+Cj4gDQo+ID4gKw0KPiA+ICtBcyBkZXNjcmliZWQgaW4gdGhlIGFib3ZlIG92ZXJ2aWV3LCBhbGwg
+RFBBQTIgb2JqZWN0cyBpbiBhIERQUkMgc2hhcmUgdGhlDQo+ID4gK3NhbWUgaGFyZHdhcmUgImlz
+b2xhdGlvbiBjb250ZXh0IiBhbmQgYSAxMC1iaXQgdmFsdWUgY2FsbGVkIGFuIElDSUQNCj4gPiAr
+KGlzb2xhdGlvbiBjb250ZXh0IGlkKSBpcyBleHByZXNzZWQgYnkgdGhlIGhhcmR3YXJlIHRvIGlk
+ZW50aWZ5DQo+ID4gK3RoZSByZXF1ZXN0ZXIuDQo+ID4gKw0KPiA+ICtUaGUgZ2VuZXJpYyAnaW9t
+bXVzJyBwcm9wZXJ0eSBpcyBpbnN1ZmZpY2llbnQgdG8gZGVzY3JpYmUgdGhlIHJlbGF0aW9uc2hp
+cA0KPiA+ICtiZXR3ZWVuIElDSURzIGFuZCBJT01NVXMsIHNvIGFuIGlvbW11LW1hcCBwcm9wZXJ0
+eSBpcyB1c2VkIHRvDQo+IGRlZmluZQ0KPiA+ICt0aGUgc2V0IG9mIHBvc3NpYmxlIElDSURzIHVu
+ZGVyIGEgcm9vdCBEUFJDIGFuZCBob3cgdGhleSBtYXAgdG8NCj4gPiArYW4gSU9NTVUuDQo+ID4g
+Kw0KPiA+ICtGb3IgZ2VuZXJpYyBJT01NVSBiaW5kaW5ncywgc2VlDQo+ID4gK0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9pb21tdS9pb21tdS50eHQuDQo+ID4gKw0KPiA+ICtGb3Ig
+YXJtLXNtbXUgYmluZGluZywgc2VlOg0KPiA+ICtEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvaW9tbXUvYXJtLHNtbXUudHh0Lg0KPiA+ICsNCj4gPiAgIFJlcXVpcmVkIHByb3BlcnRp
+ZXM6DQo+ID4NCj4gPiAgICAgICAtIGNvbXBhdGlibGUNCj4gPiBAQCAtODgsMTQgKzEwNywzNCBA
+QCBTdWItbm9kZXM6DQo+ID4gICAgICAgICAgICAgICAgIFZhbHVlIHR5cGU6IDxwaGFuZGxlPg0K
+PiA+ICAgICAgICAgICAgICAgICBEZWZpbml0aW9uOiBTcGVjaWZpZXMgdGhlIHBoYW5kbGUgdG8g
+dGhlIFBIWSBkZXZpY2Ugbm9kZSBhc3NvY2lhdGVkDQo+ID4gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHdpdGggdGhlIHRoaXMgZHBtYWMuDQo+ID4gK09wdGlvbmFsIHByb3BlcnRpZXM6DQo+
+ID4gKw0KPiA+ICstIGlvbW11LW1hcDogTWFwcyBhbiBJQ0lEIHRvIGFuIElPTU1VIGFuZCBhc3Nv
+Y2lhdGVkIGlvbW11LQ0KPiBzcGVjaWZpZXINCj4gPiArICBkYXRhLg0KPiA+ICsNCj4gPiArICBU
+aGUgcHJvcGVydHkgaXMgYW4gYXJiaXRyYXJ5IG51bWJlciBvZiB0dXBsZXMgb2YNCj4gPiArICAo
+aWNpZC1iYXNlLGlvbW11LGlvbW11LWJhc2UsbGVuZ3RoKS4NCj4gPiArDQo+ID4gKyAgQW55IElD
+SUQgaSBpbiB0aGUgaW50ZXJ2YWwgW2ljaWQtYmFzZSwgaWNpZC1iYXNlICsgbGVuZ3RoKSBpcw0K
+PiA+ICsgIGFzc29jaWF0ZWQgd2l0aCB0aGUgbGlzdGVkIElPTU1VLCB3aXRoIHRoZSBpb21tdS1z
+cGVjaWZpZXINCj4gPiArICAoaSAtIGljaWQtYmFzZSArIGlvbW11LWJhc2UpLg0KPiA+DQo+ID4g
+ICBFeGFtcGxlOg0KPiA+DQo+ID4gKyAgICAgICAgc21tdTogaW9tbXVANTAwMDAwMCB7DQo+ID4g
+KyAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAiYXJtLG1tdS01MDAiOw0KPiA+ICsgICAgICAg
+ICAgICAgICAjaW9tbXUtY2VsbHMgPSA8Mj47DQo+IA0KPiBUaGlzIHNob3VsZCBiZSAxIGlmIHN0
+cmVhbS1tYXRjaC1tYXNrIGlzIHByZXNlbnQuIEJhZCBleGFtcGxlIGlzIGJhZCA6KQ0KDQpBZ3Jl
+ZSA6KS4gSWxsIHVwZGF0ZSBpdC4NCg0KPiANCj4gUm9iaW4uDQo+IA0KPiA+ICsgICAgICAgICAg
+ICAgICBzdHJlYW0tbWF0Y2gtbWFzayA9IDwweDdDMDA+Ow0KPiA+ICsgICAgICAgICAgICAgICAu
+Li4NCj4gPiArICAgICAgICB9Ow0KPiA+ICsNCj4gPiAgICAgICAgICAgZnNsX21jOiBmc2wtbWNA
+ODBjMDAwMDAwIHsNCj4gPiAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCxxb3Jp
+cS1tYyI7DQo+ID4gICAgICAgICAgICAgICAgICAgcmVnID0gPDB4MDAwMDAwMDggMHgwYzAwMDAw
+MCAwIDB4NDA+LCAgICAvKiBNQyBwb3J0YWwgYmFzZSAqLw0KPiA+ICAgICAgICAgICAgICAgICAg
+ICAgICAgIDwweDAwMDAwMDAwIDB4MDgzNDAwMDAgMCAweDQwMDAwPjsgLyogTUMgY29udHJvbCBy
+ZWcgKi8NCj4gPiAgICAgICAgICAgICAgICAgICBtc2ktcGFyZW50ID0gPCZpdHM+Ow0KPiA+ICsg
+ICAgICAgICAgICAgICAgLyogZGVmaW5lIG1hcCBmb3IgSUNJRHMgMjMtNjQgKi8NCj4gPiArICAg
+ICAgICAgICAgICAgIGlvbW11LW1hcCA9IDwyMyAmc21tdSAyMyA0MT47DQo+ID4gICAgICAgICAg
+ICAgICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8Mz47DQo+ID4gICAgICAgICAgICAgICAgICAgI3Np
+emUtY2VsbHMgPSA8MT47DQo+ID4NCj4gPg0K
