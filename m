@@ -1,38 +1,35 @@
-Return-Path: <nipun.gupta@nxp.com>
-Received: from EUR02-VE1-obe.outbound.protection.outlook.com
- (mail-eopbgr20059.outbound.protection.outlook.com [40.107.2.59])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-it0-x243.google.com (mail-it0-x243.google.com
+ [IPv6:2607:f8b0:4001:c0b::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MYg54bHfzDr02
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 22:18:57 +1000 (AEST)
-From: Nipun Gupta <nipun.gupta@nxp.com>
-To: Robin Murphy <robin.murphy@arm.com>, "will.deacon@arm.com"
- <will.deacon@arm.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "robh@kernel.org" <robh@kernel.org>, "mark.rutland@arm.com"
- <mark.rutland@arm.com>, "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Laurentiu Tudor
- <laurentiu.tudor@nxp.com>, "bhelgaas@google.com" <bhelgaas@google.com>
-CC: "hch@lst.de" <hch@lst.de>, "joro@8bytes.org" <joro@8bytes.org>,
- "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "shawnguo@kernel.org"
- <shawnguo@kernel.org>, "frowand.list@gmail.com" <frowand.list@gmail.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, Bharat Bhushan <bharat.bhushan@nxp.com>,
- "stuyoder@gmail.com" <stuyoder@gmail.com>, Leo Li <leoyang.li@nxp.com>
-Subject: RE: [PATCH 7/7 v5] arm64: dts: ls208xa: comply with the iommu map
- binding for fsl_mc
-Date: Fri, 6 Jul 2018 12:18:49 +0000
-Message-ID: <HE1PR0401MB2425F914BA7A9DDCB3D76AEDE6470@HE1PR0401MB2425.eurprd04.prod.outlook.com>
-References: <1526824191-7000-1-git-send-email-nipun.gupta@nxp.com>
- <1526824191-7000-8-git-send-email-nipun.gupta@nxp.com>
- <88626adc-6f5b-86df-88a0-620d258f8053@arm.com>
-In-Reply-To: <88626adc-6f5b-86df-88a0-620d258f8053@arm.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Mbl941PMzDqJh
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2018 23:52:37 +1000 (AEST)
+Received: by mail-it0-x243.google.com with SMTP id p4-v6so16628947itf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 06:52:37 -0700 (PDT)
 MIME-Version: 1.0
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+ <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de>
+In-Reply-To: <20180706083603.GA9063@wunner.de>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Fri, 6 Jul 2018 21:52:21 +0800
+Message-ID: <CAFgQCTsouCPy7GWGFzWbLuSUxnE2rWe5EGqsE5ivT+=ATw2MJg@mail.gmail.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+To: lukas@wunner.de
+Cc: rafael@kernel.org, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pm@vger.kernel.org, kishon@ti.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,58 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUm9iaW4gTXVycGh5IFtt
-YWlsdG86cm9iaW4ubXVycGh5QGFybS5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIEp1bHkgMywgMjAx
-OCAxMDowNiBQTQ0KPiBUbzogTmlwdW4gR3VwdGEgPG5pcHVuLmd1cHRhQG54cC5jb20+OyB3aWxs
-LmRlYWNvbkBhcm0uY29tOw0KPiByb2JoK2R0QGtlcm5lbC5vcmc7IHJvYmhAa2VybmVsLm9yZzsg
-bWFyay5ydXRsYW5kQGFybS5jb207DQo+IGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tOyBncmVna2hA
-bGludXhmb3VuZGF0aW9uLm9yZzsgTGF1cmVudGl1IFR1ZG9yDQo+IDxsYXVyZW50aXUudHVkb3JA
-bnhwLmNvbT47IGJoZWxnYWFzQGdvb2dsZS5jb20NCj4gQ2M6IGhjaEBsc3QuZGU7IGpvcm9AOGJ5
-dGVzLm9yZzsgbS5zenlwcm93c2tpQHNhbXN1bmcuY29tOw0KPiBzaGF3bmd1b0BrZXJuZWwub3Jn
-OyBmcm93YW5kLmxpc3RAZ21haWwuY29tOyBpb21tdUBsaXN0cy5saW51eC0NCj4gZm91bmRhdGlv
-bi5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJu
-ZWwub3JnOw0KPiBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4gcGNpQHZnZXIua2VybmVsLm9yZzsgQmhh
-cmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQG54cC5jb20+Ow0KPiBzdHV5b2RlckBnbWFpbC5j
-b207IExlbyBMaSA8bGVveWFuZy5saUBueHAuY29tPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDcv
-NyB2NV0gYXJtNjQ6IGR0czogbHMyMDh4YTogY29tcGx5IHdpdGggdGhlIGlvbW11IG1hcA0KPiBi
-aW5kaW5nIGZvciBmc2xfbWMNCj4gDQo+IE9uIDIwLzA1LzE4IDE0OjQ5LCBOaXB1biBHdXB0YSB3
-cm90ZToNCj4gPiBmc2wtbWMgYnVzIHN1cHBvcnQgdGhlIG5ldyBpb21tdS1tYXAgcHJvcGVydHku
-IENvbXBseSB0byB0aGlzIGJpbmRpbmcNCj4gPiBmb3IgZnNsX21jIGJ1cy4NCj4gPg0KPiA+IFNp
-Z25lZC1vZmYtYnk6IE5pcHVuIEd1cHRhIDxuaXB1bi5ndXB0YUBueHAuY29tPg0KPiA+IFJldmll
-d2VkLWJ5OiBMYXVyZW50aXUgVHVkb3IgPGxhdXJlbnRpdS50dWRvckBueHAuY29tPg0KPiA+IC0t
-LQ0KPiA+ICAgYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWxzMjA4eGEuZHRzaSB8
-IDYgKysrKystDQo+ID4gICAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCAxIGRlbGV0
-aW9uKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9mcmVlc2Nh
-bGUvZnNsLWxzMjA4eGEuZHRzaQ0KPiBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2Zz
-bC1sczIwOHhhLmR0c2kNCj4gPiBpbmRleCAxMzdlZjRkLi42MDEwNTA1IDEwMDY0NA0KPiA+IC0t
-LSBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL2ZzbC1sczIwOHhhLmR0c2kNCj4gPiAr
-KysgYi9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHMyMDh4YS5kdHNpDQo+ID4g
-QEAgLTE4NCw2ICsxODQsNyBAQA0KPiA+ICAgCQkjYWRkcmVzcy1jZWxscyA9IDwyPjsNCj4gPiAg
-IAkJI3NpemUtY2VsbHMgPSA8Mj47DQo+ID4gICAJCXJhbmdlczsNCj4gPiArCQlkbWEtcmFuZ2Vz
-ID0gPDB4MCAweDAgMHgwIDB4MCAweDEwMDAwIDB4MDAwMDAwMDA+Ow0KPiA+DQo+ID4gICAJCWNs
-b2NrZ2VuOiBjbG9ja2luZ0AxMzAwMDAwIHsNCj4gPiAgIAkJCWNvbXBhdGlibGUgPSAiZnNsLGxz
-MjA4MGEtY2xvY2tnZW4iOw0KPiA+IEBAIC0zNTcsNiArMzU4LDggQEANCj4gPiAgIAkJCXJlZyA9
-IDwweDAwMDAwMDA4IDB4MGMwMDAwMDAgMCAweDQwPiwJIC8qIE1DIHBvcnRhbA0KPiBiYXNlICov
-DQo+ID4gICAJCQkgICAgICA8MHgwMDAwMDAwMCAweDA4MzQwMDAwIDAgMHg0MDAwMD47IC8qIE1D
-DQo+IGNvbnRyb2wgcmVnICovDQo+ID4gICAJCQltc2ktcGFyZW50ID0gPCZpdHM+Ow0KPiA+ICsJ
-CQlpb21tdS1tYXAgPSA8MCAmc21tdSAwIDA+OwkvKiBUaGlzIGlzIGZpeGVkLXVwIGJ5DQo+IHUt
-Ym9vdCAqLw0KPiA+ICsJCQlkbWEtY29oZXJlbnQ7DQo+ID4gICAJCQkjYWRkcmVzcy1jZWxscyA9
-IDwzPjsNCj4gPiAgIAkJCSNzaXplLWNlbGxzID0gPDE+Ow0KPiA+DQo+ID4gQEAgLTQ2MCw2ICs0
-NjMsOCBAQA0KPiA+ICAgCQkJY29tcGF0aWJsZSA9ICJhcm0sbW11LTUwMCI7DQo+ID4gICAJCQly
-ZWcgPSA8MCAweDUwMDAwMDAgMCAweDgwMDAwMD47DQo+ID4gICAJCQkjZ2xvYmFsLWludGVycnVw
-dHMgPSA8MTI+Ow0KPiA+ICsJCQkjaW9tbXUtY2VsbHMgPSA8MT47DQo+ID4gKwkJCXN0cmVhbS1t
-YXRjaC1tYXNrID0gPDB4N0MwMD47DQo+ID4gICAJCQlpbnRlcnJ1cHRzID0gPDAgMTMgND4sIC8q
-IGdsb2JhbCBzZWN1cmUgZmF1bHQgKi8NCj4gPiAgIAkJCQkgICAgIDwwIDE0IDQ+LCAvKiBjb21i
-aW5lZCBzZWN1cmUgaW50ZXJydXB0ICovDQo+ID4gICAJCQkJICAgICA8MCAxNSA0PiwgLyogZ2xv
-YmFsIG5vbi1zZWN1cmUgZmF1bHQgKi8NCj4gPiBAQCAtNTAyLDcgKzUwNyw2IEBADQo+ID4gICAJ
-CQkJICAgICA8MCAyMDQgND4sIDwwIDIwNSA0PiwNCj4gPiAgIAkJCQkgICAgIDwwIDIwNiA0Piwg
-PDAgMjA3IDQ+LA0KPiA+ICAgCQkJCSAgICAgPDAgMjA4IDQ+LCA8MCAyMDkgND47DQo+ID4gLQkJ
-CW1tdS1tYXN0ZXJzID0gPCZmc2xfbWMgMHgzMDAgMD47DQo+IA0KPiBTaW5jZSB3ZSdyZSBpbiBo
-ZXJlLCBpcyB0aGUgU01NVSBpdHNlbGYgYWxzbyBjb2hlcmVudD8gSWYgaXQgaXMsIHlvdQ0KPiBw
-cm9iYWJseSB3YW50IHRvIHNheSBzbyBhbmQgYXZvaWQgdGhlIG92ZXJoZWFkIG9mIHBvaW50bGVz
-c2x5IGNsZWFuaW5nDQo+IGNhY2hlIGxpbmVzIG9uIGV2ZXJ5IHBhZ2UgdGFibGUgdXBkYXRlLg0K
-DQpZZXMsIGRtYS1jb2hlcmVudCBwcm9wZXJ0eSBpcyBhbHNvIHJlcXVpcmVkIGhlcmUuIEkgbWlz
-c2VkIGl0IHNvbWVob3cuDQpUaGFua3MgZm9yIHBvaW50aW5nIHRoaXMuDQoNClJlZ2FyZHMsDQpO
-aXB1bg0KDQo+IA0KPiBSb2Jpbi4NCj4gDQo+ID4gICAJCX07DQo+ID4NCj4gPiAgIAkJZHNwaTog
-ZHNwaUAyMTAwMDAwIHsNCj4gPg0K
+On Fri, Jul 6, 2018 at 4:36 PM Lukas Wunner <lukas@wunner.de> wrote:
+>
+> [cc += Kishon Vijay Abraham]
+>
+> On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+> > OK, so calling devices_kset_move_last() from really_probe() clearly is
+> > a mistake.
+> >
+> > I'm not really sure what the intention of it was as the changelog of
+> > commit 52cdbdd49853d doesn't really explain that (why would it be
+> > insufficient without that change?)
+>
+> It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+> whose reset pin needs to be driven high on shutdown, lest the MMC
+> won't be found on the next boot.
+>
+> The boards' devicetrees use a kludge wherein the reset pin is modelled
+> as a regulator.  The regulator is enabled when the MMC probes and
+> disabled on driver unbind and shutdown.  As a result, the pin is driven
+> low on shutdown and the MMC is not found on the next boot.
+>
+> To fix this, another kludge was invented wherein the GPIO expander
+> driving the reset pin unconditionally drives all its pins high on
+> shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+> (commit adc284755055, "gpio: pcf857x: restore the initial line state
+> of all pcf lines").
+>
+> For this kludge to work, the GPIO expander's ->shutdown hook needs to
+> be executed after the MMC expander's ->shutdown hook.
+>
+> Commit 52cdbdd49853d achieved that by reordering devices_kset according
+> to the probe order.  Apparently the MMC probes after the GPIO expander,
+> possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+> available yet, see mmc_regulator_get_supply().
+>
+> Note, I'm just piecing the information together from git history,
+> I'm not responsible for these kludges.  (I'm innocent!)
+>
+Thanks for your exploration, very clearly. I had tried, but failed
+since these commits are contributed with different authors. I am not
+familiar with ARM and dts, so had thought
+really_probe()->devices_kset_move_last() is used to address a very
+popular "supplier<-consumer" order issue in smart phone, based on the
+configuration hard-coded in "bios(or counterpart in ARM).
+
+> @Pingfan Liu, if you just remove the call to devices_kset_move_last()
+> from really_probe(), does the issue go away?
+>
+Yes, it goes away.
+
+> If so, it might be best to remove that call and model the dependency
+> with a call to device_link_add() in mmc_regulator_get_supply().
+> Another idea would be to automatically add a device_link in the
+> driver core if -EPROBE_DEFER is returned.
+>
+Maybe the first one is better, as it is already used by other drivers.
+
+Thanks,
+Pingfan
