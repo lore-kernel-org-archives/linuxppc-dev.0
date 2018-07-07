@@ -1,37 +1,23 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-io0-x244.google.com (mail-io0-x244.google.com
- [IPv6:2607:f8b0:4001:c06::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rdunlap@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Mz5N6hC6zDql8
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 14:24:40 +1000 (AEST)
-Received: by mail-io0-x244.google.com with SMTP id z19-v6so12586788ioh.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Jul 2018 21:24:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Mzrs2MwwzDqv6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 14:58:51 +1000 (AEST)
+Subject: Re: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+ <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <4f3a5969-88d5-134d-508d-7617947c588c@infradead.org>
+Date: Fri, 6 Jul 2018 21:58:29 -0700
 MIME-Version: 1.0
-References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
- <4685360.VNmeYLh0dQ@aspire.rjw.lan>
- <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
- <6281446.GoJLz6Hq6C@aspire.rjw.lan>
- <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
- <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
- <20180706083603.GA9063@wunner.de>
- <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
- <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
-In-Reply-To: <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
-From: Pingfan Liu <kernelfans@gmail.com>
-Date: Sat, 7 Jul 2018 12:24:26 +0800
-Message-ID: <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
-Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
- ordering in device_kset
-To: rafael@kernel.org
-Cc: lukas@wunner.de, linux-kernel@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Grygorii Strashko <grygorii.strashko@ti.com>,
- Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
- Dave Young <dyoung@redhat.com>,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org, kishon@ti.com
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,68 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 6, 2018 at 9:55 PM Pingfan Liu <kernelfans@gmail.com> wrote:
->
-> On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > [cc += Kishon Vijay Abraham]
-> > >
-> > > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
-> > >> OK, so calling devices_kset_move_last() from really_probe() clearly is
-> > >> a mistake.
-> > >>
-> > >> I'm not really sure what the intention of it was as the changelog of
-> > >> commit 52cdbdd49853d doesn't really explain that (why would it be
-> > >> insufficient without that change?)
-> > >
-> > > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
-> > > whose reset pin needs to be driven high on shutdown, lest the MMC
-> > > won't be found on the next boot.
-> > >
-> > > The boards' devicetrees use a kludge wherein the reset pin is modelled
-> > > as a regulator.  The regulator is enabled when the MMC probes and
-> > > disabled on driver unbind and shutdown.  As a result, the pin is driven
-> > > low on shutdown and the MMC is not found on the next boot.
-> > >
-> > > To fix this, another kludge was invented wherein the GPIO expander
-> > > driving the reset pin unconditionally drives all its pins high on
-> > > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
-> > > (commit adc284755055, "gpio: pcf857x: restore the initial line state
-> > > of all pcf lines").
-> > >
-> > > For this kludge to work, the GPIO expander's ->shutdown hook needs to
-> > > be executed after the MMC expander's ->shutdown hook.
-> > >
-> > > Commit 52cdbdd49853d achieved that by reordering devices_kset according
-> > > to the probe order.  Apparently the MMC probes after the GPIO expander,
-> > > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
-> > > available yet, see mmc_regulator_get_supply().
-> > >
-> > > Note, I'm just piecing the information together from git history,
-> > > I'm not responsible for these kludges.  (I'm innocent!)
-> >
-> > Sure enough. :-)
-> >
-> > In any case, calling devices_kset_move_last() in really_probe() is
-> > plain broken and if its only purpose was to address a single, arguably
-> > kludgy, use case, let's just get rid of it in the first place IMO.
-> >
-> Yes, if it is only used for a single use case.
->
-Think it again, I saw other potential issue with the current code.
-device_link_add->device_reorder_to_tail() can break the
-"supplier<-consumer" order. During moving children after parent's
-supplier, it ignores the order of child's consumer.  Beside this,
-essentially both devices_kset_move_after/_before() and
-device_pm_move_after/_before() expose  the shutdown order to the
-indirect caller,  and we can not expect that the caller can not handle
-it correctly. It should be a job of drivers core.  It is hard to
-extract high dimension info and pack them into one dimension
-linked-list. And in theory, it is warranted that the shutdown seq is
-correct by using device tree info. More important, it is cheap with
-the data structure in hand. So I think it is time to resolve the issue
-once for all.
+On 07/06/2018 06:45 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-07-05 at 14:30 -0700, Randy Dunlap wrote:
+>> Hi,
+>>
+>> Is there a good way (or a shortcut) to do something like:
+>>
+>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+>>   to get a PPC32/32BIT allmodconfig
+>>
+>> and also be able to do:
+>>
+>> $make ARCH=powerpc O=PPC64 [other_options] allmodconfig
+>>   to get a PPC64/64BIT allmodconfig?
+> 
+> Hrm... O= is for the separate build dir, so there much be something
+> else.
+> 
+> You mean having ARCH= aliases like ppc/ppc32 and ppc64 ?
 
-Thanks and regards,
-Pingfan
+Yes.
+
+> That would be a matter of overriding some .config defaults I suppose, I
+> don't know how this is done on other archs.
+> 
+> I see the aliasing trick in the Makefile but that's about it.
+> 
+>> Note that arch/x86, arch/sh, and arch/sparc have ways to do
+>> some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
+>> sh and sparc based on a recent "fix" patch from me):
+> 
+> I fail to see what you are actually talking about here ... sorry. Do
+> you have concrete examples on x86 or sparc ? From what I can tell the
+> "i386" or "sparc32/sparc64" aliases just change SRCARCH in Makefile and
+> 32 vs 64-bit is just a Kconfig option...
+
+Yes, your summary is mostly correct.
+
+I'm just looking for a way to do cross-compile builds that are close to
+ppc32 allmodconfig and ppc64 allmodconfig.
+
+
+>> x86: i386 for 32 bit, x86_64 for 64 bit
+>> sh: sh for 32 bit, sh64 for 64 bit
+>> sparc: sparc32 for 32 bit, sparc64 for 64 bit
+
+I saw the powerpc merge-config targets after I sent this original email.
+I can do my own homebrew that I prefer over those, though.
+
+
+thanks,
+-- 
+~Randy
