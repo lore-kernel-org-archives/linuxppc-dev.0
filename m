@@ -1,19 +1,21 @@
-Return-Path: <tim@seoss.co.uk>
-Received: from relay1.allsecuredomains.com (relay1.allsecuredomains.com
- [78.47.251.4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41MdVL6RbTzDqBW
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 01:11:37 +1000 (AEST)
-To: linuxppc-dev@lists.ozlabs.org
-From: Tim Small <tim@seoss.co.uk>
-Cc: Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>
-Subject: NXP p1010se device trees only correct for P1010E/P1014E, not
- P1010/P1014 SoCs.
-Message-ID: <1ed6ce0c-f7df-615b-ffdb-8dab25b506f6@seoss.co.uk>
-Date: Fri, 6 Jul 2018 15:50:27 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41MvYw4V4gzDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2018 11:45:40 +1000 (AEST)
+Message-ID: <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
+Subject: Re: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Randy Dunlap <rdunlap@infradead.org>, linux-kbuild
+ <linux-kbuild@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org
+Date: Sat, 07 Jul 2018 11:45:03 +1000
+In-Reply-To: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Thu, 2018-07-05 at 14:30 -0700, Randy Dunlap wrote:
+> Hi,
+> 
+> Is there a good way (or a shortcut) to do something like:
+> 
+> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+>   to get a PPC32/32BIT allmodconfig
+> 
+> and also be able to do:
+> 
+> $make ARCH=powerpc O=PPC64 [other_options] allmodconfig
+>   to get a PPC64/64BIT allmodconfig?
 
-I contributed a patch to OpenWRT a couple of days ago to fix the device 
-tree for a device which uses an NXP p1014 without the SEC4 module.  I 
-was wondering about getting a similar fix applied upstream...
+Hrm... O= is for the separate build dir, so there much be something
+else.
 
-The device uses the P1014 (without SEC4 functionality), and includes:
+You mean having ARCH= aliases like ppc/ppc32 and ppc64 ?
 
-fsl/p1010si-pre.dtsi and fsl/p1010si-post.dtsi
+That would be a matter of overriding some .config defaults I suppose, I
+don't know how this is done on other archs.
 
-... in its device tree.  The latter pulls in leads to a node for 
-soc@ffe00000/crypto@30000 - which then causes the CAAM modules to be 
-used for crypto operations, when then fail at runtime.
+I see the aliasing trick in the Makefile but that's about it.
 
-AN4938 states that there are versions of both the p1010 and p1014 
-without the SEC4 module.
+> Note that arch/x86, arch/sh, and arch/sparc have ways to do
+> some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
+> sh and sparc based on a recent "fix" patch from me):
 
-The P1010 errata at:
+I fail to see what you are actually talking about here ... sorry. Do
+you have concrete examples on x86 or sparc ? From what I can tell the
+"i386" or "sparc32/sparc64" aliases just change SRCARCH in Makefile and
+32 vs 64-bit is just a Kconfig option...
 
-https://media.digikey.com/pdf/PCNs/Freescale/P1010CE_RevL.pdf
-
-(table 2 on page 2), says that the P1010 and P1014 don't have the SEC4 
-module, only the P1010E and P1014E models do.
-
-So, I think there should probably be device trees for p101xE (with SEC) 
-and p101x (without SEC).
-
-Any thoughts?  Not really sure how best to do that...  My openwrt patch 
-just does a:
-
-/delete-node/ crypto@30000;
-
-after the p1010si-post.dtsi include.
-
-Cheers,
-
-Tim.
--- 
-South East Open Source Solutions Limited
-Registered in England and Wales with company number 06134732.
-Registered Office: 2 Powell Gardens, Redhill, Surrey, RH1 1TQ
-VAT number: 900 6633 53  http://seoss.co.uk/ +44-(0)1273-808309
+> x86: i386 for 32 bit, x86_64 for 64 bit
+> sh: sh for 32 bit, sh64 for 64 bit
+> sparc: sparc32 for 32 bit, sparc64 for 64 bit
