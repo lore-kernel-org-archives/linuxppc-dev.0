@@ -1,26 +1,40 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41NFBR3HTWzDqv6
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jul 2018 00:59:58 +1000 (AEST)
-Subject: Re: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Stephen Rothwell <sfr@canb.auug.org.au>
-References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
- <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
- <4f3a5969-88d5-134d-508d-7617947c588c@infradead.org>
- <20180707221316.5b75e075@roar.ozlabs.ibm.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <c0a17b80-6384-7437-045c-3688d9e5e7f9@infradead.org>
-Date: Sat, 7 Jul 2018 07:59:49 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41NY9F3YL1zDqFG
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jul 2018 13:00:00 +1000 (AEST)
+Date: Sun, 8 Jul 2018 10:59:46 +0800
+From: Baoquan He <bhe@redhat.com>
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, linux-kernel@vger.kernel.org,
+ akpm@linux-foundation.org, robh+dt@kernel.org,
+ dan.j.williams@intel.com, nicolas.pitre@linaro.org,
+ josh@joshtriplett.org, fengguang.wu@intel.com, bp@suse.de,
+ andy.shevchenko@gmail.com, brijesh.singh@amd.com,
+ devicetree@vger.kernel.org, airlied@linux.ie,
+ linux-pci@vger.kernel.org, richard.weiyang@gmail.com,
+ keith.busch@intel.com, jcmvbkbc@gmail.com,
+ baiyaowei@cmss.chinamobile.com, frowand.list@gmail.com,
+ lorenzo.pieralisi@arm.com, sthemmin@microsoft.com,
+ linux-nvdimm@lists.01.org, patrik.r.jakobsson@gmail.com,
+ linux-input@vger.kernel.org, gustavo@padovan.org, dyoung@redhat.com,
+ vgoyal@redhat.com, thomas.lendacky@amd.com, haiyangz@microsoft.com,
+ maarten.lankhorst@linux.intel.com, jglisse@redhat.com,
+ seanpaul@chromium.org, bhelgaas@google.com, tglx@linutronix.de,
+ yinghai@kernel.org, jonathan.derrick@intel.com, chris@zankel.net,
+ monstr@monstr.eu, linux-parisc@vger.kernel.org,
+ gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com,
+ kexec@lists.infradead.org, ebiederm@xmission.com,
+ devel@linuxdriverproject.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
+Subject: Re: [PATCH v6 2/4] resource: Use list_head to link sibling resource
+Message-ID: <20180708025946.GI3047@MiWiFi-R3L-srv>
+References: <20180704041038.8190-3-bhe@redhat.com>
+ <201807042347.hfDcKxmG%fengguang.wu@intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20180707221316.5b75e075@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201807042347.hfDcKxmG%fengguang.wu@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,141 +44,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/07/2018 05:13 AM, Nicholas Piggin wrote:
-> On Fri, 6 Jul 2018 21:58:29 -0700
-> Randy Dunlap <rdunlap@infradead.org> wrote:
+Hi,
+
+On 07/05/18 at 01:00am, kbuild test robot wrote:
+> Hi Baoquan,
 > 
->> On 07/06/2018 06:45 PM, Benjamin Herrenschmidt wrote:
->>> On Thu, 2018-07-05 at 14:30 -0700, Randy Dunlap wrote:  
->>>> Hi,
->>>>
->>>> Is there a good way (or a shortcut) to do something like:
->>>>
->>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
->>>>   to get a PPC32/32BIT allmodconfig
->>>>
->>>> and also be able to do:
->>>>
->>>> $make ARCH=powerpc O=PPC64 [other_options] allmodconfig
->>>>   to get a PPC64/64BIT allmodconfig?  
->>>
->>> Hrm... O= is for the separate build dir, so there much be something
->>> else.
->>>
->>> You mean having ARCH= aliases like ppc/ppc32 and ppc64 ?  
->>
->> Yes.
->>
->>> That would be a matter of overriding some .config defaults I suppose, I
->>> don't know how this is done on other archs.
->>>
->>> I see the aliasing trick in the Makefile but that's about it.
->>>   
->>>> Note that arch/x86, arch/sh, and arch/sparc have ways to do
->>>> some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
->>>> sh and sparc based on a recent "fix" patch from me):  
->>>
->>> I fail to see what you are actually talking about here ... sorry. Do
->>> you have concrete examples on x86 or sparc ? From what I can tell the
->>> "i386" or "sparc32/sparc64" aliases just change SRCARCH in Makefile and
->>> 32 vs 64-bit is just a Kconfig option...  
->>
->> Yes, your summary is mostly correct.
->>
->> I'm just looking for a way to do cross-compile builds that are close to
->> ppc32 allmodconfig and ppc64 allmodconfig.
+> I love your patch! Yet something to improve:
 > 
-> Would there a problem with adding ARCH=ppc32 / ppc64 matching? This
-> seems to work...
+> [auto build test ERROR on linus/master]
+> [also build test ERROR on v4.18-rc3 next-20180704]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+Thanks for telling. 
+
+I cloned 0day-ci/linut to my local pc.
+https://github.com/0day-ci/linux.git
+
+However, I didn't find below branch. And tried to open it in web
+broswer, also failed.
+
+
+> url:    https://github.com/0day-ci/linux/commits/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180704-121402
+> config: mips-rb532_defconfig (attached as .config)
+> compiler: mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> reproduce:
+>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         GCC_VERSION=7.2.0 make.cross ARCH=mips 
+
+I did find a old one which is for the old version 5 post.
+
+[bhe@linux]$ git remote -v
+0day-ci	https://github.com/0day-ci/linux.git (fetch)
+0day-ci	https://github.com/0day-ci/linux.git (push)
+[bhe@dhcp-128-28 linux]$ git branch -a| grep Baoquan| grep resource
+  remotes/0day-ci/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180612-113600
+
+Could you help have a look at this?
+
+Thanks
+Baoquan
+
 > 
-> Thanks,
-> Nick
-
-Yes, this mostly works and is similar to a patch (my patch) on my test machine.
-And they both work for allmodconfig, which is my primary build target.
-
-And they both have one little quirk that is confusing when the build target
-is defconfig:
-
-When ARCH=ppc32, the terminal output (stdout) is: (using O=PPC32)
-
-make[1]: Entering directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
-  GEN     ./Makefile
-*** Default configuration is based on 'ppc64_defconfig'   <<<<< NOTE <<<<<
-#
-# configuration written to .config
-#
-make[1]: Leaving directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
-
-
-I expect that can be fixed also.  :)
-
-And the written .config file is indeed for 32BIT, not 64BIT.
-
-Thanks, Nick.
-
+> All error/warnings (new ones prefixed by >>):
+> 
+> >> arch/mips/pci/pci-rc32434.c:57:11: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
+>      .child = &rc32434_res_pci_mem2
+>               ^
+>    arch/mips/pci/pci-rc32434.c:57:11: note: (near initialization for 'rc32434_res_pci_mem1.child.next')
+> >> arch/mips/pci/pci-rc32434.c:51:47: warning: missing braces around initializer [-Wmissing-braces]
+>     static struct resource rc32434_res_pci_mem1 = {
+>                                                   ^
+>    arch/mips/pci/pci-rc32434.c:60:47: warning: missing braces around initializer [-Wmissing-braces]
+>     static struct resource rc32434_res_pci_mem2 = {
+>                                                   ^
+>    cc1: some warnings being treated as errors
+> 
+> vim +57 arch/mips/pci/pci-rc32434.c
+> 
+> 73b4390f Ralf Baechle 2008-07-16  50  
+> 73b4390f Ralf Baechle 2008-07-16 @51  static struct resource rc32434_res_pci_mem1 = {
+> 73b4390f Ralf Baechle 2008-07-16  52  	.name = "PCI MEM1",
+> 73b4390f Ralf Baechle 2008-07-16  53  	.start = 0x50000000,
+> 73b4390f Ralf Baechle 2008-07-16  54  	.end = 0x5FFFFFFF,
+> 73b4390f Ralf Baechle 2008-07-16  55  	.flags = IORESOURCE_MEM,
+> 73b4390f Ralf Baechle 2008-07-16  56  	.sibling = NULL,
+> 73b4390f Ralf Baechle 2008-07-16 @57  	.child = &rc32434_res_pci_mem2
+> 73b4390f Ralf Baechle 2008-07-16  58  };
+> 73b4390f Ralf Baechle 2008-07-16  59  
+> 
+> :::::: The code at line 57 was first introduced by commit
+> :::::: 73b4390fb23456964201abda79f1210fe337d01a [MIPS] Routerboard 532: Support for base system
+> 
+> :::::: TO: Ralf Baechle <ralf@linux-mips.org>
+> :::::: CC: Ralf Baechle <ralf@linux-mips.org>
+> 
 > ---
->  Makefile                               | 8 ++++++++
->  arch/powerpc/Kconfig                   | 9 +++++++++
->  arch/powerpc/platforms/Kconfig.cputype | 8 --------
->  3 files changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index c5ce55cbc543..f97204aed17a 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -345,6 +345,14 @@ ifeq ($(ARCH),sh64)
->         SRCARCH := sh
->  endif
->  
-> +# Additional ARCH settings for powerpc
-> +ifeq ($(ARCH),ppc32)
-> +       SRCARCH := powerpc
-> +endif
-> +ifeq ($(ARCH),ppc64)
-> +       SRCARCH := powerpc
-> +endif
-> +
->  KCONFIG_CONFIG	?= .config
->  export KCONFIG_CONFIG
->  
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 9f2b75fe2c2d..3405b1b122be 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -1,4 +1,13 @@
->  # SPDX-License-Identifier: GPL-2.0
-> +
-> +config PPC64
-> +	bool "64-bit kernel" if "$(ARCH)" = "powerpc"
-> +	default "$(ARCH)" != "ppc32"
-> +	select ZLIB_DEFLATE
-> +	help
-> +	  This option selects whether a 32-bit or a 64-bit kernel
-> +	  will be built.
-> +
->  source "arch/powerpc/platforms/Kconfig.cputype"
->  
->  config PPC32
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> index e6a1de521319..f6e5d6ef9782 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -1,12 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0
-> -config PPC64
-> -	bool "64-bit kernel"
-> -	default n
-> -	select ZLIB_DEFLATE
-> -	help
-> -	  This option selects whether a 32-bit or a 64-bit kernel
-> -	  will be built.
-> -
->  menu "Processor support"
->  choice
->  	prompt "Processor Type"
-> 
-
-
--- 
-~Randy
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
