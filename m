@@ -1,35 +1,25 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conssluserg-02.nifty.com (conssluserg-02.nifty.com
- [210.131.2.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pf0-x242.google.com (mail-pf0-x242.google.com
+ [IPv6:2607:f8b0:400e:c00::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41P2mN3FGCzDqyp
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 08:13:39 +1000 (AEST)
-Received: from mail-vk0-f48.google.com (mail-vk0-f48.google.com
- [209.85.213.48]) (authenticated)
- by conssluserg-02.nifty.com with ESMTP id w68MDIC6030896
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2018 07:13:18 +0900
-Received: by mail-vk0-f48.google.com with SMTP id y70-v6so7128960vkc.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jul 2018 15:13:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41P3Zv2sW6zDqyp
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 08:50:30 +1000 (AEST)
+Received: by mail-pf0-x242.google.com with SMTP id b17-v6so12247495pfi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jul 2018 15:50:30 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH v4 3/3] hwmon: Document the sensor enable attribute
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
+References: <1530878166-12589-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1530878166-12589-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <7f9c672a-ae52-0bb3-8820-22049c445a4e@roeck-us.net>
+Date: Sun, 8 Jul 2018 15:50:26 -0700
 MIME-Version: 1.0
-In-Reply-To: <20180706004940.32587-1-labbott@redhat.com>
-References: <20180706004940.32587-1-labbott@redhat.com>
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Mon, 9 Jul 2018 07:12:37 +0900
-Message-ID: <CAK7LNASo7pnL32dFqdxmKqCLkBsJwGOaTHXX=rVjpi2-Y=t0Aw@mail.gmail.com>
-Subject: Re: [PATCHv6 0/4] Salted build ids via ELF notes
-To: Laura Abbott <labbott@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>, Mark Wielaard <mjw@fedoraproject.org>,
- "H . J . Lu" <hjl.tools@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, X86 ML <x86@kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Nick Clifton <nickc@redhat.com>, Cary Coutant <ccoutant@gmail.com>,
- Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1530878166-12589-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,46 +29,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-07-06 9:49 GMT+09:00 Laura Abbott <labbott@redhat.com>:
-> Hi,
->
-> This is v6 of the series to allow unique build ids. v6 is mostly minor
-> fixups and Acks for this to go through the kbuild tree.
+On 07/06/2018 04:56 AM, Shilpasri G Bhat wrote:
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
+Applied to hwmon-next, after updating the commit description.
+I also removed the text "This attribute can be used as per-sensor or
+per-sub-group attribute depending on what is supported by the hardware."
+from the attribute descriptions; this is an implementation detail
+which should be described in driver documentations.
 
-Applied to linux-kbuild. Thanks!
+Thanks,
+Guenter
 
-
-> Thanks,
-> Laura
->
-> Laura Abbott (4):
->   kbuild: Add build salt to the kernel and modules
->   x86: Add build salt to the vDSO
->   powerpc: Add build salt to the vDSO
->   arm64: Add build salt to the vDSO
->
->  arch/arm64/kernel/vdso/note.S     |  3 +++
->  arch/powerpc/kernel/vdso32/note.S |  3 +++
->  arch/x86/entry/vdso/vdso-note.S   |  3 +++
->  arch/x86/entry/vdso/vdso32/note.S |  3 +++
->  include/linux/build-salt.h        | 20 ++++++++++++++++++++
->  init/Kconfig                      |  9 +++++++++
->  init/version.c                    |  3 +++
->  scripts/mod/modpost.c             |  3 +++
->  8 files changed, 47 insertions(+)
->  create mode 100644 include/linux/build-salt.h
->
-> --
-> 2.17.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+> ---
+>   Documentation/hwmon/sysfs-interface | 62 +++++++++++++++++++++++++++++++++++++
+>   1 file changed, 62 insertions(+)
+> 
+> diff --git a/Documentation/hwmon/sysfs-interface b/Documentation/hwmon/sysfs-interface
+> index fc337c3..f865dd7 100644
+> --- a/Documentation/hwmon/sysfs-interface
+> +++ b/Documentation/hwmon/sysfs-interface
+> @@ -171,6 +171,15 @@ in[0-*]_label	Suggested voltage channel label.
+>   		user-space.
+>   		RO
+>   
+> +in[0-*]_enable
+> +		Enable or disable the sensors.
+> +		When disabled the sensor read will return -ENODATA. This
+> +		attribute can be used as per-sensor or per-sub-group attribute
+> +		depending on what is supported by the hardware.
+> +		1: Enable
+> +		0: Disable
+> +		RW
+> +
+>   cpu[0-*]_vid	CPU core reference voltage.
+>   		Unit: millivolt
+>   		RO
+> @@ -236,6 +245,15 @@ fan[1-*]_label	Suggested fan channel label.
+>   		In all other cases, the label is provided by user-space.
+>   		RO
+>   
+> +fan[1-*]_enable
+> +		Enable or disable the sensors.
+> +		When disabled the sensor read will return -ENODATA. This
+> +		attribute can be used as per-sensor or per-sub-group attribute
+> +		depending on what is supported by the hardware.
+> +		1: Enable
+> +		0: Disable
+> +		RW
+> +
+>   Also see the Alarms section for status flags associated with fans.
+>   
+>   
+> @@ -409,6 +427,15 @@ temp_reset_history
+>   		Reset temp_lowest and temp_highest for all sensors
+>   		WO
+>   
+> +temp[1-*]_enable
+> +		Enable or disable the sensors.
+> +		When disabled the sensor read will return -ENODATA. This
+> +		attribute can be used as per-sensor or per-sub-group attribute
+> +		depending on what is supported by the hardware.
+> +		1: Enable
+> +		0: Disable
+> +		RW
+> +
+>   Some chips measure temperature using external thermistors and an ADC, and
+>   report the temperature measurement as a voltage. Converting this voltage
+>   back to a temperature (or the other way around for limits) requires
+> @@ -468,6 +495,15 @@ curr_reset_history
+>   		Reset currX_lowest and currX_highest for all sensors
+>   		WO
+>   
+> +curr[1-*]_enable
+> +		Enable or disable the sensors.
+> +		When disabled the sensor read will return -ENODATA. This
+> +		attribute can be used as per-sensor or per-sub-group attribute
+> +		depending on what is supported by the hardware.
+> +		1: Enable
+> +		0: Disable
+> +		RW
+> +
+>   Also see the Alarms section for status flags associated with currents.
+>   
+>   *********
+> @@ -566,6 +602,15 @@ power[1-*]_crit			Critical maximum power.
+>   				Unit: microWatt
+>   				RW
+>   
+> +power[1-*]_enable		Enable or disable the sensors.
+> +				When disabled the sensor read will return
+> +				-ENODATA. This attribute can be used as
+> +				per-sensor or per-sub-group attribute depending
+> +				on what is supported by the hardware.
+> +				1: Enable
+> +				0: Disable
+> +				RW
+> +
+>   Also see the Alarms section for status flags associated with power readings.
+>   
+>   **********
+> @@ -576,6 +621,14 @@ energy[1-*]_input		Cumulative energy use
+>   				Unit: microJoule
+>   				RO
+>   
+> +energy[1-*]_enable		Enable or disable the sensors.
+> +				When disabled the sensor read will return
+> +				-ENODATA. This attribute can be used as
+> +				per-sensor or per-sub-group attribute depending
+> +				on what is supported by the hardware.
+> +				1: Enable
+> +				0: Disable
+> +				RW
+>   
+>   ************
+>   * Humidity *
+> @@ -586,6 +639,15 @@ humidity[1-*]_input		Humidity
+>   				RO
+>   
+>   
+> +humidity[1-*]_enable		Enable or disable the sensors
+> +				When disabled the sensor read will return
+> +				-ENODATA. This attribute can be used as
+> +				per-sensor or per-sub-group attribute depending
+> +				on what is supported by the hardware.
+> +				1: Enable
+> +				0: Disable
+> +				RW
+> +
+>   **********
+>   * Alarms *
+>   **********
+> 
