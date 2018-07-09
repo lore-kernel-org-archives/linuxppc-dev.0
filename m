@@ -1,18 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-io0-x242.google.com (mail-io0-x242.google.com
+ [IPv6:2607:f8b0:4001:c06::242])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PFn64rM1zDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 16:30:02 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: msuchanek@suse.de,
-	anton@samba.org,
-	npiggin@gmail.com
-Subject: [PATCH] powerpc64s: Show ori31 availability in spectre_v1 sysfs file
- not v2
-Date: Mon,  9 Jul 2018 16:25:21 +1000
-Message-Id: <20180709062521.693-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PGBm0QVXzDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 16:48:47 +1000 (AEST)
+Received: by mail-io0-x242.google.com with SMTP id r24-v6so16092128ioh.9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jul 2018 23:48:47 -0700 (PDT)
+MIME-Version: 1.0
+References: <1530600642-25090-1-git-send-email-kernelfans@gmail.com>
+ <4685360.VNmeYLh0dQ@aspire.rjw.lan>
+ <CAFgQCTusBM0-E=wAJgRJA7g-RnDi9ts==-M7KezNBwSWnyO=HA@mail.gmail.com>
+ <6281446.GoJLz6Hq6C@aspire.rjw.lan>
+ <CAFgQCTt7VfqM=UyCnvNFxrSw8Z6cUtAi3HUwR4_xPAc03SgHjQ@mail.gmail.com>
+ <CAJZ5v0jo5-z0ZYDzdNPpn54+oAxpdG_=EvVDdz-HKxp7psu-EA@mail.gmail.com>
+ <20180706083603.GA9063@wunner.de>
+ <CAJZ5v0j6+m8NGMneG45tF9L1s6ahtFo91wPCO=3YOTEyAOL+VQ@mail.gmail.com>
+ <CAFgQCTugu5XO06_xXb4ihkdfGJxtFX0813g2J-Jk2JeYtPP1vA@mail.gmail.com>
+ <CAFgQCTsCjkDWJsNog_sTnS-ZaZ87fMFpKq1ekVSUG4MDs6K_jw@mail.gmail.com>
+ <CAJZ5v0gxJ9LJ328WbgPrZCV-0SEiO31trsTSYYS8L95P4kfkbA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gxJ9LJ328WbgPrZCV-0SEiO31trsTSYYS8L95P4kfkbA@mail.gmail.com>
+From: Pingfan Liu <kernelfans@gmail.com>
+Date: Mon, 9 Jul 2018 14:48:33 +0800
+Message-ID: <CAFgQCTvYwjKtx+AQf-kQjTsJMPRz48vgJ__jqNpwZuayG21oQw@mail.gmail.com>
+Subject: Re: [PATCHv3 0/4] drivers/base: bugfix for supplier<-consumer
+ ordering in device_kset
+To: Rafael Wysocki <rafael@kernel.org>
+Cc: lukas@wunner.de, linux-kernel@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Grygorii Strashko <grygorii.strashko@ti.com>,
+ Christoph Hellwig <hch@infradead.org>, Bjorn Helgaas <helgaas@kernel.org>,
+ Dave Young <dyoung@redhat.com>,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pm@vger.kernel.org, kishon@ti.com
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,91 +43,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When I added the spectre_v2 information in sysfs, I included the
-availability of the ori31 speculation barrier.
+On Sun, Jul 8, 2018 at 4:25 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Sat, Jul 7, 2018 at 6:24 AM, Pingfan Liu <kernelfans@gmail.com> wrote:
+> > On Fri, Jul 6, 2018 at 9:55 PM Pingfan Liu <kernelfans@gmail.com> wrote:
+> >>
+> >> On Fri, Jul 6, 2018 at 4:47 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >> >
+> >> > On Fri, Jul 6, 2018 at 10:36 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> > > [cc += Kishon Vijay Abraham]
+> >> > >
+> >> > > On Thu, Jul 05, 2018 at 11:18:28AM +0200, Rafael J. Wysocki wrote:
+> >> > >> OK, so calling devices_kset_move_last() from really_probe() clearly is
+> >> > >> a mistake.
+> >> > >>
+> >> > >> I'm not really sure what the intention of it was as the changelog of
+> >> > >> commit 52cdbdd49853d doesn't really explain that (why would it be
+> >> > >> insufficient without that change?)
+> >> > >
+> >> > > It seems 52cdbdd49853d fixed an issue with boards which have an MMC
+> >> > > whose reset pin needs to be driven high on shutdown, lest the MMC
+> >> > > won't be found on the next boot.
+> >> > >
+> >> > > The boards' devicetrees use a kludge wherein the reset pin is modelled
+> >> > > as a regulator.  The regulator is enabled when the MMC probes and
+> >> > > disabled on driver unbind and shutdown.  As a result, the pin is driven
+> >> > > low on shutdown and the MMC is not found on the next boot.
+> >> > >
+> >> > > To fix this, another kludge was invented wherein the GPIO expander
+> >> > > driving the reset pin unconditionally drives all its pins high on
+> >> > > shutdown, see pcf857x_shutdown() in drivers/gpio/gpio-pcf857x.c
+> >> > > (commit adc284755055, "gpio: pcf857x: restore the initial line state
+> >> > > of all pcf lines").
+> >> > >
+> >> > > For this kludge to work, the GPIO expander's ->shutdown hook needs to
+> >> > > be executed after the MMC expander's ->shutdown hook.
+> >> > >
+> >> > > Commit 52cdbdd49853d achieved that by reordering devices_kset according
+> >> > > to the probe order.  Apparently the MMC probes after the GPIO expander,
+> >> > > possibly because it returns -EPROBE_DEFER if the vmmc regulator isn't
+> >> > > available yet, see mmc_regulator_get_supply().
+> >> > >
+> >> > > Note, I'm just piecing the information together from git history,
+> >> > > I'm not responsible for these kludges.  (I'm innocent!)
+> >> >
+> >> > Sure enough. :-)
+> >> >
+> >> > In any case, calling devices_kset_move_last() in really_probe() is
+> >> > plain broken and if its only purpose was to address a single, arguably
+> >> > kludgy, use case, let's just get rid of it in the first place IMO.
+> >> >
+> >> Yes, if it is only used for a single use case.
+> >>
+> > Think it again, I saw other potential issue with the current code.
+> > device_link_add->device_reorder_to_tail() can break the
+> > "supplier<-consumer" order. During moving children after parent's
+> > supplier, it ignores the order of child's consumer.
+>
+> What do you mean?
+>
+The drivers use device_link_add() to build "supplier<-consumer" order
+without knowing each other. Hence there is the following potential
+odds: (consumerX, child_a, ...) (consumer_a,..) (supplierX), where
+consumer_a consumes child_a. When
+device_link_add()->device_reorder_to_tail() moves all descendant of
+consumerX to the tail, it breaks the "supplier<-consumer" order by
+"consumer_a <- child_a". And we need recrusion to resolve the item in
+(consumer_a,..), each time when moving a consumer behind its supplier,
+we may break "parent<-child".
 
-Although the ori31 barrier can be used to mitigate v2, it's primarily
-intended as a spectre v1 mitigation. Spectre v2 is mitigated by
-hardware changes.
+> > Beside this, essentially both devices_kset_move_after/_before() and
+> > device_pm_move_after/_before() expose  the shutdown order to the
+> > indirect caller,  and we can not expect that the caller can not handle
+> > it correctly. It should be a job of drivers core.
+>
+> Arguably so, but that's how those functions were designed and the
+> callers should be aware of the limitation.
+>
+> If they aren't, there is a bug in the caller.
+>
+If we consider device_move()-> device_pm_move_after/_before() more
+carefully like the above description, then we can hide the detail from
+caller. And keep the info of the pm order inside the core.
 
-So rework the sysfs files to show the ori31 information in the
-spectre_v1 file, rather than v2.
+> > It is hard to extract high dimension info and pack them into one dimension
+> > linked-list.
+>
+> Well, yes and no.
+>
+For "hard", I means that we need two interleaved recursion to make the
+order correct. Otherwise, I think it is a bug or limitation.
 
-Currently we display eg:
+> We know it for a fact that there is a linear ordering that will work.
+> It is inefficient to figure it out every time during system suspend
+> and resume, for one and that's why we have dpm_list.
+>
+Yeah, I agree that iterating over device tree may hurt performance. I
+guess the iterating will not cost the majority of the suspend time,
+comparing to the device_suspend(), which causes hardware's sync. But
+data is more persuasive. Besides the performance, do you have other
+concern till now?
 
-  $ grep . spectre_v*
-  spectre_v1:Mitigation: __user pointer sanitization
-  spectre_v2:Mitigation: Indirect branch cache disabled, ori31 speculation barrier enabled
+> Now, if we have it for suspend and resume, it can also be used for shutdown.
+>
+Yes, I do think so.
 
-After:
-
-  $ grep . spectre_v*
-  spectre_v1:Mitigation: __user pointer sanitization, ori31 speculation barrier enabled
-  spectre_v2:Mitigation: Indirect branch cache disabled
-
-Fixes: d6fbe1c55c55 ("powerpc/64s: Wire up cpu_show_spectre_v2()")
-Cc: stable@vger.kernel.org # v4.17+
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/security.c | 27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
-index a8b277362931..4cb8f1f7b593 100644
---- a/arch/powerpc/kernel/security.c
-+++ b/arch/powerpc/kernel/security.c
-@@ -117,25 +117,35 @@ ssize_t cpu_show_meltdown(struct device *dev, struct device_attribute *attr, cha
- 
- ssize_t cpu_show_spectre_v1(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	if (!security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR))
--		return sprintf(buf, "Not affected\n");
-+	struct seq_buf s;
-+
-+	seq_buf_init(&s, buf, PAGE_SIZE - 1);
- 
--	if (barrier_nospec_enabled)
--		return sprintf(buf, "Mitigation: __user pointer sanitization\n");
-+	if (security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR)) {
-+		if (barrier_nospec_enabled)
-+			seq_buf_printf(&s, "Mitigation: __user pointer sanitization");
-+		else
-+			seq_buf_printf(&s, "Vulnerable");
- 
--	return sprintf(buf, "Vulnerable\n");
-+		if (security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31))
-+			seq_buf_printf(&s, ", ori31 speculation barrier enabled");
-+
-+		seq_buf_printf(&s, "\n");
-+	} else
-+		seq_buf_printf(&s, "Not affected\n");
-+
-+	return s.len;
- }
- 
- ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, char *buf)
- {
--	bool bcs, ccd, ori;
- 	struct seq_buf s;
-+	bool bcs, ccd;
- 
- 	seq_buf_init(&s, buf, PAGE_SIZE - 1);
- 
- 	bcs = security_ftr_enabled(SEC_FTR_BCCTRL_SERIALISED);
- 	ccd = security_ftr_enabled(SEC_FTR_COUNT_CACHE_DISABLED);
--	ori = security_ftr_enabled(SEC_FTR_SPEC_BAR_ORI31);
- 
- 	if (bcs || ccd) {
- 		seq_buf_printf(&s, "Mitigation: ");
-@@ -151,9 +161,6 @@ ssize_t cpu_show_spectre_v2(struct device *dev, struct device_attribute *attr, c
- 	} else
- 		seq_buf_printf(&s, "Vulnerable");
- 
--	if (ori)
--		seq_buf_printf(&s, ", ori31 speculation barrier enabled");
--
- 	seq_buf_printf(&s, "\n");
- 
- 	return s.len;
--- 
-2.14.1
+Thanks and regards,
+Pingfan
