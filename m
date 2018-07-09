@@ -1,33 +1,37 @@
-Return-Path: <srs0=v2pl=jz=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <labbott@redhat.com>
+Received: from mail-qk0-f196.google.com (mail-qk0-f196.google.com
+ [209.85.220.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PVTx43ljzDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 02:02:45 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41PVTx3ZXzz8vNM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 02:02:45 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41PVTw3cBcz9rvt
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2018 02:02:42 +1000 (AEST)
-Date: Mon, 9 Jul 2018 18:02:39 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 8/8] powernv/pseries: consolidate code for mce early
- handling.
-Message-ID: <20180709180239.3646bf39@kitsune.suse.cz>
-In-Reply-To: <20180706194024.5282bf74@roar.ozlabs.ibm.com>
-References: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
- <153072717270.29016.18207683951100257477.stgit@jupiter.in.ibm.com>
- <20180706194024.5282bf74@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PXMw4gh2zDr2p
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 03:27:38 +1000 (AEST)
+Received: by mail-qk0-f196.google.com with SMTP id b5-v6so8105848qkg.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 10:27:38 -0700 (PDT)
+Subject: Re: [PATCH 1/2] mm/cma: remove unsupported gfp_mask parameter from
+ cma_alloc()
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+ Michal Nazarewicz <mina86@mina86.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Christoph Hellwig <hch@lst.de>,
+ Michal Hocko <mhocko@suse.com>, Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Chris Zankel <chris@zankel.net>, Martin Schwidefsky
+ <schwidefsky@de.ibm.com>, Joerg Roedel <joro@8bytes.org>,
+ Sumit Semwal <sumit.semwal@linaro.org>, Robin Murphy <robin.murphy@arm.com>,
+ linaro-mm-sig@lists.linaro.org
+References: <20180709121956.20200-1-m.szyprowski@samsung.com>
+ <CGME20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29@eucas1p2.samsung.com>
+ <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
+From: Laura Abbott <labbott@redhat.com>
+Message-ID: <32c180a0-271a-3d8f-0402-87b76484cea6@redhat.com>
+Date: Mon, 9 Jul 2018 10:27:31 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,152 +41,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 6 Jul 2018 19:40:24 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> On Wed, 04 Jul 2018 23:30:12 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On 07/09/2018 05:19 AM, Marek Szyprowski wrote:
+> cma_alloc() function doesn't really support gfp flags other than
+> __GFP_NOWARN, so convert gfp_mask parameter to boolean no_warn parameter.
 > 
-> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > 
-> > Now that other platforms also implements real mode mce handler,
-> > lets consolidate the code by sharing existing powernv machine check
-> > early code. Rename machine_check_powernv_early to
-> > machine_check_common_early and reuse the code.
-> > 
-> > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/kernel/exceptions-64s.S |   56
-> > +++++++--------------------------- 1 file changed, 11
-> > insertions(+), 45 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S
-> > b/arch/powerpc/kernel/exceptions-64s.S index
-> > 0038596b7906..3e877ec55d50 100644 ---
-> > a/arch/powerpc/kernel/exceptions-64s.S +++
-> > b/arch/powerpc/kernel/exceptions-64s.S @@ -243,14 +243,13 @@
-> > EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
-> > SET_SCRATCH0(r13)		/* save r13 */
-> > EXCEPTION_PROLOG_0(PACA_EXMC) BEGIN_FTR_SECTION
-> > -	b	machine_check_powernv_early
-> > +	b	machine_check_common_early
-> >  FTR_SECTION_ELSE
-> >  	b	machine_check_pSeries_0
-> >  ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
-> >  EXC_REAL_END(machine_check, 0x200, 0x100)
-> >  EXC_VIRT_NONE(0x4200, 0x100)
-> > -TRAMP_REAL_BEGIN(machine_check_powernv_early)
-> > -BEGIN_FTR_SECTION
-> > +TRAMP_REAL_BEGIN(machine_check_common_early)
-> >  	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-> >  	/*
-> >  	 * Register contents:
-> > @@ -306,7 +305,9 @@ BEGIN_FTR_SECTION
-> >  	/* Save r9 through r13 from EXMC save area to stack frame.
-> > */ EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-> >  	mfmsr	r11			/* get MSR value */
-> > +BEGIN_FTR_SECTION
-> >  	ori	r11,r11,MSR_ME		/* turn on ME bit
-> > */ +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> >  	ori	r11,r11,MSR_RI		/* turn on RI bit
-> > */ LOAD_HANDLER(r12, machine_check_handle_early)
-> >  1:	mtspr	SPRN_SRR0,r12
-> > @@ -325,7 +326,6 @@ BEGIN_FTR_SECTION
-> >  	andc	r11,r11,r10		/* Turn off MSR_ME
-> > */ b	1b
-> >  	b	.	/* prevent speculative execution */
-> > -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> >  
-> >  TRAMP_REAL_BEGIN(machine_check_pSeries)
-> >  	.globl machine_check_fwnmi
-> > @@ -333,7 +333,7 @@ machine_check_fwnmi:
-> >  	SET_SCRATCH0(r13)		/* save r13 */
-> >  	EXCEPTION_PROLOG_0(PACA_EXMC)
-> >  BEGIN_FTR_SECTION
-> > -	b	machine_check_pSeries_early
-> > +	b	machine_check_common_early
-> >  END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
-> >  machine_check_pSeries_0:
-> >  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
-> > @@ -346,45 +346,6 @@ machine_check_pSeries_0:
-> >  
-> >  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
-> >  
-> > -TRAMP_REAL_BEGIN(machine_check_pSeries_early)
-> > -BEGIN_FTR_SECTION
-> > -	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-> > -	mr	r10,r1			/* Save r1 */
-> > -	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency
-> > stack */
-> > -	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack
-> > frame		*/
-> > -	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-> > -	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
-> > -	EXCEPTION_PROLOG_COMMON_1()
-> > -	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-> > -	EXCEPTION_PROLOG_COMMON_3(0x200)
-> > -	addi	r3,r1,STACK_FRAME_OVERHEAD
-> > -	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call
-> > ABI */ -
-> > -	/* Move original SRR0 and SRR1 into the respective regs */
-> > -	ld	r9,_MSR(r1)
-> > -	mtspr	SPRN_SRR1,r9
-> > -	ld	r3,_NIP(r1)
-> > -	mtspr	SPRN_SRR0,r3
-> > -	ld	r9,_CTR(r1)
-> > -	mtctr	r9
-> > -	ld	r9,_XER(r1)
-> > -	mtxer	r9
-> > -	ld	r9,_LINK(r1)
-> > -	mtlr	r9
-> > -	REST_GPR(0, r1)
-> > -	REST_8GPRS(2, r1)
-> > -	REST_GPR(10, r1)
-> > -	ld	r11,_CCR(r1)
-> > -	mtcr	r11
-> > -	REST_GPR(11, r1)
-> > -	REST_2GPRS(12, r1)
-> > -	/* restore original r1. */
-> > -	ld	r1,GPR1(r1)
-> > -	SET_SCRATCH0(r13)		/* save r13 */
-> > -	EXCEPTION_PROLOG_0(PACA_EXMC)
-> > -	b	machine_check_pSeries_0
-> > -END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
-> > -
-> >  EXC_COMMON_BEGIN(machine_check_common)
-> >  	/*
-> >  	 * Machine check is different because we use a different
-> > @@ -483,6 +444,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
-> >  	bl	machine_check_early
-> >  	std	r3,RESULT(r1)	/* Save result */
-> >  	ld	r12,_MSR(r1)
-> > +BEGIN_FTR_SECTION
-> > +	bne	9f			/* pSeries: continue
-> > to V mode. */ +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)  
+> This will help to avoid giving false feeling that this function supports
+> standard gfp flags and callers can pass __GFP_ZERO to get zeroed buffer,
+> what has already been an issue: see commit dd65a941f6ba ("arm64:
+> dma-mapping: clear buffers allocated with FORCE_CONTIGUOUS flag").
 > 
-> Should this be "b 9f" ? Although...
+
+For Ion,
+
+Acked-by: Laura Abbott <labbott@redhat.com>
+
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>   arch/powerpc/kvm/book3s_hv_builtin.c       | 2 +-
+>   drivers/s390/char/vmcp.c                   | 2 +-
+>   drivers/staging/android/ion/ion_cma_heap.c | 2 +-
+>   include/linux/cma.h                        | 2 +-
+>   kernel/dma/contiguous.c                    | 3 ++-
+>   mm/cma.c                                   | 8 ++++----
+>   mm/cma_debug.c                             | 2 +-
+>   7 files changed, 11 insertions(+), 10 deletions(-)
 > 
-> >  
-> >  #ifdef	CONFIG_PPC_P7_NAP
-> >  	/*
-> > @@ -564,7 +528,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
-> >  9:
-> >  	/* Deliver the machine check to host kernel in V mode. */
-> >  	MACHINE_CHECK_HANDLER_WINDUP
-> > -	b	machine_check_pSeries
-> > +	SET_SCRATCH0(r13)		/* save r13 */
-> > +	EXCEPTION_PROLOG_0(PACA_EXMC)
-> > +	b	machine_check_pSeries_0  
+> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
+> index d4a3f4da409b..fc6bb9630a9c 100644
+> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
+> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
+> @@ -77,7 +77,7 @@ struct page *kvm_alloc_hpt_cma(unsigned long nr_pages)
+>   	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
+>   
+>   	return cma_alloc(kvm_cma, nr_pages, order_base_2(HPT_ALIGN_PAGES),
+> -			 GFP_KERNEL);
+> +			 false);
+>   }
+>   EXPORT_SYMBOL_GPL(kvm_alloc_hpt_cma);
+>   
+> diff --git a/drivers/s390/char/vmcp.c b/drivers/s390/char/vmcp.c
+> index 948ce82a7725..0fa1b6b1491a 100644
+> --- a/drivers/s390/char/vmcp.c
+> +++ b/drivers/s390/char/vmcp.c
+> @@ -68,7 +68,7 @@ static void vmcp_response_alloc(struct vmcp_session *session)
+>   	 * anymore the system won't work anyway.
+>   	 */
+>   	if (order > 2)
+> -		page = cma_alloc(vmcp_cma, nr_pages, 0, GFP_KERNEL);
+> +		page = cma_alloc(vmcp_cma, nr_pages, 0, false);
+>   	if (page) {
+>   		session->response = (char *)page_to_phys(page);
+>   		session->cma_alloc = 1;
+> diff --git a/drivers/staging/android/ion/ion_cma_heap.c b/drivers/staging/android/ion/ion_cma_heap.c
+> index 49718c96bf9e..3fafd013d80a 100644
+> --- a/drivers/staging/android/ion/ion_cma_heap.c
+> +++ b/drivers/staging/android/ion/ion_cma_heap.c
+> @@ -39,7 +39,7 @@ static int ion_cma_allocate(struct ion_heap *heap, struct ion_buffer *buffer,
+>   	if (align > CONFIG_CMA_ALIGNMENT)
+>   		align = CONFIG_CMA_ALIGNMENT;
+>   
+> -	pages = cma_alloc(cma_heap->cma, nr_pages, align, GFP_KERNEL);
+> +	pages = cma_alloc(cma_heap->cma, nr_pages, align, false);
+>   	if (!pages)
+>   		return -ENOMEM;
+>   
+> diff --git a/include/linux/cma.h b/include/linux/cma.h
+> index bf90f0bb42bd..190184b5ff32 100644
+> --- a/include/linux/cma.h
+> +++ b/include/linux/cma.h
+> @@ -33,7 +33,7 @@ extern int cma_init_reserved_mem(phys_addr_t base, phys_addr_t size,
+>   					const char *name,
+>   					struct cma **res_cma);
+>   extern struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
+> -			      gfp_t gfp_mask);
+> +			      bool no_warn);
+>   extern bool cma_release(struct cma *cma, const struct page *pages, unsigned int count);
+>   
+>   extern int cma_for_each_area(int (*it)(struct cma *cma, void *data), void *data);
+> diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
+> index d987dcd1bd56..19ea5d70150c 100644
+> --- a/kernel/dma/contiguous.c
+> +++ b/kernel/dma/contiguous.c
+> @@ -191,7 +191,8 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
+>   	if (align > CONFIG_CMA_ALIGNMENT)
+>   		align = CONFIG_CMA_ALIGNMENT;
+>   
+> -	return cma_alloc(dev_get_cma_area(dev), count, align, gfp_mask);
+> +	return cma_alloc(dev_get_cma_area(dev), count, align,
+> +			 gfp_mask & __GFP_NOWARN);
+>   }
+>   
+>   /**
+> diff --git a/mm/cma.c b/mm/cma.c
+> index 5809bbe360d7..4cb76121a3ab 100644
+> --- a/mm/cma.c
+> +++ b/mm/cma.c
+> @@ -395,13 +395,13 @@ static inline void cma_debug_show_areas(struct cma *cma) { }
+>    * @cma:   Contiguous memory region for which the allocation is performed.
+>    * @count: Requested number of pages.
+>    * @align: Requested alignment of pages (in PAGE_SIZE order).
+> - * @gfp_mask:  GFP mask to use during compaction
+> + * @no_warn: Avoid printing message about failed allocation
+>    *
+>    * This function allocates part of contiguous memory on specific
+>    * contiguous memory area.
+>    */
+>   struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
+> -		       gfp_t gfp_mask)
+> +		       bool no_warn)
+>   {
+>   	unsigned long mask, offset;
+>   	unsigned long pfn = -1;
+> @@ -447,7 +447,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
+>   		pfn = cma->base_pfn + (bitmap_no << cma->order_per_bit);
+>   		mutex_lock(&cma_mutex);
+>   		ret = alloc_contig_range(pfn, pfn + count, MIGRATE_CMA,
+> -					 gfp_mask);
+> +				     GFP_KERNEL | (no_warn ? __GFP_NOWARN : 0));
+>   		mutex_unlock(&cma_mutex);
+>   		if (ret == 0) {
+>   			page = pfn_to_page(pfn);
+> @@ -466,7 +466,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
+>   
+>   	trace_cma_alloc(pfn, page, count, align);
+>   
+> -	if (ret && !(gfp_mask & __GFP_NOWARN)) {
+> +	if (ret && !no_warn) {
+>   		pr_err("%s: alloc failed, req-size: %zu pages, ret: %d\n",
+>   			__func__, count, ret);
+>   		cma_debug_show_areas(cma);
+> diff --git a/mm/cma_debug.c b/mm/cma_debug.c
+> index f23467291cfb..ad6723e9d110 100644
+> --- a/mm/cma_debug.c
+> +++ b/mm/cma_debug.c
+> @@ -139,7 +139,7 @@ static int cma_alloc_mem(struct cma *cma, int count)
+>   	if (!mem)
+>   		return -ENOMEM;
+>   
+> -	p = cma_alloc(cma, count, 0, GFP_KERNEL);
+> +	p = cma_alloc(cma, count, 0, false);
+>   	if (!p) {
+>   		kfree(mem);
+>   		return -ENOMEM;
 > 
-> I'm not sure that's quite right. You're missing out testing the result
-> of the early handler call? Is this buggy in existing code too? We
-> should be testing that result in all cases, shouldn't we? But it
-> doesn't seem like we are.
-
-At least for the pSeries case the result of realmode handler is stored
-in the MCE log data. Both the real and virtual part of the handler
-should be called in any case. They do different and independent things.
-
-Thanks
-
-Michal
