@@ -1,55 +1,34 @@
-Return-Path: <bhe@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0218.hostedemail.com
+ [216.40.44.218])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41P9Cf5T2dzDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 13:04:13 +1000 (AEST)
-Date: Mon, 9 Jul 2018 11:04:03 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Nicolas Pitre <nicolas.pitre@linaro.org>,
- Josh Triplett <josh@joshtriplett.org>,
- kbuild test robot <fengguang.wu@intel.com>,
- Borislav Petkov <bp@suse.de>, brijesh.singh@amd.com,
- devicetree <devicetree@vger.kernel.org>,
- David Airlie <airlied@linux.ie>, linux-pci@vger.kernel.org,
- richard.weiyang@gmail.com, Keith Busch <keith.busch@intel.com>,
- Max Filippov <jcmvbkbc@gmail.com>, baiyaowei@cmss.chinamobile.com,
- Frank Rowand <frowand.list@gmail.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Stephen Hemminger <sthemmin@microsoft.com>, linux-nvdimm@lists.01.org,
- Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
- linux-input <linux-input@vger.kernel.org>,
- Gustavo Padovan <gustavo@padovan.org>,
- Dave Young <dyoung@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- Haiyang Zhang <haiyangz@microsoft.com>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
- Sean Paul <seanpaul@chromium.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
- Jon Derrick <jonathan.derrick@intel.com>,
- Chris Zankel <chris@zankel.net>, Michal Simek <monstr@monstr.eu>,
- linux-parisc@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- kexec@lists.infradead.org, Eric Biederman <ebiederm@xmission.com>,
- devel@linuxdriverproject.org,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH v6 2/4] resource: Use list_head to link sibling resource
-Message-ID: <20180709030403.GJ3047@MiWiFi-R3L-srv>
-References: <20180704041038.8190-3-bhe@redhat.com>
- <201807042347.hfDcKxmG%fengguang.wu@intel.com>
- <20180708025946.GI3047@MiWiFi-R3L-srv>
- <CAHp75VcjGQutVtZ90C0huUGCY6yj8H0Wo0tMdrbLmLsRQ+x4XQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAHp75VcjGQutVtZ90C0huUGCY6yj8H0Wo0tMdrbLmLsRQ+x4XQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PBVw1vr8zDqBm
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 14:02:32 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave07.hostedemail.com (Postfix) with ESMTP id DC8CE18045C03
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 03:52:50 +0000 (UTC)
+Message-ID: <75bfb54e1292e31830aafb8329e3cc81d1412ff5.camel@perches.com>
+Subject: Re: [PATCH v3 1/2] powerpc: Detect the presence of big-cores via
+ "ibm, thread-groups"
+From: Joe Perches <joe@perches.com>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, "Gautham R. Shenoy"
+ <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, Shilpasri G Bhat
+ <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Date: Sun, 08 Jul 2018 20:52:39 -0700
+In-Reply-To: <20180708160334.GA6947@kermit-br-ibm-com>
+References: <cover.1530867876.git.ego@linux.vnet.ibm.com>
+ <abaea3bd2aa89c7c9f284e3a7beabb865d8e1050.1530867876.git.ego@linux.vnet.ibm.com>
+ <20180708160334.GA6947@kermit-br-ibm-com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,68 +38,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/18 at 08:48pm, Andy Shevchenko wrote:
-> On Sun, Jul 8, 2018 at 5:59 AM, Baoquan He <bhe@redhat.com> wrote:
-> > On 07/05/18 at 01:00am, kbuild test robot wrote:
+On Sun, 2018-07-08 at 13:03 -0300, Murilo Opsfelder Araujo wrote:
+> On Fri, Jul 06, 2018 at 02:35:48PM +0530, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > On IBM POWER9, the device tree exposes a property array identifed by
+> > "ibm,thread-groups" which will indicate which groups of threads share a
+> > particular set of resources.
+[]
+> > diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+[]
+> > @@ -1025,6 +1026,33 @@ static ssize_t show_physical_id(struct device *dev,
+> >  }
+> >  static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
+> >  
+> > +static ssize_t show_small_core_siblings(struct device *dev,
+> > +					struct device_attribute *attr,
+> > +					char *buf)
+> > +{
 > 
-> > However, I didn't find below branch. And tried to open it in web
-> > broswer, also failed.
+> Interesting enough, checkpatch.pl warned about this function name:
 > 
-> While this is kinda valid point...
-> 
-> > Could you help have a look at this?
-> 
-> ...isn't obvious that you didn't change the file mentioned in a report?
-> Just take latest linux-next and you will see.
+>     WARNING: Consider renaming function(s) 'show_small_core_siblings' to 'small_core_siblings_show'
+>     #354: FILE: arch/powerpc/kernel/sysfs.c:1053:
+>     +}
 
-Yes, it's clear to me. Just want to use the way to cross compile them on
-ia64 and mips, hope I can find out all missed places on these ARCHes.
-Now I think I can apply patches on linux-next, and use the config
-attached to compile. Thanks.
+It's to allow the DEVICE_ATTR below to be renamed to DEVICE_ATTR_RO 
 
-> 
-> 
-> >> All error/warnings (new ones prefixed by >>):
-> >>
-> >> >> arch/mips/pci/pci-rc32434.c:57:11: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
-> >>      .child = &rc32434_res_pci_mem2
-> >>               ^
-> >>    arch/mips/pci/pci-rc32434.c:57:11: note: (near initialization for 'rc32434_res_pci_mem1.child.next')
-> >> >> arch/mips/pci/pci-rc32434.c:51:47: warning: missing braces around initializer [-Wmissing-braces]
-> >>     static struct resource rc32434_res_pci_mem1 = {
-> >>                                                   ^
-> >>    arch/mips/pci/pci-rc32434.c:60:47: warning: missing braces around initializer [-Wmissing-braces]
-> >>     static struct resource rc32434_res_pci_mem2 = {
-> >>                                                   ^
-> >>    cc1: some warnings being treated as errors
-> >>
-> >> vim +57 arch/mips/pci/pci-rc32434.c
-> >>
-> >> 73b4390f Ralf Baechle 2008-07-16  50
-> >> 73b4390f Ralf Baechle 2008-07-16 @51  static struct resource rc32434_res_pci_mem1 = {
-> >> 73b4390f Ralf Baechle 2008-07-16  52          .name = "PCI MEM1",
-> >> 73b4390f Ralf Baechle 2008-07-16  53          .start = 0x50000000,
-> >> 73b4390f Ralf Baechle 2008-07-16  54          .end = 0x5FFFFFFF,
-> >> 73b4390f Ralf Baechle 2008-07-16  55          .flags = IORESOURCE_MEM,
-> >> 73b4390f Ralf Baechle 2008-07-16  56          .sibling = NULL,
-> >> 73b4390f Ralf Baechle 2008-07-16 @57          .child = &rc32434_res_pci_mem2
-> >> 73b4390f Ralf Baechle 2008-07-16  58  };
-> >> 73b4390f Ralf Baechle 2008-07-16  59
-> >>
-> >> :::::: The code at line 57 was first introduced by commit
-> >> :::::: 73b4390fb23456964201abda79f1210fe337d01a [MIPS] Routerboard 532: Support for base system
-> >>
-> >> :::::: TO: Ralf Baechle <ralf@linux-mips.org>
-> >> :::::: CC: Ralf Baechle <ralf@linux-mips.org>
-> >>
-> >> ---
-> >> 0-DAY kernel test infrastructure                Open Source Technology Center
-> >> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> >
-> >
-> 
-> 
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
+> > +static DEVICE_ATTR(small_core_siblings, 0444, show_small_core_siblings, NULL);
+
+So this becomes 
+
+DEVICE_ATTR_RO(small_core_siblings)
