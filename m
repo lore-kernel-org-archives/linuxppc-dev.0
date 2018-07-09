@@ -2,36 +2,31 @@ Return-Path: <mhocko@kernel.org>
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PQfH586YzDr0X
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2018 23:09:40 +1000 (AEST)
-Date: Mon, 9 Jul 2018 15:09:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PS7P6YQqzDr02
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:16:31 +1000 (AEST)
+Date: Mon, 9 Jul 2018 16:16:21 +0200
 From: Michal Hocko <mhocko@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- iommu@lists.linux-foundation.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Vlastimil Babka <vbabka@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, Sumit Semwal <sumit.semwal@linaro.org>,
- Robin Murphy <robin.murphy@arm.com>,
- Laura Abbott <labbott@redhat.com>, linaro-mm-sig@lists.linaro.org
-Subject: Re: [PATCH 1/2] mm/cma: remove unsupported gfp_mask parameter from
- cma_alloc()
-Message-ID: <20180709130931.GL22049@dhcp22.suse.cz>
-References: <20180709121956.20200-1-m.szyprowski@samsung.com>
- <CGME20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29@eucas1p2.samsung.com>
- <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
+To: Alexandre Ghiti <alex@ghiti.fr>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, ysato@users.sourceforge.jp, dalias@libc.org,
+ davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
+ hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+Message-ID: <20180709141621.GD22297@dhcp22.suse.cz>
+References: <20180705110716.3919-1-alex@ghiti.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
+In-Reply-To: <20180705110716.3919-1-alex@ghiti.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,151 +36,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon 09-07-18 14:19:55, Marek Szyprowski wrote:
-> cma_alloc() function doesn't really support gfp flags other than
-> __GFP_NOWARN, so convert gfp_mask parameter to boolean no_warn parameter.
-> 
-> This will help to avoid giving false feeling that this function supports
-> standard gfp flags and callers can pass __GFP_ZERO to get zeroed buffer,
-> what has already been an issue: see commit dd65a941f6ba ("arm64:
-> dma-mapping: clear buffers allocated with FORCE_CONTIGUOUS flag").
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+[CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
 
-Thanks! This makes perfect sense to me. If there is a real need for the
-gfp_mask then we should start by defining the semantic first.
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> ---
->  arch/powerpc/kvm/book3s_hv_builtin.c       | 2 +-
->  drivers/s390/char/vmcp.c                   | 2 +-
->  drivers/staging/android/ion/ion_cma_heap.c | 2 +-
->  include/linux/cma.h                        | 2 +-
->  kernel/dma/contiguous.c                    | 3 ++-
->  mm/cma.c                                   | 8 ++++----
->  mm/cma_debug.c                             | 2 +-
->  7 files changed, 11 insertions(+), 10 deletions(-)
+On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
+> In order to reduce copy/paste of functions across architectures and then
+> make riscv hugetlb port (and future ports) simpler and smaller, this
+> patchset intends to factorize the numerous hugetlb primitives that are
+> defined across all the architectures.
 > 
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-> index d4a3f4da409b..fc6bb9630a9c 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -77,7 +77,7 @@ struct page *kvm_alloc_hpt_cma(unsigned long nr_pages)
->  	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
->  
->  	return cma_alloc(kvm_cma, nr_pages, order_base_2(HPT_ALIGN_PAGES),
-> -			 GFP_KERNEL);
-> +			 false);
->  }
->  EXPORT_SYMBOL_GPL(kvm_alloc_hpt_cma);
->  
-> diff --git a/drivers/s390/char/vmcp.c b/drivers/s390/char/vmcp.c
-> index 948ce82a7725..0fa1b6b1491a 100644
-> --- a/drivers/s390/char/vmcp.c
-> +++ b/drivers/s390/char/vmcp.c
-> @@ -68,7 +68,7 @@ static void vmcp_response_alloc(struct vmcp_session *session)
->  	 * anymore the system won't work anyway.
->  	 */
->  	if (order > 2)
-> -		page = cma_alloc(vmcp_cma, nr_pages, 0, GFP_KERNEL);
-> +		page = cma_alloc(vmcp_cma, nr_pages, 0, false);
->  	if (page) {
->  		session->response = (char *)page_to_phys(page);
->  		session->cma_alloc = 1;
-> diff --git a/drivers/staging/android/ion/ion_cma_heap.c b/drivers/staging/android/ion/ion_cma_heap.c
-> index 49718c96bf9e..3fafd013d80a 100644
-> --- a/drivers/staging/android/ion/ion_cma_heap.c
-> +++ b/drivers/staging/android/ion/ion_cma_heap.c
-> @@ -39,7 +39,7 @@ static int ion_cma_allocate(struct ion_heap *heap, struct ion_buffer *buffer,
->  	if (align > CONFIG_CMA_ALIGNMENT)
->  		align = CONFIG_CMA_ALIGNMENT;
->  
-> -	pages = cma_alloc(cma_heap->cma, nr_pages, align, GFP_KERNEL);
-> +	pages = cma_alloc(cma_heap->cma, nr_pages, align, false);
->  	if (!pages)
->  		return -ENOMEM;
->  
-> diff --git a/include/linux/cma.h b/include/linux/cma.h
-> index bf90f0bb42bd..190184b5ff32 100644
-> --- a/include/linux/cma.h
-> +++ b/include/linux/cma.h
-> @@ -33,7 +33,7 @@ extern int cma_init_reserved_mem(phys_addr_t base, phys_addr_t size,
->  					const char *name,
->  					struct cma **res_cma);
->  extern struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
-> -			      gfp_t gfp_mask);
-> +			      bool no_warn);
->  extern bool cma_release(struct cma *cma, const struct page *pages, unsigned int count);
->  
->  extern int cma_for_each_area(int (*it)(struct cma *cma, void *data), void *data);
-> diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
-> index d987dcd1bd56..19ea5d70150c 100644
-> --- a/kernel/dma/contiguous.c
-> +++ b/kernel/dma/contiguous.c
-> @@ -191,7 +191,8 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
->  	if (align > CONFIG_CMA_ALIGNMENT)
->  		align = CONFIG_CMA_ALIGNMENT;
->  
-> -	return cma_alloc(dev_get_cma_area(dev), count, align, gfp_mask);
-> +	return cma_alloc(dev_get_cma_area(dev), count, align,
-> +			 gfp_mask & __GFP_NOWARN);
->  }
->  
->  /**
-> diff --git a/mm/cma.c b/mm/cma.c
-> index 5809bbe360d7..4cb76121a3ab 100644
-> --- a/mm/cma.c
-> +++ b/mm/cma.c
-> @@ -395,13 +395,13 @@ static inline void cma_debug_show_areas(struct cma *cma) { }
->   * @cma:   Contiguous memory region for which the allocation is performed.
->   * @count: Requested number of pages.
->   * @align: Requested alignment of pages (in PAGE_SIZE order).
-> - * @gfp_mask:  GFP mask to use during compaction
-> + * @no_warn: Avoid printing message about failed allocation
->   *
->   * This function allocates part of contiguous memory on specific
->   * contiguous memory area.
->   */
->  struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
-> -		       gfp_t gfp_mask)
-> +		       bool no_warn)
->  {
->  	unsigned long mask, offset;
->  	unsigned long pfn = -1;
-> @@ -447,7 +447,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
->  		pfn = cma->base_pfn + (bitmap_no << cma->order_per_bit);
->  		mutex_lock(&cma_mutex);
->  		ret = alloc_contig_range(pfn, pfn + count, MIGRATE_CMA,
-> -					 gfp_mask);
-> +				     GFP_KERNEL | (no_warn ? __GFP_NOWARN : 0));
->  		mutex_unlock(&cma_mutex);
->  		if (ret == 0) {
->  			page = pfn_to_page(pfn);
-> @@ -466,7 +466,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
->  
->  	trace_cma_alloc(pfn, page, count, align)>  
-> -	if (ret && !(gfp_mask & __GFP_NOWARN)) {
-> +	if (ret && !no_warn) {
->  		pr_err("%s: alloc failed, req-size: %zu pages, ret: %d\n",
->  			__func__, count, ret);
->  		cma_debug_show_areas(cma);
-> diff --git a/mm/cma_debug.c b/mm/cma_debug.c
-> index f23467291cfb..ad6723e9d110 100644
-> --- a/mm/cma_debug.c
-> +++ b/mm/cma_debug.c
-> @@ -139,7 +139,7 @@ static int cma_alloc_mem(struct cma *cma, int count)
->  	if (!mem)
->  		return -ENOMEM;
->  
-> -	p = cma_alloc(cma, count, 0, GFP_KERNEL);
-> +	p = cma_alloc(cma, count, 0, false);
->  	if (!p) {
->  		kfree(mem);
->  		return -ENOMEM;
+> Except for prepare_hugepage_range, this patchset moves the versions that
+> are just pass-through to standard pte primitives into
+> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+> 
+> s390 architecture has not been tackled in this serie since it does not
+> use asm-generic/hugetlb.h at all.
+> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+> 
+> This patchset has been compiled on x86 only. 
+> 
+> Changelog:
+> 
+> v4:
+>   Fix powerpc build error due to misplacing of #include
+>   <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
+>   pointed by Christophe Leroy.
+> 
+> v1, v2, v3:
+>   Same version, just problems with email provider and misuse of
+>   --batch-size option of git send-email
+> 
+> Alexandre Ghiti (11):
+>   hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+>   hugetlb: Introduce generic version of hugetlb_free_pgd_range
+>   hugetlb: Introduce generic version of set_huge_pte_at
+>   hugetlb: Introduce generic version of huge_ptep_get_and_clear
+>   hugetlb: Introduce generic version of huge_ptep_clear_flush
+>   hugetlb: Introduce generic version of huge_pte_none
+>   hugetlb: Introduce generic version of huge_pte_wrprotect
+>   hugetlb: Introduce generic version of prepare_hugepage_range
+>   hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+>   hugetlb: Introduce generic version of huge_ptep_set_access_flags
+>   hugetlb: Introduce generic version of huge_ptep_get
+> 
+>  arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+>  arch/arm/include/asm/hugetlb.h               | 33 +----------
+>  arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+>  arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+>  arch/mips/include/asm/hugetlb.h              | 40 +++----------
+>  arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+>  arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
+>  arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+>  arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+>  arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
+>  arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+>  arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+>  arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+>  arch/x86/include/asm/hugetlb.h               | 72 +----------------------
+>  include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+>  15 files changed, 143 insertions(+), 384 deletions(-)
+> 
 > -- 
-> 2.17.1
-> 
+> 2.16.2
 
 -- 
 Michal Hocko
