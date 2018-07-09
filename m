@@ -1,32 +1,17 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PS7P6YQqzDr02
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:16:31 +1000 (AEST)
-Date: Mon, 9 Jul 2018 16:16:21 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Alexandre Ghiti <alex@ghiti.fr>
-Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
- deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, ysato@users.sourceforge.jp, dalias@libc.org,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
-Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-Message-ID: <20180709141621.GD22297@dhcp22.suse.cz>
-References: <20180705110716.3919-1-alex@ghiti.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180705110716.3919-1-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PSJp3yTczDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:24:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com,
+	rdunlap@infradead.org,
+	malat@debian.org
+Subject: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
+Date: Tue, 10 Jul 2018 00:24:25 +1000
+Message-Id: <20180709142426.26999-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,69 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
+Because the allmodconfig logic just sets every symbol to M or Y, it
+has the effect of always generating a 64-bit config, because
+CONFIG_PPC64 becomes Y.
 
-On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
-> In order to reduce copy/paste of functions across architectures and then
-> make riscv hugetlb port (and future ports) simpler and smaller, this
-> patchset intends to factorize the numerous hugetlb primitives that are
-> defined across all the architectures.
-> 
-> Except for prepare_hugepage_range, this patchset moves the versions that
-> are just pass-through to standard pte primitives into
-> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
-> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
-> 
-> s390 architecture has not been tackled in this serie since it does not
-> use asm-generic/hugetlb.h at all.
-> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
-> 
-> This patchset has been compiled on x86 only. 
-> 
-> Changelog:
-> 
-> v4:
->   Fix powerpc build error due to misplacing of #include
->   <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
->   pointed by Christophe Leroy.
-> 
-> v1, v2, v3:
->   Same version, just problems with email provider and misuse of
->   --batch-size option of git send-email
-> 
-> Alexandre Ghiti (11):
->   hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->   hugetlb: Introduce generic version of hugetlb_free_pgd_range
->   hugetlb: Introduce generic version of set_huge_pte_at
->   hugetlb: Introduce generic version of huge_ptep_get_and_clear
->   hugetlb: Introduce generic version of huge_ptep_clear_flush
->   hugetlb: Introduce generic version of huge_pte_none
->   hugetlb: Introduce generic version of huge_pte_wrprotect
->   hugetlb: Introduce generic version of prepare_hugepage_range
->   hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->   hugetlb: Introduce generic version of huge_ptep_set_access_flags
->   hugetlb: Introduce generic version of huge_ptep_get
-> 
->  arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->  arch/arm/include/asm/hugetlb.h               | 33 +----------
->  arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->  arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->  arch/mips/include/asm/hugetlb.h              | 40 +++----------
->  arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->  arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
->  arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->  arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->  arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
->  arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->  arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->  arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->  arch/x86/include/asm/hugetlb.h               | 72 +----------------------
->  include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->  15 files changed, 143 insertions(+), 384 deletions(-)
-> 
-> -- 
-> 2.16.2
+So to make it easier for folks to test 32-bit code, provide a phony
+defconfig target that generates a 32-bit allmodconfig.
 
+The 32-bit port has several mutually exclusive CPU types, we choose
+the Book3S variants as that's what the help text in Kconfig says is
+most common.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Makefile                 | 5 +++++
+ arch/powerpc/configs/book3s_32.config | 2 ++
+ 2 files changed, 7 insertions(+)
+ create mode 100644 arch/powerpc/configs/book3s_32.config
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 2ea575cb3401..2556c2182789 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
+ 	$(call merge_into_defconfig,mpc86xx_basic_defconfig,\
+ 		86xx-smp 86xx-hw fsl-emb-nonhw)
+ 
++PHONY += ppc32_allmodconfig
++ppc32_allmodconfig:
++	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
++		-f $(srctree)/Makefile allmodconfig
++
+ define archhelp
+   @echo '* zImage          - Build default images selected by kernel config'
+   @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+diff --git a/arch/powerpc/configs/book3s_32.config b/arch/powerpc/configs/book3s_32.config
+new file mode 100644
+index 000000000000..8721eb7b1294
+--- /dev/null
++++ b/arch/powerpc/configs/book3s_32.config
+@@ -0,0 +1,2 @@
++CONFIG_PPC64=n
++CONFIG_PPC_BOOK3S_32=y
 -- 
-Michal Hocko
-SUSE Labs
+2.14.1
