@@ -1,25 +1,25 @@
 Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PT4F3vWYzDrHZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:58:53 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PT4L22xFzDr86
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:58:58 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w69Ermj5064307
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2018 10:58:50 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k48jg5nvy-1
+ w69Es3Uf132524
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2018 10:58:56 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k48k55k66-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 10:58:50 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 10:58:55 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Mon, 9 Jul 2018 08:58:49 -0600
+ Mon, 9 Jul 2018 08:58:54 -0600
 From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH v06 4/9] mobility/numa: Ensure numa update does not overlap
+Subject: [PATCH v06 5/9] numa: Disable/enable arch_update_cpu_topology
 Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Nathan Fontenot <nfont@linux.vnet.ibm.com>,
  John Allen <jallen@linux.vnet.ibm.com>,
@@ -27,10 +27,10 @@ Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
  Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 In-Reply-To: <4e6b3582-0033-b232-3769-226ba6f68eac@linux.vnet.ibm.com>
-Date: Mon, 9 Jul 2018 09:58:43 -0500
+Date: Mon, 9 Jul 2018 09:58:49 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Message-Id: <f1b39e79-b109-6bc6-def8-ded4941cfadb@linux.vnet.ibm.com>
+Message-Id: <24a6890b-95c9-e266-9923-a543250f0a6c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +40,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mobility/numa: Ensure that numa_update_cpu_topology() can not be
-entered multiple times concurrently.  It may be accessed through
-many different paths / concurrent work functions, and the lock
-ordering may be difficult to ensure otherwise.
+numa: Provide mechanism to disable/enable operation of
+arch_update_cpu_topology/numa_update_cpu_topology.  This is
+a simple tool to eliminate some avenues for thread deadlock
+observed during system execution.
 
 Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/numa.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/include/asm/topology.h |   10 ++++++++++
+ arch/powerpc/mm/numa.c              |   14 ++++++++++++++
+ 2 files changed, 24 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 16b0778..d9ceba6 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -43,6 +43,8 @@ static inline int pcibus_to_node(struct pci_bus *bus)
+ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+ extern int numa_update_cpu_topology(bool cpus_locked);
++extern void arch_update_cpu_topology_suspend(void);
++extern void arch_update_cpu_topology_resume(void);
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+ {
+@@ -82,6 +84,14 @@ static inline int numa_update_cpu_topology(bool cpus_locked)
+ 	return 0;
+ }
+ 
++static inline void arch_update_cpu_topology_suspend(void)
++{
++}
++
++static inline void arch_update_cpu_topology_resume(void)
++{
++}
++
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node) {}
+ 
+ #endif /* CONFIG_NUMA */
 diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index a789d57..b22e27a 100644
+index b22e27a..2352489 100644
 --- a/arch/powerpc/mm/numa.c
 +++ b/arch/powerpc/mm/numa.c
 @@ -1079,6 +1079,7 @@ struct topology_update_data {
  static int topology_timer_secs = 1;
  static int topology_inited;
  static int topology_update_needed;
-+static struct mutex topology_update_lock;
++static int topology_update_enabled = 1;
+ static struct mutex topology_update_lock;
  
  /*
-  * Change polling interval for associativity changes.
-@@ -1320,6 +1321,11 @@ int numa_update_cpu_topology(bool cpus_locked)
- 	if (!updates)
+@@ -1313,6 +1314,9 @@ int numa_update_cpu_topology(bool cpus_locked)
  		return 0;
+ 	}
  
-+	if (!mutex_trylock(&topology_update_lock)) {
-+		kfree(updates);
++	if (!topology_update_enabled)
 +		return 0;
-+	}
 +
- 	cpumask_clear(&updated_cpus);
- 
- 	for_each_cpu(cpu, &cpu_associativity_changes_mask) {
-@@ -1424,6 +1430,7 @@ int numa_update_cpu_topology(bool cpus_locked)
- out:
- 	kfree(updates);
- 	topology_update_needed = 0;
-+	mutex_unlock(&topology_update_lock);
- 	return changed;
+ 	weight = cpumask_weight(&cpu_associativity_changes_mask);
+ 	if (!weight)
+ 		return 0;
+@@ -1439,6 +1443,16 @@ int arch_update_cpu_topology(void)
+ 	return numa_update_cpu_topology(true);
  }
  
-@@ -1598,6 +1605,8 @@ static ssize_t topology_write(struct file *file, const char __user *buf,
- 
- static int topology_update_init(void)
- {
-+	mutex_init(&topology_update_lock);
++void arch_update_cpu_topology_suspend(void)
++{
++	topology_update_enabled = 0;
++}
 +
- 	/* Do not poll for changes if disabled at boot */
- 	if (topology_updates_enabled)
- 		start_topology_update();
++void arch_update_cpu_topology_resume(void)
++{
++	topology_update_enabled = 1;
++}
++
+ static void topology_work_fn(struct work_struct *work)
+ {
+ 	rebuild_sched_domains();
