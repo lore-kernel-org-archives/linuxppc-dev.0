@@ -1,22 +1,35 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41PSyf3XldzDr0X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:54:01 +1000 (AEST)
-From: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [RFC PATCH 1/2] dma-mapping: Clean up dma_set_*mask() hooks
-To: Christoph Hellwig <hch@lst.de>
-Cc: m.szyprowski@samsung.com, iommu@lists.linux-foundation.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
- <20180705193738.GB28905@lst.de>
- <33175bb1-d198-a9fd-ff37-e8c4132f47f8@arm.com>
- <20180708150708.GA14418@lst.de>
-Message-ID: <3ce04634-a467-ec6b-7b90-6cd916d9b532@arm.com>
-Date: Mon, 9 Jul 2018 15:53:50 +0100
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PT372G3yzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 00:57:55 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w69ErkYT099450
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2018 10:57:52 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k499gjp5m-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 10:57:52 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Mon, 9 Jul 2018 08:57:51 -0600
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v06 0/9] powerpc/hotplug: Update affinity for migrated CPUs
+Date: Mon, 9 Jul 2018 09:57:45 -0500
 MIME-Version: 1.0
-In-Reply-To: <20180708150708.GA14418@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4e6b3582-0033-b232-3769-226ba6f68eac@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +39,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/07/18 16:07, Christoph Hellwig wrote:
-> On Fri, Jul 06, 2018 at 03:20:34PM +0100, Robin Murphy wrote:
->>> What are you trying to do?  I really don't want to see more users of
->>> the hooks as they are are a horribly bad idea.
->>
->> I really need to fix the ongoing problem we have where, due to funky
->> integrations, devices suffer some downstream addressing limit (described by
->> DT dma-ranges or ACPI IORT/_DMA) which we carefully set up in
->> dma_configure(), but then just gets lost when the driver probes and
->> innocently calls dma_set_mask() with something wider. I think it's
->> effectively the generalised case of the VIA 32-bit quirk, if I understand
->> that one correctly.
-> 
-> I'd much rather fix this in generic code.  How funky are your limitations?
-> In fact when I did the 32-bit quirk (which will also be used by a Xiling
-> PCIe root port usable on a lot of architectures) I did initially consider
-> adding a bus_dma_mask or similar to struct device, but opted for the
-> most simple implementation for now.  I'd be happy to chanfe this.
-> 
-> Especially these days where busses and IP blocks are generally not tied
-> to a specific cpu instruction set I really believe that having any
-> more architecture code than absolutely required is a bad idea.
+The migration of LPARs across Power systems affects many attributes
+including that of the associativity of CPUs.  The patches in this
+set execute when a system is coming up fresh upon a migration target.
+They are intended to,
 
-Oh, for sure, the generic fix would be the longer-term goal, this was 
-just an expedient compromise because I want to get *something* landed 
-for 4.19. Since in practice this is predominantly affecting arm64, doing 
-the arch-specific fix to appease affected customers then working to 
-generalise it afterwards seemed to carry the lowest risk.
+* Recognize changes to the associativity of CPUs recorded in internal
+  data structures when compared to the latest copies in the device tree.
+* Generate calls to other code layers to reset the data structures
+  related to associativity of the CPUs.
+* Re-register the 'changed' entities into the target system.
+  Re-registration of CPUs mostly entails acting as if they have been
+  newly hot-added into the target system.
 
-That said, I think I can see a relatively safe and clean alternative 
-approach based on converting dma_32bit_limit to a mask, so I'll spin 
-some patches around that idea ASAP to continue the discussion.
+Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
 
->> The approach that seemed to me to be safest is largely based on the one
->> proposed in a thread from ages ago[1]; namely to make dma_configure()
->> better at distinguishing firmware-specified masks from bus defaults,
->> capture the firmware mask in dev->archdata during arch_setup_dma_ops(),
->> then use the custom set_mask routines to ensure any subsequent updates
->> never exceed that. It doesn't seem possible to make this work robustly
->> without storing *some* additional per-device data, and for that archdata is
->> a lesser evil than struct device itself. Plus even though it's not actually
->> an arch-specific issue it feels like there's such a risk of breaking other
->> platforms that I'm reticent to even try handling it entirely in generic
->> code.
-> 
-> My plan for a few merge windows from now is that dma_mask and
-> coherent_mask are 100% in device control and dma_set_mask will never
-> fail.  It will be up to the dma ops to make sure things are addressible.
-
-It's entirely possible to plug an old PCI soundcard via a bridge adapter 
-into a modern board where the card's 24-bit DMA mask reaches nothing but 
-the SoC's boot flash, and no IOMMU is available (e.g. some of the 
-smaller NXP Layercape stuff); I still think there should be an error in 
-such rare cases when DMA is utterly impossible, but otherwise I agree it 
-would be much nicer for drivers to just provide their preferred mask and 
-let the ops massage it as necessary.
-
-Robin.
+Michael Bringmann (9):
+  hotplug/cpu: Conditionally acquire/release DRC index
+  hotplug/cpu: Add operation queuing function
+  hotplug/cpu: Provide CPU readd operation
+  mobility/numa: Ensure numa update does not overlap
+  numa: Disable/enable arch_update_cpu_topology
+  pmt/numa: Disable arch_update_cpu_topology during CPU readd
+  powerpc/rtas: Allow disabling rtas_event_scan
+  hotplug/rtas: No rtas_event_scan during PMT update
+  hotplug/pmt: Update topology after PMT
+---
+Changes in patch:
+  -- Restructure and rearrange content of patches to co-locate
+     similar or related modifications
+  -- Rename pseries_update_drconf_cpu to pseries_update_processor
+  -- Simplify code to update CPU nodes during mobility checks.
+     Remove functions to generate extra HP_ELOG messages in favor
+     of direct function calls to dlpar_cpu_readd_by_index.
+  -- Revise code order in dlpar_cpu_readd_by_index() to present
+     more appropriate error codes from underlying layers of the
+     implementation.
+  -- Add hotplug device lock around all property updates
+  -- Add call to rebuild_sched_domains in case of changes
+  -- Various code cleanups and compaction
+  -- Rebase to 4.18-rc1 kernel
+  -- Change operation to run CPU readd after end of migration store.
+  -- Improve descriptive text
+  -- Cleanup patch reference to outdated function
