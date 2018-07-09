@@ -1,37 +1,38 @@
-Return-Path: <labbott@redhat.com>
-Received: from mail-qk0-f196.google.com (mail-qk0-f196.google.com
- [209.85.220.196])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PXMw4gh2zDr2p
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 03:27:38 +1000 (AEST)
-Received: by mail-qk0-f196.google.com with SMTP id b5-v6so8105848qkg.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 10:27:38 -0700 (PDT)
-Subject: Re: [PATCH 1/2] mm/cma: remove unsupported gfp_mask parameter from
- cma_alloc()
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Vlastimil Babka <vbabka@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Michal Hocko <mhocko@suse.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>, Martin Schwidefsky
- <schwidefsky@de.ibm.com>, Joerg Roedel <joro@8bytes.org>,
- Sumit Semwal <sumit.semwal@linaro.org>, Robin Murphy <robin.murphy@arm.com>,
- linaro-mm-sig@lists.linaro.org
-References: <20180709121956.20200-1-m.szyprowski@samsung.com>
- <CGME20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29@eucas1p2.samsung.com>
- <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
-From: Laura Abbott <labbott@redhat.com>
-Message-ID: <32c180a0-271a-3d8f-0402-87b76484cea6@redhat.com>
-Date: Mon, 9 Jul 2018 10:27:31 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PYKJ1d1XzDr4C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 04:10:28 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w69I8cjQ058578
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2018 14:10:25 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k48jgge36-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 14:10:24 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Mon, 9 Jul 2018 12:10:23 -0600
+Subject: Re: [next-20180709][bisected 9cf57731][ppc] build fail with ld: BFD
+ version 2.26.1-1.fc25 assertion fail elf64-ppc.c:14734
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-next
+ <linux-next@vger.kernel.org>, stephen Rothwell <sfr@canb.auug.org.au>, mpe
+ <mpe@ellerman.id.au>, sachinp <sachinp@linux.vnet.ibm.com>, Ingo Molnar
+ <mingo@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Date: Mon, 09 Jul 2018 23:40:14 +0530
+In-Reply-To: <20180709114716.GN2476@hirez.programming.kicks-ass.net>
+References: <1531129883.6480.7.camel@abdul.in.ibm.com>
+ <20180709114716.GN2476@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1531159814.6480.11.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,146 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2018 05:19 AM, Marek Szyprowski wrote:
-> cma_alloc() function doesn't really support gfp flags other than
-> __GFP_NOWARN, so convert gfp_mask parameter to boolean no_warn parameter.
+On Mon, 2018-07-09 at 13:47 +0200, Peter Zijlstra wrote:
+> On Mon, Jul 09, 2018 at 03:21:23PM +0530, Abdul Haleem wrote:
+> > Greeting's
+> > 
+> > Today's next fails to build on powerpc with below error
+> > 
+> > kernel/cpu.o:(.data.rel+0x18e0): undefined reference to
+> > `lockup_detector_online_cpu'
+> > ld: BFD version 2.26.1-1.fc25 assertion fail elf64-ppc.c:14734
+> > kernel/cpu.o:(.data.rel+0x18e8): undefined reference to
+> > `lockup_detector_offline_cpu'
+> > ld: BFD version 2.26.1-1.fc25 assertion fail elf64-ppc.c:14734
+> > Makefile:1005: recipe for target 'vmlinux' failed
+> > make: *** [vmlinux] Error 1
 > 
-> This will help to avoid giving false feeling that this function supports
-> standard gfp flags and callers can pass __GFP_ZERO to get zeroed buffer,
-> what has already been an issue: see commit dd65a941f6ba ("arm64:
-> dma-mapping: clear buffers allocated with FORCE_CONTIGUOUS flag").
+> Urgh, sorry about that. I think the below should cure that.
+> 
+> I got confused by all the varioud CONFIG options here abour and
+> conflated CONFIG_LOCKUP_DETECTOR and CONFIG_SOFTLOCKUP_DETECTOR it
+> seems.
+> 
+> diff --git a/include/linux/nmi.h b/include/linux/nmi.h
+> index 80664bbeca43..08f9247e9827 100644
+> --- a/include/linux/nmi.h
+> +++ b/include/linux/nmi.h
+> @@ -33,15 +33,10 @@ extern int sysctl_hardlockup_all_cpu_backtrace;
+>  #define sysctl_hardlockup_all_cpu_backtrace 0
+>  #endif /* !CONFIG_SMP */
+> 
+> -extern int lockup_detector_online_cpu(unsigned int cpu);
+> -extern int lockup_detector_offline_cpu(unsigned int cpu);
+> -
+>  #else /* CONFIG_LOCKUP_DETECTOR */
+>  static inline void lockup_detector_init(void) { }
+>  static inline void lockup_detector_soft_poweroff(void) { }
+>  static inline void lockup_detector_cleanup(void) { }
+> -#define lockup_detector_online_cpu	NULL
+> -#define lockup_detector_offline_cpu	NULL
+>  #endif /* !CONFIG_LOCKUP_DETECTOR */
+> 
+>  #ifdef CONFIG_SOFTLOCKUP_DETECTOR
+> @@ -50,12 +45,18 @@ extern void touch_softlockup_watchdog(void);
+>  extern void touch_softlockup_watchdog_sync(void);
+>  extern void touch_all_softlockup_watchdogs(void);
+>  extern unsigned int  softlockup_panic;
+> -#else
+> +
+> +extern int lockup_detector_online_cpu(unsigned int cpu);
+> +extern int lockup_detector_offline_cpu(unsigned int cpu);
+> +#else /* CONFIG_SOFTLOCKUP_DETECTOR */
+>  static inline void touch_softlockup_watchdog_sched(void) { }
+>  static inline void touch_softlockup_watchdog(void) { }
+>  static inline void touch_softlockup_watchdog_sync(void) { }
+>  static inline void touch_all_softlockup_watchdogs(void) { }
+> -#endif
+> +
+> +#define lockup_detector_online_cpu	NULL
+> +#define lockup_detector_offline_cpu	NULL
+> +#endif /* CONFIG_SOFTLOCKUP_DETECTOR */
+> 
+>  #ifdef CONFIG_DETECT_HUNG_TASK
+>  void reset_hung_task_detector(void);
 > 
 
-For Ion,
+Thanks Peter for the patch, build and boot is fine.
 
-Acked-by: Laura Abbott <labbott@redhat.com>
+Reported-and-tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->   arch/powerpc/kvm/book3s_hv_builtin.c       | 2 +-
->   drivers/s390/char/vmcp.c                   | 2 +-
->   drivers/staging/android/ion/ion_cma_heap.c | 2 +-
->   include/linux/cma.h                        | 2 +-
->   kernel/dma/contiguous.c                    | 3 ++-
->   mm/cma.c                                   | 8 ++++----
->   mm/cma_debug.c                             | 2 +-
->   7 files changed, 11 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-> index d4a3f4da409b..fc6bb9630a9c 100644
-> --- a/arch/powerpc/kvm/book3s_hv_builtin.c
-> +++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-> @@ -77,7 +77,7 @@ struct page *kvm_alloc_hpt_cma(unsigned long nr_pages)
->   	VM_BUG_ON(order_base_2(nr_pages) < KVM_CMA_CHUNK_ORDER - PAGE_SHIFT);
->   
->   	return cma_alloc(kvm_cma, nr_pages, order_base_2(HPT_ALIGN_PAGES),
-> -			 GFP_KERNEL);
-> +			 false);
->   }
->   EXPORT_SYMBOL_GPL(kvm_alloc_hpt_cma);
->   
-> diff --git a/drivers/s390/char/vmcp.c b/drivers/s390/char/vmcp.c
-> index 948ce82a7725..0fa1b6b1491a 100644
-> --- a/drivers/s390/char/vmcp.c
-> +++ b/drivers/s390/char/vmcp.c
-> @@ -68,7 +68,7 @@ static void vmcp_response_alloc(struct vmcp_session *session)
->   	 * anymore the system won't work anyway.
->   	 */
->   	if (order > 2)
-> -		page = cma_alloc(vmcp_cma, nr_pages, 0, GFP_KERNEL);
-> +		page = cma_alloc(vmcp_cma, nr_pages, 0, false);
->   	if (page) {
->   		session->response = (char *)page_to_phys(page);
->   		session->cma_alloc = 1;
-> diff --git a/drivers/staging/android/ion/ion_cma_heap.c b/drivers/staging/android/ion/ion_cma_heap.c
-> index 49718c96bf9e..3fafd013d80a 100644
-> --- a/drivers/staging/android/ion/ion_cma_heap.c
-> +++ b/drivers/staging/android/ion/ion_cma_heap.c
-> @@ -39,7 +39,7 @@ static int ion_cma_allocate(struct ion_heap *heap, struct ion_buffer *buffer,
->   	if (align > CONFIG_CMA_ALIGNMENT)
->   		align = CONFIG_CMA_ALIGNMENT;
->   
-> -	pages = cma_alloc(cma_heap->cma, nr_pages, align, GFP_KERNEL);
-> +	pages = cma_alloc(cma_heap->cma, nr_pages, align, false);
->   	if (!pages)
->   		return -ENOMEM;
->   
-> diff --git a/include/linux/cma.h b/include/linux/cma.h
-> index bf90f0bb42bd..190184b5ff32 100644
-> --- a/include/linux/cma.h
-> +++ b/include/linux/cma.h
-> @@ -33,7 +33,7 @@ extern int cma_init_reserved_mem(phys_addr_t base, phys_addr_t size,
->   					const char *name,
->   					struct cma **res_cma);
->   extern struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
-> -			      gfp_t gfp_mask);
-> +			      bool no_warn);
->   extern bool cma_release(struct cma *cma, const struct page *pages, unsigned int count);
->   
->   extern int cma_for_each_area(int (*it)(struct cma *cma, void *data), void *data);
-> diff --git a/kernel/dma/contiguous.c b/kernel/dma/contiguous.c
-> index d987dcd1bd56..19ea5d70150c 100644
-> --- a/kernel/dma/contiguous.c
-> +++ b/kernel/dma/contiguous.c
-> @@ -191,7 +191,8 @@ struct page *dma_alloc_from_contiguous(struct device *dev, size_t count,
->   	if (align > CONFIG_CMA_ALIGNMENT)
->   		align = CONFIG_CMA_ALIGNMENT;
->   
-> -	return cma_alloc(dev_get_cma_area(dev), count, align, gfp_mask);
-> +	return cma_alloc(dev_get_cma_area(dev), count, align,
-> +			 gfp_mask & __GFP_NOWARN);
->   }
->   
->   /**
-> diff --git a/mm/cma.c b/mm/cma.c
-> index 5809bbe360d7..4cb76121a3ab 100644
-> --- a/mm/cma.c
-> +++ b/mm/cma.c
-> @@ -395,13 +395,13 @@ static inline void cma_debug_show_areas(struct cma *cma) { }
->    * @cma:   Contiguous memory region for which the allocation is performed.
->    * @count: Requested number of pages.
->    * @align: Requested alignment of pages (in PAGE_SIZE order).
-> - * @gfp_mask:  GFP mask to use during compaction
-> + * @no_warn: Avoid printing message about failed allocation
->    *
->    * This function allocates part of contiguous memory on specific
->    * contiguous memory area.
->    */
->   struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
-> -		       gfp_t gfp_mask)
-> +		       bool no_warn)
->   {
->   	unsigned long mask, offset;
->   	unsigned long pfn = -1;
-> @@ -447,7 +447,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
->   		pfn = cma->base_pfn + (bitmap_no << cma->order_per_bit);
->   		mutex_lock(&cma_mutex);
->   		ret = alloc_contig_range(pfn, pfn + count, MIGRATE_CMA,
-> -					 gfp_mask);
-> +				     GFP_KERNEL | (no_warn ? __GFP_NOWARN : 0));
->   		mutex_unlock(&cma_mutex);
->   		if (ret == 0) {
->   			page = pfn_to_page(pfn);
-> @@ -466,7 +466,7 @@ struct page *cma_alloc(struct cma *cma, size_t count, unsigned int align,
->   
->   	trace_cma_alloc(pfn, page, count, align);
->   
-> -	if (ret && !(gfp_mask & __GFP_NOWARN)) {
-> +	if (ret && !no_warn) {
->   		pr_err("%s: alloc failed, req-size: %zu pages, ret: %d\n",
->   			__func__, count, ret);
->   		cma_debug_show_areas(cma);
-> diff --git a/mm/cma_debug.c b/mm/cma_debug.c
-> index f23467291cfb..ad6723e9d110 100644
-> --- a/mm/cma_debug.c
-> +++ b/mm/cma_debug.c
-> @@ -139,7 +139,7 @@ static int cma_alloc_mem(struct cma *cma, int count)
->   	if (!mem)
->   		return -ENOMEM;
->   
-> -	p = cma_alloc(cma, count, 0, GFP_KERNEL);
-> +	p = cma_alloc(cma, count, 0, false);
->   	if (!p) {
->   		kfree(mem);
->   		return -ENOMEM;
-> 
+-- 
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
