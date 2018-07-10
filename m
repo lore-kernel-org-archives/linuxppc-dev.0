@@ -1,23 +1,24 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf0-x244.google.com (mail-pf0-x244.google.com
- [IPv6:2607:f8b0:400e:c00::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PqVM5V3PzDrSd
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 14:49:15 +1000 (AEST)
-Received: by mail-pf0-x244.google.com with SMTP id e13-v6so1849968pff.7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jul 2018 21:49:15 -0700 (PDT)
-Date: Tue, 10 Jul 2018 14:49:08 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-arch <linux-arch@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: Can people please check this patch out for cross-arch issues
-Message-ID: <20180710144908.4a2bb2cc@roar.ozlabs.ibm.com>
-In-Reply-To: <CA+55aFxWZuFNHKpE0iA+vDJHTyPofSX3BPPOt2UUB2zXSSBZHQ@mail.gmail.com>
-References: <CA+55aFxWZuFNHKpE0iA+vDJHTyPofSX3BPPOt2UUB2zXSSBZHQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Prr15Hj9zDrTg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 15:49:37 +1000 (AEST)
+Content-Type: text/plain;
+	charset=utf-8
+Mime-Version: 1.0 (1.0)
+Subject: [PATCH NEXT 1/4] powerpc/pasemi: Add PCI initialisation for Nemo
+ board.
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+In-Reply-To: <87k1skanxy.fsf@concordia.ellerman.id.au>
+Date: Tue, 10 Jul 2018 07:43:23 +0200
+Cc: Darren Stevens <darren@stevens-zone.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Message-Id: <F7494DDC-BDA9-460A-94EB-6FAF58D673FA@xenosoft.de>
+References: <4b3d1ee02c7.3de0aa2c@auth.smtp.1and1.co.uk>
+ <87k1skanxy.fsf@concordia.ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 9 Jul 2018 16:57:46 -0700
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hi Michael,
+Hi All,
 
-> We have a funny new bugzilla entry for an issue that is 12 years old,
-> and not really all that critical, but one that *can* become a problem
-> for people who do very specific things.
-> 
-> What happens is that 'fork()' will cause a re-try (with
-> ERESTARTNOINTR) if a signal has come in between the point where the
-> fork() started, but before we add the process to the process table.
-> The reason is that the signal possibly *should* affect the new child
-> process too, but it was never queued to it because we were obviously
-> in the process of creating it.
-> 
-> That's normally entirely a non-issue, and I don't think anybody ever
-> imagined it could matter in practice, but apparently there are loads
-> where this becomes problematic.
-> 
-> See kernel bugzilla at
-> 
->     https://bugzilla.kernel.org/show_bug.cgi?id=200447
-> 
-> which has a trial balloon patch for this issue already, to at least
-> limit that retry to only signals that actually might affect the child
-> (ie not any random signals sent explicitly and directly only to the
-> parent process).
-> 
-> HOWEVER.
-> 
-> The very first thing I noticed while looking at this was that one of
-> the more expensive parts of the fork() retry is actually marking all
-> the parent page tables read-only. Now, it's one of _many_ expensive
-> parts, and it's not nearly as expensive as all the reference counting
-> we do for each page, but it's actually very easy to avoid. When we
-> have repeated fork() calls, there's just no point in repeatedly
-> marking pages read-only.
-> 
-> This the attached one-liner patch.
-> 
-> The reason I'm sending it to the arch people is that while this is a
-> totally trivial patch on x86 ("pte_write()" literally tests exactly
-> the same bit that "pte_wrprotect()" and "ptep_set_wrprotect()"
-> clears), the same is not necessarily always true on other
-> architectures.
-> 
-> Some other architectures make "ptep_set_wrprotect()" do more than just
-> clear the one bit we test with "pte_write()".
-> 
-> Honestly, I don't think it could possibly matter: if "pte_write()"
-> returns false, then whatever "ptep_set_writeprotect()" does can not
-> really matter (at least for a COW mapping). But I thought I'd send
-> this out for comments anyway, despite how trivial it looks.
-> 
-> So. Comments?
+kbuild test robot Wed, 03 Jan 2018 04:17:20 -0800 wrote:
 
-Looks good to me (after the huge page bits are done?)
+Hi Darren,
 
-If pte_write returns false here, surely any later write access has to
-fault otherwise we've got bigger problems right? powerpc/64/radix is
-pretty unsurprising so no problems there (it just modifies the pte, so
-shouldn't change anything in this case). Hash will actually schedule
-the hash table entry to be invalidated, but it can't be writable.
+Thank you for the patch! Perhaps something to improve:
 
-> It doesn't make a huge difference, honestly, and the real fix for the
-> "retry too eagerly" is completely different, but at the same time this
-> one-liner trivial fix does feel like the RightThing(tm) regardless.
+arch/powerpc/platforms/pasemi/pci.c: In function 'sb600_set_flag': >> includ=
+e/linux/kern_levels.h:5:18: warning: format '%lx' expects argument of >> typ=
+e 'long unsigned int', but argument 2 has type 'resource_size_t {aka long >>=
+ long unsigned int}' [-Wformat=3D] #define KERN_SOH "\001" /* ASCII Start Of=
+ Header */
 
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+=E2=80=94-
+
+I was able to fix this small format issue. I replaced the format '%08lx' wit=
+h '%08llx'.
+
++ printk(KERN_CRIT "NEMO SB600 IOB base %08llx\n",res.start);
+
+Is this fix OK or is there a better solution?
+
+> On 3. May 2018, at 15:06, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>=20
+>> +
+>> +        printk(KERN_CRIT "NEMO SB600 IOB base %08lx\n",res.start);
+>=20
+> That's INFO or even DEBUG.
+>>=20
+
+Michael,
+
+What do you think about this fix?
+
++ printk(KERN_INFO "NEMO SB600 IOB base %08llx\n",res.start);
+
+Thanks,
+Christian=
