@@ -1,23 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Q3gQ5xSqzDqBm
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 23:57:54 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: kbuild test robot <lkp@intel.com>, Daniel Klamt <eleon@ele0n.de>
-Cc: kbuild-all@01.org, benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kernel@i4.cs.fau.de, Daniel Klamt <eleon@ele0n.de>,
- Bjoern Noetel <bjoern@br3ak3r.de>
-Subject: Re: [PATCH] powerpc: Replaced msleep with usleep_range
-In-Reply-To: <201807100423.0p0r9QGb%fengguang.wu@intel.com>
-References: <1531144679-31675-1-git-send-email-eleon@ele0n.de>
- <201807100423.0p0r9QGb%fengguang.wu@intel.com>
-Date: Tue, 10 Jul 2018 23:57:51 +1000
-Message-ID: <87y3ej9ork.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Q5C13zqDzDr0X
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 01:06:51 +1000 (AEST)
+Date: Tue, 10 Jul 2018 17:08:24 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Christoph Hellwig <hch@lst.de>, m.szyprowski@samsung.com,
+ iommu@lists.linux-foundation.org,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC PATCH 2/2] dma-mapping: Clean up dma_get_required_mask()
+ hooks
+Message-ID: <20180710150824.GA12274@lst.de>
+References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
+ <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
+ <20180710113908.GB32688@lst.de>
+ <3b8a23b6-6015-3e8e-07f0-b75920a1e264@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3b8a23b6-6015-3e8e-07f0-b75920a1e264@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,35 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kbuild test robot <lkp@intel.com> writes:
+On Tue, Jul 10, 2018 at 01:29:20PM +0100, Robin Murphy wrote:
+>> What I've done is to:
+>>
+>>   1) provide the get_required_mask unconditionally in struct dma_map_ops
+>>   2) default to what is the current dma_get_required_mask implementation
+>>      if nothing else is specified.
+>
+> Yeah, there's already 17 pointers in dma_map_ops of which about half are 
+> optional, so these awkward #ifdefs to save one more probably aren't worth 
+> the inconsistency they bring. It feels like this guy mostly goes 
+> hand-in-hand with dma_supported, so ack to giving it the same look and 
+> feel.
 
-> Hi Daniel,
->
-> Thank you for the patch! Yet something to improve:
->
-> [auto build test ERROR on powerpc/next]
-> [also build test ERROR on v4.18-rc4 next-20180709]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Daniel-Klamt/powerpc-Replaced-msleep-with-usleep_range/20180709-231913
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
-> config: powerpc-defconfig (attached as .config)
-> compiler: powerpc64-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         GCC_VERSION=7.2.0 make.cross ARCH=powerpc 
->
-> All errors (new ones prefixed by >>):
->
->    arch/powerpc/sysdev/xive/native.c: In function 'xive_native_configure_irq':
->>> arch/powerpc/sysdev/xive/native.c:113:2: error: expected ';' before '}' token
->      }
->      ^
+This whole area needs a major refactoring - we currentl have three
+different APIs to deal with addressability: dma_get_required_mask,
+dma_capable/dma_set_mask and dma_capable from dma-direct.h, and there
+is plenty of unexplainable mismatches between them.
 
-There's also instructions here for building the powerpc kernel:
+Sorting this out has been on my TODO list, but I think it can only
+effectively be done once the direct mapping implementations are
+reasonably consolidated.
 
-  https://github.com/linuxppc/linux/wiki/Building-powerpc-kernels
+>> What I still had on my todo list but not done yet:
+>>
+>>   3) go through all instances and check if the current default
+>>      makes sense, at it based on direct addressability.  For most
+>>      iommu instances it seems like we should just return a 64-bit mask.
+>
+> That's reasonable, although in many cases we should know the effective 
+> IOMMU input address size which would be even neater.
 
-cheers
+Sure.  Maybe I just need to steps 1 and 2 and let maintainers fill
+in.
+
+>>   4) figure out how to take the dma offsets into account for it
+>
+> AFAICS it might boil down to simply:
+>
+> 	mask = roundup_pow_of_two(phys_to_dma(dev, PFN_PHYS(max_pfn))) - 1;
+
+That looks way to sensible.  Which reminds me that I need to research
+the history behind the low_totalram/high_totalram magic in
+dma_get_required_mask.
