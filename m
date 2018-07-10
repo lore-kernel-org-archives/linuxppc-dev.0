@@ -1,22 +1,19 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41Q1jN6JMkzDr0X
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 22:29:27 +1000 (AEST)
-Subject: Re: [RFC PATCH 2/2] dma-mapping: Clean up dma_get_required_mask()
- hooks
-To: Christoph Hellwig <hch@lst.de>
-Cc: m.szyprowski@samsung.com, iommu@lists.linux-foundation.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
- <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
- <20180710113908.GB32688@lst.de>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <3b8a23b6-6015-3e8e-07f0-b75920a1e264@arm.com>
-Date: Tue, 10 Jul 2018 13:29:20 +0100
+Return-Path: <mpe@ellerman.id.au>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, sachinp <sachinp@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linuxppc-dev
+ <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
+Subject: Re: [powerpc/powervm]Oops: Kernel access of bad area,
+ sig: 11 [#1] while running stress-ng
+In-Reply-To: <920d9bc6a2c3449700dec191c271bdff@linux.vnet.ibm.com>
+References: <8595a4f915a7344210a8cc7ad6923a2b@linux.vnet.ibm.com>
+ <20180710180708.6e0cd26b@roar.ozlabs.ibm.com>
+ <920d9bc6a2c3449700dec191c271bdff@linux.vnet.ibm.com>
+Date: Tue, 10 Jul 2018 23:42:00 +1000
+Message-ID: <877em3b42f.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <20180710113908.GB32688@lst.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/07/18 12:39, Christoph Hellwig wrote:
-> On Wed, Jul 04, 2018 at 06:50:12PM +0100, Robin Murphy wrote:
->> As for the other mask-related hooks, standardise the arch override into
->> a Kconfig option, and also pull the generic implementation into the DMA
->> mapping code rather than having it hide away in the platform bus code.
-> 
-> I compared this a bit to what I had around against an older kernel,
-> and I think we should probably go with something more like the
-> version I had, which I can dust off again.
-> 
-> What I've done is to:
-> 
->   1) provide the get_required_mask unconditionally in struct dma_map_ops
->   2) default to what is the current dma_get_required_mask implementation
->      if nothing else is specified.
+vrbagal1 <vrbagal1@linux.vnet.ibm.com> writes:
 
-Yeah, there's already 17 pointers in dma_map_ops of which about half are 
-optional, so these awkward #ifdefs to save one more probably aren't 
-worth the inconsistency they bring. It feels like this guy mostly goes 
-hand-in-hand with dma_supported, so ack to giving it the same look and feel.
+> On 2018-07-10 13:37, Nicholas Piggin wrote:
+>> On Tue, 10 Jul 2018 11:58:40 +0530
+>> vrbagal1 <vrbagal1@linux.vnet.ibm.com> wrote:
+>> 
+>>> Hi,
+>>> 
+>>> Observing kernel oops on Power9(ZZ) box, running on PowerVM, while
+>>> running stress-ng.
+>>> 
+>>> 
+>>> Kernel: 4.18.0-rc4
+>>> Machine: Power9 ZZ (PowerVM)
+>>> Test: Stress-ng
+>>> 
+>>> Attached is .config file
+>>> 
+>>> Traces:
+>>> 
+>>>   [12251.245209] Oops: Kernel access of bad area, sig: 11 [#1]
+>> 
+>> Can you post the lines above this? Otherwise we don't know what address
+>> it tried to access (without decoding the instructions and 
+>> reconstructing
+>> it from registers at least, which the XFS devs wouldn't be inclined to
+>> do).
+>> 
+>
+> ah my bad.
+>
+>   [12251.245179] Unable to handle kernel paging request for data at address 0x6000000060000000
+>   [12251.245199] Faulting instruction address: 0xc000000000319e2c
 
-> What I still had on my todo list but not done yet:
-> 
->   3) go through all instances and check if the current default
->      makes sense, at it based on direct addressability.  For most
->      iommu instances it seems like we should just return a 64-bit mask.
+Which matches the regs & disassembly:
 
-That's reasonable, although in many cases we should know the effective 
-IOMMU input address size which would be even neater.
+r4 = 6000000060000000 
+r9 = 0
+ldx     r9,r4,r9	<- pop
 
->   4) figure out how to take the dma offsets into account for it
+So object was 0x6000000060000000.
 
-AFAICS it might boil down to simply:
+That looks like two nops, ie. we got some code?
 
-	mask = roundup_pow_of_two(phys_to_dma(dev, PFN_PHYS(max_pfn))) - 1;
+And there's only one caller of prefetch_freepointer() in slab_alloc_node():
 
->   5) move the function to the dma-direct code, as that is where it
->      belongs
->   5) figure out if there is a better name for the method, as with
->      swiotlb & co it isn't really the required mask, but more something
->      like the optimal mask
->   6) document the whole thing..
->   7) sort out the powerpc indirection mess.
-> 
-> Do you agree with that general plan?  If so I can dust off my old
-> patch.
+	prefetch_freepointer(s, next_object);
 
-Sounds good; in the meantime I'll happily drop these two.
 
-Robin.
+So slab corruption is looking likely.
+
+Do you have slub_debug=FZP on the kernel command line?
+
+cheers
