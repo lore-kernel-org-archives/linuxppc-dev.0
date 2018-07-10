@@ -1,41 +1,30 @@
-Return-Path: <xiaolong.ye@intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PkV51zvhzDr2J
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 11:03:34 +1000 (AEST)
-Date: Tue, 10 Jul 2018 08:59:28 +0800
-From: Ye Xiaolong <xiaolong.ye@intel.com>
-To: Baoquan He <bhe@redhat.com>
-Cc: kbuild test robot <lkp@intel.com>, nicolas.pitre@linaro.org,
- brijesh.singh@amd.com, thomas.lendacky@amd.com, airlied@linux.ie,
- linux-pci@vger.kernel.org, richard.weiyang@gmail.com,
- keith.busch@intel.com, jcmvbkbc@gmail.com,
- baiyaowei@cmss.chinamobile.com, frowand.list@gmail.com,
- tglx@linutronix.de, lorenzo.pieralisi@arm.com,
- sthemmin@microsoft.com, linux-nvdimm@lists.01.org,
- patrik.r.jakobsson@gmail.com, andy.shevchenko@gmail.com,
- linux-input@vger.kernel.org, gustavo@padovan.org, bp@suse.de,
- dyoung@redhat.com, vgoyal@redhat.com, ebiederm@xmission.com,
- devicetree@vger.kernel.org, haiyangz@microsoft.com,
- maarten.lankhorst@linux.intel.com, josh@joshtriplett.org,
- jglisse@redhat.com, robh+dt@kernel.org, seanpaul@chromium.org,
- bhelgaas@google.com, dan.j.williams@intel.com, yinghai@kernel.org,
- jonathan.derrick@intel.com, chris@zankel.net, monstr@monstr.eu,
- linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org,
- dmitry.torokhov@gmail.com, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, kbuild-all@01.org,
- devel@linuxdriverproject.org, akpm@linux-foundation.org,
- fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
-Subject: Re: [kbuild-all] [PATCH v6 2/4] resource: Use list_head to link
- sibling resource
-Message-ID: <20180710005927.GG10005@yexl-desktop>
-References: <20180704041038.8190-3-bhe@redhat.com>
- <201807042347.hfDcKxmG%fengguang.wu@intel.com>
- <20180708025946.GI3047@MiWiFi-R3L-srv>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41Pknq0qzqzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 11:17:18 +1000 (AEST)
+Date: Tue, 10 Jul 2018 11:18:34 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Meelis Roos <mroos@linux.ee>, Mathieu Malaterre <malat@debian.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Joshua Thompson <funaho@jurai.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>, linux-m68k@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>,
+ Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 1/3] [v2] powerpc: mac: fix rtc read/write functions
+In-Reply-To: <CAK8P3a29rNtWCcgKeJK57C5CPPi74wc1o1cnPJM=Qe+eMKFYjw@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1807101105130.12@nippy.intranet>
+References: <20180619140229.3615110-1-arnd@arndb.de>
+ <CA+7wUsyN_gru4rW0y3ZzXzYwhfaA=uHKaOG=z5bprnYq6oVfMg@mail.gmail.com>
+ <alpine.LRH.2.21.1807011844470.19761@math.ut.ee>
+ <CAK8P3a29rNtWCcgKeJK57C5CPPi74wc1o1cnPJM=Qe+eMKFYjw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180708025946.GI3047@MiWiFi-R3L-srv>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,99 +34,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, 9 Jul 2018, Arnd Bergmann wrote:
 
-On 07/08, Baoquan He wrote:
->Hi,
->
->On 07/05/18 at 01:00am, kbuild test robot wrote:
->> Hi Baoquan,
->> 
->> I love your patch! Yet something to improve:
->> 
->> [auto build test ERROR on linus/master]
->> [also build test ERROR on v4.18-rc3 next-20180704]
->> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
->Thanks for telling. 
->
->I cloned 0day-ci/linut to my local pc.
->https://github.com/0day-ci/linux.git
->
->However, I didn't find below branch. And tried to open it in web
->broswer, also failed.
->
+> 
+> The most likely explanation I have here is that the RTC was indeed set 
+> to an incorrect date, either because of a depleted battery (not unlikely 
+> for a ~15 year old box) or because it was previously stored incorrectly.
 
-Sorry for the inconvenience, 0day bot didn't push the branch to github successfully,
-Just push it manually, you can have a try again.
+The PowerMac stores the GMT offset in NVRAM, and this gets used to 
+initialize timezone_offset.
 
-Thanks,
-Xiaolong
+If timezone_offset was negative and now.tv_sec was zero, I think this 
+could store a 1969 date in the RTC:
 
+int update_persistent_clock64(struct timespec64 now)
+{
+        struct rtc_time tm;
 
->
->> url:    https://github.com/0day-ci/linux/commits/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180704-121402
->> config: mips-rb532_defconfig (attached as .config)
->> compiler: mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
->> reproduce:
->>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->>         chmod +x ~/bin/make.cross
->>         # save the attached .config to linux build tree
->>         GCC_VERSION=7.2.0 make.cross ARCH=mips 
->
->I did find a old one which is for the old version 5 post.
->
->[bhe@linux]$ git remote -v
->0day-ci	https://github.com/0day-ci/linux.git (fetch)
->0day-ci	https://github.com/0day-ci/linux.git (push)
->[bhe@dhcp-128-28 linux]$ git branch -a| grep Baoquan| grep resource
->  remotes/0day-ci/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180612-113600
->
->Could you help have a look at this?
->
->Thanks
->Baoquan
->
->> 
->> All error/warnings (new ones prefixed by >>):
->> 
->> >> arch/mips/pci/pci-rc32434.c:57:11: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
->>      .child = &rc32434_res_pci_mem2
->>               ^
->>    arch/mips/pci/pci-rc32434.c:57:11: note: (near initialization for 'rc32434_res_pci_mem1.child.next')
->> >> arch/mips/pci/pci-rc32434.c:51:47: warning: missing braces around initializer [-Wmissing-braces]
->>     static struct resource rc32434_res_pci_mem1 = {
->>                                                   ^
->>    arch/mips/pci/pci-rc32434.c:60:47: warning: missing braces around initializer [-Wmissing-braces]
->>     static struct resource rc32434_res_pci_mem2 = {
->>                                                   ^
->>    cc1: some warnings being treated as errors
->> 
->> vim +57 arch/mips/pci/pci-rc32434.c
->> 
->> 73b4390f Ralf Baechle 2008-07-16  50  
->> 73b4390f Ralf Baechle 2008-07-16 @51  static struct resource rc32434_res_pci_mem1 = {
->> 73b4390f Ralf Baechle 2008-07-16  52  	.name = "PCI MEM1",
->> 73b4390f Ralf Baechle 2008-07-16  53  	.start = 0x50000000,
->> 73b4390f Ralf Baechle 2008-07-16  54  	.end = 0x5FFFFFFF,
->> 73b4390f Ralf Baechle 2008-07-16  55  	.flags = IORESOURCE_MEM,
->> 73b4390f Ralf Baechle 2008-07-16  56  	.sibling = NULL,
->> 73b4390f Ralf Baechle 2008-07-16 @57  	.child = &rc32434_res_pci_mem2
->> 73b4390f Ralf Baechle 2008-07-16  58  };
->> 73b4390f Ralf Baechle 2008-07-16  59  
->> 
->> :::::: The code at line 57 was first introduced by commit
->> :::::: 73b4390fb23456964201abda79f1210fe337d01a [MIPS] Routerboard 532: Support for base system
->> 
->> :::::: TO: Ralf Baechle <ralf@linux-mips.org>
->> :::::: CC: Ralf Baechle <ralf@linux-mips.org>
->> 
->> ---
->> 0-DAY kernel test infrastructure                Open Source Technology Center
->> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
->
->
->_______________________________________________
->kbuild-all mailing list
->kbuild-all@lists.01.org
->https://lists.01.org/mailman/listinfo/kbuild-all
+        if (!ppc_md.set_rtc_time)
+                return -ENODEV;
+
+        rtc_time64_to_tm(now.tv_sec + 1 + timezone_offset, &tm);
+
+        return ppc_md.set_rtc_time(&tm);
+}
+
+But maybe now.tv_sec can be shown to be greater than timezone_offset.
+
+Then, what would happen when the timezone in /etc/localtime disagrees with 
+the timezone_offset stored in NVRAM (PRAM)?
+
+Besides that, if the battery went flat, what use is a backtrace? Why not 
+scrap the WARN_ON()?
+
+-- 
