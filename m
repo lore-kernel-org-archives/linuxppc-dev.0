@@ -1,17 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Q3RG4ns7zDr0X
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 23:47:22 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: vrbagal1 <vrbagal1@linux.vnet.ibm.com>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linux-fsdevel@vger.kernel.org, sachinp <sachinp@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Linuxppc-dev
- <linuxppc-dev-bounces+vrbagal1=linux.vnet.ibm.com@lists.ozlabs.org>
-Subject: Re: [powerpc/powervm]Oops: Kernel access of bad area,
- sig: 11 [#1] while running stress-ng
-In-Reply-To: <920d9bc6a2c3449700dec191c271bdff@linux.vnet.ibm.com>
-References: <8595a4f915a7344210a8cc7ad6923a2b@linux.vnet.ibm.com>
- <20180710180708.6e0cd26b@roar.ozlabs.ibm.com>
- <920d9bc6a2c3449700dec191c271bdff@linux.vnet.ibm.com>
-Date: Tue, 10 Jul 2018 23:42:00 +1000
-Message-ID: <877em3b42f.fsf@concordia.ellerman.id.au>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: linuxppc-dev@ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
+In-Reply-To: <CA+7wUsz3hADry_O7MCO8pJRmWb84dbQYu8zOyEYQ01P=R8WoDA@mail.gmail.com>
+References: <20180709142426.26999-1-mpe@ellerman.id.au>
+ <CA+7wUsz3hADry_O7MCO8pJRmWb84dbQYu8zOyEYQ01P=R8WoDA@mail.gmail.com>
+Date: Tue, 10 Jul 2018 23:47:20 +1000
+Message-ID: <874lh7b3tj.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,57 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vrbagal1 <vrbagal1@linux.vnet.ibm.com> writes:
-
-> On 2018-07-10 13:37, Nicholas Piggin wrote:
->> On Tue, 10 Jul 2018 11:58:40 +0530
->> vrbagal1 <vrbagal1@linux.vnet.ibm.com> wrote:
->> 
->>> Hi,
->>> 
->>> Observing kernel oops on Power9(ZZ) box, running on PowerVM, while
->>> running stress-ng.
->>> 
->>> 
->>> Kernel: 4.18.0-rc4
->>> Machine: Power9 ZZ (PowerVM)
->>> Test: Stress-ng
->>> 
->>> Attached is .config file
->>> 
->>> Traces:
->>> 
->>>   [12251.245209] Oops: Kernel access of bad area, sig: 11 [#1]
->> 
->> Can you post the lines above this? Otherwise we don't know what address
->> it tried to access (without decoding the instructions and 
->> reconstructing
->> it from registers at least, which the XFS devs wouldn't be inclined to
->> do).
->> 
+Mathieu Malaterre <malat@debian.org> writes:
+> On Mon, Jul 9, 2018 at 4:24 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>> Because the allmodconfig logic just sets every symbol to M or Y, it
+>> has the effect of always generating a 64-bit config, because
+>> CONFIG_PPC64 becomes Y.
+>>
+>> So to make it easier for folks to test 32-bit code, provide a phony
+>> defconfig target that generates a 32-bit allmodconfig.
+>>
+>> The 32-bit port has several mutually exclusive CPU types, we choose
+>> the Book3S variants as that's what the help text in Kconfig says is
+>> most common.
 >
-> ah my bad.
+> Ok then.
+
+That was just me taking a stab in the dark. You suggested we should
+mimic the Debian config, what does that use?
+
+>> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+>> index 2ea575cb3401..2556c2182789 100644
+>> --- a/arch/powerpc/Makefile
+>> +++ b/arch/powerpc/Makefile
+>> @@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
+>>         $(call merge_into_defconfig,mpc86xx_basic_defconfig,\
+>>                 86xx-smp 86xx-hw fsl-emb-nonhw)
+>>
+>> +PHONY += ppc32_allmodconfig
+>> +ppc32_allmodconfig:
+>> +       $(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+>> +               -f $(srctree)/Makefile allmodconfig
+>> +
 >
->   [12251.245179] Unable to handle kernel paging request for data at address 0x6000000060000000
->   [12251.245199] Faulting instruction address: 0xc000000000319e2c
+> I this a good time to update line 34 at the same time:
+>
+> KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+>
+> ?
 
-Which matches the regs & disassembly:
+34 or 36?
 
-r4 = 6000000060000000 
-r9 = 0
-ldx     r9,r4,r9	<- pop
+  ifeq ($(CROSS_COMPILE),)
+  KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+  else
+  KBUILD_DEFCONFIG := ppc64_defconfig
+  endif
 
-So object was 0x6000000060000000.
-
-That looks like two nops, ie. we got some code?
-
-And there's only one caller of prefetch_freepointer() in slab_alloc_node():
-
-	prefetch_freepointer(s, next_object);
-
-
-So slab corruption is looking likely.
-
-Do you have slub_debug=FZP on the kernel command line?
+Do you mean the else case?
 
 cheers
