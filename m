@@ -1,21 +1,41 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xiaolong.ye@intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41PhwL3K15zDr1S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 09:52:50 +1000 (AEST)
-Message-ID: <66cab64903570ff2ab93e79b4e71223c64cdf283.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Replaced msleep with usleep_range
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Daniel Klamt <eleon@ele0n.de>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-kernel@i4.cs.fau.de, Bjoern Noetel
- <bjoern@br3ak3r.de>
-Date: Tue, 10 Jul 2018 09:52:21 +1000
-In-Reply-To: <1531144679-31675-1-git-send-email-eleon@ele0n.de>
-References: <1531144679-31675-1-git-send-email-eleon@ele0n.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PkV51zvhzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 11:03:34 +1000 (AEST)
+Date: Tue, 10 Jul 2018 08:59:28 +0800
+From: Ye Xiaolong <xiaolong.ye@intel.com>
+To: Baoquan He <bhe@redhat.com>
+Cc: kbuild test robot <lkp@intel.com>, nicolas.pitre@linaro.org,
+ brijesh.singh@amd.com, thomas.lendacky@amd.com, airlied@linux.ie,
+ linux-pci@vger.kernel.org, richard.weiyang@gmail.com,
+ keith.busch@intel.com, jcmvbkbc@gmail.com,
+ baiyaowei@cmss.chinamobile.com, frowand.list@gmail.com,
+ tglx@linutronix.de, lorenzo.pieralisi@arm.com,
+ sthemmin@microsoft.com, linux-nvdimm@lists.01.org,
+ patrik.r.jakobsson@gmail.com, andy.shevchenko@gmail.com,
+ linux-input@vger.kernel.org, gustavo@padovan.org, bp@suse.de,
+ dyoung@redhat.com, vgoyal@redhat.com, ebiederm@xmission.com,
+ devicetree@vger.kernel.org, haiyangz@microsoft.com,
+ maarten.lankhorst@linux.intel.com, josh@joshtriplett.org,
+ jglisse@redhat.com, robh+dt@kernel.org, seanpaul@chromium.org,
+ bhelgaas@google.com, dan.j.williams@intel.com, yinghai@kernel.org,
+ jonathan.derrick@intel.com, chris@zankel.net, monstr@monstr.eu,
+ linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org,
+ dmitry.torokhov@gmail.com, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, kbuild-all@01.org,
+ devel@linuxdriverproject.org, akpm@linux-foundation.org,
+ fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Subject: Re: [kbuild-all] [PATCH v6 2/4] resource: Use list_head to link
+ sibling resource
+Message-ID: <20180710005927.GG10005@yexl-desktop>
+References: <20180704041038.8190-3-bhe@redhat.com>
+ <201807042347.hfDcKxmG%fengguang.wu@intel.com>
+ <20180708025946.GI3047@MiWiFi-R3L-srv>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180708025946.GI3047@MiWiFi-R3L-srv>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,133 +45,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-09 at 15:57 +0200, Daniel Klamt wrote:
-> Replaced msleep for less than 10ms with usleep_range because will
-> often sleep longer than intended.
-> For original explanation see:
-> Documentation/timers/timers-howto.txt
+Hi,
 
-Why ? This is pointless. The original code is smaller and more
-readable. We don't care how long it actually sleeps, this is the FW
-telling us it's busy (or the HW is), come back a bit later.
+On 07/08, Baoquan He wrote:
+>Hi,
+>
+>On 07/05/18 at 01:00am, kbuild test robot wrote:
+>> Hi Baoquan,
+>> 
+>> I love your patch! Yet something to improve:
+>> 
+>> [auto build test ERROR on linus/master]
+>> [also build test ERROR on v4.18-rc3 next-20180704]
+>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+>Thanks for telling. 
+>
+>I cloned 0day-ci/linut to my local pc.
+>https://github.com/0day-ci/linux.git
+>
+>However, I didn't find below branch. And tried to open it in web
+>broswer, also failed.
+>
 
-Ben.
+Sorry for the inconvenience, 0day bot didn't push the branch to github successfully,
+Just push it manually, you can have a try again.
 
-> Signed-off-by: Daniel Klamt <eleon@ele0n.de>
-> Signed-off-by: Bjoern Noetel <bjoern@br3ak3r.de>
-> ---
->  arch/powerpc/sysdev/xive/native.c | 24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-> index 311185b9960a..b164b1cdf4d6 100644
-> --- a/arch/powerpc/sysdev/xive/native.c
-> +++ b/arch/powerpc/sysdev/xive/native.c
-> @@ -109,7 +109,7 @@ int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq)
->  		rc = opal_xive_set_irq_config(hw_irq, target, prio, sw_irq);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100)
->  	}
->  	return rc == 0 ? 0 : -ENXIO;
->  }
-> @@ -163,7 +163,7 @@ int xive_native_configure_queue(u32 vp_id, struct xive_q *q, u8 prio,
->  		rc = opal_xive_set_queue_info(vp_id, prio, qpage_phys, order, flags);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	if (rc) {
->  		pr_err("Error %lld setting queue for prio %d\n", rc, prio);
-> @@ -190,7 +190,7 @@ static void __xive_native_disable_queue(u32 vp_id, struct xive_q *q, u8 prio)
->  		rc = opal_xive_set_queue_info(vp_id, prio, 0, 0, 0);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	if (rc)
->  		pr_err("Error %lld disabling queue for prio %d\n", rc, prio);
-> @@ -253,7 +253,7 @@ static int xive_native_get_ipi(unsigned int cpu, struct xive_cpu *xc)
->  	for (;;) {
->  		irq = opal_xive_allocate_irq(chip_id);
->  		if (irq == OPAL_BUSY) {
-> -			msleep(1);
-> +			usleep_range(1000, 1100);
->  			continue;
->  		}
->  		if (irq < 0) {
-> @@ -275,7 +275,7 @@ u32 xive_native_alloc_irq(void)
->  		rc = opal_xive_allocate_irq(OPAL_XIVE_ANY_CHIP);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	if (rc < 0)
->  		return 0;
-> @@ -289,7 +289,7 @@ void xive_native_free_irq(u32 irq)
->  		s64 rc = opal_xive_free_irq(irq);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  }
->  EXPORT_SYMBOL_GPL(xive_native_free_irq);
-> @@ -305,7 +305,7 @@ static void xive_native_put_ipi(unsigned int cpu, struct xive_cpu *xc)
->  	for (;;) {
->  		rc = opal_xive_free_irq(xc->hw_ipi);
->  		if (rc == OPAL_BUSY) {
-> -			msleep(1);
-> +			usleep_range(1000, 1100);
->  			continue;
->  		}
->  		xc->hw_ipi = 0;
-> @@ -400,7 +400,7 @@ static void xive_native_setup_cpu(unsigned int cpu, struct xive_cpu *xc)
->  		rc = opal_xive_set_vp_info(vp, OPAL_XIVE_VP_ENABLED, 0);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	if (rc) {
->  		pr_err("Failed to enable pool VP on CPU %d\n", cpu);
-> @@ -444,7 +444,7 @@ static void xive_native_teardown_cpu(unsigned int cpu, struct xive_cpu *xc)
->  		rc = opal_xive_set_vp_info(vp, 0, 0);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  }
->  
-> @@ -645,7 +645,7 @@ u32 xive_native_alloc_vp_block(u32 max_vcpus)
->  		rc = opal_xive_alloc_vp_block(order);
->  		switch (rc) {
->  		case OPAL_BUSY:
-> -			msleep(1);
-> +			usleep_range(1000, 1100);
->  			break;
->  		case OPAL_XIVE_PROVISIONING:
->  			if (!xive_native_provision_pages())
-> @@ -687,7 +687,7 @@ int xive_native_enable_vp(u32 vp_id, bool single_escalation)
->  		rc = opal_xive_set_vp_info(vp_id, flags, 0);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	return rc ? -EIO : 0;
->  }
-> @@ -701,7 +701,7 @@ int xive_native_disable_vp(u32 vp_id)
->  		rc = opal_xive_set_vp_info(vp_id, 0, 0);
->  		if (rc != OPAL_BUSY)
->  			break;
-> -		msleep(1);
-> +		usleep_range(1000, 1100);
->  	}
->  	return rc ? -EIO : 0;
->  }
+Thanks,
+Xiaolong
+
+
+>
+>> url:    https://github.com/0day-ci/linux/commits/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180704-121402
+>> config: mips-rb532_defconfig (attached as .config)
+>> compiler: mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+>> reproduce:
+>>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>>         chmod +x ~/bin/make.cross
+>>         # save the attached .config to linux build tree
+>>         GCC_VERSION=7.2.0 make.cross ARCH=mips 
+>
+>I did find a old one which is for the old version 5 post.
+>
+>[bhe@linux]$ git remote -v
+>0day-ci	https://github.com/0day-ci/linux.git (fetch)
+>0day-ci	https://github.com/0day-ci/linux.git (push)
+>[bhe@dhcp-128-28 linux]$ git branch -a| grep Baoquan| grep resource
+>  remotes/0day-ci/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180612-113600
+>
+>Could you help have a look at this?
+>
+>Thanks
+>Baoquan
+>
+>> 
+>> All error/warnings (new ones prefixed by >>):
+>> 
+>> >> arch/mips/pci/pci-rc32434.c:57:11: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
+>>      .child = &rc32434_res_pci_mem2
+>>               ^
+>>    arch/mips/pci/pci-rc32434.c:57:11: note: (near initialization for 'rc32434_res_pci_mem1.child.next')
+>> >> arch/mips/pci/pci-rc32434.c:51:47: warning: missing braces around initializer [-Wmissing-braces]
+>>     static struct resource rc32434_res_pci_mem1 = {
+>>                                                   ^
+>>    arch/mips/pci/pci-rc32434.c:60:47: warning: missing braces around initializer [-Wmissing-braces]
+>>     static struct resource rc32434_res_pci_mem2 = {
+>>                                                   ^
+>>    cc1: some warnings being treated as errors
+>> 
+>> vim +57 arch/mips/pci/pci-rc32434.c
+>> 
+>> 73b4390f Ralf Baechle 2008-07-16  50  
+>> 73b4390f Ralf Baechle 2008-07-16 @51  static struct resource rc32434_res_pci_mem1 = {
+>> 73b4390f Ralf Baechle 2008-07-16  52  	.name = "PCI MEM1",
+>> 73b4390f Ralf Baechle 2008-07-16  53  	.start = 0x50000000,
+>> 73b4390f Ralf Baechle 2008-07-16  54  	.end = 0x5FFFFFFF,
+>> 73b4390f Ralf Baechle 2008-07-16  55  	.flags = IORESOURCE_MEM,
+>> 73b4390f Ralf Baechle 2008-07-16  56  	.sibling = NULL,
+>> 73b4390f Ralf Baechle 2008-07-16 @57  	.child = &rc32434_res_pci_mem2
+>> 73b4390f Ralf Baechle 2008-07-16  58  };
+>> 73b4390f Ralf Baechle 2008-07-16  59  
+>> 
+>> :::::: The code at line 57 was first introduced by commit
+>> :::::: 73b4390fb23456964201abda79f1210fe337d01a [MIPS] Routerboard 532: Support for base system
+>> 
+>> :::::: TO: Ralf Baechle <ralf@linux-mips.org>
+>> :::::: CC: Ralf Baechle <ralf@linux-mips.org>
+>> 
+>> ---
+>> 0-DAY kernel test infrastructure                Open Source Technology Center
+>> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>
+>
+>_______________________________________________
+>kbuild-all mailing list
+>kbuild-all@lists.01.org
+>https://lists.01.org/mailman/listinfo/kbuild-all
