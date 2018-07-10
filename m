@@ -1,26 +1,31 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
+ [IPv6:2a00:1450:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Q5C13zqDzDr0X
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 01:06:51 +1000 (AEST)
-Date: Tue, 10 Jul 2018 17:08:24 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Christoph Hellwig <hch@lst.de>, m.szyprowski@samsung.com,
- iommu@lists.linux-foundation.org,
- linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC PATCH 2/2] dma-mapping: Clean up dma_get_required_mask()
- hooks
-Message-ID: <20180710150824.GA12274@lst.de>
-References: <55ac9550c311f056dcfeed9b2c8265375f17b155.1530726467.git.robin.murphy@arm.com>
- <08256121f325ceed7f6b88c1a5d3cf949698787d.1530726467.git.robin.murphy@arm.com>
- <20180710113908.GB32688@lst.de>
- <3b8a23b6-6015-3e8e-07f0-b75920a1e264@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Q6Jv5DJtzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 01:57:03 +1000 (AEST)
+Received: by mail-wr1-x441.google.com with SMTP id p1-v6so15165741wrs.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 08:57:03 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 10 Jul 2018 17:56:57 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ stephen Rothwell <sfr@canb.auug.org.au>, mpe <mpe@ellerman.id.au>,
+ sachinp <sachinp@linux.vnet.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] watchdog/softlockup: Fix SOFTLOCKUP_DETECTOR=n build
+Message-ID: <20180710155657.GA13019@gmail.com>
+References: <1531129883.6480.7.camel@abdul.in.ibm.com>
+ <20180709114716.GN2476@hirez.programming.kicks-ass.net>
+ <1531159814.6480.11.camel@abdul.in.ibm.com>
+ <20180710114210.GI2476@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3b8a23b6-6015-3e8e-07f0-b75920a1e264@arm.com>
+In-Reply-To: <20180710114210.GI2476@hirez.programming.kicks-ass.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2018 at 01:29:20PM +0100, Robin Murphy wrote:
->> What I've done is to:
->>
->>   1) provide the get_required_mask unconditionally in struct dma_map_ops
->>   2) default to what is the current dma_get_required_mask implementation
->>      if nothing else is specified.
->
-> Yeah, there's already 17 pointers in dma_map_ops of which about half are 
-> optional, so these awkward #ifdefs to save one more probably aren't worth 
-> the inconsistency they bring. It feels like this guy mostly goes 
-> hand-in-hand with dma_supported, so ack to giving it the same look and 
-> feel.
 
-This whole area needs a major refactoring - we currentl have three
-different APIs to deal with addressability: dma_get_required_mask,
-dma_capable/dma_set_mask and dma_capable from dma-direct.h, and there
-is plenty of unexplainable mismatches between them.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Sorting this out has been on my TODO list, but I think it can only
-effectively be done once the direct mapping implementations are
-reasonably consolidated.
+> On Mon, Jul 09, 2018 at 11:40:14PM +0530, Abdul Haleem wrote:
+> 
+> > Thanks Peter for the patch, build and boot is fine.
+> > 
+> > Reported-and-tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> 
+> Excellent, Ingo can you stick this in?
 
->> What I still had on my todo list but not done yet:
->>
->>   3) go through all instances and check if the current default
->>      makes sense, at it based on direct addressability.  For most
->>      iommu instances it seems like we should just return a 64-bit mask.
->
-> That's reasonable, although in many cases we should know the effective 
-> IOMMU input address size which would be even neater.
+Sure, done!
 
-Sure.  Maybe I just need to steps 1 and 2 and let maintainers fill
-in.
+Thanks,
 
->>   4) figure out how to take the dma offsets into account for it
->
-> AFAICS it might boil down to simply:
->
-> 	mask = roundup_pow_of_two(phys_to_dma(dev, PFN_PHYS(max_pfn))) - 1;
-
-That looks way to sensible.  Which reminds me that I need to research
-the history behind the low_totalram/high_totalram magic in
-dma_get_required_mask.
+	Ingo
