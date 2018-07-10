@@ -1,18 +1,42 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhe@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Plx40DJhzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 12:08:40 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: corbet@lwn.net
-Cc: keescook@chromium.org, tglx@linutronix.de, konrad.wilk@oracle.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH] Documentation: Add powerpc options for
- spec_store_bypass_disable
-Date: Tue, 10 Jul 2018 12:08:36 +1000
-Message-Id: <20180710020836.23571-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41PnKB5BNGzDr2J
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 13:11:10 +1000 (AEST)
+Date: Tue, 10 Jul 2018 11:10:55 +0800
+From: Baoquan He <bhe@redhat.com>
+To: Ye Xiaolong <xiaolong.ye@intel.com>
+Cc: kbuild test robot <lkp@intel.com>, nicolas.pitre@linaro.org,
+ brijesh.singh@amd.com, thomas.lendacky@amd.com, airlied@linux.ie,
+ linux-pci@vger.kernel.org, richard.weiyang@gmail.com,
+ keith.busch@intel.com, jcmvbkbc@gmail.com,
+ baiyaowei@cmss.chinamobile.com, frowand.list@gmail.com,
+ tglx@linutronix.de, lorenzo.pieralisi@arm.com,
+ sthemmin@microsoft.com, linux-nvdimm@lists.01.org,
+ patrik.r.jakobsson@gmail.com, andy.shevchenko@gmail.com,
+ linux-input@vger.kernel.org, gustavo@padovan.org, bp@suse.de,
+ dyoung@redhat.com, vgoyal@redhat.com, ebiederm@xmission.com,
+ devicetree@vger.kernel.org, haiyangz@microsoft.com,
+ maarten.lankhorst@linux.intel.com, josh@joshtriplett.org,
+ jglisse@redhat.com, robh+dt@kernel.org, seanpaul@chromium.org,
+ bhelgaas@google.com, dan.j.williams@intel.com, yinghai@kernel.org,
+ jonathan.derrick@intel.com, chris@zankel.net, monstr@monstr.eu,
+ linux-parisc@vger.kernel.org, gregkh@linuxfoundation.org,
+ dmitry.torokhov@gmail.com, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, kbuild-all@01.org,
+ devel@linuxdriverproject.org, akpm@linux-foundation.org,
+ fengguang.wu@intel.com, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Subject: Re: [kbuild-all] [PATCH v6 2/4] resource: Use list_head to link
+ sibling resource
+Message-ID: <20180710031055.GC1969@MiWiFi-R3L-srv>
+References: <20180704041038.8190-3-bhe@redhat.com>
+ <201807042347.hfDcKxmG%fengguang.wu@intel.com>
+ <20180708025946.GI3047@MiWiFi-R3L-srv>
+ <20180710005927.GG10005@yexl-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180710005927.GG10005@yexl-desktop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,55 +46,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Document the support for spec_store_bypass_disable that was added for
-powerpc in commit a048a07d7f45 ("powerpc/64s: Add support for a store
-forwarding barrier at kernel entry/exit").
+On 07/10/18 at 08:59am, Ye Xiaolong wrote:
+> Hi,
+> 
+> On 07/08, Baoquan He wrote:
+> >Hi,
+> >
+> >On 07/05/18 at 01:00am, kbuild test robot wrote:
+> >> Hi Baoquan,
+> >> 
+> >> I love your patch! Yet something to improve:
+> >> 
+> >> [auto build test ERROR on linus/master]
+> >> [also build test ERROR on v4.18-rc3 next-20180704]
+> >> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> >
+> >Thanks for telling. 
+> >
+> >I cloned 0day-ci/linut to my local pc.
+> >https://github.com/0day-ci/linux.git
+> >
+> >However, I didn't find below branch. And tried to open it in web
+> >broswer, also failed.
+> >
+> 
+> Sorry for the inconvenience, 0day bot didn't push the branch to github successfully,
+> Just push it manually, you can have a try again.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- Documentation/admin-guide/kernel-parameters.txt | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+Thanks, Xiaolong, I have applied them on top of linux-next/master, and
+copy the config file attached, and run the command to reproduce as
+suggested. Now I have fixed all those issues reported, will repost.
 
-I tried documenting the differences between the PPC options and X86 ones in one
-section, but it got quite messy, so I went with this instead. Happy to take
-advice on how better to structure it if anyone has opinions.
-
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index efc7aa7a0670..f320c7168b04 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -4060,6 +4060,8 @@
- 			This parameter controls whether the Speculative Store
- 			Bypass optimization is used.
- 
-+			On x86 the options are:
-+
- 			on      - Unconditionally disable Speculative Store Bypass
- 			off     - Unconditionally enable Speculative Store Bypass
- 			auto    - Kernel detects whether the CPU model contains an
-@@ -4075,12 +4077,20 @@
- 			seccomp - Same as "prctl" above, but all seccomp threads
- 				  will disable SSB unless they explicitly opt out.
- 
--			Not specifying this option is equivalent to
--			spec_store_bypass_disable=auto.
--
- 			Default mitigations:
- 			X86:	If CONFIG_SECCOMP=y "seccomp", otherwise "prctl"
- 
-+			On powerpc the options are:
-+
-+			on,auto - On Power8 and Power9 insert a store-forwarding
-+				  barrier on kernel entry and exit. On Power7
-+				  perform a software flush on kernel entry and
-+				  exit.
-+			off	- No action.
-+
-+			Not specifying this option is equivalent to
-+			spec_store_bypass_disable=auto.
-+
- 	spia_io_base=	[HW,MTD]
- 	spia_fio_base=
- 	spia_pedr=
--- 
-2.14.1
+> 
+> >
+> >> url:    https://github.com/0day-ci/linux/commits/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180704-121402
+> >> config: mips-rb532_defconfig (attached as .config)
+> >> compiler: mipsel-linux-gnu-gcc (Debian 7.2.0-11) 7.2.0
+> >> reproduce:
+> >>         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+> >>         chmod +x ~/bin/make.cross
+> >>         # save the attached .config to linux build tree
+> >>         GCC_VERSION=7.2.0 make.cross ARCH=mips 
+> >
+> >I did find a old one which is for the old version 5 post.
+> >
+> >[bhe@linux]$ git remote -v
+> >0day-ci	https://github.com/0day-ci/linux.git (fetch)
+> >0day-ci	https://github.com/0day-ci/linux.git (push)
+> >[bhe@dhcp-128-28 linux]$ git branch -a| grep Baoquan| grep resource
+> >  remotes/0day-ci/Baoquan-He/resource-Use-list_head-to-link-sibling-resource/20180612-113600
+> >
+> >Could you help have a look at this?
+> >
+> >Thanks
+> >Baoquan
+> >
+> >> 
+> >> All error/warnings (new ones prefixed by >>):
+> >> 
+> >> >> arch/mips/pci/pci-rc32434.c:57:11: error: initialization from incompatible pointer type [-Werror=incompatible-pointer-types]
+> >>      .child = &rc32434_res_pci_mem2
+> >>               ^
+> >>    arch/mips/pci/pci-rc32434.c:57:11: note: (near initialization for 'rc32434_res_pci_mem1.child.next')
+> >> >> arch/mips/pci/pci-rc32434.c:51:47: warning: missing braces around initializer [-Wmissing-braces]
+> >>     static struct resource rc32434_res_pci_mem1 = {
+> >>                                                   ^
+> >>    arch/mips/pci/pci-rc32434.c:60:47: warning: missing braces around initializer [-Wmissing-braces]
+> >>     static struct resource rc32434_res_pci_mem2 = {
+> >>                                                   ^
+> >>    cc1: some warnings being treated as errors
+> >> 
+> >> vim +57 arch/mips/pci/pci-rc32434.c
+> >> 
+> >> 73b4390f Ralf Baechle 2008-07-16  50  
+> >> 73b4390f Ralf Baechle 2008-07-16 @51  static struct resource rc32434_res_pci_mem1 = {
+> >> 73b4390f Ralf Baechle 2008-07-16  52  	.name = "PCI MEM1",
+> >> 73b4390f Ralf Baechle 2008-07-16  53  	.start = 0x50000000,
+> >> 73b4390f Ralf Baechle 2008-07-16  54  	.end = 0x5FFFFFFF,
+> >> 73b4390f Ralf Baechle 2008-07-16  55  	.flags = IORESOURCE_MEM,
+> >> 73b4390f Ralf Baechle 2008-07-16  56  	.sibling = NULL,
+> >> 73b4390f Ralf Baechle 2008-07-16 @57  	.child = &rc32434_res_pci_mem2
+> >> 73b4390f Ralf Baechle 2008-07-16  58  };
+> >> 73b4390f Ralf Baechle 2008-07-16  59  
+> >> 
+> >> :::::: The code at line 57 was first introduced by commit
+> >> :::::: 73b4390fb23456964201abda79f1210fe337d01a [MIPS] Routerboard 532: Support for base system
+> >> 
+> >> :::::: TO: Ralf Baechle <ralf@linux-mips.org>
+> >> :::::: CC: Ralf Baechle <ralf@linux-mips.org>
+> >> 
+> >> ---
+> >> 0-DAY kernel test infrastructure                Open Source Technology Center
+> >> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+> >
+> >
+> >_______________________________________________
+> >kbuild-all mailing list
+> >kbuild-all@lists.01.org
+> >https://lists.01.org/mailman/listinfo/kbuild-all
