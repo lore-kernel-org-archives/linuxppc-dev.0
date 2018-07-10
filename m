@@ -1,31 +1,32 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
- [IPv6:2a00:1450:4864:20::441])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=q2vl=j2=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Q6Jv5DJtzDr0d
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 01:57:03 +1000 (AEST)
-Received: by mail-wr1-x441.google.com with SMTP id p1-v6so15165741wrs.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 08:57:03 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 10 Jul 2018 17:56:57 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-next <linux-next@vger.kernel.org>,
- stephen Rothwell <sfr@canb.auug.org.au>, mpe <mpe@ellerman.id.au>,
- sachinp <sachinp@linux.vnet.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] watchdog/softlockup: Fix SOFTLOCKUP_DETECTOR=n build
-Message-ID: <20180710155657.GA13019@gmail.com>
-References: <1531129883.6480.7.camel@abdul.in.ibm.com>
- <20180709114716.GN2476@hirez.programming.kicks-ass.net>
- <1531159814.6480.11.camel@abdul.in.ibm.com>
- <20180710114210.GI2476@hirez.programming.kicks-ass.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Q7YZ4ZJyzDr0d
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 02:53:06 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41Q7YZ36Zcz8tQL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 02:53:06 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41Q7YY2pgBz9s19
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2018 02:53:04 +1000 (AEST)
+Date: Tue, 10 Jul 2018 18:53:00 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: "Mahesh J Salgaonkar" <mahesh@linux.vnet.ibm.com>
+Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>, "Michael Ellerman"
+ <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Laurent Dufour"
+ <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 5/8] powerpc/pseries: flush SLB contents on SLB MCE
+ errors.
+Message-ID: <20180710185300.697fc061@kitsune.suse.cz>
+In-Reply-To: <153072708065.29016.482194584457257883.stgit@jupiter.in.ibm.com>
+References: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
+ <153072708065.29016.482194584457257883.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180710114210.GI2476@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,19 +36,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+On Wed, 04 Jul 2018 23:28:21 +0530
+"Mahesh J Salgaonkar" <mahesh@linux.vnet.ibm.com> wrote:
 
-> On Mon, Jul 09, 2018 at 11:40:14PM +0530, Abdul Haleem wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> > Thanks Peter for the patch, build and boot is fine.
-> > 
-> > Reported-and-tested-by: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+> On pseries, as of today system crashes if we get a machine check
+> exceptions due to SLB errors. These are soft errors and can be fixed
+> by flushing the SLBs so the kernel can continue to function instead of
+> system crash. We do this in real mode before turning on MMU. Otherwise
+> we would run into nested machine checks. This patch now fetches the
+> rtas error log in real mode and flushes the SLBs on SLB errors.
 > 
-> Excellent, Ingo can you stick this in?
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1 
+>  arch/powerpc/include/asm/machdep.h            |    1 
+>  arch/powerpc/kernel/exceptions-64s.S          |   42
+> +++++++++++++++++++++ arch/powerpc/kernel/mce.c
+> |   16 +++++++- arch/powerpc/mm/slb.c                         |    6
+> +++ arch/powerpc/platforms/pseries/pseries.h      |    1 
+>  arch/powerpc/platforms/pseries/ras.c          |   51
+> +++++++++++++++++++++++++
+> arch/powerpc/platforms/pseries/setup.c        |    1 8 files changed,
+> 116 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h index
+> 50ed64fba4ae..cc00a7088cf3 100644 ---
+> a/arch/powerpc/include/asm/book3s/64/mmu-hash.h +++
+> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h @@ -487,6 +487,7 @@
+> extern void hpte_init_native(void); 
+>  extern void slb_initialize(void);
+>  extern void slb_flush_and_rebolt(void);
+> +extern void slb_flush_and_rebolt_realmode(void);
+>  
+>  extern void slb_vmalloc_update(void);
+>  extern void slb_set_size(u16 size);
+> diff --git a/arch/powerpc/include/asm/machdep.h
+> b/arch/powerpc/include/asm/machdep.h index ffe7c71e1132..fe447e0d4140
+> 100644 --- a/arch/powerpc/include/asm/machdep.h
+> +++ b/arch/powerpc/include/asm/machdep.h
+> @@ -108,6 +108,7 @@ struct machdep_calls {
+>  
+>  	/* Early exception handlers called in realmode */
+>  	int		(*hmi_exception_early)(struct pt_regs
+> *regs);
+> +	int		(*machine_check_early)(struct pt_regs
+> *regs); 
+>  	/* Called during machine check exception to retrive fixup
+> address. */ bool		(*mce_check_early_recovery)(struct
+> pt_regs *regs); diff --git a/arch/powerpc/kernel/exceptions-64s.S
+> b/arch/powerpc/kernel/exceptions-64s.S index
+> f283958129f2..0038596b7906 100644 ---
+> a/arch/powerpc/kernel/exceptions-64s.S +++
+> b/arch/powerpc/kernel/exceptions-64s.S @@ -332,6 +332,9 @@
+> TRAMP_REAL_BEGIN(machine_check_pSeries) machine_check_fwnmi:
+>  	SET_SCRATCH0(r13)		/* save r13 */
+>  	EXCEPTION_PROLOG_0(PACA_EXMC)
+> +BEGIN_FTR_SECTION
+> +	b	machine_check_pSeries_early
+> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+>  machine_check_pSeries_0:
+>  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
+>  	/*
+> @@ -343,6 +346,45 @@ machine_check_pSeries_0:
+>  
+>  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
+>  
+> +TRAMP_REAL_BEGIN(machine_check_pSeries_early)
+> +BEGIN_FTR_SECTION
+> +	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+> +	mr	r10,r1			/* Save r1 */
+> +	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency
+> stack */
+> +	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack
+> frame		*/
+> +	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
+> +	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
+> +	EXCEPTION_PROLOG_COMMON_1()
+> +	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
+> +	EXCEPTION_PROLOG_COMMON_3(0x200)
+> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+> +	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI
+> */ +
+> +	/* Move original SRR0 and SRR1 into the respective regs */
+> +	ld	r9,_MSR(r1)
+> +	mtspr	SPRN_SRR1,r9
+> +	ld	r3,_NIP(r1)
+> +	mtspr	SPRN_SRR0,r3
+> +	ld	r9,_CTR(r1)
+> +	mtctr	r9
+> +	ld	r9,_XER(r1)
+> +	mtxer	r9
+> +	ld	r9,_LINK(r1)
+> +	mtlr	r9
+> +	REST_GPR(0, r1)
+> +	REST_8GPRS(2, r1)
+> +	REST_GPR(10, r1)
+> +	ld	r11,_CCR(r1)
+> +	mtcr	r11
+> +	REST_GPR(11, r1)
+> +	REST_2GPRS(12, r1)
+> +	/* restore original r1. */
+> +	ld	r1,GPR1(r1)
+> +	SET_SCRATCH0(r13)		/* save r13 */
+> +	EXCEPTION_PROLOG_0(PACA_EXMC)
+> +	b	machine_check_pSeries_0
+> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+> +
+>  EXC_COMMON_BEGIN(machine_check_common)
+>  	/*
+>  	 * Machine check is different because we use a different
+> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> index efdd16a79075..221271c96a57 100644
+> --- a/arch/powerpc/kernel/mce.c
+> +++ b/arch/powerpc/kernel/mce.c
+> @@ -488,9 +488,21 @@ long machine_check_early(struct pt_regs *regs)
+>  {
+>  	long handled = 0;
+>  
+> -	__this_cpu_inc(irq_stat.mce_exceptions);
+> +	/*
+> +	 * For pSeries we count mce when we go into virtual mode
+> machine
+> +	 * check handler. Hence skip it. Also, We can't access per
+> cpu
+> +	 * variables in real mode for LPAR.
+> +	 */
+> +	if (early_cpu_has_feature(CPU_FTR_HVMODE))
+> +		__this_cpu_inc(irq_stat.mce_exceptions);
 
-Sure, done!
+Maybe we could simplify the condition
 
-Thanks,
+if (!IS_ENABLED(CONFIG_PPC_BOOK3S_64) || !cpu_has_feature(CPU_FTR_HVMODE))
 
-	Ingo
+in machine_check instead?
+
+Thanks
+
+Michal
