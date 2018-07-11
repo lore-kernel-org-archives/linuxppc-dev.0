@@ -1,16 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41QVZl0pbfzF35L
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41QVZl52DSzF35N
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 17:10:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
 Cc: mikey@neuling.org,
 	chris@distroguy.com
-Subject: [PATCH 2/3] selftests/powerpc: Remove Power9 paste tests
-Date: Wed, 11 Jul 2018 17:10:16 +1000
-Message-Id: <20180711071017.5128-2-mpe@ellerman.id.au>
+Subject: [PATCH 3/3] selftests/powerpc: Consolidate copy/paste test logic
+Date: Wed, 11 Jul 2018 17:10:17 +1000
+Message-Id: <20180711071017.5128-3-mpe@ellerman.id.au>
 In-Reply-To: <20180711071017.5128-1-mpe@ellerman.id.au>
 References: <20180711071017.5128-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,48 +22,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paste on POWER9 only works to accelerators and not on real memory. So
-these tests just generate a SIGILL.
-
-So just delete them.
+This logic was shared between multiple tests, but now that we have
+removed all but one of them we can just move it into that test.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- .../testing/selftests/powerpc/alignment/.gitignore |  2 -
- tools/testing/selftests/powerpc/alignment/Makefile |  3 +-
- .../powerpc/alignment/paste_last_unaligned.c       | 43 ----------------------
- .../selftests/powerpc/alignment/paste_unaligned.c  | 43 ----------------------
- 4 files changed, 1 insertion(+), 90 deletions(-)
- delete mode 100644 tools/testing/selftests/powerpc/alignment/paste_last_unaligned.c
- delete mode 100644 tools/testing/selftests/powerpc/alignment/paste_unaligned.c
+ .../testing/selftests/powerpc/alignment/.gitignore |  1 -
+ tools/testing/selftests/powerpc/alignment/Makefile |  2 +-
+ .../powerpc/alignment/copy_first_unaligned.c       | 33 +++++++++++++-
+ .../alignment/copy_paste_unaligned_common.c        | 53 ----------------------
+ .../alignment/copy_paste_unaligned_common.h        | 26 -----------
+ 5 files changed, 33 insertions(+), 82 deletions(-)
+ delete mode 100644 tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.c
+ delete mode 100644 tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.h
 
 diff --git a/tools/testing/selftests/powerpc/alignment/.gitignore b/tools/testing/selftests/powerpc/alignment/.gitignore
-index 78ac678b175b..9c9b2e9b11c4 100644
+index 9c9b2e9b11c4..6d4fd014511c 100644
 --- a/tools/testing/selftests/powerpc/alignment/.gitignore
 +++ b/tools/testing/selftests/powerpc/alignment/.gitignore
-@@ -1,5 +1,3 @@
+@@ -1,3 +1,2 @@
  copy_first_unaligned
--paste_unaligned
--paste_last_unaligned
- copy_paste_unaligned_common
+-copy_paste_unaligned_common
  alignment_handler
 diff --git a/tools/testing/selftests/powerpc/alignment/Makefile b/tools/testing/selftests/powerpc/alignment/Makefile
-index 2d09d0e28b35..58d0e0ed8ff5 100644
+index 58d0e0ed8ff5..93baacab7693 100644
 --- a/tools/testing/selftests/powerpc/alignment/Makefile
 +++ b/tools/testing/selftests/powerpc/alignment/Makefile
-@@ -1,5 +1,4 @@
--TEST_GEN_PROGS := copy_first_unaligned paste_unaligned \
--	paste_last_unaligned alignment_handler
-+TEST_GEN_PROGS := copy_first_unaligned alignment_handler
+@@ -2,4 +2,4 @@ TEST_GEN_PROGS := copy_first_unaligned alignment_handler
  
  include ../../lib.mk
  
-diff --git a/tools/testing/selftests/powerpc/alignment/paste_last_unaligned.c b/tools/testing/selftests/powerpc/alignment/paste_last_unaligned.c
+-$(TEST_GEN_PROGS): ../harness.c ../utils.c copy_paste_unaligned_common.c
++$(TEST_GEN_PROGS): ../harness.c ../utils.c
+diff --git a/tools/testing/selftests/powerpc/alignment/copy_first_unaligned.c b/tools/testing/selftests/powerpc/alignment/copy_first_unaligned.c
+index 47b73b3a08bd..5a9589987702 100644
+--- a/tools/testing/selftests/powerpc/alignment/copy_first_unaligned.c
++++ b/tools/testing/selftests/powerpc/alignment/copy_first_unaligned.c
+@@ -11,15 +11,46 @@
+  *
+  */
+ 
++#include <signal.h>
+ #include <string.h>
+ #include <unistd.h>
+ #include "utils.h"
+ #include "instructions.h"
+-#include "copy_paste_unaligned_common.h"
+ 
+ unsigned int expected_instruction = PPC_INST_COPY_FIRST;
+ unsigned int instruction_mask = 0xfc2007fe;
+ 
++void signal_action_handler(int signal_num, siginfo_t *info, void *ptr)
++{
++	ucontext_t *ctx = ptr;
++#ifdef __powerpc64__
++	unsigned int *pc = (unsigned int *)ctx->uc_mcontext.gp_regs[PT_NIP];
++#else
++	unsigned int *pc = (unsigned int *)ctx->uc_mcontext.uc_regs->gregs[PT_NIP];
++#endif
++
++	/*
++	 * Check that the signal was on the correct instruction, using a
++	 * mask because the compiler assigns the register at RB.
++	 */
++	if ((*pc & instruction_mask) == expected_instruction)
++		_exit(0); /* We hit the right instruction */
++
++	_exit(1);
++}
++
++void setup_signal_handler(void)
++{
++	struct sigaction signal_action;
++
++	memset(&signal_action, 0, sizeof(signal_action));
++	signal_action.sa_sigaction = signal_action_handler;
++	signal_action.sa_flags = SA_SIGINFO;
++	sigaction(SIGBUS, &signal_action, NULL);
++}
++
++char cacheline_buf[128] __cacheline_aligned;
++
+ int test_copy_first_unaligned(void)
+ {
+ 	/* Only run this test on a P9 or later */
+diff --git a/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.c b/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.c
 deleted file mode 100644
-index 6e0ad045fcc3..000000000000
---- a/tools/testing/selftests/powerpc/alignment/paste_last_unaligned.c
+index d35fa5f5d2d3..000000000000
+--- a/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.c
 +++ /dev/null
-@@ -1,43 +0,0 @@
+@@ -1,53 +0,0 @@
 -/*
 - * Copyright 2016, Chris Smart, IBM Corporation.
 - *
@@ -72,47 +120,57 @@ index 6e0ad045fcc3..000000000000
 - * as published by the Free Software Foundation; either version
 - * 2 of the License, or (at your option) any later version.
 - *
-- * Calls to paste_last which are not 128-byte aligned should be
-- * caught and sent a SIGBUS.
+- * Common code for copy, copy_first, paste and paste_last unaligned
+- * tests.
 - *
 - */
 -
+-#include <signal.h>
 -#include <string.h>
 -#include <unistd.h>
 -#include "utils.h"
 -#include "instructions.h"
 -#include "copy_paste_unaligned_common.h"
 -
--unsigned int expected_instruction = PPC_INST_PASTE_LAST;
--unsigned int instruction_mask = 0xfc2007ff;
+-unsigned int expected_instruction;
+-unsigned int instruction_mask;
 -
--int test_paste_last_unaligned(void)
+-char cacheline_buf[128] __cacheline_aligned;
+-
+-void signal_action_handler(int signal_num, siginfo_t *info, void *ptr)
 -{
--	/* Only run this test on a P9 or later */
--	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
+-	ucontext_t *ctx = ptr;
+-#if defined(__powerpc64__)
+-	unsigned int *pc = (unsigned int *)ctx->uc_mcontext.gp_regs[PT_NIP];
+-#else
+-	unsigned int *pc = (unsigned int *)ctx->uc_mcontext.uc_regs->gregs[PT_NIP];
+-#endif
 -
--	/* Register our signal handler with SIGBUS */
--	setup_signal_handler();
+-	/*
+-	 * Check that the signal was on the correct instruction, using a
+-	 * mask because the compiler assigns the register at RB.
+-	 */
+-	if ((*pc & instruction_mask) == expected_instruction)
+-		_exit(0); /* We hit the right instruction */
 -
--	copy(cacheline_buf);
--
--	/* +1 makes buf unaligned */
--	paste_last(cacheline_buf+1);
--
--	/* We should not get here */
--	return 1;
+-	_exit(1);
 -}
 -
--int main(int argc, char *argv[])
+-void setup_signal_handler(void)
 -{
--	return test_harness(test_paste_last_unaligned, "test_paste_last_unaligned");
+-	struct sigaction signal_action;
+-
+-	memset(&signal_action, 0, sizeof(signal_action));
+-	signal_action.sa_sigaction = signal_action_handler;
+-	signal_action.sa_flags = SA_SIGINFO;
+-	sigaction(SIGBUS, &signal_action, NULL);
 -}
-diff --git a/tools/testing/selftests/powerpc/alignment/paste_unaligned.c b/tools/testing/selftests/powerpc/alignment/paste_unaligned.c
+diff --git a/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.h b/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.h
 deleted file mode 100644
-index 6f982b45e4bd..000000000000
---- a/tools/testing/selftests/powerpc/alignment/paste_unaligned.c
+index 053899fe506e..000000000000
+--- a/tools/testing/selftests/powerpc/alignment/copy_paste_unaligned_common.h
 +++ /dev/null
-@@ -1,43 +0,0 @@
+@@ -1,26 +0,0 @@
 -/*
 - * Copyright 2016, Chris Smart, IBM Corporation.
 - *
@@ -121,40 +179,23 @@ index 6f982b45e4bd..000000000000
 - * as published by the Free Software Foundation; either version
 - * 2 of the License, or (at your option) any later version.
 - *
-- * Calls to paste which are not 128-byte aligned should be caught
-- * and sent a SIGBUS.
+- * Declarations for common code for copy, copy_first, paste and
+- * paste_last unaligned tests.
 - *
 - */
 -
--#include <string.h>
--#include <unistd.h>
--#include "utils.h"
--#include "instructions.h"
--#include "copy_paste_unaligned_common.h"
+-#ifndef _SELFTESTS_POWERPC_COPY_PASTE_H
+-#define _SELFTESTS_POWERPC_COPY_PASTE_H
 -
--unsigned int expected_instruction = PPC_INST_PASTE;
--unsigned int instruction_mask = 0xfc0007fe;
+-#include <signal.h>
 -
--int test_paste_unaligned(void)
--{
--	/* Only run this test on a P9 or later */
--	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
+-int main(int argc, char *argv[]);
+-void signal_action_handler(int signal_num, siginfo_t *info, void *ptr);
+-void setup_signal_handler(void);
+-extern char cacheline_buf[128] __cacheline_aligned;
+-extern unsigned int expected_instruction;
+-extern unsigned int instruction_mask;
 -
--	/* Register our signal handler with SIGBUS */
--	setup_signal_handler();
--
--	copy(cacheline_buf);
--
--	/* +1 makes buf unaligned */
--	paste(cacheline_buf+1);
--
--	/* We should not get here */
--	return 1;
--}
--
--int main(int argc, char *argv[])
--{
--	return test_harness(test_paste_unaligned, "test_paste_unaligned");
--}
+-#endif /* _SELFTESTS_POWERPC_COPY_PASTE_H */
 -- 
 2.14.1
