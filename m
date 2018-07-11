@@ -1,19 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 41QbjF3007zF35t
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 21:01:21 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Alex Williamson <alex.williamson@redhat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Paul Mackerras <paulus@ozlabs.org>, Balbir Singh <bsingharora@gmail.com>
-Subject: [PATCH kernel v6 0/2] KVM: PPC: Check if IOMMU page is contained in
- the pinned physical page
-Date: Wed, 11 Jul 2018 21:00:42 +1000
-Message-Id: <20180711110044.15939-1-aik@ozlabs.ru>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Qf6d3Tx0zF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 22:50:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: akpm@linux-foundation.org, broonie@kernel.org, mhocko@suse.cz,
+ sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhe@redhat.com, pasha.tatashin@oracle.com,
+ "Aneesh Kumar K.V"  <aneesh.kumar@linux.ibm.com>,
+ Anshuman Khandual  <khandual@linux.vnet.ibm.com>
+Subject: Boot failures with "mm/sparse: Remove
+ CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER" on powerpc (was Re: mmotm
+ 2018-07-10-16-50 uploaded)
+In-Reply-To: <20180710235044.vjlRV%akpm@linux-foundation.org>
+References: <20180710235044.vjlRV%akpm@linux-foundation.org>
+Date: Wed, 11 Jul 2018 22:49:58 +1000
+Message-ID: <87lgai9bt5.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +30,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is to improve page boundaries checking and should probably
-be cc:stable. I came accross this while debugging nvlink2 passthrough
-but the lack of checking might be exploited by the existing userspace.
+akpm@linux-foundation.org writes:
+> The mm-of-the-moment snapshot 2018-07-10-16-50 has been uploaded to
+>
+>    http://www.ozlabs.org/~akpm/mmotm/
+...
 
-The get_user_pages() comment says it should be "phased out" but the only
-alternative seems to be get_user_pages_longterm(), should that be used
-instead (this is longterm reference elevation, however it is not DAX,
-whatever this implies)? get_user_pages_remote() seems unnecessarily
-complicated because of @locked.
+> * mm-sparse-add-a-static-variable-nr_present_sections.patch
+> * mm-sparsemem-defer-the-ms-section_mem_map-clearing.patch
+> * mm-sparsemem-defer-the-ms-section_mem_map-clearing-fix.patch
+> * mm-sparse-add-a-new-parameter-data_unit_size-for-alloc_usemap_and_memmap.patch
+> * mm-sparse-optimize-memmap-allocation-during-sparse_init.patch
+> * mm-sparse-optimize-memmap-allocation-during-sparse_init-checkpatch-fixes.patch
+
+> * mm-sparse-remove-config_sparsemem_alloc_mem_map_together.patch
+
+This seems to be breaking my powerpc pseries qemu boots.
+
+The boot log with some extra debug shows eg:
+
+  $ make pseries_le_defconfig
+  $ qemu-system-ppc64 -nographic -vga none -M pseries -m 2G -kernel vmlinux 
+  ...
+  vmemmap_populate f000000000000000..f000000000004000, node 0
+        * f000000000000000..f000000001000000 allocated at c00000007e000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7e000000
+  vmemmap_populate f000000000000000..f000000000008000, node 0
+        * f000000000000000..f000000001000000 allocated at c00000007d000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7d000000
+  vmemmap_populate f000000000000000..f00000000000c000, node 0
+        * f000000000000000..f000000001000000 allocated at c00000007c000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7c000000
+  vmemmap_populate f000000000000000..f000000000010000, node 0
+        * f000000000000000..f000000001000000 allocated at c00000007b000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7b000000
+  vmemmap_populate f000000000000000..f000000000014000, node 0
+        * f000000000000000..f000000001000000 allocated at c00000007a000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7a000000
+  vmemmap_populate f000000000000000..f000000000018000, node 0
+        * f000000000000000..f000000001000000 allocated at c000000079000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x79000000
+  vmemmap_populate f000000000000000..f00000000001c000, node 0
+        * f000000000000000..f000000001000000 allocated at c000000078000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x78000000
+  vmemmap_populate f000000000000000..f000000000020000, node 0
+        * f000000000000000..f000000001000000 allocated at c000000077000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x77000000
+  vmemmap_populate f000000000000000..f000000000024000, node 0
+        * f000000000000000..f000000001000000 allocated at c000000076000000
+  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x76000000
+  hash__vmemmap_create_mapping: failed -1
+
+  <repeated many times>
+
+Then there's lots of other warnings about bad page states and eventually
+a NULL deref and we panic().
 
 
-Changes:
-v6:
-* 2/2: read pageshift from pte
+The problem seems to be that we're calling down into
+hash__vmemmap_create_mapping() for every call to vmemmap_populate(),
+whereas previously we would only call hash__vmemmap_create_mapping()
+once because our vmemmap_populated() would return true.
 
-v5:
-* 2/2: changed compound pages handling
+There's actually a comment in sparse_init() that says:
 
-v4:
-* 2/2: implemented less strict but still safe max pageshift as David suggested
+	 * powerpc need to call sparse_init_one_section right after each
+	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
 
-v3:
-* enforced huge pages not to cross preregistered chunk boundaries
+So changing that behaviour does seem to be the problem.
 
-v2:
-* 2/2: explicitly check for compound pages before calling compound_order()
+I assume that comment is talking about the fact that we use pfn_valid()
+in vmemmap_populated().
 
+I'm not clear on how to fix it though.
 
+Any ideas?
 
-
-This is based on sha1
-1e4b044 Linus Torvalds "Linux 4.18-rc4".
-
-Please comment. Thanks.
-
-
-
-Alexey Kardashevskiy (2):
-  vfio/spapr: Use IOMMU pageshift rather than pagesize
-  KVM: PPC: Check if IOMMU page is contained in the pinned physical page
-
- arch/powerpc/include/asm/mmu_context.h |  4 ++--
- arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
- arch/powerpc/mm/mmu_context_iommu.c    | 39 ++++++++++++++++++++++++++++++++--
- drivers/vfio/vfio_iommu_spapr_tce.c    | 10 ++++-----
- 5 files changed, 49 insertions(+), 12 deletions(-)
-
--- 
-2.11.0
+cheers
