@@ -1,25 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Qgmy50mhzF35x
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 00:04:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41QgzC03jMzF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 00:13:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH NEXT 1/4] powerpc/pasemi: Add PCI initialisation for Nemo
- board.
-In-Reply-To: <196ECBF7-5001-4B0B-9FE3-F079CE0996EE@xenosoft.de>
-References: <4b3d1ee02c7.3de0aa2c@auth.smtp.1and1.co.uk>
- <87k1skanxy.fsf@concordia.ellerman.id.au>
- <F7494DDC-BDA9-460A-94EB-6FAF58D673FA@xenosoft.de>
- <871scbb3ob.fsf@concordia.ellerman.id.au>
- <196ECBF7-5001-4B0B-9FE3-F079CE0996EE@xenosoft.de>
-Date: Thu, 12 Jul 2018 00:04:49 +1000
-Message-ID: <87bmbdamwu.fsf@concordia.ellerman.id.au>
+To: Daniel Klamt <eleon@ele0n.de>, benh@kernel.crashing.org
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kernel@i4.cs.fau.de,
+ Daniel Klamt <eleon@ele0n.de>, Bjoern Noetel <bjoern@br3ak3r.de>
+Subject: Re: [PATCH] powerpc: Replaced msleep with usleep_range
+In-Reply-To: <1531144679-31675-1-git-send-email-eleon@ele0n.de>
+References: <1531144679-31675-1-git-send-email-eleon@ele0n.de>
+Date: Thu, 12 Jul 2018 00:13:39 +1000
+Message-ID: <878t6hami4.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+Hi Daniel,
 
-> Hello Michael,
+Daniel Klamt <eleon@ele0n.de> writes:
+> Replaced msleep for less than 10ms with usleep_range because will
+> often sleep longer than intended.
+> For original explanation see:
+> Documentation/timers/timers-howto.txt
 >
-> Thanks a lot for your reply. OK, first I would like to add=20
+> Signed-off-by: Daniel Klamt <eleon@ele0n.de>
+> Signed-off-by: Bjoern Noetel <bjoern@br3ak3r.de>
+> ---
+>  arch/powerpc/sysdev/xive/native.c | 24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
 >
-> pr_info("NEMO SB600 IOB base %08llx\n",res.start)
->
-> to the Nemo patch. Is this line correct now?
+> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
+> index 311185b9960a..b164b1cdf4d6 100644
+> --- a/arch/powerpc/sysdev/xive/native.c
+> +++ b/arch/powerpc/sysdev/xive/native.c
+> @@ -109,7 +109,7 @@ int xive_native_configure_irq(u32 hw_irq, u32 target, u8 prio, u32 sw_irq)
+>  		rc = opal_xive_set_irq_config(hw_irq, target, prio, sw_irq);
+>  		if (rc != OPAL_BUSY)
+>  			break;
+> -		msleep(1);
+> +		usleep_range(1000, 1100)
+>  	}
 
-Yes I think so.
+We have actually recently added OPAL_BUSY_DELAY_MS (see opal.h) and
+should convert these to use that. eg:
 
-The type of start is resource_size_t, which can be 32 or 64-bits. But in
-this code it should always be 64-bit.
+		msleep(OPAL_BUSY_DELAY_MS);
 
-> After that I will try to contact Darren because of your other comments.
->
-> If I don=E2=80=99t reach Darren then I will try to fix the issues but I t=
-hink
-> I need your help for fixing them.
 
-Sure.
+That has the effect of documenting that this is a short sleep to wait
+for opal (our firmware), and we aren't concerned about rounding errors
+in msleep().
+
+If you send me a patch doing that I'd be happy to merge it.
 
 cheers
