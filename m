@@ -1,42 +1,26 @@
-Return-Path: <js1304@gmail.com>
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com
- [IPv6:2a00:1450:4864:20::441])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf0-x241.google.com (mail-pf0-x241.google.com
+ [IPv6:2607:f8b0:400e:c00::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41QW7m3BkDzDqx6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 17:35:31 +1000 (AEST)
-Received: by mail-wr1-x441.google.com with SMTP id c13-v6so17011271wrt.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 00:35:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41QXMf4FxzzF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 18:30:54 +1000 (AEST)
+Received: by mail-pf0-x241.google.com with SMTP id e13-v6so4577017pff.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 01:30:54 -0700 (PDT)
+Date: Wed, 11 Jul 2018 18:30:36 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>, huntbag@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH] powerpc/64s: Move ISAv3.0 / POWER9 idle code to
+ powernv C code
+Message-ID: <20180711183036.02c006d3@roar.ozlabs.ibm.com>
+In-Reply-To: <20180710110634.GA29887@in.ibm.com>
+References: <20180708142436.15714-1-npiggin@gmail.com>
+ <20180710110634.GA29887@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180710095056.GE14284@dhcp22.suse.cz>
-References: <CGME20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29@eucas1p2.samsung.com>
- <20180709121956.20200-1-m.szyprowski@samsung.com>
- <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
- <CAAmzW4PPNYhUj_MeZox+ddq8MjXqnJs_AJ3xkayf710udD1pSg@mail.gmail.com>
- <20180710095056.GE14284@dhcp22.suse.cz>
-From: Joonsoo Kim <js1304@gmail.com>
-Date: Wed, 11 Jul 2018 16:35:28 +0900
-Message-ID: <CAAmzW4P1m_T77DfQzDD6ysGaOF46++-0gwRaOajmo6ef=VYp=A@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mm/cma: remove unsupported gfp_mask parameter from
- cma_alloc()
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
- Linux Memory Management List <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, iommu@lists.linux-foundation.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Vlastimil Babka <vbabka@suse.cz>,
- Christoph Hellwig <hch@lst.de>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Joerg Roedel <joro@8bytes.org>,
- Sumit Semwal <sumit.semwal@linaro.org>, Robin Murphy <robin.murphy@arm.com>,
- Laura Abbott <labbott@redhat.com>, linaro-mm-sig@lists.linaro.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,26 +30,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-07-10 18:50 GMT+09:00 Michal Hocko <mhocko@kernel.org>:
-> On Tue 10-07-18 16:19:32, Joonsoo Kim wrote:
->> Hello, Marek.
->>
->> 2018-07-09 21:19 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
->> > cma_alloc() function doesn't really support gfp flags other than
->> > __GFP_NOWARN, so convert gfp_mask parameter to boolean no_warn parameter.
->>
->> Although gfp_mask isn't used in cma_alloc() except no_warn, it can be used
->> in alloc_contig_range(). For example, if passed gfp mask has no __GFP_FS,
->> compaction(isolation) would work differently. Do you have considered
->> such a case?
->
-> Does any of cma_alloc users actually care about GFP_NO{FS,IO}?
+On Tue, 10 Jul 2018 16:36:34 +0530
+Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
 
-I don't know. My guess is that cma_alloc() is used for DMA allocation so
-block device would use it, too. If fs/block subsystem initiates the
-request for the device,
-it would be possible that cma_alloc() is called with such a flag.
-Again, I don't know
-much about those subsystem so I would be wrong.
+> Hello Nicholas,
+> 
+> 
+> On Mon, Jul 09, 2018 at 12:24:36AM +1000, Nicholas Piggin wrote:
+> > Reimplement POWER9 idle code in C, in the powernv platform code.
+> > Assembly stubs are used to save and restore the stack frame and
+> > non-volatile GPRs before going to idle, but these are small and
+> > mostly agnostic to microarchitecture implementation details.
+> >  
+> 
+> Thanks for this patch.  It is indeed hard to maneuver through the
+> current assembly code and change things without introducing new bugs.
 
-Thanks.
+Hey thanks for the very good review. I don't mean to disparage the
+existing asm code too much :) We were doing our best there to get
+something working, now I think it's a good time to step back and see
+what we can improve.
+
+> > POWER7/8 code is not converted (yet), but that's not a moving
+> > target, and it doesn't make you want to claw your eyes out so
+> > much with the POWER9 code untangled from it.
+> > 
+> > The optimisation where EC=ESL=0 idle modes did not have to save
+> > GPRs or mtmsrd L=0 is restored, because it's simple to do.
+> > 
+> > Idle wakeup no longer uses the ->cpu_restore call to reinit SPRs,
+> > but saves and restores them all explicitly.  
+> 
+> Right! The ->cpu_restore call in the current code is rendered
+> ineffective by "restore_additional_sprs" which is called after the
+> cpu_restore. 
+
+Yes, I would actually like to do an initial incremental patch for this,
+and remove it from P7/8 CPU types as well. I think that's quite easy to
+do, and a useful cleanup to remove it entirely.
+
+> > diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> > index e210a83eb196..b668f030d531 100644
+> > --- a/arch/powerpc/include/asm/cpuidle.h
+> > +++ b/arch/powerpc/include/asm/cpuidle.h
+> > @@ -28,6 +28,7 @@
+> >   * yet woken from the winkle state.
+> >   */
+> >  #define PNV_CORE_IDLE_LOCK_BIT			0x10000000
+> > +#define NR_PNV_CORE_IDLE_LOCK_BIT		28  
+> 
+> We can define PNV_CORE_IDLE_LOCK_BIT mask based on
+> NR_PNV_CORE_IDLE_LOCK_BIT ?
+
+Yep good point.
+
+> > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> > index 76a14702cb9c..36b5f0e18c0c 100644
+> > --- a/arch/powerpc/kernel/exceptions-64s.S
+> > +++ b/arch/powerpc/kernel/exceptions-64s.S
+> > @@ -135,8 +135,14 @@ TRAMP_KVM(PACA_EXNMI, 0x100)
+> > 
+> >  #ifdef CONFIG_PPC_P7_NAP
+> >  EXC_COMMON_BEGIN(system_reset_idle_common)
+> > +BEGIN_FTR_SECTION
+> > +	mfspr	r3,SPRN_SRR1
+> > +	bltlr	cr3	/* no state loss, return to idle caller */  
+> 
+> This is a nice optimization. But perhaps needs a carefully checked.
+> We wakeup at SYSTEM_RESET only when we have executed stop via the
+> mayloss() call which creates an additional stack frame. When we return
+> back to the caller, we will go back with that stack frame. Perhaps we
+> need to jump to a isa3_idle_wake_gpr_noloss ?
+
+I wasn't 100% sure of all this so yes it's something I do need to
+verify carefully. I did test a few different cases in mambo and stepped
+through things, but could easily have bugs.
+
+I could have got something wrong, but I think mayloss does not create
+an additional stack frame, so this works okay. It's just using red zone.
+... I think...
+
+> > +_GLOBAL(isa3_idle_stop_mayloss)
+> > +	std	r1,PACAR1(r13)
+> > +	mflr	r4
+> > +	mfcr	r5
+> > +	/* use stack red zone rather than a new frame */
+> > +	addi	r6,r1,-INT_FRAME_SIZE
+> > +	SAVE_GPR(2, r6)
+> > +	SAVE_NVGPRS(r6)
+> > +	std	r4,_LINK(r6)
+> > +	std	r5,_CCR(r6)
+> > +	mtspr 	SPRN_PSSCR,r3
+> > +	PPC_STOP  
+> 
+> 
+> Suppose we enter into a isa3_idle_stop_may_loss (ESL=EC=1), but as
+> soon as we execute PPC_STOP, if we get interrupted, we will go back to
+> SYSTEM_RESET vector.
+> 
+> The SRR1[46:47] should be 0x1, due to which we will do a bl there,
+> thereby going back to the caller of isa3_idle_stop_mayloss. Which
+> implies that we need to perform the stack unwinding there.
+
+Well we haven't modified r1 here, so I thought it should be okay. It
+seems to do the right thing in mambo.
+
+> > +static inline void atomic_unlock_thread_idle(void)
+> > +{
+> > +	int cpu = raw_smp_processor_id();
+> > +	int first = cpu_first_thread_sibling(cpu);
+> > +	unsigned long *state = &paca_ptrs[first]->idle_state;
+> > +
+> > +	clear_bit_unlock(NR_PNV_CORE_IDLE_LOCK_BIT, state);
+> > +}
+> > +
+> > +static unsigned long power9_idle_stop(unsigned long psscr, bool  mmu_on)  
+> 
+> We are not using the mmu_on anywhere in the code. Is this for
+> restoring the IR|DR bit in the MSR ?
+
+Hmm, it's supposed to be for KVM secondaries that have to have the MMU
+switched off around idle/wake. I haven't got all the KVM stuff right
+yet though.
+
+
+Thanks,
+Nick
