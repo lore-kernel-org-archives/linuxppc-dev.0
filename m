@@ -1,39 +1,21 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41QZtL2zfWzDqx6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 20:24:09 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6BANcgA102359
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 06:24:07 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2k5ervkh5d-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 06:24:06 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 11 Jul 2018 06:24:06 -0400
-Date: Wed, 11 Jul 2018 15:54:00 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, huntbag@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH] powerpc/64s: Move ISAv3.0 / POWER9 idle code to
- powernv C code
-Reply-To: ego@linux.vnet.ibm.com
-References: <20180708142436.15714-1-npiggin@gmail.com>
- <20180710110634.GA29887@in.ibm.com>
- <20180711183036.02c006d3@roar.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180711183036.02c006d3@roar.ozlabs.ibm.com>
-Message-Id: <20180711102400.GA17878@in.ibm.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41Qbhk6RCCzF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 21:00:53 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@ozlabs.org>, Balbir Singh <bsingharora@gmail.com>
+Subject: [PATCH kernel v6 1/2] vfio/spapr: Use IOMMU pageshift rather than
+ pagesize
+Date: Wed, 11 Jul 2018 21:00:43 +1000
+Message-Id: <20180711110044.15939-2-aik@ozlabs.ru>
+In-Reply-To: <20180711110044.15939-1-aik@ozlabs.ru>
+References: <20180711110044.15939-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,157 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2018 at 06:30:36PM +1000, Nicholas Piggin wrote:
-> On Tue, 10 Jul 2018 16:36:34 +0530
-> Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> 
-> > Hello Nicholas,
-> > 
-> > 
-> > On Mon, Jul 09, 2018 at 12:24:36AM +1000, Nicholas Piggin wrote:
-> > > Reimplement POWER9 idle code in C, in the powernv platform code.
-> > > Assembly stubs are used to save and restore the stack frame and
-> > > non-volatile GPRs before going to idle, but these are small and
-> > > mostly agnostic to microarchitecture implementation details.
-> > >  
-> > 
-> > Thanks for this patch.  It is indeed hard to maneuver through the
-> > current assembly code and change things without introducing new bugs.
-> 
-> Hey thanks for the very good review. I don't mean to disparage the
-> existing asm code too much :) We were doing our best there to get
-> something working, now I think it's a good time to step back and see
-> what we can improve.
-> 
-> > > POWER7/8 code is not converted (yet), but that's not a moving
-> > > target, and it doesn't make you want to claw your eyes out so
-> > > much with the POWER9 code untangled from it.
-> > > 
-> > > The optimisation where EC=ESL=0 idle modes did not have to save
-> > > GPRs or mtmsrd L=0 is restored, because it's simple to do.
-> > > 
-> > > Idle wakeup no longer uses the ->cpu_restore call to reinit SPRs,
-> > > but saves and restores them all explicitly.  
-> > 
-> > Right! The ->cpu_restore call in the current code is rendered
-> > ineffective by "restore_additional_sprs" which is called after the
-> > cpu_restore. 
-> 
-> Yes, I would actually like to do an initial incremental patch for this,
-> and remove it from P7/8 CPU types as well. I think that's quite easy to
-> do, and a useful cleanup to remove it entirely.
-> 
-> > > diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
-> > > index e210a83eb196..b668f030d531 100644
-> > > --- a/arch/powerpc/include/asm/cpuidle.h
-> > > +++ b/arch/powerpc/include/asm/cpuidle.h
-> > > @@ -28,6 +28,7 @@
-> > >   * yet woken from the winkle state.
-> > >   */
-> > >  #define PNV_CORE_IDLE_LOCK_BIT			0x10000000
-> > > +#define NR_PNV_CORE_IDLE_LOCK_BIT		28  
-> > 
-> > We can define PNV_CORE_IDLE_LOCK_BIT mask based on
-> > NR_PNV_CORE_IDLE_LOCK_BIT ?
-> 
-> Yep good point.
-> 
-> > > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> > > index 76a14702cb9c..36b5f0e18c0c 100644
-> > > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > > @@ -135,8 +135,14 @@ TRAMP_KVM(PACA_EXNMI, 0x100)
-> > > 
-> > >  #ifdef CONFIG_PPC_P7_NAP
-> > >  EXC_COMMON_BEGIN(system_reset_idle_common)
-> > > +BEGIN_FTR_SECTION
-> > > +	mfspr	r3,SPRN_SRR1
-> > > +	bltlr	cr3	/* no state loss, return to idle caller */  
-> > 
-> > This is a nice optimization. But perhaps needs a carefully checked.
-> > We wakeup at SYSTEM_RESET only when we have executed stop via the
-> > mayloss() call which creates an additional stack frame. When we return
-> > back to the caller, we will go back with that stack frame. Perhaps we
-> > need to jump to a isa3_idle_wake_gpr_noloss ?
-> 
-> I wasn't 100% sure of all this so yes it's something I do need to
-> verify carefully. I did test a few different cases in mambo and stepped
-> through things, but could easily have bugs.
-> 
-> I could have got something wrong, but I think mayloss does not create
-> an additional stack frame, so this works okay. It's just using red zone.
-> ... I think...
-> 
-> > > +_GLOBAL(isa3_idle_stop_mayloss)
-> > > +	std	r1,PACAR1(r13)
-> > > +	mflr	r4
-> > > +	mfcr	r5
-> > > +	/* use stack red zone rather than a new frame */
-> > > +	addi	r6,r1,-INT_FRAME_SIZE
-> > > +	SAVE_GPR(2, r6)
-> > > +	SAVE_NVGPRS(r6)
-> > > +	std	r4,_LINK(r6)
-> > > +	std	r5,_CCR(r6)
-> > > +	mtspr 	SPRN_PSSCR,r3
-> > > +	PPC_STOP  
-> > 
-> > 
-> > Suppose we enter into a isa3_idle_stop_may_loss (ESL=EC=1), but as
-> > soon as we execute PPC_STOP, if we get interrupted, we will go back to
-> > SYSTEM_RESET vector.
-> > 
-> > The SRR1[46:47] should be 0x1, due to which we will do a bl there,
-> > thereby going back to the caller of isa3_idle_stop_mayloss. Which
-> > implies that we need to perform the stack unwinding there.
-> 
-> Well we haven't modified r1 here, so I thought it should be okay. It
-> seems to do the right thing in mambo.
+The size is always equal to 1 page so let's use this. Later on this will
+be used for other checks which use page shifts to check the granularity
+of access.
 
-Yeah, my bad. We aren't updating the r1. The code is fine in that
-case.
+This should cause no behavioral change.
 
-> 
-> > > +static inline void atomic_unlock_thread_idle(void)
-> > > +{
-> > > +	int cpu = raw_smp_processor_id();
-> > > +	int first = cpu_first_thread_sibling(cpu);
-> > > +	unsigned long *state = &paca_ptrs[first]->idle_state;
-> > > +
-> > > +	clear_bit_unlock(NR_PNV_CORE_IDLE_LOCK_BIT, state);
-> > > +}
-> > > +
-> > > +static unsigned long power9_idle_stop(unsigned long psscr, bool  mmu_on)  
-> > 
-> > We are not using the mmu_on anywhere in the code. Is this for
-> > restoring the IR|DR bit in the MSR ?
-> 
-> Hmm, it's supposed to be for KVM secondaries that have to have the MMU
-> switched off around idle/wake. I haven't got all the KVM stuff right
-> yet though.
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
 
-Ah, right. But I was under the impression that it was a quirk only on 
-POWER8 so that we set the KVM_HWTHREAD_IN_IDLE on the secondaries with
-MMU off, so that in the event the primary thread in the core switches
-to guest, the secondaries won't execute the guest code.
+As Alex suggested, this should go via the ppc tree which the next patch
+is going to (which is ppc-kvm).
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-On P9, the comment in power9_offline_stop says that we don't need to
-set the KVM_HWTHREAD_IN_IDLE in the real-mode.
-
-	/*
-	 * Tell KVM we're entering idle.
-	 * This does not have to be done in real mode because the P9 MMU
-	 * is independent per-thread. Some steppings share radix/hash mode
-	 * between threads, but in that case KVM has a barrier sync in real
-	 * mode before and after switching between radix and hash.
-	 */
-
-Am I missing something?
-
-> 
-> 
-> Thanks,
-> Nick
-> 
---
-Thanks and Regards
-gautham.
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 759a5bd..2da5f05 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_container *container,
+ }
+ 
+ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+-		unsigned long tce, unsigned long size,
++		unsigned long tce, unsigned long shift,
+ 		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
+-	mem = mm_iommu_lookup(container->mm, tce, size);
++	mem = mm_iommu_lookup(container->mm, tce, 1ULL << shift);
+ 	if (!mem)
+ 		return -EINVAL;
+ 
+@@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_container *container,
+ 	if (!pua)
+ 		return;
+ 
+-	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl),
++	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
+ 			&hpa, &mem);
+ 	if (ret)
+ 		pr_debug("%s: tce %lx at #%lx was not cached, ret=%d\n",
+@@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *container,
+ 				entry + i);
+ 
+ 		ret = tce_iommu_prereg_ua_to_hpa(container,
+-				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
++				tce, tbl->it_page_shift, &hpa, &mem);
+ 		if (ret)
+ 			break;
+ 
+-- 
+2.11.0
