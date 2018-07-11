@@ -1,20 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Qft84GGrzF35P
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Qft86gZFzF35S
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 23:24:16 +1000 (AEST)
-In-Reply-To: <20180628100509.17413-2-fbarrat@linux.ibm.com>
-To: Frederic Barrat <fbarrat@linux.ibm.com>, alastair@au1.ibm.com,
- andrew.donnellan@au1.ibm.com, vaibhav@linux.ibm.com, clombard@linux.ibm.com,
- felix@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20180629001209.18523-1-mikey@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: huyn@mellanox.com
-Subject: Re: [v2,
- 01/10] Revert "cxl: Add kernel API to allow a context to operate with
- relocate disabled"
-Message-Id: <41Qft75SvqzB4Mj@ozlabs.org>
-Date: Wed, 11 Jul 2018 23:24:15 +1000 (AEST)
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, rashmica.g@gmail.com
+Subject: Re: powerpc: Remove memtrace mmap
+Message-Id: <41Qft83wnmzB4MQ@ozlabs.org>
+Date: Wed, 11 Jul 2018 23:24:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +20,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-06-28 at 10:05:00 UTC, Frederic Barrat wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Fri, 2018-06-29 at 00:12:09 UTC, Michael Neuling wrote:
+> debugfs doesn't support mmap, so this code is never used.
 > 
-> Remove abandonned capi support for the Mellanox CX4.
-> The symbol 'cxl_set_translation_mode' is never called, so
-> ctx->real_mode is always false.
-> 
-> This reverts commit 7a0d85d313c2066712e530e668bc02bb741a685c.
-> 
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/c5828150067c47a97f30e690a472e0
+https://git.kernel.org/powerpc/c/7dea6f2f053599d90f7894216db0dd
 
 cheers
