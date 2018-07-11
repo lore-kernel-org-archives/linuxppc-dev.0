@@ -1,20 +1,33 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
+Return-Path: <srs0=juda=j3=gmail.com=mathieu.malaterre@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41QVZL2dpDzDqx6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 17:10:02 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41QVZL0ZxSz8xZG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 17:10:02 +1000 (AEST)
+Received: from mail-oi0-f53.google.com (mail-oi0-f53.google.com
+ [209.85.218.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41QT5D6tDmzF37Y
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 16:03:12 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id n2-v6so2617724pgq.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2018 23:03:12 -0700 (PDT)
-Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
-From: Joel Stanley <joel@jms.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc: Remove Power8 DD1 from cputable
-Date: Wed, 11 Jul 2018 16:02:58 +1000
-Message-Id: <20180711060258.14448-1-joel@jms.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id 41QVZJ48b5z9s01
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2018 17:10:00 +1000 (AEST)
+Received: by mail-oi0-f53.google.com with SMTP id v8-v6so47416992oie.5
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2018 00:10:00 -0700 (PDT)
+MIME-Version: 1.0
+References: <20180709142426.26999-1-mpe@ellerman.id.au>
+ <CA+7wUsz3hADry_O7MCO8pJRmWb84dbQYu8zOyEYQ01P=R8WoDA@mail.gmail.com>
+ <874lh7b3tj.fsf@concordia.ellerman.id.au>
+In-Reply-To: <874lh7b3tj.fsf@concordia.ellerman.id.au>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 11 Jul 2018 09:09:44 +0200
+Message-ID: <CA+7wUszg2EnuExY=Wx0JWebvFmdYwRSN2nvjkvwTtmD1vS4AJQ@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Nicholas Piggin <npiggin@gmail.com>,
+ Randy Dunlap <rdunlap@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,97 +37,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was added to support an early version of Power8 that did not have
-working doorbells. These machines were not publicly available, and all of
-the internal users have long since upgraded.
+On Tue, Jul 10, 2018 at 3:47 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>
+> Mathieu Malaterre <malat@debian.org> writes:
+> > On Mon, Jul 9, 2018 at 4:24 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >>
+> >> Because the allmodconfig logic just sets every symbol to M or Y, it
+> >> has the effect of always generating a 64-bit config, because
+> >> CONFIG_PPC64 becomes Y.
+> >>
+> >> So to make it easier for folks to test 32-bit code, provide a phony
+> >> defconfig target that generates a 32-bit allmodconfig.
+> >>
+> >> The 32-bit port has several mutually exclusive CPU types, we choose
+> >> the Book3S variants as that's what the help text in Kconfig says is
+> >> most common.
+> >
+> > Ok then.
+>
+> That was just me taking a stab in the dark. You suggested we should
+> mimic the Debian config, what does that use?
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
----
- arch/powerpc/include/asm/cputable.h | 15 +++++++--------
- arch/powerpc/kernel/cputable.c      | 19 -------------------
- 2 files changed, 7 insertions(+), 27 deletions(-)
+Sorry got confused for a minute. This is the correct value (at least
+the one used in Debian).
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 9c0a3083571b..7711ebfb7d5f 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -452,7 +452,6 @@ static inline void cpu_feature_keys_init(void) { }
- 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
- 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP | CPU_FTR_PKEY)
- #define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
--#define CPU_FTRS_POWER8_DD1 (CPU_FTRS_POWER8 & ~CPU_FTR_DBELL)
- #define CPU_FTRS_POWER9 (CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | CPU_FTR_ARCH_206 |\
- 	    CPU_FTR_MMCRA | CPU_FTR_SMT | \
-@@ -488,16 +487,16 @@ static inline void cpu_feature_keys_init(void) { }
- #ifdef CONFIG_CPU_LITTLE_ENDIAN
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 | \
--	     CPU_FTRS_POWER8_DD1 | CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | \
--	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
-+	     CPU_FTR_ALTIVEC_COMP | CPU_FTR_VSX_COMP | CPU_FTRS_POWER9 | \
-+	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
- 	     CPU_FTRS_POWER9_DD2_2)
- #else
- #define CPU_FTRS_POSSIBLE	\
- 	    (CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
- 	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
--	     CPU_FTRS_POWER8 | CPU_FTRS_POWER8_DD1 | CPU_FTRS_CELL | \
--	     CPU_FTRS_PA6T | CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | \
--	     CPU_FTRS_POWER9 | CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
-+	     CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | \
-+	     CPU_FTR_VSX_COMP | CPU_FTR_ALTIVEC_COMP | CPU_FTRS_POWER9 | \
-+	     CPU_FTRS_POWER9_DD1 | CPU_FTRS_POWER9_DD2_1 | \
- 	     CPU_FTRS_POWER9_DD2_2)
- #endif /* CONFIG_CPU_LITTLE_ENDIAN */
- #endif
-@@ -566,7 +565,7 @@ enum {
- #ifdef CONFIG_CPU_LITTLE_ENDIAN
- #define CPU_FTRS_ALWAYS \
- 	    (CPU_FTRS_POSSIBLE & ~CPU_FTR_HVMODE & CPU_FTRS_POWER7 & \
--	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & CPU_FTRS_POWER8_DD1 & \
-+	     CPU_FTRS_POWER8E & CPU_FTRS_POWER8 & \
- 	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
- 	     CPU_FTRS_DT_CPU_BASE)
- #else
-@@ -574,7 +573,7 @@ enum {
- 	    (CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
- 	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
- 	     CPU_FTRS_PA6T & CPU_FTRS_POWER8 & CPU_FTRS_POWER8E & \
--	     CPU_FTRS_POWER8_DD1 & ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
-+	     ~CPU_FTR_HVMODE & CPU_FTRS_POSSIBLE & \
- 	     CPU_FTRS_POWER9 & CPU_FTRS_POWER9_DD1 & CPU_FTRS_POWER9_DD2_1 & \
- 	     CPU_FTRS_DT_CPU_BASE)
- #endif /* CONFIG_CPU_LITTLE_ENDIAN */
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c8fc9691f8c7..9169ffdbab08 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -447,25 +447,6 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check_early	= __machine_check_early_realmode_p8,
- 		.platform		= "power8",
- 	},
--	{	/* Power8 DD1: Does not support doorbell IPIs */
--		.pvr_mask		= 0xffffff00,
--		.pvr_value		= 0x004d0100,
--		.cpu_name		= "POWER8 (raw)",
--		.cpu_features		= CPU_FTRS_POWER8_DD1,
--		.cpu_user_features	= COMMON_USER_POWER8,
--		.cpu_user_features2	= COMMON_USER2_POWER8,
--		.mmu_features		= MMU_FTRS_POWER8,
--		.icache_bsize		= 128,
--		.dcache_bsize		= 128,
--		.num_pmcs		= 6,
--		.pmc_type		= PPC_PMC_IBM,
--		.oprofile_cpu_type	= "ppc64/power8",
--		.oprofile_type		= PPC_OPROFILE_INVALID,
--		.cpu_setup		= __setup_cpu_power8,
--		.cpu_restore		= __restore_cpu_power8,
--		.machine_check_early	= __machine_check_early_realmode_p8,
--		.platform		= "power8",
--	},
- 	{	/* Power8 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x004d0000,
--- 
-2.17.1
+> >> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> >> index 2ea575cb3401..2556c2182789 100644
+> >> --- a/arch/powerpc/Makefile
+> >> +++ b/arch/powerpc/Makefile
+> >> @@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
+> >>         $(call merge_into_defconfig,mpc86xx_basic_defconfig,\
+> >>                 86xx-smp 86xx-hw fsl-emb-nonhw)
+> >>
+> >> +PHONY += ppc32_allmodconfig
+> >> +ppc32_allmodconfig:
+> >> +       $(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+> >> +               -f $(srctree)/Makefile allmodconfig
+> >> +
+> >
+> > I this a good time to update line 34 at the same time:
+> >
+> > KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+> >
+> > ?
+>
+> 34 or 36?
+>
+>   ifeq ($(CROSS_COMPILE),)
+>   KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+>   else
+>   KBUILD_DEFCONFIG := ppc64_defconfig
+>   endif
+>
+> Do you mean the else case?
+
+As far as I know uname -m on powerpc returns 'ppc' so the following
+has always failed from a ppc32be machine:
+
+$ make ARCH=powerpc defconfig
+
+I was simply suggesting to mimic what was done for ppc64:
+
+ifeq ($(CROSS_COMPILE),)
+KBUILD_DEFCONFIG := ppc32_defconfig
+else
+KBUILD_DEFCONFIG := ppc64_defconfig
+endif
+
+If I followed the discussion one would want the file `ppc32_defconfig`
+to contains pretty much the same thing as the .config generated from
+`book3s_32.config`, right ?
+
+> cheers
