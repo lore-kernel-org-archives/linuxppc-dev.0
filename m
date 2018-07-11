@@ -1,26 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Qf6d3Tx0zF35J
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 22:50:01 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: akpm@linux-foundation.org, broonie@kernel.org, mhocko@suse.cz,
- sfr@canb.auug.org.au, linux-next@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhe@redhat.com, pasha.tatashin@oracle.com,
- "Aneesh Kumar K.V"  <aneesh.kumar@linux.ibm.com>,
- Anshuman Khandual  <khandual@linux.vnet.ibm.com>
-Subject: Boot failures with "mm/sparse: Remove
- CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER" on powerpc (was Re: mmotm
- 2018-07-10-16-50 uploaded)
-In-Reply-To: <20180710235044.vjlRV%akpm@linux-foundation.org>
-References: <20180710235044.vjlRV%akpm@linux-foundation.org>
-Date: Wed, 11 Jul 2018 22:49:58 +1000
-Message-ID: <87lgai9bt5.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41QfL10LHdzF35J
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 22:59:52 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: y2038@lists.linaro.org, Arnd Bergmann <arnd@arndb.de>,
+ Balbir Singh <bsingharora@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>,
+ Breno Leitao <leitao@debian.org>, Mathieu Malaterre <malat@debian.org>,
+ Yisheng Xie <xieyisheng1@huawei.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] [RESEND] powerpc: xmon: use ktime_get_coarse_boottime64
+Date: Wed, 11 Jul 2018 14:53:23 +0200
+Message-Id: <20180711125338.1365368-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,80 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-akpm@linux-foundation.org writes:
-> The mm-of-the-moment snapshot 2018-07-10-16-50 has been uploaded to
->
->    http://www.ozlabs.org/~akpm/mmotm/
-...
+get_monotonic_boottime() is deprecated, and may not be safe to call in
+every context, as it has to read a hardware clocksource.
 
-> * mm-sparse-add-a-static-variable-nr_present_sections.patch
-> * mm-sparsemem-defer-the-ms-section_mem_map-clearing.patch
-> * mm-sparsemem-defer-the-ms-section_mem_map-clearing-fix.patch
-> * mm-sparse-add-a-new-parameter-data_unit_size-for-alloc_usemap_and_memmap.patch
-> * mm-sparse-optimize-memmap-allocation-during-sparse_init.patch
-> * mm-sparse-optimize-memmap-allocation-during-sparse_init-checkpatch-fixes.patch
+This changes xmon to print the time using ktime_get_coarse_boottime64()
+instead, which avoids the old timespec type and the HW access.
 
-> * mm-sparse-remove-config_sparsemem_alloc_mem_map_together.patch
+Acked-by: Balbir Singh <bsingharora@gmail.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+Originally sent Jun 18, but this hasn't appeared in linux-next yet.
 
-This seems to be breaking my powerpc pseries qemu boots.
+Resending to make sure this is still on the radar. Please apply
+to the powerpc git for 4.19
+---
+ arch/powerpc/xmon/xmon.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-The boot log with some extra debug shows eg:
-
-  $ make pseries_le_defconfig
-  $ qemu-system-ppc64 -nographic -vga none -M pseries -m 2G -kernel vmlinux 
-  ...
-  vmemmap_populate f000000000000000..f000000000004000, node 0
-        * f000000000000000..f000000001000000 allocated at c00000007e000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7e000000
-  vmemmap_populate f000000000000000..f000000000008000, node 0
-        * f000000000000000..f000000001000000 allocated at c00000007d000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7d000000
-  vmemmap_populate f000000000000000..f00000000000c000, node 0
-        * f000000000000000..f000000001000000 allocated at c00000007c000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7c000000
-  vmemmap_populate f000000000000000..f000000000010000, node 0
-        * f000000000000000..f000000001000000 allocated at c00000007b000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7b000000
-  vmemmap_populate f000000000000000..f000000000014000, node 0
-        * f000000000000000..f000000001000000 allocated at c00000007a000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x7a000000
-  vmemmap_populate f000000000000000..f000000000018000, node 0
-        * f000000000000000..f000000001000000 allocated at c000000079000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x79000000
-  vmemmap_populate f000000000000000..f00000000001c000, node 0
-        * f000000000000000..f000000001000000 allocated at c000000078000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x78000000
-  vmemmap_populate f000000000000000..f000000000020000, node 0
-        * f000000000000000..f000000001000000 allocated at c000000077000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x77000000
-  vmemmap_populate f000000000000000..f000000000024000, node 0
-        * f000000000000000..f000000001000000 allocated at c000000076000000
-  hash__vmemmap_create_mapping: start 0xf000000000000000 size 0x1000000 phys 0x76000000
-  hash__vmemmap_create_mapping: failed -1
-
-  <repeated many times>
-
-Then there's lots of other warnings about bad page states and eventually
-a NULL deref and we panic().
-
-
-The problem seems to be that we're calling down into
-hash__vmemmap_create_mapping() for every call to vmemmap_populate(),
-whereas previously we would only call hash__vmemmap_create_mapping()
-once because our vmemmap_populated() would return true.
-
-There's actually a comment in sparse_init() that says:
-
-	 * powerpc need to call sparse_init_one_section right after each
-	 * sparse_early_mem_map_alloc, so allocate usemap_map at first.
-
-So changing that behaviour does seem to be the problem.
-
-I assume that comment is talking about the fact that we use pfn_valid()
-in vmemmap_populated().
-
-I'm not clear on how to fix it though.
-
-Any ideas?
-
-cheers
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 47166ad2a669..45e3d0ec1246 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -918,13 +918,13 @@ static void remove_cpu_bpts(void)
+ static void
+ show_uptime(void)
+ {
+-	struct timespec uptime;
++	struct timespec64 uptime;
+ 
+ 	if (setjmp(bus_error_jmp) == 0) {
+ 		catch_memory_errors = 1;
+ 		sync();
+ 
+-		get_monotonic_boottime(&uptime);
++		ktime_get_coarse_boottime_ts64(&uptime);
+ 		printf("Uptime: %lu.%.2lu seconds\n", (unsigned long)uptime.tv_sec,
+ 			((unsigned long)uptime.tv_nsec / (NSEC_PER_SEC/100)));
+ 
+-- 
+2.9.0
