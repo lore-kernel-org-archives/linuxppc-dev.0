@@ -1,50 +1,42 @@
-Return-Path: <pasha.tatashin@oracle.com>
-Received: from aserp2120.oracle.com (aserp2120.oracle.com [141.146.126.78])
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41RK9l6cF4zDr10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 01:10:03 +1000 (AEST)
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
- by aserp2120.oracle.com (8.16.0.22/8.16.0.22) with SMTP id w6CEwb34134241
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:10:00 GMT
-Received: from aserv0021.oracle.com (aserv0021.oracle.com [141.146.126.233])
- by aserp2120.oracle.com with ESMTP id 2k2p7e443p-1
- (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:10:00 +0000
-Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
- by aserv0021.oracle.com (8.14.4/8.14.4) with ESMTP id w6CF9vAu031132
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:09:57 GMT
-Received: from abhmp0005.oracle.com (abhmp0005.oracle.com [141.146.116.11])
- by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id w6CF9vhZ015727
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:09:57 GMT
-Received: by mail-oi0-f43.google.com with SMTP id b15-v6so56357274oib.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 08:09:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41RN4G5tpqzF35R
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 03:20:30 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6CHEciE036769
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 13:20:28 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k69y83j0p-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 13:20:28 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Thu, 12 Jul 2018 11:20:27 -0600
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mathieu Malaterre <malat@debian.org>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Kees Cook <keescook@chromium.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/prom_init: remove linux,stdout-package property
+Date: Thu, 12 Jul 2018 14:19:04 -0300
 MIME-Version: 1.0
-References: <20180710235044.vjlRV%akpm@linux-foundation.org>
- <87lgai9bt5.fsf@concordia.ellerman.id.au>
- <20180711133737.GA29573@techadventures.net>
- <CAGM2reYsSi5kDGtnTQASnp1v49T8Y+9o_pNxmSq-+m68QhF2Tg@mail.gmail.com>
- <CAOXBz7ixEK85S-029XrM4+g4fxtSY6_tke0gcQ-hOXFCb7wcZg@mail.gmail.com>
- <87efg981rd.fsf@concordia.ellerman.id.au>
- <20180712095002.GA5342@techadventures.net>
-In-Reply-To: <20180712095002.GA5342@techadventures.net>
-From: Pavel Tatashin <pasha.tatashin@oracle.com>
-Date: Thu, 12 Jul 2018 11:09:20 -0400
-Message-ID: <CAGM2reb=KeLH7KKUP+7-u27nJxvTcBskhtS2cDH8SwiiEZ1jNQ@mail.gmail.com>
-Subject: Re: Boot failures with "mm/sparse: Remove
- CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER"
- on powerpc (was Re: mmotm 2018-07-10-16-50 uploaded)
-To: osalvador@techadventures.net
-Cc: mpe@ellerman.id.au, osalvador.vilardaga@gmail.com,
- Andrew Morton <akpm@linux-foundation.org>, broonie@kernel.org,
- mhocko@suse.cz, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-next@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Linux Memory Management List <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>, mm-commits@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhe@redhat.com,
- aneesh.kumar@linux.ibm.com, khandual@linux.vnet.ibm.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20180712171904.18971-1-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,22 +46,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 12, 2018 at 5:50 AM Oscar Salvador
-<osalvador@techadventures.net> wrote:
->
-> > > I just roughly check, but if I checked the right place,
-> > > vmemmap_populated() checks for the section to contain the flags we are
-> > > setting in sparse_init_one_section().
-> >
-> > Yes.
-> >
-> > > But with this patch, we populate first everything, and then we call
-> > > sparse_init_one_section() in sparse_init().
-> > > As I said I could be mistaken because I just checked the surface.
+This property was added in 2004 by
 
-Yes, this is right, sparse_init_one_section() is needed after every
-populate call on ppc64. I am adding this to my sparse_init re-write,
-and it actually simplifies code, as it avoids one extra loop, and
-makes ppc64 to work.
+    https://github.com/mpe/linux-fullhistory/commit/689fe5072fe9a0dec914bfa4fa60aed1e54563e6
 
-Pavel
+and the only use of it, which was already inside `#if 0`, was removed a month
+later by
+
+    https://github.com/mpe/linux-fullhistory/commit/1fbe5a6d90f6cd4ea610737ef488719d1a875de7
+
+Fixes: https://github.com/linuxppc/linux/issues/125
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+---
+ arch/powerpc/kernel/prom_init.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 5425dd3d6a9f..c45fb463c9e5 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2102,8 +2102,6 @@ static void __init prom_init_stdout(void)
+ 	stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+ 	if (stdout_node != PROM_ERROR) {
+ 		val = cpu_to_be32(stdout_node);
+-		prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
+-			     &val, sizeof(val));
+ 
+ 		/* If it's a display, note it */
+ 		memset(type, 0, sizeof(type));
+-- 
+2.17.1
