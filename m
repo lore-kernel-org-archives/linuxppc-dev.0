@@ -1,32 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Qwjg1p69zF35W
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 09:47:51 +1000 (AEST)
-Date: Thu, 12 Jul 2018 09:47:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>,
- osalvador@techadventures.net, mpe@ellerman.id.au, broonie@kernel.org,
- mhocko@suse.cz, linux-next@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- Linux Memory Management List <linux-mm@kvack.org>, LKML
- <linux-kernel@vger.kernel.org>, mm-commits@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bhe@redhat.com, aneesh.kumar@linux.ibm.com,
- khandual@linux.vnet.ibm.com
-Subject: Re: Boot failures with "mm/sparse: Remove
- CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER" on powerpc (was Re: mmotm
- 2018-07-10-16-50 uploaded)
-Message-ID: <20180712094729.1112f290@canb.auug.org.au>
-In-Reply-To: <20180711141344.10eb6d22b0ee1423cc94faf8@linux-foundation.org>
-References: <20180710235044.vjlRV%akpm@linux-foundation.org>
- <87lgai9bt5.fsf@concordia.ellerman.id.au>
- <20180711133737.GA29573@techadventures.net>
- <CAGM2reYsSi5kDGtnTQASnp1v49T8Y+9o_pNxmSq-+m68QhF2Tg@mail.gmail.com>
- <20180711141344.10eb6d22b0ee1423cc94faf8@linux-foundation.org>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail02.adl2.internode.on.net (ipmail02.adl2.internode.on.net
+ [150.101.137.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41Qz9X4ptdzF35m
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 11:38:40 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell Currey <ruscur@russell.cc>, Balbir Singh <bsingharora@gmail.com>,
+ Stewart Smith <stewart@linux.ibm.com>
+Subject: Re: [PATCH kernel] powerpc/ioda/npu2: Call hot reset skiboot hook
+ when disabling NPU
+Date: Thu, 12 Jul 2018 11:38:34 +1000
+Message-ID: <1903233.NnVPaYN7RK@new-mexico>
+In-Reply-To: <20180711194510.0bc8dc39@aik.ozlabs.ibm.com>
+References: <20180607070607.16037-1-aik@ozlabs.ru>
+ <20180711194510.0bc8dc39@aik.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/EYBWYqRmT+9CpTkc3L=Ei9_"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/EYBWYqRmT+9CpTkc3L=Ei9_
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Alexey,
 
-Hi Andrew,
+On Wednesday, 11 July 2018 7:45:10 PM AEST Alexey Kardashevskiy wrote:
+> On Thu,  7 Jun 2018 17:06:07 +1000
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> 
+> > This brings NPU2 in a safe mode when it does not throw HMI if GPU
+> > coherent memory is gone.
 
-On Wed, 11 Jul 2018 14:13:44 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> OK, I shall drop
-> mm-sparse-remove-config_sparsemem_alloc_mem_map_together.patch for now.
+It might be helpful if you you could describe the problem and what you are
+trying to solve in a bit more depth. Assuming the memory was online how are you
+offlining it? If the memory has been online merely fencing/hot-resetting the
+NVLink is likely not sufficient as you also need to flush caches prior to taking
+the links down.
 
-I have dropped it from linux-next today (in case you don't get time).
+- Alistair
 
---=20
-Cheers,
-Stephen Rothwell
-
---Sig_/EYBWYqRmT+9CpTkc3L=Ei9_
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltGlxEACgkQAVBC80lX
-0GwoUwf/bx0m01nkKzrGDRN2EbV745BfGn4LcFCUqgnVbtIwvCgd21+BSMQKZeBQ
-hXceLO2LFHU5+BQxG8CsGyLob2rijmXu35ie3boJKXPjMPdng8QaCCtSDyUkjTuu
-XkiNYUspbTMVZWlnHX3tFV0Urm4SI7xHOG5lrE/c58rLoJnTOqL9ssC2cdiN0j2w
-glkgPVXLSljiB5RwUmF/cXf3Q6knDeHF2f3XikAlUjKv5NIa+JR3wz1H/pzzIw7K
-kSVxPcRjwRBaAmqxPMep92ZpthSBZ9sJfTxQajHFyTKfgpSfWB6aP8FuavEL8zuC
-xHM1AI0ggVguLGhN2yKqtxRw77KLmQ==
-=c4bd
------END PGP SIGNATURE-----
-
---Sig_/EYBWYqRmT+9CpTkc3L=Ei9_--
+> > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> 
+> 
+> Anyone, ping?
+> 
+> 
+> > ---
+> > 
+> > The main aim for this is nvlink2 pass through, helps a lot.
+> > 
+> > 
+> > ---
+> >  arch/powerpc/platforms/powernv/pci-ioda.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> > 
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 66c2804..29f798c 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -3797,6 +3797,16 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
+> >  		pnv_ioda_release_pe(pe);
+> >  }
+> >  
+> > +void pnv_npu_disable_device(struct pci_dev *pdev)
+> > +{
+> > +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+> > +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
+> > +
+> > +	if (eehpe && eeh_ops && eeh_ops->reset) {
+> > +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
+> > +	}
+> > +}
+> > +
+> >  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+> >  {
+> >  	struct pnv_phb *phb = hose->private_data;
+> > @@ -3841,6 +3851,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+> >  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+> >  	.dma_set_mask		= pnv_npu_dma_set_mask,
+> >  	.shutdown		= pnv_pci_ioda_shutdown,
+> > +	.disable_device		= pnv_npu_disable_device,
+> >  };
+> >  
+> >  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
+> 
+> 
+> 
+> --
+> Alexey
+> 
