@@ -1,14 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 41R7070qy8zF35P
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 17:31:02 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@ozlabs.org>
-Subject: [PATCH kernel] KVM: PPC: Expose userspace mm context id via debugfs
-Date: Thu, 12 Jul 2018 17:30:26 +1000
-Message-Id: <20180712073026.19463-1-aik@ozlabs.ru>
+Return-Path: <ruscur@russell.cc>
+Received: from wout4-smtp.messagingengine.com (wout4-smtp.messagingengine.com
+ [64.147.123.20])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41R70F4h1CzF35c
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 17:31:09 +1000 (AEST)
+Message-ID: <9640a2ff6ce0c20d603c16ba7e8b5238d206bf26.camel@russell.cc>
+Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Add 256M IOMMU page size
+ to the default POWER8 case
+From: Russell Currey <ruscur@russell.cc>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Date: Thu, 12 Jul 2018 17:21:49 +1000
+In-Reply-To: <20180702074205.12837-1-aik@ozlabs.ru>
+References: <20180702074205.12837-1-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,101 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a debugfs entry with mm context id of a process which is using
-KVM. This id is an index in the process table so the userspace can dump
-that tree provided it is granted access to /dev/mem.
+On Mon, 2018-07-02 at 17:42 +1000, Alexey Kardashevskiy wrote:
+> The sketchy bypass uses 256M pages so add this page size as well.
+> 
+> This should cause no behavioral change but will be used later.
+> 
+> Fixes: 477afd6ea6 "powerpc/ioda: Use ibm,supported-tce-sizes for
+> IOMMU page size mask"
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/include/asm/kvm_host.h |  1 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 58 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
+Reviewed-by: Russell Currey <ruscur@russell.cc>
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index fa4efa7..bb72667 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -284,6 +284,7 @@ struct kvm_arch {
- 	u64 process_table;
- 	struct dentry *debugfs_dir;
- 	struct dentry *htab_dentry;
-+	struct dentry *mm_ctxid_dentry;
- 	struct kvm_resize_hpt *resize_hpt; /* protected by kvm->lock */
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
- #ifdef CONFIG_KVM_BOOK3S_PR_POSSIBLE
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 7f3a8cf..3b9eb17 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -2138,11 +2138,69 @@ static const struct file_operations debugfs_htab_fops = {
- 	.llseek	 = generic_file_llseek,
- };
- 
-+static int debugfs_mm_ctxid_open(struct inode *inode, struct file *file)
-+{
-+	struct kvm *kvm = inode->i_private;
-+
-+	kvm_get_kvm(kvm);
-+	file->private_data = kvm;
-+
-+	return nonseekable_open(inode, file);
-+}
-+
-+static int debugfs_mm_ctxid_release(struct inode *inode, struct file *file)
-+{
-+	struct kvm *kvm = file->private_data;
-+
-+	kvm_put_kvm(kvm);
-+	return 0;
-+}
-+
-+static ssize_t debugfs_mm_ctxid_read(struct file *file, char __user *buf,
-+				 size_t len, loff_t *ppos)
-+{
-+	struct kvm *kvm = file->private_data;
-+	ssize_t n, left, ret;
-+	char tmp[64];
-+
-+	if (!kvm_is_radix(kvm))
-+		return 0;
-+
-+	ret = snprintf(tmp, sizeof(tmp) - 1, "%lu\n", kvm->mm->context.id);
-+	if (*ppos >= ret)
-+		return 0;
-+
-+	left = min_t(ssize_t, ret - *ppos, len);
-+	n = copy_to_user(buf, tmp + *ppos, left);
-+	ret = left - n;
-+	*ppos += ret;
-+
-+	return ret;
-+}
-+
-+static ssize_t debugfs_mm_ctxid_write(struct file *file, const char __user *buf,
-+			   size_t len, loff_t *ppos)
-+{
-+	return -EACCES;
-+}
-+
-+static const struct file_operations debugfs_mm_ctxid_fops = {
-+	.owner	 = THIS_MODULE,
-+	.open	 = debugfs_mm_ctxid_open,
-+	.release = debugfs_mm_ctxid_release,
-+	.read	 = debugfs_mm_ctxid_read,
-+	.write	 = debugfs_mm_ctxid_write,
-+	.llseek	 = generic_file_llseek,
-+};
-+
- void kvmppc_mmu_debugfs_init(struct kvm *kvm)
- {
- 	kvm->arch.htab_dentry = debugfs_create_file("htab", 0400,
- 						    kvm->arch.debugfs_dir, kvm,
- 						    &debugfs_htab_fops);
-+	kvm->arch.mm_ctxid_dentry = debugfs_create_file("mm_ctxid", 0400,
-+						    kvm->arch.debugfs_dir, kvm,
-+						    &debugfs_mm_ctxid_fops);
- }
- 
- void kvmppc_mmu_book3s_hv_init(struct kvm_vcpu *vcpu)
--- 
-2.11.0
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
+> b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 5bd0eb6..557c11d 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -2925,7 +2925,7 @@ static unsigned long
+> pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
+>  		/* Add 16M for POWER8 by default */
+>  		if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
+>  				!cpu_has_feature(CPU_FTR_ARCH_300))
+> -			mask |= SZ_16M;
+> +			mask |= SZ_16M | SZ_256M;
+>  		return mask;
+>  	}
+>  
