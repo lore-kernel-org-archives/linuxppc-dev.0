@@ -1,23 +1,32 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
- [IPv6:2607:f8b0:400e:c00::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41R3x20gxXzDr10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:13:08 +1000 (AEST)
-Received: by mail-pf0-x243.google.com with SMTP id c21-v6so15247759pfn.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2018 22:13:08 -0700 (PDT)
-Date: Thu, 12 Jul 2018 15:12:59 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Russell Currey <ruscur@russell.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Add 256M IOMMU page size
- to the default POWER8 case
-Message-ID: <20180712151259.44f2f6ee@aik.ozlabs.ibm.com>
-In-Reply-To: <20180702074205.12837-1-aik@ozlabs.ru>
-References: <20180702074205.12837-1-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41R4BK2QFlzF35f
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 15:24:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Oscar Salvador <osalvador.vilardaga@gmail.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, broonie@kernel.org,
+ mhocko@suse.cz, Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-next@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ LKML <linux-kernel@vger.kernel.org>, mm-commits@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, bhe@redhat.com, aneesh.kumar@linux.ibm.com,
+ khandual@linux.vnet.ibm.com
+Subject: Re: Boot failures with "mm/sparse: Remove
+ CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER" on powerpc (was Re: mmotm
+ 2018-07-10-16-50 uploaded)
+In-Reply-To: <CAOXBz7ixEK85S-029XrM4+g4fxtSY6_tke0gcQ-hOXFCb7wcZg@mail.gmail.com>
+References: <20180710235044.vjlRV%akpm@linux-foundation.org>
+ <87lgai9bt5.fsf@concordia.ellerman.id.au>
+ <20180711133737.GA29573@techadventures.net>
+ <CAGM2reYsSi5kDGtnTQASnp1v49T8Y+9o_pNxmSq-+m68QhF2Tg@mail.gmail.com>
+ <CAOXBz7ixEK85S-029XrM4+g4fxtSY6_tke0gcQ-hOXFCb7wcZg@mail.gmail.com>
+Date: Thu, 12 Jul 2018 15:24:38 +1000
+Message-ID: <87efg981rd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +36,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon,  2 Jul 2018 17:42:05 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+Oscar Salvador <osalvador.vilardaga@gmail.com> writes:
+> El dc., 11 jul. 2018 , 15:56, Pavel Tatashin <pasha.tatashin@oracle.com> va
+> escriure:
+>
+>> I am OK, if this patch is removed from Baoquan's series. But, I would
+>> still like to get rid of CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER, I
+>> can work on this in my sparse_init re-write series. ppc64 should
+>> really fallback safely to small chunks allocs, and if it does not
+>> there is some existing bug. Michael please send the config that you
+>> used.
+>>
+>> Thank you,
+>> Pavel
+>> On Wed, Jul 11, 2018 at 9:37 AM Oscar Salvador
+>> <osalvador@techadventures.net> wrote:
+>> >
+>> > On Wed, Jul 11, 2018 at 10:49:58PM +1000, Michael Ellerman wrote:
+>> > > akpm@linux-foundation.org writes:
+>> > > > The mm-of-the-moment snapshot 2018-07-10-16-50 has been uploaded to
+>> > > >
+>> > > >    http://www.ozlabs.org/~akpm/mmotm/
+>> > > ...
+>> > >
+>> > > > * mm-sparse-add-a-static-variable-nr_present_sections.patch
+>> > > > * mm-sparsemem-defer-the-ms-section_mem_map-clearing.patch
+>> > > > * mm-sparsemem-defer-the-ms-section_mem_map-clearing-fix.patch
+>> > > > *
+>> mm-sparse-add-a-new-parameter-data_unit_size-for-alloc_usemap_and_memmap.patch
+>> > > > * mm-sparse-optimize-memmap-allocation-during-sparse_init.patch
+>> > > > *
+>> mm-sparse-optimize-memmap-allocation-during-sparse_init-checkpatch-fixes.patch
+>> > >
+>> > > > * mm-sparse-remove-config_sparsemem_alloc_mem_map_together.patch
+>> > >
+>> > > This seems to be breaking my powerpc pseries qemu boots.
+>> > >
+>> > > The boot log with some extra debug shows eg:
+>> > >
+>> > >   $ make pseries_le_defconfig
+>> >
+>> > Could you please share the config?
+>> > I was not able to find such config in the kernel tree.
+>>
+>>
+> I just roughly check, but if I checked the right place,
+> vmemmap_populated() checks for the section to contain the flags we are
+> setting in sparse_init_one_section().
 
-> The sketchy bypass uses 256M pages so add this page size as well.
-> 
-> This should cause no behavioral change but will be used later.
-> 
-> Fixes: 477afd6ea6 "powerpc/ioda: Use ibm,supported-tce-sizes for IOMMU page size mask"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 5bd0eb6..557c11d 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2925,7 +2925,7 @@ static unsigned long pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
->  		/* Add 16M for POWER8 by default */
->  		if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
->  				!cpu_has_feature(CPU_FTR_ARCH_300))
-> -			mask |= SZ_16M;
-> +			mask |= SZ_16M | SZ_256M;
+Yes.
 
+> But with this patch, we populate first everything, and then we call
+> sparse_init_one_section() in sparse_init().
+> As I said I could be mistaken because I just checked the surface.
 
-Ping?
+Yeah I think that's correct.
 
->  		return mask;
->  	}
->  
-> -- 
-> 2.11.0
-> 
+This might just be a bug in our code, let me look at it a bit.
 
-
-
---
-Alexey
+cheers
