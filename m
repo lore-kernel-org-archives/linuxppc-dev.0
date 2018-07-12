@@ -1,21 +1,19 @@
-Return-Path: <ruscur@russell.cc>
-Received: from wout4-smtp.messagingengine.com (wout4-smtp.messagingengine.com
- [64.147.123.20])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41R70F4h1CzF35c
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 17:31:09 +1000 (AEST)
-Message-ID: <9640a2ff6ce0c20d603c16ba7e8b5238d206bf26.camel@russell.cc>
-Subject: Re: [PATCH kernel] powerpc/powernv/ioda2: Add 256M IOMMU page size
- to the default POWER8 case
-From: Russell Currey <ruscur@russell.cc>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Date: Thu, 12 Jul 2018 17:21:49 +1000
-In-Reply-To: <20180702074205.12837-1-aik@ozlabs.ru>
-References: <20180702074205.12837-1-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41R76h4z6ZzF35P
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 17:36:43 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id 31-v6so10317811plc.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 00:36:43 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linux-mm@kvack.org
+Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arch@vger.kernel.org
+Subject: [RFC PATCH] mm: optimise pte dirty/accessed bits handling in fork
+Date: Thu, 12 Jul 2018 17:36:33 +1000
+Message-Id: <20180712073633.1702-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +23,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-02 at 17:42 +1000, Alexey Kardashevskiy wrote:
-> The sketchy bypass uses 256M pages so add this page size as well.
-> 
-> This should cause no behavioral change but will be used later.
-> 
-> Fixes: 477afd6ea6 "powerpc/ioda: Use ibm,supported-tce-sizes for
-> IOMMU page size mask"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+fork clears dirty/accessed bits from new ptes in the child, even
+though the mapping allows such accesses. This logic has existed
+for ~ever, and certainly well before physical page reclaim and
+cleaning was not strongly tied to pte access state as it is today.
+Now that is the case, this access bit clearing logic does not do
+much.
 
-Reviewed-by: Russell Currey <ruscur@russell.cc>
+Other than this case, Linux is "eager" to set dirty/accessed bits
+when setting up mappings, which avoids micro-faults (and page
+faults on CPUs that implement these bits in software). With this
+patch, there are no cases I could instrument where dirty/accessed
+bits do not match the access permissions without memory pressure
+(and without more exotic things like migration).
 
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c
-> b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 5bd0eb6..557c11d 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -2925,7 +2925,7 @@ static unsigned long
-> pnv_ioda_parse_tce_sizes(struct pnv_phb *phb)
->  		/* Add 16M for POWER8 by default */
->  		if (cpu_has_feature(CPU_FTR_ARCH_207S) &&
->  				!cpu_has_feature(CPU_FTR_ARCH_300))
-> -			mask |= SZ_16M;
-> +			mask |= SZ_16M | SZ_256M;
->  		return mask;
->  	}
->  
+This speeds up a fork/exit microbenchmark by about 5% on POWER9
+(which uses a software fault fallback mechanism to set these bits).
+I expect x86 CPUs will barely be noticable, but would be interesting
+to see. Other archs might care more, and anyway it's always good if
+we can remove code and make things a bit faster.
+
+I don't *think* I'm missing anything fundamental, but would be good
+to be sure. Comments?
+
+Thanks,
+Nick
+
+---
+
+ mm/huge_memory.c |  4 ++--
+ mm/memory.c      | 10 +++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 1cd7c1a57a14..c1d41cad9aad 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -974,7 +974,7 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 	pgtable_trans_huge_deposit(dst_mm, dst_pmd, pgtable);
+ 
+ 	pmdp_set_wrprotect(src_mm, addr, src_pmd);
+-	pmd = pmd_mkold(pmd_wrprotect(pmd));
++	pmd = pmd_wrprotect(pmd);
+ 	set_pmd_at(dst_mm, addr, dst_pmd, pmd);
+ 
+ 	ret = 0;
+@@ -1065,7 +1065,7 @@ int copy_huge_pud(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 	}
+ 
+ 	pudp_set_wrprotect(src_mm, addr, src_pud);
+-	pud = pud_mkold(pud_wrprotect(pud));
++	pud = pud_wrprotect(pud);
+ 	set_pud_at(dst_mm, addr, dst_pud, pud);
+ 
+ 	ret = 0;
+diff --git a/mm/memory.c b/mm/memory.c
+index 7206a634270b..3fea40da3a58 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1023,12 +1023,12 @@ copy_one_pte(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+ 	}
+ 
+ 	/*
+-	 * If it's a shared mapping, mark it clean in
+-	 * the child
++	 * Child inherits dirty and young bits from parent. There is no
++	 * point clearing them because any cleaning or aging has to walk
++	 * all ptes anyway, and it will notice the bits set in the parent.
++	 * Leaving them set avoids stalls and even page faults on CPUs that
++	 * handle these bits in software.
+ 	 */
+-	if (vm_flags & VM_SHARED)
+-		pte = pte_mkclean(pte);
+-	pte = pte_mkold(pte);
+ 
+ 	page = vm_normal_page(vma, addr, pte);
+ 	if (page) {
+-- 
+2.17.0
