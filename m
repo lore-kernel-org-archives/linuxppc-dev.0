@@ -1,46 +1,29 @@
-Return-Path: <js1304@gmail.com>
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com
- [IPv6:2a00:1450:4864:20::442])
+Return-Path: <zajec5@gmail.com>
+Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
+ [IPv6:2a00:1450:4010:c07::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41RjZj218YzDr55
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 16:29:32 +1000 (AEST)
-Received: by mail-wr1-x442.google.com with SMTP id m1-v6so11176913wrg.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2018 23:29:32 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20180712071536.GA15506@lst.de>
-References: <CGME20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29@eucas1p2.samsung.com>
- <20180709121956.20200-1-m.szyprowski@samsung.com>
- <20180709122019eucas1p2340da484acfcc932537e6014f4fd2c29~-sqTPJKij2939229392eucas1p2j@eucas1p2.samsung.com>
- <CAAmzW4PPNYhUj_MeZox+ddq8MjXqnJs_AJ3xkayf710udD1pSg@mail.gmail.com>
- <20180710095056.GE14284@dhcp22.suse.cz>
- <CAAmzW4P1m_T77DfQzDD6ysGaOF46++-0gwRaOajmo6ef=VYp=A@mail.gmail.com>
- <20180711085407.GB20050@dhcp22.suse.cz>
- <CAAmzW4M3KADCZD9+B2h7=WsYksGtg-GzYRCJjbqK5Scceynrrg@mail.gmail.com>
- <20180712071536.GA15506@lst.de>
-From: Joonsoo Kim <js1304@gmail.com>
-Date: Fri, 13 Jul 2018 15:29:29 +0900
-Message-ID: <CAAmzW4MNuZOZRP1fHt7E42Mm6+-CLkYYA1Ju2Cfe0ik4Ynb4Lw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] mm/cma: remove unsupported gfp_mask parameter from
- cma_alloc()
-To: Christoph Hellwig <hch@lst.de>
-Cc: Michal Hocko <mhocko@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Linux Memory Management List <linux-mm@kvack.org>,
- LKML <linux-kernel@vger.kernel.org>,
- linux-arm-kernel@lists.infradead.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, iommu@lists.linux-foundation.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Vlastimil Babka <vbabka@suse.cz>,
- Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Rlxs6nqYzDr02
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 18:16:14 +1000 (AEST)
+Received: by mail-lf0-x243.google.com with SMTP id b22-v6so14052894lfa.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 01:16:14 -0700 (PDT)
+From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>,
+ Boris Brezillon <boris.brezillon@free-electrons.com>,
+ Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>
+Cc: linux-mtd@lists.infradead.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Joerg Roedel <joro@8bytes.org>,
- Sumit Semwal <sumit.semwal@linaro.org>, Robin Murphy <robin.murphy@arm.com>,
- Laura Abbott <labbott@redhat.com>, linaro-mm-sig@lists.linaro.org
-Content-Type: text/plain; charset="UTF-8"
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Cyril Bur <cyrilbur@gmail.com>, Miquel Raynal <miquel.raynal@bootlin.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Timothy Pearson <tpearson@raptorengineering.com>,
+ =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>
+Subject: [PATCH] mtd: powernv_flash: set of_node in mtd's dev
+Date: Fri, 13 Jul 2018 10:15:59 +0200
+Message-Id: <20180713081559.4373-1-zajec5@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,24 +33,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2018-07-12 16:15 GMT+09:00 Christoph Hellwig <hch@lst.de>:
-> On Thu, Jul 12, 2018 at 11:48:47AM +0900, Joonsoo Kim wrote:
->> One of existing user is general DMA layer and it takes gfp flags that is
->> provided by user. I don't check all the DMA allocation sites but how do
->> you convince that none of them try to use anything other
->> than GFP_KERNEL [|__GFP_NOWARN]?
->
-> They use a few others things still like __GFP_COMP, __GPF_DMA or
-> GFP_HUGEPAGE.  But all these are bogus as we have various implementations
-> that can't respect them.  I plan to get rid of the gfp_t argument
-> in the dma_map_ops alloc method in a few merge windows because of that,
-> but it needs further implementation consolidation first.
+From: Rafał Miłecki <rafal@milecki.pl>
 
-Okay. If those flags are all, this change would be okay.
+This enables some features implemented in mtd subsystem like reading
+label and partitioning info from DT.
 
-For the remind of this gfp flag introduction in cma_alloc(), see the
-following link.
+Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
+Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
+---
+ drivers/mtd/devices/powernv_flash.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-https://marc.info/?l=linux-mm&m=148431452118407
-
-Thanks.
+diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
+index c1312b141ae0..33593122e49b 100644
+--- a/drivers/mtd/devices/powernv_flash.c
++++ b/drivers/mtd/devices/powernv_flash.c
+@@ -223,6 +223,7 @@ static int powernv_flash_set_driver_info(struct device *dev,
+ 	mtd->_read = powernv_flash_read;
+ 	mtd->_write = powernv_flash_write;
+ 	mtd->dev.parent = dev;
++	mtd_set_of_node(mtd, dev->of_node);
+ 	return 0;
+ }
+ 
+-- 
+2.13.7
