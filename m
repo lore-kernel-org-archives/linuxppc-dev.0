@@ -1,16 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <diana.craciun@nxp.com>
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41RtTn4clBzF35Q
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 23:10:52 +1000 (AEST)
-Message-Id: <4302f36bd615c179c92f2007a0f3a1215ba96c55.1531439662.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/8xx: fix handling of early NULL pointer dereference
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 13 Jul 2018 13:10:47 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41RvPl09pWzF35T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 23:52:25 +1000 (AEST)
+From: Diana Craciun <diana.craciun@nxp.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mpe@ellerman.id.au, oss@buserror.net, leoyang.li@nxp.com,
+ bharat.bhushan@nxp.com, Diana Craciun <diana.craciun@nxp.com>
+Subject: [PATCH v3 1/6] powerpc/fsl: Disable the speculation barrier from the
+ command line
+Date: Fri, 13 Jul 2018 16:52:10 +0300
+Message-Id: <1531489935-17473-2-git-send-email-diana.craciun@nxp.com>
+In-Reply-To: <1531489935-17473-1-git-send-email-diana.craciun@nxp.com>
+References: <1531489935-17473-1-git-send-email-diana.craciun@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,43 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NULL pointers are pointers to user memory space. So user pagetable
-has to be set in order to avoid random behaviour in case of NULL
-pointer dereference, otherwise we may encounter random memory
-access hence Machine Check Exception from TLB Miss handlers.
+The speculation barrier can be disabled from the command line
+with the parameter: "nospectre_v1".
 
-Set user pagetable as early as possible in order to properly
-catch early kernel NULL pointer dereference.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
 ---
- arch/powerpc/kernel/head_8xx.S | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+History:
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 6cab07e76732..04501b65040e 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -873,6 +873,10 @@ start_here:
- 	li	r0,0
- 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+v2-->v3
+- no changes
+
+ arch/powerpc/kernel/security.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/security.c
+index a8b2773..2ebfc5b 100644
+--- a/arch/powerpc/kernel/security.c
++++ b/arch/powerpc/kernel/security.c
+@@ -16,6 +16,7 @@
+ unsigned long powerpc_security_features __read_mostly = SEC_FTR_DEFAULT;
  
-+	lis	r6, swapper_pg_dir@ha
-+	tophys(r6,r6)
-+	mtspr	SPRN_M_TW, r6
+ bool barrier_nospec_enabled;
++static bool no_nospec;
+ 
+ static void enable_barrier_nospec(bool enable)
+ {
+@@ -42,9 +43,18 @@ void setup_barrier_nospec(void)
+ 	enable = security_ftr_enabled(SEC_FTR_FAVOUR_SECURITY) &&
+ 		 security_ftr_enabled(SEC_FTR_BNDS_CHK_SPEC_BAR);
+ 
+-	enable_barrier_nospec(enable);
++	if (!no_nospec)
++		enable_barrier_nospec(enable);
+ }
+ 
++static int __init handle_nospectre_v1(char *p)
++{
++	no_nospec = true;
 +
- 	bl	early_init	/* We have to do this with MMU on */
- 
- /*
-@@ -893,9 +897,6 @@ start_here:
- 	 * init's THREAD like the context switch code does, but this is
- 	 * easier......until someone changes init's static structures.
- 	 */
--	lis	r6, swapper_pg_dir@ha
--	tophys(r6,r6)
--	mtspr	SPRN_M_TW, r6
- 	lis	r4,2f@h
- 	ori	r4,r4,2f@l
- 	tophys(r4,r4)
++	return 0;
++}
++early_param("nospectre_v1", handle_nospectre_v1);
++
+ #ifdef CONFIG_DEBUG_FS
+ static int barrier_nospec_set(void *data, u64 val)
+ {
 -- 
-2.13.3
+2.5.5
