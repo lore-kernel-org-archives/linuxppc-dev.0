@@ -1,22 +1,29 @@
-Return-Path: <srs0=wnvg=j6=infradead.org=rdunlap@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jallen@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41SCY33NglzF35V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 11:59:51 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41SCY32n1Xz8ttN
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 11:59:51 +1000 (AEST)
-Subject: Re: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com, malat@debian.org
-References: <20180709142426.26999-1-mpe@ellerman.id.au>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <da5b3f3d-73f8-c21b-3c90-65fe33afbf97@infradead.org>
-Date: Fri, 13 Jul 2018 18:59:45 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180709142426.26999-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Rw4X2fqKzDr10
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 00:22:32 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6DEEGTf138047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 10:22:29 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k6vqntx0h-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 10:22:28 -0400
+Received: from localhost
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
+ Fri, 13 Jul 2018 08:22:28 -0600
+From: John Allen <jallen@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com
+Subject: [PATCH 0/2] powerpc/pseries: Improve serialization of PRRN events
+Date: Fri, 13 Jul 2018 09:22:22 -0500
+Message-Id: <20180713142224.4516-1-jallen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,100 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2018 07:24 AM, Michael Ellerman wrote:
-> Because the allmodconfig logic just sets every symbol to M or Y, it
-> has the effect of always generating a 64-bit config, because
-> CONFIG_PPC64 becomes Y.
-> 
-> So to make it easier for folks to test 32-bit code, provide a phony
-> defconfig target that generates a 32-bit allmodconfig.
-> 
-> The 32-bit port has several mutually exclusive CPU types, we choose
-> the Book3S variants as that's what the help text in Kconfig says is
-> most com
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Stress testing has uncovered issues with handling continuously queued PRRN
+events. Running PRRN events in this way can seriously load the system given
+the sheer volume of dlpar being handled. This patchset ensures that PRRN
+events are handled more synchronously, only allowing the PRRN handler to
+queue a single dlpar event at any given time.  Additionally, it ensures
+that rtas polling continues normally when multiple PRRN events are queued
+simultaneously.
 
-Hi Michael,
+John Allen (2):
+  pseries/prrn: Avoid blocking rtas polling handling multiple PRRN
+    events
+  pseries/prrn: Wait for completion of hotplug events during PRRN
+    handling
 
-Sorry for the delay.  I was traveling (out in the boonies).
-
-I'm trying to use 'make ppc32_allmodconfig'.  Cross-building on x86_64
-with crosstools from kernel.org.  (gcc 8.1.0)
-
-I'm getting build errors.  Looks like it's missing a header file or 3.
-I looked into that but it's a long and twisty maze of passages.
-Any ideas?
-
-
-  CC      arch/powerpc/mm/dump_linuxpagetables.o
-In file included from ../arch/powerpc/include/asm/book3s/pgtable.h:8,
-                 from ../arch/powerpc/include/asm/pgtable.h:18,
-                 from ../include/linux/hugetlb.h:12,
-                 from ../arch/powerpc/mm/dump_linuxpagetables.c:19:
-../arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
-../arch/powerpc/include/asm/book3s/32/pgtable.h:53:19: error: 'PKMAP_BASE' undeclared (first use in this function); did you mean 'AT_BASE'?
- #define KVIRT_TOP PKMAP_BASE
-                   ^~~~~~~~~~
-../arch/powerpc/include/asm/book3s/32/pgtable.h:64:23: note: in expansion of macro 'KVIRT_TOP'
- #define IOREMAP_TOP ((KVIRT_TOP - CONFIG_CONSISTENT_SIZE) & PAGE_MASK)
-                       ^~~~~~~~~
-../arch/powerpc/mm/dump_linuxpagetables.c:456:39: note: in expansion of macro 'IOREMAP_TOP'
-  address_markers[i++].start_address = IOREMAP_TOP;
-                                       ^~~~~~~~~~~
-../arch/powerpc/include/asm/book3s/32/pgtable.h:53:19: note: each undeclared identifier is reported only once for each function it appears in
- #define KVIRT_TOP PKMAP_BASE
-                   ^~~~~~~~~~
-../arch/powerpc/include/asm/book3s/32/pgtable.h:64:23: note: in expansion of macro 'KVIRT_TOP'
- #define IOREMAP_TOP ((KVIRT_TOP - CONFIG_CONSISTENT_SIZE) & PAGE_MASK)
-                       ^~~~~~~~~
-../arch/powerpc/mm/dump_linuxpagetables.c:456:39: note: in expansion of macro 'IOREMAP_TOP'
-  address_markers[i++].start_address = IOREMAP_TOP;
-                                       ^~~~~~~~~~~
-../arch/powerpc/mm/dump_linuxpagetables.c:464:39: error: implicit declaration of function 'PKMAP_ADDR'; did you mean 'PCI_IO_ADDR'? [-Werror=implicit-function-declaration]
-  address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
-                                       ^~~~~~~~~~
-                                       PCI_IO_ADDR
-../arch/powerpc/mm/dump_linuxpagetables.c:464:50: error: 'LAST_PKMAP' undeclared (first use in this function); did you mean 'LIST_HEAD'?
-  address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
-                                                  ^~~~~~~~~~
-                                                  LIST_HEAD
-
-
-
-Thanks.
-
-> ---
->  arch/powerpc/Makefile                 | 5 +++++
->  arch/powerpc/configs/book3s_32.config | 2 ++
->  2 files changed, 7 insertions(+)
->  create mode 100644 arch/powerpc/configs/book3s_32.config
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 2ea575cb3401..2556c2182789 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
->  	$(call merge_into_defconfig,mpc86xx_basic_defconfig,\
->  		86xx-smp 86xx-hw fsl-emb-nonhw)
->  
-> +PHONY += ppc32_allmodconfig
-> +ppc32_allmodconfig:
-> +	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
-> +		-f $(srctree)/Makefile allmodconfig
-> +
->  define archhelp
->    @echo '* zImage          - Build default images selected by kernel config'
->    @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-> diff --git a/arch/powerpc/configs/book3s_32.config b/arch/powerpc/configs/book3s_32.config
-> new file mode 100644
-> index 000000000000..8721eb7b1294
-> --- /dev/null
-> +++ b/arch/powerpc/configs/book3s_32.config
-> @@ -0,0 +1,2 @@
-> +CONFIG_PPC64=n
-> +CONFIG_PPC_BOOK3S_32=y
-> 
-
+ arch/powerpc/kernel/rtasd.c               | 11 ++++++++---
+ arch/powerpc/platforms/pseries/mobility.c |  5 ++++-
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
 -- 
-~Randy
+2.17.1
