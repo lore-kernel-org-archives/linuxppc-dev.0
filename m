@@ -1,40 +1,26 @@
-Return-Path: <abdhalee@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41RnCp6RQrzDr55
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 19:13:26 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6D94vXD053730
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 05:13:24 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k6rvcs87j-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 05:13:24 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
- Fri, 13 Jul 2018 03:13:23 -0600
-Subject: Re: [next-20180711][Oops] linux-next kernel boot is broken on powerpc
-From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-To: Pavel Tatashin <pasha.tatashin@oracle.com>
-Cc: sachinp@linux.vnet.ibm.com, Stephen Rothwell <sfr@canb.auug.org.au>,
- Michal Hocko <mhocko@suse.com>, sim@linux.vnet.ibm.com,
- venkatb3@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
- manvanth@linux.vnet.ibm.com, Linux Memory Management List
- <linux-mm@kvack.org>,
- linux-next@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Date: Fri, 13 Jul 2018 14:43:11 +0530
-In-Reply-To: <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
-References: <1531416305.6480.24.camel@abdul.in.ibm.com>
- <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41RrWJ6wVWzDr55
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 21:42:03 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id r16-v6so61693497oie.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 04:42:03 -0700 (PDT)
+MIME-Version: 1.0
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+ <87sh4uj675.fsf@concordia.ellerman.id.au>
+ <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
+In-Reply-To: <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 13 Jul 2018 13:41:49 +0200
+Message-ID: <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
+Subject: CONFIG_ANDROID_BINDER_IPC=y (Re: powerpc: 32BIT vs. 64BIT (PPC32 vs.
+ PPC64))
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Message-Id: <1531473191.6480.26.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,25 +30,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-07-12 at 13:44 -0400, Pavel Tatashin wrote:
-> > Related commit could be one of below ? I see lots of patches related to mm and could not bisect
+Randy,
+
+On Mon, Jul 9, 2018 at 2:00 PM Mathieu Malaterre <malat@debian.org> wrote:
+>
+> On Sun, Jul 8, 2018 at 1:53 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
 > >
-> > 5479976fda7d3ab23ba0a4eb4d60b296eb88b866 mm: page_alloc: restore memblock_next_valid_pfn() on arm/arm64
-> > 41619b27b5696e7e5ef76d9c692dd7342c1ad7eb mm-drop-vm_bug_on-from-__get_free_pages-fix
-> > 531bbe6bd2721f4b66cdb0f5cf5ac14612fa1419 mm: drop VM_BUG_ON from __get_free_pages
-> > 479350dd1a35f8bfb2534697e5ca68ee8a6e8dea mm, page_alloc: actually ignore mempolicies for high priority allocations
-> > 088018f6fe571444caaeb16e84c9f24f22dfc8b0 mm: skip invalid pages block at a time in zero_resv_unresv()
-> 
-> Looks like:
-> 0ba29a108979 mm/sparse: Remove CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-> 
-> This patch is going to be reverted from linux-next. Abdul, please
-> verify that issue is gone once  you revert this patch.
+> > Randy Dunlap <rdunlap@infradead.org> writes:
+> > > Hi,
+> > >
+> > > Is there a good way (or a shortcut) to do something like:
+> >
+> > The best I know of is:
+> >
+> > > $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+> > >   to get a PPC32/32BIT allmodconfig
+> >
+> > $ echo CONFIG_PPC64=n > allmod.config
+> > $ KCONFIG_ALLCONFIG=1 make allmodconfig
+> > $ grep PPC32 .config
+> > CONFIG_PPC32=y
+> >
+> > Which is still a bit clunky.
+> >
+> >
+> > I looked at this a while back and the problem we have is that the 32-bit
+> > kernel is not a single thing. There are multiple 32-bit platforms which
+> > are mutually exclusive.
+> >
+> > eg, from menuconfig:
+> >
+> >  - 512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx
+> >  - Freescale 85xx
+> >  - Freescale 8xx
+> >  - AMCC 40x
+> >  - AMCC 44x, 46x or 47x
+> >  - Freescale e200
+>
+> Most Linux distro seems to have drop support for ppc32. So I'd suggest
+> to pick Debian powperc default config (but I agree that I am a little
+> biased here).
 
-kernel booted fine when the above patch is reverted.
+I tried an allmode as suggest by Michael (above). But I get a build error:
 
--- 
-Regard's
+  MODPOST vmlinux.o
+drivers/android/binder.o: In function `binder_thread_write':
+binder.c:(.text+0xc750): undefined reference to `__get_user_bad'
+binder.c:(.text+0xc76c): undefined reference to `__get_user_bad'
+binder.c:(.text+0xc790): undefined reference to `__get_user_bad'
+binder.c:(.text+0xc7d4): undefined reference to `__get_user_bad'
+binder.c:(.text+0xc7f4): undefined reference to `__get_user_bad'
 
-Abdul Haleem
-IBM Linux Technology Centre
+
+So for now I need to do: CONFIG_ANDROID_BINDER_IPC=n
+
+How did you get passed this build failure ?
+
+> >
+> > So we could have a 32-bit allmodconfig, but we'd need to chose one of
+> > the above, and we'd still only be testing some of the code.
+> >
+> > Having said that you're the 2nd person to ask about this, so we should
+> > clearly do something to make a 32-bit allmodconfig easier, even if it's
+> > not perfect.
+> >
+> > cheers
