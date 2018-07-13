@@ -1,27 +1,16 @@
-Return-Path: <jrdr.linux@gmail.com>
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com
- [IPv6:2a00:1450:4864:20::244])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41RtB32wnvzF35T
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 22:57:15 +1000 (AEST)
-Received: by mail-lj1-x244.google.com with SMTP id 203-v6so13434558ljj.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 05:57:14 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <41Qft01FR3zB4MS@ozlabs.org>
-References: <20180611202904.GA25538@jordon-HP-15-Notebook-PC>
- <41Qft01FR3zB4MS@ozlabs.org>
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Fri, 13 Jul 2018 18:27:10 +0530
-Message-ID: <CAFqt6zaBuJ=DRkDA4y4ecMzecGFXE0ddP2m9xfEXKHmnyFfcOQ@mail.gmail.com>
-Subject: Re: misc: ocxl: Change return type for fault handler
-To: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Matthew Wilcox <willy@infradead.org>, fbarrat@linux.vnet.ibm.com,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
- Greg KH <gregkh@linuxfoundation.org>, brajeswar.linux@gmail.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Sabyasachi Gupta <sabyasachi.linux@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41RtTn4clBzF35Q
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 23:10:52 +1000 (AEST)
+Message-Id: <4302f36bd615c179c92f2007a0f3a1215ba96c55.1531439662.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/8xx: fix handling of early NULL pointer dereference
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 13 Jul 2018 13:10:47 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2018 at 6:54 PM, Michael Ellerman
-<patch-notifications@ellerman.id.au> wrote:
-> On Mon, 2018-06-11 at 20:29:04 UTC, Souptick Joarder wrote:
->> Use new return type vm_fault_t for fault handler. For
->> now, this is just documenting that the function returns
->> a VM_FAULT value rather than an errno. Once all instances
->> are converted, vm_fault_t will become a distinct type.
->>
->> Ref-> commit 1c8f422059ae ("mm: change return type to vm_fault_t")
->>
->> There is an existing bug when vm_insert_pfn() can return
->> ENOMEM which was ignored and VM_FAULT_NOPAGE returned as
->> default. The new inline vmf_insert_pfn() has removed
->> this inefficiency by returning correct vm_fault_ type.
->>
->> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
->> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
->> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
->
-> Applied to powerpc next, thanks.
->
-> https://git.kernel.org/powerpc/c/a545cf032d11437ed86e62f00d4991
->
-> cheers
+NULL pointers are pointers to user memory space. So user pagetable
+has to be set in order to avoid random behaviour in case of NULL
+pointer dereference, otherwise we may encounter random memory
+access hence Machine Check Exception from TLB Miss handlers.
 
-Thanks :)
+Set user pagetable as early as possible in order to properly
+catch early kernel NULL pointer dereference.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_8xx.S | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 6cab07e76732..04501b65040e 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -873,6 +873,10 @@ start_here:
+ 	li	r0,0
+ 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+ 
++	lis	r6, swapper_pg_dir@ha
++	tophys(r6,r6)
++	mtspr	SPRN_M_TW, r6
++
+ 	bl	early_init	/* We have to do this with MMU on */
+ 
+ /*
+@@ -893,9 +897,6 @@ start_here:
+ 	 * init's THREAD like the context switch code does, but this is
+ 	 * easier......until someone changes init's static structures.
+ 	 */
+-	lis	r6, swapper_pg_dir@ha
+-	tophys(r6,r6)
+-	mtspr	SPRN_M_TW, r6
+ 	lis	r4,2f@h
+ 	ori	r4,r4,2f@l
+ 	tophys(r4,r4)
+-- 
+2.13.3
