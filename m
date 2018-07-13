@@ -1,29 +1,40 @@
-Return-Path: <zajec5@gmail.com>
-Received: from mail-lf0-x243.google.com (mail-lf0-x243.google.com
- [IPv6:2a00:1450:4010:c07::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <abdhalee@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Rlxs6nqYzDr02
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 18:16:14 +1000 (AEST)
-Received: by mail-lf0-x243.google.com with SMTP id b22-v6so14052894lfa.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 01:16:14 -0700 (PDT)
-From: =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <zajec5@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- Boris Brezillon <boris.brezillon@free-electrons.com>,
- Marek Vasut <marek.vasut@gmail.com>, Richard Weinberger <richard@nod.at>
-Cc: linux-mtd@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Cyril Bur <cyrilbur@gmail.com>, Miquel Raynal <miquel.raynal@bootlin.com>,
- linuxppc-dev@lists.ozlabs.org,
- Timothy Pearson <tpearson@raptorengineering.com>,
- =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>
-Subject: [PATCH] mtd: powernv_flash: set of_node in mtd's dev
-Date: Fri, 13 Jul 2018 10:15:59 +0200
-Message-Id: <20180713081559.4373-1-zajec5@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41RnCp6RQrzDr55
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 19:13:26 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6D94vXD053730
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 05:13:24 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k6rvcs87j-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 05:13:24 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <abdhalee@linux.vnet.ibm.com>;
+ Fri, 13 Jul 2018 03:13:23 -0600
+Subject: Re: [next-20180711][Oops] linux-next kernel boot is broken on powerpc
+From: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+To: Pavel Tatashin <pasha.tatashin@oracle.com>
+Cc: sachinp@linux.vnet.ibm.com, Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michal Hocko <mhocko@suse.com>, sim@linux.vnet.ibm.com,
+ venkatb3@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+ manvanth@linux.vnet.ibm.com, Linux Memory Management List
+ <linux-mm@kvack.org>,
+ linux-next@vger.kernel.org, aneesh.kumar@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Date: Fri, 13 Jul 2018 14:43:11 +0530
+In-Reply-To: <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
+References: <1531416305.6480.24.camel@abdul.in.ibm.com>
+ <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Message-Id: <1531473191.6480.26.camel@abdul.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +44,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rafał Miłecki <rafal@milecki.pl>
+On Thu, 2018-07-12 at 13:44 -0400, Pavel Tatashin wrote:
+> > Related commit could be one of below ? I see lots of patches related to mm and could not bisect
+> >
+> > 5479976fda7d3ab23ba0a4eb4d60b296eb88b866 mm: page_alloc: restore memblock_next_valid_pfn() on arm/arm64
+> > 41619b27b5696e7e5ef76d9c692dd7342c1ad7eb mm-drop-vm_bug_on-from-__get_free_pages-fix
+> > 531bbe6bd2721f4b66cdb0f5cf5ac14612fa1419 mm: drop VM_BUG_ON from __get_free_pages
+> > 479350dd1a35f8bfb2534697e5ca68ee8a6e8dea mm, page_alloc: actually ignore mempolicies for high priority allocations
+> > 088018f6fe571444caaeb16e84c9f24f22dfc8b0 mm: skip invalid pages block at a time in zero_resv_unresv()
+> 
+> Looks like:
+> 0ba29a108979 mm/sparse: Remove CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+> 
+> This patch is going to be reverted from linux-next. Abdul, please
+> verify that issue is gone once  you revert this patch.
 
-This enables some features implemented in mtd subsystem like reading
-label and partitioning info from DT.
+kernel booted fine when the above patch is reverted.
 
-Reported-by: Timothy Pearson <tpearson@raptorengineering.com>
-Signed-off-by: Rafał Miłecki <rafal@milecki.pl>
----
- drivers/mtd/devices/powernv_flash.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-index c1312b141ae0..33593122e49b 100644
---- a/drivers/mtd/devices/powernv_flash.c
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -223,6 +223,7 @@ static int powernv_flash_set_driver_info(struct device *dev,
- 	mtd->_read = powernv_flash_read;
- 	mtd->_write = powernv_flash_write;
- 	mtd->dev.parent = dev;
-+	mtd_set_of_node(mtd, dev->of_node);
- 	return 0;
- }
- 
 -- 
-2.13.7
+Regard's
+
+Abdul Haleem
+IBM Linux Technology Centre
