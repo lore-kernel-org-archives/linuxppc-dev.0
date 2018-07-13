@@ -1,36 +1,25 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <rdunlap@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41S3zC699HzF35Z
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 06:18:31 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6DKFsGc013567
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 16:18:30 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k72t60hc4-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 16:18:30 -0400
-Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Fri, 13 Jul 2018 16:18:28 -0400
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Subject: [PATCH v07 9/9] hotplug/pmt: Update topology after PMT
-Cc: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <458ff569-f611-f506-afa1-138146551dde@linux.vnet.ibm.com>
-Date: Fri, 13 Jul 2018 15:18:23 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41S86S550KzF35W
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 09:25:03 +1000 (AEST)
+Subject: Re: CONFIG_ANDROID_BINDER_IPC=y (Re: powerpc: 32BIT vs. 64BIT (PPC32
+ vs. PPC64))
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+ <87sh4uj675.fsf@concordia.ellerman.id.au>
+ <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
+ <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
+Date: Fri, 13 Jul 2018 16:24:54 -0700
 MIME-Version: 1.0
+In-Reply-To: <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <8ad3d872-b470-b8eb-e51e-df1da0ea2414@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,35 +29,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hotplug/pmt: Call rebuild_sched_domains after applying changes
-to update CPU associativity i.e. 'readd' CPUs.  This is to
-ensure that the deferred calls to arch_update_cpu_topology are
-now reflected in the system data structures.
+On 07/13/2018 04:41 AM, Mathieu Malaterre wrote:
+> Randy,
+> 
+> On Mon, Jul 9, 2018 at 2:00 PM Mathieu Malaterre <malat@debian.org> wrote:
+>>
+>> On Sun, Jul 8, 2018 at 1:53 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>>
+>>> Randy Dunlap <rdunlap@infradead.org> writes:
+>>>> Hi,
+>>>>
+>>>> Is there a good way (or a shortcut) to do something like:
+>>>
+>>> The best I know of is:
+>>>
+>>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+>>>>   to get a PPC32/32BIT allmodconfig
+>>>
+>>> $ echo CONFIG_PPC64=n > allmod.config
+>>> $ KCONFIG_ALLCONFIG=1 make allmodconfig
+>>> $ grep PPC32 .config
+>>> CONFIG_PPC32=y
+>>>
+>>> Which is still a bit clunky.
+>>>
+>>>
+>>> I looked at this a while back and the problem we have is that the 32-bit
+>>> kernel is not a single thing. There are multiple 32-bit platforms which
+>>> are mutually exclusive.
+>>>
+>>> eg, from menuconfig:
+>>>
+>>>  - 512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx
+>>>  - Freescale 85xx
+>>>  - Freescale 8xx
+>>>  - AMCC 40x
+>>>  - AMCC 44x, 46x or 47x
+>>>  - Freescale e200
+>>
+>> Most Linux distro seems to have drop support for ppc32. So I'd suggest
+>> to pick Debian powperc default config (but I agree that I am a little
+>> biased here).
+> 
+> I tried an allmode as suggest by Michael (above). But I get a build error:
+> 
+>   MODPOST vmlinux.o
+> drivers/android/binder.o: In function `binder_thread_write':
+> binder.c:(.text+0xc750): undefined reference to `__get_user_bad'
+> binder.c:(.text+0xc76c): undefined reference to `__get_user_bad'
+> binder.c:(.text+0xc790): undefined reference to `__get_user_bad'
+> binder.c:(.text+0xc7d4): undefined reference to `__get_user_bad'
+> binder.c:(.text+0xc7f4): undefined reference to `__get_user_bad'
+> 
+> 
+> So for now I need to do: CONFIG_ANDROID_BINDER_IPC=n
+> 
+> How did you get passed this build failure ?
 
-Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/dlpar.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Hi,
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 7264b8e..ea3c08a 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -16,6 +16,7 @@
- #include <linux/notifier.h>
- #include <linux/spinlock.h>
- #include <linux/cpu.h>
-+#include <linux/cpuset.h>
- #include <linux/slab.h>
- #include <linux/of.h>
- 
-@@ -451,6 +452,9 @@ static int dlpar_pmt(struct pseries_hp_errorlog *work)
- 		ssleep(10);
- 	}
- 
-+	ssleep(5);
-+	rebuild_sched_domains();
-+
- 	return 0;
- }
- 
+I am not seeing an error on that driver build.
+
+I am using gcc 8.1.0 from kernel.org:
+https://mirrors.edge.kernel.org/pub/tools/crosstool/
+
+and building on x86_64.
+
+
+-- 
+~Randy
