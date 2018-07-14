@@ -1,22 +1,27 @@
-Return-Path: <srs0=wnvg=j6=infradead.org=rdunlap@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41SH0v0XhdzDqgr
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 14:35:43 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41SH0t6VtSz8sxY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 14:35:42 +1000 (AEST)
-Subject: Re: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com, malat@debian.org
-References: <20180709142426.26999-1-mpe@ellerman.id.au>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <a41ed163-3db6-f204-4262-d428ec0a8d7a@infradead.org>
-Date: Fri, 13 Jul 2018 21:35:38 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41SSJq3HdvzDqvV
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 21:35:04 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id r5-v6so5790617pgv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 04:35:04 -0700 (PDT)
+Date: Sat, 14 Jul 2018 21:34:50 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alistair Popple <alistair@popple.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Russell Currey <ruscur@russell.cc>, Balbir
+ Singh <bsingharora@gmail.com>, Stewart Smith <stewart@linux.ibm.com>
+Subject: Re: [PATCH kernel] powerpc/ioda/npu2: Call hot reset skiboot hook
+ when disabling NPU
+Message-ID: <20180714213450.0803b435@aikyoga2>
+In-Reply-To: <1903233.NnVPaYN7RK@new-mexico>
+References: <20180607070607.16037-1-aik@ozlabs.ru>
+ <20180711194510.0bc8dc39@aik.ozlabs.ibm.com>
+ <1903233.NnVPaYN7RK@new-mexico>
 MIME-Version: 1.0
-In-Reply-To: <20180709142426.26999-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2018 07:24 AM, Michael Ellerman wrote:
-> Because the allmodconfig logic just sets every symbol to M or Y, it
-> has the effect of always generating a 64-bit config, because
-> CONFIG_PPC64 becomes Y.
+On Thu, 12 Jul 2018 11:38:34 +1000
+Alistair Popple <alistair@popple.id.au> wrote:
+
+> Hi Alexey,
 > 
-> So to make it easier for folks to test 32-bit code, provide a phony
-> defconfig target that generates a 32-bit allmodconfig.
+> On Wednesday, 11 July 2018 7:45:10 PM AEST Alexey Kardashevskiy wrote:
+> > On Thu,  7 Jun 2018 17:06:07 +1000
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >   
+> > > This brings NPU2 in a safe mode when it does not throw HMI if GPU
+> > > coherent memory is gone.  
 > 
-> The 32-bit port has several mutually exclusive CPU types, we choose
-> the Book3S variants as that's what the help text in Kconfig says is
-> most common.
+> It might be helpful if you you could describe the problem and what you are
+> trying to solve in a bit more depth. Assuming the memory was online how are you
+> offlining it?
+
+Fair enough. I am offlining it by simply killing a guest which triggers
+GPU PCI reset. Before this, PCI reset would trigger HMI as PTEs were
+still in both QEMU and guest pagetables and that would cause
+prefetching and thus killing the host.
+
+
+> If the memory has been online merely fencing/hot-resetting the
+> NVLink is likely not sufficient as you also need to flush caches prior to taking
+> the links down.
+
+I'd expect the guest driver to take care of this. If this is not enough
+and I need to pass some other MMIO (in addition to the ATS/tlb
+invalidation thingy which I'll add anyway), then what is it?
+
+
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-Hi Michael,
-
-ppc32_allmodconfig sets CONFIG_ISA=y (and other related symbols) and
-CONFIG_PPC_CHRP=y.  But my builds are failing because they are missing
-the functions isa_bus_to_virt() and isa_virt_to_bus().
-
-Any ideas?
-
-Thanks.
-
-> ---
->  arch/powerpc/Makefile                 | 5 +++++
->  arch/powerpc/configs/book3s_32.config | 2 ++
->  2 files changed, 7 insertions(+)
->  create mode 100644 arch/powerpc/configs/book3s_32.config
+> - Alistair
 > 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index 2ea575cb3401..2556c2182789 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
->  	$(call merge_into_defconfig,mpc86xx_basic_defconfig,\
->  		86xx-smp 86xx-hw fsl-emb-nonhw)
->  
-> +PHONY += ppc32_allmodconfig
-> +ppc32_allmodconfig:
-> +	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
-> +		-f $(srctree)/Makefile allmodconfig
-> +
->  define archhelp
->    @echo '* zImage          - Build default images selected by kernel config'
->    @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-> diff --git a/arch/powerpc/configs/book3s_32.config b/arch/powerpc/configs/book3s_32.config
-> new file mode 100644
-> index 000000000000..8721eb7b1294
-> --- /dev/null
-> +++ b/arch/powerpc/configs/book3s_32.config
-> @@ -0,0 +1,2 @@
-> +CONFIG_PPC64=n
-> +CONFIG_PPC_BOOK3S_32=y
+> > > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>  
+> > 
+> > 
+> > Anyone, ping?
+> > 
+> >   
+> > > ---
+> > > 
+> > > The main aim for this is nvlink2 pass through, helps a lot.
+> > > 
+> > > 
+> > > ---
+> > >  arch/powerpc/platforms/powernv/pci-ioda.c | 11 +++++++++++
+> > >  1 file changed, 11 insertions(+)
+> > > 
+> > > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > > index 66c2804..29f798c 100644
+> > > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > > @@ -3797,6 +3797,16 @@ static void pnv_pci_release_device(struct pci_dev *pdev)
+> > >  		pnv_ioda_release_pe(pe);
+> > >  }
+> > >  
+> > > +void pnv_npu_disable_device(struct pci_dev *pdev)
+> > > +{
+> > > +	struct eeh_dev *edev = pci_dev_to_eeh_dev(pdev);
+> > > +	struct eeh_pe *eehpe = edev ? edev->pe : NULL;
+> > > +
+> > > +	if (eehpe && eeh_ops && eeh_ops->reset) {
+> > > +		eeh_ops->reset(eehpe, EEH_RESET_HOT);
+> > > +	}
+> > > +}
+> > > +
+> > >  static void pnv_pci_ioda_shutdown(struct pci_controller *hose)
+> > >  {
+> > >  	struct pnv_phb *phb = hose->private_data;
+> > > @@ -3841,6 +3851,7 @@ static const struct pci_controller_ops pnv_npu_ioda_controller_ops = {
+> > >  	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
+> > >  	.dma_set_mask		= pnv_npu_dma_set_mask,
+> > >  	.shutdown		= pnv_pci_ioda_shutdown,
+> > > +	.disable_device		= pnv_npu_disable_device,
+> > >  };
+> > >  
+> > >  static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {  
+> > 
+> > 
+> > 
+> > --
+> > Alexey
+> >   
+> 
 > 
 
 
--- 
-~Randy
+
+--
+Alexey
