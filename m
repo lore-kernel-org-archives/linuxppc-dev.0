@@ -1,32 +1,20 @@
-Return-Path: <jallen@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <rdunlap@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Rw4Z1DPJzDr55
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 00:22:37 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6DEEl58005556
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 10:22:35 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2k6ub3xmpp-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2018 10:22:34 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
- Fri, 13 Jul 2018 08:22:32 -0600
-From: John Allen <jallen@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: nfont@linux.vnet.ibm.com, John Allen <jallen@linux.ibm.com>
-Subject: [PATCH 2/2] powerpc/pseries: Wait for completion of hotplug events
- during PRRN handling
-Date: Fri, 13 Jul 2018 09:22:24 -0500
-In-Reply-To: <20180713142224.4516-1-jallen@linux.ibm.com>
-References: <20180713142224.4516-1-jallen@linux.ibm.com>
-Message-Id: <20180713142224.4516-3-jallen@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41SGn46w0HzDqgP
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 14:25:24 +1000 (AEST)
+To: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ David Miller <davem@davemloft.net>
+Cc: Madalin Bucur <madalin.bucur@nxp.com>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH] net/ethernet/freescale/fman: fix cross-build error
+Message-ID: <3a063d78-73f8-b41f-9354-fe839fe80c11@infradead.org>
+Date: Fri, 13 Jul 2018 21:25:19 -0700
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While handling PRRN events, the time to handle the actual hotplug events
-dwarfs the time it takes to perform the device tree updates and queue the
-hotplug events. In the case that PRRN events are being queued continuously,
-hotplug events have been observed to be queued faster than the kernel can
-actually handle them. This patch avoids the problem by waiting for a
-hotplug request to complete before queueing more hotplug events.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Signed-off-by: John Allen <jallen@linux.ibm.com>
+  CC [M]  drivers/net/ethernet/freescale/fman/fman.o
+In file included from ../drivers/net/ethernet/freescale/fman/fman.c:35:
+../include/linux/fsl/guts.h: In function 'guts_set_dmacr':
+../include/linux/fsl/guts.h:165:2: error: implicit declaration of function 'clrsetbits_be32' [-Werror=implicit-function-declaration]
+  clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
+  ^~~~~~~~~~~~~~~
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Madalin Bucur <madalin.bucur@nxp.com>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/platforms/pseries/mobility.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Found while doing ppc32_allmodconfig builds.
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 8a8033a249c7..49930848fa78 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -242,6 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
- static void prrn_update_node(__be32 phandle)
- {
- 	struct pseries_hp_errorlog *hp_elog;
-+	struct completion hotplug_done;
- 	struct device_node *dn;
+ include/linux/fsl/guts.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- lnx-418-rc4.orig/include/linux/fsl/guts.h
++++ lnx-418-rc4/include/linux/fsl/guts.h
+@@ -16,6 +16,7 @@
+ #define __FSL_GUTS_H__
  
- 	/*
-@@ -263,7 +264,9 @@ static void prrn_update_node(__be32 phandle)
- 	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
- 	hp_elog->_drc_u.drc_index = phandle;
+ #include <linux/types.h>
++#include <linux/io.h>
  
--	queue_hotplug_event(hp_elog, NULL, NULL);
-+	init_completion(&hotplug_done);
-+	queue_hotplug_event(hp_elog, &hotplug_done, NULL);
-+	wait_for_completion(&hotplug_done);
- 
- 	kfree(hp_elog);
- }
--- 
-2.17.1
+ /**
+  * Global Utility Registers.
