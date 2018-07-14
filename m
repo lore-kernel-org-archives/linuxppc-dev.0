@@ -1,27 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <srs0=wnvg=j6=infradead.org=rdunlap@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41SB6l17HdzF35V
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 10:55:27 +1000 (AEST)
-Date: Sat, 14 Jul 2018 10:55:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
-Cc: Pavel Tatashin <pasha.tatashin@oracle.com>, sachinp@linux.vnet.ibm.com,
- Michal Hocko <mhocko@suse.com>, sim@linux.vnet.ibm.com,
- venkatb3@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
- manvanth@linux.vnet.ibm.com, Linux Memory Management List
- <linux-mm@kvack.org>, linux-next@vger.kernel.org,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [next-20180711][Oops] linux-next kernel boot is broken on powerpc
-Message-ID: <20180714105500.3694b93f@canb.auug.org.au>
-In-Reply-To: <1531473191.6480.26.camel@abdul.in.ibm.com>
-References: <1531416305.6480.24.camel@abdul.in.ibm.com>
- <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
- <1531473191.6480.26.camel@abdul.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41SCY33NglzF35V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 11:59:51 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41SCY32n1Xz8ttN
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 11:59:51 +1000 (AEST)
+Subject: Re: [PATCH 1/2] powerpc: Add ppc32_allmodconfig defconfig target
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com, malat@debian.org
+References: <20180709142426.26999-1-mpe@ellerman.id.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <da5b3f3d-73f8-c21b-3c90-65fe33afbf97@infradead.org>
+Date: Fri, 13 Jul 2018 18:59:45 -0700
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/h9o4dxATHYTD+EgczYGdc_="; protocol="application/pgp-signature"
+In-Reply-To: <20180709142426.26999-1-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +26,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/h9o4dxATHYTD+EgczYGdc_=
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On 07/09/2018 07:24 AM, Michael Ellerman wrote:
+> Because the allmodconfig logic just sets every symbol to M or Y, it
+> has the effect of always generating a 64-bit config, because
+> CONFIG_PPC64 becomes Y.
+> 
+> So to make it easier for folks to test 32-bit code, provide a phony
+> defconfig target that generates a 32-bit allmodconfig.
+> 
+> The 32-bit port has several mutually exclusive CPU types, we choose
+> the Book3S variants as that's what the help text in Kconfig says is
+> most com
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Hi Abdul,
+Hi Michael,
 
-On Fri, 13 Jul 2018 14:43:11 +0530 Abdul Haleem <abdhalee@linux.vnet.ibm.co=
-m> wrote:
->
-> On Thu, 2018-07-12 at 13:44 -0400, Pavel Tatashin wrote:
-> > > Related commit could be one of below ? I see lots of patches related =
-to mm and could not bisect
-> > >
-> > > 5479976fda7d3ab23ba0a4eb4d60b296eb88b866 mm: page_alloc: restore memb=
-lock_next_valid_pfn() on arm/arm64
-> > > 41619b27b5696e7e5ef76d9c692dd7342c1ad7eb mm-drop-vm_bug_on-from-__get=
-_free_pages-fix
-> > > 531bbe6bd2721f4b66cdb0f5cf5ac14612fa1419 mm: drop VM_BUG_ON from __ge=
-t_free_pages
-> > > 479350dd1a35f8bfb2534697e5ca68ee8a6e8dea mm, page_alloc: actually ign=
-ore mempolicies for high priority allocations
-> > > 088018f6fe571444caaeb16e84c9f24f22dfc8b0 mm: skip invalid pages block=
- at a time in zero_resv_unresv() =20
-> >=20
-> > Looks like:
-> > 0ba29a108979 mm/sparse: Remove CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
-> >=20
-> > This patch is going to be reverted from linux-next. Abdul, please
-> > verify that issue is gone once  you revert this patch. =20
->=20
-> kernel booted fine when the above patch is reverted.
+Sorry for the delay.  I was traveling (out in the boonies).
 
-And it has been removed from linux-next as of next-20180713.  (Friday
-the 13th is not all bad :-))
---=20
-Cheers,
-Stephen Rothwell
+I'm trying to use 'make ppc32_allmodconfig'.  Cross-building on x86_64
+with crosstools from kernel.org.  (gcc 8.1.0)
 
---Sig_/h9o4dxATHYTD+EgczYGdc_=
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+I'm getting build errors.  Looks like it's missing a header file or 3.
+I looked into that but it's a long and twisty maze of passages.
+Any ideas?
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltJSeQACgkQAVBC80lX
-0GzEPgf+O8ZUulbaRgniWzhnLUmbpQm5/OWeEsLqXQOjU5/rHCoshZNJPaIJyJZJ
-bBApGslZMfVpOqFwXAg0AyP3RHJwShjMaT/Et+9w7Q2UhxXV5DgPItJ9hvAmOBMk
-9UvmL2gPbZ7UNMZQVnxpnSsPVMj9RWp5nNG59ANcgV8skYN/nPEEju/DtJ+QJFN/
-utSHrk2BXD2juj1xgqQhAd8FGB0eRLFvWUFzMgLXWnl7ErTySkMSYYVYGtY9UBWN
-RuKT/pMD/V6/DdJKLMODs9yQaPeP7s9pFAgXzYeqwxxcqfllxbCr6xhyP3po64kp
-iDtz6xVa4SjoyUiR90n3DIPkbAHV2Q==
-=mqb2
------END PGP SIGNATURE-----
+  CC      arch/powerpc/mm/dump_linuxpagetables.o
+In file included from ../arch/powerpc/include/asm/book3s/pgtable.h:8,
+                 from ../arch/powerpc/include/asm/pgtable.h:18,
+                 from ../include/linux/hugetlb.h:12,
+                 from ../arch/powerpc/mm/dump_linuxpagetables.c:19:
+../arch/powerpc/mm/dump_linuxpagetables.c: In function 'populate_markers':
+../arch/powerpc/include/asm/book3s/32/pgtable.h:53:19: error: 'PKMAP_BASE' undeclared (first use in this function); did you mean 'AT_BASE'?
+ #define KVIRT_TOP PKMAP_BASE
+                   ^~~~~~~~~~
+../arch/powerpc/include/asm/book3s/32/pgtable.h:64:23: note: in expansion of macro 'KVIRT_TOP'
+ #define IOREMAP_TOP ((KVIRT_TOP - CONFIG_CONSISTENT_SIZE) & PAGE_MASK)
+                       ^~~~~~~~~
+../arch/powerpc/mm/dump_linuxpagetables.c:456:39: note: in expansion of macro 'IOREMAP_TOP'
+  address_markers[i++].start_address = IOREMAP_TOP;
+                                       ^~~~~~~~~~~
+../arch/powerpc/include/asm/book3s/32/pgtable.h:53:19: note: each undeclared identifier is reported only once for each function it appears in
+ #define KVIRT_TOP PKMAP_BASE
+                   ^~~~~~~~~~
+../arch/powerpc/include/asm/book3s/32/pgtable.h:64:23: note: in expansion of macro 'KVIRT_TOP'
+ #define IOREMAP_TOP ((KVIRT_TOP - CONFIG_CONSISTENT_SIZE) & PAGE_MASK)
+                       ^~~~~~~~~
+../arch/powerpc/mm/dump_linuxpagetables.c:456:39: note: in expansion of macro 'IOREMAP_TOP'
+  address_markers[i++].start_address = IOREMAP_TOP;
+                                       ^~~~~~~~~~~
+../arch/powerpc/mm/dump_linuxpagetables.c:464:39: error: implicit declaration of function 'PKMAP_ADDR'; did you mean 'PCI_IO_ADDR'? [-Werror=implicit-function-declaration]
+  address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
+                                       ^~~~~~~~~~
+                                       PCI_IO_ADDR
+../arch/powerpc/mm/dump_linuxpagetables.c:464:50: error: 'LAST_PKMAP' undeclared (first use in this function); did you mean 'LIST_HEAD'?
+  address_markers[i++].start_address = PKMAP_ADDR(LAST_PKMAP);
+                                                  ^~~~~~~~~~
+                                                  LIST_HEAD
 
---Sig_/h9o4dxATHYTD+EgczYGdc_=--
+
+
+Thanks.
+
+> ---
+>  arch/powerpc/Makefile                 | 5 +++++
+>  arch/powerpc/configs/book3s_32.config | 2 ++
+>  2 files changed, 7 insertions(+)
+>  create mode 100644 arch/powerpc/configs/book3s_32.config
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 2ea575cb3401..2556c2182789 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -354,6 +354,11 @@ mpc86xx_smp_defconfig:
+>  	$(call merge_into_defconfig,mpc86xx_basic_defconfig,\
+>  		86xx-smp 86xx-hw fsl-emb-nonhw)
+>  
+> +PHONY += ppc32_allmodconfig
+> +ppc32_allmodconfig:
+> +	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+> +		-f $(srctree)/Makefile allmodconfig
+> +
+>  define archhelp
+>    @echo '* zImage          - Build default images selected by kernel config'
+>    @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+> diff --git a/arch/powerpc/configs/book3s_32.config b/arch/powerpc/configs/book3s_32.config
+> new file mode 100644
+> index 000000000000..8721eb7b1294
+> --- /dev/null
+> +++ b/arch/powerpc/configs/book3s_32.config
+> @@ -0,0 +1,2 @@
+> +CONFIG_PPC64=n
+> +CONFIG_PPC_BOOK3S_32=y
+> 
+
+
+-- 
+~Randy
