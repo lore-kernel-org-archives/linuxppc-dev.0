@@ -1,25 +1,27 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41S86S550KzF35W
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 09:25:03 +1000 (AEST)
-Subject: Re: CONFIG_ANDROID_BINDER_IPC=y (Re: powerpc: 32BIT vs. 64BIT (PPC32
- vs. PPC64))
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
- <87sh4uj675.fsf@concordia.ellerman.id.au>
- <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
- <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
-Date: Fri, 13 Jul 2018 16:24:54 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41SB6l17HdzF35V
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2018 10:55:27 +1000 (AEST)
+Date: Sat, 14 Jul 2018 10:55:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>
+Cc: Pavel Tatashin <pasha.tatashin@oracle.com>, sachinp@linux.vnet.ibm.com,
+ Michal Hocko <mhocko@suse.com>, sim@linux.vnet.ibm.com,
+ venkatb3@in.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+ manvanth@linux.vnet.ibm.com, Linux Memory Management List
+ <linux-mm@kvack.org>, linux-next@vger.kernel.org,
+ aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [next-20180711][Oops] linux-next kernel boot is broken on powerpc
+Message-ID: <20180714105500.3694b93f@canb.auug.org.au>
+In-Reply-To: <1531473191.6480.26.camel@abdul.in.ibm.com>
+References: <1531416305.6480.24.camel@abdul.in.ibm.com>
+ <CAGM2rebtisZda0kqhg0u92fTDxC+=zMNNgKFBLH38osphk0fdA@mail.gmail.com>
+ <1531473191.6480.26.camel@abdul.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/h9o4dxATHYTD+EgczYGdc_="; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2018 04:41 AM, Mathieu Malaterre wrote:
-> Randy,
-> 
-> On Mon, Jul 9, 2018 at 2:00 PM Mathieu Malaterre <malat@debian.org> wrote:
->>
->> On Sun, Jul 8, 2018 at 1:53 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>
->>> Randy Dunlap <rdunlap@infradead.org> writes:
->>>> Hi,
->>>>
->>>> Is there a good way (or a shortcut) to do something like:
->>>
->>> The best I know of is:
->>>
->>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
->>>>   to get a PPC32/32BIT allmodconfig
->>>
->>> $ echo CONFIG_PPC64=n > allmod.config
->>> $ KCONFIG_ALLCONFIG=1 make allmodconfig
->>> $ grep PPC32 .config
->>> CONFIG_PPC32=y
->>>
->>> Which is still a bit clunky.
->>>
->>>
->>> I looked at this a while back and the problem we have is that the 32-bit
->>> kernel is not a single thing. There are multiple 32-bit platforms which
->>> are mutually exclusive.
->>>
->>> eg, from menuconfig:
->>>
->>>  - 512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx
->>>  - Freescale 85xx
->>>  - Freescale 8xx
->>>  - AMCC 40x
->>>  - AMCC 44x, 46x or 47x
->>>  - Freescale e200
->>
->> Most Linux distro seems to have drop support for ppc32. So I'd suggest
->> to pick Debian powperc default config (but I agree that I am a little
->> biased here).
-> 
-> I tried an allmode as suggest by Michael (above). But I get a build error:
-> 
->   MODPOST vmlinux.o
-> drivers/android/binder.o: In function `binder_thread_write':
-> binder.c:(.text+0xc750): undefined reference to `__get_user_bad'
-> binder.c:(.text+0xc76c): undefined reference to `__get_user_bad'
-> binder.c:(.text+0xc790): undefined reference to `__get_user_bad'
-> binder.c:(.text+0xc7d4): undefined reference to `__get_user_bad'
-> binder.c:(.text+0xc7f4): undefined reference to `__get_user_bad'
-> 
-> 
-> So for now I need to do: CONFIG_ANDROID_BINDER_IPC=n
-> 
-> How did you get passed this build failure ?
+--Sig_/h9o4dxATHYTD+EgczYGdc_=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Abdul,
 
-I am not seeing an error on that driver build.
+On Fri, 13 Jul 2018 14:43:11 +0530 Abdul Haleem <abdhalee@linux.vnet.ibm.co=
+m> wrote:
+>
+> On Thu, 2018-07-12 at 13:44 -0400, Pavel Tatashin wrote:
+> > > Related commit could be one of below ? I see lots of patches related =
+to mm and could not bisect
+> > >
+> > > 5479976fda7d3ab23ba0a4eb4d60b296eb88b866 mm: page_alloc: restore memb=
+lock_next_valid_pfn() on arm/arm64
+> > > 41619b27b5696e7e5ef76d9c692dd7342c1ad7eb mm-drop-vm_bug_on-from-__get=
+_free_pages-fix
+> > > 531bbe6bd2721f4b66cdb0f5cf5ac14612fa1419 mm: drop VM_BUG_ON from __ge=
+t_free_pages
+> > > 479350dd1a35f8bfb2534697e5ca68ee8a6e8dea mm, page_alloc: actually ign=
+ore mempolicies for high priority allocations
+> > > 088018f6fe571444caaeb16e84c9f24f22dfc8b0 mm: skip invalid pages block=
+ at a time in zero_resv_unresv() =20
+> >=20
+> > Looks like:
+> > 0ba29a108979 mm/sparse: Remove CONFIG_SPARSEMEM_ALLOC_MEM_MAP_TOGETHER
+> >=20
+> > This patch is going to be reverted from linux-next. Abdul, please
+> > verify that issue is gone once  you revert this patch. =20
+>=20
+> kernel booted fine when the above patch is reverted.
 
-I am using gcc 8.1.0 from kernel.org:
-https://mirrors.edge.kernel.org/pub/tools/crosstool/
+And it has been removed from linux-next as of next-20180713.  (Friday
+the 13th is not all bad :-))
+--=20
+Cheers,
+Stephen Rothwell
 
-and building on x86_64.
+--Sig_/h9o4dxATHYTD+EgczYGdc_=
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
+-----BEGIN PGP SIGNATURE-----
 
--- 
-~Randy
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltJSeQACgkQAVBC80lX
+0GzEPgf+O8ZUulbaRgniWzhnLUmbpQm5/OWeEsLqXQOjU5/rHCoshZNJPaIJyJZJ
+bBApGslZMfVpOqFwXAg0AyP3RHJwShjMaT/Et+9w7Q2UhxXV5DgPItJ9hvAmOBMk
+9UvmL2gPbZ7UNMZQVnxpnSsPVMj9RWp5nNG59ANcgV8skYN/nPEEju/DtJ+QJFN/
+utSHrk2BXD2juj1xgqQhAd8FGB0eRLFvWUFzMgLXWnl7ErTySkMSYYVYGtY9UBWN
+RuKT/pMD/V6/DdJKLMODs9yQaPeP7s9pFAgXzYeqwxxcqfllxbCr6xhyP3po64kp
+iDtz6xVa4SjoyUiR90n3DIPkbAHV2Q==
+=mqb2
+-----END PGP SIGNATURE-----
+
+--Sig_/h9o4dxATHYTD+EgczYGdc_=--
