@@ -1,19 +1,23 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=o7v3=j7=infradead.org=rdunlap@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41TDJj50l5zF35s
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 03:37:41 +1000 (AEST)
-To: USB list <linux-usb@vger.kernel.org>,
- PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Felipe Balbi <balbi@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41TH2q3XBxzF36W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 05:40:51 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41TH2q1mHHz8v1Y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 05:40:51 +1000 (AEST)
+Subject: Re: [PATCH 2/2] powerpc: Add ppc64le and ppc64_book3e allmodconfig
+ targets
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com, malat@debian.org, Felipe Balbi <balbi@kernel.org>
+References: <20180709142426.26999-1-mpe@ellerman.id.au>
+ <20180709142426.26999-2-mpe@ellerman.id.au>
 From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
-Message-ID: <cb618610-7c6a-68e5-e471-0d75afddf168@infradead.org>
-Date: Sun, 15 Jul 2018 10:37:37 -0700
+Message-ID: <b0965451-620f-7d19-eacb-64179ee21a3b@infradead.org>
+Date: Sun, 15 Jul 2018 12:40:22 -0700
 MIME-Version: 1.0
+In-Reply-To: <20180709142426.26999-2-mpe@ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,66 +28,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Randy Dunlap <rdunlap@infradead.org>
+On 07/09/18 07:24, Michael Ellerman wrote:
+> Similarly as we just did for 32-bit, add phony targets for generating
+> a little endian and Book3E allmodconfig. These aren't covered by the
+> regular allmodconfig, which is big endian and Book3S due to the way
+> the Kconfig symbols are structured.
 
-Fix build errors when built for PPC64:
-These variables are only used on PPC32 so they don't need to be
-initialized for PPC64.
+[adding Felipe Balbi]
 
-../drivers/usb/phy/phy-fsl-usb.c: In function 'usb_otg_start':
-../drivers/usb/phy/phy-fsl-usb.c:865:3: error: '_fsl_readl' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_be;
-../drivers/usb/phy/phy-fsl-usb.c:865:16: error: '_fsl_readl_be' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_be;
-../drivers/usb/phy/phy-fsl-usb.c:866:3: error: '_fsl_writel' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_be;
-../drivers/usb/phy/phy-fsl-usb.c:866:17: error: '_fsl_writel_be' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_be;
-../drivers/usb/phy/phy-fsl-usb.c:868:16: error: '_fsl_readl_le' undeclared (first use in this function); did you mean 'fsl_readl'?
-   _fsl_readl = _fsl_readl_le;
-../drivers/usb/phy/phy-fsl-usb.c:869:17: error: '_fsl_writel_le' undeclared (first use in this function); did you mean 'fsl_writel'?
-   _fsl_writel = _fsl_writel_le;
 
-and the sysfs "show" function return type should be ssize_t, not int:
+Is book3e allmodconfig not seen/used very much?
 
-../drivers/usb/phy/phy-fsl-usb.c:1042:49: error: initialization of 'ssize_t (*)(struct device *, struct device_attribute *, char *)' {aka 'long int (*)(struct device *, struct device_attribute *, char *)'} from incompatible pointer type 'int (*)(struct device *, struct device_attribute *, char *)' [-Werror=incompatible-pointer-types]
- static DEVICE_ATTR(fsl_usb2_otg_state, S_IRUGO, show_fsl_usb2_otg_state, NULL);
+Besides the patches that I have already sent, I am seeing a build problem
+with ppc64_book3e_allmodconfig, where we have:
 
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Felipe Balbi <balbi@kernel.org>
-Cc: linux-usb@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
----
-Found when using Michael's patch for ppc64_book3e_allmodconfig.
+CONFIG_USB_PHY=y
+CONFIG_FSL_USB2_OTG=y
+but
+CONFIG_USB_OTG_FSM=m
 
- drivers/usb/phy/phy-fsl-usb.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+In drivers/usb/phy/Kconfig, FSL_USB2_OTG depends on USB_OTG_FSM (among
+other things), but!  FSL_USB2_OTG is a bool symbol, depending on a
+tristate symbol.  This often causes problems.  In this case it causes errors
+with a builtin driver trying to use symbols that are built in a loadable module:
 
---- lnx-418-rc4.orig/drivers/usb/phy/phy-fsl-usb.c
-+++ lnx-418-rc4/drivers/usb/phy/phy-fsl-usb.c
-@@ -861,6 +861,7 @@ int usb_otg_start(struct platform_device
- 	if (pdata->init && pdata->init(pdev) != 0)
- 		return -EINVAL;
- 
-+#ifdef CONFIG_PPC32
- 	if (pdata->big_endian_mmio) {
- 		_fsl_readl = _fsl_readl_be;
- 		_fsl_writel = _fsl_writel_be;
-@@ -868,6 +869,7 @@ int usb_otg_start(struct platform_device
- 		_fsl_readl = _fsl_readl_le;
- 		_fsl_writel = _fsl_writel_le;
- 	}
-+#endif
- 
- 	/* request irq */
- 	p_otg->irq = platform_get_irq(pdev, 0);
-@@ -958,7 +960,7 @@ int usb_otg_start(struct platform_device
- /*
-  * state file in sysfs
-  */
--static int show_fsl_usb2_otg_state(struct device *dev,
-+static ssize_t show_fsl_usb2_otg_state(struct device *dev,
- 				   struct device_attribute *attr, char *buf)
- {
- 	struct otg_fsm *fsm = &fsl_otg_dev->fsm;
+drivers/usb/phy/phy-fsl-usb.o: In function `.fsl_otg_ioctl':
+phy-fsl-usb.c:(.text.fsl_otg_ioctl+0xb4): undefined reference to `.otg_statemachine'
+drivers/usb/phy/phy-fsl-usb.o: In function `.fsl_otg_start_srp':
+phy-fsl-usb.c:(.text.fsl_otg_start_srp+0x4c): undefined reference to `.otg_statemachine'
+drivers/usb/phy/phy-fsl-usb.o: In function `.fsl_otg_set_host':
+phy-fsl-usb.c:(.text.fsl_otg_set_host+0xd0): undefined reference to `.otg_statemachine'
+drivers/usb/phy/phy-fsl-usb.o: In function `.fsl_otg_start_hnp':
+phy-fsl-usb.c:(.text.fsl_otg_start_hnp+0x68): undefined reference to `.otg_statemachine'
+drivers/usb/phy/phy-fsl-usb.o: In function `.show_fsl_usb2_otg_state':
+phy-fsl-usb.c:(.text.show_fsl_usb2_otg_state+0x154): undefined reference to `.usb_otg_state_string'
+drivers/usb/phy/phy-fsl-usb.o: In function `.a_wait_enum':
+(.text.a_wait_enum+0x4c): undefined reference to `.otg_statemachine'
+drivers/usb/phy/phy-fsl-usb.o: In function `.fsl_otg_set_peripheral':
+phy-fsl-usb.c:(.text.fsl_otg_set_peripheral+0x84): undefined reference to `.usb_gadget_vbus_disconnect'
+phy-fsl-usb.c:(.text.fsl_otg_set_peripheral+0x9c): undefined reference to `.otg_statemachine'
+
+
+
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/Makefile | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 2556c2182789..48e887f03a6c 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -359,6 +359,16 @@ ppc32_allmodconfig:
+>  	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/book3s_32.config \
+>  		-f $(srctree)/Makefile allmodconfig
+>  
+> +PHONY += ppc64le_allmodconfig
+> +ppc64le_allmodconfig:
+> +	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/le.config \
+> +		-f $(srctree)/Makefile allmodconfig
+> +
+> +PHONY += ppc64_book3e_allmodconfig
+> +ppc64_book3e_allmodconfig:
+> +	$(Q)$(MAKE) KCONFIG_ALLCONFIG=$(srctree)/arch/powerpc/configs/85xx-64bit.config \
+> +		-f $(srctree)/Makefile allmodconfig
+> +
+>  define archhelp
+>    @echo '* zImage          - Build default images selected by kernel config'
+>    @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+> 
+
+thanks,
+-- 
+~Randy
