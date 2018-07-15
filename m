@@ -3,17 +3,16 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41TDFZ4bsRzF35s
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 03:34:58 +1000 (AEST)
-To: PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Scott Wood <oss@buserror.net>, Kumar Gala <galak@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41TDJj50l5zF35s
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 03:37:41 +1000 (AEST)
+To: USB list <linux-usb@vger.kernel.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 From: Randy Dunlap <rdunlap@infradead.org>
-Subject: [PATCH] powerpc/platforms/85xx: fix t1042rdb_diu.c build errors &
- warning
-Message-ID: <25463c4f-4901-b86f-2002-6c65c9ee9fd2@infradead.org>
-Date: Sun, 15 Jul 2018 10:34:46 -0700
+Subject: [PATCH] usb/phy: fix PPC64 build errors in phy-fsl-usb.c
+Message-ID: <cb618610-7c6a-68e5-e471-0d75afddf168@infradead.org>
+Date: Sun, 15 Jul 2018 10:37:37 -0700
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,46 +26,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Randy Dunlap <rdunlap@infradead.org>
 
-Fix build errors and warnings in t1042rdb_diu.c by adding header files
-and MODULE_LICENSE().
+Fix build errors when built for PPC64:
+These variables are only used on PPC32 so they don't need to be
+initialized for PPC64.
 
-../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: data definition has no type or storage class
- early_initcall(t1042rdb_diu_init);
-../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: error: type defaults to 'int' in declaration of 'early_initcall' [-Werror=implicit-int]
-../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: parameter names (without types) in function declaration
+../drivers/usb/phy/phy-fsl-usb.c: In function 'usb_otg_start':
+../drivers/usb/phy/phy-fsl-usb.c:865:3: error: '_fsl_readl' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:865:16: error: '_fsl_readl_be' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:3: error: '_fsl_writel' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:866:17: error: '_fsl_writel_be' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_be;
+../drivers/usb/phy/phy-fsl-usb.c:868:16: error: '_fsl_readl_le' undeclared (first use in this function); did you mean 'fsl_readl'?
+   _fsl_readl = _fsl_readl_le;
+../drivers/usb/phy/phy-fsl-usb.c:869:17: error: '_fsl_writel_le' undeclared (first use in this function); did you mean 'fsl_writel'?
+   _fsl_writel = _fsl_writel_le;
 
-and
-WARNING: modpost: missing MODULE_LICENSE() in arch/powerpc/platforms/85xx/t1042rdb_diu.o
+and the sysfs "show" function return type should be ssize_t, not int:
+
+../drivers/usb/phy/phy-fsl-usb.c:1042:49: error: initialization of 'ssize_t (*)(struct device *, struct device_attribute *, char *)' {aka 'long int (*)(struct device *, struct device_attribute *, char *)'} from incompatible pointer type 'int (*)(struct device *, struct device_attribute *, char *)' [-Werror=incompatible-pointer-types]
+ static DEVICE_ATTR(fsl_usb2_otg_state, S_IRUGO, show_fsl_usb2_otg_state, NULL);
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: linux-usb@vger.kernel.org
 Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Scott Wood <oss@buserror.net>
-Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
 Found when using Michael's patch for ppc64_book3e_allmodconfig.
 
- arch/powerpc/platforms/85xx/t1042rdb_diu.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/usb/phy/phy-fsl-usb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- lnx-418-rc4.orig/arch/powerpc/platforms/85xx/t1042rdb_diu.c
-+++ lnx-418-rc4/arch/powerpc/platforms/85xx/t1042rdb_diu.c
-@@ -9,8 +9,10 @@
-  * option) any later version.
+--- lnx-418-rc4.orig/drivers/usb/phy/phy-fsl-usb.c
++++ lnx-418-rc4/drivers/usb/phy/phy-fsl-usb.c
+@@ -861,6 +861,7 @@ int usb_otg_start(struct platform_device
+ 	if (pdata->init && pdata->init(pdev) != 0)
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_PPC32
+ 	if (pdata->big_endian_mmio) {
+ 		_fsl_readl = _fsl_readl_be;
+ 		_fsl_writel = _fsl_writel_be;
+@@ -868,6 +869,7 @@ int usb_otg_start(struct platform_device
+ 		_fsl_readl = _fsl_readl_le;
+ 		_fsl_writel = _fsl_writel_le;
+ 	}
++#endif
+ 
+ 	/* request irq */
+ 	p_otg->irq = platform_get_irq(pdev, 0);
+@@ -958,7 +960,7 @@ int usb_otg_start(struct platform_device
+ /*
+  * state file in sysfs
   */
- 
-+#include <linux/init.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- 
-@@ -150,3 +152,5 @@ static int __init t1042rdb_diu_init(void
- }
- 
- early_initcall(t1042rdb_diu_init);
-+
-+MODULE_LICENSE("GPL");
+-static int show_fsl_usb2_otg_state(struct device *dev,
++static ssize_t show_fsl_usb2_otg_state(struct device *dev,
+ 				   struct device_attribute *attr, char *buf)
+ {
+ 	struct otg_fsm *fsm = &fsl_otg_dev->fsm;
