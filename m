@@ -1,34 +1,37 @@
-Return-Path: <vbabka@suse.cz>
+Return-Path: <srs0=h5fe=ka=kernel.org=mhocko@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Tc2k053MzDr55
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 18:26:54 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41Tc2j5BB3z8tDv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 18:26:53 +1000 (AEST)
 Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Tb761WwMzF35w
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 17:45:38 +1000 (AEST)
-Subject: Re: [PATCH 2/2] dma: remove unsupported gfp_mask parameter from
- dma_alloc_from_contiguous()
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Christoph Hellwig <hch@lst.de>, Michal Hocko <mhocko@suse.com>,
- Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
- <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>, Martin Schwidefsky
- <schwidefsky@de.ibm.com>, Joerg Roedel <joro@8bytes.org>,
- Sumit Semwal <sumit.semwal@linaro.org>, Robin Murphy <robin.murphy@arm.com>,
- Laura Abbott <labbott@redhat.com>, linaro-mm-sig@lists.linaro.org
-References: <20180709121956.20200-1-m.szyprowski@samsung.com>
- <CGME20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1@eucas1p2.samsung.com>
- <20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1~-sqUFoa-h2939329393eucas1p2Y@eucas1p2.samsung.com>
-From: Vlastimil Babka <vbabka@suse.cz>
-Message-ID: <c4380664-e9c2-f366-f776-f24af8a42f27@suse.cz>
-Date: Mon, 16 Jul 2018 09:45:31 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 41Tc2j11Wdz9ryt
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2018 18:26:52 +1000 (AEST)
+Date: Mon, 16 Jul 2018 10:26:46 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>,
+ Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Ananth Narayan <ananth@in.ibm.com>, kernelfans@gmail.com
+Subject: Re: [RFC PATCH v6 0/4] powerpc/fadump: Improvements and fixes for
+ firmware-assisted dump.
+Message-ID: <20180716082646.GF17280@dhcp22.suse.cz>
+References: <153172096333.29252.4376707071382727345.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1~-sqUFoa-h2939329393eucas1p2Y@eucas1p2.samsung.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <153172096333.29252.4376707071382727345.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2018 02:19 PM, Marek Szyprowski wrote:
-> The CMA memory allocator doesn't support standard gfp flags for memory
-> allocation, so there is no point having it as a parameter for
-> dma_alloc_from_contiguous() function. Replace it by a boolean no_warn
-> argument, which covers all the underlaying cma_alloc() function supports.
-> 
-> This will help to avoid giving false feeling that this function supports
-> standard gfp flags and callers can pass __GFP_ZERO to get zeroed buffer,
-> what has already been an issue: see commit dd65a941f6ba ("arm64:
-> dma-mapping: clear buffers allocated with FORCE_CONTIGUOUS flag").
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+On Mon 16-07-18 11:32:56, Mahesh J Salgaonkar wrote:
+> One of the primary issues with Firmware Assisted Dump (fadump) on Power
+> is that it needs a large amount of memory to be reserved. This reserved
+> memory is used for saving the contents of old crashed kernel's memory before
+> fadump capture kernel uses old kernel's memory area to boot. However, This
+> reserved memory area stays unused until system crash and isn't available
+> for production kernel to use.
 
-Acked-by: Vlastimil Babka <vbabka@suse.cz>
+How much memory are we talking about. Regular kernel dump process needs
+some reserved memory as well. Why that is not a big problem?
+
+> Instead of setting aside a significant chunk of memory that nobody can use,
+> take advantage ZONE_MOVABLE to mark a significant chunk of reserved memory
+> as ZONE_MOVABLE, so that the kernel is prevented from using, but
+> applications are free to use it.
+
+Why kernel cannot use that memory while userspace can?
+[...]
+>  Documentation/powerpc/firmware-assisted-dump.txt |   18 +++
+>  arch/powerpc/include/asm/fadump.h                |    7 +
+>  arch/powerpc/kernel/fadump.c                     |  123 +++++++++++++++++--
+>  arch/powerpc/platforms/pseries/hotplug-memory.c  |    7 +
+>  include/linux/mmzone.h                           |    2 
+>  mm/page_alloc.c                                  |  146 ++++++++++++++++++++++
+>  6 files changed, 290 insertions(+), 13 deletions(-)
+
+This is quite a large change and you didn't seem to explain why we need
+it.
+-- 
+Michal Hocko
+SUSE Labs
