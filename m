@@ -1,16 +1,18 @@
 Return-Path: <diana.craciun@nxp.com>
-Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VHcY2vwzzF3Hr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 21:10:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VHcY3qXyzF3Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 21:10:04 +1000 (AEST)
 From: Diana Craciun <diana.craciun@nxp.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: mpe@ellerman.id.au, oss@buserror.net, leoyang.li@nxp.com,
  bharat.bhushan@nxp.com, Diana Craciun <diana.craciun@nxp.com>
-Subject: [PATCH v4 0/6] powerpc/fsl: Speculation barrier for NXP PowerPC Book3E
-Date: Tue, 17 Jul 2018 14:09:51 +0300
-Message-Id: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+Subject: [PATCH v4 2/6] powerpc/fsl: Document nospectre_v1 kernel parameter.
+Date: Tue, 17 Jul 2018 14:09:53 +0300
+Message-Id: <1531825797-14236-3-git-send-email-diana.craciun@nxp.com>
+In-Reply-To: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,43 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement barrier_nospec for NXP PowerPC Book3E processors.
-
-Diana Craciun (6):
-  Disable the speculation barrier from the command line
-  Document nospectre_v1 kernel parameter.
-  Make stf barrier PPC_BOOK3S_64 specific.
-  Enable cpu vulnerabilities reporting for NXP PPC BOOK3E
-  Add barrier_nospec implementation for NXP PowerPC Book3E
-  powerpc/fsl: Sanitize the syscall table for NXP PowerPC 32 bit
-    platforms
-
- Documentation/admin-guide/kernel-parameters.txt |  4 +++
- arch/powerpc/Kconfig                            |  7 ++++-
- arch/powerpc/include/asm/barrier.h              | 12 ++++++---
- arch/powerpc/include/asm/setup.h                |  6 ++++-
- arch/powerpc/kernel/Makefile                    |  3 ++-
- arch/powerpc/kernel/entry_32.S                  | 10 +++++++
- arch/powerpc/kernel/module.c                    |  4 ++-
- arch/powerpc/kernel/security.c                  | 17 +++++++++++-
- arch/powerpc/kernel/setup-common.c              |  2 ++
- arch/powerpc/kernel/vmlinux.lds.S               |  4 ++-
- arch/powerpc/lib/feature-fixups.c               | 35 ++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/setup.c          |  1 -
- arch/powerpc/platforms/pseries/setup.c          |  1 -
- 13 files changed, 94 insertions(+), 12 deletions(-)
-
---
+Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+---
 History:
-v3 --> v4
-- fixed compilation issues
 
-v2 --> v3
-- addressed review comments
-- included the 32bit sanitization in the same patch series
+v2-->v3
+- new
 
-v1 --> v2
-- added implementation for cpu_show_spectre_x functions
-- the mitigation is no longer enabled through device tree options
+ Documentation/admin-guide/kernel-parameters.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index efc7aa7..b346cc7 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2687,6 +2687,10 @@
+ 	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
+ 			Equivalent to smt=1.
+ 
++	nospectre_v1	[PPC] Disable mitigations for Spectre Variant 1
++				(bounds check bypass). With this option data leaks are
++				possible in the system.
++
+ 	nospectre_v2	[X86] Disable all mitigations for the Spectre variant 2
+ 			(indirect branch prediction) vulnerability. System may
+ 			allow data leaks with this option, which is equivalent
+-- 
 2.5.5
