@@ -1,37 +1,41 @@
-Return-Path: <hch@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VNrp42PQzF3Hy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 01:06:02 +1000 (AEST)
-Date: Tue, 17 Jul 2018 17:08:32 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- iommu@lists.linux-foundation.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Michal Nazarewicz <mina86@mina86.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Vlastimil Babka <vbabka@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Michal Hocko <mhocko@suse.com>, Russell King <linux@armlinux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Chris Zankel <chris@zankel.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Joerg Roedel <joro@8bytes.org>, Sumit Semwal <sumit.semwal@linaro.org>,
- Robin Murphy <robin.murphy@arm.com>,
- Laura Abbott <labbott@redhat.com>, linaro-mm-sig@lists.linaro.org
-Subject: Re: [PATCH 2/2] dma: remove unsupported gfp_mask parameter from
- dma_alloc_from_contiguous()
-Message-ID: <20180717150832.GB22408@lst.de>
-References: <20180709121956.20200-1-m.szyprowski@samsung.com>
- <CGME20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1@eucas1p2.samsung.com>
- <20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1~-sqUFoa-h2939329393eucas1p2Y@eucas1p2.samsung.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VQ221KtCzF3Hb
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 01:59:04 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6HFsld9016045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 11:59:02 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k9ggqgv2x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 11:59:02 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 17 Jul 2018 16:59:00 +0100
+Date: Tue, 17 Jul 2018 08:58:48 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
+ msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v13 08/24] selftests/vm: fix the wrong assert in
+ pkey_disable_set()
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
+ <1528937115-10132-9-git-send-email-linuxram@us.ibm.com>
+ <3c441309-1d35-eead-0c5d-1d7d20018219@intel.com>
 MIME-Version: 1.0
+In-Reply-To: <3c441309-1d35-eead-0c5d-1d7d20018219@intel.com>
+Message-Id: <20180717155848.GA5790@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180709122020eucas1p21a71b092975cb4a3b9954ffc63f699d1~-sqUFoa-h2939329393eucas1p2Y@eucas1p2.samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,6 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks good,
+On Wed, Jun 20, 2018 at 07:47:02AM -0700, Dave Hansen wrote:
+> On 06/13/2018 05:44 PM, Ram Pai wrote:
+> > If the flag is 0, no bits will be set. Hence we cant expect
+> > the resulting bitmap to have a higher value than what it
+> > was earlier
+> ...
+> >  	if (flags)
+> > -		pkey_assert(read_pkey_reg() > orig_pkey_reg);
+> > +		pkey_assert(read_pkey_reg() >= orig_pkey_reg);
+> >  	dprintf1("END<---%s(%d, 0x%x)\n", __func__,
+> >  		pkey, flags);
+> >  }
+> 
+> This is the kind of thing where I'd love to hear the motivation and
+> background.  This "disable a key that was already disabled" operation
+> obviously doesn't happen today.  What motivated you to change it now?
 
-Reviewed-by: Christoph Hellwig <hch@lst.de>
+On powerpc, hardware supports READ_DISABLE and WRITE_DISABLE.
+ACCESS_DISABLE is basically READ_DISABLE|WRITE_DISABLE on powerpc.
+
+If access disable is called on a key followed by a write disable, the
+second operation becomes a nop. In such cases, 
+       read_pkey_reg() == orig_pkey_reg
+
+
+Hence the code above is modified to 
+	pkey_assert(read_pkey_reg() >= orig_pkey_reg);
+
+
+-- 
+Ram Pai
