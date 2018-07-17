@@ -1,28 +1,18 @@
-Return-Path: <keescook@google.com>
-Received: from mail-yb0-x242.google.com (mail-yb0-x242.google.com
- [IPv6:2607:f8b0:4002:c09::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41V60p62D3zF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 13:56:58 +1000 (AEST)
-Received: by mail-yb0-x242.google.com with SMTP id c10-v6so14561221ybf.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2018 20:56:57 -0700 (PDT)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20180629185254.GA37557@beast>
-References: <20180629185254.GA37557@beast>
-From: Kees Cook <keescook@chromium.org>
-Date: Mon, 16 Jul 2018 20:56:54 -0700
-Message-ID: <CAGXu5jKV-YAQZtN2heFdmiD9EOZ-AqrBc-NjC8fRYLSafovuyQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/msi: Remove VLA usage
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, Rob Herring <robh@kernel.org>,
- Ingo Molnar <mingo@kernel.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41V6cj5zw5zF3HZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 14:24:37 +1000 (AEST)
+From: David Gibson <david@gibson.dropbear.id.au>
+To: aneesh.kumar@linux.vnet.ibm.com,
+	mpe@ellerman.id.au,
+	paulus@samba.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH] powerpc/hugetlbpage: Rmove unhelpful HUGEPD_*_SHIFT macros
+Date: Tue, 17 Jul 2018 14:24:30 +1000
+Message-Id: <20180717042430.15395-1-david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,78 +22,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 29, 2018 at 11:52 AM, Kees Cook <keescook@chromium.org> wrote:
-> In the quest to remove all stack VLA usage from the kernel[1], this
-> switches from an unchanging variable to a constant expression to eliminate
-> the VLA generation.
->
-> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+The HUGEPD_*_SHIFT macros are always defined to be PGDIR_SHIFT and
+PUD_SHIFT, and have to have those values to work properly.  They once used
+to have different values, but that was really only because they were used
+to mean different things in different contexts.
 
-Friendly ping! Michael, can you take this?
+6fa50483 "powerpc/mm/hugetlb: initialize the pagetable cache correctly for
+hugetlb" removed that double meaning, but left the now useless constants.
 
--Kees
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ arch/powerpc/mm/hugetlbpage.c | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
 
-
-> ---
->  arch/powerpc/sysdev/msi_bitmap.c | 15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-> index 6243a7e537d0..e64a411d1a00 100644
-> --- a/arch/powerpc/sysdev/msi_bitmap.c
-> +++ b/arch/powerpc/sysdev/msi_bitmap.c
-> @@ -225,22 +225,23 @@ static void __init test_of_node(void)
->         struct device_node of_node;
->         struct property prop;
->         struct msi_bitmap bmp;
-> -       int size = 256;
-> -       DECLARE_BITMAP(expected, size);
-> +#define SIZE_EXPECTED 256
-> +       DECLARE_BITMAP(expected, SIZE_EXPECTED);
->
->         /* There should really be a struct device_node allocator */
->         memset(&of_node, 0, sizeof(of_node));
->         of_node_init(&of_node);
->         of_node.full_name = node_name;
->
-> -       WARN_ON(msi_bitmap_alloc(&bmp, size, &of_node));
-> +       WARN_ON(msi_bitmap_alloc(&bmp, SIZE_EXPECTED, &of_node));
->
->         /* No msi-available-ranges, so expect > 0 */
->         WARN_ON(msi_bitmap_reserve_dt_hwirqs(&bmp) <= 0);
->
->         /* Should all still be free */
-> -       WARN_ON(bitmap_find_free_region(bmp.bitmap, size, get_count_order(size)));
-> -       bitmap_release_region(bmp.bitmap, 0, get_count_order(size));
-> +       WARN_ON(bitmap_find_free_region(bmp.bitmap, SIZE_EXPECTED,
-> +                                       get_count_order(SIZE_EXPECTED)));
-> +       bitmap_release_region(bmp.bitmap, 0, get_count_order(SIZE_EXPECTED));
->
->         /* Now create a fake msi-available-ranges property */
->
-> @@ -256,8 +257,8 @@ static void __init test_of_node(void)
->         WARN_ON(msi_bitmap_reserve_dt_hwirqs(&bmp));
->
->         /* Check we got the expected result */
-> -       WARN_ON(bitmap_parselist(expected_str, expected, size));
-> -       WARN_ON(!bitmap_equal(expected, bmp.bitmap, size));
-> +       WARN_ON(bitmap_parselist(expected_str, expected, SIZE_EXPECTED));
-> +       WARN_ON(!bitmap_equal(expected, bmp.bitmap, SIZE_EXPECTED));
->
->         msi_bitmap_free(&bmp);
->         kfree(bmp.bitmap);
-> --
-> 2.17.1
->
->
-> --
-> Kees Cook
-> Pixel Security
-
-
-
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 8a9a49c13865..acbbaabdaaf8 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -117,15 +117,6 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 	return 0;
+ }
+ 
+-/*
+- * These macros define how to determine which level of the page table holds
+- * the hpdp.
+- */
+-#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
+-#define HUGEPD_PGD_SHIFT PGDIR_SHIFT
+-#define HUGEPD_PUD_SHIFT PUD_SHIFT
+-#endif
+-
+ /*
+  * At this point we do the placement change only for BOOK3S 64. This would
+  * possibly work on other subarchs.
+@@ -174,13 +165,13 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
+ 		}
+ 	}
+ #else
+-	if (pshift >= HUGEPD_PGD_SHIFT) {
++	if (pshift >= PGDIR_SHIFT) {
+ 		ptl = &mm->page_table_lock;
+ 		hpdp = (hugepd_t *)pg;
+ 	} else {
+ 		pdshift = PUD_SHIFT;
+ 		pu = pud_alloc(mm, pg, addr);
+-		if (pshift >= HUGEPD_PUD_SHIFT) {
++		if (pshift >= PUD_SHIFT) {
+ 			ptl = pud_lockptr(mm, pu);
+ 			hpdp = (hugepd_t *)pu;
+ 		} else {
+@@ -695,9 +686,9 @@ static int __init hugetlbpage_init(void)
+ 		else
+ 			pdshift = PMD_SHIFT;
+ #else
+-		if (shift < HUGEPD_PUD_SHIFT)
++		if (shift < PUD_SHIFT)
+ 			pdshift = PMD_SHIFT;
+-		else if (shift < HUGEPD_PGD_SHIFT)
++		else if (shift < PGDIR_SHIFT)
+ 			pdshift = PUD_SHIFT;
+ 		else
+ 			pdshift = PGDIR_SHIFT;
 -- 
-Kees Cook
-Pixel Security
+2.17.1
