@@ -1,27 +1,24 @@
-Return-Path: <turtle.in.the.kernel@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VY0B1Y0MzF3HZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 07:12:54 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id 27-v6so1327200qkv.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 14:12:54 -0700 (PDT)
-Subject: Re: [PATCH] powerpc/msi: Remove VLA usage
-To: Kees Cook <keescook@chromium.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Rob Herring <robh@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
-References: <20180629185254.GA37557@beast>
-From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
-Message-ID: <911632d5-b54c-b632-75d9-7628a0cfc490@gmail.com>
-Date: Tue, 17 Jul 2018 14:12:49 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180629185254.GA37557@beast>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Vbvl6xpVzF35v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 09:24:19 +1000 (AEST)
+Message-ID: <80bbdf47081e3e302ab5f28b5ddc9e2faabba842.camel@neuling.org>
+Subject: Re: [RESEND][PATCH] powerpc/powernv : Save/Restore SPRG3 on
+ entry/exit from stop.
+From: Michael Neuling <mikey@neuling.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Florian
+ Weimer <fweimer@redhat.com>, Oleg Nesterov <oleg@redhat.com>
+Date: Wed, 18 Jul 2018 09:24:19 +1000
+In-Reply-To: <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,23 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2018 11:52 AM, Kees Cook wrote:
-> In the quest to remove all stack VLA usage from the kernel[1], this
-> switches from an unchanging variable to a constant expression to eliminate
-> the VLA generation.
-> 
-> [1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Cc: Rob Herring <robh@kernel.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
 
-Reviewed-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+>  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+> diff --git a/arch/powerpc/kernel/idle_book3s.S
+> b/arch/powerpc/kernel/idle_book3s.S
+> index d85d551..5069d42 100644
+> --- a/arch/powerpc/kernel/idle_book3s.S
+> +++ b/arch/powerpc/kernel/idle_book3s.S
+> @@ -120,6 +120,9 @@ power9_save_additional_sprs:
+>  	mfspr	r4, SPRN_MMCR2
+>  	std	r3, STOP_MMCR1(r13)
+>  	std	r4, STOP_MMCR2(r13)
+> +
+> +	mfspr	r3, SPRN_SPRG3
+> +	std	r3, STOP_SPRG3(r13)
+
+We don't need to save it.  Just restore it from paca->sprg_vdso which shoul=
+d
+never change.
+
+How can we do better at catching these missing SPRGs?=20
+
+We missed this one and looking at c1b25a17d249 we missed the AMOR a couple =
+of
+months back. I'd rather we had some systematic way of finding the ones we a=
+re
+missing, rather than playing wake-a-mole.
+
+Mikey=20
+
+>  	blr
+> =20
+>  power9_restore_additional_sprs:
+> @@ -144,7 +147,9 @@ power9_restore_additional_sprs:
+>  	mtspr	SPRN_MMCR1, r4
+> =20
+>  	ld	r3, STOP_MMCR2(r13)
+> +	ld	r4, STOP_SPRG3(r13)
+>  	mtspr	SPRN_MMCR2, r3
+> +	mtspr	SPRN_SPRG3, r4
+>  	blr
+> =20
+>  /*
