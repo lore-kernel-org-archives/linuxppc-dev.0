@@ -1,26 +1,27 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+Return-Path: <ram.n.pai@gmail.com>
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VM6N4lnxzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:47:40 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id g2-v6so469381pgs.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:47:40 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Subject: Re: [PATCH v5 2/2] hwmon: ibmpowernv: Add attributes to
- enable/disable sensor groups
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
-References: <1531637685-23250-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1531637685-23250-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-From: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <9e7f301e-c169-d034-eee7-a45f0afb03a1@roeck-us.net>
-Date: Tue, 17 Jul 2018 06:47:36 -0700
-MIME-Version: 1.0
-In-Reply-To: <1531637685-23250-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VM9F4NPdzF3JQ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:50:09 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id u21-v6so515384qku.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:50:09 -0700 (PDT)
+Sender: Ram Pai <ram.n.pai@gmail.com>
+From: Ram Pai <linuxram@us.ibm.com>
+To: shuahkh@osg.samsung.com,
+	linux-kselftest@vger.kernel.org
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ dave.hansen@intel.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
+ linuxram@us.ibm.com, fweimer@redhat.com, msuchanek@suse.de,
+ aneesh.kumar@linux.vnet.ibm.com
+Subject: [PATCH v14 02/22] selftests/vm: rename all references to pkru to a
+ generic name
+Date: Tue, 17 Jul 2018 06:49:05 -0700
+Message-Id: <1531835365-32387-3-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
+References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,487 +31,756 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/14/2018 11:54 PM, Shilpasri G Bhat wrote:
-> On-Chip-Controller(OCC) is an embedded micro-processor in POWER9 chip
-> which measures various system and chip level sensors. These sensors
-> comprises of environmental sensors (like power, temperature, current
-> and voltage) and performance sensors (like utilization, frequency).
-> All these sensors are copied to main memory at a regular interval of
-> 100ms. OCC provides a way to select a group of sensors that is copied
-> to the main memory to increase the update frequency of selected sensor
-> groups. When a sensor-group is disabled, OCC will not copy it to main
-> memory and those sensors read 0 values.
-> 
-> This patch provides support for enabling/disabling the sensor groups
-> like power, temperature, current and voltage. This patch adds new
-> per-senor sysfs attribute to disable and enable them.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> Changes from v4:
-> - As per Mpe's suggestion store device_node instead of phandles and
->    clean it after init
-> - s/sg_data/sgrp_data
-> 
->   Documentation/hwmon/ibmpowernv |  43 ++++++-
->   drivers/hwmon/ibmpowernv.c     | 256 +++++++++++++++++++++++++++++++++++------
->   2 files changed, 265 insertions(+), 34 deletions(-)
-> 
-> diff --git a/Documentation/hwmon/ibmpowernv b/Documentation/hwmon/ibmpowernv
-> index 8826ba2..5646825 100644
-> --- a/Documentation/hwmon/ibmpowernv
-> +++ b/Documentation/hwmon/ibmpowernv
-> @@ -33,9 +33,48 @@ fanX_input		Measured RPM value.
->   fanX_min		Threshold RPM for alert generation.
->   fanX_fault		0: No fail condition
->   			1: Failing fan
-> +
->   tempX_input		Measured ambient temperature.
->   tempX_max		Threshold ambient temperature for alert generation.
-> -inX_input		Measured power supply voltage
-> +tempX_highest		Historical maximum temperature
-> +tempX_lowest		Historical minimum temperature
-> +tempX_enable		Enable/disable all temperature sensors belonging to the
-> +			sub-group. In POWER9, this attribute corresponds to
-> +			each OCC. Using this attribute each OCC can be asked to
-> +			disable/enable all of its temperature sensors.
-> +			1: Enable
-> +			0: Disable
-> +
-> +inX_input		Measured power supply voltage (millivolt)
->   inX_fault		0: No fail condition.
->   			1: Failing power supply.
-> -power1_input		System power consumption (microWatt)
-> +inX_highest		Historical maximum voltage
-> +inX_lowest		Historical minimum voltage
-> +inX_enable		Enable/disable all voltage sensors belonging to the
-> +			sub-group. In POWER9, this attribute corresponds to
-> +			each OCC. Using this attribute each OCC can be asked to
-> +			disable/enable all of its voltage sensors.
-> +			1: Enable
-> +			0: Disable
-> +
-> +powerX_input		Power consumption (microWatt)
-> +powerX_input_highest	Historical maximum power
-> +powerX_input_lowest	Historical minimum power
-> +powerX_enable		Enable/disable all power sensors belonging to the
-> +			sub-group. In POWER9, this attribute corresponds to
-> +			each OCC. Using this attribute each OCC can be asked to
-> +			disable/enable all of its power sensors.
-> +			1: Enable
-> +			0: Disable
-> +
-> +currX_input		Measured current (milliampere)
-> +currX_highest		Historical maximum current
-> +currX_lowest		Historical minimum current
-> +currX_enable		Enable/disable all current sensors belonging to the
-> +			sub-group. In POWER9, this attribute corresponds to
-> +			each OCC. Using this attribute each OCC can be asked to
-> +			disable/enable all of its current sensors.
-> +			1: Enable
-> +			0: Disable
-> +
-> +energyX_input		Cumulative energy (microJoule)
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index f829dad..a509b9b 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -90,11 +90,23 @@ struct sensor_data {
->   	char label[MAX_LABEL_LEN];
->   	char name[MAX_ATTR_LEN];
->   	struct device_attribute dev_attr;
-> +	struct sensor_group_data *sgrp_data;
-> +};
-> +
-> +struct sensor_group_data {
-> +	struct mutex mutex;
-> +	struct device_node **of_nodes;
-> +	u32 gid;
-> +	u32 nr_nodes;
-> +	enum sensors type;
-> +	bool enable;
->   };
->   
->   struct platform_data {
->   	const struct attribute_group *attr_groups[MAX_SENSOR_TYPE + 1];
-> +	struct sensor_group_data *sgrp_data;
->   	u32 sensors_count; /* Total count of sensors from each group */
-> +	u32 nr_sensor_groups; /* Total number of sensor groups */
->   };
->   
->   static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
-> @@ -105,6 +117,9 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
->   	ssize_t ret;
->   	u64 x;
->   
-> +	if (sdata->sgrp_data && !sdata->sgrp_data->enable)
-> +		return -ENODATA;
-> +
->   	ret =  opal_get_sensor_data_u64(sdata->id, &x);
->   
->   	if (ret)
-> @@ -120,6 +135,46 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
->   	return sprintf(buf, "%llu\n", x);
->   }
->   
-> +static ssize_t show_enable(struct device *dev,
-> +			   struct device_attribute *devattr, char *buf)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +
-> +	return sprintf(buf, "%u\n", sdata->sgrp_data->enable);
-> +}
-> +
-> +static ssize_t store_enable(struct device *dev,
-> +			    struct device_attribute *devattr,
-> +			    const char *buf, size_t count)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +	struct sensor_group_data *sgrp_data = sdata->sgrp_data;
-> +	bool data;
-> +	int ret;
-> +
-> +	ret = kstrtobool(buf, &data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = mutex_lock_interruptible(&sgrp_data->mutex);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (data != sgrp_data->enable) {
-> +		ret =  sensor_group_enable(sgrp_data->gid, data);
-> +		if (!ret)
-> +			sgrp_data->enable = data;
-> +	}
-> +
-> +	if (!ret)
-> +		ret = count;
-> +
-> +	mutex_unlock(&sgrp_data->mutex);
-> +	return ret;
-> +}
-> +
->   static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
->   			  char *buf)
->   {
-> @@ -292,12 +347,129 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
->   	return ++sensor_groups[sdata->type].hwmon_index;
->   }
->   
-> +static int init_sensor_group_data(struct platform_device *pdev,
-> +				  struct platform_data *pdata)
-> +{
-> +	struct sensor_group_data *sgrp_data;
-> +	struct device_node *groups, *sgrp;
-> +	enum sensors type;
-> +	int count = 0, ret = 0;
-> +
-> +	groups = of_find_node_by_path("/ibm,opal/sensor-groups");
-> +	if (!groups)
-> +		return ret;
-> +
-> +	for_each_child_of_node(groups, sgrp) {
-> +		type = get_sensor_type(sgrp);
-> +		if (type != MAX_SENSOR_TYPE)
-> +			pdata->nr_sensor_groups++;
-> +	}
-> +
-> +	if (!pdata->nr_sensor_groups)
-> +		goto out;
-> +
-> +	sgrp_data = devm_kcalloc(&pdev->dev, pdata->nr_sensor_groups,
-> +				 sizeof(*sgrp_data), GFP_KERNEL);
-> +	if (!sgrp_data) {
-> +		ret = -ENOMEM;
-> +		goto out;
-> +	}
-> +
-> +	for_each_child_of_node(groups, sgrp) {
-> +		const __be32 *phandles;
-> +		int len, gid, i, k = 0;
-> +
-> +		type = get_sensor_type(sgrp);
-> +		if (type == MAX_SENSOR_TYPE)
-> +			continue;
-> +
-> +		if (of_property_read_u32(sgrp, "sensor-group-id", &gid))
-> +			continue;
-> +
-> +		phandles = of_get_property(sgrp, "sensors", &len);
-> +		if (!phandles)
-> +			continue;
-> +
-> +		len /= sizeof(u32);
-> +		if (!len)
-> +			continue;
-> +
-> +		sgrp_data[count].of_nodes = devm_kcalloc(&pdev->dev,
-> +						sizeof(struct device_node *),
-> +						len, GFP_KERNEL);
-> +		if (!sgrp_data[count].of_nodes) {
-> +			ret = -ENOMEM;
-> +			of_node_put(sgrp);
-> +			goto out;
-> +		}
-> +
-> +		for (i = 0; i < len; i++) {
-> +			struct device_node *node;
-> +
-> +			node = of_parse_phandle(sgrp, "sensors", i);
-> +			if (!node)
-> +				continue;
-> +			sgrp_data[count].of_nodes[k++] = node;
+some pkru references are named to pkey_reg
+and some prku references are renamed to pkey
 
-I don't immediately see where "node" is used later. As mentioned below,
-I'll need to have a much closer look into the code to understand what
-is going on here.
+cc: Dave Hansen <dave.hansen@intel.com>
+cc: Florian Weimer <fweimer@redhat.com>
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Reviewed-by: Dave Hansen <dave.hansen@intel.com>
+---
+ tools/testing/selftests/vm/pkey-helpers.h    |   85 +++++-----
+ tools/testing/selftests/vm/protection_keys.c |  238 ++++++++++++++------------
+ 2 files changed, 169 insertions(+), 154 deletions(-)
 
-> +		}
-> +
-> +		sensor_groups[type].attr_count++;
-> +		sgrp_data[count].gid = gid;
-> +		sgrp_data[count].type = type;
-> +		sgrp_data[count].nr_nodes = len;
-> +		mutex_init(&sgrp_data[count].mutex);
-> +		sgrp_data[count++].enable = false;
-> +	}
-> +	pdata->sgrp_data = sgrp_data;
-> +out:
-> +	of_node_put(groups);
-> +	return ret;
-> +}
-> +
-> +static struct sensor_group_data *get_sensor_group(struct platform_data *pdata,
-> +						  struct device_node *node,
-> +						  enum sensors type)
-> +{
-> +	struct sensor_group_data *sgrp_data = pdata->sgrp_data;
-> +	int i, j;
-> +
-> +	for (i = 0; i < pdata->nr_sensor_groups; i++) {
-> +		if (type != sgrp_data[i].type)
-> +			continue;
-> +
-> +		for (j = 0; j < sgrp_data[i].nr_nodes; j++)
-> +			if (sgrp_data[i].of_nodes[j] == node)
-> +				return &sgrp_data[i];
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static void clean_sensor_group_of_node(struct platform_device *pdev)
-> +{
-> +	struct platform_data *pdata = platform_get_drvdata(pdev);
-> +	struct sensor_group_data *sgrp_data = pdata->sgrp_data;
-> +	int i, j;
-> +
-> +	for (i = 0; i < pdata->nr_sensor_groups; i++) {
-> +		for (j = 0; j < sgrp_data[i].nr_nodes; j++)
-> +			of_node_put(sgrp_data[i].of_nodes[j]);
-> +
-> +		devm_kfree(&pdev->dev, sgrp_data[i].of_nodes);
-
-The whole point of calling devm_kzalloc() is that calling devm_kfree()
-is not necessary. Any call to devm_kfree() is a strong indication
-that something is wrong.
-
-> +		sgrp_data[i].of_nodes = NULL;
-> +	}
-> +}
-> +
-
-Ok, this will require a detailed review. I don't understand what this
-function is about. It seems that sgrp_data[].of_nodes is only allocated
-to be  freed at the end of create_dev_attrs(), suggesting that the cleared
-data isn't needed for runtime and thus should not be stored in an
-array in the first place. I'll have to understand this much better
-than I do right now before approving it.
-
-Guenter
-
->   static int populate_attr_groups(struct platform_device *pdev)
->   {
->   	struct platform_data *pdata = platform_get_drvdata(pdev);
->   	const struct attribute_group **pgroups = pdata->attr_groups;
->   	struct device_node *opal, *np;
->   	enum sensors type;
-> +	int ret;
-> +
-> +	ret = init_sensor_group_data(pdev, pdata);
-> +	if (ret)
-> +		return ret;
->   
->   	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	for_each_child_of_node(opal, np) {
-> @@ -344,7 +516,10 @@ static int populate_attr_groups(struct platform_device *pdev)
->   static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
->   			      ssize_t (*show)(struct device *dev,
->   					      struct device_attribute *attr,
-> -					      char *buf))
-> +					      char *buf),
-> +			    ssize_t (*store)(struct device *dev,
-> +					     struct device_attribute *attr,
-> +					     const char *buf, size_t count))
->   {
->   	snprintf(sdata->name, MAX_ATTR_LEN, "%s%d_%s",
->   		 sensor_groups[sdata->type].name, sdata->hwmon_index,
-> @@ -352,23 +527,33 @@ static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
->   
->   	sysfs_attr_init(&sdata->dev_attr.attr);
->   	sdata->dev_attr.attr.name = sdata->name;
-> -	sdata->dev_attr.attr.mode = S_IRUGO;
->   	sdata->dev_attr.show = show;
-> +	if (store) {
-> +		sdata->dev_attr.store = store;
-> +		sdata->dev_attr.attr.mode = 0664;
-> +	} else {
-> +		sdata->dev_attr.attr.mode = 0444;
-> +	}
->   }
->   
->   static void populate_sensor(struct sensor_data *sdata, int od, int hd, int sid,
->   			    const char *attr_name, enum sensors type,
->   			    const struct attribute_group *pgroup,
-> +			    struct sensor_group_data *sgrp_data,
->   			    ssize_t (*show)(struct device *dev,
->   					    struct device_attribute *attr,
-> -					    char *buf))
-> +					    char *buf),
-> +			    ssize_t (*store)(struct device *dev,
-> +					     struct device_attribute *attr,
-> +					     const char *buf, size_t count))
->   {
->   	sdata->id = sid;
->   	sdata->type = type;
->   	sdata->opal_index = od;
->   	sdata->hwmon_index = hd;
-> -	create_hwmon_attr(sdata, attr_name, show);
-> +	create_hwmon_attr(sdata, attr_name, show, store);
->   	pgroup->attrs[sensor_groups[type].attr_count++] = &sdata->dev_attr.attr;
-> +	sdata->sgrp_data = sgrp_data;
->   }
->   
->   static char *get_max_attr(enum sensors type)
-> @@ -403,24 +588,23 @@ static int create_device_attrs(struct platform_device *pdev)
->   	const struct attribute_group **pgroups = pdata->attr_groups;
->   	struct device_node *opal, *np;
->   	struct sensor_data *sdata;
-> -	u32 sensor_id;
-> -	enum sensors type;
->   	u32 count = 0;
-> -	int err = 0;
-> +	u32 group_attr_id[MAX_SENSOR_TYPE] = {0};
->   
-> -	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	sdata = devm_kcalloc(&pdev->dev,
->   			     pdata->sensors_count, sizeof(*sdata),
->   			     GFP_KERNEL);
-> -	if (!sdata) {
-> -		err = -ENOMEM;
-> -		goto exit_put_node;
-> -	}
-> +	if (!sdata)
-> +		return -ENOMEM;
->   
-> +	opal = of_find_node_by_path("/ibm,opal/sensors");
->   	for_each_child_of_node(opal, np) {
-> +		struct sensor_group_data *sgrp_data;
->   		const char *attr_name;
-> -		u32 opal_index;
-> +		u32 opal_index, hw_id;
-> +		u32 sensor_id;
->   		const char *label;
-> +		enum sensors type;
->   
->   		if (np->name == NULL)
->   			continue;
-> @@ -456,14 +640,12 @@ static int create_device_attrs(struct platform_device *pdev)
->   			opal_index = INVALID_INDEX;
->   		}
->   
-> -		sdata[count].opal_index = opal_index;
-> -		sdata[count].hwmon_index =
-> -			get_sensor_hwmon_index(&sdata[count], sdata, count);
-> -
-> -		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
-> -
-> -		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> -				&sdata[count++].dev_attr.attr;
-> +		hw_id = get_sensor_hwmon_index(&sdata[count], sdata, count);
-> +		sgrp_data = get_sensor_group(pdata, np, type);
-> +		populate_sensor(&sdata[count], opal_index, hw_id, sensor_id,
-> +				attr_name, type, pgroups[type], sgrp_data,
-> +				show_sensor, NULL);
-> +		count++;
->   
->   		if (!of_property_read_string(np, "label", &label)) {
->   			/*
-> @@ -474,35 +656,44 @@ static int create_device_attrs(struct platform_device *pdev)
->   			 */
->   
->   			make_sensor_label(np, &sdata[count], label);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, "label", type, pgroups[type],
-> -					show_label);
-> +					NULL, show_label, NULL);
->   			count++;
->   		}
->   
->   		if (!of_property_read_u32(np, "sensor-data-max", &sensor_id)) {
->   			attr_name = get_max_attr(type);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, attr_name, type,
-> -					pgroups[type], show_sensor);
-> +					pgroups[type], sgrp_data, show_sensor,
-> +					NULL);
->   			count++;
->   		}
->   
->   		if (!of_property_read_u32(np, "sensor-data-min", &sensor_id)) {
->   			attr_name = get_min_attr(type);
-> -			populate_sensor(&sdata[count], opal_index,
-> -					sdata[count - 1].hwmon_index,
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
->   					sensor_id, attr_name, type,
-> -					pgroups[type], show_sensor);
-> +					pgroups[type], sgrp_data, show_sensor,
-> +					NULL);
-> +			count++;
-> +		}
-> +
-> +		if (sgrp_data && !sgrp_data->enable) {
-> +			sgrp_data->enable = true;
-> +			hw_id = ++group_attr_id[type];
-> +			populate_sensor(&sdata[count], opal_index, hw_id,
-> +					sgrp_data->gid, "enable", type,
-> +					pgroups[type], sgrp_data, show_enable,
-> +					store_enable);
->   			count++;
->   		}
->   	}
->   
-> -exit_put_node:
->   	of_node_put(opal);
-> -	return err;
-> +	clean_sensor_group_of_node(pdev);
-> +	return 0;
->   }
->   
->   static int ibmpowernv_probe(struct platform_device *pdev)
-> @@ -517,6 +708,7 @@ static int ibmpowernv_probe(struct platform_device *pdev)
->   
->   	platform_set_drvdata(pdev, pdata);
->   	pdata->sensors_count = 0;
-> +	pdata->nr_sensor_groups = 0;
->   	err = populate_attr_groups(pdev);
->   	if (err)
->   		return err;
-> 
+diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
+index 254e543..d5779be 100644
+--- a/tools/testing/selftests/vm/pkey-helpers.h
++++ b/tools/testing/selftests/vm/pkey-helpers.h
+@@ -14,7 +14,7 @@
+ #include <sys/mman.h>
+ 
+ #define NR_PKEYS 16
+-#define PKRU_BITS_PER_PKEY 2
++#define PKEY_BITS_PER_PKEY 2
+ 
+ #ifndef DEBUG_LEVEL
+ #define DEBUG_LEVEL 0
+@@ -53,85 +53,88 @@ static inline void sigsafe_printf(const char *format, ...)
+ #define dprintf3(args...) dprintf_level(3, args)
+ #define dprintf4(args...) dprintf_level(4, args)
+ 
+-extern unsigned int shadow_pkru;
+-static inline unsigned int __rdpkru(void)
++extern unsigned int shadow_pkey_reg;
++static inline unsigned int __read_pkey_reg(void)
+ {
+ 	unsigned int eax, edx;
+ 	unsigned int ecx = 0;
+-	unsigned int pkru;
++	unsigned int pkey_reg;
+ 
+ 	asm volatile(".byte 0x0f,0x01,0xee\n\t"
+ 		     : "=a" (eax), "=d" (edx)
+ 		     : "c" (ecx));
+-	pkru = eax;
+-	return pkru;
++	pkey_reg = eax;
++	return pkey_reg;
+ }
+ 
+-static inline unsigned int _rdpkru(int line)
++static inline unsigned int _read_pkey_reg(int line)
+ {
+-	unsigned int pkru = __rdpkru();
++	unsigned int pkey_reg = __read_pkey_reg();
+ 
+-	dprintf4("rdpkru(line=%d) pkru: %x shadow: %x\n",
+-			line, pkru, shadow_pkru);
+-	assert(pkru == shadow_pkru);
++	dprintf4("read_pkey_reg(line=%d) pkey_reg: %x shadow: %x\n",
++			line, pkey_reg, shadow_pkey_reg);
++	assert(pkey_reg == shadow_pkey_reg);
+ 
+-	return pkru;
++	return pkey_reg;
+ }
+ 
+-#define rdpkru() _rdpkru(__LINE__)
++#define read_pkey_reg() _read_pkey_reg(__LINE__)
+ 
+-static inline void __wrpkru(unsigned int pkru)
++static inline void __write_pkey_reg(unsigned int pkey_reg)
+ {
+-	unsigned int eax = pkru;
++	unsigned int eax = pkey_reg;
+ 	unsigned int ecx = 0;
+ 	unsigned int edx = 0;
+ 
+-	dprintf4("%s() changing %08x to %08x\n", __func__, __rdpkru(), pkru);
++	dprintf4("%s() changing %08x to %08x\n", __func__,
++			__read_pkey_reg(), pkey_reg);
+ 	asm volatile(".byte 0x0f,0x01,0xef\n\t"
+ 		     : : "a" (eax), "c" (ecx), "d" (edx));
+-	assert(pkru == __rdpkru());
++	assert(pkey_reg == __read_pkey_reg());
+ }
+ 
+-static inline void wrpkru(unsigned int pkru)
++static inline void write_pkey_reg(unsigned int pkey_reg)
+ {
+-	dprintf4("%s() changing %08x to %08x\n", __func__, __rdpkru(), pkru);
++	dprintf4("%s() changing %08x to %08x\n", __func__,
++			__read_pkey_reg(), pkey_reg);
+ 	/* will do the shadow check for us: */
+-	rdpkru();
+-	__wrpkru(pkru);
+-	shadow_pkru = pkru;
+-	dprintf4("%s(%08x) pkru: %08x\n", __func__, pkru, __rdpkru());
++	read_pkey_reg();
++	__write_pkey_reg(pkey_reg);
++	shadow_pkey_reg = pkey_reg;
++	dprintf4("%s(%08x) pkey_reg: %08x\n", __func__,
++			pkey_reg, __read_pkey_reg());
+ }
+ 
+ /*
+  * These are technically racy. since something could
+- * change PKRU between the read and the write.
++ * change PKEY register between the read and the write.
+  */
+ static inline void __pkey_access_allow(int pkey, int do_allow)
+ {
+-	unsigned int pkru = rdpkru();
++	unsigned int pkey_reg = read_pkey_reg();
+ 	int bit = pkey * 2;
+ 
+ 	if (do_allow)
+-		pkru &= (1<<bit);
++		pkey_reg &= (1<<bit);
+ 	else
+-		pkru |= (1<<bit);
++		pkey_reg |= (1<<bit);
+ 
+-	dprintf4("pkru now: %08x\n", rdpkru());
+-	wrpkru(pkru);
++	dprintf4("pkey_reg now: %08x\n", read_pkey_reg());
++	write_pkey_reg(pkey_reg);
+ }
+ 
+ static inline void __pkey_write_allow(int pkey, int do_allow_write)
+ {
+-	long pkru = rdpkru();
++	long pkey_reg = read_pkey_reg();
+ 	int bit = pkey * 2 + 1;
+ 
+ 	if (do_allow_write)
+-		pkru &= (1<<bit);
++		pkey_reg &= (1<<bit);
+ 	else
+-		pkru |= (1<<bit);
++		pkey_reg |= (1<<bit);
+ 
+-	wrpkru(pkru);
+-	dprintf4("pkru now: %08x\n", rdpkru());
++	write_pkey_reg(pkey_reg);
++	dprintf4("pkey_reg now: %08x\n", read_pkey_reg());
+ }
+ 
+ #define PROT_PKEY0     0x10            /* protection key value (bit 0) */
+@@ -181,10 +184,10 @@ static inline int cpu_has_pku(void)
+ 	return 1;
+ }
+ 
+-#define XSTATE_PKRU_BIT	(9)
+-#define XSTATE_PKRU	0x200
++#define XSTATE_PKEY_BIT	(9)
++#define XSTATE_PKEY	0x200
+ 
+-int pkru_xstate_offset(void)
++int pkey_reg_xstate_offset(void)
+ {
+ 	unsigned int eax;
+ 	unsigned int ebx;
+@@ -195,21 +198,21 @@ int pkru_xstate_offset(void)
+ 	unsigned long XSTATE_CPUID = 0xd;
+ 	int leaf;
+ 
+-	/* assume that XSTATE_PKRU is set in XCR0 */
+-	leaf = XSTATE_PKRU_BIT;
++	/* assume that XSTATE_PKEY is set in XCR0 */
++	leaf = XSTATE_PKEY_BIT;
+ 	{
+ 		eax = XSTATE_CPUID;
+ 		ecx = leaf;
+ 		__cpuid(&eax, &ebx, &ecx, &edx);
+ 
+-		if (leaf == XSTATE_PKRU_BIT) {
++		if (leaf == XSTATE_PKEY_BIT) {
+ 			xstate_offset = ebx;
+ 			xstate_size = eax;
+ 		}
+ 	}
+ 
+ 	if (xstate_size == 0) {
+-		printf("could not find size/offset of PKRU in xsave state\n");
++		printf("could not find size/offset of PKEY in xsave state\n");
+ 		return 0;
+ 	}
+ 
+diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+index 460b4bd..9f373cc 100644
+--- a/tools/testing/selftests/vm/protection_keys.c
++++ b/tools/testing/selftests/vm/protection_keys.c
+@@ -1,11 +1,11 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * Tests x86 Memory Protection Keys (see Documentation/x86/protection-keys.txt)
++ * Tests Memory Protection Keys (see Documentation/vm/protection-keys.txt)
+  *
+  * There are examples in here of:
+  *  * how to set protection keys on memory
+- *  * how to set/clear bits in PKRU (the rights register)
+- *  * how to handle SEGV_PKRU signals and extract pkey-relevant
++ *  * how to set/clear bits in pkey registers (the rights register)
++ *  * how to handle SEGV_PKUERR signals and extract pkey-relevant
+  *    information from the siginfo
+  *
+  * Things to add:
+@@ -48,7 +48,7 @@
+ int iteration_nr = 1;
+ int test_nr;
+ 
+-unsigned int shadow_pkru;
++unsigned int shadow_pkey_reg;
+ 
+ #define HPAGE_SIZE	(1UL<<21)
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*(x)))
+@@ -255,7 +255,7 @@ void dump_mem(void *dumpme, int len_bytes)
+ 	return "UNKNOWN";
+ }
+ 
+-int pkru_faults;
++int pkey_faults;
+ int last_si_pkey = -1;
+ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+ {
+@@ -263,16 +263,16 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+ 	int trapno;
+ 	unsigned long ip;
+ 	char *fpregs;
+-	u32 *pkru_ptr;
++	u32 *pkey_reg_ptr;
+ 	u64 siginfo_pkey;
+ 	u32 *si_pkey_ptr;
+-	int pkru_offset;
++	int pkey_reg_offset;
+ 	fpregset_t fpregset;
+ 
+ 	dprint_in_signal = 1;
+ 	dprintf1(">>>>===============SIGSEGV============================\n");
+-	dprintf1("%s()::%d, pkru: 0x%x shadow: %x\n", __func__, __LINE__,
+-			__rdpkru(), shadow_pkru);
++	dprintf1("%s()::%d, pkey_reg: 0x%x shadow: %x\n", __func__, __LINE__,
++			__read_pkey_reg(), shadow_pkey_reg);
+ 
+ 	trapno = uctxt->uc_mcontext.gregs[REG_TRAPNO];
+ 	ip = uctxt->uc_mcontext.gregs[REG_IP_IDX];
+@@ -289,19 +289,19 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+ 	 */
+ 	fpregs += 0x70;
+ #endif
+-	pkru_offset = pkru_xstate_offset();
+-	pkru_ptr = (void *)(&fpregs[pkru_offset]);
++	pkey_reg_offset = pkey_reg_xstate_offset();
++	pkey_reg_ptr = (void *)(&fpregs[pkey_reg_offset]);
+ 
+ 	dprintf1("siginfo: %p\n", si);
+ 	dprintf1(" fpregs: %p\n", fpregs);
+ 	/*
+-	 * If we got a PKRU fault, we *HAVE* to have at least one bit set in
++	 * If we got a PKEY fault, we *HAVE* to have at least one bit set in
+ 	 * here.
+ 	 */
+-	dprintf1("pkru_xstate_offset: %d\n", pkru_xstate_offset());
++	dprintf1("pkey_reg_xstate_offset: %d\n", pkey_reg_xstate_offset());
+ 	if (DEBUG_LEVEL > 4)
+-		dump_mem(pkru_ptr - 128, 256);
+-	pkey_assert(*pkru_ptr);
++		dump_mem(pkey_reg_ptr - 128, 256);
++	pkey_assert(*pkey_reg_ptr);
+ 
+ 	if ((si->si_code == SEGV_MAPERR) ||
+ 	    (si->si_code == SEGV_ACCERR) ||
+@@ -317,13 +317,16 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+ 	pkey_assert(siginfo_pkey < NR_PKEYS);
+ 	last_si_pkey = siginfo_pkey;
+ 
+-	dprintf1("signal pkru from xsave: %08x\n", *pkru_ptr);
+-	/* need __rdpkru() version so we do not do shadow_pkru checking */
+-	dprintf1("signal pkru from  pkru: %08x\n", __rdpkru());
++	dprintf1("signal pkey_reg from xsave: %08x\n", *pkey_reg_ptr);
++	/*
++	 * need __read_pkey_reg() version so we do not do shadow_pkey_reg
++	 * checking
++	 */
++	dprintf1("signal pkey_reg from  pkey_reg: %08x\n", __read_pkey_reg());
+ 	dprintf1("pkey from siginfo: %jx\n", siginfo_pkey);
+-	*(u64 *)pkru_ptr = 0x00000000;
++	*(u64 *)pkey_reg_ptr = 0x00000000;
+ 	dprintf1("WARNING: set PRKU=0 to allow faulting instruction to continue\n");
+-	pkru_faults++;
++	pkey_faults++;
+ 	dprintf1("<<<<==================================================\n");
+ 	dprint_in_signal = 0;
+ }
+@@ -402,45 +405,47 @@ pid_t fork_lazy_child(void)
+ static u32 hw_pkey_get(int pkey, unsigned long flags)
+ {
+ 	u32 mask = (PKEY_DISABLE_ACCESS|PKEY_DISABLE_WRITE);
+-	u32 pkru = __rdpkru();
+-	u32 shifted_pkru;
+-	u32 masked_pkru;
++	u32 pkey_reg = __read_pkey_reg();
++	u32 shifted_pkey_reg;
++	u32 masked_pkey_reg;
+ 
+ 	dprintf1("%s(pkey=%d, flags=%lx) = %x / %d\n",
+ 			__func__, pkey, flags, 0, 0);
+-	dprintf2("%s() raw pkru: %x\n", __func__, pkru);
++	dprintf2("%s() raw pkey_reg: %x\n", __func__, pkey_reg);
+ 
+-	shifted_pkru = (pkru >> (pkey * PKRU_BITS_PER_PKEY));
+-	dprintf2("%s() shifted_pkru: %x\n", __func__, shifted_pkru);
+-	masked_pkru = shifted_pkru & mask;
+-	dprintf2("%s() masked  pkru: %x\n", __func__, masked_pkru);
++	shifted_pkey_reg = (pkey_reg >> (pkey * PKEY_BITS_PER_PKEY));
++	dprintf2("%s() shifted_pkey_reg: %x\n", __func__, shifted_pkey_reg);
++	masked_pkey_reg = shifted_pkey_reg & mask;
++	dprintf2("%s() masked  pkey_reg: %x\n", __func__, masked_pkey_reg);
+ 	/*
+ 	 * shift down the relevant bits to the lowest two, then
+ 	 * mask off all the other high bits.
+ 	 */
+-	return masked_pkru;
++	return masked_pkey_reg;
+ }
+ 
+ static int hw_pkey_set(int pkey, unsigned long rights, unsigned long flags)
+ {
+ 	u32 mask = (PKEY_DISABLE_ACCESS|PKEY_DISABLE_WRITE);
+-	u32 old_pkru = __rdpkru();
+-	u32 new_pkru;
++	u32 old_pkey_reg = __read_pkey_reg();
++	u32 new_pkey_reg;
+ 
+ 	/* make sure that 'rights' only contains the bits we expect: */
+ 	assert(!(rights & ~mask));
+ 
+-	/* copy old pkru */
+-	new_pkru = old_pkru;
++	/* copy old pkey_reg */
++	new_pkey_reg = old_pkey_reg;
+ 	/* mask out bits from pkey in old value: */
+-	new_pkru &= ~(mask << (pkey * PKRU_BITS_PER_PKEY));
++	new_pkey_reg &= ~(mask << (pkey * PKEY_BITS_PER_PKEY));
+ 	/* OR in new bits for pkey: */
+-	new_pkru |= (rights << (pkey * PKRU_BITS_PER_PKEY));
++	new_pkey_reg |= (rights << (pkey * PKEY_BITS_PER_PKEY));
+ 
+-	__wrpkru(new_pkru);
++	__write_pkey_reg(new_pkey_reg);
+ 
+-	dprintf3("%s(pkey=%d, rights=%lx, flags=%lx) = %x pkru now: %x old_pkru: %x\n",
+-			__func__, pkey, rights, flags, 0, __rdpkru(), old_pkru);
++	dprintf3("%s(pkey=%d, rights=%lx, flags=%lx) = %x"
++	       " pkey_reg now: %x old_pkey_reg: %x\n",
++		__func__, pkey, rights, flags, 0, __read_pkey_reg(),
++		old_pkey_reg);
+ 	return 0;
+ }
+ 
+@@ -449,7 +454,7 @@ void pkey_disable_set(int pkey, int flags)
+ 	unsigned long syscall_flags = 0;
+ 	int ret;
+ 	int pkey_rights;
+-	u32 orig_pkru = rdpkru();
++	u32 orig_pkey_reg = read_pkey_reg();
+ 
+ 	dprintf1("START->%s(%d, 0x%x)\n", __func__,
+ 		pkey, flags);
+@@ -465,9 +470,9 @@ void pkey_disable_set(int pkey, int flags)
+ 
+ 	ret = hw_pkey_set(pkey, pkey_rights, syscall_flags);
+ 	assert(!ret);
+-	/*pkru and flags have the same format */
+-	shadow_pkru |= flags << (pkey * 2);
+-	dprintf1("%s(%d) shadow: 0x%x\n", __func__, pkey, shadow_pkru);
++	/*pkey_reg and flags have the same format */
++	shadow_pkey_reg |= flags << (pkey * 2);
++	dprintf1("%s(%d) shadow: 0x%x\n", __func__, pkey, shadow_pkey_reg);
+ 
+ 	pkey_assert(ret >= 0);
+ 
+@@ -475,9 +480,9 @@ void pkey_disable_set(int pkey, int flags)
+ 	dprintf1("%s(%d) hw_pkey_get(%d): %x\n", __func__,
+ 			pkey, pkey, pkey_rights);
+ 
+-	dprintf1("%s(%d) pkru: 0x%x\n", __func__, pkey, rdpkru());
++	dprintf1("%s(%d) pkey_reg: 0x%x\n", __func__, pkey, read_pkey_reg());
+ 	if (flags)
+-		pkey_assert(rdpkru() > orig_pkru);
++		pkey_assert(read_pkey_reg() > orig_pkey_reg);
+ 	dprintf1("END<---%s(%d, 0x%x)\n", __func__,
+ 		pkey, flags);
+ }
+@@ -487,7 +492,7 @@ void pkey_disable_clear(int pkey, int flags)
+ 	unsigned long syscall_flags = 0;
+ 	int ret;
+ 	int pkey_rights = hw_pkey_get(pkey, syscall_flags);
+-	u32 orig_pkru = rdpkru();
++	u32 orig_pkey_reg = read_pkey_reg();
+ 
+ 	pkey_assert(flags & (PKEY_DISABLE_ACCESS | PKEY_DISABLE_WRITE));
+ 
+@@ -498,17 +503,16 @@ void pkey_disable_clear(int pkey, int flags)
+ 	pkey_rights |= flags;
+ 
+ 	ret = hw_pkey_set(pkey, pkey_rights, 0);
+-	/* pkru and flags have the same format */
+-	shadow_pkru &= ~(flags << (pkey * 2));
++	shadow_pkey_reg &= ~(flags << (pkey * 2));
+ 	pkey_assert(ret >= 0);
+ 
+ 	pkey_rights = hw_pkey_get(pkey, syscall_flags);
+ 	dprintf1("%s(%d) hw_pkey_get(%d): %x\n", __func__,
+ 			pkey, pkey, pkey_rights);
+ 
+-	dprintf1("%s(%d) pkru: 0x%x\n", __func__, pkey, rdpkru());
++	dprintf1("%s(%d) pkey_reg: 0x%x\n", __func__, pkey, read_pkey_reg());
+ 	if (flags)
+-		assert(rdpkru() > orig_pkru);
++		assert(read_pkey_reg() > orig_pkey_reg);
+ }
+ 
+ void pkey_write_allow(int pkey)
+@@ -561,33 +565,38 @@ int alloc_pkey(void)
+ 	int ret;
+ 	unsigned long init_val = 0x0;
+ 
+-	dprintf1("alloc_pkey()::%d, pkru: 0x%x shadow: %x\n",
+-			__LINE__, __rdpkru(), shadow_pkru);
++	dprintf1("%s()::%d, pkey_reg: 0x%x shadow: %x\n", __func__,
++			__LINE__, __read_pkey_reg(), shadow_pkey_reg);
+ 	ret = sys_pkey_alloc(0, init_val);
+ 	/*
+-	 * pkey_alloc() sets PKRU, so we need to reflect it in
+-	 * shadow_pkru:
++	 * pkey_alloc() sets PKEY register, so we need to reflect it in
++	 * shadow_pkey_reg:
+ 	 */
+-	dprintf4("alloc_pkey()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n",
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++	dprintf4("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++			__func__, __LINE__, ret, __read_pkey_reg(),
++			shadow_pkey_reg);
+ 	if (ret) {
+ 		/* clear both the bits: */
+-		shadow_pkru &= ~(0x3      << (ret * 2));
+-		dprintf4("alloc_pkey()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n",
+-				__LINE__, ret, __rdpkru(), shadow_pkru);
++		shadow_pkey_reg &= ~(0x3      << (ret * 2));
++		dprintf4("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++				__func__,
++				__LINE__, ret, __read_pkey_reg(),
++				shadow_pkey_reg);
+ 		/*
+ 		 * move the new state in from init_val
+-		 * (remember, we cheated and init_val == pkru format)
++		 * (remember, we cheated and init_val == pkey_reg format)
+ 		 */
+-		shadow_pkru |=  (init_val << (ret * 2));
++		shadow_pkey_reg |=  (init_val << (ret * 2));
+ 	}
+-	dprintf4("alloc_pkey()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n",
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
+-	dprintf1("alloc_pkey()::%d errno: %d\n", __LINE__, errno);
++	dprintf4("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++			__func__, __LINE__, ret, __read_pkey_reg(),
++			shadow_pkey_reg);
++	dprintf1("%s()::%d errno: %d\n", __func__, __LINE__, errno);
+ 	/* for shadow checking: */
+-	rdpkru();
+-	dprintf4("alloc_pkey()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n",
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++	read_pkey_reg();
++	dprintf4("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++		__func__, __LINE__, ret, __read_pkey_reg(),
++		shadow_pkey_reg);
+ 	return ret;
+ }
+ 
+@@ -638,8 +647,8 @@ int alloc_random_pkey(void)
+ 		free_ret = sys_pkey_free(alloced_pkeys[i]);
+ 		pkey_assert(!free_ret);
+ 	}
+-	dprintf1("%s()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n", __func__,
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++	dprintf1("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n", __func__,
++			__LINE__, ret, __read_pkey_reg(), shadow_pkey_reg);
+ 	return ret;
+ }
+ 
+@@ -657,11 +666,13 @@ int mprotect_pkey(void *ptr, size_t size, unsigned long orig_prot,
+ 		if (nr_iterations-- < 0)
+ 			break;
+ 
+-		dprintf1("%s()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n", __func__,
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++		dprintf1("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++			__func__, __LINE__, ret, __read_pkey_reg(),
++			shadow_pkey_reg);
+ 		sys_pkey_free(rpkey);
+-		dprintf1("%s()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n", __func__,
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++		dprintf1("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n",
++			__func__, __LINE__, ret, __read_pkey_reg(),
++			shadow_pkey_reg);
+ 	}
+ 	pkey_assert(pkey < NR_PKEYS);
+ 
+@@ -669,8 +680,8 @@ int mprotect_pkey(void *ptr, size_t size, unsigned long orig_prot,
+ 	dprintf1("mprotect_pkey(%p, %zx, prot=0x%lx, pkey=%ld) ret: %d\n",
+ 			ptr, size, orig_prot, pkey, ret);
+ 	pkey_assert(!ret);
+-	dprintf1("%s()::%d, ret: %d pkru: 0x%x shadow: 0x%x\n", __func__,
+-			__LINE__, ret, __rdpkru(), shadow_pkru);
++	dprintf1("%s()::%d, ret: %d pkey_reg: 0x%x shadow: 0x%x\n", __func__,
++			__LINE__, ret, __read_pkey_reg(), shadow_pkey_reg);
+ 	return ret;
+ }
+ 
+@@ -752,7 +763,7 @@ void free_pkey_malloc(void *ptr)
+ 	void *ptr;
+ 	int ret;
+ 
+-	rdpkru();
++	read_pkey_reg();
+ 	dprintf1("doing %s(size=%ld, prot=0x%x, pkey=%d)\n", __func__,
+ 			size, prot, pkey);
+ 	pkey_assert(pkey < NR_PKEYS);
+@@ -761,7 +772,7 @@ void free_pkey_malloc(void *ptr)
+ 	ret = mprotect_pkey((void *)ptr, PAGE_SIZE, prot, pkey);
+ 	pkey_assert(!ret);
+ 	record_pkey_malloc(ptr, size, prot);
+-	rdpkru();
++	read_pkey_reg();
+ 
+ 	dprintf1("%s() for pkey %d @ %p\n", __func__, pkey, ptr);
+ 	return ptr;
+@@ -924,15 +935,15 @@ void setup_hugetlbfs(void)
+ 	return ret;
+ }
+ 
+-int last_pkru_faults;
++int last_pkey_faults;
+ #define UNKNOWN_PKEY -2
+-void expected_pk_fault(int pkey)
++void expected_pkey_fault(int pkey)
+ {
+-	dprintf2("%s(): last_pkru_faults: %d pkru_faults: %d\n",
+-			__func__, last_pkru_faults, pkru_faults);
++	dprintf2("%s(): last_pkey_faults: %d pkey_faults: %d\n",
++			__func__, last_pkey_faults, pkey_faults);
+ 	dprintf2("%s(%d): last_si_pkey: %d\n", __func__, pkey, last_si_pkey);
+-	pkey_assert(last_pkru_faults + 1 == pkru_faults);
+ 
++	pkey_assert(last_pkey_faults + 1 == pkey_faults);
+        /*
+ 	* For exec-only memory, we do not know the pkey in
+ 	* advance, so skip this check.
+@@ -941,23 +952,23 @@ void expected_pk_fault(int pkey)
+ 		pkey_assert(last_si_pkey == pkey);
+ 
+ 	/*
+-	 * The signal handler shold have cleared out PKRU to let the
++	 * The signal handler shold have cleared out PKEY register to let the
+ 	 * test program continue.  We now have to restore it.
+ 	 */
+-	if (__rdpkru() != 0)
++	if (__read_pkey_reg() != 0)
+ 		pkey_assert(0);
+ 
+-	__wrpkru(shadow_pkru);
+-	dprintf1("%s() set PKRU=%x to restore state after signal nuked it\n",
+-			__func__, shadow_pkru);
+-	last_pkru_faults = pkru_faults;
++	__write_pkey_reg(shadow_pkey_reg);
++	dprintf1("%s() set pkey_reg=%x to restore state after signal "
++		       "nuked it\n", __func__, shadow_pkey_reg);
++	last_pkey_faults = pkey_faults;
+ 	last_si_pkey = -1;
+ }
+ 
+-#define do_not_expect_pk_fault(msg)	do {			\
+-	if (last_pkru_faults != pkru_faults)			\
+-		dprintf0("unexpected PK fault: %s\n", msg);	\
+-	pkey_assert(last_pkru_faults == pkru_faults);		\
++#define do_not_expect_pkey_fault(msg)	do {			\
++	if (last_pkey_faults != pkey_faults)			\
++		dprintf0("unexpected PKey fault: %s\n", msg);	\
++	pkey_assert(last_pkey_faults == pkey_faults);		\
+ } while (0)
+ 
+ int test_fds[10] = { -1 };
+@@ -1015,25 +1026,25 @@ void test_read_of_access_disabled_region(int *ptr, u16 pkey)
+ 	int ptr_contents;
+ 
+ 	dprintf1("disabling access to PKEY[%02d], doing read @ %p\n", pkey, ptr);
+-	rdpkru();
++	read_pkey_reg();
+ 	pkey_access_deny(pkey);
+ 	ptr_contents = read_ptr(ptr);
+ 	dprintf1("*ptr: %d\n", ptr_contents);
+-	expected_pk_fault(pkey);
++	expected_pkey_fault(pkey);
+ }
+ void test_write_of_write_disabled_region(int *ptr, u16 pkey)
+ {
+ 	dprintf1("disabling write access to PKEY[%02d], doing write\n", pkey);
+ 	pkey_write_deny(pkey);
+ 	*ptr = __LINE__;
+-	expected_pk_fault(pkey);
++	expected_pkey_fault(pkey);
+ }
+ void test_write_of_access_disabled_region(int *ptr, u16 pkey)
+ {
+ 	dprintf1("disabling access to PKEY[%02d], doing write\n", pkey);
+ 	pkey_access_deny(pkey);
+ 	*ptr = __LINE__;
+-	expected_pk_fault(pkey);
++	expected_pkey_fault(pkey);
+ }
+ void test_kernel_write_of_access_disabled_region(int *ptr, u16 pkey)
+ {
+@@ -1145,9 +1156,10 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
+ 		int new_pkey;
+ 		dprintf1("%s() alloc loop: %d\n", __func__, i);
+ 		new_pkey = alloc_pkey();
+-		dprintf4("%s()::%d, err: %d pkru: 0x%x shadow: 0x%x\n", __func__,
+-				__LINE__, err, __rdpkru(), shadow_pkru);
+-		rdpkru(); /* for shadow checking */
++		dprintf4("%s()::%d, err: %d pkey_reg: 0x%x shadow: 0x%x\n",
++				__func__, __LINE__, err, __read_pkey_reg(),
++				shadow_pkey_reg);
++		read_pkey_reg(); /* for shadow checking */
+ 		dprintf2("%s() errno: %d ENOSPC: %d\n", __func__, errno, ENOSPC);
+ 		if ((new_pkey == -1) && (errno == ENOSPC)) {
+ 			dprintf2("%s() failed to allocate pkey after %d tries\n",
+@@ -1180,7 +1192,7 @@ void test_pkey_alloc_exhaust(int *ptr, u16 pkey)
+ 	for (i = 0; i < nr_allocated_pkeys; i++) {
+ 		err = sys_pkey_free(allocated_pkeys[i]);
+ 		pkey_assert(!err);
+-		rdpkru(); /* for shadow checking */
++		read_pkey_reg(); /* for shadow checking */
+ 	}
+ }
+ 
+@@ -1266,7 +1278,7 @@ void test_ptrace_of_child(int *ptr, u16 pkey)
+ 	pkey_assert(ret != -1);
+ 	/* Now access from the current task, and expect an exception: */
+ 	peek_result = read_ptr(ptr);
+-	expected_pk_fault(pkey);
++	expected_pkey_fault(pkey);
+ 
+ 	/*
+ 	 * Try to access the NON-pkey-protected "plain_ptr" via ptrace:
+@@ -1276,7 +1288,7 @@ void test_ptrace_of_child(int *ptr, u16 pkey)
+ 	pkey_assert(ret != -1);
+ 	/* Now access from the current task, and expect NO exception: */
+ 	peek_result = read_ptr(plain_ptr);
+-	do_not_expect_pk_fault("read plain pointer after ptrace");
++	do_not_expect_pkey_fault("read plain pointer after ptrace");
+ 
+ 	ret = ptrace(PTRACE_DETACH, child_pid, ignored, 0);
+ 	pkey_assert(ret != -1);
+@@ -1326,17 +1338,17 @@ void test_executing_on_unreadable_memory(int *ptr, u16 pkey)
+ 	pkey_assert(!ret);
+ 	pkey_access_deny(pkey);
+ 
+-	dprintf2("pkru: %x\n", rdpkru());
++	dprintf2("pkey_reg: %x\n", read_pkey_reg());
+ 
+ 	/*
+ 	 * Make sure this is an *instruction* fault
+ 	 */
+ 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
+ 	lots_o_noops_around_write(&scratch);
+-	do_not_expect_pk_fault("executing on PROT_EXEC memory");
++	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
+ 	ptr_contents = read_ptr(p1);
+ 	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
+-	expected_pk_fault(pkey);
++	expected_pkey_fault(pkey);
+ }
+ 
+ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
+@@ -1357,15 +1369,15 @@ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
+ 	ret = mprotect(p1, PAGE_SIZE, PROT_EXEC);
+ 	pkey_assert(!ret);
+ 
+-	dprintf2("pkru: %x\n", rdpkru());
++	dprintf2("pkru: %x\n", read_pkey_reg());
+ 
+ 	/* Make sure this is an *instruction* fault */
+ 	madvise(p1, PAGE_SIZE, MADV_DONTNEED);
+ 	lots_o_noops_around_write(&scratch);
+-	do_not_expect_pk_fault("executing on PROT_EXEC memory");
++	do_not_expect_pkey_fault("executing on PROT_EXEC memory");
+ 	ptr_contents = read_ptr(p1);
+ 	dprintf2("ptr (%p) contents@%d: %x\n", p1, __LINE__, ptr_contents);
+-	expected_pk_fault(UNKNOWN_PKEY);
++	expected_pkey_fault(UNKNOWN_PKEY);
+ 
+ 	/*
+ 	 * Put the memory back to non-PROT_EXEC.  Should clear the
+@@ -1379,7 +1391,7 @@ void test_implicit_mprotect_exec_only_memory(int *ptr, u16 pkey)
+ 	ret = mprotect(p1, PAGE_SIZE, PROT_READ|PROT_EXEC);
+ 	pkey_assert(!ret);
+ 	ptr_contents = read_ptr(p1);
+-	do_not_expect_pk_fault("plain read on recently PROT_EXEC area");
++	do_not_expect_pkey_fault("plain read on recently PROT_EXEC area");
+ }
+ 
+ void test_mprotect_pkey_on_unsupported_cpu(int *ptr, u16 pkey)
+@@ -1421,7 +1433,7 @@ void run_tests_once(void)
+ 
+ 	for (test_nr = 0; test_nr < ARRAY_SIZE(pkey_tests); test_nr++) {
+ 		int pkey;
+-		int orig_pkru_faults = pkru_faults;
++		int orig_pkey_faults = pkey_faults;
+ 
+ 		dprintf1("======================\n");
+ 		dprintf1("test %d preparing...\n", test_nr);
+@@ -1436,8 +1448,8 @@ void run_tests_once(void)
+ 		free_pkey_malloc(ptr);
+ 		sys_pkey_free(pkey);
+ 
+-		dprintf1("pkru_faults: %d\n", pkru_faults);
+-		dprintf1("orig_pkru_faults: %d\n", orig_pkru_faults);
++		dprintf1("pkey_faults: %d\n", pkey_faults);
++		dprintf1("orig_pkey_faults: %d\n", orig_pkey_faults);
+ 
+ 		tracing_off();
+ 		close_test_fds();
+@@ -1450,7 +1462,7 @@ void run_tests_once(void)
+ 
+ void pkey_setup_shadow(void)
+ {
+-	shadow_pkru = __rdpkru();
++	shadow_pkey_reg = __read_pkey_reg();
+ }
+ 
+ int main(void)
+@@ -1474,7 +1486,7 @@ int main(void)
+ 	}
+ 
+ 	pkey_setup_shadow();
+-	printf("startup pkru: %x\n", rdpkru());
++	printf("startup pkey_reg: %x\n", read_pkey_reg());
+ 	setup_hugetlbfs();
+ 
+ 	while (nr_iterations-- > 0)
+-- 
+1.7.1
