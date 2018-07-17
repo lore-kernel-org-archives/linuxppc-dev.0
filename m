@@ -2,8 +2,8 @@ Return-Path: <krzk@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VQC72GMYzF3Hk
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:06:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VQCC73c7zF3Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:07:03 +1000 (AEST)
 From: Krzysztof Kozlowski <krzk@kernel.org>
 To: Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>,
@@ -24,9 +24,9 @@ To: Herbert Xu <herbert@gondor.apana.org.au>,
  netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  devel@driverdev.osuosl.org
 Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 5/6] staging: rtl: Use existing define with polynomial
-Date: Tue, 17 Jul 2018 18:05:40 +0200
-Message-Id: <20180717160541.3843-6-krzk@kernel.org>
+Subject: [PATCH 6/6] lib: Use existing define with polynomial
+Date: Tue, 17 Jul 2018 18:05:41 +0200
+Message-Id: <20180717160541.3843-7-krzk@kernel.org>
 In-Reply-To: <20180717160541.3843-1-krzk@kernel.org>
 References: <20180717160541.3843-1-krzk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,75 +42,51 @@ Do not define again the polynomial but use header with existing define.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
-Not tested
+ lib/decompress_bunzip2.c | 3 ++-
+ lib/xz/xz_crc32.c        | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-It would be nice to get some testing. Only generic lib/crc, bunzip, xz_crc32
-and Freescale's Ethernet driver were tested on HW.  Rest got just different
-builds.
-
- drivers/staging/rtl8712/rtl871x_security.c    | 5 ++---
- drivers/staging/rtl8723bs/core/rtw_security.c | 5 ++---
- 2 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/staging/rtl8712/rtl871x_security.c b/drivers/staging/rtl8712/rtl871x_security.c
-index 7bc74d7d8a3a..1075eacdb441 100644
---- a/drivers/staging/rtl8712/rtl871x_security.c
-+++ b/drivers/staging/rtl8712/rtl871x_security.c
-@@ -40,6 +40,7 @@
- #include <linux/uaccess.h>
- #include <asm/byteorder.h>
- #include <linux/atomic.h>
+diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
+index 0234361b24b8..7c4932eed748 100644
+--- a/lib/decompress_bunzip2.c
++++ b/lib/decompress_bunzip2.c
+@@ -51,6 +51,7 @@
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
 +#include <linux/crc32poly.h>
- #include <linux/semaphore.h>
  
- #include "osdep_service.h"
-@@ -49,8 +50,6 @@
+ #ifndef INT_MAX
+ #define INT_MAX 0x7fffffff
+@@ -654,7 +655,7 @@ static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, long len,
+ 	for (i = 0; i < 256; i++) {
+ 		c = i << 24;
+ 		for (j = 8; j; j--)
+-			c = c&0x80000000 ? (c << 1)^0x04c11db7 : (c << 1);
++			c = c&0x80000000 ? (c << 1)^(CRC32_POLY_BE) : (c << 1);
+ 		bd->crc32Table[i] = c;
+ 	}
  
- /* =====WEP related===== */
- 
--#define CRC32_POLY 0x04c11db7
--
- struct arc4context {
- 	u32 x;
- 	u32 y;
-@@ -135,7 +134,7 @@ static void crc32_init(void)
- 	for (i = 0; i < 256; ++i) {
- 		k = crc32_reverseBit((u8)i);
- 		for (c = ((u32)k) << 24, j = 8; j > 0; --j)
--			c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);
-+			c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY_BE : (c << 1);
- 		p1 = (u8 *)&crc32_table[i];
- 		p1[0] = crc32_reverseBit(p[3]);
- 		p1[1] = crc32_reverseBit(p[2]);
-diff --git a/drivers/staging/rtl8723bs/core/rtw_security.c b/drivers/staging/rtl8723bs/core/rtw_security.c
-index 612277a555d2..6c8ac9e86c9f 100644
---- a/drivers/staging/rtl8723bs/core/rtw_security.c
-+++ b/drivers/staging/rtl8723bs/core/rtw_security.c
-@@ -6,6 +6,7 @@
-  ******************************************************************************/
- #define  _RTW_SECURITY_C_
+diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
+index 34532d14fd4c..25a5d87e2e4c 100644
+--- a/lib/xz/xz_crc32.c
++++ b/lib/xz/xz_crc32.c
+@@ -15,6 +15,7 @@
+  * but they are bigger and use more memory for the lookup table.
+  */
  
 +#include <linux/crc32poly.h>
- #include <drv_types.h>
- #include <rtw_debug.h>
+ #include "xz_private.h"
  
-@@ -87,8 +88,6 @@ const char *security_type_str(u8 value)
+ /*
+@@ -29,7 +30,7 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
  
- /* WEP related ===== */
+ XZ_EXTERN void xz_crc32_init(void)
+ {
+-	const uint32_t poly = 0xEDB88320;
++	const uint32_t poly = CRC32_POLY_LE;
  
--#define CRC32_POLY 0x04c11db7
--
- struct arc4context {
- 	u32 x;
- 	u32 y;
-@@ -178,7 +177,7 @@ static void crc32_init(void)
- 		for (i = 0; i < 256; ++i) {
- 			k = crc32_reverseBit((u8)i);
- 			for (c = ((u32)k) << 24, j = 8; j > 0; --j) {
--				c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);
-+				c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY_BE : (c << 1);
- 			}
- 			p1 = (u8 *)&crc32_table[i];
- 
+ 	uint32_t i;
+ 	uint32_t j;
 -- 
 2.14.1
