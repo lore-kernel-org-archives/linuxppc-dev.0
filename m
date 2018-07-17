@@ -1,22 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dave.hansen@intel.com>
+Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VR5K0h2vzF3Hh
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:47:00 +1000 (AEST)
-Date: Tue, 17 Jul 2018 18:46:54 +0200
-Message-ID: <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Diana Craciun <diana.craciun@nxp.com>
-Cc: leoyang.li@nxp.com, bharat.bhushan@nxp.com, oss@buserror.net,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities
- reporting for NXP PPC BOOK3E
-References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
- <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
-In-Reply-To: <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VSb13lzSzF3Hh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 03:54:19 +1000 (AEST)
+Subject: Re: [PATCH v13 08/24] selftests/vm: fix the wrong assert in
+ pkey_disable_set()
+To: Ram Pai <linuxram@us.ibm.com>
+References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
+ <1528937115-10132-9-git-send-email-linuxram@us.ibm.com>
+ <3c441309-1d35-eead-0c5d-1d7d20018219@intel.com>
+ <20180717155848.GA5790@ram.oc3035372033.ibm.com>
+Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
+ msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <07869e1f-5022-92e3-416d-15c5f52d3b41@intel.com>
+Date: Tue, 17 Jul 2018 10:53:57 -0700
 MIME-Version: 1.0
+In-Reply-To: <20180717155848.GA5790@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,77 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Diana Craciun <diana.craciun@nxp.com> a =C3=A9crit=C2=A0:
+On 07/17/2018 08:58 AM, Ram Pai wrote:
+> On Wed, Jun 20, 2018 at 07:47:02AM -0700, Dave Hansen wrote:
+>> On 06/13/2018 05:44 PM, Ram Pai wrote:
+>>> If the flag is 0, no bits will be set. Hence we cant expect
+>>> the resulting bitmap to have a higher value than what it
+>>> was earlier
+>> ...
+>>>  	if (flags)
+>>> -		pkey_assert(read_pkey_reg() > orig_pkey_reg);
+>>> +		pkey_assert(read_pkey_reg() >= orig_pkey_reg);
+>>>  	dprintf1("END<---%s(%d, 0x%x)\n", __func__,
+>>>  		pkey, flags);
+>>>  }
+>> This is the kind of thing where I'd love to hear the motivation and
+>> background.  This "disable a key that was already disabled" operation
+>> obviously doesn't happen today.  What motivated you to change it now?
+> On powerpc, hardware supports READ_DISABLE and WRITE_DISABLE.
+> ACCESS_DISABLE is basically READ_DISABLE|WRITE_DISABLE on powerpc.
+> 
+> If access disable is called on a key followed by a write disable, the
+> second operation becomes a nop. In such cases, 
+>        read_pkey_reg() == orig_pkey_reg
+> 
+> Hence the code above is modified to 
+> 	pkey_assert(read_pkey_reg() >= orig_pkey_reg);
 
-> The NXP PPC Book3E platforms are not vulnerable to meltdown and
-> Spectre v4, so make them PPC_BOOK3S_64 specific.
->
-> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
-> ---
-> History:
->
-> v2-->v3
-> - used the existing functions for spectre v1/v2
->
->  arch/powerpc/Kconfig           | 7 ++++++-
->  arch/powerpc/kernel/security.c | 2 ++
->  2 files changed, 8 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 9f2b75f..116c953 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -165,7 +165,7 @@ config PPC
->  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
->  	select GENERIC_CMOS_UPDATE
->  	select GENERIC_CPU_AUTOPROBE
-> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
-> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC
-
-I don't understand.  You say this patch is to make something specific=20=20
-to=20book3s64 specific, and you are creating a new config param that=20=20
-make=20things less specific
-
-Christophe
-
->  	select GENERIC_IRQ_SHOW
->  	select GENERIC_IRQ_SHOW_LEVEL
->  	select GENERIC_SMP_IDLE_THREAD
-> @@ -240,6 +240,11 @@ config PPC
->  	# Please keep this list sorted alphabetically.
->  	#
->
-> +config PPC_NOSPEC
-> +    bool
-> +    default y
-> +    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
-> +
->  config GENERIC_CSUM
->  	def_bool n
->
-> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/securit=
-y.c
-> index 3a4e5c3..539c744 100644
-> --- a/arch/powerpc/kernel/security.c
-> +++ b/arch/powerpc/kernel/security.c
-> @@ -92,6 +92,7 @@ static __init int barrier_nospec_debugfs_init(void)
->  device_initcall(barrier_nospec_debugfs_init);
->  #endif /* CONFIG_DEBUG_FS */
->
-> +#ifdef CONFIG_PPC_BOOK3S_64
->  ssize_t cpu_show_meltdown(struct device *dev, struct=20=20
->=20device_attribute *attr, char *buf)
->  {
->  	bool thread_priv;
-> @@ -124,6 +125,7 @@ ssize_t cpu_show_meltdown(struct device *dev,=20=20
->=20struct device_attribute *attr, cha
->
->  	return sprintf(buf, "Vulnerable\n");
->  }
-> +#endif
->
->  ssize_t cpu_show_spectre_v1(struct device *dev, struct=20=20
->=20device_attribute *attr, char *buf)
->  {
-> --
-> 2.5.5
+Makes sense.  Do we have a comment for that now?
