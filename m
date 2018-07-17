@@ -1,34 +1,41 @@
-Return-Path: <krzk@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linuxram@us.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VQCC73c7zF3Hs
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:07:03 +1000 (AEST)
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Maxime Coquelin <mcoquelin.stm32@gmail.com>,
- Alexandre Torgue <alexandre.torgue@st.com>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- Siva Reddy Kallam <siva.kallam@broadcom.com>,
- Prashant Sreedharan <prashant@broadcom.com>,
- Michael Chan <mchan@broadcom.com>, Fugang Duan <fugang.duan@nxp.com>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>,
- Jose Abreu <Jose.Abreu@synopsys.com>,
- Larry Finger <Larry.Finger@lwfinger.net>,
- Florian Schilhabel <florian.c.schilhabel@googlemail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- devel@driverdev.osuosl.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 6/6] lib: Use existing define with polynomial
-Date: Tue, 17 Jul 2018 18:05:41 +0200
-Message-Id: <20180717160541.3843-7-krzk@kernel.org>
-In-Reply-To: <20180717160541.3843-1-krzk@kernel.org>
-References: <20180717160541.3843-1-krzk@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VQF91TY8zF3Hx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:08:45 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6HG4W7q110736
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:08:42 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k9h49fr1u-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:08:42 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
+ Tue, 17 Jul 2018 17:08:40 +0100
+Date: Tue, 17 Jul 2018 09:08:28 -0700
+From: Ram Pai <linuxram@us.ibm.com>
+To: Dave Hansen <dave.hansen@intel.com>
+Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
+ msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH v13 18/24] selftests/vm: fix an assertion in
+ test_pkey_alloc_exhaust()
+Reply-To: Ram Pai <linuxram@us.ibm.com>
+References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
+ <1528937115-10132-19-git-send-email-linuxram@us.ibm.com>
+ <55227442-a573-62b1-3206-1f3065a4b55f@intel.com>
+MIME-Version: 1.0
+In-Reply-To: <55227442-a573-62b1-3206-1f3065a4b55f@intel.com>
+Message-Id: <20180717160828.GF5790@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,55 +45,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do not define again the polynomial but use header with existing define.
+On Wed, Jun 20, 2018 at 08:11:07AM -0700, Dave Hansen wrote:
+> On 06/13/2018 05:45 PM, Ram Pai wrote:
+> >  	/*
+> > -	 * There are 16 pkeys supported in hardware.  Three are
+> > -	 * allocated by the time we get here:
+> > -	 *   1. The default key (0)
+> > -	 *   2. One possibly consumed by an execute-only mapping.
+> > -	 *   3. One allocated by the test code and passed in via
+> > -	 *      'pkey' to this function.
+> > -	 * Ensure that we can allocate at least another 13 (16-3).
+> > +	 * There are NR_PKEYS pkeys supported in hardware. arch_reserved_keys()
+> > +	 * are reserved. One of which is the default key(0). One can be taken
+> > +	 * up by an execute-only mapping.
+> > +	 * Ensure that we can allocate at least the remaining.
+> >  	 */
+> > -	pkey_assert(i >= NR_PKEYS-3);
+> > +	pkey_assert(i >= (NR_PKEYS-arch_reserved_keys()-1));
+> 
+> We recently had a bug here.  I fixed it and left myself a really nice
+> comment so I and others wouldn't screw it up in the future.
+> 
+> Does this kill my nice, new comment?
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- lib/decompress_bunzip2.c | 3 ++-
- lib/xz/xz_crc32.c        | 3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+part of your nice comment has been moved into the header file. The arch
+specific header file explains where and how the reserved keys are used.
 
-diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-index 0234361b24b8..7c4932eed748 100644
---- a/lib/decompress_bunzip2.c
-+++ b/lib/decompress_bunzip2.c
-@@ -51,6 +51,7 @@
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
-+#include <linux/crc32poly.h>
- 
- #ifndef INT_MAX
- #define INT_MAX 0x7fffffff
-@@ -654,7 +655,7 @@ static int INIT start_bunzip(struct bunzip_data **bdp, void *inbuf, long len,
- 	for (i = 0; i < 256; i++) {
- 		c = i << 24;
- 		for (j = 8; j; j--)
--			c = c&0x80000000 ? (c << 1)^0x04c11db7 : (c << 1);
-+			c = c&0x80000000 ? (c << 1)^(CRC32_POLY_BE) : (c << 1);
- 		bd->crc32Table[i] = c;
- 	}
- 
-diff --git a/lib/xz/xz_crc32.c b/lib/xz/xz_crc32.c
-index 34532d14fd4c..25a5d87e2e4c 100644
---- a/lib/xz/xz_crc32.c
-+++ b/lib/xz/xz_crc32.c
-@@ -15,6 +15,7 @@
-  * but they are bigger and use more memory for the lookup table.
-  */
- 
-+#include <linux/crc32poly.h>
- #include "xz_private.h"
- 
- /*
-@@ -29,7 +30,7 @@ STATIC_RW_DATA uint32_t xz_crc32_table[256];
- 
- XZ_EXTERN void xz_crc32_init(void)
- {
--	const uint32_t poly = 0xEDB88320;
-+	const uint32_t poly = CRC32_POLY_LE;
- 
- 	uint32_t i;
- 	uint32_t j;
 -- 
-2.14.1
+Ram Pai
