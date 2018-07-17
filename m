@@ -1,23 +1,23 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VMBn0rFkzF3Hy
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:29 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id y5-v6so879459qti.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VMBr3LFPzF3Hr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:32 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id q12-v6so887806qtp.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:32 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: [PATCH v3 0/9] powerpc/pkeys: fixes to pkeys
-Date: Tue, 17 Jul 2018 06:51:01 -0700
-Message-Id: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH v3 2/9] powerpc/pkeys: Deny read/write/execute by default
+Date: Tue, 17 Jul 2018 06:51:03 -0700
+Message-Id: <1531835470-32691-3-git-send-email-linuxram@us.ibm.com>
+In-Reply-To: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
+References: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Assortment of fixes to pkey to match its behavior to that on x86.
+Deny all permissions on all keys, with some exceptions.  pkey-0 must
+allow all permissions, or else everything comes to a screaching halt.
+Execute-only key must allow execute permission.
 
-Patch 1  makes pkey consumable in multithreaded applications.
+Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+---
+ arch/powerpc/mm/pkeys.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-Patch 2  Deny, by default, permissions on all unallocated keys.
-
-Patch 3  pkey allocation/free must not change pkey registers.
-
-Patch 4  fixes fork to inherit the key attributes.
-
-Patch 5  A off-by-one bug made one key unusable. Fixes it.
-
-Patch 6  Makes pkey-0 less special.
-
-Patch 7 fix to core-pkeys selftest to capture the modified behavior
-
-Patch 8 fix to ptrace-pkeys selftest to capture the modified behavior
-
-The above patch series is successfully verified using pkey selftests,
-on both powerpc and x86.
-
-Ram Pai (9):
-  powerpc/pkeys: Give all threads control of their key permissions
-  powerpc/pkeys: Deny read/write/execute by default
-  powerpc/pkeys: key allocation/deallocation must not change pkey
-    registers
-  powerpc/pkeys: Save the pkey registers before fork
-  powerpc/pkeys: fix calculation of total pkeys.
-  powerpc/pkeys: Preallocate execute-only key
-  powerpc/pkeys: make protection key 0 less special
-  powerpc/core-pkeys: execute-permission on keys are disabled by
-    default
-  powerpc/ptrace-pkeys: execute-permission on keys are disabled by
-    default
-
- arch/powerpc/include/asm/pkeys.h                   |   40 +++---
- arch/powerpc/kernel/process.c                      |    1 +
- arch/powerpc/mm/pkeys.c                            |  141 +++++++-------------
- tools/testing/selftests/powerpc/ptrace/core-pkey.c |    4 +
- .../testing/selftests/powerpc/ptrace/ptrace-pkey.c |    5 +
- 5 files changed, 79 insertions(+), 112 deletions(-)
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index 0facc0d..7dc0024 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -124,12 +124,10 @@ int pkey_initialize(void)
+ 
+ 	/* register mask is in BE format */
+ 	pkey_amr_mask = ~0x0ul;
+-	pkey_iamr_mask = ~0x0ul;
++	pkey_amr_mask &= ~(0x3ul << pkeyshift(0));
+ 
+-	for (i = 0; i < (pkeys_total - os_reserved); i++) {
+-		pkey_amr_mask &= ~(0x3ul << pkeyshift(i));
+-		pkey_iamr_mask &= ~(0x1ul << pkeyshift(i));
+-	}
++	pkey_iamr_mask = ~0x0ul;
++	pkey_iamr_mask &= ~(0x3ul << pkeyshift(0));
+ 
+ 	pkey_uamor_mask = ~0x0ul;
+ 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(0));
+-- 
+1.7.1
