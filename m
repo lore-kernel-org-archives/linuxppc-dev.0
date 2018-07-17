@@ -1,25 +1,24 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Received: from mail-qk0-x242.google.com (mail-qk0-x242.google.com
+ [IPv6:2607:f8b0:400d:c09::242])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VMC04j5MzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:40 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id e19-v6so886990qtp.8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VMC24M3SzF3Hk
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:42 +1000 (AEST)
+Received: by mail-qk0-x242.google.com with SMTP id c192-v6so513023qkg.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:42 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: [PATCH v3 7/9] powerpc/pkeys: make protection key 0 less special
-Date: Tue, 17 Jul 2018 06:51:08 -0700
-Message-Id: <1531835470-32691-8-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v3 8/9] powerpc/core-pkeys: execute-permission on keys are
+ disabled by default
+Date: Tue, 17 Jul 2018 06:51:09 -0700
+Message-Id: <1531835470-32691-9-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
 References: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,171 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Applications need the ability to associate an address-range with some
-key and latter revert to its initial default key. Pkey-0 comes close to
-providing this function but falls short, because the current
-implementation disallows applications to explicitly associate pkey-0 to
-the address range.
+Only when the key is allocated, its permission are enabled.
 
-Lets make pkey-0 less special and treat it almost like any other key.
-Thus it can be explicitly associated with any address range, and can be
-freed. This gives the application more flexibility and power.  The
-ability to free pkey-0 must be used responsibily, since pkey-0 is
-associated with almost all address-range by default.
-
-Even with this change pkey-0 continues to be slightly more special
-from the following point of view.
-(a) it is implicitly allocated.
-(b) it is the default key assigned to any address-range.
-(c) its permissions cannot be modified by userspace.
-
-NOTE: (c) is specific to powerpc only. pkey-0 is associated by default
-with all pages including kernel pages, and pkeys are also active in
-kernel mode. If any permission is denied on pkey-0, the kernel running
-in the context of the application will be unable to operate.
-
-Tested on powerpc.
-
-cc: Thomas Gleixner <tglx@linutronix.de>
-cc: Dave Hansen <dave.hansen@intel.com>
-cc: Michael Ellermen <mpe@ellerman.id.au>
-cc: Ingo Molnar <mingo@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>
-cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-cc: Michal Such谩nek <msuchanek@suse.de
+Reviewed-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
------------------------------------------------------------------------
-History:
-	v4: . introduced PKEY_0 macro.  No bug fixes. Code
-		re-arrangement to save a few cycles.
-
-	v3: . Corrected a comment in arch_set_user_pkey_access().  .
-	Clarified the header, to capture the notion that pkey-0
-	permissions cannot be modified by userspace on powerpc.
-      		-- comment from Thiago
-
-	v2: . mm_pkey_is_allocated() continued to treat pkey-0 special.
-		fixed it.
 ---
- arch/powerpc/include/asm/pkeys.h |   29 +++++++++++++++++++++++------
- arch/powerpc/mm/pkeys.c          |   19 +++++++++----------
- 2 files changed, 32 insertions(+), 16 deletions(-)
+ tools/testing/selftests/powerpc/ptrace/core-pkey.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pkeys.h b/arch/powerpc/include/asm/pkeys.h
-index 3312606..92a9962 100644
---- a/arch/powerpc/include/asm/pkeys.h
-+++ b/arch/powerpc/include/asm/pkeys.h
-@@ -13,7 +13,10 @@
+diff --git a/tools/testing/selftests/powerpc/ptrace/core-pkey.c b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+index 36bc312..b353d86 100644
+--- a/tools/testing/selftests/powerpc/ptrace/core-pkey.c
++++ b/tools/testing/selftests/powerpc/ptrace/core-pkey.c
+@@ -140,6 +140,10 @@ static int child(struct shared_info *info)
  
- DECLARE_STATIC_KEY_TRUE(pkey_disabled);
- extern int pkeys_total; /* total pkeys as per device tree */
--extern u32 initial_allocation_mask; /* bits set for reserved keys */
-+extern u32 initial_allocation_mask; /*  bits set for the initially allocated keys */
-+extern u32 reserved_allocation_mask; /* bits set for reserved keys */
+ 	if (disable_execute)
+ 		info->iamr |= 1ul << pkeyshift(pkey1);
++	else
++		info->iamr &= ~(1ul << pkeyshift(pkey1));
++	info->iamr &= ~(1ul << pkeyshift(pkey2) | 1ul << pkeyshift(pkey3));
 +
-+#define PKEY_0	0
  
- #define ARCH_VM_PKEY_FLAGS (VM_PKEY_BIT0 | VM_PKEY_BIT1 | VM_PKEY_BIT2 | \
- 			    VM_PKEY_BIT3 | VM_PKEY_BIT4)
-@@ -83,15 +86,19 @@ static inline u16 pte_to_pkey_bits(u64 pteflags)
- #define __mm_pkey_is_allocated(mm, pkey)	\
- 	(mm_pkey_allocation_map(mm) & pkey_alloc_mask(pkey))
- 
--#define __mm_pkey_is_reserved(pkey) (initial_allocation_mask & \
-+#define __mm_pkey_is_reserved(pkey) (reserved_allocation_mask & \
- 				       pkey_alloc_mask(pkey))
- 
- static inline bool mm_pkey_is_allocated(struct mm_struct *mm, int pkey)
- {
--	/* A reserved key is never considered as 'explicitly allocated' */
--	return ((pkey < arch_max_pkey()) &&
--		!__mm_pkey_is_reserved(pkey) &&
--		__mm_pkey_is_allocated(mm, pkey));
-+	if (pkey < 0 || pkey >= arch_max_pkey())
-+		return false;
-+
-+	/* Reserved keys are never allocated. */
-+	if (__mm_pkey_is_reserved(pkey))
-+		return false;
-+
-+	return __mm_pkey_is_allocated(mm, pkey);
- }
- 
- /*
-@@ -176,6 +183,16 @@ static inline int arch_set_user_pkey_access(struct task_struct *tsk, int pkey,
- {
- 	if (static_branch_likely(&pkey_disabled))
- 		return -EINVAL;
-+
-+	/*
-+	 * userspace should not change pkey-0 permissions.
-+	 * pkey-0 is associated with every page in the kernel.
-+	 * If userspace denies any permission on pkey-0, the
-+	 * kernel cannot operate.
-+	 */
-+	if (pkey == PKEY_0)
-+		return init_val ? -EINVAL : 0;
-+
- 	return __arch_set_user_pkey_access(tsk, pkey, init_val);
- }
- 
-diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
-index 5d39a10..4860acd 100644
---- a/arch/powerpc/mm/pkeys.c
-+++ b/arch/powerpc/mm/pkeys.c
-@@ -14,7 +14,8 @@
- bool pkey_execute_disable_supported;
- int  pkeys_total;		/* Total pkeys as per device tree */
- bool pkeys_devtree_defined;	/* pkey property exported by device tree */
--u32  initial_allocation_mask;	/* Bits set for reserved keys */
-+u32  initial_allocation_mask;   /* Bits set for the initially allocated keys */
-+u32  reserved_allocation_mask;  /* Bits set for reserved keys */
- u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
- u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
-@@ -121,26 +122,27 @@ int pkey_initialize(void)
- #else
- 	os_reserved = 0;
- #endif
--	initial_allocation_mask  = (0x1 << 0) | (0x1 << 1) |
--					(0x1 << execute_only_key);
-+	/* Bits are in LE format. */
-+	reserved_allocation_mask = (0x1 << 1) | (0x1 << execute_only_key);
- 
- 	/* register mask is in BE format */
- 	pkey_amr_mask = ~0x0ul;
--	pkey_amr_mask &= ~(0x3ul << pkeyshift(0));
-+	pkey_amr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
- 
- 	pkey_iamr_mask = ~0x0ul;
--	pkey_iamr_mask &= ~(0x3ul << pkeyshift(0));
-+	pkey_iamr_mask &= ~(0x3ul << pkeyshift(PKEY_0));
- 	pkey_iamr_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	pkey_uamor_mask = ~0x0ul;
--	pkey_uamor_mask &= ~(0x3ul << pkeyshift(0));
-+	pkey_uamor_mask &= ~(0x3ul << pkeyshift(PKEY_0));
- 	pkey_uamor_mask &= ~(0x3ul << pkeyshift(execute_only_key));
- 
- 	/* mark the rest of the keys as reserved and hence unavailable */
- 	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++) {
--		initial_allocation_mask |= (0x1 << i);
-+		reserved_allocation_mask |= (0x1 << i);
- 		pkey_uamor_mask &= ~(0x3ul << pkeyshift(i));
- 	}
-+	initial_allocation_mask = reserved_allocation_mask | (0x1 << PKEY_0);
- 
- 	if (unlikely((pkeys_total - os_reserved) <= execute_only_key)) {
- 		/*
-@@ -359,9 +361,6 @@ static bool pkey_access_permitted(int pkey, bool write, bool execute)
- 	int pkey_shift;
- 	u64 amr;
- 
--	if (!pkey)
--		return true;
--
- 	if (!is_pkey_enabled(pkey))
- 		return true;
+ 	info->uamor |= 3ul << pkeyshift(pkey1) | 3ul << pkeyshift(pkey2);
  
 -- 
 1.7.1
