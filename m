@@ -2,17 +2,19 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VR1F1R3YzF3J5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:43:27 +1000 (AEST)
-Date: Tue, 17 Jul 2018 18:43:20 +0200
-Message-ID: <20180717184320.Horde.oDFr4qk9a_r69egW2Z04lQ8@messagerie.si.c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VR5K0h2vzF3Hh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:47:00 +1000 (AEST)
+Date: Tue, 17 Jul 2018 18:46:54 +0200
+Message-ID: <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
 From: LEROY Christophe <christophe.leroy@c-s.fr>
 To: Diana Craciun <diana.craciun@nxp.com>
 Cc: leoyang.li@nxp.com, bharat.bhushan@nxp.com, oss@buserror.net,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 0/6] powerpc/fsl: Speculation barrier for NXP PowerPC
- Book3E
-In-Reply-To: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities
+ reporting for NXP PPC BOOK3E
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+ <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
+In-Reply-To: <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,49 +28,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Diana Craciun <diana.craciun@nxp.com> a =C3=A9crit=C2=A0:
 
-> Implement barrier_nospec for NXP PowerPC Book3E processors.
+> The NXP PPC Book3E platforms are not vulnerable to meltdown and
+> Spectre v4, so make them PPC_BOOK3S_64 specific.
 >
-> Diana Craciun (6):
->   Disable the speculation barrier from the command line
->   Document nospectre_v1 kernel parameter.
->   Make stf barrier PPC_BOOK3S_64 specific.
->   Enable cpu vulnerabilities reporting for NXP PPC BOOK3E
->   Add barrier_nospec implementation for NXP PowerPC Book3E
->   powerpc/fsl: Sanitize the syscall table for NXP PowerPC 32 bit
->     platforms
+> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+> ---
+> History:
+>
+> v2-->v3
+> - used the existing functions for spectre v1/v2
+>
+>  arch/powerpc/Kconfig           | 7 ++++++-
+>  arch/powerpc/kernel/security.c | 2 ++
+>  2 files changed, 8 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 9f2b75f..116c953 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -165,7 +165,7 @@ config PPC
+>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+>  	select GENERIC_CMOS_UPDATE
+>  	select GENERIC_CPU_AUTOPROBE
+> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC
 
-This list doesn't corresponds to the names of following 6 patches
+I don't understand.  You say this patch is to make something specific=20=20
+to=20book3s64 specific, and you are creating a new config param that=20=20
+make=20things less specific
 
 Christophe
 
+>  	select GENERIC_IRQ_SHOW
+>  	select GENERIC_IRQ_SHOW_LEVEL
+>  	select GENERIC_SMP_IDLE_THREAD
+> @@ -240,6 +240,11 @@ config PPC
+>  	# Please keep this list sorted alphabetically.
+>  	#
 >
->  Documentation/admin-guide/kernel-parameters.txt |  4 +++
->  arch/powerpc/Kconfig                            |  7 ++++-
->  arch/powerpc/include/asm/barrier.h              | 12 ++++++---
->  arch/powerpc/include/asm/setup.h                |  6 ++++-
->  arch/powerpc/kernel/Makefile                    |  3 ++-
->  arch/powerpc/kernel/entry_32.S                  | 10 +++++++
->  arch/powerpc/kernel/module.c                    |  4 ++-
->  arch/powerpc/kernel/security.c                  | 17 +++++++++++-
->  arch/powerpc/kernel/setup-common.c              |  2 ++
->  arch/powerpc/kernel/vmlinux.lds.S               |  4 ++-
->  arch/powerpc/lib/feature-fixups.c               | 35=20=20
->=20++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/setup.c          |  1 -
->  arch/powerpc/platforms/pseries/setup.c          |  1 -
->  13 files changed, 94 insertions(+), 12 deletions(-)
+> +config PPC_NOSPEC
+> +    bool
+> +    default y
+> +    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
+> +
+>  config GENERIC_CSUM
+>  	def_bool n
 >
+> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/securit=
+y.c
+> index 3a4e5c3..539c744 100644
+> --- a/arch/powerpc/kernel/security.c
+> +++ b/arch/powerpc/kernel/security.c
+> @@ -92,6 +92,7 @@ static __init int barrier_nospec_debugfs_init(void)
+>  device_initcall(barrier_nospec_debugfs_init);
+>  #endif /* CONFIG_DEBUG_FS */
+>
+> +#ifdef CONFIG_PPC_BOOK3S_64
+>  ssize_t cpu_show_meltdown(struct device *dev, struct=20=20
+>=20device_attribute *attr, char *buf)
+>  {
+>  	bool thread_priv;
+> @@ -124,6 +125,7 @@ ssize_t cpu_show_meltdown(struct device *dev,=20=20
+>=20struct device_attribute *attr, cha
+>
+>  	return sprintf(buf, "Vulnerable\n");
+>  }
+> +#endif
+>
+>  ssize_t cpu_show_spectre_v1(struct device *dev, struct=20=20
+>=20device_attribute *attr, char *buf)
+>  {
 > --
-> History:
-> v3 --> v4
-> - fixed compilation issues
->
-> v2 --> v3
-> - addressed review comments
-> - included the 32bit sanitization in the same patch series
->
-> v1 --> v2
-> - added implementation for cpu_show_spectre_x functions
-> - the mitigation is no longer enabled through device tree options
->
 > 2.5.5
