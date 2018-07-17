@@ -1,41 +1,32 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <krzk@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VQ9T3ml7zF3J8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:05:33 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6HG4W78006601
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:05:30 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k9k2whpbu-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:05:30 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 17 Jul 2018 17:05:28 +0100
-Date: Tue, 17 Jul 2018 09:05:16 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
- msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v13 17/24] selftests/vm: powerpc implementation to check
- support for pkey
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
- <1528937115-10132-18-git-send-email-linuxram@us.ibm.com>
- <20bc9696-3ae9-4eb9-40ce-9c477a8aaea2@intel.com>
-MIME-Version: 1.0
-In-Reply-To: <20bc9696-3ae9-4eb9-40ce-9c477a8aaea2@intel.com>
-Message-Id: <20180717160516.GE5790@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VQBj1dF8zF3Hs
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:06:33 +1000 (AEST)
+From: Krzysztof Kozlowski <krzk@kernel.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Siva Reddy Kallam <siva.kallam@broadcom.com>,
+ Prashant Sreedharan <prashant@broadcom.com>,
+ Michael Chan <mchan@broadcom.com>, Fugang Duan <fugang.duan@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>,
+ Jose Abreu <Jose.Abreu@synopsys.com>,
+ Larry Finger <Larry.Finger@lwfinger.net>,
+ Florian Schilhabel <florian.c.schilhabel@googlemail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devel@driverdev.osuosl.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH 0/6] lib/crc32: treewide: Use existing define with polynomial
+Date: Tue, 17 Jul 2018 18:05:35 +0200
+Message-Id: <20180717160541.3843-1-krzk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,21 +36,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2018 at 08:09:12AM -0700, Dave Hansen wrote:
-> > -	if (cpu_has_pku()) {
-> > -		dprintf1("SKIP: %s: no CPU support\n", __func__);
-> > +	if (is_pkey_supported()) {
-> > +		dprintf1("SKIP: %s: no CPU/kernel support\n", __func__);
-> >  		return;
-> >  	}
-> 
-> I actually kinda wanted a specific message for when the *CPU* doesn't
-> support the feature.
+Hi,
 
-is_pkey_supported() x86 implementation has specific messages. it will
-print if the CPU doesn't support the feature.
+Kernel defines same polynomial for CRC-32 in few places.
+This is unnecessary duplication of the same value. Also this might
+be error-prone for future code - every driver will define the
+polynomial again.
 
-RP
+This is an attempt to unify definition of polynomial.  Few obvious
+hard-coded locations are fixed with define.
+
+All series depend on each 1/6 and 2/6.
+
+This could be merged in two different merge windows (1st lib/crc and then
+the rest) or taken through one tree.
+
+It would be nice to get some testing. Only generic lib/crc, bunzip, xz_crc32
+and Freescale's Ethernet driver were tested on HW.  Rest got just different
+builds.
+
+Best regards,
+Krzysztof
+
+
+
+
+Krzysztof Kozlowski (6):
+  lib/crc: Move polynomial definition to separate header
+  lib/crc: Use consistent naming for CRC-32 polynomials
+  crypto: stm32_crc32 - Use existing define with polynomial
+  net: ethernet: Use existing define with polynomial
+  staging: rtl: Use existing define with polynomial
+  lib: Use existing define with polynomial
+
+ drivers/crypto/stm32/stm32_crc32.c               | 11 ++++-------
+ drivers/net/ethernet/amd/xgbe/xgbe-dev.c         |  4 ++--
+ drivers/net/ethernet/apple/bmac.c                |  8 ++------
+ drivers/net/ethernet/broadcom/tg3.c              |  3 ++-
+ drivers/net/ethernet/freescale/fec_main.c        |  4 ++--
+ drivers/net/ethernet/freescale/fs_enet/fec.h     |  3 ---
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c |  3 ++-
+ drivers/net/ethernet/micrel/ks8851_mll.c         |  3 ++-
+ drivers/net/ethernet/synopsys/dwc-xlgmac-hw.c    |  4 ++--
+ drivers/staging/rtl8712/rtl871x_security.c       |  5 ++---
+ drivers/staging/rtl8723bs/core/rtw_security.c    |  5 ++---
+ include/linux/crc32poly.h                        | 20 ++++++++++++++++++++
+ lib/crc32.c                                      | 11 ++++++-----
+ lib/crc32defs.h                                  | 14 --------------
+ lib/decompress_bunzip2.c                         |  3 ++-
+ lib/gen_crc32table.c                             |  5 +++--
+ lib/xz/xz_crc32.c                                |  3 ++-
+ 17 files changed, 55 insertions(+), 54 deletions(-)
+ create mode 100644 include/linux/crc32poly.h
 
 -- 
-Ram Pai
+2.14.1
