@@ -1,18 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41V6cj5zw5zF3HZ
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 14:24:37 +1000 (AEST)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: aneesh.kumar@linux.vnet.ibm.com,
-	mpe@ellerman.id.au,
-	paulus@samba.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH] powerpc/hugetlbpage: Rmove unhelpful HUGEPD_*_SHIFT macros
-Date: Tue, 17 Jul 2018 14:24:30 +1000
-Message-Id: <20180717042430.15395-1-david@gibson.dropbear.id.au>
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41VBVL6YwHzF3HZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 17:19:22 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Mackerras <paulus@ozlabs.org>
+Subject: [PATCH kernel v7 1/2] vfio/spapr: Use IOMMU pageshift rather than
+ pagesize
+Date: Tue, 17 Jul 2018 17:19:12 +1000
+Message-Id: <20180717071913.2167-2-aik@ozlabs.ru>
+In-Reply-To: <20180717071913.2167-1-aik@ozlabs.ru>
+References: <20180717071913.2167-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,66 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The HUGEPD_*_SHIFT macros are always defined to be PGDIR_SHIFT and
-PUD_SHIFT, and have to have those values to work properly.  They once used
-to have different values, but that was really only because they were used
-to mean different things in different contexts.
+The size is always equal to 1 page so let's use this. Later on this will
+be used for other checks which use page shifts to check the granularity
+of access.
 
-6fa50483 "powerpc/mm/hugetlb: initialize the pagetable cache correctly for
-hugetlb" removed that double meaning, but left the now useless constants.
+This should cause no behavioral change.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/mm/hugetlbpage.c | 17 ++++-------------
- 1 file changed, 4 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 8a9a49c13865..acbbaabdaaf8 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -117,15 +117,6 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 	return 0;
+As Alex suggested, this should go via the ppc tree which the next patch
+is going to (which is ppc-kvm).
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 759a5bd..2da5f05 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -457,13 +457,13 @@ static void tce_iommu_unuse_page(struct tce_container *container,
  }
  
--/*
-- * These macros define how to determine which level of the page table holds
-- * the hpdp.
-- */
--#if defined(CONFIG_PPC_FSL_BOOK3E) || defined(CONFIG_PPC_8xx)
--#define HUGEPD_PGD_SHIFT PGDIR_SHIFT
--#define HUGEPD_PUD_SHIFT PUD_SHIFT
--#endif
--
- /*
-  * At this point we do the placement change only for BOOK3S 64. This would
-  * possibly work on other subarchs.
-@@ -174,13 +165,13 @@ pte_t *huge_pte_alloc(struct mm_struct *mm, unsigned long addr, unsigned long sz
- 		}
- 	}
- #else
--	if (pshift >= HUGEPD_PGD_SHIFT) {
-+	if (pshift >= PGDIR_SHIFT) {
- 		ptl = &mm->page_table_lock;
- 		hpdp = (hugepd_t *)pg;
- 	} else {
- 		pdshift = PUD_SHIFT;
- 		pu = pud_alloc(mm, pg, addr);
--		if (pshift >= HUGEPD_PUD_SHIFT) {
-+		if (pshift >= PUD_SHIFT) {
- 			ptl = pud_lockptr(mm, pu);
- 			hpdp = (hugepd_t *)pu;
- 		} else {
-@@ -695,9 +686,9 @@ static int __init hugetlbpage_init(void)
- 		else
- 			pdshift = PMD_SHIFT;
- #else
--		if (shift < HUGEPD_PUD_SHIFT)
-+		if (shift < PUD_SHIFT)
- 			pdshift = PMD_SHIFT;
--		else if (shift < HUGEPD_PGD_SHIFT)
-+		else if (shift < PGDIR_SHIFT)
- 			pdshift = PUD_SHIFT;
- 		else
- 			pdshift = PGDIR_SHIFT;
+ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+-		unsigned long tce, unsigned long size,
++		unsigned long tce, unsigned long shift,
+ 		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+ {
+ 	long ret = 0;
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 
+-	mem = mm_iommu_lookup(container->mm, tce, size);
++	mem = mm_iommu_lookup(container->mm, tce, 1ULL << shift);
+ 	if (!mem)
+ 		return -EINVAL;
+ 
+@@ -487,7 +487,7 @@ static void tce_iommu_unuse_page_v2(struct tce_container *container,
+ 	if (!pua)
+ 		return;
+ 
+-	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, IOMMU_PAGE_SIZE(tbl),
++	ret = tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
+ 			&hpa, &mem);
+ 	if (ret)
+ 		pr_debug("%s: tce %lx at #%lx was not cached, ret=%d\n",
+@@ -611,7 +611,7 @@ static long tce_iommu_build_v2(struct tce_container *container,
+ 				entry + i);
+ 
+ 		ret = tce_iommu_prereg_ua_to_hpa(container,
+-				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
++				tce, tbl->it_page_shift, &hpa, &mem);
+ 		if (ret)
+ 			break;
+ 
 -- 
-2.17.1
+2.11.0
