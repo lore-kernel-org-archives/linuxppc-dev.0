@@ -1,26 +1,23 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x241.google.com (mail-qt0-x241.google.com
- [IPv6:2607:f8b0:400d:c0d::241])
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VMB42pTKzF3Hp
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:50:51 +1000 (AEST)
-Received: by mail-qt0-x241.google.com with SMTP id a18-v6so888195qtj.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:50:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VMBn0rFkzF3Hy
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:29 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id y5-v6so879459qti.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:29 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
-To: shuahkh@osg.samsung.com,
-	linux-kselftest@vger.kernel.org
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- dave.hansen@intel.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
- linuxram@us.ibm.com, fweimer@redhat.com, msuchanek@suse.de,
- aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v14 22/22] selftests/vm: test correct behavior of pkey-0
-Date: Tue, 17 Jul 2018 06:49:25 -0700
-Message-Id: <1531835365-32387-23-git-send-email-linuxram@us.ibm.com>
-In-Reply-To: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
-References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
+ bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
+ Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
+Subject: [PATCH v3 0/9] powerpc/pkeys: fixes to pkeys
+Date: Tue, 17 Jul 2018 06:51:01 -0700
+Message-Id: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,107 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ensure pkey-0 is allocated on start.  Ensure pkey-0 can be attached
-dynamically in various modes, without failures.  Ensure pkey-0 can be
-freed and allocated.
+Assortment of fixes to pkey to match its behavior to that on x86.
 
-Signed-off-by: Ram Pai <linuxram@us.ibm.com>
----
- tools/testing/selftests/vm/protection_keys.c |   66 +++++++++++++++++++++++++-
- 1 files changed, 64 insertions(+), 2 deletions(-)
+Patch 1  makes pkey consumable in multithreaded applications.
 
-diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 569faf1..156b449 100644
---- a/tools/testing/selftests/vm/protection_keys.c
-+++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -999,6 +999,67 @@ void close_test_fds(void)
- 	return *ptr;
- }
- 
-+void test_pkey_alloc_free_attach_pkey0(int *ptr, u16 pkey)
-+{
-+	int i, err;
-+	int max_nr_pkey_allocs;
-+	int alloced_pkeys[NR_PKEYS];
-+	int nr_alloced = 0;
-+	int newpkey;
-+	long size;
-+
-+	assert(pkey_last_malloc_record);
-+	size = pkey_last_malloc_record->size;
-+	/*
-+	 * This is a bit of a hack.  But mprotect() requires
-+	 * huge-page-aligned sizes when operating on hugetlbfs.
-+	 * So, make sure that we use something that's a multiple
-+	 * of a huge page when we can.
-+	 */
-+	if (size >= HPAGE_SIZE)
-+		size = HPAGE_SIZE;
-+
-+
-+	/* allocate every possible key and make sure key-0 never got allocated */
-+	max_nr_pkey_allocs = NR_PKEYS;
-+	for (i = 0; i < max_nr_pkey_allocs; i++) {
-+		int new_pkey = alloc_pkey();
-+		assert(new_pkey != 0);
-+
-+		if (new_pkey < 0)
-+			break;
-+		alloced_pkeys[nr_alloced++] = new_pkey;
-+	}
-+	/* free all the allocated keys */
-+	for (i = 0; i < nr_alloced; i++) {
-+		int free_ret;
-+
-+		if (!alloced_pkeys[i])
-+			continue;
-+		free_ret = sys_pkey_free(alloced_pkeys[i]);
-+		pkey_assert(!free_ret);
-+	}
-+
-+	/* attach key-0 in various modes */
-+	err = sys_mprotect_pkey(ptr, size, PROT_READ, 0);
-+	pkey_assert(!err);
-+	err = sys_mprotect_pkey(ptr, size, PROT_WRITE, 0);
-+	pkey_assert(!err);
-+	err = sys_mprotect_pkey(ptr, size, PROT_EXEC, 0);
-+	pkey_assert(!err);
-+	err = sys_mprotect_pkey(ptr, size, PROT_READ|PROT_WRITE, 0);
-+	pkey_assert(!err);
-+	err = sys_mprotect_pkey(ptr, size, PROT_READ|PROT_WRITE|PROT_EXEC, 0);
-+	pkey_assert(!err);
-+
-+	/* free key-0 */
-+	err = sys_pkey_free(0);
-+	pkey_assert(!err);
-+
-+	newpkey = sys_pkey_alloc(0, 0x0);
-+	assert(newpkey == 0);
-+}
-+
- void test_read_of_write_disabled_region(int *ptr, u16 pkey)
- {
- 	int ptr_contents;
-@@ -1144,10 +1205,10 @@ void test_kernel_gup_write_to_write_disabled_region(int *ptr, u16 pkey)
- void test_pkey_syscalls_on_non_allocated_pkey(int *ptr, u16 pkey)
- {
- 	int err;
--	int i = get_start_key();
-+	int i;
- 
- 	/* Note: 0 is the default pkey, so don't mess with it */
--	for (; i < NR_PKEYS; i++) {
-+	for (i=1; i < NR_PKEYS; i++) {
- 		if (pkey == i)
- 			continue;
- 
-@@ -1455,6 +1516,7 @@ void test_mprotect_pkey_on_unsupported_cpu(int *ptr, u16 pkey)
- 	test_pkey_syscalls_on_non_allocated_pkey,
- 	test_pkey_syscalls_bad_args,
- 	test_pkey_alloc_exhaust,
-+	test_pkey_alloc_free_attach_pkey0,
- };
- 
- void run_tests_once(void)
--- 
-1.7.1
+Patch 2  Deny, by default, permissions on all unallocated keys.
+
+Patch 3  pkey allocation/free must not change pkey registers.
+
+Patch 4  fixes fork to inherit the key attributes.
+
+Patch 5  A off-by-one bug made one key unusable. Fixes it.
+
+Patch 6  Makes pkey-0 less special.
+
+Patch 7 fix to core-pkeys selftest to capture the modified behavior
+
+Patch 8 fix to ptrace-pkeys selftest to capture the modified behavior
+
+The above patch series is successfully verified using pkey selftests,
+on both powerpc and x86.
+
+Ram Pai (9):
+  powerpc/pkeys: Give all threads control of their key permissions
+  powerpc/pkeys: Deny read/write/execute by default
+  powerpc/pkeys: key allocation/deallocation must not change pkey
+    registers
+  powerpc/pkeys: Save the pkey registers before fork
+  powerpc/pkeys: fix calculation of total pkeys.
+  powerpc/pkeys: Preallocate execute-only key
+  powerpc/pkeys: make protection key 0 less special
+  powerpc/core-pkeys: execute-permission on keys are disabled by
+    default
+  powerpc/ptrace-pkeys: execute-permission on keys are disabled by
+    default
+
+ arch/powerpc/include/asm/pkeys.h                   |   40 +++---
+ arch/powerpc/kernel/process.c                      |    1 +
+ arch/powerpc/mm/pkeys.c                            |  141 +++++++-------------
+ tools/testing/selftests/powerpc/ptrace/core-pkey.c |    4 +
+ .../testing/selftests/powerpc/ptrace/ptrace-pkey.c |    5 +
+ 5 files changed, 79 insertions(+), 112 deletions(-)
