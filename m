@@ -1,41 +1,38 @@
-Return-Path: <linuxram@us.ibm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VQ221KtCzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 01:59:04 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VQ443bGMzF3Hx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 02:00:52 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6HFsld9016045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 11:59:02 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2k9ggqgv2x-1
+ w6HFxqbQ008164
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:00:49 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k9jmtjtdr-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 11:59:02 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 12:00:46 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Tue, 17 Jul 2018 16:59:00 +0100
-Date: Tue, 17 Jul 2018 08:58:48 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: shuahkh@osg.samsung.com, linux-kselftest@vger.kernel.org,
- mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
- msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH v13 08/24] selftests/vm: fix the wrong assert in
- pkey_disable_set()
-Reply-To: Ram Pai <linuxram@us.ibm.com>
-References: <1528937115-10132-1-git-send-email-linuxram@us.ibm.com>
- <1528937115-10132-9-git-send-email-linuxram@us.ibm.com>
- <3c441309-1d35-eead-0c5d-1d7d20018219@intel.com>
-MIME-Version: 1.0
-In-Reply-To: <3c441309-1d35-eead-0c5d-1d7d20018219@intel.com>
-Message-Id: <20180717155848.GA5790@ram.oc3035372033.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Tue, 17 Jul 2018 10:00:35 -0600
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Florian Weimer <fweimer@redhat.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Oleg Nesterov <oleg@redhat.com>
+Subject: [RESEND][PATCH] powerpc/powernv : Save/Restore SPRG3 on entry/exit
+ from stop.
+Date: Tue, 17 Jul 2018 21:30:16 +0530
+In-Reply-To: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,34 +42,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2018 at 07:47:02AM -0700, Dave Hansen wrote:
-> On 06/13/2018 05:44 PM, Ram Pai wrote:
-> > If the flag is 0, no bits will be set. Hence we cant expect
-> > the resulting bitmap to have a higher value than what it
-> > was earlier
-> ...
-> >  	if (flags)
-> > -		pkey_assert(read_pkey_reg() > orig_pkey_reg);
-> > +		pkey_assert(read_pkey_reg() >= orig_pkey_reg);
-> >  	dprintf1("END<---%s(%d, 0x%x)\n", __func__,
-> >  		pkey, flags);
-> >  }
-> 
-> This is the kind of thing where I'd love to hear the motivation and
-> background.  This "disable a key that was already disabled" operation
-> obviously doesn't happen today.  What motivated you to change it now?
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On powerpc, hardware supports READ_DISABLE and WRITE_DISABLE.
-ACCESS_DISABLE is basically READ_DISABLE|WRITE_DISABLE on powerpc.
+On 64-bit servers, SPRN_SPRG3 and its userspace read-only mirror
+SPRN_USPRG3 are used as userspace VDSO write and read registers
+respectively.
 
-If access disable is called on a key followed by a write disable, the
-second operation becomes a nop. In such cases, 
-       read_pkey_reg() == orig_pkey_reg
+SPRN_SPRG3 is lost when we enter stop4 and above, and is currently not
+restored.  As a result, any read from SPRN_USPRG3 returns zero on an
+exit from stop4 and above.
 
+Thus in this situation, on POWER9, any call from sched_getcpu() always
+returns zero, as on powerpc, we call __kernel_getcpu() which relies
+upon SPRN_USPRG3 to report the CPU and NUMA node information.
 
-Hence the code above is modified to 
-	pkey_assert(read_pkey_reg() >= orig_pkey_reg);
+Fix this by saving the SPRN_SPRG3 before entering a deep stop state,
+and restoring it back on wakeup from the stop state.
 
+Fixes: e1c1cfed5432 ("powerpc/powernv: Save/Restore additional SPRs
+for stop4 cpuidle")
 
+Reported-by: Florian Weimer <fweimer@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/cpuidle.h | 1 +
+ arch/powerpc/kernel/asm-offsets.c  | 1 +
+ arch/powerpc/kernel/idle_book3s.S  | 5 +++++
+ 3 files changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+index e210a83..03fa904 100644
+--- a/arch/powerpc/include/asm/cpuidle.h
++++ b/arch/powerpc/include/asm/cpuidle.h
+@@ -77,6 +77,7 @@ struct stop_sprs {
+ 	u64 mmcr1;
+ 	u64 mmcr2;
+ 	u64 mmcra;
++	u64 sprg3;
+ };
+ 
+ extern u32 pnv_fastsleep_workaround_at_entry[];
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 89cf155..a35ebfc 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -776,6 +776,7 @@ int main(void)
+ 	STOP_SPR(STOP_MMCR1, mmcr1);
+ 	STOP_SPR(STOP_MMCR2, mmcr2);
+ 	STOP_SPR(STOP_MMCRA, mmcra);
++	STOP_SPR(STOP_SPRG3, sprg3);
+ #endif
+ 
+ 	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
+index d85d551..5069d42 100644
+--- a/arch/powerpc/kernel/idle_book3s.S
++++ b/arch/powerpc/kernel/idle_book3s.S
+@@ -120,6 +120,9 @@ power9_save_additional_sprs:
+ 	mfspr	r4, SPRN_MMCR2
+ 	std	r3, STOP_MMCR1(r13)
+ 	std	r4, STOP_MMCR2(r13)
++
++	mfspr	r3, SPRN_SPRG3
++	std	r3, STOP_SPRG3(r13)
+ 	blr
+ 
+ power9_restore_additional_sprs:
+@@ -144,7 +147,9 @@ power9_restore_additional_sprs:
+ 	mtspr	SPRN_MMCR1, r4
+ 
+ 	ld	r3, STOP_MMCR2(r13)
++	ld	r4, STOP_SPRG3(r13)
+ 	mtspr	SPRN_MMCR2, r3
++	mtspr	SPRN_SPRG3, r4
+ 	blr
+ 
+ /*
 -- 
-Ram Pai
+1.9.4
