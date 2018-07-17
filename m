@@ -1,21 +1,22 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
- [IPv6:2607:f8b0:400d:c0d::243])
+Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
+ [IPv6:2607:f8b0:400d:c0d::244])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VMBv6SC4zF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:35 +1000 (AEST)
-Received: by mail-qt0-x243.google.com with SMTP id h4-v6so888561qtj.7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VMBp6bSqzF3Hb
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:51:30 +1000 (AEST)
+Received: by mail-qt0-x244.google.com with SMTP id h4-v6so888303qtj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:51:30 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, hbabu@us.ibm.com, mhocko@kernel.org,
  bauerman@linux.vnet.ibm.com, linuxram@us.ibm.com,
  Ulrich.Weigand@de.ibm.com, fweimer@redhat.com, msuchanek@suse.de
-Subject: [PATCH v3 4/9] powerpc/pkeys: Save the pkey registers before fork
-Date: Tue, 17 Jul 2018 06:51:05 -0700
-Message-Id: <1531835470-32691-5-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v3 1/9] powerpc/pkeys: Give all threads control of their key
+ permissions
+Date: Tue, 17 Jul 2018 06:51:02 -0700
+Message-Id: <1531835470-32691-2-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
 References: <1531835470-32691-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,34 +28,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a thread forks the contents of AMR, IAMR, UAMOR registers in the
-newly forked thread are not inherited.
+Currently in a multithreaded application, a key allocated by one
+thread is not usable by other threads. By "not usable" we mean that
+other threads are unable to change the access permissions for that
+key for themselves.
 
-Save the registers before forking, for content of those
-registers to be automatically copied into the new thread.
+When a new key is allocated in one thread, the corresponding UAMOR
+bits for that thread get enabled, however the UAMOR bits for that key
+for all other threads remain disabled.
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Florian Weimer <fweimer@redhat.com>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Other threads have no way to set permissions on the key, and the
+current default permissions are that read/write is enabled for all
+keys, which means the key has no effect for other threads. Although
+that may be the desired behaviour in some circumstances, having all
+threads able to control their permissions for the key is more
+flexible.
+
+The current behaviour also differs from the x86 behaviour, which is
+problematic for users.
+
+To fix this, enable the UAMOR bits for all keys, at process
+creation (in start_thread(), ie exec time). Since the contents of
+UAMOR are inherited at fork, all threads are capable of modifying the
+permissions on any key.
+
+This is technically an ABI break on powerpc, but pkey support is fairly
+new on powerpc and not widely used, and this brings us into
+line with x86.
+
 Fixes: cf43d3b26452 ("powerpc: Enable pkey subsystem")
 Cc: stable@vger.kernel.org # v4.16+
+Tested-by: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+[mpe: Reword some of the changelog]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/process.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/powerpc/mm/pkeys.c |   44 ++++++++++++++++++++++++++------------------
+ 1 files changed, 26 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 9ef4aea..991d097 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -583,6 +583,7 @@ static void save_all(struct task_struct *tsk)
- 		__giveup_spe(tsk);
+diff --git a/arch/powerpc/mm/pkeys.c b/arch/powerpc/mm/pkeys.c
+index e6f500f..0facc0d 100644
+--- a/arch/powerpc/mm/pkeys.c
++++ b/arch/powerpc/mm/pkeys.c
+@@ -15,8 +15,9 @@
+ int  pkeys_total;		/* Total pkeys as per device tree */
+ bool pkeys_devtree_defined;	/* pkey property exported by device tree */
+ u32  initial_allocation_mask;	/* Bits set for reserved keys */
+-u64  pkey_amr_uamor_mask;	/* Bits in AMR/UMOR not to be touched */
++u64  pkey_amr_mask;		/* Bits in AMR not to be touched */
+ u64  pkey_iamr_mask;		/* Bits in AMR not to be touched */
++u64  pkey_uamor_mask;		/* Bits in UMOR not to be touched */
  
- 	msr_check_and_clear(msr_all_available);
-+	thread_pkey_regs_save(&tsk->thread);
+ #define AMR_BITS_PER_PKEY 2
+ #define AMR_RD_BIT 0x1UL
+@@ -119,20 +120,26 @@ int pkey_initialize(void)
+ #else
+ 	os_reserved = 0;
+ #endif
+-	initial_allocation_mask = ~0x0;
+-	pkey_amr_uamor_mask = ~0x0ul;
++	initial_allocation_mask  = (0x1 << 0) | (0x1 << 1);
++
++	/* register mask is in BE format */
++	pkey_amr_mask = ~0x0ul;
+ 	pkey_iamr_mask = ~0x0ul;
+-	/*
+-	 * key 0, 1 are reserved.
+-	 * key 0 is the default key, which allows read/write/execute.
+-	 * key 1 is recommended not to be used. PowerISA(3.0) page 1015,
+-	 * programming note.
+-	 */
+-	for (i = 2; i < (pkeys_total - os_reserved); i++) {
+-		initial_allocation_mask &= ~(0x1 << i);
+-		pkey_amr_uamor_mask &= ~(0x3ul << pkeyshift(i));
++
++	for (i = 0; i < (pkeys_total - os_reserved); i++) {
++		pkey_amr_mask &= ~(0x3ul << pkeyshift(i));
+ 		pkey_iamr_mask &= ~(0x1ul << pkeyshift(i));
+ 	}
++
++	pkey_uamor_mask = ~0x0ul;
++	pkey_uamor_mask &= ~(0x3ul << pkeyshift(0));
++
++	/* mark the rest of the keys as reserved and hence unavailable */
++	for (i = (pkeys_total - os_reserved); i < pkeys_total; i++) {
++		initial_allocation_mask |= (0x1 << i);
++		pkey_uamor_mask &= ~(0x3ul << pkeyshift(i));
++	}
++
+ 	return 0;
  }
  
- void flush_all_to_thread(struct task_struct *tsk)
+@@ -289,9 +296,6 @@ void thread_pkey_regs_restore(struct thread_struct *new_thread,
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return;
+ 
+-	/*
+-	 * TODO: Just set UAMOR to zero if @new_thread hasn't used any keys yet.
+-	 */
+ 	if (old_thread->amr != new_thread->amr)
+ 		write_amr(new_thread->amr);
+ 	if (old_thread->iamr != new_thread->iamr)
+@@ -305,9 +309,13 @@ void thread_pkey_regs_init(struct thread_struct *thread)
+ 	if (static_branch_likely(&pkey_disabled))
+ 		return;
+ 
+-	thread->amr = read_amr() & pkey_amr_uamor_mask;
+-	thread->iamr = read_iamr() & pkey_iamr_mask;
+-	thread->uamor = read_uamor() & pkey_amr_uamor_mask;
++	thread->amr = pkey_amr_mask;
++	thread->iamr = pkey_iamr_mask;
++ 	thread->uamor = pkey_uamor_mask;
++
++	write_uamor(pkey_uamor_mask);
++	write_amr(pkey_amr_mask);
++	write_iamr(pkey_iamr_mask);
+ }
+ 
+ static inline bool pkey_allows_readwrite(int pkey)
 -- 
 1.7.1
