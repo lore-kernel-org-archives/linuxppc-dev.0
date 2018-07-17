@@ -1,12 +1,12 @@
 Return-Path: <ram.n.pai@gmail.com>
-Received: from mail-qt0-x244.google.com (mail-qt0-x244.google.com
- [IPv6:2607:f8b0:400d:c0d::244])
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VM9c2jfjzF3Hl
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:50:28 +1000 (AEST)
-Received: by mail-qt0-x244.google.com with SMTP id z8-v6so881903qto.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:50:28 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VM9f0fbYzF3Hl
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 23:50:30 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id b15-v6so879434qtp.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 06:50:29 -0700 (PDT)
 Sender: Ram Pai <ram.n.pai@gmail.com>
 From: Ram Pai <linuxram@us.ibm.com>
 To: shuahkh@osg.samsung.com,
@@ -16,10 +16,9 @@ Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
  dave.hansen@intel.com, mhocko@kernel.org, bauerman@linux.vnet.ibm.com,
  linuxram@us.ibm.com, fweimer@redhat.com, msuchanek@suse.de,
  aneesh.kumar@linux.vnet.ibm.com
-Subject: [PATCH v14 11/22] selftests/vm: introduce two arch independent
- abstraction
-Date: Tue, 17 Jul 2018 06:49:14 -0700
-Message-Id: <1531835365-32387-12-git-send-email-linuxram@us.ibm.com>
+Subject: [PATCH v14 12/22] selftests/vm: pkey register should match shadow pkey
+Date: Tue, 17 Jul 2018 06:49:15 -0700
+Message-Id: <1531835365-32387-13-git-send-email-linuxram@us.ibm.com>
 In-Reply-To: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
 References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,76 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-open_hugepage_file() <- opens the huge page file
-get_start_key() <--  provides the first non-reserved key.
+expected_pkey_fault() is comparing the contents of pkey
+register with 0. This may not be true all the time. There
+could be bits set by default by the architecture
+which can never be changed. Hence compare the value against
+shadow pkey register, which is supposed to track the bits
+accurately all throughout
 
 cc: Dave Hansen <dave.hansen@intel.com>
 cc: Florian Weimer <fweimer@redhat.com>
 Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Reviewed-by: Dave Hansen <dave.hansen@intel.com>
 ---
- tools/testing/selftests/vm/pkey-helpers.h    |   10 ++++++++++
- tools/testing/selftests/vm/pkey-x86.h        |    1 +
- tools/testing/selftests/vm/protection_keys.c |    6 +++---
- 3 files changed, 14 insertions(+), 3 deletions(-)
+ tools/testing/selftests/vm/protection_keys.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/vm/pkey-helpers.h b/tools/testing/selftests/vm/pkey-helpers.h
-index ada0146..52a1152 100644
---- a/tools/testing/selftests/vm/pkey-helpers.h
-+++ b/tools/testing/selftests/vm/pkey-helpers.h
-@@ -179,4 +179,14 @@ static inline void __pkey_write_allow(int pkey, int do_allow_write)
- #define __stringify_1(x...)     #x
- #define __stringify(x...)       __stringify_1(x)
- 
-+static inline int open_hugepage_file(int flag)
-+{
-+	return open(HUGEPAGE_FILE, flag);
-+}
-+
-+static inline int get_start_key(void)
-+{
-+	return 1;
-+}
-+
- #endif /* _PKEYS_HELPER_H */
-diff --git a/tools/testing/selftests/vm/pkey-x86.h b/tools/testing/selftests/vm/pkey-x86.h
-index 2b3780d..d5fa299 100644
---- a/tools/testing/selftests/vm/pkey-x86.h
-+++ b/tools/testing/selftests/vm/pkey-x86.h
-@@ -48,6 +48,7 @@
- #define MB			(1<<20)
- #define pkey_reg_t		u32
- #define PKEY_REG_FMT		"%016x"
-+#define HUGEPAGE_FILE		"/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
- 
- static inline u32 pkey_bit_position(int pkey)
- {
 diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-index 2565b4c..2e448e0 100644
+index 2e448e0..f50cce8 100644
 --- a/tools/testing/selftests/vm/protection_keys.c
 +++ b/tools/testing/selftests/vm/protection_keys.c
-@@ -788,7 +788,7 @@ void setup_hugetlbfs(void)
- 	 * Now go make sure that we got the pages and that they
- 	 * are 2M pages.  Someone might have made 1G the default.
+@@ -913,10 +913,10 @@ void expected_pkey_fault(int pkey)
+ 		pkey_assert(last_si_pkey == pkey);
+ 
+ 	/*
+-	 * The signal handler shold have cleared out PKEY register to let the
++	 * The signal handler should have cleared out pkey-register to let the
+ 	 * test program continue.  We now have to restore it.
  	 */
--	fd = open("/sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", O_RDONLY);
-+	fd = open_hugepage_file(O_RDONLY);
- 	if (fd < 0) {
- 		perror("opening sysfs 2M hugetlb config");
- 		return;
-@@ -1075,10 +1075,10 @@ void test_kernel_gup_write_to_write_disabled_region(int *ptr, u16 pkey)
- void test_pkey_syscalls_on_non_allocated_pkey(int *ptr, u16 pkey)
- {
- 	int err;
--	int i;
-+	int i = get_start_key();
+-	if (__read_pkey_reg() != 0)
++	if (__read_pkey_reg() != shadow_pkey_reg)
+ 		pkey_assert(0);
  
- 	/* Note: 0 is the default pkey, so don't mess with it */
--	for (i = 1; i < NR_PKEYS; i++) {
-+	for (; i < NR_PKEYS; i++) {
- 		if (pkey == i)
- 			continue;
- 
+ 	__write_pkey_reg(shadow_pkey_reg);
 -- 
 1.7.1
