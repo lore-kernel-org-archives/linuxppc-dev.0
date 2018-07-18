@@ -1,38 +1,25 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com
- [IPv6:2a00:1450:4864:20::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <diana.craciun@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-am5eur03on0605.outbound.protection.outlook.com
+ [IPv6:2a01:111:f400:fe08::605])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VzwX68H8zF35L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 00:26:20 +1000 (AEST)
-Received: by mail-lj1-x242.google.com with SMTP id f1-v6so2636569ljc.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 07:26:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41W00M3T8HzF35L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 00:29:37 +1000 (AEST)
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+CC: Leo Li <leoyang.li@nxp.com>, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ "oss@buserror.net" <oss@buserror.net>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities reporting
+ for NXP PPC BOOK3E
+Date: Wed, 18 Jul 2018 14:29:31 +0000
+Message-ID: <VI1PR0401MB246392F396B74D6153CF12F7FF530@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+ <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
+ <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Sender: arndbergmann@gmail.com
-In-Reply-To: <alpine.LNX.2.21.1807182333150.41@nippy.intranet>
-References: <20180619140229.3615110-1-arnd@arndb.de>
- <20180619140229.3615110-2-arnd@arndb.de>
- <CAMuHMdXHUwbD4ZBuQz-xYQO=QdYdPS=j=oLWBet6B7PrGEkT9Q@mail.gmail.com>
- <alpine.LNX.2.21.1807182201560.41@nippy.intranet>
- <CAK8P3a0OBVu-o6kFCS=gV83EcH9ba9QYGZBBhB9D8cJrf=8akA@mail.gmail.com>
- <alpine.LNX.2.21.1807182333150.41@nippy.intranet>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 18 Jul 2018 16:26:16 +0200
-Message-ID: <CAK8P3a3azDB5WsQWTKOSmXNqycTxz0qXtowS61_=zUsnMo+EXg@mail.gmail.com>
-Subject: Re: [PATCH 2/3] [v2] m68k: mac: use time64_t in RTC handling
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Joshua Thompson <funaho@jurai.org>,
- Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Ungerer <gerg@linux-m68k.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Meelis Roos <mroos@linux.ee>, Andreas Schwab <schwab@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,45 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2018 at 3:49 PM, Finn Thain <fthain@telegraphics.com.au> wrote:
-> On Wed, 18 Jul 2018, Arnd Bergmann wrote:
-
->>
->> -static long via_read_time(void)
->> +static time64_t via_read_time(void)
->>  {
->>         union {
->>                 __u8 cdata[4];
->> -               long idata;
->> +               __u32 idata;
->>         } result, last_result;
->> +       time64_t ret;
->
-> ret isn't used.
->
->>         int count = 1;
->>
->>         via_pram_command(0x81, &last_result.cdata[3]);
->> @@ -279,12 +280,8 @@ static long via_read_time(void)
->>                 via_pram_command(0x89, &result.cdata[1]);
->>                 via_pram_command(0x8D, &result.cdata[0]);
->>
->> -               if (result.idata == last_result.idata) {
->> -                       if (result.idata < RTC_OFFSET)
->> -                               result.idata += 0x100000000ull;
->> -
->> -                       return result.idata - RTC_OFFSET;
->> -               }
->> +               if (result.idata == last_result.idata)
->> +                       return (time64_t(result.idata) - RTC_OFFSET);
->>
->
-> Did you mean to write,
->
->                         return (time64_t)result.idata - RTC_OFFSET;
->
-> ?
-
-Right, I should have at least tried to build it again.
-
-      Arnd
+On 7/17/2018 7:47 PM, LEROY Christophe wrote:=0A=
+> Diana Craciun <diana.craciun@nxp.com> a =E9crit :=0A=
+>=0A=
+>> The NXP PPC Book3E platforms are not vulnerable to meltdown and=0A=
+>> Spectre v4, so make them PPC_BOOK3S_64 specific.=0A=
+>>=0A=
+>> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>=0A=
+>> ---=0A=
+>> History:=0A=
+>>=0A=
+>> v2-->v3=0A=
+>> - used the existing functions for spectre v1/v2=0A=
+>>=0A=
+>>  arch/powerpc/Kconfig           | 7 ++++++-=0A=
+>>  arch/powerpc/kernel/security.c | 2 ++=0A=
+>>  2 files changed, 8 insertions(+), 1 deletion(-)=0A=
+>>=0A=
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig=0A=
+>> index 9f2b75f..116c953 100644=0A=
+>> --- a/arch/powerpc/Kconfig=0A=
+>> +++ b/arch/powerpc/Kconfig=0A=
+>> @@ -165,7 +165,7 @@ config PPC=0A=
+>>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP=0A=
+>>  	select GENERIC_CMOS_UPDATE=0A=
+>>  	select GENERIC_CPU_AUTOPROBE=0A=
+>> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64=0A=
+>> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC=0A=
+> I don't understand.  You say this patch is to make something specific  =
+=0A=
+> to book3s64 specific, and you are creating a new config param that  =0A=
+> make things less specific=0A=
+>=0A=
+> Christophe=0A=
+=0A=
+In order to enable the vulnerabilities reporting on NXP socs I need to=0A=
+enable them for PPC_FSL_BOOK3E. So they will be enabled for both=0A=
+PPC_FSL_BOOK3E and PPC_BOOK3S_64. This is the reason for adding the=0A=
+Kconfig. However this will enable: spectre v1/v2 and meltdown. NXP socs=0A=
+are not vulnerable to meltdown, so I made the meltdown reporting=0A=
+PPC_BOOK3S_64 specific. I guess I can have the PPC_NOSPEC definition in=0A=
+a separate patch to be more clear.=0A=
+=0A=
+Diana=0A=
+=0A=
+>=0A=
+>>  	select GENERIC_IRQ_SHOW=0A=
+>>  	select GENERIC_IRQ_SHOW_LEVEL=0A=
+>>  	select GENERIC_SMP_IDLE_THREAD=0A=
+>> @@ -240,6 +240,11 @@ config PPC=0A=
+>>  	# Please keep this list sorted alphabetically.=0A=
+>>  	#=0A=
+>>=0A=
+>> +config PPC_NOSPEC=0A=
+>> +    bool=0A=
+>> +    default y=0A=
+>> +    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E=0A=
+>> +=0A=
+>>  config GENERIC_CSUM=0A=
+>>  	def_bool n=0A=
+>>=0A=
+>> diff --git a/arch/powerpc/kernel/security.c b/arch/powerpc/kernel/securi=
+ty.c=0A=
+>> index 3a4e5c3..539c744 100644=0A=
+>> --- a/arch/powerpc/kernel/security.c=0A=
+>> +++ b/arch/powerpc/kernel/security.c=0A=
+>> @@ -92,6 +92,7 @@ static __init int barrier_nospec_debugfs_init(void)=0A=
+>>  device_initcall(barrier_nospec_debugfs_init);=0A=
+>>  #endif /* CONFIG_DEBUG_FS */=0A=
+>>=0A=
+>> +#ifdef CONFIG_PPC_BOOK3S_64=0A=
+>>  ssize_t cpu_show_meltdown(struct device *dev, struct  =0A=
+>> device_attribute *attr, char *buf)=0A=
+>>  {=0A=
+>>  	bool thread_priv;=0A=
+>> @@ -124,6 +125,7 @@ ssize_t cpu_show_meltdown(struct device *dev,  =0A=
+>> struct device_attribute *attr, cha=0A=
+>>=0A=
+>>  	return sprintf(buf, "Vulnerable\n");=0A=
+>>  }=0A=
+>> +#endif=0A=
+>>=0A=
+>>  ssize_t cpu_show_spectre_v1(struct device *dev, struct  =0A=
+>> device_attribute *attr, char *buf)=0A=
+>>  {=0A=
+>> --=0A=
+>> 2.5.5=0A=
+>=0A=
+>=0A=
+=0A=
