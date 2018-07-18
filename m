@@ -1,20 +1,22 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2620:137:e000::1:9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WB9z0M1BzDqC3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 08:08:37 +1000 (AEST)
-To: Alan Stern <stern@rowland.harvard.edu>, Takashi Iwai <tiwai@suse.com>,
- Jaroslav Kysela <perex@perex.cz>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-usb@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH] powerpc/ps3: Set driver coherent_dma_mask
-Message-ID: <068ebcfa-7cd0-bd06-42e7-577a4624f0b0@infradead.org>
-Date: Wed, 18 Jul 2018 15:08:33 -0700
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WBVP5r9rzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 08:22:52 +1000 (AEST)
+Date: Thu, 19 Jul 2018 07:22:49 +0900 (KST)
+Message-Id: <20180719.072249.841425419842816951.davem@davemloft.net>
+To: krzk@kernel.org
+Cc: pantelis.antoniou@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ vbordug@ru.mvista.com, vitb@kernel.crashing.org
+Subject: Re: [PATCH] MAINTAINERS: Drop inactive Vitaly Bordug's email
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20180717164154.6577-1-krzk@kernel.org>
+References: <20180717164154.6577-1-krzk@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,96 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Set the coherent_dma_mask for the PS3 ehci, ohci, and snd devices.
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 17 Jul 2018 18:41:54 +0200
 
-Silences WARN_ON_ONCE messages emitted by the dma_alloc_attrs() routine.
+> The Vitaly Bordug's email bounces ("ru.mvista.com: Name or service not
+> known") and there was no activity (ack, review, sign) since 2009.
+> 
+> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+> Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Reported-by: Fredrik Noring <noring@nocrew.org>
-Signed-off-by: Geoff Levand <geoff@infradead.org>
----
-Hi Michael,
-
-This just silences some warnings.  Can you take it through the powerpc
-tree?
-
--Geoff
-
-
- drivers/usb/host/ehci-ps3.c | 6 ++++--
- drivers/usb/host/ohci-ps3.c | 6 ++++--
- sound/ppc/snd_ps3.c         | 5 +++++
- 3 files changed, 13 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
-index 8c733492d8fe..454d8c624a3f 100644
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -86,7 +86,7 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
- 	int result;
- 	struct usb_hcd *hcd;
- 	unsigned int virq;
--	static u64 dummy_mask = DMA_BIT_MASK(32);
-+	static u64 dummy_mask;
- 
- 	if (usb_disabled()) {
- 		result = -ENODEV;
-@@ -131,7 +131,9 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
- 		goto fail_irq;
- 	}
- 
--	dev->core.dma_mask = &dummy_mask; /* FIXME: for improper usb code */
-+	dummy_mask = DMA_BIT_MASK(32);
-+	dev->core.dma_mask = &dummy_mask;
-+	dma_set_coherent_mask(&dev->core, dummy_mask);
- 
- 	hcd = usb_create_hcd(&ps3_ehci_hc_driver, &dev->core, dev_name(&dev->core));
- 
-diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
-index 20a23d795adf..395f9d3bc849 100644
---- a/drivers/usb/host/ohci-ps3.c
-+++ b/drivers/usb/host/ohci-ps3.c
-@@ -69,7 +69,7 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
- 	int result;
- 	struct usb_hcd *hcd;
- 	unsigned int virq;
--	static u64 dummy_mask = DMA_BIT_MASK(32);
-+	static u64 dummy_mask;
- 
- 	if (usb_disabled()) {
- 		result = -ENODEV;
-@@ -115,7 +115,9 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
- 		goto fail_irq;
- 	}
- 
--	dev->core.dma_mask = &dummy_mask; /* FIXME: for improper usb code */
-+	dummy_mask = DMA_BIT_MASK(32);
-+	dev->core.dma_mask = &dummy_mask;
-+	dma_set_coherent_mask(&dev->core, dummy_mask);
- 
- 	hcd = usb_create_hcd(&ps3_ohci_hc_driver, &dev->core, dev_name(&dev->core));
- 
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 36f34f434ecb..abe031c9d592 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -930,6 +930,7 @@ static int snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
- {
- 	int i, ret;
- 	u64 lpar_addr, lpar_size;
-+	static u64 dummy_mask;
- 
- 	if (WARN_ON(!firmware_has_feature(FW_FEATURE_PS3_LV1)))
- 		return -ENODEV;
-@@ -970,6 +971,10 @@ static int snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
- 		goto clean_mmio;
- 	}
- 
-+	dummy_mask = DMA_BIT_MASK(32);
-+	dev->core.dma_mask = &dummy_mask;
-+	dma_set_coherent_mask(&dev->core, dummy_mask);
-+
- 	snd_ps3_audio_set_base_addr(dev->d_region->bus_addr);
- 
- 	/* CONFIG_SND_PS3_DEFAULT_START_DELAY */
--- 
-2.14.1
+Applied.
