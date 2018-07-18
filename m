@@ -1,36 +1,27 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Vr5L3vmHzF35L
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 18:33:26 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6I8UQe4077043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:33:24 -0400
-Received: from e15.ny.us.ibm.com (e15.ny.us.ibm.com [129.33.205.205])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2k9xj6rhd2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:33:24 -0400
-Received: from localhost
- by e15.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 18 Jul 2018 04:33:23 -0400
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Florian Weimer <fweimer@redhat.com>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, <stable@vger.kernel.org>,
- Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH v2] powerpc/powernv : Save/Restore SPRG3 on entry/exit from
- stop.
-Date: Wed, 18 Jul 2018 14:03:16 +0530
-Message-Id: <1531902796-32294-1-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41VsWW0DZDzF35L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 19:37:43 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ linux-kernel@vger.kernel.org
+Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Mathieu
+ Malaterre <malat@debian.org>, Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, Kees Cook
+ <keescook@chromium.org>, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, =?utf-8?Q?C=C3=A9dric?= Le Goater
+ <clg@kaod.org>, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/prom_init: remove linux,stdout-package property
+In-Reply-To: <20180712171904.18971-1-muriloo@linux.ibm.com>
+References: <20180712171904.18971-1-muriloo@linux.ibm.com>
+Date: Wed, 18 Jul 2018 19:37:37 +1000
+Message-ID: <87a7qoq3z2.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,55 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Hi Murilo,
 
-On 64-bit servers, SPRN_SPRG3 and its userspace read-only mirror
-SPRN_USPRG3 are used as userspace VDSO write and read registers
-respectively.
+Thanks for the patch.
 
-SPRN_SPRG3 is lost when we enter stop4 and above, and is currently not
-restored.  As a result, any read from SPRN_USPRG3 returns zero on an
-exit from stop4 and above.
+Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
+> This property was added in 2004 by
+>
+>     https://github.com/mpe/linux-fullhistory/commit/689fe5072fe9a0dec914bfa4fa60aed1e54563e6
+>
+> and the only use of it, which was already inside `#if 0`, was removed a month
+> later by
+>
+>     https://github.com/mpe/linux-fullhistory/commit/1fbe5a6d90f6cd4ea610737ef488719d1a875de7
+>
+> Fixes: https://github.com/linuxppc/linux/issues/125
 
-Thus in this situation, on POWER9, any call from sched_getcpu() always
-returns zero, as on powerpc, we call __kernel_getcpu() which relies
-upon SPRN_USPRG3 to report the CPU and NUMA node information.
+That is going to confuse some scripts that are expecting that to be a
+"Fixes: <some commit>" tag :)
 
-Fix this by restoring SPRN_SPRG3 on wake up from a deep stop state
-with the sprg_vdso value that is cached in PACA.
+The proper tag to use there would be "Link:".
 
-Fixes: e1c1cfed5432 ("powerpc/powernv: Save/Restore additional SPRs
-for stop4 cpuidle")
+But, I'd prefer we didn't add github issue links to the history, as I'm
+not sure they won't bit-rot eventually. Not because I'm a anti-Microsoft
+conspiracy person but just because it's a repo I set up and manage and
+there's no long term plan for it necessarily.
 
-Reported-by: Florian Weimer <fweimer@redhat.com>
-Cc: <stable@vger.kernel.org> # 4.14
-Cc: Oleg Nesterov <oleg@redhat.com>
-Cc: Michael Neuling <mikey@neuling.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
-Change from v1: 
-  Restoring the SPRG3 from paca->sprg_vdso instead of saving
-  it separately during stop-entry, as suggested by Mikey.
-  
- arch/powerpc/kernel/idle_book3s.S | 2 ++
- 1 file changed, 2 insertions(+)
+> ---
+>  arch/powerpc/kernel/prom_init.c | 2 --
+>  1 file changed, 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index d85d551..672ead8 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -144,7 +144,9 @@ power9_restore_additional_sprs:
- 	mtspr	SPRN_MMCR1, r4
- 
- 	ld	r3, STOP_MMCR2(r13)
-+	ld	r4, PACA_SPRG_VDSO(r13)
- 	mtspr	SPRN_MMCR2, r3
-+	mtspr	SPRN_SPRG3, r4
- 	blr
- 
- /*
--- 
-1.8.3.1
+Including the link here would be ideal, as it means it doesn't end up in
+the commit history, but it does end up in the mail archive. So if we
+ever really need to find it, it should be there.
+
+cheers
+
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 5425dd3d6a9f..c45fb463c9e5 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2102,8 +2102,6 @@ static void __init prom_init_stdout(void)
+>  	stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+>  	if (stdout_node != PROM_ERROR) {
+>  		val = cpu_to_be32(stdout_node);
+> -		prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
+> -			     &val, sizeof(val));
+>  
+>  		/* If it's a display, note it */
+>  		memset(type, 0, sizeof(type));
+> -- 
+> 2.17.1
