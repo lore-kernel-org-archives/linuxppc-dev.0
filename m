@@ -1,20 +1,20 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua0-f194.google.com (mail-ua0-f194.google.com
- [209.85.217.194])
+Received: from mail-vk0-f67.google.com (mail-vk0-f67.google.com
+ [209.85.213.67])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Vw9H4gwmzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 21:37:06 +1000 (AEST)
-Received: by mail-ua0-f194.google.com with SMTP id g18-v6so2699013uam.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:37:06 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Vw9Y3Qv2zF3Hy
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 21:37:19 +1000 (AEST)
+Received: by mail-vk0-f67.google.com with SMTP id p12-v6so2305220vkf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:37:19 -0700 (PDT)
 MIME-Version: 1.0
 References: <20180619140229.3615110-1-arnd@arndb.de>
- <20180619140229.3615110-2-arnd@arndb.de>
-In-Reply-To: <20180619140229.3615110-2-arnd@arndb.de>
+ <20180619140229.3615110-3-arnd@arndb.de>
+In-Reply-To: <20180619140229.3615110-3-arnd@arndb.de>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 18 Jul 2018 13:36:52 +0200
-Message-ID: <CAMuHMdXHUwbD4ZBuQz-xYQO=QdYdPS=j=oLWBet6B7PrGEkT9Q@mail.gmail.com>
-Subject: Re: [PATCH 2/3] [v2] m68k: mac: use time64_t in RTC handling
+Date: Wed, 18 Jul 2018 13:37:05 +0200
+Message-ID: <CAMuHMdV2tSqXWgOiUtNjmCnQa2VSVddS9iHKb=5dvV9ChYNxsw@mail.gmail.com>
+Subject: Re: [PATCH 3/3] [v2] m68k: remove unused set_clock_mmss() helpers
 To: Arnd Bergmann <arnd@arndb.de>
 Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Joshua Thompson <funaho@jurai.org>, Mathieu Malaterre <malat@debian.org>,
@@ -36,26 +36,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, Jun 19, 2018 at 4:04 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> The real-time clock on m68k (and powerpc) mac systems uses an unsigned
-> 32-bit value starting in 1904, which overflows in 2040, about two years
-> later than everyone else, but this gets wrapped around in the Linux
-> code in 2038 already because of the deprecated usage of time_t and/or
-> long in the conversion.
+> Commit 397ac99c6cef ("m68k: remove dead timer code") removed set_rtc_mmss()
+> because it was unused in 2012. However, this was itself the only user of the
+> mach_set_clock_mmss() callback and the many implementations of that callback,
+> which are equally unused.
 >
-> Getting rid of the deprecated interfaces makes it work until 2040 as
-> documented, and it could be easily extended by reinterpreting
-> the resulting time64_t as a positive number. For the moment, I'm
-> adding a WARN_ON() that triggers if we encounter a time before 1970
-> or after 2040 (the two are indistinguishable).
+> This removes all of those as well.
 >
-> This brings it in line with the corresponding code that we have on
-> powerpc macintosh.
->
+> Acked-by: Greg Ungerer <gerg@linux-m68k.org>
 > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Thanks for your patch!
-
-Applied and queued for v4.19, with the WARN_ON() dropped.
+Thanks, applied and queued for v4.19.
 
 Gr{oetje,eeting}s,
 
