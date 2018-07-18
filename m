@@ -1,25 +1,24 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga17.intel.com (mga17.intel.com [192.55.52.151])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41W2114b04zF35L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:00:19 +1000 (AEST)
-Subject: Re: [PATCH v14 12/22] selftests/vm: pkey register should match shadow
- pkey
-To: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
- linux-kselftest@vger.kernel.org
-References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
- <1531835365-32387-13-git-send-email-linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
- msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <13e29efb-6a75-d6c8-e9a8-9e7495b88e00@intel.com>
-Date: Wed, 18 Jul 2018 09:00:11 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41W2341bBzzF35L
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:02:07 +1000 (AEST)
+Date: Wed, 18 Jul 2018 18:02:03 +0200
+Message-ID: <20180718180203.Horde.hNnOtk9Z-nuEx9HefV50JQ1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Diana Madalina Craciun <diana.craciun@nxp.com>
+Cc: linuxppc-dev@lists.ozlabs.org, oss@buserror.net, Bharat Bhushan
+ <bharat.bhushan@nxp.com>, Leo Li <leoyang.li@nxp.com>
+Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities
+ reporting for NXP PPC BOOK3E
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+ <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
+ <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
+ <VI1PR0401MB246392F396B74D6153CF12F7FF530@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+In-Reply-To: <VI1PR0401MB246392F396B74D6153CF12F7FF530@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-In-Reply-To: <1531835365-32387-13-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/17/2018 06:49 AM, Ram Pai wrote:
-> expected_pkey_fault() is comparing the contents of pkey
-> register with 0. This may not be true all the time. There
-> could be bits set by default by the architecture
-> which can never be changed. Hence compare the value against
-> shadow pkey register, which is supposed to track the bits
-> accurately all throughout
+Diana Madalina Craciun <diana.craciun@nxp.com> a =C3=A9crit=C2=A0:
 
-This is getting dangerously close to full sentences that actually
-describe the patch.  You forgot a period, but much this is a substantial
-improvement over earlier parts of the series.  Thanks for writing this,
-seriously.
+> On 7/17/2018 7:47 PM, LEROY Christophe wrote:
+>> Diana Craciun <diana.craciun@nxp.com> a =C3=A9crit :
+>>
+>>> The NXP PPC Book3E platforms are not vulnerable to meltdown and
+>>> Spectre v4, so make them PPC_BOOK3S_64 specific.
+>>>
+>>> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+>>> ---
+>>> History:
+>>>
+>>> v2-->v3
+>>> - used the existing functions for spectre v1/v2
+>>>
+>>>  arch/powerpc/Kconfig           | 7 ++++++-
+>>>  arch/powerpc/kernel/security.c | 2 ++
+>>>  2 files changed, 8 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index 9f2b75f..116c953 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -165,7 +165,7 @@ config PPC
+>>>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+>>>  	select GENERIC_CMOS_UPDATE
+>>>  	select GENERIC_CPU_AUTOPROBE
+>>> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+>>> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC
+>> I don't understand.  You say this patch is to make something specific
+>> to book3s64 specific, and you are creating a new config param that
+>> make things less specific
+>>
+>> Christophe
+>
+> In order to enable the vulnerabilities reporting on NXP socs I need to
+> enable them for PPC_FSL_BOOK3E. So they will be enabled for both
+> PPC_FSL_BOOK3E and PPC_BOOK3S_64. This is the reason for adding the
+> Kconfig. However this will enable: spectre v1/v2 and meltdown. NXP socs
+> are not vulnerable to meltdown, so I made the meltdown reporting
+> PPC_BOOK3S_64 specific. I guess I can have the PPC_NOSPEC definition in
+> a separate patch to be more clear.
 
-> cc: Dave Hansen <dave.hansen@intel.com>
-> cc: Florian Weimer <fweimer@redhat.com>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  tools/testing/selftests/vm/protection_keys.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-> index 2e448e0..f50cce8 100644
-> --- a/tools/testing/selftests/vm/protection_keys.c
-> +++ b/tools/testing/selftests/vm/protection_keys.c
-> @@ -913,10 +913,10 @@ void expected_pkey_fault(int pkey)
->  		pkey_assert(last_si_pkey == pkey);
->  
->  	/*
-> -	 * The signal handler shold have cleared out PKEY register to let the
-> +	 * The signal handler should have cleared out pkey-register to let the
->  	 * test program continue.  We now have to restore it.
->  	 */
+Yes you can. Or keep it as a single patch and add the details you gave=20=
+=20
+me=20in the patch description.
 
-... while I appreciate the spelling corrections, and I would totally ack
-a patch that fixed them in one fell swoop, could we please segregate the
-random spelling corrections from code fixes unless you touch those lines
-otherwise?
+Christophe
 
-> -	if (__read_pkey_reg() != 0)
-> +	if (__read_pkey_reg() != shadow_pkey_reg)
->  		pkey_assert(0);
->  
->  	__write_pkey_reg(shadow_pkey_reg);
-
-I know this is a one-line change, but I don't fully understand it.
-
-On x86, if we take a pkey fault, we clear PKRU entirely (via the
-on-stack XSAVE state that is restored at sigreturn) which allows the
-faulting instruction to resume and execute normally.  That's what this
-check is looking for: Did the signal handler clear PKRU?
-
-Now, you're saying that powerpc might not clear it.  That makes sense.
-
-While PKRU's state here is obvious, it isn't patently obvious to me what
-shadow_pkey_reg's state is.  In fact, looking at it, I don't see the
-signal handler manipulating the shadow.  So, how can this patch work?
+>
+> Diana
+>
+>>
+>>>  	select GENERIC_IRQ_SHOW
+>>>  	select GENERIC_IRQ_SHOW_LEVEL
+>>>  	select GENERIC_SMP_IDLE_THREAD
+>>> @@ -240,6 +240,11 @@ config PPC
+>>>  	# Please keep this list sorted alphabetically.
+>>>  	#
+>>>
+>>> +config PPC_NOSPEC
+>>> +    bool
+>>> +    default y
+>>> +    depends on PPC_BOOK3S_64 || PPC_FSL_BOOK3E
+>>> +
+>>>  config GENERIC_CSUM
+>>>  	def_bool n
+>>>
+>>> diff --git a/arch/powerpc/kernel/security.c=20=20
+>>>=20b/arch/powerpc/kernel/security.c
+>>> index 3a4e5c3..539c744 100644
+>>> --- a/arch/powerpc/kernel/security.c
+>>> +++ b/arch/powerpc/kernel/security.c
+>>> @@ -92,6 +92,7 @@ static __init int barrier_nospec_debugfs_init(void)
+>>>  device_initcall(barrier_nospec_debugfs_init);
+>>>  #endif /* CONFIG_DEBUG_FS */
+>>>
+>>> +#ifdef CONFIG_PPC_BOOK3S_64
+>>>  ssize_t cpu_show_meltdown(struct device *dev, struct
+>>> device_attribute *attr, char *buf)
+>>>  {
+>>>  	bool thread_priv;
+>>> @@ -124,6 +125,7 @@ ssize_t cpu_show_meltdown(struct device *dev,
+>>> struct device_attribute *attr, cha
+>>>
+>>>  	return sprintf(buf, "Vulnerable\n");
+>>>  }
+>>> +#endif
+>>>
+>>>  ssize_t cpu_show_spectre_v1(struct device *dev, struct
+>>> device_attribute *attr, char *buf)
+>>>  {
+>>> --
+>>> 2.5.5
+>>
+>>
