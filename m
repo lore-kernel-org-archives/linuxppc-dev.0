@@ -1,19 +1,20 @@
 Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-vk0-x244.google.com (mail-vk0-x244.google.com
- [IPv6:2607:f8b0:400c:c05::244])
+Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
+ [IPv6:2607:f8b0:400c:c08::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41W2pX25MkzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:36:19 +1000 (AEST)
-Received: by mail-vk0-x244.google.com with SMTP id y70-v6so2839824vkc.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 09:36:19 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41W2qq72S9zF3J3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:37:27 +1000 (AEST)
+Received: by mail-ua0-x243.google.com with SMTP id y10-v6so3333217uao.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 09:37:27 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180718024944.577-2-bhe@redhat.com>
+In-Reply-To: <CAHp75VdO88ydJQ9GHdaDUmAmzL6QHR=US6JiXZ1R_EEA-xWR1Q@mail.gmail.com>
 References: <20180718024944.577-1-bhe@redhat.com>
  <20180718024944.577-2-bhe@redhat.com>
+ <CAHp75VdO88ydJQ9GHdaDUmAmzL6QHR=US6JiXZ1R_EEA-xWR1Q@mail.gmail.com>
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 18 Jul 2018 19:36:17 +0300
-Message-ID: <CAHp75VdO88ydJQ9GHdaDUmAmzL6QHR=US6JiXZ1R_EEA-xWR1Q@mail.gmail.com>
+Date: Wed, 18 Jul 2018 19:37:24 +0300
+Message-ID: <CAHp75Vf2yEwHhEhhQH2XN+pOQ=-skiAHZ=FgLnfVV8vcm59qeQ@mail.gmail.com>
 Subject: Re: [PATCH v7 1/4] resource: Move reparent_resources() to
  kernel/resource.c and make it public
 To: Baoquan He <bhe@redhat.com>
@@ -60,76 +61,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2018 at 5:49 AM, Baoquan He <bhe@redhat.com> wrote:
-> reparent_resources() is duplicated in arch/microblaze/pci/pci-common.c
-> and arch/powerpc/kernel/pci-common.c, so move it to kernel/resource.c
-> so that it's shared.
+On Wed, Jul 18, 2018 at 7:36 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Wed, Jul 18, 2018 at 5:49 AM, Baoquan He <bhe@redhat.com> wrote:
+>> reparent_resources() is duplicated in arch/microblaze/pci/pci-common.c
+>> and arch/powerpc/kernel/pci-common.c, so move it to kernel/resource.c
+>> so that it's shared.
 
-Some minor stuff.
+>> + * Returns 0 on success, -ENOTSUPP if child resource is not completely
+>> + * contained by 'res', -ECANCELED if no any conflicting entry found.
 
-> +/**
-> + * reparent_resources - reparent resource children of parent that res covers
-> + * @parent: parent resource descriptor
-> + * @res: resource descriptor desired by caller
-> + *
-> + * Returns 0 on success, -ENOTSUPP if child resource is not completely
-> + * contained by 'res', -ECANCELED if no any conflicting entry found.
-
-'res' -> @res
-
-> + *
-> + * Reparent resource children of 'parent' that conflict with 'res'
-
-Ditto + 'parent' -> @parent
-
-> + * under 'res', and make 'res' replace those children.
-
-Ditto.
-
-> + */
-> +int reparent_resources(struct resource *parent, struct resource *res)
-> +{
-> +       struct resource *p, **pp;
-> +       struct resource **firstpp = NULL;
-> +
-> +       for (pp = &parent->child; (p = *pp) != NULL; pp = &p->sibling) {
-> +               if (p->end < res->start)
-> +                       continue;
-> +               if (res->end < p->start)
-> +                       break;
-> +               if (p->start < res->start || p->end > res->end)
-> +                       return -ENOTSUPP;       /* not completely contained */
-> +               if (firstpp == NULL)
-> +                       firstpp = pp;
-> +       }
-> +       if (firstpp == NULL)
-> +               return -ECANCELED; /* didn't find any conflicting entries? */
-> +       res->parent = parent;
-> +       res->child = *firstpp;
-> +       res->sibling = *pp;
-> +       *firstpp = res;
-> +       *pp = NULL;
-> +       for (p = res->child; p != NULL; p = p->sibling) {
-> +               p->parent = res;
-
-> +               pr_debug("PCI: Reparented %s %pR under %s\n",
-> +                        p->name, p, res->name);
-
-Now, PCI is a bit confusing here.
-
-> +       }
-> +       return 0;
-> +}
-> +EXPORT_SYMBOL(reparent_resources);
-> +
->  static void __init __reserve_region_with_split(struct resource *root,
->                 resource_size_t start, resource_size_t end,
->                 const char *name)
-> --
-> 2.13.6
->
-
-
+You also can refer to constants by prefixing them with %, e.g. %-ENOTSUPP.
+But this is up to you completely.
 
 -- 
 With Best Regards,
