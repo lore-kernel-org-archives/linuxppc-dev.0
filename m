@@ -1,33 +1,42 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41VqNQ6jdzzF3Hb
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 18:01:26 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Vqdm40sWzF35L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 18:13:00 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6I7xM55045546
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:01:24 -0400
-Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ka027kcvd-1
+ w6I85HSZ125470
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:12:58 -0400
+Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2k9xt46xpx-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:01:23 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:12:58 -0400
 Received: from localhost
- by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 18 Jul 2018 04:01:21 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH 2/2] powerpc/mm/book3s/radix: Add mapping statistics
-Date: Wed, 18 Jul 2018 13:31:12 +0530
-In-Reply-To: <20180718080112.16633-1-aneesh.kumar@linux.ibm.com>
-References: <20180718080112.16633-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180718080112.16633-2-aneesh.kumar@linux.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 18 Jul 2018 04:12:56 -0400
+Date: Wed, 18 Jul 2018 13:42:49 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Florian Weimer <fweimer@redhat.com>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RESEND][PATCH] powerpc/powernv : Save/Restore SPRG3 on
+ entry/exit from stop.
+Reply-To: ego@linux.vnet.ibm.com
+References: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
+ <80bbdf47081e3e302ab5f28b5ddc9e2faabba842.camel@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <80bbdf47081e3e302ab5f28b5ddc9e2faabba842.camel@neuling.org>
+Message-Id: <20180718081249.GA17700@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,140 +46,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add statistics that show how memory is mapped within the kernel linear mapping.
-This is similar to commit 37cd944c8d8f ("s390/pgtable: add mapping statistics")
+Hello Mikey,
 
-We don't do this with Hash translation mode. Hash uses one size (mmu_linear_psize)
-to map the kernel linear mapping and we print the linear psize during boot as
-below.
+On Wed, Jul 18, 2018 at 09:24:19AM +1000, Michael Neuling wrote:
+> 
+> >  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+> > diff --git a/arch/powerpc/kernel/idle_book3s.S
+> > b/arch/powerpc/kernel/idle_book3s.S
+> > index d85d551..5069d42 100644
+> > --- a/arch/powerpc/kernel/idle_book3s.S
+> > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > @@ -120,6 +120,9 @@ power9_save_additional_sprs:
+> >  	mfspr	r4, SPRN_MMCR2
+> >  	std	r3, STOP_MMCR1(r13)
+> >  	std	r4, STOP_MMCR2(r13)
+> > +
+> > +	mfspr	r3, SPRN_SPRG3
+> > +	std	r3, STOP_SPRG3(r13)
+> 
+> We don't need to save it.  Just restore it from paca->sprg_vdso which should
+> never change.
 
-"Page orders: linear mapping = 24, virtual = 16, io = 16, vmemmap = 24"
+Ok. I will respin a patch to restore SPRG3 from paca->sprg_vdso.
 
-A sample output looks like:
+> 
+> How can we do better at catching these missing SPRGs?
 
-DirectMap4k:           0 kB
-DirectMap64k:       18432 kB
-DirectMap2M:     1030144 kB
-DirectMap1G:    11534336 kB
+We can go through the list of SPRs from the POWER9 User Manual and
+document explicitly why we don't have to save/restore certain SPRs
+during the execution of the stop instruction. Does this sound ok ?
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 13 ++++++++++++
- arch/powerpc/include/asm/book3s/64/radix.h   |  3 +++
- arch/powerpc/mm/pgtable-book3s64.c           | 22 ++++++++++++++++++++
- arch/powerpc/mm/pgtable-radix.c              | 13 +++++++-----
- 4 files changed, 46 insertions(+), 5 deletions(-)
+(Ref: Table 4-8, Section 4.7.3.4 from the POWER9 User Manual
+accessible from
+https://openpowerfoundation.org/?resource_lib=power9-processor-users-manual)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 01ee40f11f3a..1d2d69ae1bd2 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -208,4 +208,17 @@ static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t table,
- 
- #define check_pgt_cache()	do { } while (0)
- 
-+extern atomic_long_t direct_pages_count[MMU_PAGE_COUNT];
-+static inline void update_page_count(unsigned long mapping_shift, long count)
-+{
-+	int level;
-+
-+	if (IS_ENABLED(CONFIG_PROC_FS)) {
-+		level = shift_to_mmu_psize(mapping_shift);
-+		if (level < 0)
-+			return;
-+		atomic_long_add(count, &direct_pages_count[level]);
-+	}
-+}
-+
- #endif /* _ASM_POWERPC_BOOK3S_64_PGALLOC_H */
-diff --git a/arch/powerpc/include/asm/book3s/64/radix.h b/arch/powerpc/include/asm/book3s/64/radix.h
-index 3ab3f7aef022..56a6e3f5f7c1 100644
---- a/arch/powerpc/include/asm/book3s/64/radix.h
-+++ b/arch/powerpc/include/asm/book3s/64/radix.h
-@@ -30,6 +30,9 @@
- #define RADIX_PUD_BAD_BITS		0x60000000000000e0UL
- #define RADIX_PGD_BAD_BITS		0x60000000000000e0UL
- 
-+#define RADIX_PMD_SHIFT		(PAGE_SHIFT + RADIX_PTE_INDEX_SIZE)
-+#define RADIX_PUD_SHIFT		(RADIX_PMD_SHIFT + RADIX_PMD_INDEX_SIZE)
-+#define RADIX_PGD_SHIFT		(RADIX_PUD_SHIFT + RADIX_PUD_INDEX_SIZE)
- /*
-  * Size of EA range mapped by our pagetables.
-  */
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 4afbfbb64bfd..5d2328ef7958 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -450,3 +450,25 @@ void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int index)
- 	return pgtable_free(table, index);
- }
- #endif
-+
-+#ifdef CONFIG_PROC_FS
-+atomic_long_t direct_pages_count[MMU_PAGE_COUNT];
-+
-+void arch_report_meminfo(struct seq_file *m)
-+{
-+	/*
-+	 * Hash maps the memory with one size mmu_linear_psize.
-+	 * So don't bother to print these on hash
-+	 */
-+	if (!radix_enabled())
-+		return;
-+	seq_printf(m, "DirectMap4k:    %8lu kB\n",
-+		   atomic_long_read(&direct_pages_count[MMU_PAGE_4K]) << 2);
-+	seq_printf(m, "DirectMap64k:    %8lu kB\n",
-+		   atomic_long_read(&direct_pages_count[MMU_PAGE_64K]) << 6);
-+	seq_printf(m, "DirectMap2M:    %8lu kB\n",
-+		   atomic_long_read(&direct_pages_count[MMU_PAGE_2M]) << 11);
-+	seq_printf(m, "DirectMap1G:    %8lu kB\n",
-+		   atomic_long_read(&direct_pages_count[MMU_PAGE_1G]) << 20);
-+}
-+#endif /* CONFIG_PROC_FS */
-diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
-index d9819e573103..5c5ca58e7d1f 100644
---- a/arch/powerpc/mm/pgtable-radix.c
-+++ b/arch/powerpc/mm/pgtable-radix.c
-@@ -259,6 +259,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 					     unsigned long end,
- 					     int nid)
- {
-+	int mapping_shift;
- 	unsigned long vaddr, addr, mapping_size = 0;
- 	pgprot_t prot;
- #ifdef CONFIG_STRICT_KERNEL_RWX
-@@ -277,18 +278,19 @@ static int __meminit create_physical_mapping(unsigned long start,
- 
- 		if (IS_ALIGNED(addr, PUD_SIZE) && gap >= PUD_SIZE &&
- 		    mmu_psize_defs[MMU_PAGE_1G].shift)
--			mapping_size = PUD_SIZE;
-+			mapping_shift = RADIX_PUD_SHIFT;
- 		else if (IS_ALIGNED(addr, PMD_SIZE) && gap >= PMD_SIZE &&
- 			 mmu_psize_defs[MMU_PAGE_2M].shift)
--			mapping_size = PMD_SIZE;
-+			mapping_shift = RADIX_PMD_SHIFT;
- 		else
--			mapping_size = PAGE_SIZE;
-+			mapping_shift = PAGE_SHIFT;
- 
--		if (split_text_mapping && (mapping_size != PAGE_SIZE) &&
-+		if (split_text_mapping && (mapping_shift != PAGE_SHIFT) &&
- 		    (addr <= __pa_symbol(__init_begin)) &&
- 		    (addr + mapping_size) >= __pa_symbol(_stext))
--			mapping_size = PAGE_SIZE;
-+			mapping_shift = PAGE_SHIFT;
- 
-+		mapping_size = (1UL << mapping_shift);
- 		if (mapping_size != previous_size) {
- 			print_mapping(start, addr, previous_size);
- 			start = addr;
-@@ -305,6 +307,7 @@ static int __meminit create_physical_mapping(unsigned long start,
- 		rc = __map_kernel_page(vaddr, addr, prot, mapping_size, nid, start, end);
- 		if (rc)
- 			return rc;
-+		update_page_count(mapping_shift, 1);
- 	}
- 
- 	print_mapping(start, addr, mapping_size);
--- 
-2.17.1
+> 
+> We missed this one and looking at c1b25a17d249 we missed the AMOR a couple of
+> months back. I'd rather we had some systematic way of finding the ones we are
+> missing, rather than playing wake-a-mole.
+
+I agree, we need something more systematic than the try-catch method
+thing we have now.
+
+For deep stop states on POWER9, we looked at the list of SPRs that
+were being lost and restored during winkle on POWER8. The additional
+SPRs that we took care of were the ones related to the Radix and IMC.
+
+Now since winkle was used only in the context of CPU-Hotplug, the
+CPU-online code would reinit some of the SPRs such as SPRG3, which is
+why we didn't see this problem on POWER8. So, that is one obvious
+place to audit.
+
+AMOR was a bad miss. It was being restored in POWER8 as part of the
+subcore restore code, so like RPR, it should have been restored along
+with the other per-core SPRs.
+
+> 
+> Mikey 
+> 
+> >  	blr
+> >  
+> >  power9_restore_additional_sprs:
+> > @@ -144,7 +147,9 @@ power9_restore_additional_sprs:
+> >  	mtspr	SPRN_MMCR1, r4
+> >  
+> >  	ld	r3, STOP_MMCR2(r13)
+> > +	ld	r4, STOP_SPRG3(r13)
+> >  	mtspr	SPRN_MMCR2, r3
+> > +	mtspr	SPRN_SPRG3, r4
+> >  	blr
+> >  
+> >  /*
