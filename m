@@ -1,19 +1,29 @@
-Return-Path: <camelia.groza@nxp.com>
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Vwg61PzXzF3Hv
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 21:59:29 +1000 (AEST)
-From: Camelia Groza <camelia.groza@nxp.com>
-To: robh+dt@kernel.org,
-	mark.rutland@arm.com,
-	benh@kernel.crashing.org
-Cc: paulus@samba.org, mpe@ellerman.id.au, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Camelia Groza <camelia.groza@nxp.com>
-Subject: [PATCH 0/3] powerpc/dpaa: use the Cortina PHY driver
-Date: Wed, 18 Jul 2018 14:46:48 +0300
-Message-Id: <cover.1531903211.git.camelia.groza@nxp.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41VwkM2bKszF3Hq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 22:02:18 +1000 (AEST)
+Date: Wed, 18 Jul 2018 22:02:15 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Joshua Thompson <funaho@jurai.org>,
+ Mathieu Malaterre <malat@debian.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Greg Ungerer <gerg@linux-m68k.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ y2038 Mailman List <y2038@lists.linaro.org>, Meelis Roos <mroos@linux.ee>,
+ Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 2/3] [v2] m68k: mac: use time64_t in RTC handling
+In-Reply-To: <CAMuHMdXHUwbD4ZBuQz-xYQO=QdYdPS=j=oLWBet6B7PrGEkT9Q@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1807182201560.41@nippy.intranet>
+References: <20180619140229.3615110-1-arnd@arndb.de>
+ <20180619140229.3615110-2-arnd@arndb.de>
+ <CAMuHMdXHUwbD4ZBuQz-xYQO=QdYdPS=j=oLWBet6B7PrGEkT9Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,19 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Cortina PHY on T2080RDB and T4240RDB requires the use of the
-dedicated Cortina PHY driver. This patch series enables it for
-DPAA platforms and uses it on T4240RDB and T2080RDB.
+On Wed, 18 Jul 2018, Geert Uytterhoeven wrote:
 
-Camelia Groza (3):
-  powerpc/configs/dpaa: enable the Cortina PHY driver
-  powerpc/dts/fsl: t4240rdb: use the Cortina PHY driver compatible
-  powerpc/dts/fsl: t2080rdb: use the Cortina PHY driver compatible
+> 
+> Thanks for your patch!
+> 
+> Applied and queued for v4.19, with the WARN_ON() dropped.
+> 
 
- arch/powerpc/boot/dts/fsl/t2080rdb.dts | 4 ++--
- arch/powerpc/boot/dts/fsl/t4240rdb.dts | 8 ++++----
- arch/powerpc/configs/dpaa.config       | 1 +
- 3 files changed, 7 insertions(+), 6 deletions(-)
+The patch you've committed to your for-v4.19 branch has this hunk:
 
---
-1.9.1
+@@ -269,8 +275,12 @@ static long via_read_time(void)
+                via_pram_command(0x89, &result.cdata[1]);
+                via_pram_command(0x8D, &result.cdata[0]);
+ 
+-               if (result.idata == last_result.idata)
++               if (result.idata == last_result.idata) {
++                       if (result.idata < RTC_OFFSET)
++                               result.idata += 0x100000000ull;
++
+                        return result.idata - RTC_OFFSET;
++               }
+ 
+                if (++count > 10)
+                        break;
+
+That looks bogus to me, since result.idata is a long.
+
+Also, the following hunk seems a bit pointless (?)
+
+@@ -291,11 +301,11 @@ static long via_read_time(void)
+  * is basically any machine with Mac II-style ADB.
+  */
+ 
+-static void via_write_time(long time)
++static void via_write_time(time64_t time)
+ {
+        union {
+                __u8 cdata[4];
+-               long idata;
++               __u32 idata;
+        } data;
+        __u8 temp;
+ 
+
+But if data.idata needs to be changed to __u32 here, why not change the 
+same struct member in via_read_time() also?
+
+-- 
