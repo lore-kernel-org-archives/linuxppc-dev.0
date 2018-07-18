@@ -1,22 +1,39 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WBVP5r9rzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 08:22:52 +1000 (AEST)
-Date: Thu, 19 Jul 2018 07:22:49 +0900 (KST)
-Message-Id: <20180719.072249.841425419842816951.davem@davemloft.net>
-To: krzk@kernel.org
-Cc: pantelis.antoniou@gmail.com, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- vbordug@ru.mvista.com, vitb@kernel.crashing.org
-Subject: Re: [PATCH] MAINTAINERS: Drop inactive Vitaly Bordug's email
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20180717164154.6577-1-krzk@kernel.org>
-References: <20180717164154.6577-1-krzk@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WBkg0xFPzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 08:33:30 +1000 (AEST)
+Date: Wed, 18 Jul 2018 15:33:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Baoquan He <bhe@redhat.com>
+Cc: linux-kernel@vger.kernel.org, robh+dt@kernel.org,
+ dan.j.williams@intel.com, nicolas.pitre@linaro.org, josh@joshtriplett.org,
+ fengguang.wu@intel.com, bp@suse.de, andy.shevchenko@gmail.com,
+ patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
+ haiyangz@microsoft.com, sthemmin@microsoft.com, dmitry.torokhov@gmail.com,
+ frowand.list@gmail.com, keith.busch@intel.com, jonathan.derrick@intel.com,
+ lorenzo.pieralisi@arm.com, bhelgaas@google.com, tglx@linutronix.de,
+ brijesh.singh@amd.com, jglisse@redhat.com, thomas.lendacky@amd.com,
+ gregkh@linuxfoundation.org, baiyaowei@cmss.chinamobile.com,
+ richard.weiyang@gmail.com, devel@linuxdriverproject.org,
+ linux-input@vger.kernel.org, linux-nvdimm@lists.01.org,
+ devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
+ ebiederm@xmission.com, vgoyal@redhat.com, dyoung@redhat.com,
+ yinghai@kernel.org, monstr@monstr.eu, davem@davemloft.net,
+ chris@zankel.net, jcmvbkbc@gmail.com, gustavo@padovan.org,
+ maarten.lankhorst@linux.intel.com, seanpaul@chromium.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org
+Subject: Re: [PATCH v7 4/4] kexec_file: Load kernel at top of system RAM if
+ required
+Message-Id: <20180718153326.b795e9ea7835432a56cd7011@linux-foundation.org>
+In-Reply-To: <20180718024944.577-5-bhe@redhat.com>
+References: <20180718024944.577-1-bhe@redhat.com>
+ <20180718024944.577-5-bhe@redhat.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +43,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Tue, 17 Jul 2018 18:41:54 +0200
+On Wed, 18 Jul 2018 10:49:44 +0800 Baoquan He <bhe@redhat.com> wrote:
 
-> The Vitaly Bordug's email bounces ("ru.mvista.com: Name or service not
-> known") and there was no activity (ack, review, sign) since 2009.
-> 
-> Cc: Vitaly Bordug <vitb@kernel.crashing.org>
-> Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> For kexec_file loading, if kexec_buf.top_down is 'true', the memory which
+> is used to load kernel/initrd/purgatory is supposed to be allocated from
+> top to down. This is what we have been doing all along in the old kexec
+> loading interface and the kexec loading is still default setting in some
+> distributions. However, the current kexec_file loading interface doesn't
+> do like this. The function arch_kexec_walk_mem() it calls ignores checking
+> kexec_buf.top_down, but calls walk_system_ram_res() directly to go through
+> all resources of System RAM from bottom to up, to try to find memory region
+> which can contain the specific kexec buffer, then call locate_mem_hole_callback()
+> to allocate memory in that found memory region from top to down. This brings
+> confusion especially when KASLR is widely supported , users have to make clear
+> why kexec/kdump kernel loading position is different between these two
+> interfaces in order to exclude unnecessary noises. Hence these two interfaces
+> need be unified on behaviour.
 
-Applied.
+As far as I can tell, the above is the whole reason for the patchset,
+yes?  To avoid confusing users.
+
+Is that sufficient?  Can we instead simplify their lives by providing
+better documentation or informative printks or better Kconfig text,
+etc?
+
+And who *are* the people who are performing this configuration?  Random
+system administrators?  Linux distro engineers?  If the latter then
+they presumably aren't easily confused!
+
+In other words, I'm trying to understand how much benefit this patchset
+will provide to our users as a whole.
