@@ -1,24 +1,40 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <ebiggers3@gmail.com>
+Received: from mail-pf0-x243.google.com (mail-pf0-x243.google.com
+ [IPv6:2607:f8b0:400e:c00::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Vbvl6xpVzF35v
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 09:24:19 +1000 (AEST)
-Message-ID: <80bbdf47081e3e302ab5f28b5ddc9e2faabba842.camel@neuling.org>
-Subject: Re: [RESEND][PATCH] powerpc/powernv : Save/Restore SPRG3 on
- entry/exit from stop.
-From: Michael Neuling <mikey@neuling.org>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Florian
- Weimer <fweimer@redhat.com>, Oleg Nesterov <oleg@redhat.com>
-Date: Wed, 18 Jul 2018 09:24:19 +1000
-In-Reply-To: <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
- <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Vd026jqJzF35v
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 10:13:03 +1000 (AEST)
+Received: by mail-pf0-x243.google.com with SMTP id k21-v6so1278779pff.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2018 17:13:02 -0700 (PDT)
+Date: Tue, 17 Jul 2018 17:12:58 -0700
+From: Eric Biggers <ebiggers3@gmail.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Siva Reddy Kallam <siva.kallam@broadcom.com>,
+ Prashant Sreedharan <prashant@broadcom.com>,
+ Michael Chan <mchan@broadcom.com>, Fugang Duan <fugang.duan@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>,
+ Jose Abreu <Jose.Abreu@synopsys.com>,
+ Larry Finger <Larry.Finger@lwfinger.net>,
+ Florian Schilhabel <florian.c.schilhabel@googlemail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devel@driverdev.osuosl.org
+Subject: Re: [PATCH 0/6] lib/crc32: treewide: Use existing define with
+ polynomial
+Message-ID: <20180718001258.GA210746@gmail.com>
+References: <20180717160541.3843-1-krzk@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180717160541.3843-1-krzk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +44,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Krzysztof,
 
->  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
-> diff --git a/arch/powerpc/kernel/idle_book3s.S
-> b/arch/powerpc/kernel/idle_book3s.S
-> index d85d551..5069d42 100644
-> --- a/arch/powerpc/kernel/idle_book3s.S
-> +++ b/arch/powerpc/kernel/idle_book3s.S
-> @@ -120,6 +120,9 @@ power9_save_additional_sprs:
->  	mfspr	r4, SPRN_MMCR2
->  	std	r3, STOP_MMCR1(r13)
->  	std	r4, STOP_MMCR2(r13)
-> +
-> +	mfspr	r3, SPRN_SPRG3
-> +	std	r3, STOP_SPRG3(r13)
+On Tue, Jul 17, 2018 at 06:05:35PM +0200, Krzysztof Kozlowski wrote:
+> Hi,
+> 
+> Kernel defines same polynomial for CRC-32 in few places.
+> This is unnecessary duplication of the same value. Also this might
+> be error-prone for future code - every driver will define the
+> polynomial again.
+> 
+> This is an attempt to unify definition of polynomial.  Few obvious
+> hard-coded locations are fixed with define.
+> 
+> All series depend on each 1/6 and 2/6.
+> 
+> This could be merged in two different merge windows (1st lib/crc and then
+> the rest) or taken through one tree.
+> 
+> It would be nice to get some testing. Only generic lib/crc, bunzip, xz_crc32
+> and Freescale's Ethernet driver were tested on HW.  Rest got just different
+> builds.
+> 
+> Best regards,
+> Krzysztof
+> 
+> Krzysztof Kozlowski (6):
+>   lib/crc: Move polynomial definition to separate header
+>   lib/crc: Use consistent naming for CRC-32 polynomials
+>   crypto: stm32_crc32 - Use existing define with polynomial
+>   net: ethernet: Use existing define with polynomial
+>   staging: rtl: Use existing define with polynomial
+>   lib: Use existing define with polynomial
+> 
+>  drivers/crypto/stm32/stm32_crc32.c               | 11 ++++-------
+>  drivers/net/ethernet/amd/xgbe/xgbe-dev.c         |  4 ++--
+>  drivers/net/ethernet/apple/bmac.c                |  8 ++------
+>  drivers/net/ethernet/broadcom/tg3.c              |  3 ++-
+>  drivers/net/ethernet/freescale/fec_main.c        |  4 ++--
+>  drivers/net/ethernet/freescale/fs_enet/fec.h     |  3 ---
+>  drivers/net/ethernet/freescale/fs_enet/mac-fec.c |  3 ++-
+>  drivers/net/ethernet/micrel/ks8851_mll.c         |  3 ++-
+>  drivers/net/ethernet/synopsys/dwc-xlgmac-hw.c    |  4 ++--
+>  drivers/staging/rtl8712/rtl871x_security.c       |  5 ++---
+>  drivers/staging/rtl8723bs/core/rtw_security.c    |  5 ++---
+>  include/linux/crc32poly.h                        | 20 ++++++++++++++++++++
+>  lib/crc32.c                                      | 11 ++++++-----
+>  lib/crc32defs.h                                  | 14 --------------
+>  lib/decompress_bunzip2.c                         |  3 ++-
+>  lib/gen_crc32table.c                             |  5 +++--
+>  lib/xz/xz_crc32.c                                |  3 ++-
+>  17 files changed, 55 insertions(+), 54 deletions(-)
+>  create mode 100644 include/linux/crc32poly.h
+> 
 
-We don't need to save it.  Just restore it from paca->sprg_vdso which shoul=
-d
-never change.
+Did you check whether any of these users can be converted to use the CRC
+implementations in lib/, so they wouldn't need the polynomial definition
+themselves?
 
-How can we do better at catching these missing SPRGs?=20
-
-We missed this one and looking at c1b25a17d249 we missed the AMOR a couple =
-of
-months back. I'd rather we had some systematic way of finding the ones we a=
-re
-missing, rather than playing wake-a-mole.
-
-Mikey=20
-
->  	blr
-> =20
->  power9_restore_additional_sprs:
-> @@ -144,7 +147,9 @@ power9_restore_additional_sprs:
->  	mtspr	SPRN_MMCR1, r4
-> =20
->  	ld	r3, STOP_MMCR2(r13)
-> +	ld	r4, STOP_SPRG3(r13)
->  	mtspr	SPRN_MMCR2, r3
-> +	mtspr	SPRN_SPRG3, r4
->  	blr
-> =20
->  /*
+- Eric
