@@ -1,57 +1,24 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-ua0-x243.google.com (mail-ua0-x243.google.com
- [IPv6:2607:f8b0:400c:c08::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dave.hansen@intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41W2qq72S9zF3J3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:37:27 +1000 (AEST)
-Received: by mail-ua0-x243.google.com with SMTP id y10-v6so3333217uao.4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 09:37:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41W2rs0sQlzF3Hk
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:38:19 +1000 (AEST)
+Subject: Re: [PATCH v14 14/22] selftests/vm: Introduce generic abstractions
+To: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
+ linux-kselftest@vger.kernel.org
+References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
+ <1531835365-32387-15-git-send-email-linuxram@us.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
+ x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
+ mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
+ msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
+From: Dave Hansen <dave.hansen@intel.com>
+Message-ID: <527bc6c2-0bfd-4ada-e601-08863443995f@intel.com>
+Date: Wed, 18 Jul 2018 09:38:14 -0700
 MIME-Version: 1.0
-In-Reply-To: <CAHp75VdO88ydJQ9GHdaDUmAmzL6QHR=US6JiXZ1R_EEA-xWR1Q@mail.gmail.com>
-References: <20180718024944.577-1-bhe@redhat.com>
- <20180718024944.577-2-bhe@redhat.com>
- <CAHp75VdO88ydJQ9GHdaDUmAmzL6QHR=US6JiXZ1R_EEA-xWR1Q@mail.gmail.com>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Wed, 18 Jul 2018 19:37:24 +0300
-Message-ID: <CAHp75Vf2yEwHhEhhQH2XN+pOQ=-skiAHZ=FgLnfVV8vcm59qeQ@mail.gmail.com>
-Subject: Re: [PATCH v7 1/4] resource: Move reparent_resources() to
- kernel/resource.c and make it public
-To: Baoquan He <bhe@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Rob Herring <robh+dt@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
- Nicolas Pitre <nicolas.pitre@linaro.org>, Josh Triplett <josh@joshtriplett.org>,
- kbuild test robot <fengguang.wu@intel.com>, Borislav Petkov <bp@suse.de>,
- Patrik Jakobsson <patrik.r.jakobsson@gmail.com>,
- David Airlie <airlied@linux.ie>,
- KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>,
- Stephen Hemminger <sthemmin@microsoft.com>,
- Dmitry Torokhov <dmitry.torokhov@gmail.com>,
- Frank Rowand <frowand.list@gmail.com>, Keith Busch <keith.busch@intel.com>,
- Jon Derrick <jonathan.derrick@intel.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- brijesh.singh@amd.com,
- =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>,
- Tom Lendacky <thomas.lendacky@amd.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- baiyaowei@cmss.chinamobile.com, richard.weiyang@gmail.com,
- devel@linuxdriverproject.org, linux-input <linux-input@vger.kernel.org>,
- linux-nvdimm@lists.01.org, devicetree <devicetree@vger.kernel.org>,
- linux-pci@vger.kernel.org, Eric Biederman <ebiederm@xmission.com>,
- Vivek Goyal <vgoyal@redhat.com>, Dave Young <dyoung@redhat.com>,
- Yinghai Lu <yinghai@kernel.org>,
- Michal Simek <monstr@monstr.eu>, "David S. Miller" <davem@davemloft.net>,
- Chris Zankel <chris@zankel.net>,
- Max Filippov <jcmvbkbc@gmail.com>, Gustavo Padovan <gustavo@padovan.org>,
- Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
- Sean Paul <seanpaul@chromium.org>, linux-parisc@vger.kernel.org,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1531835365-32387-15-git-send-email-linuxram@us.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -61,19 +28,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2018 at 7:36 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> On Wed, Jul 18, 2018 at 5:49 AM, Baoquan He <bhe@redhat.com> wrote:
->> reparent_resources() is duplicated in arch/microblaze/pci/pci-common.c
->> and arch/powerpc/kernel/pci-common.c, so move it to kernel/resource.c
->> so that it's shared.
+On 07/17/2018 06:49 AM, Ram Pai wrote:
+> Introduce generic abstractions and provide architecture
+> specific implementation for the abstractions.
 
->> + * Returns 0 on success, -ENOTSUPP if child resource is not completely
->> + * contained by 'res', -ECANCELED if no any conflicting entry found.
+I really wanted to see these two things separated:
+1. introduce abstractions
+2. introduce ppc implementation
 
-You also can refer to constants by prefixing them with %, e.g. %-ENOTSUPP.
-But this is up to you completely.
+But, I guess most of it is done except for the siginfo stuff.
 
--- 
-With Best Regards,
-Andy Shevchenko
+>  #if defined(__i386__) || defined(__x86_64__) /* arch */
+>  #include "pkey-x86.h"
+> +#elif defined(__powerpc64__) /* arch */
+> +#include "pkey-powerpc.h"
+>  #else /* arch */
+>  #error Architecture not supported
+>  #endif /* arch */
+> @@ -186,7 +191,16 @@ static inline int open_hugepage_file(int flag)
+>  
+>  static inline int get_start_key(void)
+>  {
+> -	return 1;
+> +	return 0;
+> +}
+
+How does this not now break x86?
+>  #endif /* _PKEYS_X86_H */
+> diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
+> index 304f74f..18e1bb7 100644
+> --- a/tools/testing/selftests/vm/protection_keys.c
+> +++ b/tools/testing/selftests/vm/protection_keys.c
+> @@ -197,17 +197,18 @@ void dump_mem(void *dumpme, int len_bytes)
+>  
+>  int pkey_faults;
+>  int last_si_pkey = -1;
+> +void pkey_access_allow(int pkey);
+
+Please just move the function.
+
+>  void signal_handler(int signum, siginfo_t *si, void *vucontext)
+>  {
+>  	ucontext_t *uctxt = vucontext;
+>  	int trapno;
+>  	unsigned long ip;
+>  	char *fpregs;
+> +#if defined(__i386__) || defined(__x86_64__) /* arch */
+>  	pkey_reg_t *pkey_reg_ptr;
+> -	u64 siginfo_pkey;
+> +#endif /* defined(__i386__) || defined(__x86_64__) */
+> +	u32 siginfo_pkey;
+>  	u32 *si_pkey_ptr;
+> -	int pkey_reg_offset;
+> -	fpregset_t fpregset;
+>  
+>  	dprint_in_signal = 1;
+>  	dprintf1(">>>>===============SIGSEGV============================\n");
+> @@ -217,12 +218,14 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+>  
+>  	trapno = uctxt->uc_mcontext.gregs[REG_TRAPNO];
+>  	ip = uctxt->uc_mcontext.gregs[REG_IP_IDX];
+> -	fpregset = uctxt->uc_mcontext.fpregs;
+> -	fpregs = (void *)fpregset;
+> +	fpregs = (char *) uctxt->uc_mcontext.fpregs;
+>  
+>  	dprintf2("%s() trapno: %d ip: 0x%016lx info->si_code: %s/%d\n",
+>  			__func__, trapno, ip, si_code_str(si->si_code),
+>  			si->si_code);
+> +
+> +#if defined(__i386__) || defined(__x86_64__) /* arch */
+> +
+>  #ifdef __i386__
+>  	/*
+>  	 * 32-bit has some extra padding so that userspace can tell whether
+> @@ -230,20 +233,21 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+>  	 * state.  We just assume that it is here.
+>  	 */
+>  	fpregs += 0x70;
+> -#endif
+> -	pkey_reg_offset = pkey_reg_xstate_offset();
+> -	pkey_reg_ptr = (void *)(&fpregs[pkey_reg_offset]);
+> +#endif /* __i386__ */
+>  
+> -	dprintf1("siginfo: %p\n", si);
+> -	dprintf1(" fpregs: %p\n", fpregs);
+> +	pkey_reg_ptr = (void *)(&fpregs[pkey_reg_xstate_offset()]);
+
+There are unnecessary parenthesis here.
+
+Also, why are you bothering to mess with this?  This is inside the x86
+#ifdef, right?
+
+>  	/*
+> -	 * If we got a PKEY fault, we *HAVE* to have at least one bit set in
+> +	 * If we got a key fault, we *HAVE* to have at least one bit set in
+>  	 * here.
+>  	 */
+>  	dprintf1("pkey_reg_xstate_offset: %d\n", pkey_reg_xstate_offset());
+>  	if (DEBUG_LEVEL > 4)
+>  		dump_mem(pkey_reg_ptr - 128, 256);
+>  	pkey_assert(*pkey_reg_ptr);
+> +#endif /* defined(__i386__) || defined(__x86_64__) */
+> +
+> +	dprintf1("siginfo: %p\n", si);
+> +	dprintf1(" fpregs: %p\n", fpregs);
+>  
+>  	if ((si->si_code == SEGV_MAPERR) ||
+>  	    (si->si_code == SEGV_ACCERR) ||
+> @@ -252,22 +256,28 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
+>  		exit(4);
+>  	}
+>  
+> -	si_pkey_ptr = (u32 *)(((u8 *)si) + si_pkey_offset);
+> +	si_pkey_ptr = siginfo_get_pkey_ptr(si);
+>  	dprintf1("si_pkey_ptr: %p\n", si_pkey_ptr);
+> -	dump_mem((u8 *)si_pkey_ptr - 8, 24);
+> +	dump_mem(si_pkey_ptr - 8, 24);
+
+You removed the cast here, why?  That changes the pointer math.
+
+Can we merge this as-is.  No, I do not think we can.  If it were _just_
+the #ifdefs, we could let it pass, but there are a bunch of rough spots,
+not just the #ifdefs.
