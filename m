@@ -1,20 +1,23 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WBtN3WrCzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 08:40:12 +1000 (AEST)
-Subject: Re: Improvements for the PS3
-To: Fredrik Noring <noring@nocrew.org>, linuxppc-dev@lists.ozlabs.org,
- Geert Uytterhoeven <geert@linux-m68k.org>
-References: <20180714164906.GQ23412@localhost.localdomain>
-From: Geoff Levand <geoff@infradead.org>
-Message-ID: <7d6362d7-da99-e57f-40ed-81c7a03ea1a4@infradead.org>
-Date: Wed, 18 Jul 2018 15:40:05 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WCyv3hxpzDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 09:29:10 +1000 (AEST)
+Date: Wed, 18 Jul 2018 18:29:07 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Hari Vyas <hari.vyas@broadcom.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, ray.jui@broadcom.com,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
+Message-ID: <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
+References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
+ <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
 MIME-Version: 1.0
-In-Reply-To: <20180714164906.GQ23412@localhost.localdomain>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +27,257 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Fredrik,
+[+cc Paul, Michael, linuxppc-dev]
 
-On 07/14/2018 09:49 AM, Fredrik Noring wrote:
-> so I added a sleep with
+On Tue, Jul 03, 2018 at 02:35:41PM +0530, Hari Vyas wrote:
+> When a pci device is detected, a variable is_added is set to
+> 1 in pci device structure and proc, sys entries are created.
 > 
-> +	msleep(10000);
+> When a pci device is removed, first is_added is checked for one
+> and then device is detached with clearing of proc and sys
+> entries and at end, is_added is set to 0.
+> 
+> is_added and is_busmaster are bit fields in pci_dev structure
+> sharing same memory location.
+> 
+> A strange issue was observed with multiple times removal and
+> rescan of a pcie nvme device using sysfs commands where is_added
+> flag was observed as zero instead of one while removing device
+> and proc,sys entries are not cleared.  This causes issue in
+> later device addition with warning message "proc_dir_entry"
+> already registered.
+> 
+> Debugging revealed a race condition between pcie core driver
+> enabling is_added bit(pci_bus_add_device()) and nvme driver
+> reset work-queue enabling is_busmaster bit (by pci_set_master()).
+> As both fields are not handled in atomic manner and that clears
+> is_added bit.
+> 
+> Fix moves device addition is_added bit to separate private flag
+> variable and use different atomic functions to set and retrieve
+> device addition state. As is_added shares different memory
+> location so race condition is avoided.
+
+Really nice bit of debugging!
+
+> Signed-off-by: Hari Vyas <hari.vyas@broadcom.com>
+> ---
+>  arch/powerpc/kernel/pci-common.c          |  4 +++-
+>  arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
+>  arch/powerpc/platforms/pseries/setup.c    |  3 ++-
+>  drivers/pci/bus.c                         |  6 +++---
+>  drivers/pci/hotplug/acpiphp_glue.c        |  2 +-
+>  drivers/pci/pci.h                         | 11 +++++++++++
+>  drivers/pci/probe.c                       |  4 ++--
+>  drivers/pci/remove.c                      |  5 +++--
+>  include/linux/pci.h                       |  1 -
+>  9 files changed, 27 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index fe9733f..471aac3 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -42,6 +42,8 @@
+>  #include <asm/ppc-pci.h>
+>  #include <asm/eeh.h>
+>  
+> +#include "../../../drivers/pci/pci.h"
+
+I see why you need it, but this include path is really ugly.  Outside
+of bootloaders and tools, there are very few instances of includes
+like this that reference a different top-level directory, and I'm not
+very keen about adding more.
+
+Obviously powerpc is the only arch that needs dev->is_added.  It seems
+to be because "We can only call pcibios_setup_device() after bus setup
+is complete, since some of the platform specific DMA setup code
+depends on it."
+
+I don't know powerpc, but it does raise the question in my mind of
+whether powerpc could be changed to do the DMA setup more like other
+arches do to remove this ordering dependency and the need to use
+dev->is_added.
+
+That sounds like a lot of work, but it would have the benefit of
+unifying some code that is probably needlessly arch-specific.
+
+>  /* hose_spinlock protects accesses to the the phb_bitmap. */
+>  static DEFINE_SPINLOCK(hose_spinlock);
+>  LIST_HEAD(hose_list);
+> @@ -1014,7 +1016,7 @@ void pcibios_setup_bus_devices(struct pci_bus *bus)
+>  		/* Cardbus can call us to add new devices to a bus, so ignore
+>  		 * those who are already fully discovered
+>  		 */
+> -		if (dev->is_added)
+> +		if (pci_dev_is_added(dev))
+>  			continue;
+>  
+>  		pcibios_setup_device(dev);
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 5bd0eb6..70b2e1e 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -46,6 +46,7 @@
+>  
+>  #include "powernv.h"
+>  #include "pci.h"
+> +#include "../../../../drivers/pci/pci.h"
+>  
+>  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs	*/
+>  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR	*/
+> @@ -3138,7 +3139,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+>  	struct pci_dn *pdn;
+>  	int mul, total_vfs;
+>  
+> -	if (!pdev->is_physfn || pdev->is_added)
+> +	if (!pdev->is_physfn || pci_dev_is_added(pdev))
+>  		return;
+>  
+>  	pdn = pci_get_pdn(pdev);
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 139f0af..8a4868a 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -71,6 +71,7 @@
+>  #include <asm/security_features.h>
+>  
+>  #include "pseries.h"
+> +#include "../../../../drivers/pci/pci.h"
+>  
+>  int CMO_PrPSP = -1;
+>  int CMO_SecPSP = -1;
+> @@ -664,7 +665,7 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
+>  	const int *indexes;
+>  	struct device_node *dn = pci_device_to_OF_node(pdev);
+>  
+> -	if (!pdev->is_physfn || pdev->is_added)
+> +	if (!pdev->is_physfn || pci_dev_is_added(pdev))
+>  		return;
+>  	/*Firmware must support open sriov otherwise dont configure*/
+>  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> index 35b7fc8..5cb40b2 100644
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -330,7 +330,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+>  		return;
+>  	}
+>  
+> -	dev->is_added = 1;
+> +	pci_dev_assign_added(dev, true);
+>  }
+>  EXPORT_SYMBOL_GPL(pci_bus_add_device);
+>  
+> @@ -347,14 +347,14 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>  		/* Skip already-added devices */
+> -		if (dev->is_added)
+> +		if (pci_dev_is_added(dev))
+>  			continue;
+>  		pci_bus_add_device(dev);
+>  	}
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>  		/* Skip if device attach failed */
+> -		if (!dev->is_added)
+> +		if (!pci_dev_is_added(dev))
+>  			continue;
+>  		child = dev->subordinate;
+>  		if (child)
+> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> index 3a17b29..ef0b1b6 100644
+> --- a/drivers/pci/hotplug/acpiphp_glue.c
+> +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> @@ -509,7 +509,7 @@ static void enable_slot(struct acpiphp_slot *slot)
+>  
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>  		/* Assume that newly added devices are powered on already. */
+> -		if (!dev->is_added)
+> +		if (!pci_dev_is_added(dev))
+>  			dev->current_state = PCI_D0;
+>  	}
+>  
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 882f1f9..0881725 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -288,6 +288,7 @@ struct pci_sriov {
+>  
+>  /* pci_dev priv_flags */
+>  #define PCI_DEV_DISCONNECTED 0
+> +#define PCI_DEV_ADDED 1
+>  
+>  static inline int pci_dev_set_disconnected(struct pci_dev *dev, void *unused)
+>  {
+> @@ -300,6 +301,16 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
+>  	return test_bit(PCI_DEV_DISCONNECTED, &dev->priv_flags);
+>  }
+>  
+> +static inline void pci_dev_assign_added(struct pci_dev *dev, bool added)
+> +{
+> +	assign_bit(PCI_DEV_ADDED, &dev->priv_flags, added);
+> +}
 > +
->  	return 0;
+> +static inline bool pci_dev_is_added(const struct pci_dev *dev)
+> +{
+> +	return test_bit(PCI_DEV_ADDED, &dev->priv_flags);
+> +}
+> +
+>  #ifdef CONFIG_PCI_ATS
+>  void pci_restore_ats_state(struct pci_dev *dev);
+>  #else
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index ac876e3..611adcd 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -2433,13 +2433,13 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+>  	dev = pci_scan_single_device(bus, devfn);
+>  	if (!dev)
+>  		return 0;
+> -	if (!dev->is_added)
+> +	if (!pci_dev_is_added(dev))
+>  		nr++;
+>  
+>  	for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
+>  		dev = pci_scan_single_device(bus, devfn + fn);
+>  		if (dev) {
+> -			if (!dev->is_added)
+> +			if (!pci_dev_is_added(dev))
+>  				nr++;
+>  			dev->multifunction = 1;
+>  		}
+> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+> index 6f072ea..5e3d0dc 100644
+> --- a/drivers/pci/remove.c
+> +++ b/drivers/pci/remove.c
+> @@ -19,11 +19,12 @@ static void pci_stop_dev(struct pci_dev *dev)
+>  {
+>  	pci_pme_active(dev, false);
+>  
+> -	if (dev->is_added) {
+> +	if (pci_dev_is_added(dev)) {
+>  		device_release_driver(&dev->dev);
+>  		pci_proc_detach_device(dev);
+>  		pci_remove_sysfs_dev_files(dev);
+> -		dev->is_added = 0;
+> +
+> +		pci_dev_assign_added(dev, false);
+>  	}
+>  
+>  	if (dev->bus->self)
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 340029b..506125b 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -368,7 +368,6 @@ struct pci_dev {
+>  	unsigned int	transparent:1;		/* Subtractive decode bridge */
+>  	unsigned int	multifunction:1;	/* Multi-function device */
+>  
+> -	unsigned int	is_added:1;
+>  	unsigned int	is_busmaster:1;		/* Is busmaster */
+>  	unsigned int	no_msi:1;		/* May not use MSI */
+>  	unsigned int	no_64bit_msi:1; 	/* May only use 32-bit MSIs */
+> -- 
+> 1.9.1
 > 
-> et voilà, the screen came alive and the kernel panic was revealed! It seems
-> the kernel panics so fast that the PS3 frame buffer is unprepared. This is,
-> of course, very unfortunate because trying to debug the boot process without
-> a screen or any other means of obtaining console text is quite difficult.
-
-We could add a fixed delay there, but I'd like to avoid waiting that
-long on every boot.  Why don't you add a kernel module_param named
-something like ps3fb_delay that takes a value in milliseconds and a
-default of zero.  See:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/video/fbdev/ps3fb.c?h=v4.17#n260
-
-> I suppose the problem is that it relies on interrupts for ps3fb_sync_image
-> to regularly copy the image, hence without them the screen isn't updated to
-> show kernel panics, etc. Perhaps one way to fix that is to implement the
-> struct fb_tile_ops API, so that the console is synchronously updated? Would
-> that be acceptable?
-
-I'm not sure if that would work or not.   Maybe Geert is more familiar with it.
-
--Geoff
