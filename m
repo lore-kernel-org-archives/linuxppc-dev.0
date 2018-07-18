@@ -1,24 +1,39 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga18.intel.com (mga18.intel.com [134.134.136.126])
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41W28M2PvQzF35L
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:06:42 +1000 (AEST)
-Subject: Re: [PATCH v14 13/22] selftests/vm: generic cleanup
-To: Ram Pai <linuxram@us.ibm.com>, shuahkh@osg.samsung.com,
- linux-kselftest@vger.kernel.org
-References: <1531835365-32387-1-git-send-email-linuxram@us.ibm.com>
- <1531835365-32387-14-git-send-email-linuxram@us.ibm.com>
-Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- x86@kernel.org, linux-arch@vger.kernel.org, mingo@redhat.com,
- mhocko@kernel.org, bauerman@linux.vnet.ibm.com, fweimer@redhat.com,
- msuchanek@suse.de, aneesh.kumar@linux.vnet.ibm.com
-From: Dave Hansen <dave.hansen@intel.com>
-Message-ID: <07f89e3b-a538-0466-cf5c-b975c0cc0aa8@intel.com>
-Date: Wed, 18 Jul 2018 09:06:26 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41W2MR0C82zF3Hb
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:16:17 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6IGEsvx049328
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 12:16:15 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ka73ydads-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 12:16:15 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Wed, 18 Jul 2018 12:16:14 -0400
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Kees Cook <keescook@chromium.org>, Mathieu Malaterre <malat@debian.org>,
+ Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/prom_init: remove linux,stdout-package property
+Date: Wed, 18 Jul 2018 13:15:44 -0300
 MIME-Version: 1.0
-In-Reply-To: <1531835365-32387-14-git-send-email-linuxram@us.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <20180718161544.12134-1-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,98 +43,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/17/2018 06:49 AM, Ram Pai wrote:
-> cleanup the code to satisfy coding styles.
-> 
-> cc: Dave Hansen <dave.hansen@intel.com>
-> cc: Florian Weimer <fweimer@redhat.com>
-> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> ---
->  tools/testing/selftests/vm/protection_keys.c |   64 +++++++++++++++++--------
->  1 files changed, 43 insertions(+), 21 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/vm/protection_keys.c b/tools/testing/selftests/vm/protection_keys.c
-> index f50cce8..304f74f 100644
-> --- a/tools/testing/selftests/vm/protection_keys.c
-> +++ b/tools/testing/selftests/vm/protection_keys.c
-> @@ -4,7 +4,7 @@
->   *
->   * There are examples in here of:
->   *  * how to set protection keys on memory
-> - *  * how to set/clear bits in pkey registers (the rights register)
-> + *  * how to set/clear bits in Protection Key registers (the rights register)
+This property was added in 2004 and the only use of it, which was already inside
+`#if 0`, was removed a month later.
 
-Huh?  Which coding style says that we can't say "pkey"?
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+---
+ arch/powerpc/kernel/prom_init.c | 2 --
+ 1 file changed, 2 deletions(-)
 
->   *  * how to handle SEGV_PKUERR signals and extract pkey-relevant
->   *    information from the siginfo
->   *
-> @@ -13,13 +13,18 @@
->   *	prefault pages in at malloc, or not
->   *	protect MPX bounds tables with protection keys?
->   *	make sure VMA splitting/merging is working correctly
-> - *	OOMs can destroy mm->mmap (see exit_mmap()), so make sure it is immune to pkeys
-> - *	look for pkey "leaks" where it is still set on a VMA but "freed" back to the kernel
-> - *	do a plain mprotect() to a mprotect_pkey() area and make sure the pkey sticks
-> + *	OOMs can destroy mm->mmap (see exit_mmap()),
-> + *			so make sure it is immune to pkeys
-> + *	look for pkey "leaks" where it is still set on a VMA
-> + *			 but "freed" back to the kernel
-> + *	do a plain mprotect() to a mprotect_pkey() area and make
-> + *			 sure the pkey sticks
+v1..v2:
+- Move github.com links to this section so they can still end up in the mail
+  archive.
+- Remove Fixes: tag from commit message.
+- Add Link: tag here.
+- Link to v1: https://lkml.kernel.org/r/20180712171904.18971-1-muriloo@linux.ibm.com
 
-This makes it work substantially worse.  That's not acceptable, even if
-you did move it under 80 columns.
+This property was added in 2004 by
 
->   * Compile like this:
-> - *	gcc      -o protection_keys    -O2 -g -std=gnu99 -pthread -Wall protection_keys.c -lrt -ldl -lm
-> - *	gcc -m32 -o protection_keys_32 -O2 -g -std=gnu99 -pthread -Wall protection_keys.c -lrt -ldl -lm
-> + *	gcc      -o protection_keys    -O2 -g -std=gnu99
-> + *			 -pthread -Wall protection_keys.c -lrt -ldl -lm
-> + *	gcc -m32 -o protection_keys_32 -O2 -g -std=gnu99
-> + *			 -pthread -Wall protection_keys.c -lrt -ldl -lm
->   */
+    https://github.com/mpe/linux-fullhistory/commit/689fe5072fe9a0dec914bfa4fa60aed1e54563e6
 
-Why was this on one line?  Because it was easier to copy and paste.
-Please leave it on one line, CodingStyle be damned.
+and the only use of it, which was already inside `#if 0`, was removed a month
+later by
 
->  #define _GNU_SOURCE
->  #include <errno.h>
-> @@ -263,10 +268,12 @@ void signal_handler(int signum, siginfo_t *si, void *vucontext)
->  			__read_pkey_reg());
->  	dprintf1("pkey from siginfo: %jx\n", siginfo_pkey);
->  	*(u64 *)pkey_reg_ptr = 0x00000000;
-> -	dprintf1("WARNING: set PRKU=0 to allow faulting instruction to continue\n");
-> +	dprintf1("WARNING: set PKEY_REG=0 to allow faulting instruction "
-> +			"to continue\n");
+    https://github.com/mpe/linux-fullhistory/commit/1fbe5a6d90f6cd4ea610737ef488719d1a875de7
 
-It's actually totally OK to let printk strings go over 80 columns.
+Link: https://github.com/linuxppc/linux/issues/125
 
->  	pkey_faults++;
->  	dprintf1("<<<<==================================================\n");
->  	dprint_in_signal = 0;
-> +	return;
->  }
-
-Now we're just being silly.
-
->  
->  int wait_all_children(void)
-> @@ -384,7 +391,7 @@ void pkey_disable_set(int pkey, int flags)
->  {
->  	unsigned long syscall_flags = 0;
->  	int ret;
-> -	int pkey_rights;
-> +	u32 pkey_rights;
-
-This is not CodingStyle.  Shouldn't this be the pkey_reg_t that you
-introduced earlier in the series?
-
-> -int sys_pkey_alloc(unsigned long flags, unsigned long init_val)
-> +int sys_pkey_alloc(unsigned long flags, u64 init_val)
->  {
-
-Um, this is actually a 'unsigned long' in the ABI.
-
-Can you go back through this and actually make sure that these are real
-coding style cleanups?
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index 5425dd3d6a9f..c45fb463c9e5 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2102,8 +2102,6 @@ static void __init prom_init_stdout(void)
+ 	stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+ 	if (stdout_node != PROM_ERROR) {
+ 		val = cpu_to_be32(stdout_node);
+-		prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
+-			     &val, sizeof(val));
+ 
+ 		/* If it's a display, note it */
+ 		memset(type, 0, sizeof(type));
+-- 
+2.17.1
