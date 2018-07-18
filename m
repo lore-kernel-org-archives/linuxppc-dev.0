@@ -1,31 +1,24 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vk0-f67.google.com (mail-vk0-f67.google.com
- [209.85.213.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <camelia.groza@nxp.com>
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Vw9Y3Qv2zF3Hy
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 21:37:19 +1000 (AEST)
-Received: by mail-vk0-f67.google.com with SMTP id p12-v6so2305220vkf.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 04:37:19 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180619140229.3615110-1-arnd@arndb.de>
- <20180619140229.3615110-3-arnd@arndb.de>
-In-Reply-To: <20180619140229.3615110-3-arnd@arndb.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 18 Jul 2018 13:37:05 +0200
-Message-ID: <CAMuHMdV2tSqXWgOiUtNjmCnQa2VSVddS9iHKb=5dvV9ChYNxsw@mail.gmail.com>
-Subject: Re: [PATCH 3/3] [v2] m68k: remove unused set_clock_mmss() helpers
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Joshua Thompson <funaho@jurai.org>, Mathieu Malaterre <malat@debian.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Greg Ungerer <gerg@linux-m68k.org>,
- linux-m68k <linux-m68k@lists.linux-m68k.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- y2038 Mailman List <y2038@lists.linaro.org>,
- Meelis Roos <mroos@linux.ee>, Andreas Schwab <schwab@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Vwdl72FVzF35L
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 21:58:19 +1000 (AEST)
+From: Camelia Groza <camelia.groza@nxp.com>
+To: robh+dt@kernel.org,
+	mark.rutland@arm.com,
+	benh@kernel.crashing.org
+Cc: paulus@samba.org, mpe@ellerman.id.au, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Camelia Groza <camelia.groza@nxp.com>
+Subject: [PATCH 3/3] powerpc/dts/fsl: t2080rdb: use the Cortina PHY driver
+ compatible
+Date: Wed, 18 Jul 2018 14:46:51 +0300
+Message-Id: <1d1d60a461700d02fbb319e0cbdd134c5a107782.1531903211.git.camelia.groza@nxp.com>
+In-Reply-To: <cover.1531903211.git.camelia.groza@nxp.com>
+References: <cover.1531903211.git.camelia.groza@nxp.com>
+In-Reply-To: <cover.1531903211.git.camelia.groza@nxp.com>
+References: <cover.1531903211.git.camelia.groza@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,26 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 19, 2018 at 4:04 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> Commit 397ac99c6cef ("m68k: remove dead timer code") removed set_rtc_mmss()
-> because it was unused in 2012. However, this was itself the only user of the
-> mach_set_clock_mmss() callback and the many implementations of that callback,
-> which are equally unused.
->
-> This removes all of those as well.
->
-> Acked-by: Greg Ungerer <gerg@linux-m68k.org>
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+The Cortina PHY requires the use of the dedicated Cortina PHY driver
+instead of the generic one.
 
-Thanks, applied and queued for v4.19.
+Signed-off-by: Camelia Groza <camelia.groza@nxp.com>
+---
+ arch/powerpc/boot/dts/fsl/t2080rdb.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/boot/dts/fsl/t2080rdb.dts b/arch/powerpc/boot/dts/fsl/t2080rdb.dts
+index 836e4c9..55c0210 100644
+--- a/arch/powerpc/boot/dts/fsl/t2080rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t2080rdb.dts
+@@ -97,12 +97,12 @@
+ 
+ 		mdio@fd000 {
+ 			xg_cs4315_phy1: ethernet-phy@c {
+-				compatible = "ethernet-phy-ieee802.3-c45";
++				compatible = "ethernet-phy-id13e5.1002";
+ 				reg = <0xc>;
+ 			};
+ 
+ 			xg_cs4315_phy2: ethernet-phy@d {
+-				compatible = "ethernet-phy-ieee802.3-c45";
++				compatible = "ethernet-phy-id13e5.1002";
+ 				reg = <0xd>;
+ 			};
+ 
+-- 
+1.9.1
