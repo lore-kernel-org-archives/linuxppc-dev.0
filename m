@@ -1,20 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WNpc6PpGzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:07:36 +1000 (AEST)
-In-Reply-To: <20180621083305.5322-1-brgl@bgdev.pl>
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh+dt@kernel.org>,
- Mark Rutland <mark.rutland@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WNpf1NqCzDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:07:38 +1000 (AEST)
+In-Reply-To: <153016319642.8584.7868984232962915832.stgit@hbathini.in.ibm.com>
+To: Hari Bathini <hbathini@linux.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: devicetree@vger.kernel.org, Bartosz Golaszewski <brgl@bgdev.pl>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND,
- 1/3] powerpc: dts: use 'atmel' as at24 anufacturer for pdm360ng
-Message-Id: <41WNpc2DKrz9s4w@ozlabs.org>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Dave Young <dyoung@redhat.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>, dgibson@redhat.com
+Subject: Re: powerpc/kdump: handle crashkernel memory reservation failure
+Message-Id: <41WNpc5Jvtz9s5K@ozlabs.org>
 Date: Thu, 19 Jul 2018 16:07:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,14 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-06-21 at 08:33:03 UTC, Bartosz Golaszewski wrote:
-> Using 'at' as the <manufacturer> part of the compatible string is now
-> deprecated. Use a correct string: 'atmel,<model>'.
+On Thu, 2018-06-28 at 05:19:56 UTC, Hari Bathini wrote:
+> Memory reservation for crashkernel could fail if there are holes around
+> kdump kernel offset (128M). Fail gracefully in such cases and print an
+> error message.
 > 
-> Signed-off-by: Bartosz Golaszewski <brgl@bgdev.pl>
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> Tested-by: David Gibson <dgibson@redhat.com>
+> Reviewed-by: Dave Young <dyoung@redhat.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/835b706bab95141e2663b046f2fc59
+https://git.kernel.org/powerpc/c/8950329c4a64c6d3ca0bc34711a1af
 
 cheers
