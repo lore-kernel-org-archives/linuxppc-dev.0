@@ -1,17 +1,18 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Wc2756KjzDqCK
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:33:19 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: aneesh.kumar@linux.vnet.ibm.com,
-	pmenzel@molgen.mpg.de
-Subject: [PATCH] powerpc/mm: Don't report PUDs as memory leaks when using
- kmemleak
-Date: Fri, 20 Jul 2018 00:33:16 +1000
-Message-Id: <20180719143316.23486-1-mpe@ellerman.id.au>
+Return-Path: <stern+5b5b8f2e@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by lists.ozlabs.org (Postfix) with SMTP id 41Wc9j6C3czDqCK
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:39:52 +1000 (AEST)
+Date: Thu, 19 Jul 2018 10:33:10 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Geoff Levand <geoff@infradead.org>
+cc: Takashi Iwai <tiwai@suse.com>, Jaroslav Kysela <perex@perex.cz>,
+ Michael Ellerman <mpe@ellerman.id.au>,  <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/ps3: Set driver coherent_dma_mask
+In-Reply-To: <068ebcfa-7cd0-bd06-42e7-577a4624f0b0@infradead.org>
+Message-ID: <Pine.LNX.4.44L0.1807191029570.1491-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,121 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Menzel reported that kmemleak was producing reports such as:
+On Wed, 18 Jul 2018, Geoff Levand wrote:
 
-  unreferenced object 0xc0000000f8b80000 (size 16384):
-    comm "init", pid 1, jiffies 4294937416 (age 312.240s)
-    hex dump (first 32 bytes):
-      00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-      00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-    backtrace:
-      [<00000000d997deb7>] __pud_alloc+0x80/0x190
-      [<0000000087f2e8a3>] move_page_tables+0xbac/0xdc0
-      [<00000000091e51c2>] shift_arg_pages+0xc0/0x210
-      [<00000000ab88670c>] setup_arg_pages+0x22c/0x2a0
-      [<0000000060871529>] load_elf_binary+0x41c/0x1648
-      [<00000000ecd9d2d4>] search_binary_handler.part.11+0xbc/0x280
-      [<0000000034e0cdd7>] __do_execve_file.isra.13+0x73c/0x940
-      [<000000005f953a6e>] sys_execve+0x58/0x70
-      [<000000009700a858>] system_call+0x5c/0x70
+> Set the coherent_dma_mask for the PS3 ehci, ohci, and snd devices.
+> 
+> Silences WARN_ON_ONCE messages emitted by the dma_alloc_attrs() routine.
+> 
+> Reported-by: Fredrik Noring <noring@nocrew.org>
+> Signed-off-by: Geoff Levand <geoff@infradead.org>
+> ---
+> Hi Michael,
+> 
+> This just silences some warnings.  Can you take it through the powerpc
+> tree?
+> 
+> -Geoff
+> 
+> 
+>  drivers/usb/host/ehci-ps3.c | 6 ++++--
+>  drivers/usb/host/ohci-ps3.c | 6 ++++--
+>  sound/ppc/snd_ps3.c         | 5 +++++
+>  3 files changed, 13 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
+> index 8c733492d8fe..454d8c624a3f 100644
+> --- a/drivers/usb/host/ehci-ps3.c
+> +++ b/drivers/usb/host/ehci-ps3.c
+> @@ -86,7 +86,7 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+>  	int result;
+>  	struct usb_hcd *hcd;
+>  	unsigned int virq;
+> -	static u64 dummy_mask = DMA_BIT_MASK(32);
+> +	static u64 dummy_mask;
+>  
+>  	if (usb_disabled()) {
+>  		result = -ENODEV;
+> @@ -131,7 +131,9 @@ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+>  		goto fail_irq;
+>  	}
+>  
+> -	dev->core.dma_mask = &dummy_mask; /* FIXME: for improper usb code */
+> +	dummy_mask = DMA_BIT_MASK(32);
+> +	dev->core.dma_mask = &dummy_mask;
+> +	dma_set_coherent_mask(&dev->core, dummy_mask);
 
-Indicating that a PUD was being leaked.
+What is the reason for changing a static initialization to a dynamic
+one?  As far as I can see, the patch touches four lines of code but the
+only real difference is addition of a single line (and removal of a 
+comment).
 
-However what's really happening is that kmemleak is not able to
-recognise the references from the PGD to the PUD, because they are not
-fully qualified pointers.
+> diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
+> index 20a23d795adf..395f9d3bc849 100644
+> --- a/drivers/usb/host/ohci-ps3.c
+> +++ b/drivers/usb/host/ohci-ps3.c
+> @@ -69,7 +69,7 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
+>  	int result;
+>  	struct usb_hcd *hcd;
+>  	unsigned int virq;
+> -	static u64 dummy_mask = DMA_BIT_MASK(32);
+> +	static u64 dummy_mask;
+>  
+>  	if (usb_disabled()) {
+>  		result = -ENODEV;
+> @@ -115,7 +115,9 @@ static int ps3_ohci_probe(struct ps3_system_bus_device *dev)
+>  		goto fail_irq;
+>  	}
+>  
+> -	dev->core.dma_mask = &dummy_mask; /* FIXME: for improper usb code */
+> +	dummy_mask = DMA_BIT_MASK(32);
+> +	dev->core.dma_mask = &dummy_mask;
+> +	dma_set_coherent_mask(&dev->core, dummy_mask);
 
-We can confirm that in xmon, eg:
+Same here.
 
-Find the task struct for pid 1 "init":
-  0:mon> P
-       task_struct     ->thread.ksp    PID   PPID S  P CMD
-  c0000001fe7c0000 c0000001fe803960      1      0 S 13 systemd
-
-Dump virtual address 0 to find the PGD:
-  0:mon> dv 0 c0000001fe7c0000
-  pgd  @ 0xc0000000f8b01000
-
-Dump the memory of the PGD:
-  0:mon> d c0000000f8b01000
-  c0000000f8b01000 00000000f8b90000 0000000000000000  |................|
-  c0000000f8b01010 0000000000000000 0000000000000000  |................|
-  c0000000f8b01020 0000000000000000 0000000000000000  |................|
-  c0000000f8b01030 0000000000000000 00000000f8b80000  |................|
-                                    ^^^^^^^^^^^^^^^^
-
-There we can see the reference to our supposedly leaked PUD. But
-because it's missing the leading 0xc, kmemleak won't recognise it.
-
-We can confirm it's still in use by translating an address that is
-mapped via it:
-  0:mon> dv 7fff94000000 c0000001fe7c0000
-  pgd  @ 0xc0000000f8b01000
-  pgdp @ 0xc0000000f8b01038 = 0x00000000f8b80000 <--
-  pudp @ 0xc0000000f8b81ff8 = 0x00000000037c4000
-  pmdp @ 0xc0000000037c5ca0 = 0x00000000fbd89000
-  ptep @ 0xc0000000fbd89000 = 0xc0800001d5ce0386
-  Maps physical address = 0x00000001d5ce0000
-  Flags = Accessed Dirty Read Write
-
-The fix is fairly simple. We need to tell kmemleak to ignore PUD
-allocations and never report them as leaks. We can also tell it not to
-scan the PGD, because it will never find pointers in there. However it
-will still notice if we allocate a PGD and then leak it.
-
-Reported-by: Paul Menzel <pmenzel@molgen.mpg.de>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/book3s/64/pgalloc.h | 23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-index 01ee40f11f3a..76234a14b97d 100644
---- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
-@@ -9,6 +9,7 @@
- 
- #include <linux/slab.h>
- #include <linux/cpumask.h>
-+#include <linux/kmemleak.h>
- #include <linux/percpu.h>
- 
- struct vmemmap_backing {
-@@ -82,6 +83,13 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
- 
- 	pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
- 			       pgtable_gfp_flags(mm, GFP_KERNEL));
-+	/*
-+	 * Don't scan the PGD for pointers, it contains references to PUDs but
-+	 * those references are not full pointers and so can't be recognised by
-+	 * kmemleak.
-+	 */
-+	kmemleak_no_scan(pgd);
-+
- 	/*
- 	 * With hugetlb, we don't clear the second half of the page table.
- 	 * If we share the same slab cache with the pmd or pud level table,
-@@ -110,8 +118,19 @@ static inline void pgd_populate(struct mm_struct *mm, pgd_t *pgd, pud_t *pud)
- 
- static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
--	return kmem_cache_alloc(PGT_CACHE(PUD_CACHE_INDEX),
--		pgtable_gfp_flags(mm, GFP_KERNEL));
-+	pud_t *pud;
-+
-+	pud = kmem_cache_alloc(PGT_CACHE(PUD_CACHE_INDEX),
-+			       pgtable_gfp_flags(mm, GFP_KERNEL));
-+	/*
-+	 * Tell kmemleak to ignore the PUD, that means don't scan it for
-+	 * pointers and don't consider it a leak. PUDs are typically only
-+	 * referred to by their PGD, but kmemleak is not able to recognise those
-+	 * as pointers, leading to false leak reports.
-+	 */
-+	kmemleak_ignore(pud);
-+
-+	return pud;
- }
- 
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
--- 
-2.14.1
+Alan Stern
