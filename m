@@ -1,38 +1,23 @@
-Return-Path: <stewart@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-f195.google.com (mail-ua0-f195.google.com
+ [209.85.217.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WPyb2RpLzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:59:35 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6J6sDp6084290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:59:32 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kajbuf8gq-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 02:59:32 -0400
-Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.ibm.com>;
- Thu, 19 Jul 2018 00:59:31 -0600
-From: Stewart Smith <stewart@linux.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au,
- linux@roeck-us.net
-Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 2/2] hwmon: ibmpowernv: Add attributes to
- enable/disable sensor groups
-In-Reply-To: <1531937610-6454-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1531937610-6454-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1531937610-6454-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Thu, 19 Jul 2018 16:59:21 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WQzl6qnFzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 17:45:39 +1000 (AEST)
+Received: by mail-ua0-f195.google.com with SMTP id w7-v6so4579089uan.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 00:45:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87lga7r9rq.fsf@linux.vnet.ibm.com>
+References: <20180714164906.GQ23412@localhost.localdomain>
+ <7d6362d7-da99-e57f-40ed-81c7a03ea1a4@infradead.org>
+In-Reply-To: <7d6362d7-da99-e57f-40ed-81c7a03ea1a4@infradead.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 19 Jul 2018 09:45:24 +0200
+Message-ID: <CAMuHMdX3xiRYYdhQftHRDYFqob7xMHm-xxvh3NyoC1TowH4x8g@mail.gmail.com>
+Subject: Re: Improvements for the PS3
+To: geoff@infradead.org, noring@nocrew.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,46 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> On-Chip-Controller(OCC) is an embedded micro-processor in POWER9 chip
-> which measures various system and chip level sensors. These sensors
-> comprises of environmental sensors (like power, temperature, current
-> and voltage) and performance sensors (like utilization, frequency).
-> All these sensors are copied to main memory at a regular interval of
-> 100ms. OCC provides a way to select a group of sensors that is copied
-> to the main memory to increase the update frequency of selected sensor
-> groups. When a sensor-group is disabled, OCC will not copy it to main
-> memory and those sensors read 0 values.
+Hi Geoff, Frederik,
 
-OCC is an implementation detail rather than a core part of this firmware
-API.
+On Thu, Jul 19, 2018 at 12:40 AM Geoff Levand <geoff@infradead.org> wrote:
+> On 07/14/2018 09:49 AM, Fredrik Noring wrote:
+> > so I added a sleep with
+> >
+> > +     msleep(10000);
 
-Why not something like this:
+I can't see where you added the sleep, but 10s seems excessive.
+If the real reason is the need to wait for an interrupt for ps3fb_sync_imag=
+e(),
+then waiting for 40 ms should be sufficient? Or am I missing something?
 
-OPAL firmware provides the facility for some groups of sensors to be
-enabled/disabled at runtime to give the user the option of using the
-system resources for collecting these sensors or not.
+> > +
+> >       return 0;
+> >
+> > et voil=C3=A0, the screen came alive and the kernel panic was revealed!=
+ It seems
+> > the kernel panics so fast that the PS3 frame buffer is unprepared. This=
+ is,
+> > of course, very unfortunate because trying to debug the boot process wi=
+thout
+> > a screen or any other means of obtaining console text is quite difficul=
+t.
+>
+> We could add a fixed delay there, but I'd like to avoid waiting that
+> long on every boot.  Why don't you add a kernel module_param named
+> something like ps3fb_delay that takes a value in milliseconds and a
+> default of zero.  See:
+>
+>   https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree=
+/drivers/video/fbdev/ps3fb.c?h=3Dv4.17#n260
+>
+> > I suppose the problem is that it relies on interrupts for ps3fb_sync_im=
+age
+> > to regularly copy the image, hence without them the screen isn't update=
+d to
+> > show kernel panics, etc. Perhaps one way to fix that is to implement th=
+e
+> > struct fb_tile_ops API, so that the console is synchronously updated? W=
+ould
+> > that be acceptable?
+>
+> I'm not sure if that would work or not.   Maybe Geert is more familiar wi=
+th it.
 
-For example, on POWER9 systems, the On Chip Controller (OCC) gathers
-various system and chip level sensors and maintains their values in main
-memory.
+That sounds like a complex solution, slowing down the console a lot.
 
+What about letting ps3fb register a panic notifier to sync the screen, like
+hyperv_fb does?
 
-> +static int init_sensor_group_data(struct platform_device *pdev,
-> +				  struct platform_data *pdata)
-> +{
-> +	struct sensor_group_data *sgrp_data;
-> +	struct device_node *groups, *sgrp;
-> +	enum sensors type;
-> +	int count = 0, ret = 0;
-> +
-> +	groups = of_find_node_by_path("/ibm,opal/sensor-groups");
-> +	if (!groups)
-> +		return ret;
+Gr{oetje,eeting}s,
 
-Why not look for the compatible property?
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
 
--- 
-Stewart Smith
-OPAL Architect, IBM.
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
