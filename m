@@ -1,27 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WZ7l5thrzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:08:03 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, Nicholas Piggin
- <npiggin@gmail.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 5/7] powerpc/pseries: flush SLB contents on SLB MCE
- errors.
-In-Reply-To: <20180712154113.46845936@kitsune.suse.cz>
-References: <153051022088.30541.5610525713141009848.stgit@jupiter.in.ibm.com>
- <153051042206.30541.2156877677180900261.stgit@jupiter.in.ibm.com>
- <20180703080814.5a57f52b@roar.ozlabs.ibm.com>
- <20180712154113.46845936@kitsune.suse.cz>
-Date: Thu, 19 Jul 2018 23:08:02 +1000
-Message-ID: <87zhynbcgd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WZPV021wzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:19:57 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id p23-v6so3736437pgv.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 06:19:57 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Subject: Re: [PATCH v6 2/2] hwmon: ibmpowernv: Add attributes to
+ enable/disable sensor groups
+To: Stewart Smith <stewart@linux.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com
+References: <1531937610-6454-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1531937610-6454-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <87lga7r9rq.fsf@linux.vnet.ibm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Message-ID: <06548ca9-8bc9-f0ec-7e75-1dd675972d13@roeck-us.net>
+Date: Thu, 19 Jul 2018 06:19:53 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87lga7r9rq.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> On Tue, 3 Jul 2018 08:08:14 +1000
-> "Nicholas Piggin" <npiggin@gmail.com> wrote: >> On Mon, 02 Jul 2018 11:17=
-:06 +0530
->> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
->> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> > diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
->> > index efdd16a79075..221271c96a57 100644
->> > --- a/arch/powerpc/kernel/mce.c
->> > +++ b/arch/powerpc/kernel/mce.c
->> > @@ -488,9 +488,21 @@ long machine_check_early(struct pt_regs *regs)
->> >  {
->> >  	long handled =3D 0;
->> >=20=20
->> > -	__this_cpu_inc(irq_stat.mce_exceptions);
->> > +	/*
->> > +	 * For pSeries we count mce when we go into virtual mode
->> > machine
->> > +	 * check handler. Hence skip it. Also, We can't access per
->> > cpu
->> > +	 * variables in real mode for LPAR.
->> > +	 */
->> > +	if (early_cpu_has_feature(CPU_FTR_HVMODE))
->> > +		__this_cpu_inc(irq_stat.mce_exceptions);
->> >=20=20
->> > -	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
->> > +	/*
->> > +	 * See if platform is capable of handling machine check.
->> > +	 * Otherwise fallthrough and allow CPU to handle this
->> > machine check.
->> > +	 */
->> > +	if (ppc_md.machine_check_early)
->> > +		handled =3D ppc_md.machine_check_early(regs);
->> > +	else if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
->> >  		handled =3D
->> > cur_cpu_spec->machine_check_early(regs);=20=20
->>=20
->> Would be good to add a powernv ppc_md handler which does the
->> cur_cpu_spec->machine_check_early() call now that other platforms are
->> calling this code. Because those aren't valid as a fallback call, but
->> specific to powernv.
->>=20
->
-> Something like this (untested)?
->
-> Subject: [PATCH] powerpc/powernv: define platform MCE handler.
+On 07/18/2018 11:59 PM, Stewart Smith wrote:
+> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> On-Chip-Controller(OCC) is an embedded micro-processor in POWER9 chip
+>> which measures various system and chip level sensors. These sensors
+>> comprises of environmental sensors (like power, temperature, current
+>> and voltage) and performance sensors (like utilization, frequency).
+>> All these sensors are copied to main memory at a regular interval of
+>> 100ms. OCC provides a way to select a group of sensors that is copied
+>> to the main memory to increase the update frequency of selected sensor
+>> groups. When a sensor-group is disabled, OCC will not copy it to main
+>> memory and those sensors read 0 values.
+> 
+> OCC is an implementation detail rather than a core part of this firmware
+> API.
+> 
+> Why not something like this:
+> 
+> OPAL firmware provides the facility for some groups of sensors to be
+> enabled/disabled at runtime to give the user the option of using the
+> system resources for collecting these sensors or not.
+> 
+> For example, on POWER9 systems, the On Chip Controller (OCC) gathers
+> various system and chip level sensors and maintains their values in main
+> memory.
+> 
+> 
+>> +static int init_sensor_group_data(struct platform_device *pdev,
+>> +				  struct platform_data *pdata)
+>> +{
+>> +	struct sensor_group_data *sgrp_data;
+>> +	struct device_node *groups, *sgrp;
+>> +	enum sensors type;
+>> +	int count = 0, ret = 0;
+>> +
+>> +	groups = of_find_node_by_path("/ibm,opal/sensor-groups");
+>> +	if (!groups)
+>> +		return ret;
+> 
+> Why not look for the compatible property?
+> 
+> 
 
-LGTM.
+For both, I don't really care either way. Can you folks get to an agreement
+and let me know after you decided ?
 
-cheers
+Thanks,
+Guenter
