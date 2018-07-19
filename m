@@ -2,19 +2,24 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WWx02cqKzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 21:28:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WXjB0YyhzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 22:03:26 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg KH <gregkh@linuxfoundation.org>, Geoff Levand <geoff@infradead.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Takashi Iwai <tiwai@suse.com>,
- Jaroslav Kysela <perex@perex.cz>, linux-usb@vger.kernel.org,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/ps3: Set driver coherent_dma_mask
-In-Reply-To: <20180719065503.GB21108@kroah.com>
-References: <068ebcfa-7cd0-bd06-42e7-577a4624f0b0@infradead.org>
- <20180719065503.GB21108@kroah.com>
-Date: Thu, 19 Jul 2018 21:28:29 +1000
-Message-ID: <87bmb3cvmq.fsf@concordia.ellerman.id.au>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.ibm.com>, Kees Cook <keescook@chromium.org>, Mathieu
+ Malaterre <malat@debian.org>, Bharata B Rao <bharata@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, Paul Mackerras
+ <paulus@samba.org>, =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/prom_init: remove linux,stdout-package property
+In-Reply-To: <20180718162116.GA24748@kermit-br-ibm-com>
+References: <20180712171904.18971-1-muriloo@linux.ibm.com>
+ <87a7qoq3z2.fsf@concordia.ellerman.id.au>
+ <20180718162116.GA24748@kermit-br-ibm-com>
+Date: Thu, 19 Jul 2018 22:03:19 +1000
+Message-ID: <878t67cu0o.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,25 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Greg KH <gregkh@linuxfoundation.org> writes:
-
-> On Wed, Jul 18, 2018 at 03:08:33PM -0700, Geoff Levand wrote:
->> Set the coherent_dma_mask for the PS3 ehci, ohci, and snd devices.
+Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
+> On Wed, Jul 18, 2018 at 07:37:37PM +1000, Michael Ellerman wrote:
+>> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
+>> > This property was added in 2004 by
+>> >
+>> >     https://github.com/mpe/linux-fullhistory/commit/689fe5072fe9a0dec914bfa4fa60aed1e54563e6
+>> >
+>> > and the only use of it, which was already inside `#if 0`, was removed a month
+>> > later by
+>> >
+>> >     https://github.com/mpe/linux-fullhistory/commit/1fbe5a6d90f6cd4ea610737ef488719d1a875de7
+>> >
+>> > Fixes: https://github.com/linuxppc/linux/issues/125
 >> 
->> Silences WARN_ON_ONCE messages emitted by the dma_alloc_attrs() routine.
+>> That is going to confuse some scripts that are expecting that to be a
+>> "Fixes: <some commit>" tag :)
 >> 
->> Reported-by: Fredrik Noring <noring@nocrew.org>
->> Signed-off-by: Geoff Levand <geoff@infradead.org>
->> ---
->> Hi Michael,
+>> The proper tag to use there would be "Link:".
 >> 
->> This just silences some warnings.  Can you take it through the powerpc
->> tree?
+>> But, I'd prefer we didn't add github issue links to the history, as I'm
+>> not sure they won't bit-rot eventually. Not because I'm a anti-Microsoft
+>> conspiracy person but just because it's a repo I set up and manage and
+>> there's no long term plan for it necessarily.
+>> 
+>> > ---
+>> >  arch/powerpc/kernel/prom_init.c | 2 --
+>> >  1 file changed, 2 deletions(-)
+>> 
+>> Including the link here would be ideal, as it means it doesn't end up in
+>> the commit history, but it does end up in the mail archive. So if we
+>> ever really need to find it, it should be there.
+>> 
+>> cheers
 >
-> Oops, nevermind, it should go through the ppc tree.  Here's my ack:
+> Hi, Michael.
 >
-> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Thanks for reviewing it.  I've sent v2 with your suggestions:
+>
+>     https://lkml.kernel.org/r/20180718161544.12134-1-muriloo@linux.ibm.com
 
-OK thanks, I'll take it.
+Thanks.
+
+I had actually already applied the first version, but I didn't say that
+in my email did I :}
+
+So I've rebased and applied your v2, thanks.
 
 cheers
