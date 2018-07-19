@@ -2,26 +2,25 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WXjB0YyhzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 22:03:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WXlJ5P88zDqnM
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 22:05:16 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.ibm.com>, Kees Cook <keescook@chromium.org>, Mathieu
- Malaterre <malat@debian.org>, Bharata B Rao <bharata@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, Paul Mackerras
- <paulus@samba.org>, =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@kaod.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/prom_init: remove linux,stdout-package property
-In-Reply-To: <20180718162116.GA24748@kermit-br-ibm-com>
-References: <20180712171904.18971-1-muriloo@linux.ibm.com>
- <87a7qoq3z2.fsf@concordia.ellerman.id.au>
- <20180718162116.GA24748@kermit-br-ibm-com>
-Date: Thu, 19 Jul 2018 22:03:19 +1000
-Message-ID: <878t67cu0o.fsf@concordia.ellerman.id.au>
+To: LEROY Christophe <christophe.leroy@c-s.fr>,
+ Diana Madalina Craciun <diana.craciun@nxp.com>
+Cc: oss@buserror.net, Bharat Bhushan <bharat.bhushan@nxp.com>,
+ linuxppc-dev@lists.ozlabs.org, Leo Li <leoyang.li@nxp.com>
+Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities reporting
+ for NXP PPC BOOK3E
+In-Reply-To: <20180718180203.Horde.hNnOtk9Z-nuEx9HefV50JQ1@messagerie.si.c-s.fr>
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+ <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
+ <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
+ <VI1PR0401MB246392F396B74D6153CF12F7FF530@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+ <20180718180203.Horde.hNnOtk9Z-nuEx9HefV50JQ1@messagerie.si.c-s.fr>
+Date: Thu, 19 Jul 2018 22:05:15 +1000
+Message-ID: <87601bctxg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
-> On Wed, Jul 18, 2018 at 07:37:37PM +1000, Michael Ellerman wrote:
->> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
->> > This property was added in 2004 by
->> >
->> >     https://github.com/mpe/linux-fullhistory/commit/689fe5072fe9a0dec914bfa4fa60aed1e54563e6
->> >
->> > and the only use of it, which was already inside `#if 0`, was removed a month
->> > later by
->> >
->> >     https://github.com/mpe/linux-fullhistory/commit/1fbe5a6d90f6cd4ea610737ef488719d1a875de7
->> >
->> > Fixes: https://github.com/linuxppc/linux/issues/125
->> 
->> That is going to confuse some scripts that are expecting that to be a
->> "Fixes: <some commit>" tag :)
->> 
->> The proper tag to use there would be "Link:".
->> 
->> But, I'd prefer we didn't add github issue links to the history, as I'm
->> not sure they won't bit-rot eventually. Not because I'm a anti-Microsoft
->> conspiracy person but just because it's a repo I set up and manage and
->> there's no long term plan for it necessarily.
->> 
->> > ---
->> >  arch/powerpc/kernel/prom_init.c | 2 --
->> >  1 file changed, 2 deletions(-)
->> 
->> Including the link here would be ideal, as it means it doesn't end up in
->> the commit history, but it does end up in the mail archive. So if we
->> ever really need to find it, it should be there.
->> 
->> cheers
+LEROY Christophe <christophe.leroy@c-s.fr> writes:
+> Diana Madalina Craciun <diana.craciun@nxp.com> a =C3=A9crit=C2=A0:
+>> On 7/17/2018 7:47 PM, LEROY Christophe wrote:
+>>> Diana Craciun <diana.craciun@nxp.com> a =C3=A9crit :
+>>>> The NXP PPC Book3E platforms are not vulnerable to meltdown and
+>>>> Spectre v4, so make them PPC_BOOK3S_64 specific.
+>>>>
+>>>> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+>>>> ---
+>>>> History:
+>>>>
+>>>> v2-->v3
+>>>> - used the existing functions for spectre v1/v2
+>>>>
+>>>>  arch/powerpc/Kconfig           | 7 ++++++-
+>>>>  arch/powerpc/kernel/security.c | 2 ++
+>>>>  2 files changed, 8 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>>> index 9f2b75f..116c953 100644
+>>>> --- a/arch/powerpc/Kconfig
+>>>> +++ b/arch/powerpc/Kconfig
+>>>> @@ -165,7 +165,7 @@ config PPC
+>>>>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP
+>>>>  	select GENERIC_CMOS_UPDATE
+>>>>  	select GENERIC_CPU_AUTOPROBE
+>>>> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64
+>>>> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC
+>>> I don't understand.  You say this patch is to make something specific
+>>> to book3s64 specific, and you are creating a new config param that
+>>> make things less specific
+>>>
+>>> Christophe
+>>
+>> In order to enable the vulnerabilities reporting on NXP socs I need to
+>> enable them for PPC_FSL_BOOK3E. So they will be enabled for both
+>> PPC_FSL_BOOK3E and PPC_BOOK3S_64. This is the reason for adding the
+>> Kconfig. However this will enable: spectre v1/v2 and meltdown. NXP socs
+>> are not vulnerable to meltdown, so I made the meltdown reporting
+>> PPC_BOOK3S_64 specific. I guess I can have the PPC_NOSPEC definition in
+>> a separate patch to be more clear.
 >
-> Hi, Michael.
->
-> Thanks for reviewing it.  I've sent v2 with your suggestions:
->
->     https://lkml.kernel.org/r/20180718161544.12134-1-muriloo@linux.ibm.com
+> Yes you can. Or keep it as a single patch and add the details you gave=20=
+=20
+> me in the patch description.
 
-Thanks.
+Yeah I think the patch is fine, but the change log is a bit short on detail.
 
-I had actually already applied the first version, but I didn't say that
-in my email did I :}
-
-So I've rebased and applied your v2, thanks.
+If you just send me a new change log I can fold it in.
 
 cheers
