@@ -2,19 +2,20 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WNmy6slqzDqCB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:06:10 +1000 (AEST)
-In-Reply-To: <20180717071913.2167-3-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WNmz0HVBzDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:06:11 +1000 (AEST)
+In-Reply-To: <1531902796-32294-1-git-send-email-ego@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Nicholas Piggin <npiggin@gmail.com>,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [kernel, v7,
- 2/2] KVM: PPC: Check if IOMMU page is contained in the pinned
- physical page
-Message-Id: <41WNmy2hVZz9s4w@ozlabs.org>
+Cc: Florian Weimer <fweimer@redhat.com>,
+ "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v2] powerpc/powernv : Save/Restore SPRG3 on entry/exit from stop.
+Message-Id: <41WNmy63X5z9s55@ozlabs.org>
 Date: Thu, 19 Jul 2018 16:06:10 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,45 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-07-17 at 07:19:13 UTC, Alexey Kardashevskiy wrote:
-> A VM which has:
->  - a DMA capable device passed through to it (eg. network card);
->  - running a malicious kernel that ignores H_PUT_TCE failure;
->  - capability of using IOMMU pages bigger that physical pages
-> can create an IOMMU mapping that exposes (for example) 16MB of
-> the host physical memory to the device when only 64K was allocated to the VM.
+On Wed, 2018-07-18 at 08:33:16 UTC, "Gautham R. Shenoy" wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> The remaining 16MB - 64K will be some other content of host memory, possibly
-> including pages of the VM, but also pages of host kernel memory, host
-> programs or other VMs.
+> On 64-bit servers, SPRN_SPRG3 and its userspace read-only mirror
+> SPRN_USPRG3 are used as userspace VDSO write and read registers
+> respectively.
 > 
-> The attacking VM does not control the location of the page it can map,
-> and is only allowed to map as many pages as it has pages of RAM.
+> SPRN_SPRG3 is lost when we enter stop4 and above, and is currently not
+> restored.  As a result, any read from SPRN_USPRG3 returns zero on an
+> exit from stop4 and above.
 > 
-> We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
-> an IOMMU page is contained in the physical page so the PCI hardware won't
-> get access to unassigned host memory; however this check is missing in
-> the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far and
-> did not hit this yet as the very first time when the mapping happens
-> we do not have tbl::it_userspace allocated yet and fall back to
-> the userspace which in turn calls VFIO IOMMU driver, this fails and
-> the guest does not retry,
+> Thus in this situation, on POWER9, any call from sched_getcpu() always
+> returns zero, as on powerpc, we call __kernel_getcpu() which relies
+> upon SPRN_USPRG3 to report the CPU and NUMA node information.
 > 
-> This stores the smallest preregistered page size in the preregistered
-> region descriptor and changes the mm_iommu_xxx API to check this against
-> the IOMMU page size.
+> Fix this by restoring SPRN_SPRG3 on wake up from a deep stop state
+> with the sprg_vdso value that is cached in PACA.
 > 
-> This calculates maximum page size as a minimum of the natural region
-> alignment and compound page size. For the page shift this uses the shift
-> returned by find_linux_pte() which indicates how the page is mapped to
-> the current userspace - if the page is huge and this is not a zero, then
-> it is a leaf pte and the page is mapped within the range.
+> Fixes: e1c1cfed5432 ("powerpc/powernv: Save/Restore additional SPRs
+> for stop4 cpuidle")
 > 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Reported-by: Florian Weimer <fweimer@redhat.com>
+> Cc: <stable@vger.kernel.org> # 4.14
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Michael Neuling <mikey@neuling.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
 Applied to powerpc fixes, thanks.
 
-https://git.kernel.org/powerpc/c/76fa4975f3ed12d15762bc979ca440
+https://git.kernel.org/powerpc/c/b03897cf318dfc47de33a7ecbc7655
 
 cheers
