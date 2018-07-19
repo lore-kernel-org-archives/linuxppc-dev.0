@@ -1,31 +1,23 @@
-Return-Path: <sbobroff@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WHtK0qQ2zDqCB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 12:25:24 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6J2OV39028457
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 22:25:19 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kabx9uw2b-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2018 22:25:19 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Thu, 19 Jul 2018 03:25:17 +0100
-From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, paulus@samba.org,
- david@gibson.dropbear.id.au, clg@kaod.org
-Subject: [PATCH v3 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access full
- VCPU ID space
-Date: Thu, 19 Jul 2018 12:25:10 +1000
-Message-Id: <1fb3aea5f44f1029866ee10db40abde7e18b24ad.1531967105.git.sbobroff@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WLNn5WKTzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 14:18:33 +1000 (AEST)
+Message-ID: <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <helgaas@kernel.org>, Hari Vyas <hari.vyas@broadcom.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, ray.jui@broadcom.com,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 19 Jul 2018 14:18:09 +1000
+In-Reply-To: <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
+References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
+ <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
+ <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,242 +27,258 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+On Wed, 2018-07-18 at 18:29 -0500, Bjorn Helgaas wrote:
+> [+cc Paul, Michael, linuxppc-dev]
+> 
 
-It is not currently possible to create the full number of possible
-VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
-threads per core than it's core stride (or "VSMT mode"). This is
-because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
-even though the VCPU ID is less than KVM_MAX_VCPU_ID.
+   ..../...
 
-To address this, "pack" the VCORE ID and XIVE offsets by using
-knowledge of the way the VCPU IDs will be used when there are less
-guest threads per core than the core stride. The primary thread of
-each core will always be used first. Then, if the guest uses more than
-one thread per core, these secondary threads will sequentially follow
-the primary in each core.
+> > Debugging revealed a race condition between pcie core driver
+> > enabling is_added bit(pci_bus_add_device()) and nvme driver
+> > reset work-queue enabling is_busmaster bit (by pci_set_master()).
+> > As both fields are not handled in atomic manner and that clears
+> > is_added bit.
+> > 
+> > Fix moves device addition is_added bit to separate private flag
+> > variable and use different atomic functions to set and retrieve
+> > device addition state. As is_added shares different memory
+> > location so race condition is avoided.
+> 
+> Really nice bit of debugging!
 
-So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
-VCPUs are being spaced apart, so at least half of each core is empty
-and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
-into the second half of each core (4..7, in an 8-thread core).
+Indeed. However I'm not fan of the solution. Shouldn't we instead have
+some locking for the content of pci_dev ? I've always been wary of us
+having other similar races in there.
 
-Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
-each core is being left empty, and we can map down into the second and
-third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
+As for the powerpc bits, I'm probably the one who wrote them, however,
+I'm on vacation this week and right now, no bandwidth to context switch
+all that back in :-) So give me a few days and/or ping me next week.
 
-Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
-threads are being used and 7/8 of the core is empty, allowing use of
-the 1, 3, 5 and 7 thread slots.
+The powerpc PCI code contains a lot of cruft coming from the depth of
+history, including rather nasty assumptions. We want to progressively
+clean it up, starting with EEH, but it will take time.
 
-(Strides less than 8 are handled similarly.)
+Cheers,
+Ben.
 
-This allows the VCORE ID or offset to be calculated quickly from the
-VCPU ID or XIVE server numbers, without access to the VCPU structure.
-
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
-Hello everyone,
-
-I've completed a trial merge with the guest native-XIVE code and found no
-problems; it's no more difficult than the host side and only requires a few
-calls to xive_vp().
-
-On that basis, here is v3 (unchanged from v2) as non-RFC and it seems to be
-ready to go.
-
-Patch set v3:
-Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-
-Patch set v2:
-Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-* Corrected places in kvm/book3s_xive.c where IDs weren't packed.
-* Because kvmppc_pack_vcpu_id() is only called on P9, there is no need to test "emul_smt_mode > 1", so remove it.
-* Re-ordered block_offsets[] to be more ascending.
-* Added more detailed description of the packing algorithm.
-
-Patch set v1:
-Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-
- arch/powerpc/include/asm/kvm_book3s.h | 44 +++++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/book3s_hv.c          | 14 +++++++----
- arch/powerpc/kvm/book3s_xive.c        | 19 +++++++++------
- 3 files changed, 66 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index 1f345a0b6ba2..ba4b6e00fca7 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -390,4 +390,48 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu *vcpu);
- #define SPLIT_HACK_MASK			0xff000000
- #define SPLIT_HACK_OFFS			0xfb000000
- 
-+/* Pack a VCPU ID from the [0..KVM_MAX_VCPU_ID) space down to the
-+ * [0..KVM_MAX_VCPUS) space, while using knowledge of the guest's core stride
-+ * (but not it's actual threading mode, which is not available) to avoid
-+ * collisions.
-+ *
-+ * The implementation leaves VCPU IDs from the range [0..KVM_MAX_VCPUS) (block
-+ * 0) unchanged: if the guest is filling each VCORE completely then it will be
-+ * using consecutive IDs and it will fill the space without any packing.
-+ *
-+ * For higher VCPU IDs, the packed ID is based on the VCPU ID modulo
-+ * KVM_MAX_VCPUS (effectively masking off the top bits) and then an offset is
-+ * added to avoid collisions.
-+ *
-+ * VCPU IDs in the range [KVM_MAX_VCPUS..(KVM_MAX_VCPUS*2)) (block 1) are only
-+ * possible if the guest is leaving at least 1/2 of each VCORE empty, so IDs
-+ * can be safely packed into the second half of each VCORE by adding an offset
-+ * of (stride / 2).
-+ *
-+ * Similarly, if VCPU IDs in the range [(KVM_MAX_VCPUS*2)..(KVM_MAX_VCPUS*4))
-+ * (blocks 2 and 3) are seen, the guest must be leaving at least 3/4 of each
-+ * VCORE empty so packed IDs can be offset by (stride / 4) and (stride * 3 / 4).
-+ *
-+ * Finally, VCPU IDs from blocks 5..7 will only be seen if the guest is using a
-+ * stride of 8 and 1 thread per core so the remaining offsets of 1, 3, 5 and 7
-+ * must be free to use.
-+ *
-+ * (The offsets for each block are stored in block_offsets[], indexed by the
-+ * block number if the stride is 8. For cases where the guest's stride is less
-+ * than 8, we can re-use the block_offsets array by multiplying the block
-+ * number by (MAX_SMT_THREADS / stride) to reach the correct entry.)
-+ */
-+static inline u32 kvmppc_pack_vcpu_id(struct kvm *kvm, u32 id)
-+{
-+	const int block_offsets[MAX_SMT_THREADS] = {0, 4, 2, 6, 1, 3, 5, 7};
-+	int stride = kvm->arch.emul_smt_mode;
-+	int block = (id / KVM_MAX_VCPUS) * (MAX_SMT_THREADS / stride);
-+	u32 packed_id;
-+
-+	BUG_ON(block >= MAX_SMT_THREADS);
-+	packed_id = (id % KVM_MAX_VCPUS) + block_offsets[block];
-+	BUG_ON(packed_id >= KVM_MAX_VCPUS);
-+	return packed_id;
-+}
-+
- #endif /* __ASM_KVM_BOOK3S_H__ */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index de686b340f4a..363c2fb0d89e 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1816,7 +1816,7 @@ static int threads_per_vcore(struct kvm *kvm)
- 	return threads_per_subcore;
- }
- 
--static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
-+static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int id)
- {
- 	struct kvmppc_vcore *vcore;
- 
-@@ -1830,7 +1830,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
- 	init_swait_queue_head(&vcore->wq);
- 	vcore->preempt_tb = TB_NIL;
- 	vcore->lpcr = kvm->arch.lpcr;
--	vcore->first_vcpuid = core * kvm->arch.smt_mode;
-+	vcore->first_vcpuid = id;
- 	vcore->kvm = kvm;
- 	INIT_LIST_HEAD(&vcore->preempt_list);
- 
-@@ -2048,12 +2048,18 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 	mutex_lock(&kvm->lock);
- 	vcore = NULL;
- 	err = -EINVAL;
--	core = id / kvm->arch.smt_mode;
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		BUG_ON(kvm->arch.smt_mode != 1);
-+		core = kvmppc_pack_vcpu_id(kvm, id);
-+	} else {
-+		core = id / kvm->arch.smt_mode;
-+	}
- 	if (core < KVM_MAX_VCORES) {
- 		vcore = kvm->arch.vcores[core];
-+		BUG_ON(cpu_has_feature(CPU_FTR_ARCH_300) && vcore);
- 		if (!vcore) {
- 			err = -ENOMEM;
--			vcore = kvmppc_vcore_create(kvm, core);
-+			vcore = kvmppc_vcore_create(kvm, id & ~(kvm->arch.smt_mode - 1));
- 			kvm->arch.vcores[core] = vcore;
- 			kvm->arch.online_vcores++;
- 		}
-diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-index f9818d7d3381..dbd5887daf4a 100644
---- a/arch/powerpc/kvm/book3s_xive.c
-+++ b/arch/powerpc/kvm/book3s_xive.c
-@@ -317,6 +317,11 @@ static int xive_select_target(struct kvm *kvm, u32 *server, u8 prio)
- 	return -EBUSY;
- }
- 
-+static u32 xive_vp(struct kvmppc_xive *xive, u32 server)
-+{
-+	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
-+}
-+
- static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
- 			     struct kvmppc_xive_src_block *sb,
- 			     struct kvmppc_xive_irq_state *state)
-@@ -362,7 +367,7 @@ static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
- 	 */
- 	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
- 		xive_native_configure_irq(hw_num,
--					  xive->vp_base + state->act_server,
-+					  xive_vp(xive, state->act_server),
- 					  MASKED, state->number);
- 		/* set old_p so we can track if an H_EOI was done */
- 		state->old_p = true;
-@@ -418,7 +423,7 @@ static void xive_finish_unmask(struct kvmppc_xive *xive,
- 	 */
- 	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
- 		xive_native_configure_irq(hw_num,
--					  xive->vp_base + state->act_server,
-+					  xive_vp(xive, state->act_server),
- 					  state->act_priority, state->number);
- 		/* If an EOI is needed, do it here */
- 		if (!state->old_p)
-@@ -495,7 +500,7 @@ static int xive_target_interrupt(struct kvm *kvm,
- 	kvmppc_xive_select_irq(state, &hw_num, NULL);
- 
- 	return xive_native_configure_irq(hw_num,
--					 xive->vp_base + server,
-+					 xive_vp(xive, server),
- 					 prio, state->number);
- }
- 
-@@ -883,7 +888,7 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
- 	 * which is fine for a never started interrupt.
- 	 */
- 	xive_native_configure_irq(hw_irq,
--				  xive->vp_base + state->act_server,
-+				  xive_vp(xive, state->act_server),
- 				  state->act_priority, state->number);
- 
- 	/*
-@@ -959,7 +964,7 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
- 
- 	/* Reconfigure the IPI */
- 	xive_native_configure_irq(state->ipi_number,
--				  xive->vp_base + state->act_server,
-+				  xive_vp(xive, state->act_server),
- 				  state->act_priority, state->number);
- 
- 	/*
-@@ -1084,7 +1089,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 		pr_devel("Duplicate !\n");
- 		return -EEXIST;
- 	}
--	if (cpu >= KVM_MAX_VCPUS) {
-+	if (cpu >= KVM_MAX_VCPU_ID) {
- 		pr_devel("Out of bounds !\n");
- 		return -EINVAL;
- 	}
-@@ -1098,7 +1103,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
- 	xc->xive = xive;
- 	xc->vcpu = vcpu;
- 	xc->server_num = cpu;
--	xc->vp_id = xive->vp_base + cpu;
-+	xc->vp_id = xive_vp(xive, cpu);
- 	xc->mfrr = 0xff;
- 	xc->valid = true;
- 
--- 
-2.16.1.74.g9b0b1f47b
+> > Signed-off-by: Hari Vyas <hari.vyas@broadcom.com>
+> > ---
+> >  arch/powerpc/kernel/pci-common.c          |  4 +++-
+> >  arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
+> >  arch/powerpc/platforms/pseries/setup.c    |  3 ++-
+> >  drivers/pci/bus.c                         |  6 +++---
+> >  drivers/pci/hotplug/acpiphp_glue.c        |  2 +-
+> >  drivers/pci/pci.h                         | 11 +++++++++++
+> >  drivers/pci/probe.c                       |  4 ++--
+> >  drivers/pci/remove.c                      |  5 +++--
+> >  include/linux/pci.h                       |  1 -
+> >  9 files changed, 27 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> > index fe9733f..471aac3 100644
+> > --- a/arch/powerpc/kernel/pci-common.c
+> > +++ b/arch/powerpc/kernel/pci-common.c
+> > @@ -42,6 +42,8 @@
+> >  #include <asm/ppc-pci.h>
+> >  #include <asm/eeh.h>
+> >  
+> > +#include "../../../drivers/pci/pci.h"
+> 
+> I see why you need it, but this include path is really ugly.  Outside
+> of bootloaders and tools, there are very few instances of includes
+> like this that reference a different top-level directory, and I'm not
+> very keen about adding more.
+> 
+> Obviously powerpc is the only arch that needs dev->is_added.  It seems
+> to be because "We can only call pcibios_setup_device() after bus setup
+> is complete, since some of the platform specific DMA setup code
+> depends on it."
+> 
+> I don't know powerpc, but it does raise the question in my mind of
+> whether powerpc could be changed to do the DMA setup more like other
+> arches do to remove this ordering dependency and the need to use
+> dev->is_added.
+> 
+> That sounds like a lot of work, but it would have the benefit of
+> unifying some code that is probably needlessly arch-specific.
+> 
+> >  /* hose_spinlock protects accesses to the the phb_bitmap. */
+> >  static DEFINE_SPINLOCK(hose_spinlock);
+> >  LIST_HEAD(hose_list);
+> > @@ -1014,7 +1016,7 @@ void pcibios_setup_bus_devices(struct pci_bus *bus)
+> >  		/* Cardbus can call us to add new devices to a bus, so ignore
+> >  		 * those who are already fully discovered
+> >  		 */
+> > -		if (dev->is_added)
+> > +		if (pci_dev_is_added(dev))
+> >  			continue;
+> >  
+> >  		pcibios_setup_device(dev);
+> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > index 5bd0eb6..70b2e1e 100644
+> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> > @@ -46,6 +46,7 @@
+> >  
+> >  #include "powernv.h"
+> >  #include "pci.h"
+> > +#include "../../../../drivers/pci/pci.h"
+> >  
+> >  #define PNV_IODA1_M64_NUM	16	/* Number of M64 BARs	*/
+> >  #define PNV_IODA1_M64_SEGS	8	/* Segments per M64 BAR	*/
+> > @@ -3138,7 +3139,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+> >  	struct pci_dn *pdn;
+> >  	int mul, total_vfs;
+> >  
+> > -	if (!pdev->is_physfn || pdev->is_added)
+> > +	if (!pdev->is_physfn || pci_dev_is_added(pdev))
+> >  		return;
+> >  
+> >  	pdn = pci_get_pdn(pdev);
+> > diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> > index 139f0af..8a4868a 100644
+> > --- a/arch/powerpc/platforms/pseries/setup.c
+> > +++ b/arch/powerpc/platforms/pseries/setup.c
+> > @@ -71,6 +71,7 @@
+> >  #include <asm/security_features.h>
+> >  
+> >  #include "pseries.h"
+> > +#include "../../../../drivers/pci/pci.h"
+> >  
+> >  int CMO_PrPSP = -1;
+> >  int CMO_SecPSP = -1;
+> > @@ -664,7 +665,7 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
+> >  	const int *indexes;
+> >  	struct device_node *dn = pci_device_to_OF_node(pdev);
+> >  
+> > -	if (!pdev->is_physfn || pdev->is_added)
+> > +	if (!pdev->is_physfn || pci_dev_is_added(pdev))
+> >  		return;
+> >  	/*Firmware must support open sriov otherwise dont configure*/
+> >  	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
+> > diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> > index 35b7fc8..5cb40b2 100644
+> > --- a/drivers/pci/bus.c
+> > +++ b/drivers/pci/bus.c
+> > @@ -330,7 +330,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+> >  		return;
+> >  	}
+> >  
+> > -	dev->is_added = 1;
+> > +	pci_dev_assign_added(dev, true);
+> >  }
+> >  EXPORT_SYMBOL_GPL(pci_bus_add_device);
+> >  
+> > @@ -347,14 +347,14 @@ void pci_bus_add_devices(const struct pci_bus *bus)
+> >  
+> >  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> >  		/* Skip already-added devices */
+> > -		if (dev->is_added)
+> > +		if (pci_dev_is_added(dev))
+> >  			continue;
+> >  		pci_bus_add_device(dev);
+> >  	}
+> >  
+> >  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> >  		/* Skip if device attach failed */
+> > -		if (!dev->is_added)
+> > +		if (!pci_dev_is_added(dev))
+> >  			continue;
+> >  		child = dev->subordinate;
+> >  		if (child)
+> > diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> > index 3a17b29..ef0b1b6 100644
+> > --- a/drivers/pci/hotplug/acpiphp_glue.c
+> > +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> > @@ -509,7 +509,7 @@ static void enable_slot(struct acpiphp_slot *slot)
+> >  
+> >  	list_for_each_entry(dev, &bus->devices, bus_list) {
+> >  		/* Assume that newly added devices are powered on already. */
+> > -		if (!dev->is_added)
+> > +		if (!pci_dev_is_added(dev))
+> >  			dev->current_state = PCI_D0;
+> >  	}
+> >  
+> > diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> > index 882f1f9..0881725 100644
+> > --- a/drivers/pci/pci.h
+> > +++ b/drivers/pci/pci.h
+> > @@ -288,6 +288,7 @@ struct pci_sriov {
+> >  
+> >  /* pci_dev priv_flags */
+> >  #define PCI_DEV_DISCONNECTED 0
+> > +#define PCI_DEV_ADDED 1
+> >  
+> >  static inline int pci_dev_set_disconnected(struct pci_dev *dev, void *unused)
+> >  {
+> > @@ -300,6 +301,16 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
+> >  	return test_bit(PCI_DEV_DISCONNECTED, &dev->priv_flags);
+> >  }
+> >  
+> > +static inline void pci_dev_assign_added(struct pci_dev *dev, bool added)
+> > +{
+> > +	assign_bit(PCI_DEV_ADDED, &dev->priv_flags, added);
+> > +}
+> > +
+> > +static inline bool pci_dev_is_added(const struct pci_dev *dev)
+> > +{
+> > +	return test_bit(PCI_DEV_ADDED, &dev->priv_flags);
+> > +}
+> > +
+> >  #ifdef CONFIG_PCI_ATS
+> >  void pci_restore_ats_state(struct pci_dev *dev);
+> >  #else
+> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> > index ac876e3..611adcd 100644
+> > --- a/drivers/pci/probe.c
+> > +++ b/drivers/pci/probe.c
+> > @@ -2433,13 +2433,13 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+> >  	dev = pci_scan_single_device(bus, devfn);
+> >  	if (!dev)
+> >  		return 0;
+> > -	if (!dev->is_added)
+> > +	if (!pci_dev_is_added(dev))
+> >  		nr++;
+> >  
+> >  	for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
+> >  		dev = pci_scan_single_device(bus, devfn + fn);
+> >  		if (dev) {
+> > -			if (!dev->is_added)
+> > +			if (!pci_dev_is_added(dev))
+> >  				nr++;
+> >  			dev->multifunction = 1;
+> >  		}
+> > diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+> > index 6f072ea..5e3d0dc 100644
+> > --- a/drivers/pci/remove.c
+> > +++ b/drivers/pci/remove.c
+> > @@ -19,11 +19,12 @@ static void pci_stop_dev(struct pci_dev *dev)
+> >  {
+> >  	pci_pme_active(dev, false);
+> >  
+> > -	if (dev->is_added) {
+> > +	if (pci_dev_is_added(dev)) {
+> >  		device_release_driver(&dev->dev);
+> >  		pci_proc_detach_device(dev);
+> >  		pci_remove_sysfs_dev_files(dev);
+> > -		dev->is_added = 0;
+> > +
+> > +		pci_dev_assign_added(dev, false);
+> >  	}
+> >  
+> >  	if (dev->bus->self)
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > index 340029b..506125b 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -368,7 +368,6 @@ struct pci_dev {
+> >  	unsigned int	transparent:1;		/* Subtractive decode bridge */
+> >  	unsigned int	multifunction:1;	/* Multi-function device */
+> >  
+> > -	unsigned int	is_added:1;
+> >  	unsigned int	is_busmaster:1;		/* Is busmaster */
+> >  	unsigned int	no_msi:1;		/* May not use MSI */
+> >  	unsigned int	no_64bit_msi:1; 	/* May only use 32-bit MSIs */
+> > -- 
+> > 1.9.1
+> > 
