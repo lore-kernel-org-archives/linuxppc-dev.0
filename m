@@ -1,17 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WNph49g3zDqCK
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WNph4YjBzDqCq
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 16:07:40 +1000 (AEST)
-In-Reply-To: <20180702074205.12837-1-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1531346584-9157-1-git-send-email-eleon@ele0n.de>
+To: Daniel Klamt <eleon@ele0n.de>, benh@kernel.crashing.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [kernel] powerpc/powernv/ioda2: Add 256M IOMMU page size to the
- default POWER8 case
-Message-Id: <41WNpf5qnDz9s78@ozlabs.org>
-Date: Thu, 19 Jul 2018 16:07:38 +1000 (AEST)
+Cc: linux-kernel@i4.cs.fau.de, linux-kernel@vger.kernel.org, paulus@samba.org,
+ Daniel Klamt <eleon@ele0n.de>, Bjoern Noetel <bjoern@br3ak3r.de>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Replaced msleep(x) with msleep(OPAL_BUSY_DELAY_MS)
+Message-Id: <41WNph2Dpxz9s9F@ozlabs.org>
+Date: Thu, 19 Jul 2018 16:07:39 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-02 at 07:42:05 UTC, Alexey Kardashevskiy wrote:
-> The sketchy bypass uses 256M pages so add this page size as well.
+On Wed, 2018-07-11 at 22:03:04 UTC, Daniel Klamt wrote:
+> Replaced msleep(x) with with msleep(OPAL_BUSY_DELAY_MS)
+> to diocument these sleep is to wait for opal.
 > 
-> This should cause no behavioral change but will be used later.
-> 
-> Fixes: 477afd6ea6 "powerpc/ioda: Use ibm,supported-tce-sizes for IOMMU page size mask"
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Daniel Klamt <eleon@ele0n.de>
+> Signed-off-by: Bjoern Noetel <bjoern@br3ak3r.de>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/00c376fdd7ed6cc083da3a3c51a63a
+https://git.kernel.org/powerpc/c/9c3250a127901c93b23723dc5859c7
 
 cheers
