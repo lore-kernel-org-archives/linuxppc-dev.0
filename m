@@ -1,28 +1,23 @@
-Return-Path: <hari.vyas@broadcom.com>
-Received: from mail-it0-x241.google.com (mail-it0-x241.google.com
- [IPv6:2607:f8b0:4001:c0b::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WbP46BtyzDqCF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:04:36 +1000 (AEST)
-Received: by mail-it0-x241.google.com with SMTP id p17-v6so9671839itc.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 07:04:36 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WrQl4s1jzDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 09:51:59 +1000 (AEST)
+Date: Fri, 20 Jul 2018 09:51:38 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>, David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
+ <paulus@ozlabs.org>, Alex Williamson <alex.williamson@redhat.com>
+Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
+ tree
+Message-ID: <20180720095138.275cc9aa@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
-References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
- <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
- <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
- <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
-From: Hari Vyas <hari.vyas@broadcom.com>
-Date: Thu, 19 Jul 2018 19:34:32 +0530
-Message-ID: <CAM5rFu8b1mdim8uA15TzpJtcxH5jXN3C53rBGZcyXG2h7bRoyA@mail.gmail.com>
-Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-pci@vger.kernel.org,
- Ray Jui <ray.jui@broadcom.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/M/wB7O1tQxgKIF7Eg3TSknz"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,288 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Bjonr, Ben
+--Sig_/M/wB7O1tQxgKIF7Eg3TSknz
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Jul 19, 2018 at 9:48 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Wed, 2018-07-18 at 18:29 -0500, Bjorn Helgaas wrote:
->> [+cc Paul, Michael, linuxppc-dev]
->>
->
->    ..../...
->
->> > Debugging revealed a race condition between pcie core driver
->> > enabling is_added bit(pci_bus_add_device()) and nvme driver
->> > reset work-queue enabling is_busmaster bit (by pci_set_master()).
->> > As both fields are not handled in atomic manner and that clears
->> > is_added bit.
->> >
->> > Fix moves device addition is_added bit to separate private flag
->> > variable and use different atomic functions to set and retrieve
->> > device addition state. As is_added shares different memory
->> > location so race condition is avoided.
->>
->> Really nice bit of debugging!
->
-> Indeed. However I'm not fan of the solution. Shouldn't we instead have
-> some locking for the content of pci_dev ? I've always been wary of us
-> having other similar races in there.
->
-> As for the powerpc bits, I'm probably the one who wrote them, however,
-> I'm on vacation this week and right now, no bandwidth to context switch
-> all that back in :-) So give me a few days and/or ping me next week.
->
-> The powerpc PCI code contains a lot of cruft coming from the depth of
-> history, including rather nasty assumptions. We want to progressively
-> clean it up, starting with EEH, but it will take time.
->
-> Cheers,
-> Ben.
->
-Some driver too directly using pci_dev structure flags and may cause similar
-type of issues in race condition and should be avoided.
-Probably not causing issue currently but some race scenario may affect
-and needs to be handled
-with some get(),set() api's in atomic manner.
-I will suggest to use bit position for all remaining bitfields and use
-atomic operation. In that way,
-it can be controlled and avoid direct updating fields from outside.
-Ex;
-enum pci_dev_flags {
-   IS_BUSMASTER=1,
-.  NO_MSI=2.
-}
-void assign_pci_dev_flag(struct pci_dev *dev, int flag, bool val)
-{
-   assign_bit(flag, &dev->flags, val);
-}
-Proper cleanup is required at so many places but that will certainly
-take some time
-i.e.  good effort but will be future safe.If  Bjorn agrees, we can
-work on that one.
->> > Signed-off-by: Hari Vyas <hari.vyas@broadcom.com>
->> > ---
->> >  arch/powerpc/kernel/pci-common.c          |  4 +++-
->> >  arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
->> >  arch/powerpc/platforms/pseries/setup.c    |  3 ++-
->> >  drivers/pci/bus.c                         |  6 +++---
->> >  drivers/pci/hotplug/acpiphp_glue.c        |  2 +-
->> >  drivers/pci/pci.h                         | 11 +++++++++++
->> >  drivers/pci/probe.c                       |  4 ++--
->> >  drivers/pci/remove.c                      |  5 +++--
->> >  include/linux/pci.h                       |  1 -
->> >  9 files changed, 27 insertions(+), 12 deletions(-)
->> >
->> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->> > index fe9733f..471aac3 100644
->> > --- a/arch/powerpc/kernel/pci-common.c
->> > +++ b/arch/powerpc/kernel/pci-common.c
->> > @@ -42,6 +42,8 @@
->> >  #include <asm/ppc-pci.h>
->> >  #include <asm/eeh.h>
->> >
->> > +#include "../../../drivers/pci/pci.h"
->>
->> I see why you need it, but this include path is really ugly.  Outside
->> of bootloaders and tools, there are very few instances of includes
->> like this that reference a different top-level directory, and I'm not
->> very keen about adding more.
->>
->> Obviously powerpc is the only arch that needs dev->is_added.  It seems
->> to be because "We can only call pcibios_setup_device() after bus setup
->> is complete, since some of the platform specific DMA setup code
->> depends on it."
->>
->> I don't know powerpc, but it does raise the question in my mind of
->> whether powerpc could be changed to do the DMA setup more like other
->> arches do to remove this ordering dependency and the need to use
->> dev->is_added.
->>
->> That sounds like a lot of work, but it would have the benefit of
->> unifying some code that is probably needlessly arch-specific.
->>
-Yes. I also agree, including pci.h with ../ references is really bad.
-First patch
-was using spin lock for protecting is_added and is_busmaster bits but in final
-patch moved is_added to private flags.
+Hi all,
 
->> >  /* hose_spinlock protects accesses to the the phb_bitmap. */
->> >  static DEFINE_SPINLOCK(hose_spinlock);
->> >  LIST_HEAD(hose_list);
->> > @@ -1014,7 +1016,7 @@ void pcibios_setup_bus_devices(struct pci_bus *bus)
->> >             /* Cardbus can call us to add new devices to a bus, so ignore
->> >              * those who are already fully discovered
->> >              */
->> > -           if (dev->is_added)
->> > +           if (pci_dev_is_added(dev))
->> >                     continue;
->> >
->> >             pcibios_setup_device(dev);
->> > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> > index 5bd0eb6..70b2e1e 100644
->> > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> > @@ -46,6 +46,7 @@
->> >
->> >  #include "powernv.h"
->> >  #include "pci.h"
->> > +#include "../../../../drivers/pci/pci.h"
->> >
->> >  #define PNV_IODA1_M64_NUM  16      /* Number of M64 BARs   */
->> >  #define PNV_IODA1_M64_SEGS 8       /* Segments per M64 BAR */
->> > @@ -3138,7 +3139,7 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
->> >     struct pci_dn *pdn;
->> >     int mul, total_vfs;
->> >
->> > -   if (!pdev->is_physfn || pdev->is_added)
->> > +   if (!pdev->is_physfn || pci_dev_is_added(pdev))
->> >             return;
->> >
->> >     pdn = pci_get_pdn(pdev);
->> > diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
->> > index 139f0af..8a4868a 100644
->> > --- a/arch/powerpc/platforms/pseries/setup.c
->> > +++ b/arch/powerpc/platforms/pseries/setup.c
->> > @@ -71,6 +71,7 @@
->> >  #include <asm/security_features.h>
->> >
->> >  #include "pseries.h"
->> > +#include "../../../../drivers/pci/pci.h"
->> >
->> >  int CMO_PrPSP = -1;
->> >  int CMO_SecPSP = -1;
->> > @@ -664,7 +665,7 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
->> >     const int *indexes;
->> >     struct device_node *dn = pci_device_to_OF_node(pdev);
->> >
->> > -   if (!pdev->is_physfn || pdev->is_added)
->> > +   if (!pdev->is_physfn || pci_dev_is_added(pdev))
->> >             return;
->> >     /*Firmware must support open sriov otherwise dont configure*/
->> >     indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
->> > diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
->> > index 35b7fc8..5cb40b2 100644
->> > --- a/drivers/pci/bus.c
->> > +++ b/drivers/pci/bus.c
->> > @@ -330,7 +330,7 @@ void pci_bus_add_device(struct pci_dev *dev)
->> >             return;
->> >     }
->> >
->> > -   dev->is_added = 1;
->> > +   pci_dev_assign_added(dev, true);
->> >  }
->> >  EXPORT_SYMBOL_GPL(pci_bus_add_device);
->> >
->> > @@ -347,14 +347,14 @@ void pci_bus_add_devices(const struct pci_bus *bus)
->> >
->> >     list_for_each_entry(dev, &bus->devices, bus_list) {
->> >             /* Skip already-added devices */
->> > -           if (dev->is_added)
->> > +           if (pci_dev_is_added(dev))
->> >                     continue;
->> >             pci_bus_add_device(dev);
->> >     }
->> >
->> >     list_for_each_entry(dev, &bus->devices, bus_list) {
->> >             /* Skip if device attach failed */
->> > -           if (!dev->is_added)
->> > +           if (!pci_dev_is_added(dev))
->> >                     continue;
->> >             child = dev->subordinate;
->> >             if (child)
->> > diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
->> > index 3a17b29..ef0b1b6 100644
->> > --- a/drivers/pci/hotplug/acpiphp_glue.c
->> > +++ b/drivers/pci/hotplug/acpiphp_glue.c
->> > @@ -509,7 +509,7 @@ static void enable_slot(struct acpiphp_slot *slot)
->> >
->> >     list_for_each_entry(dev, &bus->devices, bus_list) {
->> >             /* Assume that newly added devices are powered on already. */
->> > -           if (!dev->is_added)
->> > +           if (!pci_dev_is_added(dev))
->> >                     dev->current_state = PCI_D0;
->> >     }
->> >
->> > diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
->> > index 882f1f9..0881725 100644
->> > --- a/drivers/pci/pci.h
->> > +++ b/drivers/pci/pci.h
->> > @@ -288,6 +288,7 @@ struct pci_sriov {
->> >
->> >  /* pci_dev priv_flags */
->> >  #define PCI_DEV_DISCONNECTED 0
->> > +#define PCI_DEV_ADDED 1
->> >
->> >  static inline int pci_dev_set_disconnected(struct pci_dev *dev, void *unused)
->> >  {
->> > @@ -300,6 +301,16 @@ static inline bool pci_dev_is_disconnected(const struct pci_dev *dev)
->> >     return test_bit(PCI_DEV_DISCONNECTED, &dev->priv_flags);
->> >  }
->> >
->> > +static inline void pci_dev_assign_added(struct pci_dev *dev, bool added)
->> > +{
->> > +   assign_bit(PCI_DEV_ADDED, &dev->priv_flags, added);
->> > +}
->> > +
->> > +static inline bool pci_dev_is_added(const struct pci_dev *dev)
->> > +{
->> > +   return test_bit(PCI_DEV_ADDED, &dev->priv_flags);
->> > +}
->> > +
->> >  #ifdef CONFIG_PCI_ATS
->> >  void pci_restore_ats_state(struct pci_dev *dev);
->> >  #else
->> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> > index ac876e3..611adcd 100644
->> > --- a/drivers/pci/probe.c
->> > +++ b/drivers/pci/probe.c
->> > @@ -2433,13 +2433,13 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
->> >     dev = pci_scan_single_device(bus, devfn);
->> >     if (!dev)
->> >             return 0;
->> > -   if (!dev->is_added)
->> > +   if (!pci_dev_is_added(dev))
->> >             nr++;
->> >
->> >     for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
->> >             dev = pci_scan_single_device(bus, devfn + fn);
->> >             if (dev) {
->> > -                   if (!dev->is_added)
->> > +                   if (!pci_dev_is_added(dev))
->> >                             nr++;
->> >                     dev->multifunction = 1;
->> >             }
->> > diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
->> > index 6f072ea..5e3d0dc 100644
->> > --- a/drivers/pci/remove.c
->> > +++ b/drivers/pci/remove.c
->> > @@ -19,11 +19,12 @@ static void pci_stop_dev(struct pci_dev *dev)
->> >  {
->> >     pci_pme_active(dev, false);
->> >
->> > -   if (dev->is_added) {
->> > +   if (pci_dev_is_added(dev)) {
->> >             device_release_driver(&dev->dev);
->> >             pci_proc_detach_device(dev);
->> >             pci_remove_sysfs_dev_files(dev);
->> > -           dev->is_added = 0;
->> > +
->> > +           pci_dev_assign_added(dev, false);
->> >     }
->> >
->> >     if (dev->bus->self)
->> > diff --git a/include/linux/pci.h b/include/linux/pci.h
->> > index 340029b..506125b 100644
->> > --- a/include/linux/pci.h
->> > +++ b/include/linux/pci.h
->> > @@ -368,7 +368,6 @@ struct pci_dev {
->> >     unsigned int    transparent:1;          /* Subtractive decode bridge */
->> >     unsigned int    multifunction:1;        /* Multi-function device */
->> >
->> > -   unsigned int    is_added:1;
->> >     unsigned int    is_busmaster:1;         /* Is busmaster */
->> >     unsigned int    no_msi:1;               /* May not use MSI */
->> >     unsigned int    no_64bit_msi:1;         /* May only use 32-bit MSIs */
->> > --
->> > 1.9.1
->> >
+Today's linux-next merge of the powerpc tree got a conflict in:
+
+  drivers/vfio/vfio_iommu_spapr_tce.c
+
+between commit:
+
+  1463edca6734 ("vfio/spapr: Use IOMMU pageshift rather than pagesize")
+
+from the powerpc-fixes tree and commit:
+
+  00a5c58d9499 ("KVM: PPC: Make iommu_table::it_userspace big endian")
+
+from the powerpc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+diff --cc drivers/vfio/vfio_iommu_spapr_tce.c
+index 7cd63b0c1a46,11a4c194d6e3..000000000000
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@@ -487,11 -449,11 +449,11 @@@ static void tce_iommu_unuse_page_v2(str
+  	if (!pua)
+  		return;
+ =20
+- 	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
+- 			&hpa, &mem);
++ 	ret =3D tce_iommu_prereg_ua_to_hpa(container, be64_to_cpu(*pua),
+ -			IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
+++			tbl->it_page_shift, &hpa, &mem);
+  	if (ret)
+- 		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
+- 				__func__, *pua, entry, ret);
++ 		pr_debug("%s: tce %llx at #%lx was not cached, ret=3D%d\n",
++ 				__func__, be64_to_cpu(*pua), entry, ret);
+  	if (mem)
+  		mm_iommu_mapped_dec(mem);
+ =20
+@@@ -599,19 -561,12 +561,12 @@@ static long tce_iommu_build_v2(struct t
+  	unsigned long hpa;
+  	enum dma_data_direction dirtmp;
+ =20
+- 	if (!tbl->it_userspace) {
+- 		ret =3D tce_iommu_userspace_view_alloc(tbl, container->mm);
+- 		if (ret)
+- 			return ret;
+- 	}
+-=20
+  	for (i =3D 0; i < pages; ++i) {
+  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
+- 		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
+- 				entry + i);
++ 		__be64 *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry + i);
+ =20
+  		ret =3D tce_iommu_prereg_ua_to_hpa(container,
+ -				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
+ +				tce, tbl->it_page_shift, &hpa, &mem);
+  		if (ret)
+  			break;
+ =20
+
+--Sig_/M/wB7O1tQxgKIF7Eg3TSknz
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltRJAoACgkQAVBC80lX
+0GyGIwf/UsUGTDeLCB1dBOXDnIOy937KSGh90Zwx+oOyTE8mjziQB/MtJjZeEhVi
+GtTzPDqTwZeOKU963SX9EmrkpmyHby/aSWB2iBeVnsCqvsUxSEAXMIUlbttfyCxT
+4wDxGKIgAHoSTn7aDJoOjfLd88FiNmCKwX51UFSNqqkbMbQY9s8U7AQ6yuba23gr
+y7rZtAddwYo401xYF5TtUxv9OBgkm1vKyA5vtRPvvHuR023ax9+JkI7NX8Djo4BK
+/6JyLVIQRqkjal7HoJ9lgUkk2KLB77ENvCdR82DOJZETPG56zSxH6zwPaG5eWRK1
+o270Y/I3BCyXzZjC/f8RQg7KGprJcw==
+=n+fN
+-----END PGP SIGNATURE-----
+
+--Sig_/M/wB7O1tQxgKIF7Eg3TSknz--
