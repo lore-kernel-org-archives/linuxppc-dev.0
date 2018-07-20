@@ -1,23 +1,23 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Wxwr3qnHzDqCF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 13:59:56 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6K3xWMA134750
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:59:54 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kb2mvt91s-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Wxwx4GR3zDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 14:00:01 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6K3xRsE118343
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:59:59 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kb17xwnpa-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:59:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2018 23:59:59 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 20 Jul 2018 04:59:51 +0100
+ Fri, 20 Jul 2018 04:59:56 +0100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
@@ -26,9 +26,11 @@ Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
  benh@kernel.crashing.org, mpe@ellerman.id.au, mst@redhat.com,
  hch@infradead.org, khandual@linux.vnet.ibm.com, linuxram@us.ibm.com,
  haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com
-Subject: [RFC 0/4] Virtio uses DMA API for all devices
-Date: Fri, 20 Jul 2018 09:29:37 +0530
-Message-Id: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+Subject: [RFC 1/4] virtio: Define virtio_direct_dma_ops structure
+Date: Fri, 20 Jul 2018 09:29:38 +0530
+In-Reply-To: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+Message-Id: <20180720035941.6844-2-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +40,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series is the follow up on the discussions we had before about
-the RFC titled [RFC,V2] virtio: Add platform specific DMA API translation
-for virito devices (https://patchwork.kernel.org/patch/10417371/). There
-were suggestions about doing away with two different paths of transactions
-with the host/QEMU, first being the direct GPA and the other being the DMA
-API based translations.
+Current implementation of DMA API inside virtio core calls device's DMA OPS
+callback functions when the flag VIRTIO_F_IOMMU_PLATFORM flag is set. But
+in absence of the flag, virtio core falls back calling basic transformation
+of the incoming SG addresses as GPA. Going forward virtio should only call
+DMA API based transformations generating either GPA or IOVA depending on
+QEMU expectations again based on VIRTIO_F_IOMMU_PLATFORM flag. It requires
+removing existing fallback code path for GPA transformation and replacing
+that with a direct map DMA OPS structure. This adds that direct mapping DMA
+OPS structure to be used in later patches which will make virtio core call
+DMA API all the time for all virtio devices.
 
-First patch attempts to create a direct GPA mapping based DMA operations
-structure called 'virtio_direct_dma_ops' with exact same implementation
-of the direct GPA path which virtio core currently has but just wrapped in
-a DMA API format. Virtio core must use 'virtio_direct_dma_ops' instead of
-the arch default in absence of VIRTIO_F_IOMMU_PLATFORM flag to preserve the
-existing semantics. The second patch does exactly that inside the function
-virtio_finalize_features(). The third patch removes the default direct GPA
-path from virtio core forcing it to use DMA API callbacks for all devices.
-Now with that change, every device must have a DMA operations structure
-associated with it. The fourth patch adds an additional hook which gives
-the platform an opportunity to do yet another override if required. This
-platform hook can be used on POWER Ultravisor based protected guests to
-load up SWIOTLB DMA callbacks to do the required (as discussed previously
-in the above mentioned thread how host is allowed to access only parts of
-the guest GPA range) bounce buffering into the shared memory for all I/O
-scatter gather buffers to be consumed on the host side.
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ drivers/virtio/virtio.c            | 60 ++++++++++++++++++++++++++++++++++++++
+ drivers/virtio/virtio_pci_common.h |  3 ++
+ 2 files changed, 63 insertions(+)
 
-Please go through these patches and review whether this approach broadly
-makes sense. I will appreciate suggestions, inputs, comments regarding
-the patches or the approach in general. Thank you.
-
-Anshuman Khandual (4):
-  virtio: Define virtio_direct_dma_ops structure
-  virtio: Override device's DMA OPS with virtio_direct_dma_ops selectively
-  virtio: Force virtio core to use DMA API callbacks for all virtio devices
-  virtio: Add platform specific DMA API translation for virito devices
-
- arch/powerpc/include/asm/dma-mapping.h |  6 +++
- arch/powerpc/platforms/pseries/iommu.c |  6 +++
- drivers/virtio/virtio.c                | 72 ++++++++++++++++++++++++++++++++++
- drivers/virtio/virtio_pci_common.h     |  3 ++
- drivers/virtio/virtio_ring.c           | 65 +-----------------------------
- 5 files changed, 89 insertions(+), 63 deletions(-)
-
+diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
+index 59e36ef..7907ad3 100644
+--- a/drivers/virtio/virtio.c
++++ b/drivers/virtio/virtio.c
+@@ -3,6 +3,7 @@
+ #include <linux/virtio_config.h>
+ #include <linux/module.h>
+ #include <linux/idr.h>
++#include <linux/dma-mapping.h>
+ #include <uapi/linux/virtio_ids.h>
+ 
+ /* Unique numbering for virtio devices. */
+@@ -442,3 +443,62 @@ core_initcall(virtio_init);
+ module_exit(virtio_exit);
+ 
+ MODULE_LICENSE("GPL");
++
++/*
++ * Virtio direct mapping DMA API operations structure
++ *
++ * This defines DMA API structure for all virtio devices which would not
++ * either bring in their own DMA OPS from architecture or they would not
++ * like to use architecture specific IOMMU based DMA OPS because QEMU
++ * expects GPA instead of an IOVA in absence of VIRTIO_F_IOMMU_PLATFORM.
++ */
++dma_addr_t virtio_direct_map_page(struct device *dev, struct page *page,
++			    unsigned long offset, size_t size,
++			    enum dma_data_direction dir,
++			    unsigned long attrs)
++{
++	return page_to_phys(page) + offset;
++}
++
++void virtio_direct_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
++			size_t size, enum dma_data_direction dir,
++			unsigned long attrs)
++{
++}
++
++int virtio_direct_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
++{
++	return 0;
++}
++
++void *virtio_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
++		gfp_t gfp, unsigned long attrs)
++{
++	void *queue = alloc_pages_exact(PAGE_ALIGN(size), gfp);
++
++	if (queue) {
++		phys_addr_t phys_addr = virt_to_phys(queue);
++		*dma_handle = (dma_addr_t)phys_addr;
++
++		if (WARN_ON_ONCE(*dma_handle != phys_addr)) {
++			free_pages_exact(queue, PAGE_ALIGN(size));
++			return NULL;
++		}
++	}
++	return queue;
++}
++
++void virtio_direct_free(struct device *dev, size_t size, void *vaddr,
++		dma_addr_t dma_addr, unsigned long attrs)
++{
++	free_pages_exact(vaddr, PAGE_ALIGN(size));
++}
++
++const struct dma_map_ops virtio_direct_dma_ops = {
++	.alloc			= virtio_direct_alloc,
++	.free			= virtio_direct_free,
++	.map_page		= virtio_direct_map_page,
++	.unmap_page		= virtio_direct_unmap_page,
++	.mapping_error		= virtio_direct_mapping_error,
++};
++EXPORT_SYMBOL(virtio_direct_dma_ops);
+diff --git a/drivers/virtio/virtio_pci_common.h b/drivers/virtio/virtio_pci_common.h
+index 135ee3c..ec44d2f 100644
+--- a/drivers/virtio/virtio_pci_common.h
++++ b/drivers/virtio/virtio_pci_common.h
+@@ -31,6 +31,9 @@
+ #include <linux/highmem.h>
+ #include <linux/spinlock.h>
+ 
++extern struct dma_map_ops virtio_direct_dma_ops;
++
++
+ struct virtio_pci_vq_info {
+ 	/* the actual virtqueue */
+ 	struct virtqueue *vq;
 -- 
 2.9.3
