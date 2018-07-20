@@ -1,23 +1,28 @@
-Return-Path: <tim@seoss.co.uk>
-Received: from relay1.allsecuredomains.com (relay1.allsecuredomains.com
- [78.47.251.4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <diana.craciun@nxp.com>
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20085.outbound.protection.outlook.com [40.107.2.85])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41XCyw0sD0zDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 00:32:38 +1000 (AEST)
-Subject: TP Link WDR4900 (was NXP p1010se device trees only correct for
- P1010E/P1014E, not P1010/P1014 SoCs).
-To: Scott Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org
-References: <1ed6ce0c-f7df-615b-ffdb-8dab25b506f6@seoss.co.uk>
- <bdc2e385580cc08bcbf9d5b3595cbca5162314f8.camel@buserror.net>
- <0bec4690-992b-a6ef-3989-a1ce96da825d@seoss.co.uk>
- <9c74bcada9949792f83997195d4d365a850114a6.camel@buserror.net>
-From: Tim Small <tim@seoss.co.uk>
-Message-ID: <d8e6466a-0279-4c38-73ec-8de6397755a0@seoss.co.uk>
-Date: Fri, 20 Jul 2018 15:32:32 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41XFLD19ZKzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 01:34:27 +1000 (AEST)
+From: Diana Madalina Craciun <diana.craciun@nxp.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, LEROY Christophe
+ <christophe.leroy@c-s.fr>
+CC: "oss@buserror.net" <oss@buserror.net>, Bharat Bhushan
+ <bharat.bhushan@nxp.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Leo Li <leoyang.li@nxp.com>
+Subject: Re: [PATCH v4 4/6] powerpc/fsl: Enable cpu vulnerabilities reporting
+ for NXP PPC BOOK3E
+Date: Fri, 20 Jul 2018 15:34:21 +0000
+Message-ID: <VI1PR0401MB246362E819D49AA3CC5AE9D7FF510@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+References: <1531825797-14236-1-git-send-email-diana.craciun@nxp.com>
+ <1531825797-14236-5-git-send-email-diana.craciun@nxp.com>
+ <20180717184654.Horde.vpgbrK2KJGaXTbvLIr1Bgg1@messagerie.si.c-s.fr>
+ <VI1PR0401MB246392F396B74D6153CF12F7FF530@VI1PR0401MB2463.eurprd04.prod.outlook.com>
+ <20180718180203.Horde.hNnOtk9Z-nuEx9HefV50JQ1@messagerie.si.c-s.fr>
+ <87601bctxg.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-In-Reply-To: <9c74bcada9949792f83997195d4d365a850114a6.camel@buserror.net>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +32,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/07/18 23:21, Scott Wood wrote:
-
->> Thanks for your email.  The device in question ships an old uboot (a
->> vendor fork of U-Boot 2010.12-svn15934).
-> 
-> This was added by commit 6b70ffb9d1b2e, committed in July 2008... maybe
-> there's a problem with the old U-Boot finding the crypto node on this
-> particular chip?
-
-Hi Scott,
-
-Thanks for your response and the pointers...  I don't know my way around 
-this code at all (I just got here when I hit a user space bug when 
-trying to use 802.1AE), so I'm in the dark a bit here.
-
-The device doesn't have mainline support, there is the original vendor 
-patched uboot and kernel (linux 2.6.35 based) released here:
-
-https://www.tp-link.com/us/download/TL-WDR4900.html#GPL-Code
-
-The the vendor u-boot serial output identifies the board as a P1014RDB 
-in its serial output, so I'd guess that TP-Link just made minimal 
-changes from the NXP reference design.
-
-The OpenWRT distro package, which has its own reasonably simple set of 
-kernel patches (it's currently using 4.9.x on this platform) at:
-
-https://git.openwrt.org/openwrt/openwrt.git
-
-in:
-
-target/linux/mpc85xx/files/arch/powerpc/platforms/85xx
-
-It produces a cuImage for this board, but I don't know why that decision 
-was made, maybe it's just what the vendor kernel did, or maybe it's 
-difficult to differentiate a TL-WDR4900 from a P1010RDB reference board. 
-  I couldn't find the P1010RDB BSP to see what TP-Link has done.
-
-I could potentially work on getting those upstream if you think that 
-would be worthwhile, but I don't really have a good feel for how good or 
-hacky the code that's in OpenWRT is at the moment.  I'd probably need 
-help getting it up and running.
-
-I presume it'd mean switching from a cuImage to a uImage if practical?
-
-Cheers,
-
-Tim.
-
--- 
-South East Open Source Solutions Limited
-Registered in England and Wales with company number 06134732.
-Registered Office: 2 Powell Gardens, Redhill, Surrey, RH1 1TQ
-VAT number: 900 6633 53  http://seoss.co.uk/ +44-(0)1273-808309
+On 7/19/2018 3:05 PM, Michael Ellerman wrote:=0A=
+> LEROY Christophe <christophe.leroy@c-s.fr> writes:=0A=
+>> Diana Madalina Craciun <diana.craciun@nxp.com> a =E9crit :=0A=
+>>> On 7/17/2018 7:47 PM, LEROY Christophe wrote:=0A=
+>>>> Diana Craciun <diana.craciun@nxp.com> a =E9crit :=0A=
+>>>>> The NXP PPC Book3E platforms are not vulnerable to meltdown and=0A=
+>>>>> Spectre v4, so make them PPC_BOOK3S_64 specific.=0A=
+>>>>>=0A=
+>>>>> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>=0A=
+>>>>> ---=0A=
+>>>>> History:=0A=
+>>>>>=0A=
+>>>>> v2-->v3=0A=
+>>>>> - used the existing functions for spectre v1/v2=0A=
+>>>>>=0A=
+>>>>>  arch/powerpc/Kconfig           | 7 ++++++-=0A=
+>>>>>  arch/powerpc/kernel/security.c | 2 ++=0A=
+>>>>>  2 files changed, 8 insertions(+), 1 deletion(-)=0A=
+>>>>>=0A=
+>>>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig=0A=
+>>>>> index 9f2b75f..116c953 100644=0A=
+>>>>> --- a/arch/powerpc/Kconfig=0A=
+>>>>> +++ b/arch/powerpc/Kconfig=0A=
+>>>>> @@ -165,7 +165,7 @@ config PPC=0A=
+>>>>>  	select GENERIC_CLOCKEVENTS_BROADCAST	if SMP=0A=
+>>>>>  	select GENERIC_CMOS_UPDATE=0A=
+>>>>>  	select GENERIC_CPU_AUTOPROBE=0A=
+>>>>> -	select GENERIC_CPU_VULNERABILITIES	if PPC_BOOK3S_64=0A=
+>>>>> +	select GENERIC_CPU_VULNERABILITIES	if PPC_NOSPEC=0A=
+>>>> I don't understand.  You say this patch is to make something specific=
+=0A=
+>>>> to book3s64 specific, and you are creating a new config param that=0A=
+>>>> make things less specific=0A=
+>>>>=0A=
+>>>> Christophe=0A=
+>>> In order to enable the vulnerabilities reporting on NXP socs I need to=
+=0A=
+>>> enable them for PPC_FSL_BOOK3E. So they will be enabled for both=0A=
+>>> PPC_FSL_BOOK3E and PPC_BOOK3S_64. This is the reason for adding the=0A=
+>>> Kconfig. However this will enable: spectre v1/v2 and meltdown. NXP socs=
+=0A=
+>>> are not vulnerable to meltdown, so I made the meltdown reporting=0A=
+>>> PPC_BOOK3S_64 specific. I guess I can have the PPC_NOSPEC definition in=
+=0A=
+>>> a separate patch to be more clear.=0A=
+>> Yes you can. Or keep it as a single patch and add the details you gave  =
+=0A=
+>> me in the patch description.=0A=
+> Yeah I think the patch is fine, but the change log is a bit short on deta=
+il.=0A=
+>=0A=
+> If you just send me a new change log I can fold it in.=0A=
+>=0A=
+> cheers=0A=
+>=0A=
+Thanks! This is the new change log:=0A=
+=0A=
+"The Spectre/Meltdown vulnerabilities will be enabled for both=0A=
+PPC_FSL_BOOK3E and PPC_BOOK3S_64. In order to avoid a complicated ifdef=0A=
+we add a new Kconfig (PPC_NOSPEC) to select the common code between=0A=
+BOOK3S_64 and FSL_BOOK3E. However, the NXP platforms are not vulnerable=0A=
+to Meltdown, so make the Meltdown vulnerability reporting PPC_BOOK3S_64=0A=
+specific."=0A=
+=0A=
+Regards,=0A=
+=0A=
+Diana=0A=
+=0A=
