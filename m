@@ -1,23 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WrQl4s1jzDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 09:51:59 +1000 (AEST)
-Date: Fri, 20 Jul 2018 09:51:38 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
-Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
- Mailing List <linux-kernel@vger.kernel.org>, Alexey Kardashevskiy
- <aik@ozlabs.ru>, David Gibson <david@gibson.dropbear.id.au>, Paul Mackerras
- <paulus@ozlabs.org>, Alex Williamson <alex.williamson@redhat.com>
-Subject: linux-next: manual merge of the powerpc tree with the powerpc-fixes
- tree
-Message-ID: <20180720095138.275cc9aa@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/M/wB7O1tQxgKIF7Eg3TSknz"; protocol="application/pgp-signature"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WsCM34N7zDqC3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 10:27:11 +1000 (AEST)
+Message-ID: <1205bfc10c62986b4345fa258cf37e820c08226b.camel@neuling.org>
+Subject: Re: [RESEND][PATCH] powerpc/powernv : Save/Restore SPRG3 on
+ entry/exit from stop.
+From: Michael Neuling <mikey@neuling.org>
+To: ego@linux.vnet.ibm.com
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Vaidyanathan Srinivasan
+ <svaidy@linux.vnet.ibm.com>,  linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Florian Weimer <fweimer@redhat.com>, Oleg
+ Nesterov <oleg@redhat.com>
+Date: Fri, 20 Jul 2018 10:27:10 +1000
+In-Reply-To: <20180718081249.GA17700@in.ibm.com>
+References: <1531826849-31838-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1531843216-22209-1-git-send-email-ego@linux.vnet.ibm.com>
+ <80bbdf47081e3e302ab5f28b5ddc9e2faabba842.camel@neuling.org>
+ <20180718081249.GA17700@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,95 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/M/wB7O1tQxgKIF7Eg3TSknz
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2018-07-18 at 13:42 +0530, Gautham R Shenoy wrote:
+> Hello Mikey,
+>=20
+> On Wed, Jul 18, 2018 at 09:24:19AM +1000, Michael Neuling wrote:
+> >=20
+> > >  	DEFINE(PPC_DBELL_SERVER, PPC_DBELL_SERVER);
+> > > diff --git a/arch/powerpc/kernel/idle_book3s.S
+> > > b/arch/powerpc/kernel/idle_book3s.S
+> > > index d85d551..5069d42 100644
+> > > --- a/arch/powerpc/kernel/idle_book3s.S
+> > > +++ b/arch/powerpc/kernel/idle_book3s.S
+> > > @@ -120,6 +120,9 @@ power9_save_additional_sprs:
+> > >  	mfspr	r4, SPRN_MMCR2
+> > >  	std	r3, STOP_MMCR1(r13)
+> > >  	std	r4, STOP_MMCR2(r13)
+> > > +
+> > > +	mfspr	r3, SPRN_SPRG3
+> > > +	std	r3, STOP_SPRG3(r13)
+> >=20
+> > We don't need to save it.  Just restore it from paca->sprg_vdso which s=
+hould
+> > never change.
+>=20
+> Ok. I will respin a patch to restore SPRG3 from paca->sprg_vdso.
+>=20
+> >=20
+> > How can we do better at catching these missing SPRGs?
+>=20
+> We can go through the list of SPRs from the POWER9 User Manual and
+> document explicitly why we don't have to save/restore certain SPRs
+> during the execution of the stop instruction. Does this sound ok ?
+>=20
+> (Ref: Table 4-8, Section 4.7.3.4 from the POWER9 User Manual
+> accessible from
+> https://openpowerfoundation.org/?resource_lib=3Dpower9-processor-users-ma=
+nual)
 
-Hi all,
+I was thinking of a boot time test case built into linux. linux has some bo=
+ot
+time test cases which you can enable via CONFIG options.
 
-Today's linux-next merge of the powerpc tree got a conflict in:
+Firstly you could see if an SPR exists using the same trick xmon does in
+dump_one_spr(). Then once you have a list of usable SPRs, you could write a=
+ll
+the known ones (I assume you'd have to leave out some, like the PSSCR), the=
+n set
+the appropriate stop level, make sure you got into that stop level, and the=
+n see
+if that register was changed. Then you'd have an automated list of register=
+s you
+need to make sure you save/restore at each stop level.
 
-  drivers/vfio/vfio_iommu_spapr_tce.c
+Could something like that work?
 
-between commit:
-
-  1463edca6734 ("vfio/spapr: Use IOMMU pageshift rather than pagesize")
-
-from the powerpc-fixes tree and commit:
-
-  00a5c58d9499 ("KVM: PPC: Make iommu_table::it_userspace big endian")
-
-from the powerpc tree.
-
-I fixed it up (see below) and can carry the fix as necessary. This
-is now fixed as far as linux-next is concerned, but any non trivial
-conflicts should be mentioned to your upstream maintainer when your tree
-is submitted for merging.  You may also want to consider cooperating
-with the maintainer of the conflicting tree to minimise any particularly
-complex conflicts.
-
---=20
-Cheers,
-Stephen Rothwell
-
-diff --cc drivers/vfio/vfio_iommu_spapr_tce.c
-index 7cd63b0c1a46,11a4c194d6e3..000000000000
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@@ -487,11 -449,11 +449,11 @@@ static void tce_iommu_unuse_page_v2(str
-  	if (!pua)
-  		return;
- =20
-- 	ret =3D tce_iommu_prereg_ua_to_hpa(container, *pua, tbl->it_page_shift,
-- 			&hpa, &mem);
-+ 	ret =3D tce_iommu_prereg_ua_to_hpa(container, be64_to_cpu(*pua),
- -			IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
-++			tbl->it_page_shift, &hpa, &mem);
-  	if (ret)
-- 		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
-- 				__func__, *pua, entry, ret);
-+ 		pr_debug("%s: tce %llx at #%lx was not cached, ret=3D%d\n",
-+ 				__func__, be64_to_cpu(*pua), entry, ret);
-  	if (mem)
-  		mm_iommu_mapped_dec(mem);
- =20
-@@@ -599,19 -561,12 +561,12 @@@ static long tce_iommu_build_v2(struct t
-  	unsigned long hpa;
-  	enum dma_data_direction dirtmp;
- =20
-- 	if (!tbl->it_userspace) {
-- 		ret =3D tce_iommu_userspace_view_alloc(tbl, container->mm);
-- 		if (ret)
-- 			return ret;
-- 	}
--=20
-  	for (i =3D 0; i < pages; ++i) {
-  		struct mm_iommu_table_group_mem_t *mem =3D NULL;
-- 		unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl,
-- 				entry + i);
-+ 		__be64 *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry + i);
- =20
-  		ret =3D tce_iommu_prereg_ua_to_hpa(container,
- -				tce, IOMMU_PAGE_SIZE(tbl), &hpa, &mem);
- +				tce, tbl->it_page_shift, &hpa, &mem);
-  		if (ret)
-  			break;
- =20
-
---Sig_/M/wB7O1tQxgKIF7Eg3TSknz
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltRJAoACgkQAVBC80lX
-0GyGIwf/UsUGTDeLCB1dBOXDnIOy937KSGh90Zwx+oOyTE8mjziQB/MtJjZeEhVi
-GtTzPDqTwZeOKU963SX9EmrkpmyHby/aSWB2iBeVnsCqvsUxSEAXMIUlbttfyCxT
-4wDxGKIgAHoSTn7aDJoOjfLd88FiNmCKwX51UFSNqqkbMbQY9s8U7AQ6yuba23gr
-y7rZtAddwYo401xYF5TtUxv9OBgkm1vKyA5vtRPvvHuR023ax9+JkI7NX8Djo4BK
-/6JyLVIQRqkjal7HoJ9lgUkk2KLB77ENvCdR82DOJZETPG56zSxH6zwPaG5eWRK1
-o270Y/I3BCyXzZjC/f8RQg7KGprJcw==
-=n+fN
------END PGP SIGNATURE-----
-
---Sig_/M/wB7O1tQxgKIF7Eg3TSknz--
+Mikey
