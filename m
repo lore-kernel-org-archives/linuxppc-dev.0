@@ -2,23 +2,32 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WyYB6nY2zDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 14:27:58 +1000 (AEST)
-Message-ID: <f3ff14198333daac599adb64344d66a09e88acb7.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WzDX5jWVzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 14:58:36 +1000 (AEST)
+Message-ID: <3987274f49523b23971d0252141ae3f335d1f5ce.camel@kernel.crashing.org>
+Subject: Re: [PATCH 4/7] x86,tlb: make lazy TLB mode lazier
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Lukas Wunner <lukas@wunner.de>, Hari Vyas <hari.vyas@broadcom.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, Ray Jui
- <ray.jui@broadcom.com>, Paul Mackerras <paulus@samba.org>, Michael Ellerman
- <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Date: Fri, 20 Jul 2018 14:27:41 +1000
-In-Reply-To: <20180719185538.GA7731@wunner.de>
-References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
- <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
- <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
- <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
- <CAM5rFu8b1mdim8uA15TzpJtcxH5jXN3C53rBGZcyXG2h7bRoyA@mail.gmail.com>
- <20180719185538.GA7731@wunner.de>
+To: Andy Lutomirski <luto@kernel.org>, Rik van Riel <riel@surriel.com>,
+ Peter Zijlstra <peterz@infradead.org>, Vitaly Kuznetsov
+ <vkuznets@redhat.com>, Juergen Gross <jgross@suse.com>, Boris Ostrovsky
+ <boris.ostrovsky@oracle.com>, linux-arch <linux-arch@vger.kernel.org>, Will
+ Deacon <will.deacon@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-s390@vger.kernel.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, Mike
+ Galbraith <efault@gmx.de>, kernel-team <kernel-team@fb.com>, Ingo Molnar
+ <mingo@kernel.org>, Dave Hansen <dave.hansen@intel.com>, Nick Piggin
+ <npiggin@au1.ibm.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 20 Jul 2018 14:57:40 +1000
+In-Reply-To: <CALCETrXLMsSBChDvrms-omwYV4LHT30GenDjbnD-+LTg55yPow@mail.gmail.com>
+References: <20180716190337.26133-1-riel@surriel.com>
+ <20180716190337.26133-5-riel@surriel.com>
+ <CALCETrUMntRe_LYX5wj9YD4xZ+84QExK+ZNb3yxEBDEKa7nePQ@mail.gmail.com>
+ <B6566AA4-2E8A-43BD-A224-0F6D4747B8FB@surriel.com>
+ <F93A3335-4830-4E36-9179-D0FA5D640C8A@amacapital.net>
+ <B976CC13-D014-433A-83DE-F8DF9AB4F421@surriel.com>
+ <CALCETrWDiMhgiR3f8n0jdWcW31EDJ+Waq0wh5sMDutfigANGnA@mail.gmail.com>
+ <CALCETrXLMsSBChDvrms-omwYV4LHT30GenDjbnD-+LTg55yPow@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,37 +39,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-07-19 at 20:55 +0200, Lukas Wunner wrote:
-> On Thu, Jul 19, 2018 at 9:48 AM, Benjamin Herrenschmidt <benh@kernel.crashing.org wrote:
-> > Indeed. However I'm not fan of the solution. Shouldn't we instead have
-> > some locking for the content of pci_dev? I've always been wary of us
-> > having other similar races in there.
+On Thu, 2018-07-19 at 10:04 -0700, Andy Lutomirski wrote:
+> On Thu, Jul 19, 2018 at 9:45 AM, Andy Lutomirski <luto@amacapital.net> wrote:
+> > [I added PeterZ and Vitaly -- can you see any way in which this would
+> > break something obscure?  I don't.]
+
+Added Nick and Aneesh. We do have HW remote flushes on powerpc.
+
+> > On Thu, Jul 19, 2018 at 7:14 AM, Rik van Riel <riel@surriel.com> wrote:
+> > > I guess we can skip both switch_ldt and load_mm_cr4 if real_prev equals
+> > > next?
+> > 
+> > Yes, AFAICS.
+> > 
+> > > 
+> > > On to the lazy TLB mm_struct refcounting stuff :)
+> > > 
+> > > > 
+> > > > Which refcount?  mm_users shouldn’t be hot, so I assume you’re talking about
+> > > > mm_count. My suggestion is to get rid of mm_count instead of trying to
+> > > > optimize it.
+> > > 
+> > > 
+> > > Do you have any suggestions on how? :)
+> > > 
+> > > The TLB shootdown sent at __exit_mm time does not get rid of the
+> > > kernelthread->active_mm
+> > > pointer pointing at the mm that is exiting.
+> > > 
+> > 
+> > Ah, but that's conceptually very easy to fix.  Add a #define like
+> > ARCH_NO_TASK_ACTIVE_MM.  Then just get rid of active_mm if that
+> > #define is set.  After some grepping, there are very few users.  The
+> > only nontrivial ones are the ones in kernel/ and mm/mmu_context.c that
+> > are involved in the rather complicated dance of refcounting active_mm.
+> > If that field goes away, it doesn't need to be refcounted.  Instead, I
+> > think the refcounting can get replaced with something like:
+> > 
+> > /*
+> >  * Release any arch-internal references to mm.  Only called when
+> > mm_users is zero
+> >  * and all tasks using mm have either been switch_mm()'d away or have had
+> >  * enter_lazy_tlb() called.
+> >  */
+> > extern void arch_shoot_down_dead_mm(struct mm_struct *mm);
+> > 
+> > which the kernel calls in __mmput() after tearing down all the page
+> > tables.  The body can be something like:
+> > 
+> > if (WARN_ON(cpumask_any_but(mm_cpumask(...), ...)) {
+> >   /* send an IPI.  Maybe just call tlb_flush_remove_tables() */
+> > }
+> > 
+> > (You'll also have to fix up the highly questionable users in
+> > arch/x86/platform/efi/efi_64.c, but that's easy.)
+> > 
+> > Does all that make sense?  Basically, as I understand it, the
+> > expensive atomic ops you're seeing are all pointless because they're
+> > enabling an optimization that hasn't actually worked for a long time,
+> > if ever.
 > 
-> The solution presented is perfectly fine as it uses atomic bitops which
-> obviate the need for locking.  Why do you want to add unnecessary locking
-> on top?
-
-Atomic bitops tend to be *more* expensive than a lock.
-
-My concern is that the PCIe code historically had no locking and I
-worry we may have other fields in there with similar issues. But maybe
-I'm wrong.
-
-> Certain other parts of struct pci_dev use their own locking, e.g.
-> pci_bus_sem to protect bus_list.  Most elements can and should
-> be accessed lockless for performance.
+> Hmm.  Xen PV has a big hack in xen_exit_mmap(), which is called from
+> arch_exit_mmap(), I think.  It's a heavier weight version of more or
+> less the same thing that arch_shoot_down_dead_mm() would be, except
+> that it happens before exit_mmap().  But maybe Xen actually has the
+> right idea.  In other words, rather doing the big pagetable free in
+> exit_mmap() while there may still be other CPUs pointing at the page
+> tables, the other order might make more sense.  So maybe, if
+> ARCH_NO_TASK_ACTIVE_MM is set, arch_exit_mmap() should be responsible
+> for getting rid of all secret arch references to the mm.
 > 
+> Hmm.  ARCH_FREE_UNUSED_MM_IMMEDIATELY might be a better name.
 > 
-> > > The powerpc PCI code contains a lot of cruft coming from the depth of
-> > > history, including rather nasty assumptions. We want to progressively
-> > > clean it up, starting with EEH, but it will take time.
+> I added some more arch maintainers.  The idea here is that, on x86 at
+> least, task->active_mm and all its refcounting is pure overhead.  When
+> a process exits, __mmput() gets called, but the core kernel has a
+> longstanding "optimization" in which other tasks (kernel threads and
+> idle tasks) may have ->active_mm pointing at this mm.  This is nasty,
+> complicated, and hurts performance on large systems, since it requires
+> extra atomic operations whenever a CPU switches between real users
+> threads and idle/kernel threads.
 > 
-> Then I suggest using the #include "../../../drivers/pci/pci.h" for now
-> until the powerpc arch code has been consolidated.
-
-There's also the need both in powerpc and sparc to access the guts of
-pci_dev because those archs will "fabricate" as pci_dev from the
-device-tree rather than probing it under some circumstances.
-
-Cheers,
-Ben.
+> It's also almost completely worthless on x86 at least, since __mmput()
+> frees pagetables, and that operation *already* forces a remote TLB
+> flush, so we might as well zap all the active_mm references at the
+> same time.
+> 
+> But arm64 has real HW remote flushes.  Does arm64 actually benefit
+> from the active_mm optimization?  What happens on arm64 when a process
+> exits?  How about s390?  I suspect that x390 has rather larger systems
+> than arm64, where the cost of the reference counting can be much
+> higher.
+> 
+> (Also, Rik, x86 on Hyper-V has remote flushes, too. How does that
+> interact with your previous patch set?)
