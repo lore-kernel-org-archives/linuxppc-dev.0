@@ -1,34 +1,26 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <rdunlap@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41XGBt00MXzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 02:13:09 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6KGA0E1130078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 12:13:06 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kbj35jh8k-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 12:13:06 -0400
-Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Fri, 20 Jul 2018 12:13:05 -0400
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-To: John Allen <jallen@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-3-jallen@linux.ibm.com>
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Fri, 20 Jul 2018 11:12:59 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41XHsg01fVzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 03:28:22 +1000 (AEST)
+Subject: Re: CONFIG_ANDROID_BINDER_IPC=y (Re: powerpc: 32BIT vs. 64BIT (PPC32
+ vs. PPC64))
+From: Randy Dunlap <rdunlap@infradead.org>
+To: Mathieu Malaterre <malat@debian.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+ <87sh4uj675.fsf@concordia.ellerman.id.au>
+ <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
+ <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
+ <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
+Message-ID: <4d09fd96-0e9b-d3d1-d009-426c6497bf3a@infradead.org>
+Date: Fri, 20 Jul 2018 10:28:10 -0700
 MIME-Version: 1.0
-In-Reply-To: <20180717194048.3057-3-jallen@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <019da370-8b12-cfd4-11c3-ef99407c0fd6@linux.vnet.ibm.com>
+In-Reply-To: <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,43 +30,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/17/2018 02:40 PM, John Allen wrote:
-> While handling PRRN events, the time to handle the actual hotplug events
-> dwarfs the time it takes to perform the device tree updates and queue the
-> hotplug events. In the case that PRRN events are being queued continuously,
-> hotplug events have been observed to be queued faster than the kernel can
-> actually handle them. This patch avoids the problem by waiting for a
-> hotplug request to complete before queueing more hotplug events.
+On 07/13/2018 04:24 PM, Randy Dunlap wrote:
+> On 07/13/2018 04:41 AM, Mathieu Malaterre wrote:
+>> Randy,
+>>
+>> On Mon, Jul 9, 2018 at 2:00 PM Mathieu Malaterre <malat@debian.org> wrote:
+>>>
+>>> On Sun, Jul 8, 2018 at 1:53 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>>>
+>>>> Randy Dunlap <rdunlap@infradead.org> writes:
+>>>>> Hi,
+>>>>>
+>>>>> Is there a good way (or a shortcut) to do something like:
+>>>>
+>>>> The best I know of is:
+>>>>
+>>>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+>>>>>   to get a PPC32/32BIT allmodconfig
+>>>>
+>>>> $ echo CONFIG_PPC64=n > allmod.config
+>>>> $ KCONFIG_ALLCONFIG=1 make allmodconfig
+>>>> $ grep PPC32 .config
+>>>> CONFIG_PPC32=y
+>>>>
+>>>> Which is still a bit clunky.
+>>>>
+>>>>
+>>>> I looked at this a while back and the problem we have is that the 32-bit
+>>>> kernel is not a single thing. There are multiple 32-bit platforms which
+>>>> are mutually exclusive.
+>>>>
+>>>> eg, from menuconfig:
+>>>>
+>>>>  - 512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx
+>>>>  - Freescale 85xx
+>>>>  - Freescale 8xx
+>>>>  - AMCC 40x
+>>>>  - AMCC 44x, 46x or 47x
+>>>>  - Freescale e200
+>>>
+>>> Most Linux distro seems to have drop support for ppc32. So I'd suggest
+>>> to pick Debian powperc default config (but I agree that I am a little
+>>> biased here).
+>>
+>> I tried an allmode as suggest by Michael (above). But I get a build error:
+>>
+>>   MODPOST vmlinux.o
+>> drivers/android/binder.o: In function `binder_thread_write':
+>> binder.c:(.text+0xc750): undefined reference to `__get_user_bad'
+>> binder.c:(.text+0xc76c): undefined reference to `__get_user_bad'
+>> binder.c:(.text+0xc790): undefined reference to `__get_user_bad'
+>> binder.c:(.text+0xc7d4): undefined reference to `__get_user_bad'
+>> binder.c:(.text+0xc7f4): undefined reference to `__get_user_bad'
+>>
+>>
+>> So for now I need to do: CONFIG_ANDROID_BINDER_IPC=n
+>>
+>> How did you get passed this build failure ?
 > 
-> Signed-off-by: John Allen <jallen@linux.ibm.com>
+> Hi,
+> 
+> I am not seeing an error on that driver build.
+> 
+> I am using gcc 8.1.0 from kernel.org:
+> https://mirrors.edge.kernel.org/pub/tools/crosstool/
+> 
+> and building on x86_64.
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Hi Mathieu,
 
-> ---
->   arch/powerpc/platforms/pseries/mobility.c | 5 ++++-
->   1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index 8a8033a249c7..49930848fa78 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -242,6 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
->   static void prrn_update_node(__be32 phandle)
->   {
->   	struct pseries_hp_errorlog *hp_elog;
-> +	struct completion hotplug_done;
->   	struct device_node *dn;
-> 
->   	/*
-> @@ -263,7 +264,9 @@ static void prrn_update_node(__be32 phandle)
->   	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
->   	hp_elog->_drc_u.drc_index = phandle;
-> 
-> -	queue_hotplug_event(hp_elog, NULL, NULL);
-> +	init_completion(&hotplug_done);
-> +	queue_hotplug_event(hp_elog, &hotplug_done, NULL);
-> +	wait_for_completion(&hotplug_done);
-> 
->   	kfree(hp_elog);
->   }
-> 
+I do see this build error (slightly different undefined reference though)
+when I do an arch/microblaze/ cross-build:
+
+drivers/android/binder.o: In function `binder_thread_write':
+drivers/android/.tmp_gl_binder.o:(.text+0xcba8): undefined reference to `__user_bad'
+drivers/android/.tmp_gl_binder.o:(.text+0xcbd4): undefined reference to `__user_bad'
+drivers/android/.tmp_gl_binder.o:(.text+0xcfbc): undefined reference to `__user_bad'
+drivers/android/.tmp_gl_binder.o:(.text+0xd648): undefined reference to `__user_bad'
+drivers/android/.tmp_gl_binder.o:(.text+0xdbc0): undefined reference to `__user_bad'
+
+
+-- 
+~Randy
