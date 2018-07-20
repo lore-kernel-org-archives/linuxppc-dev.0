@@ -1,27 +1,36 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua0-f194.google.com (mail-ua0-f194.google.com
- [209.85.217.194])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41X2lT4V3KzDqC3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 17:37:08 +1000 (AEST)
-Received: by mail-ua0-f194.google.com with SMTP id x24-v6so6895030ual.10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:37:08 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180714164906.GQ23412@localhost.localdomain>
- <7d6362d7-da99-e57f-40ed-81c7a03ea1a4@infradead.org>
- <CAMuHMdX3xiRYYdhQftHRDYFqob7xMHm-xxvh3NyoC1TowH4x8g@mail.gmail.com>
- <20180719201415.GE8962@localhost.localdomain>
-In-Reply-To: <20180719201415.GE8962@localhost.localdomain>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 20 Jul 2018 09:36:53 +0200
-Message-ID: <CAMuHMdXcbzDi07_AXUzwnzw39DYeoHpORk2aSn9W+jmBKeShOg@mail.gmail.com>
-Subject: Re: Improvements for the PS3
-To: noring@nocrew.org
-Cc: Geoff Levand <geoff@infradead.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41X3wy4NtwzDqCF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 18:30:26 +1000 (AEST)
+Date: Fri, 20 Jul 2018 10:30:16 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Rik van Riel <riel@surriel.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ Juergen Gross <jgross@suse.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+ linux-arch <linux-arch@vger.kernel.org>, Will Deacon <will.deacon@arm.com>,
+ Catalin Marinas <catalin.marinas@arm.com>, linux-s390@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "Maciej W. Rozycki" <macro@linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
+ LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>,
+ Mike Galbraith <efault@gmx.de>, kernel-team <kernel-team@fb.com>,
+ Ingo Molnar <mingo@kernel.org>, Dave Hansen <dave.hansen@intel.com>
+Subject: Re: [PATCH 4/7] x86,tlb: make lazy TLB mode lazier
+Message-ID: <20180720083016.GN2494@hirez.programming.kicks-ass.net>
+References: <20180716190337.26133-1-riel@surriel.com>
+ <20180716190337.26133-5-riel@surriel.com>
+ <CALCETrUMntRe_LYX5wj9YD4xZ+84QExK+ZNb3yxEBDEKa7nePQ@mail.gmail.com>
+ <B6566AA4-2E8A-43BD-A224-0F6D4747B8FB@surriel.com>
+ <F93A3335-4830-4E36-9179-D0FA5D640C8A@amacapital.net>
+ <B976CC13-D014-433A-83DE-F8DF9AB4F421@surriel.com>
+ <CALCETrWDiMhgiR3f8n0jdWcW31EDJ+Waq0wh5sMDutfigANGnA@mail.gmail.com>
+ <CALCETrXLMsSBChDvrms-omwYV4LHT30GenDjbnD-+LTg55yPow@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALCETrXLMsSBChDvrms-omwYV4LHT30GenDjbnD-+LTg55yPow@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Fredrik,
+On Thu, Jul 19, 2018 at 10:04:09AM -0700, Andy Lutomirski wrote:
+> I added some more arch maintainers.  The idea here is that, on x86 at
+> least, task->active_mm and all its refcounting is pure overhead.  When
+> a process exits, __mmput() gets called, but the core kernel has a
+> longstanding "optimization" in which other tasks (kernel threads and
+> idle tasks) may have ->active_mm pointing at this mm.  This is nasty,
+> complicated, and hurts performance on large systems, since it requires
+> extra atomic operations whenever a CPU switches between real users
+> threads and idle/kernel threads.
+> 
+> It's also almost completely worthless on x86 at least, since __mmput()
+> frees pagetables, and that operation *already* forces a remote TLB
+> flush, so we might as well zap all the active_mm references at the
+> same time.
 
-On Thu, Jul 19, 2018 at 10:14 PM Fredrik Noring <noring@nocrew.org> wrote:
-> > > > so I added a sleep with
-> > > >
-> > > > +     msleep(10000);
-> >
-> > I can't see where you added the sleep, but 10s seems excessive.
-> > If the real reason is the need to wait for an interrupt for ps3fb_sync_image(),
-> > then waiting for 40 ms should be sufficient? Or am I missing something?
->
-> It's at the end of ps3fb_probe, as shown in the original post:
->
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-July/175771.html
+So I disagree that active_mm is complicated (the code is less than ideal
+but that is actually fixable). And aside from the process exit case, it
+does avoid CR3 writes when switching between user and kernel threads
+(which can be far more often than exit if you have longer running
+tasks).
 
-Thanks, I had found that one in the mean time...
+Now agreed, recent x86 work has made that less important.
 
-> I thought 100 ms or so would work, but evidently it didn't. In fact, 1 s
-> for even 5 s didn't seem to work either. In any case, I would like to
-> develop a solution that does not need to sleep at all, so that will be my
-> first approach for a proper implementation.
-
-Hmm...
-
-> > > I suppose the problem is that it relies on interrupts for ps3fb_sync_image
-> > > > to regularly copy the image, hence without them the screen isn't updated to
-> > > > show kernel panics, etc. Perhaps one way to fix that is to implement the
-> > > > struct fb_tile_ops API, so that the console is synchronously updated? Would
-> > > > that be acceptable?
-> > >
-> > > I'm not sure if that would work or not.   Maybe Geert is more familiar with it.
-> >
-> > That sounds like a complex solution, slowing down the console a lot.
->
-> Why would that be slow? I have implemented a similar technique for the
-> PlayStation 2 frame buffer, and (without any measurements at hand now) it
-> appears to be about as fast as is possible, and reasonably easy too. :)
-
-[...]
-
-OK, I retract my statement ;-)
-
-> > What about letting ps3fb register a panic notifier to sync the screen, like
-> > hyperv_fb does?
->
-> That would not work with kernel freezes unfortunately. Debugging those with
-> nondeterministicly invisible kernel prints would be painful, I believe.
-
-Unfortunately AFAIK the PS3 doesn't have any other "synchronous" output we
-can use for debugging (like flashing the power LED).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+And I of course also agree that not doing those refcount atomics is
+better.
