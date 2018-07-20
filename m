@@ -1,26 +1,34 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex@ghiti.fr>
+Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net
+ [217.70.183.197])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41XHsg01fVzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 03:28:22 +1000 (AEST)
-Subject: Re: CONFIG_ANDROID_BINDER_IPC=y (Re: powerpc: 32BIT vs. 64BIT (PPC32
- vs. PPC64))
-From: Randy Dunlap <rdunlap@infradead.org>
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
- <87sh4uj675.fsf@concordia.ellerman.id.au>
- <CA+7wUsy2FmRhsX3OLkTPKh-9JCZCQKtTbbzP9=vLuEJ9Pn6QmA@mail.gmail.com>
- <CA+7wUsz=DUKb1WJgL7dCZNtH8aHh9KeJ--AHWoCmgjSSTRbggA@mail.gmail.com>
- <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
-Message-ID: <4d09fd96-0e9b-d3d1-d009-426c6497bf3a@infradead.org>
-Date: Fri, 20 Jul 2018 10:28:10 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41XKQB4QRpzDqC3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 04:38:07 +1000 (AEST)
+From: Alex Ghiti <alex@ghiti.fr>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, ysato@users.sourceforge.jp, dalias@libc.org,
+ davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+ x86@kernel.org, arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180709141621.GD22297@dhcp22.suse.cz>
+Message-ID: <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+Date: Fri, 20 Jul 2018 18:37:51 +0000
 MIME-Version: 1.0
-In-Reply-To: <edb2f575-5d22-0625-f742-13cc2d413057@infradead.org>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20180709141621.GD22297@dhcp22.suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,85 +38,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/13/2018 04:24 PM, Randy Dunlap wrote:
-> On 07/13/2018 04:41 AM, Mathieu Malaterre wrote:
->> Randy,
->>
->> On Mon, Jul 9, 2018 at 2:00 PM Mathieu Malaterre <malat@debian.org> wrote:
->>>
->>> On Sun, Jul 8, 2018 at 1:53 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->>>>
->>>> Randy Dunlap <rdunlap@infradead.org> writes:
->>>>> Hi,
->>>>>
->>>>> Is there a good way (or a shortcut) to do something like:
->>>>
->>>> The best I know of is:
->>>>
->>>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
->>>>>   to get a PPC32/32BIT allmodconfig
->>>>
->>>> $ echo CONFIG_PPC64=n > allmod.config
->>>> $ KCONFIG_ALLCONFIG=1 make allmodconfig
->>>> $ grep PPC32 .config
->>>> CONFIG_PPC32=y
->>>>
->>>> Which is still a bit clunky.
->>>>
->>>>
->>>> I looked at this a while back and the problem we have is that the 32-bit
->>>> kernel is not a single thing. There are multiple 32-bit platforms which
->>>> are mutually exclusive.
->>>>
->>>> eg, from menuconfig:
->>>>
->>>>  - 512x/52xx/6xx/7xx/74xx/82xx/83xx/86xx
->>>>  - Freescale 85xx
->>>>  - Freescale 8xx
->>>>  - AMCC 40x
->>>>  - AMCC 44x, 46x or 47x
->>>>  - Freescale e200
->>>
->>> Most Linux distro seems to have drop support for ppc32. So I'd suggest
->>> to pick Debian powperc default config (but I agree that I am a little
->>> biased here).
->>
->> I tried an allmode as suggest by Michael (above). But I get a build error:
->>
->>   MODPOST vmlinux.o
->> drivers/android/binder.o: In function `binder_thread_write':
->> binder.c:(.text+0xc750): undefined reference to `__get_user_bad'
->> binder.c:(.text+0xc76c): undefined reference to `__get_user_bad'
->> binder.c:(.text+0xc790): undefined reference to `__get_user_bad'
->> binder.c:(.text+0xc7d4): undefined reference to `__get_user_bad'
->> binder.c:(.text+0xc7f4): undefined reference to `__get_user_bad'
->>
->>
->> So for now I need to do: CONFIG_ANDROID_BINDER_IPC=n
->>
->> How did you get passed this build failure ?
-> 
-> Hi,
-> 
-> I am not seeing an error on that driver build.
-> 
-> I am using gcc 8.1.0 from kernel.org:
-> https://mirrors.edge.kernel.org/pub/tools/crosstool/
-> 
-> and building on x86_64.
+Does anyone have any suggestion about those patches ?
 
-Hi Mathieu,
-
-I do see this build error (slightly different undefined reference though)
-when I do an arch/microblaze/ cross-build:
-
-drivers/android/binder.o: In function `binder_thread_write':
-drivers/android/.tmp_gl_binder.o:(.text+0xcba8): undefined reference to `__user_bad'
-drivers/android/.tmp_gl_binder.o:(.text+0xcbd4): undefined reference to `__user_bad'
-drivers/android/.tmp_gl_binder.o:(.text+0xcfbc): undefined reference to `__user_bad'
-drivers/android/.tmp_gl_binder.o:(.text+0xd648): undefined reference to `__user_bad'
-drivers/android/.tmp_gl_binder.o:(.text+0xdbc0): undefined reference to `__user_bad'
-
-
--- 
-~Randy
+On 07/09/2018 02:16 PM, Michal Hocko wrote:
+> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
+>
+> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
+>> In order to reduce copy/paste of functions across architectures and then
+>> make riscv hugetlb port (and future ports) simpler and smaller, this
+>> patchset intends to factorize the numerous hugetlb primitives that are
+>> defined across all the architectures.
+>>
+>> Except for prepare_hugepage_range, this patchset moves the versions that
+>> are just pass-through to standard pte primitives into
+>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+>>
+>> s390 architecture has not been tackled in this serie since it does not
+>> use asm-generic/hugetlb.h at all.
+>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+>>
+>> This patchset has been compiled on x86 only.
+>>
+>> Changelog:
+>>
+>> v4:
+>>    Fix powerpc build error due to misplacing of #include
+>>    <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
+>>    pointed by Christophe Leroy.
+>>
+>> v1, v2, v3:
+>>    Same version, just problems with email provider and misuse of
+>>    --batch-size option of git send-email
+>>
+>> Alexandre Ghiti (11):
+>>    hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+>>    hugetlb: Introduce generic version of hugetlb_free_pgd_range
+>>    hugetlb: Introduce generic version of set_huge_pte_at
+>>    hugetlb: Introduce generic version of huge_ptep_get_and_clear
+>>    hugetlb: Introduce generic version of huge_ptep_clear_flush
+>>    hugetlb: Introduce generic version of huge_pte_none
+>>    hugetlb: Introduce generic version of huge_pte_wrprotect
+>>    hugetlb: Introduce generic version of prepare_hugepage_range
+>>    hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+>>    hugetlb: Introduce generic version of huge_ptep_set_access_flags
+>>    hugetlb: Introduce generic version of huge_ptep_get
+>>
+>>   arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+>>   arch/arm/include/asm/hugetlb.h               | 33 +----------
+>>   arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+>>   arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+>>   arch/mips/include/asm/hugetlb.h              | 40 +++----------
+>>   arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+>>   arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
+>>   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+>>   arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+>>   arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
+>>   arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+>>   arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+>>   arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+>>   arch/x86/include/asm/hugetlb.h               | 72 +----------------------
+>>   include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+>>   15 files changed, 143 insertions(+), 384 deletions(-)
+>>
+>> -- 
+>> 2.16.2
