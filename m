@@ -1,37 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41WxxF42HxzDqGH
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 14:00:17 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6K3wt1b121120
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:00:15 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kb6t0tjc1-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 00:00:14 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 20 Jul 2018 05:00:12 +0100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net,
- david@gibson.dropbear.id.au, jasowang@redhat.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, mst@redhat.com,
- hch@infradead.org, khandual@linux.vnet.ibm.com, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com
-Subject: [RFC 4/4] virtio: Add platform specific DMA API translation for
- virito devices
-Date: Fri, 20 Jul 2018 09:29:41 +0530
-In-Reply-To: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
-Message-Id: <20180720035941.6844-5-khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41WyYB6nY2zDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2018 14:27:58 +1000 (AEST)
+Message-ID: <f3ff14198333daac599adb64344d66a09e88acb7.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Lukas Wunner <lukas@wunner.de>, Hari Vyas <hari.vyas@broadcom.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, Ray Jui
+ <ray.jui@broadcom.com>, Paul Mackerras <paulus@samba.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 20 Jul 2018 14:27:41 +1000
+In-Reply-To: <20180719185538.GA7731@wunner.de>
+References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
+ <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
+ <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
+ <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
+ <CAM5rFu8b1mdim8uA15TzpJtcxH5jXN3C53rBGZcyXG2h7bRoyA@mail.gmail.com>
+ <20180719185538.GA7731@wunner.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,88 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a hook which a platform can define in order to allow it to
-override virtio device's DMA OPS irrespective of whether it has the
-flag VIRTIO_F_IOMMU_PLATFORM set or not. We want to use this to do
-bounce-buffering of data on the new secure pSeries platform, currently
-under development, where a KVM host cannot access all of the memory
-space of a secure KVM guest.  The host can only access the pages which
-the guest has explicitly requested to be shared with the host, thus
-the virtio implementation in the guest has to copy data to and from
-shared pages.
+On Thu, 2018-07-19 at 20:55 +0200, Lukas Wunner wrote:
+> On Thu, Jul 19, 2018 at 9:48 AM, Benjamin Herrenschmidt <benh@kernel.crashing.org wrote:
+> > Indeed. However I'm not fan of the solution. Shouldn't we instead have
+> > some locking for the content of pci_dev? I've always been wary of us
+> > having other similar races in there.
+> 
+> The solution presented is perfectly fine as it uses atomic bitops which
+> obviate the need for locking.  Why do you want to add unnecessary locking
+> on top?
 
-With this hook, the platform code in the secure guest can force the
-use of swiotlb for virtio buffers, with a back-end for swiotlb which
-will use a pool of pre-allocated shared pages.  Thus all data being
-sent or received by virtio devices will be copied through pages which
-the host has access to.
+Atomic bitops tend to be *more* expensive than a lock.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/dma-mapping.h | 6 ++++++
- arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
- drivers/virtio/virtio.c                | 7 +++++++
- 3 files changed, 19 insertions(+)
+My concern is that the PCIe code historically had no locking and I
+worry we may have other fields in there with similar issues. But maybe
+I'm wrong.
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 8fa3945..bc5a9d3 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -116,3 +116,9 @@ extern u64 __dma_get_required_mask(struct device *dev);
- 
- #endif /* __KERNEL__ */
- #endif	/* _ASM_DMA_MAPPING_H */
-+
-+#define platform_override_dma_ops platform_override_dma_ops
-+
-+struct virtio_device;
-+
-+extern void platform_override_dma_ops(struct virtio_device *vdev);
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 06f0296..5773bc7 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -38,6 +38,7 @@
- #include <linux/of.h>
- #include <linux/iommu.h>
- #include <linux/rculist.h>
-+#include <linux/virtio.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/rtas.h>
-@@ -1396,3 +1397,8 @@ static int __init disable_multitce(char *str)
- __setup("multitce=", disable_multitce);
- 
- machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
-+
-+void platform_override_dma_ops(struct virtio_device *vdev)
-+{
-+	/* Override vdev->parent.dma_ops if required */
-+}
-diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
-index 6b13987..432c332 100644
---- a/drivers/virtio/virtio.c
-+++ b/drivers/virtio/virtio.c
-@@ -168,6 +168,12 @@ EXPORT_SYMBOL_GPL(virtio_add_status);
- 
- const struct dma_map_ops virtio_direct_dma_ops;
- 
-+#ifndef platform_override_dma_ops
-+static inline void platform_override_dma_ops(struct virtio_device *vdev)
-+{
-+}
-+#endif
-+
- int virtio_finalize_features(struct virtio_device *dev)
- {
- 	int ret = dev->config->finalize_features(dev);
-@@ -179,6 +185,7 @@ int virtio_finalize_features(struct virtio_device *dev)
- 	if (virtio_has_iommu_quirk(dev))
- 		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
- 
-+	platform_override_dma_ops(dev);
- 	if (!virtio_has_feature(dev, VIRTIO_F_VERSION_1))
- 		return 0;
- 
--- 
-2.9.3
+> Certain other parts of struct pci_dev use their own locking, e.g.
+> pci_bus_sem to protect bus_list.  Most elements can and should
+> be accessed lockless for performance.
+> 
+> 
+> > > The powerpc PCI code contains a lot of cruft coming from the depth of
+> > > history, including rather nasty assumptions. We want to progressively
+> > > clean it up, starting with EEH, but it will take time.
+> 
+> Then I suggest using the #include "../../../drivers/pci/pci.h" for now
+> until the powerpc arch code has been consolidated.
+
+There's also the need both in powerpc and sparc to access the guts of
+pci_dev because those archs will "fabricate" as pci_dev from the
+device-tree rather than probing it under some circumstances.
+
+Cheers,
+Ben.
