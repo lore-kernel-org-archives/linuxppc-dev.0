@@ -1,33 +1,18 @@
-Return-Path: <mike.kravetz@oracle.com>
-Received: from userp2120.oracle.com (userp2120.oracle.com [156.151.31.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41XT7G5W4RzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 10:25:40 +1000 (AEST)
-Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-To: Alex Ghiti <alex@ghiti.fr>, Michal Hocko <mhocko@kernel.org>
-Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
- deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, ysato@users.sourceforge.jp, dalias@libc.org,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-References: <20180705110716.3919-1-alex@ghiti.fr>
- <20180709141621.GD22297@dhcp22.suse.cz>
- <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
-From: Mike Kravetz <mike.kravetz@oracle.com>
-Message-ID: <75195a7d-3d0f-4e55-92cc-4ad772683c75@oracle.com>
-Date: Fri, 20 Jul 2018 17:24:12 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41XZFk74T1zDqC7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2018 14:16:42 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, ego@linux.vnet.ibm.com,
+ jrtc27@jrtc27.com, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.18-4 tag
+Date: Sat, 21 Jul 2018 14:16:38 +1000
+Message-ID: <87r2jxi5p5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-In-Reply-To: <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,76 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/20/2018 11:37 AM, Alex Ghiti wrote:
-> Does anyone have any suggestion about those patches ?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-I only took a quick look.  From the hugetlb perspective, I like the
-idea of moving routines to a common file.  If any of the arch owners
-(or anyone else) agree, I can do a review of the series.
--- 
-Mike Kravetz
+Hi Linus,
 
-> On 07/09/2018 02:16 PM, Michal Hocko wrote:
->> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
->>
->> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
->>> In order to reduce copy/paste of functions across architectures and then
->>> make riscv hugetlb port (and future ports) simpler and smaller, this
->>> patchset intends to factorize the numerous hugetlb primitives that are
->>> defined across all the architectures.
->>>
->>> Except for prepare_hugepage_range, this patchset moves the versions that
->>> are just pass-through to standard pte primitives into
->>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
->>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
->>>
->>> s390 architecture has not been tackled in this serie since it does not
->>> use asm-generic/hugetlb.h at all.
->>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
->>>
->>> This patchset has been compiled on x86 only.
->>>
->>> Changelog:
->>>
->>> v4:
->>>    Fix powerpc build error due to misplacing of #include
->>>    <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
->>>    pointed by Christophe Leroy.
->>>
->>> v1, v2, v3:
->>>    Same version, just problems with email provider and misuse of
->>>    --batch-size option of git send-email
->>>
->>> Alexandre Ghiti (11):
->>>    hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->>>    hugetlb: Introduce generic version of hugetlb_free_pgd_range
->>>    hugetlb: Introduce generic version of set_huge_pte_at
->>>    hugetlb: Introduce generic version of huge_ptep_get_and_clear
->>>    hugetlb: Introduce generic version of huge_ptep_clear_flush
->>>    hugetlb: Introduce generic version of huge_pte_none
->>>    hugetlb: Introduce generic version of huge_pte_wrprotect
->>>    hugetlb: Introduce generic version of prepare_hugepage_range
->>>    hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->>>    hugetlb: Introduce generic version of huge_ptep_set_access_flags
->>>    hugetlb: Introduce generic version of huge_ptep_get
->>>
->>>   arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->>>   arch/arm/include/asm/hugetlb.h               | 33 +----------
->>>   arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->>>   arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->>>   arch/mips/include/asm/hugetlb.h              | 40 +++----------
->>>   arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->>>   arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
->>>   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->>>   arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->>>   arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
->>>   arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->>>   arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->>>   arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->>>   arch/x86/include/asm/hugetlb.h               | 72 +----------------------
->>>   include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->>>   15 files changed, 143 insertions(+), 384 deletions(-)
->>>
->>> -- 
->>> 2.16.2
-> 
+Please pull some more powerpc fixes for 4.18:
+
+The following changes since commit 021c91791a5e7e85c567452f1be3e4c2c6cb6063:
+
+  Linux 4.18-rc3 (2018-07-01 16:04:53 -0700)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.18-4
+
+for you to fetch changes up to b03897cf318dfc47de33a7ecbc7655584266f034:
+
+  powerpc/powernv: Fix save/restore of SPRG3 on entry/exit from stop (idle) (2018-07-18 20:40:17 +1000)
+
+- ------------------------------------------------------------------
+powerpc fixes for 4.18 #4
+
+Two regression fixes, one for xmon disassembly formatting and the other to fix
+the E500 build.
+
+Two commits to fix a potential security issue in the VFIO code under obscure
+circumstances.
+
+And finally a fix to the Power9 idle code to restore SPRG3, which is user
+visible and used for sched_getcpu().
+
+Thanks to:
+  Alexey Kardashevskiy, David Gibson. Gautham R. Shenoy, James Clarke.
+
+- ------------------------------------------------------------------
+Alexey Kardashevskiy (2):
+      vfio/spapr: Use IOMMU pageshift rather than pagesize
+      KVM: PPC: Check if IOMMU page is contained in the pinned physical page
+
+Gautham R. Shenoy (1):
+      powerpc/powernv: Fix save/restore of SPRG3 on entry/exit from stop (idle)
+
+James Clarke (1):
+      powerpc/Makefile: Assemble with -me500 when building for E500
+
+Michael Ellerman (1):
+      powerpc/xmon: Fix disassembly since printf changes
+
+
+ arch/powerpc/Makefile                  |  1 +
+ arch/powerpc/include/asm/mmu_context.h |  4 ++--
+ arch/powerpc/kernel/idle_book3s.S      |  2 ++
+ arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
+ arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
+ arch/powerpc/mm/mmu_context_iommu.c    | 37 ++++++++++++++++++++++++++++++++--
+ arch/powerpc/xmon/xmon.c               |  4 ++--
+ drivers/vfio/vfio_iommu_spapr_tce.c    | 10 ++++-----
+ 8 files changed, 52 insertions(+), 14 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJbUrNFAAoJEFHr6jzI4aWAYmsP/2ZyuFemX2WlWocU0KUKF3ig
+2og9uIrwrt4Loi44FCZxeSCWqvoJJq0VvhtPY5OOoYlEMwtTJe3ZK490i2ZLz1ev
+Bv//6RBkc1KIpIHS/sgx5h3/uCYiSmSikchdWNnDq9pjBpESRIZLacb/62Ahi2ZP
+qKOr2msCto1frncisRB8fYnRG3r/cyBOb6ZIjkoKigf2LaYc507xPh0GjF/ZMZZi
+x5Nri0RTplYk74rGMGBmUuEUCtJPL6NjSg7IwplWXGnncdddLerXlkUxyKq+2ukm
+n3wukncvzuAw3BMVP1I7+MR44x4/u37QXypNtV9Mj7kskJ4LBZDnAQPjYbMWWyM5
+h3I4j8mc1JOqFY2eMnGn5oH+IXwNacVB+9joWkbb1sYA1Z4ejW4YPnUl7LsXUkdV
+2iiw+VKFMHvQyu+VShlqMYuNvN5cLv+uKK5EOrYQaheCqomidLcnxHS6o1RkAcrn
+UIgfkKnigAV99cstWIq9NWaCUmvLZFs8nZcSRncGC2vspsR6RuchHurpsxDwecOr
+YqQUvjPuLzrDpMUjx6khX+YaYYRMXP3Hk0A0FCwULrqjBjJ2kvglrstRH2Cn/67+
+a2Qis42ZQnKPDSCuIEVfBkAR1wkoRR6+LeQ/DYSoMLAiHOTKvPNfYSSyBWj1FiUS
+dOrYHAh/DlYwk2l+RM/O
+=Fz3Z
+-----END PGP SIGNATURE-----
