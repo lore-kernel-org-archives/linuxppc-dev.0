@@ -1,36 +1,36 @@
-Return-Path: <alex@ghiti.fr>
-Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
- [217.70.183.199])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z81d3r97zDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 03:41:38 +1000 (AEST)
-From: Alex Ghiti <alex@ghiti.fr>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
- deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
- ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Mike Kravetz <mike.kravetz@oracle.com>, Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-References: <20180705110716.3919-1-alex@ghiti.fr>
- <20180709141621.GD22297@dhcp22.suse.cz>
- <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
- <87d0vehx16.fsf@concordia.ellerman.id.au>
-Message-ID: <2d4c19e1-f622-7747-3ba1-ff3243337b93@ghiti.fr>
-Date: Mon, 23 Jul 2018 17:41:26 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z82T0rWxzDqrX
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 03:42:24 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6NHd8RI040391
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 13:42:22 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kdkgtgdbn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 13:42:22 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Mon, 23 Jul 2018 13:42:20 -0400
+Subject: Re: [PATCH v07 1/9] hotplug/cpu: Conditionally acquire/release DRC
+ index
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: John Allen <jallen@linux.vnet.ibm.com>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+References: <a7e202c1-177f-db1b-912f-8773a551feec@linux.vnet.ibm.com>
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Mon, 23 Jul 2018 12:42:14 -0500
 MIME-Version: 1.0
-In-Reply-To: <87d0vehx16.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <a7e202c1-177f-db1b-912f-8773a551feec@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <a7e92a8f-2bb9-95e7-78ca-b7440f80c7f7@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,85 +40,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ok will do and report when done.
+On 07/13/2018 03:17 PM, Michael Bringmann wrote:
+> powerpc/cpu: Modify dlpar_cpu_add and dlpar_cpu_remove to allow the
+> skipping of DRC index acquire or release operations during the CPU
+> add or remove operations.  This is intended to support subsequent
+> changes to provide a 'CPU readd' operation.
+> 
+> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+> ---
+> Changes in patch:
+>    -- Move new validity check added to pseries_smp_notifier
+>       to another patch
+>    -- Revise one of checks for 'acquire_drc' in dlpar_cpu_add.
+>    -- Revise one of checks for 'release_drc' in dlpar_cpu_remove.
+> ---
+>   arch/powerpc/platforms/pseries/hotplug-cpu.c |   71 +++++++++++++++-----------
+>   1 file changed, 40 insertions(+), 31 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index 6ef77ca..7ede3b0 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -432,7 +432,7 @@ static bool valid_cpu_drc_index(struct device_node *parent, u32 drc_index)
+>   	return found;
+>   }
+> 
+> -static ssize_t dlpar_cpu_add(u32 drc_index)
+> +static ssize_t dlpar_cpu_add(u32 drc_index, bool acquire_drc)
+>   {
+>   	struct device_node *dn, *parent;
+>   	int rc, saved_rc;
+> @@ -457,19 +457,22 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+>   		return -EINVAL;
+>   	}
+> 
+> -	rc = dlpar_acquire_drc(drc_index);
+> -	if (rc) {
+> -		pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
+> -			rc, drc_index);
+> -		of_node_put(parent);
+> -		return -EINVAL;
+> +	if (acquire_drc) {
+> +		rc = dlpar_acquire_drc(drc_index);
+> +		if (rc) {
+> +			pr_warn("Failed to acquire DRC, rc: %d, drc index: %x\n",
+> +				rc, drc_index);
+> +			of_node_put(parent);
+> +			return -EINVAL;
+> +		}
+>   	}
+> 
+>   	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
+>   	if (!dn) {
+>   		pr_warn("Failed call to configure-connector, drc index: %x\n",
+>   			drc_index);
+> -		dlpar_release_drc(drc_index);
+> +		if (acquire_drc)
+> +			dlpar_release_drc(drc_index);
+>   		of_node_put(parent);
+>   		return -EINVAL;
+>   	}
+> @@ -484,9 +487,11 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+>   		pr_warn("Failed to attach node %s, rc: %d, drc index: %x\n",
+>   			dn->name, rc, drc_index);
+> 
+> -		rc = dlpar_release_drc(drc_index);
+> -		if (!rc)
+> -			dlpar_free_cc_nodes(dn);
+> +		if (acquire_drc) {
+> +			rc = dlpar_release_drc(drc_index);
+> +			if (!rc)
+> +				dlpar_free_cc_nodes(dn);
+> +		}
+> 
+>   		return saved_rc;
+>   	}
+> @@ -498,7 +503,7 @@ static ssize_t dlpar_cpu_add(u32 drc_index)
+>   			dn->name, rc, drc_index);
+> 
+>   		rc = dlpar_detach_node(dn);
+> -		if (!rc)
+> +		if (!rc && acquire_drc)
+>   			dlpar_release_drc(drc_index);
+> 
+>   		return saved_rc;
+> @@ -566,7 +571,8 @@ static int dlpar_offline_cpu(struct device_node *dn)
+> 
+>   }
+> 
+> -static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+> +static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index,
+> +				bool release_drc)
+>   {
+>   	int rc;
+> 
+> @@ -579,12 +585,14 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+>   		return -EINVAL;
+>   	}
+> 
+> -	rc = dlpar_release_drc(drc_index);
+> -	if (rc) {
+> -		pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
+> -			drc_index, dn->name, rc);
+> -		dlpar_online_cpu(dn);
+> -		return rc;
+> +	if (release_drc) {
+> +		rc = dlpar_release_drc(drc_index);
+> +		if (rc) {
+> +			pr_warn("Failed to release drc (%x) for CPU %s, rc: %d\n",
+> +				drc_index, dn->name, rc);
+> +			dlpar_online_cpu(dn);
+> +			return rc;
+> +		}
+>   	}
+> 
+>   	rc = dlpar_detach_node(dn);
+> @@ -593,8 +601,9 @@ static ssize_t dlpar_cpu_remove(struct device_node *dn, u32 drc_index)
+> 
+>   		pr_warn("Failed to detach CPU %s, rc: %d", dn->name, rc);
+> 
+> -		rc = dlpar_acquire_drc(drc_index);
+> -		if (!rc)
+> +		if (release_drc)
+> +			rc = dlpar_acquire_drc(drc_index);
+> +		if (!release_drc || !rc)
+>   			dlpar_online_cpu(dn);
 
-Thanks for your feedback,
+This is likely wrong. At this point you're in a if (rc) so rc is already
+non-zero. If release_drc is false this checks an invalid rc state.
 
-Alex
+-Nathan
 
-On 07/23/2018 02:00 PM, Michael Ellerman wrote:
-> Alex Ghiti <alex@ghiti.fr> writes:
->
->> Does anyone have any suggestion about those patches ?
-> Cross compiling it for some non-x86 arches would be a good start :)
->
-> There are cross compilers available here:
->
->    https://mirrors.edge.kernel.org/pub/tools/crosstool/
->
->
-> cheers
->
->> On 07/09/2018 02:16 PM, Michal Hocko wrote:
->>> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
->>>
->>> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
->>>> In order to reduce copy/paste of functions across architectures and then
->>>> make riscv hugetlb port (and future ports) simpler and smaller, this
->>>> patchset intends to factorize the numerous hugetlb primitives that are
->>>> defined across all the architectures.
->>>>
->>>> Except for prepare_hugepage_range, this patchset moves the versions that
->>>> are just pass-through to standard pte primitives into
->>>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
->>>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
->>>>
->>>> s390 architecture has not been tackled in this serie since it does not
->>>> use asm-generic/hugetlb.h at all.
->>>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
->>>>
->>>> This patchset has been compiled on x86 only.
->>>>
->>>> Changelog:
->>>>
->>>> v4:
->>>>     Fix powerpc build error due to misplacing of #include
->>>>     <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
->>>>     pointed by Christophe Leroy.
->>>>
->>>> v1, v2, v3:
->>>>     Same version, just problems with email provider and misuse of
->>>>     --batch-size option of git send-email
->>>>
->>>> Alexandre Ghiti (11):
->>>>     hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->>>>     hugetlb: Introduce generic version of hugetlb_free_pgd_range
->>>>     hugetlb: Introduce generic version of set_huge_pte_at
->>>>     hugetlb: Introduce generic version of huge_ptep_get_and_clear
->>>>     hugetlb: Introduce generic version of huge_ptep_clear_flush
->>>>     hugetlb: Introduce generic version of huge_pte_none
->>>>     hugetlb: Introduce generic version of huge_pte_wrprotect
->>>>     hugetlb: Introduce generic version of prepare_hugepage_range
->>>>     hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->>>>     hugetlb: Introduce generic version of huge_ptep_set_access_flags
->>>>     hugetlb: Introduce generic version of huge_ptep_get
->>>>
->>>>    arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->>>>    arch/arm/include/asm/hugetlb.h               | 33 +----------
->>>>    arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->>>>    arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->>>>    arch/mips/include/asm/hugetlb.h              | 40 +++----------
->>>>    arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->>>>    arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
->>>>    arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->>>>    arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->>>>    arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
->>>>    arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->>>>    arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->>>>    arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->>>>    arch/x86/include/asm/hugetlb.h               | 72 +----------------------
->>>>    include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->>>>    15 files changed, 143 insertions(+), 384 deletions(-)
->>>>
->>>> -- 
->>>> 2.16.2
+> 
+>   		return saved_rc;
+> @@ -622,7 +631,7 @@ static struct device_node *cpu_drc_index_to_dn(u32 drc_index)
+>   	return dn;
+>   }
+> 
+> -static int dlpar_cpu_remove_by_index(u32 drc_index)
+> +static int dlpar_cpu_remove_by_index(u32 drc_index, bool release_drc)
+>   {
+>   	struct device_node *dn;
+>   	int rc;
+> @@ -634,7 +643,7 @@ static int dlpar_cpu_remove_by_index(u32 drc_index)
+>   		return -ENODEV;
+>   	}
+> 
+> -	rc = dlpar_cpu_remove(dn, drc_index);
+> +	rc = dlpar_cpu_remove(dn, drc_index, release_drc);
+>   	of_node_put(dn);
+>   	return rc;
+>   }
+> @@ -699,7 +708,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+>   	}
+> 
+>   	for (i = 0; i < cpus_to_remove; i++) {
+> -		rc = dlpar_cpu_remove_by_index(cpu_drcs[i]);
+> +		rc = dlpar_cpu_remove_by_index(cpu_drcs[i], true);
+>   		if (rc)
+>   			break;
+> 
+> @@ -710,7 +719,7 @@ static int dlpar_cpu_remove_by_count(u32 cpus_to_remove)
+>   		pr_warn("CPU hot-remove failed, adding back removed CPUs\n");
+> 
+>   		for (i = 0; i < cpus_removed; i++)
+> -			dlpar_cpu_add(cpu_drcs[i]);
+> +			dlpar_cpu_add(cpu_drcs[i], true);
+> 
+>   		rc = -EINVAL;
+>   	} else {
+> @@ -780,7 +789,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+>   	}
+> 
+>   	for (i = 0; i < cpus_to_add; i++) {
+> -		rc = dlpar_cpu_add(cpu_drcs[i]);
+> +		rc = dlpar_cpu_add(cpu_drcs[i], true);
+>   		if (rc)
+>   			break;
+> 
+> @@ -791,7 +800,7 @@ static int dlpar_cpu_add_by_count(u32 cpus_to_add)
+>   		pr_warn("CPU hot-add failed, removing any added CPUs\n");
+> 
+>   		for (i = 0; i < cpus_added; i++)
+> -			dlpar_cpu_remove_by_index(cpu_drcs[i]);
+> +			dlpar_cpu_remove_by_index(cpu_drcs[i], true);
+> 
+>   		rc = -EINVAL;
+>   	} else {
+> @@ -817,7 +826,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>   		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+>   			rc = dlpar_cpu_remove_by_count(count);
+>   		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> -			rc = dlpar_cpu_remove_by_index(drc_index);
+> +			rc = dlpar_cpu_remove_by_index(drc_index, true);
+>   		else
+>   			rc = -EINVAL;
+>   		break;
+> @@ -825,7 +834,7 @@ int dlpar_cpu(struct pseries_hp_errorlog *hp_elog)
+>   		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
+>   			rc = dlpar_cpu_add_by_count(count);
+>   		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
+> -			rc = dlpar_cpu_add(drc_index);
+> +			rc = dlpar_cpu_add(drc_index, true);
+>   		else
+>   			rc = -EINVAL;
+>   		break;
+> @@ -850,7 +859,7 @@ static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+>   	if (rc)
+>   		return -EINVAL;
+> 
+> -	rc = dlpar_cpu_add(drc_index);
+> +	rc = dlpar_cpu_add(drc_index, true);
+> 
+>   	return rc ? rc : count;
+>   }
+> @@ -871,7 +880,7 @@ static ssize_t dlpar_cpu_release(const char *buf, size_t count)
+>   		return -EINVAL;
+>   	}
+> 
+> -	rc = dlpar_cpu_remove(dn, drc_index);
+> +	rc = dlpar_cpu_remove(dn, drc_index, true);
+>   	of_node_put(dn);
+> 
+>   	return rc ? rc : count;
+> 
