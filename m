@@ -2,21 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z4h41sxRzF07t
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 01:11:16 +1000 (AEST)
-In-Reply-To: <20180704152833.2288-1-vaibhav@linux.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Frederic Barrat <fbarrat@linux.ibm.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Dan Carpenter <dan.carpenter@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z4h62Qd6zDrvG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 01:11:18 +1000 (AEST)
+In-Reply-To: <4302f36bd615c179c92f2007a0f3a1215ba96c55.1531439662.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Philippe Bergheaud <philippe.bergheaud@fr.ibm.com>,
- Vaibhav Jain <vaibhav@linux.ibm.com>,
- Alastair D'Silva <alastair@linux.ibm.com>,
- Christophe Lombard <christophe_lombard@fr.ibm.com>, stable@vger.kernel.org
-Subject: Re: cxl: Fix wrong comparison in cxl_adapter_context_get()
-Message-Id: <41Z4h41040z9s0R@ozlabs.org>
-Date: Tue, 24 Jul 2018 01:11:16 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc/8xx: fix handling of early NULL pointer dereference
+Message-Id: <41Z4h573nxz9s7c@ozlabs.org>
+Date: Tue, 24 Jul 2018 01:11:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-07-04 at 15:28:33 UTC, Vaibhav Jain wrote:
-> Function atomic_inc_unless_negative() returns a bool to indicate
-> success/failure. However cxl_adapter_context_get() wrongly compares
-> the return value against '>=0' which will always be true. The patch
-> fixes this comparison to '==0' there by also fixing this compile time
-> warning:
+On Fri, 2018-07-13 at 13:10:47 UTC, Christophe Leroy wrote:
+> NULL pointers are pointers to user memory space. So user pagetable
+> has to be set in order to avoid random behaviour in case of NULL
+> pointer dereference, otherwise we may encounter random memory
+> access hence Machine Check Exception from TLB Miss handlers.
 > 
-> 	drivers/misc/cxl/main.c:290 cxl_adapter_context_get()
-> 	warn: 'atomic_inc_unless_negative(&adapter->contexts_num)' is unsigned
+> Set user pagetable as early as possible in order to properly
+> catch early kernel NULL pointer dereference.
 > 
-> Cc: stable@vger.kernel.org
-> Fixes: 70b565bbdb91 ("cxl: Prevent adapter reset if an active context exists")
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Vaibhav Jain <vaibhav@linux.ibm.com>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/ef6cb5f1a048fdf91ccee6d63d2bfa
+https://git.kernel.org/powerpc/c/8c8c10b90d88bfaad41ea34df17bf6
 
 cheers
