@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z4h62Qd6zDrvG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z4h61j2lzDsGJ
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 01:11:18 +1000 (AEST)
-In-Reply-To: <4302f36bd615c179c92f2007a0f3a1215ba96c55.1531439662.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20180711071017.5128-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: powerpc/8xx: fix handling of early NULL pointer dereference
-Message-Id: <41Z4h573nxz9s7c@ozlabs.org>
-Date: Tue, 24 Jul 2018 01:11:17 +1000 (AEST)
+Cc: mikey@neuling.org, chris@distroguy.com
+Subject: Re: [1/3] selftests/powerpc: Remove Power9 copy_unaligned test
+Message-Id: <41Z4h508fJz9s7Q@ozlabs.org>
+Date: Tue, 24 Jul 2018 01:11:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,19 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-07-13 at 13:10:47 UTC, Christophe Leroy wrote:
-> NULL pointers are pointers to user memory space. So user pagetable
-> has to be set in order to avoid random behaviour in case of NULL
-> pointer dereference, otherwise we may encounter random memory
-> access hence Machine Check Exception from TLB Miss handlers.
+On Wed, 2018-07-11 at 07:10:15 UTC, Michael Ellerman wrote:
+> This is a test of the ISA 3.0 "copy" instruction. That instruction has
+> an L field, which if set to 1 specifies that "the instruction
+> identifies the beginning of a move group" (pp 858). That's also
+> referred to as "copy first" vs "copy".
 > 
-> Set user pagetable as early as possible in order to properly
-> catch early kernel NULL pointer dereference.
+> In ISA 3.0B the copy instruction does not have an L field, and the
+> corresponding bit in the instruction must be set to 1.
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> This test is generating a "copy" instruction, not a "copy first", and
+> so on Power9 (which implements 3.0B), this results in an illegal
+> instruction.
+> 
+> So just drop the test entirely. We still have copy_first_unaligned to
+> test the "copy first" behaviour.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Michael Neuling <mikey@neuling.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/8c8c10b90d88bfaad41ea34df17bf6
+https://git.kernel.org/powerpc/c/83039f22ba2f6aff935a2acbb6bf67
 
 cheers
