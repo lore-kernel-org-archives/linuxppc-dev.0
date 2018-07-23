@@ -1,21 +1,31 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z34k6r7NzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 23:59:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z36g5WHHzDrH0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 00:00:43 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux@roeck-us.net
-Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
- linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com, stewart@linux.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 2/2] hwmon: ibmpowernv: Add attributes to
- enable/disable sensor groups
-In-Reply-To: <1532067143-22022-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1532067143-22022-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1532067143-22022-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Date: Mon, 23 Jul 2018 23:59:00 +1000
-Message-ID: <87fu0ahx3v.fsf@concordia.ellerman.id.au>
+To: Alex Ghiti <alex@ghiti.fr>, Michal Hocko <mhocko@kernel.org>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, paulus@samba.org, ysato@users.sourceforge.jp,
+ dalias@libc.org, davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
+ hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-arch@vger.kernel.org, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+In-Reply-To: <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180709141621.GD22297@dhcp22.suse.cz>
+ <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+Date: Tue, 24 Jul 2018 00:00:37 +1000
+Message-ID: <87d0vehx16.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,116 +37,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> index f829dad..99afbf7 100644
-> --- a/drivers/hwmon/ibmpowernv.c
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -292,12 +344,126 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
->  	return ++sensor_groups[sdata->type].hwmon_index;
->  }
->  
-> +static int init_sensor_group_data(struct platform_device *pdev,
-> +				  struct platform_data *pdata)
-> +{
-> +	struct sensor_group_data *sgrp_data;
-> +	struct device_node *groups, *sgrp;
-> +	enum sensors type;
-> +	int count = 0, ret = 0;
-> +
-> +	groups = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
-> +	if (!groups)
-> +		return ret;
-> +
-> +	for_each_child_of_node(groups, sgrp) {
-> +		type = get_sensor_type(sgrp);
-> +		if (type != MAX_SENSOR_TYPE)
-> +			pdata->nr_sensor_groups++;
-> +	}
-> +
-> +	if (!pdata->nr_sensor_groups)
-> +		goto out;
-> +
-> +	sgrp_data = devm_kcalloc(&pdev->dev, pdata->nr_sensor_groups,
-> +				 sizeof(*sgrp_data), GFP_KERNEL);
-> +	if (!sgrp_data) {
-> +		ret = -ENOMEM;
-> +		goto out;
-> +	}
-> +
-> +	for_each_child_of_node(groups, sgrp) {
-> +		const __be32 *phandles;
-> +		int len, gid;
-> +
-> +		type = get_sensor_type(sgrp);
-> +		if (type == MAX_SENSOR_TYPE)
-> +			continue;
-> +
-> +		if (of_property_read_u32(sgrp, "sensor-group-id", &gid))
-> +			continue;
-> +
-> +		phandles = of_get_property(sgrp, "sensors", &len);
-> +		if (!phandles)
-> +			continue;
+Alex Ghiti <alex@ghiti.fr> writes:
 
-You should be able to use the more modern OF APIs, eg:
+> Does anyone have any suggestion about those patches ?
 
-		rc = of_count_phandle_with_args(sgrp, "sensors", NULL);
+Cross compiling it for some non-x86 arches would be a good start :)
 
-> +		len /= sizeof(u32);
-> +		if (!len)
-> +			continue;
+There are cross compilers available here:
 
-Which would make that check unnecessary.
-
-> +		sensor_groups[type].attr_count++;
-> +		sgrp_data[count].gid = gid;
-> +		mutex_init(&sgrp_data[count].mutex);
-> +		sgrp_data[count++].enable = false;
-> +	}
-> +
-> +	pdata->sgrp_data = sgrp_data;
-> +out:
-> +	of_node_put(groups);
-> +	return ret;
-> +}
-> +
-> +static struct sensor_group_data *get_sensor_group(struct platform_data *pdata,
-> +						  struct device_node *node,
-> +						  enum sensors gtype)
-> +{
-> +	struct sensor_group_data *sgrp_data = pdata->sgrp_data;
-> +	struct device_node *groups, *sgrp;
-> +
-> +	groups = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
-> +	if (!groups)
-> +		return NULL;
-> +
-> +	for_each_child_of_node(groups, sgrp) {
-> +		const __be32 *phandles;
-> +		int len, gid, i;
-> +		enum sensors type;
-> +
-> +		type = get_sensor_type(sgrp);
-> +		if (type != gtype)
-> +			continue;
-> +
-> +		if (of_property_read_u32(sgrp, "sensor-group-id", &gid))
-> +			continue;
-> +
-> +		phandles = of_get_property(sgrp, "sensors", &len);
-> +		if (!phandles)
-> +			continue;
-> +
-> +		len /= sizeof(u32);
-> +		if (!len)
-> +			continue;
-> +
-> +		while (--len >= 0)
-> +			if (be32_to_cpu(phandles[len]) == node->phandle)
-> +				break;
-
-Likewise, here you could use of_for_each_phandle().
+  https://mirrors.edge.kernel.org/pub/tools/crosstool/
 
 
 cheers
+
+> On 07/09/2018 02:16 PM, Michal Hocko wrote:
+>> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
+>>
+>> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
+>>> In order to reduce copy/paste of functions across architectures and then
+>>> make riscv hugetlb port (and future ports) simpler and smaller, this
+>>> patchset intends to factorize the numerous hugetlb primitives that are
+>>> defined across all the architectures.
+>>>
+>>> Except for prepare_hugepage_range, this patchset moves the versions that
+>>> are just pass-through to standard pte primitives into
+>>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+>>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+>>>
+>>> s390 architecture has not been tackled in this serie since it does not
+>>> use asm-generic/hugetlb.h at all.
+>>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+>>>
+>>> This patchset has been compiled on x86 only.
+>>>
+>>> Changelog:
+>>>
+>>> v4:
+>>>    Fix powerpc build error due to misplacing of #include
+>>>    <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
+>>>    pointed by Christophe Leroy.
+>>>
+>>> v1, v2, v3:
+>>>    Same version, just problems with email provider and misuse of
+>>>    --batch-size option of git send-email
+>>>
+>>> Alexandre Ghiti (11):
+>>>    hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+>>>    hugetlb: Introduce generic version of hugetlb_free_pgd_range
+>>>    hugetlb: Introduce generic version of set_huge_pte_at
+>>>    hugetlb: Introduce generic version of huge_ptep_get_and_clear
+>>>    hugetlb: Introduce generic version of huge_ptep_clear_flush
+>>>    hugetlb: Introduce generic version of huge_pte_none
+>>>    hugetlb: Introduce generic version of huge_pte_wrprotect
+>>>    hugetlb: Introduce generic version of prepare_hugepage_range
+>>>    hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+>>>    hugetlb: Introduce generic version of huge_ptep_set_access_flags
+>>>    hugetlb: Introduce generic version of huge_ptep_get
+>>>
+>>>   arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+>>>   arch/arm/include/asm/hugetlb.h               | 33 +----------
+>>>   arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+>>>   arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+>>>   arch/mips/include/asm/hugetlb.h              | 40 +++----------
+>>>   arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+>>>   arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
+>>>   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+>>>   arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+>>>   arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
+>>>   arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+>>>   arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+>>>   arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+>>>   arch/x86/include/asm/hugetlb.h               | 72 +----------------------
+>>>   include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+>>>   15 files changed, 143 insertions(+), 384 deletions(-)
+>>>
+>>> -- 
+>>> 2.16.2
