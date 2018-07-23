@@ -1,20 +1,42 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41YXmW4v22zDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 04:13:14 +1000 (AEST)
-Date: Sun, 22 Jul 2018 11:13:06 -0700 (PDT)
-Message-Id: <20180722.111306.1387292994024366959.davem@davemloft.net>
-To: rdunlap@infradead.org
-Cc: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: prevent ISA drivers from building on PPC32
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <b7e66624-a077-048a-d8f5-52a3722157df@infradead.org>
-References: <b7e66624-a077-048a-d8f5-52a3722157df@infradead.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41YlV12xyvzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 12:16:25 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6N28uEw088624
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jul 2018 22:16:22 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kd4d7u50c-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jul 2018 22:16:22 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 23 Jul 2018 03:16:20 +0100
+Subject: Re: [RFC 4/4] virtio: Add platform specific DMA API translation for
+ virito devices
+To: "Michael S. Tsirkin" <mst@redhat.com>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180720035941.6844-5-khandual@linux.vnet.ibm.com>
+ <20180720160550-mutt-send-email-mst@kernel.org>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
+ joe@perches.com, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, jasowang@redhat.com,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org,
+ linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Mon, 23 Jul 2018 07:46:09 +0530
+MIME-Version: 1.0
+In-Reply-To: <20180720160550-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <3dd36d8e-3bc8-91ba-cf6d-939495439d2c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +46,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Sat, 21 Jul 2018 12:59:25 -0700
-
-> From: Randy Dunlap <rdunlap@infradead.org>
+On 07/20/2018 06:45 PM, Michael S. Tsirkin wrote:
+> On Fri, Jul 20, 2018 at 09:29:41AM +0530, Anshuman Khandual wrote:
+>> Subject: Re: [RFC 4/4] virtio: Add platform specific DMA API translation for
+>> virito devices
 > 
-> Prevent drivers from building on PPC32 if they use isa_bus_to_virt(),
-> isa_virt_to_bus(), or isa_page_to_bus(), which are not available and
-> thus cause build errors.
- ...
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
+> s/virito/virtio/
 
-Applied, thanks Randy.
+Oops, will fix it. Thanks for pointing out.
+
+> 
+>> This adds a hook which a platform can define in order to allow it to
+>> override virtio device's DMA OPS irrespective of whether it has the
+>> flag VIRTIO_F_IOMMU_PLATFORM set or not. We want to use this to do
+>> bounce-buffering of data on the new secure pSeries platform, currently
+>> under development, where a KVM host cannot access all of the memory
+>> space of a secure KVM guest.  The host can only access the pages which
+>> the guest has explicitly requested to be shared with the host, thus
+>> the virtio implementation in the guest has to copy data to and from
+>> shared pages.
+>>
+>> With this hook, the platform code in the secure guest can force the
+>> use of swiotlb for virtio buffers, with a back-end for swiotlb which
+>> will use a pool of pre-allocated shared pages.  Thus all data being
+>> sent or received by virtio devices will be copied through pages which
+>> the host has access to.
+>>
+>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/dma-mapping.h | 6 ++++++
+>>  arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
+>>  drivers/virtio/virtio.c                | 7 +++++++
+>>  3 files changed, 19 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+>> index 8fa3945..bc5a9d3 100644
+>> --- a/arch/powerpc/include/asm/dma-mapping.h
+>> +++ b/arch/powerpc/include/asm/dma-mapping.h
+>> @@ -116,3 +116,9 @@ extern u64 __dma_get_required_mask(struct device *dev);
+>>  
+>>  #endif /* __KERNEL__ */
+>>  #endif	/* _ASM_DMA_MAPPING_H */
+>> +
+>> +#define platform_override_dma_ops platform_override_dma_ops
+>> +
+>> +struct virtio_device;
+>> +
+>> +extern void platform_override_dma_ops(struct virtio_device *vdev);
+>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+>> index 06f0296..5773bc7 100644
+>> --- a/arch/powerpc/platforms/pseries/iommu.c
+>> +++ b/arch/powerpc/platforms/pseries/iommu.c
+>> @@ -38,6 +38,7 @@
+>>  #include <linux/of.h>
+>>  #include <linux/iommu.h>
+>>  #include <linux/rculist.h>
+>> +#include <linux/virtio.h>
+>>  #include <asm/io.h>
+>>  #include <asm/prom.h>
+>>  #include <asm/rtas.h>
+>> @@ -1396,3 +1397,8 @@ static int __init disable_multitce(char *str)
+>>  __setup("multitce=", disable_multitce);
+>>  
+>>  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
+>> +
+>> +void platform_override_dma_ops(struct virtio_device *vdev)
+>> +{
+>> +	/* Override vdev->parent.dma_ops if required */
+>> +}
+>> diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
+>> index 6b13987..432c332 100644
+>> --- a/drivers/virtio/virtio.c
+>> +++ b/drivers/virtio/virtio.c
+>> @@ -168,6 +168,12 @@ EXPORT_SYMBOL_GPL(virtio_add_status);
+>>  
+>>  const struct dma_map_ops virtio_direct_dma_ops;
+>>  
+>> +#ifndef platform_override_dma_ops
+>> +static inline void platform_override_dma_ops(struct virtio_device *vdev)
+>> +{
+>> +}
+>> +#endif
+>> +
+>>  int virtio_finalize_features(struct virtio_device *dev)
+>>  {
+>>  	int ret = dev->config->finalize_features(dev);
+>> @@ -179,6 +185,7 @@ int virtio_finalize_features(struct virtio_device *dev)
+>>  	if (virtio_has_iommu_quirk(dev))
+>>  		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
+>>  
+>> +	platform_override_dma_ops(dev);
+> 
+> Is there a single place where virtio_has_iommu_quirk is called now?
+
+Not other than this one. But in the proposed implementation of
+platform_override_dma_ops on powerpc, we will again check on
+virtio_has_iommu_quirk before overriding it with SWIOTLB.
+
+void platform_override_dma_ops(struct virtio_device *vdev)
+{
+        if (is_ultravisor_platform() && virtio_has_iommu_quirk(vdev))
+                set_dma_ops(vdev->dev.parent, &swiotlb_dma_ops);
+}
+
+> If so, we could put this into virtio_has_iommu_quirk then.
+
+Did you mean platform_override_dma_ops instead ? If so, yes that
+is possible. Default implementation of platform_override_dma_ops
+should just check on VIRTIO_F_IOMMU_PLATFORM feature and override
+with virtio_direct_dma_ops but arch implementation can check on
+what ever else they would like and override appropriately.
+
+Default platform_override_dma_ops will be like this
+
+#ifndef platform_override_dma_ops
+static inline void platform_override_dma_ops(struct virtio_device *vdev)
+{
+	if(!virtio_has_feature(vdev, VIRTIO_F_IOMMU_PLATFORM))
+		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
+}
+#endif
+
+Proposed powerpc implementation will be like this instead
+
+void platform_override_dma_ops(struct virtio_device *vdev)
+{
+	if (virtio_has_feature(vdev, VIRTIO_F_IOMMU_PLATFORM))
+		return;
+
+        if (is_ultravisor_platform())
+                set_dma_ops(vdev->dev.parent, &swiotlb_dma_ops);
+	else
+		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
+	
+}
+
+There is a redundant definition of virtio_has_iommu_quirk in the tools
+directory (tools/virtio/linux/virtio_config.h) which does not seem to
+be used any where. I guess that can be removed without problem.
