@@ -3,9 +3,9 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41YvY83j00zDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 18:19:40 +1000 (AEST)
-Date: Mon, 23 Jul 2018 01:19:38 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41YvsF29dHzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 18:33:37 +1000 (AEST)
+Date: Mon, 23 Jul 2018 01:18:11 -0700
 From: Christoph Hellwig <hch@infradead.org>
 To: Randy Dunlap <rdunlap@infradead.org>
 Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>,
@@ -14,12 +14,11 @@ Cc: PowerPC <linuxppc-dev@lists.ozlabs.org>,
  "Martin K. Petersen" <martin.petersen@oracle.com>,
  "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
 Subject: Re: [PATCH] scsi: prevent ISA driver from building on PPC32
-Message-ID: <20180723081938.GA28153@infradead.org>
+Message-ID: <20180723081811.GA27025@infradead.org>
 References: <5928f120-5a23-eff9-6c1d-41344d588b11@infradead.org>
- <20180723081811.GA27025@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180723081811.GA27025@infradead.org>
+In-Reply-To: <5928f120-5a23-eff9-6c1d-41344d588b11@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 23, 2018 at 01:18:11AM -0700, Christoph Hellwig wrote:
-> On Sat, Jul 21, 2018 at 12:58:21PM -0700, Randy Dunlap wrote:
-> > From: Randy Dunlap <rdunlap@infradead.org>
-> > 
-> > Prevent drivers from building on PPC32 if they use isa_bus_to_virt(),
-> > isa_virt_to_bus(), or isa_page_to_bus(), which are not available and
-> > thus cause build errors.
+On Sat, Jul 21, 2018 at 12:58:21PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <rdunlap@infradead.org>
 > 
-> Please don't introduce weird arch dependencies, and add a
-> CONFIG_ISA_VIRT_TO_BUS instead.
+> Prevent drivers from building on PPC32 if they use isa_bus_to_virt(),
+> isa_virt_to_bus(), or isa_page_to_bus(), which are not available and
+> thus cause build errors.
 
-And in fact we have so few drivers that we should just kill off the
-API entirely instead.  I'll take care of aha1542 in the next week or
-so.
+Please don't introduce weird arch dependencies, and add a
+CONFIG_ISA_VIRT_TO_BUS instead.
