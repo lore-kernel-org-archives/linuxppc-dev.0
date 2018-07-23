@@ -1,31 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <yuehaibing@huawei.com>
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z36g5WHHzDrH0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 00:00:43 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alex Ghiti <alex@ghiti.fr>, Michal Hocko <mhocko@kernel.org>
-Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
- paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, paulus@samba.org, ysato@users.sourceforge.jp,
- dalias@libc.org, davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com,
- hpa@zytor.com, x86@kernel.org, arnd@arndb.de,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-ia64@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-arch@vger.kernel.org, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- Mike Kravetz <mike.kravetz@oracle.com>
-Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-In-Reply-To: <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
-References: <20180705110716.3919-1-alex@ghiti.fr>
- <20180709141621.GD22297@dhcp22.suse.cz>
- <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
-Date: Tue, 24 Jul 2018 00:00:37 +1000
-Message-ID: <87d0vehx16.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z3kh5pQGzDqmj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 00:28:26 +1000 (AEST)
+From: YueHaibing <yuehaibing@huawei.com>
+To: <qiang.zhao@nxp.com>, <davem@davemloft.net>
+CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
+Subject: [PATCH net-next] wan/fsl_ucc_hdlc: use IS_ERR_VALUE() to check return
+ value of qe_muram_alloc
+Date: Mon, 23 Jul 2018 22:12:33 +0800
+Message-ID: <20180723141233.19948-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,79 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alex Ghiti <alex@ghiti.fr> writes:
+qe_muram_alloc return a unsigned long integer,which should not
+compared with zero. check it using IS_ERR_VALUE() to fix this.
 
-> Does anyone have any suggestion about those patches ?
+Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/net/wan/fsl_ucc_hdlc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Cross compiling it for some non-x86 arches would be a good start :)
-
-There are cross compilers available here:
-
-  https://mirrors.edge.kernel.org/pub/tools/crosstool/
-
-
-cheers
-
-> On 07/09/2018 02:16 PM, Michal Hocko wrote:
->> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
->>
->> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
->>> In order to reduce copy/paste of functions across architectures and then
->>> make riscv hugetlb port (and future ports) simpler and smaller, this
->>> patchset intends to factorize the numerous hugetlb primitives that are
->>> defined across all the architectures.
->>>
->>> Except for prepare_hugepage_range, this patchset moves the versions that
->>> are just pass-through to standard pte primitives into
->>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
->>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
->>>
->>> s390 architecture has not been tackled in this serie since it does not
->>> use asm-generic/hugetlb.h at all.
->>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
->>>
->>> This patchset has been compiled on x86 only.
->>>
->>> Changelog:
->>>
->>> v4:
->>>    Fix powerpc build error due to misplacing of #include
->>>    <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
->>>    pointed by Christophe Leroy.
->>>
->>> v1, v2, v3:
->>>    Same version, just problems with email provider and misuse of
->>>    --batch-size option of git send-email
->>>
->>> Alexandre Ghiti (11):
->>>    hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->>>    hugetlb: Introduce generic version of hugetlb_free_pgd_range
->>>    hugetlb: Introduce generic version of set_huge_pte_at
->>>    hugetlb: Introduce generic version of huge_ptep_get_and_clear
->>>    hugetlb: Introduce generic version of huge_ptep_clear_flush
->>>    hugetlb: Introduce generic version of huge_pte_none
->>>    hugetlb: Introduce generic version of huge_pte_wrprotect
->>>    hugetlb: Introduce generic version of prepare_hugepage_range
->>>    hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->>>    hugetlb: Introduce generic version of huge_ptep_set_access_flags
->>>    hugetlb: Introduce generic version of huge_ptep_get
->>>
->>>   arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->>>   arch/arm/include/asm/hugetlb.h               | 33 +----------
->>>   arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->>>   arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->>>   arch/mips/include/asm/hugetlb.h              | 40 +++----------
->>>   arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->>>   arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
->>>   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->>>   arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->>>   arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
->>>   arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->>>   arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->>>   arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->>>   arch/x86/include/asm/hugetlb.h               | 72 +----------------------
->>>   include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->>>   15 files changed, 143 insertions(+), 384 deletions(-)
->>>
->>> -- 
->>> 2.16.2
+diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
+index 9b09c9d..5f0366a 100644
+--- a/drivers/net/wan/fsl_ucc_hdlc.c
++++ b/drivers/net/wan/fsl_ucc_hdlc.c
+@@ -192,7 +192,7 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
+ 	priv->ucc_pram_offset = qe_muram_alloc(sizeof(struct ucc_hdlc_param),
+ 				ALIGNMENT_OF_UCC_HDLC_PRAM);
+ 
+-	if (priv->ucc_pram_offset < 0) {
++	if (IS_ERR_VALUE(priv->ucc_pram_offset)) {
+ 		dev_err(priv->dev, "Can not allocate MURAM for hdlc parameter.\n");
+ 		ret = -ENOMEM;
+ 		goto free_tx_bd;
+@@ -230,14 +230,14 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
+ 
+ 	/* Alloc riptr, tiptr */
+ 	riptr = qe_muram_alloc(32, 32);
+-	if (riptr < 0) {
++	if (IS_ERR_VALUE(riptr)) {
+ 		dev_err(priv->dev, "Cannot allocate MURAM mem for Receive internal temp data pointer\n");
+ 		ret = -ENOMEM;
+ 		goto free_tx_skbuff;
+ 	}
+ 
+ 	tiptr = qe_muram_alloc(32, 32);
+-	if (tiptr < 0) {
++	if (IS_ERR_VALUE(tiptr)) {
+ 		dev_err(priv->dev, "Cannot allocate MURAM mem for Transmit internal temp data pointer\n");
+ 		ret = -ENOMEM;
+ 		goto free_riptr;
+-- 
+2.7.0
