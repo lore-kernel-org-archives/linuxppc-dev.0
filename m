@@ -1,42 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41YlV12xyvzDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 12:16:25 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6N28uEw088624
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jul 2018 22:16:22 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kd4d7u50c-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jul 2018 22:16:22 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 23 Jul 2018 03:16:20 +0100
-Subject: Re: [RFC 4/4] virtio: Add platform specific DMA API translation for
- virito devices
-To: "Michael S. Tsirkin" <mst@redhat.com>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180720035941.6844-5-khandual@linux.vnet.ibm.com>
- <20180720160550-mutt-send-email-mst@kernel.org>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net,
- david@gibson.dropbear.id.au, jasowang@redhat.com,
- benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org,
- linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Mon, 23 Jul 2018 07:46:09 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Yr584DkYzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 15:43:40 +1000 (AEST)
+Date: Mon, 23 Jul 2018 15:43:37 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, david@gibson.dropbear.id.au, clg@kaod.org
+Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access
+ full VCPU ID space
+Message-ID: <20180723054337.GA29207@fergus>
+References: <1fb3aea5f44f1029866ee10db40abde7e18b24ad.1531967105.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180720160550-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Message-Id: <3dd36d8e-3bc8-91ba-cf6d-939495439d2c@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1fb3aea5f44f1029866ee10db40abde7e18b24ad.1531967105.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,141 +25,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/20/2018 06:45 PM, Michael S. Tsirkin wrote:
-> On Fri, Jul 20, 2018 at 09:29:41AM +0530, Anshuman Khandual wrote:
->> Subject: Re: [RFC 4/4] virtio: Add platform specific DMA API translation for
->> virito devices
+On Thu, Jul 19, 2018 at 12:25:10PM +1000, Sam Bobroff wrote:
+> From: Sam Bobroff <sam.bobroff@au1.ibm.com>
 > 
-> s/virito/virtio/
-
-Oops, will fix it. Thanks for pointing out.
-
+> It is not currently possible to create the full number of possible
+> VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
+> threads per core than it's core stride (or "VSMT mode"). This is
+> because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
+> even though the VCPU ID is less than KVM_MAX_VCPU_ID.
 > 
->> This adds a hook which a platform can define in order to allow it to
->> override virtio device's DMA OPS irrespective of whether it has the
->> flag VIRTIO_F_IOMMU_PLATFORM set or not. We want to use this to do
->> bounce-buffering of data on the new secure pSeries platform, currently
->> under development, where a KVM host cannot access all of the memory
->> space of a secure KVM guest.  The host can only access the pages which
->> the guest has explicitly requested to be shared with the host, thus
->> the virtio implementation in the guest has to copy data to and from
->> shared pages.
->>
->> With this hook, the platform code in the secure guest can force the
->> use of swiotlb for virtio buffers, with a back-end for swiotlb which
->> will use a pool of pre-allocated shared pages.  Thus all data being
->> sent or received by virtio devices will be copied through pages which
->> the host has access to.
->>
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/dma-mapping.h | 6 ++++++
->>  arch/powerpc/platforms/pseries/iommu.c | 6 ++++++
->>  drivers/virtio/virtio.c                | 7 +++++++
->>  3 files changed, 19 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
->> index 8fa3945..bc5a9d3 100644
->> --- a/arch/powerpc/include/asm/dma-mapping.h
->> +++ b/arch/powerpc/include/asm/dma-mapping.h
->> @@ -116,3 +116,9 @@ extern u64 __dma_get_required_mask(struct device *dev);
->>  
->>  #endif /* __KERNEL__ */
->>  #endif	/* _ASM_DMA_MAPPING_H */
->> +
->> +#define platform_override_dma_ops platform_override_dma_ops
->> +
->> +struct virtio_device;
->> +
->> +extern void platform_override_dma_ops(struct virtio_device *vdev);
->> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->> index 06f0296..5773bc7 100644
->> --- a/arch/powerpc/platforms/pseries/iommu.c
->> +++ b/arch/powerpc/platforms/pseries/iommu.c
->> @@ -38,6 +38,7 @@
->>  #include <linux/of.h>
->>  #include <linux/iommu.h>
->>  #include <linux/rculist.h>
->> +#include <linux/virtio.h>
->>  #include <asm/io.h>
->>  #include <asm/prom.h>
->>  #include <asm/rtas.h>
->> @@ -1396,3 +1397,8 @@ static int __init disable_multitce(char *str)
->>  __setup("multitce=", disable_multitce);
->>  
->>  machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
->> +
->> +void platform_override_dma_ops(struct virtio_device *vdev)
->> +{
->> +	/* Override vdev->parent.dma_ops if required */
->> +}
->> diff --git a/drivers/virtio/virtio.c b/drivers/virtio/virtio.c
->> index 6b13987..432c332 100644
->> --- a/drivers/virtio/virtio.c
->> +++ b/drivers/virtio/virtio.c
->> @@ -168,6 +168,12 @@ EXPORT_SYMBOL_GPL(virtio_add_status);
->>  
->>  const struct dma_map_ops virtio_direct_dma_ops;
->>  
->> +#ifndef platform_override_dma_ops
->> +static inline void platform_override_dma_ops(struct virtio_device *vdev)
->> +{
->> +}
->> +#endif
->> +
->>  int virtio_finalize_features(struct virtio_device *dev)
->>  {
->>  	int ret = dev->config->finalize_features(dev);
->> @@ -179,6 +185,7 @@ int virtio_finalize_features(struct virtio_device *dev)
->>  	if (virtio_has_iommu_quirk(dev))
->>  		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
->>  
->> +	platform_override_dma_ops(dev);
+> To address this, "pack" the VCORE ID and XIVE offsets by using
+> knowledge of the way the VCPU IDs will be used when there are less
+> guest threads per core than the core stride. The primary thread of
+> each core will always be used first. Then, if the guest uses more than
+> one thread per core, these secondary threads will sequentially follow
+> the primary in each core.
 > 
-> Is there a single place where virtio_has_iommu_quirk is called now?
+> So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
+> VCPUs are being spaced apart, so at least half of each core is empty
+> and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
+> into the second half of each core (4..7, in an 8-thread core).
+> 
+> Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
+> each core is being left empty, and we can map down into the second and
+> third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
+> 
+> Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
+> threads are being used and 7/8 of the core is empty, allowing use of
+> the 1, 3, 5 and 7 thread slots.
+> 
+> (Strides less than 8 are handled similarly.)
+> 
+> This allows the VCORE ID or offset to be calculated quickly from the
+> VCPU ID or XIVE server numbers, without access to the VCPU structure.
+> 
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
-Not other than this one. But in the proposed implementation of
-platform_override_dma_ops on powerpc, we will again check on
-virtio_has_iommu_quirk before overriding it with SWIOTLB.
+I have some comments relating to the situation where the stride
+(i.e. kvm->arch.emul_smt_mode) is less than 8; see below.
 
-void platform_override_dma_ops(struct virtio_device *vdev)
-{
-        if (is_ultravisor_platform() && virtio_has_iommu_quirk(vdev))
-                set_dma_ops(vdev->dev.parent, &swiotlb_dma_ops);
-}
+[snip]
+> +static inline u32 kvmppc_pack_vcpu_id(struct kvm *kvm, u32 id)
+> +{
+> +	const int block_offsets[MAX_SMT_THREADS] = {0, 4, 2, 6, 1, 3, 5, 7};
 
-> If so, we could put this into virtio_has_iommu_quirk then.
+This needs to be {0, 4, 2, 6, 1, 5, 3, 7} (with the 3 and 5 swapped
+from what you have) for the case when stride == 4 and block == 3.  In
+that case we need block_offsets[block] to be 3; if it is 5, then we
+will collide with the case where block == 2 for the next virtual core.
 
-Did you mean platform_override_dma_ops instead ? If so, yes that
-is possible. Default implementation of platform_override_dma_ops
-should just check on VIRTIO_F_IOMMU_PLATFORM feature and override
-with virtio_direct_dma_ops but arch implementation can check on
-what ever else they would like and override appropriately.
+> +	int stride = kvm->arch.emul_smt_mode;
+> +	int block = (id / KVM_MAX_VCPUS) * (MAX_SMT_THREADS / stride);
+> +	u32 packed_id;
+> +
+> +	BUG_ON(block >= MAX_SMT_THREADS);
+> +	packed_id = (id % KVM_MAX_VCPUS) + block_offsets[block];
+> +	BUG_ON(packed_id >= KVM_MAX_VCPUS);
+> +	return packed_id;
+> +}
+> +
+>  #endif /* __ASM_KVM_BOOK3S_H__ */
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index de686b340f4a..363c2fb0d89e 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -1816,7 +1816,7 @@ static int threads_per_vcore(struct kvm *kvm)
+>  	return threads_per_subcore;
+>  }
+>  
+> -static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
+> +static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int id)
+>  {
+>  	struct kvmppc_vcore *vcore;
+>  
+> @@ -1830,7 +1830,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
+>  	init_swait_queue_head(&vcore->wq);
+>  	vcore->preempt_tb = TB_NIL;
+>  	vcore->lpcr = kvm->arch.lpcr;
+> -	vcore->first_vcpuid = core * kvm->arch.smt_mode;
+> +	vcore->first_vcpuid = id;
+>  	vcore->kvm = kvm;
+>  	INIT_LIST_HEAD(&vcore->preempt_list);
+>  
+> @@ -2048,12 +2048,18 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
+>  	mutex_lock(&kvm->lock);
+>  	vcore = NULL;
+>  	err = -EINVAL;
+> -	core = id / kvm->arch.smt_mode;
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> +		BUG_ON(kvm->arch.smt_mode != 1);
+> +		core = kvmppc_pack_vcpu_id(kvm, id);
 
-Default platform_override_dma_ops will be like this
+We now have a way for userspace to trigger a BUG_ON, as far as I can
+see.  The only check on id up to this point is that it is less than
+KVM_MAX_VCPU_ID, which means that the BUG_ON(block >= MAX_SMT_THREADS)
+can be triggered, if kvm->arch.emul_smt_mode < MAX_SMT_THREADS, by
+giving an id that is greater than or equal to KVM_MAX_VCPUS *
+kvm->arch.emul_smt+mode.
 
-#ifndef platform_override_dma_ops
-static inline void platform_override_dma_ops(struct virtio_device *vdev)
-{
-	if(!virtio_has_feature(vdev, VIRTIO_F_IOMMU_PLATFORM))
-		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
-}
-#endif
+> +	} else {
+> +		core = id / kvm->arch.smt_mode;
+> +	}
+>  	if (core < KVM_MAX_VCORES) {
+>  		vcore = kvm->arch.vcores[core];
+> +		BUG_ON(cpu_has_feature(CPU_FTR_ARCH_300) && vcore);
 
-Proposed powerpc implementation will be like this instead
+Doesn't this just mean that userspace has chosen an id big enough to
+cause a collision in the output space of kvmppc_pack_vcpu_id()?  How
+is this not user-triggerable?
 
-void platform_override_dma_ops(struct virtio_device *vdev)
-{
-	if (virtio_has_feature(vdev, VIRTIO_F_IOMMU_PLATFORM))
-		return;
-
-        if (is_ultravisor_platform())
-                set_dma_ops(vdev->dev.parent, &swiotlb_dma_ops);
-	else
-		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
-	
-}
-
-There is a redundant definition of virtio_has_iommu_quirk in the tools
-directory (tools/virtio/linux/virtio_config.h) which does not seem to
-be used any where. I guess that can be removed without problem.
+Paul.
