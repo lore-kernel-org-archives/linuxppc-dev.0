@@ -1,17 +1,36 @@
-Return-Path: <krzk@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alex@ghiti.fr>
+Received: from relay9-d.mail.gandi.net (relay9-d.mail.gandi.net
+ [217.70.183.199])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z6DK0kyRzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 02:20:48 +1000 (AEST)
-From: Krzysztof Kozlowski <krzk@kernel.org>
-To: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- "David S. Miller" <davem@davemloft.net>, linuxppc-dev@lists.ozlabs.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Eric Biggers <ebiggers3@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH] net: ethernet: fs-enet: Use generic CRC32 implementation
-Date: Mon, 23 Jul 2018 18:20:20 +0200
-Message-Id: <20180723162020.6221-1-krzk@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z81d3r97zDqmj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 03:41:38 +1000 (AEST)
+From: Alex Ghiti <alex@ghiti.fr>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>, Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180709141621.GD22297@dhcp22.suse.cz>
+ <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+ <87d0vehx16.fsf@concordia.ellerman.id.au>
+Message-ID: <2d4c19e1-f622-7747-3ba1-ff3243337b93@ghiti.fr>
+Date: Mon, 23 Jul 2018 17:41:26 +0000
+MIME-Version: 1.0
+In-Reply-To: <87d0vehx16.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,57 +40,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use generic kernel CRC32 implementation because it:
-1. Should be faster (uses lookup tables),
-2. Removes duplicated CRC generation code,
-3. Uses well-proven algorithm instead of coding it one more time.
+Ok will do and report when done.
 
-Suggested-by: Eric Biggers <ebiggers3@gmail.com>
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Thanks for your feedback,
 
----
+Alex
 
-Not tested on hardware.
----
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 18 ++++--------------
- 1 file changed, 4 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index 1fc27c97e3b2..99fe2c210d0f 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -18,6 +18,7 @@
- #include <linux/string.h>
- #include <linux/ptrace.h>
- #include <linux/errno.h>
-+#include <linux/crc32.h>
- #include <linux/ioport.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-@@ -176,21 +177,10 @@ static void set_multicast_start(struct net_device *dev)
- static void set_multicast_one(struct net_device *dev, const u8 *mac)
- {
- 	struct fs_enet_private *fep = netdev_priv(dev);
--	int temp, hash_index, i, j;
-+	int temp, hash_index;
- 	u32 crc, csrVal;
--	u8 byte, msb;
--
--	crc = 0xffffffff;
--	for (i = 0; i < 6; i++) {
--		byte = mac[i];
--		for (j = 0; j < 8; j++) {
--			msb = crc >> 31;
--			crc <<= 1;
--			if (msb ^ (byte & 0x1))
--				crc ^= FEC_CRC_POLY;
--			byte >>= 1;
--		}
--	}
-+
-+	crc = ether_crc(6, mac);
- 
- 	temp = (crc & 0x3f) >> 1;
- 	hash_index = ((temp & 0x01) << 4) |
--- 
-2.14.1
+On 07/23/2018 02:00 PM, Michael Ellerman wrote:
+> Alex Ghiti <alex@ghiti.fr> writes:
+>
+>> Does anyone have any suggestion about those patches ?
+> Cross compiling it for some non-x86 arches would be a good start :)
+>
+> There are cross compilers available here:
+>
+>    https://mirrors.edge.kernel.org/pub/tools/crosstool/
+>
+>
+> cheers
+>
+>> On 07/09/2018 02:16 PM, Michal Hocko wrote:
+>>> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
+>>>
+>>> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
+>>>> In order to reduce copy/paste of functions across architectures and then
+>>>> make riscv hugetlb port (and future ports) simpler and smaller, this
+>>>> patchset intends to factorize the numerous hugetlb primitives that are
+>>>> defined across all the architectures.
+>>>>
+>>>> Except for prepare_hugepage_range, this patchset moves the versions that
+>>>> are just pass-through to standard pte primitives into
+>>>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+>>>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+>>>>
+>>>> s390 architecture has not been tackled in this serie since it does not
+>>>> use asm-generic/hugetlb.h at all.
+>>>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+>>>>
+>>>> This patchset has been compiled on x86 only.
+>>>>
+>>>> Changelog:
+>>>>
+>>>> v4:
+>>>>     Fix powerpc build error due to misplacing of #include
+>>>>     <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
+>>>>     pointed by Christophe Leroy.
+>>>>
+>>>> v1, v2, v3:
+>>>>     Same version, just problems with email provider and misuse of
+>>>>     --batch-size option of git send-email
+>>>>
+>>>> Alexandre Ghiti (11):
+>>>>     hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+>>>>     hugetlb: Introduce generic version of hugetlb_free_pgd_range
+>>>>     hugetlb: Introduce generic version of set_huge_pte_at
+>>>>     hugetlb: Introduce generic version of huge_ptep_get_and_clear
+>>>>     hugetlb: Introduce generic version of huge_ptep_clear_flush
+>>>>     hugetlb: Introduce generic version of huge_pte_none
+>>>>     hugetlb: Introduce generic version of huge_pte_wrprotect
+>>>>     hugetlb: Introduce generic version of prepare_hugepage_range
+>>>>     hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+>>>>     hugetlb: Introduce generic version of huge_ptep_set_access_flags
+>>>>     hugetlb: Introduce generic version of huge_ptep_get
+>>>>
+>>>>    arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+>>>>    arch/arm/include/asm/hugetlb.h               | 33 +----------
+>>>>    arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+>>>>    arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+>>>>    arch/mips/include/asm/hugetlb.h              | 40 +++----------
+>>>>    arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+>>>>    arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
+>>>>    arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+>>>>    arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+>>>>    arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
+>>>>    arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+>>>>    arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+>>>>    arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+>>>>    arch/x86/include/asm/hugetlb.h               | 72 +----------------------
+>>>>    include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+>>>>    15 files changed, 143 insertions(+), 384 deletions(-)
+>>>>
+>>>> -- 
+>>>> 2.16.2
