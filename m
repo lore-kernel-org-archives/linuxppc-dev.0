@@ -2,19 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z2hP5P5MzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 23:41:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z34k6r7NzDqmj
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2018 23:59:02 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Allen <jallen@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- nfont@linux.vnet.ibm.com
-Cc: John Allen <jallen@linux.ibm.com>
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-In-Reply-To: <20180717194048.3057-3-jallen@linux.ibm.com>
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-3-jallen@linux.ibm.com>
-Date: Mon, 23 Jul 2018 23:41:24 +1000
-Message-ID: <87k1pmhxx7.fsf@concordia.ellerman.id.au>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux@roeck-us.net
+Cc: linuxppc-dev@lists.ozlabs.org, linux-hwmon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, ego@linux.vnet.ibm.com, stewart@linux.ibm.com,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 2/2] hwmon: ibmpowernv: Add attributes to
+ enable/disable sensor groups
+In-Reply-To: <1532067143-22022-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1532067143-22022-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1532067143-22022-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Mon, 23 Jul 2018 23:59:00 +1000
+Message-ID: <87fu0ahx3v.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,52 +27,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-John Allen <jallen@linux.ibm.com> writes:
+Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+> index f829dad..99afbf7 100644
+> --- a/drivers/hwmon/ibmpowernv.c
+> +++ b/drivers/hwmon/ibmpowernv.c
+> @@ -292,12 +344,126 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
+>  	return ++sensor_groups[sdata->type].hwmon_index;
+>  }
+>  
+> +static int init_sensor_group_data(struct platform_device *pdev,
+> +				  struct platform_data *pdata)
+> +{
+> +	struct sensor_group_data *sgrp_data;
+> +	struct device_node *groups, *sgrp;
+> +	enum sensors type;
+> +	int count = 0, ret = 0;
+> +
+> +	groups = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
+> +	if (!groups)
+> +		return ret;
+> +
+> +	for_each_child_of_node(groups, sgrp) {
+> +		type = get_sensor_type(sgrp);
+> +		if (type != MAX_SENSOR_TYPE)
+> +			pdata->nr_sensor_groups++;
+> +	}
+> +
+> +	if (!pdata->nr_sensor_groups)
+> +		goto out;
+> +
+> +	sgrp_data = devm_kcalloc(&pdev->dev, pdata->nr_sensor_groups,
+> +				 sizeof(*sgrp_data), GFP_KERNEL);
+> +	if (!sgrp_data) {
+> +		ret = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	for_each_child_of_node(groups, sgrp) {
+> +		const __be32 *phandles;
+> +		int len, gid;
+> +
+> +		type = get_sensor_type(sgrp);
+> +		if (type == MAX_SENSOR_TYPE)
+> +			continue;
+> +
+> +		if (of_property_read_u32(sgrp, "sensor-group-id", &gid))
+> +			continue;
+> +
+> +		phandles = of_get_property(sgrp, "sensors", &len);
+> +		if (!phandles)
+> +			continue;
 
-> While handling PRRN events, the time to handle the actual hotplug events
-> dwarfs the time it takes to perform the device tree updates and queue the
-> hotplug events. In the case that PRRN events are being queued continuously,
-> hotplug events have been observed to be queued faster than the kernel can
-> actually handle them. This patch avoids the problem by waiting for a
-> hotplug request to complete before queueing more hotplug events.
+You should be able to use the more modern OF APIs, eg:
 
-So do we need the hotplug work queue at all? Can we just call
-handle_dlpar_errorlog() directly?
+		rc = of_count_phandle_with_args(sgrp, "sensors", NULL);
 
-Or are we using the work queue to serialise things? And if so would a
-mutex be better?
+> +		len /= sizeof(u32);
+> +		if (!len)
+> +			continue;
 
-It looks like prrn_update_node() is called via at least, prrn_work_fn()
-and post_mobility_fixup().
+Which would make that check unnecessary.
 
-The latter is called from migration_store(), which seems like it would
-be harmless. But also from pseries_suspend_enable_irqs() which I'm less
-clear on.
+> +		sensor_groups[type].attr_count++;
+> +		sgrp_data[count].gid = gid;
+> +		mutex_init(&sgrp_data[count].mutex);
+> +		sgrp_data[count++].enable = false;
+> +	}
+> +
+> +	pdata->sgrp_data = sgrp_data;
+> +out:
+> +	of_node_put(groups);
+> +	return ret;
+> +}
+> +
+> +static struct sensor_group_data *get_sensor_group(struct platform_data *pdata,
+> +						  struct device_node *node,
+> +						  enum sensors gtype)
+> +{
+> +	struct sensor_group_data *sgrp_data = pdata->sgrp_data;
+> +	struct device_node *groups, *sgrp;
+> +
+> +	groups = of_find_compatible_node(NULL, NULL, "ibm,opal-sensor-group");
+> +	if (!groups)
+> +		return NULL;
+> +
+> +	for_each_child_of_node(groups, sgrp) {
+> +		const __be32 *phandles;
+> +		int len, gid, i;
+> +		enum sensors type;
+> +
+> +		type = get_sensor_type(sgrp);
+> +		if (type != gtype)
+> +			continue;
+> +
+> +		if (of_property_read_u32(sgrp, "sensor-group-id", &gid))
+> +			continue;
+> +
+> +		phandles = of_get_property(sgrp, "sensors", &len);
+> +		if (!phandles)
+> +			continue;
+> +
+> +		len /= sizeof(u32);
+> +		if (!len)
+> +			continue;
+> +
+> +		while (--len >= 0)
+> +			if (be32_to_cpu(phandles[len]) == node->phandle)
+> +				break;
+
+Likewise, here you could use of_for_each_phandle().
+
 
 cheers
-
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index 8a8033a249c7..49930848fa78 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -242,6 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
->  static void prrn_update_node(__be32 phandle)
->  {
->  	struct pseries_hp_errorlog *hp_elog;
-> +	struct completion hotplug_done;
->  	struct device_node *dn;
->  
->  	/*
-> @@ -263,7 +264,9 @@ static void prrn_update_node(__be32 phandle)
->  	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
->  	hp_elog->_drc_u.drc_index = phandle;
->  
-> -	queue_hotplug_event(hp_elog, NULL, NULL);
-> +	init_completion(&hotplug_done);
-> +	queue_hotplug_event(hp_elog, &hotplug_done, NULL);
-> +	wait_for_completion(&hotplug_done);
->  
->  	kfree(hp_elog);
->  }
-> -- 
-> 2.17.1
