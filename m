@@ -1,19 +1,42 @@
-Return-Path: <yuehaibing@huawei.com>
-Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z3kh5pQGzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 00:28:26 +1000 (AEST)
-From: YueHaibing <yuehaibing@huawei.com>
-To: <qiang.zhao@nxp.com>, <davem@davemloft.net>
-CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, YueHaibing <yuehaibing@huawei.com>
-Subject: [PATCH net-next] wan/fsl_ucc_hdlc: use IS_ERR_VALUE() to check return
- value of qe_muram_alloc
-Date: Mon, 23 Jul 2018 22:12:33 +0800
-Message-ID: <20180723141233.19948-1-yuehaibing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Z3t31ZjWzDqnK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 00:34:50 +1000 (AEST)
+Date: Mon, 23 Jul 2018 16:34:43 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: Baoquan He <bhe@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, dan.j.williams@intel.com,
+ nicolas.pitre@linaro.org, josh@joshtriplett.org,
+ fengguang.wu@intel.com, bp@suse.de, andy.shevchenko@gmail.com,
+ patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
+ haiyangz@microsoft.com, sthemmin@microsoft.com,
+ dmitry.torokhov@gmail.com, frowand.list@gmail.com,
+ keith.busch@intel.com, jonathan.derrick@intel.com,
+ lorenzo.pieralisi@arm.com, bhelgaas@google.com, tglx@linutronix.de,
+ brijesh.singh@amd.com, jglisse@redhat.com, thomas.lendacky@amd.com,
+ gregkh@linuxfoundation.org, baiyaowei@cmss.chinamobile.com,
+ richard.weiyang@gmail.com, devel@linuxdriverproject.org,
+ linux-input@vger.kernel.org, linux-nvdimm@lists.01.org,
+ devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
+ ebiederm@xmission.com, vgoyal@redhat.com, dyoung@redhat.com,
+ yinghai@kernel.org, monstr@monstr.eu, davem@davemloft.net,
+ chris@zankel.net, jcmvbkbc@gmail.com, gustavo@padovan.org,
+ maarten.lankhorst@linux.intel.com, seanpaul@chromium.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kexec@lists.infradead.org
+Subject: Re: [PATCH v7 4/4] kexec_file: Load kernel at top of system RAM if
+ required
+Message-ID: <20180723143443.GD18181@dhcp22.suse.cz>
+References: <20180718024944.577-1-bhe@redhat.com>
+ <20180718024944.577-5-bhe@redhat.com>
+ <20180718153326.b795e9ea7835432a56cd7011@linux-foundation.org>
+ <20180719151753.GB7147@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180719151753.GB7147@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +46,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-qe_muram_alloc return a unsigned long integer,which should not
-compared with zero. check it using IS_ERR_VALUE() to fix this.
+On Thu 19-07-18 23:17:53, Baoquan He wrote:
+> Kexec has been a formal feature in our distro, and customers owning
+> those kind of very large machine can make use of this feature to speed
+> up the reboot process. On uefi machine, the kexec_file loading will
+> search place to put kernel under 4G from top to down. As we know, the
+> 1st 4G space is DMA32 ZONE, dma, pci mmcfg, bios etc all try to consume
+> it. It may have possibility to not be able to find a usable space for
+> kernel/initrd. From the top down of the whole memory space, we don't
+> have this worry. 
 
-Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/net/wan/fsl_ucc_hdlc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/net/wan/fsl_ucc_hdlc.c b/drivers/net/wan/fsl_ucc_hdlc.c
-index 9b09c9d..5f0366a 100644
---- a/drivers/net/wan/fsl_ucc_hdlc.c
-+++ b/drivers/net/wan/fsl_ucc_hdlc.c
-@@ -192,7 +192,7 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
- 	priv->ucc_pram_offset = qe_muram_alloc(sizeof(struct ucc_hdlc_param),
- 				ALIGNMENT_OF_UCC_HDLC_PRAM);
- 
--	if (priv->ucc_pram_offset < 0) {
-+	if (IS_ERR_VALUE(priv->ucc_pram_offset)) {
- 		dev_err(priv->dev, "Can not allocate MURAM for hdlc parameter.\n");
- 		ret = -ENOMEM;
- 		goto free_tx_bd;
-@@ -230,14 +230,14 @@ static int uhdlc_init(struct ucc_hdlc_private *priv)
- 
- 	/* Alloc riptr, tiptr */
- 	riptr = qe_muram_alloc(32, 32);
--	if (riptr < 0) {
-+	if (IS_ERR_VALUE(riptr)) {
- 		dev_err(priv->dev, "Cannot allocate MURAM mem for Receive internal temp data pointer\n");
- 		ret = -ENOMEM;
- 		goto free_tx_skbuff;
- 	}
- 
- 	tiptr = qe_muram_alloc(32, 32);
--	if (tiptr < 0) {
-+	if (IS_ERR_VALUE(tiptr)) {
- 		dev_err(priv->dev, "Cannot allocate MURAM mem for Transmit internal temp data pointer\n");
- 		ret = -ENOMEM;
- 		goto free_riptr;
+I do not have the full context here but let me note that you should be
+careful when doing top-down reservation because you can easily get into
+hotplugable memory and break the hotremove usecase. We even warn when
+this is done. See memblock_find_in_range_node
 -- 
-2.7.0
+Michal Hocko
+SUSE Labs
