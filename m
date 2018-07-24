@@ -2,17 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg383RkxzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:48 +1000 (AEST)
-In-Reply-To: <20180430145558.4308-2-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg390QNyzDqyZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:49 +1000 (AEST)
+In-Reply-To: <20180603122432.617-1-npiggin@gmail.com>
 To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org,
- Nicholas Piggin <npiggin@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [01/15] powerpc/powernv: opal_put_chars partial write fix
-Message-Id: <41Zg380lfkz9s3N@ozlabs.org>
-Date: Tue, 24 Jul 2018 23:59:47 +1000 (AEST)
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v2] powerpc/64s: make PACA_IRQ_HARD_DIS track MSR[EE] closely
+Message-Id: <41Zg386ybRz9s4V@ozlabs.org>
+Date: Tue, 24 Jul 2018 23:59:48 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,21 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-04-30 at 14:55:44 UTC, Nicholas Piggin wrote:
-> The intention here is to consume and discard the remaining buffer
-> upon error. This works if there has not been a previous partial write.
-> If there has been, then total_len is no longer total number of bytes
-> to copy. total_len is always "bytes left to copy", so it should be
-> added to written bytes.
+On Sun, 2018-06-03 at 12:24:32 UTC, Nicholas Piggin wrote:
+> When the masked interrupt handler clears MSR[EE] for an interrupt in
+> the PACA_IRQ_MUST_HARD_MASK set, it does not set PACA_IRQ_HARD_DIS.
+> This makes them get out of synch.
 > 
-> This code may not be exercised any more if partial writes will not be
-> hit, but this is a small bugfix before a larger change.
+> With that taken into account, it's only low level irq manipulation
+> (and interrupt entry before reconcile) where they can be out of synch.
+> This makes the code less surprising.
 > 
-> Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> It also allows the IRQ replay code to rely on the IRQ_HARD_DIS value
+> and not have to mtmsrd again in this case (e.g., for an external
+> interrupt that has been masked). The bigger benefit might just be
+> that there is not such an element of surprise in these two bits of
+> state.
+> 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Patches 1-9 applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/bd90284cc6c1c9e8e48c8eadd0c795
+https://git.kernel.org/powerpc/c/9b81c0211c249c1bc8caec2ddbc86e
 
 cheers
