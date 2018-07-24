@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg3743lkzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:47 +1000 (AEST)
-In-Reply-To: <20180425051759.9474-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg355YXMzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:45 +1000 (AEST)
+In-Reply-To: <1487596931-26975-1-git-send-email-mukesh02@linux.vnet.ibm.com>
+To: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, stewart@linux.vnet.ibm.com,
+ jk@ozlabs.org, hegdevasant@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [v2] powerpc: NMI IPI make NMI IPIs fully sychronous
-Message-Id: <41Zg372DMxz9s29@ozlabs.org>
-Date: Tue, 24 Jul 2018 23:59:47 +1000 (AEST)
+Cc: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+Subject: Re: [V2,
+ 1/2] powerpc/powernv/opal-dump : Handles opal_dump_info properly
+Message-Id: <41Zg345gqGz9s0R@ozlabs.org>
+Date: Tue, 24 Jul 2018 23:59:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,21 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-25 at 05:17:59 UTC, Nicholas Piggin wrote:
-> There is an asynchronous aspect to smp_send_nmi_ipi. The caller waits
-> for all CPUs to call in to the handler, but it does not wait for
-> completion of the handler. This is a needless complication, so remove
-> it and always wait synchronously.
+On Mon, 2017-02-20 at 13:22:10 UTC, Mukesh Ojha wrote:
+> Moves the return value check of 'opal_dump_info' to a proper place which
+> was previously unnecessarily filling all the dump info even on failure.
 > 
-> The synchronous wait allows the caller to easily time out and clear
-> the wait for completion (zero nmi_ipi_busy_count) in the case of badly
-> behaved handlers. This would have prevented the recent smp_send_stop
-> NMI IPI bug from causing the system to hang.
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Acked-by: Jeremy Kerr <jk@ozlabs.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/5b73151fff63fb019db8171cb81c6c
+https://git.kernel.org/powerpc/c/a5bbe8fd29f7e42fe5d26371adbad9
 
 cheers
