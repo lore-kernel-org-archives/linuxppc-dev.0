@@ -1,28 +1,38 @@
-Return-Path: <jic23@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zhongjiang@huawei.com>
+Received: from huawei.com (szxga07-in.huawei.com [45.249.212.35])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ZrTF0lcJzDrVM
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 07:04:29 +1000 (AEST)
-Date: Tue, 24 Jul 2018 22:04:20 +0100
-From: Jonathan Cameron <jic23@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Perches
- <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller"
- <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
- lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-Message-ID: <20180724220420.7c23daaa@archlinux>
-In-Reply-To: <20180724111600.4158975-1-arnd@arndb.de>
-References: <20180724111600.4158975-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Zh2k0nhxzDq6t
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 00:44:29 +1000 (AEST)
+Message-ID: <5B573715.5070201@huawei.com>
+Date: Tue, 24 Jul 2018 22:26:29 +0800
+From: zhong jiang <zhongjiang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+CC: <akpm@linux-foundation.org>, <mhocko@kernel.org>, <peterz@infradead.org>,
+ <kirill@shutemov.name>, <ak@linux.intel.com>, <dave@stgolabs.net>,
+ <jack@suse.cz>, Matthew Wilcox <willy@infradead.org>,
+ <khandual@linux.vnet.ibm.com>, <aneesh.kumar@linux.vnet.ibm.com>,
+ <benh@kernel.crashing.org>, <mpe@ellerman.id.au>, <paulus@samba.org>,
+ "Thomas Gleixner" <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ <hpa@zytor.com>, Will Deacon <will.deacon@arm.com>, Sergey Senozhatsky
+ <sergey.senozhatsky@gmail.com>, <sergey.senozhatsky.work@gmail.com>, "Andrea
+ Arcangeli" <aarcange@redhat.com>, Alexei Starovoitov
+ <alexei.starovoitov@gmail.com>, <kemi.wang@intel.com>, Daniel Jordan
+ <daniel.m.jordan@oracle.com>, David Rientjes <rientjes@google.com>, "Jerome
+ Glisse" <jglisse@redhat.com>, Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Minchan Kim <minchan@kernel.org>, Punit Agrawal <punitagrawal@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>, Yang Shi
+ <yang.shi@linux.alibaba.com>, <linux-kernel@vger.kernel.org>,
+ <linux-mm@kvack.org>, <haren@linux.vnet.ibm.com>, <npiggin@gmail.com>,
+ <bsingharora@gmail.com>, <paulmck@linux.vnet.ibm.com>, Tim Chen
+ <tim.c.chen@linux.intel.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <x86@kernel.org>
+Subject: Re: [PATCH v11 19/26] mm: provide speculative fault infrastructure
+References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <1526555193-7242-20-git-send-email-ldufour@linux.vnet.ibm.com>
+In-Reply-To: <1526555193-7242-20-git-send-email-ldufour@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,883 +42,631 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Jul 2018 13:13:25 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
-
-> Almost all files in the kernel are either plain text or UTF-8
-> encoded. A couple however are ISO_8859-1, usually just a few
-> characters in a C comments, for historic reasons.
->=20
-> This converts them all to UTF-8 for consistency.
->=20
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-For IIO, Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
-Thanks for tidying this up.
-
-Jonathan
-
+On 2018/5/17 19:06, Laurent Dufour wrote:
+> From: Peter Zijlstra <peterz@infradead.org>
+>
+> Provide infrastructure to do a speculative fault (not holding
+> mmap_sem).
+>
+> The not holding of mmap_sem means we can race against VMA
+> change/removal and page-table destruction. We use the SRCU VMA freeing
+> to keep the VMA around. We use the VMA seqcount to detect change
+> (including umapping / page-table deletion) and we use gup_fast() style
+> page-table walking to deal with page-table races.
+>
+> Once we've obtained the page and are ready to update the PTE, we
+> validate if the state we started the fault with is still valid, if
+> not, we'll fail the fault with VM_FAULT_RETRY, otherwise we update the
+> PTE and we're done.
+>
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+>
+> [Manage the newly introduced pte_spinlock() for speculative page
+>  fault to fail if the VMA is touched in our back]
+> [Rename vma_is_dead() to vma_has_changed() and declare it here]
+> [Fetch p4d and pud]
+> [Set vmd.sequence in __handle_mm_fault()]
+> [Abort speculative path when handle_userfault() has to be called]
+> [Add additional VMA's flags checks in handle_speculative_fault()]
+> [Clear FAULT_FLAG_ALLOW_RETRY in handle_speculative_fault()]
+> [Don't set vmf->pte and vmf->ptl if pte_map_lock() failed]
+> [Remove warning comment about waiting for !seq&1 since we don't want
+>  to wait]
+> [Remove warning about no huge page support, mention it explictly]
+> [Don't call do_fault() in the speculative path as __do_fault() calls
+>  vma->vm_ops->fault() which may want to release mmap_sem]
+> [Only vm_fault pointer argument for vma_has_changed()]
+> [Fix check against huge page, calling pmd_trans_huge()]
+> [Use READ_ONCE() when reading VMA's fields in the speculative path]
+> [Explicitly check for __HAVE_ARCH_PTE_SPECIAL as we can't support for
+>  processing done in vm_normal_page()]
+> [Check that vma->anon_vma is already set when starting the speculative
+>  path]
+> [Check for memory policy as we can't support MPOL_INTERLEAVE case due to
+>  the processing done in mpol_misplaced()]
+> [Don't support VMA growing up or down]
+> [Move check on vm_sequence just before calling handle_pte_fault()]
+> [Don't build SPF services if !CONFIG_SPECULATIVE_PAGE_FAULT]
+> [Add mem cgroup oom check]
+> [Use READ_ONCE to access p*d entries]
+> [Replace deprecated ACCESS_ONCE() by READ_ONCE() in vma_has_changed()]
+> [Don't fetch pte again in handle_pte_fault() when running the speculative
+>  path]
+> [Check PMD against concurrent collapsing operation]
+> [Try spin lock the pte during the speculative path to avoid deadlock with
+>  other CPU's invalidating the TLB and requiring this CPU to catch the
+>  inter processor's interrupt]
+> [Move define of FAULT_FLAG_SPECULATIVE here]
+> [Introduce __handle_speculative_fault() and add a check against
+>  mm->mm_users in handle_speculative_fault() defined in mm.h]
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 > ---
->  .../devicetree/bindings/net/nfc/pn544.txt     |   2 +-
->  arch/arm/boot/dts/sun4i-a10-inet97fv2.dts     |   2 +-
->  arch/arm/crypto/sha256_glue.c                 |   2 +-
->  arch/arm/crypto/sha256_neon_glue.c            |   4 +-
->  drivers/crypto/vmx/ghashp8-ppc.pl             |  12 +-
->  drivers/iio/dac/ltc2632.c                     |   2 +-
->  drivers/power/reset/ltc2952-poweroff.c        |   4 +-
->  kernel/events/callchain.c                     |   2 +-
->  net/netfilter/ipvs/Kconfig                    |   8 +-
->  net/netfilter/ipvs/ip_vs_mh.c                 |   4 +-
->  tools/power/cpupower/po/de.po                 |  44 +++----
->  tools/power/cpupower/po/fr.po                 | 120 +++++++++---------
->  12 files changed, 103 insertions(+), 103 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/net/nfc/pn544.txt b/Docume=
-ntation/devicetree/bindings/net/nfc/pn544.txt
-> index 538a86f7b2b0..72593f056b75 100644
-> --- a/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> +++ b/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> @@ -2,7 +2,7 @@
-> =20
->  Required properties:
->  - compatible: Should be "nxp,pn544-i2c".
-> -- clock-frequency: I_C work frequency.
-> +- clock-frequency: I=C2=B2C work frequency.
->  - reg: address on the bus
->  - interrupt-parent: phandle for the interrupt gpio controller
->  - interrupts: GPIO interrupt to which the chip is connected
-> diff --git a/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts b/arch/arm/boot/dt=
-s/sun4i-a10-inet97fv2.dts
-> index 5d096528e75a..71c27ea0b53e 100644
-> --- a/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts
-> +++ b/arch/arm/boot/dts/sun4i-a10-inet97fv2.dts
-> @@ -1,7 +1,7 @@
+>  include/linux/hugetlb_inline.h |   2 +-
+>  include/linux/mm.h             |  30 ++++
+>  include/linux/pagemap.h        |   4 +-
+>  mm/internal.h                  |  16 +-
+>  mm/memory.c                    | 340 ++++++++++++++++++++++++++++++++++++++++-
+>  5 files changed, 385 insertions(+), 7 deletions(-)
+>
+> diff --git a/include/linux/hugetlb_inline.h b/include/linux/hugetlb_inline.h
+> index 0660a03d37d9..9e25283d6fc9 100644
+> --- a/include/linux/hugetlb_inline.h
+> +++ b/include/linux/hugetlb_inline.h
+> @@ -8,7 +8,7 @@
+>  
+>  static inline bool is_vm_hugetlb_page(struct vm_area_struct *vma)
+>  {
+> -	return !!(vma->vm_flags & VM_HUGETLB);
+> +	return !!(READ_ONCE(vma->vm_flags) & VM_HUGETLB);
+>  }
+>  
+>  #else
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 05cbba70104b..31acf98a7d92 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -315,6 +315,7 @@ extern pgprot_t protection_map[16];
+>  #define FAULT_FLAG_USER		0x40	/* The fault originated in userspace */
+>  #define FAULT_FLAG_REMOTE	0x80	/* faulting for non current tsk/mm */
+>  #define FAULT_FLAG_INSTRUCTION  0x100	/* The fault was during an instruction fetch */
+> +#define FAULT_FLAG_SPECULATIVE	0x200	/* Speculative fault, not holding mmap_sem */
+>  
+>  #define FAULT_FLAG_TRACE \
+>  	{ FAULT_FLAG_WRITE,		"WRITE" }, \
+> @@ -343,6 +344,10 @@ struct vm_fault {
+>  	gfp_t gfp_mask;			/* gfp mask to be used for allocations */
+>  	pgoff_t pgoff;			/* Logical page offset based on vma */
+>  	unsigned long address;		/* Faulting virtual address */
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	unsigned int sequence;
+> +	pmd_t orig_pmd;			/* value of PMD at the time of fault */
+> +#endif
+>  	pmd_t *pmd;			/* Pointer to pmd entry matching
+>  					 * the 'address' */
+>  	pud_t *pud;			/* Pointer to pud entry matching
+> @@ -1415,6 +1420,31 @@ int invalidate_inode_page(struct page *page);
+>  #ifdef CONFIG_MMU
+>  extern int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>  		unsigned int flags);
+> +
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +extern int __handle_speculative_fault(struct mm_struct *mm,
+> +				      unsigned long address,
+> +				      unsigned int flags);
+> +static inline int handle_speculative_fault(struct mm_struct *mm,
+> +					   unsigned long address,
+> +					   unsigned int flags)
+> +{
+> +	/*
+> +	 * Try speculative page fault for multithreaded user space task only.
+> +	 */
+> +	if (!(flags & FAULT_FLAG_USER) || atomic_read(&mm->mm_users) == 1)
+> +		return VM_FAULT_RETRY;
+> +	return __handle_speculative_fault(mm, address, flags);
+> +}
+> +#else
+> +static inline int handle_speculative_fault(struct mm_struct *mm,
+> +					   unsigned long address,
+> +					   unsigned int flags)
+> +{
+> +	return VM_FAULT_RETRY;
+> +}
+> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+> +
+>  extern int fixup_user_fault(struct task_struct *tsk, struct mm_struct *mm,
+>  			    unsigned long address, unsigned int fault_flags,
+>  			    bool *unlocked);
+> diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+> index b1bd2186e6d2..6e2aa4e79af7 100644
+> --- a/include/linux/pagemap.h
+> +++ b/include/linux/pagemap.h
+> @@ -456,8 +456,8 @@ static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+>  	pgoff_t pgoff;
+>  	if (unlikely(is_vm_hugetlb_page(vma)))
+>  		return linear_hugepage_index(vma, address);
+> -	pgoff = (address - vma->vm_start) >> PAGE_SHIFT;
+> -	pgoff += vma->vm_pgoff;
+> +	pgoff = (address - READ_ONCE(vma->vm_start)) >> PAGE_SHIFT;
+> +	pgoff += READ_ONCE(vma->vm_pgoff);
+>  	return pgoff;
+>  }
+>  
+> diff --git a/mm/internal.h b/mm/internal.h
+> index fb2667b20f0a..10b188c87fa4 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -44,7 +44,21 @@ int do_swap_page(struct vm_fault *vmf);
+>  extern struct vm_area_struct *get_vma(struct mm_struct *mm,
+>  				      unsigned long addr);
+>  extern void put_vma(struct vm_area_struct *vma);
+> -#endif
+> +
+> +static inline bool vma_has_changed(struct vm_fault *vmf)
+> +{
+> +	int ret = RB_EMPTY_NODE(&vmf->vma->vm_rb);
+> +	unsigned int seq = READ_ONCE(vmf->vma->vm_sequence.sequence);
+> +
+> +	/*
+> +	 * Matches both the wmb in write_seqlock_{begin,end}() and
+> +	 * the wmb in vma_rb_erase().
+> +	 */
+> +	smp_rmb();
+> +
+> +	return ret || seq != vmf->sequence;
+> +}
+> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+>  
+>  void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
+>  		unsigned long floor, unsigned long ceiling);
+> diff --git a/mm/memory.c b/mm/memory.c
+> index ab32b0b4bd69..7bbbb8c7b9cd 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -769,7 +769,8 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
+>  	if (page)
+>  		dump_page(page, "bad pte");
+>  	pr_alert("addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
+> -		 (void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
+> +		 (void *)addr, READ_ONCE(vma->vm_flags), vma->anon_vma,
+> +		 mapping, index);
+>  	pr_alert("file:%pD fault:%pf mmap:%pf readpage:%pf\n",
+>  		 vma->vm_file,
+>  		 vma->vm_ops ? vma->vm_ops->fault : NULL,
+> @@ -2306,6 +2307,118 @@ int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
+>  }
+>  EXPORT_SYMBOL_GPL(apply_to_page_range);
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +static bool pte_spinlock(struct vm_fault *vmf)
+> +{
+> +	bool ret = false;
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +	pmd_t pmdval;
+> +#endif
+> +
+> +	/* Check if vma is still valid */
+> +	if (!(vmf->flags & FAULT_FLAG_SPECULATIVE)) {
+> +		vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> +		spin_lock(vmf->ptl);
+> +		return true;
+> +	}
+> +
+> +again:
+> +	local_irq_disable();
+> +	if (vma_has_changed(vmf))
+> +		goto out;
+> +
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +	/*
+> +	 * We check if the pmd value is still the same to ensure that there
+> +	 * is not a huge collapse operation in progress in our back.
+> +	 */
+> +	pmdval = READ_ONCE(*vmf->pmd);
+> +	if (!pmd_same(pmdval, vmf->orig_pmd))
+> +		goto out;
+> +#endif
+> +
+> +	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> +	if (unlikely(!spin_trylock(vmf->ptl))) {
+> +		local_irq_enable();
+> +		goto again;
+> +	}
+> +
+> +	if (vma_has_changed(vmf)) {
+> +		spin_unlock(vmf->ptl);
+> +		goto out;
+> +	}
+> +
+> +	ret = true;
+> +out:
+> +	local_irq_enable();
+> +	return ret;
+> +}
+> +
+> +static bool pte_map_lock(struct vm_fault *vmf)
+> +{
+> +	bool ret = false;
+> +	pte_t *pte;
+> +	spinlock_t *ptl;
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +	pmd_t pmdval;
+> +#endif
+> +
+> +	if (!(vmf->flags & FAULT_FLAG_SPECULATIVE)) {
+> +		vmf->pte = pte_offset_map_lock(vmf->vma->vm_mm, vmf->pmd,
+> +					       vmf->address, &vmf->ptl);
+> +		return true;
+> +	}
+> +
+> +	/*
+> +	 * The first vma_has_changed() guarantees the page-tables are still
+> +	 * valid, having IRQs disabled ensures they stay around, hence the
+> +	 * second vma_has_changed() to make sure they are still valid once
+> +	 * we've got the lock. After that a concurrent zap_pte_range() will
+> +	 * block on the PTL and thus we're safe.
+> +	 */
+> +again:
+> +	local_irq_disable();
+> +	if (vma_has_changed(vmf))
+> +		goto out;
+> +
+> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +	/*
+> +	 * We check if the pmd value is still the same to ensure that there
+> +	 * is not a huge collapse operation in progress in our back.
+> +	 */
+> +	pmdval = READ_ONCE(*vmf->pmd);
+> +	if (!pmd_same(pmdval, vmf->orig_pmd))
+> +		goto out;
+> +#endif
+> +
+> +	/*
+> +	 * Same as pte_offset_map_lock() except that we call
+> +	 * spin_trylock() in place of spin_lock() to avoid race with
+> +	 * unmap path which may have the lock and wait for this CPU
+> +	 * to invalidate TLB but this CPU has irq disabled.
+> +	 * Since we are in a speculative patch, accept it could fail
+> +	 */
+> +	ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> +	pte = pte_offset_map(vmf->pmd, vmf->address);
+> +	if (unlikely(!spin_trylock(ptl))) {
+> +		pte_unmap(pte);
+> +		local_irq_enable();
+> +		goto again;
+> +	}
+> +
+> +	if (vma_has_changed(vmf)) {
+> +		pte_unmap_unlock(pte, ptl);
+> +		goto out;
+> +	}
+> +
+> +	vmf->pte = pte;
+> +	vmf->ptl = ptl;
+> +	ret = true;
+> +out:
+> +	local_irq_enable();
+> +	return ret;
+> +}
+> +#else
+>  static inline bool pte_spinlock(struct vm_fault *vmf)
+>  {
+>  	vmf->ptl = pte_lockptr(vmf->vma->vm_mm, vmf->pmd);
+> @@ -2319,6 +2432,7 @@ static inline bool pte_map_lock(struct vm_fault *vmf)
+>  				       vmf->address, &vmf->ptl);
+>  	return true;
+>  }
+> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+>  
 >  /*
->   * Copyright 2014 Open Source Support GmbH
->   *
-> - * David Lanzend_rfer <david.lanzendoerfer@o2s.ch>
-> + * David Lanzend=C3=B6rfer <david.lanzendoerfer@o2s.ch>
->   *
->   * This file is dual-licensed: you can use it either under the terms
->   * of the GPL or the X11 license, at your option. Note that this dual
-> diff --git a/arch/arm/crypto/sha256_glue.c b/arch/arm/crypto/sha256_glue.c
-> index bf8ccff2c9d0..0ae900e778f3 100644
-> --- a/arch/arm/crypto/sha256_glue.c
-> +++ b/arch/arm/crypto/sha256_glue.c
-> @@ -2,7 +2,7 @@
->   * Glue code for the SHA256 Secure Hash Algorithm assembly implementation
->   * using optimized ARM assembler and NEON instructions.
->   *
-> - * Copyright _ 2015 Google Inc.
-> + * Copyright =C2=A9 2015 Google Inc.
->   *
->   * This file is based on sha256_ssse3_glue.c:
->   *   Copyright (C) 2013 Intel Corporation
-> diff --git a/arch/arm/crypto/sha256_neon_glue.c b/arch/arm/crypto/sha256_=
-neon_glue.c
-> index 9bbee56fbdc8..1d82c6cd31a4 100644
-> --- a/arch/arm/crypto/sha256_neon_glue.c
-> +++ b/arch/arm/crypto/sha256_neon_glue.c
-> @@ -2,10 +2,10 @@
->   * Glue code for the SHA256 Secure Hash Algorithm assembly implementation
->   * using NEON instructions.
->   *
-> - * Copyright _ 2015 Google Inc.
-> + * Copyright =C2=A9 2015 Google Inc.
->   *
->   * This file is based on sha512_neon_glue.c:
-> - *   Copyright _ 2014 Jussi Kivilinna <jussi.kivilinna@iki.fi>
-> + *   Copyright =C2=A9 2014 Jussi Kivilinna <jussi.kivilinna@iki.fi>
->   *
->   * This program is free software; you can redistribute it and/or modify =
-it
->   * under the terms of the GNU General Public License as published by the=
- Free
-> diff --git a/drivers/crypto/vmx/ghashp8-ppc.pl b/drivers/crypto/vmx/ghash=
-p8-ppc.pl
-> index f746af271460..38b06503ede0 100644
-> --- a/drivers/crypto/vmx/ghashp8-ppc.pl
-> +++ b/drivers/crypto/vmx/ghashp8-ppc.pl
-> @@ -129,9 +129,9 @@ $code=3D<<___;
->  	 le?vperm	$IN,$IN,$IN,$lemask
->  	vxor		$zero,$zero,$zero
-> =20
-> -	vpmsumd		$Xl,$IN,$Hl		# H.lo_Xi.lo
-> -	vpmsumd		$Xm,$IN,$H		# H.hi_Xi.lo+H.lo_Xi.hi
-> -	vpmsumd		$Xh,$IN,$Hh		# H.hi_Xi.hi
-> +	vpmsumd		$Xl,$IN,$Hl		# H.lo=C2=B7Xi.lo
-> +	vpmsumd		$Xm,$IN,$H		# H.hi=C2=B7Xi.lo+H.lo=C2=B7Xi.hi
-> +	vpmsumd		$Xh,$IN,$Hh		# H.hi=C2=B7Xi.hi
-> =20
->  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
-> =20
-> @@ -187,11 +187,11 @@ $code=3D<<___;
->  .align	5
->  Loop:
->  	 subic		$len,$len,16
-> -	vpmsumd		$Xl,$IN,$Hl		# H.lo_Xi.lo
-> +	vpmsumd		$Xl,$IN,$Hl		# H.lo=C2=B7Xi.lo
->  	 subfe.		r0,r0,r0		# borrow?-1:0
-> -	vpmsumd		$Xm,$IN,$H		# H.hi_Xi.lo+H.lo_Xi.hi
-> +	vpmsumd		$Xm,$IN,$H		# H.hi=C2=B7Xi.lo+H.lo=C2=B7Xi.hi
->  	 and		r0,r0,$len
-> -	vpmsumd		$Xh,$IN,$Hh		# H.hi_Xi.hi
-> +	vpmsumd		$Xh,$IN,$Hh		# H.hi=C2=B7Xi.hi
->  	 add		$inp,$inp,r0
-> =20
->  	vpmsumd		$t2,$Xl,$xC2		# 1st phase
-> diff --git a/drivers/iio/dac/ltc2632.c b/drivers/iio/dac/ltc2632.c
-> index cca278eaa138..885105135580 100644
-> --- a/drivers/iio/dac/ltc2632.c
-> +++ b/drivers/iio/dac/ltc2632.c
-> @@ -1,7 +1,7 @@
+>   * handle_pte_fault chooses page fault handler according to an entry which was
+> @@ -3208,6 +3322,14 @@ static int do_anonymous_page(struct vm_fault *vmf)
+>  		ret = check_stable_address_space(vma->vm_mm);
+>  		if (ret)
+>  			goto unlock;
+> +		/*
+> +		 * Don't call the userfaultfd during the speculative path.
+> +		 * We already checked for the VMA to not be managed through
+> +		 * userfaultfd, but it may be set in our back once we have lock
+> +		 * the pte. In such a case we can ignore it this time.
+> +		 */
+> +		if (vmf->flags & FAULT_FLAG_SPECULATIVE)
+> +			goto setpte;
+>  		/* Deliver the page fault to userland, check inside PT lock */
+>  		if (userfaultfd_missing(vma)) {
+>  			pte_unmap_unlock(vmf->pte, vmf->ptl);
+> @@ -3249,7 +3371,7 @@ static int do_anonymous_page(struct vm_fault *vmf)
+>  		goto unlock_and_release;
+>  
+>  	/* Deliver the page fault to userland, check inside PT lock */
+> -	if (userfaultfd_missing(vma)) {
+> +	if (!(vmf->flags & FAULT_FLAG_SPECULATIVE) && userfaultfd_missing(vma)) {
+>  		pte_unmap_unlock(vmf->pte, vmf->ptl);
+>  		mem_cgroup_cancel_charge(page, memcg, false);
+>  		put_page(page);
+> @@ -3994,13 +4116,22 @@ static int handle_pte_fault(struct vm_fault *vmf)
+>  
+>  	if (unlikely(pmd_none(*vmf->pmd))) {
+>  		/*
+> +		 * In the case of the speculative page fault handler we abort
+> +		 * the speculative path immediately as the pmd is probably
+> +		 * in the way to be converted in a huge one. We will try
+> +		 * again holding the mmap_sem (which implies that the collapse
+> +		 * operation is done).
+> +		 */
+> +		if (vmf->flags & FAULT_FLAG_SPECULATIVE)
+> +			return VM_FAULT_RETRY;
+> +		/*
+>  		 * Leave __pte_alloc() until later: because vm_ops->fault may
+>  		 * want to allocate huge page, and if we expose page table
+>  		 * for an instant, it will be difficult to retract from
+>  		 * concurrent faults and from rmap lookups.
+>  		 */
+>  		vmf->pte = NULL;
+> -	} else {
+> +	} else if (!(vmf->flags & FAULT_FLAG_SPECULATIVE)) {
+>  		/* See comment in pte_alloc_one_map() */
+>  		if (pmd_devmap_trans_unstable(vmf->pmd))
+>  			return 0;
+> @@ -4009,6 +4140,9 @@ static int handle_pte_fault(struct vm_fault *vmf)
+>  		 * pmd from under us anymore at this point because we hold the
+>  		 * mmap_sem read mode and khugepaged takes it in write mode.
+>  		 * So now it's safe to run pte_offset_map().
+> +		 * This is not applicable to the speculative page fault handler
+> +		 * but in that case, the pte is fetched earlier in
+> +		 * handle_speculative_fault().
+>  		 */
+>  		vmf->pte = pte_offset_map(vmf->pmd, vmf->address);
+>  		vmf->orig_pte = *vmf->pte;
+> @@ -4031,6 +4165,8 @@ static int handle_pte_fault(struct vm_fault *vmf)
+>  	if (!vmf->pte) {
+>  		if (vma_is_anonymous(vmf->vma))
+>  			return do_anonymous_page(vmf);
+> +		else if (vmf->flags & FAULT_FLAG_SPECULATIVE)
+> +			return VM_FAULT_RETRY;
+>  		else
+>  			return do_fault(vmf);
+>  	}
+> @@ -4128,6 +4264,9 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>  	vmf.pmd = pmd_alloc(mm, vmf.pud, address);
+>  	if (!vmf.pmd)
+>  		return VM_FAULT_OOM;
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +	vmf.sequence = raw_read_seqcount(&vma->vm_sequence);
+> +#endif
+>  	if (pmd_none(*vmf.pmd) && transparent_hugepage_enabled(vma)) {
+>  		ret = create_huge_pmd(&vmf);
+>  		if (!(ret & VM_FAULT_FALLBACK))
+> @@ -4161,6 +4300,201 @@ static int __handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+>  	return handle_pte_fault(&vmf);
+>  }
+>  
+> +#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
+> +/*
+> + * Tries to handle the page fault in a speculative way, without grabbing the
+> + * mmap_sem.
+> + */
+> +int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+> +			       unsigned int flags)
+> +{
+> +	struct vm_fault vmf = {
+> +		.address = address,
+> +	};
+> +	pgd_t *pgd, pgdval;
+> +	p4d_t *p4d, p4dval;
+> +	pud_t pudval;
+> +	int seq, ret = VM_FAULT_RETRY;
+> +	struct vm_area_struct *vma;
+> +#ifdef CONFIG_NUMA
+> +	struct mempolicy *pol;
+> +#endif
+> +
+> +	/* Clear flags that may lead to release the mmap_sem to retry */
+> +	flags &= ~(FAULT_FLAG_ALLOW_RETRY|FAULT_FLAG_KILLABLE);
+> +	flags |= FAULT_FLAG_SPECULATIVE;
+> +
+> +	vma = get_vma(mm, address);
+> +	if (!vma)
+> +		return ret;
+> +
+> +	seq = raw_read_seqcount(&vma->vm_sequence); /* rmb <-> seqlock,vma_rb_erase() */
+> +	if (seq & 1)
+> +		goto out_put;
+> +
+> +	/*
+> +	 * Can't call vm_ops service has we don't know what they would do
+> +	 * with the VMA.
+> +	 * This include huge page from hugetlbfs.
+> +	 */
+> +	if (vma->vm_ops)
+> +		goto out_put;
+> +
+  Hi   Laurent
+   
+   I think that most of pagefault will leave here.   Is there any case  need to skip ?
+  I have tested the following  patch, it work well.
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 936128b..9bc1545 100644
+ @@ -3893,8 +3898,6 @@ static int handle_pte_fault(struct fault_env *fe)
+        if (!fe->pte) {
+                if (vma_is_anonymous(fe->vma))
+                        return do_anonymous_page(fe);
+-               else if (fe->flags & FAULT_FLAG_SPECULATIVE)
+-                       return VM_FAULT_RETRY;
+                else
+                        return do_fault(fe);
+        }
+@@ -4026,20 +4029,11 @@ int __handle_speculative_fault(struct mm_struct *mm, unsigned long address,
+                goto out_put;
+        }
+        /*
+-        * Can't call vm_ops service has we don't know what they would do
+-        * with the VMA.
+-        * This include huge page from hugetlbfs.
+-        */
+-       if (vma->vm_ops) {
+-               trace_spf_vma_notsup(_RET_IP_, vma, address);
+-               goto out_put;
+-       }
+
+
+Thanks
+zhong jiang
+> +	/*
+> +	 * __anon_vma_prepare() requires the mmap_sem to be held
+> +	 * because vm_next and vm_prev must be safe. This can't be guaranteed
+> +	 * in the speculative path.
+> +	 */
+> +	if (unlikely(!vma->anon_vma))
+> +		goto out_put;
+> +
+> +	vmf.vma_flags = READ_ONCE(vma->vm_flags);
+> +	vmf.vma_page_prot = READ_ONCE(vma->vm_page_prot);
+> +
+> +	/* Can't call userland page fault handler in the speculative path */
+> +	if (unlikely(vmf.vma_flags & VM_UFFD_MISSING))
+> +		goto out_put;
+> +
+> +	if (vmf.vma_flags & VM_GROWSDOWN || vmf.vma_flags & VM_GROWSUP)
+> +		/*
+> +		 * This could be detected by the check address against VMA's
+> +		 * boundaries but we want to trace it as not supported instead
+> +		 * of changed.
+> +		 */
+> +		goto out_put;
+> +
+> +	if (address < READ_ONCE(vma->vm_start)
+> +	    || READ_ONCE(vma->vm_end) <= address)
+> +		goto out_put;
+> +
+> +	if (!arch_vma_access_permitted(vma, flags & FAULT_FLAG_WRITE,
+> +				       flags & FAULT_FLAG_INSTRUCTION,
+> +				       flags & FAULT_FLAG_REMOTE)) {
+> +		ret = VM_FAULT_SIGSEGV;
+> +		goto out_put;
+> +	}
+> +
+> +	/* This is one is required to check that the VMA has write access set */
+> +	if (flags & FAULT_FLAG_WRITE) {
+> +		if (unlikely(!(vmf.vma_flags & VM_WRITE))) {
+> +			ret = VM_FAULT_SIGSEGV;
+> +			goto out_put;
+> +		}
+> +	} else if (unlikely(!(vmf.vma_flags & (VM_READ|VM_EXEC|VM_WRITE)))) {
+> +		ret = VM_FAULT_SIGSEGV;
+> +		goto out_put;
+> +	}
+> +
+> +#ifdef CONFIG_NUMA
+> +	/*
+> +	 * MPOL_INTERLEAVE implies additional checks in
+> +	 * mpol_misplaced() which are not compatible with the
+> +	 *speculative page fault processing.
+> +	 */
+> +	pol = __get_vma_policy(vma, address);
+> +	if (!pol)
+> +		pol = get_task_policy(current);
+> +	if (pol && pol->mode == MPOL_INTERLEAVE)
+> +		goto out_put;
+> +#endif
+> +
+> +	/*
+> +	 * Do a speculative lookup of the PTE entry.
+> +	 */
+> +	local_irq_disable();
+> +	pgd = pgd_offset(mm, address);
+> +	pgdval = READ_ONCE(*pgd);
+> +	if (pgd_none(pgdval) || unlikely(pgd_bad(pgdval)))
+> +		goto out_walk;
+> +
+> +	p4d = p4d_offset(pgd, address);
+> +	p4dval = READ_ONCE(*p4d);
+> +	if (p4d_none(p4dval) || unlikely(p4d_bad(p4dval)))
+> +		goto out_walk;
+> +
+> +	vmf.pud = pud_offset(p4d, address);
+> +	pudval = READ_ONCE(*vmf.pud);
+> +	if (pud_none(pudval) || unlikely(pud_bad(pudval)))
+> +		goto out_walk;
+> +
+> +	/* Huge pages at PUD level are not supported. */
+> +	if (unlikely(pud_trans_huge(pudval)))
+> +		goto out_walk;
+> +
+> +	vmf.pmd = pmd_offset(vmf.pud, address);
+> +	vmf.orig_pmd = READ_ONCE(*vmf.pmd);
+> +	/*
+> +	 * pmd_none could mean that a hugepage collapse is in progress
+> +	 * in our back as collapse_huge_page() mark it before
+> +	 * invalidating the pte (which is done once the IPI is catched
+> +	 * by all CPU and we have interrupt disabled).
+> +	 * For this reason we cannot handle THP in a speculative way since we
+> +	 * can't safely indentify an in progress collapse operation done in our
+> +	 * back on that PMD.
+> +	 * Regarding the order of the following checks, see comment in
+> +	 * pmd_devmap_trans_unstable()
+> +	 */
+> +	if (unlikely(pmd_devmap(vmf.orig_pmd) ||
+> +		     pmd_none(vmf.orig_pmd) || pmd_trans_huge(vmf.orig_pmd) ||
+> +		     is_swap_pmd(vmf.orig_pmd)))
+> +		goto out_walk;
+> +
+> +	/*
+> +	 * The above does not allocate/instantiate page-tables because doing so
+> +	 * would lead to the possibility of instantiating page-tables after
+> +	 * free_pgtables() -- and consequently leaking them.
+> +	 *
+> +	 * The result is that we take at least one !speculative fault per PMD
+> +	 * in order to instantiate it.
+> +	 */
+> +
+> +	vmf.pte = pte_offset_map(vmf.pmd, address);
+> +	vmf.orig_pte = READ_ONCE(*vmf.pte);
+> +	barrier(); /* See comment in handle_pte_fault() */
+> +	if (pte_none(vmf.orig_pte)) {
+> +		pte_unmap(vmf.pte);
+> +		vmf.pte = NULL;
+> +	}
+> +
+> +	vmf.vma = vma;
+> +	vmf.pgoff = linear_page_index(vma, address);
+> +	vmf.gfp_mask = __get_fault_gfp_mask(vma);
+> +	vmf.sequence = seq;
+> +	vmf.flags = flags;
+> +
+> +	local_irq_enable();
+> +
+> +	/*
+> +	 * We need to re-validate the VMA after checking the bounds, otherwise
+> +	 * we might have a false positive on the bounds.
+> +	 */
+> +	if (read_seqcount_retry(&vma->vm_sequence, seq))
+> +		goto out_put;
+> +
+> +	mem_cgroup_oom_enable();
+> +	ret = handle_pte_fault(&vmf);
+> +	mem_cgroup_oom_disable();
+> +
+> +	put_vma(vma);
+> +
+> +	/*
+> +	 * The task may have entered a memcg OOM situation but
+> +	 * if the allocation error was handled gracefully (no
+> +	 * VM_FAULT_OOM), there is no need to kill anything.
+> +	 * Just clean up the OOM state peacefully.
+> +	 */
+> +	if (task_in_memcg_oom(current) && !(ret & VM_FAULT_OOM))
+> +		mem_cgroup_oom_synchronize(false);
+> +	return ret;
+> +
+> +out_walk:
+> +	local_irq_enable();
+> +out_put:
+> +	put_vma(vma);
+> +	return ret;
+> +}
+> +#endif /* CONFIG_SPECULATIVE_PAGE_FAULT */
+> +
 >  /*
->   * LTC2632 Digital to analog convertors spi driver
+>   * By the time we get here, we already hold the mm semaphore
 >   *
-> - * Copyright 2017 Maxime Roussin-B_langer
-> + * Copyright 2017 Maxime Roussin-B=C3=A9langer
->   * expanded by Silvan Murer <silvan.murer@gmail.com>
->   *
->   * Licensed under the GPL-2.
-> diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset=
-/ltc2952-poweroff.c
-> index 6b911b6b10a6..c484584745bc 100644
-> --- a/drivers/power/reset/ltc2952-poweroff.c
-> +++ b/drivers/power/reset/ltc2952-poweroff.c
-> @@ -2,7 +2,7 @@
->   * LTC2952 (PowerPath) driver
->   *
->   * Copyright (C) 2014, Xsens Technologies BV <info@xsens.com>
-> - * Maintainer: Ren_ Moll <linux@r-moll.nl>
-> + * Maintainer: Ren=C3=A9 Moll <linux@r-moll.nl>
->   *
->   * This program is free software; you can redistribute it and/or
->   * modify it under the terms of the GNU General Public License
-> @@ -319,6 +319,6 @@ static struct platform_driver ltc2952_poweroff_driver=
- =3D {
-> =20
->  module_platform_driver(ltc2952_poweroff_driver);
-> =20
-> -MODULE_AUTHOR("Ren_ Moll <rene.moll@xsens.com>");
-> +MODULE_AUTHOR("Ren=C3=A9 Moll <rene.moll@xsens.com>");
->  MODULE_DESCRIPTION("LTC PowerPath power-off driver");
->  MODULE_LICENSE("GPL v2");
-> diff --git a/kernel/events/callchain.c b/kernel/events/callchain.c
-> index c187aa3df3c8..24a77c34e9ad 100644
-> --- a/kernel/events/callchain.c
-> +++ b/kernel/events/callchain.c
-> @@ -4,7 +4,7 @@
->   *  Copyright (C) 2008 Thomas Gleixner <tglx@linutronix.de>
->   *  Copyright (C) 2008-2011 Red Hat, Inc., Ingo Molnar
->   *  Copyright (C) 2008-2011 Red Hat, Inc., Peter Zijlstra
-> - *  Copyright  _  2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.com>
-> + *  Copyright  =C2=A9  2009 Paul Mackerras, IBM Corp. <paulus@au1.ibm.co=
-m>
->   *
->   * For licensing details see kernel-base/COPYING
->   */
-> diff --git a/net/netfilter/ipvs/Kconfig b/net/netfilter/ipvs/Kconfig
-> index 05dc1b77e466..cad48d07c818 100644
-> --- a/net/netfilter/ipvs/Kconfig
-> +++ b/net/netfilter/ipvs/Kconfig
-> @@ -296,10 +296,10 @@ config IP_VS_MH_TAB_INDEX
->  	  stored in a hash table. This table is assigned by a preference
->  	  list of the positions to each destination until all slots in
->  	  the table are filled. The index determines the prime for size of
-> -	  the table as_251, 509, 1021, 2039, 4093, 8191, 16381, 32749,
-> -	  65521 or 131071._When using weights to allow destinations to
-> -	  receive more connections,_the table is assigned an amount
-> -	  proportional to the weights specified._The table needs to be large
-> +	  the table as=C2=A0251, 509, 1021, 2039, 4093, 8191, 16381, 32749,
-> +	  65521 or 131071.=C2=A0When using weights to allow destinations to
-> +	  receive more connections,=C2=A0the table is assigned an amount
-> +	  proportional to the weights specified.=C2=A0The table needs to be lar=
-ge
->  	  enough to effectively fit all the destinations multiplied by their
->  	  respective weights.
-> =20
-> diff --git a/net/netfilter/ipvs/ip_vs_mh.c b/net/netfilter/ipvs/ip_vs_mh.c
-> index 0f795b186eb3..94d9d349ebb0 100644
-> --- a/net/netfilter/ipvs/ip_vs_mh.c
-> +++ b/net/netfilter/ipvs/ip_vs_mh.c
-> @@ -5,10 +5,10 @@
->   *
->   */
-> =20
-> -/* The mh algorithm is to assign_a preference list of all the lookup
-> +/* The mh algorithm is to assign=C2=A0a preference list of all the lookup
->   * table positions to each destination and populate the table with
->   * the most-preferred position of destinations. Then it is to select
-> - * destination with the hash key of source IP address_through looking
-> + * destination with the hash key of source IP address=C2=A0through looki=
-ng
->   * up a the lookup table.
->   *
->   * The algorithm is detailed in:
-> diff --git a/tools/power/cpupower/po/de.po b/tools/power/cpupower/po/de.po
-> index 78c09e51663a..840c17cc450a 100644
-> --- a/tools/power/cpupower/po/de.po
-> +++ b/tools/power/cpupower/po/de.po
-> @@ -323,12 +323,12 @@ msgstr "  Hardwarebedingte Grenzen der Taktfrequenz=
-: "
->  #: utils/cpufreq-info.c:256
->  #, c-format
->  msgid "  available frequency steps: "
-> -msgstr "  m_gliche Taktfrequenzen: "
-> +msgstr "  m=C3=B6gliche Taktfrequenzen: "
-> =20
->  #: utils/cpufreq-info.c:269
->  #, c-format
->  msgid "  available cpufreq governors: "
-> -msgstr "  m_gliche Regler: "
-> +msgstr "  m=C3=B6gliche Regler: "
-> =20
->  #: utils/cpufreq-info.c:280
->  #, c-format
-> @@ -381,7 +381,7 @@ msgstr "Optionen:\n"
->  msgid "  -e, --debug          Prints out debug information [default]\n"
->  msgstr ""
->  "  -e, --debug          Erzeugt detaillierte Informationen, hilfreich\n"
-> -"                       zum Aufsp_ren von Fehlern\n"
-> +"                       zum Aufsp=C3=BCren von Fehlern\n"
-> =20
->  #: utils/cpufreq-info.c:475
->  #, c-format
-> @@ -424,7 +424,7 @@ msgstr "  -p, --policy         Findet die momentane T=
-aktik heraus *\n"
->  #: utils/cpufreq-info.c:482
->  #, c-format
->  msgid "  -g, --governors      Determines available cpufreq governors *\n"
-> -msgstr "  -g, --governors      Erzeugt eine Liste mit verf_gbaren Regler=
-n *\n"
-> +msgstr "  -g, --governors      Erzeugt eine Liste mit verf=C3=BCgbaren R=
-eglern *\n"
-> =20
->  #: utils/cpufreq-info.c:483
->  #, c-format
-> @@ -450,7 +450,7 @@ msgstr ""
->  #, c-format
->  msgid "  -s, --stats          Shows cpufreq statistics if available\n"
->  msgstr ""
-> -"  -s, --stats          Zeigt, sofern m_glich, Statistiken _ber cpufreq =
-an.\n"
-> +"  -s, --stats          Zeigt, sofern m=C3=B6glich, Statistiken =C3=BCbe=
-r cpufreq an.\n"
-> =20
->  #: utils/cpufreq-info.c:487
->  #, c-format
-> @@ -473,9 +473,9 @@ msgid ""
->  "cpufreq\n"
->  "                       interface in 2.4. and early 2.6. kernels\n"
->  msgstr ""
-> -"  -o, --proc           Erzeugt Informationen in einem _hnlichem Format =
-zu "
-> +"  -o, --proc           Erzeugt Informationen in einem =C3=A4hnlichem Fo=
-rmat zu "
->  "dem\n"
-> -"                       der /proc/cpufreq-Datei in 2.4. und fr_hen 2.6.\=
-n"
-> +"                       der /proc/cpufreq-Datei in 2.4. und fr=C3=BChen =
-2.6.\n"
->  "                       Kernel-Versionen\n"
-> =20
->  #: utils/cpufreq-info.c:491
-> @@ -491,7 +491,7 @@ msgstr ""
->  #: utils/cpufreq-info.c:492 utils/cpuidle-info.c:152
->  #, c-format
->  msgid "  -h, --help           Prints out this screen\n"
-> -msgstr "  -h, --help           Gibt diese Kurz_bersicht aus\n"
-> +msgstr "  -h, --help           Gibt diese Kurz=C3=BCbersicht aus\n"
-> =20
->  #: utils/cpufreq-info.c:495
->  #, c-format
-> @@ -501,7 +501,7 @@ msgid ""
->  msgstr ""
->  "Sofern kein anderer Parameter als '-c, --cpu' angegeben wird, liefert "
->  "dieses\n"
-> -"Programm Informationen, die z.B. zum Berichten von Fehlern n_tzlich sin=
-d.\n"
-> +"Programm Informationen, die z.B. zum Berichten von Fehlern n=C3=BCtzlic=
-h sind.\n"
-> =20
->  #: utils/cpufreq-info.c:497
->  #, c-format
-> @@ -557,7 +557,7 @@ msgid ""
->  "select\n"
->  msgstr ""
->  "  -d FREQ, --min FREQ      neue minimale Taktfrequenz, die der Regler\n"
-> -"                           ausw_hlen darf\n"
-> +"                           ausw=C3=A4hlen darf\n"
-> =20
->  #: utils/cpufreq-set.c:28
->  #, c-format
-> @@ -566,7 +566,7 @@ msgid ""
->  "select\n"
->  msgstr ""
->  "  -u FREQ, --max FREQ      neue maximale Taktfrequenz, die der Regler\n"
-> -"                           ausw_hlen darf\n"
-> +"                           ausw=C3=A4hlen darf\n"
-> =20
->  #: utils/cpufreq-set.c:29
->  #, c-format
-> @@ -579,20 +579,20 @@ msgid ""
->  "  -f FREQ, --freq FREQ     specific frequency to be set. Requires users=
-pace\n"
->  "                           governor to be available and loaded\n"
->  msgstr ""
-> -"  -f FREQ, --freq FREQ     setze exakte Taktfrequenz. Ben_tigt den Regl=
-er\n"
-> +"  -f FREQ, --freq FREQ     setze exakte Taktfrequenz. Ben=C3=B6tigt den=
- Regler\n"
->  "                           'userspace'.\n"
-> =20
->  #: utils/cpufreq-set.c:32
->  #, c-format
->  msgid "  -r, --related            Switches all hardware-related CPUs\n"
->  msgstr ""
-> -"  -r, --related            Setze Werte f_r alle CPUs, deren Taktfrequen=
-z\n"
-> +"  -r, --related            Setze Werte f=C3=BCr alle CPUs, deren Taktfr=
-equenz\n"
->  "                           hardwarebedingt identisch ist.\n"
-> =20
->  #: utils/cpufreq-set.c:33 utils/cpupower-set.c:28 utils/cpupower-info.c:=
-27
->  #, c-format
->  msgid "  -h, --help               Prints out this screen\n"
-> -msgstr "  -h, --help               Gibt diese Kurz_bersicht aus\n"
-> +msgstr "  -h, --help               Gibt diese Kurz=C3=BCbersicht aus\n"
-> =20
->  #: utils/cpufreq-set.c:35
->  #, fuzzy, c-format
-> @@ -618,8 +618,8 @@ msgstr ""
->  "   angenommen\n"
->  "2. Der Parameter -f bzw. --freq kann mit keinem anderen als dem Paramet=
-er\n"
->  "   -c bzw. --cpu kombiniert werden\n"
-> -"3. FREQuenzen k_nnen in Hz, kHz (Standard), MHz, GHz oder THz eingegebe=
-n\n"
-> -"   werden, indem der Wert und unmittelbar anschlie_end (ohne Leerzeiche=
-n!)\n"
-> +"3. FREQuenzen k=C3=B6nnen in Hz, kHz (Standard), MHz, GHz oder THz eing=
-egeben\n"
-> +"   werden, indem der Wert und unmittelbar anschlie=C3=9Fend (ohne Leerz=
-eichen!)\n"
->  "   die Einheit angegeben werden. (Bsp: 1GHz )\n"
->  "   (FREQuenz in kHz =3D^ MHz * 1000 =3D^ GHz * 1000000).\n"
-> =20
-> @@ -638,7 +638,7 @@ msgid ""
->  msgstr ""
->  "Beim Einstellen ist ein Fehler aufgetreten. Typische Fehlerquellen sind=
-:\n"
->  "- nicht ausreichende Rechte (Administrator)\n"
-> -"- der Regler ist nicht verf_gbar bzw. nicht geladen\n"
-> +"- der Regler ist nicht verf=C3=BCgbar bzw. nicht geladen\n"
->  "- die angegebene Taktik ist inkorrekt\n"
->  "- eine spezifische Frequenz wurde angegeben, aber der Regler 'userspace=
-'\n"
->  "  kann entweder hardwarebedingt nicht genutzt werden oder ist nicht gel=
-aden\n"
-> @@ -821,7 +821,7 @@ msgstr ""
->  #: utils/cpuidle-info.c:48
->  #, fuzzy, c-format
->  msgid "Available idle states:"
-> -msgstr "  m_gliche Taktfrequenzen: "
-> +msgstr "  m=C3=B6gliche Taktfrequenzen: "
-> =20
->  #: utils/cpuidle-info.c:71
->  #, c-format
-> @@ -924,7 +924,7 @@ msgstr "Aufruf: cpufreq-info [Optionen]\n"
->  msgid "  -s, --silent         Only show general C-state information\n"
->  msgstr ""
->  "  -e, --debug          Erzeugt detaillierte Informationen, hilfreich\n"
-> -"                       zum Aufsp_ren von Fehlern\n"
-> +"                       zum Aufsp=C3=BCren von Fehlern\n"
-> =20
->  #: utils/cpuidle-info.c:150
->  #, fuzzy, c-format
-> @@ -933,9 +933,9 @@ msgid ""
->  "acpi/processor/*/power\n"
->  "                       interface in older kernels\n"
->  msgstr ""
-> -"  -o, --proc           Erzeugt Informationen in einem _hnlichem Format =
-zu "
-> +"  -o, --proc           Erzeugt Informationen in einem =C3=A4hnlichem Fo=
-rmat zu "
->  "dem\n"
-> -"                       der /proc/cpufreq-Datei in 2.4. und fr_hen 2.6.\=
-n"
-> +"                       der /proc/cpufreq-Datei in 2.4. und fr=C3=BChen =
-2.6.\n"
->  "                       Kernel-Versionen\n"
-> =20
->  #: utils/cpuidle-info.c:209
-> @@ -949,7 +949,7 @@ msgstr ""
->  #~ "  -c CPU, --cpu CPU    CPU number which information shall be determi=
-ned "
->  #~ "about\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU    Nummer der CPU, _ber die Informationen "
-> +#~ "  -c CPU, --cpu CPU    Nummer der CPU, =C3=BCber die Informationen "
->  #~ "herausgefunden werden sollen\n"
-> =20
->  #~ msgid ""
-> diff --git a/tools/power/cpupower/po/fr.po b/tools/power/cpupower/po/fr.po
-> index 245ad20a9bf9..b46ca2548f86 100644
-> --- a/tools/power/cpupower/po/fr.po
-> +++ b/tools/power/cpupower/po/fr.po
-> @@ -212,7 +212,7 @@ msgstr ""
->  #: utils/cpupower.c:91
->  #, c-format
->  msgid "Report errors and bugs to %s, please.\n"
-> -msgstr "Veuillez rapportez les erreurs et les bogues _ %s, s'il vous pla=
-it.\n"
-> +msgstr "Veuillez rapportez les erreurs et les bogues =C3=A0 %s, s'il vou=
-s plait.\n"
-> =20
->  #: utils/cpupower.c:114
->  #, c-format
-> @@ -227,14 +227,14 @@ msgstr ""
->  #: utils/cpufreq-info.c:31
->  #, c-format
->  msgid "Couldn't count the number of CPUs (%s: %s), assuming 1\n"
-> -msgstr "D_termination du nombre de CPUs (%s : %s) impossible.  Assume 1\=
-n"
-> +msgstr "D=C3=A9termination du nombre de CPUs (%s : %s) impossible.  Assu=
-me 1\n"
-> =20
->  #: utils/cpufreq-info.c:63
->  #, c-format
->  msgid ""
->  "          minimum CPU frequency  -  maximum CPU frequency  -  governor\=
-n"
->  msgstr ""
-> -"         Fr_quence CPU minimale - Fr_quence CPU maximale  - r_gulateur\=
-n"
-> +"         Fr=C3=A9quence CPU minimale - Fr=C3=A9quence CPU maximale  - r=
-=C3=A9gulateur\n"
-> =20
->  #: utils/cpufreq-info.c:151
->  #, c-format
-> @@ -302,12 +302,12 @@ msgstr "  pilote : %s\n"
->  #: utils/cpufreq-info.c:219
->  #, fuzzy, c-format
->  msgid "  CPUs which run at the same hardware frequency: "
-> -msgstr "  CPUs qui doivent changer de fr_quences en m_me temps : "
-> +msgstr "  CPUs qui doivent changer de fr=C3=A9quences en m=C3=AAme temps=
- : "
-> =20
->  #: utils/cpufreq-info.c:230
->  #, fuzzy, c-format
->  msgid "  CPUs which need to have their frequency coordinated by software=
-: "
-> -msgstr "  CPUs qui doivent changer de fr_quences en m_me temps : "
-> +msgstr "  CPUs qui doivent changer de fr=C3=A9quences en m=C3=AAme temps=
- : "
-> =20
->  #: utils/cpufreq-info.c:241
->  #, c-format
-> @@ -317,22 +317,22 @@ msgstr ""
->  #: utils/cpufreq-info.c:247
->  #, c-format
->  msgid "  hardware limits: "
-> -msgstr "  limitation mat_rielle : "
-> +msgstr "  limitation mat=C3=A9rielle : "
-> =20
->  #: utils/cpufreq-info.c:256
->  #, c-format
->  msgid "  available frequency steps: "
-> -msgstr "  plage de fr_quence : "
-> +msgstr "  plage de fr=C3=A9quence : "
-> =20
->  #: utils/cpufreq-info.c:269
->  #, c-format
->  msgid "  available cpufreq governors: "
-> -msgstr "  r_gulateurs disponibles : "
-> +msgstr "  r=C3=A9gulateurs disponibles : "
-> =20
->  #: utils/cpufreq-info.c:280
->  #, c-format
->  msgid "  current policy: frequency should be within "
-> -msgstr "  tactique actuelle : la fr_quence doit _tre comprise entre "
-> +msgstr "  tactique actuelle : la fr=C3=A9quence doit =C3=AAtre comprise =
-entre "
-> =20
->  #: utils/cpufreq-info.c:282
->  #, c-format
-> @@ -345,18 +345,18 @@ msgid ""
->  "The governor \"%s\" may decide which speed to use\n"
->  "                  within this range.\n"
->  msgstr ""
-> -"Le r_gulateur \"%s\" est libre de choisir la vitesse\n"
-> -"                  dans cette plage de fr_quences.\n"
-> +"Le r=C3=A9gulateur \"%s\" est libre de choisir la vitesse\n"
-> +"                  dans cette plage de fr=C3=A9quences.\n"
-> =20
->  #: utils/cpufreq-info.c:293
->  #, c-format
->  msgid "  current CPU frequency is "
-> -msgstr "  la fr_quence actuelle de ce CPU est "
-> +msgstr "  la fr=C3=A9quence actuelle de ce CPU est "
-> =20
->  #: utils/cpufreq-info.c:296
->  #, c-format
->  msgid " (asserted by call to hardware)"
-> -msgstr " (v_rifi_ par un appel direct du mat_riel)"
-> +msgstr " (v=C3=A9rifi=C3=A9 par un appel direct du mat=C3=A9riel)"
-> =20
->  #: utils/cpufreq-info.c:304
->  #, c-format
-> @@ -377,7 +377,7 @@ msgstr "Options :\n"
->  #: utils/cpufreq-info.c:474
->  #, fuzzy, c-format
->  msgid "  -e, --debug          Prints out debug information [default]\n"
-> -msgstr "  -e, --debug          Afficher les informations de d_boguage\n"
-> +msgstr "  -e, --debug          Afficher les informations de d=C3=A9bogua=
-ge\n"
-> =20
->  #: utils/cpufreq-info.c:475
->  #, c-format
-> @@ -385,8 +385,8 @@ msgid ""
->  "  -f, --freq           Get frequency the CPU currently runs at, accordi=
-ng\n"
->  "                       to the cpufreq core *\n"
->  msgstr ""
-> -"  -f, --freq           Obtenir la fr_quence actuelle du CPU selon le po=
-int\n"
-> -"                       de vue du coeur du syst_me de cpufreq *\n"
-> +"  -f, --freq           Obtenir la fr=C3=A9quence actuelle du CPU selon =
-le point\n"
-> +"                       de vue du coeur du syst=C3=A8me de cpufreq *\n"
-> =20
->  #: utils/cpufreq-info.c:477
->  #, c-format
-> @@ -394,8 +394,8 @@ msgid ""
->  "  -w, --hwfreq         Get frequency the CPU currently runs at, by read=
-ing\n"
->  "                       it from hardware (only available to root) *\n"
->  msgstr ""
-> -"  -w, --hwfreq         Obtenir la fr_quence actuelle du CPU directement=
- par\n"
-> -"                       le mat_riel (doit _tre root) *\n"
-> +"  -w, --hwfreq         Obtenir la fr=C3=A9quence actuelle du CPU direct=
-ement par\n"
-> +"                       le mat=C3=A9riel (doit =C3=AAtre root) *\n"
-> =20
->  #: utils/cpufreq-info.c:479
->  #, c-format
-> @@ -403,13 +403,13 @@ msgid ""
->  "  -l, --hwlimits       Determine the minimum and maximum CPU frequency "
->  "allowed *\n"
->  msgstr ""
-> -"  -l, --hwlimits       Affiche les fr_quences minimales et maximales du=
- CPU "
-> +"  -l, --hwlimits       Affiche les fr=C3=A9quences minimales et maximal=
-es du CPU "
->  "*\n"
-> =20
->  #: utils/cpufreq-info.c:480
->  #, c-format
->  msgid "  -d, --driver         Determines the used cpufreq kernel driver =
-*\n"
-> -msgstr "  -d, --driver         Affiche le pilote cpufreq utilis_ *\n"
-> +msgstr "  -d, --driver         Affiche le pilote cpufreq utilis=C3=A9 *\=
-n"
-> =20
->  #: utils/cpufreq-info.c:481
->  #, c-format
-> @@ -420,7 +420,7 @@ msgstr "  -p, --policy         Affiche la tactique ac=
-tuelle de cpufreq *\n"
->  #, c-format
->  msgid "  -g, --governors      Determines available cpufreq governors *\n"
->  msgstr ""
-> -"  -g, --governors      Affiche les r_gulateurs disponibles de cpufreq *=
-\n"
-> +"  -g, --governors      Affiche les r=C3=A9gulateurs disponibles de cpuf=
-req *\n"
-> =20
->  #: utils/cpufreq-info.c:483
->  #, fuzzy, c-format
-> @@ -429,7 +429,7 @@ msgid ""
->  "frequency *\n"
->  msgstr ""
->  "  -a, --affected-cpus   Affiche quels sont les CPUs qui doivent changer=
- de\n"
-> -"                        fr_quences en m_me temps *\n"
-> +"                        fr=C3=A9quences en m=C3=AAme temps *\n"
-> =20
->  #: utils/cpufreq-info.c:484
->  #, fuzzy, c-format
-> @@ -438,7 +438,7 @@ msgid ""
->  "                       coordinated by software *\n"
->  msgstr ""
->  "  -a, --affected-cpus   Affiche quels sont les CPUs qui doivent changer=
- de\n"
-> -"                        fr_quences en m_me temps *\n"
-> +"                        fr=C3=A9quences en m=C3=AAme temps *\n"
-> =20
->  #: utils/cpufreq-info.c:486
->  #, c-format
-> @@ -453,7 +453,7 @@ msgid ""
->  "  -y, --latency        Determines the maximum latency on CPU frequency "
->  "changes *\n"
->  msgstr ""
-> -"  -l, --hwlimits       Affiche les fr_quences minimales et maximales du=
- CPU "
-> +"  -l, --hwlimits       Affiche les fr=C3=A9quences minimales et maximal=
-es du CPU "
->  "*\n"
-> =20
->  #: utils/cpufreq-info.c:488
-> @@ -469,7 +469,7 @@ msgid ""
->  "                       interface in 2.4. and early 2.6. kernels\n"
->  msgstr ""
->  "  -o, --proc           Affiche les informations en utilisant l'interfac=
-e\n"
-> -"                       fournie par /proc/cpufreq, pr_sente dans les "
-> +"                       fournie par /proc/cpufreq, pr=C3=A9sente dans le=
-s "
->  "versions\n"
->  "                       2.4 et les anciennes versions 2.6 du noyau\n"
-> =20
-> @@ -485,7 +485,7 @@ msgstr ""
->  #: utils/cpufreq-info.c:492 utils/cpuidle-info.c:152
->  #, c-format
->  msgid "  -h, --help           Prints out this screen\n"
-> -msgstr "  -h, --help           affiche l'aide-m_moire\n"
-> +msgstr "  -h, --help           affiche l'aide-m=C3=A9moire\n"
-> =20
->  #: utils/cpufreq-info.c:495
->  #, c-format
-> @@ -493,8 +493,8 @@ msgid ""
->  "If no argument or only the -c, --cpu parameter is given, debug output a=
-bout\n"
->  "cpufreq is printed which is useful e.g. for reporting bugs.\n"
->  msgstr ""
-> -"Par d_faut, les informations de d_boguage seront affich_es si aucun\n"
-> -"argument, ou bien si seulement l'argument -c (--cpu) est donn_, afin de=
-\n"
-> +"Par d=C3=A9faut, les informations de d=C3=A9boguage seront affich=C3=A9=
-es si aucun\n"
-> +"argument, ou bien si seulement l'argument -c (--cpu) est donn=C3=A9, af=
-in de\n"
->  "faciliter les rapports de bogues par exemple\n"
-> =20
->  #: utils/cpufreq-info.c:497
-> @@ -517,8 +517,8 @@ msgid ""
->  "You can't specify more than one --cpu parameter and/or\n"
->  "more than one output-specific argument\n"
->  msgstr ""
-> -"On ne peut indiquer plus d'un param_tre --cpu, tout comme l'on ne peut\=
-n"
-> -"sp_cifier plus d'un argument de formatage\n"
-> +"On ne peut indiquer plus d'un param=C3=A8tre --cpu, tout comme l'on ne =
-peut\n"
-> +"sp=C3=A9cifier plus d'un argument de formatage\n"
-> =20
->  #: utils/cpufreq-info.c:600 utils/cpufreq-set.c:82 utils/cpupower-set.c:=
-42
->  #: utils/cpupower-info.c:42 utils/cpuidle-info.c:213
-> @@ -529,7 +529,7 @@ msgstr "option invalide\n"
->  #: utils/cpufreq-info.c:617
->  #, c-format
->  msgid "couldn't analyze CPU %d as it doesn't seem to be present\n"
-> -msgstr "analyse du CPU %d impossible puisqu'il ne semble pas _tre pr_sen=
-t\n"
-> +msgstr "analyse du CPU %d impossible puisqu'il ne semble pas =C3=AAtre p=
-r=C3=A9sent\n"
-> =20
->  #: utils/cpufreq-info.c:620 utils/cpupower-info.c:142
->  #, c-format
-> @@ -547,8 +547,8 @@ msgid ""
->  "  -d FREQ, --min FREQ      new minimum CPU frequency the governor may "
->  "select\n"
->  msgstr ""
-> -"  -d FREQ, --min FREQ       nouvelle fr_quence minimale du CPU _ utilis=
-er\n"
-> -"                            par le r_gulateur\n"
-> +"  -d FREQ, --min FREQ       nouvelle fr=C3=A9quence minimale du CPU =C3=
-=A0 utiliser\n"
-> +"                            par le r=C3=A9gulateur\n"
-> =20
->  #: utils/cpufreq-set.c:28
->  #, c-format
-> @@ -556,13 +556,13 @@ msgid ""
->  "  -u FREQ, --max FREQ      new maximum CPU frequency the governor may "
->  "select\n"
->  msgstr ""
-> -"  -u FREQ, --max FREQ       nouvelle fr_quence maximale du CPU _ utilis=
-er\n"
-> -"                            par le r_gulateur\n"
-> +"  -u FREQ, --max FREQ       nouvelle fr=C3=A9quence maximale du CPU =C3=
-=A0 utiliser\n"
-> +"                            par le r=C3=A9gulateur\n"
-> =20
->  #: utils/cpufreq-set.c:29
->  #, c-format
->  msgid "  -g GOV, --governor GOV   new cpufreq governor\n"
-> -msgstr "  -g GOV, --governor GOV   active le r_gulateur GOV\n"
-> +msgstr "  -g GOV, --governor GOV   active le r=C3=A9gulateur GOV\n"
-> =20
->  #: utils/cpufreq-set.c:30
->  #, c-format
-> @@ -570,9 +570,9 @@ msgid ""
->  "  -f FREQ, --freq FREQ     specific frequency to be set. Requires users=
-pace\n"
->  "                           governor to be available and loaded\n"
->  msgstr ""
-> -"  -f FREQ, --freq FREQ     fixe la fr_quence du processeur _ FREQ. Il f=
-aut\n"
-> -"                           que le r_gulateur _ userspace _ soit disponi=
-ble \n"
-> -"                           et activ_.\n"
-> +"  -f FREQ, --freq FREQ     fixe la fr=C3=A9quence du processeur =C3=A0 =
-FREQ. Il faut\n"
-> +"                           que le r=C3=A9gulateur =C2=AB userspace =C2=
-=BB soit disponible \n"
-> +"                           et activ=C3=A9.\n"
-> =20
->  #: utils/cpufreq-set.c:32
->  #, c-format
-> @@ -582,7 +582,7 @@ msgstr ""
->  #: utils/cpufreq-set.c:33 utils/cpupower-set.c:28 utils/cpupower-info.c:=
-27
->  #, fuzzy, c-format
->  msgid "  -h, --help               Prints out this screen\n"
-> -msgstr "  -h, --help           affiche l'aide-m_moire\n"
-> +msgstr "  -h, --help           affiche l'aide-m=C3=A9moire\n"
-> =20
->  #: utils/cpufreq-set.c:35
->  #, fuzzy, c-format
-> @@ -602,11 +602,11 @@ msgid ""
->  "   (FREQuency in kHz =3D^ Hz * 0.001 =3D^ MHz * 1000 =3D^ GHz * 1000000=
-).\n"
->  msgstr ""
->  "Remarque :\n"
-> -"1. Le CPU num_ro 0 sera utilis_ par d_faut si -c (ou --cpu) est omis ;\=
-n"
-> -"2. l'argument -f FREQ (ou --freq FREQ) ne peut _tre utilis_ qu'avec --c=
-pu ;\n"
-> -"3. on pourra pr_ciser l'unit_ des fr_quences en postfixant sans aucune "
-> +"1. Le CPU num=C3=A9ro 0 sera utilis=C3=A9 par d=C3=A9faut si -c (ou --c=
-pu) est omis ;\n"
-> +"2. l'argument -f FREQ (ou --freq FREQ) ne peut =C3=AAtre utilis=C3=A9 q=
-u'avec --cpu ;\n"
-> +"3. on pourra pr=C3=A9ciser l'unit=C3=A9 des fr=C3=A9quences en postfixa=
-nt sans aucune "
->  "espace\n"
-> -"   les valeurs par hz, kHz (par d_faut), MHz, GHz ou THz\n"
-> +"   les valeurs par hz, kHz (par d=C3=A9faut), MHz, GHz ou THz\n"
->  "   (kHz =3D^ Hz * 0.001 =3D^ MHz * 1000 =3D^ GHz * 1000000).\n"
-> =20
->  #: utils/cpufreq-set.c:57
-> @@ -622,21 +622,21 @@ msgid ""
->  "frequency\n"
->  "   or because the userspace governor isn't loaded?\n"
->  msgstr ""
-> -"En ajustant les nouveaux param_tres, une erreur est apparue. Les source=
-s\n"
-> +"En ajustant les nouveaux param=C3=A8tres, une erreur est apparue. Les s=
-ources\n"
->  "d'erreur typique sont :\n"
-> -"- droit d'administration insuffisant (_tes-vous root ?) ;\n"
-> -"- le r_gulateur choisi n'est pas disponible, ou bien n'est pas disponib=
-le "
-> +"- droit d'administration insuffisant (=C3=AAtes-vous root ?) ;\n"
-> +"- le r=C3=A9gulateur choisi n'est pas disponible, ou bien n'est pas dis=
-ponible "
->  "en\n"
->  "  tant que module noyau ;\n"
->  "- la tactique n'est pas disponible ;\n"
-> -"- vous voulez utiliser l'option -f/--freq, mais le r_gulateur _ userspa=
-ce _\n"
-> -"  n'est pas disponible, par exemple parce que le mat_riel ne le support=
-e\n"
-> -"  pas, ou bien n'est tout simplement pas charg_.\n"
-> +"- vous voulez utiliser l'option -f/--freq, mais le r=C3=A9gulateur =C2=
-=AB userspace =C2=BB\n"
-> +"  n'est pas disponible, par exemple parce que le mat=C3=A9riel ne le su=
-pporte\n"
-> +"  pas, ou bien n'est tout simplement pas charg=C3=A9.\n"
-> =20
->  #: utils/cpufreq-set.c:170
->  #, c-format
->  msgid "wrong, unknown or unhandled CPU?\n"
-> -msgstr "CPU inconnu ou non support_ ?\n"
-> +msgstr "CPU inconnu ou non support=C3=A9 ?\n"
-> =20
->  #: utils/cpufreq-set.c:302
->  #, c-format
-> @@ -653,7 +653,7 @@ msgid ""
->  "At least one parameter out of -f/--freq, -d/--min, -u/--max, and\n"
->  "-g/--governor must be passed\n"
->  msgstr ""
-> -"L'un de ces param_tres est obligatoire : -f/--freq, -d/--min, -u/--max =
-et\n"
-> +"L'un de ces param=C3=A8tres est obligatoire : -f/--freq, -d/--min, -u/-=
--max et\n"
->  "-g/--governor\n"
-> =20
->  #: utils/cpufreq-set.c:347
-> @@ -810,7 +810,7 @@ msgstr ""
->  #: utils/cpuidle-info.c:48
->  #, fuzzy, c-format
->  msgid "Available idle states:"
-> -msgstr "  plage de fr_quence : "
-> +msgstr "  plage de fr=C3=A9quence : "
-> =20
->  #: utils/cpuidle-info.c:71
->  #, c-format
-> @@ -911,7 +911,7 @@ msgstr "Usage : cpufreq-info [options]\n"
->  #: utils/cpuidle-info.c:149
->  #, fuzzy, c-format
->  msgid "  -s, --silent         Only show general C-state information\n"
-> -msgstr "  -e, --debug          Afficher les informations de d_boguage\n"
-> +msgstr "  -e, --debug          Afficher les informations de d=C3=A9bogua=
-ge\n"
-> =20
->  #: utils/cpuidle-info.c:150
->  #, fuzzy, c-format
-> @@ -921,7 +921,7 @@ msgid ""
->  "                       interface in older kernels\n"
->  msgstr ""
->  "  -o, --proc           Affiche les informations en utilisant l'interfac=
-e\n"
-> -"                       fournie par /proc/cpufreq, pr_sente dans les "
-> +"                       fournie par /proc/cpufreq, pr=C3=A9sente dans le=
-s "
->  "versions\n"
->  "                       2.4 et les anciennes versions 2.6 du noyau\n"
-> =20
-> @@ -929,19 +929,19 @@ msgstr ""
->  #, fuzzy, c-format
->  msgid "You can't specify more than one output-specific argument\n"
->  msgstr ""
-> -"On ne peut indiquer plus d'un param_tre --cpu, tout comme l'on ne peut\=
-n"
-> -"sp_cifier plus d'un argument de formatage\n"
-> +"On ne peut indiquer plus d'un param=C3=A8tre --cpu, tout comme l'on ne =
-peut\n"
-> +"sp=C3=A9cifier plus d'un argument de formatage\n"
-> =20
->  #~ msgid ""
->  #~ "  -c CPU, --cpu CPU    CPU number which information shall be determi=
-ned "
->  #~ "about\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU    Num_ro du CPU pour lequel l'information sera "
-> -#~ "affich_e\n"
-> +#~ "  -c CPU, --cpu CPU    Num=C3=A9ro du CPU pour lequel l'information =
-sera "
-> +#~ "affich=C3=A9e\n"
-> =20
->  #~ msgid ""
->  #~ "  -c CPU, --cpu CPU        number of CPU where cpufreq settings shal=
-l be "
->  #~ "modified\n"
->  #~ msgstr ""
-> -#~ "  -c CPU, --cpu CPU        num_ro du CPU _ prendre en compte pour le=
-s\n"
-> +#~ "  -c CPU, --cpu CPU        num=C3=A9ro du CPU =C3=A0 prendre en comp=
-te pour les\n"
->  #~ "                           changements\n"
