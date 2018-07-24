@@ -1,25 +1,32 @@
-Return-Path: <clg@kaod.org>
-Received: from 8.mo68.mail-out.ovh.net (8.mo68.mail-out.ovh.net
- [46.105.74.219])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <krzk@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ZYR1571WzDqRM
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 19:46:35 +1000 (AEST)
-Received: from player763.ha.ovh.net (unknown [10.109.146.175])
- by mo68.mail-out.ovh.net (Postfix) with ESMTP id 1FC2AF1218
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 11:07:59 +0200 (CEST)
-Subject: Re: [PATCH v3 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access full
- VCPU ID space
-To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, paulus@samba.org,
- david@gibson.dropbear.id.au
-References: <1fb3aea5f44f1029866ee10db40abde7e18b24ad.1531967105.git.sbobroff@linux.ibm.com>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <a5d56288-9af0-fc27-b6df-35e6e45a5905@kaod.org>
-Date: Tue, 24 Jul 2018 11:07:49 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ZbKP3rKSzDqyZ
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 21:11:53 +1000 (AEST)
+Received: from mail-wm0-f52.google.com (mail-wm0-f52.google.com [74.125.82.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id A637620875
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 11:11:50 +0000 (UTC)
+Received: by mail-wm0-f52.google.com with SMTP id c14-v6so2111460wmb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 04:11:50 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1fb3aea5f44f1029866ee10db40abde7e18b24ad.1531967105.git.sbobroff@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <5ef968e1cb2a473cad97f6bfead369ca@AcuMS.aculab.com>
+References: <20180723162020.6221-1-krzk@kernel.org>
+ <5ef968e1cb2a473cad97f6bfead369ca@AcuMS.aculab.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 24 Jul 2018 13:11:48 +0200
+Message-ID: <CAJKOXPdveQeg_M42v69m9vBEz2SaJE0_BZNRUqGLt4Ve+ZLYSg@mail.gmail.com>
+Subject: Re: [PATCH] net: ethernet: fs-enet: Use generic CRC32 implementation
+To: David Laight <David.Laight@aculab.com>
+Cc: Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Eric Biggers <ebiggers3@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,251 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/19/2018 04:25 AM, Sam Bobroff wrote:
-> From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-> 
-> It is not currently possible to create the full number of possible
-> VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
-> threads per core than it's core stride (or "VSMT mode"). This is
-> because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
-> even though the VCPU ID is less than KVM_MAX_VCPU_ID.
-> 
-> To address this, "pack" the VCORE ID and XIVE offsets by using
-> knowledge of the way the VCPU IDs will be used when there are less
-> guest threads per core than the core stride. The primary thread of
-> each core will always be used first. Then, if the guest uses more than
-> one thread per core, these secondary threads will sequentially follow
-> the primary in each core.
-> 
-> So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
-> VCPUs are being spaced apart, so at least half of each core is empty
-> and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
-> into the second half of each core (4..7, in an 8-thread core).
-> 
-> Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
-> each core is being left empty, and we can map down into the second and
-> third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
-> 
-> Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
-> threads are being used and 7/8 of the core is empty, allowing use of
-> the 1, 3, 5 and 7 thread slots.
-> 
-> (Strides less than 8 are handled similarly.)
-> 
-> This allows the VCORE ID or offset to be calculated quickly from the
-> VCPU ID or XIVE server numbers, without access to the VCPU structure.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+On 24 July 2018 at 13:05, David Laight <David.Laight@aculab.com> wrote:
+> From: Krzysztof Kozlowski
+>> Sent: 23 July 2018 17:20
+>> Use generic kernel CRC32 implementation because it:
+>> 1. Should be faster (uses lookup tables),
+>
+> Are you sure?
+> The lookup tables are unlikely to be in the data cache and
+> the 6 cache misses kill performance.
+> (Not that it particularly matters when setting up multicast hash tables).
 
-On the XIVE part, 
+Good point, so this statement should be rather "Could be faster"... I
+did not run any performance tests so this is not backed up by any
+data.
 
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
+I think the main benefit is rather easier code maintenance by removing
+duplicated, custom code.
 
-Thanks,
+>> 2. Removes duplicated CRC generation code,
+>> 3. Uses well-proven algorithm instead of coding it one more time.
+> ...
+>>
+>> Not tested on hardware.
+>
+> Have you verified that the old and new functions give the
+> same result for a few mac addresses?
+> It is very easy to use the wrong bits in crc calculations
+> or generate the output in the wrong bit order.
 
-C.
+I copied the original code and new one onto a different driver and run
+this in a loop for thousands of data input (although not all possible
+MAC combinations). The output was the same. I agree however that real
+testing would be important.
 
-> ---
-> Hello everyone,
-> 
-> I've completed a trial merge with the guest native-XIVE code and found no
-> problems; it's no more difficult than the host side and only requires a few
-> calls to xive_vp().
-> 
-> On that basis, here is v3 (unchanged from v2) as non-RFC and it seems to be
-> ready to go.
-> 
-> Patch set v3:
-> Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-> 
-> Patch set v2:
-> Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-> * Corrected places in kvm/book3s_xive.c where IDs weren't packed.
-> * Because kvmppc_pack_vcpu_id() is only called on P9, there is no need to test "emul_smt_mode > 1", so remove it.
-> * Re-ordered block_offsets[] to be more ascending.
-> * Added more detailed description of the packing algorithm.
-> 
-> Patch set v1:
-> Patch 1/1: KVM: PPC: Book3S HV: pack VCORE IDs to access full VCPU ID space
-> 
->  arch/powerpc/include/asm/kvm_book3s.h | 44 +++++++++++++++++++++++++++++++++++
->  arch/powerpc/kvm/book3s_hv.c          | 14 +++++++----
->  arch/powerpc/kvm/book3s_xive.c        | 19 +++++++++------
->  3 files changed, 66 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index 1f345a0b6ba2..ba4b6e00fca7 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -390,4 +390,48 @@ extern int kvmppc_h_logical_ci_store(struct kvm_vcpu *vcpu);
->  #define SPLIT_HACK_MASK			0xff000000
->  #define SPLIT_HACK_OFFS			0xfb000000
->  
-> +/* Pack a VCPU ID from the [0..KVM_MAX_VCPU_ID) space down to the
-> + * [0..KVM_MAX_VCPUS) space, while using knowledge of the guest's core stride
-> + * (but not it's actual threading mode, which is not available) to avoid
-> + * collisions.
-> + *
-> + * The implementation leaves VCPU IDs from the range [0..KVM_MAX_VCPUS) (block
-> + * 0) unchanged: if the guest is filling each VCORE completely then it will be
-> + * using consecutive IDs and it will fill the space without any packing.
-> + *
-> + * For higher VCPU IDs, the packed ID is based on the VCPU ID modulo
-> + * KVM_MAX_VCPUS (effectively masking off the top bits) and then an offset is
-> + * added to avoid collisions.
-> + *
-> + * VCPU IDs in the range [KVM_MAX_VCPUS..(KVM_MAX_VCPUS*2)) (block 1) are only
-> + * possible if the guest is leaving at least 1/2 of each VCORE empty, so IDs
-> + * can be safely packed into the second half of each VCORE by adding an offset
-> + * of (stride / 2).
-> + *
-> + * Similarly, if VCPU IDs in the range [(KVM_MAX_VCPUS*2)..(KVM_MAX_VCPUS*4))
-> + * (blocks 2 and 3) are seen, the guest must be leaving at least 3/4 of each
-> + * VCORE empty so packed IDs can be offset by (stride / 4) and (stride * 3 / 4).
-> + *
-> + * Finally, VCPU IDs from blocks 5..7 will only be seen if the guest is using a
-> + * stride of 8 and 1 thread per core so the remaining offsets of 1, 3, 5 and 7
-> + * must be free to use.
-> + *
-> + * (The offsets for each block are stored in block_offsets[], indexed by the
-> + * block number if the stride is 8. For cases where the guest's stride is less
-> + * than 8, we can re-use the block_offsets array by multiplying the block
-> + * number by (MAX_SMT_THREADS / stride) to reach the correct entry.)
-> + */
-> +static inline u32 kvmppc_pack_vcpu_id(struct kvm *kvm, u32 id)
-> +{
-> +	const int block_offsets[MAX_SMT_THREADS] = {0, 4, 2, 6, 1, 3, 5, 7};
-> +	int stride = kvm->arch.emul_smt_mode;
-> +	int block = (id / KVM_MAX_VCPUS) * (MAX_SMT_THREADS / stride);
-> +	u32 packed_id;
-> +
-> +	BUG_ON(block >= MAX_SMT_THREADS);
-> +	packed_id = (id % KVM_MAX_VCPUS) + block_offsets[block];
-> +	BUG_ON(packed_id >= KVM_MAX_VCPUS);
-> +	return packed_id;
-> +}
-> +
->  #endif /* __ASM_KVM_BOOK3S_H__ */
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index de686b340f4a..363c2fb0d89e 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -1816,7 +1816,7 @@ static int threads_per_vcore(struct kvm *kvm)
->  	return threads_per_subcore;
->  }
->  
-> -static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
-> +static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int id)
->  {
->  	struct kvmppc_vcore *vcore;
->  
-> @@ -1830,7 +1830,7 @@ static struct kvmppc_vcore *kvmppc_vcore_create(struct kvm *kvm, int core)
->  	init_swait_queue_head(&vcore->wq);
->  	vcore->preempt_tb = TB_NIL;
->  	vcore->lpcr = kvm->arch.lpcr;
-> -	vcore->first_vcpuid = core * kvm->arch.smt_mode;
-> +	vcore->first_vcpuid = id;
->  	vcore->kvm = kvm;
->  	INIT_LIST_HEAD(&vcore->preempt_list);
->  
-> @@ -2048,12 +2048,18 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
->  	mutex_lock(&kvm->lock);
->  	vcore = NULL;
->  	err = -EINVAL;
-> -	core = id / kvm->arch.smt_mode;
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> +		BUG_ON(kvm->arch.smt_mode != 1);
-> +		core = kvmppc_pack_vcpu_id(kvm, id);
-> +	} else {
-> +		core = id / kvm->arch.smt_mode;
-> +	}
->  	if (core < KVM_MAX_VCORES) {
->  		vcore = kvm->arch.vcores[core];
-> +		BUG_ON(cpu_has_feature(CPU_FTR_ARCH_300) && vcore);
->  		if (!vcore) {
->  			err = -ENOMEM;
-> -			vcore = kvmppc_vcore_create(kvm, core);
-> +			vcore = kvmppc_vcore_create(kvm, id & ~(kvm->arch.smt_mode - 1));
->  			kvm->arch.vcores[core] = vcore;
->  			kvm->arch.online_vcores++;
->  		}
-> diff --git a/arch/powerpc/kvm/book3s_xive.c b/arch/powerpc/kvm/book3s_xive.c
-> index f9818d7d3381..dbd5887daf4a 100644
-> --- a/arch/powerpc/kvm/book3s_xive.c
-> +++ b/arch/powerpc/kvm/book3s_xive.c
-> @@ -317,6 +317,11 @@ static int xive_select_target(struct kvm *kvm, u32 *server, u8 prio)
->  	return -EBUSY;
->  }
->  
-> +static u32 xive_vp(struct kvmppc_xive *xive, u32 server)
-> +{
-> +	return xive->vp_base + kvmppc_pack_vcpu_id(xive->kvm, server);
-> +}
-> +
->  static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
->  			     struct kvmppc_xive_src_block *sb,
->  			     struct kvmppc_xive_irq_state *state)
-> @@ -362,7 +367,7 @@ static u8 xive_lock_and_mask(struct kvmppc_xive *xive,
->  	 */
->  	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
->  		xive_native_configure_irq(hw_num,
-> -					  xive->vp_base + state->act_server,
-> +					  xive_vp(xive, state->act_server),
->  					  MASKED, state->number);
->  		/* set old_p so we can track if an H_EOI was done */
->  		state->old_p = true;
-> @@ -418,7 +423,7 @@ static void xive_finish_unmask(struct kvmppc_xive *xive,
->  	 */
->  	if (xd->flags & OPAL_XIVE_IRQ_MASK_VIA_FW) {
->  		xive_native_configure_irq(hw_num,
-> -					  xive->vp_base + state->act_server,
-> +					  xive_vp(xive, state->act_server),
->  					  state->act_priority, state->number);
->  		/* If an EOI is needed, do it here */
->  		if (!state->old_p)
-> @@ -495,7 +500,7 @@ static int xive_target_interrupt(struct kvm *kvm,
->  	kvmppc_xive_select_irq(state, &hw_num, NULL);
->  
->  	return xive_native_configure_irq(hw_num,
-> -					 xive->vp_base + server,
-> +					 xive_vp(xive, server),
->  					 prio, state->number);
->  }
->  
-> @@ -883,7 +888,7 @@ int kvmppc_xive_set_mapped(struct kvm *kvm, unsigned long guest_irq,
->  	 * which is fine for a never started interrupt.
->  	 */
->  	xive_native_configure_irq(hw_irq,
-> -				  xive->vp_base + state->act_server,
-> +				  xive_vp(xive, state->act_server),
->  				  state->act_priority, state->number);
->  
->  	/*
-> @@ -959,7 +964,7 @@ int kvmppc_xive_clr_mapped(struct kvm *kvm, unsigned long guest_irq,
->  
->  	/* Reconfigure the IPI */
->  	xive_native_configure_irq(state->ipi_number,
-> -				  xive->vp_base + state->act_server,
-> +				  xive_vp(xive, state->act_server),
->  				  state->act_priority, state->number);
->  
->  	/*
-> @@ -1084,7 +1089,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
->  		pr_devel("Duplicate !\n");
->  		return -EEXIST;
->  	}
-> -	if (cpu >= KVM_MAX_VCPUS) {
-> +	if (cpu >= KVM_MAX_VCPU_ID) {
->  		pr_devel("Out of bounds !\n");
->  		return -EINVAL;
->  	}
-> @@ -1098,7 +1103,7 @@ int kvmppc_xive_connect_vcpu(struct kvm_device *dev,
->  	xc->xive = xive;
->  	xc->vcpu = vcpu;
->  	xc->server_num = cpu;
-> -	xc->vp_id = xive->vp_base + cpu;
-> +	xc->vp_id = xive_vp(xive, cpu);
->  	xc->mfrr = 0xff;
->  	xc->valid = true;
->  
-> 
+Best regards,
+Krzysztof
