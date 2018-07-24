@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg355YXMzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:45 +1000 (AEST)
-In-Reply-To: <1487596931-26975-1-git-send-email-mukesh02@linux.vnet.ibm.com>
-To: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>, stewart@linux.vnet.ibm.com,
- jk@ozlabs.org, hegdevasant@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41Zg360MtLzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 23:59:46 +1000 (AEST)
+In-Reply-To: <20180201010746.413-1-cyrilbur@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-Subject: Re: [V2,
- 1/2] powerpc/powernv/opal-dump : Handles opal_dump_info properly
-Message-Id: <41Zg345gqGz9s0R@ozlabs.org>
-Date: Tue, 24 Jul 2018 23:59:44 +1000 (AEST)
+Cc: gromero@linux.vnet.ibm.com
+Subject: Re: powerpc/tm: Remove struct thread_info param from
+ tm_reclaim_thread()
+Message-Id: <41Zg353jZVz9s1x@ozlabs.org>
+Date: Tue, 24 Jul 2018 23:59:45 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,16 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2017-02-20 at 13:22:10 UTC, Mukesh Ojha wrote:
-> Moves the return value check of 'opal_dump_info' to a proper place which
-> was previously unnecessarily filling all the dump info even on failure.
+On Thu, 2018-02-01 at 01:07:46 UTC, Cyril Bur wrote:
+> tm_reclaim_thread() doesn't use the parameter anymore, both callers have
+> to bother getting it as they have no need for a struct thread_info
+> either.
 > 
-> Signed-off-by: Mukesh Ojha <mukesh02@linux.vnet.ibm.com>
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-> Acked-by: Jeremy Kerr <jk@ozlabs.org>
+> Just remove it and adjust the callers.
+> 
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/a5bbe8fd29f7e42fe5d26371adbad9
+https://git.kernel.org/powerpc/c/edd00b830731be468fd3caf7f9154d
 
 cheers
