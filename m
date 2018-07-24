@@ -1,14 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bharat.bhushan@nxp.com>
+Received: from EUR02-VE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr20072.outbound.protection.outlook.com [40.107.2.72])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ZSFy1gDvzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:53:26 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] selftests/powerpc: Add a test of wild bctr
-Date: Tue, 24 Jul 2018 15:53:22 +1000
-Message-Id: <20180724055322.27720-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ZSVX1GWQzDqRM
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 16:04:19 +1000 (AEST)
+From: Bharat Bhushan <Bharat.Bhushan@nxp.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Bharat Bhushan <Bharat.Bhushan@nxp.com>
+Subject: [PATCH] powerpc/e200: Skip tlb1 entries used for kernel mapping
+Date: Tue, 24 Jul 2018 11:29:45 +0530
+Message-Id: <1532411985-17725-1-git-send-email-Bharat.Bhushan@nxp.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,219 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This tests that a bctr (Branch to counter and link), ie. a function
-call, to a wildly out-of-bounds address is handled correctly.
+E200 have TLB1 only and it does not have TLB0.
+So TLB1 are used for mapping kernel and user-space both.
+TLB miss handler for E200 does not consider skipping TLBs
+used for kernel mapping. This patch ensures that we skip
+tlb1 entries used for kernel mapping (tlbcam_index).
 
-Some old kernel versions didn't handle it correctly, see eg:
-
-  "powerpc/slb: Force a full SLB flush when we insert for a bad EA"
-  https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/157397.html
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
 ---
- tools/testing/selftests/powerpc/include/reg.h  |   1 +
- tools/testing/selftests/powerpc/mm/.gitignore  |   3 +-
- tools/testing/selftests/powerpc/mm/Makefile    |   2 +-
- tools/testing/selftests/powerpc/mm/wild_bctr.c | 153 +++++++++++++++++++++++++
- 4 files changed, 157 insertions(+), 2 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/mm/wild_bctr.c
+ arch/powerpc/kernel/head_fsl_booke.S | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
-index 7f348c059bc2..52b4710469d2 100644
---- a/tools/testing/selftests/powerpc/include/reg.h
-+++ b/tools/testing/selftests/powerpc/include/reg.h
-@@ -17,6 +17,7 @@
- 				    : "memory")
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index bf4c602..951fb96 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -801,12 +801,28 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_BIG_PHYS)
+ 	/* Round robin TLB1 entries assignment */
+ 	mfspr	r12, SPRN_MAS0
  
- #define mb()		asm volatile("sync" : : : "memory");
-+#define barrier()	asm volatile("" : : : "memory");
++	/* Get first free tlbcam entry */
++	lis	r11, tlbcam_index@ha
++	lwz	r11, tlbcam_index@l(r11)
++
++	/* Extract MAS0(NV) */
++	andi.	r13, r12, 0xfff
++	cmpw	0, r13, r11
++	blt	0, 5f
++	b	6f
++5:
++	/* When NV is less than first free tlbcam entry, use first free
++	 * tlbcam entry for ESEL and set NV */
++	rlwimi	r12, r11, 16, 4, 15
++	addi	r11, r11, 1
++	rlwimi	r12, r11, 0, 20, 31
++	b	7f
++6:
+ 	/* Extract TLB1CFG(NENTRY) */
+ 	mfspr	r11, SPRN_TLB1CFG
+ 	andi.	r11, r11, 0xfff
  
- #define SPRN_MMCR2     769
- #define SPRN_MMCRA     770
-diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
-index 7d7c42ed6de9..ba919308fe30 100644
---- a/tools/testing/selftests/powerpc/mm/.gitignore
-+++ b/tools/testing/selftests/powerpc/mm/.gitignore
-@@ -2,4 +2,5 @@ hugetlb_vs_thp_test
- subpage_prot
- tempfile
- prot_sao
--segv_errors
-\ No newline at end of file
-+segv_errors
-+wild_bctr
-\ No newline at end of file
-diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-index 8ebbe96d80a8..893ad41460af 100644
---- a/tools/testing/selftests/powerpc/mm/Makefile
-+++ b/tools/testing/selftests/powerpc/mm/Makefile
-@@ -2,7 +2,7 @@
- noarg:
- 	$(MAKE) -C ../
- 
--TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors
-+TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
- TEST_GEN_FILES := tempfile
- 
- include ../../lib.mk
-diff --git a/tools/testing/selftests/powerpc/mm/wild_bctr.c b/tools/testing/selftests/powerpc/mm/wild_bctr.c
-new file mode 100644
-index 000000000000..f8a2901dc44e
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/mm/wild_bctr.c
-@@ -0,0 +1,153 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2018, Michael Ellerman, IBM Corp.
-+ *
-+ * Test that an out-of-bounds branch to counter behaves as expected.
-+ */
-+
-+#include <setjmp.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/mman.h>
-+#include <ucontext.h>
-+#include <unistd.h>
-+
-+#include "utils.h"
-+
-+
-+#define BAD_NIP	0x788c545a18000000ull
-+
-+static struct pt_regs signal_regs;
-+static jmp_buf setjmp_env;
-+
-+static void save_regs(ucontext_t *ctxt)
-+{
-+	struct pt_regs *regs = ctxt->uc_mcontext.regs;
-+
-+	memcpy(&signal_regs, regs, sizeof(signal_regs));
-+}
-+
-+static void segv_handler(int signum, siginfo_t *info, void *ctxt_v)
-+{
-+	save_regs(ctxt_v);
-+	longjmp(setjmp_env, 1);
-+}
-+
-+static void usr2_handler(int signum, siginfo_t *info, void *ctxt_v)
-+{
-+	save_regs(ctxt_v);
-+}
-+
-+static int ok(void)
-+{
-+	printf("Everything is OK in here.\n");
-+	return 0;
-+}
-+
-+#define REG_POISON	0x5a5aUL
-+#define POISONED_REG(n)	((REG_POISON << 48) | ((n) << 32) | (REG_POISON << 16) | (n))
-+
-+static inline void poison_regs(void)
-+{
-+	#define POISON_REG(n)	\
-+	  "lis  " __stringify(n) "," __stringify(REG_POISON) ";" \
-+	  "addi " __stringify(n) "," __stringify(n) "," __stringify(n) ";" \
-+	  "sldi " __stringify(n) "," __stringify(n) ", 32 ;" \
-+	  "oris " __stringify(n) "," __stringify(n) "," __stringify(REG_POISON) ";" \
-+	  "addi " __stringify(n) "," __stringify(n) "," __stringify(n) ";"
-+
-+	asm (POISON_REG(15)
-+	     POISON_REG(16)
-+	     POISON_REG(17)
-+	     POISON_REG(18)
-+	     POISON_REG(19)
-+	     POISON_REG(20)
-+	     POISON_REG(21)
-+	     POISON_REG(22)
-+	     POISON_REG(23)
-+	     POISON_REG(24)
-+	     POISON_REG(25)
-+	     POISON_REG(26)
-+	     POISON_REG(27)
-+	     POISON_REG(28)
-+	     POISON_REG(29)
-+	     : // inputs
-+	     : // outputs
-+	     : "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
-+	       "26", "27", "28", "29"
-+	);
-+	#undef POISON_REG
-+}
-+
-+static int check_regs(void)
-+{
-+	unsigned long i;
-+
-+	for (i = 15; i <= 29; i++)
-+		FAIL_IF(signal_regs.gpr[i] != POISONED_REG(i));
-+
-+	printf("Regs OK\n");
-+	return 0;
-+}
-+
-+static void dump_regs(void)
-+{
-+	for (int i = 0; i < 32; i += 4) {
-+		printf("r%02d 0x%016lx  r%02d 0x%016lx  " \
-+		       "r%02d 0x%016lx  r%02d 0x%016lx\n",
-+		       i, signal_regs.gpr[i],
-+		       i+1, signal_regs.gpr[i+1],
-+		       i+2, signal_regs.gpr[i+2],
-+		       i+3, signal_regs.gpr[i+3]);
-+	}
-+}
-+
-+int test_wild_bctr(void)
-+{
-+	int (*func_ptr)(void);
-+	struct sigaction segv = {
-+		.sa_sigaction = segv_handler,
-+		.sa_flags = SA_SIGINFO
-+	};
-+	struct sigaction usr2 = {
-+		.sa_sigaction = usr2_handler,
-+		.sa_flags = SA_SIGINFO
-+	};
-+
-+	FAIL_IF(sigaction(SIGSEGV, &segv, NULL));
-+	FAIL_IF(sigaction(SIGUSR2, &usr2, NULL));
-+
-+	bzero(&signal_regs, sizeof(signal_regs));
-+
-+	if (setjmp(setjmp_env) == 0) {
-+		func_ptr = ok;
-+		func_ptr();
-+
-+		kill(getpid(), SIGUSR2);
-+		printf("Regs before:\n");
-+		dump_regs();
-+		bzero(&signal_regs, sizeof(signal_regs));
-+
-+		poison_regs();
-+
-+		func_ptr = (int (*)(void))BAD_NIP;
-+		func_ptr();
-+
-+		FAIL_IF(1); /* we didn't segv? */
-+	}
-+
-+	FAIL_IF(signal_regs.nip != BAD_NIP);
-+
-+	printf("All good - took SEGV as expected branching to 0x%llx\n", BAD_NIP);
-+
-+	dump_regs();
-+	FAIL_IF(check_regs());
-+
-+	return 0;
-+}
-+
-+int main(void)
-+{
-+	return test_harness(test_wild_bctr, "wild_bctr");
-+}
+-	/* Extract MAS0(NV) */
+-	andi.	r13, r12, 0xfff
++	/* Set MAS0(NV) for next TLB miss exception */
+ 	addi	r13, r13, 1
+ 	cmpw	0, r13, r11
+ 	addi	r12, r12, 1
 -- 
-2.14.1
+1.9.3
