@@ -1,16 +1,14 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 41ZRpK04cRzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:32:56 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org,
- gregkh@linuxfoundation.org, #@ozlabs.ru, v4.12+@ozlabs.ru
-Subject: [PATCH kernel for v4.14 and v4.17 stable] KVM: PPC: Check if IOMMU
- page is contained in the pinned physical page
-Date: Tue, 24 Jul 2018 15:32:47 +1000
-Message-Id: <20180724053247.26870-1-aik@ozlabs.ru>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ZSFy1gDvzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:53:26 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] selftests/powerpc: Add a test of wild bctr
+Date: Tue, 24 Jul 2018 15:53:22 +1000
+Message-Id: <20180724055322.27720-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,230 +18,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A VM which has:
- - a DMA capable device passed through to it (eg. network card);
- - running a malicious kernel that ignores H_PUT_TCE failure;
- - capability of using IOMMU pages bigger that physical pages
-can create an IOMMU mapping that exposes (for example) 16MB of
-the host physical memory to the device when only 64K was allocated to the VM.
+This tests that a bctr (Branch to counter and link), ie. a function
+call, to a wildly out-of-bounds address is handled correctly.
 
-The remaining 16MB - 64K will be some other content of host memory, possibly
-including pages of the VM, but also pages of host kernel memory, host
-programs or other VMs.
+Some old kernel versions didn't handle it correctly, see eg:
 
-The attacking VM does not control the location of the page it can map,
-and is only allowed to map as many pages as it has pages of RAM.
+  "powerpc/slb: Force a full SLB flush when we insert for a bad EA"
+  https://lists.ozlabs.org/pipermail/linuxppc-dev/2017-April/157397.html
 
-We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
-an IOMMU page is contained in the physical page so the PCI hardware won't
-get access to unassigned host memory; however this check is missing in
-the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far and
-did not hit this yet as the very first time when the mapping happens
-we do not have tbl::it_userspace allocated yet and fall back to
-the userspace which in turn calls VFIO IOMMU driver, this fails and
-the guest does not retry,
-
-This stores the smallest preregistered page size in the preregistered
-region descriptor and changes the mm_iommu_xxx API to check this against
-the IOMMU page size.
-
-This calculates maximum page size as a minimum of the natural region
-alignment and compound page size. For the page shift this uses the shift
-returned by find_linux_pte() which indicates how the page is mapped to
-the current userspace - if the page is huge and this is not a zero, then
-it is a leaf pte and the page is mapped within the range.
-
-Fixes: 121f80ba68f1 ("KVM: PPC: VFIO: Add in-kernel acceleration for VFIO")
-Cc: stable@vger.kernel.org # v4.12+
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-(cherry picked from commit 76fa4975f3ed12d15762bc979ca44078598ed8ee)
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
+ tools/testing/selftests/powerpc/include/reg.h  |   1 +
+ tools/testing/selftests/powerpc/mm/.gitignore  |   3 +-
+ tools/testing/selftests/powerpc/mm/Makefile    |   2 +-
+ tools/testing/selftests/powerpc/mm/wild_bctr.c | 153 +++++++++++++++++++++++++
+ 4 files changed, 157 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/wild_bctr.c
 
-The original patch did not apply because of fad953ce which fixed
-all vmalloc's to use array_size() so the backport is pretty trivial
-and applies to v4.17 stable as well.
-
-
----
- arch/powerpc/include/asm/mmu_context.h |  4 ++--
- arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
- arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
- arch/powerpc/mm/mmu_context_iommu.c    | 37 ++++++++++++++++++++++++++++++++--
- drivers/vfio/vfio_iommu_spapr_tce.c    |  2 +-
- 5 files changed, 43 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 44fdf47..6f67ff5 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -35,9 +35,9 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
- extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- 		unsigned long ua, unsigned long entries);
- extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa);
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
- extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa);
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
- extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
- extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
- #endif
-diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
-index 4dffa61..e14cec6 100644
---- a/arch/powerpc/kvm/book3s_64_vio.c
-+++ b/arch/powerpc/kvm/book3s_64_vio.c
-@@ -433,7 +433,7 @@ long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
- 		/* This only handles v2 IOMMU type, v1 is handled via ioctl() */
- 		return H_TOO_HARD;
+diff --git a/tools/testing/selftests/powerpc/include/reg.h b/tools/testing/selftests/powerpc/include/reg.h
+index 7f348c059bc2..52b4710469d2 100644
+--- a/tools/testing/selftests/powerpc/include/reg.h
++++ b/tools/testing/selftests/powerpc/include/reg.h
+@@ -17,6 +17,7 @@
+ 				    : "memory")
  
--	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
-+	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, tbl->it_page_shift, &hpa)))
- 		return H_HARDWARE;
+ #define mb()		asm volatile("sync" : : : "memory");
++#define barrier()	asm volatile("" : : : "memory");
  
- 	if (mm_iommu_mapped_inc(mem))
-diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-index c32e9bfe..648cf6c 100644
---- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-@@ -262,7 +262,8 @@ static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
- 	if (!mem)
- 		return H_TOO_HARD;
+ #define SPRN_MMCR2     769
+ #define SPRN_MMCRA     770
+diff --git a/tools/testing/selftests/powerpc/mm/.gitignore b/tools/testing/selftests/powerpc/mm/.gitignore
+index 7d7c42ed6de9..ba919308fe30 100644
+--- a/tools/testing/selftests/powerpc/mm/.gitignore
++++ b/tools/testing/selftests/powerpc/mm/.gitignore
+@@ -2,4 +2,5 @@ hugetlb_vs_thp_test
+ subpage_prot
+ tempfile
+ prot_sao
+-segv_errors
+\ No newline at end of file
++segv_errors
++wild_bctr
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+index 8ebbe96d80a8..893ad41460af 100644
+--- a/tools/testing/selftests/powerpc/mm/Makefile
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -2,7 +2,7 @@
+ noarg:
+ 	$(MAKE) -C ../
  
--	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
-+	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, tbl->it_page_shift,
-+			&hpa)))
- 		return H_HARDWARE;
+-TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors
++TEST_GEN_PROGS := hugetlb_vs_thp_test subpage_prot prot_sao segv_errors wild_bctr
+ TEST_GEN_FILES := tempfile
  
- 	pua = (void *) vmalloc_to_phys(pua);
-@@ -431,7 +432,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
- 
- 		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
- 		if (mem)
--			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
-+			prereg = mm_iommu_ua_to_hpa_rm(mem, ua,
-+					IOMMU_PAGE_SHIFT_4K, &tces) == 0;
- 	}
- 
- 	if (!prereg) {
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index e0a2d8e..8160559 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -19,6 +19,7 @@
- #include <linux/hugetlb.h>
- #include <linux/swap.h>
- #include <asm/mmu_context.h>
-+#include <asm/pte-walk.h>
- 
- static DEFINE_MUTEX(mem_list_mutex);
- 
-@@ -27,6 +28,7 @@ struct mm_iommu_table_group_mem_t {
- 	struct rcu_head rcu;
- 	unsigned long used;
- 	atomic64_t mapped;
-+	unsigned int pageshift;
- 	u64 ua;			/* userspace address */
- 	u64 entries;		/* number of entries in hpas[] */
- 	u64 *hpas;		/* vmalloc'ed */
-@@ -126,6 +128,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- {
- 	struct mm_iommu_table_group_mem_t *mem;
- 	long i, j, ret = 0, locked_entries = 0;
-+	unsigned int pageshift;
-+	unsigned long flags;
- 	struct page *page = NULL;
- 
- 	mutex_lock(&mem_list_mutex);
-@@ -160,6 +164,12 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		goto unlock_exit;
- 	}
- 
-+	/*
-+	 * For a starting point for a maximum page size calculation
-+	 * we use @ua and @entries natural alignment to allow IOMMU pages
-+	 * smaller than huge pages but still bigger than PAGE_SIZE.
-+	 */
-+	mem->pageshift = __ffs(ua | (entries << PAGE_SHIFT));
- 	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
- 	if (!mem->hpas) {
- 		kfree(mem);
-@@ -200,6 +210,23 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 			}
- 		}
- populate:
-+		pageshift = PAGE_SHIFT;
-+		if (PageCompound(page)) {
-+			pte_t *pte;
-+			struct page *head = compound_head(page);
-+			unsigned int compshift = compound_order(head);
+ include ../../lib.mk
+diff --git a/tools/testing/selftests/powerpc/mm/wild_bctr.c b/tools/testing/selftests/powerpc/mm/wild_bctr.c
+new file mode 100644
+index 000000000000..f8a2901dc44e
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/wild_bctr.c
+@@ -0,0 +1,153 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2018, Michael Ellerman, IBM Corp.
++ *
++ * Test that an out-of-bounds branch to counter behaves as expected.
++ */
 +
-+			local_irq_save(flags); /* disables as well */
-+			pte = find_linux_pte(mm->pgd, ua, NULL, &pageshift);
-+			local_irq_restore(flags);
++#include <setjmp.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/mman.h>
++#include <ucontext.h>
++#include <unistd.h>
 +
-+			/* Double check it is still the same pinned page */
-+			if (pte && pte_page(*pte) == head &&
-+					pageshift == compshift)
-+				pageshift = max_t(unsigned int, pageshift,
-+						PAGE_SHIFT);
-+		}
-+		mem->pageshift = min(mem->pageshift, pageshift);
- 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
- 	}
- 
-@@ -350,7 +377,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
- EXPORT_SYMBOL_GPL(mm_iommu_find);
- 
- long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa)
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
- 	u64 *va = &mem->hpas[entry];
-@@ -358,6 +385,9 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- 	if (entry >= mem->entries)
- 		return -EFAULT;
- 
-+	if (pageshift > mem->pageshift)
-+		return -EFAULT;
++#include "utils.h"
 +
- 	*hpa = *va | (ua & ~PAGE_MASK);
- 
- 	return 0;
-@@ -365,7 +395,7 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
- EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
- 
- long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
--		unsigned long ua, unsigned long *hpa)
-+		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
- {
- 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
- 	void *va = &mem->hpas[entry];
-@@ -374,6 +404,9 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
- 	if (entry >= mem->entries)
- 		return -EFAULT;
- 
-+	if (pageshift > mem->pageshift)
-+		return -EFAULT;
 +
- 	pa = (void *) vmalloc_to_phys(va);
- 	if (!pa)
- 		return -EFAULT;
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index b751dd6..b4c68f3 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -467,7 +467,7 @@ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
- 	if (!mem)
- 		return -EINVAL;
- 
--	ret = mm_iommu_ua_to_hpa(mem, tce, phpa);
-+	ret = mm_iommu_ua_to_hpa(mem, tce, shift, phpa);
- 	if (ret)
- 		return -EINVAL;
- 
++#define BAD_NIP	0x788c545a18000000ull
++
++static struct pt_regs signal_regs;
++static jmp_buf setjmp_env;
++
++static void save_regs(ucontext_t *ctxt)
++{
++	struct pt_regs *regs = ctxt->uc_mcontext.regs;
++
++	memcpy(&signal_regs, regs, sizeof(signal_regs));
++}
++
++static void segv_handler(int signum, siginfo_t *info, void *ctxt_v)
++{
++	save_regs(ctxt_v);
++	longjmp(setjmp_env, 1);
++}
++
++static void usr2_handler(int signum, siginfo_t *info, void *ctxt_v)
++{
++	save_regs(ctxt_v);
++}
++
++static int ok(void)
++{
++	printf("Everything is OK in here.\n");
++	return 0;
++}
++
++#define REG_POISON	0x5a5aUL
++#define POISONED_REG(n)	((REG_POISON << 48) | ((n) << 32) | (REG_POISON << 16) | (n))
++
++static inline void poison_regs(void)
++{
++	#define POISON_REG(n)	\
++	  "lis  " __stringify(n) "," __stringify(REG_POISON) ";" \
++	  "addi " __stringify(n) "," __stringify(n) "," __stringify(n) ";" \
++	  "sldi " __stringify(n) "," __stringify(n) ", 32 ;" \
++	  "oris " __stringify(n) "," __stringify(n) "," __stringify(REG_POISON) ";" \
++	  "addi " __stringify(n) "," __stringify(n) "," __stringify(n) ";"
++
++	asm (POISON_REG(15)
++	     POISON_REG(16)
++	     POISON_REG(17)
++	     POISON_REG(18)
++	     POISON_REG(19)
++	     POISON_REG(20)
++	     POISON_REG(21)
++	     POISON_REG(22)
++	     POISON_REG(23)
++	     POISON_REG(24)
++	     POISON_REG(25)
++	     POISON_REG(26)
++	     POISON_REG(27)
++	     POISON_REG(28)
++	     POISON_REG(29)
++	     : // inputs
++	     : // outputs
++	     : "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
++	       "26", "27", "28", "29"
++	);
++	#undef POISON_REG
++}
++
++static int check_regs(void)
++{
++	unsigned long i;
++
++	for (i = 15; i <= 29; i++)
++		FAIL_IF(signal_regs.gpr[i] != POISONED_REG(i));
++
++	printf("Regs OK\n");
++	return 0;
++}
++
++static void dump_regs(void)
++{
++	for (int i = 0; i < 32; i += 4) {
++		printf("r%02d 0x%016lx  r%02d 0x%016lx  " \
++		       "r%02d 0x%016lx  r%02d 0x%016lx\n",
++		       i, signal_regs.gpr[i],
++		       i+1, signal_regs.gpr[i+1],
++		       i+2, signal_regs.gpr[i+2],
++		       i+3, signal_regs.gpr[i+3]);
++	}
++}
++
++int test_wild_bctr(void)
++{
++	int (*func_ptr)(void);
++	struct sigaction segv = {
++		.sa_sigaction = segv_handler,
++		.sa_flags = SA_SIGINFO
++	};
++	struct sigaction usr2 = {
++		.sa_sigaction = usr2_handler,
++		.sa_flags = SA_SIGINFO
++	};
++
++	FAIL_IF(sigaction(SIGSEGV, &segv, NULL));
++	FAIL_IF(sigaction(SIGUSR2, &usr2, NULL));
++
++	bzero(&signal_regs, sizeof(signal_regs));
++
++	if (setjmp(setjmp_env) == 0) {
++		func_ptr = ok;
++		func_ptr();
++
++		kill(getpid(), SIGUSR2);
++		printf("Regs before:\n");
++		dump_regs();
++		bzero(&signal_regs, sizeof(signal_regs));
++
++		poison_regs();
++
++		func_ptr = (int (*)(void))BAD_NIP;
++		func_ptr();
++
++		FAIL_IF(1); /* we didn't segv? */
++	}
++
++	FAIL_IF(signal_regs.nip != BAD_NIP);
++
++	printf("All good - took SEGV as expected branching to 0x%llx\n", BAD_NIP);
++
++	dump_regs();
++	FAIL_IF(check_regs());
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_wild_bctr, "wild_bctr");
++}
 -- 
-2.11.0
+2.14.1
