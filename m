@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ZpKq2jtVzDrGC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 05:27:58 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6OJNdXb044088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:27:56 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ZpKt25qNzDrGC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 05:28:02 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6OJNdU7019789
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:27:59 -0400
 Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ke8hjvnck-1
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2ke8xh3y9x-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:27:55 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:27:59 -0400
 Received: from localhost
  by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Tue, 24 Jul 2018 15:27:55 -0400
+ Tue, 24 Jul 2018 15:27:58 -0400
 From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Alastair D'Silva" <alastair@d-silva.org>,
@@ -32,11 +32,14 @@ Cc: "Alastair D'Silva" <alastair@d-silva.org>,
  Simon Guo <wei.guo.simon@gmail.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/7] powerpc: Modernize unhandled signals message
-Date: Tue, 24 Jul 2018 16:27:13 -0300
+Subject: [PATCH 1/7] powerpc/traps: Print unhandled signals in a separate
+ function
+Date: Tue, 24 Jul 2018 16:27:14 -0300
+In-Reply-To: <20180724192720.32417-1-muriloo@linux.ibm.com>
+References: <20180724192720.32417-1-muriloo@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20180724192720.32417-1-muriloo@linux.ibm.com>
+Message-Id: <20180724192720.32417-2-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,50 +49,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, everyone.
+Isolate the logic of printing unhandled signals out of _exception_pkey().  No
+functional change, only code rearrangement.
 
-This series was inspired by the need to modernize and display more
-informative messages about unhandled signals.
+Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+---
+ arch/powerpc/kernel/traps.c | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
-The "unhandled signal NN" is not very informative.  We thought it would
-be helpful adding a human-readable message describing what the signal
-number means, printing the VMA address, and dumping the instructions.
-
-We can add more informative messages, like informing what each code of a
-SIGSEGV signal means.  We are open to suggestions.
-
-I have collected some early feedback from Michael Ellerman about this
-series and would love to hear more feedback from you all.
-
-Before this series:
-
-    Jul 24 13:01:07 localhost kernel: pandafault[5989]: unhandled signal 11 at 00000000100007d0 nip 000000001000061c lr 00003fff85a75100 code 2
-
-After this series:
-
-    Jul 24 13:08:01 localhost kernel: pandafault[10758]: segfault (11) at 00000000100007d0 nip 000000001000061c lr 00007fffabc85100 code 2 in pandafault[10000000+10000]
-    Jul 24 13:08:01 localhost kernel: Instruction dump:
-    Jul 24 13:08:01 localhost kernel: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
-    Jul 24 13:08:01 localhost kernel: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
-
-Cheers
-Murilo
-
-Murilo Opsfelder Araujo (7):
-  powerpc/traps: Print unhandled signals in a separate function
-  powerpc/traps: Return early in show_signal_msg()
-  powerpc/reg: Add REG_FMT definition
-  powerpc/traps: Use REG_FMT in show_signal_msg()
-  powerpc/traps: Print VMA for unhandled signals
-  powerpc/traps: Print signal name for unhandled signals
-  powerpc/traps: Show instructions on exceptions
-
- arch/powerpc/include/asm/reg.h        |  6 +++
- arch/powerpc/include/asm/stacktrace.h |  7 +++
- arch/powerpc/kernel/process.c         | 28 +++++-----
- arch/powerpc/kernel/traps.c           | 73 +++++++++++++++++++++++----
- 4 files changed, 89 insertions(+), 25 deletions(-)
- create mode 100644 arch/powerpc/include/asm/stacktrace.h
-
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 0e17dcb48720..cbd3dc365193 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -301,26 +301,32 @@ void user_single_step_siginfo(struct task_struct *tsk,
+ 	info->si_addr = (void __user *)regs->nip;
+ }
+ 
++static void show_signal_msg(int signr, struct pt_regs *regs, int code,
++			    unsigned long addr)
++{
++	const char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
++		"at %08lx nip %08lx lr %08lx code %x\n";
++	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
++		"at %016lx nip %016lx lr %016lx code %x\n";
++
++	if (show_unhandled_signals && unhandled_signal(current, signr)) {
++		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
++				   current->comm, current->pid, signr,
++				   addr, regs->nip, regs->link, code);
++	}
++}
+ 
+ void _exception_pkey(int signr, struct pt_regs *regs, int code,
+-		unsigned long addr, int key)
++		     unsigned long addr, int key)
+ {
+ 	siginfo_t info;
+-	const char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
+-			"at %08lx nip %08lx lr %08lx code %x\n";
+-	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
+-			"at %016lx nip %016lx lr %016lx code %x\n";
+ 
+ 	if (!user_mode(regs)) {
+ 		die("Exception in kernel mode", regs, signr);
+ 		return;
+ 	}
+ 
+-	if (show_unhandled_signals && unhandled_signal(current, signr)) {
+-		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+-				   current->comm, current->pid, signr,
+-				   addr, regs->nip, regs->link, code);
+-	}
++	show_signal_msg(signr, regs, code, addr);
+ 
+ 	if (arch_irqs_disabled() && !arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
 -- 
 2.17.1
