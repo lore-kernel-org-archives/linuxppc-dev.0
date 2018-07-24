@@ -1,22 +1,16 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2620:137:e000::1:9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41Z8bS1pnpzDqmj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 04:07:31 +1000 (AEST)
-Date: Mon, 23 Jul 2018 11:07:26 -0700 (PDT)
-Message-Id: <20180723.110726.835170464043859135.davem@davemloft.net>
-To: yuehaibing@huawei.com
-Cc: qiang.zhao@nxp.com, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH net-next] wan/fsl_ucc_hdlc: use IS_ERR_VALUE() to check
- return value of qe_muram_alloc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20180723141233.19948-1-yuehaibing@huawei.com>
-References: <20180723141233.19948-1-yuehaibing@huawei.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Return-Path: <aik@ozlabs.ru>
+Received: from ozlabs.ru (unknown [107.173.13.209])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41ZRpK04cRzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2018 15:32:56 +1000 (AEST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Michael Ellerman <mpe@ellerman.id.au>, stable@vger.kernel.org,
+ gregkh@linuxfoundation.org, #@ozlabs.ru, v4.12+@ozlabs.ru
+Subject: [PATCH kernel for v4.14 and v4.17 stable] KVM: PPC: Check if IOMMU
+ page is contained in the pinned physical page
+Date: Tue, 24 Jul 2018 15:32:47 +1000
+Message-Id: <20180724053247.26870-1-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +20,230 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Mon, 23 Jul 2018 22:12:33 +0800
+A VM which has:
+ - a DMA capable device passed through to it (eg. network card);
+ - running a malicious kernel that ignores H_PUT_TCE failure;
+ - capability of using IOMMU pages bigger that physical pages
+can create an IOMMU mapping that exposes (for example) 16MB of
+the host physical memory to the device when only 64K was allocated to the VM.
 
-> qe_muram_alloc return a unsigned long integer,which should not
-> compared with zero. check it using IS_ERR_VALUE() to fix this.
-> 
-> Fixes: c19b6d246a35 ("drivers/net: support hdlc function for QE-UCC")
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+The remaining 16MB - 64K will be some other content of host memory, possibly
+including pages of the VM, but also pages of host kernel memory, host
+programs or other VMs.
 
-Applied, thanks.
+The attacking VM does not control the location of the page it can map,
+and is only allowed to map as many pages as it has pages of RAM.
+
+We already have a check in drivers/vfio/vfio_iommu_spapr_tce.c that
+an IOMMU page is contained in the physical page so the PCI hardware won't
+get access to unassigned host memory; however this check is missing in
+the KVM fastpath (H_PUT_TCE accelerated code). We were lucky so far and
+did not hit this yet as the very first time when the mapping happens
+we do not have tbl::it_userspace allocated yet and fall back to
+the userspace which in turn calls VFIO IOMMU driver, this fails and
+the guest does not retry,
+
+This stores the smallest preregistered page size in the preregistered
+region descriptor and changes the mm_iommu_xxx API to check this against
+the IOMMU page size.
+
+This calculates maximum page size as a minimum of the natural region
+alignment and compound page size. For the page shift this uses the shift
+returned by find_linux_pte() which indicates how the page is mapped to
+the current userspace - if the page is huge and this is not a zero, then
+it is a leaf pte and the page is mapped within the range.
+
+Fixes: 121f80ba68f1 ("KVM: PPC: VFIO: Add in-kernel acceleration for VFIO")
+Cc: stable@vger.kernel.org # v4.12+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+(cherry picked from commit 76fa4975f3ed12d15762bc979ca44078598ed8ee)
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+The original patch did not apply because of fad953ce which fixed
+all vmalloc's to use array_size() so the backport is pretty trivial
+and applies to v4.17 stable as well.
+
+
+---
+ arch/powerpc/include/asm/mmu_context.h |  4 ++--
+ arch/powerpc/kvm/book3s_64_vio.c       |  2 +-
+ arch/powerpc/kvm/book3s_64_vio_hv.c    |  6 ++++--
+ arch/powerpc/mm/mmu_context_iommu.c    | 37 ++++++++++++++++++++++++++++++++--
+ drivers/vfio/vfio_iommu_spapr_tce.c    |  2 +-
+ 5 files changed, 43 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 44fdf47..6f67ff5 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -35,9 +35,9 @@ extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup_rm(
+ extern struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ 		unsigned long ua, unsigned long entries);
+ extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+-		unsigned long ua, unsigned long *hpa);
++		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
+ extern long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
+-		unsigned long ua, unsigned long *hpa);
++		unsigned long ua, unsigned int pageshift, unsigned long *hpa);
+ extern long mm_iommu_mapped_inc(struct mm_iommu_table_group_mem_t *mem);
+ extern void mm_iommu_mapped_dec(struct mm_iommu_table_group_mem_t *mem);
+ #endif
+diff --git a/arch/powerpc/kvm/book3s_64_vio.c b/arch/powerpc/kvm/book3s_64_vio.c
+index 4dffa61..e14cec6 100644
+--- a/arch/powerpc/kvm/book3s_64_vio.c
++++ b/arch/powerpc/kvm/book3s_64_vio.c
+@@ -433,7 +433,7 @@ long kvmppc_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+ 		/* This only handles v2 IOMMU type, v1 is handled via ioctl() */
+ 		return H_TOO_HARD;
+ 
+-	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, &hpa)))
++	if (WARN_ON_ONCE(mm_iommu_ua_to_hpa(mem, ua, tbl->it_page_shift, &hpa)))
+ 		return H_HARDWARE;
+ 
+ 	if (mm_iommu_mapped_inc(mem))
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index c32e9bfe..648cf6c 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -262,7 +262,8 @@ static long kvmppc_rm_tce_iommu_map(struct kvm *kvm, struct iommu_table *tbl,
+ 	if (!mem)
+ 		return H_TOO_HARD;
+ 
+-	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, &hpa)))
++	if (WARN_ON_ONCE_RM(mm_iommu_ua_to_hpa_rm(mem, ua, tbl->it_page_shift,
++			&hpa)))
+ 		return H_HARDWARE;
+ 
+ 	pua = (void *) vmalloc_to_phys(pua);
+@@ -431,7 +432,8 @@ long kvmppc_rm_h_put_tce_indirect(struct kvm_vcpu *vcpu,
+ 
+ 		mem = mm_iommu_lookup_rm(vcpu->kvm->mm, ua, IOMMU_PAGE_SIZE_4K);
+ 		if (mem)
+-			prereg = mm_iommu_ua_to_hpa_rm(mem, ua, &tces) == 0;
++			prereg = mm_iommu_ua_to_hpa_rm(mem, ua,
++					IOMMU_PAGE_SHIFT_4K, &tces) == 0;
+ 	}
+ 
+ 	if (!prereg) {
+diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
+index e0a2d8e..8160559 100644
+--- a/arch/powerpc/mm/mmu_context_iommu.c
++++ b/arch/powerpc/mm/mmu_context_iommu.c
+@@ -19,6 +19,7 @@
+ #include <linux/hugetlb.h>
+ #include <linux/swap.h>
+ #include <asm/mmu_context.h>
++#include <asm/pte-walk.h>
+ 
+ static DEFINE_MUTEX(mem_list_mutex);
+ 
+@@ -27,6 +28,7 @@ struct mm_iommu_table_group_mem_t {
+ 	struct rcu_head rcu;
+ 	unsigned long used;
+ 	atomic64_t mapped;
++	unsigned int pageshift;
+ 	u64 ua;			/* userspace address */
+ 	u64 entries;		/* number of entries in hpas[] */
+ 	u64 *hpas;		/* vmalloc'ed */
+@@ -126,6 +128,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ {
+ 	struct mm_iommu_table_group_mem_t *mem;
+ 	long i, j, ret = 0, locked_entries = 0;
++	unsigned int pageshift;
++	unsigned long flags;
+ 	struct page *page = NULL;
+ 
+ 	mutex_lock(&mem_list_mutex);
+@@ -160,6 +164,12 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 		goto unlock_exit;
+ 	}
+ 
++	/*
++	 * For a starting point for a maximum page size calculation
++	 * we use @ua and @entries natural alignment to allow IOMMU pages
++	 * smaller than huge pages but still bigger than PAGE_SIZE.
++	 */
++	mem->pageshift = __ffs(ua | (entries << PAGE_SHIFT));
+ 	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
+ 	if (!mem->hpas) {
+ 		kfree(mem);
+@@ -200,6 +210,23 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
+ 			}
+ 		}
+ populate:
++		pageshift = PAGE_SHIFT;
++		if (PageCompound(page)) {
++			pte_t *pte;
++			struct page *head = compound_head(page);
++			unsigned int compshift = compound_order(head);
++
++			local_irq_save(flags); /* disables as well */
++			pte = find_linux_pte(mm->pgd, ua, NULL, &pageshift);
++			local_irq_restore(flags);
++
++			/* Double check it is still the same pinned page */
++			if (pte && pte_page(*pte) == head &&
++					pageshift == compshift)
++				pageshift = max_t(unsigned int, pageshift,
++						PAGE_SHIFT);
++		}
++		mem->pageshift = min(mem->pageshift, pageshift);
+ 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
+ 	}
+ 
+@@ -350,7 +377,7 @@ struct mm_iommu_table_group_mem_t *mm_iommu_find(struct mm_struct *mm,
+ EXPORT_SYMBOL_GPL(mm_iommu_find);
+ 
+ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+-		unsigned long ua, unsigned long *hpa)
++		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+ {
+ 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
+ 	u64 *va = &mem->hpas[entry];
+@@ -358,6 +385,9 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ 	if (entry >= mem->entries)
+ 		return -EFAULT;
+ 
++	if (pageshift > mem->pageshift)
++		return -EFAULT;
++
+ 	*hpa = *va | (ua & ~PAGE_MASK);
+ 
+ 	return 0;
+@@ -365,7 +395,7 @@ long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
+ EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+ 
+ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
+-		unsigned long ua, unsigned long *hpa)
++		unsigned long ua, unsigned int pageshift, unsigned long *hpa)
+ {
+ 	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
+ 	void *va = &mem->hpas[entry];
+@@ -374,6 +404,9 @@ long mm_iommu_ua_to_hpa_rm(struct mm_iommu_table_group_mem_t *mem,
+ 	if (entry >= mem->entries)
+ 		return -EFAULT;
+ 
++	if (pageshift > mem->pageshift)
++		return -EFAULT;
++
+ 	pa = (void *) vmalloc_to_phys(va);
+ 	if (!pa)
+ 		return -EFAULT;
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index b751dd6..b4c68f3 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -467,7 +467,7 @@ static int tce_iommu_prereg_ua_to_hpa(struct tce_container *container,
+ 	if (!mem)
+ 		return -EINVAL;
+ 
+-	ret = mm_iommu_ua_to_hpa(mem, tce, phpa);
++	ret = mm_iommu_ua_to_hpa(mem, tce, shift, phpa);
+ 	if (ret)
+ 		return -EINVAL;
+ 
+-- 
+2.11.0
