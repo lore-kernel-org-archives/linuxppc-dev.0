@@ -1,28 +1,34 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <alex@ghiti.fr>
+Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net
+ [217.70.183.196])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41b5hn2kyWzDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 17:00:25 +1000 (AEST)
-Message-ID: <0f185351330a7f1d66409fe6a2dc02aae6826039.camel@neuling.org>
-Subject: Re: [PATCH 0/7] powerpc: Modernize unhandled signals message
-From: Michael Neuling <mikey@neuling.org>
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- linux-kernel@vger.kernel.org
-Cc: Alastair D'Silva <alastair@d-silva.org>, Andrew Donnellan
- <andrew.donnellan@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
- <christophe.leroy@c-s.fr>, Cyril Bur <cyrilbur@gmail.com>,  "Eric W .
- Biederman" <ebiederm@xmission.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>, Sukadev Bhattiprolu
- <sukadev@linux.vnet.ibm.com>,  "Tobin C . Harding" <me@tobin.cc>,
- linuxppc-dev@lists.ozlabs.org
-Date: Wed, 25 Jul 2018 17:00:21 +1000
-In-Reply-To: <20180724192720.32417-1-muriloo@linux.ibm.com>
-References: <20180724192720.32417-1-muriloo@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41b6Z84chmzDqyG
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 17:39:42 +1000 (AEST)
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+To: Paul Burton <paul.burton@mips.com>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180725003428.jsklz7pj4m7lj3m4@pburton-laptop>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Message-ID: <7c187058-12c7-ee2d-3ceb-d17ba94875b8@ghiti.fr>
+Date: Wed, 25 Jul 2018 09:38:57 +0200
+MIME-Version: 1.0
+In-Reply-To: <20180725003428.jsklz7pj4m7lj3m4@pburton-laptop>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- On Tue, 2018-07-24 at 16:27 -0300, Murilo Opsfelder Araujo wrote:
-> Hi, everyone.
->=20
-> This series was inspired by the need to modernize and display more
-> informative messages about unhandled signals.
->=20
-> The "unhandled signal NN" is not very informative.  We thought it would
-> be helpful adding a human-readable message describing what the signal
-> number means, printing the VMA address, and dumping the instructions.
->=20
-> We can add more informative messages, like informing what each code of a
-> SIGSEGV signal means.  We are open to suggestions.
->=20
-> I have collected some early feedback from Michael Ellerman about this
-> series and would love to hear more feedback from you all.
+Hi Paul,
 
-Nice.. the instruction dump would have been very handy when debugging the P=
-CR
-init issue I had a month or so back.
+Thanks for having tested it, I remove mips from my list.
 
-> Before this series:
->=20
->     Jul 24 13:01:07 localhost kernel: pandafault[5989]: unhandled signal =
-11 at 00000000100007d0 nip 000000001000061c lr 00003fff85a75100 code 2
->=20
-> After this series:
->=20
->     Jul 24 13:08:01 localhost kernel: pandafault[10758]: segfault (11) at=
- 00000000100007d0 nip 000000001000061c lr 00007fffabc85100 code 2 in pandaf=
-ault[10000000+10000]
->     Jul 24 13:08:01 localhost kernel: Instruction dump:
->     Jul 24 13:08:01 localhost kernel: 4bfffeec 4bfffee8 3c401002 38427f00=
- fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
->     Jul 24 13:08:01 localhost kernel: 392988d0 f93f0020 e93f0020 39400048=
- <99490000> 39200000 7d234b78 383f0040
+Thanks again,
 
-What happens if we get a sudden flood of these from different processes tha=
-t
-overlap their output? Are we going to be able to match up the process with
-instruction dump?
+Alex
 
-Should we prefix every line with the PID to avoid this?
 
-Mikey
+On 07/25/2018 02:34 AM, Paul Burton wrote:
+> Hi Alexandre,
+>
+> On Thu, Jul 05, 2018 at 11:07:05AM +0000, Alexandre Ghiti wrote:
+>> In order to reduce copy/paste of functions across architectures and then
+>> make riscv hugetlb port (and future ports) simpler and smaller, this
+>> patchset intends to factorize the numerous hugetlb primitives that are
+>> defined across all the architectures.
+>>
+>> Except for prepare_hugepage_range, this patchset moves the versions that
+>> are just pass-through to standard pte primitives into
+>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+>>
+>> s390 architecture has not been tackled in this serie since it does not
+>> use asm-generic/hugetlb.h at all.
+>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+>>
+>> This patchset has been compiled on x86 only.
+> For MIPS these look good - I don't see any issues & they pass a build
+> test (using cavium_octeon_defconfig which enables huge pages), so:
+>
+>      Acked-by: Paul Burton <paul.burton@mips.com> # MIPS parts
+>
+> Thanks,
+>      Paul
