@@ -1,35 +1,42 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <gromero@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bHPL4jXlzF1Pw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 00:17:42 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6PEEt8X024315
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 10:17:37 -0400
-Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kest6kkwv-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bJmQ4RbvzDrHF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:19:14 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6PFIwIY001315
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:19:12 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2keu9rhfvn-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 10:17:36 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:19:12 -0400
 Received: from localhost
- by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 25 Jul 2018 15:17:35 +0100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: [PATCH] powerpc/64s/radix: tlb do not flush on page size when
- fullmm
-In-Reply-To: <20180725135806.29648-1-npiggin@gmail.com>
-References: <20180725135806.29648-1-npiggin@gmail.com>
-Date: Wed, 25 Jul 2018 19:47:29 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
+ Wed, 25 Jul 2018 11:19:09 -0400
+Subject: Re: [PATCH 6/7] powerpc/traps: Print signal name for unhandled signals
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ linux-kernel@vger.kernel.org
+Cc: Michael Neuling <mikey@neuling.org>, Simon Guo <wei.guo.simon@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "Alastair D'Silva" <alastair@d-silva.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Cyril Bur <cyrilbur@gmail.com>,
+ "Tobin C . Harding" <me@tobin.cc>
+References: <20180724192720.32417-1-muriloo@linux.ibm.com>
+ <20180724192720.32417-7-muriloo@linux.ibm.com>
+From: Gustavo Romero <gromero@linux.vnet.ibm.com>
+Date: Wed, 25 Jul 2018 12:19:00 -0300
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87sh47o0w6.fsf@linux.ibm.com>
+In-Reply-To: <20180724192720.32417-7-muriloo@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <0364bdc4-ddf9-85de-1128-8fc8791d63dd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,36 +46,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nicholas Piggin <npiggin@gmail.com> writes:
+Hi Murilo,
 
-> When the mm is being torn down there will be a full PID flush so
-> there is no need to flush the TLB on page size changes.
+LGTM.
 
-and that tlb flush is PID flush since tlb->fulmm is set? So this avoids
-multiple PID tlb flush.
+Just a comment:
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+On 07/24/2018 04:27 PM, Murilo Opsfelder Araujo wrote:
+> This adds a human-readable name in the unhandled signal message.
+> 
+> Before this patch, a page fault looked like:
+> 
+>      Jul 11 16:04:11 localhost kernel: pandafault[6303]: unhandled signal 11 at 00000000100007d0 nip 000000001000061c lr 00007fff93c55100 code 2 in pandafault[10000000+10000]
+> 
+> After this patch, a page fault looks like:
+> 
+>      Jul 11 18:14:48 localhost kernel: pandafault[6352]: segfault (11) at 000000013a2a09f8 nip 000000013a2a086c lr 00007fffb63e5100 code 2 in pandafault[13a2a0000+10000]
+
+I _really_ don't want to bikeshed here, but I vouch for keeping the
+"unhandled" word before the signal name, like:
+
+[...] pandafault[6352]: unhandled segfault (11) at 000000013a2a09f8 nip [...]
+
+because the issue reported here is really that we got a segfault _and_
+there was no handler to catch it.
+
+But feel free to wait for additional comments to decide it.
 
 
->
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/include/asm/tlb.h | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 5d3107f2b014..d1b3dc4a6a0a 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -84,6 +84,9 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
->  static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
->  						     unsigned int page_size)
->  {
-> +	if (tlb->fullmm)
-> +		return;
-> +
->  	if (!tlb->page_size)
->  		tlb->page_size = page_size;
->  	else if (tlb->page_size != page_size) {
-> -- 
-> 2.17.0
+Cheers,
+Gustavo
