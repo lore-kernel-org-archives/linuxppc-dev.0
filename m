@@ -1,27 +1,37 @@
-Return-Path: <robin.murphy@arm.com>
-Received: from foss.arm.com (usa-sjc-mx-foss1.foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41bFhp1cG4zDrHN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 23:00:57 +1000 (AEST)
-Subject: Re: [PATCH 1/7 v6] Documentation: fsl-mc: add iommu-map device-tree
- binding for fsl-mc bus
-To: Nipun Gupta <nipun.gupta@nxp.com>, will.deacon@arm.com,
- robh+dt@kernel.org, robh@kernel.org, mark.rutland@arm.com,
- catalin.marinas@arm.com, gregkh@linuxfoundation.org,
- laurentiu.tudor@nxp.com, bhelgaas@google.com, hch@lst.de
-Cc: joro@8bytes.org, m.szyprowski@samsung.com, shawnguo@kernel.org,
- frowand.list@gmail.com, iommu@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, bharat.bhushan@nxp.com, stuyoder@gmail.com,
- leoyang.li@nxp.com
-References: <1531135103-10699-1-git-send-email-nipun.gupta@nxp.com>
- <1531135103-10699-2-git-send-email-nipun.gupta@nxp.com>
-From: Robin Murphy <robin.murphy@arm.com>
-Message-ID: <c4989dc1-4f18-a30a-75a5-843b6be3b44e@arm.com>
-Date: Wed, 25 Jul 2018 14:00:50 +0100
+Return-Path: <arndbergmann@gmail.com>
+Received: from mail-qt0-x243.google.com (mail-qt0-x243.google.com
+ [IPv6:2607:f8b0:400d:c0d::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bFxq6GgmzDrHN
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 23:12:14 +1000 (AEST)
+Received: by mail-qt0-x243.google.com with SMTP id m13-v6so7526135qth.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 06:12:14 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1531135103-10699-2-git-send-email-nipun.gupta@nxp.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Sender: arndbergmann@gmail.com
+In-Reply-To: <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+References: <20180724111600.4158975-1-arnd@arndb.de>
+ <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
+ <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
+ <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 25 Jul 2018 15:12:11 +0200
+Message-ID: <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
+Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ Networking <netdev@vger.kernel.org>, DTML <devicetree@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ "open list:HARDWARE RANDOM NUMBER GENERATOR CORE"
+ <linux-crypto@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-iio@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>,
+ lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+ coreteam@netfilter.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,84 +41,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/07/18 12:18, Nipun Gupta wrote:
-> The existing IOMMU bindings cannot be used to specify the relationship
-> between fsl-mc devices and IOMMUs. This patch adds a generic binding for
-> mapping fsl-mc devices to IOMMUs, using iommu-map property.
+tools/perf/tests/.gitignore:
+                            LLVM byte-codes, uncompressed
+On Wed, Jul 25, 2018 at 2:55 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe@perches.com> wrote:
+>
+>> On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
+>> > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+>> > > Almost all files in the kernel are either plain text or UTF-8
+>> > > encoded. A couple however are ISO_8859-1, usually just a few
+>> > > characters in a C comments, for historic reasons.
+>> > > This converts them all to UTF-8 for consistency.
+>> []
+>> > Will we be getting a checkpatch rule to keep things this way?
+>>
+>> How would that be done?
+>
+> I'm using this, seems to work.
+>
+>         if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
+>         then
+>                 echo $p: weird charset
+>         fi
 
-No more nits from me :)
+There are a couple of files that my version of 'find' incorrectly identified as
+something completely different, like:
 
-Acked-by: Robin Murphy <robin.murphy@arm.com>
+Documentation/devicetree/bindings/pinctrl/pinctrl-sx150x.txt:
+            SemOne archive data
+Documentation/devicetree/bindings/rtc/epson,rtc7301.txt:
+            Microsoft Document Imaging Format
+Documentation/filesystems/nfs/pnfs-block-server.txt:
+            PPMN archive data
+arch/arm/boot/dts/bcm283x-rpi-usb-host.dtsi:
+        Sendmail frozen configuration  - version = "host";
+Documentation/networking/segmentation-offloads.txt:
+        StuffIt Deluxe Segment (data) : gmentation Offloads in the
+Linux Networking Stack
+arch/sparc/include/asm/visasm.h:                              SAS 7+
+arch/xtensa/kernel/setup.c:                                         ,
+init=0x454c, stat=0x090a, dev=0x2009, bas=0x2020
+drivers/cpufreq/powernow-k8.c:
+TI-XX Graphing Calculator (FLASH)
+tools/testing/selftests/net/forwarding/tc_shblocks.sh:
+                            Minix filesystem, V2 (big endian)
+tools/perf/tests/.gitignore:
+                            LLVM byte-codes, uncompressed
 
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> ---
->   .../devicetree/bindings/misc/fsl,qoriq-mc.txt      | 39 ++++++++++++++++++++++
->   1 file changed, 39 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt b/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
-> index 6611a7c..01fdc33 100644
-> --- a/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
-> +++ b/Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
-> @@ -9,6 +9,25 @@ blocks that can be used to create functional hardware objects/devices
->   such as network interfaces, crypto accelerator instances, L2 switches,
->   etc.
->   
-> +For an overview of the DPAA2 architecture and fsl-mc bus see:
-> +Documentation/networking/dpaa2/overview.rst
-> +
-> +As described in the above overview, all DPAA2 objects in a DPRC share the
-> +same hardware "isolation context" and a 10-bit value called an ICID
-> +(isolation context id) is expressed by the hardware to identify
-> +the requester.
-> +
-> +The generic 'iommus' property is insufficient to describe the relationship
-> +between ICIDs and IOMMUs, so an iommu-map property is used to define
-> +the set of possible ICIDs under a root DPRC and how they map to
-> +an IOMMU.
-> +
-> +For generic IOMMU bindings, see
-> +Documentation/devicetree/bindings/iommu/iommu.txt.
-> +
-> +For arm-smmu binding, see:
-> +Documentation/devicetree/bindings/iommu/arm,smmu.txt.
-> +
->   Required properties:
->   
->       - compatible
-> @@ -88,14 +107,34 @@ Sub-nodes:
->                 Value type: <phandle>
->                 Definition: Specifies the phandle to the PHY device node associated
->                             with the this dpmac.
-> +Optional properties:
-> +
-> +- iommu-map: Maps an ICID to an IOMMU and associated iommu-specifier
-> +  data.
-> +
-> +  The property is an arbitrary number of tuples of
-> +  (icid-base,iommu,iommu-base,length).
-> +
-> +  Any ICID i in the interval [icid-base, icid-base + length) is
-> +  associated with the listed IOMMU, with the iommu-specifier
-> +  (i - icid-base + iommu-base).
->   
->   Example:
->   
-> +        smmu: iommu@5000000 {
-> +               compatible = "arm,mmu-500";
-> +               #iommu-cells = <1>;
-> +               stream-match-mask = <0x7C00>;
-> +               ...
-> +        };
-> +
->           fsl_mc: fsl-mc@80c000000 {
->                   compatible = "fsl,qoriq-mc";
->                   reg = <0x00000008 0x0c000000 0 0x40>,    /* MC portal base */
->                         <0x00000000 0x08340000 0 0x40000>; /* MC control reg */
->                   msi-parent = <&its>;
-> +                /* define map for ICIDs 23-64 */
-> +                iommu-map = <23 &smmu 23 41>;
->                   #address-cells = <3>;
->                   #size-cells = <1>;
->   
-> 
+All of the above seem to be valid ASCII or UTF-8 files, so the check
+above will lead
+to false-positives, but it may be good enough as they are the
+exception, and may be
+bugs in 'file'.
+
+Not sure if we need to worry about 'file' not being installed.
+
+       Arnd
