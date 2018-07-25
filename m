@@ -1,42 +1,34 @@
-Return-Path: <gromero@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0250.hostedemail.com
+ [216.40.44.250])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bJmQ4RbvzDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:19:14 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6PFIwIY001315
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:19:12 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2keu9rhfvn-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:19:12 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gromero@linux.vnet.ibm.com>;
- Wed, 25 Jul 2018 11:19:09 -0400
-Subject: Re: [PATCH 6/7] powerpc/traps: Print signal name for unhandled signals
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- linux-kernel@vger.kernel.org
-Cc: Michael Neuling <mikey@neuling.org>, Simon Guo <wei.guo.simon@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- "Alastair D'Silva" <alastair@d-silva.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Cyril Bur <cyrilbur@gmail.com>,
- "Tobin C . Harding" <me@tobin.cc>
-References: <20180724192720.32417-1-muriloo@linux.ibm.com>
- <20180724192720.32417-7-muriloo@linux.ibm.com>
-From: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Date: Wed, 25 Jul 2018 12:19:00 -0300
-MIME-Version: 1.0
-In-Reply-To: <20180724192720.32417-7-muriloo@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <0364bdc4-ddf9-85de-1128-8fc8791d63dd@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bK5L0zQ5zDrHF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:33:56 +1000 (AEST)
+Message-ID: <0fa2951559a9618c635d5a1fc6d4e32a5b795826.camel@perches.com>
+Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
+From: Joe Perches <joe@perches.com>
+To: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller"
+ <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless
+ <linux-wireless@vger.kernel.org>, Networking <netdev@vger.kernel.org>, DTML
+ <devicetree@vger.kernel.org>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Linux ARM
+ <linux-arm-kernel@lists.infradead.org>,  "open list:HARDWARE RANDOM NUMBER
+ GENERATOR CORE" <linux-crypto@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>,  linux-iio@vger.kernel.org, Linux PM list
+ <linux-pm@vger.kernel.org>,  lvs-devel@vger.kernel.org,
+ netfilter-devel@vger.kernel.org,  coreteam@netfilter.org
+Date: Wed, 25 Jul 2018 08:33:47 -0700
+In-Reply-To: <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
+References: <20180724111600.4158975-1-arnd@arndb.de>
+ <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
+ <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
+ <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
+ <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,33 +38,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Murilo,
-
-LGTM.
-
-Just a comment:
-
-On 07/24/2018 04:27 PM, Murilo Opsfelder Araujo wrote:
-> This adds a human-readable name in the unhandled signal message.
+On Wed, 2018-07-25 at 15:12 +0200, Arnd Bergmann wrote:
+> tools/perf/tests/.gitignore:
+>                             LLVM byte-codes, uncompressed
+> On Wed, Jul 25, 2018 at 2:55 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe@perches.com> wrote:
+> > 
+> > > On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
+> > > > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
+> > > > > Almost all files in the kernel are either plain text or UTF-8
+> > > > > encoded. A couple however are ISO_8859-1, usually just a few
+> > > > > characters in a C comments, for historic reasons.
+> > > > > This converts them all to UTF-8 for consistency.
+> > > 
+> > > []
+> > > > Will we be getting a checkpatch rule to keep things this way?
+> > > 
+> > > How would that be done?
+> > 
+> > I'm using this, seems to work.
+> > 
+> >         if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
+> >         then
+> >                 echo $p: weird charset
+> >         fi
 > 
-> Before this patch, a page fault looked like:
+> There are a couple of files that my version of 'find' incorrectly identified as
+> something completely different, like:
 > 
->      Jul 11 16:04:11 localhost kernel: pandafault[6303]: unhandled signal 11 at 00000000100007d0 nip 000000001000061c lr 00007fff93c55100 code 2 in pandafault[10000000+10000]
+> Documentation/devicetree/bindings/pinctrl/pinctrl-sx150x.txt:
+>             SemOne archive data
+> Documentation/devicetree/bindings/rtc/epson,rtc7301.txt:
+>             Microsoft Document Imaging Format
+> Documentation/filesystems/nfs/pnfs-block-server.txt:
+>             PPMN archive data
+> arch/arm/boot/dts/bcm283x-rpi-usb-host.dtsi:
+>         Sendmail frozen configuration  - version = "host";
+> Documentation/networking/segmentation-offloads.txt:
+>         StuffIt Deluxe Segment (data) : gmentation Offloads in the
+> Linux Networking Stack
+> arch/sparc/include/asm/visasm.h:                              SAS 7+
+> arch/xtensa/kernel/setup.c:                                         ,
+> init=0x454c, stat=0x090a, dev=0x2009, bas=0x2020
+> drivers/cpufreq/powernow-k8.c:
+> TI-XX Graphing Calculator (FLASH)
+> tools/testing/selftests/net/forwarding/tc_shblocks.sh:
+>                             Minix filesystem, V2 (big endian)
+> tools/perf/tests/.gitignore:
+>                             LLVM byte-codes, uncompressed
 > 
-> After this patch, a page fault looks like:
+> All of the above seem to be valid ASCII or UTF-8 files, so the check
+> above will lead
+> to false-positives, but it may be good enough as they are the
+> exception, and may be
+> bugs in 'file'.
 > 
->      Jul 11 18:14:48 localhost kernel: pandafault[6352]: segfault (11) at 000000013a2a09f8 nip 000000013a2a086c lr 00007fffb63e5100 code 2 in pandafault[13a2a0000+10000]
+> Not sure if we need to worry about 'file' not being installed.
 
-I _really_ don't want to bikeshed here, but I vouch for keeping the
-"unhandled" word before the signal name, like:
+checkpatch works on patches so I think the test isn't
+really relevant.  It has to use the appropriate email
+header that sets the charset.
 
-[...] pandafault[6352]: unhandled segfault (11) at 000000013a2a09f8 nip [...]
+perhaps:
+---
+ scripts/checkpatch.pl | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-because the issue reported here is really that we got a segfault _and_
-there was no handler to catch it.
-
-But feel free to wait for additional comments to decide it.
-
-
-Cheers,
-Gustavo
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 34e4683de7a3..57355fbd2d28 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -2765,9 +2765,13 @@ sub process {
+ # Check if there is UTF-8 in a commit log when a mail header has explicitly
+ # declined it, i.e defined some charset where it is missing.
+ 		if ($in_header_lines &&
+-		    $rawline =~ /^Content-Type:.+charset="(.+)".*$/ &&
+-		    $1 !~ /utf-8/i) {
+-			$non_utf8_charset = 1;
++		    $rawline =~ /^Content-Type:.+charset="?([^\s;"]+)/) {
++			my $charset = $1;
++			$non_utf8_charset = 1 if ($charset !~ /^utf-8$/i);
++			if ($charset !~ /^(?:us-ascii|utf-8|iso-8859-1)$/) {
++				WARN("PATCH_CHARSET",
++				     "Unpreferred email header charset '$charset'\n" . $herecurr);
++			}
+ 		}
+ 
+ 		if ($in_commit_log && $non_utf8_charset && $realfile =~ /^$/ &&
