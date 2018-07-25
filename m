@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
- [IPv6:2607:f8b0:400e:c01::241])
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41b9Y52yKWzDsDx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 19:54:00 +1000 (AEST)
-Received: by mail-pl0-x241.google.com with SMTP id w3-v6so3081320plq.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 02:54:00 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41b9Ys22BdzDrpd
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 19:54:41 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id s7-v6so4979130pgv.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 02:54:41 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc/64s: fix page table fragment refcount race vs
- speculative references
-Date: Wed, 25 Jul 2018 19:53:42 +1000
-Message-Id: <20180725095342.22445-1-npiggin@gmail.com>
+Subject: [PATCH] powerpc/64s: free page table caches at exit_mmap time
+Date: Wed, 25 Jul 2018 19:54:28 +1000
+Message-Id: <20180725095428.22561-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,134 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The page table fragment allocator uses the main page refcount racily
-with respect to speculative references. A customer observed a BUG due
-to page table page refcount underflow in the fragment allocator. This
-can be caused by the fragment allocator set_page_count stomping on a
-speculative reference, and then the speculative failure handler
-decrements the new reference, and the underflow eventually pops when
-the page tables are freed.
+The kernel page table caches are tied to init_mm, so there is no
+more need for them after userspace is finished.
 
-Fix this by using a dedicated field in the struct page for the page
-table fragment allocator.
-
-Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/mm/mmu_context_book3s64.c |  8 ++++----
- arch/powerpc/mm/pgtable-book3s64.c     | 17 +++++++++++------
- include/linux/mm_types.h               |  5 ++++-
- 3 files changed, 19 insertions(+), 11 deletions(-)
+ arch/powerpc/mm/mmu_context_book3s64.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index f3d4b4a0e561..3bb5cec03d1f 100644
+index 3bb5cec03d1f..5738c2db751c 100644
 --- a/arch/powerpc/mm/mmu_context_book3s64.c
 +++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -200,9 +200,9 @@ static void pte_frag_destroy(void *pte_frag)
- 	/* drop all the pending references */
- 	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
- 	/* We allow PTE_FRAG_NR fragments from a PTE page */
--	if (page_ref_sub_and_test(page, PTE_FRAG_NR - count)) {
-+	if (atomic_sub_and_test(PTE_FRAG_NR - count, &page->pt_frag_refcount)) {
- 		pgtable_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
+@@ -221,7 +221,7 @@ static void pmd_frag_destroy(void *pmd_frag)
  	}
  }
  
-@@ -215,9 +215,9 @@ static void pmd_frag_destroy(void *pmd_frag)
- 	/* drop all the pending references */
- 	count = ((unsigned long)pmd_frag & ~PAGE_MASK) >> PMD_FRAG_SIZE_SHIFT;
- 	/* We allow PTE_FRAG_NR fragments from a PTE page */
--	if (page_ref_sub_and_test(page, PMD_FRAG_NR - count)) {
-+	if (atomic_sub_and_test(PMD_FRAG_NR - count, &page->pt_frag_refcount)) {
- 		pgtable_pmd_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
+-static void destroy_pagetable_page(struct mm_struct *mm)
++static void destroy_pagetable_cache(struct mm_struct *mm)
+ {
+ 	void *frag;
+ 
+@@ -244,13 +244,14 @@ void destroy_context(struct mm_struct *mm)
+ 		WARN_ON(process_tb[mm->context.id].prtb0 != 0);
+ 	else
+ 		subpage_prot_free(mm);
+-	destroy_pagetable_page(mm);
+ 	destroy_contexts(&mm->context);
+ 	mm->context.id = MMU_NO_CONTEXT;
  }
  
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 4afbfbb64bfd..78d0b3d5ebad 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -270,6 +270,8 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
- 		return NULL;
- 	}
- 
-+	atomic_set(&page->pt_frag_refcount, 1);
+ void arch_exit_mmap(struct mm_struct *mm)
+ {
++	destroy_pagetable_cache(mm);
 +
- 	ret = page_address(page);
- 	/*
- 	 * if we support only one fragment just return the
-@@ -285,7 +287,7 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
- 	 * count.
- 	 */
- 	if (likely(!mm->context.pmd_frag)) {
--		set_page_count(page, PMD_FRAG_NR);
-+		atomic_set(&page->pt_frag_refcount, PMD_FRAG_NR);
- 		mm->context.pmd_frag = ret + PMD_FRAG_SIZE;
- 	}
- 	spin_unlock(&mm->page_table_lock);
-@@ -308,9 +310,10 @@ void pmd_fragment_free(unsigned long *pmd)
- {
- 	struct page *page = virt_to_page(pmd);
- 
--	if (put_page_testzero(page)) {
-+	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
-+	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
- 		pgtable_pmd_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
- 
-@@ -352,6 +355,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
- 			return NULL;
- 	}
- 
-+	atomic_set(&page->pt_frag_refcount, 1);
- 
- 	ret = page_address(page);
- 	/*
-@@ -367,7 +371,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
- 	 * count.
- 	 */
- 	if (likely(!mm->context.pte_frag)) {
--		set_page_count(page, PTE_FRAG_NR);
-+		atomic_set(&page->pt_frag_refcount, PTE_FRAG_NR);
- 		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
- 	}
- 	spin_unlock(&mm->page_table_lock);
-@@ -390,10 +394,11 @@ void pte_fragment_free(unsigned long *table, int kernel)
- {
- 	struct page *page = virt_to_page(table);
- 
--	if (put_page_testzero(page)) {
-+	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
-+	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
- 		if (!kernel)
- 			pgtable_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
- 
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 99ce070e7dcb..22651e124071 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -139,7 +139,10 @@ struct page {
- 			unsigned long _pt_pad_1;	/* compound_head */
- 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
- 			unsigned long _pt_pad_2;	/* mapping */
--			struct mm_struct *pt_mm;	/* x86 pgds only */
-+			union {
-+				struct mm_struct *pt_mm; /* x86 pgds only */
-+				atomic_t pt_frag_refcount; /* powerpc */
-+			};
- #if ALLOC_SPLIT_PTLOCKS
- 			spinlock_t *ptl;
- #else
+ 	if (radix_enabled()) {
+ 		/*
+ 		 * Radix doesn't have a valid bit in the process table
 -- 
 2.17.0
