@@ -1,43 +1,28 @@
-Return-Path: <bhe@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41b5Qw4sfgzDqyG
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 16:48:24 +1000 (AEST)
-Date: Wed, 25 Jul 2018 14:48:13 +0800
-From: Baoquan He <bhe@redhat.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, dan.j.williams@intel.com,
- nicolas.pitre@linaro.org, josh@joshtriplett.org,
- fengguang.wu@intel.com, bp@suse.de, andy.shevchenko@gmail.com,
- patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
- haiyangz@microsoft.com, sthemmin@microsoft.com,
- dmitry.torokhov@gmail.com, frowand.list@gmail.com,
- keith.busch@intel.com, jonathan.derrick@intel.com,
- lorenzo.pieralisi@arm.com, bhelgaas@google.com, tglx@linutronix.de,
- brijesh.singh@amd.com, jglisse@redhat.com, thomas.lendacky@amd.com,
- gregkh@linuxfoundation.org, baiyaowei@cmss.chinamobile.com,
- richard.weiyang@gmail.com, devel@linuxdriverproject.org,
- linux-input@vger.kernel.org, linux-nvdimm@lists.01.org,
- devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
- ebiederm@xmission.com, vgoyal@redhat.com, dyoung@redhat.com,
- yinghai@kernel.org, monstr@monstr.eu, davem@davemloft.net,
- chris@zankel.net, jcmvbkbc@gmail.com, gustavo@padovan.org,
- maarten.lankhorst@linux.intel.com, seanpaul@chromium.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org
-Subject: Re: [PATCH v7 4/4] kexec_file: Load kernel at top of system RAM if
- required
-Message-ID: <20180725064813.GI6480@MiWiFi-R3L-srv>
-References: <20180718024944.577-1-bhe@redhat.com>
- <20180718024944.577-5-bhe@redhat.com>
- <20180718153326.b795e9ea7835432a56cd7011@linux-foundation.org>
- <20180719151753.GB7147@localhost.localdomain>
- <20180723143443.GD18181@dhcp22.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180723143443.GD18181@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41b5hn2kyWzDrHF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 17:00:25 +1000 (AEST)
+Message-ID: <0f185351330a7f1d66409fe6a2dc02aae6826039.camel@neuling.org>
+Subject: Re: [PATCH 0/7] powerpc: Modernize unhandled signals message
+From: Michael Neuling <mikey@neuling.org>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ linux-kernel@vger.kernel.org
+Cc: Alastair D'Silva <alastair@d-silva.org>, Andrew Donnellan
+ <andrew.donnellan@au1.ibm.com>, Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christophe Leroy
+ <christophe.leroy@c-s.fr>, Cyril Bur <cyrilbur@gmail.com>,  "Eric W .
+ Biederman" <ebiederm@xmission.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Simon Guo <wei.guo.simon@gmail.com>, Sukadev Bhattiprolu
+ <sukadev@linux.vnet.ibm.com>,  "Tobin C . Harding" <me@tobin.cc>,
+ linuxppc-dev@lists.ozlabs.org
+Date: Wed, 25 Jul 2018 17:00:21 +1000
+In-Reply-To: <20180724192720.32417-1-muriloo@linux.ibm.com>
+References: <20180724192720.32417-1-muriloo@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,59 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/18 at 04:34pm, Michal Hocko wrote:
-> On Thu 19-07-18 23:17:53, Baoquan He wrote:
-> > Kexec has been a formal feature in our distro, and customers owning
-> > those kind of very large machine can make use of this feature to speed
-> > up the reboot process. On uefi machine, the kexec_file loading will
-> > search place to put kernel under 4G from top to down. As we know, the
-> > 1st 4G space is DMA32 ZONE, dma, pci mmcfg, bios etc all try to consume
-> > it. It may have possibility to not be able to find a usable space for
-> > kernel/initrd. From the top down of the whole memory space, we don't
-> > have this worry. 
-> 
-> I do not have the full context here but let me note that you should be
-> careful when doing top-down reservation because you can easily get into
-> hotplugable memory and break the hotremove usecase. We even warn when
-> this is done. See memblock_find_in_range_node
+ On Tue, 2018-07-24 at 16:27 -0300, Murilo Opsfelder Araujo wrote:
+> Hi, everyone.
+>=20
+> This series was inspired by the need to modernize and display more
+> informative messages about unhandled signals.
+>=20
+> The "unhandled signal NN" is not very informative.  We thought it would
+> be helpful adding a human-readable message describing what the signal
+> number means, printing the VMA address, and dumping the instructions.
+>=20
+> We can add more informative messages, like informing what each code of a
+> SIGSEGV signal means.  We are open to suggestions.
+>=20
+> I have collected some early feedback from Michael Ellerman about this
+> series and would love to hear more feedback from you all.
 
-Kexec read kernel/initrd file into buffer, just search usable positions
-for them to do the later copying. You can see below struct kexec_segment, 
-for the old kexec_load, kernel/initrd are read into user space buffer,
-the @buf stores the user space buffer address, @mem stores the position
-where kernel/initrd will be put. In kernel, it calls
-kimage_load_normal_segment() to copy user space buffer to intermediate
-pages which are allocated with flag GFP_KERNEL. These intermediate pages
-are recorded as entries, later when user execute "kexec -e" to trigger
-kexec jumping, it will do the final copying from the intermediate pages
-to the real destination pages which @mem pointed. Because we can't touch
-the existed data in 1st kernel when do kexec kernel loading. With my
-understanding, GFP_KERNEL will make those intermediate pages be
-allocated inside immovable area, it won't impact hotplugging. But the
-@mem we searched in the whole system RAM might be lost along with
-hotplug. Hence we need do kexec kernel again when hotplug event is
-detected.
+Nice.. the instruction dump would have been very handy when debugging the P=
+CR
+init issue I had a month or so back.
 
-#define KEXEC_CONTROL_MEMORY_GFP (GFP_KERNEL | __GFP_NORETRY)
+> Before this series:
+>=20
+>     Jul 24 13:01:07 localhost kernel: pandafault[5989]: unhandled signal =
+11 at 00000000100007d0 nip 000000001000061c lr 00003fff85a75100 code 2
+>=20
+> After this series:
+>=20
+>     Jul 24 13:08:01 localhost kernel: pandafault[10758]: segfault (11) at=
+ 00000000100007d0 nip 000000001000061c lr 00007fffabc85100 code 2 in pandaf=
+ault[10000000+10000]
+>     Jul 24 13:08:01 localhost kernel: Instruction dump:
+>     Jul 24 13:08:01 localhost kernel: 4bfffeec 4bfffee8 3c401002 38427f00=
+ fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
+>     Jul 24 13:08:01 localhost kernel: 392988d0 f93f0020 e93f0020 39400048=
+ <99490000> 39200000 7d234b78 383f0040
 
+What happens if we get a sudden flood of these from different processes tha=
+t
+overlap their output? Are we going to be able to match up the process with
+instruction dump?
 
-struct kexec_segment {
-        /*
-         * This pointer can point to user memory if kexec_load() system
-         * call is used or will point to kernel memory if
-         * kexec_file_load() system call is used.
-         *
-         * Use ->buf when expecting to deal with user memory and use ->kbuf
-         * when expecting to deal with kernel memory.
-         */
-        union {
-                void __user *buf;
-                void *kbuf;
-        };
-        size_t bufsz;                                                                                                                             
-        unsigned long mem;
-        size_t memsz;
-};
+Should we prefix every line with the PID to avoid this?
 
-Thanks
-Baoquan
+Mikey
