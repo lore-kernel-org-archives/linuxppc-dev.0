@@ -1,20 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.ru (unknown [107.173.13.209])
- by lists.ozlabs.org (Postfix) with ESMTP id 41b9TT1zX5zDrHN
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 19:50:53 +1000 (AEST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x241.google.com (mail-pl0-x241.google.com
+ [IPv6:2607:f8b0:400e:c01::241])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41b9Y52yKWzDsDx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 19:54:00 +1000 (AEST)
+Received: by mail-pl0-x241.google.com with SMTP id w3-v6so3081320plq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 02:54:00 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
- Russell Currey <ruscur@russell.cc>
-Subject: [PATCH kernel RFC 3/3] powerpc/pseries/iommu: Use memory@ nodes in
- max RAM address calculation
-Date: Wed, 25 Jul 2018 19:50:32 +1000
-Message-Id: <20180725095032.2196-4-aik@ozlabs.ru>
-In-Reply-To: <20180725095032.2196-1-aik@ozlabs.ru>
-References: <20180725095032.2196-1-aik@ozlabs.ru>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc/64s: fix page table fragment refcount race vs
+ speculative references
+Date: Wed, 25 Jul 2018 19:53:42 +1000
+Message-Id: <20180725095342.22445-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +24,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We might have memory@ nodes with "linux,usable-memory" set to zero
-(for example, to replicate powernv's behaviour for GPU coherent memory)
-which means that the memory needs an extra initialization but since
-it can be used afterwards, the pseries platform will try mapping it
-for DMA so the DMA window needs to cover those memory regions too.
+The page table fragment allocator uses the main page refcount racily
+with respect to speculative references. A customer observed a BUG due
+to page table page refcount underflow in the fragment allocator. This
+can be caused by the fragment allocator set_page_count stomping on a
+speculative reference, and then the speculative failure handler
+decrements the new reference, and the underflow eventually pops when
+the page tables are freed.
 
-This walks through the memory nodes to find the highest RAM address to
-let a huge DMA window cover that too in case this memory gets onlined
-later.
+Fix this by using a dedicated field in the struct page for the page
+table fragment allocator.
 
-The existing memory_hotplug_max() does not do the job as it calls:
-
-1. memblock_end_of_DRAM() which looks at memory blocks and
-GPU RAM is not there because of size==0 in linux,usable-memory
-property of the memory node;
-
-2. hot_add_drconf_memory_max() does not support sparse memory
-if we want to map this memory in the guest where it is mapped
-on the host (and it looks like we have to), the drconf chunk
-is easily getting bigger that a megabyte.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arch/powerpc/platforms/pseries/iommu.c | 43 +++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/mmu_context_book3s64.c |  8 ++++----
+ arch/powerpc/mm/pgtable-book3s64.c     | 17 +++++++++++------
+ include/linux/mm_types.h               |  5 ++++-
+ 3 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 840afe5..74404f8 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -967,6 +967,47 @@ struct failed_ddw_pdn {
- 
- static LIST_HEAD(failed_ddw_pdn_list);
- 
-+static unsigned long read_n_cells(int n, const __be32 **buf)
-+{
-+	unsigned long result = 0;
-+
-+	while (n--) {
-+		result = (result << 32) | of_read_number(*buf, 1);
-+		(*buf)++;
-+	}
-+	return result;
-+}
-+
-+static phys_addr_t ddw_memory_hotplug_max(void)
-+{
-+	phys_addr_t max_addr = memory_hotplug_max();
-+	struct device_node *memory;
-+
-+	for_each_node_by_type(memory, "memory") {
-+		unsigned long start, size;
-+		int ranges, n_mem_addr_cells, n_mem_size_cells, len;
-+		const __be32 *memcell_buf;
-+
-+		memcell_buf = of_get_property(memory, "reg", &len);
-+		if (!memcell_buf || len <= 0)
-+			continue;
-+
-+		n_mem_addr_cells = of_n_addr_cells(memory);
-+		n_mem_size_cells = of_n_size_cells(memory);
-+
-+		/* ranges in cell */
-+		ranges = (len >> 2) / (n_mem_addr_cells + n_mem_size_cells);
-+
-+		/* these are order-sensitive, and modify the buffer pointer */
-+		start = read_n_cells(n_mem_addr_cells, &memcell_buf);
-+		size = read_n_cells(n_mem_size_cells, &memcell_buf);
-+
-+		max_addr = max_t(phys_addr_t, max_addr, start + size);
-+	}
-+
-+	return max_addr;
-+}
-+
- /*
-  * If the PE supports dynamic dma windows, and there is space for a table
-  * that can map all pages in a linear offset, then setup such a table,
-@@ -1067,7 +1108,7 @@ static u64 enable_ddw(struct pci_dev *dev, struct device_node *pdn,
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index f3d4b4a0e561..3bb5cec03d1f 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -200,9 +200,9 @@ static void pte_frag_destroy(void *pte_frag)
+ 	/* drop all the pending references */
+ 	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
+ 	/* We allow PTE_FRAG_NR fragments from a PTE page */
+-	if (page_ref_sub_and_test(page, PTE_FRAG_NR - count)) {
++	if (atomic_sub_and_test(PTE_FRAG_NR - count, &page->pt_frag_refcount)) {
+ 		pgtable_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
  	}
- 	/* verify the window * number of ptes will map the partition */
- 	/* check largest block * page size > max memory hotplug addr */
--	max_addr = memory_hotplug_max();
-+	max_addr = ddw_memory_hotplug_max();
- 	if (query.largest_available_block < (max_addr >> page_shift)) {
- 		dev_dbg(&dev->dev, "can't map partition max 0x%llx with %u "
- 			  "%llu-sized pages\n", max_addr,  query.largest_available_block,
+ }
+ 
+@@ -215,9 +215,9 @@ static void pmd_frag_destroy(void *pmd_frag)
+ 	/* drop all the pending references */
+ 	count = ((unsigned long)pmd_frag & ~PAGE_MASK) >> PMD_FRAG_SIZE_SHIFT;
+ 	/* We allow PTE_FRAG_NR fragments from a PTE page */
+-	if (page_ref_sub_and_test(page, PMD_FRAG_NR - count)) {
++	if (atomic_sub_and_test(PMD_FRAG_NR - count, &page->pt_frag_refcount)) {
+ 		pgtable_pmd_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 4afbfbb64bfd..78d0b3d5ebad 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -270,6 +270,8 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
+ 		return NULL;
+ 	}
+ 
++	atomic_set(&page->pt_frag_refcount, 1);
++
+ 	ret = page_address(page);
+ 	/*
+ 	 * if we support only one fragment just return the
+@@ -285,7 +287,7 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
+ 	 * count.
+ 	 */
+ 	if (likely(!mm->context.pmd_frag)) {
+-		set_page_count(page, PMD_FRAG_NR);
++		atomic_set(&page->pt_frag_refcount, PMD_FRAG_NR);
+ 		mm->context.pmd_frag = ret + PMD_FRAG_SIZE;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+@@ -308,9 +310,10 @@ void pmd_fragment_free(unsigned long *pmd)
+ {
+ 	struct page *page = virt_to_page(pmd);
+ 
+-	if (put_page_testzero(page)) {
++	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
++	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
+ 		pgtable_pmd_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+@@ -352,6 +355,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 			return NULL;
+ 	}
+ 
++	atomic_set(&page->pt_frag_refcount, 1);
+ 
+ 	ret = page_address(page);
+ 	/*
+@@ -367,7 +371,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 	 * count.
+ 	 */
+ 	if (likely(!mm->context.pte_frag)) {
+-		set_page_count(page, PTE_FRAG_NR);
++		atomic_set(&page->pt_frag_refcount, PTE_FRAG_NR);
+ 		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+@@ -390,10 +394,11 @@ void pte_fragment_free(unsigned long *table, int kernel)
+ {
+ 	struct page *page = virt_to_page(table);
+ 
+-	if (put_page_testzero(page)) {
++	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
++	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
+ 		if (!kernel)
+ 			pgtable_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 99ce070e7dcb..22651e124071 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -139,7 +139,10 @@ struct page {
+ 			unsigned long _pt_pad_1;	/* compound_head */
+ 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
+ 			unsigned long _pt_pad_2;	/* mapping */
+-			struct mm_struct *pt_mm;	/* x86 pgds only */
++			union {
++				struct mm_struct *pt_mm; /* x86 pgds only */
++				atomic_t pt_frag_refcount; /* powerpc */
++			};
+ #if ALLOC_SPLIT_PTLOCKS
+ 			spinlock_t *ptl;
+ #else
 -- 
-2.11.0
+2.17.0
