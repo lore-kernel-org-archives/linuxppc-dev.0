@@ -1,22 +1,35 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bH976xs9zDrph
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 00:07:07 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id y10-v6so1795391pfn.8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 07:07:07 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linux-mm@kvack.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [RFC PATCH 4/4] powerpc/64s/radix: optimise TLB flush with precise
- TLB ranges in mmu_gather
-Date: Thu, 26 Jul 2018 00:06:41 +1000
-Message-Id: <20180725140641.30372-5-npiggin@gmail.com>
-In-Reply-To: <20180725140641.30372-1-npiggin@gmail.com>
-References: <20180725140641.30372-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bHPL4jXlzF1Pw
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 00:17:42 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6PEEt8X024315
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 10:17:37 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kest6kkwv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 10:17:36 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 25 Jul 2018 15:17:35 +0100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [PATCH] powerpc/64s/radix: tlb do not flush on page size when
+ fullmm
+In-Reply-To: <20180725135806.29648-1-npiggin@gmail.com>
+References: <20180725135806.29648-1-npiggin@gmail.com>
+Date: Wed, 25 Jul 2018 19:47:29 +0530
+MIME-Version: 1.0
+Content-Type: text/plain
+Message-Id: <87sh47o0w6.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,112 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mmu_gather APIs keep track of the invalidated address range, and
-the generic page table freeing accessors expand the invalidated range
-to cover the addresses corresponding to the page tables even if there
-are no ptes and therefore no TLB entries to invalidate. This is done
-for architectures that have paging structure caches that are
-invalidated with their TLB invalidate instructions (e.g., x86).
+Nicholas Piggin <npiggin@gmail.com> writes:
 
-powerpc/64s/radix does have a "page walk cache" (PWC), but it is
-invalidated with a specific instruction and tracked independently in
-the mmu_gather (using the need_flush_all flag to indicate PWC must be
-flushed). Therefore TLB invalidation does not have to be expanded to
-cover freed page tables.
+> When the mm is being torn down there will be a full PID flush so
+> there is no need to flush the TLB on page size changes.
 
-This patch defines p??_free_tlb functions for 64s, which do not expand
-the TLB flush range over page table pages. This brings the number of
-tlbiel instructions required by a kernel compile from 33M to 25M, most
-avoided from exec => shift_arg_pages().
+and that tlb flush is PID flush since tlb->fulmm is set? So this avoids
+multiple PID tlb flush.
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/include/asm/tlb.h | 34 ++++++++++++++++++++++++++++++++++
- arch/powerpc/mm/tlb-radix.c    | 10 ++++++++++
- include/asm-generic/tlb.h      |  5 +++++
- 3 files changed, 49 insertions(+)
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index 9138baccebb0..5d3107f2b014 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -30,6 +30,40 @@
- #define __tlb_remove_tlb_entry	__tlb_remove_tlb_entry
- #define tlb_remove_check_page_size_change tlb_remove_check_page_size_change
- 
-+#ifdef CONFIG_PPC_BOOK3S_64
-+/*
-+ * powerpc book3s hash does not have page table structure caches, and
-+ * radix requires explicit management with PWC invalidate tlb type, so
-+ * there is no need to expand the mmu_gather range over invalidated page
-+ * table pages like the generic code does.
-+ */
-+
-+#define pte_free_tlb(tlb, ptep, address)			\
-+	do {							\
-+		__pte_free_tlb(tlb, ptep, address);		\
-+	} while (0)
-+
-+#define pmd_free_tlb(tlb, pmdp, address)			\
-+	do {							\
-+		__pmd_free_tlb(tlb, pmdp, address);		\
-+	} while (0)
-+
-+#define pud_free_tlb(tlb, pudp, address)			\
-+	do {							\
-+		__pud_free_tlb(tlb, pudp, address);		\
-+	} while (0)
-+
-+/*
-+ * Radix sets need_flush_all when page table pages have been unmapped
-+ * and the PWC needs flushing. Generic code must call our tlb_flush
-+ * even on empty ranges in this case.
-+ *
-+ * This will always be false for hash.
-+ */
-+#define arch_tlb_mustflush(tlb) (tlb->need_flush_all)
-+
-+#endif
-+
- extern void tlb_flush(struct mmu_gather *tlb);
- 
- /* Get the generic bits... */
-diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-index 1135b43a597c..238b20a513e7 100644
---- a/arch/powerpc/mm/tlb-radix.c
-+++ b/arch/powerpc/mm/tlb-radix.c
-@@ -862,6 +862,16 @@ void radix__tlb_flush(struct mmu_gather *tlb)
- 	unsigned long start = tlb->start;
- 	unsigned long end = tlb->end;
- 
-+	/*
-+	 * This can happen if need_flush_all is set due to a page table
-+	 * invalidate, but no ptes under it freed (see arch_tlb_mustflush).
-+	 * Set end = start to prevent any TLB flushing here (only PWC).
-+	 */
-+	if (!end) {
-+		WARN_ON_ONCE(!tlb->need_flush_all);
-+		end = start;
-+	}
-+
- 	/*
- 	 * if page size is not something we understand, do a full mm flush
- 	 *
-diff --git a/include/asm-generic/tlb.h b/include/asm-generic/tlb.h
-index b320c0cc8996..a55ef1425f0d 100644
---- a/include/asm-generic/tlb.h
-+++ b/include/asm-generic/tlb.h
-@@ -285,6 +285,11 @@ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
-  * http://lkml.kernel.org/r/CA+55aFzBggoXtNXQeng5d_mRoDnaMBE5Y+URs+PHR67nUpMtaw@mail.gmail.com
-  *
-  * For now w.r.t page table cache, mark the range_size as PAGE_SIZE
-+ *
-+ * Update: powerpc (Book3S 64-bit, radix MMU) has an architected page table
-+ * cache (called PWC), and invalidates it specifically. It sets the
-+ * need_flush_all flag to indicate the PWC requires flushing, so it defines
-+ * its own p??_free_tlb functions which do not expand the TLB range.
-  */
- 
- #ifndef pte_free_tlb
--- 
-2.17.0
+
+>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/tlb.h | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+> index 5d3107f2b014..d1b3dc4a6a0a 100644
+> --- a/arch/powerpc/include/asm/tlb.h
+> +++ b/arch/powerpc/include/asm/tlb.h
+> @@ -84,6 +84,9 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
+>  static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+>  						     unsigned int page_size)
+>  {
+> +	if (tlb->fullmm)
+> +		return;
+> +
+>  	if (!tlb->page_size)
+>  		tlb->page_size = page_size;
+>  	else if (tlb->page_size != page_size) {
+> -- 
+> 2.17.0
