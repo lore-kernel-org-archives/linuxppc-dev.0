@@ -1,36 +1,28 @@
-Return-Path: <mwb@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bKcp46zRzDrHr
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:57:45 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6PFnNYb013171
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:57:43 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kes10aw23-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 11:57:43 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
- Wed, 25 Jul 2018 11:57:42 -0400
-Subject: Re: [PATCH v07 2/9] hotplug/cpu: Add operation queuing function
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-References: <a2c023e9-6997-d1a3-0110-fa8c788e64ee@linux.vnet.ibm.com>
- <71455ad3-482b-d801-8f2e-fa2ddcb4017f@linux.vnet.ibm.com>
-From: Michael Bringmann <mwb@linux.vnet.ibm.com>
-Date: Wed, 25 Jul 2018 10:57:37 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bKjH6SBKzDrHF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 02:01:39 +1000 (AEST)
+Date: Wed, 25 Jul 2018 18:01:34 +0200
+Message-ID: <20180725180134.Horde.BdhyE2b-TXhoVB7W8bsBhg1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C . Harding" <me@tobin.cc>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Simon Guo
+ <wei.guo.simon@gmail.com>, Paul Mackerras <paulus@samba.org>, Nicholas
+ Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, "Eric W . Biederman" <ebiederm@xmission.com>,
+ Cyril Bur <cyrilbur@gmail.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Balbir Singh <bsingharora@gmail.com>, Andrew
+ Donnellan <andrew.donnellan@au1.ibm.com>, Alastair D'Silva
+ <alastair@d-silva.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] powerpc/traps: Show instructions on exceptions
+References: <20180724192720.32417-1-muriloo@linux.ibm.com>
+ <20180724192720.32417-8-muriloo@linux.ibm.com>
+In-Reply-To: <20180724192720.32417-8-muriloo@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
 MIME-Version: 1.0
-In-Reply-To: <71455ad3-482b-d801-8f2e-fa2ddcb4017f@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <680c77f2-734c-aad5-03c6-5dbc92a0dedb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,208 +32,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-See below.
+Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a =C3=A9crit=C2=A0:
 
-On 07/23/2018 12:51 PM, Nathan Fontenot wrote:
-> On 07/13/2018 03:18 PM, Michael Bringmann wrote:
->> migration/dlpar: This patch adds function dlpar_queue_action()
->> which will queued up information about a CPU/Memory 'readd'
->> operation according to resource type, action code, and DRC index.
->> At a subsequent point, the list of operations can be run/played
->> in series.  Examples of such oprations include 'readd' of CPU
->> and Memory blocks identified as having changed their associativity
->> during an LPAR migration event. >
->> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
->> ---
->> Changes in patch:
->>    -- Correct drc_index before adding to pseries_hp_errorlog struct
->>    -- Correct text of notice
->>    -- Revise queuing model to save up all of the DLPAR actions for
->>       later execution.
->>    -- Restore list init statement missing from patch
->>    -- Move call to apply queued operations into 'mobility.c'
->>    -- Compress some code
->>    -- Rename some of queueing function APIs
->>    -- Revise implementation to push execution of queued operations
->>       to a workqueue task.
->>    -- Cleanup reference to outdated queuing operation.
->> ---
->>   arch/powerpc/include/asm/rtas.h           |    2 +
->>   arch/powerpc/platforms/pseries/dlpar.c    |   61 +++++++++++++++++++++++++++++
->>   arch/powerpc/platforms/pseries/mobility.c |    4 ++
->>   arch/powerpc/platforms/pseries/pseries.h  |    2 +
->>   4 files changed, 69 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
->> index 71e393c..4f601c7 100644
->> --- a/arch/powerpc/include/asm/rtas.h
->> +++ b/arch/powerpc/include/asm/rtas.h
->> @@ -310,12 +310,14 @@ struct pseries_hp_errorlog {
->>           struct { __be32 count, index; } ic;
->>           char    drc_name[1];
->>       } _drc_u;
->> +    struct list_head list;
->>   };
->>
->>   #define PSERIES_HP_ELOG_RESOURCE_CPU    1
->>   #define PSERIES_HP_ELOG_RESOURCE_MEM    2
->>   #define PSERIES_HP_ELOG_RESOURCE_SLOT    3
->>   #define PSERIES_HP_ELOG_RESOURCE_PHB    4
->> +#define PSERIES_HP_ELOG_RESOURCE_PMT    5
->>
->>   #define PSERIES_HP_ELOG_ACTION_ADD    1
->>   #define PSERIES_HP_ELOG_ACTION_REMOVE    2
->> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
->> index a0b20c0..7264b8e 100644
->> --- a/arch/powerpc/platforms/pseries/dlpar.c
->> +++ b/arch/powerpc/platforms/pseries/dlpar.c
->> @@ -25,6 +25,7 @@
->>   #include <asm/prom.h>
->>   #include <asm/machdep.h>
->>   #include <linux/uaccess.h>
->> +#include <linux/delay.h>
->>   #include <asm/rtas.h>
->>
->>   static struct workqueue_struct *pseries_hp_wq;
->> @@ -329,6 +330,8 @@ int dlpar_release_drc(u32 drc_index)
->>       return 0;
->>   }
->>
->> +static int dlpar_pmt(struct pseries_hp_errorlog *work);
->> +
->>   static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
->>   {
->>       int rc;
->> @@ -357,6 +360,9 @@ static int handle_dlpar_errorlog(struct pseries_hp_errorlog *hp_elog)
->>       case PSERIES_HP_ELOG_RESOURCE_CPU:
->>           rc = dlpar_cpu(hp_elog);
->>           break;
->> +    case PSERIES_HP_ELOG_RESOURCE_PMT:
->> +        rc = dlpar_pmt(hp_elog);
->> +        break;
->>       default:
->>           pr_warn_ratelimited("Invalid resource (%d) specified\n",
->>                       hp_elog->resource);
->> @@ -407,6 +413,61 @@ void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
->>       }
->>   }
->>
->> +LIST_HEAD(dlpar_delayed_list);
->> +
->> +int dlpar_queue_action(int resource, int action, u32 drc_index)
->> +{
->> +    struct pseries_hp_errorlog *hp_errlog;
->> +
->> +    hp_errlog = kmalloc(sizeof(struct pseries_hp_errorlog), GFP_KERNEL);
->> +    if (!hp_errlog)
->> +        return -ENOMEM;
->> +
->> +    hp_errlog->resource = resource;
->> +    hp_errlog->action = action;
->> +    hp_errlog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
->> +    hp_errlog->_drc_u.drc_index = cpu_to_be32(drc_index);
->> +
->> +    list_add_tail(&hp_errlog->list, &dlpar_delayed_list);
->> +
->> +    return 0;
->> +}
->> +
->> +static int dlpar_pmt(struct pseries_hp_errorlog *work)
->> +{
->> +    struct list_head *pos, *q;
->> +
->> +    ssleep(15);
->> +
->> +    list_for_each_safe(pos, q, &dlpar_delayed_list) {
->> +        struct pseries_hp_errorlog *tmp;
->> +
->> +        tmp = list_entry(pos, struct pseries_hp_errorlog, list);
->> +        handle_dlpar_errorlog(tmp);
->> +
->> +        list_del(pos);
->> +        kfree(tmp);
->> +
->> +        ssleep(10);
->> +    }
->> +
->> +    return 0;
->> +}
->> +
->> +int dlpar_queued_actions_run(void)
->> +{
->> +    if (!list_empty(&dlpar_delayed_list)) {
->> +        struct pseries_hp_errorlog hp_errlog;
->> +
->> +        hp_errlog.resource = PSERIES_HP_ELOG_RESOURCE_PMT;
->> +        hp_errlog.action = 0;
->> +        hp_errlog.id_type = 0;
->> +
->> +        queue_hotplug_event(&hp_errlog, 0, 0); > +    }
->> +    return 0;
->> +}
-> 
-> I'm a bit confused by this. Is there a reason this needs to queue a
-> hotplug event instead of just walking the list as is done in dlpar_pmt?
+> Move show_instructions() declaration to arch/powerpc/include/asm/stacktra=
+ce.h
+> and include asm/stracktrace.h in arch/powerpc/kernel/process.c,=20=20
+>=20which contains
+> the implementation.
+>
+> Modify show_instructions() not to call __kernel_text_address(), allowing
+> userspace instruction dump.  probe_kernel_address(), which returns -EFAUL=
+T if
+> something goes wrong, is still being called.
+>
+> Call show_instructions() in arch/powerpc/kernel/traps.c to dump=20=20
+>=20instructions at
+> faulty location, useful to debugging.
 
-Up to this point, the operations have only been added to 'dlpar_delayed_list'.
-This function separates the execution of the CPU readd and Memory readd
-operations from the execution of 'migration store'.  If we walk the list
-here, then we add the execution time of all of the readd operations to
-the time of 'migration store'.  This is not a large problem in small
-systems like we have in the Kernel Team.  This may be a major issue though,
-for production SAP HANA systems where we may be readding thousands of pages
-of memory.  By pushing the execution of the CPU readd and Memory readd
-operations after, and separate, from the execution of 'migration store',
-we do not delay the end of the operation or the return of the completion
-status to an associated HMC.
+Shouldn't this part be in a second patch ?
 
-> 
-> -Nathan
+Wouldn't it be better to also see regs in addition if we want to use=20=20
+this=20to understand what happened ?
+So you could call show_regs() instead of show_instructions() ?
 
-Michael
+Christophe
 
-> 
->> +
->>   static int dlpar_parse_resource(char **cmd, struct pseries_hp_errorlog *hp_elog)
->>   {
->>       char *arg;
->> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
->> index f6364d9..d0d1cae 100644
->> --- a/arch/powerpc/platforms/pseries/mobility.c
->> +++ b/arch/powerpc/platforms/pseries/mobility.c
->> @@ -378,6 +378,10 @@ static ssize_t migration_store(struct class *class,
->>           return rc;
->>
->>       post_mobility_fixup();
->> +
->> +    /* Apply any necessary changes identified during fixup */
->> +    dlpar_queued_actions_run();
->> +
->>       return count;
->>   }
->>
->> diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
->> index 60db2ee..72ca996 100644
->> --- a/arch/powerpc/platforms/pseries/pseries.h
->> +++ b/arch/powerpc/platforms/pseries/pseries.h
->> @@ -61,6 +61,8 @@ extern struct device_node *dlpar_configure_connector(__be32,
->>
->>   void queue_hotplug_event(struct pseries_hp_errorlog *hp_errlog,
->>                struct completion *hotplug_done, int *rc);
->> +int dlpar_queue_action(int resource, int action, u32 drc_index);
->> +int dlpar_queued_actions_run(void);
->>   #ifdef CONFIG_MEMORY_HOTPLUG
->>   int dlpar_memory(struct pseries_hp_errorlog *hp_elog);
->>   #else
->>
-> 
-> 
-
--- 
-Michael W. Bringmann
-Linux Technology Center
-IBM Corporation
-Tie-Line  363-5196
-External: (512) 286-5196
-Cell:       (512) 466-0650
-mwb@linux.vnet.ibm.com
+>
+> Before this patch, an unhandled signal message looked like:
+>
+>     Jul 24 09:57:00 localhost kernel: pandafault[10524]: segfault=20=20
+>=20(11) at 00000000100007d0 nip 000000001000061c lr 00007fffbd295100=20=20
+>=20code 2 in pandafault[10000000+10000]
+>
+> After this patch, it looks like:
+>
+>     Jul 24 09:57:00 localhost kernel: pandafault[10524]: segfault=20=20
+>=20(11) at 00000000100007d0 nip 000000001000061c lr 00007fffbd295100=20=20
+>=20code 2 in pandafault[10000000+10000]
+>     Jul 24 09:57:00 localhost kernel: Instruction dump:
+>     Jul 24 09:57:00 localhost kernel: 4bfffeec 4bfffee8 3c401002=20=20
+>=2038427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
+>     Jul 24 09:57:00 localhost kernel: 392988d0 f93f0020 e93f0020=20=20
+>=2039400048 <99490000> 39200000 7d234b78 383f0040
+>
+> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+> ---
+>  arch/powerpc/include/asm/stacktrace.h | 7 +++++++
+>  arch/powerpc/kernel/process.c         | 6 +++---
+>  arch/powerpc/kernel/traps.c           | 3 +++
+>  3 files changed, 13 insertions(+), 3 deletions(-)
+>  create mode 100644 arch/powerpc/include/asm/stacktrace.h
+>
+> diff --git a/arch/powerpc/include/asm/stacktrace.h=20=20
+>=20b/arch/powerpc/include/asm/stacktrace.h
+> new file mode 100644
+> index 000000000000..46e5ef451578
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/stacktrace.h
+> @@ -0,0 +1,7 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_POWERPC_STACKTRACE_H
+> +#define _ASM_POWERPC_STACKTRACE_H
+> +
+> +void show_instructions(struct pt_regs *regs);
+> +
+> +#endif /* _ASM_POWERPC_STACKTRACE_H */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.=
+c
+> index b1af3390249c..ee1d63e03c52 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -52,6 +52,7 @@
+>  #include <asm/machdep.h>
+>  #include <asm/time.h>
+>  #include <asm/runlatch.h>
+> +#include <asm/stacktrace.h>
+>  #include <asm/syscalls.h>
+>  #include <asm/switch_to.h>
+>  #include <asm/tm.h>
+> @@ -1261,7 +1262,7 @@ struct task_struct *__switch_to(struct=20=20
+>=20task_struct *prev,
+>
+>  static int instructions_to_print =3D 16;
+>
+> -static void show_instructions(struct pt_regs *regs)
+> +void show_instructions(struct pt_regs *regs)
+>  {
+>  	int i;
+>  	unsigned long pc =3D regs->nip - (instructions_to_print * 3 / 4 *
+> @@ -1283,8 +1284,7 @@ static void show_instructions(struct pt_regs *regs)
+>  			pc =3D (unsigned long)phys_to_virt(pc);
+>  #endif
+>
+> -		if (!__kernel_text_address(pc) ||
+> -		     probe_kernel_address((unsigned int __user *)pc, instr)) {
+> +		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
+>  			pr_cont("XXXXXXXX ");
+>  		} else {
+>  			if (regs->nip =3D=3D pc)
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index e55ee639d010..3beca17ac1b1 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -70,6 +70,7 @@
+>  #include <asm/hmi.h>
+>  #include <sysdev/fsl_pci.h>
+>  #include <asm/kprobes.h>
+> +#include <asm/stacktrace.h>
+>
+>  #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC_CORE)
+>  int (*__debugger)(struct pt_regs *regs) __read_mostly;
+> @@ -357,6 +358,8 @@ static void show_signal_msg(int signr, struct=20=20
+>=20pt_regs *regs, int code,
+>  	print_vma_addr(KERN_CONT " in ", regs->nip);
+>
+>  	pr_cont("\n");
+> +
+> +	show_instructions(regs);
+>  }
+>
+>  void _exception_pkey(int signr, struct pt_regs *regs, int code,
+> --
+> 2.17.1
