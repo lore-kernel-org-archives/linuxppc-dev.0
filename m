@@ -1,33 +1,32 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
+Return-Path: <jallen@linux.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bL651xhpzDrJ5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 02:19:41 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bNZz3fVhzDqyG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 04:11:23 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6PGES3t134815
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 12:19:39 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ketx2wm1k-1
+ w6PI4O7F114542
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 14:11:20 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2keu8fr2fm-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 12:19:39 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2018 14:11:20 -0400
 Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 25 Jul 2018 12:19:37 -0400
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH V2 6/6] powerpc/mm:book3s: Enable THP migration support
-Date: Wed, 25 Jul 2018 21:49:03 +0530
-In-Reply-To: <20180725161903.31257-1-aneesh.kumar@linux.ibm.com>
-References: <20180725161903.31257-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180725161903.31257-6-aneesh.kumar@linux.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
+ Wed, 25 Jul 2018 12:11:20 -0600
+Date: Wed, 25 Jul 2018 13:11:15 -0500
+From: John Allen <jallen@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: jallen@linux.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+ n-horiguchi@ah.jp.nec.com, mgorman@suse.de, mhocko@suse.cz
+Subject: Infinite looping observed in __offline_pages
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Message-Id: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,49 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
----
- arch/powerpc/include/asm/book3s/64/pgtable.h | 8 ++++++++
- arch/powerpc/platforms/Kconfig.cputype       | 1 +
- 2 files changed, 9 insertions(+)
+Hi All,
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 8b80c5e16896..2f12732952f0 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -734,6 +734,8 @@ static inline bool pte_user(pte_t pte)
-  */
- #define __pte_to_swp_entry(pte)	((swp_entry_t) { pte_val((pte)) & ~_PAGE_PTE })
- #define __swp_entry_to_pte(x)	__pte((x).val | _PAGE_PTE)
-+#define __pmd_to_swp_entry(pmd)	(__pte_to_swp_entry(pmd_pte(pmd)))
-+#define __swp_entry_to_pmd(x)	(pte_pmd(__swp_entry_to_pte(x)))
- 
- #ifdef CONFIG_MEM_SOFT_DIRTY
- #define _PAGE_SWP_SOFT_DIRTY   (1UL << (SWP_TYPE_BITS + _PAGE_BIT_SWAP_TYPE))
-@@ -1084,6 +1086,12 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
- #define pmd_soft_dirty(pmd)    pte_soft_dirty(pmd_pte(pmd))
- #define pmd_mksoft_dirty(pmd)  pte_pmd(pte_mksoft_dirty(pmd_pte(pmd)))
- #define pmd_clear_soft_dirty(pmd) pte_pmd(pte_clear_soft_dirty(pmd_pte(pmd)))
-+
-+#ifdef CONFIG_ARCH_ENABLE_THP_MIGRATION
-+#define pmd_swp_mksoft_dirty(pmd)	pte_pmd(pte_swp_mksoft_dirty(pmd_pte(pmd)))
-+#define pmd_swp_soft_dirty(pmd)		pte_swp_soft_dirty(pmd_pte(pmd))
-+#define pmd_swp_clear_soft_dirty(pmd)	pte_pmd(pte_swp_clear_soft_dirty(pmd_pte(pmd)))
-+#endif
- #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
- 
- #ifdef CONFIG_NUMA_BALANCING
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index e93d6186de6e..f83ca0ca3bd8 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -72,6 +72,7 @@ config PPC_BOOK3S_64
- 	select PPC_HAVE_PMU_SUPPORT
- 	select SYS_SUPPORTS_HUGETLBFS
- 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE
-+	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
- 	select ARCH_SUPPORTS_NUMA_BALANCING
- 	select IRQ_WORK
- 
--- 
-2.17.1
+Under heavy stress and constant memory hot add/remove, I have observed 
+the following loop to occasionally loop infinitely:
+
+mm/memory_hotplug.c:__offline_pages
+
+repeat:
+        /* start memory hot removal */
+        ret = -EINTR;
+        if (signal_pending(current))
+                goto failed_removal;
+
+        cond_resched();
+        lru_add_drain_all();
+        drain_all_pages(zone);
+
+        pfn = scan_movable_pages(start_pfn, end_pfn);
+        if (pfn) { /* We have movable pages */
+                ret = do_migrate_range(pfn, end_pfn);
+                goto repeat;
+        }
+
+What appears to be happening in this case is that do_migrate_range 
+returns a failure code which is being ignored. The failure is stemming 
+from migrate_pages returning "1" which I'm guessing is the result of us 
+hitting the following case:
+
+mm/migrate.c: migrate_pages
+
+	default:
+		/*
+		 * Permanent failure (-EBUSY, -ENOSYS, etc.):
+		 * unlike -EAGAIN case, the failed page is
+		 * removed from migration page list and not
+		 * retried in the next outer loop.
+		 */
+		nr_failed++;
+		break;
+	}
+
+Does a failure in do_migrate_range indicate that the range is 
+unmigratable and the loop in __offline_pages should terminate and goto 
+failed_removal? Or should we allow a certain number of retrys before we
+give up on migrating the range?
+
+This issue was observed on a ppc64le lpar on a 4.18-rc6 kernel.
+
+-John
