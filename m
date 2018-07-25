@@ -1,34 +1,28 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0250.hostedemail.com
- [216.40.44.250])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bK5L0zQ5zDrHF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:33:56 +1000 (AEST)
-Message-ID: <0fa2951559a9618c635d5a1fc6d4e32a5b795826.camel@perches.com>
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-From: Joe Perches <joe@perches.com>
-To: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, "David S. Miller"
- <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Jonathan Cameron <jic23@kernel.org>, linux-wireless
- <linux-wireless@vger.kernel.org>, Networking <netdev@vger.kernel.org>, DTML
- <devicetree@vger.kernel.org>, Linux Kernel Mailing List
- <linux-kernel@vger.kernel.org>, Linux ARM
- <linux-arm-kernel@lists.infradead.org>,  "open list:HARDWARE RANDOM NUMBER
- GENERATOR CORE" <linux-crypto@vger.kernel.org>, linuxppc-dev
- <linuxppc-dev@lists.ozlabs.org>,  linux-iio@vger.kernel.org, Linux PM list
- <linux-pm@vger.kernel.org>,  lvs-devel@vger.kernel.org,
- netfilter-devel@vger.kernel.org,  coreteam@netfilter.org
-Date: Wed, 25 Jul 2018 08:33:47 -0700
-In-Reply-To: <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
-References: <20180724111600.4158975-1-arnd@arndb.de>
- <20180724140010.e24a9964fd340afe2d98a994@linux-foundation.org>
- <aa39b6d15f44555cb79d5ebdef74aeab19003d6a.camel@perches.com>
- <20180724175531.75276cf4e539124aa9e27177@linux-foundation.org>
- <CAK8P3a3tOuP1FVS7oD1UhO5s4C+fLkL8VT3eCpRnSxBZxKzf6A@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bKHG2qRJzDrHN
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 01:42:33 +1000 (AEST)
+Date: Wed, 25 Jul 2018 17:42:28 +0200
+Message-ID: <20180725174228.Horde.-PsCOyKHj9skAHIMbqyLDg1@messagerie.si.c-s.fr>
+From: LEROY Christophe <christophe.leroy@c-s.fr>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C . Harding" <me@tobin.cc>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Simon Guo
+ <wei.guo.simon@gmail.com>, Paul Mackerras <paulus@samba.org>, Nicholas
+ Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>, Michael
+ Ellerman <mpe@ellerman.id.au>, "Eric W . Biederman" <ebiederm@xmission.com>,
+ Cyril Bur <cyrilbur@gmail.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Balbir Singh <bsingharora@gmail.com>, Andrew
+ Donnellan <andrew.donnellan@au1.ibm.com>, Alastair D'Silva
+ <alastair@d-silva.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] powerpc/traps: Return early in show_signal_msg()
+References: <20180724192720.32417-1-muriloo@linux.ibm.com>
+ <20180724192720.32417-3-muriloo@linux.ibm.com>
+In-Reply-To: <20180724192720.32417-3-muriloo@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,91 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-07-25 at 15:12 +0200, Arnd Bergmann wrote:
-> tools/perf/tests/.gitignore:
->                             LLVM byte-codes, uncompressed
-> On Wed, Jul 25, 2018 at 2:55 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> > On Tue, 24 Jul 2018 17:13:20 -0700 Joe Perches <joe@perches.com> wrote:
-> > 
-> > > On Tue, 2018-07-24 at 14:00 -0700, Andrew Morton wrote:
-> > > > On Tue, 24 Jul 2018 13:13:25 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
-> > > > > Almost all files in the kernel are either plain text or UTF-8
-> > > > > encoded. A couple however are ISO_8859-1, usually just a few
-> > > > > characters in a C comments, for historic reasons.
-> > > > > This converts them all to UTF-8 for consistency.
-> > > 
-> > > []
-> > > > Will we be getting a checkpatch rule to keep things this way?
-> > > 
-> > > How would that be done?
-> > 
-> > I'm using this, seems to work.
-> > 
-> >         if ! file $p | grep -q -P ", ASCII text|, UTF-8 Unicode text"
-> >         then
-> >                 echo $p: weird charset
-> >         fi
-> 
-> There are a couple of files that my version of 'find' incorrectly identified as
-> something completely different, like:
-> 
-> Documentation/devicetree/bindings/pinctrl/pinctrl-sx150x.txt:
->             SemOne archive data
-> Documentation/devicetree/bindings/rtc/epson,rtc7301.txt:
->             Microsoft Document Imaging Format
-> Documentation/filesystems/nfs/pnfs-block-server.txt:
->             PPMN archive data
-> arch/arm/boot/dts/bcm283x-rpi-usb-host.dtsi:
->         Sendmail frozen configuration  - version = "host";
-> Documentation/networking/segmentation-offloads.txt:
->         StuffIt Deluxe Segment (data) : gmentation Offloads in the
-> Linux Networking Stack
-> arch/sparc/include/asm/visasm.h:                              SAS 7+
-> arch/xtensa/kernel/setup.c:                                         ,
-> init=0x454c, stat=0x090a, dev=0x2009, bas=0x2020
-> drivers/cpufreq/powernow-k8.c:
-> TI-XX Graphing Calculator (FLASH)
-> tools/testing/selftests/net/forwarding/tc_shblocks.sh:
->                             Minix filesystem, V2 (big endian)
-> tools/perf/tests/.gitignore:
->                             LLVM byte-codes, uncompressed
-> 
-> All of the above seem to be valid ASCII or UTF-8 files, so the check
-> above will lead
-> to false-positives, but it may be good enough as they are the
-> exception, and may be
-> bugs in 'file'.
-> 
-> Not sure if we need to worry about 'file' not being installed.
+Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a =C3=A9crit=C2=A0:
 
-checkpatch works on patches so I think the test isn't
-really relevant.  It has to use the appropriate email
-header that sets the charset.
+> Modify logic of show_signal_msg() to return early, if possible.  Replace
+> printk_ratelimited() by printk() and a default rate limit burst to limit
+> displaying unhandled signals messages.
 
-perhaps:
----
- scripts/checkpatch.pl | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+Can you explain more the benefits of this change ?
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 34e4683de7a3..57355fbd2d28 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -2765,9 +2765,13 @@ sub process {
- # Check if there is UTF-8 in a commit log when a mail header has explicitly
- # declined it, i.e defined some charset where it is missing.
- 		if ($in_header_lines &&
--		    $rawline =~ /^Content-Type:.+charset="(.+)".*$/ &&
--		    $1 !~ /utf-8/i) {
--			$non_utf8_charset = 1;
-+		    $rawline =~ /^Content-Type:.+charset="?([^\s;"]+)/) {
-+			my $charset = $1;
-+			$non_utf8_charset = 1 if ($charset !~ /^utf-8$/i);
-+			if ($charset !~ /^(?:us-ascii|utf-8|iso-8859-1)$/) {
-+				WARN("PATCH_CHARSET",
-+				     "Unpreferred email header charset '$charset'\n" . $herecurr);
-+			}
- 		}
- 
- 		if ($in_commit_log && $non_utf8_charset && $realfile =~ /^$/ &&
+Christophe
+
+>
+> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+> ---
+>  arch/powerpc/kernel/traps.c | 21 +++++++++++++++------
+>  1 file changed, 15 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index cbd3dc365193..4faab4705774 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -301,6 +301,13 @@ void user_single_step_siginfo(struct task_struct *ts=
+k,
+>  	info->si_addr =3D (void __user *)regs->nip;
+>  }
+>
+> +static bool show_unhandled_signals_ratelimited(void)
+> +{
+> +	static DEFINE_RATELIMIT_STATE(rs, DEFAULT_RATELIMIT_INTERVAL,
+> +				      DEFAULT_RATELIMIT_BURST);
+> +	return show_unhandled_signals && __ratelimit(&rs);
+> +}
+> +
+>  static void show_signal_msg(int signr, struct pt_regs *regs, int code,
+>  			    unsigned long addr)
+>  {
+> @@ -309,11 +316,12 @@ static void show_signal_msg(int signr, struct=20=20
+>=20pt_regs *regs, int code,
+>  	const char fmt64[] =3D KERN_INFO "%s[%d]: unhandled signal %d " \
+>  		"at %016lx nip %016lx lr %016lx code %x\n";
+>
+> -	if (show_unhandled_signals && unhandled_signal(current, signr)) {
+> -		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+> -				   current->comm, current->pid, signr,
+> -				   addr, regs->nip, regs->link, code);
+> -	}
+> +	if (!unhandled_signal(current, signr))
+> +		return;
+> +
+> +	printk(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+> +	       current->comm, current->pid, signr,
+> +	       addr, regs->nip, regs->link, code);
+>  }
+>
+>  void _exception_pkey(int signr, struct pt_regs *regs, int code,
+> @@ -326,7 +334,8 @@ void _exception_pkey(int signr, struct pt_regs=20=20
+>=20*regs, int code,
+>  		return;
+>  	}
+>
+> -	show_signal_msg(signr, regs, code, addr);
+> +	if (show_unhandled_signals_ratelimited())
+> +		show_signal_msg(signr, regs, code, addr);
+>
+>  	if (arch_irqs_disabled() && !arch_irq_disabled_regs(regs))
+>  		local_irq_enable();
+> --
+> 2.17.1
