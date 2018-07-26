@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bgz10Q4VzDqnG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bgz11FkbzF0PZ
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 15:44:45 +1000 (AEST)
-Date: Thu, 26 Jul 2018 15:44:34 +1000
+Date: Thu, 26 Jul 2018 15:43:54 +1000
 From: Paul Mackerras <paulus@ozlabs.org>
 To: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: Sam Bobroff <sbobroff@linux.ibm.com>,
  David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] KVM: PPC: Book3S HV: Read kvm->arch.emul_smt_mode under
- kvm->lock
-Message-ID: <20180726054434.GC1672@fergus>
+Subject: [PATCH 1/2] KVM: PPC: Book3S HV: Allow creating max number of VCPUs
+ on POWER9
+Message-ID: <20180726054353.GB1672@fergus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,58 +24,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Commit 1e175d2 ("KVM: PPC: Book3S HV: Pack VCORE IDs to access full
-VCPU ID space", 2018-07-25) added code that uses kvm->arch.emul_smt_mode
-before any VCPUs are created.  However, userspace can change
-kvm->arch.emul_smt_mode at any time up until the first VCPU is created.
-Hence it is (theoretically) possible for the check in
-kvmppc_core_vcpu_create_hv() to race with another userspace thread
-changing kvm->arch.emul_smt_mode.
+VCPU ID space", 2018-07-25) allowed use of VCPU IDs up to
+KVM_MAX_VCPU_ID on POWER9 in all guest SMT modes and guest emulated
+hardware SMT modes.  However, with the current definition of
+KVM_MAX_VCPU_ID, a guest SMT mode of 1 and an emulated SMT mode of 8,
+it is only possible to create KVM_MAX_VCPUS / 2 VCPUS, because
+threads_per_subcore is 4 on POWER9 CPUs.  (Using an emulated SMT mode
+of 8 is useful when migrating VMs to or from POWER8 hosts.)
 
-This fixes it by moving the test that uses kvm->arch.emul_smt_mode into
-the block where kvm->lock is held.
+This increases KVM_MAX_VCPU_ID to 8 * KVM_MAX_VCPUS when HV KVM is
+configured in, so that a full complement of KVM_MAX_VCPUS VCPUs can
+be created on POWER9 in all guest SMT modes and emulated hardware
+SMT modes.
 
 Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
- arch/powerpc/kvm/book3s_hv.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+This and the next patch apply on my kvm-ppc-next branch, which
+includes Sam Bobroff's patch "KVM: PPC: Book3S HV: Pack VCORE IDs to
+access full VCPU ID space".
 
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 785245e..113f815 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1989,16 +1989,10 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 						   unsigned int id)
- {
- 	struct kvm_vcpu *vcpu;
--	int err = -EINVAL;
-+	int err;
- 	int core;
- 	struct kvmppc_vcore *vcore;
+ arch/powerpc/include/asm/kvm_host.h | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index 5b9e660..906bcbdf 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -42,7 +42,14 @@
+ #define KVM_USER_MEM_SLOTS	512
  
--	if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode) &&
--	    cpu_has_feature(CPU_FTR_ARCH_300)) {
--		pr_devel("DNCI: VCPU ID too high\n");
--		goto out;
--	}
--
- 	err = -ENOMEM;
- 	vcpu = kmem_cache_zalloc(kvm_vcpu_cache, GFP_KERNEL);
- 	if (!vcpu)
-@@ -2055,8 +2049,13 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
- 	vcore = NULL;
- 	err = -EINVAL;
- 	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
--		BUG_ON(kvm->arch.smt_mode != 1);
--		core = kvmppc_pack_vcpu_id(kvm, id);
-+		if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode)) {
-+			pr_devel("KVM: VCPU ID too high\n");
-+			core = KVM_MAX_VCORES;
-+		} else {
-+			BUG_ON(kvm->arch.smt_mode != 1);
-+			core = kvmppc_pack_vcpu_id(kvm, id);
-+		}
- 	} else {
- 		core = id / kvm->arch.smt_mode;
- 	}
+ #include <asm/cputhreads.h>
+-#define KVM_MAX_VCPU_ID                (threads_per_subcore * KVM_MAX_VCORES)
++
++#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
++#include <asm/kvm_book3s_asm.h>		/* for MAX_SMT_THREADS */
++#define KVM_MAX_VCPU_ID		(MAX_SMT_THREADS * KVM_MAX_VCORES)
++
++#else
++#define KVM_MAX_VCPU_ID		KVM_MAX_VCPUS
++#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+ 
+ #define __KVM_HAVE_ARCH_INTC_INITIALIZED
+ 
 -- 
 2.7.4
