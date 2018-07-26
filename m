@@ -2,15 +2,15 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41brrz6XKVzF0f7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 22:25:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bsFP2mfYzDqnG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 22:42:49 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] selftests/powerpc: Give some tests longer to run
-Date: Thu, 26 Jul 2018 22:24:59 +1000
-Message-Id: <20180726122459.9293-3-mpe@ellerman.id.au>
-In-Reply-To: <20180726122459.9293-1-mpe@ellerman.id.au>
-References: <20180726122459.9293-1-mpe@ellerman.id.au>
+Cc: npiggin@gmail.com,
+	anton@samba.org
+Subject: [PATCH] powerpc/64s: Make rfi_flush_fallback a little more robust
+Date: Thu, 26 Jul 2018 22:42:44 +1000
+Message-Id: <20180726124244.13993-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,73 +20,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of these long running tests can time out on heavily loaded
-systems, give them longer to run.
+Because rfi_flush_fallback runs immediately before the return to
+userspace it currently runs with the user r1 (stack pointer). This
+means if we oops in there we will report a bad kernel stack pointer in
+the exception entry path, eg:
+
+  Bad kernel stack pointer 7ffff7150e40 at c0000000000023b4
+  Oops: Bad kernel stack pointer, sig: 6 [#1]
+  LE SMP NR_CPUS=32 NUMA PowerNV
+  Modules linked in:
+  CPU: 0 PID: 1246 Comm: klogd Not tainted 4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3 #7
+  NIP:  c0000000000023b4 LR: 0000000010053e00 CTR: 0000000000000040
+  REGS: c0000000fffe7d40 TRAP: 4100   Not tainted  (4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3)
+  MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
+  CFAR: c00000000000bac8 IRQMASK: c0000000f1e66a80
+  GPR00: 0000000002000000 00007ffff7150e40 00007fff93a99900 0000000000000020
+  ...
+  NIP [c0000000000023b4] rfi_flush_fallback+0x34/0x80
+  LR [0000000010053e00] 0x10053e00
+
+Although the NIP tells us where we were, and the TRAP number tells us
+what happened, it would still be nicer if we could report the actual
+exception rather than barfing about the stack pointer.
+
+We an do that fairly simply by loading the kernel stack pointer on
+entry and restoring the user value before returning. That way we see a
+regular oops such as:
+
+  Unrecoverable exception 4100 at c00000000000239c
+  Oops: Unrecoverable exception, sig: 6 [#1]
+  LE SMP NR_CPUS=32 NUMA PowerNV
+  Modules linked in:
+  CPU: 0 PID: 1251 Comm: klogd Not tainted 4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty #40
+  NIP:  c00000000000239c LR: 0000000010053e00 CTR: 0000000000000040
+  REGS: c0000000f1e17bb0 TRAP: 4100   Not tainted  (4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty)
+  MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
+  CFAR: c00000000000bac8 IRQMASK: 0
+  ...
+  NIP [c00000000000239c] rfi_flush_fallback+0x3c/0x80
+  LR [0000000010053e00] 0x10053e00
+  Call Trace:
+  [c0000000f1e17e30] [c00000000000b9e4] system_call+0x5c/0x70 (unreliable)
+
+Note this shouldn't make the kernel stack pointer vulnerable to a
+meltdown attack, because it should be flushed from the cache before we
+return to userspace. The user r1 value will be in the cache, because
+we load it in the return path, but that is harmless.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/benchmarks/futex_bench.c         | 1 +
- tools/testing/selftests/powerpc/benchmarks/mmap_bench.c          | 2 ++
- tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c | 1 +
- tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c    | 1 +
- tools/testing/selftests/powerpc/stringloops/memcmp.c             | 1 +
- 5 files changed, 6 insertions(+)
+ arch/powerpc/kernel/exceptions-64s.S | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/benchmarks/futex_bench.c b/tools/testing/selftests/powerpc/benchmarks/futex_bench.c
-index 2fc711d9150d..d58e4dc50fcd 100644
---- a/tools/testing/selftests/powerpc/benchmarks/futex_bench.c
-+++ b/tools/testing/selftests/powerpc/benchmarks/futex_bench.c
-@@ -38,5 +38,6 @@ int test_futex(void)
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index f7cc12aa3dc6..a6fa85916273 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1518,6 +1518,8 @@ TRAMP_REAL_BEGIN(stf_barrier_fallback)
+ TRAMP_REAL_BEGIN(rfi_flush_fallback)
+ 	SET_SCRATCH0(r13);
+ 	GET_PACA(r13);
++	std	r1,PACA_EXRFI+EX_R12(r13)
++	ld	r1,PACAKSAVE(r13)
+ 	std	r9,PACA_EXRFI+EX_R9(r13)
+ 	std	r10,PACA_EXRFI+EX_R10(r13)
+ 	std	r11,PACA_EXRFI+EX_R11(r13)
+@@ -1552,12 +1554,15 @@ TRAMP_REAL_BEGIN(rfi_flush_fallback)
+ 	ld	r9,PACA_EXRFI+EX_R9(r13)
+ 	ld	r10,PACA_EXRFI+EX_R10(r13)
+ 	ld	r11,PACA_EXRFI+EX_R11(r13)
++	ld	r1,PACA_EXRFI+EX_R12(r13)
+ 	GET_SCRATCH0(r13);
+ 	rfid
  
- int main(void)
- {
-+	test_harness_set_timeout(300);
- 	return test_harness(test_futex, "futex_bench");
- }
-diff --git a/tools/testing/selftests/powerpc/benchmarks/mmap_bench.c b/tools/testing/selftests/powerpc/benchmarks/mmap_bench.c
-index 7a0a462a2272..033de0560d99 100644
---- a/tools/testing/selftests/powerpc/benchmarks/mmap_bench.c
-+++ b/tools/testing/selftests/powerpc/benchmarks/mmap_bench.c
-@@ -84,5 +84,7 @@ int main(int argc, char *argv[])
- 			exit(1);
- 		}
- 	}
-+
-+	test_harness_set_timeout(300);
- 	return test_harness(test_mmap, "mmap_bench");
- }
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c b/tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c
-index ae9a79086111..35a3426e341c 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c
-@@ -162,5 +162,6 @@ int instruction_count(void)
+ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
+ 	SET_SCRATCH0(r13);
+ 	GET_PACA(r13);
++	std	r1,PACA_EXRFI+EX_R12(r13)
++	ld	r1,PACAKSAVE(r13)
+ 	std	r9,PACA_EXRFI+EX_R9(r13)
+ 	std	r10,PACA_EXRFI+EX_R10(r13)
+ 	std	r11,PACA_EXRFI+EX_R11(r13)
+@@ -1592,6 +1597,7 @@ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
+ 	ld	r9,PACA_EXRFI+EX_R9(r13)
+ 	ld	r10,PACA_EXRFI+EX_R10(r13)
+ 	ld	r11,PACA_EXRFI+EX_R11(r13)
++	ld	r1,PACA_EXRFI+EX_R12(r13)
+ 	GET_SCRATCH0(r13);
+ 	hrfid
  
- int main(void)
- {
-+	test_harness_set_timeout(300);
- 	return test_harness(instruction_count, "instruction_count");
- }
-diff --git a/tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c b/tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c
-index eb8acb78bc6c..2ed7ad33f7a3 100644
---- a/tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c
-+++ b/tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c
-@@ -98,5 +98,6 @@ static int lost_exception(void)
- 
- int main(void)
- {
-+	test_harness_set_timeout(300);
- 	return test_harness(lost_exception, "lost_exception");
- }
-diff --git a/tools/testing/selftests/powerpc/stringloops/memcmp.c b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-index b5cf71727b2d..b1fa7546957f 100644
---- a/tools/testing/selftests/powerpc/stringloops/memcmp.c
-+++ b/tools/testing/selftests/powerpc/stringloops/memcmp.c
-@@ -154,5 +154,6 @@ static int testcases(void)
- 
- int main(void)
- {
-+	test_harness_set_timeout(300);
- 	return test_harness(testcases, "memcmp");
- }
 -- 
 2.14.1
