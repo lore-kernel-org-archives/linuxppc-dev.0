@@ -1,31 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bbRq4PhbzDqnG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 12:20:55 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Michael Neuling <mikey@neuling.org>
-Cc: linux-kernel@vger.kernel.org, Alastair D'Silva <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Cyril Bur <cyrilbur@gmail.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/7] powerpc: Modernize unhandled signals message
-In-Reply-To: <20180725193647.GA23643@kermit-br-ibm-com>
-References: <20180724192720.32417-1-muriloo@linux.ibm.com>
- <0f185351330a7f1d66409fe6a2dc02aae6826039.camel@neuling.org>
- <20180725193647.GA23643@kermit-br-ibm-com>
-Date: Thu, 26 Jul 2018 12:20:52 +1000
-Message-ID: <87wotihh4r.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bd9l0PczzDqnG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 13:38:51 +1000 (AEST)
+Date: Thu, 26 Jul 2018 13:22:52 +1000
+From: Paul Mackerras <paulus@ozlabs.org>
+To: Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, david@gibson.dropbear.id.au, clg@kaod.org
+Subject: Re: [PATCH v4 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access
+ full VCPU ID space
+Message-ID: <20180726032252.GA1672@fergus>
+References: <dc8e985d05d7de08cce080dfe6e70beeed2a50a1.1532499120.git.sbobroff@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <dc8e985d05d7de08cce080dfe6e70beeed2a50a1.1532499120.git.sbobroff@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,54 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
-> On Wed, Jul 25, 2018 at 05:00:21PM +1000, Michael Neuling wrote:
->>  On Tue, 2018-07-24 at 16:27 -0300, Murilo Opsfelder Araujo wrote:
->> > This series was inspired by the need to modernize and display more
->> > informative messages about unhandled signals.
-...
->> 
->> Nice.. the instruction dump would have been very handy when debugging the PCR
->> init issue I had a month or so back.
+On Wed, Jul 25, 2018 at 04:12:02PM +1000, Sam Bobroff wrote:
+> From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> 
+> It is not currently possible to create the full number of possible
+> VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
+> threads per core than it's core stride (or "VSMT mode"). This is
+> because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
+> even though the VCPU ID is less than KVM_MAX_VCPU_ID.
+> 
+> To address this, "pack" the VCORE ID and XIVE offsets by using
+> knowledge of the way the VCPU IDs will be used when there are less
+> guest threads per core than the core stride. The primary thread of
+> each core will always be used first. Then, if the guest uses more than
+> one thread per core, these secondary threads will sequentially follow
+> the primary in each core.
+> 
+> So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
+> VCPUs are being spaced apart, so at least half of each core is empty
+> and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
+> into the second half of each core (4..7, in an 8-thread core).
+> 
+> Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
+> each core is being left empty, and we can map down into the second and
+> third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
+> 
+> Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
+> threads are being used and 7/8 of the core is empty, allowing use of
+> the 1, 5, 3 and 7 thread slots.
+> 
+> (Strides less than 8 are handled similarly.)
+> 
+> This allows the VCORE ID or offset to be calculated quickly from the
+> VCPU ID or XIVE server numbers, without access to the VCPU structure.
+> 
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
-These things may be related :)
+I noticed a problem:
 
->> What happens if we get a sudden flood of these from different processes that
->> overlap their output? Are we going to be able to match up the process with
->> instruction dump?
->
-> As to the flood of messages, ___ratelimit() makes me think that we'll
-> likely see some warn messages informing how many show_signal_msg()
-> callbacks were suppressed, instead of interleaved messages and
-> instruction dumps.
->
-> As to matching process with instruction dump, I believe we'd need more
-> information to glue them together.
->
-> What if we modify show_instructions() to accept a string prefix to be
-> printed along with each line?
->
->> Should we prefix every line with the PID to avoid this?
->
-> That's possible.  An alternative would be prefixing each line with the
-> process name and its PID, as in the first line.  For example:
->
->     pandafault[10758]: segfault (11) at 00000000100007d0 nip 000000001000061c lr 00007fffabc85100 code 2 in pandafault[10000000+10000]
->     pandafault[10758]: Instruction dump:
->     pandafault[10758]: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
->     pandafault[10758]: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
->
-> The above can be interleaved with other messages and we'll still be able
-> to match process and its corresponding instruction dump.
+> @@ -1989,10 +1989,15 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
+>  						   unsigned int id)
+>  {
+>  	struct kvm_vcpu *vcpu;
+> -	int err;
+> +	int err = -EINVAL;
+>  	int core;
+>  	struct kvmppc_vcore *vcore;
+>  
+> +	if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode)) {
+> +		WARN_ONCE(true, "DNCI: VCPU ID too high\n");
+> +		goto out;
+> +	}
 
-Yeah prefixing with the comm and pid is nice.
+On POWER8, kvm->arch.emul_smt_mode will be either 1 or 0, so this test
+needs to be conditional on CPU_FTR_ARCH_300.  I'll fix it.
 
-Also the "Instruction dump:" line is a waste of space.
+Also, kvm->arch.emul_smt_mode can change at any time until the first
+vcore is created, so this test should be done while holding kvm->lock.
 
-I prefer the x86 format, where it's prefixed with "code:", eg:
-
-  pandafault[10758]: segfault (11) at 00000000100007d0 nip 000000001000061c lr 00007fffabc85100 code 2 in pandafault[10000000+10000]
-  pandafault[10758]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
-  pandafault[10758]: code: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
-
-cheers
+Paul.
