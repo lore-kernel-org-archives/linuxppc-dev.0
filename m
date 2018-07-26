@@ -1,21 +1,36 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <alex@ghiti.fr>
+Received: from relay2-d.mail.gandi.net (relay2-d.mail.gandi.net
+ [217.70.183.194])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bd9l0PczzDqnG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 13:38:51 +1000 (AEST)
-Date: Thu, 26 Jul 2018 13:22:52 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: Sam Bobroff <sbobroff@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org, david@gibson.dropbear.id.au, clg@kaod.org
-Subject: Re: [PATCH v4 1/1] KVM: PPC: Book3S HV: pack VCORE IDs to access
- full VCPU ID space
-Message-ID: <20180726032252.GA1672@fergus>
-References: <dc8e985d05d7de08cce080dfe6e70beeed2a50a1.1532499120.git.sbobroff@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bgv643bzzDqnG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 15:41:19 +1000 (AEST)
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+To: Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@kernel.org>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180709141621.GD22297@dhcp22.suse.cz>
+ <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+ <87d0vehx16.fsf@concordia.ellerman.id.au>
+From: Alex Ghiti <alex@ghiti.fr>
+Message-ID: <67aba0f0-c0d4-b06f-5fbc-f4d113ce5033@ghiti.fr>
+Date: Thu, 26 Jul 2018 05:41:03 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <dc8e985d05d7de08cce080dfe6e70beeed2a50a1.1532499120.git.sbobroff@linux.ibm.com>
+In-Reply-To: <87d0vehx16.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,62 +40,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 25, 2018 at 04:12:02PM +1000, Sam Bobroff wrote:
-> From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-> 
-> It is not currently possible to create the full number of possible
-> VCPUs (KVM_MAX_VCPUS) on Power9 with KVM-HV when the guest uses less
-> threads per core than it's core stride (or "VSMT mode"). This is
-> because the VCORE ID and XIVE offsets to grow beyond KVM_MAX_VCPUS
-> even though the VCPU ID is less than KVM_MAX_VCPU_ID.
-> 
-> To address this, "pack" the VCORE ID and XIVE offsets by using
-> knowledge of the way the VCPU IDs will be used when there are less
-> guest threads per core than the core stride. The primary thread of
-> each core will always be used first. Then, if the guest uses more than
-> one thread per core, these secondary threads will sequentially follow
-> the primary in each core.
-> 
-> So, the only way an ID above KVM_MAX_VCPUS can be seen, is if the
-> VCPUs are being spaced apart, so at least half of each core is empty
-> and IDs between KVM_MAX_VCPUS and (KVM_MAX_VCPUS * 2) can be mapped
-> into the second half of each core (4..7, in an 8-thread core).
-> 
-> Similarly, if IDs above KVM_MAX_VCPUS * 2 are seen, at least 3/4 of
-> each core is being left empty, and we can map down into the second and
-> third quarters of each core (2, 3 and 5, 6 in an 8-thread core).
-> 
-> Lastly, if IDs above KVM_MAX_VCPUS * 4 are seen, only the primary
-> threads are being used and 7/8 of the core is empty, allowing use of
-> the 1, 5, 3 and 7 thread slots.
-> 
-> (Strides less than 8 are handled similarly.)
-> 
-> This allows the VCORE ID or offset to be calculated quickly from the
-> VCPU ID or XIVE server numbers, without access to the VCPU structure.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Hi everyone,
 
-I noticed a problem:
+This is the result of the build for all arches tackled in this series 
+rebased on 4.18-rc6:
 
-> @@ -1989,10 +1989,15 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_hv(struct kvm *kvm,
->  						   unsigned int id)
->  {
->  	struct kvm_vcpu *vcpu;
-> -	int err;
-> +	int err = -EINVAL;
->  	int core;
->  	struct kvmppc_vcore *vcore;
->  
-> +	if (id >= (KVM_MAX_VCPUS * kvm->arch.emul_smt_mode)) {
-> +		WARN_ONCE(true, "DNCI: VCPU ID too high\n");
-> +		goto out;
-> +	}
+arm:
+         versatile_defconfig: without huge page OK
+         keystone_defconfig: with huge page OK
+arm64:
+         defconfig: with huge page OK
+ia64:
+         generic_defconfig: with huge page OK
+mips:
+         Paul Burton tested cavium octeon with huge page OK
+parisc:
+         generic-64bit_defconfig: with huge page does not link
+         generic-64bit_defconfig: without huge page does not link
+         BUT not because of this series, any feedback welcome.
+powerpc:
+         ppc64_defconfig: without huge page OK
+         ppc64_defconfig: with huge page OK
+sh:
+         dreamcast_defconfig: with huge page OK
+sparc:
+         sparc32_defconfig: without huge page OK
+sparc64:
+         sparc64_defconfig: with huge page OK
+x86:
+         with huge page OK
 
-On POWER8, kvm->arch.emul_smt_mode will be either 1 or 0, so this test
-needs to be conditional on CPU_FTR_ARCH_300.  I'll fix it.
+Alex
 
-Also, kvm->arch.emul_smt_mode can change at any time until the first
-vcore is created, so this test should be done while holding kvm->lock.
-
-Paul.
+On 07/23/2018 02:00 PM, Michael Ellerman wrote:
+> Alex Ghiti <alex@ghiti.fr> writes:
+>
+>> Does anyone have any suggestion about those patches ?
+> Cross compiling it for some non-x86 arches would be a good start :)
+>
+> There are cross compilers available here:
+>
+>    https://mirrors.edge.kernel.org/pub/tools/crosstool/
+>
+>
+> cheers
+>
+>> On 07/09/2018 02:16 PM, Michal Hocko wrote:
+>>> [CC hugetlb guys - http://lkml.kernel.org/r/20180705110716.3919-1-alex@ghiti.fr]
+>>>
+>>> On Thu 05-07-18 11:07:05, Alexandre Ghiti wrote:
+>>>> In order to reduce copy/paste of functions across architectures and then
+>>>> make riscv hugetlb port (and future ports) simpler and smaller, this
+>>>> patchset intends to factorize the numerous hugetlb primitives that are
+>>>> defined across all the architectures.
+>>>>
+>>>> Except for prepare_hugepage_range, this patchset moves the versions that
+>>>> are just pass-through to standard pte primitives into
+>>>> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
+>>>> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
+>>>>
+>>>> s390 architecture has not been tackled in this serie since it does not
+>>>> use asm-generic/hugetlb.h at all.
+>>>> powerpc could be factorized a bit more (cf huge_ptep_set_wrprotect).
+>>>>
+>>>> This patchset has been compiled on x86 only.
+>>>>
+>>>> Changelog:
+>>>>
+>>>> v4:
+>>>>     Fix powerpc build error due to misplacing of #include
+>>>>     <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
+>>>>     pointed by Christophe Leroy.
+>>>>
+>>>> v1, v2, v3:
+>>>>     Same version, just problems with email provider and misuse of
+>>>>     --batch-size option of git send-email
+>>>>
+>>>> Alexandre Ghiti (11):
+>>>>     hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
+>>>>     hugetlb: Introduce generic version of hugetlb_free_pgd_range
+>>>>     hugetlb: Introduce generic version of set_huge_pte_at
+>>>>     hugetlb: Introduce generic version of huge_ptep_get_and_clear
+>>>>     hugetlb: Introduce generic version of huge_ptep_clear_flush
+>>>>     hugetlb: Introduce generic version of huge_pte_none
+>>>>     hugetlb: Introduce generic version of huge_pte_wrprotect
+>>>>     hugetlb: Introduce generic version of prepare_hugepage_range
+>>>>     hugetlb: Introduce generic version of huge_ptep_set_wrprotect
+>>>>     hugetlb: Introduce generic version of huge_ptep_set_access_flags
+>>>>     hugetlb: Introduce generic version of huge_ptep_get
+>>>>
+>>>>    arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
+>>>>    arch/arm/include/asm/hugetlb.h               | 33 +----------
+>>>>    arch/arm64/include/asm/hugetlb.h             | 39 +++---------
+>>>>    arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
+>>>>    arch/mips/include/asm/hugetlb.h              | 40 +++----------
+>>>>    arch/parisc/include/asm/hugetlb.h            | 33 +++--------
+>>>>    arch/powerpc/include/asm/book3s/32/pgtable.h |  2 +
+>>>>    arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
+>>>>    arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
+>>>>    arch/powerpc/include/asm/nohash/32/pgtable.h |  2 +
+>>>>    arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
+>>>>    arch/sh/include/asm/hugetlb.h                | 54 ++---------------
+>>>>    arch/sparc/include/asm/hugetlb.h             | 40 +++----------
+>>>>    arch/x86/include/asm/hugetlb.h               | 72 +----------------------
+>>>>    include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
+>>>>    15 files changed, 143 insertions(+), 384 deletions(-)
+>>>>
+>>>> -- 
+>>>> 2.16.2
