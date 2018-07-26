@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41brry0zlszDqnG
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41brry6wmGzF0dm
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 22:25:06 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] selftests/powerpc: Add a helper for checking if we're on
- ppc64le
-Date: Thu, 26 Jul 2018 22:24:57 +1000
-Message-Id: <20180726122459.9293-1-mpe@ellerman.id.au>
+Subject: [PATCH 2/3] selftests/powerpc: Only run some tests on ppc64le
+Date: Thu, 26 Jul 2018 22:24:58 +1000
+Message-Id: <20180726122459.9293-2-mpe@ellerman.id.au>
+In-Reply-To: <20180726122459.9293-1-mpe@ellerman.id.au>
+References: <20180726122459.9293-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,62 +20,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some of our selftests have only been tested on ppc64le and crash or
-behave weirdly on ppc64/ppc32. So add a helper for checking the UTS
-machine.
+These tests are currently failing on (some) big endian systems. Until
+we can fix that, skip them unless we're on ppc64le.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/include/utils.h |  2 ++
- tools/testing/selftests/powerpc/utils.c         | 17 +++++++++++++++++
- 2 files changed, 19 insertions(+)
+ tools/testing/selftests/powerpc/tm/tm-sigreturn.c | 1 +
+ tools/testing/selftests/powerpc/tm/tm-tar.c       | 1 +
+ tools/testing/selftests/powerpc/tm/tm-vmxcopy.c   | 1 +
+ 3 files changed, 3 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/include/utils.h b/tools/testing/selftests/powerpc/include/utils.h
-index 735815b3ad7f..c58c370828b4 100644
---- a/tools/testing/selftests/powerpc/include/utils.h
-+++ b/tools/testing/selftests/powerpc/include/utils.h
-@@ -48,6 +48,8 @@ static inline bool have_hwcap2(unsigned long ftr2)
- }
- #endif
+diff --git a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+index 85d63449243b..9a6017a1d769 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
++++ b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
+@@ -55,6 +55,7 @@ int tm_sigreturn(void)
+ 	uint64_t ret = 0;
  
-+bool is_ppc64le(void);
-+
- /* Yes, this is evil */
- #define FAIL_IF(x)						\
- do {								\
-diff --git a/tools/testing/selftests/powerpc/utils.c b/tools/testing/selftests/powerpc/utils.c
-index d46916867a6f..aa8fc1e6365b 100644
---- a/tools/testing/selftests/powerpc/utils.c
-+++ b/tools/testing/selftests/powerpc/utils.c
-@@ -11,8 +11,10 @@
- #include <link.h>
- #include <sched.h>
- #include <stdio.h>
-+#include <string.h>
- #include <sys/stat.h>
- #include <sys/types.h>
-+#include <sys/utsname.h>
- #include <unistd.h>
+ 	SKIP_IF(!have_htm());
++	SKIP_IF(!is_ppc64le());
  
- #include "utils.h"
-@@ -104,3 +106,18 @@ int pick_online_cpu(void)
- 	printf("No cpus in affinity mask?!\n");
- 	return -1;
- }
-+
-+bool is_ppc64le(void)
-+{
-+	struct utsname uts;
-+	int rc;
-+
-+	errno = 0;
-+	rc = uname(&uts);
-+	if (rc) {
-+		perror("uname");
-+		return false;
-+	}
-+
-+	return strcmp(uts.machine, "ppc64le") == 0;
-+}
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.sa_handler = handler;
+diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
+index 2d2fcc2b7a60..f31fe5a28ddb 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-tar.c
++++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
+@@ -26,6 +26,7 @@ int test_tar(void)
+ 	int i;
+ 
+ 	SKIP_IF(!have_htm());
++	SKIP_IF(!is_ppc64le());
+ 
+ 	for (i = 0; i < num_loops; i++)
+ 	{
+diff --git a/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c b/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
+index 0274de7b11f3..fe52811584ae 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
++++ b/tools/testing/selftests/powerpc/tm/tm-vmxcopy.c
+@@ -46,6 +46,7 @@ int test_vmxcopy()
+ 	uint64_t aborted = 0;
+ 
+ 	SKIP_IF(!have_htm());
++	SKIP_IF(!is_ppc64le());
+ 
+ 	fd = mkstemp(tmpfile);
+ 	assert(fd >= 0);
 -- 
 2.14.1
