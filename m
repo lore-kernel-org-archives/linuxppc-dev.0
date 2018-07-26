@@ -1,44 +1,17 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41bsdN4tV5zDqnG
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 23:00:07 +1000 (AEST)
-Date: Thu, 26 Jul 2018 14:59:57 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: Baoquan He <bhe@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, dan.j.williams@intel.com,
- nicolas.pitre@linaro.org, josh@joshtriplett.org,
- fengguang.wu@intel.com, bp@suse.de, andy.shevchenko@gmail.com,
- patrik.r.jakobsson@gmail.com, airlied@linux.ie, kys@microsoft.com,
- haiyangz@microsoft.com, sthemmin@microsoft.com,
- dmitry.torokhov@gmail.com, frowand.list@gmail.com,
- keith.busch@intel.com, jonathan.derrick@intel.com,
- lorenzo.pieralisi@arm.com, bhelgaas@google.com, tglx@linutronix.de,
- brijesh.singh@amd.com, jglisse@redhat.com, thomas.lendacky@amd.com,
- gregkh@linuxfoundation.org, baiyaowei@cmss.chinamobile.com,
- richard.weiyang@gmail.com, devel@linuxdriverproject.org,
- linux-input@vger.kernel.org, linux-nvdimm@lists.01.org,
- devicetree@vger.kernel.org, linux-pci@vger.kernel.org,
- ebiederm@xmission.com, vgoyal@redhat.com, dyoung@redhat.com,
- yinghai@kernel.org, monstr@monstr.eu, davem@davemloft.net,
- chris@zankel.net, jcmvbkbc@gmail.com, gustavo@padovan.org,
- maarten.lankhorst@linux.intel.com, seanpaul@chromium.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org
-Subject: Re: [PATCH v7 4/4] kexec_file: Load kernel at top of system RAM if
- required
-Message-ID: <20180726125957.GH28386@dhcp22.suse.cz>
-References: <20180718024944.577-1-bhe@redhat.com>
- <20180718024944.577-5-bhe@redhat.com>
- <20180718153326.b795e9ea7835432a56cd7011@linux-foundation.org>
- <20180719151753.GB7147@localhost.localdomain>
- <20180723143443.GD18181@dhcp22.suse.cz>
- <20180725064813.GI6480@MiWiFi-R3L-srv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180725064813.GI6480@MiWiFi-R3L-srv>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41bsgQ0hQgzF0q0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2018 23:01:54 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: npiggin@gmail.com,
+	anton@samba.org,
+	paulus@samba.org
+Subject: [PATCH] powerpc/64s: Make unrecoverable SLB miss less confusing
+Date: Thu, 26 Jul 2018 23:01:51 +1000
+Message-Id: <20180726130151.16410-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,46 +21,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 25-07-18 14:48:13, Baoquan He wrote:
-> On 07/23/18 at 04:34pm, Michal Hocko wrote:
-> > On Thu 19-07-18 23:17:53, Baoquan He wrote:
-> > > Kexec has been a formal feature in our distro, and customers owning
-> > > those kind of very large machine can make use of this feature to speed
-> > > up the reboot process. On uefi machine, the kexec_file loading will
-> > > search place to put kernel under 4G from top to down. As we know, the
-> > > 1st 4G space is DMA32 ZONE, dma, pci mmcfg, bios etc all try to consume
-> > > it. It may have possibility to not be able to find a usable space for
-> > > kernel/initrd. From the top down of the whole memory space, we don't
-> > > have this worry. 
-> > 
-> > I do not have the full context here but let me note that you should be
-> > careful when doing top-down reservation because you can easily get into
-> > hotplugable memory and break the hotremove usecase. We even warn when
-> > this is done. See memblock_find_in_range_node
-> 
-> Kexec read kernel/initrd file into buffer, just search usable positions
-> for them to do the later copying. You can see below struct kexec_segment, 
-> for the old kexec_load, kernel/initrd are read into user space buffer,
-> the @buf stores the user space buffer address, @mem stores the position
-> where kernel/initrd will be put. In kernel, it calls
-> kimage_load_normal_segment() to copy user space buffer to intermediate
-> pages which are allocated with flag GFP_KERNEL. These intermediate pages
-> are recorded as entries, later when user execute "kexec -e" to trigger
-> kexec jumping, it will do the final copying from the intermediate pages
-> to the real destination pages which @mem pointed. Because we can't touch
-> the existed data in 1st kernel when do kexec kernel loading. With my
-> understanding, GFP_KERNEL will make those intermediate pages be
-> allocated inside immovable area, it won't impact hotplugging. But the
-> @mem we searched in the whole system RAM might be lost along with
-> hotplug. Hence we need do kexec kernel again when hotplug event is
-> detected.
+If we take an SLB miss while MSR[RI]=0 we can't recover and have to
+oops. Currently this is reported by faking up a 0x4100 exception, eg:
 
-I am not sure I am following. If @mem is placed at movable node then the
-memory hotremove simply won't work, because we are seeing reserved pages
-and do not know what to do about them. They are not migrateable.
-Allocating intermediate pages from other nodes doesn't really help.
+  Unrecoverable exception 4100 at 0
+  Oops: Unrecoverable exception, sig: 6 [#1]
+  ...
+  CPU: 0 PID: 1262 Comm: sh Not tainted 4.18.0-rc3-gcc-7.3.1-00098-g7fc2229fb2ab-dirty #9
+  NIP:  0000000000000000 LR: c00000000000b9e4 CTR: 00007fff8bb971b0
+  REGS: c0000000ee02bbb0 TRAP: 4100
+  ...
+  LR [c00000000000b9e4] system_call+0x5c/0x70
 
-The memblock code warns exactly for that reason.
+The 0x4100 value was chosen back in 2004 as part of the fix for the
+"mega bug" - "ppc64: Fix SLB reload bug". Back then it was obvious
+that 0x4100 was not a real trap value, as the highest actual trap was
+less than 0x2000.
+
+Since then however the architecture has changed and now we have
+"virtual mode" or "relon" exceptions, in which exceptions can be
+delivered with the MMU on starting at 0x4000.
+
+At a glance 0x4100 looks like a virtual mode 0x100 exception, aka
+system reset exception. A close reading of the architecture will show
+that system reset exceptions can't be delivered in virtual mode, and
+so 0x4100 is not a valid trap number. But that's not immediately
+obvious. There's also nothing about 0x4100 that suggests SLB miss.
+
+So to make things a bit less confusing switch to a fake but unique and
+hopefully more helpful numbering. For data SLB misses we report a
+0x390 trap and for instruction we report 0x490. Compared to 0x380 and
+0x480 for the actual data & instruction SLB exceptions.
+
+Also add a C handler that prints a more explicit message. The end
+result is something like:
+
+  Oops: Unrecoverable SLB miss (MSR[RI]=0), sig: 6 [#3]
+  ...
+  CPU: 0 PID: 1262 Comm: sh Not tainted 4.18.0-rc3-gcc-7.3.1-00098-g7fc2229fb2ab-dirty #9
+  NIP:  0000000000000000 LR: c00000000000b9e4 CTR: 0000000000000000
+  REGS: c0000000f19a3bb0 TRAP: 0490
+  ...
+  LR [c00000000000b9e4] system_call+0x5c/0x70
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/asm-prototypes.h | 1 +
+ arch/powerpc/kernel/exceptions-64s.S      | 7 +++++--
+ arch/powerpc/kernel/traps.c               | 6 ++++++
+ 3 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+index 7841b8a60657..ffba4a6ee619 100644
+--- a/arch/powerpc/include/asm/asm-prototypes.h
++++ b/arch/powerpc/include/asm/asm-prototypes.h
+@@ -74,6 +74,7 @@ void facility_unavailable_exception(struct pt_regs *regs);
+ void TAUException(struct pt_regs *regs);
+ void altivec_assist_exception(struct pt_regs *regs);
+ void unrecoverable_exception(struct pt_regs *regs);
++void unrecoverable_slb_miss(struct pt_regs *regs);
+ void kernel_bad_stack(struct pt_regs *regs);
+ void system_reset_exception(struct pt_regs *regs);
+ void machine_check_exception(struct pt_regs *regs);
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index a6fa85916273..8e1396433eb4 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -743,11 +743,14 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+ 	b	.
+ 
+ EXC_COMMON_BEGIN(unrecov_slb)
+-	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
++	EXCEPTION_PROLOG_COMMON(0x390, PACA_EXSLB)
+ 	RECONCILE_IRQ_STATE(r10, r11)
+ 	bl	save_nvgprs
++	beq	cr6, 1f		// cr6.eq is set for a data SLB miss ...
++	li	r10, 0x490	// else fix trap number for instruction SLB miss
++	std	r10, _TRAP(r1)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	unrecoverable_exception
++	bl	unrecoverable_slb_miss
+ 	b	1b
+ 
+ EXC_COMMON_BEGIN(large_addr_slb)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 0e17dcb48720..0b1724a0b001 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -2061,6 +2061,12 @@ void unrecoverable_exception(struct pt_regs *regs)
+ }
+ NOKPROBE_SYMBOL(unrecoverable_exception);
+ 
++void unrecoverable_slb_miss(struct pt_regs *regs)
++{
++	die("Unrecoverable SLB miss (MSR[RI]=0)", regs, SIGABRT);
++}
++NOKPROBE_SYMBOL(unrecoverable_slb_miss);
++
+ #if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
+ /*
+  * Default handler for a Watchdog exception,
 -- 
-Michal Hocko
-SUSE Labs
+2.14.1
