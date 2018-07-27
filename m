@@ -1,32 +1,27 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x22a.google.com (mail-pl0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c01::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cW8C0J3GzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 00:10:33 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6RE8rG4004560
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 10:10:31 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kg4uvr6n2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 10:10:31 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Fri, 27 Jul 2018 15:10:29 +0100
-Subject: Re: [PATCH 0/3] powerpc/pseries: use H_BLOCK_REMOVE
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <1532697739-4878-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Date: Fri, 27 Jul 2018 16:10:26 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cWYq4lfWzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 00:29:18 +1000 (AEST)
+Received: by mail-pl0-x22a.google.com with SMTP id w8-v6so2390148ply.8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 07:29:18 -0700 (PDT)
+Date: Sat, 28 Jul 2018 00:29:06 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Matthew Wilcox <willy@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton
+ <akpm@linux-foundation.org>, Linus Torvalds
+ <torvalds@linux-foundation.org>, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org
+Subject: Re: [PATCH resend] powerpc/64s: fix page table fragment refcount
+ race vs speculative references
+Message-ID: <20180728002906.531d0211@roar.ozlabs.ibm.com>
+In-Reply-To: <20180727134156.GA13348@bombadil.infradead.org>
+References: <20180727114817.27190-1-npiggin@gmail.com>
+ <20180727134156.GA13348@bombadil.infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <1532697739-4878-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <4860026b-4d69-a42e-81eb-8599059bb964@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,68 +31,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sorry for the noise, I forgot to add CC people in copy of this cover.
-A wall new thread has been resent : https://lkml.org/lkml/2018/7/27/651
+On Fri, 27 Jul 2018 06:41:56 -0700
+Matthew Wilcox <willy@infradead.org> wrote:
 
-On 27/07/2018 15:22, Laurent Dufour wrote:
-> On very large system we could see soft lockup fired when a process is exiting
+> On Fri, Jul 27, 2018 at 09:48:17PM +1000, Nicholas Piggin wrote:
+> > The page table fragment allocator uses the main page refcount racily
+> > with respect to speculative references. A customer observed a BUG due
+> > to page table page refcount underflow in the fragment allocator. This
+> > can be caused by the fragment allocator set_page_count stomping on a
+> > speculative reference, and then the speculative failure handler
+> > decrements the new reference, and the underflow eventually pops when
+> > the page tables are freed.  
 > 
-> watchdog: BUG: soft lockup - CPU#851 stuck for 21s! [forkoff:215523]
-> Modules linked in: pseries_rng rng_core xfs raid10 vmx_crypto btrfs libcrc32c xor zstd_decompress zstd_compress xxhash lzo_compress raid6_pq crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
-> CPU: 851 PID: 215523 Comm: forkoff Not tainted 4.17.0 #1
-> NIP:  c0000000000b995c LR: c0000000000b8f64 CTR: 000000000000aa18
-> REGS: c00006b0645b7610 TRAP: 0901   Not tainted  (4.17.0)
-> MSR:  800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22042082  XER: 00000000
-> CFAR: 00000000006cf8f0 SOFTE: 0 
-> GPR00: 0010000000000000 c00006b0645b7890 c000000000f99200 0000000000000000 
-> GPR04: 8e000001a5a4de58 400249cf1bfd5480 8e000001a5a4de50 400249cf1bfd5480 
-> GPR08: 8e000001a5a4de48 400249cf1bfd5480 8e000001a5a4de40 400249cf1bfd5480 
-> GPR12: ffffffffffffffff c00000001e690800 
-> NIP [c0000000000b995c] plpar_hcall9+0x44/0x7c
-> LR [c0000000000b8f64] pSeries_lpar_flush_hash_range+0x324/0x3d0
-> Call Trace:
-> [c00006b0645b7890] [8e000001a5a4dd20] 0x8e000001a5a4dd20 (unreliable)
-> [c00006b0645b7a00] [c00000000006d5b0] flush_hash_range+0x60/0x110
-> [c00006b0645b7a50] [c000000000072a2c] __flush_tlb_pending+0x4c/0xd0
-> [c00006b0645b7a80] [c0000000002eaf44] unmap_page_range+0x984/0xbd0
-> [c00006b0645b7bc0] [c0000000002eb594] unmap_vmas+0x84/0x100
-> [c00006b0645b7c10] [c0000000002f8afc] exit_mmap+0xac/0x1f0
-> [c00006b0645b7cd0] [c0000000000f2638] mmput+0x98/0x1b0
-> [c00006b0645b7d00] [c0000000000fc9d0] do_exit+0x330/0xc00
-> [c00006b0645b7dc0] [c0000000000fd384] do_group_exit+0x64/0x100
-> [c00006b0645b7e00] [c0000000000fd44c] sys_exit_group+0x2c/0x30
-> [c00006b0645b7e30] [c00000000000b960] system_call+0x58/0x6c
-> Instruction dump:
-> 60000000 f8810028 7ca42b78 7cc53378 7ce63b78 7d074378 7d284b78 7d495378 
-> e9410060 e9610068 e9810070 44000022 <7d806378> e9810028 f88c0000 f8ac0008
+> Oof.  Can't you fix this instead by using page_ref_add() instead of
+> set_page_count()?
+
+It's ugly doing it that way. The problem is we have a page table
+destructor and that would be missed if the spec ref was the last
+put. In practice with RCU page table freeing maybe you can say
+there will be no spec ref there (unless something changes), but
+still it just seems much simpler doing this and avoiding any
+complexity or relying on other synchronization.
+
 > 
-> This happens when removing the PTE by calling the hypervisor using the
-> H_BULK_REMOVE call. This call is processing up to 4 PTEs but is doing a
-> tlbie for each PTE it is processing. This could lead to long time spent in
-> the hypervisor (sometimes up to 4s) and soft lockup being raised because
-> the scheduler is not called in zap_pte_range().
+> > Any objection to the struct page change to grab the arch specific
+> > page table page word for powerpc to use? If not, then this should
+> > go via powerpc tree because it's inconsequential for core mm.  
 > 
-> Since the Power7's time, the hypervisor is providing a new hcall
-> H_BLOCK_REMOVE allowing processing up to 8 PTEs with one call to
-> tlbie. By limiting the amount of tlbie generated, this reduces the time
-> spent invalidating the PTEs.
-> 
-> This hcall requires that the pages are "all within the same naturally
-> aligned 8 page virtual address block".
-> 
-> With this patch series applied, I couldn't see any soft lockup raised on
-> the victim LPAR I was running the test one.
-> 
-> This series is covering both normal pages and huge pages.
-> 
-> Laurent Dufour (3):
->   powerpc/pseries/mm: Introducing FW_FEATURE_BLOCK_REMOVE
->   powerpc/pseries/mm: factorize PTE slot computation
->   powerpc/pseries/mm: call H_BLOCK_REMOVE
-> 
->  arch/powerpc/include/asm/firmware.h       |   3 +-
->  arch/powerpc/include/asm/hvcall.h         |   1 +
->  arch/powerpc/platforms/pseries/firmware.c |   1 +
->  arch/powerpc/platforms/pseries/lpar.c     | 250 ++++++++++++++++++++++++++----
->  4 files changed, 228 insertions(+), 27 deletions(-)
-> 
+> I want (eventually) to get to the point where every struct page carries
+> a pointer to the struct mm that it belongs to.  It's good for debugging
+> as well as handling memory errors in page tables.
+
+That doesn't seem like it should be a problem, there's some spare
+words there for arch independent users.
+
+Thanks,
+Nick
