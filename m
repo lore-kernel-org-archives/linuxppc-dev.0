@@ -1,42 +1,23 @@
-Return-Path: <srs0=i7yr=kl=linux.ibm.com=aneesh.kumar@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cKYT2mCbzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 16:58:21 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41cKYT23kQz8sww
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 16:58:21 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41cKYS5TpNz9ryl
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2018 16:58:20 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6R6snPH039258
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2018 02:58:18 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kfx0chd1r-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2018 02:58:18 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 27 Jul 2018 07:58:16 +0100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] powerpc/64s: fix page table fragment refcount race vs
- speculative references
-In-Reply-To: <87tvonv621.fsf@linux.ibm.com>
-References: <20180725095342.22445-1-npiggin@gmail.com>
- <87tvonv621.fsf@linux.ibm.com>
-Date: Fri, 27 Jul 2018 12:28:11 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cLvl0hDdzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 17:59:15 +1000 (AEST)
+Date: Fri, 27 Jul 2018 17:59:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, PowerPC
+ <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Stefan Popa
+ <stefan.popa@analog.com>, Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Michael Hanselmann <linux-kernel@hansmi.ch>
+Subject: linux-next: manual merge of the staging tree with the powerpc tree
+Message-ID: <20180727175911.76ed6d44@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87o9etnp18.fsf@linux.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/L97V92Xz7lZANjfkOVsej2B"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,144 +27,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Sig_/L97V92Xz7lZANjfkOVsej2B
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Adding the list back.
+Hi all,
 
-Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com> writes:
+Today's linux-next merge of the staging tree got a conflict in:
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
->
->> The page table fragment allocator uses the main page refcount racily
->> with respect to speculative references. A customer observed a BUG due
->> to page table page refcount underflow in the fragment allocator. This
->> can be caused by the fragment allocator set_page_count stomping on a
->> speculative reference, and then the speculative failure handler
->> decrements the new reference, and the underflow eventually pops when
->> the page tables are freed.
->>
->> Fix this by using a dedicated field in the struct page for the page
->> table fragment allocator.
->>
->
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
->
->> Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
->> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
->> ---
->>  arch/powerpc/mm/mmu_context_book3s64.c |  8 ++++----
->>  arch/powerpc/mm/pgtable-book3s64.c     | 17 +++++++++++------
->>  include/linux/mm_types.h               |  5 ++++-
->>  3 files changed, 19 insertions(+), 11 deletions(-)
->>
->> diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
->> index f3d4b4a0e561..3bb5cec03d1f 100644
->> --- a/arch/powerpc/mm/mmu_context_book3s64.c
->> +++ b/arch/powerpc/mm/mmu_context_book3s64.c
->> @@ -200,9 +200,9 @@ static void pte_frag_destroy(void *pte_frag)
->>  	/* drop all the pending references */
->>  	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
->>  	/* We allow PTE_FRAG_NR fragments from a PTE page */
->> -	if (page_ref_sub_and_test(page, PTE_FRAG_NR - count)) {
->> +	if (atomic_sub_and_test(PTE_FRAG_NR - count, &page->pt_frag_refcount)) {
->>  		pgtable_page_dtor(page);
->> -		free_unref_page(page);
->> +		__free_page(page);
->>  	}
->>  }
->>
->> @@ -215,9 +215,9 @@ static void pmd_frag_destroy(void *pmd_frag)
->>  	/* drop all the pending references */
->>  	count = ((unsigned long)pmd_frag & ~PAGE_MASK) >> PMD_FRAG_SIZE_SHIFT;
->>  	/* We allow PTE_FRAG_NR fragments from a PTE page */
->> -	if (page_ref_sub_and_test(page, PMD_FRAG_NR - count)) {
->> +	if (atomic_sub_and_test(PMD_FRAG_NR - count, &page->pt_frag_refcount)) {
->>  		pgtable_pmd_page_dtor(page);
->> -		free_unref_page(page);
->> +		__free_page(page);
->>  	}
->>  }
->>
->> diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
->> index 4afbfbb64bfd..78d0b3d5ebad 100644
->> --- a/arch/powerpc/mm/pgtable-book3s64.c
->> +++ b/arch/powerpc/mm/pgtable-book3s64.c
->> @@ -270,6 +270,8 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
->>  		return NULL;
->>  	}
->>
->> +	atomic_set(&page->pt_frag_refcount, 1);
->> +
->>  	ret = page_address(page);
->>  	/*
->>  	 * if we support only one fragment just return the
->> @@ -285,7 +287,7 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
->>  	 * count.
->>  	 */
->>  	if (likely(!mm->context.pmd_frag)) {
->> -		set_page_count(page, PMD_FRAG_NR);
->> +		atomic_set(&page->pt_frag_refcount, PMD_FRAG_NR);
->>  		mm->context.pmd_frag = ret + PMD_FRAG_SIZE;
->>  	}
->>  	spin_unlock(&mm->page_table_lock);
->> @@ -308,9 +310,10 @@ void pmd_fragment_free(unsigned long *pmd)
->>  {
->>  	struct page *page = virt_to_page(pmd);
->>
->> -	if (put_page_testzero(page)) {
->> +	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
->> +	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
->>  		pgtable_pmd_page_dtor(page);
->> -		free_unref_page(page);
->> +		__free_page(page);
->>  	}
->>  }
->>
->> @@ -352,6 +355,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
->>  			return NULL;
->>  	}
->>
->> +	atomic_set(&page->pt_frag_refcount, 1);
->>
->>  	ret = page_address(page);
->>  	/*
->> @@ -367,7 +371,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
->>  	 * count.
->>  	 */
->>  	if (likely(!mm->context.pte_frag)) {
->> -		set_page_count(page, PTE_FRAG_NR);
->> +		atomic_set(&page->pt_frag_refcount, PTE_FRAG_NR);
->>  		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
->>  	}
->>  	spin_unlock(&mm->page_table_lock);
->> @@ -390,10 +394,11 @@ void pte_fragment_free(unsigned long *table, int kernel)
->>  {
->>  	struct page *page = virt_to_page(table);
->>
->> -	if (put_page_testzero(page)) {
->> +	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
->> +	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
->>  		if (!kernel)
->>  			pgtable_page_dtor(page);
->> -		free_unref_page(page);
->> +		__free_page(page);
->>  	}
->>  }
->>
->> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
->> index 99ce070e7dcb..22651e124071 100644
->> --- a/include/linux/mm_types.h
->> +++ b/include/linux/mm_types.h
->> @@ -139,7 +139,10 @@ struct page {
->>  			unsigned long _pt_pad_1;	/* compound_head */
->>  			pgtable_t pmd_huge_pte; /* protected by page->ptl */
->>  			unsigned long _pt_pad_2;	/* mapping */
->> -			struct mm_struct *pt_mm;	/* x86 pgds only */
->> +			union {
->> +				struct mm_struct *pt_mm; /* x86 pgds only */
->> +				atomic_t pt_frag_refcount; /* powerpc */
->> +			};
->>  #if ALLOC_SPLIT_PTLOCKS
->>  			spinlock_t *ptl;
->>  #else
->> -- 
->> 2.17.0
+  MAINTAINERS
+
+between commit:
+
+  d69ccc00c497 ("MAINTAINERS: Remove the entry for the orphaned ams driver")
+
+from the powerpc tree and commit:
+
+  28d1a7ac2a0d ("iio: dac: Add AD5758 support")
+
+from the staging tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+diff --cc MAINTAINERS
+index fc92aab3ca2a,b9503cefc42d..000000000000
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@@ -807,6 -791,19 +807,14 @@@ S:	Supporte
+  F:	drivers/net/ethernet/amd/xgbe/
+  F:	arch/arm64/boot/dts/amd/amd-seattle-xgbe*.dtsi
+ =20
+ -AMS (Apple Motion Sensor) DRIVER
+ -M:	Michael Hanselmann <linux-kernel@hansmi.ch>
+ -S:	Supported
+ -F:	drivers/macintosh/ams/
+ -
++ ANALOG DEVICES INC AD5758 DRIVER
++ M:	Stefan Popa <stefan.popa@analog.com>
++ L:	linux-iio@vger.kernel.org
++ W:	http://ez.analog.com/community/linux-device-drivers
++ S:	Supported
++ F:	drivers/iio/dac/ad5758.c
++ F:	Documentation/devicetree/bindings/iio/dac/ad5758.txt
++=20
+  ANALOG DEVICES INC AD5686 DRIVER
+  M:	Stefan Popa <stefan.popa@analog.com>
+  L:	linux-pm@vger.kernel.org
+
+--Sig_/L97V92Xz7lZANjfkOVsej2B
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAlta0M8ACgkQAVBC80lX
+0GzA1wf/SAWQBwpGl2//kv3uNZcfXQbHK1Igv2Ep82CgDzsyA6W2J34947rS9m9r
+MokmbvEcac4BJWVRVismDosGNNFwYZiTxI1XHsmj5pZIUxzF9ejCAiN/R8wcy4Z2
+bkHn3MAThP9HWVFYmT9VGXEpTHkhPuWNvgmmVfr+xre/PaSBrIs8gMAnotF/+0qB
+cTRufaMJfEpgXatqE8sGvtx0WMsRwtP1hF8AOlHOKt0SRk1ibOOBQQ7uhROvZCCw
+M755bev3wwaQ3C9YRR6lDrEy+33qa2h3Ohe1Lt6e3ozb+1wDgm1XvFEwbkkd73wS
+DZ8cfYBeytGlYRmmX1ha4RWGM4U7rg==
+=Rdb9
+-----END PGP SIGNATURE-----
+
+--Sig_/L97V92Xz7lZANjfkOVsej2B--
