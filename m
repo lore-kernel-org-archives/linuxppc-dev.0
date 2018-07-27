@@ -1,22 +1,34 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cS0G32l8zDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 21:48:30 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id z7-v6so2217003plo.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 04:48:30 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org
-Subject: [PATCH resend] powerpc/64s: fix page table fragment refcount race vs
- speculative references
-Date: Fri, 27 Jul 2018 21:48:17 +1000
-Message-Id: <20180727114817.27190-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cV4k1MstzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 23:22:29 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6RDKO5O074181
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 09:22:27 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kg24uw5up-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 09:22:26 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 27 Jul 2018 14:22:25 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/3] powerpc/pseries/mm: Introducing FW_FEATURE_BLOCK_REMOVE
+Date: Fri, 27 Jul 2018 15:22:17 +0200
+In-Reply-To: <1532697739-4878-1-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1532697739-4878-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1532697739-4878-2-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,143 +38,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The page table fragment allocator uses the main page refcount racily
-with respect to speculative references. A customer observed a BUG due
-to page table page refcount underflow in the fragment allocator. This
-can be caused by the fragment allocator set_page_count stomping on a
-speculative reference, and then the speculative failure handler
-decrements the new reference, and the underflow eventually pops when
-the page tables are freed.
+This feature tells if the hcall H_BLOCK_REMOVE is available.
 
-Fix this by using a dedicated field in the struct page for the page
-table fragment allocator.
-
-Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
+ arch/powerpc/include/asm/firmware.h       | 3 ++-
+ arch/powerpc/platforms/pseries/firmware.c | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Any objection to the struct page change to grab the arch specific
-page table page word for powerpc to use? If not, then this should
-go via powerpc tree because it's inconsequential for core mm.
-
-Thanks,
-Nick
-
- arch/powerpc/mm/mmu_context_book3s64.c |  8 ++++----
- arch/powerpc/mm/pgtable-book3s64.c     | 17 +++++++++++------
- include/linux/mm_types.h               |  5 ++++-
- 3 files changed, 19 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
-index f3d4b4a0e561..3bb5cec03d1f 100644
---- a/arch/powerpc/mm/mmu_context_book3s64.c
-+++ b/arch/powerpc/mm/mmu_context_book3s64.c
-@@ -200,9 +200,9 @@ static void pte_frag_destroy(void *pte_frag)
- 	/* drop all the pending references */
- 	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
- 	/* We allow PTE_FRAG_NR fragments from a PTE page */
--	if (page_ref_sub_and_test(page, PTE_FRAG_NR - count)) {
-+	if (atomic_sub_and_test(PTE_FRAG_NR - count, &page->pt_frag_refcount)) {
- 		pgtable_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 535add3f7791..360ba197f9d2 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -53,6 +53,7 @@
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
+ #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
+ #define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
++#define FW_FEATURE_BLOCK_REMOVE ASM_CONST(0x0000001000000000)
  
-@@ -215,9 +215,9 @@ static void pmd_frag_destroy(void *pmd_frag)
- 	/* drop all the pending references */
- 	count = ((unsigned long)pmd_frag & ~PAGE_MASK) >> PMD_FRAG_SIZE_SHIFT;
- 	/* We allow PTE_FRAG_NR fragments from a PTE page */
--	if (page_ref_sub_and_test(page, PMD_FRAG_NR - count)) {
-+	if (atomic_sub_and_test(PMD_FRAG_NR - count, &page->pt_frag_refcount)) {
- 		pgtable_pmd_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
+ #ifndef __ASSEMBLY__
  
-diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
-index 4afbfbb64bfd..78d0b3d5ebad 100644
---- a/arch/powerpc/mm/pgtable-book3s64.c
-+++ b/arch/powerpc/mm/pgtable-book3s64.c
-@@ -270,6 +270,8 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
- 		return NULL;
- 	}
+@@ -70,7 +71,7 @@ enum {
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+ 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
+ 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
+-		FW_FEATURE_DRC_INFO,
++		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index a3bbeb43689e..1624501386f4 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -65,6 +65,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
+ 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
++	{FW_FEATURE_BLOCK_REMOVE,	"hcall-block-remove"},
+ };
  
-+	atomic_set(&page->pt_frag_refcount, 1);
-+
- 	ret = page_address(page);
- 	/*
- 	 * if we support only one fragment just return the
-@@ -285,7 +287,7 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
- 	 * count.
- 	 */
- 	if (likely(!mm->context.pmd_frag)) {
--		set_page_count(page, PMD_FRAG_NR);
-+		atomic_set(&page->pt_frag_refcount, PMD_FRAG_NR);
- 		mm->context.pmd_frag = ret + PMD_FRAG_SIZE;
- 	}
- 	spin_unlock(&mm->page_table_lock);
-@@ -308,9 +310,10 @@ void pmd_fragment_free(unsigned long *pmd)
- {
- 	struct page *page = virt_to_page(pmd);
- 
--	if (put_page_testzero(page)) {
-+	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
-+	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
- 		pgtable_pmd_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
- 
-@@ -352,6 +355,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
- 			return NULL;
- 	}
- 
-+	atomic_set(&page->pt_frag_refcount, 1);
- 
- 	ret = page_address(page);
- 	/*
-@@ -367,7 +371,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
- 	 * count.
- 	 */
- 	if (likely(!mm->context.pte_frag)) {
--		set_page_count(page, PTE_FRAG_NR);
-+		atomic_set(&page->pt_frag_refcount, PTE_FRAG_NR);
- 		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
- 	}
- 	spin_unlock(&mm->page_table_lock);
-@@ -390,10 +394,11 @@ void pte_fragment_free(unsigned long *table, int kernel)
- {
- 	struct page *page = virt_to_page(table);
- 
--	if (put_page_testzero(page)) {
-+	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
-+	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
- 		if (!kernel)
- 			pgtable_page_dtor(page);
--		free_unref_page(page);
-+		__free_page(page);
- 	}
- }
- 
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 99ce070e7dcb..22651e124071 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -139,7 +139,10 @@ struct page {
- 			unsigned long _pt_pad_1;	/* compound_head */
- 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
- 			unsigned long _pt_pad_2;	/* mapping */
--			struct mm_struct *pt_mm;	/* x86 pgds only */
-+			union {
-+				struct mm_struct *pt_mm; /* x86 pgds only */
-+				atomic_t pt_frag_refcount; /* powerpc */
-+			};
- #if ALLOC_SPLIT_PTLOCKS
- 			spinlock_t *ptl;
- #else
+ /* Build up the firmware features bitmask using the contents of
 -- 
-2.17.0
+2.7.4
