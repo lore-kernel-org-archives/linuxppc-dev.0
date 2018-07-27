@@ -1,25 +1,36 @@
-Return-Path: <willy@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cY5p5sxFzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 01:38:38 +1000 (AEST)
-Date: Fri, 27 Jul 2018 08:38:35 -0700
-From: Matthew Wilcox <willy@infradead.org>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org
-Subject: Re: [PATCH resend] powerpc/64s: fix page table fragment refcount
- race vs speculative references
-Message-ID: <20180727153834.GC13348@bombadil.infradead.org>
-References: <20180727114817.27190-1-npiggin@gmail.com>
- <20180727134156.GA13348@bombadil.infradead.org>
- <20180728002906.531d0211@roar.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cZ4W2jvqzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 02:22:35 +1000 (AEST)
+Date: Sat, 28 Jul 2018 00:05:13 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>,
+ Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+ Alexandre Torgue <alexandre.torgue@st.com>,
+ Tom Lendacky <thomas.lendacky@amd.com>,
+ Siva Reddy Kallam <siva.kallam@broadcom.com>,
+ Prashant Sreedharan <prashant@broadcom.com>,
+ Michael Chan <mchan@broadcom.com>, Fugang Duan <fugang.duan@nxp.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>,
+ Jose Abreu <Jose.Abreu@synopsys.com>,
+ Larry Finger <Larry.Finger@lwfinger.net>,
+ Florian Schilhabel <florian.c.schilhabel@googlemail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ devel@driverdev.osuosl.org
+Subject: Re: [PATCH 0/6] lib/crc32: treewide: Use existing define with
+ polynomial
+Message-ID: <20180727160513.fluthoaj24co2khr@gondor.apana.org.au>
+References: <20180717160541.3843-1-krzk@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180728002906.531d0211@roar.ozlabs.ibm.com>
+In-Reply-To: <20180717160541.3843-1-krzk@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 28, 2018 at 12:29:06AM +1000, Nicholas Piggin wrote:
-> On Fri, 27 Jul 2018 06:41:56 -0700
-> Matthew Wilcox <willy@infradead.org> wrote:
+On Tue, Jul 17, 2018 at 06:05:35PM +0200, Krzysztof Kozlowski wrote:
+> Hi,
 > 
-> > On Fri, Jul 27, 2018 at 09:48:17PM +1000, Nicholas Piggin wrote:
-> > > The page table fragment allocator uses the main page refcount racily
-> > > with respect to speculative references. A customer observed a BUG due
-> > > to page table page refcount underflow in the fragment allocator. This
-> > > can be caused by the fragment allocator set_page_count stomping on a
-> > > speculative reference, and then the speculative failure handler
-> > > decrements the new reference, and the underflow eventually pops when
-> > > the page tables are freed.  
-> > 
-> > Oof.  Can't you fix this instead by using page_ref_add() instead of
-> > set_page_count()?
+> Kernel defines same polynomial for CRC-32 in few places.
+> This is unnecessary duplication of the same value. Also this might
+> be error-prone for future code - every driver will define the
+> polynomial again.
 > 
-> It's ugly doing it that way. The problem is we have a page table
-> destructor and that would be missed if the spec ref was the last
-> put. In practice with RCU page table freeing maybe you can say
-> there will be no spec ref there (unless something changes), but
-> still it just seems much simpler doing this and avoiding any
-> complexity or relying on other synchronization.
-
-I don't want to rely on the speculative reference not happening by the
-time the page table is torn down; that's way too black-magic for me.
-Another possibility would be to use, say, the top 16 bits of the
-atomic for your counter and call the dtor once the atomic is below 64k.
-I'm also thinking about overhauling the dtor system so it's not tied to
-compound pages; anyone with a bit in page_type would be able to use it.
-That way you'd always get your dtor called, even if the speculative
-reference was the last one.
-
-> > > Any objection to the struct page change to grab the arch specific
-> > > page table page word for powerpc to use? If not, then this should
-> > > go via powerpc tree because it's inconsequential for core mm.  
-> > 
-> > I want (eventually) to get to the point where every struct page carries
-> > a pointer to the struct mm that it belongs to.  It's good for debugging
-> > as well as handling memory errors in page tables.
+> This is an attempt to unify definition of polynomial.  Few obvious
+> hard-coded locations are fixed with define.
 > 
-> That doesn't seem like it should be a problem, there's some spare
-> words there for arch independent users.
+> All series depend on each 1/6 and 2/6.
+> 
+> This could be merged in two different merge windows (1st lib/crc and then
+> the rest) or taken through one tree.
+> 
+> It would be nice to get some testing. Only generic lib/crc, bunzip, xz_crc32
+> and Freescale's Ethernet driver were tested on HW.  Rest got just different
+> builds.
+> 
+> Best regards,
+> Krzysztof
+> 
+> 
+> 
+> 
+> Krzysztof Kozlowski (6):
+>   lib/crc: Move polynomial definition to separate header
+>   lib/crc: Use consistent naming for CRC-32 polynomials
+>   crypto: stm32_crc32 - Use existing define with polynomial
+>   net: ethernet: Use existing define with polynomial
+>   staging: rtl: Use existing define with polynomial
+>   lib: Use existing define with polynomial
+> 
+>  drivers/crypto/stm32/stm32_crc32.c               | 11 ++++-------
+>  drivers/net/ethernet/amd/xgbe/xgbe-dev.c         |  4 ++--
+>  drivers/net/ethernet/apple/bmac.c                |  8 ++------
+>  drivers/net/ethernet/broadcom/tg3.c              |  3 ++-
+>  drivers/net/ethernet/freescale/fec_main.c        |  4 ++--
+>  drivers/net/ethernet/freescale/fs_enet/fec.h     |  3 ---
+>  drivers/net/ethernet/freescale/fs_enet/mac-fec.c |  3 ++-
+>  drivers/net/ethernet/micrel/ks8851_mll.c         |  3 ++-
+>  drivers/net/ethernet/synopsys/dwc-xlgmac-hw.c    |  4 ++--
+>  drivers/staging/rtl8712/rtl871x_security.c       |  5 ++---
+>  drivers/staging/rtl8723bs/core/rtw_security.c    |  5 ++---
+>  include/linux/crc32poly.h                        | 20 ++++++++++++++++++++
+>  lib/crc32.c                                      | 11 ++++++-----
+>  lib/crc32defs.h                                  | 14 --------------
+>  lib/decompress_bunzip2.c                         |  3 ++-
+>  lib/gen_crc32table.c                             |  5 +++--
+>  lib/xz/xz_crc32.c                                |  3 ++-
+>  17 files changed, 55 insertions(+), 54 deletions(-)
+>  create mode 100644 include/linux/crc32poly.h
 
-Could you take one of the spare words instead then?  My intent was to
-just take the 'x86 pgds only' comment off that member.  _pt_pad_2 looks
-ideal because it'll be initialised to 0 and you'll return it to 0 by
-the time you're done.
+All applied.  Thanks.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
