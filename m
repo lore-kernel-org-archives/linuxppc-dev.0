@@ -1,25 +1,40 @@
-Return-Path: <AlexeiS@astrosoft.ru>
-Received: from EUR02-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur02on0609.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe05::609])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cQsY6TTjzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 20:57:35 +1000 (AEST)
-From: Alexey Spirkov <AlexeiS@astrosoft.ru>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-CC: "trivial@kernel.org" <trivial@kernel.org>, "andrew@ncrmnt.org"
- <andrew@ncrmnt.org>
-Subject: RE: [PATCH] Adds __init annotation at mmu_init_secondary func
-Date: Fri, 27 Jul 2018 10:57:29 +0000
-Message-ID: <AM5PR03MB28496A9D6FD7B175312E48F6C92A0@AM5PR03MB2849.eurprd03.prod.outlook.com>
-References: <AM5PR03MB28499BE4A0B6200F7DA83835C92B0@AM5PR03MB2849.eurprd03.prod.outlook.com>
- <87tvolrm43.fsf@concordia.ellerman.id.au>
-In-Reply-To: <87tvolrm43.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cQwk6LBdzF0h9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 21:00:22 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6RAxXYm136517
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 07:00:19 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kfy2f82sw-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 07:00:19 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 27 Jul 2018 12:00:16 +0100
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+To: Will Deacon <will.deacon@arm.com>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com>
+Cc: robh@kernel.org, srikar@linux.vnet.ibm.com, mst@redhat.com, aik@ozlabs.ru,
+ jasowang@redhat.com, linuxram@us.ibm.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, hch@infradead.org,
+ jean-philippe.brucker@arm.com, paulus@samba.org, marc.zyngier@arm.com,
+ joe@perches.com, robin.murphy@arm.com, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net, haren@linux.vnet.ibm.com,
+ david@gibson.dropbear.id.au
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Fri, 27 Jul 2018 16:28:33 +0530
 MIME-Version: 1.0
+In-Reply-To: <20180727095804.GA25592@arm.com>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <0f123b95-7ac2-d1a2-80c9-732c7113d9c0@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,57 +44,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Without any additional option=20
+On 07/27/2018 03:28 PM, Will Deacon wrote:
+> Hi Anshuman,
+> 
+> On Fri, Jul 20, 2018 at 09:29:37AM +0530, Anshuman Khandual wrote:
+>> This patch series is the follow up on the discussions we had before about
+>> the RFC titled [RFC,V2] virtio: Add platform specific DMA API translation
+>> for virito devices (https://patchwork.kernel.org/patch/10417371/). There
+>> were suggestions about doing away with two different paths of transactions
+>> with the host/QEMU, first being the direct GPA and the other being the DMA
+>> API based translations.
+>>
+>> First patch attempts to create a direct GPA mapping based DMA operations
+>> structure called 'virtio_direct_dma_ops' with exact same implementation
+>> of the direct GPA path which virtio core currently has but just wrapped in
+>> a DMA API format. Virtio core must use 'virtio_direct_dma_ops' instead of
+>> the arch default in absence of VIRTIO_F_IOMMU_PLATFORM flag to preserve the
+>> existing semantics. The second patch does exactly that inside the function
+>> virtio_finalize_features(). The third patch removes the default direct GPA
+>> path from virtio core forcing it to use DMA API callbacks for all devices.
+>> Now with that change, every device must have a DMA operations structure
+>> associated with it. The fourth patch adds an additional hook which gives
+>> the platform an opportunity to do yet another override if required. This
+>> platform hook can be used on POWER Ultravisor based protected guests to
+>> load up SWIOTLB DMA callbacks to do the required (as discussed previously
+>> in the above mentioned thread how host is allowed to access only parts of
+>> the guest GPA range) bounce buffering into the shared memory for all I/O
+>> scatter gather buffers to be consumed on the host side.
+>>
+>> Please go through these patches and review whether this approach broadly
+>> makes sense. I will appreciate suggestions, inputs, comments regarding
+>> the patches or the approach in general. Thank you.
+> I just wanted to say that this patch series provides a means for us to
+> force the coherent DMA ops for legacy virtio devices on arm64, which in turn
+> means that we can enable the SMMU with legacy devices in our fastmodel
+> emulation platform (which is slowly being upgraded to virtio 1.0) without
+> hanging during boot. Patch below.
+> 
+> So:
+> 
+> Acked-by: Will Deacon <will.deacon@arm.com>
+> Tested-by: Will Deacon <will.deacon@arm.com>
 
-WARNING: modpost: Found 1 section mismatch(es).
-
-If detailed debug is switched on than:
-
-WARNING: vmlinux.o(.text+0x142ac): Section mismatch in reference from the f=
-unction mmu_init_secondary() to the function .init.text:ppc44x_pin_tlb()
-The function mmu_init_secondary() references
-the function __init ppc44x_pin_tlb().
-This is often because mmu_init_secondary lacks a __init=20
-annotation or the annotation of ppc44x_pin_tlb is wrong.
-
-Best regards,
-Alexey Spirkov
-
------Original Message-----
-From: Michael Ellerman <mpe@ellerman.id.au>=20
-Sent: Friday, July 27, 2018 1:48 PM
-To: Alexey Spirkov <AlexeiS@astrosoft.ru>; Benjamin Herrenschmidt <benh@ker=
-nel.crashing.org>; Paul Mackerras <paulus@samba.org>; linuxppc-dev@lists.oz=
-labs.org
-Cc: trivial@kernel.org; andrew@ncrmnt.org
-Subject: Re: [PATCH] Adds __init annotation at mmu_init_secondary func
-
-Alexey Spirkov <AlexeiS@astrosoft.ru> writes:
-
-> mmu_init_secondary function called at initialization sequence but it=20
-> misses __init annotation. As result modpost warning is generated.
-> Some building systems sensitive to such kind of warnings.
-
-What warning are you seeing?
-
-AFAICS it's not called from, nor does it call, any __init code.
-
-So I'm a bit confused.
-
-cheers
-
-> diff --git a/arch/powerpc/mm/44x_mmu.c b/arch/powerpc/mm/44x_mmu.c=20
-> index 82b1ff7..12d9251 100644
-> --- a/arch/powerpc/mm/44x_mmu.c
-> +++ b/arch/powerpc/mm/44x_mmu.c
-> @@ -229,7 +229,7 @@ void setup_initial_memory_limit(phys_addr_t=20
-> first_memblock_base,  }
-> =20
->  #ifdef CONFIG_SMP
-> -void mmu_init_secondary(int cpu)
-> +void __init mmu_init_secondary(int cpu)
->  {
->  	unsigned long addr;
->  	unsigned long memstart =3D memstart_addr & ~(PPC_PIN_SIZE - 1);
-> --
-> 2.9.5
+Thanks Will.
