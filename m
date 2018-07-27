@@ -3,8 +3,8 @@ Received: from EUR03-AM5-obe.outbound.protection.outlook.com
  (mail-eopbgr30087.outbound.protection.outlook.com [40.107.3.87])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cPQf5lmGzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 19:52:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cPQh2WSyzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 19:52:44 +1000 (AEST)
 From: Bharat Bhushan <Bharat.Bhushan@nxp.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  oss@buserror.net, galak@kernel.crashing.org, mark.rutland@arm.com,
@@ -13,9 +13,9 @@ To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  linux-kernel@vger.kernel.org
 Cc: robh@kernel.org, keescook@chromium.org, tyreld@linux.vnet.ibm.com,
  joe@perches.com, Bharat Bhushan <Bharat.Bhushan@nxp.com>
-Subject: [RFC 4/5] powerpc/mpic: Boot print supported interrupt ranges
-Date: Fri, 27 Jul 2018 15:18:00 +0530
-Message-Id: <1532684881-19310-5-git-send-email-Bharat.Bhushan@nxp.com>
+Subject: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
+Date: Fri, 27 Jul 2018 15:18:01 +0530
+Message-Id: <1532684881-19310-6-git-send-email-Bharat.Bhushan@nxp.com>
 In-Reply-To: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
 References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
 MIME-Version: 1.0
@@ -29,49 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As mpic can have non-contiguous source of interrupt range,
-print same during boot.
+MPIC on NXP (Freescale) P2020 supports following irq
+ranges:
+  > 0 - 11      (External interrupt)
+  > 16 - 79     (Internal interrupt)
+  > 176 - 183   (Messaging interrupt)
+  > 224 - 231   (Shared message signaled interrupt)
+
+We have to remove "irq_count" from platform code as platform
+is given precedence over device-tree, while I think device-tree
+should have precedence.
 
 Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
 ---
- arch/powerpc/sysdev/mpic.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/fsl/p2020si-post.dtsi | 3 +++
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c   | 5 +++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index cbf3a51..8df248f 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -155,6 +155,21 @@ struct bus_type mpic_subsys = {
+diff --git a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+index 884e01b..08e266b 100644
+--- a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+@@ -192,6 +192,9 @@
+ /include/ "pq3-sec3.1-0.dtsi"
+ /include/ "pq3-mpic.dtsi"
+ /include/ "pq3-mpic-timer-B.dtsi"
++	pic@40000 {
++		supported-irq-ranges = <0 11 16 79 176 183 224 231>;
++	};
  
- #endif /* CONFIG_MPIC_WEIRD */
- 
-+static void mpic_show_irq_ranges(struct mpic *mpic)
-+{
-+	int i;
-+
-+	pr_info("mpic: Initializing for %d sources\n", mpic->num_sources);
-+
-+	if (mpic->num_ranges) {
-+		pr_info(" Supported source of interrupt ranges\n");
-+		for (i = 0; i < mpic->num_ranges; i++)
-+			pr_info("  > %d - %d\n", mpic->irq_ranges[i].start_irq,
-+				mpic->irq_ranges[i].end_irq);
-+
-+	}
-+}
-+
- static int mpic_irq_source_invalid(struct mpic *mpic, unsigned int irq)
- {
- 	int i;
-@@ -1646,8 +1661,7 @@ void __init mpic_init(struct mpic *mpic)
- 	int num_timers = 4;
- 
- 	BUG_ON(mpic->num_sources == 0);
--
--	printk(KERN_INFO "mpic: Initializing for %d sources\n", mpic->num_sources);
-+	mpic_show_irq_ranges(mpic);
- 
- 	/* Set current processor priority to max */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0xf);
+ 	global-utilities@e0000 {
+ 		compatible = "fsl,p2020-guts";
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 1006950..49ff348 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -57,6 +57,11 @@ void __init mpc85xx_rdb_pic_init(void)
+ 			MPIC_BIG_ENDIAN |
+ 			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
++	} else if (of_machine_is_compatible("fsl,P2020RDB-PC")) {
++		mpic = mpic_alloc(NULL, 0,
++		  MPIC_BIG_ENDIAN |
++		  MPIC_SINGLE_DEST_CPU,
++		  0, 0, " OpenPIC  ");
+ 	} else {
+ 		mpic = mpic_alloc(NULL, 0,
+ 		  MPIC_BIG_ENDIAN |
 -- 
 1.9.3
