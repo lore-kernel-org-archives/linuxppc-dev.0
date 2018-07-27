@@ -1,36 +1,25 @@
-Return-Path: <jallen@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <helgaas@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cbdt6GqgzF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 03:33:06 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6RHQAnX101001
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 13:33:04 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kg7sn8765-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 13:33:04 -0400
-Received: from localhost
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
- Fri, 27 Jul 2018 11:33:03 -0600
-Date: Fri, 27 Jul 2018 12:32:59 -0500
-From: John Allen <jallen@linux.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kamezawa.hiroyu@jp.fujitsu.com, n-horiguchi@ah.jp.nec.com,
- mgorman@suse.de, nfont@linux.vnet.ibm.com
-Subject: Re: Infinite looping observed in __offline_pages
-References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
- <20180725200336.GP28386@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ck7X0TJtzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 08:25:43 +1000 (AEST)
+Date: Fri, 27 Jul 2018 17:25:40 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hari Vyas <hari.vyas@broadcom.com>, bhelgaas@google.com,
+ linux-pci@vger.kernel.org, ray.jui@broadcom.com,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] PCI: Data corruption happening due to race condition
+Message-ID: <20180727222540.GH173328@bhelgaas-glaptop.roam.corp.google.com>
+References: <1530608741-30664-1-git-send-email-hari.vyas@broadcom.com>
+ <1530608741-30664-2-git-send-email-hari.vyas@broadcom.com>
+ <20180718232904.GJ128988@bhelgaas-glaptop.roam.corp.google.com>
+ <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <20180725200336.GP28386@dhcp22.suse.cz>
-Message-Id: <20180727173259.htdxpn4i2fxprpaj@p50.austin.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <65dd986d0b8b2ebe5132b365dabb2dbaaed9177f.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,56 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 25, 2018 at 10:03:36PM +0200, Michal Hocko wrote:
->On Wed 25-07-18 13:11:15, John Allen wrote:
->[...]
->> Does a failure in do_migrate_range indicate that the range is unmigratable
->> and the loop in __offline_pages should terminate and goto failed_removal? Or
->> should we allow a certain number of retrys before we
->> give up on migrating the range?
->
->Unfortunatelly not. Migration code doesn't tell a difference between
->ephemeral and permanent failures. We are relying on
->start_isolate_page_range to tell us this. So the question is, what kind
->of page is not migratable and for what reason.
->
->Are you able to add some debugging to give us more information. The
->current debugging code in the hotplug/migration sucks...
+On Thu, Jul 19, 2018 at 02:18:09PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-07-18 at 18:29 -0500, Bjorn Helgaas wrote:
+> > [+cc Paul, Michael, linuxppc-dev]
+> > 
+> 
+>    ..../...
+> 
+> > > Debugging revealed a race condition between pcie core driver
+> > > enabling is_added bit(pci_bus_add_device()) and nvme driver
+> > > reset work-queue enabling is_busmaster bit (by pci_set_master()).
+> > > As both fields are not handled in atomic manner and that clears
+> > > is_added bit.
+> > > 
+> > > Fix moves device addition is_added bit to separate private flag
+> > > variable and use different atomic functions to set and retrieve
+> > > device addition state. As is_added shares different memory
+> > > location so race condition is avoided.
+> > 
+> > Really nice bit of debugging!
+> 
+> Indeed. However I'm not fan of the solution. Shouldn't we instead have
+> some locking for the content of pci_dev ? I've always been wary of us
+> having other similar races in there.
+> 
+> As for the powerpc bits, I'm probably the one who wrote them, however,
+> I'm on vacation this week and right now, no bandwidth to context switch
+> all that back in :-) So give me a few days and/or ping me next week.
 
-After reproducing the problem a couple times, it seems that it can occur 
-for different types of pages. Running page-types on the offending page 
-over two separate instances produced the following:
+OK, here's a ping :)
 
-# tools/vm/page-types -a 307968-308224
-             flags	page-count       MB  symbolic-flags			long-symbolic-flags
-0x0000000000000400	         1        0  __________B________________________________	buddy
-	     total	         1        0
+Some powerpc cleanup would be ideal, but I'd like to fix the race for
+v4.19, so I'm fine with this patch as-is.  But I'd definitely want
+your ack before inserting the ugly #include path in the powerpc code.
 
-And the following on a separate run:
-
-# tools/vm/page-types -a 313088-313344
-             flags	page-count       MB  symbolic-flags			long-symbolic-flags
-0x000000000000006c	         1        0  __RU_lA____________________________________	referenced,uptodate,lru,active
-             total	         1        0
-
-The source of the failure in migrate_pages actually doesn't seem to be 
-that we're hitting the case of the permanent failure, but instead the 
--EAGAIN case. I traced the EAGAIN return back to 
-migrate_page_move_mapping which I've seen return EAGAIN in two places:
-
-mm/migrate.c:453
-	if (!mapping) {
-		/* Anonymous page without mapping */
-		if (page_count(page) != expected_count)
-                        return -EAGAIN;
-
-mm/migrate.c:476
-	if (page_count(page) != expected_count ||
-                radix_tree_deref_slot_protected(pslot,
-                                        &mapping->i_pages.xa_lock) != page) {
-                xa_unlock_irq(&mapping->i_pages);
-                return -EAGAIN;
-	}
-
-So it seems in each case, the actual reference count for the page is not 
-what it is expected to be.
+> The powerpc PCI code contains a lot of cruft coming from the depth of
+> history, including rather nasty assumptions. We want to progressively
+> clean it up, starting with EEH, but it will take time.
+> 
+> Cheers,
+> Ben.
+> 
+> > > Signed-off-by: Hari Vyas <hari.vyas@broadcom.com>
+> > > ---
+> > >  arch/powerpc/kernel/pci-common.c          |  4 +++-
+> > >  arch/powerpc/platforms/powernv/pci-ioda.c |  3 ++-
+> > >  arch/powerpc/platforms/pseries/setup.c    |  3 ++-
+> > >  drivers/pci/bus.c                         |  6 +++---
+> > >  drivers/pci/hotplug/acpiphp_glue.c        |  2 +-
+> > >  drivers/pci/pci.h                         | 11 +++++++++++
+> > >  drivers/pci/probe.c                       |  4 ++--
+> > >  drivers/pci/remove.c                      |  5 +++--
+> > >  include/linux/pci.h                       |  1 -
+> > >  9 files changed, 27 insertions(+), 12 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> > > index fe9733f..471aac3 100644
+> > > --- a/arch/powerpc/kernel/pci-common.c
+> > > +++ b/arch/powerpc/kernel/pci-common.c
+> > > @@ -42,6 +42,8 @@
+> > >  #include <asm/ppc-pci.h>
+> > >  #include <asm/eeh.h>
+> > >  
+> > > +#include "../../../drivers/pci/pci.h"
+> > 
+> > I see why you need it, but this include path is really ugly.  Outside
+> > of bootloaders and tools, there are very few instances of includes
+> > like this that reference a different top-level directory, and I'm not
+> > very keen about adding more.
