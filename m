@@ -1,24 +1,39 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <alex@ghiti.fr>
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net
+ [217.70.183.200])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cJSl4507zDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 16:09:11 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: John Allen <jallen@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH v07 2/9] hotplug/cpu: Add operation queuing function
-In-Reply-To: <680c77f2-734c-aad5-03c6-5dbc92a0dedb@linux.vnet.ibm.com>
-References: <a2c023e9-6997-d1a3-0110-fa8c788e64ee@linux.vnet.ibm.com>
- <71455ad3-482b-d801-8f2e-fa2ddcb4017f@linux.vnet.ibm.com>
- <680c77f2-734c-aad5-03c6-5dbc92a0dedb@linux.vnet.ibm.com>
-Date: Fri, 27 Jul 2018 16:09:09 +1000
-Message-ID: <87k1phyzui.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cKR1729XzDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 16:52:42 +1000 (AEST)
+Subject: Re: [PATCH v4 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+To: Mike Kravetz <mike.kravetz@oracle.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@kernel.org>
+Cc: linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org,
+ deller@gmx.de, benh@kernel.crashing.org, paulus@samba.org,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+References: <20180705110716.3919-1-alex@ghiti.fr>
+ <20180709141621.GD22297@dhcp22.suse.cz>
+ <2173685f-7f85-7acb-4685-2383210c5fa2@ghiti.fr>
+ <75195a7d-3d0f-4e55-92cc-4ad772683c75@oracle.com>
+ <87tvomgqyv.fsf@concordia.ellerman.id.au>
+ <99473e0d-12d8-bbea-fe9c-4e3738ab7f5a@oracle.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Message-ID: <a6d158b6-965d-7473-677d-13a9b7d46ba1@ghiti.fr>
+Date: Fri, 27 Jul 2018 08:51:51 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <99473e0d-12d8-bbea-fe9c-4e3738ab7f5a@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
-> On 07/23/2018 12:51 PM, Nathan Fontenot wrote:
->> On 07/13/2018 03:18 PM, Michael Bringmann wrote:
-...
->>> +
->>> +int dlpar_queued_actions_run(void)
->>> +{
->>> +=C2=A0=C2=A0=C2=A0 if (!list_empty(&dlpar_delayed_list)) {
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 struct pseries_hp_errorlog =
-hp_errlog;
->>> +
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 hp_errlog.resource =3D PSER=
-IES_HP_ELOG_RESOURCE_PMT;
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 hp_errlog.action =3D 0;
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 hp_errlog.id_type =3D 0;
->>> +
->>> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 queue_hotplug_event(&hp_err=
-log, 0, 0); > +=C2=A0=C2=A0=C2=A0 }
->>> +=C2=A0=C2=A0=C2=A0 return 0;
->>> +}
->>=20
->> I'm a bit confused by this. Is there a reason this needs to queue a
->> hotplug event instead of just walking the list as is done in dlpar_pmt?
+Hi Mike,
+
+Thanks for your review. I'm going to fix the 2nd patch as you said, 
+you're right, no need to move the #include at the bottom of the file.
+I'm going to post a v5, add -mm in cc and ask for inclusion in their tree.
+
+Thanks again for your time,
+
+Alex
+
+
+On 07/26/2018 09:16 PM, Mike Kravetz wrote:
+> On 07/26/2018 04:46 AM, Michael Ellerman wrote:
+>> Mike Kravetz <mike.kravetz@oracle.com> writes:
+>>
+>>> On 07/20/2018 11:37 AM, Alex Ghiti wrote:
+>>>> Does anyone have any suggestion about those patches ?
+>>> I only took a quick look.  From the hugetlb perspective, I like the
+>>> idea of moving routines to a common file.  If any of the arch owners
+>>> (or anyone else) agree, I can do a review of the series.
+>> The conversions look pretty good to me. If you want to give it a review
+>> then from my point of view it could go in -mm to shake out any bugs.
+> Nothing of significance found in a review.  As others have suggested,
+> the (cross)compiler may be better at finding issues than human eyes.
 >
-> Up to this point, the operations have only been added to 'dlpar_delayed_l=
-ist'.
-> This function separates the execution of the CPU readd and Memory readd
-> operations from the execution of 'migration store'.  If we walk the list
-> here, then we add the execution time of all of the readd operations to
-> the time of 'migration store'.  This is not a large problem in small
-> systems like we have in the Kernel Team.  This may be a major issue thoug=
-h,
-> for production SAP HANA systems where we may be readding thousands of pag=
-es
-> of memory.  By pushing the execution of the CPU readd and Memory readd
-> operations after, and separate, from the execution of 'migration store',
-> we do not delay the end of the operation or the return of the completion
-> status to an associated HMC.
-
-But you can't return completion status, because the operation hasn't
-completed.
-
-The migration isn't finished until we've updated the topology for the
-new system.
-
-If you decouple things like this you now have no way of reporting
-progress or an error to the caller.
-
-So I'm unconvinced this is the right solution.
-
-cheers
+> I also suggest it be added to -mm.
