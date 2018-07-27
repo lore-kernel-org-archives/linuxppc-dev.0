@@ -1,28 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <srs0=naab=kl=kernel.org=robh+dt@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cbBn1TsPzF0h9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 03:13:05 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41cbBm73btz8sww
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 03:13:04 +1000 (AEST)
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cZTC10M5zF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2018 02:40:30 +1000 (AEST)
-Date: Fri, 27 Jul 2018 18:40:23 +0200
-Message-ID: <20180727184023.Horde.KRXPzZpG18uxt_B9sy_FBg5@messagerie.si.c-s.fr>
-From: LEROY Christophe <christophe.leroy@c-s.fr>
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C . Harding" <me@tobin.cc>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Simon Guo
- <wei.guo.simon@gmail.com>, Paul Mackerras <paulus@samba.org>, Nicholas
- Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>, Michael
- Ellerman <mpe@ellerman.id.au>, "Eric W . Biederman" <ebiederm@xmission.com>,
- Cyril Bur <cyrilbur@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Balbir Singh <bsingharora@gmail.com>, Andrew
- Donnellan <andrew.donnellan@au1.ibm.com>, Alastair D'Silva
- <alastair@d-silva.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 04/10] powerpc/traps: Use REG_FMT in show_signal_msg()
-References: <20180727145811.12334-1-muriloo@linux.ibm.com>
- <20180727145811.12334-5-muriloo@linux.ibm.com>
-In-Reply-To: <20180727145811.12334-5-muriloo@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed; DelSp=Yes
+ by ozlabs.org (Postfix) with ESMTPS id 41cbBm42Nvz9s0w
+ for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2018 03:13:04 +1000 (AEST)
+Received: from mail-qt0-f170.google.com (mail-qt0-f170.google.com
+ [209.85.216.170])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id F0C03208B6
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2018 17:13:01 +0000 (UTC)
+Received: by mail-qt0-f170.google.com with SMTP id m13-v6so5778879qth.1
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2018 10:13:01 -0700 (PDT)
 MIME-Version: 1.0
+References: <20180727053555.26596-1-mpe@ellerman.id.au>
+In-Reply-To: <20180727053555.26596-1-mpe@ellerman.id.au>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Fri, 27 Jul 2018 11:12:50 -0600
+Message-ID: <CAL_JsqK4GEPJSPg+sStvFyO=sQ0Fp49FKKTz0S9OGc1COOnp-g@mail.gmail.com>
+Subject: Re: [PATCH] of/fdt: Remove PPC32 longtrail hack in memory scan
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,52 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a =C3=A9crit=C2=A0:
-
-> Simplify the message format by using REG_FMT as the register format.  Thi=
-s
-> avoids having two different formats and avoids checking for MSR_64BIT.
-
-Are you sure it is what we want ?
-
-Won't it change the behaviour for a 32 bits app running on a 64bits kernel =
-?
-
-Christophe
-
-
+On Thu, Jul 26, 2018 at 11:36 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
 >
-> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-> ---
->  arch/powerpc/kernel/traps.c | 12 ++++--------
->  1 file changed, 4 insertions(+), 8 deletions(-)
+> When the OF code was originally made common by Grant in commit
+> 51975db0b733 ("of/flattree: merge early_init_dt_scan_memory() common
+> code") (Feb 2010), the common code inherited a hack to handle
+> PPC "longtrail" machines, which had a "memory@0" node with no
+> device_type.
 >
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 4faab4705774..047d980ac776 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -311,17 +311,13 @@ static bool show_unhandled_signals_ratelimited(void=
-)
->  static void show_signal_msg(int signr, struct pt_regs *regs, int code,
->  			    unsigned long addr)
->  {
-> -	const char fmt32[] =3D KERN_INFO "%s[%d]: unhandled signal %d " \
-> -		"at %08lx nip %08lx lr %08lx code %x\n";
-> -	const char fmt64[] =3D KERN_INFO "%s[%d]: unhandled signal %d " \
-> -		"at %016lx nip %016lx lr %016lx code %x\n";
-> -
->  	if (!unhandled_signal(current, signr))
->  		return;
+> That check was then made to only apply to PPC32 in b44aa25d20e2 ("of:
+> Handle memory@0 node on PPC32 only") (May 2014).
 >
-> -	printk(regs->msr & MSR_64BIT ? fmt64 : fmt32,
-> -	       current->comm, current->pid, signr,
-> -	       addr, regs->nip, regs->link, code);
-> +	pr_info("%s[%d]: unhandled signal %d at "REG_FMT \
-> +		" nip "REG_FMT" lr "REG_FMT" code %x\n",
-> +		current->comm, current->pid, signr, addr,
-> +		regs->nip, regs->link, code);
->  }
+> But according to Paul Mackerras the "longtrail" machines are long
+> dead, if they were ever seen in the wild at all. If someone does still
+> have one, we can handle this firmware wart in powerpc platform code.
 >
->  void _exception_pkey(int signr, struct pt_regs *regs, int code,
-> --
-> 2.17.1
+> So remove the hack once and for all.
+
+Yay. I guess Power Macs and other quirks will never die...
+
+I'll queue this up.
+
+Rob
