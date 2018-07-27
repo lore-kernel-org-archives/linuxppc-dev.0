@@ -2,19 +2,25 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cJ4t1mXjzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 15:51:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cJCb6NH0zDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 15:57:47 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gustavo Romero <gromero@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/3] selftests/powerpc: Only run some tests on ppc64le
-In-Reply-To: <6f71e169-7d73-9128-5cff-72efcf734e7d@linux.vnet.ibm.com>
-References: <20180726122459.9293-1-mpe@ellerman.id.au>
- <20180726122459.9293-2-mpe@ellerman.id.au>
- <6f71e169-7d73-9128-5cff-72efcf734e7d@linux.vnet.ibm.com>
-Date: Fri, 27 Jul 2018 15:51:55 +1000
-Message-ID: <87pnz9z0n8.fsf@concordia.ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.ibm.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+Subject: Re: [PATCH v07 2/9] hotplug/cpu: Add operation queuing function
+In-Reply-To: <0bcf83ad-0d06-2311-e9c6-cd66326b5f93@linux.vnet.ibm.com>
+References: <458ff569-f611-f506-afa1-138146551dde@linux.vnet.ibm.com>
+ <a2c023e9-6997-d1a3-0110-fa8c788e64ee@linux.vnet.ibm.com>
+ <20180723155414.2apx5uxrn3462qks@p50>
+ <0bcf83ad-0d06-2311-e9c6-cd66326b5f93@linux.vnet.ibm.com>
+Date: Fri, 27 Jul 2018 15:57:47 +1000
+Message-ID: <87muudz0dg.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gustavo Romero <gromero@linux.vnet.ibm.com> writes:
-
-> Hi Michael,
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+> On 07/23/2018 10:54 AM, John Allen wrote:
+>> On Fri, Jul 13, 2018 at 03:18:01PM -0500, Michael Bringmann wrote:
+>>> @@ -407,6 +413,61 @@ void queue_hotplug_event(struct pseries_hp_errorlo=
+g *hp_errlog,
+...
+>>> +
+>>> +static int dlpar_pmt(struct pseries_hp_errorlog *work)
+>>> +{
+>>> +=C2=A0=C2=A0=C2=A0 struct list_head *pos, *q;
+>>> +
+>>> +=C2=A0=C2=A0=C2=A0 ssleep(15);
+>>=20
+>> Why do we need to sleep for so long here?
 >
-> On 07/26/2018 09:24 AM, Michael Ellerman wrote:
->> These tests are currently failing on (some) big endian systems. Until
->> we can fix that, skip them unless we're on ppc64le.
+> One or more drivers were finishing their initialization about the same
+> time as the 'migration_store' operation was completing.  E.g. 'ibmvscsi'
+> When we did 'dlpar cpu readd' operations at the same time early on in
+> testing, the errors / warnings were inconsistent.  I put in a delay to
+> get beyond the driver re-init after migration.  15 seconds was an estimat=
+e.
+> As it occurs after the completion of the 'migration store' operation,
+> it does not delay any responses returned to the HMC.
 >
-> I can take a look at this.
+> We can rerun tests with reduced / removed delays to see if they are still
+> necessary given some other corrections in the mix.
 
-Thanks!
+Please do.
 
-> Is that the same issue related to the gcc version we discussed a month ago?
-
-Maybe, I've forgotten :)
-
-> If not, could you provide the crash logs as a starting point?
-
-There's not much:
-
-  test: tm_tar
-  tags: git_version:9794259
-  failure: tm_tar
-  run-parts: ./tm-tar exited with return code 1
-  
-  test: tm_vmxcopy
-  tags: git_version:9794259
-  !! child died by signal 11
-  failure: tm_vmxcopy
-  run-parts: ./tm-vmxcopy exited with return code 1
-
-And now I can't get the sigreturn one to fail :/
-
+I'm not inclined to merge code with "sleep 15" in it, unless there's
+some incredibly good reason for it.
 
 cheers
