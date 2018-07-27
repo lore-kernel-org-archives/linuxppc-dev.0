@@ -1,28 +1,22 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41cRcj28MCzDqkJ
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 21:31:32 +1000 (AEST)
-Date: Fri, 27 Jul 2018 14:31:25 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: robh@kernel.org, srikar@linux.vnet.ibm.com, aik@ozlabs.ru,
- jasowang@redhat.com, linuxram@us.ibm.com, linux-kernel@vger.kernel.org,
- virtualization@lists.linux-foundation.org, hch@infradead.org,
- paulus@samba.org, joe@perches.com, linuxppc-dev@lists.ozlabs.org,
- elfring@users.sourceforge.net, haren@linux.vnet.ibm.com,
- david@gibson.dropbear.id.au
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180727143008-mutt-send-email-mst@kernel.org>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180720161541-mutt-send-email-mst@kernel.org>
- <8f51d2c6-cc0c-9e42-f0fd-a8a33acc8b83@linux.vnet.ibm.com>
- <20180723120511-mutt-send-email-mst@kernel.org>
- <4062dd48-2b5b-e454-e860-c6bfe321ebdc@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4062dd48-2b5b-e454-e860-c6bfe321ebdc@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41cS0G32l8zDqkJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 21:48:30 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id z7-v6so2217003plo.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2018 04:48:30 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, linux-mm@kvack.org
+Subject: [PATCH resend] powerpc/64s: fix page table fragment refcount race vs
+ speculative references
+Date: Fri, 27 Jul 2018 21:48:17 +1000
+Message-Id: <20180727114817.27190-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,13 +26,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 25, 2018 at 08:56:23AM +0530, Anshuman Khandual wrote:
-> Results with and without the patches are similar.
+The page table fragment allocator uses the main page refcount racily
+with respect to speculative references. A customer observed a BUG due
+to page table page refcount underflow in the fragment allocator. This
+can be caused by the fragment allocator set_page_count stomping on a
+speculative reference, and then the speculative failure handler
+decrements the new reference, and the underflow eventually pops when
+the page tables are freed.
 
-Thanks! And another thing to try is virtio-net with
-a fast NIC backend (40G and up). Unfortunately
-at this point loopback tests stress the host
-scheduler too much.
+Fix this by using a dedicated field in the struct page for the page
+table fragment allocator.
 
+Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+
+Any objection to the struct page change to grab the arch specific
+page table page word for powerpc to use? If not, then this should
+go via powerpc tree because it's inconsequential for core mm.
+
+Thanks,
+Nick
+
+ arch/powerpc/mm/mmu_context_book3s64.c |  8 ++++----
+ arch/powerpc/mm/pgtable-book3s64.c     | 17 +++++++++++------
+ include/linux/mm_types.h               |  5 ++++-
+ 3 files changed, 19 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/mm/mmu_context_book3s64.c b/arch/powerpc/mm/mmu_context_book3s64.c
+index f3d4b4a0e561..3bb5cec03d1f 100644
+--- a/arch/powerpc/mm/mmu_context_book3s64.c
++++ b/arch/powerpc/mm/mmu_context_book3s64.c
+@@ -200,9 +200,9 @@ static void pte_frag_destroy(void *pte_frag)
+ 	/* drop all the pending references */
+ 	count = ((unsigned long)pte_frag & ~PAGE_MASK) >> PTE_FRAG_SIZE_SHIFT;
+ 	/* We allow PTE_FRAG_NR fragments from a PTE page */
+-	if (page_ref_sub_and_test(page, PTE_FRAG_NR - count)) {
++	if (atomic_sub_and_test(PTE_FRAG_NR - count, &page->pt_frag_refcount)) {
+ 		pgtable_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+@@ -215,9 +215,9 @@ static void pmd_frag_destroy(void *pmd_frag)
+ 	/* drop all the pending references */
+ 	count = ((unsigned long)pmd_frag & ~PAGE_MASK) >> PMD_FRAG_SIZE_SHIFT;
+ 	/* We allow PTE_FRAG_NR fragments from a PTE page */
+-	if (page_ref_sub_and_test(page, PMD_FRAG_NR - count)) {
++	if (atomic_sub_and_test(PMD_FRAG_NR - count, &page->pt_frag_refcount)) {
+ 		pgtable_pmd_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index 4afbfbb64bfd..78d0b3d5ebad 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -270,6 +270,8 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
+ 		return NULL;
+ 	}
+ 
++	atomic_set(&page->pt_frag_refcount, 1);
++
+ 	ret = page_address(page);
+ 	/*
+ 	 * if we support only one fragment just return the
+@@ -285,7 +287,7 @@ static pmd_t *__alloc_for_pmdcache(struct mm_struct *mm)
+ 	 * count.
+ 	 */
+ 	if (likely(!mm->context.pmd_frag)) {
+-		set_page_count(page, PMD_FRAG_NR);
++		atomic_set(&page->pt_frag_refcount, PMD_FRAG_NR);
+ 		mm->context.pmd_frag = ret + PMD_FRAG_SIZE;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+@@ -308,9 +310,10 @@ void pmd_fragment_free(unsigned long *pmd)
+ {
+ 	struct page *page = virt_to_page(pmd);
+ 
+-	if (put_page_testzero(page)) {
++	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
++	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
+ 		pgtable_pmd_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+@@ -352,6 +355,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 			return NULL;
+ 	}
+ 
++	atomic_set(&page->pt_frag_refcount, 1);
+ 
+ 	ret = page_address(page);
+ 	/*
+@@ -367,7 +371,7 @@ static pte_t *__alloc_for_ptecache(struct mm_struct *mm, int kernel)
+ 	 * count.
+ 	 */
+ 	if (likely(!mm->context.pte_frag)) {
+-		set_page_count(page, PTE_FRAG_NR);
++		atomic_set(&page->pt_frag_refcount, PTE_FRAG_NR);
+ 		mm->context.pte_frag = ret + PTE_FRAG_SIZE;
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+@@ -390,10 +394,11 @@ void pte_fragment_free(unsigned long *table, int kernel)
+ {
+ 	struct page *page = virt_to_page(table);
+ 
+-	if (put_page_testzero(page)) {
++	BUG_ON(atomic_read(&page->pt_frag_refcount) <= 0);
++	if (atomic_dec_and_test(&page->pt_frag_refcount)) {
+ 		if (!kernel)
+ 			pgtable_page_dtor(page);
+-		free_unref_page(page);
++		__free_page(page);
+ 	}
+ }
+ 
+diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+index 99ce070e7dcb..22651e124071 100644
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -139,7 +139,10 @@ struct page {
+ 			unsigned long _pt_pad_1;	/* compound_head */
+ 			pgtable_t pmd_huge_pte; /* protected by page->ptl */
+ 			unsigned long _pt_pad_2;	/* mapping */
+-			struct mm_struct *pt_mm;	/* x86 pgds only */
++			union {
++				struct mm_struct *pt_mm; /* x86 pgds only */
++				atomic_t pt_frag_refcount; /* powerpc */
++			};
+ #if ALLOC_SPLIT_PTLOCKS
+ 			spinlock_t *ptl;
+ #else
 -- 
-MST
+2.17.0
