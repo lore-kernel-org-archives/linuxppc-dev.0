@@ -1,19 +1,20 @@
 Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vk0-f68.google.com (mail-vk0-f68.google.com
- [209.85.213.68])
+Received: from mail-ua0-f194.google.com (mail-ua0-f194.google.com
+ [209.85.217.194])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fB2c2VmTzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 17:26:31 +1000 (AEST)
-Received: by mail-vk0-f68.google.com with SMTP id y70-v6so5239543vkc.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 00:26:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fB3d5qGPzF1BL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 17:27:25 +1000 (AEST)
+Received: by mail-ua0-f194.google.com with SMTP id k25-v6so7172635uao.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 00:27:25 -0700 (PDT)
 MIME-Version: 1.0
 References: <cover.1530519301.git.fthain@telegraphics.com.au>
  <03e778fa5a025ac72f6d11c519939c5f8dbc6b8c.1530519301.git.fthain@telegraphics.com.au>
-In-Reply-To: <03e778fa5a025ac72f6d11c519939c5f8dbc6b8c.1530519301.git.fthain@telegraphics.com.au>
+ <CAMuHMdU_7V0n6HCNR87pmxYSMJxC=WpbtChpdzT2DQi3VWBZ7Q@mail.gmail.com>
+In-Reply-To: <CAMuHMdU_7V0n6HCNR87pmxYSMJxC=WpbtChpdzT2DQi3VWBZ7Q@mail.gmail.com>
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 30 Jul 2018 09:26:17 +0200
-Message-ID: <CAMuHMdU_7V0n6HCNR87pmxYSMJxC=WpbtChpdzT2DQi3VWBZ7Q@mail.gmail.com>
+Date: Mon, 30 Jul 2018 09:27:11 +0200
+Message-ID: <CAMuHMdXFo8RxfkHJ5z11kzj1Nn_1tZEgDjJb_kC4MSf5aE+27Q@mail.gmail.com>
 Subject: Re: [PATCH v4 09/11] macintosh/via-pmu: Replace via-pmu68k driver
  with via-pmu driver
 To: Finn Thain <fthain@telegraphics.com.au>
@@ -32,15 +33,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 2, 2018 at 10:21 AM Finn Thain <fthain@telegraphics.com.au> wrote:
-> Now that the PowerMac via-pmu driver supports m68k PowerBooks,
-> switch over to that driver and remove the via-pmu68k driver.
+On Mon, Jul 30, 2018 at 9:26 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, Jul 2, 2018 at 10:21 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> > Now that the PowerMac via-pmu driver supports m68k PowerBooks,
+> > switch over to that driver and remove the via-pmu68k driver.
+> >
+> > Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> > Tested-by: Stan Johnson <userm57@yahoo.com>
+> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 >
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Tested-by: Stan Johnson <userm57@yahoo.com>
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
 Gr{oetje,eeting}s,
 
