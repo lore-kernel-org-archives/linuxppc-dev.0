@@ -3,29 +3,28 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fDng5YmSzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:30:31 +1000 (AEST)
-Date: Mon, 30 Jul 2018 02:30:27 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fDt33lFJzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:34:19 +1000 (AEST)
+Date: Mon, 30 Jul 2018 02:34:14 -0700
 From: Christoph Hellwig <hch@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
+To: Will Deacon <will.deacon@arm.com>
 Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
  elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
  jasowang@redhat.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- hch@infradead.org, linuxram@us.ibm.com, haren@linux.vnet.ibm.com,
- paulus@samba.org, srikar@linux.vnet.ibm.com
-Subject: Re: [RFC 2/4] virtio: Override device's DMA OPS with
- virtio_direct_dma_ops selectively
-Message-ID: <20180730093027.GC26245@infradead.org>
+ mst@redhat.com, hch@infradead.org, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180730093414.GD26245@infradead.org>
 References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180720035941.6844-3-khandual@linux.vnet.ibm.com>
- <c443ad8c-fb81-302d-edb2-5521831d38da@linux.vnet.ibm.com>
- <20180729001344-mutt-send-email-mst@kernel.org>
+ <20180727095804.GA25592@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180729001344-mutt-send-email-mst@kernel.org>
+In-Reply-To: <20180727095804.GA25592@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +
-> > +	if (xen_domain())
-> > +		goto skip_override;
-> > +
-> > +	if (virtio_has_iommu_quirk(dev))
-> > +		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
-> > +
-> > + skip_override:
-> > +
+On Fri, Jul 27, 2018 at 10:58:05AM +0100, Will Deacon wrote:
 > 
-> I prefer normal if scoping as opposed to goto spaghetti pls.
-> Better yet move vring_use_dma_api here and use it.
-> Less of a chance something will break.
+> I just wanted to say that this patch series provides a means for us to
+> force the coherent DMA ops for legacy virtio devices on arm64, which in turn
+> means that we can enable the SMMU with legacy devices in our fastmodel
+> emulation platform (which is slowly being upgraded to virtio 1.0) without
+> hanging during boot. Patch below.
 
-I agree about avoid pointless gotos here, but we can do things
-perfectly well without either gotos or a confusing helper here
-if we structure it right. E.g.:
+Yikes, this is a nightmare.  That is exactly where I do not want things
+to end up.  We really need to distinguish between legacy virtual crappy
+virtio (and that includes v1) that totally ignores the bus it pretends
+to be on, and sane virtio (to be defined) that sit on a real (or
+properly emulated including iommu and details for dma mapping) bus.
 
-	// suitably detailed comment here
-	if (!xen_domain() &&
-	    !virtio_has_feature(vdev, VIRTIO_F_IOMMU_PLATFORM))
-		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
+Having a mumble jumble of arch specific undocumented magic as in
+the powerpc patch replied to or this arm patch is a complete no-go.
 
-and while we're at it - modifying dma ops for the parent looks very
-dangerous.  I don't think we can do that, as it could break iommu
-setup interactions.  IFF we set a specific dma map ops it has to be
-on the virtio device itself, of which we have full control.
+Nacked-by: Christoph Hellwig <hch@lst.de>
+
+for both.
