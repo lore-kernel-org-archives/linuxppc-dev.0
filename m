@@ -1,23 +1,27 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+396ebc2d5722fb16c925+5454+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fDT71gZlzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:16:09 +1000 (AEST)
-Date: Mon, 30 Jul 2018 11:16:05 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: John Allen <jallen@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kamezawa.hiroyu@jp.fujitsu.com, n-horiguchi@ah.jp.nec.com,
- mgorman@suse.de, nfont@linux.vnet.ibm.com
-Subject: Re: Infinite looping observed in __offline_pages
-Message-ID: <20180730091605.GF24267@dhcp22.suse.cz>
-References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
- <20180725200336.GP28386@dhcp22.suse.cz>
- <20180727173259.htdxpn4i2fxprpaj@p50.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fDfc5QwyzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:24:24 +1000 (AEST)
+Date: Mon, 30 Jul 2018 02:24:19 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
+ joe@perches.com, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, jasowang@redhat.com,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, mst@redhat.com,
+ hch@infradead.org, linuxram@us.ibm.com, haren@linux.vnet.ibm.com,
+ paulus@samba.org, srikar@linux.vnet.ibm.com
+Subject: Re: [RFC 1/4] virtio: Define virtio_direct_dma_ops structure
+Message-ID: <20180730092419.GA26245@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180720035941.6844-2-khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180727173259.htdxpn4i2fxprpaj@p50.austin.ibm.com>
+In-Reply-To: <20180720035941.6844-2-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri 27-07-18 12:32:59, John Allen wrote:
-> On Wed, Jul 25, 2018 at 10:03:36PM +0200, Michal Hocko wrote:
-> > On Wed 25-07-18 13:11:15, John Allen wrote:
-> > [...]
-> > > Does a failure in do_migrate_range indicate that the range is unmigratable
-> > > and the loop in __offline_pages should terminate and goto failed_removal? Or
-> > > should we allow a certain number of retrys before we
-> > > give up on migrating the range?
-> > 
-> > Unfortunatelly not. Migration code doesn't tell a difference between
-> > ephemeral and permanent failures. We are relying on
-> > start_isolate_page_range to tell us this. So the question is, what kind
-> > of page is not migratable and for what reason.
-> > 
-> > Are you able to add some debugging to give us more information. The
-> > current debugging code in the hotplug/migration sucks...
-> 
-> After reproducing the problem a couple times, it seems that it can occur for
-> different types of pages. Running page-types on the offending page over two
-> separate instances produced the following:
-> 
-> # tools/vm/page-types -a 307968-308224
->             flags	page-count       MB  symbolic-flags			long-symbolic-flags
-> 0x0000000000000400	         1        0  __________B________________________________	buddy
-> 	     total	         1        0
+> +/*
+> + * Virtio direct mapping DMA API operations structure
+> + *
+> + * This defines DMA API structure for all virtio devices which would not
+> + * either bring in their own DMA OPS from architecture or they would not
+> + * like to use architecture specific IOMMU based DMA OPS because QEMU
+> + * expects GPA instead of an IOVA in absence of VIRTIO_F_IOMMU_PLATFORM.
+> + */
+> +dma_addr_t virtio_direct_map_page(struct device *dev, struct page *page,
+> +			    unsigned long offset, size_t size,
+> +			    enum dma_data_direction dir,
+> +			    unsigned long attrs)
 
-Huh! How come a buddy page has non zero reference count.
-> 
-> And the following on a separate run:
-> 
-> # tools/vm/page-types -a 313088-313344
->             flags	page-count       MB  symbolic-flags			long-symbolic-flags
-> 0x000000000000006c	         1        0  __RU_lA____________________________________	referenced,uptodate,lru,active
->             total	         1        0
+All these functions should probably be marked static.
 
-Hmm, what is the expected page count in this case? Seeing 1 doesn't look
-particularly wrong.
--- 
-Michal Hocko
-SUSE Labs
+> +void virtio_direct_unmap_page(struct device *hwdev, dma_addr_t dev_addr,
+> +			size_t size, enum dma_data_direction dir,
+> +			unsigned long attrs)
+> +{
+> +}
+
+No need to implement no-op callbacks in struct dma_map_ops.
+
+> +
+> +int virtio_direct_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
+> +{
+> +	return 0;
+> +}
+
+Including this one.
+
+> +void *virtio_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+> +		gfp_t gfp, unsigned long attrs)
+> +{
+> +	void *queue = alloc_pages_exact(PAGE_ALIGN(size), gfp);
+> +
+> +	if (queue) {
+> +		phys_addr_t phys_addr = virt_to_phys(queue);
+> +		*dma_handle = (dma_addr_t)phys_addr;
+> +
+> +		if (WARN_ON_ONCE(*dma_handle != phys_addr)) {
+> +			free_pages_exact(queue, PAGE_ALIGN(size));
+> +			return NULL;
+> +		}
+> +	}
+> +	return queue;
+
+queue is a very odd name in a generic memory allocator.
+
+> +void virtio_direct_free(struct device *dev, size_t size, void *vaddr,
+> +		dma_addr_t dma_addr, unsigned long attrs)
+> +{
+> +	free_pages_exact(vaddr, PAGE_ALIGN(size));
+> +}
+> +
+> +const struct dma_map_ops virtio_direct_dma_ops = {
+> +	.alloc			= virtio_direct_alloc,
+> +	.free			= virtio_direct_free,
+> +	.map_page		= virtio_direct_map_page,
+> +	.unmap_page		= virtio_direct_unmap_page,
+> +	.mapping_error		= virtio_direct_mapping_error,
+> +};
+
+This is missing a dma_map_sg implementation.  In general this is
+mandatory for dma_ops.  So either you implement it or explain in
+a common why you think you can skip it.
+
+> +EXPORT_SYMBOL(virtio_direct_dma_ops);
+
+EXPORT_SYMBOL_GPL like all virtio symbols, please.
