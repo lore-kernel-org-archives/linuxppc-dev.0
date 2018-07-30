@@ -1,25 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-f196.google.com (mail-ua0-f196.google.com
+ [209.85.217.196])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41f9P11XDjzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 16:57:25 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alexey Spirkov <AlexeiS@astrosoft.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Cc: "trivial\@kernel.org" <trivial@kernel.org>,
- "andrew\@ncrmnt.org" <andrew@ncrmnt.org>
-Subject: RE: [PATCH] Adds __init annotation at mmu_init_secondary func
-In-Reply-To: <AM5PR03MB28496A9D6FD7B175312E48F6C92A0@AM5PR03MB2849.eurprd03.prod.outlook.com>
-References: <AM5PR03MB28499BE4A0B6200F7DA83835C92B0@AM5PR03MB2849.eurprd03.prod.outlook.com>
- <87tvolrm43.fsf@concordia.ellerman.id.au>
- <AM5PR03MB28496A9D6FD7B175312E48F6C92A0@AM5PR03MB2849.eurprd03.prod.outlook.com>
-Date: Mon, 30 Jul 2018 16:57:22 +1000
-Message-ID: <87r2jli52l.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41f9zN3QX4zF0jn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 17:23:43 +1000 (AEST)
+Received: by mail-ua0-f196.google.com with SMTP id o11-v6so7175747uak.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 00:23:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+References: <cover.1530519301.git.fthain@telegraphics.com.au>
+ <3923d42d8e3a5e3ae3382d3354744fb6648d03a8.1530519301.git.fthain@telegraphics.com.au>
+In-Reply-To: <3923d42d8e3a5e3ae3382d3354744fb6648d03a8.1530519301.git.fthain@telegraphics.com.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 30 Jul 2018 09:23:29 +0200
+Message-ID: <CAMuHMdVLLyF=F7ArbXxmPioQF4F2qDq8Sis629BL_B0HrN4=Xg@mail.gmail.com>
+Subject: Re: [PATCH v4 08/11] macintosh/via-pmu68k: Don't load driver on
+ unsupported hardware
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Schmitz <schmitzmic@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-m68k <linux-m68k@lists.linux-m68k.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,22 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Spirkov <AlexeiS@astrosoft.ru> writes:
-
-> Without any additional option 
+On Mon, Jul 2, 2018 at 10:21 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> Don't load the via-pmu68k driver on early PowerBooks. The M50753 PMU
+> device found in those models was never supported by this driver.
+> Attempting to load the driver usually causes a boot hang.
 >
-> WARNING: modpost: Found 1 section mismatch(es).
->
-> If detailed debug is switched on than:
->
-> WARNING: vmlinux.o(.text+0x142ac): Section mismatch in reference from the function mmu_init_secondary() to the function .init.text:ppc44x_pin_tlb()
-> The function mmu_init_secondary() references
-> the function __init ppc44x_pin_tlb().
-> This is often because mmu_init_secondary lacks a __init 
-> annotation or the annotation of ppc44x_pin_tlb is wrong.
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Reviewed-by: Michael Schmitz <schmitzmic@gmail.com>
 
-Ah right, thanks.
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-I checked ppc47x_pin_tlb() but didn't spot the call to ppc44x_pin_tlb().
+Gr{oetje,eeting}s,
 
-cheers
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
