@@ -1,28 +1,35 @@
-Return-Path: <richardcochran@gmail.com>
-Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
- [IPv6:2607:f8b0:400e:c01::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bryantly@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fMSH59BvzF09Y
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 00:30:48 +1000 (AEST)
-Received: by mail-pl0-x243.google.com with SMTP id w8-v6so5637236ply.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 07:30:48 -0700 (PDT)
-Date: Mon, 30 Jul 2018 07:30:43 -0700
-From: Richard Cochran <richardcochran@gmail.com>
-To: Yangbo Lu <yangbo.lu@nxp.com>
-Cc: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
- initialization
-Message-ID: <20180730143043.qu66ttzwyjbw6si7@localhost>
-References: <20180730100154.27906-1-yangbo.lu@nxp.com>
- <20180730100154.27906-3-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fNGw1GB4zF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 01:07:45 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6UF4LFv106921
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:07:42 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kj3w8kgh2-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:07:42 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.ibm.com>;
+ Mon, 30 Jul 2018 11:07:40 -0400
+Subject: Re: [PATCH v3 1/1] powerpc/pseries: fix EEH recovery of some IOV
+ devices
+To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org
+Cc: mpe@ellerman.id.au, bhelgaas@google.com, bryantly@linux.vnet.ibm.com
+References: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
+From: "Bryant G. Ly" <bryantly@linux.ibm.com>
+Date: Mon, 30 Jul 2018 10:07:35 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180730100154.27906-3-yangbo.lu@nxp.com>
+In-Reply-To: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <478afe66-34dd-458c-8b66-5e57c6b686eb@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +39,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 30, 2018 at 06:01:54PM +0800, Yangbo Lu wrote:
-> The ptp_qoriq driver initialized the 1588 timer with the
-> configurations provided by the properties of device tree
-> node. For example,
-> 
->   fsl,tclk-period = <5>;
->   fsl,tmr-prsc    = <2>;
->   fsl,tmr-add     = <0xaaaaaaab>;
->   fsl,tmr-fiper1  = <999999995>;
->   fsl,tmr-fiper2  = <99990>;
->   fsl,max-adj     = <499999999>;
-> 
-> These things actually were runtime configurations which
-> were not proper to be put into dts.
+On 7/29/18 8:59 PM, Sam Bobroff wrote:
 
-That is debatable.  While I agree that the dts isn't ideal for these,
-still it is the lesser of two or more evils.
+> EEH recovery currently fails on pSeries for some IOV capable PCI
+> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
+> certain device tree properties for the device. (Found on an IOV
+> capable device using the ipr driver.)
+>
+> Recovery fails in pci_enable_resources() at the check on r->parent,
+> because r->flags is set and r->parent is not.  This state is due to
+> sriov_init() setting the start, end and flags members of the IOV BARs
+> but the parent not being set later in
+> pseries_pci_fixup_iov_resources(), because the
+> "ibm,open-sriov-vf-bar-info" property is missing.
+>
+> Correct this by zeroing the resource flags for IOV BARs when they
+> can't be configured (this is the same method used by sriov_init() and
+> __pci_read_base()).
+>
+> VFs cleared this way can't be enabled later, because that requires
+> another device tree property, "ibm,number-of-configurable-vfs" as well
+> as support for the RTAS function "ibm_map_pes". These are all part of
+> hypervisor support for IOV and it seems unlikely that a hypervisor
+> would ever partially, but not fully, support it. (None are currently
+> provided by QEMU/KVM.)
+>
+> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
+> ---
+> Hi,
+>
+> This is a fix to allow EEH recovery to succeed in a specific situation,
+> which I've tried to explain in the commit message.
+>
+> As with the RFC version, the IOV BARs are disabled by setting the resource
+> flags to 0 but the other fields are now left as-is because that is what is done
+> elsewhere (see sriov_init() and __pci_read_base()).
+>
+> I've also examined the concern raised by Bjorn Helgaas, that VFs could be
+> enabled later after the BARs are disabled, and it already seems safe: enabling
+> VFs (on pseries) depends on another device tree property,
+> "ibm,number-of-configurable-vfs" as well as support for the RTAS function
+> "ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
+> seems unlikely that we would ever see some of them but not all. (None are
+> currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
+> recovery failure was discovered doesn't even seem to have SR-IOV support so it
+> certainly can't enable VFs.)
+>
+> Cheers,
+> Sam.
+>
+> Patch set v3:
+> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
+> * Moved some useful information from the cover letter to the commit log.
+>
+> Patch set v2:
+> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
+> * Moved the BAR disabling code to a function.
+> * Also check in pseries_pci_fixup_resources().
+>
+> Patch set v1:
+> Patch 1/1: powerpc/pseries: fix EEH recovery of IOV devices
+>
+>  arch/powerpc/platforms/pseries/setup.c | 25 +++++++++++++++++--------
+>  1 file changed, 17 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index b55ad4286dc7..0a9e4243ae1d 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -645,6 +645,15 @@ void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
+>  	}
+>  }
 
-> This patch is to convert
-> to use module parameters for 1588 timer initialization, and
-> to support initial register values calculation.
-
-It is hard for me to understand how using module parameters improves
-the situation.
-
-> If the parameters are not provided, the driver will calculate
-> register values with a set of default parameters. With this
-> patch, those dts properties are no longer needed for new
-> platform to support 1588 timer, and many QorIQ DPAA platforms
-> (some P series and T series platforms of PowerPC, and some
-> LS series platforms of ARM64) could use this driver for their
-> fman ptp timer with default module parameters. However, this
-> patch didn't remove the dts method. Because there were still
-> many old platforms using the dts method. We need to clean up
-> their dts files, verify module parameters on them, and convert
-> them to the new method gradually in case of breaking any
-> function.
-
-In addition, like it or not, because the dts is an ABI, you must
-continue support of the dts values as a legacy option.
-
-Thanks,
-Richard
+Reviewed-by: Bryant G. Ly <bryantly@linux.ibm.com>
