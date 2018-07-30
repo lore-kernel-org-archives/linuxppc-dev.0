@@ -3,8 +3,8 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fQJ35lsDzF13G
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 02:38:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fQJ51LfZzF14h
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 02:39:01 +1000 (AEST)
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -12,9 +12,9 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Robin Murphy <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Subject: [PATCH 08/20] powerpc/dma: remove the unused dma_nommu_ops export
-Date: Mon, 30 Jul 2018 18:38:12 +0200
-Message-Id: <20180730163824.10064-9-hch@lst.de>
+Subject: [PATCH 09/20] powerpc/dma: remove the unused ISA_DMA_THRESHOLD export
+Date: Mon, 30 Jul 2018 18:38:13 +0200
+Message-Id: <20180730163824.10064-10-hch@lst.de>
 In-Reply-To: <20180730163824.10064-1-hch@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,20 +28,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/kernel/dma.c | 1 -
+ arch/powerpc/kernel/setup_32.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index dbfc7056d7df..3939589aab04 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -286,7 +286,6 @@ const struct dma_map_ops dma_nommu_ops = {
- 	.sync_sg_for_device 		= dma_nommu_sync_sg,
- #endif
- };
--EXPORT_SYMBOL(dma_nommu_ops);
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 74457485574b..3c2d093f74c7 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -55,7 +55,6 @@ unsigned long ISA_DMA_THRESHOLD;
+ unsigned int DMA_MODE_READ;
+ unsigned int DMA_MODE_WRITE;
  
- int dma_set_coherent_mask(struct device *dev, u64 mask)
- {
+-EXPORT_SYMBOL(ISA_DMA_THRESHOLD);
+ EXPORT_SYMBOL(DMA_MODE_READ);
+ EXPORT_SYMBOL(DMA_MODE_WRITE);
+ 
 -- 
 2.18.0
