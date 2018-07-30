@@ -1,32 +1,23 @@
-Return-Path: <BATV+396ebc2d5722fb16c925+5454+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2a01:7a0:2:106d:700::1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fH9v1VLHzF09Y
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 21:18:09 +1000 (AEST)
-Date: Mon, 30 Jul 2018 04:18:02 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
- linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180730111802.GA9830@infradead.org>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180727095804.GA25592@arm.com>
- <20180730093414.GD26245@infradead.org>
- <20180730125100-mutt-send-email-mst@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fJNf04SKzF09Y
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 22:12:33 +1000 (AEST)
+Date: Mon, 30 Jul 2018 13:55:24 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Christoph Hellwig <hch@lst.de>
+cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI: call dma_debug_add_bus for pci_bus_type in common
+ code
+In-Reply-To: <20180730073842.16092-1-hch@lst.de>
+Message-ID: <alpine.DEB.2.21.1807301355030.2518@nanos.tec.linutronix.de>
+References: <20180730073842.16092-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180730125100-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 30, 2018 at 01:28:03PM +0300, Michael S. Tsirkin wrote:
-> Let me reply to the "crappy" part first:
-> So virtio devices can run on another CPU or on a PCI bus. Configuration
-> can happen over mupltiple transports.  There is a discovery protocol to
-> figure out where it is. It has some warts but any real system has warts.
+On Mon, 30 Jul 2018, Christoph Hellwig wrote:
+
+> There is nothing arch specific about PCI or dma-debug, so move this
+> call to common code just after registering the bus type.
 > 
-> So IMHO virtio running on another CPU isn't "legacy virtual crappy
-> virtio". virtio devices that actually sit on a PCI bus aren't "sane"
-> simply because the DMA is more convoluted on some architectures.
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-All of what you said would be true if virtio didn't claim to be
-a PCI device.  Once it claims to be a PCI device and we also see
-real hardware written to the interface I stand to all what I said
-above.
-
-> With this out of my system:
-> I agree these approaches are hacky. I think it is generally better to
-> have virtio feature negotiation tell you whether device runs on a CPU or
-> not rather than rely on platform specific ways for this. To this end
-> there was a recent proposal to rename VIRTIO_F_IO_BARRIER to
-> VIRTIO_F_REAL_DEVICE.  It got stuck since "real" sounds vague to people,
-> e.g.  what if it's a VF - is that real or not? But I can see something
-> like e.g. VIRTIO_F_PLATFORM_DMA gaining support.
-> 
-> We would then rename virtio_has_iommu_quirk to virtio_has_dma_quirk
-> and test VIRTIO_F_PLATFORM_DMA in addition to the IOMMU thing.
-
-I don't really care about the exact naming, and indeed a device that
-sets the flag doesn't have to be a 'real' device - it just has to act
-like one.  I explained all the issues that this means (at least relating
-to DMA) in one of the previous threads.
-
-The important bit is that we can specify exact behavior for both
-devices that sets the "I'm real!" flag and that ones that don't exactly
-in the spec.  And that very much excludes arch-specific (or
-Xen-specific) overrides.
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
