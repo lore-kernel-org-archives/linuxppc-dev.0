@@ -2,21 +2,22 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41f99G24kvzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 16:47:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41f9P11XDjzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 16:57:25 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Finn Thain <fthain@telegraphics.com.au>,
+To: Alexey Spirkov <AlexeiS@astrosoft.ru>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Schmitz <schmitzmic@gmail.com>, linux-m68k@lists.linux-m68k.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 09/11] macintosh/via-pmu: Replace via-pmu68k driver
- with via-pmu driver
-In-Reply-To: <03e778fa5a025ac72f6d11c519939c5f8dbc6b8c.1530519301.git.fthain@telegraphics.com.au>
-References: <cover.1530519301.git.fthain@telegraphics.com.au>
- <03e778fa5a025ac72f6d11c519939c5f8dbc6b8c.1530519301.git.fthain@telegraphics.com.au>
-Date: Mon, 30 Jul 2018 16:47:13 +1000
-Message-ID: <87tvohi5ji.fsf@concordia.ellerman.id.au>
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "trivial\@kernel.org" <trivial@kernel.org>,
+ "andrew\@ncrmnt.org" <andrew@ncrmnt.org>
+Subject: RE: [PATCH] Adds __init annotation at mmu_init_secondary func
+In-Reply-To: <AM5PR03MB28496A9D6FD7B175312E48F6C92A0@AM5PR03MB2849.eurprd03.prod.outlook.com>
+References: <AM5PR03MB28499BE4A0B6200F7DA83835C92B0@AM5PR03MB2849.eurprd03.prod.outlook.com>
+ <87tvolrm43.fsf@concordia.ellerman.id.au>
+ <AM5PR03MB28496A9D6FD7B175312E48F6C92A0@AM5PR03MB2849.eurprd03.prod.outlook.com>
+Date: Mon, 30 Jul 2018 16:57:22 +1000
+Message-ID: <87r2jli52l.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,27 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Finn Thain <fthain@telegraphics.com.au> writes:
+Alexey Spirkov <AlexeiS@astrosoft.ru> writes:
 
-> Now that the PowerMac via-pmu driver supports m68k PowerBooks,
-> switch over to that driver and remove the via-pmu68k driver.
+> Without any additional option 
 >
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Tested-by: Stan Johnson <userm57@yahoo.com>
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> ---
->  arch/m68k/configs/mac_defconfig   |   2 +-
->  arch/m68k/configs/multi_defconfig |   2 +-
->  arch/m68k/mac/config.c            |   2 +-
->  arch/m68k/mac/misc.c              |  48 +--
->  drivers/macintosh/Kconfig         |  13 +-
->  drivers/macintosh/Makefile        |   1 -
->  drivers/macintosh/adb.c           |   2 +-
->  drivers/macintosh/via-pmu68k.c    | 846 --------------------------------------
->  include/uapi/linux/pmu.h          |   2 +-
->  9 files changed, 14 insertions(+), 904 deletions(-)
->  delete mode 100644 drivers/macintosh/via-pmu68k.c
+> WARNING: modpost: Found 1 section mismatch(es).
+>
+> If detailed debug is switched on than:
+>
+> WARNING: vmlinux.o(.text+0x142ac): Section mismatch in reference from the function mmu_init_secondary() to the function .init.text:ppc44x_pin_tlb()
+> The function mmu_init_secondary() references
+> the function __init ppc44x_pin_tlb().
+> This is often because mmu_init_secondary lacks a __init 
+> annotation or the annotation of ppc44x_pin_tlb is wrong.
 
-Geert are you OK with this and the other one that touches arch/m68k ?
+Ah right, thanks.
+
+I checked ppc47x_pin_tlb() but didn't spot the call to ppc44x_pin_tlb().
 
 cheers
