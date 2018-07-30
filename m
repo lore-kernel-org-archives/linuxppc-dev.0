@@ -1,19 +1,35 @@
-Return-Path: <BATV+396ebc2d5722fb16c925+5454+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <yamada.masahiro@socionext.com>
+Received: from conssluserg-03.nifty.com (conssluserg-03.nifty.com
+ [210.131.2.82])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fBXC65fjzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 17:48:43 +1000 (AEST)
-From: Christoph Hellwig <hch@lst.de>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	iommu@lists.linux-foundation.org
-Subject: [PATCH] powerpc: do not redefined NEED_DMA_MAP_STATE
-Date: Mon, 30 Jul 2018 09:37:21 +0200
-Message-Id: <20180730073721.15991-1-hch@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fCld3tJHzF0xv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 18:43:39 +1000 (AEST)
+Received: from mail-ua0-f173.google.com (mail-ua0-f173.google.com
+ [209.85.217.173]) (authenticated)
+ by conssluserg-03.nifty.com with ESMTP id w6U8hL5P016544
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 17:43:22 +0900
+Received: by mail-ua0-f173.google.com with SMTP id i4-v6so7305565uak.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 01:43:21 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <c0a17b80-6384-7437-045c-3688d9e5e7f9@infradead.org>
+References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
+ <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
+ <4f3a5969-88d5-134d-508d-7617947c588c@infradead.org>
+ <20180707221316.5b75e075@roar.ozlabs.ibm.com>
+ <c0a17b80-6384-7437-045c-3688d9e5e7f9@infradead.org>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Mon, 30 Jul 2018 17:42:40 +0900
+Message-ID: <CAK7LNASKiO8J8yTRGp4ngo2=ErC6S2_0bNENVsc4PoYpENQfTQ@mail.gmail.com>
+Subject: Re: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,48 +39,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kernel/dma/Kconfig already defines NEED_DMA_MAP_STATE, just select it
-from PPC64 and NOT_COHERENT_CACHE instead.
+2018-07-07 23:59 GMT+09:00 Randy Dunlap <rdunlap@infradead.org>:
+> On 07/07/2018 05:13 AM, Nicholas Piggin wrote:
+>> On Fri, 6 Jul 2018 21:58:29 -0700
+>> Randy Dunlap <rdunlap@infradead.org> wrote:
+>>
+>>> On 07/06/2018 06:45 PM, Benjamin Herrenschmidt wrote:
+>>>> On Thu, 2018-07-05 at 14:30 -0700, Randy Dunlap wrote:
+>>>>> Hi,
+>>>>>
+>>>>> Is there a good way (or a shortcut) to do something like:
+>>>>>
+>>>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
+>>>>>   to get a PPC32/32BIT allmodconfig
+>>>>>
+>>>>> and also be able to do:
+>>>>>
+>>>>> $make ARCH=powerpc O=PPC64 [other_options] allmodconfig
+>>>>>   to get a PPC64/64BIT allmodconfig?
+>>>>
+>>>> Hrm... O= is for the separate build dir, so there much be something
+>>>> else.
+>>>>
+>>>> You mean having ARCH= aliases like ppc/ppc32 and ppc64 ?
+>>>
+>>> Yes.
+>>>
+>>>> That would be a matter of overriding some .config defaults I suppose, I
+>>>> don't know how this is done on other archs.
+>>>>
+>>>> I see the aliasing trick in the Makefile but that's about it.
+>>>>
+>>>>> Note that arch/x86, arch/sh, and arch/sparc have ways to do
+>>>>> some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
+>>>>> sh and sparc based on a recent "fix" patch from me):
+>>>>
+>>>> I fail to see what you are actually talking about here ... sorry. Do
+>>>> you have concrete examples on x86 or sparc ? From what I can tell the
+>>>> "i386" or "sparc32/sparc64" aliases just change SRCARCH in Makefile and
+>>>> 32 vs 64-bit is just a Kconfig option...
+>>>
+>>> Yes, your summary is mostly correct.
+>>>
+>>> I'm just looking for a way to do cross-compile builds that are close to
+>>> ppc32 allmodconfig and ppc64 allmodconfig.
+>>
+>> Would there a problem with adding ARCH=ppc32 / ppc64 matching? This
+>> seems to work...
+>>
+>> Thanks,
+>> Nick
+>
+> Yes, this mostly works and is similar to a patch (my patch) on my test machine.
+> And they both work for allmodconfig, which is my primary build target.
+>
+> And they both have one little quirk that is confusing when the build target
+> is defconfig:
+>
+> When ARCH=ppc32, the terminal output (stdout) is: (using O=PPC32)
+>
+> make[1]: Entering directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
+>   GEN     ./Makefile
+> *** Default configuration is based on 'ppc64_defconfig'   <<<<< NOTE <<<<<
+> #
+> # configuration written to .config
+> #
+> make[1]: Leaving directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
+>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- arch/powerpc/Kconfig                   | 3 ---
- arch/powerpc/platforms/Kconfig.cputype | 2 ++
- 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9f2b75fe2c2d..f9cae7edd735 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -884,9 +884,6 @@ config ZONE_DMA
- 	bool
- 	default y
- 
--config NEED_DMA_MAP_STATE
--	def_bool (PPC64 || NOT_COHERENT_CACHE)
--
- config GENERIC_ISA_DMA
- 	bool
- 	depends on ISA_DMA_API
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index e6a1de521319..a2578bf8d560 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -3,6 +3,7 @@ config PPC64
- 	bool "64-bit kernel"
- 	default n
- 	select ZLIB_DEFLATE
-+	select NEED_DMA_MAP_STATE
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
-@@ -386,6 +387,7 @@ config NOT_COHERENT_CACHE
- 	depends on 4xx || PPC_8xx || E200 || PPC_MPC512x || GAMECUBE_COMMON
- 	default n if PPC_47x
- 	default y
-+	select NEED_DMA_MAP_STATE
- 
- config CHECK_CACHE_COHERENCY
- 	bool
+Maybe, we can set one of ppc32 defconfigs to KBUILD_DEFCONFIG
+if ARCH is ppc32 ?
+
+
+ifeq ($(ARCH),ppc32)
+   KBUILD_DEFCONFIG := (some reasonable 32bit machine _defconfig)
+else
+   KBUILD_DEFCONFIG := ppc64_defconfig
+endif
+
+ifeq ($(CROSS_COMPILE),)
+    KBUILD_DEFCONFIG := $(shell uname -m)_defconfig
+endif
+
+
+> I expect that can be fixed also.  :)
+>
+> And the written .config file is indeed for 32BIT, not 64BIT.
+>
+> Thanks, Nick.
+>
+>> ---
+>>  Makefile                               | 8 ++++++++
+>>  arch/powerpc/Kconfig                   | 9 +++++++++
+>>  arch/powerpc/platforms/Kconfig.cputype | 8 --------
+>>  3 files changed, 17 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/Makefile b/Makefile
+>> index c5ce55cbc543..f97204aed17a 100644
+>> --- a/Makefile
+>> +++ b/Makefile
+>> @@ -345,6 +345,14 @@ ifeq ($(ARCH),sh64)
+>>         SRCARCH := sh
+>>  endif
+>>
+>> +# Additional ARCH settings for powerpc
+>> +ifeq ($(ARCH),ppc32)
+>> +       SRCARCH := powerpc
+>> +endif
+>> +ifeq ($(ARCH),ppc64)
+>> +       SRCARCH := powerpc
+>> +endif
+>> +
+>>  KCONFIG_CONFIG       ?= .config
+>>  export KCONFIG_CONFIG
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 9f2b75fe2c2d..3405b1b122be 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -1,4 +1,13 @@
+>>  # SPDX-License-Identifier: GPL-2.0
+>> +
+>> +config PPC64
+>> +     bool "64-bit kernel" if "$(ARCH)" = "powerpc"
+>> +     default "$(ARCH)" != "ppc32"
+>> +     select ZLIB_DEFLATE
+>> +     help
+>> +       This option selects whether a 32-bit or a 64-bit kernel
+>> +       will be built.
+>> +
+>>  source "arch/powerpc/platforms/Kconfig.cputype"
+>>
+>>  config PPC32
+>> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+>> index e6a1de521319..f6e5d6ef9782 100644
+>> --- a/arch/powerpc/platforms/Kconfig.cputype
+>> +++ b/arch/powerpc/platforms/Kconfig.cputype
+>> @@ -1,12 +1,4 @@
+>>  # SPDX-License-Identifier: GPL-2.0
+>> -config PPC64
+>> -     bool "64-bit kernel"
+>> -     default n
+>> -     select ZLIB_DEFLATE
+>> -     help
+>> -       This option selects whether a 32-bit or a 64-bit kernel
+>> -       will be built.
+>> -
+>>  menu "Processor support"
+>>  choice
+>>       prompt "Processor Type"
+>>
+>
+>
+> --
+> ~Randy
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kbuild" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-2.18.0
+Best Regards
+Masahiro Yamada
