@@ -1,19 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fKn95GZzzF0jn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 23:15:25 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: devicetree@vger.kernel.org,
-	robh+dt@kernel.org,
-	frowand.list@gmail.com
-Cc: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc: Use of_machine_compatible_match()
-Date: Mon, 30 Jul 2018 23:15:16 +1000
-Message-Id: <20180730131516.18406-2-mpe@ellerman.id.au>
-In-Reply-To: <20180730131516.18406-1-mpe@ellerman.id.au>
-References: <20180730131516.18406-1-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fL2B24zJzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 23:26:41 +1000 (AEST)
+Date: Mon, 30 Jul 2018 16:26:32 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, benh@kernel.crashing.org, mpe@ellerman.id.au,
+ linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180730155633-mutt-send-email-mst@kernel.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com>
+ <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180730111802.GA9830@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,156 +36,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use of_machine_compatible_match() in platform code rather than open
-coding.
+On Mon, Jul 30, 2018 at 04:18:02AM -0700, Christoph Hellwig wrote:
+> On Mon, Jul 30, 2018 at 01:28:03PM +0300, Michael S. Tsirkin wrote:
+> > Let me reply to the "crappy" part first:
+> > So virtio devices can run on another CPU or on a PCI bus. Configuration
+> > can happen over mupltiple transports.  There is a discovery protocol to
+> > figure out where it is. It has some warts but any real system has warts.
+> > 
+> > So IMHO virtio running on another CPU isn't "legacy virtual crappy
+> > virtio". virtio devices that actually sit on a PCI bus aren't "sane"
+> > simply because the DMA is more convoluted on some architectures.
+> 
+> All of what you said would be true if virtio didn't claim to be
+> a PCI device.  
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/40x/ppc40x_simple.c    | 2 +-
- arch/powerpc/platforms/512x/mpc512x_generic.c | 2 +-
- arch/powerpc/platforms/52xx/lite5200.c        | 2 +-
- arch/powerpc/platforms/52xx/media5200.c       | 2 +-
- arch/powerpc/platforms/52xx/mpc5200_simple.c  | 2 +-
- arch/powerpc/platforms/83xx/mpc830x_rdb.c     | 2 +-
- arch/powerpc/platforms/83xx/mpc831x_rdb.c     | 2 +-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c     | 2 +-
- arch/powerpc/platforms/85xx/corenet_generic.c | 2 +-
- arch/powerpc/platforms/85xx/tqm85xx.c         | 2 +-
- 10 files changed, 10 insertions(+), 10 deletions(-)
+There's nothing virtio claims to be.  It's a PV device that uses PCI for
+its configuration.  Configuration is enumerated on the virtual PCI bus.
+That part of the interface is emulated PCI. Data path is through a
+PV device enumerated on the virtio bus.
 
+> Once it claims to be a PCI device and we also see
+> real hardware written to the interface I stand to all what I said
+> above.
 
-Tested the corenet_generic.c change on a p5020ds, the rest are untested owing to
-lack of hardware.
+Real hardware would reuse parts of the interface but by necessity it
+needs to behave slightly differently on some platforms.  However for
+some platforms (such as x86) a PV virtio driver will by luck work with a
+PCI device backend without changes. As these platforms and drivers are
+widely deployed, some people will deploy hardware like that.  Should be
+a non issue as by definition it's transparent to guests.
 
-diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-index 2a050007bbae..f401a8add141 100644
---- a/arch/powerpc/platforms/40x/ppc40x_simple.c
-+++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-@@ -63,7 +63,7 @@ static const char * const board[] __initconst = {
- 
- static int __init ppc40x_probe(void)
- {
--	if (of_device_compatible_match(of_root, board)) {
-+	if (of_machine_compatible_match(board)) {
- 		pci_set_flags(PCI_REASSIGN_ALL_RSRC);
- 		return 1;
- 	}
-diff --git a/arch/powerpc/platforms/512x/mpc512x_generic.c b/arch/powerpc/platforms/512x/mpc512x_generic.c
-index bf884d3075e4..952ea53d4829 100644
---- a/arch/powerpc/platforms/512x/mpc512x_generic.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_generic.c
-@@ -38,7 +38,7 @@ static const char * const board[] __initconst = {
-  */
- static int __init mpc512x_generic_probe(void)
- {
--	if (!of_device_compatible_match(of_root, board))
-+	if (!of_machine_compatible_match(board))
- 		return 0;
- 
- 	mpc512x_init_early();
-diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
-index c94c385cc919..5f11e906e02c 100644
---- a/arch/powerpc/platforms/52xx/lite5200.c
-+++ b/arch/powerpc/platforms/52xx/lite5200.c
-@@ -183,7 +183,7 @@ static const char * const board[] __initconst = {
-  */
- static int __init lite5200_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- define_machine(lite5200) {
-diff --git a/arch/powerpc/platforms/52xx/media5200.c b/arch/powerpc/platforms/52xx/media5200.c
-index 1fcab233d2f2..8641bb55c8e8 100644
---- a/arch/powerpc/platforms/52xx/media5200.c
-+++ b/arch/powerpc/platforms/52xx/media5200.c
-@@ -242,7 +242,7 @@ static const char * const board[] __initconst = {
-  */
- static int __init media5200_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- define_machine(media5200_platform) {
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index a80c6278d515..7b8b3be0f159 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -70,7 +70,7 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc5200_simple_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- define_machine(mpc5200_simple_platform) {
-diff --git a/arch/powerpc/platforms/83xx/mpc830x_rdb.c b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-index 272c41c387b9..7c0cd27e71e7 100644
---- a/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc830x_rdb.c
-@@ -43,7 +43,7 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc830x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- machine_device_initcall(mpc830x_rdb, mpc83xx_declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/83xx/mpc831x_rdb.c b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-index fd80fd570e67..3718db1c74e4 100644
---- a/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc831x_rdb.c
-@@ -43,7 +43,7 @@ static const char *board[] __initdata = {
-  */
- static int __init mpc831x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- machine_device_initcall(mpc831x_rdb, mpc83xx_declare_of_platform_devices);
-diff --git a/arch/powerpc/platforms/83xx/mpc837x_rdb.c b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-index 0c55fa6af2d5..08c8434d895c 100644
---- a/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc837x_rdb.c
-@@ -70,7 +70,7 @@ static const char * const board[] __initconst = {
-  */
- static int __init mpc837x_rdb_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- define_machine(mpc837x_rdb) {
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index ac191a7a1337..8a2a32b75c66 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -174,7 +174,7 @@ static int __init corenet_generic_probe(void)
- 	extern struct smp_ops_t smp_85xx_ops;
- #endif
- 
--	if (of_device_compatible_match(of_root, boards))
-+	if (of_machine_compatible_match(boards))
- 		return 1;
- 
- 	/* Check if we're running under the Freescale hypervisor */
-diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 9fc20a37835e..2172e93a7c67 100644
---- a/arch/powerpc/platforms/85xx/tqm85xx.c
-+++ b/arch/powerpc/platforms/85xx/tqm85xx.c
-@@ -122,7 +122,7 @@ static const char * const board[] __initconst = {
-  */
- static int __init tqm85xx_probe(void)
- {
--	return of_device_compatible_match(of_root, board);
-+	return of_machine_compatible_match(board);
- }
- 
- define_machine(tqm85xx) {
+> > With this out of my system:
+> > I agree these approaches are hacky. I think it is generally better to
+> > have virtio feature negotiation tell you whether device runs on a CPU or
+> > not rather than rely on platform specific ways for this. To this end
+> > there was a recent proposal to rename VIRTIO_F_IO_BARRIER to
+> > VIRTIO_F_REAL_DEVICE.  It got stuck since "real" sounds vague to people,
+> > e.g.  what if it's a VF - is that real or not? But I can see something
+> > like e.g. VIRTIO_F_PLATFORM_DMA gaining support.
+> > 
+> > We would then rename virtio_has_iommu_quirk to virtio_has_dma_quirk
+> > and test VIRTIO_F_PLATFORM_DMA in addition to the IOMMU thing.
+> 
+> I don't really care about the exact naming, and indeed a device that
+> sets the flag doesn't have to be a 'real' device - it just has to act
+> like one.  I explained all the issues that this means (at least relating
+> to DMA) in one of the previous threads.
+
+I believe you refer to this:
+https://lkml.org/lkml/2018/6/7/15
+that was a very helpful list outlining the problems we need to solve,
+thanks a lot for that!
+
+> The important bit is that we can specify exact behavior for both
+> devices that sets the "I'm real!" flag and that ones that don't exactly
+> in the spec.
+
+I would very much like that, yes.
+
+> And that very much excludes arch-specific (or
+> Xen-specific) overrides.
+
+We already committed to a xen specific hack but generally I prefer
+devices that describe how they work instead of platforms magically
+guessing, yes.
+
+However the question people raise is that DMA API is already full of
+arch-specific tricks the likes of which are outlined in your post linked
+above. How is this one much worse?
+
 -- 
-2.14.1
+MST
