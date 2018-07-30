@@ -1,29 +1,36 @@
 Return-Path: <sbobroff@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41f2n95hpMzF19q
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:59:25 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6U1wvwf093485
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2018 21:59:23 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41f4yW44nNzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 13:37:39 +1000 (AEST)
+Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6U3YKJw137324
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2018 23:37:37 -0400
 Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2khq6mkdxc-1
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2khtrnr8sv-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2018 21:59:22 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2018 23:37:36 -0400
 Received: from localhost
  by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sbobroff@linux.ibm.com>;
- Mon, 30 Jul 2018 02:59:21 +0100
+ Mon, 30 Jul 2018 04:37:34 +0100
+Date: Mon, 30 Jul 2018 13:37:27 +1000
 From: Sam Bobroff <sbobroff@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-Cc: mpe@ellerman.id.au, bhelgaas@google.com, bryantly@linux.vnet.ibm.com
-Subject: [PATCH v3 1/1] powerpc/pseries: fix EEH recovery of some IOV devices
-Date: Mon, 30 Jul 2018 11:59:14 +1000
-Message-Id: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
+To: Paul Mackerras <paulus@ozlabs.org>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/2] KVM: PPC: Book3S HV: Allow creating max number of
+ VCPUs on POWER9
+References: <20180726054353.GB1672@fergus>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
+In-Reply-To: <20180726054353.GB1672@fergus>
+Message-Id: <20180730033725.GA28225@tungsten.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,117 +40,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EEH recovery currently fails on pSeries for some IOV capable PCI
-devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
-certain device tree properties for the device. (Found on an IOV
-capable device using the ipr driver.)
 
-Recovery fails in pci_enable_resources() at the check on r->parent,
-because r->flags is set and r->parent is not.  This state is due to
-sriov_init() setting the start, end and flags members of the IOV BARs
-but the parent not being set later in
-pseries_pci_fixup_iov_resources(), because the
-"ibm,open-sriov-vf-bar-info" property is missing.
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Correct this by zeroing the resource flags for IOV BARs when they
-can't be configured (this is the same method used by sriov_init() and
-__pci_read_base()).
+On Thu, Jul 26, 2018 at 03:43:54PM +1000, Paul Mackerras wrote:
+> Commit 1e175d2 ("KVM: PPC: Book3S HV: Pack VCORE IDs to access full
+> VCPU ID space", 2018-07-25) allowed use of VCPU IDs up to
+> KVM_MAX_VCPU_ID on POWER9 in all guest SMT modes and guest emulated
+> hardware SMT modes.  However, with the current definition of
+> KVM_MAX_VCPU_ID, a guest SMT mode of 1 and an emulated SMT mode of 8,
+> it is only possible to create KVM_MAX_VCPUS / 2 VCPUS, because
+> threads_per_subcore is 4 on POWER9 CPUs.  (Using an emulated SMT mode
+> of 8 is useful when migrating VMs to or from POWER8 hosts.)
+>=20
+> This increases KVM_MAX_VCPU_ID to 8 * KVM_MAX_VCPUS when HV KVM is
+> configured in, so that a full complement of KVM_MAX_VCPUS VCPUs can
+> be created on POWER9 in all guest SMT modes and emulated hardware
+> SMT modes.
+>=20
+> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> ---
+> This and the next patch apply on my kvm-ppc-next branch, which
+> includes Sam Bobroff's patch "KVM: PPC: Book3S HV: Pack VCORE IDs to
+> access full VCPU ID space".
 
-VFs cleared this way can't be enabled later, because that requires
-another device tree property, "ibm,number-of-configurable-vfs" as well
-as support for the RTAS function "ibm_map_pes". These are all part of
-hypervisor support for IOV and it seems unlikely that a hypervisor
-would ever partially, but not fully, support it. (None are currently
-provided by QEMU/KVM.)
+Thanks!
 
-Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
----
-Hi,
+I've tested kvm-ppc-next with all three above patches, and I'm able to
+access the entire VCPU ID space (tested using CONFIG_NR_CPUS 1024 in the
+host, rather than the default 2048, as that's the limit imposed by
+QEMU). So:
 
-This is a fix to allow EEH recovery to succeed in a specific situation,
-which I've tried to explain in the commit message.
+Tested-by: Sam Bobroff <sbobroff@linux.ibm.com>
 
-As with the RFC version, the IOV BARs are disabled by setting the resource
-flags to 0 but the other fields are now left as-is because that is what is done
-elsewhere (see sriov_init() and __pci_read_base()).
+>=20
+>  arch/powerpc/include/asm/kvm_host.h | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/a=
+sm/kvm_host.h
+> index 5b9e660..906bcbdf 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -42,7 +42,14 @@
+>  #define KVM_USER_MEM_SLOTS	512
+> =20
+>  #include <asm/cputhreads.h>
+> -#define KVM_MAX_VCPU_ID                (threads_per_subcore * KVM_MAX_VC=
+ORES)
+> +
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +#include <asm/kvm_book3s_asm.h>		/* for MAX_SMT_THREADS */
+> +#define KVM_MAX_VCPU_ID		(MAX_SMT_THREADS * KVM_MAX_VCORES)
+> +
+> +#else
+> +#define KVM_MAX_VCPU_ID		KVM_MAX_VCPUS
+> +#endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
+> =20
+>  #define __KVM_HAVE_ARCH_INTC_INITIALIZED
+> =20
+> --=20
+> 2.7.4
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  https://urldefense.proofpoint.com/v2/url?u=3Dhttp=
+-3A__vger.kernel.org_majordomo-2Dinfo.html&d=3DDwIBAg&c=3Djf_iaSHvJObTbx-si=
+A1ZOg&r=3DFFlZoKpUuHop_w02rKHYxbjM9foF4tIm4FyKg8muba0&m=3DXJuK_j7qbnfsRxN3u=
+HJ65CPxG7brNIut6LNuFyQYF8k&s=3D2zUtzqXA51owzthAuMl8kD0fWpLcjXBZswb_t6SYFSI&=
+e=3D
+>=20
 
-I've also examined the concern raised by Bjorn Helgaas, that VFs could be
-enabled later after the BARs are disabled, and it already seems safe: enabling
-VFs (on pseries) depends on another device tree property,
-"ibm,number-of-configurable-vfs" as well as support for the RTAS function
-"ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
-seems unlikely that we would ever see some of them but not all. (None are
-currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
-recovery failure was discovered doesn't even seem to have SR-IOV support so it
-certainly can't enable VFs.)
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Cheers,
-Sam.
+-----BEGIN PGP SIGNATURE-----
 
-Patch set v3:
-Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
-* Moved some useful information from the cover letter to the commit log.
+iQEzBAABCAAdFiEELWWF8pdtWK5YQRohMX8w6AQl/iIFAlteh+8ACgkQMX8w6AQl
+/iKXuQf7BNPEJBJfdVX9kE5F4E+1PUdtIxxtE+hV1nR/u+Nyl/ydMk1QoPFzP7I2
+D6klIAYsWMtxGAoISwReDDVt+Llm0G+J+8kH4qq8mm1k+YMdGqJ3C1bpYlaUlaCe
+24kAhG5r5h2rW0GmRHZE2BsWqRoWKMvijAFbOm1SC2HH/Qs1vmkj28YqXwHJGH+H
+qt4VUETQY8Q+nQkj4LDMFaHuuzlB2zZmXAJ1Q67bMkWRYhehqNKd+u9UFcGOoE2e
+bmiuVZYINE7dd3KzlX9cuqhH/YJGPVmopMfCdtFRJXsknYhJWYZSp1DB7cVEQ8KV
+b25+WxeZIbiRwxPWfLpnZqmrxnnPCg==
+=rtuC
+-----END PGP SIGNATURE-----
 
-Patch set v2:
-Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
-* Moved the BAR disabling code to a function.
-* Also check in pseries_pci_fixup_resources().
-
-Patch set v1:
-Patch 1/1: powerpc/pseries: fix EEH recovery of IOV devices
-
- arch/powerpc/platforms/pseries/setup.c | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index b55ad4286dc7..0a9e4243ae1d 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -645,6 +645,15 @@ void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
- 	}
- }
- 
-+static void pseries_disable_sriov_resources(struct pci_dev *pdev)
-+{
-+	int i;
-+
-+	pci_warn(pdev, "No hypervisor support for SR-IOV on this device, IOV BARs disabled.\n");
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
-+		pdev->resource[i + PCI_IOV_RESOURCES].flags = 0;
-+}
-+
- static void pseries_pci_fixup_resources(struct pci_dev *pdev)
- {
- 	const int *indexes;
-@@ -652,10 +661,10 @@ static void pseries_pci_fixup_resources(struct pci_dev *pdev)
- 
- 	/*Firmware must support open sriov otherwise dont configure*/
- 	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
--	if (!indexes)
--		return;
--	/* Assign the addresses from device tree*/
--	of_pci_set_vf_bar_size(pdev, indexes);
-+	if (indexes)
-+		of_pci_set_vf_bar_size(pdev, indexes);
-+	else
-+		pseries_disable_sriov_resources(pdev);
- }
- 
- static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
-@@ -667,10 +676,10 @@ static void pseries_pci_fixup_iov_resources(struct pci_dev *pdev)
- 		return;
- 	/*Firmware must support open sriov otherwise dont configure*/
- 	indexes = of_get_property(dn, "ibm,open-sriov-vf-bar-info", NULL);
--	if (!indexes)
--		return;
--	/* Assign the addresses from device tree*/
--	of_pci_parse_iov_addrs(pdev, indexes);
-+	if (indexes)
-+		of_pci_parse_iov_addrs(pdev, indexes);
-+	else
-+		pseries_disable_sriov_resources(pdev);
- }
- 
- static resource_size_t pseries_pci_iov_resource_alignment(struct pci_dev *pdev,
--- 
-2.16.1.74.g9b0b1f47b
+--qMm9M+Fa2AknHoGS--
