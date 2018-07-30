@@ -1,33 +1,48 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk>
-Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fZwk4CNPzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 09:07:47 +1000 (AEST)
-Date: Mon, 30 Jul 2018 23:59:22 +0100
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-To: Alexei Colin <acolin@isi.edu>
-Cc: Alexandre Bounine <alex.bou9@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- John Paul Walters <jwalters@isi.edu>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>,
- Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>,
- Alexander Sverdlin <alexander.sverdlin@nokia.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fb8G5ph9zF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 09:17:50 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6UNEi8b129747
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:17:47 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kjavhte1q-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 19:17:47 -0400
+Received: from localhost
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Mon, 30 Jul 2018 19:17:46 -0400
+Date: Mon, 30 Jul 2018 20:17:38 -0300
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linux-kernel@vger.kernel.org, "Alastair D'Silva" <alastair@d-silva.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Thomas Gleixner <tglx@linutronix.de>, Peter Anvin <hpa@zytor.com>,
- Matt Porter <mporter@kernel.crashing.org>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/6] rapidio: move Kconfig menu definition to subsystem
-Message-ID: <20180730225921.GE17271@n2100.armlinux.org.uk>
-References: <20180730225035.28365-1-acolin@isi.edu>
+ Cyril Bur <cyrilbur@gmail.com>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Joe Perches <joe@perches.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Simon Guo <wei.guo.simon@gmail.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 04/10] powerpc/traps: Use REG_FMT in show_signal_msg()
+References: <20180727145811.12334-1-muriloo@linux.ibm.com>
+ <20180727145811.12334-5-muriloo@linux.ibm.com>
+ <20180727184023.Horde.KRXPzZpG18uxt_B9sy_FBg5@messagerie.si.c-s.fr>
+ <20180730152838.GA23704@kermit-br-ibm-com>
+ <20180730183047.Horde.g9hQ_3EXmF6St0upNs2DDw1@messagerie.si.c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180730225035.28365-1-acolin@isi.edu>
-Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20180730183047.Horde.g9hQ_3EXmF6St0upNs2DDw1@messagerie.si.c-s.fr>
+Message-Id: <20180730231738.GA20351@kermit-br-ibm-com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,29 +52,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I only have this message, and patches 5 and 6.  This is meaningless
-for me to review - I can't tell what you've done as far as my comments
-on your previous iteration.
+Hi, Christophe.
 
-Please arrange to _at least_ copy all patches the appropriate mailing
-lists for the set with your complete patch set if you aren't going to
-copy everyone on all patches in the set.
+On Mon, Jul 30, 2018 at 06:30:47PM +0200, LEROY Christophe wrote:
+> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a écrit :
+>
+> > Hi, Christophe.
+> >
+> > On Fri, Jul 27, 2018 at 06:40:23PM +0200, LEROY Christophe wrote:
+> > > Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a écrit :
+> > >
+> > > > Simplify the message format by using REG_FMT as the register format.  This
+> > > > avoids having two different formats and avoids checking for MSR_64BIT.
+> > >
+> > > Are you sure it is what we want ?
+> >
+> > Yes.
+> >
+> > > Won't it change the behaviour for a 32 bits app running on a 64bits kernel ?
+> >
+> > In fact, this changes how many zeroes are prefixed when displaying the
+> > registers
+> > (%016lx vs. %08lx format).  For example, 32-bits userspace, 64-bits kernel:
+>
+> Indeed that's what I suspected. What is the real benefit of this change ?
+> Why not keep the current format for 32bits userspace ? All those leading
+> zeroes are pointless to me.
 
-On Mon, Jul 30, 2018 at 06:50:28PM -0400, Alexei Colin wrote:
-> In the current patchset, I took the approach of adding '|| PCI' to the
-> depends in the subsystem. I did try the alterantive approach mentioned
-> in the reviews for v1 of this patch, where the subsystem Kconfig does
-> not add a '|| PCI' and each per-architecture Kconfig has to add a
-> 'select HAS_RAPIDIO if PCI' and SoCs with IP blocks have to also add
-> 'select HAS_RAPIDIO'. This works too but requires each architecture's
-> Kconfig to add the line for RapidIO (whereas current approach does not
-> require that involvement) and also may create a false impression that
-> the dependency on PCI is strict.
+One of the benefits is simplifying the code by removing some checks.  Another is
+deduplicating almost identical format strings in favor of a unified one.
 
-... which means, as it stands, I've no idea what you actually came up
-with for this.
+After reading Joe's comment [1], %px seems to be the format we're looking for.
+An extract from Documentation/core-api/printk-formats.rst:
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 13.8Mbps down 630kbps up
-According to speedtest.net: 13Mbps down 490kbps up
+  "%px is functionally equivalent to %lx (or %lu). %px is preferred because it
+  is more uniquely grep'able."
+
+So I guess we don't need to worry about the format (%016lx vs. %08lx), let's
+just use %px, as per the guideline.
+
+[1] https://lore.kernel.org/lkml/26f07092cdde378ebb42c1034badde1b56521c36.camel@perches.com/
+
+Cheers
+Murilo
