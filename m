@@ -2,20 +2,25 @@ Return-Path: <acolin@isi.edu>
 Received: from mail-d.ads.isi.edu (mail-d.ads.isi.edu [128.9.180.199])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fZnG58NXzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 09:01:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fZnz3yCczF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 09:01:59 +1000 (AEST)
 From: Alexei Colin <acolin@isi.edu>
 To: Alexandre Bounine <alex.bou9@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexei Colin <acolin@isi.edu>, John Paul Walters <jwalters@isi.edu>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Will Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>,
+ Alexander Sverdlin <alexander.sverdlin@nokia.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Cc: Alexei Colin <acolin@isi.edu>, Andrew Morton <akpm@linux-foundation.org>,
- John Paul Walters <jwalters@isi.edu>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 3/6] powerpc: factor out RapidIO Kconfig menu entry
-Date: Mon, 30 Jul 2018 18:50:31 -0400
-Message-Id: <20180730225035.28365-4-acolin@isi.edu>
-In-Reply-To: <20180730225035.28365-1-acolin@isi.edu>
-References: <20180730225035.28365-1-acolin@isi.edu>
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Peter Anvin <hpa@zytor.com>, Matt Porter <mporter@kernel.crashing.org>,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6] rapidio: move Kconfig menu definition to subsystem
+Date: Mon, 30 Jul 2018 18:50:28 -0400
+Message-Id: <20180730225035.28365-1-acolin@isi.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The menu entry is now defined in the rapidio subtree.  Also, re-order
-the bus menu so tha the platform-specific RapidIO controller appears
-after the entry for the RapidIO subsystem.
+The top-level Kconfig entry for RapidIO subsystem is currently
+duplicated in several architecture-specific Kconfig files. This set of
+patches does two things:
 
-Platforms with a PCI bus will be offered the RapidIO menu since they may
-be want support for a RapidIO PCI device. Platforms without a PCI bus
-that might include a RapidIO IP block will need to "select HAS_RAPIDIO"
-in the platform-/machine-specific "config ARCH_*" Kconfig entry.
+1. Move the Kconfig menu definition into the RapidIO subsystem and
+remove the duplicate definitions from arch Kconfig files.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: John Paul Walters <jwalters@isi.edu>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Alexei Colin <acolin@isi.edu>
----
- arch/powerpc/Kconfig | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+2. Enable RapidIO Kconfig menu entry for arm and arm64 architectures,
+where it was not enabled before. I tested that subsystem and drivers
+build successfully for both architectures, and tested that the modules
+load on a custom arm64 Qemu model.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 25d005af0a5b..17ea8a5f90a0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -993,16 +993,7 @@ source "drivers/pci/Kconfig"
- 
- source "drivers/pcmcia/Kconfig"
- 
--config HAS_RAPIDIO
--	bool
--	default n
--
--config RAPIDIO
--	tristate "RapidIO support"
--	depends on HAS_RAPIDIO || PCI
--	help
--	  If you say Y here, the kernel will include drivers and
--	  infrastructure code to support RapidIO interconnect devices.
-+source "drivers/rapidio/Kconfig"
- 
- config FSL_RIO
- 	bool "Freescale Embedded SRIO Controller support"
-@@ -1012,8 +1003,6 @@ config FSL_RIO
- 	  Include support for RapidIO controller on Freescale embedded
- 	  processors (MPC8548, MPC8641, etc).
- 
--source "drivers/rapidio/Kconfig"
--
- endmenu
- 
- config NONSTATIC_KERNEL
+For all architectures, RapidIO menu should be offered when either:
+(1) The platform has a PCI bus (which host a RapidIO module on the bus).
+(2) The platform has a RapidIO IP block (connected to a system bus, e.g.
+AXI on ARM). In this case, 'select HAS_RAPIDIO' should be added to the
+'config ARCH_*' menu entry for the SoCs that offer the IP block.
+
+Prior to this patchset, different architectures used different criteria:
+* powerpc: (1) and (2)
+* mips: (1) and (2) after recent commit into next that added (2):
+  https://www.linux-mips.org/archives/linux-mips/2018-07/msg00596.html
+  fc5d988878942e9b42a4de5204bdd452f3f1ce47
+  491ec1553e0075f345fbe476a93775eabcbc40b6
+* x86: (1)
+* arm,arm64: none (RapidIO menus never offered)
+
+Responses to feedback from prior submission (thanks for the reviews!):
+http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593347.html
+http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593349.html
+
+Changelog:
+  * Moved Kconfig entry into RapidIO subsystem instead of duplicating
+
+In the current patchset, I took the approach of adding '|| PCI' to the
+depends in the subsystem. I did try the alterantive approach mentioned
+in the reviews for v1 of this patch, where the subsystem Kconfig does
+not add a '|| PCI' and each per-architecture Kconfig has to add a
+'select HAS_RAPIDIO if PCI' and SoCs with IP blocks have to also add
+'select HAS_RAPIDIO'. This works too but requires each architecture's
+Kconfig to add the line for RapidIO (whereas current approach does not
+require that involvement) and also may create a false impression that
+the dependency on PCI is strict.
+
+We appreciate the suggestion for also selecting the RapdiIO subsystem for
+compilation with COMPILE_TEST, but hope to address it in a separate
+patchset, localized to the subsystem, since it will need to change
+depends on all drivers, not just on the top level, and since this
+patch now spans multiple architectures.
+
+
+Alexei Colin (6):
+  rapidio: define top Kconfig menu in driver subtree
+  x86: factor out RapidIO Kconfig menu
+  powerpc: factor out RapidIO Kconfig menu entry
+  mips: factor out RapidIO Kconfig entry
+  arm: enable RapidIO menu in Kconfig
+  arm64: enable RapidIO menu in Kconfig
+
+ arch/arm/Kconfig        |  2 ++
+ arch/arm64/Kconfig      |  2 ++
+ arch/mips/Kconfig       | 11 -----------
+ arch/powerpc/Kconfig    | 13 +------------
+ arch/x86/Kconfig        |  8 --------
+ drivers/rapidio/Kconfig | 15 +++++++++++++++
+ 6 files changed, 20 insertions(+), 31 deletions(-)
+
 -- 
 2.18.0
