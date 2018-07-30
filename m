@@ -1,35 +1,45 @@
-Return-Path: <bryantly@linux.ibm.com>
+Return-Path: <muriloo@linux.ibm.com>
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fNGw1GB4zF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 01:07:45 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6UF4LFv106921
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:07:42 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kj3w8kgh2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fNl84LFFzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 01:28:52 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6UFPEGo068489
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:28:49 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kj57f0b3x-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:07:42 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 11:28:49 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.ibm.com>;
- Mon, 30 Jul 2018 11:07:40 -0400
-Subject: Re: [PATCH v3 1/1] powerpc/pseries: fix EEH recovery of some IOV
- devices
-To: Sam Bobroff <sbobroff@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Cc: mpe@ellerman.id.au, bhelgaas@google.com, bryantly@linux.vnet.ibm.com
-References: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
-From: "Bryant G. Ly" <bryantly@linux.ibm.com>
-Date: Mon, 30 Jul 2018 10:07:35 -0500
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Mon, 30 Jul 2018 09:28:48 -0600
+Date: Mon, 30 Jul 2018 12:28:38 -0300
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Cc: linuxppc-dev@lists.ozlabs.org, "Tobin C . Harding" <me@tobin.cc>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Simon Guo <wei.guo.simon@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Michael Neuling <mikey@neuling.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Cyril Bur <cyrilbur@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ "Alastair D'Silva" <alastair@d-silva.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 04/10] powerpc/traps: Use REG_FMT in show_signal_msg()
+References: <20180727145811.12334-1-muriloo@linux.ibm.com>
+ <20180727145811.12334-5-muriloo@linux.ibm.com>
+ <20180727184023.Horde.KRXPzZpG18uxt_B9sy_FBg5@messagerie.si.c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <478afe66-34dd-458c-8b66-5e57c6b686eb@linux.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20180727184023.Horde.KRXPzZpG18uxt_B9sy_FBg5@messagerie.si.c-s.fr>
+Message-Id: <20180730152838.GA23704@kermit-br-ibm-com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,76 +49,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/29/18 8:59 PM, Sam Bobroff wrote:
+Hi, Christophe.
 
-> EEH recovery currently fails on pSeries for some IOV capable PCI
-> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
-> certain device tree properties for the device. (Found on an IOV
-> capable device using the ipr driver.)
+On Fri, Jul 27, 2018 at 06:40:23PM +0200, LEROY Christophe wrote:
+> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a écrit :
 >
-> Recovery fails in pci_enable_resources() at the check on r->parent,
-> because r->flags is set and r->parent is not.  This state is due to
-> sriov_init() setting the start, end and flags members of the IOV BARs
-> but the parent not being set later in
-> pseries_pci_fixup_iov_resources(), because the
-> "ibm,open-sriov-vf-bar-info" property is missing.
+> > Simplify the message format by using REG_FMT as the register format.  This
+> > avoids having two different formats and avoids checking for MSR_64BIT.
 >
-> Correct this by zeroing the resource flags for IOV BARs when they
-> can't be configured (this is the same method used by sriov_init() and
-> __pci_read_base()).
->
-> VFs cleared this way can't be enabled later, because that requires
-> another device tree property, "ibm,number-of-configurable-vfs" as well
-> as support for the RTAS function "ibm_map_pes". These are all part of
-> hypervisor support for IOV and it seems unlikely that a hypervisor
-> would ever partially, but not fully, support it. (None are currently
-> provided by QEMU/KVM.)
->
-> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
-> ---
-> Hi,
->
-> This is a fix to allow EEH recovery to succeed in a specific situation,
-> which I've tried to explain in the commit message.
->
-> As with the RFC version, the IOV BARs are disabled by setting the resource
-> flags to 0 but the other fields are now left as-is because that is what is done
-> elsewhere (see sriov_init() and __pci_read_base()).
->
-> I've also examined the concern raised by Bjorn Helgaas, that VFs could be
-> enabled later after the BARs are disabled, and it already seems safe: enabling
-> VFs (on pseries) depends on another device tree property,
-> "ibm,number-of-configurable-vfs" as well as support for the RTAS function
-> "ibm_map_pes". Since these are all part of the hypervisor's support for IOV it
-> seems unlikely that we would ever see some of them but not all. (None are
-> currently provided by QEMU/KVM.) (Additionally, the ipr driver on which the EEH
-> recovery failure was discovered doesn't even seem to have SR-IOV support so it
-> certainly can't enable VFs.)
->
-> Cheers,
-> Sam.
->
-> Patch set v3:
-> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
-> * Moved some useful information from the cover letter to the commit log.
->
-> Patch set v2:
-> Patch 1/1: powerpc/pseries: fix EEH recovery of some IOV devices
-> * Moved the BAR disabling code to a function.
-> * Also check in pseries_pci_fixup_resources().
->
-> Patch set v1:
-> Patch 1/1: powerpc/pseries: fix EEH recovery of IOV devices
->
->  arch/powerpc/platforms/pseries/setup.c | 25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-> index b55ad4286dc7..0a9e4243ae1d 100644
-> --- a/arch/powerpc/platforms/pseries/setup.c
-> +++ b/arch/powerpc/platforms/pseries/setup.c
-> @@ -645,6 +645,15 @@ void of_pci_parse_iov_addrs(struct pci_dev *dev, const int *indexes)
->  	}
->  }
+> Are you sure it is what we want ?
 
-Reviewed-by: Bryant G. Ly <bryantly@linux.ibm.com>
+Yes.
+
+> Won't it change the behaviour for a 32 bits app running on a 64bits kernel ?
+
+In fact, this changes how many zeroes are prefixed when displaying the registers
+(%016lx vs. %08lx format).  For example, 32-bits userspace, 64-bits kernel:
+
+before this series:
+  [66475.002900] segv[4599]: unhandled signal 11 at 00000000 nip 10000420 lr 0fe61854 code 1
+
+after this series:
+  [   73.414535] segv[3759]: segfault (11) at 0000000000000000 nip 0000000010000420 lr 000000000fe61854 code 1 in segv[10000000+10000]
+  [   73.414641] segv[3759]: code: 4e800421 80010014 38210010 7c0803a6 4bffff30 9421ffd0 93e1002c 7c3f0b78
+  [   73.414665] segv[3759]: code: 39200000 913f001c 813f001c 39400001 <91490000> 39200000 7d234b78 397f0030
+
+Have you spotted any other behaviour change?
+
+Cheers
+Murilo
