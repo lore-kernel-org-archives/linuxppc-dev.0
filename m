@@ -1,32 +1,36 @@
-Return-Path: <alex.bou9@gmail.com>
-Received: from mail-io0-x243.google.com (mail-io0-x243.google.com
- [IPv6:2607:f8b0:4001:c06::243])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fzJh1HXFzF09Y
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:26:19 +1000 (AEST)
-Received: by mail-io0-x243.google.com with SMTP id r15-v6so13170129ioa.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 07:26:19 -0700 (PDT)
-Subject: Re: [PATCH 0/6] rapidio: move Kconfig menu definition to subsystem
-To: Alexei Colin <acolin@isi.edu>, Andrew Morton <akpm@linux-foundation.org>
-Cc: John Paul Walters <jwalters@isi.edu>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- Will Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>,
- Alexander Sverdlin <alexander.sverdlin@nokia.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Peter Anvin <hpa@zytor.com>, Matt Porter <mporter@kernel.crashing.org>,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20180730225035.28365-1-acolin@isi.edu>
-From: Alex Bounine <alex.bou9@gmail.com>
-Message-ID: <37edb8c5-a16f-ea39-5da8-312d138ce442@gmail.com>
-Date: Tue, 31 Jul 2018 10:26:15 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fzMr3n82zF152
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:29:10 +1000 (AEST)
+Date: Tue, 31 Jul 2018 08:29:05 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>,
+ kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
+ Tesla V100
+Message-ID: <20180731082905.5c7cdeee@t450s.home>
+In-Reply-To: <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607110409.5057ebac@w520.home>
+ <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
+ <20180607161541.21df6434@w520.home>
+ <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+ <20180607214455.51ecfa1a@w520.home>
+ <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
+ <20180607230323.0148344e@w520.home>
+ <20180710141020.759983a6@aik.ozlabs.ibm.com>
+ <20180710163715.5c326985@t450s.home>
+ <20180711192621.174d849a@aik.ozlabs.ibm.com>
+ <4089d9ed-0c6b-3ba2-d447-049ce5b98764@ozlabs.ru>
+ <20180730102957.47fa1191@t450s.home>
+ <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <20180730225035.28365-1-acolin@isi.edu>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,73 +40,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Acked-by: Alexandre Bounine <alex.bou9@gmail.com>
+On Tue, 31 Jul 2018 14:03:35 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On 2018-07-30 06:50 PM, Alexei Colin wrote:
-> The top-level Kconfig entry for RapidIO subsystem is currently
-> duplicated in several architecture-specific Kconfig files. This set of
-> patches does two things:
+> On 31/07/2018 02:29, Alex Williamson wrote:
+> > On Mon, 30 Jul 2018 18:58:49 +1000
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >> After some local discussions, it was pointed out that force disabling
+> >> nvlinks won't bring us much as for an nvlink to work, both sides need to
+> >> enable it so malicious guests cannot penetrate good ones (or a host)
+> >> unless a good guest enabled the link but won't happen with a well
+> >> behaving guest. And if two guests became malicious, then can still only
+> >> harm each other, and so can they via other ways such network. This is
+> >> different from PCIe as once PCIe link is unavoidably enabled, a well
+> >> behaving device cannot firewall itself from peers as it is up to the
+> >> upstream bridge(s) now to decide the routing; with nvlink2, a GPU still
+> >> has means to protect itself, just like a guest can run "firewalld" for
+> >> network.
+> >>
+> >> Although it would be a nice feature to have an extra barrier between
+> >> GPUs, is inability to block the links in hypervisor still a blocker for
+> >> V100 pass through?  
+> > 
+> > How is the NVLink configured by the guest, is it 'on'/'off' or are
+> > specific routes configured?   
 > 
-> 1. Move the Kconfig menu definition into the RapidIO subsystem and
-> remove the duplicate definitions from arch Kconfig files.
+> The GPU-GPU links need not to be blocked and need to be enabled
+> (==trained) by a driver in the guest. There are no routes between GPUs
+> in NVLink fabric, these are direct links, it is just a switch on each
+> side, both switches need to be on for a link to work.
+
+Ok, but there is at least the possibility of multiple direct links per
+GPU, the very first diagram I find of NVlink shows 8 interconnected
+GPUs:
+
+https://www.nvidia.com/en-us/data-center/nvlink/
+
+So if each switch enables one direct, point to point link, how does the
+guest know which links to open for which peer device?  And of course
+since we can't see the spec, a security audit is at best hearsay :-\
+ 
+> The GPU-CPU links - the GPU bit is the same switch, the CPU NVlink state
+> is controlled via the emulated PCI bridges which I pass through together
+> with the GPU.
+
+So there's a special emulated switch, is that how the guest knows which
+GPUs it can enable NVLinks to?
+
+> > If the former, then isn't a non-malicious
+> > guest still susceptible to a malicious guest?  
 > 
-> 2. Enable RapidIO Kconfig menu entry for arm and arm64 architectures,
-> where it was not enabled before. I tested that subsystem and drivers
-> build successfully for both architectures, and tested that the modules
-> load on a custom arm64 Qemu model.
-> 
-> For all architectures, RapidIO menu should be offered when either:
-> (1) The platform has a PCI bus (which host a RapidIO module on the bus).
-> (2) The platform has a RapidIO IP block (connected to a system bus, e.g.
-> AXI on ARM). In this case, 'select HAS_RAPIDIO' should be added to the
-> 'config ARCH_*' menu entry for the SoCs that offer the IP block.
-> 
-> Prior to this patchset, different architectures used different criteria:
-> * powerpc: (1) and (2)
-> * mips: (1) and (2) after recent commit into next that added (2):
->    https://www.linux-mips.org/archives/linux-mips/2018-07/msg00596.html
->    fc5d988878942e9b42a4de5204bdd452f3f1ce47
->    491ec1553e0075f345fbe476a93775eabcbc40b6
-> * x86: (1)
-> * arm,arm64: none (RapidIO menus never offered)
-> 
-> Responses to feedback from prior submission (thanks for the reviews!):
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593347.html
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593349.html
-> 
-> Changelog:
->    * Moved Kconfig entry into RapidIO subsystem instead of duplicating
-> 
-> In the current patchset, I took the approach of adding '|| PCI' to the
-> depends in the subsystem. I did try the alterantive approach mentioned
-> in the reviews for v1 of this patch, where the subsystem Kconfig does
-> not add a '|| PCI' and each per-architecture Kconfig has to add a
-> 'select HAS_RAPIDIO if PCI' and SoCs with IP blocks have to also add
-> 'select HAS_RAPIDIO'. This works too but requires each architecture's
-> Kconfig to add the line for RapidIO (whereas current approach does not
-> require that involvement) and also may create a false impression that
-> the dependency on PCI is strict.
-> 
-> We appreciate the suggestion for also selecting the RapdiIO subsystem for
-> compilation with COMPILE_TEST, but hope to address it in a separate
-> patchset, localized to the subsystem, since it will need to change
-> depends on all drivers, not just on the top level, and since this
-> patch now spans multiple architectures.
-> 
-> 
-> Alexei Colin (6):
->    rapidio: define top Kconfig menu in driver subtree
->    x86: factor out RapidIO Kconfig menu
->    powerpc: factor out RapidIO Kconfig menu entry
->    mips: factor out RapidIO Kconfig entry
->    arm: enable RapidIO menu in Kconfig
->    arm64: enable RapidIO menu in Kconfig
-> 
->   arch/arm/Kconfig        |  2 ++
->   arch/arm64/Kconfig      |  2 ++
->   arch/mips/Kconfig       | 11 -----------
->   arch/powerpc/Kconfig    | 13 +------------
->   arch/x86/Kconfig        |  8 --------
->   drivers/rapidio/Kconfig | 15 +++++++++++++++
->   6 files changed, 20 insertions(+), 31 deletions(-)
-> 
+> A non-malicious guest needs to turn its switch on for a link to a GPU
+> which belongs to a malicious guest.
+
+Actual security, or obfuscation, will we ever know...
+
+> > If the latter, how is
+> > routing configured by the guest given that the guest view of the
+> > topology doesn't match physical hardware?  Are these routes
+> > deconfigured by device reset?  Are they part of the save/restore
+> > state?  Thanks,  
+
+Still curious what happens to these routes on reset.  Can a later user
+of a GPU inherit a device where the links are already enabled?  Thanks,
+
+Alex
