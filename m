@@ -1,21 +1,36 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ffPJ42pkzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 11:44:19 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id z8-v6so8204085pgu.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 18:44:19 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
- Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH] powerpc/4xx: Fix error return path in ppc4xx_msi_probe()
-Date: Mon, 30 Jul 2018 18:44:14 -0700
-Message-Id: <1533001454-8751-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ffSW6BNLzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 11:47:07 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6V1i4YS138350
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 21:47:05 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kj8ckux4q-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 21:47:04 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 30 Jul 2018 19:47:04 -0600
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mobility: Fix node detach/rename problem
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
+ <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
+Date: Mon, 30 Jul 2018 18:46:57 -0700
+MIME-Version: 1.0
+In-Reply-To: <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <0dd90afb-4b92-84de-2f7a-b5bf1d197c81@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,191 +40,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-An arbitrary error in ppc4xx_msi_probe() quite likely results in a
-crash similar to the following, seen after dma_alloc_coherent()
-returned an error.
+On 07/30/2018 05:59 PM, Tyrel Datwyler wrote:
+> On 07/29/2018 06:11 AM, Michael Bringmann wrote:
+>> During LPAR migration, the content of the device tree/sysfs may
+>> be updated including deletion and replacement of nodes in the
+>> tree.  When nodes are added to the internal node structures, they
+>> are appended in FIFO order to a list of nodes maintained by the
+>> OF code APIs.  When nodes are removed from the device tree, they
+>> are marked OF_DETACHED, but not actually deleted from the system
+>> to allow for pointers cached elsewhere in the kernel.  The order
+>> and content of the entries in the list of nodes is not altered,
+>> though.
+>>
+>> During LPAR migration some common nodes are deleted and re-added
+>> e.g. "ibm,platform-facilities".  If a node is re-added to the OF
+>> node lists, the of_attach_node function checks to make sure that
+>> the name + ibm,phandle of the to-be-added data is unique.  As the
+>> previous copy of a re-added node is not modified beyond the addition
+>> of a bit flag, the code (1) finds the old copy, (2) prints a WARNING
+>> notice to the console, (3) renames the to-be-added node to avoid
+>> filename collisions within a directory, and (3) adds entries to
+>> the sysfs/kernfs.
+> 
+> So, this patch actually just band aids over the real problem. This is a long standing problem with several PFO drivers leaking references. The issue here is that, during the device tree update that follows a migration. the update of the ibm,platform-facilities node and friends below are always deleted and re-added on the destination lpar and subsequently the leaked references prevent the devices nodes from every actually being properly cleaned up after detach. Thus, leading to the issue you are observing.
+> 
+> As and example a quick look at nx-842-pseries.c reveals several issues.
+> 
+> static int __init nx842_pseries_init(void)
+> {
+>         struct nx842_devdata *new_devdata;
+>         int ret;
+> 
+>         if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
+>                 return -ENODEV;
+> 
+> This call to of_find_compatible_node() results in a node returned with refcount incremented and therefore immediately leaked.
+> 
+> Further, the reconfig notifier logic makes the assumption that it only needs to deal with node updates, but as I outlined above the post migration device tree update always results in PFO nodes and properties being deleted and re-added.
+> 
+> /**
+>  * nx842_OF_notifier - Process updates to OF properties for the device
+>  *
+>  * @np: notifier block
+>  * @action: notifier action
+>  * @update: struct pSeries_reconfig_prop_update pointer if action is
+>  *      PSERIES_UPDATE_PROPERTY
+>  *
+>  * Returns:
+>  *      NOTIFY_OK on success
+>  *      NOTIFY_BAD encoded with error number on failure, use
+>  *              notifier_to_errno() to decode this value
+>  */
+> static int nx842_OF_notifier(struct notifier_block *np, unsigned long action,
+>                              void *data)
+> {
+>         struct of_reconfig_data *upd = data;
+>         struct nx842_devdata *local_devdata;
+>         struct device_node *node = NULL;
+> 
+>         rcu_read_lock();
+>         local_devdata = rcu_dereference(devdata);
+>         if (local_devdata)
+>                 node = local_devdata->dev->of_node;
+> 
+>         if (local_devdata &&
+>                         action == OF_RECONFIG_UPDATE_PROPERTY &&
+>                         !strcmp(upd->dn->name, node->name)) {
+>                 rcu_read_unlock();
+>                 nx842_OF_upd(upd->prop);
+>         } else
+>                 rcu_read_unlock();
+> 
+>         return NOTIFY_OK;
+> }
+> 
+> I expect to find the same problems in pseries-rng.c and nx.c.
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc001bff0
-Oops: Kernel access of bad area, sig: 11 [#1]
-BE Canyonlands
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper Tainted: G        W
-4.18.0-rc6-00010-gff33d1030a6c #1
-NIP:  c001bff0 LR: c001c418 CTR: c01faa7c
-REGS: cf82db40 TRAP: 0300   Tainted: G        W
-(4.18.0-rc6-00010-gff33d1030a6c)
-MSR:  00029000 <CE,EE,ME>  CR: 28002024  XER: 00000000
-DEAR: 00000000 ESR: 00000000
-GPR00: c001c418 cf82dbf0 cf828000 cf8de400 00000000 00000000 000000c4 000000c4
-GPR08: c0481ea4 00000000 00000000 000000c4 22002024 00000000 c00025e8 00000000
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c0492380 0000004a
-GPR24: 00029000 0000000c 00000000 cf8de410 c0494d60 c0494d60 cf8bebc0 00000001
-NIP [c001bff0] ppc4xx_of_msi_remove+0x48/0xa0
-LR [c001c418] ppc4xx_msi_probe+0x294/0x3b8
-Call Trace:
-[cf82dbf0] [00029000] 0x29000 (unreliable)
-[cf82dc10] [c001c418] ppc4xx_msi_probe+0x294/0x3b8
-[cf82dc70] [c0209fbc] platform_drv_probe+0x40/0x9c
-[cf82dc90] [c0208240] driver_probe_device+0x2a8/0x350
-[cf82dcc0] [c0206204] bus_for_each_drv+0x60/0xac
-[cf82dcf0] [c0207e88] __device_attach+0xe8/0x160
-[cf82dd20] [c02071e0] bus_probe_device+0xa0/0xbc
-[cf82dd40] [c02050c8] device_add+0x404/0x5c4
-[cf82dd90] [c0288978] of_platform_device_create_pdata+0x88/0xd8
-[cf82ddb0] [c0288b70] of_platform_bus_create+0x134/0x220
-[cf82de10] [c0288bcc] of_platform_bus_create+0x190/0x220
-[cf82de70] [c0288cf4] of_platform_bus_probe+0x98/0xec
-[cf82de90] [c0449650] __machine_initcall_canyonlands_ppc460ex_device_probe+0x38/0x54
-[cf82dea0] [c0002404] do_one_initcall+0x40/0x188
-[cf82df00] [c043daec] kernel_init_freeable+0x130/0x1d0
-[cf82df30] [c0002600] kernel_init+0x18/0x104
-[cf82df40] [c000c23c] ret_from_kernel_thread+0x14/0x1c
-Instruction dump:
-90010024 813d0024 2f890000 83c30058 41bd0014 48000038 813d0024 7f89f800
-409d002c 813e000c 57ea103a 3bff0001 <7c69502e> 2f830000 419effe0 4803b26d
----[ end trace 8cf551077ecfc42a ]---
+So, in actuality the main root of the problem is really in the vio core. A node reference for each PFO device under "ibm,platform-facilities" is taken during vio_register_device_node(). We need a reconfig notifier to call vio_unregister_device() for each PFO device on detach, and vio_bus_scan_register_devices("ibm,platform-facilities") on attach. This will make sure the PFO vio devices are released such that vio_dev_release() gets called to put the node reference that was taken at original registration time.
 
-Fix it up. Specifically,
+/* vio_dev refcount hit 0 */
+static void vio_dev_release(struct device *dev)
+{
+        struct iommu_table *tbl = get_iommu_table_base(dev);
 
-- Return valid error codes from ppc4xx_setup_pcieh_hw(), have it clean
-  up after itself, and only access hardware after all possible error
-  conditions have been handled.
-- Use devm_kzalloc() instead of kzalloc() in ppc4xx_msi_probe()
+        if (tbl)
+                iommu_tce_table_put(tbl);
+        of_node_put(dev->of_node);
+        kfree(to_vio_dev(dev));
+}
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- arch/powerpc/platforms/4xx/msi.c | 51 +++++++++++++++++++++++-----------------
- 1 file changed, 30 insertions(+), 21 deletions(-)
+-Tyrel
 
-diff --git a/arch/powerpc/platforms/4xx/msi.c b/arch/powerpc/platforms/4xx/msi.c
-index 81b2cbce7df8..7c324eff2f22 100644
---- a/arch/powerpc/platforms/4xx/msi.c
-+++ b/arch/powerpc/platforms/4xx/msi.c
-@@ -146,13 +146,19 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 	const u32 *sdr_addr;
- 	dma_addr_t msi_phys;
- 	void *msi_virt;
-+	int err;
- 
- 	sdr_addr = of_get_property(dev->dev.of_node, "sdr-base", NULL);
- 	if (!sdr_addr)
--		return -1;
-+		return -EINVAL;
- 
--	mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));	/*HIGH addr */
--	mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));	/* Low addr */
-+	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
-+	if (!msi_data)
-+		return -EINVAL;
-+
-+	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
-+	if (!msi_mask)
-+		return -EINVAL;
- 
- 	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
- 	if (!msi->msi_dev)
-@@ -160,30 +166,30 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 
- 	msi->msi_regs = of_iomap(msi->msi_dev, 0);
- 	if (!msi->msi_regs) {
--		dev_err(&dev->dev, "of_iomap problem failed\n");
--		return -ENOMEM;
-+		dev_err(&dev->dev, "of_iomap failed\n");
-+		err = -ENOMEM;
-+		goto node_put;
- 	}
- 	dev_dbg(&dev->dev, "PCIE-MSI: msi register mapped 0x%x 0x%x\n",
- 		(u32) (msi->msi_regs + PEIH_TERMADH), (u32) (msi->msi_regs));
- 
- 	msi_virt = dma_alloc_coherent(&dev->dev, 64, &msi_phys, GFP_KERNEL);
--	if (!msi_virt)
--		return -ENOMEM;
-+	if (!msi_virt) {
-+		err = -ENOMEM;
-+		goto iounmap;
-+	}
- 	msi->msi_addr_hi = upper_32_bits(msi_phys);
- 	msi->msi_addr_lo = lower_32_bits(msi_phys & 0xffffffff);
- 	dev_dbg(&dev->dev, "PCIE-MSI: msi address high 0x%x, low 0x%x\n",
- 		msi->msi_addr_hi, msi->msi_addr_lo);
- 
-+	mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));	/*HIGH addr */
-+	mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));	/* Low addr */
-+
- 	/* Progam the Interrupt handler Termination addr registers */
- 	out_be32(msi->msi_regs + PEIH_TERMADH, msi->msi_addr_hi);
- 	out_be32(msi->msi_regs + PEIH_TERMADL, msi->msi_addr_lo);
- 
--	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
--	if (!msi_data)
--		return -1;
--	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
--	if (!msi_mask)
--		return -1;
- 	/* Program MSI Expected data and Mask bits */
- 	out_be32(msi->msi_regs + PEIH_MSIED, *msi_data);
- 	out_be32(msi->msi_regs + PEIH_MSIMK, *msi_mask);
-@@ -191,6 +197,12 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
- 	dma_free_coherent(&dev->dev, 64, msi_virt, msi_phys);
- 
- 	return 0;
-+
-+iounmap:
-+	iounmap(msi->msi_regs);
-+node_put:
-+	of_node_put(msi->msi_dev);
-+	return err;
- }
- 
- static int ppc4xx_of_msi_remove(struct platform_device *dev)
-@@ -209,7 +221,6 @@ static int ppc4xx_of_msi_remove(struct platform_device *dev)
- 		msi_bitmap_free(&msi->bitmap);
- 	iounmap(msi->msi_regs);
- 	of_node_put(msi->msi_dev);
--	kfree(msi);
- 
- 	return 0;
- }
-@@ -223,18 +234,16 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
- 
- 	dev_dbg(&dev->dev, "PCIE-MSI: Setting up MSI support...\n");
- 
--	msi = kzalloc(sizeof(*msi), GFP_KERNEL);
--	if (!msi) {
--		dev_err(&dev->dev, "No memory for MSI structure\n");
-+	msi = devm_kzalloc(&dev->dev, sizeof(*msi), GFP_KERNEL);
-+	if (!msi)
- 		return -ENOMEM;
--	}
- 	dev->dev.platform_data = msi;
- 
- 	/* Get MSI ranges */
- 	err = of_address_to_resource(dev->dev.of_node, 0, &res);
- 	if (err) {
- 		dev_err(&dev->dev, "%pOF resource error!\n", dev->dev.of_node);
--		goto error_out;
-+		return err;
- 	}
- 
- 	msi_irqs = of_irq_count(dev->dev.of_node);
-@@ -243,7 +252,7 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
- 
- 	err = ppc4xx_setup_pcieh_hw(dev, res, msi);
- 	if (err)
--		goto error_out;
-+		return err;
- 
- 	err = ppc4xx_msi_init_allocator(dev, msi);
- 	if (err) {
-@@ -256,7 +265,7 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
- 		phb->controller_ops.setup_msi_irqs = ppc4xx_setup_msi_irqs;
- 		phb->controller_ops.teardown_msi_irqs = ppc4xx_teardown_msi_irqs;
- 	}
--	return err;
-+	return 0;
- 
- error_out:
- 	ppc4xx_of_msi_remove(dev);
--- 
-2.7.4
+> 
+> -Tyrel
+> 
+>>
+>> This patch fixes the 'migration add' problem by changing the
+>> stored 'phandle' of the OF_DETACHed node to 0 (reserved value for
+>> of_find_node_by_phandle), so that subsequent re-add operations,
+>> such as those during migration, do not find the detached node,
+>> do not observe duplicate names, do not rename them,  and the
+>> extra WARNING notices are removed from the console output.
+>>
+>> In addition, it erases the 'name' field of the OF_DETACHED node,
+>> to prevent any future calls to of_find_node_by_name() or
+>> of_find_node_by_path() from matching this node.
+>>
+>> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/platforms/pseries/dlpar.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+>> index 2de0f0d..9d82c28 100644
+>> --- a/arch/powerpc/platforms/pseries/dlpar.c
+>> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+>> @@ -274,6 +274,9 @@ int dlpar_detach_node(struct device_node *dn)
+>>  	if (rc)
+>>  		return rc;
+>>
+>> +	dn->phandle = 0;
+>> +	memset(dn->name, 0, strlen(dn->name));
+>> +
+>>  	return 0;
+>>  }
+>>
+>>
+> 
