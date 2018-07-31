@@ -1,29 +1,53 @@
-Return-Path: <frowand.list@gmail.com>
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41g5tX1jZhzF164
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 05:22:43 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id i26-v6so6572444pfo.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 12:22:43 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41g5z81NkHzF189
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 05:26:43 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6VJJgu1049556
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:26:41 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kjvvpajd6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:26:40 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Tue, 31 Jul 2018 13:26:40 -0600
+Received: from b03ledav001.gho.boulder.ibm.com
+ (b03ledav001.gho.boulder.ibm.com [9.17.130.232])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w6VJQbnX7733744
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 12:26:37 -0700
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 0AE0B6E052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 13:26:37 -0600 (MDT)
+Received: from b03ledav001.gho.boulder.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id B45186E04C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 13:26:36 -0600 (MDT)
+Received: from oc5000245537.ibm.com (unknown [9.53.92.172])
+ by b03ledav001.gho.boulder.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 13:26:36 -0600 (MDT)
 Subject: Re: phandle_cache vs of_detach_node (was Re: [PATCH]
  powerpc/mobility: Fix node detach/rename problem)
-From: Frank Rowand <frowand.list@gmail.com>
-To: Rob Herring <robh+dt@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: mwb@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
 References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
  <8736w1jkte.fsf@concordia.ellerman.id.au>
  <ffaa7eba-5236-e42d-c901-79b045adfb94@linux.vnet.ibm.com>
  <8736vzj4la.fsf@concordia.ellerman.id.au>
  <CAL_JsqKf1k3MM+HgQ2U=Ep7L9nbBCmmvGZoEAKxLB1TVqQdW_w@mail.gmail.com>
  <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
-Message-ID: <64ccf758-5b6f-d302-05da-e6bb9949d2fd@gmail.com>
-Date: Tue, 31 Jul 2018 12:22:40 -0700
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Date: Tue, 31 Jul 2018 14:26:36 -0500
 MIME-Version: 1.0
 In-Reply-To: <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
 Content-Type: text/plain; charset=utf-8
+Message-Id: <767b7ead-8e8d-d2ab-140f-0e6a20c388d3@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,7 +57,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/31/18 12:18, Frank Rowand wrote:
+On 07/31/2018 02:18 PM, Frank Rowand wrote:
 > On 07/31/18 07:17, Rob Herring wrote:
 >> On Tue, Jul 31, 2018 at 12:34 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
 >>>
@@ -80,28 +104,21 @@ On 07/31/18 12:18, Frank Rowand wrote:
 > or the bigger hammer of proper locking _unless_ we start seeing that
 > the cache is being freed and re-allocated frequently.  For overlays
 > I don't expect the high frequency because it happens on a per overlay
-> removal basis (not per node removal basis).
-
-
->                                              For of_detach_node() the
+> removal basis (not per node removal basis).  For of_detach_node() the
 > event _is_ on a per node removal basis.  Michael, do you expect node
 > removals to be a frequent event with low latency being important?  If
 > so, a rough guess on what the frequency would be?
 
-I have not looked at how of_detach_node() is used, so it might not be
-very different that overlays.  If a group of of_detach_node() calls
-are made from a common code location, the the sequence could possibly
-be:
+I am only seeing node removals during startup of the kernel after an
+LPAR migration event.  For the tests that I have run between a couple
+of P8 platforms, I see about 15 node removals split between, 8 l2-caches,
+4 hardware-specific property clusters (e.g. ibm,platform-facilities),
+and 3 CPUs.
 
-   of_free_phandle_cache()
-
-   multiple calls of of_detach_node()
-
-   of_populate_phandle_cache()
-
--Frank
 > 
 > -Frank
+
+Michael
 > 
 > 
 >> Rob
@@ -255,3 +272,12 @@ be:
 >>
 > 
 > 
+
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
