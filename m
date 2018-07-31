@@ -2,20 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fn1K0r3KzF14s
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 16:42:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fn2M1Vt1zF1Cq
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 16:43:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/mobility: Fix node detach/rename problem
-In-Reply-To: <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
-References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
- <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
-Date: Tue, 31 Jul 2018 16:42:28 +1000
-Message-ID: <871sbjj48b.fsf@concordia.ellerman.id.au>
+To: Bjorn Helgaas <helgaas@kernel.org>, Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+ bhelgaas@google.com, bryantly@linux.vnet.ibm.com
+Subject: Re: [PATCH v3 1/1] powerpc/pseries: fix EEH recovery of some IOV
+ devices
+In-Reply-To: <20180730212155.GB45322@bhelgaas-glaptop.roam.corp.google.com>
+References: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
+ <20180730212155.GB45322@bhelgaas-glaptop.roam.corp.google.com>
+Date: Tue, 31 Jul 2018 16:43:22 +1000
+Message-ID: <87y3drhpmd.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,47 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
-> On 07/29/2018 06:11 AM, Michael Bringmann wrote:
->> During LPAR migration, the content of the device tree/sysfs may
->> be updated including deletion and replacement of nodes in the
->> tree.  When nodes are added to the internal node structures, they
->> are appended in FIFO order to a list of nodes maintained by the
->> OF code APIs.  When nodes are removed from the device tree, they
->> are marked OF_DETACHED, but not actually deleted from the system
->> to allow for pointers cached elsewhere in the kernel.  The order
->> and content of the entries in the list of nodes is not altered,
->> though.
+Bjorn Helgaas <helgaas@kernel.org> writes:
+> On Mon, Jul 30, 2018 at 11:59:14AM +1000, Sam Bobroff wrote:
+>> EEH recovery currently fails on pSeries for some IOV capable PCI
+>> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
+>> certain device tree properties for the device. (Found on an IOV
+>> capable device using the ipr driver.)
 >> 
->> During LPAR migration some common nodes are deleted and re-added
->> e.g. "ibm,platform-facilities".  If a node is re-added to the OF
->> node lists, the of_attach_node function checks to make sure that
->> the name + ibm,phandle of the to-be-added data is unique.  As the
->> previous copy of a re-added node is not modified beyond the addition
->> of a bit flag, the code (1) finds the old copy, (2) prints a WARNING
->> notice to the console, (3) renames the to-be-added node to avoid
->> filename collisions within a directory, and (3) adds entries to
->> the sysfs/kernfs.
+>> Recovery fails in pci_enable_resources() at the check on r->parent,
+>> because r->flags is set and r->parent is not.  This state is due to
+>> sriov_init() setting the start, end and flags members of the IOV BARs
+>> but the parent not being set later in
+>> pseries_pci_fixup_iov_resources(), because the
+>> "ibm,open-sriov-vf-bar-info" property is missing.
+>> 
+>> Correct this by zeroing the resource flags for IOV BARs when they
+>> can't be configured (this is the same method used by sriov_init() and
+>> __pci_read_base()).
+>> 
+>> VFs cleared this way can't be enabled later, because that requires
+>> another device tree property, "ibm,number-of-configurable-vfs" as well
+>> as support for the RTAS function "ibm_map_pes". These are all part of
+>> hypervisor support for IOV and it seems unlikely that a hypervisor
+>> would ever partially, but not fully, support it. (None are currently
+>> provided by QEMU/KVM.)
+>> 
+>> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
 >
-> So, this patch actually just band aids over the real problem. This is
-> a long standing problem with several PFO drivers leaking references.
-> The issue here is that, during the device tree update that follows a
-> migration. the update of the ibm,platform-facilities node and friends
-> below are always deleted and re-added on the destination lpar and
-> subsequently the leaked references prevent the devices nodes from
-> every actually being properly cleaned up after detach. Thus, leading
-> to the issue you are observing.
+> Michael, I assume you'll take this, since it only touches powerpc.
+> Let me know if you need anything from me.
 
-Leaking references shouldn't affect the node being detached from the
-tree though.
-
-See of_detach_node() calling __of_detach_node(), none of that depends on
-the refcount.
-
-It's only the actual freeing of the node, in of_node_release() that is
-prevented by leaked reference counts.
-
-So I agree we need to do a better job with the reference counting, but I
-don't see how it is causing the problem here.
+Yeah I'll take it, thanks.
 
 cheers
