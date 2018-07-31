@@ -1,23 +1,23 @@
 Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fzrr1ySRzF15Z
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:50:52 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6VE8wO4121683
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:48 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kjqybduqt-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fzrv0WPgzF164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:50:54 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6VE8tFs108303
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:53 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kjqj0px01-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:47 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:52 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Tue, 31 Jul 2018 08:50:46 -0600
+ Tue, 31 Jul 2018 08:50:52 -0600
 From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Alastair D'Silva" <alastair@d-silva.org>,
@@ -33,13 +33,13 @@ Cc: "Alastair D'Silva" <alastair@d-silva.org>,
  Simon Guo <wei.guo.simon@gmail.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/9] powerpc/traps: Return early in show_signal_msg()
-Date: Tue, 31 Jul 2018 11:50:13 -0300
+Subject: [PATCH v3 3/9] powerpc/traps: Use %lx format in show_signal_msg()
+Date: Tue, 31 Jul 2018 11:50:14 -0300
 In-Reply-To: <20180731145020.14009-1-muriloo@linux.ibm.com>
 References: <20180731145020.14009-1-muriloo@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20180731145020.14009-3-muriloo@linux.ibm.com>
+Message-Id: <20180731145020.14009-4-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,68 +49,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Modify the logic of show_signal_msg() to return early, if possible.
-Replace printk_ratelimited() by printk() and a default rate limit burst to
-limit displaying unhandled signals messages.
+Use %lx format to print registers.  This avoids having two different
+formats and avoids checking for MSR_64BIT, improving readability of the
+function.
 
-Mainly reason of this change is to improve readability of the function.
-The conditions to display the message were coupled together in one single
-`if` statement.
+Even though we could have used %px, which is functionally equivalent to %lx
+as per Documentation/core-api/printk-formats.rst, it is not semantically
+correct because the data printed are not pointers.  And using %px requires
+casting data to (void *).
 
-Splitting out the rate limit check outside show_signal_msg() makes it
-easier to the caller decide if it wants to respect a printk rate limit or
-not.
+Besides that, %lx matches the format used in show_regs().
+
+Before this patch:
+
+  pandafault[4808]: unhandled signal 11 at 0000000010000718 nip 0000000010000574 lr 00007fff935e7a6c code 2
+
+After this patch:
+
+  pandafault[4732]: unhandled signal 11 at 10000718 nip 10000574 lr 7fff86697a6c code 2
 
 Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 ---
- arch/powerpc/kernel/traps.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/traps.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index cbd3dc365193..4faab4705774 100644
+index 4faab4705774..fd4e0648a2d2 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -301,6 +301,13 @@ void user_single_step_siginfo(struct task_struct *tsk,
- 	info->si_addr = (void __user *)regs->nip;
- }
- 
-+static bool show_unhandled_signals_ratelimited(void)
-+{
-+	static DEFINE_RATELIMIT_STATE(rs, DEFAULT_RATELIMIT_INTERVAL,
-+				      DEFAULT_RATELIMIT_BURST);
-+	return show_unhandled_signals && __ratelimit(&rs);
-+}
-+
+@@ -311,17 +311,12 @@ static bool show_unhandled_signals_ratelimited(void)
  static void show_signal_msg(int signr, struct pt_regs *regs, int code,
  			    unsigned long addr)
  {
-@@ -309,11 +316,12 @@ static void show_signal_msg(int signr, struct pt_regs *regs, int code,
- 	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
- 		"at %016lx nip %016lx lr %016lx code %x\n";
+-	const char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
+-		"at %08lx nip %08lx lr %08lx code %x\n";
+-	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
+-		"at %016lx nip %016lx lr %016lx code %x\n";
+-
+ 	if (!unhandled_signal(current, signr))
+ 		return;
  
--	if (show_unhandled_signals && unhandled_signal(current, signr)) {
--		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
--				   current->comm, current->pid, signr,
--				   addr, regs->nip, regs->link, code);
--	}
-+	if (!unhandled_signal(current, signr))
-+		return;
-+
-+	printk(regs->msr & MSR_64BIT ? fmt64 : fmt32,
-+	       current->comm, current->pid, signr,
-+	       addr, regs->nip, regs->link, code);
+-	printk(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+-	       current->comm, current->pid, signr,
+-	       addr, regs->nip, regs->link, code);
++	pr_info("%s[%d]: unhandled signal %d at %lx nip %lx lr %lx code %x\n",
++		current->comm, current->pid, signr,
++		addr, regs->nip, regs->link, code);
  }
  
  void _exception_pkey(int signr, struct pt_regs *regs, int code,
-@@ -326,7 +334,8 @@ void _exception_pkey(int signr, struct pt_regs *regs, int code,
- 		return;
- 	}
- 
--	show_signal_msg(signr, regs, code, addr);
-+	if (show_unhandled_signals_ratelimited())
-+		show_signal_msg(signr, regs, code, addr);
- 
- 	if (arch_irqs_disabled() && !arch_irq_disabled_regs(regs))
- 		local_irq_enable();
 -- 
 2.17.1
