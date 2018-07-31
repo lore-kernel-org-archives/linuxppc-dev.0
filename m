@@ -1,38 +1,32 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41g6VK3kQLzF16W
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 05:50:17 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6VJnrnM115858
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:50:14 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kjx190grk-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:50:14 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 31 Jul 2018 15:50:13 -0400
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/mobility: Fix node detach/rename problem
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>
-References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
- <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
- <871sbjj48b.fsf@concordia.ellerman.id.au>
-Date: Tue, 31 Jul 2018 12:50:06 -0700
-MIME-Version: 1.0
-In-Reply-To: <871sbjj48b.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <8bf95369-2625-146a-34d4-d051322e06ff@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41g7XM5XjMzF18B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 06:37:07 +1000 (AEST)
+Message-ID: <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>, "Michael S. Tsirkin"
+ <mst@redhat.com>
+Cc: Will Deacon <will.deacon@arm.com>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Tue, 31 Jul 2018 15:36:22 -0500
+In-Reply-To: <20180731173052.GA17153@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com> <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
+ <20180731173052.GA17153@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,77 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gMDcvMzAvMjAxOCAxMTo0MiBQTSwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4gVHly
-ZWwgRGF0d3lsZXIgPHR5cmVsZEBsaW51eC52bmV0LmlibS5jb20+IHdyaXRlczoNCj4+IE9u
-IDA3LzI5LzIwMTggMDY6MTEgQU0sIE1pY2hhZWwgQnJpbmdtYW5uIHdyb3RlOg0KPj4+IER1
-cmluZyBMUEFSIG1pZ3JhdGlvbiwgdGhlIGNvbnRlbnQgb2YgdGhlIGRldmljZSB0cmVlL3N5
-c2ZzIG1heQ0KPj4+IGJlIHVwZGF0ZWQgaW5jbHVkaW5nIGRlbGV0aW9uIGFuZCByZXBsYWNl
-bWVudCBvZiBub2RlcyBpbiB0aGUNCj4+PiB0cmVlLiAgV2hlbiBub2RlcyBhcmUgYWRkZWQg
-dG8gdGhlIGludGVybmFsIG5vZGUgc3RydWN0dXJlcywgdGhleQ0KPj4+IGFyZSBhcHBlbmRl
-ZCBpbiBGSUZPIG9yZGVyIHRvIGEgbGlzdCBvZiBub2RlcyBtYWludGFpbmVkIGJ5IHRoZQ0K
-Pj4+IE9GIGNvZGUgQVBJcy4gIFdoZW4gbm9kZXMgYXJlIHJlbW92ZWQgZnJvbSB0aGUgZGV2
-aWNlIHRyZWUsIHRoZXkNCj4+PiBhcmUgbWFya2VkIE9GX0RFVEFDSEVELCBidXQgbm90IGFj
-dHVhbGx5IGRlbGV0ZWQgZnJvbSB0aGUgc3lzdGVtDQo+Pj4gdG8gYWxsb3cgZm9yIHBvaW50
-ZXJzIGNhY2hlZCBlbHNld2hlcmUgaW4gdGhlIGtlcm5lbC4gIFRoZSBvcmRlcg0KPj4+IGFu
-ZCBjb250ZW50IG9mIHRoZSBlbnRyaWVzIGluIHRoZSBsaXN0IG9mIG5vZGVzIGlzIG5vdCBh
-bHRlcmVkLA0KPj4+IHRob3VnaC4NCj4+Pg0KPj4+IER1cmluZyBMUEFSIG1pZ3JhdGlvbiBz
-b21lIGNvbW1vbiBub2RlcyBhcmUgZGVsZXRlZCBhbmQgcmUtYWRkZWQNCj4+PiBlLmcuICJp
-Ym0scGxhdGZvcm0tZmFjaWxpdGllcyIuICBJZiBhIG5vZGUgaXMgcmUtYWRkZWQgdG8gdGhl
-IE9GDQo+Pj4gbm9kZSBsaXN0cywgdGhlIG9mX2F0dGFjaF9ub2RlIGZ1bmN0aW9uIGNoZWNr
-cyB0byBtYWtlIHN1cmUgdGhhdA0KPj4+IHRoZSBuYW1lICsgaWJtLHBoYW5kbGUgb2YgdGhl
-IHRvLWJlLWFkZGVkIGRhdGEgaXMgdW5pcXVlLiAgQXMgdGhlDQo+Pj4gcHJldmlvdXMgY29w
-eSBvZiBhIHJlLWFkZGVkIG5vZGUgaXMgbm90IG1vZGlmaWVkIGJleW9uZCB0aGUgYWRkaXRp
-b24NCj4+PiBvZiBhIGJpdCBmbGFnLCB0aGUgY29kZSAoMSkgZmluZHMgdGhlIG9sZCBjb3B5
-LCAoMikgcHJpbnRzIGEgV0FSTklORw0KPj4+IG5vdGljZSB0byB0aGUgY29uc29sZSwgKDMp
-IHJlbmFtZXMgdGhlIHRvLWJlLWFkZGVkIG5vZGUgdG8gYXZvaWQNCj4+PiBmaWxlbmFtZSBj
-b2xsaXNpb25zIHdpdGhpbiBhIGRpcmVjdG9yeSwgYW5kICgzKSBhZGRzIGVudHJpZXMgdG8N
-Cj4+PiB0aGUgc3lzZnMva2VybmZzLg0KPj4NCj4+IFNvLCB0aGlzIHBhdGNoIGFjdHVhbGx5
-IGp1c3QgYmFuZCBhaWRzIG92ZXIgdGhlIHJlYWwgcHJvYmxlbS4gVGhpcyBpcw0KPj4gYSBs
-b25nIHN0YW5kaW5nIHByb2JsZW0gd2l0aCBzZXZlcmFsIFBGTyBkcml2ZXJzIGxlYWtpbmcg
-cmVmZXJlbmNlcy4NCj4+IFRoZSBpc3N1ZSBoZXJlIGlzIHRoYXQsIGR1cmluZyB0aGUgZGV2
-aWNlIHRyZWUgdXBkYXRlIHRoYXQgZm9sbG93cyBhDQo+PiBtaWdyYXRpb24uIHRoZSB1cGRh
-dGUgb2YgdGhlIGlibSxwbGF0Zm9ybS1mYWNpbGl0aWVzIG5vZGUgYW5kIGZyaWVuZHMNCj4+
-IGJlbG93IGFyZSBhbHdheXMgZGVsZXRlZCBhbmQgcmUtYWRkZWQgb24gdGhlIGRlc3RpbmF0
-aW9uIGxwYXIgYW5kDQo+PiBzdWJzZXF1ZW50bHkgdGhlIGxlYWtlZCByZWZlcmVuY2VzIHBy
-ZXZlbnQgdGhlIGRldmljZXMgbm9kZXMgZnJvbQ0KPj4gZXZlcnkgYWN0dWFsbHkgYmVpbmcg
-cHJvcGVybHkgY2xlYW5lZCB1cCBhZnRlciBkZXRhY2guIFRodXMsIGxlYWRpbmcNCj4+IHRv
-IHRoZSBpc3N1ZSB5b3UgYXJlIG9ic2VydmluZy4NCg0KU28sIGl0IHdhcyB0aGUgZW5kIG9m
-IHRoZSBkYXksIGFuZCBJIGtpbmQgb2YgZ2xvc3NlZCBvdmVyIHRoZSBpc3N1ZSBNaWNoYWVs
-IHdhcyB0cnlpbmcgdG8gYWRkcmVzcyB3aXRoIGFuIGlzc3VlIHRoYXQgSSByZW1lbWJlcmVk
-IHRoYXQgaGFkIGJlZW4gYXJvdW5kIGZvciBhd2hpbGUuDQoNCj4gDQo+IExlYWtpbmcgcmVm
-ZXJlbmNlcyBzaG91bGRuJ3QgYWZmZWN0IHRoZSBub2RlIGJlaW5nIGRldGFjaGVkIGZyb20g
-dGhlDQo+IHRyZWUgdGhvdWdoLg0KDQpObywgYnV0IGl0IGRvZXMgcHJldmVudCBpdCBmcm9t
-IGJlaW5nIGZyZWVkIGZyb20gc3lzZnMgd2hpY2ggbGVhZHMgdG8gdGhlIHN5c2ZzIGVudHJ5
-IHJlbmFtaW5nIHRoYXQgaGFwcGVucyB3aGVuIGFub3RoZXIgbm9kZSB3aXRoIHRoZSBzYW1l
-IG5hbWUgaXMgYXR0YWNoZWQuDQoNCj4gDQo+IFNlZSBvZl9kZXRhY2hfbm9kZSgpIGNhbGxp
-bmcgX19vZl9kZXRhY2hfbm9kZSgpLCBub25lIG9mIHRoYXQgZGVwZW5kcyBvbg0KPiB0aGUg
-cmVmY291bnQuDQo+IA0KPiBJdCdzIG9ubHkgdGhlIGFjdHVhbCBmcmVlaW5nIG9mIHRoZSBu
-b2RlLCBpbiBvZl9ub2RlX3JlbGVhc2UoKSB0aGF0IGlzDQo+IHByZXZlbnRlZCBieSBsZWFr
-ZWQgcmVmZXJlbmNlIGNvdW50cy4NCg0KUmlnaHQsIGJ1dCBpZiB3ZSBkaWQgcmVmY291bnQg
-Y29ycmVjdGx5IHRoZXJlIGlzIHRoZSBuZXcgcHJvYmxlbSB0aGF0IHRoZSBub2RlIGlzIGZy
-ZWVkIGFuZCBub3cgdGhlIHBoYW5kbGUgY2FjaGUgcG9pbnRzIGF0IGZyZWVkIG1lbW9yeSBp
-biB0aGUgY2FzZSB3ZXJlIG5vIGludmFsaWRhdGlvbiBpcyBkb25lLg0KDQo+IA0KPiBTbyBJ
-IGFncmVlIHdlIG5lZWQgdG8gZG8gYSBiZXR0ZXIgam9iIHdpdGggdGhlIHJlZmVyZW5jZSBj
-b3VudGluZywgYnV0IEkNCj4gZG9uJ3Qgc2VlIGhvdyBpdCBpcyBjYXVzaW5nIHRoZSBwcm9i
-bGVtIGhlcmUNCg0KTm93IGluIHJlZ2FyZHMgdG8gdGhlIHBoYW5kbGUgY2FjaGluZyBzb21l
-aG93IEkgbWlzc2VkIHRoYXQgY29kZSBnb2luZyBpbnRvIE9GIGVhcmxpZXIgdGhpcyB5ZWFy
-LiBUaGF0IHNob3VsZCBoYXZlIGhhZCBhdCBsZWFzdCBzb21lIGRpc2N1c3Npb24gZnJvbSBv
-dXIgc2lkZSBiYXNlZCBvbiB0aGUgZmFjdCB0aGF0IGl0IGlzIGJ1aWx0IG9uIGR0YyBjb21w
-aWxlciBhc3N1bXB0aW9uIHRoYXQgdGhlcmUgYXJlIGEgc2V0IG51bWJlciBvZiBwaGFuZGxl
-cyB0aGF0IGFyZSBhbGxvY2F0ZWQgc3RhcnRpbmcgYXQgMS4ubiBzdWNoIHRoYXQgdGhleSBh
-cmUgbW9ub3RvbmljYWxseSBpbmNyZWFzaW5nLiBUaGF0IGhhcyBhIG5pY2UgZml4ZWQgc2l6
-ZSB3aXRoIE8oMSkgbG9va3VwIHRpbWUuIFBoeXAgZG9lc24ndCBndWFyYW50ZWUgYW55IHNv
-cnQgb2YgbmljZW5lc3Mgd2l0aCBuaWNlbHkgb3JkZXJlZCBwaGFuZGxlcy4gRnJvbSB3aGF0
-IEkndmUgc2VlbiB0aGVyZSBhcmUgYSBzdWJzZXQgb2YgcGhhbmRsZXMgdGhhdCBkZWNyZWFz
-ZSBmcm9tICgtMSkgbW9ub3RvbmljYWxseSwgYW5kIHRoZW4gdGhlcmUgYXJlIGEgYnVuY2gg
-b2YgcmFuZG9tIHZhbHVlcyBmb3IgY3B1cyBhbmQgSU9Bcy4gVGhpbmtpbmcgb24gaXQgbWln
-aHQgbm90IGJlIHRoYXQgYmlnIG9mIGEgZGVhbCBhcyB3ZSBqdXN0IGVuZCB1cCBpbiB0aGUg
-Y2FzZSB3aGVyZSB3ZSBoYXZlIGEgcGhhbmRsZSBjb2xsaXNpb24gb25lIG1ha2VzIGl0IGlu
-dG8gdGhlIGNhY2hlIGFuZCBpcyBvcHRpbWl6ZWQgd2hpbGUgdGhlIG90aGVyIGRvZXNuJ3Qu
-IE9uIGFub3RoZXIgbm90ZSwgdGhleSBjbGVhcmx5IGhpdCBhIHNpbWlsYXIgaXNzdWUgZHVy
-aW5nIG92ZXJsYXkgYXR0YWNoIGFuZCByZW1vdmUsIGFuZCBhcyBSb2IgcG9pbnRlZCBvdXQg
-dGhlaXIgc29sdXRpb24gdG8gaGFuZGxlIGl0IGlzIGEgZnVsbCBjYWNoZSBpbnZhbGlkYXRp
-b24gZm9sbG93ZWQgYnkgcmVzY2FubmluZyB0aGUgd2hvbGUgdHJlZSB0byByZWJ1aWxkIGl0
-LiBTZWVpbmcgYXMgb3VyIGR5bmFtaWMgbGlmZWN5Y2xlIGlzIG5vZGUgYnkgbm9kZSB0aGlz
-IGRlZmluaXRlbHkgYWRkcyBzb21lIG92ZXJoZWFkLg0KDQotVHlyZWwNCg0KPiANCj4gY2hl
-ZXJzDQo+IA0KDQo=
+On Tue, 2018-07-31 at 10:30 -0700, Christoph Hellwig wrote:
+> > However the question people raise is that DMA API is already full of
+> > arch-specific tricks the likes of which are outlined in your post linked
+> > above. How is this one much worse?
+> 
+> None of these warts is visible to the driver, they are all handled in
+> the architecture (possibly on a per-bus basis).
+> 
+> So for virtio we really need to decide if it has one set of behavior
+> as specified in the virtio spec, or if it behaves exactly as if it
+> was on a PCI bus, or in fact probably both as you lined up.  But no
+> magic arch specific behavior inbetween.
+
+The only arch specific behaviour is needed in the case where it doesn't
+behave like PCI. In this case, the PCI DMA ops are not suitable, but in
+our secure VMs, we still need to make it use swiotlb in order to bounce
+through non-secure pages.
+
+It would be nice if "real PCI" was the default but it's not, VMs are
+created in "legacy" mode all the times and we don't know at VM creation
+time whether it will become a secure VM or not. The way our secure VMs
+work is that they start as a normal VM, load a secure "payload" and
+call the Ultravisor to "become" secure.
+
+So we're in a bit of a bind here. We need that one-liner optional arch
+hook to make virtio use swiotlb in that "IOMMU bypass" case.
+
+Ben.
