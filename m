@@ -2,19 +2,20 @@ Return-Path: <acolin@isi.edu>
 Received: from mail-d.ads.isi.edu (mail-d.ads.isi.edu [128.9.180.199])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fzP12kwvzF162
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:30:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fzP16wGnzF164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:30:13 +1000 (AEST)
 From: Alexei Colin <acolin@isi.edu>
 To: Alexandre Bounine <alex.bou9@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>
 Cc: Alexei Colin <acolin@isi.edu>, Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@armlinux.org.uk>, John Paul Walters <jwalters@isi.edu>,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
+ Russell King <linux@armlinux.org.uk>,
+ Alexander Sverdlin <alexander.sverdlin@nokia.com>,
+ John Paul Walters <jwalters@isi.edu>, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
  linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [RESEND PATCH 3/6] powerpc: factor out RapidIO Kconfig menu entry
-Date: Tue, 31 Jul 2018 10:29:51 -0400
-Message-Id: <20180731142954.30345-4-acolin@isi.edu>
+Subject: [RESEND PATCH 4/6] mips: factor out RapidIO Kconfig entry
+Date: Tue, 31 Jul 2018 10:29:52 -0400
+Message-Id: <20180731142954.30345-5-acolin@isi.edu>
 In-Reply-To: <20180731142954.30345-1-acolin@isi.edu>
 References: <20180731142954.30345-1-acolin@isi.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,9 +27,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The menu entry is now defined in the rapidio subtree.  Also, re-order
-the bus menu so tha the platform-specific RapidIO controller appears
-after the entry for the RapidIO subsystem.
+The menu entry is now defined in the rapidio subtree.
 
 Platforms with a PCI bus will be offered the RapidIO menu since they may
 be want support for a RapidIO PCI device. Platforms without a PCI bus
@@ -37,6 +36,7 @@ in the platform-/machine-specific "config ARCH_*" Kconfig entry.
 
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Russell King <linux@armlinux.org.uk>
+Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>
 Cc: John Paul Walters <jwalters@isi.edu>
 Cc: x86@kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -45,14 +45,14 @@ Cc: linux-arm-kernel@lists.infradead.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Alexei Colin <acolin@isi.edu>
 ---
- arch/powerpc/Kconfig | 13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+ arch/mips/Kconfig | 11 -----------
+ 1 file changed, 11 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 25d005af0a5b..17ea8a5f90a0 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -993,16 +993,7 @@ source "drivers/pci/Kconfig"
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 10256056647c..92b9262ee731 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -3106,17 +3106,6 @@ config ZONE_DMA32
  
  source "drivers/pcmcia/Kconfig"
  
@@ -66,18 +66,9 @@ index 25d005af0a5b..17ea8a5f90a0 100644
 -	help
 -	  If you say Y here, the kernel will include drivers and
 -	  infrastructure code to support RapidIO interconnect devices.
-+source "drivers/rapidio/Kconfig"
- 
- config FSL_RIO
- 	bool "Freescale Embedded SRIO Controller support"
-@@ -1012,8 +1003,6 @@ config FSL_RIO
- 	  Include support for RapidIO controller on Freescale embedded
- 	  processors (MPC8548, MPC8641, etc).
- 
--source "drivers/rapidio/Kconfig"
 -
- endmenu
+ source "drivers/rapidio/Kconfig"
  
- config NONSTATIC_KERNEL
+ endmenu
 -- 
 2.18.0
