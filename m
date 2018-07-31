@@ -1,32 +1,31 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-it0-f66.google.com (mail-it0-f66.google.com
- [209.85.214.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <lcapitulino@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41g97m25MpzF162
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 07:49:23 +1000 (AEST)
-Received: by mail-it0-f66.google.com with SMTP id d70-v6so13608090ith.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 14:49:23 -0700 (PDT)
-Date: Tue, 31 Jul 2018 15:49:20 -0600
-From: Rob Herring <robh@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Joe Perches <joe@perches.com>, Samuel Ortiz <sameo@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Jonathan Cameron <jic23@kernel.org>, linux-wireless@vger.kernel.org,
- netdev@vger.kernel.org, devicetree@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
- lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org,
- coreteam@netfilter.org
-Subject: Re: [PATCH 1/4] treewide: convert ISO_8859-1 text comments to utf-8
-Message-ID: <20180731214920.GA20796@rob-hp-laptop>
-References: <20180724111600.4158975-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41g70t2xrbzF164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 06:13:18 +1000 (AEST)
+Date: Tue, 31 Jul 2018 16:06:40 -0400
+From: Luiz Capitulino <lcapitulino@redhat.com>
+To: Alexandre Ghiti <alex@ghiti.fr>
+Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
+ catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
+ fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
+ jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
+ arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v5 00/11] hugetlb: Factorize hugetlb architecture
+ primitives
+Message-ID: <20180731160640.11306628@doriath>
+In-Reply-To: <20180731060155.16915-1-alex@ghiti.fr>
+References: <20180731060155.16915-1-alex@ghiti.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20180724111600.4158975-1-arnd@arndb.de>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 24, 2018 at 01:13:25PM +0200, Arnd Bergmann wrote:
-> Almost all files in the kernel are either plain text or UTF-8
-> encoded. A couple however are ISO_8859-1, usually just a few
-> characters in a C comments, for historic reasons.
-> 
-> This converts them all to UTF-8 for consistency.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  .../devicetree/bindings/net/nfc/pn544.txt     |   2 +-
->  arch/arm/boot/dts/sun4i-a10-inet97fv2.dts     |   2 +-
->  arch/arm/crypto/sha256_glue.c                 |   2 +-
->  arch/arm/crypto/sha256_neon_glue.c            |   4 +-
->  drivers/crypto/vmx/ghashp8-ppc.pl             |  12 +-
->  drivers/iio/dac/ltc2632.c                     |   2 +-
->  drivers/power/reset/ltc2952-poweroff.c        |   4 +-
->  kernel/events/callchain.c                     |   2 +-
->  net/netfilter/ipvs/Kconfig                    |   8 +-
->  net/netfilter/ipvs/ip_vs_mh.c                 |   4 +-
->  tools/power/cpupower/po/de.po                 |  44 +++----
->  tools/power/cpupower/po/fr.po                 | 120 +++++++++---------
->  12 files changed, 103 insertions(+), 103 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/net/nfc/pn544.txt b/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> index 538a86f7b2b0..72593f056b75 100644
-> --- a/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> +++ b/Documentation/devicetree/bindings/net/nfc/pn544.txt
-> @@ -2,7 +2,7 @@
->  
->  Required properties:
->  - compatible: Should be "nxp,pn544-i2c".
-> -- clock-frequency: I²C work frequency.
-> +- clock-frequency: IÂ²C work frequency.
+On Tue, 31 Jul 2018 06:01:44 +0000
+Alexandre Ghiti <alex@ghiti.fr> wrote:
 
-I'd prefer just plain ASCII 'I2C' here, but either way:
+> [CC linux-mm for inclusion in -mm tree] 
+> 
+> In order to reduce copy/paste of functions across architectures and then
+> make riscv hugetlb port (and future ports) simpler and smaller, this
+> patchset intends to factorize the numerous hugetlb primitives that are
+> defined across all the architectures.
 
-Acked-by: Rob Herring <robh@kernel.org>
+[...]
 
-Rob
+>  15 files changed, 139 insertions(+), 382 deletions(-)
+
+I imagine you're mostly interested in non-x86 review at this point, but
+as this series is looking amazing:
+
+Reviewed-by: Luiz Capitulino <lcapitulino@redhat.com>
