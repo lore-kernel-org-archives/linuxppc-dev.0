@@ -1,35 +1,31 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <rdunlap@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:8b0:10b:1231::1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fdPz5hXqzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:59:48 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6V0wdWv083317
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 20:59:45 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kjak1dv4h-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 20:59:45 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 30 Jul 2018 20:59:44 -0400
-Subject: Re: [PATCH] powerpc/mobility: Fix node detach/rename problem
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- John Allen <jallen@linux.vnet.ibm.com>, mpe@ellerman.id.au
-References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 30 Jul 2018 17:59:38 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fdcc2fLkzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 11:09:01 +1000 (AEST)
+Subject: Re: [PATCH 0/6] rapidio: move Kconfig menu definition to subsystem
+To: Alexei Colin <acolin@isi.edu>, Alexandre Bounine <alex.bou9@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: John Paul Walters <jwalters@isi.edu>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ Will Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>,
+ Alexander Sverdlin <alexander.sverdlin@nokia.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Peter Anvin <hpa@zytor.com>, Matt Porter <mporter@kernel.crashing.org>,
+ x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20180730225035.28365-1-acolin@isi.edu>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <db90c65d-b6da-1f57-43c6-e105fc6f1704@infradead.org>
+Date: Mon, 30 Jul 2018 18:08:42 -0700
 MIME-Version: 1.0
-In-Reply-To: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
+In-Reply-To: <20180730225035.28365-1-acolin@isi.edu>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,112 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/29/2018 06:11 AM, Michael Bringmann wrote:
-> During LPAR migration, the content of the device tree/sysfs may
-> be updated including deletion and replacement of nodes in the
-> tree.  When nodes are added to the internal node structures, they
-> are appended in FIFO order to a list of nodes maintained by the
-> OF code APIs.  When nodes are removed from the device tree, they
-> are marked OF_DETACHED, but not actually deleted from the system
-> to allow for pointers cached elsewhere in the kernel.  The order
-> and content of the entries in the list of nodes is not altered,
-> though.
+On 07/30/2018 03:50 PM, Alexei Colin wrote:
+> The top-level Kconfig entry for RapidIO subsystem is currently
+> duplicated in several architecture-specific Kconfig files. This set of
+> patches does two things:
 > 
-> During LPAR migration some common nodes are deleted and re-added
-> e.g. "ibm,platform-facilities".  If a node is re-added to the OF
-> node lists, the of_attach_node function checks to make sure that
-> the name + ibm,phandle of the to-be-added data is unique.  As the
-> previous copy of a re-added node is not modified beyond the addition
-> of a bit flag, the code (1) finds the old copy, (2) prints a WARNING
-> notice to the console, (3) renames the to-be-added node to avoid
-> filename collisions within a directory, and (3) adds entries to
-> the sysfs/kernfs.
-
-So, this patch actually just band aids over the real problem. This is a long standing problem with several PFO drivers leaking references. The issue here is that, during the device tree update that follows a migration. the update of the ibm,platform-facilities node and friends below are always deleted and re-added on the destination lpar and subsequently the leaked references prevent the devices nodes from every actually being properly cleaned up after detach. Thus, leading to the issue you are observing.
-
-As and example a quick look at nx-842-pseries.c reveals several issues.
-
-static int __init nx842_pseries_init(void)
-{
-        struct nx842_devdata *new_devdata;
-        int ret;
-
-        if (!of_find_compatible_node(NULL, NULL, "ibm,compression"))
-                return -ENODEV;
-
-This call to of_find_compatible_node() results in a node returned with refcount incremented and therefore immediately leaked.
-
-Further, the reconfig notifier logic makes the assumption that it only needs to deal with node updates, but as I outlined above the post migration device tree update always results in PFO nodes and properties being deleted and re-added.
-
-/**
- * nx842_OF_notifier - Process updates to OF properties for the device
- *
- * @np: notifier block
- * @action: notifier action
- * @update: struct pSeries_reconfig_prop_update pointer if action is
- *      PSERIES_UPDATE_PROPERTY
- *
- * Returns:
- *      NOTIFY_OK on success
- *      NOTIFY_BAD encoded with error number on failure, use
- *              notifier_to_errno() to decode this value
- */
-static int nx842_OF_notifier(struct notifier_block *np, unsigned long action,
-                             void *data)
-{
-        struct of_reconfig_data *upd = data;
-        struct nx842_devdata *local_devdata;
-        struct device_node *node = NULL;
-
-        rcu_read_lock();
-        local_devdata = rcu_dereference(devdata);
-        if (local_devdata)
-                node = local_devdata->dev->of_node;
-
-        if (local_devdata &&
-                        action == OF_RECONFIG_UPDATE_PROPERTY &&
-                        !strcmp(upd->dn->name, node->name)) {
-                rcu_read_unlock();
-                nx842_OF_upd(upd->prop);
-        } else
-                rcu_read_unlock();
-
-        return NOTIFY_OK;
-}
-
-I expect to find the same problems in pseries-rng.c and nx.c.
-
--Tyrel
-
+> 1. Move the Kconfig menu definition into the RapidIO subsystem and
+> remove the duplicate definitions from arch Kconfig files.
 > 
-> This patch fixes the 'migration add' problem by changing the
-> stored 'phandle' of the OF_DETACHed node to 0 (reserved value for
-> of_find_node_by_phandle), so that subsequent re-add operations,
-> such as those during migration, do not find the detached node,
-> do not observe duplicate names, do not rename them,  and the
-> extra WARNING notices are removed from the console output.
+> 2. Enable RapidIO Kconfig menu entry for arm and arm64 architectures,
+> where it was not enabled before. I tested that subsystem and drivers
+> build successfully for both architectures, and tested that the modules
+> load on a custom arm64 Qemu model.
 > 
-> In addition, it erases the 'name' field of the OF_DETACHED node,
-> to prevent any future calls to of_find_node_by_name() or
-> of_find_node_by_path() from matching this node.
+> For all architectures, RapidIO menu should be offered when either:
+> (1) The platform has a PCI bus (which host a RapidIO module on the bus).
+> (2) The platform has a RapidIO IP block (connected to a system bus, e.g.
+> AXI on ARM). In this case, 'select HAS_RAPIDIO' should be added to the
+> 'config ARCH_*' menu entry for the SoCs that offer the IP block.
 > 
-> Signed-off-by: Michael Bringmann <mwb@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/dlpar.c |    3 +++
->  1 file changed, 3 insertions(+)
+> Prior to this patchset, different architectures used different criteria:
+> * powerpc: (1) and (2)
+> * mips: (1) and (2) after recent commit into next that added (2):
+>   https://www.linux-mips.org/archives/linux-mips/2018-07/msg00596.html
+>   fc5d988878942e9b42a4de5204bdd452f3f1ce47
+>   491ec1553e0075f345fbe476a93775eabcbc40b6
+> * x86: (1)
+> * arm,arm64: none (RapidIO menus never offered)
 > 
-> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-> index 2de0f0d..9d82c28 100644
-> --- a/arch/powerpc/platforms/pseries/dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/dlpar.c
-> @@ -274,6 +274,9 @@ int dlpar_detach_node(struct device_node *dn)
->  	if (rc)
->  		return rc;
+> Responses to feedback from prior submission (thanks for the reviews!):
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593347.html
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593349.html
 > 
-> +	dn->phandle = 0;
-> +	memset(dn->name, 0, strlen(dn->name));
-> +
->  	return 0;
->  }
+> Changelog:
+>   * Moved Kconfig entry into RapidIO subsystem instead of duplicating
+> 
+> In the current patchset, I took the approach of adding '|| PCI' to the
+> depends in the subsystem. I did try the alterantive approach mentioned
+> in the reviews for v1 of this patch, where the subsystem Kconfig does
+> not add a '|| PCI' and each per-architecture Kconfig has to add a
+> 'select HAS_RAPIDIO if PCI' and SoCs with IP blocks have to also add
+> 'select HAS_RAPIDIO'. This works too but requires each architecture's
+> Kconfig to add the line for RapidIO (whereas current approach does not
+> require that involvement) and also may create a false impression that
+> the dependency on PCI is strict.
+> 
+> We appreciate the suggestion for also selecting the RapdiIO subsystem for
+> compilation with COMPILE_TEST, but hope to address it in a separate
+> patchset, localized to the subsystem, since it will need to change
+> depends on all drivers, not just on the top level, and since this
+> patch now spans multiple architectures.
 > 
 > 
+> Alexei Colin (6):
+>   rapidio: define top Kconfig menu in driver subtree
+>   x86: factor out RapidIO Kconfig menu
+>   powerpc: factor out RapidIO Kconfig menu entry
+>   mips: factor out RapidIO Kconfig entry
+>   arm: enable RapidIO menu in Kconfig
+>   arm64: enable RapidIO menu in Kconfig
+> 
+>  arch/arm/Kconfig        |  2 ++
+>  arch/arm64/Kconfig      |  2 ++
+>  arch/mips/Kconfig       | 11 -----------
+>  arch/powerpc/Kconfig    | 13 +------------
+>  arch/x86/Kconfig        |  8 --------
+>  drivers/rapidio/Kconfig | 15 +++++++++++++++
+>  6 files changed, 20 insertions(+), 31 deletions(-)
+> 
+
+LGTM.
+
+Acked-by: Randy Dunlap <rdunlap@infradead.org> # for the series
+
+thanks,
+-- 
+~Randy
