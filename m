@@ -1,28 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fsLV0FfrzF14l
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 19:57:38 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masahiro Yamada <yamada.masahiro@socionext.com>,
- Randy Dunlap <rdunlap@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-kbuild <linux-kbuild@vger.kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: powerpc: 32BIT vs. 64BIT (PPC32 vs. PPC64)
-In-Reply-To: <CAK7LNASKiO8J8yTRGp4ngo2=ErC6S2_0bNENVsc4PoYpENQfTQ@mail.gmail.com>
-References: <3f906b03-98ff-c081-4e19-b490f0b35c51@infradead.org>
- <a3c9b9ee9ec116390c47dca65fcf14f138eccd3f.camel@kernel.crashing.org>
- <4f3a5969-88d5-134d-508d-7617947c588c@infradead.org>
- <20180707221316.5b75e075@roar.ozlabs.ibm.com>
- <c0a17b80-6384-7437-045c-3688d9e5e7f9@infradead.org>
- <CAK7LNASKiO8J8yTRGp4ngo2=ErC6S2_0bNENVsc4PoYpENQfTQ@mail.gmail.com>
-Date: Tue, 31 Jul 2018 19:57:36 +1000
-Message-ID: <87lg9rhgmn.fsf@concordia.ellerman.id.au>
+Return-Path: <alastair@d-silva.org>
+Received: from ushosting.nmnhosting.com (ushosting.nmnhosting.com
+ [167.160.173.127])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41fsQS386XzF14l
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 20:01:04 +1000 (AEST)
+From: "Alastair D'Silva" <alastair@d-silva.org>
+To: "'Michael Ellerman'" <mpe@ellerman.id.au>,
+ "'Murilo Opsfelder Araujo'" <muriloo@linux.ibm.com>,
+ "'LEROY Christophe'" <christophe.leroy@c-s.fr>
+Cc: <linux-kernel@vger.kernel.org>,
+ "'Andrew Donnellan'" <andrew.donnellan@au1.ibm.com>,
+ "'Balbir Singh'" <bsingharora@gmail.com>,
+ "'Benjamin Herrenschmidt'" <benh@kernel.crashing.org>,
+ "'Cyril Bur'" <cyrilbur@gmail.com>,
+ "'Eric W . Biederman'" <ebiederm@xmission.com>,
+ "'Joe Perches'" <joe@perches.com>, "'Michael Neuling'" <mikey@neuling.org>,
+ "'Nicholas Piggin'" <npiggin@gmail.com>,
+ "'Paul Mackerras'" <paulus@samba.org>,
+ "'Simon Guo'" <wei.guo.simon@gmail.com>,
+ "'Sukadev Bhattiprolu'" <sukadev@linux.vnet.ibm.com>,
+ "'Tobin C . Harding'" <me@tobin.cc>, <linuxppc-dev@lists.ozlabs.org>
+References: <20180727145811.12334-1-muriloo@linux.ibm.com>
+ <20180727145811.12334-5-muriloo@linux.ibm.com>
+ <20180727184023.Horde.KRXPzZpG18uxt_B9sy_FBg5@messagerie.si.c-s.fr>
+ <20180730152838.GA23704@kermit-br-ibm-com>
+ <20180730183047.Horde.g9hQ_3EXmF6St0upNs2DDw1@messagerie.si.c-s.fr>
+ <20180730231738.GA20351@kermit-br-ibm-com>
+ <87va8vhhsj.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87va8vhhsj.fsf@concordia.ellerman.id.au>
+Subject: RE: [PATCH v2 04/10] powerpc/traps: Use REG_FMT in show_signal_msg()
+Date: Tue, 31 Jul 2018 19:52:35 +1000
+Message-ID: <072401d428b4$4c0f4340$e42dc9c0$@d-silva.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain;
+	charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,83 +42,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Masahiro Yamada <yamada.masahiro@socionext.com> writes:
-> 2018-07-07 23:59 GMT+09:00 Randy Dunlap <rdunlap@infradead.org>:
->> On 07/07/2018 05:13 AM, Nicholas Piggin wrote:
->>> On Fri, 6 Jul 2018 21:58:29 -0700
->>> Randy Dunlap <rdunlap@infradead.org> wrote:
->>>
->>>> On 07/06/2018 06:45 PM, Benjamin Herrenschmidt wrote:
->>>>> On Thu, 2018-07-05 at 14:30 -0700, Randy Dunlap wrote:
->>>>>> Hi,
->>>>>>
->>>>>> Is there a good way (or a shortcut) to do something like:
->>>>>>
->>>>>> $ make ARCH=powerpc O=PPC32 [other_options] allmodconfig
->>>>>>   to get a PPC32/32BIT allmodconfig
->>>>>>
->>>>>> and also be able to do:
->>>>>>
->>>>>> $make ARCH=powerpc O=PPC64 [other_options] allmodconfig
->>>>>>   to get a PPC64/64BIT allmodconfig?
->>>>>
->>>>> Hrm... O= is for the separate build dir, so there much be something
->>>>> else.
->>>>>
->>>>> You mean having ARCH= aliases like ppc/ppc32 and ppc64 ?
->>>>
->>>> Yes.
->>>>
->>>>> That would be a matter of overriding some .config defaults I suppose, I
->>>>> don't know how this is done on other archs.
->>>>>
->>>>> I see the aliasing trick in the Makefile but that's about it.
->>>>>
->>>>>> Note that arch/x86, arch/sh, and arch/sparc have ways to do
->>>>>> some flavor(s) of this (from Documentation/kbuild/kbuild.txt;
->>>>>> sh and sparc based on a recent "fix" patch from me):
->>>>>
->>>>> I fail to see what you are actually talking about here ... sorry. Do
->>>>> you have concrete examples on x86 or sparc ? From what I can tell the
->>>>> "i386" or "sparc32/sparc64" aliases just change SRCARCH in Makefile and
->>>>> 32 vs 64-bit is just a Kconfig option...
->>>>
->>>> Yes, your summary is mostly correct.
->>>>
->>>> I'm just looking for a way to do cross-compile builds that are close to
->>>> ppc32 allmodconfig and ppc64 allmodconfig.
->>>
->>> Would there a problem with adding ARCH=ppc32 / ppc64 matching? This
->>> seems to work...
->>
->> Yes, this mostly works and is similar to a patch (my patch) on my test machine.
->> And they both work for allmodconfig, which is my primary build target.
->>
->> And they both have one little quirk that is confusing when the build target
->> is defconfig:
->>
->> When ARCH=ppc32, the terminal output (stdout) is: (using O=PPC32)
->>
->> make[1]: Entering directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
->>   GEN     ./Makefile
->> *** Default configuration is based on 'ppc64_defconfig'   <<<<< NOTE <<<<<
->> #
->> # configuration written to .config
->> #
->> make[1]: Leaving directory '/home/rdunlap/lnx/lnx-418-rc3/PPC32'
->>
->
->
-> Maybe, we can set one of ppc32 defconfigs to KBUILD_DEFCONFIG
-> if ARCH is ppc32 ?
+> -----Original Message-----
+> From: Michael Ellerman <mpe@ellerman.id.au>
+> Sent: Tuesday, 31 July 2018 7:32 PM
+> To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>; LEROY Christophe
+> <christophe.leroy@c-s.fr>
+> Cc: linux-kernel@vger.kernel.org; Alastair D'Silva =
+<alastair@d-silva.org>;
+> Andrew Donnellan <andrew.donnellan@au1.ibm.com>; Balbir Singh
+> <bsingharora@gmail.com>; Benjamin Herrenschmidt
+> <benh@kernel.crashing.org>; Cyril Bur <cyrilbur@gmail.com>; Eric W .
+> Biederman <ebiederm@xmission.com>; Joe Perches <joe@perches.com>;
+> Michael Neuling <mikey@neuling.org>; Nicholas Piggin
+> <npiggin@gmail.com>; Paul Mackerras <paulus@samba.org>; Simon Guo
+> <wei.guo.simon@gmail.com>; Sukadev Bhattiprolu
+> <sukadev@linux.vnet.ibm.com>; Tobin C . Harding <me@tobin.cc>; =
+linuxppc-
+> dev@lists.ozlabs.org
+> Subject: Re: [PATCH v2 04/10] powerpc/traps: Use REG_FMT in
+> show_signal_msg()
+>=20
+> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> writes:
+> > On Mon, Jul 30, 2018 at 06:30:47PM +0200, LEROY Christophe wrote:
+> >> Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a =C3=A9crit :
+> >> > On Fri, Jul 27, 2018 at 06:40:23PM +0200, LEROY Christophe wrote:
+> >> > > Murilo Opsfelder Araujo <muriloo@linux.ibm.com> a =C3=A9crit :
+> >> > >
+> >> > > > Simplify the message format by using REG_FMT as the register
+> >> > > > format.  This avoids having two different formats and avoids
+> checking for MSR_64BIT.
+> >> > >
+> >> > > Are you sure it is what we want ?
+> >> >
+> >> > Yes.
+> >> >
+> >> > > Won't it change the behaviour for a 32 bits app running on a =
+64bits
+> kernel ?
+> >> >
+> >> > In fact, this changes how many zeroes are prefixed when =
+displaying
+> >> > the registers (%016lx vs. %08lx format).  For example, 32-bits
+> >> > userspace, 64-bits kernel:
+> >>
+> >> Indeed that's what I suspected. What is the real benefit of this =
+change ?
+> >> Why not keep the current format for 32bits userspace ? All those
+> >> leading zeroes are pointless to me.
+> >
+> > One of the benefits is simplifying the code by removing some checks.
+> > Another is deduplicating almost identical format strings in favor of =
+a unified
+> one.
+> >
+> > After reading Joe's comment [1], %px seems to be the format we're
+> looking for.
+> > An extract from Documentation/core-api/printk-formats.rst:
+> >
+> >   "%px is functionally equivalent to %lx (or %lu). %px is preferred =
+because it
+> >   is more uniquely grep'able."
+> >
+> > So I guess we don't need to worry about the format (%016lx vs. =
+%08lx),
+> > let's just use %px, as per the guideline.
+>=20
+> I don't think I like %px.
 
-We could, but as I said in another reply I'd rather we didn't play
-tricks with ARCH.
+Me neither, semantically, it's for pointers, and the data being =
+displayed is not a pointer.
 
-I've merged a patch to add three new allmodconfig targets for ppc32,
-ppc64le and ppc64_book3e:
+> It makes the format string cleaner, but it means we have to cast =
+everything
+> to void * which is ugly as heck.
+>=20
+> I actually don't think the leading zeroes are helpful at all in the =
+signal
+> message, ie. we should just use %lx there.
+>=20
+> They are useful in show_regs() because we want everything to line up.
+>=20
+> So I think I'll drop patch 3 and use 0x%lx in show_signal_msg(), =
+meaning we
+> end up with, eg:
+>=20
+>   [   73.414535] segv[3759]: segfault (11) at 0x0 nip 0x10000420 lr =
+0xfe61854
+> code 0x1 in segv[10000000+10000]
+>   [   73.414641] segv[3759]: code: 4e800421 80010014 38210010 7c0803a6
+> 4bffff30 9421ffd0 93e1002c 7c3f0b78
+>   [   73.414665] segv[3759]: code: 39200000 913f001c 813f001c 39400001
+> <91490000> 39200000 7d234b78 397f0030
 
-  https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=54457&state=*
+Or better yet, "%#lx" - the hash adds the appropriate prefix in the =
+right case for the format.
 
-
-cheers
+--=20
+Alastair D'Silva           mob: 0423 762 819
+skype: alastair_dsilva     msn: alastair@d-silva.org
+blog: http://alastair.d-silva.org    Twitter: @EvilDeece
