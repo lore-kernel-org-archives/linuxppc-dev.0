@@ -1,22 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fn2M1Vt1zF1Cq
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 16:43:23 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <helgaas@kernel.org>, Sam Bobroff <sbobroff@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- bhelgaas@google.com, bryantly@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 1/1] powerpc/pseries: fix EEH recovery of some IOV
- devices
-In-Reply-To: <20180730212155.GB45322@bhelgaas-glaptop.roam.corp.google.com>
-References: <e63eb03c87a1a54257aa2bcc384cf07761824a7e.1532915951.git.sbobroff@linux.ibm.com>
- <20180730212155.GB45322@bhelgaas-glaptop.roam.corp.google.com>
-Date: Tue, 31 Jul 2018 16:43:22 +1000
-Message-ID: <87y3drhpmd.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fnQJ2fXLzF18l
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 17:00:40 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6V6xFDl019702
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 03:00:37 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kjhf5u8ax-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 03:00:37 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 31 Jul 2018 08:00:35 +0100
+Subject: Re: [RFC 2/4] virtio: Override device's DMA OPS with
+ virtio_direct_dma_ops selectively
+To: Christoph Hellwig <hch@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180720035941.6844-3-khandual@linux.vnet.ibm.com>
+ <20180730092551.GB26245@infradead.org>
+Cc: robh@kernel.org, srikar@linux.vnet.ibm.com, mst@redhat.com, aik@ozlabs.ru,
+ jasowang@redhat.com, linuxram@us.ibm.com, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, paulus@samba.org,
+ joe@perches.com, linuxppc-dev@lists.ozlabs.org,
+ elfring@users.sourceforge.net, haren@linux.vnet.ibm.com,
+ david@gibson.dropbear.id.au
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Tue, 31 Jul 2018 12:30:19 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180730092551.GB26245@infradead.org>
+Content-Type: text/plain; charset=windows-1252
+Message-Id: <1e197586-4e11-48e1-a0dd-c2c440c64f9e@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +45,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bjorn Helgaas <helgaas@kernel.org> writes:
-> On Mon, Jul 30, 2018 at 11:59:14AM +1000, Sam Bobroff wrote:
->> EEH recovery currently fails on pSeries for some IOV capable PCI
->> devices, if CONFIG_PCI_IOV is on and the hypervisor doesn't provide
->> certain device tree properties for the device. (Found on an IOV
->> capable device using the ipr driver.)
->> 
->> Recovery fails in pci_enable_resources() at the check on r->parent,
->> because r->flags is set and r->parent is not.  This state is due to
->> sriov_init() setting the start, end and flags members of the IOV BARs
->> but the parent not being set later in
->> pseries_pci_fixup_iov_resources(), because the
->> "ibm,open-sriov-vf-bar-info" property is missing.
->> 
->> Correct this by zeroing the resource flags for IOV BARs when they
->> can't be configured (this is the same method used by sriov_init() and
->> __pci_read_base()).
->> 
->> VFs cleared this way can't be enabled later, because that requires
->> another device tree property, "ibm,number-of-configurable-vfs" as well
->> as support for the RTAS function "ibm_map_pes". These are all part of
->> hypervisor support for IOV and it seems unlikely that a hypervisor
->> would ever partially, but not fully, support it. (None are currently
->> provided by QEMU/KVM.)
->> 
->> Signed-off-by: Sam Bobroff <sbobroff@linux.ibm.com>
->
-> Michael, I assume you'll take this, since it only touches powerpc.
-> Let me know if you need anything from me.
+On 07/30/2018 02:55 PM, Christoph Hellwig wrote:
+>> +const struct dma_map_ops virtio_direct_dma_ops;
+> 
+> This belongs into a header if it is non-static.  If you only
+> use it in this file anyway please mark it static and avoid a forward
+> declaration.
 
-Yeah I'll take it, thanks.
+Sure, will make it static, move the definition up in the file to avoid
+forward declaration.
+ 
+> 
+>> +
+>>  int virtio_finalize_features(struct virtio_device *dev)
+>>  {
+>>  	int ret = dev->config->finalize_features(dev);
+>> @@ -174,6 +176,9 @@ int virtio_finalize_features(struct virtio_device *dev)
+>>  	if (ret)
+>>  		return ret;
+>>  
+>> +	if (virtio_has_iommu_quirk(dev))
+>> +		set_dma_ops(dev->dev.parent, &virtio_direct_dma_ops);
+> 
+> This needs a big fat comment explaining what is going on here.
 
-cheers
+Sure, will do. Also talk about the XEN domain exception as well once
+that goes into this conditional statement.
+
+> 
+> Also not new, but I find the existance of virtio_has_iommu_quirk and its
+> name horribly confusing.  It might be better to open code it here once
+> only a single caller is left.
+
+Sure will do. There is one definition in the tools directory which can
+be removed and then this will be the only one left.
