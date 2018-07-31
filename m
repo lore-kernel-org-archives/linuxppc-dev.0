@@ -1,31 +1,21 @@
-Return-Path: <rdunlap@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
+ [IPv6:2607:f8b0:4864:20::542])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fdcc2fLkzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 11:09:01 +1000 (AEST)
-Subject: Re: [PATCH 0/6] rapidio: move Kconfig menu definition to subsystem
-To: Alexei Colin <acolin@isi.edu>, Alexandre Bounine <alex.bou9@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>
-Cc: John Paul Walters <jwalters@isi.edu>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
- Will Deacon <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>,
- Paul Burton <paul.burton@mips.com>,
- Alexander Sverdlin <alexander.sverdlin@nokia.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Peter Anvin <hpa@zytor.com>, Matt Porter <mporter@kernel.crashing.org>,
- x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20180730225035.28365-1-acolin@isi.edu>
-From: Randy Dunlap <rdunlap@infradead.org>
-Message-ID: <db90c65d-b6da-1f57-43c6-e105fc6f1704@infradead.org>
-Date: Mon, 30 Jul 2018 18:08:42 -0700
-MIME-Version: 1.0
-In-Reply-To: <20180730225035.28365-1-acolin@isi.edu>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ffPJ42pkzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 11:44:19 +1000 (AEST)
+Received: by mail-pg1-x542.google.com with SMTP id z8-v6so8204085pgu.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 18:44:19 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Robin Murphy <robin.murphy@arm.com>, Christoph Hellwig <hch@lst.de>,
+ Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH] powerpc/4xx: Fix error return path in ppc4xx_msi_probe()
+Date: Mon, 30 Jul 2018 18:44:14 -0700
+Message-Id: <1533001454-8751-1-git-send-email-linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,79 +25,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/30/2018 03:50 PM, Alexei Colin wrote:
-> The top-level Kconfig entry for RapidIO subsystem is currently
-> duplicated in several architecture-specific Kconfig files. This set of
-> patches does two things:
-> 
-> 1. Move the Kconfig menu definition into the RapidIO subsystem and
-> remove the duplicate definitions from arch Kconfig files.
-> 
-> 2. Enable RapidIO Kconfig menu entry for arm and arm64 architectures,
-> where it was not enabled before. I tested that subsystem and drivers
-> build successfully for both architectures, and tested that the modules
-> load on a custom arm64 Qemu model.
-> 
-> For all architectures, RapidIO menu should be offered when either:
-> (1) The platform has a PCI bus (which host a RapidIO module on the bus).
-> (2) The platform has a RapidIO IP block (connected to a system bus, e.g.
-> AXI on ARM). In this case, 'select HAS_RAPIDIO' should be added to the
-> 'config ARCH_*' menu entry for the SoCs that offer the IP block.
-> 
-> Prior to this patchset, different architectures used different criteria:
-> * powerpc: (1) and (2)
-> * mips: (1) and (2) after recent commit into next that added (2):
->   https://www.linux-mips.org/archives/linux-mips/2018-07/msg00596.html
->   fc5d988878942e9b42a4de5204bdd452f3f1ce47
->   491ec1553e0075f345fbe476a93775eabcbc40b6
-> * x86: (1)
-> * arm,arm64: none (RapidIO menus never offered)
-> 
-> Responses to feedback from prior submission (thanks for the reviews!):
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593347.html
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2018-July/593349.html
-> 
-> Changelog:
->   * Moved Kconfig entry into RapidIO subsystem instead of duplicating
-> 
-> In the current patchset, I took the approach of adding '|| PCI' to the
-> depends in the subsystem. I did try the alterantive approach mentioned
-> in the reviews for v1 of this patch, where the subsystem Kconfig does
-> not add a '|| PCI' and each per-architecture Kconfig has to add a
-> 'select HAS_RAPIDIO if PCI' and SoCs with IP blocks have to also add
-> 'select HAS_RAPIDIO'. This works too but requires each architecture's
-> Kconfig to add the line for RapidIO (whereas current approach does not
-> require that involvement) and also may create a false impression that
-> the dependency on PCI is strict.
-> 
-> We appreciate the suggestion for also selecting the RapdiIO subsystem for
-> compilation with COMPILE_TEST, but hope to address it in a separate
-> patchset, localized to the subsystem, since it will need to change
-> depends on all drivers, not just on the top level, and since this
-> patch now spans multiple architectures.
-> 
-> 
-> Alexei Colin (6):
->   rapidio: define top Kconfig menu in driver subtree
->   x86: factor out RapidIO Kconfig menu
->   powerpc: factor out RapidIO Kconfig menu entry
->   mips: factor out RapidIO Kconfig entry
->   arm: enable RapidIO menu in Kconfig
->   arm64: enable RapidIO menu in Kconfig
-> 
->  arch/arm/Kconfig        |  2 ++
->  arch/arm64/Kconfig      |  2 ++
->  arch/mips/Kconfig       | 11 -----------
->  arch/powerpc/Kconfig    | 13 +------------
->  arch/x86/Kconfig        |  8 --------
->  drivers/rapidio/Kconfig | 15 +++++++++++++++
->  6 files changed, 20 insertions(+), 31 deletions(-)
-> 
+An arbitrary error in ppc4xx_msi_probe() quite likely results in a
+crash similar to the following, seen after dma_alloc_coherent()
+returned an error.
 
-LGTM.
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xc001bff0
+Oops: Kernel access of bad area, sig: 11 [#1]
+BE Canyonlands
+Modules linked in:
+CPU: 0 PID: 1 Comm: swapper Tainted: G        W
+4.18.0-rc6-00010-gff33d1030a6c #1
+NIP:  c001bff0 LR: c001c418 CTR: c01faa7c
+REGS: cf82db40 TRAP: 0300   Tainted: G        W
+(4.18.0-rc6-00010-gff33d1030a6c)
+MSR:  00029000 <CE,EE,ME>  CR: 28002024  XER: 00000000
+DEAR: 00000000 ESR: 00000000
+GPR00: c001c418 cf82dbf0 cf828000 cf8de400 00000000 00000000 000000c4 000000c4
+GPR08: c0481ea4 00000000 00000000 000000c4 22002024 00000000 c00025e8 00000000
+GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c0492380 0000004a
+GPR24: 00029000 0000000c 00000000 cf8de410 c0494d60 c0494d60 cf8bebc0 00000001
+NIP [c001bff0] ppc4xx_of_msi_remove+0x48/0xa0
+LR [c001c418] ppc4xx_msi_probe+0x294/0x3b8
+Call Trace:
+[cf82dbf0] [00029000] 0x29000 (unreliable)
+[cf82dc10] [c001c418] ppc4xx_msi_probe+0x294/0x3b8
+[cf82dc70] [c0209fbc] platform_drv_probe+0x40/0x9c
+[cf82dc90] [c0208240] driver_probe_device+0x2a8/0x350
+[cf82dcc0] [c0206204] bus_for_each_drv+0x60/0xac
+[cf82dcf0] [c0207e88] __device_attach+0xe8/0x160
+[cf82dd20] [c02071e0] bus_probe_device+0xa0/0xbc
+[cf82dd40] [c02050c8] device_add+0x404/0x5c4
+[cf82dd90] [c0288978] of_platform_device_create_pdata+0x88/0xd8
+[cf82ddb0] [c0288b70] of_platform_bus_create+0x134/0x220
+[cf82de10] [c0288bcc] of_platform_bus_create+0x190/0x220
+[cf82de70] [c0288cf4] of_platform_bus_probe+0x98/0xec
+[cf82de90] [c0449650] __machine_initcall_canyonlands_ppc460ex_device_probe+0x38/0x54
+[cf82dea0] [c0002404] do_one_initcall+0x40/0x188
+[cf82df00] [c043daec] kernel_init_freeable+0x130/0x1d0
+[cf82df30] [c0002600] kernel_init+0x18/0x104
+[cf82df40] [c000c23c] ret_from_kernel_thread+0x14/0x1c
+Instruction dump:
+90010024 813d0024 2f890000 83c30058 41bd0014 48000038 813d0024 7f89f800
+409d002c 813e000c 57ea103a 3bff0001 <7c69502e> 2f830000 419effe0 4803b26d
+---[ end trace 8cf551077ecfc42a ]---
 
-Acked-by: Randy Dunlap <rdunlap@infradead.org> # for the series
+Fix it up. Specifically,
 
-thanks,
+- Return valid error codes from ppc4xx_setup_pcieh_hw(), have it clean
+  up after itself, and only access hardware after all possible error
+  conditions have been handled.
+- Use devm_kzalloc() instead of kzalloc() in ppc4xx_msi_probe()
+
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ arch/powerpc/platforms/4xx/msi.c | 51 +++++++++++++++++++++++-----------------
+ 1 file changed, 30 insertions(+), 21 deletions(-)
+
+diff --git a/arch/powerpc/platforms/4xx/msi.c b/arch/powerpc/platforms/4xx/msi.c
+index 81b2cbce7df8..7c324eff2f22 100644
+--- a/arch/powerpc/platforms/4xx/msi.c
++++ b/arch/powerpc/platforms/4xx/msi.c
+@@ -146,13 +146,19 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
+ 	const u32 *sdr_addr;
+ 	dma_addr_t msi_phys;
+ 	void *msi_virt;
++	int err;
+ 
+ 	sdr_addr = of_get_property(dev->dev.of_node, "sdr-base", NULL);
+ 	if (!sdr_addr)
+-		return -1;
++		return -EINVAL;
+ 
+-	mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));	/*HIGH addr */
+-	mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));	/* Low addr */
++	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
++	if (!msi_data)
++		return -EINVAL;
++
++	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
++	if (!msi_mask)
++		return -EINVAL;
+ 
+ 	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
+ 	if (!msi->msi_dev)
+@@ -160,30 +166,30 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
+ 
+ 	msi->msi_regs = of_iomap(msi->msi_dev, 0);
+ 	if (!msi->msi_regs) {
+-		dev_err(&dev->dev, "of_iomap problem failed\n");
+-		return -ENOMEM;
++		dev_err(&dev->dev, "of_iomap failed\n");
++		err = -ENOMEM;
++		goto node_put;
+ 	}
+ 	dev_dbg(&dev->dev, "PCIE-MSI: msi register mapped 0x%x 0x%x\n",
+ 		(u32) (msi->msi_regs + PEIH_TERMADH), (u32) (msi->msi_regs));
+ 
+ 	msi_virt = dma_alloc_coherent(&dev->dev, 64, &msi_phys, GFP_KERNEL);
+-	if (!msi_virt)
+-		return -ENOMEM;
++	if (!msi_virt) {
++		err = -ENOMEM;
++		goto iounmap;
++	}
+ 	msi->msi_addr_hi = upper_32_bits(msi_phys);
+ 	msi->msi_addr_lo = lower_32_bits(msi_phys & 0xffffffff);
+ 	dev_dbg(&dev->dev, "PCIE-MSI: msi address high 0x%x, low 0x%x\n",
+ 		msi->msi_addr_hi, msi->msi_addr_lo);
+ 
++	mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));	/*HIGH addr */
++	mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));	/* Low addr */
++
+ 	/* Progam the Interrupt handler Termination addr registers */
+ 	out_be32(msi->msi_regs + PEIH_TERMADH, msi->msi_addr_hi);
+ 	out_be32(msi->msi_regs + PEIH_TERMADL, msi->msi_addr_lo);
+ 
+-	msi_data = of_get_property(dev->dev.of_node, "msi-data", NULL);
+-	if (!msi_data)
+-		return -1;
+-	msi_mask = of_get_property(dev->dev.of_node, "msi-mask", NULL);
+-	if (!msi_mask)
+-		return -1;
+ 	/* Program MSI Expected data and Mask bits */
+ 	out_be32(msi->msi_regs + PEIH_MSIED, *msi_data);
+ 	out_be32(msi->msi_regs + PEIH_MSIMK, *msi_mask);
+@@ -191,6 +197,12 @@ static int ppc4xx_setup_pcieh_hw(struct platform_device *dev,
+ 	dma_free_coherent(&dev->dev, 64, msi_virt, msi_phys);
+ 
+ 	return 0;
++
++iounmap:
++	iounmap(msi->msi_regs);
++node_put:
++	of_node_put(msi->msi_dev);
++	return err;
+ }
+ 
+ static int ppc4xx_of_msi_remove(struct platform_device *dev)
+@@ -209,7 +221,6 @@ static int ppc4xx_of_msi_remove(struct platform_device *dev)
+ 		msi_bitmap_free(&msi->bitmap);
+ 	iounmap(msi->msi_regs);
+ 	of_node_put(msi->msi_dev);
+-	kfree(msi);
+ 
+ 	return 0;
+ }
+@@ -223,18 +234,16 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
+ 
+ 	dev_dbg(&dev->dev, "PCIE-MSI: Setting up MSI support...\n");
+ 
+-	msi = kzalloc(sizeof(*msi), GFP_KERNEL);
+-	if (!msi) {
+-		dev_err(&dev->dev, "No memory for MSI structure\n");
++	msi = devm_kzalloc(&dev->dev, sizeof(*msi), GFP_KERNEL);
++	if (!msi)
+ 		return -ENOMEM;
+-	}
+ 	dev->dev.platform_data = msi;
+ 
+ 	/* Get MSI ranges */
+ 	err = of_address_to_resource(dev->dev.of_node, 0, &res);
+ 	if (err) {
+ 		dev_err(&dev->dev, "%pOF resource error!\n", dev->dev.of_node);
+-		goto error_out;
++		return err;
+ 	}
+ 
+ 	msi_irqs = of_irq_count(dev->dev.of_node);
+@@ -243,7 +252,7 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
+ 
+ 	err = ppc4xx_setup_pcieh_hw(dev, res, msi);
+ 	if (err)
+-		goto error_out;
++		return err;
+ 
+ 	err = ppc4xx_msi_init_allocator(dev, msi);
+ 	if (err) {
+@@ -256,7 +265,7 @@ static int ppc4xx_msi_probe(struct platform_device *dev)
+ 		phb->controller_ops.setup_msi_irqs = ppc4xx_setup_msi_irqs;
+ 		phb->controller_ops.teardown_msi_irqs = ppc4xx_teardown_msi_irqs;
+ 	}
+-	return err;
++	return 0;
+ 
+ error_out:
+ 	ppc4xx_of_msi_remove(dev);
 -- 
-~Randy
+2.7.4
