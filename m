@@ -1,45 +1,31 @@
-Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexander.sverdlin@nokia.com>
+Received: from EUR01-VE1-obe.outbound.protection.outlook.com
+ (mail-ve1eur01on0109.outbound.protection.outlook.com [104.47.1.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fzvH0f3nzF1Pr
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:52:58 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6VE8vSn101294
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:52:56 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kjs50ta0n-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:52:49 -0400
-Received: from localhost
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Tue, 31 Jul 2018 08:51:01 -0600
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: "Alastair D'Silva" <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christophe Leroy <christophe.leroy@c-s.fr>, Cyril Bur <cyrilbur@gmail.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Joe Perches <joe@perches.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/9] powerpc/traps: Print signal name for unhandled signals
-Date: Tue, 31 Jul 2018 11:50:16 -0300
-In-Reply-To: <20180731145020.14009-1-muriloo@linux.ibm.com>
-References: <20180731145020.14009-1-muriloo@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41g0HX2ztBzF18k
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 01:10:25 +1000 (AEST)
+Subject: Re: [RESEND PATCH 1/6] rapidio: define top Kconfig menu in driver
+ subtree
+To: Alexei Colin <acolin@isi.edu>, Alexandre Bounine <alex.bou9@gmail.com>,
+ Matt Porter <mporter@kernel.crashing.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, John Paul Walters
+ <jwalters@isi.edu>, Catalin Marinas <catalin.marinas@arm.com>, Russell King
+ <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Will Deacon
+ <will.deacon@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton
+ <paul.burton@mips.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ Peter Anvin <hpa@zytor.com>, <x86@kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-mips@linux-mips.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+References: <20180731142954.30345-1-acolin@isi.edu>
+ <20180731142954.30345-2-acolin@isi.edu>
+From: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+Message-ID: <053432eb-1f24-a763-0bfe-e67373e7ea82@nokia.com>
+Date: Tue, 31 Jul 2018 17:09:10 +0200
 MIME-Version: 1.0
+In-Reply-To: <20180731142954.30345-2-acolin@isi.edu>
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20180731145020.14009-6-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,77 +35,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds a human-readable name in the unhandled signal message.
+Hi!
 
-Before this patch, a page fault looked like:
+On 31/07/18 16:29, Alexei Colin wrote:
+> The top-level Kconfig entry for RapidIO subsystem is currently
+> duplicated in several architecture-specific Kconfigs. This
+> commit re-defines it in the driver subtree, and subsequent
+> commits, one per architecture, will remove the duplicated
+> definitions from respective per-architecture Kconfigs.
+> 
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: John Paul Walters <jwalters@isi.edu>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Paul Burton <paul.burton@mips.com>
+> Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Peter Anvin <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: linux-mips@linux-mips.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Alexei Colin <acolin@isi.edu>
 
-  pandafault[6303]: unhandled signal 11 at 100007d0 nip 1000061c lr 7fff93c55100 code 2 in pandafault[10000000+10000]
+Reviewed-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
 
-After this patch, a page fault looks like:
+> ---
+>  drivers/rapidio/Kconfig | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/drivers/rapidio/Kconfig b/drivers/rapidio/Kconfig
+> index d6d2f20c4597..98e301847584 100644
+> --- a/drivers/rapidio/Kconfig
+> +++ b/drivers/rapidio/Kconfig
+> @@ -1,6 +1,21 @@
+>  #
+>  # RapidIO configuration
+>  #
+> +
+> +config HAS_RAPIDIO
+> +	bool
+> +	default n
+> +
+> +config RAPIDIO
+> +	tristate "RapidIO support"
+> +	depends on HAS_RAPIDIO || PCI
+> +	help
+> +	  This feature enables support for RapidIO high-performance
+> +	  packet-switched interconnect.
+> +
+> +	  If you say Y here, the kernel will include drivers and
+> +	  infrastructure code to support RapidIO interconnect devices.
+> +
+>  source "drivers/rapidio/devices/Kconfig"
+>  
+>  config RAPIDIO_DISC_TIMEOUT
 
-  pandafault[6352]: segfault (11) at 13a2a09f8 nip 13a2a086c lr 7fffb63e5100 code 2 in pandafault[13a2a0000+10000]
-
-Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
----
- arch/powerpc/kernel/traps.c | 39 +++++++++++++++++++++++++++++++++++--
- 1 file changed, 37 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 1c4f06fca370..e71f12bca146 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -96,6 +96,41 @@ EXPORT_SYMBOL(__debugger_fault_handler);
- #define TM_DEBUG(x...) do { } while(0)
- #endif
- 
-+static const char *signames[SIGRTMIN + 1] = {
-+	"UNKNOWN",
-+	"SIGHUP",			// 1
-+	"SIGINT",			// 2
-+	"SIGQUIT",			// 3
-+	"SIGILL",			// 4
-+	"unhandled trap",		// 5 = SIGTRAP
-+	"SIGABRT",			// 6 = SIGIOT
-+	"bus error",			// 7 = SIGBUS
-+	"floating point exception",	// 8 = SIGFPE
-+	"illegal instruction",		// 9 = SIGILL
-+	"SIGUSR1",			// 10
-+	"segfault",			// 11 = SIGSEGV
-+	"SIGUSR2",			// 12
-+	"SIGPIPE",			// 13
-+	"SIGALRM",			// 14
-+	"SIGTERM",			// 15
-+	"SIGSTKFLT",			// 16
-+	"SIGCHLD",			// 17
-+	"SIGCONT",			// 18
-+	"SIGSTOP",			// 19
-+	"SIGTSTP",			// 20
-+	"SIGTTIN",			// 21
-+	"SIGTTOU",			// 22
-+	"SIGURG",			// 23
-+	"SIGXCPU",			// 24
-+	"SIGXFSZ",			// 25
-+	"SIGVTALRM",			// 26
-+	"SIGPROF",			// 27
-+	"SIGWINCH",			// 28
-+	"SIGIO",			// 29 = SIGPOLL = SIGLOST
-+	"SIGPWR",			// 30
-+	"SIGSYS",			// 31 = SIGUNUSED
-+};
-+
- /*
-  * Trap & Exception support
-  */
-@@ -314,8 +349,8 @@ static void show_signal_msg(int signr, struct pt_regs *regs, int code,
- 	if (!unhandled_signal(current, signr))
- 		return;
- 
--	pr_info("%s[%d]: unhandled signal %d at %lx nip %lx lr %lx code %x",
--		current->comm, current->pid, signr,
-+	pr_info("%s[%d]: %s (%d) at %lx nip %lx lr %lx code %x",
-+		current->comm, current->pid, signames[signr], signr,
- 		addr, regs->nip, regs->link, code);
- 
- 	print_vma_addr(KERN_CONT " in ", regs->nip);
 -- 
-2.17.1
+Best regards,
+Alexander Sverdlin.
