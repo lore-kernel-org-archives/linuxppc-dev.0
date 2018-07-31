@@ -1,42 +1,39 @@
-Return-Path: <srs0=hapg=kp=au1.ibm.com=andrew.donnellan@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
+ [IPv6:2a00:1450:4864:20::444])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41flPT2212zF14l
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:29:49 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41flPT1L0Vz8t7W
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:29:49 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41flPS4r7bz9s3Z
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 15:29:48 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6V5SiAl013696
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 01:29:45 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kjd19rr7y-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 01:29:44 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Tue, 31 Jul 2018 06:29:42 +0100
-Subject: Re: [PATCH 1/2] selftests/powerpc: Skip earlier in alignment_handler
- test
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Cc: mikey@neuling.org
-References: <20180731044104.13728-1-mpe@ellerman.id.au>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Tue, 31 Jul 2018 15:29:36 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fltl1N8GzF14s
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 15:51:42 +1000 (AEST)
+Received: by mail-wr1-x444.google.com with SMTP id e7-v6so15209805wrs.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2018 22:51:42 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 31 Jul 2018 07:51:35 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Clark Williams <williams@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-perf-users@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ Breno Leitao <leitao@debian.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Dan Williams <dan.j.williams@intel.com>, David Ahern <dsahern@gmail.com>,
+ Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+ Jiri Olsa <jolsa@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
+ Mika =?iso-8859-1?Q?Penttil=E4?= <mika.penttila@nextfour.com>,
+ Namhyung Kim <namhyung@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Prashant Bhole <bhole_prashant_q7@lab.ntt.co.jp>,
+ Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Thomas Richter <tmricht@linux.vnet.ibm.com>,
+ Tony Luck <tony.luck@intel.com>, Vince Weaver <vincent.weaver@maine.edu>,
+ Wang Nan <wangnan0@huawei.com>, Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [GIT PULL 0/5] perf/urgent fixes
+Message-ID: <20180731055135.GA29199@gmail.com>
+References: <20180730205031.12853-1-acme@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20180731044104.13728-1-mpe@ellerman.id.au>
-Message-Id: <2449ae28-69ff-2590-3cad-50381713ca36@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180730205031.12853-1-acme@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,171 +43,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 31/07/18 14:41, Michael Ellerman wrote:
-> Currently the alignment_handler test prints "Can't open /dev/fb0"
-> about 80 times per run, which is a little annoying.
+
+* Arnaldo Carvalho de Melo <acme@kernel.org> wrote:
+
+> Hi Ingo,
 > 
-> Refactor it to check earlier if it can open /dev/fb0 and skip if not,
-> this results in each test printing something like:
+> 	Please consider pulling, just to get the build without warnings
+> and finishing successfully in all my test environments,
 > 
->    test: test_alignment_handler_vsx_206
->    tags: git_version:v4.18-rc3-134-gfb21a48904aa
->    [SKIP] Test skipped on line 291
->    skip: test_alignment_handler_vsx_206
+> - Arnaldo
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-This seems sensible.
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
-> ---
->   .../powerpc/alignment/alignment_handler.c          | 40 +++++++++++++++++++---
->   1 file changed, 35 insertions(+), 5 deletions(-)
+> Test results at the end of this message, as usual.
 > 
-> diff --git a/tools/testing/selftests/powerpc/alignment/alignment_handler.c b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> index 0f2698f9fd6d..0eddd16af49f 100644
-> --- a/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> +++ b/tools/testing/selftests/powerpc/alignment/alignment_handler.c
-> @@ -40,6 +40,7 @@
->   #include <sys/stat.h>
->   #include <fcntl.h>
->   #include <unistd.h>
-> +#include <stdbool.h>
->   #include <stdio.h>
->   #include <stdlib.h>
->   #include <string.h>
-> @@ -191,7 +192,7 @@ int test_memcmp(void *s1, void *s2, int n, int offset, char *test_name)
->    */
->   int do_test(char *test_name, void (*test_func)(char *, char *))
->   {
-> -	int offset, width, fd, rc = 0, r;
-> +	int offset, width, fd, rc, r;
->   	void *mem0, *mem1, *ci0, *ci1;
->   
->   	printf("\tDoing %s:\t", test_name);
-> @@ -199,8 +200,8 @@ int do_test(char *test_name, void (*test_func)(char *, char *))
->   	fd = open("/dev/fb0", O_RDWR);
->   	if (fd < 0) {
->   		printf("\n");
-> -		perror("Can't open /dev/fb0");
-> -		SKIP_IF(1);
-> +		perror("Can't open /dev/fb0 now?");
-> +		return 1;
->   	}
->   
->   	ci0 = mmap(NULL, bufsize, PROT_WRITE, MAP_SHARED,
-> @@ -226,6 +227,7 @@ int do_test(char *test_name, void (*test_func)(char *, char *))
->   		return rc;
->   	}
->   
-> +	rc = 0;
->   	/* offset = 0 no alignment fault, so skip */
->   	for (offset = 1; offset < 16; offset++) {
->   		width = 16; /* vsx == 16 bytes */
-> @@ -244,32 +246,50 @@ int do_test(char *test_name, void (*test_func)(char *, char *))
->   		r |= test_memcpy(mem1, mem0, width, offset, test_func);
->   		if (r && !debug) {
->   			printf("FAILED: Got signal");
-> +			rc = 1;
->   			break;
->   		}
->   
->   		r |= test_memcmp(mem1, ci1, width, offset, test_name);
-> -		rc |= r;
->   		if (r && !debug) {
->   			printf("FAILED: Wrong Data");
-> +			rc = 1;
->   			break;
->   		}
->   	}
-> -	if (!r)
-> +
-> +	if (rc == 0)
->   		printf("PASSED");
-> +
->   	printf("\n");
->   
->   	munmap(ci0, bufsize);
->   	munmap(ci1, bufsize);
->   	free(mem0);
->   	free(mem1);
-> +	close(fd);
-
-Good catch :D
-
->   
->   	return rc;
->   }
->   
-> +static bool can_open_fb0(void)
-> +{
-> +	int fd;
-> +
-> +	fd = open("/dev/fb0", O_RDWR);
-> +	if (fd < 0)
-> +		return false;
-> +
-> +	close(fd);
-> +	return true;
-> +}
-> +
->   int test_alignment_handler_vsx_206(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	printf("VSX: 2.06B\n");
->   	LOAD_VSX_XFORM_TEST(lxvd2x);
->   	LOAD_VSX_XFORM_TEST(lxvw4x);
-> @@ -285,6 +305,8 @@ int test_alignment_handler_vsx_207(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	printf("VSX: 2.07B\n");
->   	LOAD_VSX_XFORM_TEST(lxsspx);
->   	LOAD_VSX_XFORM_TEST(lxsiwax);
-> @@ -298,6 +320,8 @@ int test_alignment_handler_vsx_300(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	SKIP_IF(!have_hwcap2(PPC_FEATURE2_ARCH_3_00));
->   	printf("VSX: 3.00B\n");
->   	LOAD_VMX_DFORM_TEST(lxsd);
-> @@ -328,6 +352,8 @@ int test_alignment_handler_integer(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	printf("Integer\n");
->   	LOAD_DFORM_TEST(lbz);
->   	LOAD_DFORM_TEST(lbzu);
-> @@ -383,6 +409,8 @@ int test_alignment_handler_vmx(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	printf("VMX\n");
->   	LOAD_VMX_XFORM_TEST(lvx);
->   
-> @@ -408,6 +436,8 @@ int test_alignment_handler_fp(void)
->   {
->   	int rc = 0;
->   
-> +	SKIP_IF(!can_open_fb0());
-> +
->   	printf("Floating point\n");
->   	LOAD_FLOAT_DFORM_TEST(lfd);
->   	LOAD_FLOAT_XFORM_TEST(lfdx);
+> The following changes since commit 7f635ff187ab6be0b350b3ec06791e376af238ab:
 > 
+>   perf/core: Fix crash when using HW tracing kernel filters (2018-07-25 11:46:22 +0200)
+> 
+> are available in the Git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git tags/perf-urgent-for-mingo-4.18-20180730
+> 
+> for you to fetch changes up to 44fe619b1418ff4e9d2f9518a940fbe2fb686a08:
+> 
+>   perf tools: Fix the build on the alpine:edge distro (2018-07-30 13:15:03 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/urgent fixes: (Arnaldo Carvalho de Melo)
+> 
+> - Update the tools copy of several files, including perf_event.h,
+>   powerpc's asm/unistd.h (new io_pgetevents syscall), bpf.h and
+>   x86's memcpy_64.s (used in 'perf bench mem'), silencing the
+>   respective warnings during the perf tools build.
+> 
+> - Fix the build on the alpine:edge distro.
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Arnaldo Carvalho de Melo (5):
+>       tools headers uapi: Update tools's copy of linux/perf_event.h
+>       tools headers powerpc: Update asm/unistd.h copy to pick new
+>       tools headers uapi: Refresh linux/bpf.h copy
+>       tools arch: Update arch/x86/lib/memcpy_64.S copy used in 'perf bench mem memcpy'
+>       perf tools: Fix the build on the alpine:edge distro
+> 
+>  tools/arch/powerpc/include/uapi/asm/unistd.h |   1 +
+>  tools/arch/x86/include/asm/mcsafe_test.h     |  13 ++++
+>  tools/arch/x86/lib/memcpy_64.S               | 112 +++++++++++++--------------
+>  tools/include/uapi/linux/bpf.h               |  28 +++++--
+>  tools/include/uapi/linux/perf_event.h        |   2 +
+>  tools/perf/arch/x86/util/pmu.c               |   1 +
+>  tools/perf/arch/x86/util/tsc.c               |   1 +
+>  tools/perf/bench/Build                       |   1 +
+>  tools/perf/bench/mem-memcpy-x86-64-asm.S     |   1 +
+>  tools/perf/bench/mem-memcpy-x86-64-lib.c     |  24 ++++++
+>  tools/perf/perf.h                            |   1 +
+>  tools/perf/util/header.h                     |   1 +
+>  tools/perf/util/namespaces.h                 |   1 +
+>  13 files changed, 124 insertions(+), 63 deletions(-)
+>  create mode 100644 tools/arch/x86/include/asm/mcsafe_test.h
+>  create mode 100644 tools/perf/bench/mem-memcpy-x86-64-lib.c
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Pulled, thanks a lot Arnaldo!
+
+	Ingo
