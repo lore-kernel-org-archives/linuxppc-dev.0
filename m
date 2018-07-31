@@ -1,23 +1,23 @@
 Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41fzrv0WPgzF164
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:50:54 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w6VE8tFs108303
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:53 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kjqj0px01-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41fzrx1PYrzF164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 00:50:57 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w6VE8v2a120679
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:55 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kjr56n1f9-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:52 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 10:50:55 -0400
 Received: from localhost
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Tue, 31 Jul 2018 08:50:52 -0600
+ Tue, 31 Jul 2018 08:50:54 -0600
 From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: "Alastair D'Silva" <alastair@d-silva.org>,
@@ -33,13 +33,13 @@ Cc: "Alastair D'Silva" <alastair@d-silva.org>,
  Simon Guo <wei.guo.simon@gmail.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 3/9] powerpc/traps: Use %lx format in show_signal_msg()
-Date: Tue, 31 Jul 2018 11:50:14 -0300
+Subject: [PATCH v3 4/9] powerpc/traps: Print VMA for unhandled signals
+Date: Tue, 31 Jul 2018 11:50:15 -0300
 In-Reply-To: <20180731145020.14009-1-muriloo@linux.ibm.com>
 References: <20180731145020.14009-1-muriloo@linux.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Message-Id: <20180731145020.14009-4-muriloo@linux.ibm.com>
+Message-Id: <20180731145020.14009-5-muriloo@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,52 +49,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use %lx format to print registers.  This avoids having two different
-formats and avoids checking for MSR_64BIT, improving readability of the
-function.
+This adds VMA address in the message printed for unhandled signals,
+similarly to what other architectures, like x86, print.
 
-Even though we could have used %px, which is functionally equivalent to %lx
-as per Documentation/core-api/printk-formats.rst, it is not semantically
-correct because the data printed are not pointers.  And using %px requires
-casting data to (void *).
+Before this patch, a page fault looked like:
 
-Besides that, %lx matches the format used in show_regs().
+  pandafault[61470]: unhandled signal 11 at 100007d0 nip 1000061c lr 7fff8d185100 code 2
 
-Before this patch:
+After this patch, a page fault looks like:
 
-  pandafault[4808]: unhandled signal 11 at 0000000010000718 nip 0000000010000574 lr 00007fff935e7a6c code 2
-
-After this patch:
-
-  pandafault[4732]: unhandled signal 11 at 10000718 nip 10000574 lr 7fff86697a6c code 2
+  pandafault[6303]: unhandled signal 11 at 100007d0 nip 1000061c lr 7fff93c55100 code 2 in pandafault[10000000+10000]
 
 Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 ---
- arch/powerpc/kernel/traps.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/traps.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 4faab4705774..fd4e0648a2d2 100644
+index fd4e0648a2d2..1c4f06fca370 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -311,17 +311,12 @@ static bool show_unhandled_signals_ratelimited(void)
- static void show_signal_msg(int signr, struct pt_regs *regs, int code,
- 			    unsigned long addr)
- {
--	const char fmt32[] = KERN_INFO "%s[%d]: unhandled signal %d " \
--		"at %08lx nip %08lx lr %08lx code %x\n";
--	const char fmt64[] = KERN_INFO "%s[%d]: unhandled signal %d " \
--		"at %016lx nip %016lx lr %016lx code %x\n";
--
+@@ -314,9 +314,13 @@ static void show_signal_msg(int signr, struct pt_regs *regs, int code,
  	if (!unhandled_signal(current, signr))
  		return;
  
--	printk(regs->msr & MSR_64BIT ? fmt64 : fmt32,
--	       current->comm, current->pid, signr,
--	       addr, regs->nip, regs->link, code);
-+	pr_info("%s[%d]: unhandled signal %d at %lx nip %lx lr %lx code %x\n",
-+		current->comm, current->pid, signr,
-+		addr, regs->nip, regs->link, code);
+-	pr_info("%s[%d]: unhandled signal %d at %lx nip %lx lr %lx code %x\n",
++	pr_info("%s[%d]: unhandled signal %d at %lx nip %lx lr %lx code %x",
+ 		current->comm, current->pid, signr,
+ 		addr, regs->nip, regs->link, code);
++
++	print_vma_addr(KERN_CONT " in ", regs->nip);
++
++	pr_cont("\n");
  }
  
  void _exception_pkey(int signr, struct pt_regs *regs, int code,
