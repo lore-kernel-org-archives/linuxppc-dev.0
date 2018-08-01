@@ -1,36 +1,35 @@
-Return-Path: <will.deacon@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41gS804qqNzF21T
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:05:36 +1000 (AEST)
-Date: Wed, 1 Aug 2018 10:05:35 +0100
-From: Will Deacon <will.deacon@arm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Michael S. Tsirkin" <mst@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180801090535.GB14438@arm.com>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180727095804.GA25592@arm.com>
- <20180730093414.GD26245@infradead.org>
- <20180730125100-mutt-send-email-mst@kernel.org>
- <20180730111802.GA9830@infradead.org>
- <20180730155633-mutt-send-email-mst@kernel.org>
- <20180731173052.GA17153@infradead.org>
- <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180801081637.GA14438@arm.com>
- <20180801083639.GF26378@infradead.org>
+Return-Path: <vaibhav@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gSg15V3vzF1Hp
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:29:01 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w719Sk6M038168
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2018 05:28:59 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kk95h2um8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 05:28:58 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
+ Wed, 1 Aug 2018 10:28:57 +0100
+From: Vaibhav Jain <vaibhav@linux.ibm.com>
+To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ npiggin@gmail.com
+Cc: felix@linux.ibm.com, clombard@linux.ibm.com
+Subject: Re: [PATCH] powerpc/64s/radix: Fix missing global invalidations when
+ removing copro
+In-Reply-To: <20180731132452.15994-1-fbarrat@linux.ibm.com>
+References: <20180731132452.15994-1-fbarrat@linux.ibm.com>
+Date: Wed, 01 Aug 2018 14:58:45 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180801083639.GF26378@infradead.org>
+Content-Type: text/plain
+Message-Id: <87va8ul9ki.fsf@vajain21.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,64 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+Frederic Barrat <fbarrat@linux.ibm.com> writes:
 
-On Wed, Aug 01, 2018 at 01:36:39AM -0700, Christoph Hellwig wrote:
-> On Wed, Aug 01, 2018 at 09:16:38AM +0100, Will Deacon wrote:
-> > On arm/arm64, the problem we have is that legacy virtio devices on the MMIO
-> > transport (so definitely not PCI) have historically been advertised by qemu
-> > as not being cache coherent, but because the virtio core has bypassed DMA
-> > ops then everything has happened to work. If we blindly enable the arch DMA
-> > ops,
-> 
-> No one is suggesting that as far as I can tell.
+> With the optimizations for TLB invalidation from commit 0cef77c7798a
+> ("powerpc/64s/radix: flush remote CPUs out of single-threaded
+> mm_cpumask"), the scope of a TLBI (global vs. local) can now be
+> influenced by the value of the 'copros' counter of the memory context.
+>
+> When calling mm_context_remove_copro(), the 'copros' counter is
+> decremented first before flushing. It may have the unintended side
+> effect of sending local TLBIs when we explicitly need global
+> invalidations in this case. Thus breaking any nMMU user in a bad and
+> unpredictable way.
+>
+> Fix it by flushing first, before updating the 'copros' counter, so
+> that invalidations will be global.
+>
+> Fixes: 0cef77c7798a ("powerpc/64s/radix: flush remote CPUs out of single-threaded mm_cpumask")
+> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
+> ---
+Tested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 
-Apologies: it's me that wants the DMA ops enabled to handle legacy devices
-behind an IOMMU, but see below.
-
-> > we'll plumb in the non-coherent ops and start getting data corruption,
-> > so we do need a way to quirk virtio as being "always coherent" if we want to
-> > use the DMA ops (which we do, because our emulation platforms have an IOMMU
-> > for all virtio devices).
-> 
-> From all that I've gather so far: no you do not want that.  We really
-> need to figure out virtio "dma" interacts with the host / device.
-> 
-> If you look at the current iommu spec it does talk of physical address
-> with a little careveout for VIRTIO_F_IOMMU_PLATFORM.
-
-That's true, although that doesn't exist in the legacy virtio spec, and we
-have an existing emulation platform which puts legacy virtio devices behind
-an IOMMU. Currently, Linux is unable to boot on this platform unless the
-IOMMU is configured as bypass. If we can use the coherent IOMMU DMA ops,
-then it works perfectly.
-
-> So between that and our discussion in this thread and its previous
-> iterations I think we need to stick to the current always physical,
-> bypass system dma ops mode of virtio operation as the default.
-
-As above -- that means we hang during boot because we get stuck trying to
-bring up a virtio-block device whose DMA is aborted by the IOMMU. The easy
-answer is "just upgrade to latest virtio and advertise the presence of the
-IOMMU". I'm pushing for that in future platforms, but it seems a shame not
-to support the current platform, especially given that other systems do have
-hacks in mainline to get virtio working.
-
-> We just need to figure out how to deal with devices that deviate
-> from the default.  One things is that VIRTIO_F_IOMMU_PLATFORM really
-> should become VIRTIO_F_PLATFORM_DMA to cover the cases of non-iommu
-> dma tweaks (offsets, cache flushing), which seems well in spirit of
-> the original design.  The other issue is VIRTIO_F_IO_BARRIER
-> which is very vaguely defined, and which needs a better definition.
-> And last but not least we'll need some text explaining the challenges
-> of hardware devices - I think VIRTIO_F_PLATFORM_DMA + VIRTIO_F_IO_BARRIER
-> is what would basically cover them, but a good description including
-> an explanation of why these matter.
-
-I agree that this makes sense for future revisions of virtio (or perhaps
-it can just be a clarification to virtio 1.0), but we're still left in the
-dark with legacy devices and it would be nice to have them work on the
-systems which currently exist, even if it's a legacy-only hack in the arch
-code.
-
-Will
+-- 
+Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Linux Technology Center, IBM India Pvt. Ltd.
