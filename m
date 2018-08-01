@@ -2,17 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDL2KZMzF18f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:24:02 +1000 (AEST)
-In-Reply-To: <a22c869eab31ae38320f2e803833b0708b147d7c.1530807556.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDG4LnTzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:23:58 +1000 (AEST)
+In-Reply-To: <720e9899186bed184fb9b5cce070e2dc519f9665.1530519301.git.fthain@telegraphics.com.au>
+To: Finn Thain <fthain@telegraphics.com.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v3,03/16] powerpc/405: move PPC405_ERR77 in asm-405.h
-Message-Id: <41gMDL00GFz9s0R@ozlabs.org>
-Date: Wed,  1 Aug 2018 15:24:01 +1000 (AEST)
+Cc: Michael Schmitz <schmitzmic@gmail.com>, linux-m68k@lists.linux-m68k.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v4,01/11] macintosh/via-pmu: Fix section mismatch warning
+Message-Id: <41gMDG3RdFz9s3q@ozlabs.org>
+Date: Wed,  1 Aug 2018 15:23:58 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,11 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-07-05 at 16:24:55 UTC, Christophe Leroy wrote:
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+On Mon, 2018-07-02 at 08:21:18 UTC, Finn Thain wrote:
+> The pmu_init() function has the __init qualifier, but the ops struct
+> that holds a pointer to it does not. This causes a build warning.
+> The driver works fine because the pointer is only dereferenced early.
+> 
+> The function is so small that there's negligible benefit from using
+> the __init qualifier. Remove it to fix the warning, consistent with
+> the other ADB drivers.
+> 
+> Tested-by: Stan Johnson <userm57@yahoo.com>
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/36a7eeaff7d06cef253c8df6dfe363
+https://git.kernel.org/powerpc/c/73f4447d43484224d7abfba0d9468d
 
 cheers
