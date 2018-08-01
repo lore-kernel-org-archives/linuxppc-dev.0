@@ -1,28 +1,28 @@
 Return-Path: <srs0=qdnh=kq=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gGky2LSMzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:01:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gGy20F3qzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:11:22 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41gGky1P5Yz8tPq
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:01:46 +1000 (AEST)
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41gGy16Fj1z8t9y
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:11:21 +1000 (AEST)
+Received: from mail-pl0-x243.google.com (mail-pl0-x243.google.com
+ [IPv6:2607:f8b0:400e:c01::243])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41gGkx151Fz9s0R
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2018 12:01:44 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id x5-v6so9985536pgp.7
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 19:01:44 -0700 (PDT)
-Date: Wed, 1 Aug 2018 12:01:37 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 41gGy02yZpz9s3q
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2018 12:11:19 +1000 (AEST)
+Received: by mail-pl0-x243.google.com with SMTP id 6-v6so8001286plb.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 19:11:19 -0700 (PDT)
+Date: Wed, 1 Aug 2018 12:11:11 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Subject: Re: [PATCH] powerpc/64s: Make rfi_flush_fallback a little more robust
-Message-ID: <20180801120137.3ae1bc8d@roar.ozlabs.ibm.com>
-In-Reply-To: <20180726124244.13993-1-mpe@ellerman.id.au>
-References: <20180726124244.13993-1-mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, paulus@samba.org
+Subject: Re: [PATCH] powerpc/64s: Make unrecoverable SLB miss less confusing
+Message-ID: <20180801121111.308ff705@roar.ozlabs.ibm.com>
+In-Reply-To: <20180726130151.16410-1-mpe@ellerman.id.au>
+References: <20180726130151.16410-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,100 +34,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 26 Jul 2018 22:42:44 +1000
+On Thu, 26 Jul 2018 23:01:51 +1000
 Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> Because rfi_flush_fallback runs immediately before the return to
-> userspace it currently runs with the user r1 (stack pointer). This
-> means if we oops in there we will report a bad kernel stack pointer in
-> the exception entry path, eg:
+> If we take an SLB miss while MSR[RI]=0 we can't recover and have to
+> oops. Currently this is reported by faking up a 0x4100 exception, eg:
 > 
->   Bad kernel stack pointer 7ffff7150e40 at c0000000000023b4
->   Oops: Bad kernel stack pointer, sig: 6 [#1]
->   LE SMP NR_CPUS=32 NUMA PowerNV
->   Modules linked in:
->   CPU: 0 PID: 1246 Comm: klogd Not tainted 4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3 #7
->   NIP:  c0000000000023b4 LR: 0000000010053e00 CTR: 0000000000000040
->   REGS: c0000000fffe7d40 TRAP: 4100   Not tainted  (4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3)
->   MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
->   CFAR: c00000000000bac8 IRQMASK: c0000000f1e66a80
->   GPR00: 0000000002000000 00007ffff7150e40 00007fff93a99900 0000000000000020
->   ...
->   NIP [c0000000000023b4] rfi_flush_fallback+0x34/0x80
->   LR [0000000010053e00] 0x10053e00
-> 
-> Although the NIP tells us where we were, and the TRAP number tells us
-> what happened, it would still be nicer if we could report the actual
-> exception rather than barfing about the stack pointer.
-> 
-> We an do that fairly simply by loading the kernel stack pointer on
-> entry and restoring the user value before returning. That way we see a
-> regular oops such as:
-> 
->   Unrecoverable exception 4100 at c00000000000239c
+>   Unrecoverable exception 4100 at 0
 >   Oops: Unrecoverable exception, sig: 6 [#1]
->   LE SMP NR_CPUS=32 NUMA PowerNV
->   Modules linked in:
->   CPU: 0 PID: 1251 Comm: klogd Not tainted 4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty #40
->   NIP:  c00000000000239c LR: 0000000010053e00 CTR: 0000000000000040
->   REGS: c0000000f1e17bb0 TRAP: 4100   Not tainted  (4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty)
->   MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
->   CFAR: c00000000000bac8 IRQMASK: 0
 >   ...
->   NIP [c00000000000239c] rfi_flush_fallback+0x3c/0x80
->   LR [0000000010053e00] 0x10053e00
->   Call Trace:
->   [c0000000f1e17e30] [c00000000000b9e4] system_call+0x5c/0x70 (unreliable)
+>   CPU: 0 PID: 1262 Comm: sh Not tainted 4.18.0-rc3-gcc-7.3.1-00098-g7fc2229fb2ab-dirty #9
+>   NIP:  0000000000000000 LR: c00000000000b9e4 CTR: 00007fff8bb971b0
+>   REGS: c0000000ee02bbb0 TRAP: 4100
+>   ...
+>   LR [c00000000000b9e4] system_call+0x5c/0x70
 > 
-> Note this shouldn't make the kernel stack pointer vulnerable to a
-> meltdown attack, because it should be flushed from the cache before we
-> return to userspace. The user r1 value will be in the cache, because
-> we load it in the return path, but that is harmless.
+> The 0x4100 value was chosen back in 2004 as part of the fix for the
+> "mega bug" - "ppc64: Fix SLB reload bug". Back then it was obvious
+> that 0x4100 was not a real trap value, as the highest actual trap was
+> less than 0x2000.
+> 
+> Since then however the architecture has changed and now we have
+> "virtual mode" or "relon" exceptions, in which exceptions can be
+> delivered with the MMU on starting at 0x4000.
+> 
+> At a glance 0x4100 looks like a virtual mode 0x100 exception, aka
+> system reset exception. A close reading of the architecture will show
+> that system reset exceptions can't be delivered in virtual mode, and
+> so 0x4100 is not a valid trap number. But that's not immediately
+> obvious. There's also nothing about 0x4100 that suggests SLB miss.
+> 
+> So to make things a bit less confusing switch to a fake but unique and
+> hopefully more helpful numbering. For data SLB misses we report a
+> 0x390 trap and for instruction we report 0x490. Compared to 0x380 and
+> 0x480 for the actual data & instruction SLB exceptions.
+> 
+> Also add a C handler that prints a more explicit message. The end
+> result is something like:
+> 
+>   Oops: Unrecoverable SLB miss (MSR[RI]=0), sig: 6 [#3]
+
+This is all good, but allow me to nitpick. Our unrecoverable
+exception messages (and other messages, but those) are becoming a bit
+ad-hoc and messy.
+
+It would be nice to go the other way eventually and consolidate them
+into one. Would be nice to have a common function that takes regs and
+returns the string of the corresponding exception name that makes
+these more readable.
+
+>   ...
+>   CPU: 0 PID: 1262 Comm: sh Not tainted 4.18.0-rc3-gcc-7.3.1-00098-g7fc2229fb2ab-dirty #9
+>   NIP:  0000000000000000 LR: c00000000000b9e4 CTR: 0000000000000000
+>   REGS: c0000000f19a3bb0 TRAP: 0490
+
+Unless I'm mistaken, the fake trap number was only because the code
+couldn't distinguish between 380 and 480. Now that you do, I think you
+can just use them directly rather than 390/490.
+
+Thanks,
+Nick
+
+>   ...
+>   LR [c00000000000b9e4] system_call+0x5c/0x70
 > 
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-
-Yeah that's a lot nicer, thanks.
-
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-
 > ---
->  arch/powerpc/kernel/exceptions-64s.S | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  arch/powerpc/include/asm/asm-prototypes.h | 1 +
+>  arch/powerpc/kernel/exceptions-64s.S      | 7 +++++--
+>  arch/powerpc/kernel/traps.c               | 6 ++++++
+>  3 files changed, 12 insertions(+), 2 deletions(-)
 > 
+> diff --git a/arch/powerpc/include/asm/asm-prototypes.h b/arch/powerpc/include/asm/asm-prototypes.h
+> index 7841b8a60657..ffba4a6ee619 100644
+> --- a/arch/powerpc/include/asm/asm-prototypes.h
+> +++ b/arch/powerpc/include/asm/asm-prototypes.h
+> @@ -74,6 +74,7 @@ void facility_unavailable_exception(struct pt_regs *regs);
+>  void TAUException(struct pt_regs *regs);
+>  void altivec_assist_exception(struct pt_regs *regs);
+>  void unrecoverable_exception(struct pt_regs *regs);
+> +void unrecoverable_slb_miss(struct pt_regs *regs);
+>  void kernel_bad_stack(struct pt_regs *regs);
+>  void system_reset_exception(struct pt_regs *regs);
+>  void machine_check_exception(struct pt_regs *regs);
 > diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index f7cc12aa3dc6..a6fa85916273 100644
+> index a6fa85916273..8e1396433eb4 100644
 > --- a/arch/powerpc/kernel/exceptions-64s.S
 > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1518,6 +1518,8 @@ TRAMP_REAL_BEGIN(stf_barrier_fallback)
->  TRAMP_REAL_BEGIN(rfi_flush_fallback)
->  	SET_SCRATCH0(r13);
->  	GET_PACA(r13);
-> +	std	r1,PACA_EXRFI+EX_R12(r13)
-> +	ld	r1,PACAKSAVE(r13)
->  	std	r9,PACA_EXRFI+EX_R9(r13)
->  	std	r10,PACA_EXRFI+EX_R10(r13)
->  	std	r11,PACA_EXRFI+EX_R11(r13)
-> @@ -1552,12 +1554,15 @@ TRAMP_REAL_BEGIN(rfi_flush_fallback)
->  	ld	r9,PACA_EXRFI+EX_R9(r13)
->  	ld	r10,PACA_EXRFI+EX_R10(r13)
->  	ld	r11,PACA_EXRFI+EX_R11(r13)
-> +	ld	r1,PACA_EXRFI+EX_R12(r13)
->  	GET_SCRATCH0(r13);
->  	rfid
+> @@ -743,11 +743,14 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_TYPE_RADIX)
+>  	b	.
 >  
->  TRAMP_REAL_BEGIN(hrfi_flush_fallback)
->  	SET_SCRATCH0(r13);
->  	GET_PACA(r13);
-> +	std	r1,PACA_EXRFI+EX_R12(r13)
-> +	ld	r1,PACAKSAVE(r13)
->  	std	r9,PACA_EXRFI+EX_R9(r13)
->  	std	r10,PACA_EXRFI+EX_R10(r13)
->  	std	r11,PACA_EXRFI+EX_R11(r13)
-> @@ -1592,6 +1597,7 @@ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
->  	ld	r9,PACA_EXRFI+EX_R9(r13)
->  	ld	r10,PACA_EXRFI+EX_R10(r13)
->  	ld	r11,PACA_EXRFI+EX_R11(r13)
-> +	ld	r1,PACA_EXRFI+EX_R12(r13)
->  	GET_SCRATCH0(r13);
->  	hrfid
+>  EXC_COMMON_BEGIN(unrecov_slb)
+> -	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
+> +	EXCEPTION_PROLOG_COMMON(0x390, PACA_EXSLB)
+>  	RECONCILE_IRQ_STATE(r10, r11)
+>  	bl	save_nvgprs
+> +	beq	cr6, 1f		// cr6.eq is set for a data SLB miss ...
+> +	li	r10, 0x490	// else fix trap number for instruction SLB miss
+> +	std	r10, _TRAP(r1)
+>  1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	bl	unrecoverable_exception
+> +	bl	unrecoverable_slb_miss
+>  	b	1b
 >  
+>  EXC_COMMON_BEGIN(large_addr_slb)
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 0e17dcb48720..0b1724a0b001 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -2061,6 +2061,12 @@ void unrecoverable_exception(struct pt_regs *regs)
+>  }
+>  NOKPROBE_SYMBOL(unrecoverable_exception);
+>  
+> +void unrecoverable_slb_miss(struct pt_regs *regs)
+> +{
+> +	die("Unrecoverable SLB miss (MSR[RI]=0)", regs, SIGABRT);
+> +}
+> +NOKPROBE_SYMBOL(unrecoverable_slb_miss);
+> +
+>  #if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
+>  /*
+>   * Default handler for a Watchdog exception,
