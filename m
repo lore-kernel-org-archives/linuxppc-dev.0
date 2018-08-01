@@ -2,19 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDc0BjzzF19d
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:24:16 +1000 (AEST)
-In-Reply-To: <1532423589-18730-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux@roeck-us.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDd07fLzF1C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:24:17 +1000 (AEST)
+In-Reply-To: <AM5PR03MB28499BE4A0B6200F7DA83835C92B0@AM5PR03MB2849.eurprd03.prod.outlook.com>
+To: Alexey Spirkov <AlexeiS@astrosoft.ru>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linux-hwmon@vger.kernel.org, ego@linux.vnet.ibm.com,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, stewart@linux.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [v8,
- 1/2] powernv:opal-sensor-groups: Add support to enable sensor groups
-Message-Id: <41gMDb4Ry7z9s4V@ozlabs.org>
-Date: Wed,  1 Aug 2018 15:24:15 +1000 (AEST)
+Cc: "andrew@ncrmnt.org" <andrew@ncrmnt.org>,
+ "trivial@kernel.org" <trivial@kernel.org>
+Subject: Re: Adds __init annotation at mmu_init_secondary func
+Message-Id: <41gMDc2g70z9sCQ@ozlabs.org>
+Date: Wed,  1 Aug 2018 15:24:16 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-07-24 at 09:13:08 UTC, Shilpasri G Bhat wrote:
-> Adds support to enable/disable a sensor group at runtime. This
-> can be used to select the sensor groups that needs to be copied to
-> main memory by OCC. Sensor groups like power, temperature, current,
-> voltage, frequency, utilization can be enabled/disabled at runtime.
+On Thu, 2018-07-26 at 12:52:50 UTC, Alexey Spirkov wrote:
+> mmu_init_secondary function called at initialization sequence
+> but it misses __init annotation. As result modpost warning is generated.
+> Some building systems sensitive to such kind of warnings.
 > 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Alexey Spirkov <alexeis@astrosoft.ru>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/04baaf28f40c68c35a413cd9d0db71
+https://git.kernel.org/powerpc/c/f7e2a152231f4a0308cc8f9c2296ba
 
 cheers
