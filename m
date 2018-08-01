@@ -2,31 +2,25 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gb0q50wyzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 00:14:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gbGq6JjmzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 00:26:59 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, linux-kernel@vger.kernel.org
-Cc: Alastair D'Silva <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman" <ebiederm@xmission.com>,
- Joe Perches <joe@perches.com>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 9/9] powerpc/traps: Add line prefix in
- show_instructions()
-In-Reply-To: <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
-References: <20180731145020.14009-1-muriloo@linux.ibm.com>
- <20180731145020.14009-10-muriloo@linux.ibm.com>
- <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
-Date: Thu, 02 Aug 2018 00:14:49 +1000
-Message-ID: <87ftzyfa1y.fsf@concordia.ellerman.id.au>
+To: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>
+Cc: mwb@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ devicetree@vger.kernel.org
+Subject: Re: phandle_cache vs of_detach_node (was Re: [PATCH]
+ powerpc/mobility: Fix node detach/rename problem)
+In-Reply-To: <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
+References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
+ <8736w1jkte.fsf@concordia.ellerman.id.au>
+ <ffaa7eba-5236-e42d-c901-79b045adfb94@linux.vnet.ibm.com>
+ <8736vzj4la.fsf@concordia.ellerman.id.au>
+ <CAL_JsqKf1k3MM+HgQ2U=Ep7L9nbBCmmvGZoEAKxLB1TVqQdW_w@mail.gmail.com>
+ <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
+Date: Thu, 02 Aug 2018 00:26:58 +1000
+Message-ID: <87d0v2f9hp.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,43 +30,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-
-> Le 31/07/2018 =C3=A0 16:50, Murilo Opsfelder Araujo a =C3=A9crit=C2=A0:
->> Remove "Instruction dump:" line by adding a prefix to display current->c=
-omm
->> and current->pid, along with the instructions dump.
->>=20
->> The prefix can serve as a glue that links the instructions dump to its
->> originator, allowing messages to be interleaved in the logs.
->>=20
->> Before this patch, a page fault looked like:
->>=20
->>    pandafault[10524]: segfault (11) at 100007d0 nip 1000061c lr 7fffbd29=
-5100 code 2 in pandafault[10000000+10000]
->>    Instruction dump:
->>    4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22ff=
-fe
->>    392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f=
-0040
->>=20
->> After this patch, it looks like:
->>=20
->>    pandafault[10850]: segfault (11) at 100007d0 nip 1000061c lr 7fff9f3e=
-5100 code 2 in pandafault[10000000+10000]
->>    pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8=
- f821ffc1 7c3f0b78 3d22fffe
->>    pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <9949000=
-0> 39200000 7d234b78 383f0040
->>=20
->> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+Frank Rowand <frowand.list@gmail.com> writes:
+> On 07/31/18 07:17, Rob Herring wrote:
+>> On Tue, Jul 31, 2018 at 12:34 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>>
+>>> Hi Rob/Frank,
+>>>
+>>> I think we might have a problem with the phandle_cache not interacting
+>>> well with of_detach_node():
+>> 
+>> Probably needs a similar fix as this commit did for overlays:
+>> 
+>> commit b9952b5218added5577e4a3443969bc20884cea9
+>> Author: Frank Rowand <frank.rowand@sony.com>
+>> Date:   Thu Jul 12 14:00:07 2018 -0700
+>> 
+>>     of: overlay: update phandle cache on overlay apply and remove
+>> 
+>>     A comment in the review of the patch adding the phandle cache said that
+>>     the cache would have to be updated when modules are applied and removed.
+>>     This patch implements the cache updates.
+>> 
+>>     Fixes: 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of
+>> of_find_node_by_phandle()")
+>>     Reported-by: Alan Tull <atull@kernel.org>
+>>     Suggested-by: Alan Tull <atull@kernel.org>
+>>     Signed-off-by: Frank Rowand <frank.rowand@sony.com>
+>>     Signed-off-by: Rob Herring <robh@kernel.org>
 >
-> Does the script scripts/decode_stacktrace.sh also works with this format=
-=20
-> change ?
+> Agreed.  Sorry about missing the of_detach_node() case.
+>
+>
+>> Really what we need here is an "invalidate phandle" function rather
+>> than free and re-allocate the whole damn cache.
+>
+> The big hammer approach was chosen to avoid the race conditions that
+> would otherwise occur.  OF does not have a locking strategy that
+> would be able to protect against the races.
+>
+> We could maybe implement a slightly smaller hammer by (1) disabling
+> the cache, (2) invalidate a phandle entry in the cache, (3) re-enable
+> the cache.  That is an off the cuff thought - I would have to look
+> a little bit more carefully to make sure it would work.
+>
+> But I don't see a need to add the complexity of the smaller hammer
+> or the bigger hammer of proper locking _unless_ we start seeing that
+> the cache is being freed and re-allocated frequently.  For overlays
+> I don't expect the high frequency because it happens on a per overlay
+> removal basis (not per node removal basis).  For of_detach_node() the
+> event _is_ on a per node removal basis.  Michael, do you expect node
+> removals to be a frequent event with low latency being important?  If
+> so, a rough guess on what the frequency would be?
 
-Did it work before? I've never used it.
+No in practice we expect them to be fairly rare and in the thousands at
+most I think.
 
-Would be great if it did work though.
+TBH you could just disable the phandle_cache on the first detach and
+that would be fine by me. I don't think we've ever noticed phandle
+lookups being much of a problem for us on our hardware.
 
 cheers
