@@ -1,22 +1,28 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
- [IPv6:2607:f8b0:4864:20::441])
+Return-Path: <srs0=qdnh=kq=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gGky2LSMzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:01:46 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41gGky1P5Yz8tPq
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:01:46 +1000 (AEST)
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gGbc2pW1zF12N
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 11:55:23 +1000 (AEST)
-Received: by mail-pf1-x441.google.com with SMTP id j26-v6so6982626pfi.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 18:55:23 -0700 (PDT)
-Date: Wed, 1 Aug 2018 11:55:14 +1000
+ by ozlabs.org (Postfix) with ESMTPS id 41gGkx151Fz9s0R
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2018 12:01:44 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id x5-v6so9985536pgp.7
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 19:01:44 -0700 (PDT)
+Date: Wed, 1 Aug 2018 12:01:37 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- aneesh.kumar@linux.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org
-Subject: Re: [resend] [PATCH 0/3] powerpc/pseries: use H_BLOCK_REMOVE
-Message-ID: <20180801115514.441eecc8@roar.ozlabs.ibm.com>
-In-Reply-To: <1532699493-10883-1-git-send-email-ldufour@linux.vnet.ibm.com>
-References: <1532699493-10883-1-git-send-email-ldufour@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Subject: Re: [PATCH] powerpc/64s: Make rfi_flush_fallback a little more robust
+Message-ID: <20180801120137.3ae1bc8d@roar.ozlabs.ibm.com>
+In-Reply-To: <20180726124244.13993-1-mpe@ellerman.id.au>
+References: <20180726124244.13993-1-mpe@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,67 +34,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 27 Jul 2018 15:51:30 +0200
-Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+On Thu, 26 Jul 2018 22:42:44 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> [Resending so everyone is getting the cover letter]
+> Because rfi_flush_fallback runs immediately before the return to
+> userspace it currently runs with the user r1 (stack pointer). This
+> means if we oops in there we will report a bad kernel stack pointer in
+> the exception entry path, eg:
 > 
-> On very large system we could see soft lockup fired when a process is exiting
+>   Bad kernel stack pointer 7ffff7150e40 at c0000000000023b4
+>   Oops: Bad kernel stack pointer, sig: 6 [#1]
+>   LE SMP NR_CPUS=32 NUMA PowerNV
+>   Modules linked in:
+>   CPU: 0 PID: 1246 Comm: klogd Not tainted 4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3 #7
+>   NIP:  c0000000000023b4 LR: 0000000010053e00 CTR: 0000000000000040
+>   REGS: c0000000fffe7d40 TRAP: 4100   Not tainted  (4.18.0-rc2-gcc-7.3.1-00175-g0443f8a69ba3)
+>   MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
+>   CFAR: c00000000000bac8 IRQMASK: c0000000f1e66a80
+>   GPR00: 0000000002000000 00007ffff7150e40 00007fff93a99900 0000000000000020
+>   ...
+>   NIP [c0000000000023b4] rfi_flush_fallback+0x34/0x80
+>   LR [0000000010053e00] 0x10053e00
 > 
-> watchdog: BUG: soft lockup - CPU#851 stuck for 21s! [forkoff:215523]
-> Modules linked in: pseries_rng rng_core xfs raid10 vmx_crypto btrfs libcrc32c xor zstd_decompress zstd_compress xxhash lzo_compress raid6_pq crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
-> CPU: 851 PID: 215523 Comm: forkoff Not tainted 4.17.0 #1
-> NIP:  c0000000000b995c LR: c0000000000b8f64 CTR: 000000000000aa18
-> REGS: c00006b0645b7610 TRAP: 0901   Not tainted  (4.17.0)
-> MSR:  800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22042082  XER: 00000000
-> CFAR: 00000000006cf8f0 SOFTE: 0 
-> GPR00: 0010000000000000 c00006b0645b7890 c000000000f99200 0000000000000000 
-> GPR04: 8e000001a5a4de58 400249cf1bfd5480 8e000001a5a4de50 400249cf1bfd5480 
-> GPR08: 8e000001a5a4de48 400249cf1bfd5480 8e000001a5a4de40 400249cf1bfd5480 
-> GPR12: ffffffffffffffff c00000001e690800 
-> NIP [c0000000000b995c] plpar_hcall9+0x44/0x7c
-> LR [c0000000000b8f64] pSeries_lpar_flush_hash_range+0x324/0x3d0
-> Call Trace:
-> [c00006b0645b7890] [8e000001a5a4dd20] 0x8e000001a5a4dd20 (unreliable)
-> [c00006b0645b7a00] [c00000000006d5b0] flush_hash_range+0x60/0x110
-> [c00006b0645b7a50] [c000000000072a2c] __flush_tlb_pending+0x4c/0xd0
-> [c00006b0645b7a80] [c0000000002eaf44] unmap_page_range+0x984/0xbd0
-> [c00006b0645b7bc0] [c0000000002eb594] unmap_vmas+0x84/0x100
-> [c00006b0645b7c10] [c0000000002f8afc] exit_mmap+0xac/0x1f0
-> [c00006b0645b7cd0] [c0000000000f2638] mmput+0x98/0x1b0
-> [c00006b0645b7d00] [c0000000000fc9d0] do_exit+0x330/0xc00
-> [c00006b0645b7dc0] [c0000000000fd384] do_group_exit+0x64/0x100
-> [c00006b0645b7e00] [c0000000000fd44c] sys_exit_group+0x2c/0x30
-> [c00006b0645b7e30] [c00000000000b960] system_call+0x58/0x6c
-> Instruction dump:
-> 60000000 f8810028 7ca42b78 7cc53378 7ce63b78 7d074378 7d284b78 7d495378 
-> e9410060 e9610068 e9810070 44000022 <7d806378> e9810028 f88c0000 f8ac0008
+> Although the NIP tells us where we were, and the TRAP number tells us
+> what happened, it would still be nicer if we could report the actual
+> exception rather than barfing about the stack pointer.
 > 
-> This happens when removing the PTE by calling the hypervisor using the
-> H_BULK_REMOVE call. This call is processing up to 4 PTEs but is doing a
-> tlbie for each PTE it is processing. This could lead to long time spent in
-> the hypervisor (sometimes up to 4s) and soft lockup being raised because
-> the scheduler is not called in zap_pte_range().
+> We an do that fairly simply by loading the kernel stack pointer on
+> entry and restoring the user value before returning. That way we see a
+> regular oops such as:
 > 
-> Since the Power7's time, the hypervisor is providing a new hcall
-> H_BLOCK_REMOVE allowing processing up to 8 PTEs with one call to
-> tlbie. By limiting the amount of tlbie generated, this reduces the time
-> spent invalidating the PTEs.
+>   Unrecoverable exception 4100 at c00000000000239c
+>   Oops: Unrecoverable exception, sig: 6 [#1]
+>   LE SMP NR_CPUS=32 NUMA PowerNV
+>   Modules linked in:
+>   CPU: 0 PID: 1251 Comm: klogd Not tainted 4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty #40
+>   NIP:  c00000000000239c LR: 0000000010053e00 CTR: 0000000000000040
+>   REGS: c0000000f1e17bb0 TRAP: 4100   Not tainted  (4.18.0-rc3-gcc-7.3.1-00097-g4ebfcac65acd-dirty)
+>   MSR:  9000000002803031 <SF,HV,VEC,VSX,FP,ME,IR,DR,LE>  CR: 44000442  XER: 20000000
+>   CFAR: c00000000000bac8 IRQMASK: 0
+>   ...
+>   NIP [c00000000000239c] rfi_flush_fallback+0x3c/0x80
+>   LR [0000000010053e00] 0x10053e00
+>   Call Trace:
+>   [c0000000f1e17e30] [c00000000000b9e4] system_call+0x5c/0x70 (unreliable)
+> 
+> Note this shouldn't make the kernel stack pointer vulnerable to a
+> meltdown attack, because it should be flushed from the cache before we
+> return to userspace. The user r1 value will be in the cache, because
+> we load it in the return path, but that is harmless.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Oh that's a nice feature. I must have an ancient PAPR because I don't
-have it. It could be a good project for someone to implement it in KVM
-too.
+Yeah that's a lot nicer, thanks.
 
-> 
-> This hcall requires that the pages are "all within the same naturally
-> aligned 8 page virtual address block".
-> 
-> With this patch series applied, I couldn't see any soft lockup raised on
-> the victim LPAR I was running the test one.
-> 
-> This series is covering both normal pages and huge pages.
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Really nice, thanks for working on the problem.
-
-Thanks,
-Nick
+> ---
+>  arch/powerpc/kernel/exceptions-64s.S | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index f7cc12aa3dc6..a6fa85916273 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1518,6 +1518,8 @@ TRAMP_REAL_BEGIN(stf_barrier_fallback)
+>  TRAMP_REAL_BEGIN(rfi_flush_fallback)
+>  	SET_SCRATCH0(r13);
+>  	GET_PACA(r13);
+> +	std	r1,PACA_EXRFI+EX_R12(r13)
+> +	ld	r1,PACAKSAVE(r13)
+>  	std	r9,PACA_EXRFI+EX_R9(r13)
+>  	std	r10,PACA_EXRFI+EX_R10(r13)
+>  	std	r11,PACA_EXRFI+EX_R11(r13)
+> @@ -1552,12 +1554,15 @@ TRAMP_REAL_BEGIN(rfi_flush_fallback)
+>  	ld	r9,PACA_EXRFI+EX_R9(r13)
+>  	ld	r10,PACA_EXRFI+EX_R10(r13)
+>  	ld	r11,PACA_EXRFI+EX_R11(r13)
+> +	ld	r1,PACA_EXRFI+EX_R12(r13)
+>  	GET_SCRATCH0(r13);
+>  	rfid
+>  
+>  TRAMP_REAL_BEGIN(hrfi_flush_fallback)
+>  	SET_SCRATCH0(r13);
+>  	GET_PACA(r13);
+> +	std	r1,PACA_EXRFI+EX_R12(r13)
+> +	ld	r1,PACAKSAVE(r13)
+>  	std	r9,PACA_EXRFI+EX_R9(r13)
+>  	std	r10,PACA_EXRFI+EX_R10(r13)
+>  	std	r11,PACA_EXRFI+EX_R11(r13)
+> @@ -1592,6 +1597,7 @@ TRAMP_REAL_BEGIN(hrfi_flush_fallback)
+>  	ld	r9,PACA_EXRFI+EX_R9(r13)
+>  	ld	r10,PACA_EXRFI+EX_R10(r13)
+>  	ld	r11,PACA_EXRFI+EX_R11(r13)
+> +	ld	r1,PACA_EXRFI+EX_R12(r13)
+>  	GET_SCRATCH0(r13);
+>  	hrfid
+>  
