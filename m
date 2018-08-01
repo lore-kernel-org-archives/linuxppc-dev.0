@@ -1,20 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDH4fzczF10S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:23:59 +1000 (AEST)
-In-Reply-To: <20180705114022.19285-2-akshay.adiga@linux.vnet.ibm.com>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gMDM3k0gzF1BL
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:24:03 +1000 (AEST)
+In-Reply-To: <6a49b03f64750a8308be1465efdc89be9179b608.1530807556.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: stewart@linux.vnet.ibm.com, ego@linux.vnet.ibm.com, rjw@rjwysocki.net,
- npiggin@gmail.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [v4,
- 1/2] powernv/cpuidle: Parse dt idle properties into global structure
-Message-Id: <41gMDH3hWCz9s3x@ozlabs.org>
-Date: Wed,  1 Aug 2018 15:23:59 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v3,
+ 04/16] powerpc: move ASM_CONST and stringify_in_c() into asm-const.h
+Message-Id: <41gMDM2d6tz9s7t@ozlabs.org>
+Date: Wed,  1 Aug 2018 15:24:02 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-07-05 at 11:40:21 UTC, Akshay Adiga wrote:
-> Device-tree parsing happens twice, once while deciding idle state to be
-> used for hotplug and once during cpuidle init. Hence, parsing the device
-> tree and caching it will reduce code duplication. Parsing code has been
-> moved to pnv_parse_cpuidle_dt() from pnv_probe_idle_states(). In addition
-> to the properties in the device tree the number of available states is
-> also required.
+On Thu, 2018-07-05 at 16:24:57 UTC, Christophe Leroy wrote:
+> This patch moves ASM_CONST() and stringify_in_c() into
+> dedicated asm-const.h, then cleans all related inclusions.
 > 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/9c7b185ab2fe313b4426bf55da3624
+https://git.kernel.org/powerpc/c/ec0c464cdbf38bf6ddabec8bfa595b
 
 cheers
