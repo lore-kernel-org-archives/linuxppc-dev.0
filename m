@@ -1,23 +1,32 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gYjN14j5zF1BL
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 23:16:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gb0q50wyzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 00:14:51 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Allen <jallen@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-In-Reply-To: <20180723152223.mydr5dovcv26domv@p50>
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-3-jallen@linux.ibm.com>
- <87k1pmhxx7.fsf@concordia.ellerman.id.au>
- <20180723152223.mydr5dovcv26domv@p50>
-Date: Wed, 01 Aug 2018 23:16:22 +1000
-Message-ID: <87in4ufcrd.fsf@concordia.ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, linux-kernel@vger.kernel.org
+Cc: Alastair D'Silva <alastair@d-silva.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman" <ebiederm@xmission.com>,
+ Joe Perches <joe@perches.com>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Simon Guo <wei.guo.simon@gmail.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 9/9] powerpc/traps: Add line prefix in
+ show_instructions()
+In-Reply-To: <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
+References: <20180731145020.14009-1-muriloo@linux.ibm.com>
+ <20180731145020.14009-10-muriloo@linux.ibm.com>
+ <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
+Date: Thu, 02 Aug 2018 00:14:49 +1000
+Message-ID: <87ftzyfa1y.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +36,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-John Allen <jallen@linux.ibm.com> writes:
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
 
-> On Mon, Jul 23, 2018 at 11:41:24PM +1000, Michael Ellerman wrote:
->>John Allen <jallen@linux.ibm.com> writes:
->>
->>> While handling PRRN events, the time to handle the actual hotplug events
->>> dwarfs the time it takes to perform the device tree updates and queue the
->>> hotplug events. In the case that PRRN events are being queued continuously,
->>> hotplug events have been observed to be queued faster than the kernel can
->>> actually handle them. This patch avoids the problem by waiting for a
->>> hotplug request to complete before queueing more hotplug events.
-
-Have you tested this patch in isolation, ie. not with patch 1?
-
->>So do we need the hotplug work queue at all? Can we just call
->>handle_dlpar_errorlog() directly?
->>
->>Or are we using the work queue to serialise things? And if so would a
->>mutex be better?
+> Le 31/07/2018 =C3=A0 16:50, Murilo Opsfelder Araujo a =C3=A9crit=C2=A0:
+>> Remove "Instruction dump:" line by adding a prefix to display current->c=
+omm
+>> and current->pid, along with the instructions dump.
+>>=20
+>> The prefix can serve as a glue that links the instructions dump to its
+>> originator, allowing messages to be interleaved in the logs.
+>>=20
+>> Before this patch, a page fault looked like:
+>>=20
+>>    pandafault[10524]: segfault (11) at 100007d0 nip 1000061c lr 7fffbd29=
+5100 code 2 in pandafault[10000000+10000]
+>>    Instruction dump:
+>>    4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22ff=
+fe
+>>    392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f=
+0040
+>>=20
+>> After this patch, it looks like:
+>>=20
+>>    pandafault[10850]: segfault (11) at 100007d0 nip 1000061c lr 7fff9f3e=
+5100 code 2 in pandafault[10000000+10000]
+>>    pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8=
+ f821ffc1 7c3f0b78 3d22fffe
+>>    pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <9949000=
+0> 39200000 7d234b78 383f0040
+>>=20
+>> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 >
-> Right, the workqueue is meant to serialize all hotplug events and it 
-> gets used for more than just PRRN events. I believe the motivation for 
-> using the workqueue over a mutex is that KVM guests initiate hotplug 
-> events through the hotplug interrupt and can queue fairly large requests 
-> meaning that in this scenario, waiting for a lock would block interrupts
-> for a while.
+> Does the script scripts/decode_stacktrace.sh also works with this format=
+=20
+> change ?
 
-OK, but that just means that path needs to schedule work to run later.
+Did it work before? I've never used it.
 
-> Using the workqueue allows us to serialize hotplug events 
-> from different sources in the same way without worrying about the 
-> context in which the event is generated.
-
-A lock would be so much simpler.
-
-It looks like we have three callers of queue_hotplug_event(), the dlpar
-code, the mobility code and the ras interrupt.
-
-The dlpar code already waits synchronously:
-
-  init_completion(&hotplug_done);
-  queue_hotplug_event(hp_elog, &hotplug_done, &rc);
-  wait_for_completion(&hotplug_done);
-
-You're changing mobility to do the same (this patch), leaving only the
-ras interrupt that actually queues work and returns.
-
-
-So it really seems like a mutex would do the trick, and the ras
-interrupt would be the only case that needs to schedule work for later.
+Would be great if it did work though.
 
 cheers
