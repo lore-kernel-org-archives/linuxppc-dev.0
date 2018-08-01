@@ -1,35 +1,22 @@
-Return-Path: <vaibhav@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gSg15V3vzF1Hp
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:29:01 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w719Sk6M038168
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2018 05:28:59 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kk95h2um8-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 05:28:58 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.ibm.com>;
- Wed, 1 Aug 2018 10:28:57 +0100
-From: Vaibhav Jain <vaibhav@linux.ibm.com>
-To: Frederic Barrat <fbarrat@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- npiggin@gmail.com
-Cc: felix@linux.ibm.com, clombard@linux.ibm.com
-Subject: Re: [PATCH] powerpc/64s/radix: Fix missing global invalidations when
- removing copro
-In-Reply-To: <20180731132452.15994-1-fbarrat@linux.ibm.com>
-References: <20180731132452.15994-1-fbarrat@linux.ibm.com>
-Date: Wed, 01 Aug 2018 14:58:45 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gSrt3hBnzF1jP
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:37:34 +1000 (AEST)
+Subject: Re: [PATCH] perf tools: allow overriding MAX_NR_CPUS at compile time
+To: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr>
+ <20180503134037.GB8442@kernel.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <dc8f1911-fa9a-c1c8-0dd5-fd33236da69a@c-s.fr>
+Date: Wed, 1 Aug 2018 11:37:30 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
-Message-Id: <87va8ul9ki.fsf@vajain21.in.ibm.com>
+In-Reply-To: <20180503134037.GB8442@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +26,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frederic Barrat <fbarrat@linux.ibm.com> writes:
 
-> With the optimizations for TLB invalidation from commit 0cef77c7798a
-> ("powerpc/64s/radix: flush remote CPUs out of single-threaded
-> mm_cpumask"), the scope of a TLBI (global vs. local) can now be
-> influenced by the value of the 'copros' counter of the memory context.
->
-> When calling mm_context_remove_copro(), the 'copros' counter is
-> decremented first before flushing. It may have the unintended side
-> effect of sending local TLBIs when we explicitly need global
-> invalidations in this case. Thus breaking any nMMU user in a bad and
-> unpredictable way.
->
-> Fix it by flushing first, before updating the 'copros' counter, so
-> that invalidations will be global.
->
-> Fixes: 0cef77c7798a ("powerpc/64s/radix: flush remote CPUs out of single-threaded mm_cpumask")
-> Signed-off-by: Frederic Barrat <fbarrat@linux.ibm.com>
-> ---
-Tested-by: Vaibhav Jain <vaibhav@linux.ibm.com>
 
--- 
-Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Linux Technology Center, IBM India Pvt. Ltd.
+Le 03/05/2018 à 15:40, Arnaldo Carvalho de Melo a écrit :
+> Em Fri, Sep 22, 2017 at 01:20:43PM +0200, Christophe Leroy escreveu:
+>> After update of kernel, perf tool doesn't run anymore on my
+>> 32MB RAM powerpc board, but still runs on a 128MB RAM board:
+> 
+> Cleaning up my inbox, found this one, simple enough, still applies,
+> applied.
+
+Did you finally apply it ? I can't see it in linux-next. Will it be 
+merged into 4.19 ?
+
+Thanks
+Christophe
+
+> 
+> These all needs to be dynamicly allocated, but still, with this one can
+> get a functioning tool, apply it.
+> 
+> - Arnaldo
+>   
+>> ~# strace perf
+>> execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
+>> --- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
+>> +++ killed by SIGSEGV +++
+>> Segmentation fault
+>>
+>> objdump -x shows that .bss section has a huge size of 24Mbytes:
+>>
+>>   27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+>>
+>> With especially the following objects having quite big size
+>>
+>> 10205f80 l     O .bss	00140000              runtime_cycles_stats
+>> 10345f80 l     O .bss	00140000              runtime_stalled_cycles_front_stats
+>> 10485f80 l     O .bss	00140000              runtime_stalled_cycles_back_stats
+>> 105c5f80 l     O .bss	00140000              runtime_branches_stats
+>> 10705f80 l     O .bss	00140000              runtime_cacherefs_stats
+>> 10845f80 l     O .bss	00140000              runtime_l1_dcache_stats
+>> 10985f80 l     O .bss	00140000              runtime_l1_icache_stats
+>> 10ac5f80 l     O .bss	00140000              runtime_ll_cache_stats
+>> 10c05f80 l     O .bss	00140000              runtime_itlb_cache_stats
+>> 10d45f80 l     O .bss	00140000              runtime_dtlb_cache_stats
+>> 10e85f80 l     O .bss	00140000              runtime_cycles_in_tx_stats
+>> 10fc5f80 l     O .bss	00140000              runtime_transaction_stats
+>> 11105f80 l     O .bss	00140000              runtime_elision_stats
+>> 11245f80 l     O .bss	00140000              runtime_topdown_total_slots
+>> 11385f80 l     O .bss	00140000              runtime_topdown_slots_retired
+>> 114c5f80 l     O .bss	00140000              runtime_topdown_slots_issued
+>> 11605f80 l     O .bss	00140000              runtime_topdown_fetch_bubbles
+>> 11745f80 l     O .bss	00140000              runtime_topdown_recovery_bubbles
+>>
+>> This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
+>> to 1024"), because many tables are sized with MAX_NR_CPUS
+>>
+>> This patch gives the opportunity to redefine MAX_NR_CPUS via
+>>
+>> make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   tools/perf/perf.h | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+>> index dc442ba21bf6..a9db563da0a9 100644
+>> --- a/tools/perf/perf.h
+>> +++ b/tools/perf/perf.h
+>> @@ -23,7 +23,9 @@ static inline unsigned long long rdclock(void)
+>>   	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
+>>   }
+>>   
+>> +#ifndef MAX_NR_CPUS
+>>   #define MAX_NR_CPUS			1024
+>> +#endif
+>>   
+>>   extern const char *input_name;
+>>   extern bool perf_host, perf_guest;
+>> -- 
+>> 2.13.3
