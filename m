@@ -1,22 +1,35 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gmrG2KXMzF1d6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 07:38:06 +1000 (AEST)
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Clark Williams <williams@redhat.com>, linux-kernel@vger.kernel.org,
- linux-perf-users@vger.kernel.org,
- Christophe Leroy <christophe.leroy@c-s.fr>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 19/21] perf tools: Allow overriding MAX_NR_CPUS at compile time
-Date: Wed,  1 Aug 2018 18:36:46 -0300
-Message-Id: <20180801213648.4814-20-acme@kernel.org>
-In-Reply-To: <20180801213648.4814-1-acme@kernel.org>
-References: <20180801213648.4814-1-acme@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gnFK1mW5zF1Qn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 07:56:21 +1000 (AEST)
+Date: Thu, 2 Aug 2018 00:56:13 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180802003823-mutt-send-email-mst@kernel.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com>
+ <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
+ <20180731173052.GA17153@infradead.org>
+ <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +39,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Christophe Leroy <christophe.leroy@c-s.fr>
+On Tue, Jul 31, 2018 at 03:36:22PM -0500, Benjamin Herrenschmidt wrote:
+> On Tue, 2018-07-31 at 10:30 -0700, Christoph Hellwig wrote:
+> > > However the question people raise is that DMA API is already full of
+> > > arch-specific tricks the likes of which are outlined in your post linked
+> > > above. How is this one much worse?
+> > 
+> > None of these warts is visible to the driver, they are all handled in
+> > the architecture (possibly on a per-bus basis).
+> > 
+> > So for virtio we really need to decide if it has one set of behavior
+> > as specified in the virtio spec, or if it behaves exactly as if it
+> > was on a PCI bus, or in fact probably both as you lined up.  But no
+> > magic arch specific behavior inbetween.
+> 
+> The only arch specific behaviour is needed in the case where it doesn't
+> behave like PCI. In this case, the PCI DMA ops are not suitable, but in
+> our secure VMs, we still need to make it use swiotlb in order to bounce
+> through non-secure pages.
+> 
+> It would be nice if "real PCI" was the default
 
-After update of kernel, the perf tool doesn't run anymore on my 32MB RAM
-powerpc board, but still runs on a 128MB RAM board:
+I think you are mixing "real PCI" which isn't coded up yet and IOMMU
+bypass which is. IOMMU bypass will maybe with time become unnecessary
+since it seems that one can just program an IOMMU in a bypass mode
+instead.
 
-  ~# strace perf
-  execve("/usr/sbin/perf", ["perf"], [/* 12 vars */]) = -1 ENOMEM (Cannot allocate memory)
-  --- SIGSEGV {si_signo=SIGSEGV, si_code=SI_KERNEL, si_addr=0} ---
-  +++ killed by SIGSEGV +++
-  Segmentation fault
+It's hard to blame you since right now if you disable IOMMU bypass
+you get a real PCI mode. But they are distinct and to allow people
+to enable IOMMU by default we will need to teach someone
+(virtio or DMA API) about this mode that does follow
+translation and protection rules in the IOMMU but runs
+on a CPU and so does not need cache flushes and whatnot.
 
-objdump -x shows that .bss section has a huge size of 24Mbytes:
+OTOH real PCI mode as opposed to default hypervisor mode does not perform as
+well when what you actually have is a hypervisor.
 
- 27 .bss          016baca8  101cebb8  101cebb8  001cd988  2**3
+So we'll likely have a mix of these two modes for a while.
 
-With especially the following objects having quite big size:
+> but it's not, VMs are
+> created in "legacy" mode all the times and we don't know at VM creation
+> time whether it will become a secure VM or not. The way our secure VMs
+> work is that they start as a normal VM, load a secure "payload" and
+> call the Ultravisor to "become" secure.
+> 
+> So we're in a bit of a bind here. We need that one-liner optional arch
+> hook to make virtio use swiotlb in that "IOMMU bypass" case.
+> 
+> Ben.
 
-  10205f80 l     O .bss	00140000     runtime_cycles_stats
-  10345f80 l     O .bss	00140000     runtime_stalled_cycles_front_stats
-  10485f80 l     O .bss	00140000     runtime_stalled_cycles_back_stats
-  105c5f80 l     O .bss	00140000     runtime_branches_stats
-  10705f80 l     O .bss	00140000     runtime_cacherefs_stats
-  10845f80 l     O .bss	00140000     runtime_l1_dcache_stats
-  10985f80 l     O .bss	00140000     runtime_l1_icache_stats
-  10ac5f80 l     O .bss	00140000     runtime_ll_cache_stats
-  10c05f80 l     O .bss	00140000     runtime_itlb_cache_stats
-  10d45f80 l     O .bss	00140000     runtime_dtlb_cache_stats
-  10e85f80 l     O .bss	00140000     runtime_cycles_in_tx_stats
-  10fc5f80 l     O .bss	00140000     runtime_transaction_stats
-  11105f80 l     O .bss	00140000     runtime_elision_stats
-  11245f80 l     O .bss	00140000     runtime_topdown_total_slots
-  11385f80 l     O .bss	00140000     runtime_topdown_slots_retired
-  114c5f80 l     O .bss	00140000     runtime_topdown_slots_issued
-  11605f80 l     O .bss	00140000     runtime_topdown_fetch_bubbles
-  11745f80 l     O .bss	00140000     runtime_topdown_recovery_bubbles
+And just to make sure I understand, on your platform DMA APIs do include
+some of the cache flushing tricks and this is why you don't want to
+declare iommu support in the hypervisor?
 
-This is due to commit 4d255766d28b1 ("perf: Bump max number of cpus
-to 1024"), because many tables are sized with MAX_NR_CPUS
-
-This patch gives the opportunity to redefine MAX_NR_CPUS via
-
-  $ make EXTRA_CFLAGS=-DMAX_NR_CPUS=1
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/20170922112043.8349468C57@po15668-vm-win7.idsi0.si.c-s.fr
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/perf.h | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index d215714f48df..21bf7f5a3cf5 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -25,7 +25,9 @@ static inline unsigned long long rdclock(void)
- 	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
- }
- 
-+#ifndef MAX_NR_CPUS
- #define MAX_NR_CPUS			1024
-+#endif
- 
- extern const char *input_name;
- extern bool perf_host, perf_guest;
 -- 
-2.14.4
+MST
