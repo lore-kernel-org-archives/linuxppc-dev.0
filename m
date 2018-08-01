@@ -1,47 +1,38 @@
-Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gc5b2wnRzDqDQ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 01:04:03 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w71Exv3F034887
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2018 11:04:00 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kkf4387x6-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 11:04:00 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Wed, 1 Aug 2018 09:03:59 -0600
-Date: Wed, 1 Aug 2018 12:03:50 -0300
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: linux-kernel@vger.kernel.org, "Alastair D'Silva" <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cyril Bur <cyrilbur@gmail.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Joe Perches <joe@perches.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 9/9] powerpc/traps: Add line prefix in
- show_instructions()
-References: <20180731145020.14009-1-muriloo@linux.ibm.com>
- <20180731145020.14009-10-muriloo@linux.ibm.com>
- <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gdjZ5rRvzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 02:16:50 +1000 (AEST)
+Date: Wed, 1 Aug 2018 10:16:46 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>,
+ kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
+ Tesla V100
+Message-ID: <20180801101646.2de997c3@t450s.home>
+In-Reply-To: <38e4455c-e3b8-b867-1771-0f4ccf9d31d8@ozlabs.ru>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607110409.5057ebac@w520.home>
+ <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
+ <20180607161541.21df6434@w520.home>
+ <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+ <20180607214455.51ecfa1a@w520.home>
+ <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
+ <20180607230323.0148344e@w520.home>
+ <20180710141020.759983a6@aik.ozlabs.ibm.com>
+ <20180710163715.5c326985@t450s.home>
+ <20180711192621.174d849a@aik.ozlabs.ibm.com>
+ <4089d9ed-0c6b-3ba2-d447-049ce5b98764@ozlabs.ru>
+ <20180730102957.47fa1191@t450s.home>
+ <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
+ <20180731082905.5c7cdeee@t450s.home>
+ <38e4455c-e3b8-b867-1771-0f4ccf9d31d8@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <c7e0fe17-8c4e-4ccc-dadf-9b320ca5a1d2@c-s.fr>
-Message-Id: <20180801150350.GC6022@kermit-br-ibm-com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,43 +42,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, Christophe.
+On Wed, 1 Aug 2018 18:37:35 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On Wed, Aug 01, 2018 at 08:41:15AM +0200, Christophe LEROY wrote:
->
->
-> Le 31/07/2018 à 16:50, Murilo Opsfelder Araujo a écrit :
-> > Remove "Instruction dump:" line by adding a prefix to display current->comm
-> > and current->pid, along with the instructions dump.
-> >
-> > The prefix can serve as a glue that links the instructions dump to its
-> > originator, allowing messages to be interleaved in the logs.
-> >
-> > Before this patch, a page fault looked like:
-> >
-> >    pandafault[10524]: segfault (11) at 100007d0 nip 1000061c lr 7fffbd295100 code 2 in pandafault[10000000+10000]
-> >    Instruction dump:
-> >    4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
-> >    392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
-> >
-> > After this patch, it looks like:
-> >
-> >    pandafault[10850]: segfault (11) at 100007d0 nip 1000061c lr 7fff9f3e5100 code 2 in pandafault[10000000+10000]
-> >    pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
-> >    pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
-> >
-> > Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
->
-> Does the script scripts/decode_stacktrace.sh also works with this format
-> change ?
+> On 01/08/2018 00:29, Alex Williamson wrote:
+> > On Tue, 31 Jul 2018 14:03:35 +1000
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+> >   
+> >> On 31/07/2018 02:29, Alex Williamson wrote:  
+> >>> On Mon, 30 Jul 2018 18:58:49 +1000
+> >>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:  
+> >>>> After some local discussions, it was pointed out that force disabling
+> >>>> nvlinks won't bring us much as for an nvlink to work, both sides need to
+> >>>> enable it so malicious guests cannot penetrate good ones (or a host)
+> >>>> unless a good guest enabled the link but won't happen with a well
+> >>>> behaving guest. And if two guests became malicious, then can still only
+> >>>> harm each other, and so can they via other ways such network. This is
+> >>>> different from PCIe as once PCIe link is unavoidably enabled, a well
+> >>>> behaving device cannot firewall itself from peers as it is up to the
+> >>>> upstream bridge(s) now to decide the routing; with nvlink2, a GPU still
+> >>>> has means to protect itself, just like a guest can run "firewalld" for
+> >>>> network.
+> >>>>
+> >>>> Although it would be a nice feature to have an extra barrier between
+> >>>> GPUs, is inability to block the links in hypervisor still a blocker for
+> >>>> V100 pass through?    
+> >>>
+> >>> How is the NVLink configured by the guest, is it 'on'/'off' or are
+> >>> specific routes configured?     
+> >>
+> >> The GPU-GPU links need not to be blocked and need to be enabled
+> >> (==trained) by a driver in the guest. There are no routes between GPUs
+> >> in NVLink fabric, these are direct links, it is just a switch on each
+> >> side, both switches need to be on for a link to work.  
+> > 
+> > Ok, but there is at least the possibility of multiple direct links per
+> > GPU, the very first diagram I find of NVlink shows 8 interconnected
+> > GPUs:
+> > 
+> > https://www.nvidia.com/en-us/data-center/nvlink/  
+> 
+> Out design is like the left part of the picture but it is just a detail.
 
-I've got more feedback from Michael about this.  A better approach would be
-having a new show_user_instructions(), a slightly modified version of
-show_instructions(), that can be called from within show_signal_msg().
+Unless we can specifically identify a direct link vs a mesh link, we
+shouldn't be making assumptions about the degree of interconnect.
+ 
+> > So if each switch enables one direct, point to point link, how does the
+> > guest know which links to open for which peer device?  
+> 
+> It uses PCI config space on GPUs to discover the topology.
 
-Since _exception_pkey() dies if the exception is in kernel mode, we'll be
-safe to call the new show_user_instructions(), without interfering in
-scripts/decode_stacktrace.sh.
+So do we need to virtualize this config space if we're going to
+virtualize the topology?
 
-Cheers
-Murilo
+> > And of course
+> > since we can't see the spec, a security audit is at best hearsay :-\  
+> 
+> Yup, the exact discovery protocol is hidden.
+
+It could be reverse engineered...
+
+> >> The GPU-CPU links - the GPU bit is the same switch, the CPU NVlink state
+> >> is controlled via the emulated PCI bridges which I pass through together
+> >> with the GPU.  
+> > 
+> > So there's a special emulated switch, is that how the guest knows which
+> > GPUs it can enable NVLinks to?  
+> 
+> Since it only has PCI config space (there is nothing relevant in the
+> device tree at all), I assume (double checking with the NVIDIA folks
+> now) the guest driver enables them all, tests which pair works and
+> disables the ones which do not. This gives a malicious guest a tiny
+> window of opportunity to break into a good guest. Hm :-/
+
+Let's not minimize that window, that seems like a prime candidate for
+an exploit.
+
+> >>> If the former, then isn't a non-malicious
+> >>> guest still susceptible to a malicious guest?    
+> >>
+> >> A non-malicious guest needs to turn its switch on for a link to a GPU
+> >> which belongs to a malicious guest.  
+> > 
+> > Actual security, or obfuscation, will we ever know...  
+> >>>> If the latter, how is  
+> >>> routing configured by the guest given that the guest view of the
+> >>> topology doesn't match physical hardware?  Are these routes
+> >>> deconfigured by device reset?  Are they part of the save/restore
+> >>> state?  Thanks,    
+> > 
+> > Still curious what happens to these routes on reset.  Can a later user
+> > of a GPU inherit a device where the links are already enabled?  Thanks,  
+> 
+> I am told that the GPU reset disables links. As a side effect, we get an
+> HMI (a hardware fault which reset the host machine) when trying
+> accessing the GPU RAM which indicates that the link is down as the
+> memory is only accessible via the nvlink. We have special fencing code
+> in our host firmware (skiboot) to fence this memory on PCI reset so
+> reading from it returns zeroes instead of HMIs.
+
+What sort of reset is required for this?  Typically we rely on
+secondary bus reset for GPUs, but it would be a problem if GPUs were to
+start implementing FLR and nobody had a spec to learn that FLR maybe
+didn't disable the link.  The better approach to me still seems to be
+virtualizing these NVLink config registers to an extent that the user
+can only enabling links where they have ownership of both ends of the
+connection.  Thanks,
+
+Alex
