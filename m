@@ -1,24 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gbGq6JjmzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 00:26:59 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gbSg3HwkzDqDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 00:35:31 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Frank Rowand <frowand.list@gmail.com>, Rob Herring <robh+dt@kernel.org>
-Cc: mwb@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- devicetree@vger.kernel.org
-Subject: Re: phandle_cache vs of_detach_node (was Re: [PATCH]
- powerpc/mobility: Fix node detach/rename problem)
-In-Reply-To: <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
+ John Allen <jallen@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mobility: Fix node detach/rename problem
+In-Reply-To: <8bf95369-2625-146a-34d4-d051322e06ff@linux.vnet.ibm.com>
 References: <c2fba52a-baac-25fb-c26b-c84b25c3178c@linux.vnet.ibm.com>
- <8736w1jkte.fsf@concordia.ellerman.id.au>
- <ffaa7eba-5236-e42d-c901-79b045adfb94@linux.vnet.ibm.com>
- <8736vzj4la.fsf@concordia.ellerman.id.au>
- <CAL_JsqKf1k3MM+HgQ2U=Ep7L9nbBCmmvGZoEAKxLB1TVqQdW_w@mail.gmail.com>
- <85014a16-cd2c-0137-72e5-54d4bcdf788a@gmail.com>
-Date: Thu, 02 Aug 2018 00:26:58 +1000
-Message-ID: <87d0v2f9hp.fsf@concordia.ellerman.id.au>
+ <9cd25a93-6c71-728c-e9bf-a16f80ef5655@linux.vnet.ibm.com>
+ <871sbjj48b.fsf@concordia.ellerman.id.au>
+ <8bf95369-2625-146a-34d4-d051322e06ff@linux.vnet.ibm.com>
+Date: Thu, 02 Aug 2018 00:35:29 +1000
+Message-ID: <87a7q6f93i.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,63 +29,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Frank Rowand <frowand.list@gmail.com> writes:
-> On 07/31/18 07:17, Rob Herring wrote:
->> On Tue, Jul 31, 2018 at 12:34 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+> On 07/30/2018 11:42 PM, Michael Ellerman wrote:
+>> Tyrel Datwyler <tyreld@linux.vnet.ibm.com> writes:
+>>> On 07/29/2018 06:11 AM, Michael Bringmann wrote:
+>>>> During LPAR migration, the content of the device tree/sysfs may
+>>>> be updated including deletion and replacement of nodes in the
+>>>> tree.  When nodes are added to the internal node structures, they
+>>>> are appended in FIFO order to a list of nodes maintained by the
+>>>> OF code APIs.  When nodes are removed from the device tree, they
+>>>> are marked OF_DETACHED, but not actually deleted from the system
+>>>> to allow for pointers cached elsewhere in the kernel.  The order
+>>>> and content of the entries in the list of nodes is not altered,
+>>>> though.
+>>>>
+>>>> During LPAR migration some common nodes are deleted and re-added
+>>>> e.g. "ibm,platform-facilities".  If a node is re-added to the OF
+>>>> node lists, the of_attach_node function checks to make sure that
+>>>> the name + ibm,phandle of the to-be-added data is unique.  As the
+>>>> previous copy of a re-added node is not modified beyond the addition
+>>>> of a bit flag, the code (1) finds the old copy, (2) prints a WARNING
+>>>> notice to the console, (3) renames the to-be-added node to avoid
+>>>> filename collisions within a directory, and (3) adds entries to
+>>>> the sysfs/kernfs.
 >>>
->>> Hi Rob/Frank,
->>>
->>> I think we might have a problem with the phandle_cache not interacting
->>> well with of_detach_node():
->> 
->> Probably needs a similar fix as this commit did for overlays:
->> 
->> commit b9952b5218added5577e4a3443969bc20884cea9
->> Author: Frank Rowand <frank.rowand@sony.com>
->> Date:   Thu Jul 12 14:00:07 2018 -0700
->> 
->>     of: overlay: update phandle cache on overlay apply and remove
->> 
->>     A comment in the review of the patch adding the phandle cache said that
->>     the cache would have to be updated when modules are applied and removed.
->>     This patch implements the cache updates.
->> 
->>     Fixes: 0b3ce78e90fc ("of: cache phandle nodes to reduce cost of
->> of_find_node_by_phandle()")
->>     Reported-by: Alan Tull <atull@kernel.org>
->>     Suggested-by: Alan Tull <atull@kernel.org>
->>     Signed-off-by: Frank Rowand <frank.rowand@sony.com>
->>     Signed-off-by: Rob Herring <robh@kernel.org>
+>>> So, this patch actually just band aids over the real problem. This is
+>>> a long standing problem with several PFO drivers leaking references.
+>>> The issue here is that, during the device tree update that follows a
+>>> migration. the update of the ibm,platform-facilities node and friends
+>>> below are always deleted and re-added on the destination lpar and
+>>> subsequently the leaked references prevent the devices nodes from
+>>> every actually being properly cleaned up after detach. Thus, leading
+>>> to the issue you are observing.
 >
-> Agreed.  Sorry about missing the of_detach_node() case.
->
->
->> Really what we need here is an "invalidate phandle" function rather
->> than free and re-allocate the whole damn cache.
->
-> The big hammer approach was chosen to avoid the race conditions that
-> would otherwise occur.  OF does not have a locking strategy that
-> would be able to protect against the races.
->
-> We could maybe implement a slightly smaller hammer by (1) disabling
-> the cache, (2) invalidate a phandle entry in the cache, (3) re-enable
-> the cache.  That is an off the cuff thought - I would have to look
-> a little bit more carefully to make sure it would work.
->
-> But I don't see a need to add the complexity of the smaller hammer
-> or the bigger hammer of proper locking _unless_ we start seeing that
-> the cache is being freed and re-allocated frequently.  For overlays
-> I don't expect the high frequency because it happens on a per overlay
-> removal basis (not per node removal basis).  For of_detach_node() the
-> event _is_ on a per node removal basis.  Michael, do you expect node
-> removals to be a frequent event with low latency being important?  If
-> so, a rough guess on what the frequency would be?
+> So, it was the end of the day, and I kind of glossed over the issue
+> Michael was trying to address with an issue that I remembered that had
+> been around for awhile.
 
-No in practice we expect them to be fairly rare and in the thousands at
-most I think.
+Sure, I know that feeling :)
 
-TBH you could just disable the phandle_cache on the first detach and
-that would be fine by me. I don't think we've ever noticed phandle
-lookups being much of a problem for us on our hardware.
+>> Leaking references shouldn't affect the node being detached from the
+>> tree though.
+>
+> No, but it does prevent it from being freed from sysfs which leads to
+> the sysfs entry renaming that happens when another node with the same
+> name is attached.
+
+OK.
+
+>> See of_detach_node() calling __of_detach_node(), none of that depends on
+>> the refcount.
+>> 
+>> It's only the actual freeing of the node, in of_node_release() that is
+>> prevented by leaked reference counts.
+>
+> Right, but if we did refcount correctly there is the new problem that
+> the node is freed and now the phandle cache points at freed memory in
+> the case were no invalidation is done.
+
+Yeah that's bad.
+
+I guess no one is supposed to lookup that phandle anymore, but it's
+super fragile.
+
+>> So I agree we need to do a better job with the reference counting, but I
+>> don't see how it is causing the problem here
+>
+> Now in regards to the phandle caching somehow I missed that code going
+> into OF earlier this year. That should have had at least some
+> discussion from our side based on the fact that it is built on dtc
+> compiler assumption that there are a set number of phandles that are
+> allocated starting at 1..n such that they are monotonically
+> increasing. That has a nice fixed size with O(1) lookup time. Phyp
+> doesn't guarantee any sort of niceness with nicely ordered phandles.
+> From what I've seen there are a subset of phandles that decrease from
+> (-1) monotonically, and then there are a bunch of random values for
+> cpus and IOAs. Thinking on it might not be that big of a deal as we
+> just end up in the case where we have a phandle collision one makes it
+> into the cache and is optimized while the other doesn't. On another
+> note, they clearly hit a similar issue during overlay attach and
+> remove, and as Rob pointed out their solution to handle it is a full
+> cache invalidation followed by rescanning the whole tree to rebuild
+> it. Seeing as our dynamic lifecycle is node by node this definitely
+> adds some overhead.
+
+Yeah I also should have noticed it going in, but despite being
+subscribed to the devicetree list I didn't spot it in the flood.
+
+AIUI the 1..n assumption is not about correctness but if our phandles
+violate that we may not be getting any benefit.
+
+Anyway yeah lots of things to look at tomorrow :)
 
 cheers
