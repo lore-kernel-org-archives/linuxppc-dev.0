@@ -1,31 +1,30 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <yangbo.lu@nxp.com>
+Received: from EUR03-AM5-obe.outbound.protection.outlook.com
+ (mail-eopbgr30062.outbound.protection.outlook.com [40.107.3.62])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gHjj6PJWzF10S
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 12:45:45 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id r5-v6so10043768pgv.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2018 19:45:45 -0700 (PDT)
-Date: Wed, 1 Aug 2018 12:45:36 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org, Linus Torvalds
- <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH resend] powerpc/64s: fix page table fragment refcount
- race vs speculative references
-Message-ID: <20180801124536.173bc327@roar.ozlabs.ibm.com>
-In-Reply-To: <87600vhbs1.fsf@concordia.ellerman.id.au>
-References: <20180727114817.27190-1-npiggin@gmail.com>
- <20180727134156.GA13348@bombadil.infradead.org>
- <20180728002906.531d0211@roar.ozlabs.ibm.com>
- <20180727153834.GC13348@bombadil.infradead.org>
- <20180728023255.720d594c@roar.ozlabs.ibm.com>
- <87600vhbs1.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gL9s3JcnzF10S
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 14:36:47 +1000 (AEST)
+From: "Y.b. Lu" <yangbo.lu@nxp.com>
+To: Richard Cochran <richardcochran@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Madalin-cristian Bucur
+ <madalin.bucur@nxp.com>, Rob Herring <robh+dt@kernel.org>, Shawn Guo
+ <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
+ initialization
+Date: Wed, 1 Aug 2018 04:36:40 +0000
+Message-ID: <DB6PR0401MB253643010802739AD55820F3F82D0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <20180730100154.27906-1-yangbo.lu@nxp.com>
+ <20180730100154.27906-3-yangbo.lu@nxp.com>
+ <20180730143043.qu66ttzwyjbw6si7@localhost>
+In-Reply-To: <20180730143043.qu66ttzwyjbw6si7@localhost>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,83 +34,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 31 Jul 2018 21:42:22 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+Hi Richard,
 
-> Nicholas Piggin <npiggin@gmail.com> writes:
-> > On Fri, 27 Jul 2018 08:38:35 -0700
-> > Matthew Wilcox <willy@infradead.org> wrote:  
-> >> On Sat, Jul 28, 2018 at 12:29:06AM +1000, Nicholas Piggin wrote:  
-> >> > On Fri, 27 Jul 2018 06:41:56 -0700
-> >> > Matthew Wilcox <willy@infradead.org> wrote:  
-> >> > > On Fri, Jul 27, 2018 at 09:48:17PM +1000, Nicholas Piggin wrote:    
-> >> > > > The page table fragment allocator uses the main page refcount racily
-> >> > > > with respect to speculative references. A customer observed a BUG due
-> >> > > > to page table page refcount underflow in the fragment allocator. This
-> >> > > > can be caused by the fragment allocator set_page_count stomping on a
-> >> > > > speculative reference, and then the speculative failure handler
-> >> > > > decrements the new reference, and the underflow eventually pops when
-> >> > > > the page tables are freed.      
-> >> > > 
-> >> > > Oof.  Can't you fix this instead by using page_ref_add() instead of
-> >> > > set_page_count()?    
-> >> > 
-> >> > It's ugly doing it that way. The problem is we have a page table
-> >> > destructor and that would be missed if the spec ref was the last
-> >> > put. In practice with RCU page table freeing maybe you can say
-> >> > there will be no spec ref there (unless something changes), but
-> >> > still it just seems much simpler doing this and avoiding any
-> >> > complexity or relying on other synchronization.    
-> >> 
-> >> I don't want to rely on the speculative reference not happening by the
-> >> time the page table is torn down; that's way too black-magic for me.
-> >> Another possibility would be to use, say, the top 16 bits of the
-> >> atomic for your counter and call the dtor once the atomic is below 64k.
-> >> I'm also thinking about overhauling the dtor system so it's not tied to
-> >> compound pages; anyone with a bit in page_type would be able to use it.
-> >> That way you'd always get your dtor called, even if the speculative
-> >> reference was the last one.  
+> -----Original Message-----
+> From: Richard Cochran [mailto:richardcochran@gmail.com]
+> Sent: Monday, July 30, 2018 10:31 PM
+> To: Y.b. Lu <yangbo.lu@nxp.com>
+> Cc: netdev@vger.kernel.org; Madalin-cristian Bucur
+> <madalin.bucur@nxp.com>; Rob Herring <robh+dt@kernel.org>; Shawn Guo
+> <shawnguo@kernel.org>; David S . Miller <davem@davemloft.net>;
+> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
+> initialization
+>=20
+> On Mon, Jul 30, 2018 at 06:01:54PM +0800, Yangbo Lu wrote:
+> > The ptp_qoriq driver initialized the 1588 timer with the
+> > configurations provided by the properties of device tree node. For
+> > example,
 > >
-> > Yeah we could look at doing either of those if necessary.
-> >  
-> >> > > > Any objection to the struct page change to grab the arch specific
-> >> > > > page table page word for powerpc to use? If not, then this should
-> >> > > > go via powerpc tree because it's inconsequential for core mm.      
-> >> > > 
-> >> > > I want (eventually) to get to the point where every struct page carries
-> >> > > a pointer to the struct mm that it belongs to.  It's good for debugging
-> >> > > as well as handling memory errors in page tables.    
-> >> > 
-> >> > That doesn't seem like it should be a problem, there's some spare
-> >> > words there for arch independent users.    
-> >> 
-> >> Could you take one of the spare words instead then?  My intent was to
-> >> just take the 'x86 pgds only' comment off that member.  _pt_pad_2 looks
-> >> ideal because it'll be initialised to 0 and you'll return it to 0 by
-> >> the time you're done.  
+> >   fsl,tclk-period =3D <5>;
+> >   fsl,tmr-prsc    =3D <2>;
+> >   fsl,tmr-add     =3D <0xaaaaaaab>;
+> >   fsl,tmr-fiper1  =3D <999999995>;
+> >   fsl,tmr-fiper2  =3D <99990>;
+> >   fsl,max-adj     =3D <499999999>;
 > >
-> > It doesn't matter for powerpc where the atomic_t goes, so I'm fine with
-> > moving it. But could you juggle the fields with your patch instead? I
-> > thought it would be nice to using this field that has been already
-> > tested on x86 not to overlap with any other data for
-> > bug fix that'll have to be widely backported.  
-> 
-> Can we come to a conclusion on this one?
-> 
-> As far as backporting goes pt_mm is new in 4.18-rc so the patch will
-> need to be manually backported anyway. But I agree with Nick we'd rather
-> use a slot that is known to be free for arch use.
+> > These things actually were runtime configurations which were not
+> > proper to be put into dts.
+>=20
+> That is debatable.  While I agree that the dts isn't ideal for these, sti=
+ll it is the
+> lesser of two or more evils.
 
-Let's go with that for now. I'd really rather not fix this obscure
-bug by introducing something even worse. I'll volunteer to change
-the powerpc page table cache code if we can't find any more space in
-the struct page.
+[Y.b. Lu] Ok. You're right indeed :)
 
-So what does mapping get used for by page table pages? 4c21e2f2441
-("[PATCH] mm: split page table lock") adds that page->mapping = NULL
-in pte_lock_deinit, but I don't see why because page->mapping is
-never used anywhere else by that patch. Maybe a previous version
-of that patch used mapping rather than private?
+>=20
+> > This patch is to convert
+> > to use module parameters for 1588 timer initialization, and to support
+> > initial register values calculation.
+>=20
+> It is hard for me to understand how using module parameters improves the
+> situation.
 
-Thanks,
-Nick
+[Y.b. Lu] Actually I'm not sure whether module_param will be accepted to re=
+place dts.
+I thought the most possibility would be rejection before sending them out.
+Just want suggestion and confirmation whether there is better idea than dts=
+ from your comments.
+
+Since we should keep the dts, I will drop the module_param.
+Could I add a function to calculate a set of default register values to ini=
+tialize ptp timer when dts method failed to get required properties in driv=
+er?
+I think this will be useful. The ptp timer on new platforms (you may see tw=
+o dts patches in this patchset. Many platforms will be affected.) will work=
+ without these dts properties. If user want specific setting, they can set =
+dts properties.
+
+
+>=20
+> > If the parameters are not provided, the driver will calculate register
+> > values with a set of default parameters. With this patch, those dts
+> > properties are no longer needed for new platform to support 1588
+> > timer, and many QorIQ DPAA platforms (some P series and T series
+> > platforms of PowerPC, and some LS series platforms of ARM64) could use
+> > this driver for their fman ptp timer with default module parameters.
+> > However, this patch didn't remove the dts method. Because there were
+> > still many old platforms using the dts method. We need to clean up
+> > their dts files, verify module parameters on them, and convert them to
+> > the new method gradually in case of breaking any function.
+>=20
+> In addition, like it or not, because the dts is an ABI, you must continue=
+ support
+> of the dts values as a legacy option.
+
+[Y.b. Lu] I get your point now. The dts should be kept :)
+
+>=20
+> Thanks,
+> Richard
