@@ -1,33 +1,31 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jianchao.w.wang@oracle.com>
+Received: from userp2130.oracle.com (userp2130.oracle.com [156.151.31.86])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gQSB2vfszF18f
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 17:49:30 +1000 (AEST)
-Date: Wed, 1 Aug 2018 02:49:03 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- linux-kernel@vger.kernel.org, Michael Neuling <mikey@neuling.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- "Alastair D'Silva" <alastair@d-silva.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Cyril Bur <cyrilbur@gmail.com>,
- "Tobin C . Harding" <me@tobin.cc>
-Subject: Re: [PATCH v3 5/9] powerpc/traps: Print signal name for unhandled
- signals
-Message-ID: <20180801074903.GG16221@gate.crashing.org>
-References: <20180731145020.14009-1-muriloo@linux.ibm.com>
- <20180731145020.14009-6-muriloo@linux.ibm.com>
- <631e9a9b-dbbe-ede7-eb81-81520cc36ad5@c-s.fr>
- <afa25468e62ae3259878d8a95e9ac96f6be9f88a.camel@perches.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <afa25468e62ae3259878d8a95e9ac96f6be9f88a.camel@perches.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gPpk0fGBzDqDQ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 17:20:23 +1000 (AEST)
+Subject: Re: [next-20180727][qla2xxx][BUG] WARNING: CPU: 12 PID: 511 at
+ drivers/scsi/scsi_lib.c:691 scsi_end_request+0x250/0x280
+To: Abdul Haleem <abdhalee@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "Madhani, Himanshu" <himanshu.madhani@cavium.com>
+Cc: linux-block <linux-block@vger.kernel.org>,
+ linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ linux-ext4 <linux-ext4@vger.kernel.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ linux-next <linux-next@vger.kernel.org>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-kernel <linux-kernel@vger.kernel.org>, jejb@linux.vnet.ibm.com,
+ Jens Axboe <axboe@kernel.dk>, dgilbert@interlog.com,
+ "bart.vanassche" <bart.vanassche@wdc.com>, rosattig@br.ibm.com,
+ kyle.mahlkuch@ibm.com
+References: <1533105183.23332.15.camel@abdul>
+From: "jianchao.wang" <jianchao.w.wang@oracle.com>
+Message-ID: <ea4ba28e-0b03-e0d0-a1f2-4e8cf06326b8@oracle.com>
+Date: Wed, 1 Aug 2018 15:19:58 +0800
+MIME-Version: 1.0
+In-Reply-To: <1533105183.23332.15.camel@abdul>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,36 +35,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2018 at 12:03:50AM -0700, Joe Perches wrote:
-> On Wed, 2018-08-01 at 08:37 +0200, Christophe LEROY wrote:
-> > Le 31/07/2018 à 16:50, Murilo Opsfelder Araujo a écrit :
-> > I would suggest to instead use a function like this:
-> > 
-> > static const char *signame(int signr)
-> > {
-> > 	if (signr == SIGBUS)
-> > 		return "bus error";
-> > 	if (signr == SIGFPE)
-> > 		return "floating point exception";
-> > 	if (signr == SIGILL)
-> > 		return "illegal instruction";
-> > 	if (signr == SIGILL)
-> > 		return "segfault";
-> > 	if (signr == SIGTRAP)
-> > 		return "unhandled trap";
-> > 	return "unknown signal";
-> > }
-> 
-> trivia:
-> 
-> Unless the if tests are ordered most to least likely,
-> perhaps it would be better to use a switch/case and
-> let the compiler decide.
+Hi Abdul
 
-That would also show there are two entries for SIGILL (here and in the
-original patch), one of them very wrong.
+On 08/01/2018 02:33 PM, Abdul Haleem wrote:
+> # mkfs -t ext4 /dev/mapper/mpatha
+> mke2fs 1.43.1 (08-Jun-2016)
+> Found a dos partition table in /dev/mapper/mpatha
+> Proceed anyway? (y,n) y
+> Discarding device blocks: 
+> qla2xxx [0106:a0:00.1]-801c:2: Abort command issued nexus=2:1:0 --  1 2002.
+> qla2xxx [0106:a0:00.0]-801c:0: Abort command issued nexus=0:1:0 --  1 2002.
+> qla2xxx [0106:a0:00.1]-801c:2: Abort command issued nexus=2:1:0 --  1 2002.
+> qla2xxx [0106:a0:00.0]-801c:0: Abort command issued nexus=0:1:0 --  1 2002.
+> WARNING: CPU: 12 PID: 511 at drivers/scsi/scsi_lib.c:691 scsi_end_request+0x250/0x280
+...
+> NIP [c000000000690080] scsi_end_request+0x250/0x280
+> LR [c00000000068fe80] scsi_end_request+0x50/0x280
+> Call Trace:
+> [c00000027d39b600] [c00000000068fe80] scsi_end_request+0x50/0x280 (unreliable)
+> [c00000027d39b660] [c0000000006904ac] scsi_io_completion+0x29c/0x7d0
+> [c00000027d39b710] [c0000000006848e4] scsi_finish_command+0x104/0x1c0
+> [c00000027d39b790] [c00000000068f148] scsi_softirq_done+0x198/0x1f0
+> [c00000027d39b820] [c0000000004f2b80] blk_mq_complete_request+0x130/0x1d0
+> [c00000027d39b860] [c00000000068d27c] scsi_mq_done+0x2c/0xe0
+> [c00000027d39b890] [d000000004291080] qla2xxx_qpair_sp_compl+0xa8/0x140 [qla2xxx]
+> [c00000027d39b900] [d0000000042cc9d0] qla2x00_process_completed_request+0x68/0x140 [qla2xxx]
+> ------------[ cut here ]------------
+> kernel BUG at block/blk-core.c:3196!
 
-Check the table with psignal or something?
+blk_finish_request
 
+BUG_ON(blk_queued_rq(req))
 
-Segher
+We are also suffering a similar issue on qla2xxx,
+the BUG_ON in blk_finish_request is triggered while there are lots of command aborted.
+The root cause should be qla2xxx driver still invoke scsi_done for an aborted command
+and cause race between requeue path and normal complete path.
+
+Add Himanshu Madhani from qlogic team.
+It seems that they are working on this.
+
+Thanks
+Jianchao
