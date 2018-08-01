@@ -1,32 +1,21 @@
-Return-Path: <yangbo.lu@nxp.com>
-Received: from EUR04-DB3-obe.outbound.protection.outlook.com
- (mail-eopbgr60067.outbound.protection.outlook.com [40.107.6.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gTZv222lzF31K
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 20:10:29 +1000 (AEST)
-From: "Y.b. Lu" <yangbo.lu@nxp.com>
-To: Richard Cochran <richardcochran@gmail.com>
-CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Madalin-cristian Bucur
- <madalin.bucur@nxp.com>, Rob Herring <robh+dt@kernel.org>, Shawn Guo
- <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org"
- <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
- initialization
-Date: Wed, 1 Aug 2018 10:10:24 +0000
-Message-ID: <DB6PR0401MB2536CE4BCEE872F2C4D63710F82D0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
-References: <20180730100154.27906-1-yangbo.lu@nxp.com>
- <20180730100154.27906-3-yangbo.lu@nxp.com>
- <20180730143043.qu66ttzwyjbw6si7@localhost>
- <DB6PR0401MB253643010802739AD55820F3F82D0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
- <20180801061515.krn52iaq2kqdi3wo@localhost>
-In-Reply-To: <20180801061515.krn52iaq2kqdi3wo@localhost>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gVv95smkzF1Hr
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 21:09:41 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michal Hocko <mhocko@kernel.org>, John Allen <jallen@linux.ibm.com>
+Cc: n-horiguchi@ah.jp.nec.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com, mgorman@suse.de
+Subject: Re: Infinite looping observed in __offline_pages
+In-Reply-To: <20180725200336.GP28386@dhcp22.suse.cz>
+References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
+ <20180725200336.GP28386@dhcp22.suse.cz>
+Date: Wed, 01 Aug 2018 21:09:39 +1000
+Message-ID: <87r2jifimk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Richard,
+Michal Hocko <mhocko@kernel.org> writes:
+> On Wed 25-07-18 13:11:15, John Allen wrote:
+> [...]
+>> Does a failure in do_migrate_range indicate that the range is unmigratable
+>> and the loop in __offline_pages should terminate and goto failed_removal? Or
+>> should we allow a certain number of retrys before we
+>> give up on migrating the range?
+>
+> Unfortunatelly not. Migration code doesn't tell a difference between
+> ephemeral and permanent failures.
 
-> -----Original Message-----
-> From: Richard Cochran [mailto:richardcochran@gmail.com]
-> Sent: Wednesday, August 1, 2018 2:15 PM
-> To: Y.b. Lu <yangbo.lu@nxp.com>
-> Cc: netdev@vger.kernel.org; Madalin-cristian Bucur
-> <madalin.bucur@nxp.com>; Rob Herring <robh+dt@kernel.org>; Shawn Guo
-> <shawnguo@kernel.org>; David S . Miller <davem@davemloft.net>;
-> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
-> initialization
->=20
-> On Wed, Aug 01, 2018 at 04:36:40AM +0000, Y.b. Lu wrote:
->=20
-> > Could I add a function to calculate a set of default register values
-> > to initialize ptp timer when dts method failed to get required
-> > properties in driver?
->=20
-> Yes, it would be ideal if the driver can pick correct values automaticall=
-y.
->=20
-> However, the frequency on the FIPER outputs can't be configured
-> automatically, and we don't have an API for the user to choose this.
+What's to stop an ephemeral failure happening repeatedly?
 
-[Y.b. Lu] Thanks a lot. Just let me send out the v2 patch for your reviewin=
-g.
-
->=20
-> > I think this will be useful. The ptp timer on new platforms (you may
-> > see two dts patches in this patchset. Many platforms will be
-> > affected.) will work without these dts properties. If user want
-> > specific setting, they can set dts properties.
->=20
-> Sure.
->=20
-> Thanks,
-> Richard
+cheers
