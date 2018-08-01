@@ -1,28 +1,22 @@
-Return-Path: <BATV+568b9e22b4768da93666+5456+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
+Return-Path: <yangbo.lu@nxp.com>
+Received: from inva020.nxp.com (inva020.nxp.com [92.121.34.13])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gTD26LcDzF1QK
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:54:10 +1000 (AEST)
-Date: Wed, 1 Aug 2018 02:54:04 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Alexei Colin <acolin@isi.edu>
-Cc: Alexandre Bounine <alex.bou9@gmail.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Russell King <linux@armlinux.org.uk>,
- John Paul Walters <jwalters@isi.edu>, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND PATCH 6/6] arm64: enable RapidIO menu in Kconfig
-Message-ID: <20180801095404.GA17585@infradead.org>
-References: <20180731142954.30345-1-acolin@isi.edu>
- <20180731142954.30345-7-acolin@isi.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180731142954.30345-7-acolin@isi.edu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gTXl4RV2zF1PT
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 20:08:37 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@nxp.com>
+To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
+ Richard Cochran <richardcochran@gmail.com>,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+ "David S . Miller" <davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Yangbo Lu <yangbo.lu@nxp.com>
+Subject: [v2, 2/3] powerpc/mpc85xx: add clocks property for fman ptp timer node
+Date: Wed,  1 Aug 2018 18:05:53 +0800
+Message-Id: <20180801100554.36634-2-yangbo.lu@nxp.com>
+In-Reply-To: <20180801100554.36634-1-yangbo.lu@nxp.com>
+References: <20180801100554.36634-1-yangbo.lu@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,16 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 31, 2018 at 10:29:54AM -0400, Alexei Colin wrote:
-> Platforms with a PCI bus will be offered the RapidIO menu since they may
-> be want support for a RapidIO PCI device. Platforms without a PCI bus
-> that might include a RapidIO IP block will need to "select HAS_RAPIDIO"
-> in the platform-/machine-specific "config ARCH_*" Kconfig entry.
-> 
-> Tested that kernel builds for arm64 with RapidIO subsystem and
-> switch drivers enabled, also that the modules load successfully
-> on a custom Aarch64 Qemu model.
+This patch is to add clocks property for fman ptp timer node.
 
-As said before, please include it from drivers/Kconfig so that _all_
-architectures supporting PCI (or other Rapidio attachements) get it
-and not some arbitrary selection of architectures.
+Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
+---
+Changes for v2:
+	- None.
+---
+ arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi   |    1 +
+ arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi   |    1 +
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi  |    1 +
+ arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi  |    1 +
+ arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi |    1 +
+ 5 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
+index 6b124f7..9b6cf91 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-0.dtsi
+@@ -100,4 +100,5 @@ ptp_timer0: ptp-timer@4fe000 {
+ 	compatible = "fsl,fman-ptp-timer";
+ 	reg = <0x4fe000 0x1000>;
+ 	interrupts = <96 2 0 0>;
++	clocks = <&clockgen 3 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
+index b80aaf5..e95c11f 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman-1.dtsi
+@@ -100,4 +100,5 @@ ptp_timer1: ptp-timer@5fe000 {
+ 	compatible = "fsl,fman-ptp-timer";
+ 	reg = <0x5fe000 0x1000>;
+ 	interrupts = <97 2 0 0>;
++	clocks = <&clockgen 3 1>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
+index d3720fd..d62b36c 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-0.dtsi
+@@ -105,4 +105,5 @@ ptp_timer0: ptp-timer@4fe000 {
+ 	compatible = "fsl,fman-ptp-timer";
+ 	reg = <0x4fe000 0x1000>;
+ 	interrupts = <96 2 0 0>;
++	clocks = <&clockgen 3 0>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
+index ae34c20..3102324 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
+@@ -105,4 +105,5 @@ ptp_timer1: ptp-timer@5fe000 {
+ 	compatible = "fsl,fman-ptp-timer";
+ 	reg = <0x5fe000 0x1000>;
+ 	interrupts = <97 2 0 0>;
++	clocks = <&clockgen 3 1>;
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
+index 02f2755..c90702b 100644
+--- a/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3l-0.dtsi
+@@ -93,4 +93,5 @@ ptp_timer0: ptp-timer@4fe000 {
+ 	compatible = "fsl,fman-ptp-timer";
+ 	reg = <0x4fe000 0x1000>;
+ 	interrupts = <96 2 0 0>;
++	clocks = <&clockgen 3 0>;
+ };
+-- 
+1.7.1
