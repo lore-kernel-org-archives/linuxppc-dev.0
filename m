@@ -1,20 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+568b9e22b4768da93666+5456+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gS342ngmzF1mc
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:01:20 +1000 (AEST)
-Message-Id: <eb2eb49e417297cddf85bc1bae59b77f53cb6660.1531511429.git.christophe.leroy@c-s.fr>
-In-Reply-To: <b3d7b6cdb89a48be06a2630bf0d762d9d17d931f.1531511429.git.christophe.leroy@c-s.fr>
-References: <b3d7b6cdb89a48be06a2630bf0d762d9d17d931f.1531511429.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v8 4/4] selftests/powerpc: update strlen() test to test the
- new assembly function for PPC32
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- wei.guo.simon@gmail.com, segher@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Wed,  1 Aug 2018 09:01:16 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gS7z0221zF1S7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 19:05:34 +1000 (AEST)
+Date: Wed, 1 Aug 2018 01:36:39 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Will Deacon <will.deacon@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christoph Hellwig <hch@infradead.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180801083639.GF26378@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com>
+ <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
+ <20180731173052.GA17153@infradead.org>
+ <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+ <20180801081637.GA14438@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180801081637.GA14438@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test for testing the new assembly strlen() for PPC32
+On Wed, Aug 01, 2018 at 09:16:38AM +0100, Will Deacon wrote:
+> On arm/arm64, the problem we have is that legacy virtio devices on the MMIO
+> transport (so definitely not PCI) have historically been advertised by qemu
+> as not being cache coherent, but because the virtio core has bypassed DMA
+> ops then everything has happened to work. If we blindly enable the arch DMA
+> ops,
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v8: removed defines in ppc_asm.h that were added in v6 (not used anymore since v7) ; added missing link to strlen_32.S
- v7: reduced the scope to PPC32
- v6: added additional necessary defines in ppc_asm.h
- v5: no change
- v4: new
+No one is suggesting that as far as I can tell.
 
- tools/testing/selftests/powerpc/stringloops/Makefile    | 5 ++++-
- tools/testing/selftests/powerpc/stringloops/asm/cache.h | 1 +
- tools/testing/selftests/powerpc/stringloops/strlen_32.S | 1 +
- 3 files changed, 6 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/stringloops/asm/cache.h
- create mode 120000 tools/testing/selftests/powerpc/stringloops/strlen_32.S
+> we'll plumb in the non-coherent ops and start getting data corruption,
+> so we do need a way to quirk virtio as being "always coherent" if we want to
+> use the DMA ops (which we do, because our emulation platforms have an IOMMU
+> for all virtio devices).
 
-diff --git a/tools/testing/selftests/powerpc/stringloops/Makefile b/tools/testing/selftests/powerpc/stringloops/Makefile
-index 779b644461c4..9e510de2c07d 100644
---- a/tools/testing/selftests/powerpc/stringloops/Makefile
-+++ b/tools/testing/selftests/powerpc/stringloops/Makefile
-@@ -13,9 +13,12 @@ $(OUTPUT)/memcmp_32: CFLAGS += -m32
- $(OUTPUT)/strlen: strlen.c string.o
- $(OUTPUT)/string.o: string.c
- 
-+$(OUTPUT)/strlen_32: strlen.c
-+$(OUTPUT)/strlen_32: CFLAGS += -m32
-+
- ASFLAGS = $(CFLAGS)
- 
--TEST_GEN_PROGS := memcmp_32 memcmp_64 strlen
-+TEST_GEN_PROGS := memcmp_32 memcmp_64 strlen strlen_32
- 
- include ../../lib.mk
- 
-diff --git a/tools/testing/selftests/powerpc/stringloops/asm/cache.h b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-new file mode 100644
-index 000000000000..8a2840831122
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/asm/cache.h
-@@ -0,0 +1 @@
-+#define	IFETCH_ALIGN_BYTES 4
-diff --git a/tools/testing/selftests/powerpc/stringloops/strlen_32.S b/tools/testing/selftests/powerpc/stringloops/strlen_32.S
-new file mode 120000
-index 000000000000..72b13731b24c
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/stringloops/strlen_32.S
-@@ -0,0 +1 @@
-+../../../../../arch/powerpc/lib/strlen_32.S
-\ No newline at end of file
--- 
-2.13.3
+>From all that I've gather so far: no you do not want that.  We really
+need to figure out virtio "dma" interacts with the host / device.
+
+If you look at the current iommu spec it does talk of physical address
+with a little careveout for VIRTIO_F_IOMMU_PLATFORM.
+
+So between that and our discussion in this thread and its previous
+iterations I think we need to stick to the current always physical,
+bypass system dma ops mode of virtio operation as the default.
+
+We just need to figure out how to deal with devices that deviate
+from the default.  One things is that VIRTIO_F_IOMMU_PLATFORM really
+should become VIRTIO_F_PLATFORM_DMA to cover the cases of non-iommu
+dma tweaks (offsets, cache flushing), which seems well in spirit of
+the original design.  The other issue is VIRTIO_F_IO_BARRIER
+which is very vaguely defined, and which needs a better definition.
+And last but not least we'll need some text explaining the challenges
+of hardware devices - I think VIRTIO_F_PLATFORM_DMA + VIRTIO_F_IO_BARRIER
+is what would basically cover them, but a good description including
+an explanation of why these matter.
