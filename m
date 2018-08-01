@@ -1,31 +1,36 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srs0=qdnh=kq=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gMd83r8czF1PN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:42:04 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w715dITC100980
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2018 01:42:02 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kk2wuqm2m-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 01:42:01 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 1 Aug 2018 06:41:59 +0100
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- ego@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] powernv: opal-sensor-groups: Add attributes to disable/enable
- sensors
-Date: Wed,  1 Aug 2018 11:11:53 +0530
-Message-Id: <1533102113-27487-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gMpV0NsvzF1Nj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:50:10 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41gMpT6pdVz8wBH
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 15:50:09 +1000 (AEST)
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41gMpT3bpRz9s3q
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2018 15:50:09 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id i26-v6so7261123pfo.12
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2018 22:50:09 -0700 (PDT)
+Date: Wed, 1 Aug 2018 15:49:58 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+Cc: "Mahesh J Salgaonkar" <mahesh@linux.vnet.ibm.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, "Laurent Dufour"
+ <ldufour@linux.vnet.ibm.com>, "linuxppc-dev" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH v5 5/7] powerpc/pseries: flush SLB contents on SLB MCE
+ errors.
+Message-ID: <20180801154958.325d4b10@roar.ozlabs.ibm.com>
+In-Reply-To: <20180712154113.46845936@kitsune.suse.cz>
+References: <153051022088.30541.5610525713141009848.stgit@jupiter.in.ibm.com>
+ <153051042206.30541.2156877677180900261.stgit@jupiter.in.ibm.com>
+ <20180703080814.5a57f52b@roar.ozlabs.ibm.com>
+ <20180712154113.46845936@kitsune.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,224 +40,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch provides support to disable and enable plaform specific
-sensor groups like performance, utilization and frequency which are
-currently not supported in hwmon.
+On Thu, 12 Jul 2018 15:41:13 +0200
+Michal Such=C3=A1nek <msuchanek@suse.de> wrote:
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-This patch is based on 
-https://git.kernel.org/powerpc/c/04baaf28f40c68c35a413cd9d0db71
+> On Tue, 3 Jul 2018 08:08:14 +1000
+> "Nicholas Piggin" <npiggin@gmail.com> wrote:
+>=20
+> > On Mon, 02 Jul 2018 11:17:06 +0530
+> > Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> >  =20
+> > > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> > >=20
+> > > On pseries, as of today system crashes if we get a machine check
+> > > exceptions due to SLB errors. These are soft errors and can be
+> > > fixed by flushing the SLBs so the kernel can continue to function
+> > > instead of system crash. We do this in real mode before turning on
+> > > MMU. Otherwise we would run into nested machine checks. This patch
+> > > now fetches the rtas error log in real mode and flushes the SLBs on
+> > > SLB errors.
+> > >=20
+> > > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1=20
+> > >  arch/powerpc/include/asm/machdep.h            |    1=20
+> > >  arch/powerpc/kernel/exceptions-64s.S          |   42
+> > > +++++++++++++++++++++ arch/powerpc/kernel/mce.c
+> > > |   16 +++++++- arch/powerpc/mm/slb.c                         |
+> > > 6 +++ arch/powerpc/platforms/powernv/opal.c         |    1=20
+> > >  arch/powerpc/platforms/pseries/pseries.h      |    1=20
+> > >  arch/powerpc/platforms/pseries/ras.c          |   51
+> > > +++++++++++++++++++++++++
+> > > arch/powerpc/platforms/pseries/setup.c        |    1 9 files
+> > > changed, 116 insertions(+), 4 deletions(-)  =20
+> >=20
+> >  =20
+> > > +TRAMP_REAL_BEGIN(machine_check_pSeries_early)
+> > > +BEGIN_FTR_SECTION
+> > > +	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+> > > +	mr	r10,r1			/* Save r1 */
+> > > +	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency
+> > > stack */
+> > > +	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack
+> > > frame		*/
+> > > +	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
+> > > +	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
+> > > +	EXCEPTION_PROLOG_COMMON_1()
+> > > +	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
+> > > +	EXCEPTION_PROLOG_COMMON_3(0x200)
+> > > +	addi	r3,r1,STACK_FRAME_OVERHEAD
+> > > +	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call
+> > > ABI */   =20
+> >=20
+> > Is there any reason you can't use the existing
+> > machine_check_powernv_early code to do all this?
+> >  =20
+> > > diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> > > index efdd16a79075..221271c96a57 100644
+> > > --- a/arch/powerpc/kernel/mce.c
+> > > +++ b/arch/powerpc/kernel/mce.c
+> > > @@ -488,9 +488,21 @@ long machine_check_early(struct pt_regs *regs)
+> > >  {
+> > >  	long handled =3D 0;
+> > > =20
+> > > -	__this_cpu_inc(irq_stat.mce_exceptions);
+> > > +	/*
+> > > +	 * For pSeries we count mce when we go into virtual mode
+> > > machine
+> > > +	 * check handler. Hence skip it. Also, We can't access per
+> > > cpu
+> > > +	 * variables in real mode for LPAR.
+> > > +	 */
+> > > +	if (early_cpu_has_feature(CPU_FTR_HVMODE))
+> > > +		__this_cpu_inc(irq_stat.mce_exceptions);
+> > > =20
+> > > -	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+> > > +	/*
+> > > +	 * See if platform is capable of handling machine check.
+> > > +	 * Otherwise fallthrough and allow CPU to handle this
+> > > machine check.
+> > > +	 */
+> > > +	if (ppc_md.machine_check_early)
+> > > +		handled =3D ppc_md.machine_check_early(regs);
+> > > +	else if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+> > >  		handled =3D
+> > > cur_cpu_spec->machine_check_early(regs);   =20
+> >=20
+> > Would be good to add a powernv ppc_md handler which does the
+> > cur_cpu_spec->machine_check_early() call now that other platforms are
+> > calling this code. Because those aren't valid as a fallback call, but
+> > specific to powernv.
+> >  =20
+>=20
+> Something like this (untested)?
 
- .../ABI/testing/sysfs-firmware-opal-sensor-groups  | 33 ++++++++
- .../powerpc/platforms/powernv/opal-sensor-groups.c | 99 +++++++++++++++-------
- 2 files changed, 100 insertions(+), 32 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
+Sorry, some emails fell through the cracks. Yes exactly like this would
+be good. If you can add a quick changelog and SOB, and
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups b/Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
-new file mode 100644
-index 0000000..a236686
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-firmware-opal-sensor-groups
-@@ -0,0 +1,33 @@
-+What:		/sys/firmware/opal/sensor_groups
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Sensor groups directory for POWER9 powernv servers
-+
-+		Each folder in this directory contains a sensor group
-+		which are classified based on type of the sensor
-+		like power, temperature, frequency, current, etc. They
-+		can also indicate the group of sensors belonging to
-+		different owners like CSM, Profiler, Job-Scheduler
-+
-+What:		/sys/firmware/opal/sensor_groups/<sensor_group_name>/clear
-+Date:		August 2017
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Sysfs file to clear the min-max of all the sensors
-+		belonging to the group.
-+
-+		Writing 1 to this file will clear the minimum and
-+		maximum values of all the sensors in the group.
-+		In POWER9, the min-max of a sensor is the historical minimum
-+		and maximum value of the sensor cached by OCC.
-+
-+What:		/sys/firmware/opal/sensor_groups/<sensor_group_name>/enable
-+Date:		August 2018
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	Sysfs file to enable/disable the sensor-group
-+
-+		Writing 0 to this file will disable all the sensors
-+		belonging to the group and writing 1 will enable the
-+		sensors.
-+		In POWER9, by default all the sensor-groups are enabled and
-+		will be copied to main memory by OCC. This file can be used
-+		to increase the update frequency of selective sensor-groups.
-diff --git a/arch/powerpc/platforms/powernv/opal-sensor-groups.c b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-index f7d04b6..8bf6c86 100644
---- a/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-+++ b/arch/powerpc/platforms/powernv/opal-sensor-groups.c
-@@ -24,6 +24,8 @@
- struct sg_attr {
- 	u32 handle;
- 	struct kobj_attribute attr;
-+	u32 opal_no;
-+	bool enable;
- };
- 
- static struct sensor_group {
-@@ -60,34 +62,17 @@ int sensor_group_enable(u32 handle, bool enable)
- }
- EXPORT_SYMBOL_GPL(sensor_group_enable);
- 
--static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
--			const char *buf, size_t count)
-+static int sensor_group_clear(u32 handle)
- {
--	struct sg_attr *sattr = container_of(attr, struct sg_attr, attr);
- 	struct opal_msg msg;
--	u32 data;
--	int ret, token;
--
--	ret = kstrtoint(buf, 0, &data);
--	if (ret)
--		return ret;
--
--	if (data != 1)
--		return -EINVAL;
-+	int token, ret;
- 
- 	token = opal_async_get_token_interruptible();
--	if (token < 0) {
--		pr_devel("Failed to get token\n");
-+	if (token < 0)
- 		return token;
--	}
--
--	ret = mutex_lock_interruptible(&sg_mutex);
--	if (ret)
--		goto out_token;
- 
--	ret = opal_sensor_group_clear(sattr->handle, token);
--	switch (ret) {
--	case OPAL_ASYNC_COMPLETION:
-+	ret = opal_sensor_group_clear(handle, token);
-+	if (ret == OPAL_ASYNC_COMPLETION) {
- 		ret = opal_async_wait_response(token, &msg);
- 		if (ret) {
- 			pr_devel("Failed to wait for the async response\n");
-@@ -95,20 +80,57 @@ static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
- 			goto out;
- 		}
- 		ret = opal_error_code(opal_get_async_rc(msg));
--		if (!ret)
--			ret = count;
-+	} else {
-+		ret = opal_error_code(ret);
-+	}
-+
-+out:
-+	opal_async_release_token(token);
-+	return ret;
-+}
-+
-+static ssize_t sgroup_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			   char *buf)
-+{
-+	struct sg_attr *sattr = container_of(attr, struct sg_attr, attr);
-+
-+	return sprintf(buf, "%u\n", sattr->enable);
-+}
-+
-+static ssize_t sgroup_store(struct kobject *kobj, struct kobj_attribute *attr,
-+			    const char *buf, size_t count)
-+{
-+	struct sg_attr *sattr = container_of(attr, struct sg_attr, attr);
-+	bool data;
-+	int ret;
-+
-+	ret = kstrtobool(buf, &data);
-+	if (ret)
-+		return ret;
-+
-+	ret = mutex_lock_interruptible(&sg_mutex);
-+	if (ret)
-+		return ret;
-+
-+	ret = -EINVAL;
-+	switch (sattr->opal_no) {
-+	case OPAL_SENSOR_GROUP_CLEAR:
-+		if (data)
-+			ret = sensor_group_clear(sattr->handle);
- 		break;
--	case OPAL_SUCCESS:
--		ret = count;
-+	case OPAL_SENSOR_GROUP_ENABLE:
-+		ret = sensor_group_enable(sattr->handle, data);
-+		if (!ret)
-+			sattr->enable = data;
- 		break;
- 	default:
--		ret = opal_error_code(ret);
-+		break;
- 	}
- 
--out:
-+	if (!ret)
-+		ret = count;
-+
- 	mutex_unlock(&sg_mutex);
--out_token:
--	opal_async_release_token(token);
- 	return ret;
- }
- 
-@@ -117,17 +139,25 @@ static ssize_t sg_store(struct kobject *kobj, struct kobj_attribute *attr,
- 	const char *attr_name;
- 	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
- 			const char *buf, size_t count);
-+	ssize_t (*show)(struct kobject *kobj, struct kobj_attribute *attr,
-+			char *buf);
- } ops_info[] = {
--	{ OPAL_SENSOR_GROUP_CLEAR, "clear", sg_store },
-+	{ OPAL_SENSOR_GROUP_CLEAR, "clear", sgroup_store, NULL},
-+	{ OPAL_SENSOR_GROUP_ENABLE, "enable", sgroup_store, sgroup_show},
- };
- 
- static void add_attr(int handle, struct sg_attr *attr, int index)
- {
- 	attr->handle = handle;
-+	attr->opal_no = ops_info[index].opal_no;
- 	sysfs_attr_init(&attr->attr.attr);
- 	attr->attr.attr.name = ops_info[index].attr_name;
--	attr->attr.attr.mode = 0220;
-+	if (ops_info[index].show)
-+		attr->attr.attr.mode = 0664;
-+	else
-+		attr->attr.attr.mode = 0220;
- 	attr->attr.store = ops_info[index].store;
-+	attr->attr.show = ops_info[index].show;
- }
- 
- static int add_attr_group(const __be32 *ops, int len, struct sensor_group *sg,
-@@ -142,6 +172,7 @@ static int add_attr_group(const __be32 *ops, int len, struct sensor_group *sg,
- 				add_attr(handle, &sg->sgattrs[count], j);
- 				sg->sg.attrs[count] =
- 					&sg->sgattrs[count].attr.attr;
-+				sg->sgattrs[count].enable = true;
- 				count++;
- 			}
- 
-@@ -186,6 +217,10 @@ void __init opal_sensor_groups_init(void)
- 		const __be32 *ops;
- 		u32 sgid, len, nr_attrs, chipid;
- 
-+		/* Skip sensor groups that are handled in HWMON */
-+		if (of_device_is_compatible(node, "ibm,opal-sensor"))
-+			continue;
-+
- 		ops = of_get_property(node, "ops", &len);
- 		if (!ops)
- 			continue;
--- 
-1.8.3.1
+Thanks,
+Nick
+
+>=20
+> Subject: [PATCH] powerpc/powernv: define platform MCE handler.
+>=20
+> ---
+>  arch/powerpc/kernel/mce.c              |  3 ---
+>  arch/powerpc/platforms/powernv/setup.c | 11 +++++++++++
+>  2 files changed, 11 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> index 221271c96a57..ae17d8aa60c4 100644
+> --- a/arch/powerpc/kernel/mce.c
+> +++ b/arch/powerpc/kernel/mce.c
+> @@ -498,12 +498,9 @@ long machine_check_early(struct pt_regs *regs)
+> =20
+>  	/*
+>  	 * See if platform is capable of handling machine check.
+> -	 * Otherwise fallthrough and allow CPU to handle this machine check.
+>  	 */
+>  	if (ppc_md.machine_check_early)
+>  		handled =3D ppc_md.machine_check_early(regs);
+> -	else if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+> -		handled =3D cur_cpu_spec->machine_check_early(regs);
+>  	return handled;
+>  }
+> =20
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platfo=
+rms/powernv/setup.c
+> index f96df0a25d05..b74c93bc2e55 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -431,6 +431,16 @@ static unsigned long pnv_get_proc_freq(unsigned int =
+cpu)
+>  	return ret_freq;
+>  }
+> =20
+> +static long pnv_machine_check_early(struct pt_regs *regs)
+> +{
+> +	long handled =3D 0;
+> +
+> +	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+> +		handled =3D cur_cpu_spec->machine_check_early(regs);
+> +
+> +	return handled;
+> +}
+> +
+>  define_machine(powernv) {
+>  	.name			=3D "PowerNV",
+>  	.probe			=3D pnv_probe,
+> @@ -442,6 +452,7 @@ define_machine(powernv) {
+>  	.machine_shutdown	=3D pnv_shutdown,
+>  	.power_save             =3D NULL,
+>  	.calibrate_decr		=3D generic_calibrate_decr,
+> +	.machine_check_early	=3D pnv_machine_check_early,
+>  #ifdef CONFIG_KEXEC_CORE
+>  	.kexec_cpu_down		=3D pnv_kexec_cpu_down,
+>  #endif
