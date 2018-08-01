@@ -1,22 +1,32 @@
 Return-Path: <yangbo.lu@nxp.com>
-Received: from inva021.nxp.com (inva021.nxp.com [92.121.34.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-eopbgr60067.outbound.protection.outlook.com [40.107.6.67])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gTXm19jWzF1mc
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 20:08:37 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@nxp.com>
-To: netdev@vger.kernel.org, madalin.bucur@nxp.com,
- Richard Cochran <richardcochran@gmail.com>,
- Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
- "David S . Miller" <davem@davemloft.net>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- Yangbo Lu <yangbo.lu@nxp.com>
-Subject: [v2, 3/3] ptp_qoriq: support automatic configuration for ptp timer
-Date: Wed,  1 Aug 2018 18:05:54 +0800
-Message-Id: <20180801100554.36634-3-yangbo.lu@nxp.com>
-In-Reply-To: <20180801100554.36634-1-yangbo.lu@nxp.com>
-References: <20180801100554.36634-1-yangbo.lu@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gTZv222lzF31K
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2018 20:10:29 +1000 (AEST)
+From: "Y.b. Lu" <yangbo.lu@nxp.com>
+To: Richard Cochran <richardcochran@gmail.com>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Madalin-cristian Bucur
+ <madalin.bucur@nxp.com>, Rob Herring <robh+dt@kernel.org>, Shawn Guo
+ <shawnguo@kernel.org>, "David S . Miller" <davem@davemloft.net>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
+ initialization
+Date: Wed, 1 Aug 2018 10:10:24 +0000
+Message-ID: <DB6PR0401MB2536CE4BCEE872F2C4D63710F82D0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+References: <20180730100154.27906-1-yangbo.lu@nxp.com>
+ <20180730100154.27906-3-yangbo.lu@nxp.com>
+ <20180730143043.qu66ttzwyjbw6si7@localhost>
+ <DB6PR0401MB253643010802739AD55820F3F82D0@DB6PR0401MB2536.eurprd04.prod.outlook.com>
+ <20180801061515.krn52iaq2kqdi3wo@localhost>
+In-Reply-To: <20180801061515.krn52iaq2kqdi3wo@localhost>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,193 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch is to support automatic configuration for ptp timer.
-If required ptp dts properties are not provided, driver could
-try to calculate a set of default configurations to initialize
-the ptp timer. This makes the driver work for many boards which
-don't have the required ptp dts properties in current kernel.
-Also the users could set dts properties by themselves according
-to their requirement.
+Hi Richard,
 
-Signed-off-by: Yangbo Lu <yangbo.lu@nxp.com>
----
-Changes for v2:
-	- Dropped module_param.
----
- drivers/ptp/ptp_qoriq.c       |  111 +++++++++++++++++++++++++++++++++++++++-
- include/linux/fsl/ptp_qoriq.h |    6 ++-
- 2 files changed, 113 insertions(+), 4 deletions(-)
+> -----Original Message-----
+> From: Richard Cochran [mailto:richardcochran@gmail.com]
+> Sent: Wednesday, August 1, 2018 2:15 PM
+> To: Y.b. Lu <yangbo.lu@nxp.com>
+> Cc: netdev@vger.kernel.org; Madalin-cristian Bucur
+> <madalin.bucur@nxp.com>; Rob Herring <robh+dt@kernel.org>; Shawn Guo
+> <shawnguo@kernel.org>; David S . Miller <davem@davemloft.net>;
+> devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
+> linux-arm-kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH 3/3] ptp_qoriq: convert to use module parameters for
+> initialization
+>=20
+> On Wed, Aug 01, 2018 at 04:36:40AM +0000, Y.b. Lu wrote:
+>=20
+> > Could I add a function to calculate a set of default register values
+> > to initialize ptp timer when dts method failed to get required
+> > properties in driver?
+>=20
+> Yes, it would be ideal if the driver can pick correct values automaticall=
+y.
+>=20
+> However, the frequency on the FIPER outputs can't be configured
+> automatically, and we don't have an API for the user to choose this.
 
-diff --git a/drivers/ptp/ptp_qoriq.c b/drivers/ptp/ptp_qoriq.c
-index a14c317..095c185 100644
---- a/drivers/ptp/ptp_qoriq.c
-+++ b/drivers/ptp/ptp_qoriq.c
-@@ -29,6 +29,7 @@
- #include <linux/of_platform.h>
- #include <linux/timex.h>
- #include <linux/slab.h>
-+#include <linux/clk.h>
- 
- #include <linux/fsl/ptp_qoriq.h>
- 
-@@ -317,6 +318,105 @@ static int ptp_qoriq_enable(struct ptp_clock_info *ptp,
- 	.enable		= ptp_qoriq_enable,
- };
- 
-+/**
-+ * qoriq_ptp_nominal_freq - calculate nominal frequency according to
-+ *			    reference clock frequency
-+ *
-+ * @clk_src: reference clock frequency
-+ *
-+ * The nominal frequency is the desired clock frequency.
-+ * It should be less than the reference clock frequency.
-+ * It should be a factor of 1000MHz.
-+ *
-+ * Return the nominal frequency
-+ */
-+static u32 qoriq_ptp_nominal_freq(u32 clk_src)
-+{
-+	u32 remainder = 0;
-+
-+	clk_src /= 1000000;
-+	remainder = clk_src % 100;
-+	if (remainder) {
-+		clk_src -= remainder;
-+		clk_src += 100;
-+	}
-+
-+	do {
-+		clk_src -= 100;
-+
-+	} while (1000 % clk_src);
-+
-+	return clk_src * 1000000;
-+}
-+
-+/**
-+ * qoriq_ptp_auto_config - calculate a set of default configurations
-+ *
-+ * @qoriq_ptp: pointer to qoriq_ptp
-+ * @node: pointer to device_node
-+ *
-+ * If below dts properties are not provided, this function will be
-+ * called to calculate a set of default configurations for them.
-+ *   "fsl,tclk-period"
-+ *   "fsl,tmr-prsc"
-+ *   "fsl,tmr-add"
-+ *   "fsl,tmr-fiper1"
-+ *   "fsl,tmr-fiper2"
-+ *   "fsl,max-adj"
-+ *
-+ * Return 0 if success
-+ */
-+static int qoriq_ptp_auto_config(struct qoriq_ptp *qoriq_ptp,
-+				 struct device_node *node)
-+{
-+	struct clk *clk;
-+	u64 freq_comp;
-+	u64 max_adj;
-+	u32 nominal_freq;
-+	u32 clk_src = 0;
-+
-+	qoriq_ptp->cksel = DEFAULT_CKSEL;
-+
-+	clk = of_clk_get(node, 0);
-+	if (!IS_ERR(clk)) {
-+		clk_src = clk_get_rate(clk);
-+		clk_put(clk);
-+	}
-+
-+	if (clk_src <= 100000000UL) {
-+		pr_err("error reference clock value, or lower than 100MHz\n");
-+		return -EINVAL;
-+	}
-+
-+	nominal_freq = qoriq_ptp_nominal_freq(clk_src);
-+	if (!nominal_freq)
-+		return -EINVAL;
-+
-+	qoriq_ptp->tclk_period = 1000000000UL / nominal_freq;
-+	qoriq_ptp->tmr_prsc = DEFAULT_TMR_PRSC;
-+
-+	/* Calculate initial frequency compensation value for TMR_ADD register.
-+	 * freq_comp = ceil(2^32 / freq_ratio)
-+	 * freq_ratio = reference_clock_freq / nominal_freq
-+	 */
-+	freq_comp = ((u64)1 << 32) * nominal_freq;
-+	if (do_div(freq_comp, clk_src))
-+		freq_comp++;
-+
-+	qoriq_ptp->tmr_add = freq_comp;
-+	qoriq_ptp->tmr_fiper1 = DEFAULT_FIPER1_PERIOD - qoriq_ptp->tclk_period;
-+	qoriq_ptp->tmr_fiper2 = DEFAULT_FIPER2_PERIOD - qoriq_ptp->tclk_period;
-+
-+	/* max_adj = 1000000000 * (freq_ratio - 1.0) - 1
-+	 * freq_ratio = reference_clock_freq / nominal_freq
-+	 */
-+	max_adj = 1000000000ULL * (clk_src - nominal_freq);
-+	max_adj = max_adj / nominal_freq - 1;
-+	qoriq_ptp->caps.max_adj = max_adj;
-+
-+	return 0;
-+}
-+
- static int qoriq_ptp_probe(struct platform_device *dev)
- {
- 	struct device_node *node = dev->dev.of_node;
-@@ -332,7 +432,7 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 	if (!qoriq_ptp)
- 		goto no_memory;
- 
--	err = -ENODEV;
-+	err = -EINVAL;
- 
- 	qoriq_ptp->caps = ptp_qoriq_caps;
- 
-@@ -351,10 +451,14 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 				 "fsl,tmr-fiper2", &qoriq_ptp->tmr_fiper2) ||
- 	    of_property_read_u32(node,
- 				 "fsl,max-adj", &qoriq_ptp->caps.max_adj)) {
--		pr_err("device tree node missing required elements\n");
--		goto no_node;
-+		pr_warn("device tree node missing required elements, try automatic configuration\n");
-+
-+		if (qoriq_ptp_auto_config(qoriq_ptp, node))
-+			goto no_config;
- 	}
- 
-+	err = -ENODEV;
-+
- 	qoriq_ptp->irq = platform_get_irq(dev, 0);
- 
- 	if (qoriq_ptp->irq < 0) {
-@@ -436,6 +540,7 @@ static int qoriq_ptp_probe(struct platform_device *dev)
- 	release_resource(qoriq_ptp->rsrc);
- no_resource:
- 	free_irq(qoriq_ptp->irq, qoriq_ptp);
-+no_config:
- no_node:
- 	kfree(qoriq_ptp);
- no_memory:
-diff --git a/include/linux/fsl/ptp_qoriq.h b/include/linux/fsl/ptp_qoriq.h
-index dc3dac4..c1f003a 100644
---- a/include/linux/fsl/ptp_qoriq.h
-+++ b/include/linux/fsl/ptp_qoriq.h
-@@ -127,9 +127,13 @@ struct qoriq_ptp_registers {
- 
- 
- #define DRIVER		"ptp_qoriq"
--#define DEFAULT_CKSEL	1
- #define N_EXT_TS	2
- 
-+#define DEFAULT_CKSEL		1
-+#define DEFAULT_TMR_PRSC	2
-+#define DEFAULT_FIPER1_PERIOD	1000000000
-+#define DEFAULT_FIPER2_PERIOD	100000
-+
- struct qoriq_ptp {
- 	void __iomem *base;
- 	struct qoriq_ptp_registers regs;
--- 
-1.7.1
+[Y.b. Lu] Thanks a lot. Just let me send out the v2 patch for your reviewin=
+g.
+
+>=20
+> > I think this will be useful. The ptp timer on new platforms (you may
+> > see two dts patches in this patchset. Many platforms will be
+> > affected.) will work without these dts properties. If user want
+> > specific setting, they can set dts properties.
+>=20
+> Sure.
+>=20
+> Thanks,
+> Richard
