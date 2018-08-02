@@ -1,36 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mwb@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hHqh2XYHzF21T
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 03:54:24 +1000 (AEST)
-Message-ID: <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Thu, 02 Aug 2018 12:53:41 -0500
-In-Reply-To: <20180802200646-mutt-send-email-mst@kernel.org>
-References: <20180730125100-mutt-send-email-mst@kernel.org>
- <20180730111802.GA9830@infradead.org>
- <20180730155633-mutt-send-email-mst@kernel.org>
- <20180731173052.GA17153@infradead.org>
- <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180801081637.GA14438@arm.com> <20180801083639.GF26378@infradead.org>
- <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
- <20180802182959-mutt-send-email-mst@kernel.org>
- <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
- <20180802200646-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hJJG3st3zF21T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 04:15:42 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w72IEOtc134464
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2018 14:15:39 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2km6k019qv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Aug 2018 14:15:39 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <mwb@linux.vnet.ibm.com>;
+ Thu, 2 Aug 2018 14:15:38 -0400
+To: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.co>,
+ Michael Ellerman <mpe@ellerman.id.au>, engebret@us.ibm.com,
+ santil@us.ibm.com, hollisb@us.ibm.com, rcjenn@us.ibm.com
+From: Michael Bringmann <mwb@linux.vnet.ibm.com>
+Subject: vio.c:__vio_register_driver && LPAR Migration issue
+Date: Thu, 2 Aug 2018 13:15:32 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Message-Id: <e815e222-e468-4bd4-5f6f-8657fc980689@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +36,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-02 at 20:19 +0300, Michael S. Tsirkin wrote:
-> 
-> I see. So yes, given that device does not know or care, using
-> virtio features is an awkward fit.
-> 
-> So let's say as a quick fix for you maybe we could generalize the
-> xen_domain hack, instead of just checking xen_domain check some static
-> branch.  Then teach xen and others to enable that.>
+Hello:
+    I have been observing an anomaly during LPAR migrations between
+a couple of P8 systems.
 
-> OK but problem then becomes this: if you do this and virtio device appears
-> behind a vIOMMU and it does not advertize the IOMMU flag, the
-> code will try to use the vIOMMU mappings and fail.
->
-> It does look like even with trick above, you need a special version of
-> DMA ops that does just swiotlb but not any of the other things DMA API
-> might do.
-> 
-> Thoughts?
+This is the problem.  After migrating an LPAR, the PPC mobility code
+receives RTAS requests to delete nodes with platform-/hardware-specific
+attributes when restarting the kernel after a migration.  My example is
+for migration between a P8 Alpine and a P8 Brazos.  Among the nodes
+that I see being deleted are 'ibm,random-v1', 'ibm,compression-v1',
+'ibm,platform-facilities', and 'ibm,sym-encryption-v1'.  Of these
+nodes, the following are created during initial boot by calls to
+vio_register_driver:
 
-Yes, this is the purpose of Anshuman original patch (I haven't looked
-at the details of the patch in a while but that's what I told him to
-implement ;-) :
+drivers/char/hw_random/pseries-rng.c
+        ibm,random-v1
 
- - Make virtio always use DMA ops to simplify the code path (with a set
-of "transparent" ops for legacy)
+drivers/crypto/nx/nx-842-pseries.c
+        ibm,compression-v1
 
- and
+drivers/crypto/nx/nx.c
+        ibm,sym-encryption-v1
 
- -  Provide an arch hook allowing us to "override" those "transparent"
-DMA ops with some custom ones that do the appropriate swiotlb gunk.
+After the migration, these nodes are deleted, but nothing recreates
+them.  If I boot the LPAR on the target system, the nodes are added
+again.
 
-Cheers,
-Ben.
+My question is how do we recreate these nodes after migration?
+
+Thanks.
+
+-- 
+Michael W. Bringmann
+Linux Technology Center
+IBM Corporation
+Tie-Line  363-5196
+External: (512) 286-5196
+Cell:       (512) 466-0650
+mwb@linux.vnet.ibm.com
