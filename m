@@ -1,20 +1,37 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hDrl2h3YzF22V
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 01:40:06 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id d17-v6so1372468pgv.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Aug 2018 08:40:06 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] powernv/cpuidle: Fix idle states all being marked invalid
-Date: Fri,  3 Aug 2018 01:39:51 +1000
-Message-Id: <20180802153951.3576-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hDtF6jyJzF2DC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 01:41:25 +1000 (AEST)
+Date: Thu, 2 Aug 2018 18:41:15 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180802182959-mutt-send-email-mst@kernel.org>
+References: <20180727095804.GA25592@arm.com>
+ <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
+ <20180731173052.GA17153@infradead.org>
+ <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+ <20180801081637.GA14438@arm.com>
+ <20180801083639.GF26378@infradead.org>
+ <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +41,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 9c7b185ab2 ("powernv/cpuidle: Parse dt idle properties into
-global structure") parses dt idle states into structs, but never
-marks them valid. This results in all idle states being lost.
+On Thu, Aug 02, 2018 at 10:24:57AM -0500, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-08-01 at 01:36 -0700, Christoph Hellwig wrote:
+> > We just need to figure out how to deal with devices that deviate
+> > from the default.  One things is that VIRTIO_F_IOMMU_PLATFORM really
+> > should become VIRTIO_F_PLATFORM_DMA to cover the cases of non-iommu
+> > dma tweaks (offsets, cache flushing), which seems well in spirit of
+> > the original design. 
+> 
+> I don't completely agree:
+> 
+> 1 - VIRTIO_F_IOMMU_PLATFORM is a property of the "other side", ie qemu
+> for example. It indicates that the peer bypasses the normal platform
+> iommu. The platform code in the guest has no real way to know that this
+> is the case, this is a specific "feature" of the qemu implementation.
+> 
+> 2 - VIRTIO_F_PLATFORM_DMA (or whatever you want to call it), is a
+> property of the guest platform itself (not qemu), there's no way the
+> "peer" can advertize it via the virtio negociated flags. At least for
+> us. I don't know for sure whether that would be workable for the ARM
+> case. In our case, qemu has no idea at VM creation time that the VM
+> will turn itself into a secure VM and thus will require bounce
+> buffering for IOs (including virtio).
+> 
+> So unless we have another hook for the arch code to set
+> VIRTIO_F_PLATFORM_DMA on selected (or all) virtio devices from the
+> guest itself, I don't see that as a way to deal with it.
+> 
+> >  The other issue is VIRTIO_F_IO_BARRIER
+> > which is very vaguely defined, and which needs a better definition.
+> > And last but not least we'll need some text explaining the challenges
+> > of hardware devices - I think VIRTIO_F_PLATFORM_DMA + VIRTIO_F_IO_BARRIER
+> > is what would basically cover them, but a good description including
+> > an explanation of why these matter.
+> 
+> Ben.
+> 
 
-Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/platforms/powernv/idle.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+So is it true that from qemu point of view there is nothing special
+going on?  You pass in a PA, host writes there.
 
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 3116bab10aa3..ecb002c5db83 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -651,11 +651,12 @@ static int __init pnv_power9_idle_init(void)
- 					      &state->psscr_mask,
- 					      state->flags);
- 		if (err) {
--			state->valid = false;
- 			report_invalid_psscr_val(state->psscr_val, err);
- 			continue;
- 		}
- 
-+		state->valid = true;
-+
- 		if (max_residency_ns < state->residency_ns) {
- 			max_residency_ns = state->residency_ns;
- 			pnv_deepest_stop_psscr_val = state->psscr_val;
+
 -- 
-2.17.0
+MST
