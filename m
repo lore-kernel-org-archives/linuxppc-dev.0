@@ -2,36 +2,24 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hMp42TLfzF2F1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 06:53:16 +1000 (AEST)
-Date: Thu, 2 Aug 2018 23:53:08 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hMry1hCrzF2DY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 06:55:46 +1000 (AEST)
+Date: Thu, 2 Aug 2018 23:55:39 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
+ joe@perches.com, elfring@users.sourceforge.net,
+ david@gibson.dropbear.id.au, jasowang@redhat.com,
+ benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org,
+ linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180802235233-mutt-send-email-mst@kernel.org>
+Message-ID: <20180802235332-mutt-send-email-mst@kernel.org>
 References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180727095804.GA25592@arm.com>
- <20180730093414.GD26245@infradead.org>
- <20180730125100-mutt-send-email-mst@kernel.org>
- <20180730111802.GA9830@infradead.org>
- <20180730155633-mutt-send-email-mst@kernel.org>
- <20180731173052.GA17153@infradead.org>
- <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180802003823-mutt-send-email-mst@kernel.org>
- <7779442d7889ee943b3e4ff6c63ec90b4a58b79d.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7779442d7889ee943b3e4ff6c63ec90b4a58b79d.camel@kernel.crashing.org>
+In-Reply-To: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2018 at 10:33:05AM -0500, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-08-02 at 00:56 +0300, Michael S. Tsirkin wrote:
-> > > but it's not, VMs are
-> > > created in "legacy" mode all the times and we don't know at VM creation
-> > > time whether it will become a secure VM or not. The way our secure VMs
-> > > work is that they start as a normal VM, load a secure "payload" and
-> > > call the Ultravisor to "become" secure.
-> > > 
-> > > So we're in a bit of a bind here. We need that one-liner optional arch
-> > > hook to make virtio use swiotlb in that "IOMMU bypass" case.
-> > > 
-> > > Ben.
-> > 
-> > And just to make sure I understand, on your platform DMA APIs do include
-> > some of the cache flushing tricks and this is why you don't want to
-> > declare iommu support in the hypervisor?
+On Fri, Jul 20, 2018 at 09:29:37AM +0530, Anshuman Khandual wrote:
+> This patch series is the follow up on the discussions we had before about
+> the RFC titled [RFC,V2] virtio: Add platform specific DMA API translation
+> for virito devices (https://patchwork.kernel.org/patch/10417371/). There
+> were suggestions about doing away with two different paths of transactions
+> with the host/QEMU, first being the direct GPA and the other being the DMA
+> API based translations.
 > 
-> I'm not sure I parse what you mean.
+> First patch attempts to create a direct GPA mapping based DMA operations
+> structure called 'virtio_direct_dma_ops' with exact same implementation
+> of the direct GPA path which virtio core currently has but just wrapped in
+> a DMA API format. Virtio core must use 'virtio_direct_dma_ops' instead of
+> the arch default in absence of VIRTIO_F_IOMMU_PLATFORM flag to preserve the
+> existing semantics. The second patch does exactly that inside the function
+> virtio_finalize_features(). The third patch removes the default direct GPA
+> path from virtio core forcing it to use DMA API callbacks for all devices.
+> Now with that change, every device must have a DMA operations structure
+> associated with it. The fourth patch adds an additional hook which gives
+> the platform an opportunity to do yet another override if required. This
+> platform hook can be used on POWER Ultravisor based protected guests to
+> load up SWIOTLB DMA callbacks to do the required (as discussed previously
+> in the above mentioned thread how host is allowed to access only parts of
+> the guest GPA range) bounce buffering into the shared memory for all I/O
+> scatter gather buffers to be consumed on the host side.
 > 
-> We don't need cache flushing tricks.
+> Please go through these patches and review whether this approach broadly
+> makes sense. I will appreciate suggestions, inputs, comments regarding
+> the patches or the approach in general. Thank you.
 
-You don't but do real devices on same platform need them?
+Jason did some work on profiling this. Unfortunately he reports
+about 4% extra overhead from this switch on x86 with no vIOMMU.
 
-> The problem we have with our
-> "secure" VMs is that:
+I expect he's writing up the data in more detail, but
+just wanted to let you know this would be one more
+thing to debug before we can just switch to DMA APIs.
+
+
+> Anshuman Khandual (4):
+>   virtio: Define virtio_direct_dma_ops structure
+>   virtio: Override device's DMA OPS with virtio_direct_dma_ops selectively
+>   virtio: Force virtio core to use DMA API callbacks for all virtio devices
+>   virtio: Add platform specific DMA API translation for virito devices
 > 
->  - At VM creation time we have no idea it's going to become a secure
-> VM, qemu doesn't know anything about it, and thus qemu (or other
-> management tools, libvirt etc...) are going to create "legacy" (ie
-> iommu bypass) virtio devices.
+>  arch/powerpc/include/asm/dma-mapping.h |  6 +++
+>  arch/powerpc/platforms/pseries/iommu.c |  6 +++
+>  drivers/virtio/virtio.c                | 72 ++++++++++++++++++++++++++++++++++
+>  drivers/virtio/virtio_pci_common.h     |  3 ++
+>  drivers/virtio/virtio_ring.c           | 65 +-----------------------------
+>  5 files changed, 89 insertions(+), 63 deletions(-)
 > 
->  - Once the VM goes secure (early during boot but too late for qemu),
-> it will need to make virtio do bounce-buffering via swiotlb because
-> qemu cannot physically access most VM pages (blocked by HW security
-> features), we need to bounce buffer using some unsecure pages that are
-> accessible to qemu.
-> 
-> That said, I wouldn't object for us to more generally switch long run
-> to changing qemu so that virtio on powerpc starts using the IOMMU as a
-> default provided we fix our guest firmware to understand it (it
-> currently doesn't), and provided we verify that the performance impact
-> on things like vhost is negligible.
-> 
-> Cheers,
-> Ben.
-> 
+> -- 
+> 2.9.3
