@@ -2,9 +2,9 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hMn06R9yzF2D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 06:52:20 +1000 (AEST)
-Date: Thu, 2 Aug 2018 23:52:10 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hMp42TLfzF2F1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 06:53:16 +1000 (AEST)
+Date: Thu, 2 Aug 2018 23:53:08 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
@@ -18,20 +18,20 @@ Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
  jean-philippe.brucker@arm.com, marc.zyngier@arm.com
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180802225738-mutt-send-email-mst@kernel.org>
-References: <20180730155633-mutt-send-email-mst@kernel.org>
+Message-ID: <20180802235233-mutt-send-email-mst@kernel.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com>
+ <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
  <20180731173052.GA17153@infradead.org>
  <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180801081637.GA14438@arm.com>
- <20180801083639.GF26378@infradead.org>
- <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
- <20180802182959-mutt-send-email-mst@kernel.org>
- <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
- <20180802200646-mutt-send-email-mst@kernel.org>
- <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+ <20180802003823-mutt-send-email-mst@kernel.org>
+ <7779442d7889ee943b3e4ff6c63ec90b4a58b79d.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+In-Reply-To: <7779442d7889ee943b3e4ff6c63ec90b4a58b79d.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +41,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2018 at 12:53:41PM -0500, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-08-02 at 20:19 +0300, Michael S. Tsirkin wrote:
+On Thu, Aug 02, 2018 at 10:33:05AM -0500, Benjamin Herrenschmidt wrote:
+> On Thu, 2018-08-02 at 00:56 +0300, Michael S. Tsirkin wrote:
+> > > but it's not, VMs are
+> > > created in "legacy" mode all the times and we don't know at VM creation
+> > > time whether it will become a secure VM or not. The way our secure VMs
+> > > work is that they start as a normal VM, load a secure "payload" and
+> > > call the Ultravisor to "become" secure.
+> > > 
+> > > So we're in a bit of a bind here. We need that one-liner optional arch
+> > > hook to make virtio use swiotlb in that "IOMMU bypass" case.
+> > > 
+> > > Ben.
 > > 
-> > I see. So yes, given that device does not know or care, using
-> > virtio features is an awkward fit.
-> > 
-> > So let's say as a quick fix for you maybe we could generalize the
-> > xen_domain hack, instead of just checking xen_domain check some static
-> > branch.  Then teach xen and others to enable that.>
+> > And just to make sure I understand, on your platform DMA APIs do include
+> > some of the cache flushing tricks and this is why you don't want to
+> > declare iommu support in the hypervisor?
 > 
-> > OK but problem then becomes this: if you do this and virtio device appears
-> > behind a vIOMMU and it does not advertize the IOMMU flag, the
-> > code will try to use the vIOMMU mappings and fail.
-> >
-> > It does look like even with trick above, you need a special version of
-> > DMA ops that does just swiotlb but not any of the other things DMA API
-> > might do.
-> > 
-> > Thoughts?
+> I'm not sure I parse what you mean.
 > 
-> Yes, this is the purpose of Anshuman original patch (I haven't looked
-> at the details of the patch in a while but that's what I told him to
-> implement ;-) :
+> We don't need cache flushing tricks.
+
+You don't but do real devices on same platform need them?
+
+> The problem we have with our
+> "secure" VMs is that:
 > 
->  - Make virtio always use DMA ops to simplify the code path (with a set
-> of "transparent" ops for legacy)
+>  - At VM creation time we have no idea it's going to become a secure
+> VM, qemu doesn't know anything about it, and thus qemu (or other
+> management tools, libvirt etc...) are going to create "legacy" (ie
+> iommu bypass) virtio devices.
 > 
->  and
+>  - Once the VM goes secure (early during boot but too late for qemu),
+> it will need to make virtio do bounce-buffering via swiotlb because
+> qemu cannot physically access most VM pages (blocked by HW security
+> features), we need to bounce buffer using some unsecure pages that are
+> accessible to qemu.
 > 
->  -  Provide an arch hook allowing us to "override" those "transparent"
-> DMA ops with some custom ones that do the appropriate swiotlb gunk.
+> That said, I wouldn't object for us to more generally switch long run
+> to changing qemu so that virtio on powerpc starts using the IOMMU as a
+> default provided we fix our guest firmware to understand it (it
+> currently doesn't), and provided we verify that the performance impact
+> on things like vhost is negligible.
 > 
 > Cheers,
 > Ben.
 > 
-
-Right but as I tried to say doing that brings us to a bunch of issues
-with using DMA APIs in virtio. Put simply DMA APIs weren't designed for
-guest to hypervisor communication.
-
-When we do (as is the case with PLATFORM_IOMMU right now) this adds a
-bunch of overhead which we need to get rid of if we are to switch to
-PLATFORM_IOMMU by default.  We need to fix that.
-
--- 
-MST
