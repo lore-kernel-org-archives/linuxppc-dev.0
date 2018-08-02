@@ -1,34 +1,33 @@
-Return-Path: <BATV+60c7bee3dfeef1f96717+5457+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hCJx4qYmzF21L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 00:30:57 +1000 (AEST)
-Date: Thu, 2 Aug 2018 06:54:21 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Alexei Colin <acolin@isi.edu>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, alex.bou9@gmail.com,
- Christoph Hellwig <hch@infradead.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- the arch/x86 maintainers <x86@kernel.org>,
- Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- jwalters@isi.edu, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [RESEND PATCH 6/6] arm64: enable RapidIO menu in Kconfig
-Message-ID: <20180802135421.GA13512@infradead.org>
-References: <20180731142954.30345-1-acolin@isi.edu>
- <20180731142954.30345-7-acolin@isi.edu>
- <20180801095404.GA17585@infradead.org>
- <fad8661c-cd8c-3a9c-ca03-5d2f63893a24@gmail.com>
- <CAMuHMdVDra1MKcuuD0SqEYXSggr0iVFcbcjL33z7JuiE1_y8yw@mail.gmail.com>
- <20180802134544.GG38497@guest228.east.isi.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180802134544.GG38497@guest228.east.isi.edu>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hDXM32dNzF21L
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 01:25:55 +1000 (AEST)
+Message-ID: <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Thu, 02 Aug 2018 10:24:57 -0500
+In-Reply-To: <20180801083639.GF26378@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180727095804.GA25592@arm.com> <20180730093414.GD26245@infradead.org>
+ <20180730125100-mutt-send-email-mst@kernel.org>
+ <20180730111802.GA9830@infradead.org>
+ <20180730155633-mutt-send-email-mst@kernel.org>
+ <20180731173052.GA17153@infradead.org>
+ <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+ <20180801081637.GA14438@arm.com> <20180801083639.GF26378@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +37,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2018 at 09:45:44AM -0400, Alexei Colin wrote:
-> If I move RapidIO option to drivers/Kconfig, then it won't appear under
-> the Bus Options/System Support menu, along with other choices for the
-> system bus (PCI, PCMCIA, ISA, TC, ...).
+On Wed, 2018-08-01 at 01:36 -0700, Christoph Hellwig wrote:
+> We just need to figure out how to deal with devices that deviate
+> from the default.  One things is that VIRTIO_F_IOMMU_PLATFORM really
+> should become VIRTIO_F_PLATFORM_DMA to cover the cases of non-iommu
+> dma tweaks (offsets, cache flushing), which seems well in spirit of
+> the original design. 
 
-It's not like anyone cares.  And FYI, moving all those to
-drivers/Kconfig is osmething I will submit for the next merge window.
+I don't completely agree:
 
-> Alex explains above that RapidIO
-> may be selected as a system bus on some architectures, and users expect
-> it to be in the menu in which it has been for some time now.  What
-> problem is the current organization causing?
+1 - VIRTIO_F_IOMMU_PLATFORM is a property of the "other side", ie qemu
+for example. It indicates that the peer bypasses the normal platform
+iommu. The platform code in the guest has no real way to know that this
+is the case, this is a specific "feature" of the qemu implementation.
 
-A "system bus" seems like a rather outdated concept to start with.
+2 - VIRTIO_F_PLATFORM_DMA (or whatever you want to call it), is a
+property of the guest platform itself (not qemu), there's no way the
+"peer" can advertize it via the virtio negociated flags. At least for
+us. I don't know for sure whether that would be workable for the ARM
+case. In our case, qemu has no idea at VM creation time that the VM
+will turn itself into a secure VM and thus will require bounce
+buffering for IOs (including virtio).
+
+So unless we have another hook for the arch code to set
+VIRTIO_F_PLATFORM_DMA on selected (or all) virtio devices from the
+guest itself, I don't see that as a way to deal with it.
+
+>  The other issue is VIRTIO_F_IO_BARRIER
+> which is very vaguely defined, and which needs a better definition.
+> And last but not least we'll need some text explaining the challenges
+> of hardware devices - I think VIRTIO_F_PLATFORM_DMA + VIRTIO_F_IO_BARRIER
+> is what would basically cover them, but a good description including
+> an explanation of why these matter.
+
+Ben.
