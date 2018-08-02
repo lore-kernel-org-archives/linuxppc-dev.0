@@ -1,32 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
+ [IPv6:2607:f8b0:400d:c09::243])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gzDg5dyVzF1Qn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:26:27 +1000 (AEST)
-Subject: Re: [PATCH v4 5/6] powerpc: Add show_user_instructions()
-To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- linux-kernel@vger.kernel.org
-Cc: Alastair D'Silva <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman"
- <ebiederm@xmission.com>, Joe Perches <joe@perches.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>
-References: <20180801213320.11203-1-muriloo@linux.ibm.com>
- <20180801213320.11203-6-muriloo@linux.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <7209fa95-8d40-14ca-f27a-ce3edb64191e@c-s.fr>
-Date: Thu, 2 Aug 2018 07:26:20 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gzrL60G3zF1Qn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:53:54 +1000 (AEST)
+Received: by mail-qk0-x243.google.com with SMTP id 191-v6so747511qki.13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 22:53:54 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20180801213320.11203-6-muriloo@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+References: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
+In-Reply-To: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 2 Aug 2018 15:23:40 +0930
+Message-ID: <CACPK8XfLNr8BZ1OAiY4Qi962Y3ii1phqDf6HGb6jbqcqnsB3yQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/perf: Remove sched_task function defined for
+ thread-imc
+To: anju@linux.vnet.ibm.com
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,107 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 18 May 2018 at 17:06, Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
+>
+> Call trace observed while running perf-fuzzer:
+>
+> [  329.228068] CPU: 43 PID: 9088 Comm: perf_fuzzer Not tainted 4.13.0-32-generic #35~lp1746225
+> [  329.228070] task: c000003f776ac900 task.stack: c000003f77728000
+> [  329.228071] NIP: c000000000299b70 LR: c0000000002a4534 CTR: c00000000029bb80
+> [  329.228073] REGS: c000003f7772b760 TRAP: 0700   Not tainted  (4.13.0-32-generic)
+> [  329.228073] MSR: 900000000282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
+> [  329.228079]   CR: 24008822  XER: 00000000
+> [  329.228080] CFAR: c000000000299a70 SOFTE: 0
+> GPR00: c0000000002a4534 c000003f7772b9e0 c000000001606200 c000003fef858908
+> GPR04: c000003f776ac900 0000000000000001 ffffffffffffffff 0000003fee730000
+> GPR08: 0000000000000000 0000000000000000 c0000000011220d8 0000000000000002
+> GPR12: c00000000029bb80 c000000007a3d900 0000000000000000 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+> GPR20: 0000000000000000 0000000000000000 c000003f776ad090 c000000000c71354
+> GPR24: c000003fef716780 0000003fee730000 c000003fe69d4200 c000003f776ad330
+> GPR28: c0000000011220d8 0000000000000001 c0000000014c6108 c000003fef858900
+> [  329.228098] NIP [c000000000299b70] perf_pmu_sched_task+0x170/0x180
+> [  329.228100] LR [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
+> [  329.228101] Call Trace:
+> [  329.228102] [c000003f7772b9e0] [c0000000002a0678] perf_iterate_sb+0x158/0x2a0 (unreliable)
+> [  329.228105] [c000003f7772ba30] [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
+> [  329.228107] [c000003f7772bab0] [c0000000001396dc] finish_task_switch+0x21c/0x310
+> [  329.228109] [c000003f7772bb60] [c000000000c71354] __schedule+0x304/0xb80
+> [  329.228111] [c000003f7772bc40] [c000000000c71c10] schedule+0x40/0xc0
+> [  329.228113] [c000003f7772bc60] [c0000000001033f4] do_wait+0x254/0x2e0
+> [  329.228115] [c000003f7772bcd0] [c000000000104ac0] kernel_wait4+0xa0/0x1a0
+> [  329.228117] [c000003f7772bd70] [c000000000104c24] SyS_wait4+0x64/0xc0
+> [  329.228121] [c000003f7772be30] [c00000000000b184] system_call+0x58/0x6c
+> [  329.228121] Instruction dump:
+> [  329.228123] 3beafea0 7faa4800 409eff18 e8010060 eb610028 ebc10040 7c0803a6 38210050
+> [  329.228127] eb81ffe0 eba1ffe8 ebe1fff8 4e800020 <0fe00000> 4bffffbc 60000000 60420000
+> [  329.228131] ---[ end trace 8c46856d314c1811 ]---
+> [  375.755943] hrtimer: interrupt took 31601 ns
+>
+>
+> The context switch call-backs for thread-imc are defined in sched_task function.
+> So when thread-imc events are grouped with software pmu events,
+> perf_pmu_sched_task hits the WARN_ON_ONCE condition, since software PMUs are
+> assumed not to have a sched_task defined.
+>
+> Patch to move the thread_imc enable/disable opal call back from sched_task to
+> event_[add/del] function
+>
+> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
 
+I reproduced the WARN when running -rc7 on a Power9 box. I haven't
+seen it since applying this patch.
 
-Le 01/08/2018 à 23:33, Murilo Opsfelder Araujo a écrit :
-> show_user_instructions() is a slightly modified version of
-> show_instructions() that allows userspace instruction dump.
-> 
-> This will be useful within show_signal_msg() to dump userspace
-> instructions of the faulty location.
-> 
-> Here is a sample of what show_user_instructions() outputs:
-> 
->    pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
->    pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
-> 
-> The current->comm and current->pid printed can serve as a glue that
-> links the instructions dump to its originator, allowing messages to be
-> interleaved in the logs.
-> 
-> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-> ---
->   arch/powerpc/include/asm/stacktrace.h | 13 +++++++++
->   arch/powerpc/kernel/process.c         | 40 +++++++++++++++++++++++++++
->   2 files changed, 53 insertions(+)
->   create mode 100644 arch/powerpc/include/asm/stacktrace.h
-> 
-> diff --git a/arch/powerpc/include/asm/stacktrace.h b/arch/powerpc/include/asm/stacktrace.h
-> new file mode 100644
-> index 000000000000..6149b53b3bc8
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/stacktrace.h
-> @@ -0,0 +1,13 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * Stack trace functions.
-> + *
-> + * Copyright 2018, Murilo Opsfelder Araujo, IBM Corporation.
-> + */
-> +
-> +#ifndef _ASM_POWERPC_STACKTRACE_H
-> +#define _ASM_POWERPC_STACKTRACE_H
-> +
-> +void show_user_instructions(struct pt_regs *regs);
-> +
-> +#endif /* _ASM_POWERPC_STACKTRACE_H */
-> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-> index e9533b4d2f08..364645ac732c 100644
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -1299,6 +1299,46 @@ static void show_instructions(struct pt_regs *regs)
->   	pr_cont("\n");
->   }
->   
-> +void show_user_instructions(struct pt_regs *regs)
-> +{
-> +	int i;
-> +	const char *prefix = KERN_INFO "%s[%d]: code: ";
-> +	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
-> +					sizeof(int));
-> +
-> +	printk(prefix, current->comm, current->pid);
+Tested-by: Joel Stanley <joel@jms.id.au>
 
-Why not use pr_info() and remove KERN_INFO from *prefix ?
+Cheers,
 
-> +
-> +	for (i = 0; i < instructions_to_print; i++) {
-> +		int instr;
-> +
-> +		if (!(i % 8) && (i > 0)) {
-> +			pr_cont("\n");
-> +			printk(prefix, current->comm, current->pid);
-> +		}
-> +
-> +#if !defined(CONFIG_BOOKE)
-> +		/* If executing with the IMMU off, adjust pc rather
-> +		 * than print XXXXXXXX.
-> +		 */
-> +		if (!(regs->msr & MSR_IR))
-> +			pc = (unsigned long)phys_to_virt(pc);
-
-Shouldn't this be done outside of the loop, only once ?
-
-Christophe
-
-> +#endif
-> +
-> +		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
-> +			pr_cont("XXXXXXXX ");
-> +		} else {
-> +			if (regs->nip == pc)
-> +				pr_cont("<%08x> ", instr);
-> +			else
-> +				pr_cont("%08x ", instr);
-> +		}
-> +
-> +		pc += sizeof(int);
-> +	}
-> +
-> +	pr_cont("\n");
-> +}
-> +
->   struct regbit {
->   	unsigned long bit;
->   	const char *name;
-> 
+Joel
