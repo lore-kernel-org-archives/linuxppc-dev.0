@@ -1,24 +1,27 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-qk0-x243.google.com (mail-qk0-x243.google.com
- [IPv6:2607:f8b0:400d:c09::243])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-f181.google.com (mail-ua0-f181.google.com
+ [209.85.217.181])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gzrL60G3zF1Qn
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:53:54 +1000 (AEST)
-Received: by mail-qk0-x243.google.com with SMTP id 191-v6so747511qki.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Aug 2018 22:53:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41h1hq3V7dzF1pj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 17:17:31 +1000 (AEST)
+Received: by mail-ua0-f181.google.com with SMTP id w7-v6so779321uan.9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Aug 2018 00:17:31 -0700 (PDT)
 MIME-Version: 1.0
-References: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
-In-Reply-To: <1526628925-31075-1-git-send-email-anju@linux.vnet.ibm.com>
-From: Joel Stanley <joel@jms.id.au>
-Date: Thu, 2 Aug 2018 15:23:40 +0930
-Message-ID: <CACPK8XfLNr8BZ1OAiY4Qi962Y3ii1phqDf6HGb6jbqcqnsB3yQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/perf: Remove sched_task function defined for
- thread-imc
-To: anju@linux.vnet.ibm.com
+References: <20180802092708.10e1a71d@canb.auug.org.au>
+ <20180802094154.6d88f03c@canb.auug.org.au>
+In-Reply-To: <20180802094154.6d88f03c@canb.auug.org.au>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 2 Aug 2018 09:17:16 +0200
+Message-ID: <CAMuHMdXTW8iSA+HnnDNzoNkMwUchLY1J6YBYCBCfGRT5UatBqg@mail.gmail.com>
+Subject: Re: linux-next: manual merge of the powerpc tree with the m68k tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Michael Ellerman <mpe@ellerman.id.au>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-Next <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Finn Thain <fthain@telegraphics.com.au>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,59 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 18 May 2018 at 17:06, Anju T Sudhakar <anju@linux.vnet.ibm.com> wrote:
->
-> Call trace observed while running perf-fuzzer:
->
-> [  329.228068] CPU: 43 PID: 9088 Comm: perf_fuzzer Not tainted 4.13.0-32-generic #35~lp1746225
-> [  329.228070] task: c000003f776ac900 task.stack: c000003f77728000
-> [  329.228071] NIP: c000000000299b70 LR: c0000000002a4534 CTR: c00000000029bb80
-> [  329.228073] REGS: c000003f7772b760 TRAP: 0700   Not tainted  (4.13.0-32-generic)
-> [  329.228073] MSR: 900000000282b033 <SF,HV,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>
-> [  329.228079]   CR: 24008822  XER: 00000000
-> [  329.228080] CFAR: c000000000299a70 SOFTE: 0
-> GPR00: c0000000002a4534 c000003f7772b9e0 c000000001606200 c000003fef858908
-> GPR04: c000003f776ac900 0000000000000001 ffffffffffffffff 0000003fee730000
-> GPR08: 0000000000000000 0000000000000000 c0000000011220d8 0000000000000002
-> GPR12: c00000000029bb80 c000000007a3d900 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 0000000000000000 0000000000000000 c000003f776ad090 c000000000c71354
-> GPR24: c000003fef716780 0000003fee730000 c000003fe69d4200 c000003f776ad330
-> GPR28: c0000000011220d8 0000000000000001 c0000000014c6108 c000003fef858900
-> [  329.228098] NIP [c000000000299b70] perf_pmu_sched_task+0x170/0x180
-> [  329.228100] LR [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
-> [  329.228101] Call Trace:
-> [  329.228102] [c000003f7772b9e0] [c0000000002a0678] perf_iterate_sb+0x158/0x2a0 (unreliable)
-> [  329.228105] [c000003f7772ba30] [c0000000002a4534] __perf_event_task_sched_in+0xc4/0x230
-> [  329.228107] [c000003f7772bab0] [c0000000001396dc] finish_task_switch+0x21c/0x310
-> [  329.228109] [c000003f7772bb60] [c000000000c71354] __schedule+0x304/0xb80
-> [  329.228111] [c000003f7772bc40] [c000000000c71c10] schedule+0x40/0xc0
-> [  329.228113] [c000003f7772bc60] [c0000000001033f4] do_wait+0x254/0x2e0
-> [  329.228115] [c000003f7772bcd0] [c000000000104ac0] kernel_wait4+0xa0/0x1a0
-> [  329.228117] [c000003f7772bd70] [c000000000104c24] SyS_wait4+0x64/0xc0
-> [  329.228121] [c000003f7772be30] [c00000000000b184] system_call+0x58/0x6c
-> [  329.228121] Instruction dump:
-> [  329.228123] 3beafea0 7faa4800 409eff18 e8010060 eb610028 ebc10040 7c0803a6 38210050
-> [  329.228127] eb81ffe0 eba1ffe8 ebe1fff8 4e800020 <0fe00000> 4bffffbc 60000000 60420000
-> [  329.228131] ---[ end trace 8c46856d314c1811 ]---
-> [  375.755943] hrtimer: interrupt took 31601 ns
->
->
-> The context switch call-backs for thread-imc are defined in sched_task function.
-> So when thread-imc events are grouped with software pmu events,
-> perf_pmu_sched_task hits the WARN_ON_ONCE condition, since software PMUs are
-> assumed not to have a sched_task defined.
->
-> Patch to move the thread_imc enable/disable opal call back from sched_task to
-> event_[add/del] function
->
-> Signed-off-by: Anju T Sudhakar <anju@linux.vnet.ibm.com>
+Hi Stephen,
 
-I reproduced the WARN when running -rc7 on a Power9 box. I haven't
-seen it since applying this patch.
+On Thu, Aug 2, 2018 at 1:42 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> [forgot the conflict resolution ...]
+>
+> On Thu, 2 Aug 2018 09:27:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > Today's linux-next merge of the powerpc tree got a conflict in:
+> >
+> >   arch/m68k/mac/misc.c
+> >
+> > between commit:
+> >
+> >   5b9bfb8ec467 ("m68k: mac: Use time64_t in RTC handling")
+> >
+> > from the m68k tree and commit:
+> >
+> >   ebd722275f9c ("macintosh/via-pmu: Replace via-pmu68k driver with via-pmu driver")
+> >
+> > from the powerpc tree.
+> >
+> > I fixed it up (see below) and can carry the fix as necessary. This
+> > is now fixed as far as linux-next is concerned, but any non trivial
+> > conflicts should be mentioned to your upstream maintainer when your tree
+> > is submitted for merging.  You may also want to consider cooperating
+> > with the maintainer of the conflicting tree to minimise any particularly
+> > complex conflicts.
 
-Tested-by: Joel Stanley <joel@jms.id.au>
+Ah, now I remember Finn said he was going to rebase his series once the time64_t
+patch has entered my tree...
 
-Cheers,
+> --- a/arch/m68k/mac/misc.c
+> +++ b/arch/m68k/mac/misc.c
+> @@@ -90,11 -85,11 +90,11 @@@ static void cuda_write_pram(int offset
+>   }
+>   #endif /* CONFIG_ADB_CUDA */
+>
+> - #ifdef CONFIG_ADB_PMU68K
+> + #ifdef CONFIG_ADB_PMU
+>  -static long pmu_read_time(void)
+>  +static time64_t pmu_read_time(void)
+>   {
+>         struct adb_request req;
+>  -      long time;
+>  +      time64_t time;
+>
+>         if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
+>                 return 0;
 
-Joel
+Thanks, looks good to me!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
