@@ -1,12 +1,13 @@
-Return-Path: <mst@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hH3p5gtSzF21L
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 03:19:49 +1000 (AEST)
-Date: Thu, 2 Aug 2018 20:19:41 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hHqh2XYHzF21T
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 03:54:24 +1000 (AEST)
+Message-ID: <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
 Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
@@ -14,24 +15,22 @@ Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
  elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
  jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180802200646-mutt-send-email-mst@kernel.org>
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Thu, 02 Aug 2018 12:53:41 -0500
+In-Reply-To: <20180802200646-mutt-send-email-mst@kernel.org>
 References: <20180730125100-mutt-send-email-mst@kernel.org>
  <20180730111802.GA9830@infradead.org>
  <20180730155633-mutt-send-email-mst@kernel.org>
  <20180731173052.GA17153@infradead.org>
  <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180801081637.GA14438@arm.com>
- <20180801083639.GF26378@infradead.org>
+ <20180801081637.GA14438@arm.com> <20180801083639.GF26378@infradead.org>
  <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
  <20180802182959-mutt-send-email-mst@kernel.org>
  <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
+ <20180802200646-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,64 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2018 at 11:01:26AM -0500, Benjamin Herrenschmidt wrote:
-> On Thu, 2018-08-02 at 18:41 +0300, Michael S. Tsirkin wrote:
-> > 
-> > > I don't completely agree:
-> > > 
-> > > 1 - VIRTIO_F_IOMMU_PLATFORM is a property of the "other side", ie qemu
-> > > for example. It indicates that the peer bypasses the normal platform
-> > > iommu. The platform code in the guest has no real way to know that this
-> > > is the case, this is a specific "feature" of the qemu implementation.
-> > > 
-> > > 2 - VIRTIO_F_PLATFORM_DMA (or whatever you want to call it), is a
-> > > property of the guest platform itself (not qemu), there's no way the
-> > > "peer" can advertize it via the virtio negociated flags. At least for
-> > > us. I don't know for sure whether that would be workable for the ARM
-> > > case. In our case, qemu has no idea at VM creation time that the VM
-> > > will turn itself into a secure VM and thus will require bounce
-> > > buffering for IOs (including virtio).
-> > > 
-> > > So unless we have another hook for the arch code to set
-> > > VIRTIO_F_PLATFORM_DMA on selected (or all) virtio devices from the
-> > > guest itself, I don't see that as a way to deal with it.
-> > > 
-> > > >  The other issue is VIRTIO_F_IO_BARRIER
-> > > > which is very vaguely defined, and which needs a better definition.
-> > > > And last but not least we'll need some text explaining the challenges
-> > > > of hardware devices - I think VIRTIO_F_PLATFORM_DMA + VIRTIO_F_IO_BARRIER
-> > > > is what would basically cover them, but a good description including
-> > > > an explanation of why these matter.
-> > > 
-> > > Ben.
-> > > 
-> > 
-> > So is it true that from qemu point of view there is nothing special
-> > going on?  You pass in a PA, host writes there.
+On Thu, 2018-08-02 at 20:19 +0300, Michael S. Tsirkin wrote:
 > 
-> Yes, qemu doesn't see a different. It's the guest that will bounce the
-> pages via a pool of "insecure" pages that qemu can access. Normal pages
-> in a secure VM come from PAs that qemu cannot physically access.
+> I see. So yes, given that device does not know or care, using
+> virtio features is an awkward fit.
 > 
-> Cheers,
-> Ben.
+> So let's say as a quick fix for you maybe we could generalize the
+> xen_domain hack, instead of just checking xen_domain check some static
+> branch.  Then teach xen and others to enable that.>
+
+> OK but problem then becomes this: if you do this and virtio device appears
+> behind a vIOMMU and it does not advertize the IOMMU flag, the
+> code will try to use the vIOMMU mappings and fail.
+>
+> It does look like even with trick above, you need a special version of
+> DMA ops that does just swiotlb but not any of the other things DMA API
+> might do.
 > 
+> Thoughts?
 
-I see. So yes, given that device does not know or care, using
-virtio features is an awkward fit.
+Yes, this is the purpose of Anshuman original patch (I haven't looked
+at the details of the patch in a while but that's what I told him to
+implement ;-) :
 
-So let's say as a quick fix for you maybe we could generalize the
-xen_domain hack, instead of just checking xen_domain check some static
-branch.  Then teach xen and others to enable that.
-OK but problem then becomes this: if you do this and virtio device appears
-behind a vIOMMU and it does not advertize the IOMMU flag, the
-code will try to use the vIOMMU mappings and fail.
+ - Make virtio always use DMA ops to simplify the code path (with a set
+of "transparent" ops for legacy)
 
-It does look like even with trick above, you need a special version of
-DMA ops that does just swiotlb but not any of the other things DMA API
-might do.
+ and
 
-Thoughts?
+ -  Provide an arch hook allowing us to "override" those "transparent"
+DMA ops with some custom ones that do the appropriate swiotlb gunk.
 
--- 
-MST
+Cheers,
+Ben.
