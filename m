@@ -1,47 +1,32 @@
-Return-Path: <srs0=evbl=kr=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41gyfV4YxSzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:00:18 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41gyfV3v8Jz8x8k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:00:18 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41gyfV04f8z9s3q
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Aug 2018 15:00:17 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w724wgUp032754
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Aug 2018 01:00:16 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kkr31ptws-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 02 Aug 2018 01:00:15 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 2 Aug 2018 06:00:13 +0100
-Subject: Re: [PATCH v6 5/8] powerpc/pseries: flush SLB contents on SLB MCE
- errors.
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <153072695700.29016.8614312307132803349.stgit@jupiter.in.ibm.com>
- <153072708065.29016.482194584457257883.stgit@jupiter.in.ibm.com>
- <20180801155853.3af801c2@roar.ozlabs.ibm.com>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 2 Aug 2018 10:30:08 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41gzDg5dyVzF1Qn
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 15:26:27 +1000 (AEST)
+Subject: Re: [PATCH v4 5/6] powerpc: Add show_user_instructions()
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ linux-kernel@vger.kernel.org
+Cc: Alastair D'Silva <alastair@d-silva.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Balbir Singh <bsingharora@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman"
+ <ebiederm@xmission.com>, Joe Perches <joe@perches.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>,
+ Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Simon Guo <wei.guo.simon@gmail.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org,
+ Segher Boessenkool <segher@kernel.crashing.org>
+References: <20180801213320.11203-1-muriloo@linux.ibm.com>
+ <20180801213320.11203-6-muriloo@linux.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <7209fa95-8d40-14ca-f27a-ce3edb64191e@c-s.fr>
+Date: Thu, 2 Aug 2018 07:26:20 +0200
 MIME-Version: 1.0
-In-Reply-To: <20180801155853.3af801c2@roar.ozlabs.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <69168845-6353-a0bc-47ab-24818eb6c661@linux.vnet.ibm.com>
+In-Reply-To: <20180801213320.11203-6-muriloo@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,180 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/01/2018 11:28 AM, Nicholas Piggin wrote:
-> On Wed, 04 Jul 2018 23:28:21 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> On pseries, as of today system crashes if we get a machine check
->> exceptions due to SLB errors. These are soft errors and can be fixed by
->> flushing the SLBs so the kernel can continue to function instead of
->> system crash. We do this in real mode before turning on MMU. Otherwise
->> we would run into nested machine checks. This patch now fetches the
->> rtas error log in real mode and flushes the SLBs on SLB errors.
->>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1 
->>  arch/powerpc/include/asm/machdep.h            |    1 
->>  arch/powerpc/kernel/exceptions-64s.S          |   42 +++++++++++++++++++++
->>  arch/powerpc/kernel/mce.c                     |   16 +++++++-
->>  arch/powerpc/mm/slb.c                         |    6 +++
->>  arch/powerpc/platforms/pseries/pseries.h      |    1 
->>  arch/powerpc/platforms/pseries/ras.c          |   51 +++++++++++++++++++++++++
->>  arch/powerpc/platforms/pseries/setup.c        |    1 
->>  8 files changed, 116 insertions(+), 3 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> index 50ed64fba4ae..cc00a7088cf3 100644
->> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> @@ -487,6 +487,7 @@ extern void hpte_init_native(void);
->>  
->>  extern void slb_initialize(void);
->>  extern void slb_flush_and_rebolt(void);
->> +extern void slb_flush_and_rebolt_realmode(void);
->>  
->>  extern void slb_vmalloc_update(void);
->>  extern void slb_set_size(u16 size);
->> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
->> index ffe7c71e1132..fe447e0d4140 100644
->> --- a/arch/powerpc/include/asm/machdep.h
->> +++ b/arch/powerpc/include/asm/machdep.h
->> @@ -108,6 +108,7 @@ struct machdep_calls {
->>  
->>  	/* Early exception handlers called in realmode */
->>  	int		(*hmi_exception_early)(struct pt_regs *regs);
->> +	int		(*machine_check_early)(struct pt_regs *regs);
->>  
->>  	/* Called during machine check exception to retrive fixup address. */
->>  	bool		(*mce_check_early_recovery)(struct pt_regs *regs);
->> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->> index f283958129f2..0038596b7906 100644
->> --- a/arch/powerpc/kernel/exceptions-64s.S
->> +++ b/arch/powerpc/kernel/exceptions-64s.S
->> @@ -332,6 +332,9 @@ TRAMP_REAL_BEGIN(machine_check_pSeries)
->>  machine_check_fwnmi:
->>  	SET_SCRATCH0(r13)		/* save r13 */
->>  	EXCEPTION_PROLOG_0(PACA_EXMC)
->> +BEGIN_FTR_SECTION
->> +	b	machine_check_pSeries_early
->> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->>  machine_check_pSeries_0:
->>  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
->>  	/*
->> @@ -343,6 +346,45 @@ machine_check_pSeries_0:
->>  
->>  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
->>  
->> +TRAMP_REAL_BEGIN(machine_check_pSeries_early)
->> +BEGIN_FTR_SECTION
->> +	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
->> +	mr	r10,r1			/* Save r1 */
->> +	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
->> +	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame		*/
->> +	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
->> +	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
->> +	EXCEPTION_PROLOG_COMMON_1()
->> +	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
->> +	EXCEPTION_PROLOG_COMMON_3(0x200)
->> +	addi	r3,r1,STACK_FRAME_OVERHEAD
->> +	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI */
->> +
->> +	/* Move original SRR0 and SRR1 into the respective regs */
->> +	ld	r9,_MSR(r1)
->> +	mtspr	SPRN_SRR1,r9
->> +	ld	r3,_NIP(r1)
->> +	mtspr	SPRN_SRR0,r3
->> +	ld	r9,_CTR(r1)
->> +	mtctr	r9
->> +	ld	r9,_XER(r1)
->> +	mtxer	r9
->> +	ld	r9,_LINK(r1)
->> +	mtlr	r9
->> +	REST_GPR(0, r1)
->> +	REST_8GPRS(2, r1)
->> +	REST_GPR(10, r1)
->> +	ld	r11,_CCR(r1)
->> +	mtcr	r11
->> +	REST_GPR(11, r1)
->> +	REST_2GPRS(12, r1)
->> +	/* restore original r1. */
->> +	ld	r1,GPR1(r1)
->> +	SET_SCRATCH0(r13)		/* save r13 */
->> +	EXCEPTION_PROLOG_0(PACA_EXMC)
->> +	b	machine_check_pSeries_0
->> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->> +
->>  EXC_COMMON_BEGIN(machine_check_common)
->>  	/*
->>  	 * Machine check is different because we use a different
->> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
->> index efdd16a79075..221271c96a57 100644
->> --- a/arch/powerpc/kernel/mce.c
->> +++ b/arch/powerpc/kernel/mce.c
->> @@ -488,9 +488,21 @@ long machine_check_early(struct pt_regs *regs)
->>  {
->>  	long handled = 0;
->>  
->> -	__this_cpu_inc(irq_stat.mce_exceptions);
->> +	/*
->> +	 * For pSeries we count mce when we go into virtual mode machine
->> +	 * check handler. Hence skip it. Also, We can't access per cpu
->> +	 * variables in real mode for LPAR.
->> +	 */
->> +	if (early_cpu_has_feature(CPU_FTR_HVMODE))
->> +		__this_cpu_inc(irq_stat.mce_exceptions);
->>  
->> -	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
->> +	/*
->> +	 * See if platform is capable of handling machine check.
->> +	 * Otherwise fallthrough and allow CPU to handle this machine check.
->> +	 */
->> +	if (ppc_md.machine_check_early)
->> +		handled = ppc_md.machine_check_early(regs);
->> +	else if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
->>  		handled = cur_cpu_spec->machine_check_early(regs);
->>  	return handled;
->>  }
-> 
-> This looks fine to me after Michal's patch. Not sure if you want to
-> fold them or add his immediately after this one in your series.
 
-I am planning to fold Michal's patch into this patch itself.
 
+Le 01/08/2018 à 23:33, Murilo Opsfelder Araujo a écrit :
+> show_user_instructions() is a slightly modified version of
+> show_instructions() that allows userspace instruction dump.
 > 
->> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
->> index 66577cc66dc9..5b1813b98358 100644
->> --- a/arch/powerpc/mm/slb.c
->> +++ b/arch/powerpc/mm/slb.c
->> @@ -145,6 +145,12 @@ void slb_flush_and_rebolt(void)
->>  	get_paca()->slb_cache_ptr = 0;
->>  }
->>  
->> +void slb_flush_and_rebolt_realmode(void)
->> +{
->> +	__slb_flush_and_rebolt();
->> +	get_paca()->slb_cache_ptr = 0;
->> +}
+> This will be useful within show_signal_msg() to dump userspace
+> instructions of the faulty location.
 > 
+> Here is a sample of what show_user_instructions() outputs:
 > 
-> I think this should do something more like flush_and_reload_slb from
-> powernv machine check code. We are real mode so should invalidate all
-> SLBs.
+>    pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1fff8 f821ffc1 7c3f0b78 3d22fffe
+>    pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <99490000> 39200000 7d234b78 383f0040
+> 
+> The current->comm and current->pid printed can serve as a glue that
+> links the instructions dump to its originator, allowing messages to be
+> interleaved in the logs.
+> 
+> Signed-off-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/stacktrace.h | 13 +++++++++
+>   arch/powerpc/kernel/process.c         | 40 +++++++++++++++++++++++++++
+>   2 files changed, 53 insertions(+)
+>   create mode 100644 arch/powerpc/include/asm/stacktrace.h
+> 
+> diff --git a/arch/powerpc/include/asm/stacktrace.h b/arch/powerpc/include/asm/stacktrace.h
+> new file mode 100644
+> index 000000000000..6149b53b3bc8
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/stacktrace.h
+> @@ -0,0 +1,13 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Stack trace functions.
+> + *
+> + * Copyright 2018, Murilo Opsfelder Araujo, IBM Corporation.
+> + */
+> +
+> +#ifndef _ASM_POWERPC_STACKTRACE_H
+> +#define _ASM_POWERPC_STACKTRACE_H
+> +
+> +void show_user_instructions(struct pt_regs *regs);
+> +
+> +#endif /* _ASM_POWERPC_STACKTRACE_H */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index e9533b4d2f08..364645ac732c 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1299,6 +1299,46 @@ static void show_instructions(struct pt_regs *regs)
+>   	pr_cont("\n");
+>   }
+>   
+> +void show_user_instructions(struct pt_regs *regs)
+> +{
+> +	int i;
+> +	const char *prefix = KERN_INFO "%s[%d]: code: ";
+> +	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
+> +					sizeof(int));
+> +
+> +	printk(prefix, current->comm, current->pid);
 
-Yes, and I think even powernv code should use this one instead. But that
-can be a separate patch.
+Why not use pr_info() and remove KERN_INFO from *prefix ?
 
-> 
-> It happens I also need very similar code (without the initial
-> invalidate) for implementing idle wakeup code in C, so we should move
-> that function and variants into mm/slb.c IMO.
+> +
+> +	for (i = 0; i < instructions_to_print; i++) {
+> +		int instr;
+> +
+> +		if (!(i % 8) && (i > 0)) {
+> +			pr_cont("\n");
+> +			printk(prefix, current->comm, current->pid);
+> +		}
+> +
+> +#if !defined(CONFIG_BOOKE)
+> +		/* If executing with the IMMU off, adjust pc rather
+> +		 * than print XXXXXXXX.
+> +		 */
+> +		if (!(regs->msr & MSR_IR))
+> +			pc = (unsigned long)phys_to_virt(pc);
 
-So, you looking for only rebolt part ?
+Shouldn't this be done outside of the loop, only once ?
 
-> 
-> Thanks,
-> Nick
+Christophe
+
+> +#endif
+> +
+> +		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
+> +			pr_cont("XXXXXXXX ");
+> +		} else {
+> +			if (regs->nip == pc)
+> +				pr_cont("<%08x> ", instr);
+> +			else
+> +				pr_cont("%08x ", instr);
+> +		}
+> +
+> +		pc += sizeof(int);
+> +	}
+> +
+> +	pr_cont("\n");
+> +}
+> +
+>   struct regbit {
+>   	unsigned long bit;
+>   	const char *name;
 > 
