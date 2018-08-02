@@ -1,33 +1,17 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vk0-f65.google.com (mail-vk0-f65.google.com
- [209.85.213.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41h3vt2W2KzF1pj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 18:57:14 +1000 (AEST)
-Received: by mail-vk0-f65.google.com with SMTP id 125-v6so655371vke.11
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Aug 2018 01:57:14 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180731142954.30345-1-acolin@isi.edu>
- <20180731142954.30345-7-acolin@isi.edu>
- <20180801095404.GA17585@infradead.org>
- <fad8661c-cd8c-3a9c-ca03-5d2f63893a24@gmail.com>
-In-Reply-To: <fad8661c-cd8c-3a9c-ca03-5d2f63893a24@gmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 2 Aug 2018 10:57:00 +0200
-Message-ID: <CAMuHMdVDra1MKcuuD0SqEYXSggr0iVFcbcjL33z7JuiE1_y8yw@mail.gmail.com>
-Subject: Re: [RESEND PATCH 6/6] arm64: enable RapidIO menu in Kconfig
-To: alex.bou9@gmail.com
-Cc: Christoph Hellwig <hch@infradead.org>, acolin@isi.edu,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "the arch/x86 maintainers" <x86@kernel.org>, Will Deacon <will.deacon@arm.com>,
- Russell King <linux@armlinux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jwalters@isi.edu,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux ARM <linux-arm-kernel@lists.infradead.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41h4Y61rkSzF1pj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 19:26:02 +1000 (AEST)
+Message-Id: <47f1cc02529bafe8ad258081784e44da188eed49.1533201696.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2] powerpc/mm: fix always true/false warning in slice.c
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ malat@debian.org, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Thu,  2 Aug 2018 09:25:55 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,59 +21,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alex,
+This patch fixes the following warnings (obtained with make W=1).
 
-On Wed, Aug 1, 2018 at 3:16 PM Alex Bounine <alex.bou9@gmail.com> wrote:
-> On 2018-08-01 05:54 AM, Christoph Hellwig wrote:
-> > On Tue, Jul 31, 2018 at 10:29:54AM -0400, Alexei Colin wrote:
-> >> Platforms with a PCI bus will be offered the RapidIO menu since they may
-> >> be want support for a RapidIO PCI device. Platforms without a PCI bus
-> >> that might include a RapidIO IP block will need to "select HAS_RAPIDIO"
-> >> in the platform-/machine-specific "config ARCH_*" Kconfig entry.
-> >>
-> >> Tested that kernel builds for arm64 with RapidIO subsystem and
-> >> switch drivers enabled, also that the modules load successfully
-> >> on a custom Aarch64 Qemu model.
-> >
-> > As said before, please include it from drivers/Kconfig so that _all_
-> > architectures supporting PCI (or other Rapidio attachements) get it
-> > and not some arbitrary selection of architectures.
+arch/powerpc/mm/slice.c: In function 'slice_range_to_mask':
+arch/powerpc/mm/slice.c:73:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+  if (start < SLICE_LOW_TOP) {
+            ^
+arch/powerpc/mm/slice.c:81:20: error: comparison is always false due to limited range of data type [-Werror=type-limits]
+  if ((start + len) > SLICE_LOW_TOP) {
+                    ^
+arch/powerpc/mm/slice.c: In function 'slice_mask_for_free':
+arch/powerpc/mm/slice.c:136:17: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+  if (high_limit <= SLICE_LOW_TOP)
+                 ^
+arch/powerpc/mm/slice.c: In function 'slice_check_range_fits':
+arch/powerpc/mm/slice.c:185:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+  if (start < SLICE_LOW_TOP) {
+            ^
+arch/powerpc/mm/slice.c:195:39: error: comparison is always false due to limited range of data type [-Werror=type-limits]
+  if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
+                                       ^
+arch/powerpc/mm/slice.c: In function 'slice_scan_available':
+arch/powerpc/mm/slice.c:306:11: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+  if (addr < SLICE_LOW_TOP) {
+           ^
+arch/powerpc/mm/slice.c: In function 'get_slice_psize':
+arch/powerpc/mm/slice.c:709:11: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+  if (addr < SLICE_LOW_TOP) {
+           ^
 
-+1
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: fixed issue reported by Michael
 
-> As it was replied earlier this is not a random selection of
-> architectures but only ones that implement support for RapidIO as system
-> bus. If other architectures choose to adopt RapidIO we will include them
-> as well.
->
-> On some platforms RapidIO can be the only system bus available replacing
-> PCI/PCIe or RapidIO can coexist with PCIe.
->
-> As it is done now, RapidIO is configured in "Bus Options" (x86/PPC) or
-> "Bus Support" (ARMs) sub-menu and from system configuration option it
-> should be kept this way.
->
-> Current location of RAPIDIO configuration option is familiar to users of
-> PowerPC and x86 platforms, and is similarly available in some ARM
-> manufacturers kernel code trees.
->
-> drivers/Kconfig will be used for configuring drivers for peripheral
-> RapidIO devices if/when such device drivers will be published.
+ arch/powerpc/mm/slice.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-Everything in drivers/rapidio/Kconfig depends on RAPIDIO (probably it should
-use a big if RAPIDIO/endif instead), so it can just be included from
-drivers/Kconfig now.
-
-The sooner you do that, the less treewide changes are needed (currently
-limited to mips, powerpc, and x86; your patch adds arm64).
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 9530c6db406a..c774d43e038c 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -62,6 +62,13 @@ static void slice_print_mask(const char *label, const struct slice_mask *mask) {
+ 
+ #endif
+ 
++static inline bool slice_addr_is_low(unsigned long addr)
++{
++	u64 tmp = (u64)addr;
++
++	return tmp < SLICE_LOW_TOP;
++}
++
+ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 				struct slice_mask *ret)
+ {
+@@ -71,7 +78,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 	if (SLICE_NUM_HIGH)
+ 		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
+ 
+-	if (start < SLICE_LOW_TOP) {
++	if (slice_addr_is_low(start)) {
+ 		unsigned long mend = min(end,
+ 					 (unsigned long)(SLICE_LOW_TOP - 1));
+ 
+@@ -79,7 +86,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+ 			- (1u << GET_LOW_SLICE_INDEX(start));
+ 	}
+ 
+-	if ((start + len) > SLICE_LOW_TOP) {
++	if (SLICE_NUM_HIGH && !slice_addr_is_low(end)) {
+ 		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+ 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+ 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+@@ -134,7 +141,7 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
+ 		if (!slice_low_has_vma(mm, i))
+ 			ret->low_slices |= 1u << i;
+ 
+-	if (high_limit <= SLICE_LOW_TOP)
++	if (slice_addr_is_low(high_limit - 1))
+ 		return;
+ 
+ 	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++)
+@@ -183,7 +190,7 @@ static bool slice_check_range_fits(struct mm_struct *mm,
+ 	unsigned long end = start + len - 1;
+ 	u64 low_slices = 0;
+ 
+-	if (start < SLICE_LOW_TOP) {
++	if (slice_addr_is_low(start)) {
+ 		unsigned long mend = min(end,
+ 					 (unsigned long)(SLICE_LOW_TOP - 1));
+ 
+@@ -193,7 +200,7 @@ static bool slice_check_range_fits(struct mm_struct *mm,
+ 	if ((low_slices & available->low_slices) != low_slices)
+ 		return false;
+ 
+-	if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
++	if (SLICE_NUM_HIGH && !slice_addr_is_low(end)) {
+ 		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+ 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+ 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+@@ -304,7 +311,7 @@ static bool slice_scan_available(unsigned long addr,
+ 				 int end, unsigned long *boundary_addr)
+ {
+ 	unsigned long slice;
+-	if (addr < SLICE_LOW_TOP) {
++	if (slice_addr_is_low(addr)) {
+ 		slice = GET_LOW_SLICE_INDEX(addr);
+ 		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
+ 		return !!(available->low_slices & (1u << slice));
+@@ -707,7 +714,7 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ 
+ 	VM_BUG_ON(radix_enabled());
+ 
+-	if (addr < SLICE_LOW_TOP) {
++	if (slice_addr_is_low(addr)) {
+ 		psizes = mm->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+ 	} else {
+-- 
+2.13.3
