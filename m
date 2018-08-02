@@ -2,16 +2,22 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41h4Y61rkSzF1pj
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 19:26:02 +1000 (AEST)
-Message-Id: <47f1cc02529bafe8ad258081784e44da188eed49.1533201696.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2] powerpc/mm: fix always true/false warning in slice.c
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- malat@debian.org, aneesh.kumar@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41h4fP5hjYzF1pj
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2018 19:30:37 +1000 (AEST)
+Subject: Re: [PATCH] powerpc/mm: fix always true/false warning in slice.c
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, malat@debian.org,
+ aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Thu,  2 Aug 2018 09:25:55 +0000 (UTC)
+References: <63b696ab7be8b941fa1e1589f28260320d12a32a.1529589640.git.christophe.leroy@c-s.fr>
+ <871scqwbbo.fsf@concordia.ellerman.id.au>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <1f090f15-eda3-90b1-2aab-ac73d9abb550@c-s.fr>
+Date: Thu, 2 Aug 2018 09:30:31 +0000
+MIME-Version: 1.0
+In-Reply-To: <871scqwbbo.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,122 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the following warnings (obtained with make W=1).
 
-arch/powerpc/mm/slice.c: In function 'slice_range_to_mask':
-arch/powerpc/mm/slice.c:73:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
-  if (start < SLICE_LOW_TOP) {
-            ^
-arch/powerpc/mm/slice.c:81:20: error: comparison is always false due to limited range of data type [-Werror=type-limits]
-  if ((start + len) > SLICE_LOW_TOP) {
-                    ^
-arch/powerpc/mm/slice.c: In function 'slice_mask_for_free':
-arch/powerpc/mm/slice.c:136:17: error: comparison is always true due to limited range of data type [-Werror=type-limits]
-  if (high_limit <= SLICE_LOW_TOP)
-                 ^
-arch/powerpc/mm/slice.c: In function 'slice_check_range_fits':
-arch/powerpc/mm/slice.c:185:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
-  if (start < SLICE_LOW_TOP) {
-            ^
-arch/powerpc/mm/slice.c:195:39: error: comparison is always false due to limited range of data type [-Werror=type-limits]
-  if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
-                                       ^
-arch/powerpc/mm/slice.c: In function 'slice_scan_available':
-arch/powerpc/mm/slice.c:306:11: error: comparison is always true due to limited range of data type [-Werror=type-limits]
-  if (addr < SLICE_LOW_TOP) {
-           ^
-arch/powerpc/mm/slice.c: In function 'get_slice_psize':
-arch/powerpc/mm/slice.c:709:11: error: comparison is always true due to limited range of data type [-Werror=type-limits]
-  if (addr < SLICE_LOW_TOP) {
-           ^
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- v2: fixed issue reported by Michael
+On 06/29/2018 02:55 AM, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+> 
+>> This patch fixes the following warnings (obtained with make W=1).
+>>
+>> arch/powerpc/mm/slice.c: In function 'slice_range_to_mask':
+>> arch/powerpc/mm/slice.c:73:12: error: comparison is always true due to limited range of data type [-Werror=type-limits]
+>>    if (start < SLICE_LOW_TOP) {
+> 
+> Presumably only on 32-bit ?
 
- arch/powerpc/mm/slice.c | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+Sure
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 9530c6db406a..c774d43e038c 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -62,6 +62,13 @@ static void slice_print_mask(const char *label, const struct slice_mask *mask) {
- 
- #endif
- 
-+static inline bool slice_addr_is_low(unsigned long addr)
-+{
-+	u64 tmp = (u64)addr;
-+
-+	return tmp < SLICE_LOW_TOP;
-+}
-+
- static void slice_range_to_mask(unsigned long start, unsigned long len,
- 				struct slice_mask *ret)
- {
-@@ -71,7 +78,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
- 	if (SLICE_NUM_HIGH)
- 		bitmap_zero(ret->high_slices, SLICE_NUM_HIGH);
- 
--	if (start < SLICE_LOW_TOP) {
-+	if (slice_addr_is_low(start)) {
- 		unsigned long mend = min(end,
- 					 (unsigned long)(SLICE_LOW_TOP - 1));
- 
-@@ -79,7 +86,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
- 			- (1u << GET_LOW_SLICE_INDEX(start));
- 	}
- 
--	if ((start + len) > SLICE_LOW_TOP) {
-+	if (SLICE_NUM_HIGH && !slice_addr_is_low(end)) {
- 		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
- 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
- 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
-@@ -134,7 +141,7 @@ static void slice_mask_for_free(struct mm_struct *mm, struct slice_mask *ret,
- 		if (!slice_low_has_vma(mm, i))
- 			ret->low_slices |= 1u << i;
- 
--	if (high_limit <= SLICE_LOW_TOP)
-+	if (slice_addr_is_low(high_limit - 1))
- 		return;
- 
- 	for (i = 0; i < GET_HIGH_SLICE_INDEX(high_limit); i++)
-@@ -183,7 +190,7 @@ static bool slice_check_range_fits(struct mm_struct *mm,
- 	unsigned long end = start + len - 1;
- 	u64 low_slices = 0;
- 
--	if (start < SLICE_LOW_TOP) {
-+	if (slice_addr_is_low(start)) {
- 		unsigned long mend = min(end,
- 					 (unsigned long)(SLICE_LOW_TOP - 1));
- 
-@@ -193,7 +200,7 @@ static bool slice_check_range_fits(struct mm_struct *mm,
- 	if ((low_slices & available->low_slices) != low_slices)
- 		return false;
- 
--	if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
-+	if (SLICE_NUM_HIGH && !slice_addr_is_low(end)) {
- 		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
- 		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
- 		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
-@@ -304,7 +311,7 @@ static bool slice_scan_available(unsigned long addr,
- 				 int end, unsigned long *boundary_addr)
- {
- 	unsigned long slice;
--	if (addr < SLICE_LOW_TOP) {
-+	if (slice_addr_is_low(addr)) {
- 		slice = GET_LOW_SLICE_INDEX(addr);
- 		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
- 		return !!(available->low_slices & (1u << slice));
-@@ -707,7 +714,7 @@ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
- 
- 	VM_BUG_ON(radix_enabled());
- 
--	if (addr < SLICE_LOW_TOP) {
-+	if (slice_addr_is_low(addr)) {
- 		psizes = mm->context.low_slices_psize;
- 		index = GET_LOW_SLICE_INDEX(addr);
- 	} else {
--- 
-2.13.3
+> 
+>> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+>> index 9530c6db406a..17c57760e06c 100644
+>> --- a/arch/powerpc/mm/slice.c
+>> +++ b/arch/powerpc/mm/slice.c
+>> @@ -79,7 +86,7 @@ static void slice_range_to_mask(unsigned long start, unsigned long len,
+>>   			- (1u << GET_LOW_SLICE_INDEX(start));
+>>   	}
+>>   
+>> -	if ((start + len) > SLICE_LOW_TOP) {
+>> +	if (!slice_addr_is_low(end)) {
+>>   		unsigned long start_index = GET_HIGH_SLICE_INDEX(start);
+>>   		unsigned long align_end = ALIGN(end, (1UL << SLICE_HIGH_SHIFT));
+>>   		unsigned long count = GET_HIGH_SLICE_INDEX(align_end) - start_index;
+> 
+> This worries me.
+
+I'll change it in v2 to:
+  	if (SLICE_NUM_HIGH && !slice_addr_is_low(end)) {
+
+
+> 
+> By casting before the comparison in the helper you squash the compiler
+> warning, but the code is still broken if (start + len) overflows.
+> 
+> Presumably that "never happens", but it just seems fishy.
+> 
+> The other similar check in that file does:
+> 
+>    if (SLICE_NUM_HIGH && ((start + len) > SLICE_LOW_TOP)) {
+> 
+> Where SLICE_NUM_HIGH == 0 on 32-bit.
+> 
+> 
+> Could we fix the less than comparisons with SLICE_LOW_TOP with something
+> similar, eg:
+> 
+> 	if (!SLICE_NUM_HIGH || start < SLICE_LOW_TOP) {
+> 
+> ie. limit them to the 64-bit code?
+
+That's not enough to make GCC happy:
+
+arch/powerpc/mm/slice.c: In function ‘slice_range_to_mask’:
+arch/powerpc/mm/slice.c:74:31: error: comparison is always true due to 
+limited range of data type [-Werror=type-limits]
+   if (!SLICE_NUM_HIGH || start < SLICE_LOW_TOP) {
+
+Christophe
+
+
+> 
+> cheers
+> 
