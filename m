@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hkL00YzYzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:48:40 +1000 (AEST)
-In-Reply-To: <20180730073721.15991-1-hch@lst.de>
-To: Christoph Hellwig <hch@lst.de>, benh@kernel.crashing.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hkL10HL1zF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:48:41 +1000 (AEST)
+In-Reply-To: <1533001454-8751-1-git-send-email-linux@roeck-us.net>
+To: Guenter Roeck <linux@roeck-us.net>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: do not redefined NEED_DMA_MAP_STATE
-Message-Id: <41hkKz6mdvz9s0R@ozlabs.org>
-Date: Fri,  3 Aug 2018 20:48:39 +1000 (AEST)
+Cc: Robin Murphy <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+ Christoph Hellwig <hch@lst.de>
+Subject: Re: powerpc/4xx: Fix error return path in ppc4xx_msi_probe()
+Message-Id: <41hkL05wJhz9s0n@ozlabs.org>
+Date: Fri,  3 Aug 2018 20:48:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,14 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-30 at 07:37:21 UTC, Christoph Hellwig wrote:
-> kernel/dma/Kconfig already defines NEED_DMA_MAP_STATE, just select it
-> from PPC64 and NOT_COHERENT_CACHE instead.
+On Tue, 2018-07-31 at 01:44:14 UTC, Guenter Roeck wrote:
+> An arbitrary error in ppc4xx_msi_probe() quite likely results in a
+> crash similar to the following, seen after dma_alloc_coherent()
+> returned an error.
 > 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc001bff0
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> BE Canyonlands
+> Modules linked in:
+> CPU: 0 PID: 1 Comm: swapper Tainted: G        W
+> 4.18.0-rc6-00010-gff33d1030a6c #1
+> NIP:  c001bff0 LR: c001c418 CTR: c01faa7c
+> REGS: cf82db40 TRAP: 0300   Tainted: G        W
+> (4.18.0-rc6-00010-gff33d1030a6c)
+> MSR:  00029000 <CE,EE,ME>  CR: 28002024  XER: 00000000
+> DEAR: 00000000 ESR: 00000000
+> GPR00: c001c418 cf82dbf0 cf828000 cf8de400 00000000 00000000 000000c4 000000c4
+> GPR08: c0481ea4 00000000 00000000 000000c4 22002024 00000000 c00025e8 00000000
+> GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 c0492380 0000004a
+> GPR24: 00029000 0000000c 00000000 cf8de410 c0494d60 c0494d60 cf8bebc0 00000001
+> NIP [c001bff0] ppc4xx_of_msi_remove+0x48/0xa0
+> LR [c001c418] ppc4xx_msi_probe+0x294/0x3b8
+> Call Trace:
+> [cf82dbf0] [00029000] 0x29000 (unreliable)
+> [cf82dc10] [c001c418] ppc4xx_msi_probe+0x294/0x3b8
+> [cf82dc70] [c0209fbc] platform_drv_probe+0x40/0x9c
+> [cf82dc90] [c0208240] driver_probe_device+0x2a8/0x350
+> [cf82dcc0] [c0206204] bus_for_each_drv+0x60/0xac
+> [cf82dcf0] [c0207e88] __device_attach+0xe8/0x160
+> [cf82dd20] [c02071e0] bus_probe_device+0xa0/0xbc
+> [cf82dd40] [c02050c8] device_add+0x404/0x5c4
+> [cf82dd90] [c0288978] of_platform_device_create_pdata+0x88/0xd8
+> [cf82ddb0] [c0288b70] of_platform_bus_create+0x134/0x220
+> [cf82de10] [c0288bcc] of_platform_bus_create+0x190/0x220
+> [cf82de70] [c0288cf4] of_platform_bus_probe+0x98/0xec
+> [cf82de90] [c0449650] __machine_initcall_canyonlands_ppc460ex_device_probe+0x38/0x54
+> [cf82dea0] [c0002404] do_one_initcall+0x40/0x188
+> [cf82df00] [c043daec] kernel_init_freeable+0x130/0x1d0
+> [cf82df30] [c0002600] kernel_init+0x18/0x104
+> [cf82df40] [c000c23c] ret_from_kernel_thread+0x14/0x1c
+> Instruction dump:
+> 90010024 813d0024 2f890000 83c30058 41bd0014 48000038 813d0024 7f89f800
+> 409d002c 813e000c 57ea103a 3bff0001 <7c69502e> 2f830000 419effe0 4803b26d
+> ---[ end trace 8cf551077ecfc42a ]---
+> 
+> Fix it up. Specifically,
+> 
+> - Return valid error codes from ppc4xx_setup_pcieh_hw(), have it clean
+>   up after itself, and only access hardware after all possible error
+>   conditions have been handled.
+> - Use devm_kzalloc() instead of kzalloc() in ppc4xx_msi_probe()
+> 
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/06832fc004815b4b43628d21fc8171
+https://git.kernel.org/powerpc/c/6e0495c2e8ac39b1aad0a4588fe644
 
 cheers
