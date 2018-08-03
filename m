@@ -3,12 +3,12 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hdPw0PcyzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 17:06:44 +1000 (AEST)
-Date: Fri, 3 Aug 2018 00:06:38 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hf9J0LlpzF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 17:40:51 +1000 (AEST)
+Date: Fri, 3 Aug 2018 00:05:07 -0700
 From: Christoph Hellwig <hch@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>,
  Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
@@ -20,20 +20,20 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
  jean-philippe.brucker@arm.com, marc.zyngier@arm.com
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180803070638.GB1344@infradead.org>
-References: <20180727095804.GA25592@arm.com>
- <20180730093414.GD26245@infradead.org>
- <20180730125100-mutt-send-email-mst@kernel.org>
- <20180730111802.GA9830@infradead.org>
- <20180730155633-mutt-send-email-mst@kernel.org>
- <20180731173052.GA17153@infradead.org>
- <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180802003823-mutt-send-email-mst@kernel.org>
- <7779442d7889ee943b3e4ff6c63ec90b4a58b79d.camel@kernel.crashing.org>
- <20180802235233-mutt-send-email-mst@kernel.org>
+Message-ID: <20180803070507.GA1344@infradead.org>
+References: <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
+ <20180801081637.GA14438@arm.com>
+ <20180801083639.GF26378@infradead.org>
+ <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
+ <20180802182959-mutt-send-email-mst@kernel.org>
+ <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
+ <20180802200646-mutt-send-email-mst@kernel.org>
+ <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+ <20180802225738-mutt-send-email-mst@kernel.org>
+ <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180802235233-mutt-send-email-mst@kernel.org>
+In-Reply-To: <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,11 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 02, 2018 at 11:53:08PM +0300, Michael S. Tsirkin wrote:
-> > We don't need cache flushing tricks.
+On Thu, Aug 02, 2018 at 04:13:09PM -0500, Benjamin Herrenschmidt wrote:
+> So let's differenciate the two problems of having an IOMMU (real or
+> emulated) which indeeds adds overhead etc... and using the DMA API.
 > 
-> You don't but do real devices on same platform need them?
+> At the moment, virtio does this all over the place:
+> 
+> 	if (use_dma_api)
+> 		dma_map/alloc_something(...)
+> 	else
+> 		use_pa
+> 
+> The idea of the patch set is to do two, somewhat orthogonal, changes
+> that together achieve what we want. Let me know where you think there
+> is "a bunch of issues" because I'm missing it:
+> 
+>  1- Replace the above if/else constructs with just calling the DMA API,
+> and have virtio, at initialization, hookup its own dma_ops that just
+> "return pa" (roughly) when the IOMMU stuff isn't used.
+> 
+> This adds an indirect function call to the path that previously didn't
+> have one (the else case above). Is that a significant/measurable
+> overhead ?
 
-IBMs power plaforms are always cache coherent.  There are some powerpc
-platforms have not cache coherent DMA, but I guess this scheme isn't
-intended for them.
+If you call it often enough it does:
+
+https://www.spinics.net/lists/netdev/msg495413.html
+
+>  2- Make virtio use the DMA API with our custom platform-provided
+> swiotlb callbacks when needed, that is when not using IOMMU *and*
+> running on a secure VM in our case.
+
+And total NAK the customer platform-provided part of this.  We need
+a flag passed in from the hypervisor that the device needs all bus
+specific dma api treatment, and then just use the normal plaform
+dma mapping setup.  To get swiotlb you'll need to then use the DT/ACPI
+dma-range property to limit the addressable range, and a swiotlb
+capable plaform will use swiotlb automatically.
