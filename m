@@ -1,50 +1,18 @@
-Return-Path: <muriloo@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hlJ00vFtzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 21:31:58 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w73BVqXk023108
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2018 07:31:54 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kmp2u0d8f-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Aug 2018 07:31:53 -0400
-Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
- Fri, 3 Aug 2018 05:31:51 -0600
-Date: Fri, 3 Aug 2018 08:31:41 -0300
-From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Christophe LEROY <christophe.leroy@c-s.fr>, linux-kernel@vger.kernel.org,
- "Alastair D'Silva" <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cyril Bur <cyrilbur@gmail.com>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Joe Perches <joe@perches.com>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v4 5/6] powerpc: Add show_user_instructions()
-References: <20180801213320.11203-1-muriloo@linux.ibm.com>
- <20180801213320.11203-6-muriloo@linux.ibm.com>
- <7209fa95-8d40-14ca-f27a-ce3edb64191e@c-s.fr>
- <20180803004201.GA5891@kermit-br-ibm-com>
- <69cf990b-d4aa-97e7-be3b-7936caa91688@c-s.fr>
- <87pnyzhm9l.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hlJs67J7zF31D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 21:32:45 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: fbarrat@linux.ibm.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-4.18-5 tag
+Date: Fri, 03 Aug 2018 21:32:44 +1000
+Message-ID: <877el7hehv.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87pnyzhm9l.fsf@concordia.ellerman.id.au>
-Message-Id: <20180803113141.GA5476@kermit-br-ibm-com>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,12 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, everyone.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
 
-I'd like to thank you all that contributed to refining and making this
-series better.  I did appreciate.
+Hi Linus,
 
-Thank you!
+Please pull some more powerpc fixes for 4.18:
 
-Cheers
-Murilo
+The following changes since commit b03897cf318dfc47de33a7ecbc7655584266f034:
+
+  powerpc/powernv: Fix save/restore of SPRG3 on entry/exit from stop (idle) (2018-07-18 20:40:17 +1000)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git tags/powerpc-4.18-5
+
+for you to fetch changes up to cca19f0b684f4ed6aabf6ad07ae3e15e77bfd78a:
+
+  powerpc/64s/radix: Fix missing global invalidations when removing copro (2018-08-01 23:23:41 +1000)
+
+- ------------------------------------------------------------------
+powerpc fixes for 4.18 #5
+
+One fix for a regression in a recent TLB flush optimisation, which caused us to
+incorrectly not send TLB invalidations to coprocessors.
+
+Thanks to:
+  Frederic Barrat, Nicholas Piggin, Vaibhav Jain.
+
+- ------------------------------------------------------------------
+Frederic Barrat (1):
+      powerpc/64s/radix: Fix missing global invalidations when removing copro
+
+
+ arch/powerpc/include/asm/mmu_context.h | 33 +++++++++++++++++++++------------
+ 1 file changed, 21 insertions(+), 12 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJbZD0oAAoJEFHr6jzI4aWAcXgP/2H1bZ7IW+1iRkeBxLWerg+W
+jjo6sMXYFE/yIWiDquE0hqTDF2yeUPORrTJHDFAarDQN4kNzfbiyW1x5rR45hUED
+evbruA694+vzTIGH6bN/jiiuaazeKzX9SlweQN+eMZcO0R5m+BGPdz5mLlY/xvM+
+9iRY89+ZmMzIK5yWFeXwFYhnqupOhQAKmCh3cGi9DDI3hfSfBOawAeYyx8H6y8WI
+wd3bhl+PY6Yrx4Y6ZWnvWtNIY2QXSB9+rn0cOABPaQWasHhIYEFVpnT2DxRIM6ST
+V9BNOj1PhvDcClnwaNE8Gus06CTqf2crOWVhOvYYwB0tMlvFnhFjexxwkhXQSmeT
+kQKINYZ5eCyJhm1CmZ2CVv9KxPJESFilDr+CEHKXBq8mD7X1KUIvGyKmqZAOCgCQ
+2ZBhgPoSs/lBoj7uBMgriMrnDI0VonUGNYSgT0XPiKIB0/vi5uYJBumwkvTuyDYk
+2iIS29OnVv57xmF6QIvSp8jzmaDNxD+QP9Hrbqa7rInGiaGyYHAlfTqlm80ja7Jx
+HBvYTW9PPKywYyTAxBpFc9TytuX4CvPMZsA1vo7Ow8nfVTNjtqGRl0VeXZ3fkW3E
+QP8hfpgmkzIZeASpd1p7mSY0ki/5wad7Lb1wcqFJYE2/pT3Kd4oCjTbT7BFW70N6
+hegdM5woDuk8lKFqao3V
+=klUx
+-----END PGP SIGNATURE-----
