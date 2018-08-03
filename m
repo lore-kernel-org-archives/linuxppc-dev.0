@@ -1,34 +1,34 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hgbG1K45zF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 18:44:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hgkR2zd8zF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 18:51:11 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Alastair D'Silva <alastair@d-silva.org>,
- Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Balbir Singh <bsingharora@gmail.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman" <ebiederm@xmission.com>,
- Joe Perches <joe@perches.com>, Michael Neuling <mikey@neuling.org>,
- Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Simon Guo <wei.guo.simon@gmail.com>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- "Tobin C . Harding" <me@tobin.cc>, linuxppc-dev@lists.ozlabs.org,
- Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v4 5/6] powerpc: Add show_user_instructions()
-In-Reply-To: <69cf990b-d4aa-97e7-be3b-7936caa91688@c-s.fr>
-References: <20180801213320.11203-1-muriloo@linux.ibm.com>
- <20180801213320.11203-6-muriloo@linux.ibm.com>
- <7209fa95-8d40-14ca-f27a-ce3edb64191e@c-s.fr>
- <20180803004201.GA5891@kermit-br-ibm-com>
- <69cf990b-d4aa-97e7-be3b-7936caa91688@c-s.fr>
-Date: Fri, 03 Aug 2018 18:44:54 +1000
-Message-ID: <87pnyzhm9l.fsf@concordia.ellerman.id.au>
+To: Alex Ghiti <alex@ghiti.fr>, linux-mm@kvack.org, mike.kravetz@oracle.com,
+ linux@armlinux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, ralf@linux-mips.org,
+ paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
+ benh@kernel.crashing.org, ysato@users.sourceforge.jp, dalias@libc.org,
+ davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+ x86@kernel.org, arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
+ "aneesh.kumar\@linux.ibm.com" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH v5 09/11] hugetlb: Introduce generic version of
+ huge_ptep_set_wrprotect
+In-Reply-To: <90bf556f-144d-24b8-d2f6-70fee4a30559@ghiti.fr>
+References: <20180731060155.16915-1-alex@ghiti.fr>
+ <20180731060155.16915-10-alex@ghiti.fr>
+ <87h8kfhg7o.fsf@concordia.ellerman.id.au>
+ <6acb1389-6998-bafb-cf69-174fd522c04c@ghiti.fr>
+ <90bf556f-144d-24b8-d2f6-70fee4a30559@ghiti.fr>
+Date: Fri, 03 Aug 2018 18:51:03 +1000
+Message-ID: <87muu3hlzc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,108 +38,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 03/08/2018 =C3=A0 02:42, Murilo Opsfelder Araujo a =C3=A9crit=C2=A0:
->> Hi, Christophe.
->> On Thu, Aug 02, 2018 at 07:26:20AM +0200, Christophe LEROY wrote:
->>> Le 01/08/2018 =C3=A0 23:33, Murilo Opsfelder Araujo a =C3=A9crit=C2=A0:
->>>> show_user_instructions() is a slightly modified version of
->>>> show_instructions() that allows userspace instruction dump.
->>>>
->>>> This will be useful within show_signal_msg() to dump userspace
->>>> instructions of the faulty location.
->>>>
->>>> Here is a sample of what show_user_instructions() outputs:
->>>>
->>>>     pandafault[10850]: code: 4bfffeec 4bfffee8 3c401002 38427f00 fbe1f=
-ff8 f821ffc1 7c3f0b78 3d22fffe
->>>>     pandafault[10850]: code: 392988d0 f93f0020 e93f0020 39400048 <9949=
-0000> 39200000 7d234b78 383f0040
->>>>
->>>> The current->comm and current->pid printed can serve as a glue that
->>>> links the instructions dump to its originator, allowing messages to be
->>>> interleaved in the logs.
->>>>
->>>> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/proce=
-ss.c
->>>> index e9533b4d2f08..364645ac732c 100644
->>>> --- a/arch/powerpc/kernel/process.c
->>>> +++ b/arch/powerpc/kernel/process.c
->>>> @@ -1299,6 +1299,46 @@ static void show_instructions(struct pt_regs *r=
-egs)
->>>>    	pr_cont("\n");
->>>>    }
->>>> +void show_user_instructions(struct pt_regs *regs)
->>>> +{
->>>> +	int i;
->>>> +	const char *prefix =3D KERN_INFO "%s[%d]: code: ";
->>>> +	unsigned long pc =3D regs->nip - (instructions_to_print * 3 / 4 *
->>>> +					sizeof(int));
->>>> +
->>>> +	printk(prefix, current->comm, current->pid);
->>>
->>> Why not use pr_info() and remove KERN_INFO from *prefix ?
->>=20
->> Because it doesn't compile:
->>=20
->>    arch/powerpc/kernel/process.c:1317:10: error: expected =E2=80=98)=E2=
-=80=99 before =E2=80=98prefix=E2=80=99
->>      pr_info(prefix, current->comm, current->pid);
->>              ^
->>    ./include/linux/printk.h:288:21: note: in definition of macro =E2=80=
-=98pr_fmt=E2=80=99
->>     #define pr_fmt(fmt) fmt
->>                       ^
->>=20
->> `pr_info(prefix, ...)` expands to `printk("\001" "6" prefix, ...)`,
->> which is an invalid string concatenation.
->>=20
->> `pr_info("%s", ...)` expands to `printk("\001" "6" "%s", ...)`, which is
->> valid.
+Hi Alex,
+
+Sorry missed your previous mail.
+
+Alex Ghiti <alex@ghiti.fr> writes:
+> Ok, I tried every defconfig available:
 >
-> Then what about using directly:
->
-> pr_info("%s[%d]: code: ", ...);
+> - for the nohash/32, I found that I could use mpc885_ads_defconfig and I 
+> activated HUGETLBFS.
+> I removed the definition of huge_ptep_set_wrprotect from 
+> nohash/32/pgtable.h, add an #error in
+> include/asm-generic/hugetlb.h right before the generic definition of 
+> huge_ptep_set_wrprotect,
+> and fell onto it at compile-time:
+> => I'm pretty confident then that removing the definition of 
+> huge_ptep_set_wrprotect does not
+> break anythingin this case.
 
-Yeah that's better, I'll fix it up when applying.
+Thanks, that sounds good.
 
->>>> +#if !defined(CONFIG_BOOKE)
->>>> +		/* If executing with the IMMU off, adjust pc rather
->>>> +		 * than print XXXXXXXX.
->>>> +		 */
->>>> +		if (!(regs->msr & MSR_IR))
->>>> +			pc =3D (unsigned long)phys_to_virt(pc);
->>>
->>> Shouldn't this be done outside of the loop, only once ?
->>=20
->> I don't think so.
->>=20
->> pc gets incremented at the bottom of the loop:
->>=20
->>    pc +=3D sizeof(int);
->>=20
->> Adjusting pc is necessary at each iteration.  Leaving this block inside
->> the loop seems correct.
->
-> This looks pretty strange.
-> The first time, pc is a physical address, that you change to a virtual=20
-> address. Then when you increment it it is still a virtual address.
-> So when you call phys_to_virt(pc) for the second time, pc is already a=20
-> virt address, so what happens indeed ?
+> - regardind book3s/32, I did not find any defconfig with 
+> CONFIG_PPC_BOOK3S_32, CONFIG_PPC32
+> allowing to enable huge page support (ie CONFIG_SYS_SUPPORTS_HUGETLBFS)
+> => Do you have a defconfig that would allow me to try the same as above ?
 
-Yeah that's a bit fishy.
+I think you're right, it's dead code AFAICS.
 
-On 64-bit it works because phys_to_virt() =3D=3D __va() which is:
+We have:
 
-  #define __va(x) ((void *)(unsigned long)((phys_addr_t)(x) | PAGE_OFFSET))
+config PPC_BOOK3S_64
+        ...
+	select SYS_SUPPORTS_HUGETLBFS
 
-ie. it uses bitwise or, so __va(__va(x)) =3D=3D __va(x).
+config PPC_FSL_BOOK3E
+        ...
+	select SYS_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
 
-But it looks like on 32-bit it's going to do the wrong thing. Do we ever
-actually hit that case though, I'm not sure?
+config PPC_8xx
+	...
+	select SYS_SUPPORTS_HUGETLBFS
 
 
-However for this patch I'll just remove the whole thing, because we
-don't expect to be dumping user instructions in realmode.
+So we can't ever enable HUGETLBFS for Book3S 32.
+
+Presumably the code got copied when we split the headers apart.
+
+So I think you can just ignore that one, and we'll delete it.
 
 cheers
