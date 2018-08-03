@@ -1,26 +1,37 @@
-Return-Path: <jasowang@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0249.hostedemail.com
+ [216.40.44.249])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hWXV5TVNzF2FQ
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 12:41:58 +1000 (AEST)
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-To: "Michael S. Tsirkin" <mst@redhat.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, aik@ozlabs.ru, robh@kernel.org,
- joe@perches.com, elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org,
- linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180802235332-mutt-send-email-mst@kernel.org>
-From: Jason Wang <jasowang@redhat.com>
-Message-ID: <b31d2162-884c-0ed4-00df-e7debe0cc0e7@redhat.com>
-Date: Fri, 3 Aug 2018 10:41:41 +0800
-MIME-Version: 1.0
-In-Reply-To: <20180802235332-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hXDj3VvSzF2D8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 13:13:24 +1000 (AEST)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave03.hostedemail.com (Postfix) with ESMTP id B9A0718002057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 01:23:34 +0000 (UTC)
+Message-ID: <f6d9bc125a4b8e6cd4358c5dd9656730a7716b23.camel@perches.com>
+Subject: Re: [PATCH v4 5/6] powerpc: Add show_user_instructions()
+From: Joe Perches <joe@perches.com>
+To: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>, Christophe LEROY
+ <christophe.leroy@c-s.fr>
+Cc: linux-kernel@vger.kernel.org, Alastair D'Silva <alastair@d-silva.org>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>, Balbir Singh
+ <bsingharora@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Cyril Bur <cyrilbur@gmail.com>, "Eric W . Biederman"
+ <ebiederm@xmission.com>, Michael Ellerman <mpe@ellerman.id.au>, Michael
+ Neuling <mikey@neuling.org>, Nicholas Piggin <npiggin@gmail.com>, Paul
+ Mackerras <paulus@samba.org>, Simon Guo <wei.guo.simon@gmail.com>, Sukadev
+ Bhattiprolu <sukadev@linux.vnet.ibm.com>, "Tobin C . Harding"
+ <me@tobin.cc>,  linuxppc-dev@lists.ozlabs.org, Segher Boessenkool
+ <segher@kernel.crashing.org>
+Date: Thu, 02 Aug 2018 18:22:29 -0700
+In-Reply-To: <20180803004201.GA5891@kermit-br-ibm-com>
+References: <20180801213320.11203-1-muriloo@linux.ibm.com>
+ <20180801213320.11203-6-muriloo@linux.ibm.com>
+ <7209fa95-8d40-14ca-f27a-ce3edb64191e@c-s.fr>
+ <20180803004201.GA5891@kermit-br-ibm-com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,63 +41,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2018-08-02 at 21:42 -0300, Murilo Opsfelder Araujo wrote:
+> > > diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+[]
+> > > @@ -1299,6 +1299,46 @@ static void show_instructions(struct pt_regs *regs)
+> > >   	pr_cont("\n");
+> > >   }
+> > > +void show_user_instructions(struct pt_regs *regs)
+> > > +{
+> > > +	int i;
+> > > +	const char *prefix = KERN_INFO "%s[%d]: code: ";
+> > > +	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
+> > > +					sizeof(int));
+> > > +
+> > > +	printk(prefix, current->comm, current->pid);
+> > 
+> > Why not use pr_info() and remove KERN_INFO from *prefix ?
+> 
+> Because it doesn't compile:
+> 
+>   arch/powerpc/kernel/process.c:1317:10: error: expected ‘)’ before ‘prefix’
+>     pr_info(prefix, current->comm, current->pid);
+>             ^
+>   ./include/linux/printk.h:288:21: note: in definition of macro ‘pr_fmt’
+>    #define pr_fmt(fmt) fmt
+>                      ^
 
+What being suggested is using:
 
-On 2018年08月03日 04:55, Michael S. Tsirkin wrote:
-> On Fri, Jul 20, 2018 at 09:29:37AM +0530, Anshuman Khandual wrote:
->> This patch series is the follow up on the discussions we had before about
->> the RFC titled [RFC,V2] virtio: Add platform specific DMA API translation
->> for virito devices (https://patchwork.kernel.org/patch/10417371/). There
->> were suggestions about doing away with two different paths of transactions
->> with the host/QEMU, first being the direct GPA and the other being the DMA
->> API based translations.
->>
->> First patch attempts to create a direct GPA mapping based DMA operations
->> structure called 'virtio_direct_dma_ops' with exact same implementation
->> of the direct GPA path which virtio core currently has but just wrapped in
->> a DMA API format. Virtio core must use 'virtio_direct_dma_ops' instead of
->> the arch default in absence of VIRTIO_F_IOMMU_PLATFORM flag to preserve the
->> existing semantics. The second patch does exactly that inside the function
->> virtio_finalize_features(). The third patch removes the default direct GPA
->> path from virtio core forcing it to use DMA API callbacks for all devices.
->> Now with that change, every device must have a DMA operations structure
->> associated with it. The fourth patch adds an additional hook which gives
->> the platform an opportunity to do yet another override if required. This
->> platform hook can be used on POWER Ultravisor based protected guests to
->> load up SWIOTLB DMA callbacks to do the required (as discussed previously
->> in the above mentioned thread how host is allowed to access only parts of
->> the guest GPA range) bounce buffering into the shared memory for all I/O
->> scatter gather buffers to be consumed on the host side.
->>
->> Please go through these patches and review whether this approach broadly
->> makes sense. I will appreciate suggestions, inputs, comments regarding
->> the patches or the approach in general. Thank you.
-> Jason did some work on profiling this. Unfortunately he reports
-> about 4% extra overhead from this switch on x86 with no vIOMMU.
-
-The test is rather simple, just run pktgen (pktgen_sample01_simple.sh) 
-in guest and measure PPS on tap on host.
-
-Thanks
-
->
-> I expect he's writing up the data in more detail, but
-> just wanted to let you know this would be one more
-> thing to debug before we can just switch to DMA APIs.
->
->
->> Anshuman Khandual (4):
->>    virtio: Define virtio_direct_dma_ops structure
->>    virtio: Override device's DMA OPS with virtio_direct_dma_ops selectively
->>    virtio: Force virtio core to use DMA API callbacks for all virtio devices
->>    virtio: Add platform specific DMA API translation for virito devices
->>
->>   arch/powerpc/include/asm/dma-mapping.h |  6 +++
->>   arch/powerpc/platforms/pseries/iommu.c |  6 +++
->>   drivers/virtio/virtio.c                | 72 ++++++++++++++++++++++++++++++++++
->>   drivers/virtio/virtio_pci_common.h     |  3 ++
->>   drivers/virtio/virtio_ring.c           | 65 +-----------------------------
->>   5 files changed, 89 insertions(+), 63 deletions(-)
->>
->> -- 
->> 2.9.3
+	pr_info("%s[%d]: code: ", current->comm, current->pid);
