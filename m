@@ -1,27 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hjk76vtPzF2D8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:21:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hjmf1VThzF2FB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:23:14 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
- Darren Stevens <darren@stevens-zone.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/pasemi: Seach for PCI root bus by compatible
- property
-In-Reply-To: <CAOesGMig7yYay8dZsjsc7pmZsqmHTrGDZOukOqOkTzjEB3=z1Q@mail.gmail.com>
-References: <4c4cb2b4391.4d23d508@auth.smtp.1and1.co.uk>
- <8736vzhb6h.fsf@concordia.ellerman.id.au>
- <87zhy7fw7f.fsf@concordia.ellerman.id.au>
- <fde71219-5e0e-cc12-a31f-258ce547f471@xenosoft.de>
- <877elaf92a.fsf@concordia.ellerman.id.au>
- <CAOesGMig7yYay8dZsjsc7pmZsqmHTrGDZOukOqOkTzjEB3=z1Q@mail.gmail.com>
-Date: Fri, 03 Aug 2018 20:20:59 +1000
-Message-ID: <87k1p7hhtg.fsf@concordia.ellerman.id.au>
+To: Paul Menzel <pmenzel@molgen.mpg.de>
+Cc: linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
+Subject: Re: [PATCH] powerpc/mm: Don't report PUDs as memory leaks when using
+ kmemleak
+In-Reply-To: <83c5b57f-f11d-3223-4d24-5030799caa0c@molgen.mpg.de>
+References: <20180719143316.23486-1-mpe@ellerman.id.au>
+ <e653db46-a829-4673-4378-4c0afef03cde@molgen.mpg.de>
+ <87zhy9i5q0.fsf@concordia.ellerman.id.au>
+ <83c5b57f-f11d-3223-4d24-5030799caa0c@molgen.mpg.de>
+Date: Fri, 03 Aug 2018 20:23:10 +1000
+Message-ID: <87h8kbhhpt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Olof Johansson <olof@lixom.net> writes:
-> On Wed, Aug 1, 2018 at 7:36 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
->>
->>> Just for info: I tested it on my Nemo board today and it works.
->>
->> Awesome thanks.
->>
->> That's probably sufficient to merge it, and if it breaks anything we can
->> always revert it.
+Paul Menzel <pmenzel@molgen.mpg.de> writes:
+> On 07/30/18 08:43, Michael Ellerman wrote:
+>> Paul Menzel <pmenzel@molgen.mpg.de> writes:
+>>> Am 19.07.2018 um 16:33 schrieb Michael Ellerman:
+>> ...
+>>>>
+>>>> The fix is fairly simple. We need to tell kmemleak to ignore PUD
+>>>> allocations and never report them as leaks. We can also tell it not to
+>>>> scan the PGD, because it will never find pointers in there. However it
+>>>> will still notice if we allocate a PGD and then leak it.
+>>>>
+>>>> Reported-by: Paul Menzel <pmenzel@molgen.mpg.de>
+>>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au> > ---
+>>>>   arch/powerpc/include/asm/book3s/64/pgalloc.h | 23 ++++++++++++++++++=
++++--
+>>>>   1 file changed, 21 insertions(+), 2 deletions(-)
+>>>
+>>> [=E2=80=A6]
+>>>
+>>> Tested-by: Paul Menzel <pmenzel@molgen.mpg.de> on IBM S822LC
+>>=20
+>> Thanks.
 >
-> Should be fine, all known boards have the properties in question, and
-> I doubt anyone has anything but Nemo and Electra/Chitra boards out
-> there.
->
-> It's a virtual root bus, so all boards have it irrespective of what
-> PCIe is brought out.
->
-> (I should hook up my test system and get it into the CI cycle again,
-> maybe this fall).
->
->
-> Acked-by: Olof Johansson <olof@lixom.net>
+> No problem. I forgot to add, that it=E2=80=99d be great, if you tagged th=
+is
+> for the stable series too.
 
-Thanks.
+Sorry I didn't see this before I applied, so it's not tagged for stable.
+
+We can request a backport though, what stable version(s) are you
+running?
 
 cheers
