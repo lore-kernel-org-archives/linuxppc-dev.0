@@ -1,29 +1,22 @@
-Return-Path: <leoyang.li@nxp.com>
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30083.outbound.protection.outlook.com [40.107.3.83])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hQGx5PF2zF2D8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 08:44:56 +1000 (AEST)
-From: Leo Li <leoyang.li@nxp.com>
-To: "jocke@infinera.com" <joakim.tjernlund@infinera.com>, York Sun
- <york.sun@nxp.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, Qiang Zhao <qiang.zhao@nxp.com>
-Subject: RE: [PATCH] QE GPIO: Add qe_gpio_set_multiple
-Date: Thu, 2 Aug 2018 22:44:50 +0000
-Message-ID: <AM0PR04MB48675A4CCF7FF93E8AA4883E8F2C0@AM0PR04MB4867.eurprd04.prod.outlook.com>
-References: <20180619162216.20030-1-joakim.tjernlund@infinera.com>
- <VI1PR04MB1200BC4D8A8B362FE62B1D7591760@VI1PR04MB1200.eurprd04.prod.outlook.com>
- <fef3d759a1f6677ec713b120b4b1f4ab1eb4946b.camel@infinera.com>
- <87a7rh7ji2.fsf@concordia.ellerman.id.au>
- <b7c4d55627e474a868ad7284672fbbd14dcf8d39.camel@infinera.com>
- <VI1PR04MB2078C55EBFAEED9BC3FCE1989A420@VI1PR04MB2078.eurprd04.prod.outlook.com>
- <AM4PR0401MB1699AFF424BDFAE1BC65E1FA8F420@AM4PR0401MB1699.eurprd04.prod.outlook.com>
- <bace5db4ede3d1e8cbe314f1306b90bc2893218e.camel@infinera.com>
-In-Reply-To: <bace5db4ede3d1e8cbe314f1306b90bc2893218e.camel@infinera.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hWFx29L4zF2FJ
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 12:29:25 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ aneesh.kumar@linux.ibm.com, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [resend] [PATCH 0/3] powerpc/pseries: use H_BLOCK_REMOVE
+In-Reply-To: <20180801115514.441eecc8@roar.ozlabs.ibm.com>
+References: <1532699493-10883-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <20180801115514.441eecc8@roar.ozlabs.ibm.com>
+Date: Fri, 03 Aug 2018 12:29:20 +1000
+Message-ID: <87tvocgp33.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,61 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSm9ha2ltIFRqZXJubHVu
-ZCBbbWFpbHRvOkpvYWtpbS5UamVybmx1bmRAaW5maW5lcmEuY29tXQ0KPiBTZW50OiBUaHVyc2Rh
-eSwgQXVndXN0IDIsIDIwMTggNTozNyBQTQ0KPiBUbzogTGVvIExpIDxsZW95YW5nLmxpQG54cC5j
-b20+OyBZb3JrIFN1biA8eW9yay5zdW5AbnhwLmNvbT4NCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOyBtcGVAZWxsZXJtYW4uaWQuYXU7IFFpYW5nIFpoYW8NCj4gPHFpYW5nLnpo
-YW9AbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gUUUgR1BJTzogQWRkIHFlX2dwaW9f
-c2V0X211bHRpcGxlDQo+IA0KPiBMZW8sIGRpZCB0aGlzIGdvIGFueXdoZXJlID8NCg0KSXQgaGFz
-IGJlZW4gaW5jbHVkZWQgaW4gbXkgc29jIHB1bGwgcmVxdWVzdCBmb3IgNC4xOS4gIGh0dHA6Ly9s
-a21sLml1LmVkdS9oeXBlcm1haWwvbGludXgva2VybmVsLzE4MDcuMy8wMjI5NS5odG1sDQoNCkxl
-bw0KDQo+IA0KPiAgICAgSm9ja2UNCj4gDQo+IE9uIFR1ZSwgMjAxOC0wNy0wMyBhdCAxNjozNSAr
-MDAwMCwgTGVvIExpIHdyb3RlOg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiA+ID4gRnJvbTogWW9yayBTdW4NCj4gPiA+IFNlbnQ6IFR1ZXNkYXksIEp1bHkgMywgMjAx
-OCAxMDoyNyBBTQ0KPiA+ID4gVG86IGpvY2tlQGluZmluZXJhLmNvbSA8am9ha2ltLnRqZXJubHVu
-ZEBpbmZpbmVyYS5jb20+OyBMZW8gTGkNCj4gPiA+IDxsZW95YW5nLmxpQG54cC5jb20+DQo+ID4g
-PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IG1wZUBlbGxlcm1hbi5pZC5hdTsg
-UWlhbmcgWmhhbw0KPiA+ID4gPHFpYW5nLnpoYW9AbnhwLmNvbT4NCj4gPiA+IFN1YmplY3Q6IFJl
-OiBbUEFUQ0hdIFFFIEdQSU86IEFkZCBxZV9ncGlvX3NldF9tdWx0aXBsZQ0KPiA+ID4NCj4gPiA+
-ICtMZW8NCj4gPiA+DQo+ID4gPiBPbiAwNy8wMy8yMDE4IDAzOjMwIEFNLCBKb2FraW0gVGplcm5s
-dW5kIHdyb3RlOg0KPiA+ID4gPiBPbiBUdWUsIDIwMTgtMDYtMjYgYXQgMjM6NDEgKzEwMDAsIE1p
-Y2hhZWwgRWxsZXJtYW4gd3JvdGU6DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBKb2FraW0gVGplcm5s
-dW5kIDxKb2FraW0uVGplcm5sdW5kQGluZmluZXJhLmNvbT4gd3JpdGVzOg0KPiA+ID4gPiA+ID4g
-T24gVGh1LCAyMDE4LTA2LTIxIGF0IDAyOjM4ICswMDAwLCBRaWFuZyBaaGFvIHdyb3RlOg0KPiA+
-ID4gPiA+ID4gPiBPbiAwNi8xOS8yMDE4IDA5OjIyIEFNLCBKb2FraW0gVGplcm5sdW5kIHdyb3Rl
-Og0KPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4g
-PiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1kZXYtDQo+ID4gPg0KPiA+ID4g
-Ym91bmNlcytxaWFuZy56aGFvPW54cC5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9m
-IEpvYWtpbQ0KPiA+ID4gVGplcm5sdW5kDQo+ID4gPiA+ID4gPiA+IFNlbnQ6IDIwMTjlubQ25pyI
-MjDml6UgMDoyMg0KPiA+ID4gPiA+ID4gPiBUbzogWW9yayBTdW4gPHlvcmsuc3VuQG54cC5jb20+
-OyBsaW51eHBwYy1kZXYgPGxpbnV4cHBjLQ0KPiA+ID4NCj4gPiA+IGRldkBsaXN0cy5vemxhYnMu
-b3JnPg0KPiA+ID4gPiA+ID4gPiBTdWJqZWN0OiBbUEFUQ0hdIFFFIEdQSU86IEFkZCBxZV9ncGlv
-X3NldF9tdWx0aXBsZQ0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBUaGlzIGNvdXNpbiB0
-byBncGlvLW1wYzh4eHggd2FzIGxhY2tpbmcgYSBtdWx0aXBsZSBwaW5zDQo+ID4gPiA+ID4gPiA+
-IG1ldGhvZCwgYWRkDQo+ID4gPg0KPiA+ID4gb25lLg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gPiBTaWduZWQtb2ZmLWJ5OiBKb2FraW0gVGplcm5sdW5kDQo+ID4gPiA+ID4gPiA+IDxqb2Fr
-aW0udGplcm5sdW5kQGluZmluZXJhLmNvbT4NCj4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4g
-PiA+ICBkcml2ZXJzL3NvYy9mc2wvcWUvZ3Bpby5jIHwgMjggKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKw0KPiA+ID4gPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDI4IGluc2VydGlvbnMoKykN
-Cj4gPiA+ID4gPg0KPiA+ID4gPiA+IC4uLg0KPiA+ID4gPiA+ID4gPiAgc3RhdGljIGludCBxZV9n
-cGlvX2Rpcl9pbihzdHJ1Y3QgZ3Bpb19jaGlwICpnYywgdW5zaWduZWQgaW50IGdwaW8pICB7DQo+
-ID4gPiA+ID4gPiA+ICAgICAgICAgc3RydWN0IG9mX21tX2dwaW9fY2hpcCAqbW1fZ2MgPQ0KPiA+
-ID4gPiA+ID4gPiB0b19vZl9tbV9ncGlvX2NoaXAoZ2MpOyBAQCAtDQo+ID4gPg0KPiA+ID4gMjk4
-LDYgKzMyNSw3IEBAIHN0YXRpYyBpbnQgX19pbml0IHFlX2FkZF9ncGlvY2hpcHModm9pZCkNCj4g
-PiA+ID4gPiA+ID4gICAgICAgICAgICAgICAgIGdjLT5kaXJlY3Rpb25fb3V0cHV0ID0gcWVfZ3Bp
-b19kaXJfb3V0Ow0KPiA+ID4gPiA+ID4gPiAgICAgICAgICAgICAgICAgZ2MtPmdldCA9IHFlX2dw
-aW9fZ2V0Ow0KPiA+ID4gPiA+ID4gPiAgICAgICAgICAgICAgICAgZ2MtPnNldCA9IHFlX2dwaW9f
-c2V0Ow0KPiA+ID4gPiA+ID4gPiArICAgICAgICAgICAgICAgZ2MtPnNldF9tdWx0aXBsZSA9IHFl
-X2dwaW9fc2V0X211bHRpcGxlOw0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiAgICAgICAg
-ICAgICAgICAgcmV0ID0gb2ZfbW1fZ3Bpb2NoaXBfYWRkX2RhdGEobnAsIG1tX2djLCBxZV9nYyk7
-DQo+ID4gPiA+ID4gPiA+ICAgICAgICAgICAgICAgICBpZiAocmV0KQ0KPiA+ID4gPiA+ID4gPg0K
-PiA+ID4gPiA+ID4gPiBSZXZpZXdlZC1ieTogUWlhbmcgWmhhbyA8cWlhbmcuemhhb0BueHAuY29t
-Pg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFdobyBwaWNrcyB1cCB0
-aGlzIHBhdGNoID8gSXMgaXQgcXVldWVkIHNvbWV3aGVyZSBhbHJlYWR5Pw0KPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gTm90IG1lLg0KPiA+ID4gPg0KPiA+ID4gPiBZb3JrPyBZb3Ugc2VlbSB0byBiZSB0
-aGUgb25seSBvbmUgbGVmdC4NCj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBJIGFtIG5vdCBhIExpbnV4
-IG1haW50YWluZXIuIEV2ZW4gSSB3YW50IHRvLCBJIGNhbid0IG1lcmdlIHRoaXMgcGF0Y2guDQo+
-ID4gPg0KPiA+ID4gTGVvLCB3aG8gY2FuIG1lcmdlIHRoaXMgcGF0Y2ggYW5kIHJlcXVlc3QgYSBw
-dWxsPw0KPiA+DQo+ID4gU2luY2UgaXQgZmFsbHMgdW5kZXIgdGhlIGRyaXZlci9zb2MvZnNsLyBm
-b2xkZXIuICBJIGNhbiB0YWtlIGl0Lg0KPiA+DQo+ID4gUmVnYXJkcywNCj4gPiBMZW8NCg==
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Fri, 27 Jul 2018 15:51:30 +0200
+> Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+>> [Resending so everyone is getting the cover letter]
+>> On very large system we could see soft lockup fired when a process is exiting
+>> 
+>> watchdog: BUG: soft lockup - CPU#851 stuck for 21s! [forkoff:215523]
+>> Modules linked in: pseries_rng rng_core xfs raid10 vmx_crypto btrfs libcrc32c xor zstd_decompress zstd_compress xxhash lzo_compress raid6_pq crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
+>> CPU: 851 PID: 215523 Comm: forkoff Not tainted 4.17.0 #1
+>> NIP:  c0000000000b995c LR: c0000000000b8f64 CTR: 000000000000aa18
+>> REGS: c00006b0645b7610 TRAP: 0901   Not tainted  (4.17.0)
+>> MSR:  800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22042082  XER: 00000000
+>> CFAR: 00000000006cf8f0 SOFTE: 0 
+>> GPR00: 0010000000000000 c00006b0645b7890 c000000000f99200 0000000000000000 
+>> GPR04: 8e000001a5a4de58 400249cf1bfd5480 8e000001a5a4de50 400249cf1bfd5480 
+>> GPR08: 8e000001a5a4de48 400249cf1bfd5480 8e000001a5a4de40 400249cf1bfd5480 
+>> GPR12: ffffffffffffffff c00000001e690800 
+>> NIP [c0000000000b995c] plpar_hcall9+0x44/0x7c
+>> LR [c0000000000b8f64] pSeries_lpar_flush_hash_range+0x324/0x3d0
+>> Call Trace:
+>> [c00006b0645b7890] [8e000001a5a4dd20] 0x8e000001a5a4dd20 (unreliable)
+>> [c00006b0645b7a00] [c00000000006d5b0] flush_hash_range+0x60/0x110
+>> [c00006b0645b7a50] [c000000000072a2c] __flush_tlb_pending+0x4c/0xd0
+>> [c00006b0645b7a80] [c0000000002eaf44] unmap_page_range+0x984/0xbd0
+>> [c00006b0645b7bc0] [c0000000002eb594] unmap_vmas+0x84/0x100
+>> [c00006b0645b7c10] [c0000000002f8afc] exit_mmap+0xac/0x1f0
+>> [c00006b0645b7cd0] [c0000000000f2638] mmput+0x98/0x1b0
+>> [c00006b0645b7d00] [c0000000000fc9d0] do_exit+0x330/0xc00
+>> [c00006b0645b7dc0] [c0000000000fd384] do_group_exit+0x64/0x100
+>> [c00006b0645b7e00] [c0000000000fd44c] sys_exit_group+0x2c/0x30
+>> [c00006b0645b7e30] [c00000000000b960] system_call+0x58/0x6c
+>> Instruction dump:
+>> 60000000 f8810028 7ca42b78 7cc53378 7ce63b78 7d074378 7d284b78 7d495378 
+>> e9410060 e9610068 e9810070 44000022 <7d806378> e9810028 f88c0000 f8ac0008
+>> 
+>> This happens when removing the PTE by calling the hypervisor using the
+>> H_BULK_REMOVE call. This call is processing up to 4 PTEs but is doing a
+>> tlbie for each PTE it is processing. This could lead to long time spent in
+>> the hypervisor (sometimes up to 4s) and soft lockup being raised because
+>> the scheduler is not called in zap_pte_range().
+>> 
+>> Since the Power7's time, the hypervisor is providing a new hcall
+>> H_BLOCK_REMOVE allowing processing up to 8 PTEs with one call to
+>> tlbie. By limiting the amount of tlbie generated, this reduces the time
+>> spent invalidating the PTEs.
+>
+> Oh that's a nice feature. I must have an ancient PAPR because I don't
+> have it.
+
+The only public document is LoPAPR, which is a stripped down version of
+the 2012 PAPR.
+
+cheers
