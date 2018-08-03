@@ -1,36 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gustavo@embeddedor.com>
+Received: from gateway30.websitewelcome.com (gateway30.websitewelcome.com
+ [192.185.150.24])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ht1G6rlvzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 02:34:42 +1000 (AEST)
-Message-ID: <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Fri, 03 Aug 2018 10:58:36 -0500
-In-Reply-To: <20180803070507.GA1344@infradead.org>
-References: <3d6e81511571260de1c8047aaffa8ac4df093d2e.camel@kernel.crashing.org>
- <20180801081637.GA14438@arm.com> <20180801083639.GF26378@infradead.org>
- <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
- <20180802182959-mutt-send-email-mst@kernel.org>
- <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
- <20180802200646-mutt-send-email-mst@kernel.org>
- <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
- <20180802225738-mutt-send-email-mst@kernel.org>
- <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
- <20180803070507.GA1344@infradead.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41htMq4zddzF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 02:50:47 +1000 (AEST)
+Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
+ by gateway30.websitewelcome.com (Postfix) with ESMTP id 19D2ACCD3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 11:27:01 -0500 (CDT)
+Date: Fri, 3 Aug 2018 11:26:59 -0500
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: linux-kernel@vger.kernel.org, Timur Tabi <timur@kernel.org>,
+ Nicolin Chen <nicoleotsuka@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <fabio.estevam@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+ Peter Ujfalusi <peter.ujfalusi@ti.com>,
+ Jarkko Nikula <jarkko.nikula@bitmer.com>,
+ linux-omap@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>,
+ Sangbeom Kim <sbkim73@samsung.com>,
+ Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.com>,
+ Jaroslav Kysela <perex@perex.cz>, Liam Girdwood <lgirdwood@gmail.com>,
+ Mark Brown <broonie@kernel.org>,
+ "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: [PATCH 0/7] ASoC: Mark expected switch fall-throughs
+Message-ID: <cover.1533312229.git.gustavo@embeddedor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +36,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-08-03 at 00:05 -0700, Christoph Hellwig wrote:
-> >   2- Make virtio use the DMA API with our custom platform-provided
-> > swiotlb callbacks when needed, that is when not using IOMMU *and*
-> > running on a secure VM in our case.
-> 
-> And total NAK the customer platform-provided part of this.  We need
-> a flag passed in from the hypervisor that the device needs all bus
-> specific dma api treatment, and then just use the normal plaform
-> dma mapping setup. 
+Hi all,
 
-Christoph, as I have explained already, we do NOT have a way to provide
-such a flag as neither the hypervisor nor qemu knows anything about
-this when the VM is created.
+In preparation to enabling -Wimplicit-fallthrough, this patchset aims
+to add some annotations in order to mark switch cases where we are
+expecting to fall through.
 
->  To get swiotlb you'll need to then use the DT/ACPI
-> dma-range property to limit the addressable range, and a swiotlb
-> capable plaform will use swiotlb automatically.
+Thanks
 
-This cannot be done as you describe it.
+Gustavo A. R. Silva (7):
+  ASoC: davinci-i2s: mark expected switch fall-through
+  ASoC: fsl_esai: Mark expected switch fall-through
+  ASoC: Intel: skl-pcm: Mark expected switch fall-through
+  ASoC: omap-dmic: Mark expected switch fall-throughs
+  ASoC: omap-mcpdm: MArk expected switch fall-throughs
+  ASoC: samsung: i2s: Mark expected switch fall-through
+  ASoC: core: mark expected switch fall-through
 
-The VM is created as a *normal* VM. The DT stuff is generated by qemu
-at a point where it has *no idea* that the VM will later become secure
-and thus will have to restrict which pages can be used for "DMA".
+ sound/soc/davinci/davinci-i2s.c   | 1 +
+ sound/soc/fsl/fsl_esai.c          | 1 +
+ sound/soc/intel/skylake/skl-pcm.c | 1 +
+ sound/soc/omap/omap-dmic.c        | 2 ++
+ sound/soc/omap/omap-mcpdm.c       | 4 ++++
+ sound/soc/samsung/i2s.c           | 1 +
+ sound/soc/soc-core.c              | 1 +
+ 7 files changed, 11 insertions(+)
 
-The VM will *at runtime* turn itself into a secure VM via interactions
-with the security HW and the Ultravisor layer (which sits below the
-HV). This happens way after the DT has been created and consumed, the
-qemu devices instanciated etc...
-
-Only the guest kernel knows because it initates the transition. When
-that happens, the virtio devices have already been used by the guest
-firmware, bootloader, possibly another kernel that kexeced the "secure"
-one, etc... 
-
-So instead of running around saying NAK NAK NAK, please explain how we
-can solve that differently.
-
-Ben.
+-- 
+2.7.4
