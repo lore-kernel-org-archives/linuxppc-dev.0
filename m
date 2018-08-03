@@ -2,27 +2,37 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hxRG4qGrzF2FT
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 05:08:58 +1000 (AEST)
-Date: Fri, 3 Aug 2018 22:08:51 +0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hxdJ2YT9zF2DY
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 05:17:40 +1000 (AEST)
+Date: Fri, 3 Aug 2018 22:17:32 +0300
 From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Jason Wang <jasowang@redhat.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
  elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- benh@kernel.crashing.org, mpe@ellerman.id.au, hch@infradead.org,
- linuxram@us.ibm.com, haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180803220812-mutt-send-email-mst@kernel.org>
-References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
- <20180802235332-mutt-send-email-mst@kernel.org>
- <b31d2162-884c-0ed4-00df-e7debe0cc0e7@redhat.com>
+Message-ID: <20180803221634-mutt-send-email-mst@kernel.org>
+References: <20180801081637.GA14438@arm.com>
+ <20180801083639.GF26378@infradead.org>
+ <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
+ <20180802182959-mutt-send-email-mst@kernel.org>
+ <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
+ <20180802200646-mutt-send-email-mst@kernel.org>
+ <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+ <20180802225738-mutt-send-email-mst@kernel.org>
+ <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
+ <20180803070507.GA1344@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <b31d2162-884c-0ed4-00df-e7debe0cc0e7@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180803070507.GA1344@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,66 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2018 at 10:41:41AM +0800, Jason Wang wrote:
+On Fri, Aug 03, 2018 at 12:05:07AM -0700, Christoph Hellwig wrote:
+> On Thu, Aug 02, 2018 at 04:13:09PM -0500, Benjamin Herrenschmidt wrote:
+> > So let's differenciate the two problems of having an IOMMU (real or
+> > emulated) which indeeds adds overhead etc... and using the DMA API.
+> > 
+> > At the moment, virtio does this all over the place:
+> > 
+> > 	if (use_dma_api)
+> > 		dma_map/alloc_something(...)
+> > 	else
+> > 		use_pa
+> > 
+> > The idea of the patch set is to do two, somewhat orthogonal, changes
+> > that together achieve what we want. Let me know where you think there
+> > is "a bunch of issues" because I'm missing it:
+> > 
+> >  1- Replace the above if/else constructs with just calling the DMA API,
+> > and have virtio, at initialization, hookup its own dma_ops that just
+> > "return pa" (roughly) when the IOMMU stuff isn't used.
+> > 
+> > This adds an indirect function call to the path that previously didn't
+> > have one (the else case above). Is that a significant/measurable
+> > overhead ?
 > 
+> If you call it often enough it does:
 > 
-> On 2018年08月03日 04:55, Michael S. Tsirkin wrote:
-> > On Fri, Jul 20, 2018 at 09:29:37AM +0530, Anshuman Khandual wrote:
-> > > This patch series is the follow up on the discussions we had before about
-> > > the RFC titled [RFC,V2] virtio: Add platform specific DMA API translation
-> > > for virito devices (https://patchwork.kernel.org/patch/10417371/). There
-> > > were suggestions about doing away with two different paths of transactions
-> > > with the host/QEMU, first being the direct GPA and the other being the DMA
-> > > API based translations.
-> > > 
-> > > First patch attempts to create a direct GPA mapping based DMA operations
-> > > structure called 'virtio_direct_dma_ops' with exact same implementation
-> > > of the direct GPA path which virtio core currently has but just wrapped in
-> > > a DMA API format. Virtio core must use 'virtio_direct_dma_ops' instead of
-> > > the arch default in absence of VIRTIO_F_IOMMU_PLATFORM flag to preserve the
-> > > existing semantics. The second patch does exactly that inside the function
-> > > virtio_finalize_features(). The third patch removes the default direct GPA
-> > > path from virtio core forcing it to use DMA API callbacks for all devices.
-> > > Now with that change, every device must have a DMA operations structure
-> > > associated with it. The fourth patch adds an additional hook which gives
-> > > the platform an opportunity to do yet another override if required. This
-> > > platform hook can be used on POWER Ultravisor based protected guests to
-> > > load up SWIOTLB DMA callbacks to do the required (as discussed previously
-> > > in the above mentioned thread how host is allowed to access only parts of
-> > > the guest GPA range) bounce buffering into the shared memory for all I/O
-> > > scatter gather buffers to be consumed on the host side.
-> > > 
-> > > Please go through these patches and review whether this approach broadly
-> > > makes sense. I will appreciate suggestions, inputs, comments regarding
-> > > the patches or the approach in general. Thank you.
-> > Jason did some work on profiling this. Unfortunately he reports
-> > about 4% extra overhead from this switch on x86 with no vIOMMU.
+> https://www.spinics.net/lists/netdev/msg495413.html
 > 
-> The test is rather simple, just run pktgen (pktgen_sample01_simple.sh) in
-> guest and measure PPS on tap on host.
+> >  2- Make virtio use the DMA API with our custom platform-provided
+> > swiotlb callbacks when needed, that is when not using IOMMU *and*
+> > running on a secure VM in our case.
 > 
-> Thanks
+> And total NAK the customer platform-provided part of this.  We need
+> a flag passed in from the hypervisor that the device needs all bus
+> specific dma api treatment, and then just use the normal plaform
+> dma mapping setup.  To get swiotlb you'll need to then use the DT/ACPI
+> dma-range property to limit the addressable range, and a swiotlb
+> capable plaform will use swiotlb automatically.
 
-Could you supply host configuration involved please?
+It seems reasonable to teach a platform to override dma-range
+for a specific device e.g. in case it knows about bugs in ACPI.
 
-> > 
-> > I expect he's writing up the data in more detail, but
-> > just wanted to let you know this would be one more
-> > thing to debug before we can just switch to DMA APIs.
-> > 
-> > 
-> > > Anshuman Khandual (4):
-> > >    virtio: Define virtio_direct_dma_ops structure
-> > >    virtio: Override device's DMA OPS with virtio_direct_dma_ops selectively
-> > >    virtio: Force virtio core to use DMA API callbacks for all virtio devices
-> > >    virtio: Add platform specific DMA API translation for virito devices
-> > > 
-> > >   arch/powerpc/include/asm/dma-mapping.h |  6 +++
-> > >   arch/powerpc/platforms/pseries/iommu.c |  6 +++
-> > >   drivers/virtio/virtio.c                | 72 ++++++++++++++++++++++++++++++++++
-> > >   drivers/virtio/virtio_pci_common.h     |  3 ++
-> > >   drivers/virtio/virtio_ring.c           | 65 +-----------------------------
-> > >   5 files changed, 89 insertions(+), 63 deletions(-)
-> > > 
-> > > -- 
-> > > 2.9.3
+-- 
+MST
