@@ -1,20 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hjY959VGzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:13:17 +1000 (AEST)
-Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 41hjY92nc3z9ryn
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2018 20:13:17 +1000 (AEST)
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 0/4] powerpc/64: copy_tofrom_user exception handling
- improvements
-Date: Fri,  3 Aug 2018 20:13:02 +1000
-Message-Id: <1533291186-5374-1-git-send-email-paulus@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hjk76vtPzF2D8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:21:03 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Darren Stevens <darren@stevens-zone.net>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc/pasemi: Seach for PCI root bus by compatible
+ property
+In-Reply-To: <CAOesGMig7yYay8dZsjsc7pmZsqmHTrGDZOukOqOkTzjEB3=z1Q@mail.gmail.com>
+References: <4c4cb2b4391.4d23d508@auth.smtp.1and1.co.uk>
+ <8736vzhb6h.fsf@concordia.ellerman.id.au>
+ <87zhy7fw7f.fsf@concordia.ellerman.id.au>
+ <fde71219-5e0e-cc12-a31f-258ce547f471@xenosoft.de>
+ <877elaf92a.fsf@concordia.ellerman.id.au>
+ <CAOesGMig7yYay8dZsjsc7pmZsqmHTrGDZOukOqOkTzjEB3=z1Q@mail.gmail.com>
+Date: Fri, 03 Aug 2018 20:20:59 +1000
+Message-ID: <87k1p7hhtg.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a repost of a series that I posted back in 2016 but which was
-never applied.  It aims to make the exception handling code in
-__copy_tofrom_user_base clearer and easier to verify, and strengthens
-the selftests for the user copy code to test all the paths and to test
-the exception handling.  Finally it then fixes a deficiency in that
-when copying to userspace we don't always copy quite as many bytes as
-we could.
+Olof Johansson <olof@lixom.net> writes:
+> On Wed, Aug 1, 2018 at 7:36 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Christian Zigotzky <chzigotzky@xenosoft.de> writes:
+>>
+>>> Just for info: I tested it on my Nemo board today and it works.
+>>
+>> Awesome thanks.
+>>
+>> That's probably sufficient to merge it, and if it breaks anything we can
+>> always revert it.
+>
+> Should be fine, all known boards have the properties in question, and
+> I doubt anyone has anything but Nemo and Electra/Chitra boards out
+> there.
+>
+> It's a virtual root bus, so all boards have it irrespective of what
+> PCIe is brought out.
+>
+> (I should hook up my test system and get it into the CI cycle again,
+> maybe this fall).
+>
+>
+> Acked-by: Olof Johansson <olof@lixom.net>
 
-I have rebased this series on top of the powerpc next branch as of
-today.
+Thanks.
 
-Paul.
-
- arch/powerpc/lib/copyuser_64.S                     | 585 +++++++++------------
- arch/powerpc/lib/copyuser_power7.S                 |  21 +-
- arch/powerpc/lib/memcpy_64.S                       |   9 +-
- arch/powerpc/lib/memcpy_power7.S                   |  22 +-
- .../testing/selftests/powerpc/copyloops/.gitignore |  17 +-
- tools/testing/selftests/powerpc/copyloops/Makefile |  44 +-
- .../selftests/powerpc/copyloops/asm/ppc_asm.h      |  44 +-
- .../powerpc/copyloops/copy_tofrom_user_reference.S |  24 +
- .../selftests/powerpc/copyloops/exc_validate.c     | 124 +++++
- tools/testing/selftests/powerpc/copyloops/stubs.S  |  19 +
- 10 files changed, 516 insertions(+), 393 deletions(-)
+cheers
