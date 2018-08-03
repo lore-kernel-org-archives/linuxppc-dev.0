@@ -1,23 +1,21 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41hjmf1VThzF2FB
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:23:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41hjxh5fqMzF12N
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2018 20:31:04 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Menzel <pmenzel@molgen.mpg.de>
-Cc: linuxppc-dev@ozlabs.org, aneesh.kumar@linux.vnet.ibm.com
-Subject: Re: [PATCH] powerpc/mm: Don't report PUDs as memory leaks when using
- kmemleak
-In-Reply-To: <83c5b57f-f11d-3223-4d24-5030799caa0c@molgen.mpg.de>
-References: <20180719143316.23486-1-mpe@ellerman.id.au>
- <e653db46-a829-4673-4378-4c0afef03cde@molgen.mpg.de>
- <87zhy9i5q0.fsf@concordia.ellerman.id.au>
- <83c5b57f-f11d-3223-4d24-5030799caa0c@molgen.mpg.de>
-Date: Fri, 03 Aug 2018 20:23:10 +1000
-Message-ID: <87h8kbhhpt.fsf@concordia.ellerman.id.au>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 1/2] of: Add of_machine_compatible_match()
+In-Reply-To: <CAL_JsqKYFk6-ofDFvaiy3a+r8Zyzw2UuMQUHb-RrgeWfpjom5w@mail.gmail.com>
+References: <20180730131516.18406-1-mpe@ellerman.id.au>
+ <CAL_JsqKYFk6-ofDFvaiy3a+r8Zyzw2UuMQUHb-RrgeWfpjom5w@mail.gmail.com>
+Date: Fri, 03 Aug 2018 20:31:03 +1000
+Message-ID: <87efffhhco.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Menzel <pmenzel@molgen.mpg.de> writes:
-> On 07/30/18 08:43, Michael Ellerman wrote:
->> Paul Menzel <pmenzel@molgen.mpg.de> writes:
->>> Am 19.07.2018 um 16:33 schrieb Michael Ellerman:
->> ...
->>>>
->>>> The fix is fairly simple. We need to tell kmemleak to ignore PUD
->>>> allocations and never report them as leaks. We can also tell it not to
->>>> scan the PGD, because it will never find pointers in there. However it
->>>> will still notice if we allocate a PGD and then leak it.
->>>>
->>>> Reported-by: Paul Menzel <pmenzel@molgen.mpg.de>
->>>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au> > ---
->>>>   arch/powerpc/include/asm/book3s/64/pgalloc.h | 23 ++++++++++++++++++=
-+++--
->>>>   1 file changed, 21 insertions(+), 2 deletions(-)
->>>
->>> [=E2=80=A6]
->>>
->>> Tested-by: Paul Menzel <pmenzel@molgen.mpg.de> on IBM S822LC
->>=20
->> Thanks.
+Rob Herring <robh+dt@kernel.org> writes:
+> On Mon, Jul 30, 2018 at 7:15 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+...
+>> diff --git a/include/linux/of.h b/include/linux/of.h
+>> index 4d25e4f952d9..05e3e23a3a57 100644
+>> --- a/include/linux/of.h
+>> +++ b/include/linux/of.h
+>> @@ -389,6 +389,7 @@ extern int of_alias_get_id(struct device_node *np, const char *stem);
+>>  extern int of_alias_get_highest_id(const char *stem);
+>>
+>>  extern int of_machine_is_compatible(const char *compat);
+>> +extern bool of_machine_compatible_match(const char *const *compats);
 >
-> No problem. I forgot to add, that it=E2=80=99d be great, if you tagged th=
-is
-> for the stable series too.
+> Would be nice if of_machine_is_compatible could be implemented in
+> terms of of_machine_compatible_match like this:
+>
+> int of_machine_is_compatible(const char *compat)
+> {
+>   const char *compats[] = { compat, NULL };
+>   return of_machine_is_compatible(compats);
+> }
+>
+> Probably can be inline too.
 
-Sorry I didn't see this before I applied, so it's not tagged for stable.
-
-We can request a backport though, what stable version(s) are you
-running?
+Yeah good idea, I'll do a v2 next week.
 
 cheers
