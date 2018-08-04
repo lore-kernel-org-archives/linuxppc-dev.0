@@ -1,40 +1,27 @@
-Return-Path: <BATV+1b4ddcc4854f3835cb1f+5459+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41jHZC71lQzF3GC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 18:46:11 +1000 (AEST)
-Date: Sat, 4 Aug 2018 01:15:00 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41jNQw6GmrzF3GF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 22:25:11 +1000 (AEST)
+Date: Sat, 4 Aug 2018 22:25:37 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180804081500.GA1455@infradead.org>
-References: <20180801083639.GF26378@infradead.org>
- <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
- <20180802182959-mutt-send-email-mst@kernel.org>
- <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
- <20180802200646-mutt-send-email-mst@kernel.org>
- <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
- <20180802225738-mutt-send-email-mst@kernel.org>
- <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
- <20180803070507.GA1344@infradead.org>
- <20180803221634-mutt-send-email-mst@kernel.org>
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux-Next <linux-next@vger.kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>
+Subject: Re: linux-next: manual merge of the powerpc tree with the m68k
+ tree
+In-Reply-To: <CAMuHMdXTW8iSA+HnnDNzoNkMwUchLY1J6YBYCBCfGRT5UatBqg@mail.gmail.com>
+Message-ID: <alpine.LNX.2.21.1808042209030.9@nippy.intranet>
+References: <20180802092708.10e1a71d@canb.auug.org.au>
+ <20180802094154.6d88f03c@canb.auug.org.au>
+ <CAMuHMdXTW8iSA+HnnDNzoNkMwUchLY1J6YBYCBCfGRT5UatBqg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180803221634-mutt-send-email-mst@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,15 +31,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 03, 2018 at 10:17:32PM +0300, Michael S. Tsirkin wrote:
-> It seems reasonable to teach a platform to override dma-range
-> for a specific device e.g. in case it knows about bugs in ACPI.
+On Thu, 2 Aug 2018, Geert Uytterhoeven wrote:
 
-A platform will be able override dma-range using the dev->bus_dma_mask
-field starting in 4.19.  But we'll still need a way how to
+> Hi Stephen,
+> 
+> On Thu, Aug 2, 2018 at 1:42 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > [forgot the conflict resolution ...]
+> >
+> > On Thu, 2 Aug 2018 09:27:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > >
+> > > Today's linux-next merge of the powerpc tree got a conflict in:
+> > >
+> > >   arch/m68k/mac/misc.c
+> > >
+> > > between commit:
+> > >
+> > >   5b9bfb8ec467 ("m68k: mac: Use time64_t in RTC handling")
+> > >
+> > > from the m68k tree and commit:
+> > >
+> > >   ebd722275f9c ("macintosh/via-pmu: Replace via-pmu68k driver with via-pmu driver")
+> > >
+> > > from the powerpc tree.
+> > >
+> > > I fixed it up (see below) and can carry the fix as necessary. This 
+> > > is now fixed as far as linux-next is concerned, but any non trivial 
+> > > conflicts should be mentioned to your upstream maintainer when your 
+> > > tree is submitted for merging.  You may also want to consider 
+> > > cooperating with the maintainer of the conflicting tree to minimise 
+> > > any particularly complex conflicts.
+> 
+> Ah, now I remember Finn said he was going to rebase his series once the 
+> time64_t patch has entered my tree...
+> 
 
-  a) document in the virtio spec that all bus dma quirks are to be
-     applied
-  b) a way to document in a virtio-related spec how the bus handles
-     dma for Ben's totally fucked up hypervisor.  Without that there
-     is not way we'll get interoperable implementations.
+The conflict I was worried about was avoided when I dropped v3 patch 10/12 
+("macintosh: Use common code to access RTC"). I'll rework that patch after 
+all the PMU and RTC work makes its way into Linus' tree.
+
+> > --- a/arch/m68k/mac/misc.c
+> > +++ b/arch/m68k/mac/misc.c
+> > @@@ -90,11 -85,11 +90,11 @@@ static void cuda_write_pram(int offset
+> >   }
+> >   #endif /* CONFIG_ADB_CUDA */
+> >
+> > - #ifdef CONFIG_ADB_PMU68K
+> > + #ifdef CONFIG_ADB_PMU
+> >  -static long pmu_read_time(void)
+> >  +static time64_t pmu_read_time(void)
+> >   {
+> >         struct adb_request req;
+> >  -      long time;
+> >  +      time64_t time;
+> >
+> >         if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
+> >                 return 0;
+> 
+> Thanks, looks good to me!
+> 
+
+Looks good to me, too.
+
+Thanks.
+
+-- 
+
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> 
