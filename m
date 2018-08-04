@@ -1,10 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41j5VJ229WzF1Tw
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 11:12:08 +1000 (AEST)
-Message-ID: <ba086ad15679fd59758fb74096c46fcce42dc974.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41j5fQ4SsyzF1Tw
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 11:19:10 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w741J6g8019680
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2018 21:19:07 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kn0exjwp5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Aug 2018 21:19:06 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@kernel.crashing.org>;
+ Sat, 4 Aug 2018 02:19:03 +0100
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Michael S. Tsirkin" <mst@redhat.com>
@@ -17,7 +30,6 @@ Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
  haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
  robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Fri, 03 Aug 2018 20:11:16 -0500
 In-Reply-To: <20180803220443-mutt-send-email-mst@kernel.org>
 References: <20180801083639.GF26378@infradead.org>
  <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
@@ -32,6 +44,8 @@ References: <20180801083639.GF26378@infradead.org>
  <20180803220443-mutt-send-email-mst@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Date: Fri, 03 Aug 2018 20:18:34 -0500
+Message-Id: <d103acae2ab677eba761c4aa4c5c84a5e1f32127.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -94,6 +108,15 @@ bit warty on the virito side but probably not as much as having a qemu
 one that walks of the virtio devices to change how they behave.
 
 What do you reckon ?
+
+What we want to avoid is to expose any of this to the *end user* or
+libvirt or any other higher level of the management stack. We really
+want that stuff to remain contained between the VM itself, KVM and
+maybe qemu.
+
+We will need some other qemu changes for migration so that's ok. But
+the minute you start touching libvirt and the higher levels it becomes
+a nightmare.
 
 Cheers,
 Ben.
