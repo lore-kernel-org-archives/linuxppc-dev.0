@@ -1,23 +1,10 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41j5fb64vhzF2FR
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 11:19:19 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w741JGCf101660
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2018 21:19:16 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kmyde4m1n-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Aug 2018 21:19:16 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@kernel.crashing.org>;
- Sat, 4 Aug 2018 02:19:14 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41j5kl47YRzF2Dk
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 11:22:55 +1000 (AEST)
+Message-ID: <398d498048a5b288cce06003c0808bfefa1e9b1f.camel@kernel.crashing.org>
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Michael S. Tsirkin" <mst@redhat.com>
@@ -30,6 +17,7 @@ Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
  haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
  robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Fri, 03 Aug 2018 20:22:11 -0500
 In-Reply-To: <20180803220443-mutt-send-email-mst@kernel.org>
 References: <20180801083639.GF26378@infradead.org>
  <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
@@ -44,8 +32,6 @@ References: <20180801083639.GF26378@infradead.org>
  <20180803220443-mutt-send-email-mst@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Date: Fri, 03 Aug 2018 20:16:21 -0500
-Message-Id: <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -74,6 +60,9 @@ On Fri, 2018-08-03 at 22:07 +0300, Michael S. Tsirkin wrote:
 > I think the fact you can't add flags from the hypervisor is
 > a sign of a problematic architecture, you should look at
 > adding that down the road - you will likely need it at some point.
+
+(Appologies if you got this twice, my mailer had a brain fart and I don't
+know if the first one got through & am about to disappear in a plane for 17h)
 
 Well, we can later in the boot process. At VM creation time, it's just
 a normal VM. The VM firmware, bootloader etc... are just operating
