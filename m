@@ -1,27 +1,18 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id 41jNQw6GmrzF3GF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 22:25:11 +1000 (AEST)
-Date: Sat, 4 Aug 2018 22:25:37 +1000 (AEST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux-Next <linux-next@vger.kernel.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Arnd Bergmann <arnd@arndb.de>
-Subject: Re: linux-next: manual merge of the powerpc tree with the m68k
- tree
-In-Reply-To: <CAMuHMdXTW8iSA+HnnDNzoNkMwUchLY1J6YBYCBCfGRT5UatBqg@mail.gmail.com>
-Message-ID: <alpine.LNX.2.21.1808042209030.9@nippy.intranet>
-References: <20180802092708.10e1a71d@canb.auug.org.au>
- <20180802094154.6d88f03c@canb.auug.org.au>
- <CAMuHMdXTW8iSA+HnnDNzoNkMwUchLY1J6YBYCBCfGRT5UatBqg@mail.gmail.com>
+Return-Path: <zhongjiang@huawei.com>
+Received: from huawei.com (szxga06-in.huawei.com [45.249.212.32])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41jRLk0XxTzF3GF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2018 00:36:44 +1000 (AEST)
+From: zhong jiang <zhongjiang@huawei.com>
+To: <benh@kernel.crashing.org>
+CC: <paulus@samba.org>, <mpe@ellerman.id.au>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powpc:feature: of_node_put is not needed after iterator.
+Date: Sat, 4 Aug 2018 22:25:00 +0800
+Message-ID: <1533392700-24621-1-git-send-email-zhongjiang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,73 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2 Aug 2018, Geert Uytterhoeven wrote:
+for_each_node_by_name iterators only  exit normally when the loop
+cursor is NULL, So there is no point to call of_node_put.
 
-> Hi Stephen,
-> 
-> On Thu, Aug 2, 2018 at 1:42 AM Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > [forgot the conflict resolution ...]
-> >
-> > On Thu, 2 Aug 2018 09:27:20 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > >
-> > > Today's linux-next merge of the powerpc tree got a conflict in:
-> > >
-> > >   arch/m68k/mac/misc.c
-> > >
-> > > between commit:
-> > >
-> > >   5b9bfb8ec467 ("m68k: mac: Use time64_t in RTC handling")
-> > >
-> > > from the m68k tree and commit:
-> > >
-> > >   ebd722275f9c ("macintosh/via-pmu: Replace via-pmu68k driver with via-pmu driver")
-> > >
-> > > from the powerpc tree.
-> > >
-> > > I fixed it up (see below) and can carry the fix as necessary. This 
-> > > is now fixed as far as linux-next is concerned, but any non trivial 
-> > > conflicts should be mentioned to your upstream maintainer when your 
-> > > tree is submitted for merging.  You may also want to consider 
-> > > cooperating with the maintainer of the conflicting tree to minimise 
-> > > any particularly complex conflicts.
-> 
-> Ah, now I remember Finn said he was going to rebase his series once the 
-> time64_t patch has entered my tree...
-> 
+Signed-off-by: zhong jiang <zhongjiang@huawei.com>
+---
+ arch/powerpc/platforms/powermac/feature.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-The conflict I was worried about was avoided when I dropped v3 patch 10/12 
-("macintosh: Use common code to access RTC"). I'll rework that patch after 
-all the PMU and RTC work makes its way into Linus' tree.
-
-> > --- a/arch/m68k/mac/misc.c
-> > +++ b/arch/m68k/mac/misc.c
-> > @@@ -90,11 -85,11 +90,11 @@@ static void cuda_write_pram(int offset
-> >   }
-> >   #endif /* CONFIG_ADB_CUDA */
-> >
-> > - #ifdef CONFIG_ADB_PMU68K
-> > + #ifdef CONFIG_ADB_PMU
-> >  -static long pmu_read_time(void)
-> >  +static time64_t pmu_read_time(void)
-> >   {
-> >         struct adb_request req;
-> >  -      long time;
-> >  +      time64_t time;
-> >
-> >         if (pmu_request(&req, NULL, 1, PMU_READ_RTC) < 0)
-> >                 return 0;
-> 
-> Thanks, looks good to me!
-> 
-
-Looks good to me, too.
-
-Thanks.
-
+diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
+index 3f82cb2..4eb8cb3 100644
+--- a/arch/powerpc/platforms/powermac/feature.c
++++ b/arch/powerpc/platforms/powermac/feature.c
+@@ -2889,10 +2889,8 @@ static void __init probe_one_macio(const char *name, const char *compat, int typ
+ 	/* On all machines, switch modem & serial ports off */
+ 	for_each_node_by_name(np, "ch-a")
+ 		initial_serial_shutdown(np);
+-	of_node_put(np);
+ 	for_each_node_by_name(np, "ch-b")
+ 		initial_serial_shutdown(np);
+-	of_node_put(np);
+ }
+ 
+ void __init
 -- 
-
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> 
+1.7.12.4
