@@ -1,37 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41j5kl47YRzF2Dk
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 11:22:55 +1000 (AEST)
-Message-ID: <398d498048a5b288cce06003c0808bfefa1e9b1f.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Fri, 03 Aug 2018 20:22:11 -0500
-In-Reply-To: <20180803220443-mutt-send-email-mst@kernel.org>
-References: <20180801083639.GF26378@infradead.org>
- <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
- <20180802182959-mutt-send-email-mst@kernel.org>
- <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
- <20180802200646-mutt-send-email-mst@kernel.org>
- <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
- <20180802225738-mutt-send-email-mst@kernel.org>
- <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
- <20180803070507.GA1344@infradead.org>
- <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
- <20180803220443-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41j7RJ3mYNzF3GC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2018 12:39:40 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv/opal: Use standard interrupts property
+ when available
+In-Reply-To: <1523344570.11062.65.camel@kernel.crashing.org>
+References: <1523344570.11062.65.camel@kernel.crashing.org>
+Date: Sat, 04 Aug 2018 12:39:38 +1000
+Message-ID: <87y3dmg8id.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,97 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-08-03 at 22:07 +0300, Michael S. Tsirkin wrote:
-> On Fri, Aug 03, 2018 at 10:58:36AM -0500, Benjamin Herrenschmidt wrote:
-> > On Fri, 2018-08-03 at 00:05 -0700, Christoph Hellwig wrote:
-> > > >   2- Make virtio use the DMA API with our custom platform-provided
-> > > > swiotlb callbacks when needed, that is when not using IOMMU *and*
-> > > > running on a secure VM in our case.
-> > > 
-> > > And total NAK the customer platform-provided part of this.  We need
-> > > a flag passed in from the hypervisor that the device needs all bus
-> > > specific dma api treatment, and then just use the normal plaform
-> > > dma mapping setup. 
-> > 
-> > Christoph, as I have explained already, we do NOT have a way to provide
-> > such a flag as neither the hypervisor nor qemu knows anything about
-> > this when the VM is created.
-> 
-> I think the fact you can't add flags from the hypervisor is
-> a sign of a problematic architecture, you should look at
-> adding that down the road - you will likely need it at some point.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+...
+> diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> index 9d1b8c0aaf93..46785eaf625d 100644
+> --- a/arch/powerpc/platforms/powernv/opal-irqchip.c
+> +++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+> @@ -174,24 +175,21 @@ void opal_event_shutdown(void)
+>  
+>  	/* First free interrupts, which will also mask them */
+>  	for (i = 0; i < opal_irq_count; i++) {
+> -		if (!opal_irqs[i])
+> +		if (!opal_irqs || !opal_irqs[i].start)
+>  			continue;
+>  
+>  		if (in_interrupt())
+> -			disable_irq_nosync(opal_irqs[i]);
+> +			disable_irq_nosync(opal_irqs[i].start);
+>  		else
+> -			free_irq(opal_irqs[i], NULL);
+> -
+> -		opal_irqs[i] = 0;
 
-(Appologies if you got this twice, my mailer had a brain fart and I don't
-know if the first one got through & am about to disappear in a plane for 17h)
+This             ^^^^^^^^^^^^^^
 
-Well, we can later in the boot process. At VM creation time, it's just
-a normal VM. The VM firmware, bootloader etc... are just operating
-normally etc...
+> +			free_irq(opal_irqs[i].start, NULL);
+>  	}
 
-Later on, (we may have even already run Linux at that point,
-unsecurely, as we can use Linux as a bootloader under some
-circumstances), we start a "secure image".
+causes:
 
-This is a kernel zImage that includes a "ticket" that has the
-appropriate signature etc... so that when that kernel starts, it can
-authenticate with the ultravisor, be verified (along with its ramdisk)
-etc... and copied (by the UV) into secure memory & run from there.
+  ------------[ cut here ]------------
+  Trying to free already-free IRQ 22
+  WARNING: CPU: 0 PID: 1295 at ../kernel/irq/manage.c:1583 __free_irq+0xe0/0x420
+  Modules linked in:
+  CPU: 0 PID: 1295 Comm: init Tainted: G        W         4.18.0-rc3-gcc-7.3.1-00187-g46a3659b3791-dirty #80
+  NIP:  c00000000017ca90 LR: c00000000017ca8c CTR: c000000000771a90
+  REGS: c00000007552b810 TRAP: 0700   Tainted: G        W          (4.18.0-rc3-gcc-7.3.1-00187-g46a3659b3791-dirty)
+  MSR:  9000000000029033 <SF,HV,EE,ME,IR,DR,RI,LE>  CR: 28000222  XER: 20000000
+  CFAR: c000000000106f10 IRQMASK: 1 
+  GPR00: c00000000017ca8c c00000007552ba90 c000000000fd1600 0000000000000022 
+  GPR04: 0000000000000001 000000000000015e 9000000000009033 0000000000000000 
+  GPR08: 000000007ef50000 c000000000ef0bf0 c000000000ef0bf0 9000000000001003 
+  GPR12: 0000000000000000 c000000001160000 0000000000000000 0000000000000000 
+  GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+  GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+  GPR24: 00000000100c0828 0000000000000000 0000000000000016 c000000077118094 
+  GPR28: c000000077118148 0000000000000000 c000000077118000 0000000000000000 
+  NIP [c00000000017ca90] __free_irq+0xe0/0x420
+  LR [c00000000017ca8c] __free_irq+0xdc/0x420
+  Call Trace:
+  [c00000007552ba90] [c00000000017ca8c] __free_irq+0xdc/0x420 (unreliable)
+  [c00000007552bb30] [c00000000017ced8] free_irq+0x78/0xe0
+  [c00000007552bb60] [c0000000000a7c48] opal_event_shutdown+0x158/0x160
+  [c00000007552bbf0] [c00000000009d150] pnv_prepare_going_down+0x20/0x80
+  [c00000007552bc10] [c00000000009d1d4] pnv_power_off+0x24/0x70
+  [c00000007552bc40] [c00000000009d240] pnv_restart+0x0/0x70
+  [c00000007552bc60] [c00000000002c2a0] machine_halt+0x60/0x70
+  [c00000007552bc80] [c000000000139f74] kernel_halt+0x84/0xa0
+  [c00000007552bce0] [c00000000013a36c] sys_reboot+0x28c/0x2c0
+  [c00000007552be30] [c00000000000b9e4] system_call+0x5c/0x70
+  Instruction dump:
+  e93f0008 7fa9e840 419e0098 7feafb78 ebea0018 2fbf0000 409effe8 3c62ffd0 
+  7f44d378 386326c8 4bf8a421 60000000 <0fe00000> 7f24cb78 7f63db78 48952bdd 
+  ---[ end trace 926f8007a9952304 ]---
 
-At that point, the hypervisor is informed that the VM has become
-secure.
 
-So at that point, we could exit to qemu to inform it of the change, and
-have it walk the qtree and "Switch" all the virtio devices to use the
-IOMMU I suppose, but it feels a lot grosser to me.
+Because we're calling opal_event_shutdown() twice, via opal_shutdown()
+and then pnv_prepare_going_down().
 
-That's the only other option I can think of.
+Did you drop that line on purpose, or was it just collateral damage?
 
-> However in this specific case, the flag does not need to come from the
-> hypervisor, it can be set by arch boot code I think.
-> Christoph do you see a problem with that?
+The obvious fix does work:
 
-The above could do that yes. Another approach would be to do it from a
-small virtio "quirk" that pokes a bit in the device to force it to
-iommu mode when it detects that we are running in a secure VM. That's a
-bit warty on the virito side but probably not as much as having a qemu
-one that walks of the virtio devices to change how they behave.
++	opal_irqs[i].start = 0;
 
-What do you reckon ?
 
-What we want to avoid is to expose any of this to the *end user* or
-libvirt or any other higher level of the management stack. We really
-want that stuff to remain contained between the VM itself, KVM and
-maybe qemu.
-
-We will need some other qemu changes for migration so that's ok. But
-the minute you start touching libvirt and the higher levels it becomes
-a nightmare.
-
-Cheers,
-Ben.
-
-> > >  To get swiotlb you'll need to then use the DT/ACPI
-> > > dma-range property to limit the addressable range, and a swiotlb
-> > > capable plaform will use swiotlb automatically.
-> > 
-> > This cannot be done as you describe it.
-> > 
-> > The VM is created as a *normal* VM. The DT stuff is generated by qemu
-> > at a point where it has *no idea* that the VM will later become secure
-> > and thus will have to restrict which pages can be used for "DMA".
-> > 
-> > The VM will *at runtime* turn itself into a secure VM via interactions
-> > with the security HW and the Ultravisor layer (which sits below the
-> > HV). This happens way after the DT has been created and consumed, the
-> > qemu devices instanciated etc...
-> > 
-> > Only the guest kernel knows because it initates the transition. When
-> > that happens, the virtio devices have already been used by the guest
-> > firmware, bootloader, possibly another kernel that kexeced the "secure"
-> > one, etc... 
-> > 
-> > So instead of running around saying NAK NAK NAK, please explain how we
-> > can solve that differently.
-> > 
-> > Ben.
-> > 
+cheers
