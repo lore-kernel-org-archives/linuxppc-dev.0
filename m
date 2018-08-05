@@ -1,35 +1,38 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41jfYX223gzF2D1
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2018 09:01:51 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w74MsG0q015970
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 4 Aug 2018 19:01:48 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kn5s96h5r-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Aug 2018 19:01:48 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Sat, 4 Aug 2018 19:01:47 -0400
-Subject: Re: vio.c:__vio_register_driver && LPAR Migration issue
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, engebret@us.ibm.com
-References: <e815e222-e468-4bd4-5f6f-8657fc980689@linux.vnet.ibm.com>
- <d3d9e08c-70a7-aa6b-13f4-1afed294d39e@linux.vnet.ibm.com>
-Date: Sat, 4 Aug 2018 16:01:42 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41jh4G1bCXzF3H9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2018 10:10:04 +1000 (AEST)
+Date: Sun, 5 Aug 2018 03:09:55 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180805030326-mutt-send-email-mst@kernel.org>
+References: <26c1d3d50d8e081eed44fe9940fbefed34598cbd.camel@kernel.crashing.org>
+ <20180802182959-mutt-send-email-mst@kernel.org>
+ <82ccef6ec3d95ee43f3990a4a2d0aea87eb45e89.camel@kernel.crashing.org>
+ <20180802200646-mutt-send-email-mst@kernel.org>
+ <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+ <20180802225738-mutt-send-email-mst@kernel.org>
+ <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
+ <20180803070507.GA1344@infradead.org>
+ <20180803221634-mutt-send-email-mst@kernel.org>
+ <20180804081500.GA1455@infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <d3d9e08c-70a7-aa6b-13f4-1afed294d39e@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <18ddc119-f364-369e-6037-ef7fa0e00e00@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180804081500.GA1455@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,60 +42,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/2018 02:23 PM, Tyrel Datwyler wrote:
-> On 08/02/2018 11:15 AM, Michael Bringmann wrote:
->> Hello:
->>     I have been observing an anomaly during LPAR migrations between
->> a couple of P8 systems.
->>
->> This is the problem.  After migrating an LPAR, the PPC mobility code
->> receives RTAS requests to delete nodes with platform-/hardware-specific
->> attributes when restarting the kernel after a migration.  My example is
->> for migration between a P8 Alpine and a P8 Brazos.  Among the nodes
->> that I see being deleted are 'ibm,random-v1', 'ibm,compression-v1',
->> 'ibm,platform-facilities', and 'ibm,sym-encryption-v1'.  Of these
->> nodes, the following are created during initial boot by calls to
->> vio_register_driver:
->>
->> drivers/char/hw_random/pseries-rng.c
->>         ibm,random-v1
->>
->> drivers/crypto/nx/nx-842-pseries.c
->>         ibm,compression-v1
->>
->> drivers/crypto/nx/nx.c
->>         ibm,sym-encryption-v1
->>
->> After the migration, these nodes are deleted, but nothing recreates
->> them.  If I boot the LPAR on the target system, the nodes are added
->> again.
->>
->> My question is how do we recreate these nodes after migration?
+On Sat, Aug 04, 2018 at 01:15:00AM -0700, Christoph Hellwig wrote:
+> On Fri, Aug 03, 2018 at 10:17:32PM +0300, Michael S. Tsirkin wrote:
+> > It seems reasonable to teach a platform to override dma-range
+> > for a specific device e.g. in case it knows about bugs in ACPI.
 > 
-> Hmm, I'd have to see the scenario in action, but these should be added back by ibm,update-nodes RTAS call. There is some debug code in driver/of/dynamic.c that can be enabled that will log node/property dynamic reconfiguration events.
+> A platform will be able override dma-range using the dev->bus_dma_mask
+> field starting in 4.19.  But we'll still need a way how to
 > 
+>   a) document in the virtio spec that all bus dma quirks are to be
+>      applied
 
-I took a quick look by turning of phandle caching and turning on the OF reconfig debug on one of my lpars. I noticed that it looks like this could be a firmware issue. Looks to me like we aren't being notified to re-add those child nodes of ibm,platform-facilities.
+I agree it's a good idea. In particular I suspect that PLATFORM_IOMMU
+should be extended to cover that. But see below.
 
-[ 1671.638041] OF: notify DETACH_NODE     /cpus/l2-cache@2022
-[ 1671.638094] OF: notify DETACH_NODE     /cpus/l3-cache@3122
-[ 1671.638119] OF: notify DETACH_NODE     /cpus/l2-cache@2023
-[ 1671.638136] OF: notify DETACH_NODE     /cpus/l3-cache@3123
-[ 1671.638164] OF: notify DETACH_NODE     /ibm,platform-facilities/ibm,random-v1
-[ 1671.638182] OF: notify DETACH_NODE     /ibm,platform-facilities/ibm,compression-v1
-[ 1671.638198] OF: notify DETACH_NODE     /ibm,platform-facilities/ibm,sym-encryption-v1
-[ 1671.638219] OF: notify DETACH_NODE     /ibm,platform-facilities
-[ 1671.776419] OF: notify UPDATE_PROPERTY /:ibm,model-class
+>   b) a way to document in a virtio-related spec how the bus handles
+>      dma for Ben's totally fucked up hypervisor.  Without that there
+>      is not way we'll get interoperable implementations.
 
-... snipped property updates
 
-[ 1672.129941] OF: notify UPDATE_PROPERTY /cpus/PowerPC,POWER8@8:ibm,dfp
-[ 1672.147551] OF: notify ATTACH_NODE     /cpus/l2-cache@202e
-[ 1672.166321] OF: notify ATTACH_NODE     /cpus/l3-cache@312e
-[ 1672.183971] OF: notify ATTACH_NODE     /cpus/l2-cache@202f
-[ 1672.202752] OF: notify ATTACH_NODE     /cpus/l3-cache@312f
-[ 1672.230760] OF: notify ATTACH_NODE     /ibm,platform-facilities
+So in this case however I'm not sure what exactly do we want to add. It
+seems that from point of view of the device, there is nothing special -
+it just gets a PA and writes there.  It also seems that guest does not
+need to get any info from the device either. Instead guest itself needs
+device to DMA into specific addresses, for its own reasons.
 
-Need to verify this by tracing the RTAS calls to ibm,update-nodes. I'll try and look at that tomorrow. The loop that processes the nodes to update in pseries_devicetree_update() blindly ignores the return codes from delete_dt_node(), update_dt_node(), and add_dt_node(). So, it is also possible that we are notified, but are silently failing the add.
+It seems that the fact that within guest it's implemented using a bounce
+buffer and that it's easiest to do by switching virtio to use the DMA API
+isn't something virtio spec concerns itself with.
 
--Tyrel
+I'm open to suggestions.
+
+-- 
+MST
