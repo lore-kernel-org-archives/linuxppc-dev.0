@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kpGm0VT2zF3HL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 05:53:03 +1000 (AEST)
-Message-ID: <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kpN5562lzF3HK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 05:57:41 +1000 (AEST)
+Message-ID: <ef6d5d7c7b812bd797a1c3fd6bc7a26d0074020f.camel@kernel.crashing.org>
 Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -17,19 +17,19 @@ Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
  jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
  haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
  robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Tue, 07 Aug 2018 05:52:12 +1000
-In-Reply-To: <20180806094243.GA16032@infradead.org>
-References: <20180802225738-mutt-send-email-mst@kernel.org>
+Date: Tue, 07 Aug 2018 05:56:59 +1000
+In-Reply-To: <20180806164106-mutt-send-email-mst@kernel.org>
+References: <20180802200646-mutt-send-email-mst@kernel.org>
+ <e9beb6bba5a7d05741e27e85b24a3b23ba7c2762.camel@kernel.crashing.org>
+ <20180802225738-mutt-send-email-mst@kernel.org>
  <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
  <20180803070507.GA1344@infradead.org>
  <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
- <20180803160246.GA13794@infradead.org>
- <22310f58605169fe9de83abf78b59f593ff7fbb7.camel@kernel.crashing.org>
- <20180804082120.GB4421@infradead.org>
- <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
- <20180805072930.GB23288@infradead.org>
- <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
- <20180806094243.GA16032@infradead.org>
+ <20180803220443-mutt-send-email-mst@kernel.org>
+ <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
+ <20180805031046-mutt-send-email-mst@kernel.org>
+ <fd8fee94cf42e436878f179c7895de3a4dab3355.camel@kernel.crashing.org>
+ <20180806164106-mutt-send-email-mst@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,84 +41,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-08-06 at 02:42 -0700, Christoph Hellwig wrote:
-> On Mon, Aug 06, 2018 at 07:16:47AM +1000, Benjamin Herrenschmidt wrote:
-> > Who would set this bit ? qemu ? Under what circumstances ?
+On Mon, 2018-08-06 at 16:46 +0300, Michael S. Tsirkin wrote:
 > 
-> I don't really care who sets what.  The implementation might not even
-> involved qemu.
+> > Right, we'll need some quirk to disable balloons  in the guest I
+> > suppose.
+> > 
+> > Passing something from libvirt is cumbersome because the end user may
+> > not even need to know about secure VMs. There are use cases where the
+> > security is a contract down to some special application running inside
+> > the secure VM, the sysadmin knows nothing about.
+> > 
+> > Also there's repercussions all the way to admin tools, web UIs etc...
+> > so it's fairly wide ranging.
+> > 
+> > So as long as we only need to quirk a couple of devices, it's much
+> > better contained that way.
 > 
-> It is your job to write a coherent interface specification that does
-> not depend on the used components.  The hypervisor might be PAPR,
-> Linux + qemu, VMware, Hyperv or something so secret that you'd have
-> to shoot me if you had to tell me.  The guest might be Linux, FreeBSD,
-> AIX, OS400 or a Hipster project of the day in Rust.  As long as we
-> properly specify the interface it simplify does not matter.
+> So just the balloon thing already means that yes management and all the
+> way to the user tools must know this is going on. Otherwise
+> user will try to inflate the balloon and wonder why this does not work.
 
-That's the point Christoph. The interface is today's interface. It does
-NOT change. That information is not part of the interface.
+There is *dozens* of management systems out there, not even all open
+source, we won't ever be able to see the end of the tunnel if we need
+to teach every single of them, including end users, about platform
+specific new VM flags like that.
 
-It's the VM itself that is stashing away its memory in a secret place,
-and thus needs to do bounce buffering. There is no change to the virtio
-interface per-se.
+.../...
 
-> > What would be the effect of this bit while VIRTIO_F_IOMMU is NOT set,
-> > ie, what would qemu do and what would Linux do ? I'm not sure I fully
-> > understand your idea.
-> 
-> In a perfect would we'd just reuse VIRTIO_F_IOMMU and clarify the
-> description which currently is rather vague but basically captures
-> the use case.  Currently is is:
-> 
-> VIRTIO_F_IOMMU_PLATFORM(33)
->     This feature indicates that the device is behind an IOMMU that
->     translates bus addresses from the device into physical addresses in
->     memory. If this feature bit is set to 0, then the device emits
->     physical addresses which are not translated further, even though an
->     IOMMU may be present.
-> 
-> And I'd change it to something like:
-> 
-> VIRTIO_F_PLATFORM_DMA(33)
->     This feature indicates that the device emits platform specific
->     bus addresses that might not be identical to physical address.
->     The translation of physical to bus address is platform speific
->     and defined by the plaform specification for the bus that the virtio
->     device is attached to.
->     If this feature bit is set to 0, then the device emits
->     physical addresses which are not translated further, even if
->     the platform would normally require translations for the bus that
->     the virtio device is attached to.
-> 
-> If we can't change the defintion any more we should deprecate the
-> old VIRTIO_F_IOMMU_PLATFORM bit, and require the VIRTIO_F_IOMMU_PLATFORM
-> and VIRTIO_F_PLATFORM_DMA to be not set at the same time.
+> Here's another example: you can't migrate a secure vm to hypervisor
+> which doesn't support this feature. Again management tools above libvirt
+> need to know otherwise they will try.
 
-But this doesn't really change our problem does it ?
+There will have to be a new machine type for that I suppose, yes,
+though it's not just the hypervisor that needs to know about the
+modified migration stream, it's also the need to have a compatible
+ultravisor with the right keys on the other side.
 
-None of what happens in our case is part of the "interface". The
-suggestion to force the iommu ON was simply that it was a "workaround"
-as by doing so, we get to override the DMA ops, but that's just a
-trick.
+So migration is going to be special and require extra admin work in all
+cases yes. But not all secure VMs are meant to be migratable.
 
-Fundamentally, what we need to solve is pretty much entirely a guest
+In any case, back to the problem at hand. What a qemu flag gives us is
+just a way to force iommu at VM creation time.
+
+This is rather sub-optimal, we don't really want the iommu in the way,
+so it's at best a "workaround", and it's not really solving the real
 problem.
 
-> > I'm trying to understand because the limitation is not a device side
-> > limitation, it's not a qemu limitation, it's actually more of a VM
-> > limitation. It has most of its memory pages made inaccessible for
-> > security reasons. The platform from a qemu/KVM perspective is almost
-> > entirely normal.
-> 
-> Well, find a way to describe this either in the qemu specification using
-> new feature bits, or by using something like the above.
-
-But again, why do you want to involve the interface, and thus the
-hypervisor for something that is essentially what the guest is doign to
-itself ?
-
-It really is something we need to solve locally to the guest, it's not
-part of the interface.
+As I said replying to Christoph, we are "leaking" into the interface
+something here that is really what's the VM is doing to itself, which
+is to stash its memory away in an inaccessible place.
 
 Cheers,
 Ben.
