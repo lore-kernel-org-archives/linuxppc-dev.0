@@ -1,42 +1,38 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <BATV+2e2b7d69833f9a8d01a8+5461+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kjcX16T9zF3HL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 02:23:07 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w76GEYAJ179400
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Aug 2018 12:23:04 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kprarm6wg-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 12:23:04 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 6 Aug 2018 12:23:03 -0400
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v5 1/2] powerpc: Detect the presence of big-cores via "ibm,
- thread-groups"
-Date: Mon,  6 Aug 2018 21:52:44 +0530
-In-Reply-To: <1533572565-17357-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1533572565-17357-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1533572565-17357-2-git-send-email-ego@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kjsp3RSJzF3HK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 02:34:38 +1000 (AEST)
+Date: Mon, 6 Aug 2018 09:34:21 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, robh@kernel.org,
+ srikar@linux.vnet.ibm.com, aik@ozlabs.ru,
+ Jason Wang <jasowang@redhat.com>, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, paulus@samba.org,
+ joe@perches.com, david@gibson.dropbear.id.au,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ haren@linux.vnet.ibm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180806163421.GA13077@infradead.org>
+References: <b31d2162-884c-0ed4-00df-e7debe0cc0e7@redhat.com>
+ <20180803220812-mutt-send-email-mst@kernel.org>
+ <01c74680c4b3aa25d9b4375a9ab5e10046b7c71b.camel@kernel.crashing.org>
+ <20180805032355-mutt-send-email-mst@kernel.org>
+ <74a1e1b8-81e0-84db-6d0d-d8bd9caebb4a@linux.vnet.ibm.com>
+ <20180806163440-mutt-send-email-mst@kernel.org>
+ <20180806152406.GA29020@infradead.org>
+ <20180806190321-mutt-send-email-mst@kernel.org>
+ <20180806161040.GA4675@infradead.org>
+ <20180806191111-mutt-send-email-mst@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180806191111-mutt-send-email-mst@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,354 +42,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Mon, Aug 06, 2018 at 07:13:32PM +0300, Michael S. Tsirkin wrote:
+> Oh that makes sense then. Could you post a pointer pls so
+> this patchset is rebased on top (there are things to
+> change about 4/4 but 1-3 could go in if they don't add
+> overhead)?
 
-On IBM POWER9, the device tree exposes a property array identifed by
-"ibm,thread-groups" which will indicate which groups of threads share a
-particular set of resources.
-
-As of today we only have one form of grouping identifying the group of
-threads in the core that share the L1 cache, translation cache and
-instruction data flow.
-
-This patch defines the helper function to parse the contents of
-"ibm,thread-groups" and a new structure to contain the parsed output.
-
-The patch also creates the sysfs file named "small_core_siblings" that
-returns the physical ids of the threads in the core that share the L1
-cache, translation cache and instruction data flow.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- Documentation/ABI/testing/sysfs-devices-system-cpu |   8 ++
- arch/powerpc/include/asm/cputhreads.h              |  22 +++
- arch/powerpc/kernel/setup-common.c                 | 154 +++++++++++++++++++++
- arch/powerpc/kernel/sysfs.c                        |  35 +++++
- 4 files changed, 219 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 9c5e7732..52c9b50 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -487,3 +487,11 @@ Description:	Information about CPU vulnerabilities
- 		"Not affected"	  CPU is not affected by the vulnerability
- 		"Vulnerable"	  CPU is affected and no mitigation in effect
- 		"Mitigation: $M"  CPU is affected and mitigation $M is in effect
-+
-+What: 		/sys/devices/system/cpu/cpu[0-9]+/small_core_siblings
-+Date:		06-Aug-2018
-+KernelVersion:	v4.19.0
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	List of Physical ids of CPUs which share the L1 cache,
-+		translation cache and instruction data-flow with this CPU.
-+Values:		Comma separated list of decimal integers.
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index d71a909..33226d7 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -23,11 +23,13 @@
- extern int threads_per_core;
- extern int threads_per_subcore;
- extern int threads_shift;
-+extern bool has_big_cores;
- extern cpumask_t threads_core_mask;
- #else
- #define threads_per_core	1
- #define threads_per_subcore	1
- #define threads_shift		0
-+#define has_big_cores		0
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
- 
-@@ -69,12 +71,32 @@ static inline cpumask_t cpu_online_cores_map(void)
- 	return cpu_thread_mask_to_cores(cpu_online_mask);
- }
- 
-+#define MAX_THREAD_LIST_SIZE	8
-+struct thread_groups {
-+	unsigned int property;
-+	unsigned int nr_groups;
-+	unsigned int threads_per_group;
-+	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
-+};
-+
- #ifdef CONFIG_SMP
- int cpu_core_index_of_thread(int cpu);
- int cpu_first_thread_of_core(int core);
-+int parse_thread_groups(struct device_node *dn, struct thread_groups *tg);
-+int get_cpu_thread_group_start(int cpu, struct thread_groups *tg);
- #else
- static inline int cpu_core_index_of_thread(int cpu) { return cpu; }
- static inline int cpu_first_thread_of_core(int core) { return core; }
-+static inline int parse_thread_groups(struct device_node *dn,
-+				      struct thread_groups *tg)
-+{
-+	return -ENODATA;
-+}
-+
-+static inline int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-+{
-+	return -1;
-+}
- #endif
- 
- static inline int cpu_thread_in_core(int cpu)
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 40b44bb..989edc1 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -402,10 +402,12 @@ void __init check_for_initrd(void)
- #ifdef CONFIG_SMP
- 
- int threads_per_core, threads_per_subcore, threads_shift;
-+bool has_big_cores;
- cpumask_t threads_core_mask;
- EXPORT_SYMBOL_GPL(threads_per_core);
- EXPORT_SYMBOL_GPL(threads_per_subcore);
- EXPORT_SYMBOL_GPL(threads_shift);
-+EXPORT_SYMBOL_GPL(has_big_cores);
- EXPORT_SYMBOL_GPL(threads_core_mask);
- 
- static void __init cpu_init_thread_core_maps(int tpc)
-@@ -433,6 +435,152 @@ static void __init cpu_init_thread_core_maps(int tpc)
- 
- u32 *cpu_to_phys_id = NULL;
- 
-+/*
-+ * parse_thread_groups: Parses the "ibm,thread-groups" device tree
-+ *                      property for the CPU device node @dn and stores
-+ *                      the parsed output in the thread_groups
-+ *                      structure @tg.
-+ *
-+ * @dn: The device node of the CPU device.
-+ * @tg: Pointer to a thread group structure into which the parsed
-+ *     output of "ibm,thread-groups" is stored.
-+ *
-+ * ibm,thread-groups[0..N-1] array defines which group of threads in
-+ * the CPU-device node can be grouped together based on the property.
-+ *
-+ * ibm,thread-groups[0] tells us the property based on which the
-+ * threads are being grouped together. If this value is 1, it implies
-+ * that the threads in the same group share L1, translation cache.
-+ *
-+ * ibm,thread-groups[1] tells us how many such thread groups exist.
-+ *
-+ * ibm,thread-groups[2] tells us the number of threads in each such
-+ * group.
-+ *
-+ * ibm,thread-groups[3..N-1] is the list of threads identified by
-+ * "ibm,ppc-interrupt-server#s" arranged as per their membership in
-+ * the grouping.
-+ *
-+ * Example: If ibm,thread-groups = [1,2,4,5,6,7,8,9,10,11,12] it
-+ * implies that there are 2 groups of 4 threads each, where each group
-+ * of threads share L1, translation cache.
-+ *
-+ * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
-+ * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
-+ * 11, 12} structure
-+ *
-+ * Returns 0 on success, -EINVAL if the property does not exist,
-+ * -ENODATA if property does not have a value, and -EOVERFLOW if the
-+ * property data isn't large enough.
-+ */
-+int parse_thread_groups(struct device_node *dn,
-+			struct thread_groups *tg)
-+{
-+	unsigned int nr_groups, threads_per_group, property;
-+	int i;
-+	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
-+	u32 *thread_list;
-+	size_t total_threads;
-+	int ret;
-+
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array, 3);
-+
-+	if (ret)
-+		goto out_err;
-+
-+	property = thread_group_array[0];
-+	nr_groups = thread_group_array[1];
-+	threads_per_group = thread_group_array[2];
-+	total_threads = nr_groups * threads_per_group;
-+
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array,
-+					 3 + total_threads);
-+	if (ret)
-+		goto out_err;
-+
-+	thread_list = &thread_group_array[3];
-+
-+	for (i = 0 ; i < total_threads; i++)
-+		tg->thread_list[i] = thread_list[i];
-+
-+	tg->property = property;
-+	tg->nr_groups = nr_groups;
-+	tg->threads_per_group = threads_per_group;
-+
-+	return 0;
-+out_err:
-+	tg->property = 0;
-+	tg->nr_groups = 0;
-+	tg->threads_per_group = 0;
-+	return ret;
-+}
-+
-+/*
-+ * dt_has_big_core : Parses the device tree property
-+ *		    "ibm,thread-groups" for device node pointed by @dn
-+ *		    and stores the parsed output in the structure
-+ *		    pointed to by @tg.  Then checks if the output in
-+ *		    @tg corresponds to a big-core.
-+ *
-+ * @dn: Device node pointer of the CPU node being checked for a
-+ *      big-core.
-+ * @tg: Pointer to thread_groups struct in which parsed output of
-+ *      "ibm,thread-groups" is recorded.
-+ *
-+ * Returns true if the @dn points to a big-core.
-+ * Returns false if there is an error in parsing "ibm,thread-groups"
-+ * or the parsed output doesn't correspond to a big-core.
-+ */
-+static inline bool dt_has_big_core(struct device_node *dn,
-+				   struct thread_groups *tg)
-+{
-+	if (parse_thread_groups(dn, tg))
-+		return false;
-+
-+	if (tg->property != 1)
-+		return false;
-+
-+	if (tg->nr_groups < 1)
-+		return false;
-+
-+	return true;
-+}
-+
-+/*
-+ * get_cpu_thread_group_start : Searches the thread group in tg->thread_list
-+ *                              that @cpu belongs to.
-+ *
-+ * @cpu : The logical CPU whose thread group is being searched.
-+ * @tg : The thread-group structure of the CPU node which @cpu belongs
-+ *       to.
-+ *
-+ * Returns the index to tg->thread_list that points to the the start
-+ * of the thread_group that @cpu belongs to.
-+ *
-+ * Returns -1 if cpu doesn't belong to any of the groups pointed to by
-+ * tg->thread_list.
-+ */
-+int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-+{
-+	int hw_cpu_id = get_hard_smp_processor_id(cpu);
-+	int i, j;
-+
-+	for (i = 0; i < tg->nr_groups; i++) {
-+		int group_start = i * tg->threads_per_group;
-+
-+		for (j = 0; j < tg->threads_per_group; j++) {
-+			int idx = group_start + j;
-+
-+			if (tg->thread_list[idx] == hw_cpu_id)
-+				return group_start;
-+		}
-+	}
-+
-+	return -1;
-+}
-+
- /**
-  * setup_cpu_maps - initialize the following cpu maps:
-  *                  cpu_possible_mask
-@@ -457,6 +605,7 @@ void __init smp_setup_cpu_maps(void)
- 	int cpu = 0;
- 	int nthreads = 1;
- 
-+	has_big_cores = true;
- 	DBG("smp_setup_cpu_maps()\n");
- 
- 	cpu_to_phys_id = __va(memblock_alloc(nr_cpu_ids * sizeof(u32),
-@@ -467,6 +616,7 @@ void __init smp_setup_cpu_maps(void)
- 		const __be32 *intserv;
- 		__be32 cpu_be;
- 		int j, len;
-+		struct thread_groups tg;
- 
- 		DBG("  * %pOF...\n", dn);
- 
-@@ -505,6 +655,10 @@ void __init smp_setup_cpu_maps(void)
- 			cpu++;
- 		}
- 
-+		if (has_big_cores && !dt_has_big_core(dn, &tg)) {
-+			has_big_cores = false;
-+		}
-+
- 		if (cpu >= nr_cpu_ids) {
- 			of_node_put(dn);
- 			break;
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 755dc98..f5717de 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -18,6 +18,7 @@
- #include <asm/smp.h>
- #include <asm/pmc.h>
- #include <asm/firmware.h>
-+#include <asm/cputhreads.h>
- 
- #include "cacheinfo.h"
- #include "setup.h"
-@@ -1025,6 +1026,33 @@ static ssize_t show_physical_id(struct device *dev,
- }
- static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
- 
-+static ssize_t show_small_core_siblings(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	struct device_node *dn = of_get_cpu_node(cpu->dev.id, NULL);
-+	struct thread_groups tg;
-+	int i, j;
-+	ssize_t ret = 0;
-+
-+	if (parse_thread_groups(dn, &tg))
-+		return -ENODATA;
-+
-+	i = get_cpu_thread_group_start(cpu->dev.id, &tg);
-+
-+	if (i == -1)
-+		return -ENODATA;
-+
-+	for (j = 0; j < tg.threads_per_group - 1; j++)
-+		ret += sprintf(buf + ret, "%d,", tg.thread_list[i + j]);
-+
-+	ret += sprintf(buf + ret, "%d\n", tg.thread_list[i + j]);
-+
-+	return ret;
-+}
-+static DEVICE_ATTR(small_core_siblings, 0444, show_small_core_siblings, NULL);
-+
- static int __init topology_init(void)
- {
- 	int cpu, r;
-@@ -1048,6 +1076,13 @@ static int __init topology_init(void)
- 			register_cpu(c, cpu);
- 
- 			device_create_file(&c->dev, &dev_attr_physical_id);
-+
-+			if (has_big_cores) {
-+				const struct device_attribute *attr =
-+				       &dev_attr_small_core_siblings;
-+
-+			       device_create_file(&c->dev, attr);
-+			}
- 		}
- 	}
- 	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
--- 
-1.9.4
+The dma mapping direct calls will need a major work vs what I posted.
+I plan to start that work in about two weeks once returning from my
+vacation.
