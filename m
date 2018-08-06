@@ -1,34 +1,42 @@
-Return-Path: <andrew.donnellan@au1.ibm.com>
+Return-Path: <srs0=seuh=kv=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kPcq1ydKzF3HH
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 14:22:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41kPcq0zBWz8t7W
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 14:22:19 +1000 (AEST)
 Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kK544zF6zF2DY
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 10:58:00 +1000 (AEST)
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w760sgwQ124506
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 5 Aug 2018 20:57:58 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kpb8b1hhb-1
+ by ozlabs.org (Postfix) with ESMTPS id 41kPcp3VXdz9s5H
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2018 14:22:18 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w764J9cm044474
+ for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2018 00:22:16 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kpbucnfdm-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 05 Aug 2018 20:57:57 -0400
+ for <linuxppc-dev@ozlabs.org>; Mon, 06 Aug 2018 00:22:15 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
- Mon, 6 Aug 2018 01:57:56 +0100
-Subject: Re: [PATCH] misc: cxl: changed asterisk position
-To: Parth Y Shah <sparth1292@gmail.com>, fbarrat@linux.vnet.ibm.com,
- arnd@arndb.de, gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <1533291638-22224-1-git-send-email-sparth1292@gmail.com>
-From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-Date: Mon, 6 Aug 2018 10:57:50 +1000
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 6 Aug 2018 05:22:14 +0100
+Subject: Re: [PATCH] powerpc/fadump: handle crash memory ranges array overflow
+To: Hari Bathini <hbathini@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: stable@vger.kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>
+References: <153304539025.23724.13483958866671131484.stgit@hbathini.in.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Mon, 6 Aug 2018 09:52:09 +0530
 MIME-Version: 1.0
-In-Reply-To: <1533291638-22224-1-git-send-email-sparth1292@gmail.com>
-Message-Id: <bd46a5cf-1027-e6c3-4840-e638aaa547ef@au1.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <153304539025.23724.13483958866671131484.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c0232b82-57d7-db09-6ddb-68370bee4ff2@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +46,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/08/18 20:20, Parth Y Shah wrote:
-> Resolved <"foo* bar" should be "foo *bar"> error
+On 07/31/2018 07:26 PM, Hari Bathini wrote:
+> Crash memory ranges is an array of memory ranges of the crashing kernel
+> to be exported as a dump via /proc/vmcore file. The size of the array
+> is set based on INIT_MEMBLOCK_REGIONS, which works alright in most cases
+> where memblock memory regions count is less than INIT_MEMBLOCK_REGIONS
+> value. But this count can grow beyond INIT_MEMBLOCK_REGIONS value since
+> commit 142b45a72e22 ("memblock: Add array resizing support").
 > 
-> Signed-off-by: Parth Y Shah <sparth1292@gmail.com>
-
-Thanks for picking this up.
-
-Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-
+> On large memory systems with a few DLPAR operations, the memblock memory
+> regions count could be larger than INIT_MEMBLOCK_REGIONS value. On such
+> systems, registering fadump results in crash or other system failures
+> like below:
+> 
+>   task: c00007f39a290010 ti: c00000000b738000 task.ti: c00000000b738000
+>   NIP: c000000000047df4 LR: c0000000000f9e58 CTR: c00000000010f180
+>   REGS: c00000000b73b570 TRAP: 0300   Tainted: G          L   X  (4.4.140+)
+>   MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 22004484  XER: 20000000
+>   CFAR: c000000000008500 DAR: 000007a450000000 DSISR: 40000000 SOFTE: 0
+>   GPR00: c0000000000f9e58 c00000000b73b7f0 c000000000f09a00 000000000000001a
+>   GPR04: c00007f3bf774c90 0000000000000004 c000000000eb9a00 0000000000000800
+>   GPR08: 0000000000000804 000007a450000000 c000000000fa9a00 c00007ffb169ca20
+>   GPR12: 0000000022004482 c00000000fa12c00 c00007f3a0ea97a8 0000000000000000
+>   GPR16: c00007f3a0ea9a50 c00000000b73bd60 0000000000000118 000000000001fe80
+>   GPR20: 0000000000000118 0000000000000000 c000000000b8c980 00000000000000d0
+>   GPR24: 000007ffb0b10000 c00007ffb169c980 0000000000000000 c000000000b8c980
+>   GPR28: 0000000000000004 c00007ffb169c980 000000000000001a c00007ffb169c980
+>   NIP [c000000000047df4] smp_send_reschedule+0x24/0x80
+>   LR [c0000000000f9e58] resched_curr+0x138/0x160
+>   Call Trace:
+>   [c00000000b73b7f0] [c0000000000f9e58] resched_curr+0x138/0x160 (unreliable)
+>   [c00000000b73b820] [c0000000000fb538] check_preempt_curr+0xc8/0xf0
+>   [c00000000b73b850] [c0000000000fb598] ttwu_do_wakeup+0x38/0x150
+>   [c00000000b73b890] [c0000000000fc9c4] try_to_wake_up+0x224/0x4d0
+>   [c00000000b73b900] [c00000000011ef34] __wake_up_common+0x94/0x100
+>   [c00000000b73b960] [c00000000034a78c] ep_poll_callback+0xac/0x1c0
+>   [c00000000b73b9b0] [c00000000011ef34] __wake_up_common+0x94/0x100
+>   [c00000000b73ba10] [c00000000011f810] __wake_up_sync_key+0x70/0xa0
+>   [c00000000b73ba60] [c00000000067c3e8] sock_def_readable+0x58/0xa0
+>   [c00000000b73ba90] [c0000000007848ac] unix_stream_sendmsg+0x2dc/0x4c0
+>   [c00000000b73bb70] [c000000000675a38] sock_sendmsg+0x68/0xa0
+>   [c00000000b73bba0] [c00000000067673c] ___sys_sendmsg+0x2cc/0x2e0
+>   [c00000000b73bd30] [c000000000677dbc] __sys_sendmsg+0x5c/0xc0
+>   [c00000000b73bdd0] [c0000000006789bc] SyS_socketcall+0x36c/0x3f0
+>   [c00000000b73be30] [c000000000009488] system_call+0x3c/0x100
+>   Instruction dump:
+>   4e800020 60000000 60420000 3c4c00ec 38421c30 7c0802a6 f8010010 60000000
+>   3d42000a e92ab420 2fa90000 4dde0020 <e9290000> 2fa90000 419e0044 7c0802a6
+>   ---[ end trace a6d1dd4bab5f8253 ]---
+> 
+> as array index overflow is not checked for while setting up crash memory
+> ranges causing memory corruption. To resolve this issue, resize crash
+> memory ranges array on hitting array size limit.
+> 
+> But without a hard limit on the number of crash memory ranges, there is
+> a possibility of program headers count overflow in the /proc/vmcore ELF
+> file while exporting each of this memory ranges as PT_LOAD segments. To
+> reduce the likelihood of such scenario, fold adjacent memory ranges to
+> minimize the total number of crash memory ranges.
+> 
+> Fixes: 2df173d9e85d ("fadump: Initialize elfcore header and add PT_LOAD program headers.")
+> Cc: stable@vger.kernel.org
+> Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 > ---
->   drivers/misc/cxl/fault.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/powerpc/include/asm/fadump.h |    2 +
+>  arch/powerpc/kernel/fadump.c      |   63 ++++++++++++++++++++++++++++++++++---
+>  2 files changed, 59 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-> index 70dbb6d..d45f3e6 100644
-> --- a/drivers/misc/cxl/fault.c
-> +++ b/drivers/misc/cxl/fault.c
-> @@ -33,7 +33,7 @@ static bool sste_matches(struct cxl_sste *sste, struct copro_slb *slb)
->    * This finds a free SSTE for the given SLB, or returns NULL if it's already in
->    * the segment table.
->    */
-> -static struct cxl_sste* find_free_sste(struct cxl_context *ctx,
-> +static struct cxl_sste *find_free_sste(struct cxl_context *ctx,
->   				       struct copro_slb *slb)
->   {
->   	struct cxl_sste *primary, *sste, *ret = NULL;
+> diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
+> index 5a23010..ff708b3 100644
+> --- a/arch/powerpc/include/asm/fadump.h
+> +++ b/arch/powerpc/include/asm/fadump.h
+> @@ -196,7 +196,7 @@ struct fadump_crash_info_header {
+>  };
 > 
+>  /* Crash memory ranges */
+> -#define INIT_CRASHMEM_RANGES	(INIT_MEMBLOCK_REGIONS + 2)
+> +#define INIT_CRASHMEM_RANGES	INIT_MEMBLOCK_REGIONS
+> 
+>  struct fad_crash_memory_ranges {
+>  	unsigned long long	base;
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 07e8396..1c1df4f 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -47,7 +47,9 @@ static struct fadump_mem_struct fdm;
+>  static const struct fadump_mem_struct *fdm_active;
+> 
+>  static DEFINE_MUTEX(fadump_mutex);
+> -struct fad_crash_memory_ranges crash_memory_ranges[INIT_CRASHMEM_RANGES];
+> +struct fad_crash_memory_ranges init_crash_memory_ranges[INIT_CRASHMEM_RANGES];
+> +int max_crash_mem_ranges = INIT_CRASHMEM_RANGES;
+> +struct fad_crash_memory_ranges *crash_memory_ranges = init_crash_memory_ranges;
+>  int crash_mem_ranges;
+> 
+>  /* Scan the Firmware Assisted dump configuration details. */
+> @@ -871,14 +873,65 @@ static int __init process_fadump(const struct fadump_mem_struct *fdm_active)
+>  static inline void fadump_add_crash_memory(unsigned long long base,
+>  					unsigned long long end)
+>  {
+> +	u64  start, size;
+> +	bool is_adjacent = false;
+> +
+>  	if (base == end)
+>  		return;
+> 
+> +	/*
+> +	 * Fold adjacent memory ranges to bring down the memory ranges/
+> +	 * PT_LOAD segments count.
+> +	 */
+> +	if (crash_mem_ranges) {
+> +		start = crash_memory_ranges[crash_mem_ranges-1].base;
+> +		size = crash_memory_ranges[crash_mem_ranges-1].size;
+> +
+> +		if ((start + size) == base)
+> +			is_adjacent = true;
+> +	}
+> +
+> +	if (!is_adjacent) {
+> +		/* resize the array on reaching the limit */
+> +		if (crash_mem_ranges == max_crash_mem_ranges) {
+> +			u64 old_size, new_max;
+> +			struct fad_crash_memory_ranges *new_array;
+> +
+> +			old_size = max_crash_mem_ranges;
+> +			old_size *= sizeof(struct fad_crash_memory_ranges);
+> +
+> +			new_max = max_crash_mem_ranges + INIT_CRASHMEM_RANGES;
+> +			size = new_max * sizeof(struct fad_crash_memory_ranges);
+> +
+> +			pr_debug("Resizing crash memory ranges count from %d to %d\n",
+> +				 max_crash_mem_ranges, new_max);
+> +
+> +			new_array = kmalloc(size, GFP_KERNEL);
+> +			if (new_array == NULL) {
+> +				pr_warn("Insufficient memory for setting up crash memory ranges\n");
+> +				return;
 
--- 
-Andrew Donnellan              OzLabs, ADL Canberra
-andrew.donnellan@au1.ibm.com  IBM Australia Limited
+Looks like we still going ahead with fadump registration in this case.
+This will give us partial dump. Should we not fail fadump registration
+if we are not able to cover all the crash memory ranges ??
+
+Also alongwith this change, Should we also double the initial array size
+(e.g. INIT_CRASHMEM_RANGES * 2) to reduce our chances to go for memory
+allocation ?
+
+Thanks,
+-Mahesh.
+
+> +			}
+> +
+> +			/*
+> +			 * Copy the old memory ranges into the new array before
+> +			 * free'ing it.
+> +			 */
+> +			memcpy(new_array, crash_memory_ranges, old_size);
+> +			if (crash_memory_ranges != init_crash_memory_ranges)
+> +				kfree(crash_memory_ranges);
+> +
+> +			crash_memory_ranges = new_array;
+> +			max_crash_mem_ranges = new_max;
+> +		}
+> +		start = base;
+> +		crash_memory_ranges[crash_mem_ranges].base = start;
+> +		crash_mem_ranges++;
+> +	}
+> +
+> +	crash_memory_ranges[crash_mem_ranges-1].size = (end - start);
+> +
+>  	pr_debug("crash_memory_range[%d] [%#016llx-%#016llx], %#llx bytes\n",
+> -		crash_mem_ranges, base, end - 1, (end - base));
+> -	crash_memory_ranges[crash_mem_ranges].base = base;
+> -	crash_memory_ranges[crash_mem_ranges].size = end - base;
+> -	crash_mem_ranges++;
+> +		(crash_mem_ranges - 1), start, end - 1, (end - start));
+>  }
+> 
+>  static void fadump_exclude_reserved_area(unsigned long long start,
+> 
