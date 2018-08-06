@@ -1,19 +1,35 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+2e2b7d69833f9a8d01a8+5461+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kgzM2XrlzF3HK
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 01:09:18 +1000 (AEST)
-Message-Id: <975595591e096f4ad3253b5a11713beaf62912c4.1533561636.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/cpm1: fix compilation error with
- CONFIG_PPC_EARLY_DEBUG_CPM
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41khJp0c48zF3HK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 01:24:25 +1000 (AEST)
+Date: Mon, 6 Aug 2018 08:24:06 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, robh@kernel.org,
+ srikar@linux.vnet.ibm.com, aik@ozlabs.ru,
+ Jason Wang <jasowang@redhat.com>, linuxram@us.ibm.com,
+ linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, hch@infradead.org,
+ paulus@samba.org, joe@perches.com, david@gibson.dropbear.id.au,
+ linuxppc-dev@lists.ozlabs.org, elfring@users.sourceforge.net,
+ haren@linux.vnet.ibm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180806152406.GA29020@infradead.org>
+References: <20180720035941.6844-1-khandual@linux.vnet.ibm.com>
+ <20180802235332-mutt-send-email-mst@kernel.org>
+ <b31d2162-884c-0ed4-00df-e7debe0cc0e7@redhat.com>
+ <20180803220812-mutt-send-email-mst@kernel.org>
+ <01c74680c4b3aa25d9b4375a9ab5e10046b7c71b.camel@kernel.crashing.org>
+ <20180805032355-mutt-send-email-mst@kernel.org>
+ <74a1e1b8-81e0-84db-6d0d-d8bd9caebb4a@linux.vnet.ibm.com>
+ <20180806163440-mutt-send-email-mst@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Mon,  6 Aug 2018 15:09:11 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180806163440-mutt-send-email-mst@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,93 +39,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit e8cb7a55eb8dc ("powerpc: remove superflous inclusions of
-asm/fixmap.h") removed inclusion of asm/fixmap.h from files not
-including objects from that file.
+On Mon, Aug 06, 2018 at 04:36:43PM +0300, Michael S. Tsirkin wrote:
+> On Mon, Aug 06, 2018 at 02:32:28PM +0530, Anshuman Khandual wrote:
+> > On 08/05/2018 05:54 AM, Michael S. Tsirkin wrote:
+> > > On Fri, Aug 03, 2018 at 08:21:26PM -0500, Benjamin Herrenschmidt wrote:
+> > >> On Fri, 2018-08-03 at 22:08 +0300, Michael S. Tsirkin wrote:
+> > >>>>>> Please go through these patches and review whether this approach broadly
+> > >>>>>> makes sense. I will appreciate suggestions, inputs, comments regarding
+> > >>>>>> the patches or the approach in general. Thank you.
+> > >>>>>
+> > >>>>> Jason did some work on profiling this. Unfortunately he reports
+> > >>>>> about 4% extra overhead from this switch on x86 with no vIOMMU.
+> > >>>>
+> > >>>> The test is rather simple, just run pktgen (pktgen_sample01_simple.sh) in
+> > >>>> guest and measure PPS on tap on host.
+> > >>>>
+> > >>>> Thanks
+> > >>>
+> > >>> Could you supply host configuration involved please?
+> > >>
+> > >> I wonder how much of that could be caused by Spectre mitigations
+> > >> blowing up indirect function calls...
+> > >>
+> > >> Cheers,
+> > >> Ben.
+> > > 
+> > > I won't be surprised. If yes I suggested a way to mitigate the overhead.
+> > 
+> > Did we get better results (lower regression due to indirect calls) with
+> > the suggested mitigation ? Just curious.
+> 
+> I'm referring to this:
+> 	I wonder whether we can support map_sg and friends being NULL, then use
+> 	that when mapping is an identity. A conditional branch there is likely
+> 	very cheap.
+> 
+> I don't think anyone tried implementing this yes.
 
-However, asm/mmu-8xx.h includes  call to __fix_to_virt(). The proper
-way would be to include asm/fixmap.h in asm/mmu-8xx.h but it creates
-an inclusion loop.
-
-So we have to leave asm/fixmap.h in sysdep/cpm_common.c for
-CONFIG_PPC_EARLY_DEBUG_CPM
-
-  CC      arch/powerpc/sysdev/cpm_common.o
-In file included from ./arch/powerpc/include/asm/mmu.h:340:0,
-                 from ./arch/powerpc/include/asm/reg_8xx.h:8,
-                 from ./arch/powerpc/include/asm/reg.h:29,
-                 from ./arch/powerpc/include/asm/processor.h:13,
-                 from ./arch/powerpc/include/asm/thread_info.h:28,
-                 from ./include/linux/thread_info.h:38,
-                 from ./arch/powerpc/include/asm/ptrace.h:159,
-                 from ./arch/powerpc/include/asm/hw_irq.h:12,
-                 from ./arch/powerpc/include/asm/irqflags.h:12,
-                 from ./include/linux/irqflags.h:16,
-                 from ./include/asm-generic/cmpxchg-local.h:6,
-                 from ./arch/powerpc/include/asm/cmpxchg.h:537,
-                 from ./arch/powerpc/include/asm/atomic.h:11,
-                 from ./include/linux/atomic.h:5,
-                 from ./include/linux/mutex.h:18,
-                 from ./include/linux/kernfs.h:13,
-                 from ./include/linux/sysfs.h:16,
-                 from ./include/linux/kobject.h:20,
-                 from ./include/linux/device.h:16,
-                 from ./include/linux/node.h:18,
-                 from ./include/linux/cpu.h:17,
-                 from ./include/linux/of_device.h:5,
-                 from arch/powerpc/sysdev/cpm_common.c:21:
-arch/powerpc/sysdev/cpm_common.c: In function ‘udbg_init_cpm’:
-./arch/powerpc/include/asm/mmu-8xx.h:218:25: error: implicit declaration of function ‘__fix_to_virt’ [-Werror=implicit-function-declaration]
- #define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
-                         ^
-arch/powerpc/sysdev/cpm_common.c:75:7: note: in expansion of macro ‘VIRT_IMMR_BASE’
-       VIRT_IMMR_BASE);
-       ^
-./arch/powerpc/include/asm/mmu-8xx.h:218:39: error: ‘FIX_IMMR_BASE’ undeclared (first use in this function)
- #define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
-                                       ^
-arch/powerpc/sysdev/cpm_common.c:75:7: note: in expansion of macro ‘VIRT_IMMR_BASE’
-       VIRT_IMMR_BASE);
-       ^
-./arch/powerpc/include/asm/mmu-8xx.h:218:39: note: each undeclared identifier is reported only once for each function it appears in
- #define VIRT_IMMR_BASE (__fix_to_virt(FIX_IMMR_BASE))
-                                       ^
-arch/powerpc/sysdev/cpm_common.c:75:7: note: in expansion of macro ‘VIRT_IMMR_BASE’
-       VIRT_IMMR_BASE);
-       ^
-cc1: all warnings being treated as errors
-make[1]: *** [arch/powerpc/sysdev/cpm_common.o] Error 1
-
-Fixes: e8cb7a55eb8dc ("powerpc: remove superflous inclusions of asm/fixmap.h")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/fixmap.h | 1 +
- arch/powerpc/sysdev/cpm_common.c  | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/fixmap.h b/arch/powerpc/include/asm/fixmap.h
-index 40efdf1d2d6e..41cc15c14eee 100644
---- a/arch/powerpc/include/asm/fixmap.h
-+++ b/arch/powerpc/include/asm/fixmap.h
-@@ -16,6 +16,7 @@
- 
- #ifndef __ASSEMBLY__
- #include <asm/page.h>
-+#include <asm/pgtable.h>
- #ifdef CONFIG_HIGHMEM
- #include <linux/threads.h>
- #include <asm/kmap_types.h>
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index 010975c3422f..b74508175b67 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -28,6 +28,7 @@
- #include <asm/udbg.h>
- #include <asm/io.h>
- #include <asm/cpm.h>
-+#include <asm/fixmap.h>
- #include <soc/fsl/qe/qe.h>
- 
- #include <mm/mmu_decl.h>
--- 
-2.13.3
+I've done something very similar in the thread I posted a few years
+ago. I plan to get a version of that upstream for 4.20, but it won't
+cover the virtio case, just the real direct mapping.
