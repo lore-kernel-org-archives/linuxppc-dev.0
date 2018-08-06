@@ -1,37 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ksQF2H7RzDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 08:14:44 +1000 (AEST)
-Message-ID: <93518075238a07e9f011774d89bdc652c083f1ba.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Tue, 07 Aug 2018 08:13:56 +1000
-In-Reply-To: <20180807002857-mutt-send-email-mst@kernel.org>
-References: <20180803070507.GA1344@infradead.org>
- <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
- <20180803220443-mutt-send-email-mst@kernel.org>
- <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
- <20180805031046-mutt-send-email-mst@kernel.org>
- <fd8fee94cf42e436878f179c7895de3a4dab3355.camel@kernel.crashing.org>
- <20180806164106-mutt-send-email-mst@kernel.org>
- <ef6d5d7c7b812bd797a1c3fd6bc7a26d0074020f.camel@kernel.crashing.org>
- <20180806233024-mutt-send-email-mst@kernel.org>
- <0967fc30001323e6e38ed12c8dba8ee3d1aa13f5.camel@kernel.crashing.org>
- <20180807002857-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ktJN0XD6zDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 08:54:43 +1000 (AEST)
+Date: Mon, 6 Aug 2018 15:54:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dan Williams
+ <dan.j.williams@intel.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Build regressions/improvements in v4.17-rc1
+Message-Id: <20180806155440.9dcb271a3b075bd964aec60f@linux-foundation.org>
+In-Reply-To: <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
+References: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,80 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-07 at 00:46 +0300, Michael S. Tsirkin wrote:
-> On Tue, Aug 07, 2018 at 07:26:35AM +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2018-08-06 at 23:35 +0300, Michael S. Tsirkin wrote:
-> > > > As I said replying to Christoph, we are "leaking" into the interface
-> > > > something here that is really what's the VM is doing to itself, which
-> > > > is to stash its memory away in an inaccessible place.
-> > > > 
-> > > > Cheers,
-> > > > Ben.
-> > > 
-> > > I think Christoph merely objects to the specific implementation.  If
-> > > instead you do something like tweak dev->bus_dma_mask for the virtio
-> > > device I think he won't object.
-> > 
-> > Well, we don't have "bus_dma_mask" yet ..or you mean dma_mask ?
-> > 
-> > So, something like that would be a possibility, but the problem is that
-> > the current virtio (guest side) implementation doesn't honor this when
-> > not using dma ops and will not use dma ops if not using iommu, so back
-> > to square one.
+On Mon, 6 Aug 2018 12:39:21 +0200 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+
+> CC Dan, Michael, AKPM, powerpc
 > 
-> Well we have the RFC for that - the switch to using DMA ops unconditionally isn't
-> problematic itself IMHO, for now that RFC is blocked
-> by its perfromance overhead for now but Christoph says
-> he's trying to remove that for direct mappings,
-> so we should hopefully be able to get there in X weeks.
-
-That would be good yes.
-
- ../..
-
-> > --- a/drivers/virtio/virtio_ring.c
-> > +++ b/drivers/virtio/virtio_ring.c
-> > @@ -155,7 +155,7 @@ static bool vring_use_dma_api(struct virtio_device
-> > *vdev)
-> >          * the DMA API if we're a Xen guest, which at least allows
-> >          * all of the sensible Xen configurations to work correctly.
-> >          */
-> > -       if (xen_domain())
-> > +       if (xen_domain() || arch_virtio_direct_dma_ops(&vdev->dev))
-> >                 return true;
-> >  
-> >         return false;
+> On Mon, Apr 16, 2018 at 3:10 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > Below is the list of build error/warning regressions/improvements in
+> > v4.17-rc1[1] compared to v4.16[2].
 > 
-> Right but can't we fix the retpoline overhead such that
-> vring_use_dma_api will not be called on data path any longer, making
-> this a setup time check?
-
-Yes it needs to be a setup time check regardless actually !
-
-The above is broken, sorry I was a bit quick here (too early in the
-morning... ugh). We don't want the arch to go override the dma ops
-every time that is callled.
-
-But yes, if we can fix the overhead, it becomes just a matter of
-setting up the "right" ops automatically.
-
-> > (Passing the dev allows the arch to know this is a virtio device in
-> > "direct" mode or whatever we want to call the !iommu case, and
-> > construct appropriate DMA ops for it, which aren't the same as the DMA
-> > ops of any other PCI device who *do* use the iommu).
+> I'd like to point your attention to:
 > 
-> I think that's where Christoph might have specific ideas about it.
+> >   + warning: vmlinux.o(.text+0x376518): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
+> >   + warning: vmlinux.o(.text+0x376d64): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
 
-OK well, assuming Christoph can solve the direct case in a way that
-also work for the virtio !iommu case, we still want some bit of logic
-somewhere that will "switch" to swiotlb based ops if the DMA mask is
-limited.
+hm.  Dan isn't around at present so we're on our own with this one.
 
-You mentioned an RFC for that ? Do you happen to have a link ?
+x86 doesn't put arch_add_memory and arch_remove_memory into __meminit. 
+x86 does
 
-It would be indeed ideal if all we had to do was setup some kind of
-bus_dma_mask on all PCI devices and have virtio automagically insert
-swiotlb when necessary.
+#ifdef CONFIG_MEMORY_HOTPLUG
+int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
+		bool want_memblock)
+{
+	...
 
-Cheers,
-Ben.
+
+So I guess powerpc should do that as well?
