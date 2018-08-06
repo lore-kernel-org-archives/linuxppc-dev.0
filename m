@@ -1,39 +1,25 @@
-Return-Path: <BATV+2e2b7d69833f9a8d01a8+5461+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ua0-f177.google.com (mail-ua0-f177.google.com
+ [209.85.217.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kYQ21bF0zF3HG
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 20:13:30 +1000 (AEST)
-Date: Mon, 6 Aug 2018 02:42:43 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180806094243.GA16032@infradead.org>
-References: <20180802225738-mutt-send-email-mst@kernel.org>
- <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
- <20180803070507.GA1344@infradead.org>
- <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
- <20180803160246.GA13794@infradead.org>
- <22310f58605169fe9de83abf78b59f593ff7fbb7.camel@kernel.crashing.org>
- <20180804082120.GB4421@infradead.org>
- <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
- <20180805072930.GB23288@infradead.org>
- <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kZ082DcjzF3HJ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 20:39:35 +1000 (AEST)
+Received: by mail-ua0-f177.google.com with SMTP id r15-v6so3042738uao.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 03:39:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+References: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 6 Aug 2018 12:39:21 +0200
+Message-ID: <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.17-rc1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,56 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2018 at 07:16:47AM +1000, Benjamin Herrenschmidt wrote:
-> Who would set this bit ? qemu ? Under what circumstances ?
+CC Dan, Michael, AKPM, powerpc
 
-I don't really care who sets what.  The implementation might not even
-involved qemu.
+On Mon, Apr 16, 2018 at 3:10 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v4.17-rc1[1] compared to v4.16[2].
 
-It is your job to write a coherent interface specification that does
-not depend on the used components.  The hypervisor might be PAPR,
-Linux + qemu, VMware, Hyperv or something so secret that you'd have
-to shoot me if you had to tell me.  The guest might be Linux, FreeBSD,
-AIX, OS400 or a Hipster project of the day in Rust.  As long as we
-properly specify the interface it simplify does not matter.
+I'd like to point your attention to:
 
-> What would be the effect of this bit while VIRTIO_F_IOMMU is NOT set,
-> ie, what would qemu do and what would Linux do ? I'm not sure I fully
-> understand your idea.
+>   + warning: vmlinux.o(.text+0x376518): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x376d64): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x37dfd8): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x37e824): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x3944): Section mismatch in reference from the variable start_here_multiplatform to the function .init.text:early_setup():  => N/A
+>   + warning: vmlinux.o(.text+0x3978): Section mismatch in reference from the variable start_here_common to the function .init.text:start_kernel():  => N/A
+>   + warning: vmlinux.o(.text+0x3a66c): Section mismatch in reference from the function mips_sc_init() to the function .init.text:mips_sc_probe_cm3():  => N/A
+>   + warning: vmlinux.o(.text+0x3e9908): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x3ea154): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x498dbc): Section mismatch in reference from the function hmm_devmem_release() to the function .meminit.text:arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x499130): Section mismatch in reference from the function hmm_devmem_pages_create() to the function .meminit.text:arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x4a59ec): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x4a5d08): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x4ad8ac): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x4adbc8): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x4ca7238): Section mismatch in reference from the function .create_device_attrs() to the function .init.text:.make_sensor_label():  => N/A
+>   + warning: vmlinux.o(.text+0x51ffec): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>   + warning: vmlinux.o(.text+0x520308): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
 
-In a perfect would we'd just reuse VIRTIO_F_IOMMU and clarify the
-description which currently is rather vague but basically captures
-the use case.  Currently is is:
+These are still seen on v4.18-rc8 on various powerpc all{mod,yes}config builds.
 
-VIRTIO_F_IOMMU_PLATFORM(33)
-    This feature indicates that the device is behind an IOMMU that
-    translates bus addresses from the device into physical addresses in
-    memory. If this feature bit is set to 0, then the device emits
-    physical addresses which are not translated further, even though an
-    IOMMU may be present.
+Gr{oetje,eeting}s,
 
-And I'd change it to something like:
+                        Geert
 
-VIRTIO_F_PLATFORM_DMA(33)
-    This feature indicates that the device emits platform specific
-    bus addresses that might not be identical to physical address.
-    The translation of physical to bus address is platform speific
-    and defined by the plaform specification for the bus that the virtio
-    device is attached to.
-    If this feature bit is set to 0, then the device emits
-    physical addresses which are not translated further, even if
-    the platform would normally require translations for the bus that
-    the virtio device is attached to.
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-If we can't change the defintion any more we should deprecate the
-old VIRTIO_F_IOMMU_PLATFORM bit, and require the VIRTIO_F_IOMMU_PLATFORM
-and VIRTIO_F_PLATFORM_DMA to be not set at the same time.
-
-> I'm trying to understand because the limitation is not a device side
-> limitation, it's not a qemu limitation, it's actually more of a VM
-> limitation. It has most of its memory pages made inaccessible for
-> security reasons. The platform from a qemu/KVM perspective is almost
-> entirely normal.
-
-Well, find a way to describe this either in the qemu specification using
-new feature bits, or by using something like the above.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
