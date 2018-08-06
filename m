@@ -1,25 +1,21 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua0-f177.google.com (mail-ua0-f177.google.com
- [209.85.217.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kZ082DcjzF3HJ
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 20:39:35 +1000 (AEST)
-Received: by mail-ua0-f177.google.com with SMTP id r15-v6so3042738uao.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 03:39:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kZZq2bxZzF3HG
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2018 21:06:11 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Breno Leitao <leitao@debian.org>,
+ Gustavo Romero <gromero@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] selftests/powerpc: Avoid remaining process/threads
+In-Reply-To: <1533307039-13744-1-git-send-email-leitao@debian.org>
+References: <87bmajhh40.fsf@concordia.ellerman.id.au>
+ <1533307039-13744-1-git-send-email-leitao@debian.org>
+Date: Mon, 06 Aug 2018 21:06:10 +1000
+Message-ID: <87bmafoiu5.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-References: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 6 Aug 2018 12:39:21 +0200
-Message-ID: <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.17-rc1
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CC Dan, Michael, AKPM, powerpc
+Breno Leitao <leitao@debian.org> writes:
 
-On Mon, Apr 16, 2018 at 3:10 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v4.17-rc1[1] compared to v4.16[2].
+> diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+> index 66d31de60b9a..06c51e8d8ccb 100644
+> --- a/tools/testing/selftests/powerpc/harness.c
+> +++ b/tools/testing/selftests/powerpc/harness.c
+> @@ -85,13 +85,16 @@ int run_test(int (test_function)(void), char *name)
+>  	return status;
+>  }
+>  
+> -static void alarm_handler(int signum)
+> +static void sig_handler(int signum)
+>  {
+> -	/* Jut wake us up from waitpid */
+> +	if (signum == SIGINT)
+> +		kill(-pid, SIGTERM);
 
-I'd like to point your attention to:
+I don't think we need to do that here, if we just return then we'll pop
+out of the waitpid() and go via the normal path.
 
->   + warning: vmlinux.o(.text+0x376518): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x376d64): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x37dfd8): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x37e824): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x3944): Section mismatch in reference from the variable start_here_multiplatform to the function .init.text:early_setup():  => N/A
->   + warning: vmlinux.o(.text+0x3978): Section mismatch in reference from the variable start_here_common to the function .init.text:start_kernel():  => N/A
->   + warning: vmlinux.o(.text+0x3a66c): Section mismatch in reference from the function mips_sc_init() to the function .init.text:mips_sc_probe_cm3():  => N/A
->   + warning: vmlinux.o(.text+0x3e9908): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x3ea154): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x498dbc): Section mismatch in reference from the function hmm_devmem_release() to the function .meminit.text:arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x499130): Section mismatch in reference from the function hmm_devmem_pages_create() to the function .meminit.text:arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x4a59ec): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x4a5d08): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x4ad8ac): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x4adbc8): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
->   + warning: vmlinux.o(.text+0x4ca7238): Section mismatch in reference from the function .create_device_attrs() to the function .init.text:.make_sensor_label():  => N/A
->   + warning: vmlinux.o(.text+0x51ffec): Section mismatch in reference from the function .hmm_devmem_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->   + warning: vmlinux.o(.text+0x520308): Section mismatch in reference from the function .hmm_devmem_pages_create() to the function .meminit.text:.arch_add_memory():  => N/A
+Can you test with the existing signal handler, but wired up to SIGINT?
 
-These are still seen on v4.18-rc8 on various powerpc all{mod,yes}config builds.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+cheers
