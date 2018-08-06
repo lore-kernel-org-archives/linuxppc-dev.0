@@ -1,29 +1,24 @@
-Return-Path: <alex@ghiti.fr>
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net
- [217.70.183.193])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
+ [209.85.216.195])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41klzb1wRxzF3HM
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 04:09:46 +1000 (AEST)
-From: Alexandre Ghiti <alex@ghiti.fr>
-To: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
- catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
- fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
- jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-Cc: Alexandre Ghiti <alex@ghiti.fr>
-Subject: [PATCH v6 11/11] hugetlb: Introduce generic version of huge_ptep_get
-Date: Mon,  6 Aug 2018 17:57:11 +0000
-Message-Id: <20180806175711.24438-12-alex@ghiti.fr>
-In-Reply-To: <20180806175711.24438-1-alex@ghiti.fr>
-References: <20180806175711.24438-1-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kmJg6d70zF3HK
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 04:24:32 +1000 (AEST)
+Received: by mail-qt0-f195.google.com with SMTP id t5-v6so14974532qtn.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 11:24:32 -0700 (PDT)
+Subject: Re: [PATCH v2] selftests/powerpc: Avoid remaining process/threads
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Cc: Gustavo Romero <gromero@linux.vnet.ibm.com>
+References: <87bmajhh40.fsf@concordia.ellerman.id.au>
+ <1533307039-13744-1-git-send-email-leitao@debian.org>
+ <87bmafoiu5.fsf@concordia.ellerman.id.au>
+From: Breno Leitao <leitao@debian.org>
+Message-ID: <a4f9f03b-51dd-55d4-cfec-9ae48fbbd9d6@debian.org>
+Date: Mon, 6 Aug 2018 15:24:24 -0300
+MIME-Version: 1.0
+In-Reply-To: <87bmafoiu5.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,180 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ia64, mips, parisc, powerpc, sh, sparc, x86 architectures use the
-same version of huge_ptep_get, so move this generic implementation into
-asm-generic/hugetlb.h.
+Hello Michael,
 
-Signed-off-by: Alexandre Ghiti <alex@ghiti.fr>
-Tested-by: Helge Deller <deller@gmx.de> # parisc
-Acked-by: Catalin Marinas <catalin.marinas@arm.com> # arm64
-Acked-by: Paul Burton <paul.burton@mips.com> # MIPS parts
-Reviewed-by: Luiz Capitulino <lcapitulino@redhat.com>
-Reviewed-by: Mike Kravetz <mike.kravetz@oracle.com>
----
- arch/arm/include/asm/hugetlb-3level.h | 1 +
- arch/arm64/include/asm/hugetlb.h      | 1 +
- arch/ia64/include/asm/hugetlb.h       | 5 -----
- arch/mips/include/asm/hugetlb.h       | 5 -----
- arch/parisc/include/asm/hugetlb.h     | 5 -----
- arch/powerpc/include/asm/hugetlb.h    | 5 -----
- arch/sh/include/asm/hugetlb.h         | 5 -----
- arch/sparc/include/asm/hugetlb.h      | 5 -----
- arch/x86/include/asm/hugetlb.h        | 5 -----
- include/asm-generic/hugetlb.h         | 7 +++++++
- 10 files changed, 9 insertions(+), 35 deletions(-)
+On 08/06/2018 08:06 AM, Michael Ellerman wrote:
+> Breno Leitao <leitao@debian.org> writes:
+> 
+>> diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+>> index 66d31de60b9a..06c51e8d8ccb 100644
+>> --- a/tools/testing/selftests/powerpc/harness.c
+>> +++ b/tools/testing/selftests/powerpc/harness.c
+>> @@ -85,13 +85,16 @@ int run_test(int (test_function)(void), char *name)
+>>  	return status;
+>>  }
+>>  
+>> -static void alarm_handler(int signum)
+>> +static void sig_handler(int signum)
+>>  {
+>> -	/* Jut wake us up from waitpid */
+>> +	if (signum == SIGINT)
+>> +		kill(-pid, SIGTERM);
+> 
+> I don't think we need to do that here, if we just return then we'll pop
+> out of the waitpid() and go via the normal path.
 
-diff --git a/arch/arm/include/asm/hugetlb-3level.h b/arch/arm/include/asm/hugetlb-3level.h
-index 54e4b097b1f5..0d9f3918fa7e 100644
---- a/arch/arm/include/asm/hugetlb-3level.h
-+++ b/arch/arm/include/asm/hugetlb-3level.h
-@@ -29,6 +29,7 @@
-  * ptes.
-  * (The valid bit is automatically cleared by set_pte_at for PROT_NONE ptes).
-  */
-+#define __HAVE_ARCH_HUGE_PTEP_GET
- static inline pte_t huge_ptep_get(pte_t *ptep)
- {
- 	pte_t retval = *ptep;
-diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
-index 80887abcef7f..fb6609875455 100644
---- a/arch/arm64/include/asm/hugetlb.h
-+++ b/arch/arm64/include/asm/hugetlb.h
-@@ -20,6 +20,7 @@
- 
- #include <asm/page.h>
- 
-+#define __HAVE_ARCH_HUGE_PTEP_GET
- static inline pte_t huge_ptep_get(pte_t *ptep)
- {
- 	return READ_ONCE(*ptep);
-diff --git a/arch/ia64/include/asm/hugetlb.h b/arch/ia64/include/asm/hugetlb.h
-index e9b42750fdf5..36cc0396b214 100644
---- a/arch/ia64/include/asm/hugetlb.h
-+++ b/arch/ia64/include/asm/hugetlb.h
-@@ -27,11 +27,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/arch/mips/include/asm/hugetlb.h b/arch/mips/include/asm/hugetlb.h
-index 120adc3b2ffd..425bb6fc3bda 100644
---- a/arch/mips/include/asm/hugetlb.h
-+++ b/arch/mips/include/asm/hugetlb.h
-@@ -82,11 +82,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 	return changed;
- }
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/arch/parisc/include/asm/hugetlb.h b/arch/parisc/include/asm/hugetlb.h
-index 165b4e5a6f32..7cb595dcb7d7 100644
---- a/arch/parisc/include/asm/hugetlb.h
-+++ b/arch/parisc/include/asm/hugetlb.h
-@@ -48,11 +48,6 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 					     unsigned long addr, pte_t *ptep,
- 					     pte_t pte, int dirty);
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
-index 658bf7136a3c..33a2d9e3ea9e 100644
---- a/arch/powerpc/include/asm/hugetlb.h
-+++ b/arch/powerpc/include/asm/hugetlb.h
-@@ -142,11 +142,6 @@ extern int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 				      unsigned long addr, pte_t *ptep,
- 				      pte_t pte, int dirty);
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/arch/sh/include/asm/hugetlb.h b/arch/sh/include/asm/hugetlb.h
-index c87195ae0cfa..6f025fe18146 100644
---- a/arch/sh/include/asm/hugetlb.h
-+++ b/arch/sh/include/asm/hugetlb.h
-@@ -32,11 +32,6 @@ static inline void huge_ptep_clear_flush(struct vm_area_struct *vma,
- {
- }
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- 	clear_bit(PG_dcache_clean, &page->flags);
-diff --git a/arch/sparc/include/asm/hugetlb.h b/arch/sparc/include/asm/hugetlb.h
-index 028a1465fbe7..3963f80d1cb3 100644
---- a/arch/sparc/include/asm/hugetlb.h
-+++ b/arch/sparc/include/asm/hugetlb.h
-@@ -53,11 +53,6 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- 	return changed;
- }
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/arch/x86/include/asm/hugetlb.h b/arch/x86/include/asm/hugetlb.h
-index 574d42eb081e..7469d321f072 100644
---- a/arch/x86/include/asm/hugetlb.h
-+++ b/arch/x86/include/asm/hugetlb.h
-@@ -13,11 +13,6 @@ static inline int is_hugepage_only_range(struct mm_struct *mm,
- 	return 0;
- }
- 
--static inline pte_t huge_ptep_get(pte_t *ptep)
--{
--	return *ptep;
--}
--
- static inline void arch_clear_hugepage_flags(struct page *page)
- {
- }
-diff --git a/include/asm-generic/hugetlb.h b/include/asm-generic/hugetlb.h
-index f3c99a03ee83..71d7b77eea50 100644
---- a/include/asm-generic/hugetlb.h
-+++ b/include/asm-generic/hugetlb.h
-@@ -119,4 +119,11 @@ static inline int huge_ptep_set_access_flags(struct vm_area_struct *vma,
- }
- #endif
- 
-+#ifndef __HAVE_ARCH_HUGE_PTEP_GET
-+static inline pte_t huge_ptep_get(pte_t *ptep)
-+{
-+	return *ptep;
-+}
-+#endif
-+
- #endif /* _ASM_GENERIC_HUGETLB_H */
--- 
-2.16.2
+Correct, if we press ^C while the parent process is waiting at waitpid(),
+then waitpid() syscall will be interrupted (EINTR) and never restarted again
+(unless we set sa_flags = SA_RESTART), thus, the code will restart to execute
+the next instruction when the signal handler is done, as we had skipped
+waitpid().
+
+>From a theoretical point of view, the user can press ^C before the process
+executes waitpid() syscall. In this case and the process will not 'skip' the
+waitpid(), which will continue to wait. We can clearly force this behavior
+putting a sleep(1) before waitpid() and pressing  ^C in the very first
+second, it will 'skip' the nanosleep() syscall instead of waitpid() which
+will be there, and the ^C will be ignored (thus not calling kill(-pid, SIGTERM)).
+
+>From a practical point of view, I will prepare a v3 patch. :-)
