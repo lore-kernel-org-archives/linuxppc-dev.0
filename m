@@ -1,38 +1,37 @@
-Return-Path: <jallen@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41knJQ3h4ZzF3HL
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 05:09:25 +1000 (AEST)
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w76J9G5U017666
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Aug 2018 15:09:22 -0400
-Received: from e11.ny.us.ibm.com (e11.ny.us.ibm.com [129.33.205.201])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kpufr9rqa-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 15:09:22 -0400
-Received: from localhost
- by e11.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
- Mon, 6 Aug 2018 15:09:20 -0400
-Date: Mon, 6 Aug 2018 14:09:17 -0500
-From: John Allen <jallen@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH v2 1/2] powerpc/pseries: Avoid blocking rtas polling
- handling multiple PRRN events
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-2-jallen@linux.ibm.com>
- <87muuihyjn.fsf@concordia.ellerman.id.au>
- <20180723150548.6syfciqtkohec66r@p50>
- <87lg9qfddo.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87lg9qfddo.fsf@concordia.ellerman.id.au>
-Message-Id: <20180806190916.p5eqyuwjvevoipq5@p50.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kpGm0VT2zF3HL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 05:53:03 +1000 (AEST)
+Message-ID: <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Tue, 07 Aug 2018 05:52:12 +1000
+In-Reply-To: <20180806094243.GA16032@infradead.org>
+References: <20180802225738-mutt-send-email-mst@kernel.org>
+ <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
+ <20180803070507.GA1344@infradead.org>
+ <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
+ <20180803160246.GA13794@infradead.org>
+ <22310f58605169fe9de83abf78b59f593ff7fbb7.camel@kernel.crashing.org>
+ <20180804082120.GB4421@infradead.org>
+ <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
+ <20180805072930.GB23288@infradead.org>
+ <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+ <20180806094243.GA16032@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,110 +41,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2018 at 11:02:59PM +1000, Michael Ellerman wrote:
->Hi John,
->
->I'm still not sure about this one.
->
->John Allen <jallen@linux.ibm.com> writes:
->> On Mon, Jul 23, 2018 at 11:27:56PM +1000, Michael Ellerman wrote:
->>>Hi John,
->>>
->>>I'm a bit puzzled by this one.
->>>
->>>John Allen <jallen@linux.ibm.com> writes:
->>>> When a PRRN event is being handled and another PRRN event comes in, the
->>>> second event will block rtas polling waiting on the first to complete,
->>>> preventing any further rtas events from being handled. This can be
->>>> especially problematic in case that PRRN events are continuously being
->>>> queued in which case rtas polling gets indefinitely blocked completely.
->>>>
->>>> This patch introduces a mutex that prevents any subsequent PRRN events from
->>>> running while there is a prrn event being handled, allowing rtas polling to
->>>> continue normally.
->>>>
->>>> Signed-off-by: John Allen <jallen@linux.ibm.com>
->>>> ---
->>>> v2:
->>>>   -Unlock prrn_lock when PRRN operations are complete, not after handler is
->>>>    scheduled.
->>>>   -Remove call to flush_work, the previous broken method of serializing
->>>>    PRRN events.
->>>> ---
->>>>  arch/powerpc/kernel/rtasd.c | 10 +++++++---
->>>>  1 file changed, 7 insertions(+), 3 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
->>>> index 44d66c33d59d..845fc5aec178 100644
->>>> --- a/arch/powerpc/kernel/rtasd.c
->>>> +++ b/arch/powerpc/kernel/rtasd.c
->>>> @@ -284,15 +286,17 @@ static void prrn_work_fn(struct work_struct *work)
->>>>  	 */
->>>>  	pseries_devicetree_update(-prrn_update_scope);
->>>>  	numa_update_cpu_topology(false);
->>>> +	mutex_unlock(&prrn_lock);
->>>>  }
->>>>
->>>>  static DECLARE_WORK(prrn_work, prrn_work_fn);
->>>>
->>>>  static void prrn_schedule_update(u32 scope)
->>>>  {
->>>> -	flush_work(&prrn_work);
->>>
->>>This seems like it's actually the core of the change. Previously we were
->>>basically blocking on the flush before continuing.
->>
->> The idea here is to replace the blocking flush_work with a non-blocking
->> mutex. So rather than waiting on the running PRRN event to complete, we
->> bail out since a PRRN event is already running.
->
->OK, but why is it OK to bail out?
->
->The firmware sent you an error log asking you to do something, with a
->scope value that has some meaning, and now you're just going to drop
->that on the floor?
->
->Maybe it is OK to just drop these events? Or maybe you're saying that
->because the system is crashing under the load of too many events it's OK
->to drop the events in this case.
+On Mon, 2018-08-06 at 02:42 -0700, Christoph Hellwig wrote:
+> On Mon, Aug 06, 2018 at 07:16:47AM +1000, Benjamin Herrenschmidt wrote:
+> > Who would set this bit ? qemu ? Under what circumstances ?
+> 
+> I don't really care who sets what.  The implementation might not even
+> involved qemu.
+> 
+> It is your job to write a coherent interface specification that does
+> not depend on the used components.  The hypervisor might be PAPR,
+> Linux + qemu, VMware, Hyperv or something so secret that you'd have
+> to shoot me if you had to tell me.  The guest might be Linux, FreeBSD,
+> AIX, OS400 or a Hipster project of the day in Rust.  As long as we
+> properly specify the interface it simplify does not matter.
 
-I think I see your point. If a PRRN event comes in while another is 
-currently running, the new one may contain a different list of LMBs/CPUs 
-and the old list becomes outdated. With the mutex, the only event that 
-gets handled is the oldest and we will lose any additional changes 
-beyond the initial event. Therefore, as you mentioned in your previous 
-message, the behavior of the global workqueue should work just fine once 
-we remove the call to flush_work.  While a prrn event is running, only 
-one will remain on the workqueue, then when the first one completes, the 
-newly scheduled work function should grab the latest PRRN list.
+That's the point Christoph. The interface is today's interface. It does
+NOT change. That information is not part of the interface.
 
-I will send a new version of the patch with just the call to flush_work 
-removed.
+It's the VM itself that is stashing away its memory in a secret place,
+and thus needs to do bounce buffering. There is no change to the virtio
+interface per-se.
 
--John
+> > What would be the effect of this bit while VIRTIO_F_IOMMU is NOT set,
+> > ie, what would qemu do and what would Linux do ? I'm not sure I fully
+> > understand your idea.
+> 
+> In a perfect would we'd just reuse VIRTIO_F_IOMMU and clarify the
+> description which currently is rather vague but basically captures
+> the use case.  Currently is is:
+> 
+> VIRTIO_F_IOMMU_PLATFORM(33)
+>     This feature indicates that the device is behind an IOMMU that
+>     translates bus addresses from the device into physical addresses in
+>     memory. If this feature bit is set to 0, then the device emits
+>     physical addresses which are not translated further, even though an
+>     IOMMU may be present.
+> 
+> And I'd change it to something like:
+> 
+> VIRTIO_F_PLATFORM_DMA(33)
+>     This feature indicates that the device emits platform specific
+>     bus addresses that might not be identical to physical address.
+>     The translation of physical to bus address is platform speific
+>     and defined by the plaform specification for the bus that the virtio
+>     device is attached to.
+>     If this feature bit is set to 0, then the device emits
+>     physical addresses which are not translated further, even if
+>     the platform would normally require translations for the bus that
+>     the virtio device is attached to.
+> 
+> If we can't change the defintion any more we should deprecate the
+> old VIRTIO_F_IOMMU_PLATFORM bit, and require the VIRTIO_F_IOMMU_PLATFORM
+> and VIRTIO_F_PLATFORM_DMA to be not set at the same time.
 
->
->> The situation this is
->> meant to address is flooding the workqueue with PRRN events, which like
->> the situation in patch 2/2, these can be queued up faster than they can
->> actually be handled.
->
->I'm not really sure why this is a problem though.
->
->The current code synchronously processes the events, so there should
->only ever be one in flight.
->
->I guess the issue is that each one can queue multiple events on the
->hotplug work queue?
->
->But still, we have terabytes of RAM, we should be able to queue a lot
->of events before it becomes a problem.
->
->So what exactly is getting flooded, what's the symptom?
->
->If the queuing of the hotplug events is the problem, then why don't we
->stop doing that? We could just process them synchronously from the PRRN
->update, that would naturally throttle them.
->
->cheers
->
+But this doesn't really change our problem does it ?
+
+None of what happens in our case is part of the "interface". The
+suggestion to force the iommu ON was simply that it was a "workaround"
+as by doing so, we get to override the DMA ops, but that's just a
+trick.
+
+Fundamentally, what we need to solve is pretty much entirely a guest
+problem.
+
+> > I'm trying to understand because the limitation is not a device side
+> > limitation, it's not a qemu limitation, it's actually more of a VM
+> > limitation. It has most of its memory pages made inaccessible for
+> > security reasons. The platform from a qemu/KVM perspective is almost
+> > entirely normal.
+> 
+> Well, find a way to describe this either in the qemu specification using
+> new feature bits, or by using something like the above.
+
+But again, why do you want to involve the interface, and thus the
+hypervisor for something that is essentially what the guest is doign to
+itself ?
+
+It really is something we need to solve locally to the guest, it's not
+part of the interface.
+
+Cheers,
+Ben.
