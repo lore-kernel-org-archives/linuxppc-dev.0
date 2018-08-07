@@ -1,23 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lDVM0s7DzDqfs
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:34:35 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Rob Herring <robh+dt@kernel.org>
-Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH] of/fdt: Remove PPC32 longtrail hack in memory scan
-In-Reply-To: <CAL_JsqJQKb-0V0rHnonE5QfCrJwf8APiLNoRtEYei+H_YiC4qA@mail.gmail.com>
-References: <20180727053555.26596-1-mpe@ellerman.id.au>
- <CAL_JsqK4GEPJSPg+sStvFyO=sQ0Fp49FKKTz0S9OGc1COOnp-g@mail.gmail.com>
- <87in4xhufu.fsf@concordia.ellerman.id.au>
- <CAL_JsqJQKb-0V0rHnonE5QfCrJwf8APiLNoRtEYei+H_YiC4qA@mail.gmail.com>
-Date: Tue, 07 Aug 2018 22:34:33 +1000
-Message-ID: <87va8mbbja.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lFYF0f3dzDqCG
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 23:22:08 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id k3-v6so7851684pgq.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 06:22:08 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] powerpc/64s: idle_power4 fix PACA_IRQ_HARD_DIS accounting
+Date: Tue,  7 Aug 2018 23:21:56 +1000
+Message-Id: <20180807132156.6183-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robh+dt@kernel.org> writes:
-> On Mon, Jul 30, 2018 at 4:47 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
->> Rob Herring <robh+dt@kernel.org> writes:
->> > On Thu, Jul 26, 2018 at 11:36 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
->> >> When the OF code was originally made common by Grant in commit
->> >> 51975db0b733 ("of/flattree: merge early_init_dt_scan_memory() common
->> >> code") (Feb 2010), the common code inherited a hack to handle
->> >> PPC "longtrail" machines, which had a "memory@0" node with no
->> >> device_type.
->> >>
->> >> That check was then made to only apply to PPC32 in b44aa25d20e2 ("of:
->> >> Handle memory@0 node on PPC32 only") (May 2014).
->> >>
->> >> But according to Paul Mackerras the "longtrail" machines are long
->> >> dead, if they were ever seen in the wild at all. If someone does still
->> >> have one, we can handle this firmware wart in powerpc platform code.
->> >>
->> >> So remove the hack once and for all.
->> >
->> > Yay. I guess Power Macs and other quirks will never die...
->>
->> Not soon.
->>
->> In base.c I see:
->>  - the hack in arch_find_n_match_cpu_physical_id()
->>    - we should just move that into arch code, it's a __weak arch hook
->>      after all.
->
-> Except then we'd have to export __of_find_n_match_cpu_property. I
-> somewhat prefer it like it is because arch specific functions tend to
-> encourage duplication. But if the implementation is completely
-> different like sparc, then yes, a separate implementation makes sense.
+When idle_power4 hard disables interrupts then finds a soft pending
+interrupt, it returns with interrupts hard disabled but without
+PACA_IRQ_HARD_DIS set. Commit 9b81c0211c ("powerpc/64s: make
+PACA_IRQ_HARD_DIS track MSR[EE] closely") added a warning for that
+condition.
 
-OK I'll leave it as-is then.
+Fix this by adding the PACA_IRQ_HARD_DIS for that case.
 
->>  - a PPC hack in of_alias_scan(), I guess we need to retain that
->>    behaviour, but it's pretty minor anyway.
->
-> It would be nice to know what platform(s) needs this as I don't have a
-> clue.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Yeah.
+---
+This was half tested by modifying power4_idle to work on later CPUs
+because I have no G5.
 
-> It would also be nice if I had some dumps of DTs for some of
-> these OpenFirmware systems.
+ arch/powerpc/kernel/idle_power4.S | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-Yeah it would. What if I threw some in a git tree somewhere?
-
-I guess fully unpacked is the most useful form, ie. just a direct copy
-from /proc/device-tree.
-
-cheers
+diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
+index dd7471fe20bd..a09b3c7ca176 100644
+--- a/arch/powerpc/kernel/idle_power4.S
++++ b/arch/powerpc/kernel/idle_power4.S
+@@ -32,6 +32,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	cmpwi	0,r4,0
+ 	beqlr
+ 
++	/* This sequence is similar to prep_irq_for_idle() */
++
+ 	/* Hard disable interrupts */
+ 	mfmsr	r7
+ 	rldicl	r0,r7,48,1
+@@ -41,10 +43,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	/* Check if something happened while soft-disabled */
+ 	lbz	r0,PACAIRQHAPPENED(r13)
+ 	cmpwi	cr0,r0,0
+-	bnelr
++	bne-	2f
+ 
+-	/* Soft-enable interrupts */
++	/*
++	 * Soft-enable interrupts. This will make power4_fixup_nap return
++	 * to our caller with interrupts enabled (soft and hard). The caller
++	 * can cope with either interrupts disabled or enabled upon return.
++	 */
+ #ifdef CONFIG_TRACE_IRQFLAGS
++	/* Tell the tracer interrupts are on, because idle responds to them. */
+ 	mflr	r0
+ 	std	r0,16(r1)
+ 	stdu    r1,-128(r1)
+@@ -73,3 +80,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	b	1b
+ 
++2:	/* Return if an interrupt had happened while soft disabled */
++	/* Set the HARD_DIS flag because interrupts are now hard disabled */
++	ori	r0,r0,PACA_IRQ_HARD_DIS
++	stb	r0,PACAIRQHAPPENED(r13)
++	blr
+-- 
+2.17.0
