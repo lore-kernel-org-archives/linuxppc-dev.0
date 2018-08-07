@@ -1,35 +1,20 @@
-Return-Path: <bryantly@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lGtZ07JMzDqgD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 00:22:13 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w77EJCdR029510
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2018 10:22:11 -0400
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kqay6eng9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 10:22:10 -0400
-Received: from localhost
- by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bryantly@linux.ibm.com>;
- Tue, 7 Aug 2018 10:22:09 -0400
-Subject: Re: [PATCH] misc: ibmvsm: Fix wrong assignment of return code
-To: Michael Ellerman <michaele@au1.ibm.com>,
- "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <1533562260-11456-1-git-send-email-bryantly@linux.vnet.ibm.com>
- <87y3dibbt3.fsf@concordia.ellerman.id.au>
-From: "Bryant G. Ly" <bryantly@linux.ibm.com>
-Date: Tue, 7 Aug 2018 09:22:04 -0500
-MIME-Version: 1.0
-In-Reply-To: <87y3dibbt3.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <ff54860b-9e9a-84a2-9f72-cbb0c5b7118d@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lJsP4GQ8zDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 01:51:18 +1000 (AEST)
+Date: Tue, 7 Aug 2018 10:50:54 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Breno Leitao <leitao@debian.org>
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org
+Subject: Re: [PATCH v2] powerpc/tm: Print 64-bits MSR
+Message-ID: <20180807155054.GF31204@gate.crashing.org>
+References: <5b85006b6695bd94f4818357be607036e9df8696.camel@neuling.org>
+ <1533648900-7933-1-git-send-email-leitao@debian.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1533648900-7933-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Aug 07, 2018 at 10:35:00AM -0300, Breno Leitao wrote:
+> On a kernel TM Bad thing program exception, the Machine State Register
+> (MSR) is not being properly displayed. The exception code dumps a 32-bits
+> value but MSR is a 64 bits register for all platforms that have HTM
+> enabled.
+> 
+> This patch dumps the MSR value as a 64-bits value instead of 32 bits. In
+> order to do so, the 'reason' variable could not be used, since it trimmed
+> MSR to 32-bits (int).
 
-On 8/7/18 7:28 AM, Michael Ellerman wrote:
+So maybe reason should be a long instead of an int?
 
-> "Bryant G. Ly" <bryantly@linux.vnet.ibm.com> writes:
->
->> From: "Bryant G. Ly" <bryantly@linux.ibm.com>
->>
->> Currently the assignment is flipped and rc is always 0.
-> If you'd left rc uninitialised at the start of the function the compiler
-> would have caught it for you.
->
-> And what is the consequence of the bug? Nothing, complete system crash,
-> subtle data corruption?
 
-The consequence would be that if the CRQ Registration failed the first time
-due to not enough resources, it would never try to reset and try again. 
-
-If it fails due to any other error then it would just fail the sending of the
-crq init message, thus it would just wait for the client to init, which would
-never happen. 
-
-We would also have a memory leak since in the error case DMA would never get
-un-mapped and the message queue never gets freed. 
-
->
-> Also this should be tagged:
->
-> Fixes: 0eca353e7ae7 ("misc: IBM Virtual Management Channel Driver (VMC)")
->
-> cheers
->
-Yep, sorry I forgot to add the Fixes:..
-
--Bryant
+Segher
