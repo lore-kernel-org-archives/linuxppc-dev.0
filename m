@@ -1,21 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michaele@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lD4d1y6lzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:15:45 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, benh@kernel.crashing.org, ego@linux.vnet.ibm.com,
- huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/3] New device-tree format and Opal based idle
- save-restore
-In-Reply-To: <20180802045132.12432-1-akshay.adiga@linux.vnet.ibm.com>
-References: <20180802045132.12432-1-akshay.adiga@linux.vnet.ibm.com>
-Date: Tue, 07 Aug 2018 22:15:37 +1000
-Message-ID: <87zhxybceu.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lDMp0GjnzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:28:50 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w77COctD115639
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2018 08:28:47 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kqaq0j22r-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 08:28:47 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
+ Tue, 7 Aug 2018 13:28:46 +0100
+From: Michael Ellerman <michaele@au1.ibm.com>
+To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, gregkh@linuxfoundation.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Bryant G. Ly" <bryantly@linux.ibm.com>
+Subject: Re: [PATCH] misc: ibmvsm: Fix wrong assignment of return code
+In-Reply-To: <1533562260-11456-1-git-send-email-bryantly@linux.vnet.ibm.com>
+References: <1533562260-11456-1-git-send-email-bryantly@linux.vnet.ibm.com>
+Date: Tue, 07 Aug 2018 22:28:40 +1000
 MIME-Version: 1.0
+Message-Id: <87y3dibbt3.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,85 +38,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
+"Bryant G. Ly" <bryantly@linux.vnet.ibm.com> writes:
 
-> Previously if a older kernel runs on a newer firmware, it may enable
-> all available states irrespective of its capability of handling it.
-> New device tree format adds a compatible flag, so that only kernel
-> which has the capability to handle the version of stop state will enable
-> it.
+> From: "Bryant G. Ly" <bryantly@linux.ibm.com>
 >
-> Older kernel will still see stop0 and stop0_lite in older format and we
-> will depricate it after some time.
->
-> 1) Idea is to bump up the version string in firmware if we find a bug or
-> regression in stop states. A fix will be provided in linux which would
-> now know about the bumped up version of stop states, where as kernel
-> without fixes would ignore the states.
->
-> 2) Slowly deprecate cpuidle/cpuhotplug threshold which is hard-coded
-> into cpuidle-powernv driver. Instead use compatible strings to indicate
-> if idle state is suitable for cpuidle and hotplug.
->
-> New idle state device tree format :
->        power-mgt {
->             ...
->          ibm,enabled-stop-levels = <0xec000000>;
->          ibm,cpu-idle-state-psscr-mask = <0x0 0x3003ff 0x0 0x3003ff>;
->          ibm,cpu-idle-state-latencies-ns = <0x3e8 0x7d0>;
->          ibm,cpu-idle-state-psscr = <0x0 0x330 0x0 0x300330>;
->          ibm,cpu-idle-state-flags = <0x100000 0x101000>;
->          ibm,cpu-idle-state-residency-ns = <0x2710 0x4e20>;
->          ibm,idle-states {
->                      stop4 {
->                          flags = <0x207000>;
->                          compatible = "ibm,state-v1",
-> 				      "cpuidle",
-> 				      "opal-supported";
->                          psscr-mask = <0x0 0x3003ff>;
->                          handle = <0x102>;
->                          latency-ns = <0x186a0>;
->                          residency-ns = <0x989680>;
->                          psscr = <0x0 0x300374>;
->                   };
->                     ...
->                     stop11 {
->                      ...
->                          compatible = "ibm,state-v1",
-> 				      "cpuoffline",
-> 				      "opal-supported";
->                          ...
->                   };
->              };
->
-> Skiboot patch-set for device-tree is posted here :
-> https://patchwork.ozlabs.org/project/skiboot/list/?series=58934
+> Currently the assignment is flipped and rc is always 0.
 
-I don't see a device tree binding documented anywhere?
+If you'd left rc uninitialised at the start of the function the compiler
+would have caught it for you.
 
-There is an existing binding defined for ARM chips, presumably it
-doesn't do everything we need. But are there good reasons why we are not
-using it as a base?
+And what is the consequence of the bug? Nothing, complete system crash,
+subtle data corruption?
 
-See: Documentation/devicetree/bindings/arm/idle-states.txt
+Also this should be tagged:
 
-
-The way you're using compatible is not really consistent with its
-traditional meaning.
-
-eg, you have multiple states with:
-
-                compatible = "ibm,state-v1",
-                            "cpuoffline",
-                            "opal-supported";
-
-
-This would typically mean that all those state are all "compatible" with
-some semantics defined by the name "ibm,state-v1". What you're trying to
-say (I think) is that each state is "version 1" of *that state*. And
-only kernels that understand version 1 should use the state.
-
-And "cpuoffline" and "opal-supported" definitely don't belong in
-compatible AFAICS, they should simply be boolean properties of the node.
+Fixes: 0eca353e7ae7 ("misc: IBM Virtual Management Channel Driver (VMC)")
 
 cheers
+
+> diff --git a/drivers/misc/ibmvmc.c b/drivers/misc/ibmvmc.c
+> index 8f82bb9..b8aaa68 100644
+> --- a/drivers/misc/ibmvmc.c
+> +++ b/drivers/misc/ibmvmc.c
+> @@ -2131,7 +2131,7 @@ static int ibmvmc_init_crq_queue(struct crq_server_adapter *adapter)
+>  	retrc = plpar_hcall_norets(H_REG_CRQ,
+>  				   vdev->unit_address,
+>  				   queue->msg_token, PAGE_SIZE);
+> -	retrc = rc;
+> +	rc = retrc;
+>  
+>  	if (rc == H_RESOURCE)
+>  		rc = ibmvmc_reset_crq_queue(adapter);
