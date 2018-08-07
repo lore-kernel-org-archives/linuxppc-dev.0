@@ -1,37 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41kw9R2Jr1zDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 10:18:51 +1000 (AEST)
-Message-ID: <53554e339b334b47d5822fb5219d5c878674b33c.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Tue, 07 Aug 2018 10:18:07 +1000
-In-Reply-To: <20180807024503-mutt-send-email-mst@kernel.org>
-References: <20180803220443-mutt-send-email-mst@kernel.org>
- <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
- <20180805031046-mutt-send-email-mst@kernel.org>
- <fd8fee94cf42e436878f179c7895de3a4dab3355.camel@kernel.crashing.org>
- <20180806164106-mutt-send-email-mst@kernel.org>
- <ef6d5d7c7b812bd797a1c3fd6bc7a26d0074020f.camel@kernel.crashing.org>
- <20180806233024-mutt-send-email-mst@kernel.org>
- <0967fc30001323e6e38ed12c8dba8ee3d1aa13f5.camel@kernel.crashing.org>
- <20180807002857-mutt-send-email-mst@kernel.org>
- <93518075238a07e9f011774d89bdc652c083f1ba.camel@kernel.crashing.org>
- <20180807024503-mutt-send-email-mst@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41kwTh1Gk2zDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 10:32:55 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w770TCek132996
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Aug 2018 20:32:53 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kpugk31tf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2018 20:32:53 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Mon, 6 Aug 2018 18:32:53 -0600
+From: Breno Leitao <leitao@debian.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, Breno Leitao <leitao@debian.org>
+Subject: [PATCH] powerpc/tm: Print 64-bits MSR
+Date: Mon,  6 Aug 2018 21:32:44 -0300
+Message-Id: <1533601964-20157-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,17 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-07 at 02:45 +0300, Michael S. Tsirkin wrote:
-> > OK well, assuming Christoph can solve the direct case in a way that
-> > also work for the virtio !iommu case, we still want some bit of logic
-> > somewhere that will "switch" to swiotlb based ops if the DMA mask is
-> > limited.
-> > 
-> > You mentioned an RFC for that ? Do you happen to have a link ?
-> 
-> No but Christoph did I think.
+On a kernel TM Bad thing program exception, the MSR is not being properly
+displayed, since it dumps a 32-bits value. MSR is a 64 bits register for
+all platforms that have HTM enabled.
 
-Ok I missed that, sorry, I'll dig it out. Thanks.
+This patch dumps the MSR value as 64-bits instead of 32 bits.
 
-Cheers,
-Ben.
+Signed-off-by: Breno Leitao <leitao@debian.org>
+---
+ arch/powerpc/kernel/traps.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 0e17dcb48720..cd561fd89532 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1402,7 +1402,7 @@ void program_check_exception(struct pt_regs *regs)
+ 			goto bail;
+ 		} else {
+ 			printk(KERN_EMERG "Unexpected TM Bad Thing exception "
+-			       "at %lx (msr 0x%x)\n", regs->nip, reason);
++			       "at %lx (msr 0x%lx)\n", regs->nip, regs->msr);
+ 			die("Unrecoverable exception", regs, SIGABRT);
+ 		}
+ 	}
+-- 
+2.16.3
