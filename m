@@ -1,35 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41l4rQ71bjzDqZm
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 16:49:42 +1000 (AEST)
-Message-ID: <7622efcbb499919616f165266968565b1d329a91.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Tue, 07 Aug 2018 16:44:01 +1000
-In-Reply-To: <20180807062731.GA23159@infradead.org>
-References: <20180803220443-mutt-send-email-mst@kernel.org>
- <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
- <20180805031046-mutt-send-email-mst@kernel.org>
- <fd8fee94cf42e436878f179c7895de3a4dab3355.camel@kernel.crashing.org>
- <20180806164106-mutt-send-email-mst@kernel.org>
- <ef6d5d7c7b812bd797a1c3fd6bc7a26d0074020f.camel@kernel.crashing.org>
- <20180806233024-mutt-send-email-mst@kernel.org>
- <0967fc30001323e6e38ed12c8dba8ee3d1aa13f5.camel@kernel.crashing.org>
- <20180807002857-mutt-send-email-mst@kernel.org>
- <93518075238a07e9f011774d89bdc652c083f1ba.camel@kernel.crashing.org>
- <20180807062731.GA23159@infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41l4vC72chzDqYL
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 16:52:07 +1000 (AEST)
+Message-ID: <a31af3ea8c1bd19aeae0e0ba493f8c1dfb29f0a0.camel@neuling.org>
+Subject: Re: [PATCH 1/2] powerpc: Allow memory that has been hot-removed to
+ be hot-added
+From: Michael Neuling <mikey@neuling.org>
+To: Rashmica Gupta <rashmica.g@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ mpe@ellerman.id.au, benh@kernel.crashing.org, paulus@samba.org,
+ bsingharora@gmail.com
+Date: Tue, 07 Aug 2018 16:52:07 +1000
+In-Reply-To: <20180803060601.724-1-rashmica.g@gmail.com>
+References: <20180803060601.724-1-rashmica.g@gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,30 +25,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-08-06 at 23:27 -0700, Christoph Hellwig wrote:
-> On Tue, Aug 07, 2018 at 08:13:56AM +1000, Benjamin Herrenschmidt wrote:
-> > It would be indeed ideal if all we had to do was setup some kind of
-> > bus_dma_mask on all PCI devices and have virtio automagically insert
-> > swiotlb when necessary.
-> 
-> For 4.20 I plan to remove the swiotlb ops and instead do the bounce
-> buffering in the common code, including a direct call to the direct
-> ops to avoid retpoline overhead.  For that you still need a flag
-> in virtio that instead of blindly working physical addresses it needs
-> to be treated like a real device in terms of DMA.
+On Fri, 2018-08-03 at 16:06 +1000, Rashmica Gupta wrote:
+> This patch allows the memory removed by memtrace to be readded to the
+> kernel. So now you don't have to reboot your system to add the memory
+> back to the kernel or to have a different amount of memory removed.
+>=20
+> Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
 
-But you will still call the swiotlb infrastructure, right ? IE, I sitll
-need to control where/how the swiotlb "pool" is allocated.
-> 
-> And for powerpc to make use of that I need to get the dma series I
-> posted last week reviewed and included, otherwise powerpc will have
-> to be excepted (like arm, where rmk didn't like the way the code
-> was factored, everything else has already been taken care of).
-> 
-> https://lists.linuxfoundation.org/pipermail/iommu/2018-July/028989.html
+Tested-by: Michael Neuling <mikey@neuling.org>
 
-Yes, I saw your series. I'm just back from a week of travel, I plan to
-start reviewing it this week if Michael doesn't beat me to it.
+> ---
+> To remove 1GB from each node:
+> echo 1073741824  >  /sys/kernel/debug/powerpc/memtrace/enable
+>=20
+> To add this memory back and remove 2GB:
+> echo 2147483648 >  /sys/kernel/debug/powerpc/memtrace/enable=20
+>=20
+> To just re-add memory:
+> echo 0  >  /sys/kernel/debug/powerpc/memtrace/enable=20
 
-Cheers,
-Ben.
+Nice... thanks!
+
+Mikey
+
+>=20
+>=20
+>  arch/powerpc/platforms/powernv/memtrace.c | 93 +++++++++++++++++++++++++=
++++
+> ---
+>  1 file changed, 86 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/arch/powerpc/platforms/powernv/memtrace.c
+> b/arch/powerpc/platforms/powernv/memtrace.c
+> index b99283df8584..51fe0862dcab 100644
+> --- a/arch/powerpc/platforms/powernv/memtrace.c
+> +++ b/arch/powerpc/platforms/powernv/memtrace.c
+> @@ -206,8 +206,11 @@ static int memtrace_init_debugfs(void)
+> =20
+>  		snprintf(ent->name, 16, "%08x", ent->nid);
+>  		dir =3D debugfs_create_dir(ent->name, memtrace_debugfs_dir);
+> -		if (!dir)
+> +		if (!dir) {
+> +			pr_err("Failed to create debugfs directory for node
+> %d\n",
+> +				ent->nid);
+>  			return -1;
+> +		}
+> =20
+>  		ent->dir =3D dir;
+>  		debugfs_create_file("trace", 0400, dir, ent, &memtrace_fops);
+> @@ -218,18 +221,94 @@ static int memtrace_init_debugfs(void)
+>  	return ret;
+>  }
+> =20
+> +static int online_mem_block(struct memory_block *mem, void *arg)
+> +{
+> +	return device_online(&mem->dev);
+> +}
+> +
+> +/*
+> + * Iterate through the chunks of memory we have removed from the kernel
+> + * and attempt to add them back to the kernel.
+> + */
+> +static int memtrace_online(void)
+> +{
+> +	int i, ret =3D 0;
+> +	struct memtrace_entry *ent;
+> +
+> +	for (i =3D memtrace_array_nr - 1; i >=3D 0; i--) {
+> +		ent =3D &memtrace_array[i];
+> +
+> +		/* We have onlined this chunk previously */
+> +		if (ent->nid =3D=3D -1)
+> +			continue;
+> +
+> +		/* Remove from io mappings */
+> +		if (ent->mem) {
+> +			iounmap(ent->mem);
+> +			ent->mem =3D 0;
+> +		}
+> +
+> +		if (add_memory(ent->nid, ent->start, ent->size)) {
+> +			pr_err("Failed to add trace memory to node %d\n",
+> +					 ent->nid);
+> +			ret +=3D 1;
+> +			continue;
+> +		}
+> +
+> +		/*
+> +		 * If kernel isn't compiled with the auto online option
+> +		 * we need to online the memory ourselves.
+> +		 */
+> +		if (!memhp_auto_online) {
+> +			walk_memory_range(PFN_DOWN(ent->start),
+> +				PFN_UP(ent->start + ent->size - 1),
+> +				NULL, online_mem_block);
+> +		}
+> +
+> +		/*
+> +		 * Memory was added successfully so clean up references to it
+> +		 * so on reentry we can tell that this chunk was added.
+> +		 */
+> +		debugfs_remove_recursive(ent->dir);
+> +		pr_info("Added trace memory back to node %d\n", ent->nid);
+> +		ent->size =3D ent->start =3D ent->nid =3D -1;
+> +	}
+> +	if (ret)
+> +		return ret;
+> +
+> +	/* If all chunks of memory were added successfully, reset globals */
+> +	kfree(memtrace_array);
+> +	memtrace_array =3D NULL;
+> +	memtrace_size =3D 0;
+> +	memtrace_array_nr =3D 0;
+> +	return 0;
+> +
+> +}
+> +
+>  static int memtrace_enable_set(void *data, u64 val)
+>  {
+> -	if (memtrace_size)
+> +	uint64_t bytes;
+> +
+> +	/*
+> +	 * Don't attempt to do anything if size isn't aligned to a memory
+> +	 * block or equal to zero.
+> +	 */
+> +	bytes =3D memory_block_size_bytes();
+> +	if (val & (bytes - 1)) {
+> +		pr_err("Value must be aligned with 0x%llx\n", bytes);
+>  		return -EINVAL;
+> +	}
+> =20
+> -	if (!val)
+> -		return -EINVAL;
+> +	/* Re-add/online previously removed/offlined memory */
+> +	if (memtrace_size) {
+> +		if (memtrace_online())
+> +			return -EAGAIN;
+> +	}
+> =20
+> -	/* Make sure size is aligned to a memory block */
+> -	if (val & (memory_block_size_bytes() - 1))
+> -		return -EINVAL;
+> +	if (!val)
+> +		return 0;
+> =20
+> +	/* Offline and remove memory */
+>  	if (memtrace_init_regions_runtime(val))
+>  		return -EINVAL;
+> =20
