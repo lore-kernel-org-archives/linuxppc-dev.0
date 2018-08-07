@@ -1,15 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lCTc72f5zDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 21:48:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lD4d1y6lzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:15:45 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Cc: npiggin@gmail.com
-Subject: [PATCH] powerpc/64: Disable irq restore warning for now
-Date: Tue,  7 Aug 2018 21:48:46 +1000
-Message-Id: <20180807114846.6198-1-mpe@ellerman.id.au>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, benh@kernel.crashing.org, ego@linux.vnet.ibm.com,
+ huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 0/3] New device-tree format and Opal based idle
+ save-restore
+In-Reply-To: <20180802045132.12432-1-akshay.adiga@linux.vnet.ibm.com>
+References: <20180802045132.12432-1-akshay.adiga@linux.vnet.ibm.com>
+Date: Tue, 07 Aug 2018 22:15:37 +1000
+Message-ID: <87zhxybceu.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,47 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We recently added a warning in arch_local_irq_restore() to check that
-the soft masking state matches reality.
+Akshay Adiga <akshay.adiga@linux.vnet.ibm.com> writes:
 
-Unfortunately it trips in a few places, which are not entirely trivial
-to fix. The key problem is if we're doing function_graph tracing of
-restore_math(), the warning pops and then seems to recurse. It's not
-entirely clear because the system continuously oopses on all CPUs,
-with the output interleaved and unreadable.
+> Previously if a older kernel runs on a newer firmware, it may enable
+> all available states irrespective of its capability of handling it.
+> New device tree format adds a compatible flag, so that only kernel
+> which has the capability to handle the version of stop state will enable
+> it.
+>
+> Older kernel will still see stop0 and stop0_lite in older format and we
+> will depricate it after some time.
+>
+> 1) Idea is to bump up the version string in firmware if we find a bug or
+> regression in stop states. A fix will be provided in linux which would
+> now know about the bumped up version of stop states, where as kernel
+> without fixes would ignore the states.
+>
+> 2) Slowly deprecate cpuidle/cpuhotplug threshold which is hard-coded
+> into cpuidle-powernv driver. Instead use compatible strings to indicate
+> if idle state is suitable for cpuidle and hotplug.
+>
+> New idle state device tree format :
+>        power-mgt {
+>             ...
+>          ibm,enabled-stop-levels = <0xec000000>;
+>          ibm,cpu-idle-state-psscr-mask = <0x0 0x3003ff 0x0 0x3003ff>;
+>          ibm,cpu-idle-state-latencies-ns = <0x3e8 0x7d0>;
+>          ibm,cpu-idle-state-psscr = <0x0 0x330 0x0 0x300330>;
+>          ibm,cpu-idle-state-flags = <0x100000 0x101000>;
+>          ibm,cpu-idle-state-residency-ns = <0x2710 0x4e20>;
+>          ibm,idle-states {
+>                      stop4 {
+>                          flags = <0x207000>;
+>                          compatible = "ibm,state-v1",
+> 				      "cpuidle",
+> 				      "opal-supported";
+>                          psscr-mask = <0x0 0x3003ff>;
+>                          handle = <0x102>;
+>                          latency-ns = <0x186a0>;
+>                          residency-ns = <0x989680>;
+>                          psscr = <0x0 0x300374>;
+>                   };
+>                     ...
+>                     stop11 {
+>                      ...
+>                          compatible = "ibm,state-v1",
+> 				      "cpuoffline",
+> 				      "opal-supported";
+>                          ...
+>                   };
+>              };
+>
+> Skiboot patch-set for device-tree is posted here :
+> https://patchwork.ozlabs.org/project/skiboot/list/?series=58934
 
-It's also been observed on a G5 coming out of idle.
+I don't see a device tree binding documented anywhere?
 
-Until we can fix those cases disable the warning for now.
+There is an existing binding defined for ARM chips, presumably it
+doesn't do everything we need. But are there good reasons why we are not
+using it as a base?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/irq.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+See: Documentation/devicetree/bindings/arm/idle-states.txt
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index ca941f1e83a9..916ddc4aac44 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -261,9 +261,16 @@ notrace void arch_local_irq_restore(unsigned long mask)
- 	 */
- 	irq_happened = get_irq_happened();
- 	if (!irq_happened) {
--#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
--		WARN_ON(!(mfmsr() & MSR_EE));
--#endif
-+		/*
-+		 * FIXME. Here we'd like to be able to do:
-+		 *
-+		 * #ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-+		 *   WARN_ON(!(mfmsr() & MSR_EE));
-+		 * #endif
-+		 *
-+		 * But currently it hits in a few paths, we should fix those and
-+		 * enable the warning.
-+		 */
- 		return;
- 	}
- 
--- 
-2.14.1
+
+The way you're using compatible is not really consistent with its
+traditional meaning.
+
+eg, you have multiple states with:
+
+                compatible = "ibm,state-v1",
+                            "cpuoffline",
+                            "opal-supported";
+
+
+This would typically mean that all those state are all "compatible" with
+some semantics defined by the name "ibm,state-v1". What you're trying to
+say (I think) is that each state is "version 1" of *that state*. And
+only kernels that understand version 1 should use the state.
+
+And "cpuoffline" and "opal-supported" definitely don't belong in
+compatible AFAICS, they should simply be boolean properties of the node.
+
+cheers
