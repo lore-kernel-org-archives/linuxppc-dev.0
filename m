@@ -1,39 +1,37 @@
-Return-Path: <BATV+fca8fac9a0a6ce832f12+5462+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41l4px3Nr1zDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 16:48:25 +1000 (AEST)
-Date: Mon, 6 Aug 2018 23:12:13 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41l4rQ71bjzDqZm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 16:49:42 +1000 (AEST)
+Message-ID: <7622efcbb499919616f165266968565b1d329a91.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
  virtualization@lists.linux-foundation.org,
  linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
  elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
  jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180807061213.GA32709@infradead.org>
-References: <de4888b6457e220776e16a9c8958ff0886ffc66c.camel@kernel.crashing.org>
- <20180803070507.GA1344@infradead.org>
- <eb1750e90e4bd45da297fa6f78f8ef93671b7c2f.camel@kernel.crashing.org>
- <20180803220443-mutt-send-email-mst@kernel.org>
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Tue, 07 Aug 2018 16:44:01 +1000
+In-Reply-To: <20180807062731.GA23159@infradead.org>
+References: <20180803220443-mutt-send-email-mst@kernel.org>
  <051fd78e15595b414839fa8f9d445b9f4d7576c6.camel@kernel.crashing.org>
  <20180805031046-mutt-send-email-mst@kernel.org>
  <fd8fee94cf42e436878f179c7895de3a4dab3355.camel@kernel.crashing.org>
  <20180806164106-mutt-send-email-mst@kernel.org>
  <ef6d5d7c7b812bd797a1c3fd6bc7a26d0074020f.camel@kernel.crashing.org>
  <20180806233024-mutt-send-email-mst@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180806233024-mutt-send-email-mst@kernel.org>
+ <0967fc30001323e6e38ed12c8dba8ee3d1aa13f5.camel@kernel.crashing.org>
+ <20180807002857-mutt-send-email-mst@kernel.org>
+ <93518075238a07e9f011774d89bdc652c083f1ba.camel@kernel.crashing.org>
+ <20180807062731.GA23159@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,17 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 06, 2018 at 11:35:39PM +0300, Michael S. Tsirkin wrote:
-> > As I said replying to Christoph, we are "leaking" into the interface
-> > something here that is really what's the VM is doing to itself, which
-> > is to stash its memory away in an inaccessible place.
-> > 
-> > Cheers,
-> > Ben.
+On Mon, 2018-08-06 at 23:27 -0700, Christoph Hellwig wrote:
+> On Tue, Aug 07, 2018 at 08:13:56AM +1000, Benjamin Herrenschmidt wrote:
+> > It would be indeed ideal if all we had to do was setup some kind of
+> > bus_dma_mask on all PCI devices and have virtio automagically insert
+> > swiotlb when necessary.
 > 
-> I think Christoph merely objects to the specific implementation.  If
-> instead you do something like tweak dev->bus_dma_mask for the virtio
-> device I think he won't object.
+> For 4.20 I plan to remove the swiotlb ops and instead do the bounce
+> buffering in the common code, including a direct call to the direct
+> ops to avoid retpoline overhead.  For that you still need a flag
+> in virtio that instead of blindly working physical addresses it needs
+> to be treated like a real device in terms of DMA.
 
-As long as we also document how dev->bus_dma_mask is tweaked for this
-particular virtual bus, yes.
+But you will still call the swiotlb infrastructure, right ? IE, I sitll
+need to control where/how the swiotlb "pool" is allocated.
+> 
+> And for powerpc to make use of that I need to get the dma series I
+> posted last week reviewed and included, otherwise powerpc will have
+> to be excepted (like arm, where rmk didn't like the way the code
+> was factored, everything else has already been taken care of).
+> 
+> https://lists.linuxfoundation.org/pipermail/iommu/2018-July/028989.html
+
+Yes, I saw your series. I'm just back from a week of travel, I plan to
+start reviewing it this week if Michael doesn't beat me to it.
+
+Cheers,
+Ben.
