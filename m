@@ -1,38 +1,37 @@
-Return-Path: <jallen@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lPdl2YHkzDqgF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 05:26:35 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w77JNuCv031172
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2018 15:26:33 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kqdme2d2h-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 15:26:33 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
- Tue, 7 Aug 2018 15:26:31 -0400
-Date: Tue, 7 Aug 2018 14:26:28 -0500
-From: John Allen <jallen@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, nfont@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-3-jallen@linux.ibm.com>
- <87k1pmhxx7.fsf@concordia.ellerman.id.au>
- <20180723152223.mydr5dovcv26domv@p50>
- <87in4ufcrd.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-In-Reply-To: <87in4ufcrd.fsf@concordia.ellerman.id.au>
-Message-Id: <20180807192628.uf3nycnagabjs55o@p50.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lR7N5KM8zDqgF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 06:33:52 +1000 (AEST)
+Message-ID: <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Wed, 08 Aug 2018 06:32:45 +1000
+In-Reply-To: <20180807135505.GA29034@infradead.org>
+References: <20180803160246.GA13794@infradead.org>
+ <22310f58605169fe9de83abf78b59f593ff7fbb7.camel@kernel.crashing.org>
+ <20180804082120.GB4421@infradead.org>
+ <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
+ <20180805072930.GB23288@infradead.org>
+ <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+ <20180806094243.GA16032@infradead.org>
+ <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ <20180807062117.GD32709@infradead.org>
+ <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
+ <20180807135505.GA29034@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +41,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2018 at 11:16:22PM +1000, Michael Ellerman wrote:
->John Allen <jallen@linux.ibm.com> writes:
->
->> On Mon, Jul 23, 2018 at 11:41:24PM +1000, Michael Ellerman wrote:
->>>John Allen <jallen@linux.ibm.com> writes:
->>>
->>>> While handling PRRN events, the time to handle the actual hotplug events
->>>> dwarfs the time it takes to perform the device tree updates and queue the
->>>> hotplug events. In the case that PRRN events are being queued continuously,
->>>> hotplug events have been observed to be queued faster than the kernel can
->>>> actually handle them. This patch avoids the problem by waiting for a
->>>> hotplug request to complete before queueing more hotplug events.
->
->Have you tested this patch in isolation, ie. not with patch 1?
+On Tue, 2018-08-07 at 06:55 -0700, Christoph Hellwig wrote:
+> On Tue, Aug 07, 2018 at 04:42:44PM +1000, Benjamin Herrenschmidt wrote:
+> > Note that I can make it so that the same DMA ops (basically standard
+> > swiotlb ops without arch hacks) work for both "direct virtio" and
+> > "normal PCI" devices.
+> > 
+> > The trick is simply in the arch to setup the iommu to map the swiotlb
+> > bounce buffer pool 1:1 in the iommu, so the iommu essentially can be
+> > ignored without affecting the physical addresses.
+> > 
+> > If I do that, *all* I need is a way, from the guest itself (again, the
+> > other side dosn't know anything about it), to force virtio to use the
+> > DMA ops as if there was an iommu, that is, use whatever dma ops were
+> > setup by the platform for the pci device.
+> 
+> In that case just setting VIRTIO_F_IOMMU_PLATFORM in the flags should
+> do the work (even if that isn't strictly what the current definition
+> of the flag actually means).  On the qemu side you'll need to make
+> sure you have a way to set VIRTIO_F_IOMMU_PLATFORM without emulating
+> an iommu, but with code to take dma offsets into account if your
+> plaform has any (various power plaforms seem to have them, not sure
+> if it affects your config).
 
-While I was away on vacation, I believe a build was tested with just 
-this patch and not the first and it has been running with no problems.  
-However, I think they've had problems recreating the problem in general 
-so it may just be that the environment is not setup properly to recreate 
-the issue.
+Something like that yes. I prefer a slightly different way, see below,
+any but in both cases, it should alleviate your concerns since it means
+there would be no particular mucking around with DMA ops at all, virtio
+would just use whatever "normal" ops we establish for all PCI devices
+on that platform, which will be standard ones.
 
->
->>>So do we need the hotplug work queue at all? Can we just call
->>>handle_dlpar_errorlog() directly?
->>>
->>>Or are we using the work queue to serialise things? And if so would a
->>>mutex be better?
->>
->> Right, the workqueue is meant to serialize all hotplug events and it
->> gets used for more than just PRRN events. I believe the motivation for
->> using the workqueue over a mutex is that KVM guests initiate hotplug
->> events through the hotplug interrupt and can queue fairly large requests
->> meaning that in this scenario, waiting for a lock would block interrupts
->> for a while.
->
->OK, but that just means that path needs to schedule work to run later.
->
->> Using the workqueue allows us to serialize hotplug events
->> from different sources in the same way without worrying about the
->> context in which the event is generated.
->
->A lock would be so much simpler.
->
->It looks like we have three callers of queue_hotplug_event(), the dlpar
->code, the mobility code and the ras interrupt.
->
->The dlpar code already waits synchronously:
->
->  init_completion(&hotplug_done);
->  queue_hotplug_event(hp_elog, &hotplug_done, &rc);
->  wait_for_completion(&hotplug_done);
->
->You're changing mobility to do the same (this patch), leaving only the
->ras interrupt that actually queues work and returns.
->
->
->So it really seems like a mutex would do the trick, and the ras
->interrupt would be the only case that needs to schedule work for later.
+(swiotlb ones today and the new "integrates" ones you're cooking
+tomorrow).
 
-I think you may be right, but I would need some feedback from Nathan 
-Fontenot before I redesign the queue. He's been thinking about that 
-design for longer than I have and may know something that I don't 
-regarding the reason we're using a workqueue rather than a mutex.
+As for the flag itself, while we could set it from qemu when we get
+notified that the guest is going secure, both Michael and I think it's
+rather gross, it requires qemu to go iterate all virtio devices and
+"poke" something into them.
 
-Given that the bug this is meant to address is pretty high priority, 
-would you consider the wait_for_completion an acceptable stopgap while a 
-more substantial redesign of this code is discussed?
+It also means qemu will need some other internal nasty flag that says
+"set that bit but don't do iommu".
 
--John
+It's nicer if we have a way in the guest virtio driver to do something
+along the lines of
+
+	if ((flags & VIRTIO_F_IOMMU_PLATFORM) || arch_virtio_wants_dma_ops())
+
+Which would have the same effect and means the issue is entirely
+contained in the guest.
+
+Cheers,
+Ben.
