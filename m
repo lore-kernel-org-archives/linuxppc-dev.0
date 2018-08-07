@@ -1,18 +1,31 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
- [IPv6:2607:f8b0:4864:20::543])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <leitao@debian.org>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lFYF0f3dzDqCG
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 23:22:08 +1000 (AEST)
-Received: by mail-pg1-x543.google.com with SMTP id k3-v6so7851684pgq.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 06:22:08 -0700 (PDT)
-From: Nicholas Piggin <npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lFrG3w17zDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 23:35:09 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w77DSoJo113658
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2018 09:35:07 -0400
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kqbsba3cv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 09:35:07 -0400
+Received: from localhost
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
+ Tue, 7 Aug 2018 07:35:06 -0600
+From: Breno Leitao <leitao@debian.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/64s: idle_power4 fix PACA_IRQ_HARD_DIS accounting
-Date: Tue,  7 Aug 2018 23:21:56 +1000
-Message-Id: <20180807132156.6183-1-npiggin@gmail.com>
+Cc: mikey@neuling.org, Breno Leitao <leitao@debian.org>
+Subject: [PATCH v2] powerpc/tm: Print 64-bits MSR
+Date: Tue,  7 Aug 2018 10:35:00 -0300
+In-Reply-To: <5b85006b6695bd94f4818357be607036e9df8696.camel@neuling.org>
+References: <5b85006b6695bd94f4818357be607036e9df8696.camel@neuling.org>
+Message-Id: <1533648900-7933-1-git-send-email-leitao@debian.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,62 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When idle_power4 hard disables interrupts then finds a soft pending
-interrupt, it returns with interrupts hard disabled but without
-PACA_IRQ_HARD_DIS set. Commit 9b81c0211c ("powerpc/64s: make
-PACA_IRQ_HARD_DIS track MSR[EE] closely") added a warning for that
-condition.
+On a kernel TM Bad thing program exception, the Machine State Register
+(MSR) is not being properly displayed. The exception code dumps a 32-bits
+value but MSR is a 64 bits register for all platforms that have HTM
+enabled.
 
-Fix this by adding the PACA_IRQ_HARD_DIS for that case.
+This patch dumps the MSR value as a 64-bits value instead of 32 bits. In
+order to do so, the 'reason' variable could not be used, since it trimmed
+MSR to 32-bits (int).
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-
+Signed-off-by: Breno Leitao <leitao@debian.org>
 ---
-This was half tested by modifying power4_idle to work on later CPUs
-because I have no G5.
+ arch/powerpc/kernel/traps.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/kernel/idle_power4.S | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index dd7471fe20bd..a09b3c7ca176 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -32,6 +32,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
- 	cmpwi	0,r4,0
- 	beqlr
- 
-+	/* This sequence is similar to prep_irq_for_idle() */
-+
- 	/* Hard disable interrupts */
- 	mfmsr	r7
- 	rldicl	r0,r7,48,1
-@@ -41,10 +43,15 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
- 	/* Check if something happened while soft-disabled */
- 	lbz	r0,PACAIRQHAPPENED(r13)
- 	cmpwi	cr0,r0,0
--	bnelr
-+	bne-	2f
- 
--	/* Soft-enable interrupts */
-+	/*
-+	 * Soft-enable interrupts. This will make power4_fixup_nap return
-+	 * to our caller with interrupts enabled (soft and hard). The caller
-+	 * can cope with either interrupts disabled or enabled upon return.
-+	 */
- #ifdef CONFIG_TRACE_IRQFLAGS
-+	/* Tell the tracer interrupts are on, because idle responds to them. */
- 	mflr	r0
- 	std	r0,16(r1)
- 	stdu    r1,-128(r1)
-@@ -73,3 +80,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	isync
- 	b	1b
- 
-+2:	/* Return if an interrupt had happened while soft disabled */
-+	/* Set the HARD_DIS flag because interrupts are now hard disabled */
-+	ori	r0,r0,PACA_IRQ_HARD_DIS
-+	stb	r0,PACAIRQHAPPENED(r13)
-+	blr
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 0e17dcb48720..cd561fd89532 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1402,7 +1402,7 @@ void program_check_exception(struct pt_regs *regs)
+ 			goto bail;
+ 		} else {
+ 			printk(KERN_EMERG "Unexpected TM Bad Thing exception "
+-			       "at %lx (msr 0x%x)\n", regs->nip, reason);
++			       "at %lx (msr 0x%lx)\n", regs->nip, regs->msr);
+ 			die("Unrecoverable exception", regs, SIGABRT);
+ 		}
+ 	}
 -- 
-2.17.0
+2.16.3
