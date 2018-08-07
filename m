@@ -1,33 +1,22 @@
-Return-Path: <michaele@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lDMp0GjnzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:28:50 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w77COctD115639
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2018 08:28:47 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kqaq0j22r-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 08:28:47 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
- Tue, 7 Aug 2018 13:28:46 +0100
-From: Michael Ellerman <michaele@au1.ibm.com>
-To: "Bryant G. Ly" <bryantly@linux.vnet.ibm.com>, gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- "Bryant G. Ly" <bryantly@linux.ibm.com>
-Subject: Re: [PATCH] misc: ibmvsm: Fix wrong assignment of return code
-In-Reply-To: <1533562260-11456-1-git-send-email-bryantly@linux.vnet.ibm.com>
-References: <1533562260-11456-1-git-send-email-bryantly@linux.vnet.ibm.com>
-Date: Tue, 07 Aug 2018 22:28:40 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lDVM0s7DzDqfs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 22:34:35 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org, Frank Rowand <frowand.list@gmail.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] of/fdt: Remove PPC32 longtrail hack in memory scan
+In-Reply-To: <CAL_JsqJQKb-0V0rHnonE5QfCrJwf8APiLNoRtEYei+H_YiC4qA@mail.gmail.com>
+References: <20180727053555.26596-1-mpe@ellerman.id.au>
+ <CAL_JsqK4GEPJSPg+sStvFyO=sQ0Fp49FKKTz0S9OGc1COOnp-g@mail.gmail.com>
+ <87in4xhufu.fsf@concordia.ellerman.id.au>
+ <CAL_JsqJQKb-0V0rHnonE5QfCrJwf8APiLNoRtEYei+H_YiC4qA@mail.gmail.com>
+Date: Tue, 07 Aug 2018 22:34:33 +1000
+Message-ID: <87va8mbbja.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Message-Id: <87y3dibbt3.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,34 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Bryant G. Ly" <bryantly@linux.vnet.ibm.com> writes:
-
-> From: "Bryant G. Ly" <bryantly@linux.ibm.com>
+Rob Herring <robh+dt@kernel.org> writes:
+> On Mon, Jul 30, 2018 at 4:47 AM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Rob Herring <robh+dt@kernel.org> writes:
+>> > On Thu, Jul 26, 2018 at 11:36 PM Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> >> When the OF code was originally made common by Grant in commit
+>> >> 51975db0b733 ("of/flattree: merge early_init_dt_scan_memory() common
+>> >> code") (Feb 2010), the common code inherited a hack to handle
+>> >> PPC "longtrail" machines, which had a "memory@0" node with no
+>> >> device_type.
+>> >>
+>> >> That check was then made to only apply to PPC32 in b44aa25d20e2 ("of:
+>> >> Handle memory@0 node on PPC32 only") (May 2014).
+>> >>
+>> >> But according to Paul Mackerras the "longtrail" machines are long
+>> >> dead, if they were ever seen in the wild at all. If someone does still
+>> >> have one, we can handle this firmware wart in powerpc platform code.
+>> >>
+>> >> So remove the hack once and for all.
+>> >
+>> > Yay. I guess Power Macs and other quirks will never die...
+>>
+>> Not soon.
+>>
+>> In base.c I see:
+>>  - the hack in arch_find_n_match_cpu_physical_id()
+>>    - we should just move that into arch code, it's a __weak arch hook
+>>      after all.
 >
-> Currently the assignment is flipped and rc is always 0.
+> Except then we'd have to export __of_find_n_match_cpu_property. I
+> somewhat prefer it like it is because arch specific functions tend to
+> encourage duplication. But if the implementation is completely
+> different like sparc, then yes, a separate implementation makes sense.
 
-If you'd left rc uninitialised at the start of the function the compiler
-would have caught it for you.
+OK I'll leave it as-is then.
 
-And what is the consequence of the bug? Nothing, complete system crash,
-subtle data corruption?
+>>  - a PPC hack in of_alias_scan(), I guess we need to retain that
+>>    behaviour, but it's pretty minor anyway.
+>
+> It would be nice to know what platform(s) needs this as I don't have a
+> clue.
 
-Also this should be tagged:
+Yeah.
 
-Fixes: 0eca353e7ae7 ("misc: IBM Virtual Management Channel Driver (VMC)")
+> It would also be nice if I had some dumps of DTs for some of
+> these OpenFirmware systems.
+
+Yeah it would. What if I threw some in a git tree somewhere?
+
+I guess fully unpacked is the most useful form, ie. just a direct copy
+from /proc/device-tree.
 
 cheers
-
-> diff --git a/drivers/misc/ibmvmc.c b/drivers/misc/ibmvmc.c
-> index 8f82bb9..b8aaa68 100644
-> --- a/drivers/misc/ibmvmc.c
-> +++ b/drivers/misc/ibmvmc.c
-> @@ -2131,7 +2131,7 @@ static int ibmvmc_init_crq_queue(struct crq_server_adapter *adapter)
->  	retrc = plpar_hcall_norets(H_REG_CRQ,
->  				   vdev->unit_address,
->  				   queue->msg_token, PAGE_SIZE);
-> -	retrc = rc;
-> +	rc = retrc;
->  
->  	if (rc == H_RESOURCE)
->  		rc = ibmvmc_reset_crq_queue(adapter);
