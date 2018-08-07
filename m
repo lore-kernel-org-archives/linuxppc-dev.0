@@ -1,33 +1,20 @@
-Return-Path: <srs0=fsfq=kw=suse.de=msuchanek@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lLGc3dbVzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 02:54:48 +1000 (AEST)
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41lLGc2vS3z8w4m
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 02:54:48 +1000 (AEST)
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41lLGb2Whbz9ryt
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2018 02:54:46 +1000 (AEST)
-Date: Tue, 7 Aug 2018 18:54:41 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: "Mahesh J Salgaonkar" <mahesh@linux.vnet.ibm.com>
-Cc: "linuxppc-dev" <linuxppc-dev@ozlabs.org>, "Michael Ellerman"
- <mpe@ellerman.id.au>, "Nicholas Piggin" <npiggin@gmail.com>, "Ananth
- Narayan" <ananth@in.ibm.com>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, "Laurent Dufour"
- <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 5/9] powerpc/pseries: flush SLB contents on SLB MCE
- errors.
-Message-ID: <20180807185441.599ab1ea@kitsune.suse.cz>
-In-Reply-To: <153365142349.14256.9954484737438718329.stgit@jupiter.in.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365142349.14256.9954484737438718329.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lLkK4nfHzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 03:15:20 +1000 (AEST)
+Subject: Re: [PATCH v2] powerpc/tm: Print 64-bits MSR
+To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org
+References: <5b85006b6695bd94f4818357be607036e9df8696.camel@neuling.org>
+ <1533648900-7933-1-git-send-email-leitao@debian.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <95db63eb-6fb7-eed3-1ce8-8b2c053dff47@c-s.fr>
+Date: Tue, 7 Aug 2018 19:15:11 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <1533648900-7933-1-git-send-email-leitao@debian.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,401 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
 
 
-On Tue, 07 Aug 2018 19:47:14 +0530
-"Mahesh J Salgaonkar" <mahesh@linux.vnet.ibm.com> wrote:
-
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Le 07/08/2018 à 15:35, Breno Leitao a écrit :
+> On a kernel TM Bad thing program exception, the Machine State Register
+> (MSR) is not being properly displayed. The exception code dumps a 32-bits
+> value but MSR is a 64 bits register for all platforms that have HTM
+> enabled.
 > 
-> On pseries, as of today system crashes if we get a machine check
-> exceptions due to SLB errors. These are soft errors and can be fixed
-> by flushing the SLBs so the kernel can continue to function instead of
-> system crash. We do this in real mode before turning on MMU. Otherwise
-> we would run into nested machine checks. This patch now fetches the
-> rtas error log in real mode and flushes the SLBs on SLB errors.
+> This patch dumps the MSR value as a 64-bits value instead of 32 bits. In
+> order to do so, the 'reason' variable could not be used, since it trimmed
+> MSR to 32-bits (int).
+
+reason is not always regs->msr, see get_reason(), allthough in your case 
+it is.
+
+I think it would be better to change 'reason' to 'unsigned long' instead 
+of replacing it by regs->msr for the printk.
+
+Christophe
+
+
 > 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Michal Suchanek <msuchanek@suse.com>
+> Signed-off-by: Breno Leitao <leitao@debian.org>
 > ---
+>   arch/powerpc/kernel/traps.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Changes in V7:
-> - Fold Michal's patch into this patch.
-> - Handle MSR_RI=0 and evil context case in MC handler.
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    1 
->  arch/powerpc/include/asm/machdep.h            |    1 
->  arch/powerpc/kernel/exceptions-64s.S          |  112
-> +++++++++++++++++++++++++
-> arch/powerpc/kernel/mce.c                     |   15 +++
-> arch/powerpc/mm/slb.c                         |    6 +
-> arch/powerpc/platforms/powernv/setup.c        |   11 ++
-> arch/powerpc/platforms/pseries/pseries.h      |    1
-> arch/powerpc/platforms/pseries/ras.c          |   51 +++++++++++
-> arch/powerpc/platforms/pseries/setup.c        |    1 9 files changed,
-> 195 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h index
-> 50ed64fba4ae..cc00a7088cf3 100644 ---
-> a/arch/powerpc/include/asm/book3s/64/mmu-hash.h +++
-> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h @@ -487,6 +487,7 @@
-> extern void hpte_init_native(void); 
->  extern void slb_initialize(void);
->  extern void slb_flush_and_rebolt(void);
-> +extern void slb_flush_and_rebolt_realmode(void);
->  
->  extern void slb_vmalloc_update(void);
->  extern void slb_set_size(u16 size);
-> diff --git a/arch/powerpc/include/asm/machdep.h
-> b/arch/powerpc/include/asm/machdep.h index a47de82fb8e2..b4831f1338db
-> 100644 --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -108,6 +108,7 @@ struct machdep_calls {
->  
->  	/* Early exception handlers called in realmode */
->  	int		(*hmi_exception_early)(struct pt_regs
-> *regs);
-> +	long		(*machine_check_early)(struct pt_regs
-> *regs); 
->  	/* Called during machine check exception to retrive fixup
-> address. */ bool		(*mce_check_early_recovery)(struct
-> pt_regs *regs); diff --git a/arch/powerpc/kernel/exceptions-64s.S
-> b/arch/powerpc/kernel/exceptions-64s.S index
-> 285c6465324a..cb06f219570a 100644 ---
-> a/arch/powerpc/kernel/exceptions-64s.S +++
-> b/arch/powerpc/kernel/exceptions-64s.S @@ -332,6 +332,9 @@
-> TRAMP_REAL_BEGIN(machine_check_pSeries) machine_check_fwnmi:
->  	SET_SCRATCH0(r13)		/* save r13 */
->  	EXCEPTION_PROLOG_0(PACA_EXMC)
-> +BEGIN_FTR_SECTION
-> +	b	machine_check_pSeries_early
-> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->  machine_check_pSeries_0:
->  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
->  	/*
-> @@ -343,6 +346,90 @@ machine_check_pSeries_0:
->  
->  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
->  
-> +TRAMP_REAL_BEGIN(machine_check_pSeries_early)
-> +BEGIN_FTR_SECTION
-> +	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
-> +	mr	r10,r1			/* Save r1 */
-> +	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency
-> stack */
-> +	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack
-> frame		*/
-> +	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-> +	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
-> +	EXCEPTION_PROLOG_COMMON_1()
-> +	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
-> +	EXCEPTION_PROLOG_COMMON_3(0x200)
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI
-> */
-> +	ld	r12,_MSR(r1)
-> +	andi.	r11,r12,MSR_PR		/* See if coming
-> from user. */
-> +	bne	2f			/* continue in V mode
-> if we are. */ +
-> +	/*
-> +	 * At this point we are not sure about what context we come
-> from.
-> +	 * We may be in the middle of swithing stack. r1 may not be
-> valid.
-> +	 * Hence stay on emergency stack, call
-> machine_check_exception and
-> +	 * return from the interrupt.
-> +	 * But before that, check if this is an un-recoverable
-> exception.
-> +	 * If yes, then stay on emergency stack and panic.
-> +	 */
-> +	andi.	r11,r12,MSR_RI
-> +	bne	1f
-> +
-> +	/*
-> +	 * Check if we have successfully handled/recovered from
-> error, if not
-> +	 * then stay on emergency stack and panic.
-> +	 */
-> +	cmpdi	r3,0		/* see if we handled MCE
-> successfully */
-> +	bne	1f		/* if handled then return from
-> interrupt */ +
-> +	LOAD_HANDLER(r10,unrecover_mce)
-> +	mtspr	SPRN_SRR0,r10
-> +	ld	r10,PACAKMSR(r13)
-> +	/*
-> +	 * We are going down. But there are chances that we might
-> get hit by
-> +	 * another MCE during panic path and we may run into
-> unstable state
-> +	 * with no way out. Hence, turn ME bit off while going down,
-> so that
-> +	 * when another MCE is hit during panic path, hypervisor will
-> +	 * power cycle the lpar, instead of getting into MCE loop.
-> +	 */
-> +	li	r3,MSR_ME
-> +	andc	r10,r10,r3		/* Turn off MSR_ME */
-> +	mtspr	SPRN_SRR1,r10
-> +	RFI_TO_KERNEL
-> +	b	.
-> +
-> +	/* Stay on emergency stack and return from interrupt. */
-> +1:	LOAD_HANDLER(r10,mce_return)
-> +	mtspr	SPRN_SRR0,r10
-> +	ld	r10,PACAKMSR(r13)
-> +	mtspr	SPRN_SRR1,r10
-> +	RFI_TO_KERNEL
-> +	b	.
-
-I think that the logic should be inverted here. That is we should check
-for unrecoverable and unhandled exceptions and jump to unrecov_mce if
-found, fallthrough to mce_return otherwise.
-
-Thanks
-
-Michal
-
-
-> +
-> +	/* Move original SRR0 and SRR1 into the respective regs */
-> +2:	ld	r9,_MSR(r1)
-> +	mtspr	SPRN_SRR1,r9
-> +	ld	r3,_NIP(r1)
-> +	mtspr	SPRN_SRR0,r3
-> +	ld	r9,_CTR(r1)
-> +	mtctr	r9
-> +	ld	r9,_XER(r1)
-> +	mtxer	r9
-> +	ld	r9,_LINK(r1)
-> +	mtlr	r9
-> +	REST_GPR(0, r1)
-> +	REST_8GPRS(2, r1)
-> +	REST_GPR(10, r1)
-> +	ld	r11,_CCR(r1)
-> +	mtcr	r11
-> +	REST_GPR(11, r1)
-> +	REST_2GPRS(12, r1)
-> +	/* restore original r1. */
-> +	ld	r1,GPR1(r1)
-> +	SET_SCRATCH0(r13)		/* save r13 */
-> +	EXCEPTION_PROLOG_0(PACA_EXMC)
-> +	b	machine_check_pSeries_0
-> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
-> +
->  EXC_COMMON_BEGIN(machine_check_common)
->  	/*
->  	 * Machine check is different because we use a different
-> @@ -536,6 +623,31 @@ EXC_COMMON_BEGIN(unrecover_mce)
->  	bl	unrecoverable_exception
->  	b	1b
->  
-> +EXC_COMMON_BEGIN(mce_return)
-> +	/* Invoke machine_check_exception to print MCE event and
-> return. */
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	bl	machine_check_exception
-> +	ld	r9,_MSR(r1)
-> +	mtspr	SPRN_SRR1,r9
-> +	ld	r3,_NIP(r1)
-> +	mtspr	SPRN_SRR0,r3
-> +	ld	r9,_CTR(r1)
-> +	mtctr	r9
-> +	ld	r9,_XER(r1)
-> +	mtxer	r9
-> +	ld	r9,_LINK(r1)
-> +	mtlr	r9
-> +	REST_GPR(0, r1)
-> +	REST_8GPRS(2, r1)
-> +	REST_GPR(10, r1)
-> +	ld	r11,_CCR(r1)
-> +	mtcr	r11
-> +	REST_GPR(11, r1)
-> +	REST_2GPRS(12, r1)
-> +	/* restore original r1. */
-> +	ld	r1,GPR1(r1)
-> +	RFI_TO_KERNEL
-> +	b	.
->  
->  EXC_REAL(data_access, 0x300, 0x80)
->  EXC_VIRT(data_access, 0x4300, 0x80, 0x300)
-> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> index efdd16a79075..ae17d8aa60c4 100644
-> --- a/arch/powerpc/kernel/mce.c
-> +++ b/arch/powerpc/kernel/mce.c
-> @@ -488,10 +488,19 @@ long machine_check_early(struct pt_regs *regs)
->  {
->  	long handled = 0;
->  
-> -	__this_cpu_inc(irq_stat.mce_exceptions);
-> +	/*
-> +	 * For pSeries we count mce when we go into virtual mode
-> machine
-> +	 * check handler. Hence skip it. Also, We can't access per
-> cpu
-> +	 * variables in real mode for LPAR.
-> +	 */
-> +	if (early_cpu_has_feature(CPU_FTR_HVMODE))
-> +		__this_cpu_inc(irq_stat.mce_exceptions);
->  
-> -	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
-> -		handled = cur_cpu_spec->machine_check_early(regs);
-> +	/*
-> +	 * See if platform is capable of handling machine check.
-> +	 */
-> +	if (ppc_md.machine_check_early)
-> +		handled = ppc_md.machine_check_early(regs);
->  	return handled;
->  }
->  
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index cb796724a6fc..e89f675f1b5e 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -145,6 +145,12 @@ void slb_flush_and_rebolt(void)
->  	get_paca()->slb_cache_ptr = 0;
->  }
->  
-> +void slb_flush_and_rebolt_realmode(void)
-> +{
-> +	__slb_flush_and_rebolt();
-> +	get_paca()->slb_cache_ptr = 0;
-> +}
-> +
->  void slb_vmalloc_update(void)
->  {
->  	unsigned long vflags;
-> diff --git a/arch/powerpc/platforms/powernv/setup.c
-> b/arch/powerpc/platforms/powernv/setup.c index
-> f96df0a25d05..b74c93bc2e55 100644 ---
-> a/arch/powerpc/platforms/powernv/setup.c +++
-> b/arch/powerpc/platforms/powernv/setup.c @@ -431,6 +431,16 @@ static
-> unsigned long pnv_get_proc_freq(unsigned int cpu) return ret_freq;
->  }
->  
-> +static long pnv_machine_check_early(struct pt_regs *regs)
-> +{
-> +	long handled = 0;
-> +
-> +	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
-> +		handled = cur_cpu_spec->machine_check_early(regs);
-> +
-> +	return handled;
-> +}
-> +
->  define_machine(powernv) {
->  	.name			= "PowerNV",
->  	.probe			= pnv_probe,
-> @@ -442,6 +452,7 @@ define_machine(powernv) {
->  	.machine_shutdown	= pnv_shutdown,
->  	.power_save             = NULL,
->  	.calibrate_decr		= generic_calibrate_decr,
-> +	.machine_check_early	= pnv_machine_check_early,
->  #ifdef CONFIG_KEXEC_CORE
->  	.kexec_cpu_down		= pnv_kexec_cpu_down,
->  #endif
-> diff --git a/arch/powerpc/platforms/pseries/pseries.h
-> b/arch/powerpc/platforms/pseries/pseries.h index
-> 60db2ee511fb..ec2a5f61d4a4 100644 ---
-> a/arch/powerpc/platforms/pseries/pseries.h +++
-> b/arch/powerpc/platforms/pseries/pseries.h @@ -24,6 +24,7 @@ struct
-> pt_regs; 
->  extern int pSeries_system_reset_exception(struct pt_regs *regs);
->  extern int pSeries_machine_check_exception(struct pt_regs *regs);
-> +extern long pSeries_machine_check_realmode(struct pt_regs *regs);
->  
->  #ifdef CONFIG_SMP
->  extern void smp_init_pseries(void);
-> diff --git a/arch/powerpc/platforms/pseries/ras.c
-> b/arch/powerpc/platforms/pseries/ras.c index
-> 851ce326874a..e4420f7c8fda 100644 ---
-> a/arch/powerpc/platforms/pseries/ras.c +++
-> b/arch/powerpc/platforms/pseries/ras.c @@ -427,6 +427,35 @@ int
-> pSeries_system_reset_exception(struct pt_regs *regs) return 0; /*
-> need to perform reset */ }
->  
-> +static int mce_handle_error(struct rtas_error_log *errp)
-> +{
-> +	struct pseries_errorlog *pseries_log;
-> +	struct pseries_mc_errorlog *mce_log;
-> +	int disposition = rtas_error_disposition(errp);
-> +	uint8_t error_type;
-> +
-> +	if (!rtas_error_extended(errp))
-> +		goto out;
-> +
-> +	pseries_log = get_pseries_errorlog(errp,
-> PSERIES_ELOG_SECT_ID_MCE);
-> +	if (pseries_log == NULL)
-> +		goto out;
-> +
-> +	mce_log = (struct pseries_mc_errorlog *)pseries_log->data;
-> +	error_type = rtas_mc_error_type(mce_log);
-> +
-> +	if ((disposition == RTAS_DISP_NOT_RECOVERED) &&
-> +			(error_type == PSERIES_MC_ERROR_TYPE_SLB)) {
-> +		/* Store the old slb content someplace. */
-> +		slb_flush_and_rebolt_realmode();
-> +		disposition = RTAS_DISP_FULLY_RECOVERED;
-> +		rtas_set_disposition_recovered(errp);
-> +	}
-> +
-> +out:
-> +	return disposition;
-> +}
-> +
->  /*
->   * Process MCE rtas errlog event.
->   */
-> @@ -503,11 +532,31 @@ int pSeries_machine_check_exception(struct
-> pt_regs *regs) struct rtas_error_log *errp;
->  
->  	if (fwnmi_active) {
-> -		errp = fwnmi_get_errinfo(regs);
->  		fwnmi_release_errinfo();
-> +		errp = fwnmi_get_errlog();
->  		if (errp && recover_mce(regs, errp))
->  			return 1;
->  	}
->  
->  	return 0;
->  }
-> +
-> +long pSeries_machine_check_realmode(struct pt_regs *regs)
-> +{
-> +	struct rtas_error_log *errp;
-> +	int disposition;
-> +
-> +	if (fwnmi_active) {
-> +		errp = fwnmi_get_errinfo(regs);
-> +		/*
-> +		 * Call to fwnmi_release_errinfo() in real mode
-> causes kernel
-> +		 * to panic. Hence we will call it as soon as we go
-> into
-> +		 * virtual mode.
-> +		 */
-> +		disposition = mce_handle_error(errp);
-> +		if (disposition == RTAS_DISP_FULLY_RECOVERED)
-> +			return 1;
-> +	}
-> +
-> +	return 0;
-> +}
-> diff --git a/arch/powerpc/platforms/pseries/setup.c
-> b/arch/powerpc/platforms/pseries/setup.c index
-> b42087cd8c6b..7a9421d089d8 100644 ---
-> a/arch/powerpc/platforms/pseries/setup.c +++
-> b/arch/powerpc/platforms/pseries/setup.c @@ -1000,6 +1000,7 @@
-> define_machine(pseries) { .calibrate_decr		=
-> generic_calibrate_decr, .progress		= rtas_progress,
->  	.system_reset_exception = pSeries_system_reset_exception,
-> +	.machine_check_early	= pSeries_machine_check_realmode,
->  	.machine_check_exception = pSeries_machine_check_exception,
->  #ifdef CONFIG_KEXEC_CORE
->  	.machine_kexec          = pSeries_machine_kexec,
-> 
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index 0e17dcb48720..cd561fd89532 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1402,7 +1402,7 @@ void program_check_exception(struct pt_regs *regs)
+>   			goto bail;
+>   		} else {
+>   			printk(KERN_EMERG "Unexpected TM Bad Thing exception "
+> -			       "at %lx (msr 0x%x)\n", regs->nip, reason);
+> +			       "at %lx (msr 0x%lx)\n", regs->nip, regs->msr);
+>   			die("Unrecoverable exception", regs, SIGABRT);
+>   		}
+>   	}
 > 
