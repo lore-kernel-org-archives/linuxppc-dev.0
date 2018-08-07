@@ -1,35 +1,25 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com
- [IPv6:2a00:1450:4864:20::444])
+Return-Path: <catalin.marinas@gmail.com>
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41l8xD5vFkzDqCF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 19:54:08 +1000 (AEST)
-Received: by mail-wr1-x444.google.com with SMTP id b15-v6so15120014wrv.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 02:54:08 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 7 Aug 2018 11:54:02 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Alexandre Ghiti <alex@ghiti.fr>
-Cc: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
- catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
- fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
- jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v6 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-Message-ID: <20180807095402.GA12200@gmail.com>
-References: <20180806175711.24438-1-alex@ghiti.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lBTF56fJzDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2018 21:03:25 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id j8-v6so8426446pff.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 04:03:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180806175711.24438-1-alex@ghiti.fr>
+References: <468d3c5b-d71d-c95b-dab4-ea8c2cebe129@molgen.mpg.de>
+ <69a6086d25c17b03ecf3ab7ed34fe941fd993410.camel@kernel.crashing.org>
+In-Reply-To: <69a6086d25c17b03ecf3ab7ed34fe941fd993410.camel@kernel.crashing.org>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Tue, 7 Aug 2018 12:03:11 +0100
+Message-ID: <CAHkRjk7aYtMJXmQ_zuV7B12JiCkLfg3-8x+ayTD2DU9gDwi8Hw@mail.gmail.com>
+Subject: Re: Several suspected memory leaks
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: pmenzel@molgen.mpg.de, Paul Mackerras <paulus@samba.org>,
+ mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,82 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+(catching up with emails)
 
-* Alexandre Ghiti <alex@ghiti.fr> wrote:
+On Wed, 11 Jul 2018 at 00:40, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2018-07-10 at 17:17 +0200, Paul Menzel wrote:
+> > On a the IBM S822LC (8335-GTA) with Ubuntu 18.04 I built Linux master
+> > =E2=80=93 4.18-rc4+, commit 092150a2 (Merge branch 'for-linus'
+> > of git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid) =E2=80=93 w=
+ith
+> > kmemleak. Several issues are found.
+>
+> Some of these are completely uninteresting though and look like
+> kmemleak bugs to me :-)
+>
+> >     [<00000000bc285bbf>] __pud_alloc+0x80/0x270
+> >     [<0000000007135d64>] hash__map_kernel_page+0x30c/0x4d0
+> >     [<0000000071677858>] __ioremap_at+0x108/0x140
+> >     [<000000000023e921>] __ioremap_caller+0x130/0x180
+> >     [<000000009dbc3923>] icp_native_init_one_node+0x5cc/0x760
+> >     [<0000000015f3168a>] icp_native_init+0x70/0x13c
+> >     [<00000000655550ed>] xics_init+0x38/0x1ac
+> >     [<0000000088dbf9d1>] pnv_init_IRQ+0x30/0x5c
+>
+> This is the interrupt controller mapping its registers, why on earth
+> would that be considered a leak ? kmemleak needs to learn to ignore
+> kernel page tables allocations.
 
-> [CC linux-mm for inclusion in -mm tree]                                          
->                                                                                  
-> In order to reduce copy/paste of functions across architectures and then         
-> make riscv hugetlb port (and future ports) simpler and smaller, this             
-> patchset intends to factorize the numerous hugetlb primitives that are           
-> defined across all the architectures.                                            
->                                                                                  
-> Except for prepare_hugepage_range, this patchset moves the versions that         
-> are just pass-through to standard pte primitives into                            
-> asm-generic/hugetlb.h by using the same #ifdef semantic that can be              
-> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.                            
->                                                                                  
-> s390 architecture has not been tackled in this serie since it does not           
-> use asm-generic/hugetlb.h at all.                                                
->                                                                                  
-> This patchset has been compiled on all addressed architectures with              
-> success (except for parisc, but the problem does not come from this              
-> series).                                                                         
->                                                                                  
-> v6:                                                                              
->   - Remove nohash/32 and book3s/32 powerpc specific implementations in
->     order to use the generic ones.                                                        
->   - Add all the Reviewed-by, Acked-by and Tested-by in the commits,              
->     thanks to everyone.                                                          
->                                                                                  
-> v5:                                                                              
->   As suggested by Mike Kravetz, no need to move the #include                     
->   <asm-generic/hugetlb.h> for arm and x86 architectures, let it live at          
->   the top of the file.                                                           
->                                                                                  
-> v4:                                                                              
->   Fix powerpc build error due to misplacing of #include                          
->   <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as              
->   pointed by Christophe Leroy.                                                   
->                                                                                  
-> v1, v2, v3:                                                                      
->   Same version, just problems with email provider and misuse of                  
->   --batch-size option of git send-email
-> 
-> Alexandre Ghiti (11):
->   hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->   hugetlb: Introduce generic version of hugetlb_free_pgd_range
->   hugetlb: Introduce generic version of set_huge_pte_at
->   hugetlb: Introduce generic version of huge_ptep_get_and_clear
->   hugetlb: Introduce generic version of huge_ptep_clear_flush
->   hugetlb: Introduce generic version of huge_pte_none
->   hugetlb: Introduce generic version of huge_pte_wrprotect
->   hugetlb: Introduce generic version of prepare_hugepage_range
->   hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->   hugetlb: Introduce generic version of huge_ptep_set_access_flags
->   hugetlb: Introduce generic version of huge_ptep_get
-> 
->  arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->  arch/arm/include/asm/hugetlb.h               | 30 ----------
->  arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->  arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->  arch/mips/include/asm/hugetlb.h              | 40 +++----------
->  arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->  arch/powerpc/include/asm/book3s/32/pgtable.h |  6 --
->  arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->  arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->  arch/powerpc/include/asm/nohash/32/pgtable.h |  6 --
->  arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->  arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->  arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->  arch/x86/include/asm/hugetlb.h               | 69 ----------------------
->  include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->  15 files changed, 135 insertions(+), 394 deletions(-)
+Indeed, that's just a false positive for powerpc. Kmemleak ignores
+page allocations and most architectures use __get_free_pages() for the
+page table. In this particular case, the powerpc code uses
+kmem_cache_alloc() and that's tracked by kmemleak. Since the pgd
+stores the __pa(pud), kmemleak doesn't detect this pointer and reports
+it as a leak. To work around this, you can pass SLAB_NOLEAKTRACE to
+kmem_cache_create() in pgtable_cache_add()
+(arch/powerpc/mm/init-common.c).
 
-The x86 bits look good to me (assuming it's all tested on all relevant architectures, etc.)
-
-Acked-by: Ingo Molnar <mingo@kernel.org>
-
-Thanks,
-
-	Ingo
+--=20
+Catalin
