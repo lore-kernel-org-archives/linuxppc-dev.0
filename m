@@ -1,20 +1,28 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-it0-f68.google.com (mail-it0-f68.google.com
+ [209.85.214.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lLkK4nfHzDqBx
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 03:15:20 +1000 (AEST)
-Subject: Re: [PATCH v2] powerpc/tm: Print 64-bits MSR
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org
-References: <5b85006b6695bd94f4818357be607036e9df8696.camel@neuling.org>
- <1533648900-7933-1-git-send-email-leitao@debian.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <95db63eb-6fb7-eed3-1ce8-8b2c053dff47@c-s.fr>
-Date: Tue, 7 Aug 2018 19:15:11 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lMx20w05zDqBx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 04:09:41 +1000 (AEST)
+Received: by mail-it0-f68.google.com with SMTP id d9-v6so60322itf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Aug 2018 11:09:41 -0700 (PDT)
+Date: Tue, 7 Aug 2018 12:09:38 -0600
+From: Rob Herring <robh@kernel.org>
+To: Bharat Bhushan <Bharat.Bhushan@nxp.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ oss@buserror.net, galak@kernel.crashing.org, mark.rutland@arm.com,
+ kstewart@linuxfoundation.org, gregkh@linuxfoundation.org,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, keescook@chromium.org,
+ tyreld@linux.vnet.ibm.com, joe@perches.com
+Subject: Re: [RFC 3/5] powerpc/mpic: Add support for non-contiguous irq ranges
+Message-ID: <20180807180938.GA13623@rob-hp-laptop>
+References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
+ <1532684881-19310-4-git-send-email-Bharat.Bhushan@nxp.com>
 MIME-Version: 1.0
-In-Reply-To: <1533648900-7933-1-git-send-email-leitao@debian.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1532684881-19310-4-git-send-email-Bharat.Bhushan@nxp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jul 27, 2018 at 03:17:59PM +0530, Bharat Bhushan wrote:
+> Freescale MPIC h/w may not support all interrupt sources reported
+> by hardware, "last-interrupt-source" or platform. On these platforms
+> a misconfigured device tree that assigns one of the reserved
+> interrupts leaves a non-functioning system without warning.
 
-
-Le 07/08/2018 à 15:35, Breno Leitao a écrit :
-> On a kernel TM Bad thing program exception, the Machine State Register
-> (MSR) is not being properly displayed. The exception code dumps a 32-bits
-> value but MSR is a 64 bits register for all platforms that have HTM
-> enabled.
-> 
-> This patch dumps the MSR value as a 64-bits value instead of 32 bits. In
-> order to do so, the 'reason' variable could not be used, since it trimmed
-> MSR to 32-bits (int).
-
-reason is not always regs->msr, see get_reason(), allthough in your case 
-it is.
-
-I think it would be better to change 'reason' to 'unsigned long' instead 
-of replacing it by regs->msr for the printk.
-
-Christophe
-
+There are lots of ways to misconfigure DTs. I don't think this is 
+special and needs a property. We've had some interrupt mask or valid 
+properties in the past, but generally don't accept those.
 
 > 
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+> This patch adds "supported-irq-ranges" property in device tree to
+> provide the range of supported source of interrupts. If a reserved
+> interrupt used then it will not be programming h/w, which it does
+> currently, and through warning.
+> 
+> Signed-off-by: Bharat Bhushan <Bharat.Bhushan@nxp.com>
 > ---
->   arch/powerpc/kernel/traps.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 0e17dcb48720..cd561fd89532 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1402,7 +1402,7 @@ void program_check_exception(struct pt_regs *regs)
->   			goto bail;
->   		} else {
->   			printk(KERN_EMERG "Unexpected TM Bad Thing exception "
-> -			       "at %lx (msr 0x%x)\n", regs->nip, reason);
-> +			       "at %lx (msr 0x%lx)\n", regs->nip, regs->msr);
->   			die("Unrecoverable exception", regs, SIGABRT);
->   		}
->   	}
-> 
+>  .../devicetree/bindings/powerpc/fsl/mpic.txt       |   8 ++
+>  arch/powerpc/include/asm/mpic.h                    |   9 ++
+>  arch/powerpc/sysdev/mpic.c                         | 113 +++++++++++++++++++--
+>  3 files changed, 121 insertions(+), 9 deletions(-)
