@@ -1,35 +1,45 @@
-Return-Path: <srs0=5cqx=kx=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <srs0=bubr=kx=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41llpG201YzDrH0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:05:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41llt769pzzDr5r
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:08:31 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41llpG0Lwrz8sxN
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:05:10 +1000 (AEST)
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41llt75P3gz8swl
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:08:31 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41llpD5C8bz9s4V
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2018 19:05:08 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id n7-v6so793887pgq.4
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 02:05:08 -0700 (PDT)
-Date: Wed, 8 Aug 2018 19:04:56 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michal Suchanek
- <msuchanek@suse.com>, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Ananth Narayan <ananth@in.ibm.com>, Laurent Dufour
- <ldufour@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v7 5/9] powerpc/pseries: flush SLB contents on SLB MCE
- errors.
-Message-ID: <20180808190456.59c03b8b@roar.ozlabs.ibm.com>
-In-Reply-To: <153365142349.14256.9954484737438718329.stgit@jupiter.in.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365142349.14256.9954484737438718329.stgit@jupiter.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 41llt71RL3z9s1c
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2018 19:08:30 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w78947qb004941
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2018 05:08:29 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kqvcn34ya-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 05:08:29 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Wed, 8 Aug 2018 10:08:24 +0100
+Subject: Re: [PATCH v2 2/2] powerpc/fadump: merge adjacent memory ranges to
+ reduce PT_LOAD segements
+To: Hari Bathini <hbathini@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+References: <153358813908.15150.18359359970445648733.stgit@hbathini.in.ibm.com>
+ <153358817264.15150.1450644377959627061.stgit@hbathini.in.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Wed, 8 Aug 2018 14:38:18 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <153358817264.15150.1450644377959627061.stgit@hbathini.in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <c73ee602-dc93-1462-cc5b-3695594705e1@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +49,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 07 Aug 2018 19:47:14 +0530
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 08/07/2018 02:12 AM, Hari Bathini wrote:
+> With dynamic memory allocation support for crash memory ranges array,
+> there is no hard limit on the no. of crash memory ranges kernel could
+> export, but program headers count could overflow in the /proc/vmcore
+> ELF file while exporting each memory range as PT_LOAD segment. Reduce
+> the likelihood of a such scenario, by folding adjacent crash memory
+> ranges which minimizes the total number of PT_LOAD segments.
 > 
-> On pseries, as of today system crashes if we get a machine check
-> exceptions due to SLB errors. These are soft errors and can be fixed by
-> flushing the SLBs so the kernel can continue to function instead of
-> system crash. We do this in real mode before turning on MMU. Otherwise
-> we would run into nested machine checks. This patch now fetches the
-> rtas error log in real mode and flushes the SLBs on SLB errors.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Signed-off-by: Michal Suchanek <msuchanek@suse.com>
+> Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
 > ---
+>  arch/powerpc/kernel/fadump.c |   45 ++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 36 insertions(+), 9 deletions(-)
 > 
-> Changes in V7:
-> - Fold Michal's patch into this patch.
-> - Handle MSR_RI=0 and evil context case in MC handler.
-> ---
-
-
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index cb796724a6fc..e89f675f1b5e 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -145,6 +145,12 @@ void slb_flush_and_rebolt(void)
->  	get_paca()->slb_cache_ptr = 0;
+> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+> index 2ec5704..cd0c555 100644
+> --- a/arch/powerpc/kernel/fadump.c
+> +++ b/arch/powerpc/kernel/fadump.c
+> @@ -908,22 +908,41 @@ static int allocate_crash_memory_ranges(void)
+>  static inline int fadump_add_crash_memory(unsigned long long base,
+>  					  unsigned long long end)
+>  {
+> +	u64  start, size;
+> +	bool is_adjacent = false;
+> +
+>  	if (base == end)
+>  		return 0;
+>  
+> -	if (crash_mem_ranges == max_crash_mem_ranges) {
+> -		int ret;
+> +	/*
+> +	 * Fold adjacent memory ranges to bring down the memory ranges/
+> +	 * PT_LOAD segments count.
+> +	 */
+> +	if (crash_mem_ranges) {
+> +		start = crash_memory_ranges[crash_mem_ranges-1].base;
+> +		size = crash_memory_ranges[crash_mem_ranges-1].size;
+>  
+> -		ret = allocate_crash_memory_ranges();
+> -		if (ret)
+> -			return ret;
+> +		if ((start + size) == base)
+> +			is_adjacent = true;
+> +	}
+> +	if (!is_adjacent) {
+> +		/* resize the array on reaching the limit */
+> +		if (crash_mem_ranges == max_crash_mem_ranges) {
+> +			int ret;
+> +
+> +			ret = allocate_crash_memory_ranges();
+> +			if (ret)
+> +				return ret;
+> +		}
+> +
+> +		start = base;
+> +		crash_memory_ranges[crash_mem_ranges].base = start;
+> +		crash_mem_ranges++;
+>  	}
+>  
+> +	crash_memory_ranges[crash_mem_ranges-1].size = (end - start);
+>  	pr_debug("crash_memory_range[%d] [%#016llx-%#016llx], %#llx bytes\n",
+> -		crash_mem_ranges, base, end - 1, (end - base));
+> -	crash_memory_ranges[crash_mem_ranges].base = base;
+> -	crash_memory_ranges[crash_mem_ranges].size = end - base;
+> -	crash_mem_ranges++;
+> +		(crash_mem_ranges - 1), start, end - 1, (end - start));
+>  	return 0;
 >  }
 >  
-> +void slb_flush_and_rebolt_realmode(void)
-> +{
-> +	__slb_flush_and_rebolt();
-> +	get_paca()->slb_cache_ptr = 0;
-> +}
+> @@ -999,6 +1018,14 @@ static int fadump_setup_crash_memory_ranges(void)
+>  
+>  	pr_debug("Setup crash memory ranges.\n");
+>  	crash_mem_ranges = 0;
 > +
->  void slb_vmalloc_update(void)
->  {
->  	unsigned long vflags;
+> +	/* allocate memory for crash memory ranges for the first time */
+> +	if (!max_crash_mem_ranges) {
+> +		ret = allocate_crash_memory_ranges();
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
 
-Can you use this patch for the SLB flush?
+I see that the check for (!is_adjacent) in first hunk already handles
+the first time allocation. Do we need this ?
 
-https://patchwork.ozlabs.org/patch/953034/
+Rest looks fine to me.
+
+Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
 Thanks,
-Nick
+-Mahesh.
+
+>  	/*
+>  	 * add the first memory chunk (RMA_START through boot_memory_size) as
+>  	 * a separate memory chunk. The reason is, at the time crash firmware
+> 
