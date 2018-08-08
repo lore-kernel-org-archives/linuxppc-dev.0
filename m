@@ -1,19 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltxF0fFBzDqgZ
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltxF0kjwzDqhV
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:41 +1000 (AEST)
-In-Reply-To: <b3d7b6cdb89a48be06a2630bf0d762d9d17d931f.1531511429.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, wei.guo.simon@gmail.com,
- segher@kernel.crashing.org
+In-Reply-To: <20180727230639.25413-9-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
+ diana.craciun@nxp.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [v8,1/4] selftests/powerpc: add test for 32 bits memcmp
-Message-Id: <41ltx75dhJz9s9l@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:26:28 +1000 (AEST)
+Cc: oss@buserror.net, bharat.bhushan@nxp.com, leoyang.li@nxp.com
+Subject: Re: [v5,8/8] Documentation: Add nospectre_v1 parameter
+Message-Id: <41ltx56Glyz9s3Z@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:26:17 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,14 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-08-01 at 09:01:10 UTC, Christophe Leroy wrote:
-> This patch renames memcmp test to memcmp_64 and adds
-> a memcmp_32 test for testing the 32 bits version of memcmp()
+On Fri, 2018-07-27 at 23:06:39 UTC, Michael Ellerman wrote:
+> From: Diana Craciun <diana.craciun@nxp.com>
 > 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Currently only supported on powerpc.
+> 
+> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Series applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/1bb07b593adc1934a526eb04acfe8b
+https://git.kernel.org/powerpc/c/26cb1f36c43ee6e89d2a9f48a5a750
 
 cheers
