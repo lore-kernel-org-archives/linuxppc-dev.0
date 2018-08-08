@@ -1,44 +1,37 @@
-Return-Path: <srs0=/lpj=kx=linux.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lmpq0h2CzDr5r
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:50:43 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41lmpp6dCyz8tHw
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:50:42 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41lmpp25ynz9s1x
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2018 19:50:42 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w789oG1B138544
- for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2018 05:50:39 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kqx0drk1r-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 05:50:39 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Wed, 8 Aug 2018 10:50:37 +0100
-Subject: [PATCH v3 2/2] powerpc/fadump: merge adjacent memory ranges to
- reduce PT_LOAD segements
-From: Hari Bathini <hbathini@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Date: Wed, 08 Aug 2018 15:20:31 +0530
-In-Reply-To: <153372179892.3846.3752141557907430807.stgit@hbathini.in.ibm.com>
-References: <153372179892.3846.3752141557907430807.stgit@hbathini.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153372182512.3846.7174338882711142700.stgit@hbathini.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lnCT3b0BzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 20:08:37 +1000 (AEST)
+Message-ID: <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Wed, 08 Aug 2018 20:07:49 +1000
+In-Reply-To: <20180808063158.GA2474@infradead.org>
+References: <20180804082120.GB4421@infradead.org>
+ <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
+ <20180805072930.GB23288@infradead.org>
+ <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+ <20180806094243.GA16032@infradead.org>
+ <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ <20180807062117.GD32709@infradead.org>
+ <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
+ <20180807135505.GA29034@infradead.org>
+ <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+ <20180808063158.GA2474@infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,76 +41,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With dynamic memory allocation support for crash memory ranges array,
-there is no hard limit on the no. of crash memory ranges kernel could
-export, but program headers count could overflow in the /proc/vmcore
-ELF file while exporting each memory range as PT_LOAD segment. Reduce
-the likelihood of a such scenario, by folding adjacent crash memory
-ranges which minimizes the total number of PT_LOAD segments.
+On Tue, 2018-08-07 at 23:31 -0700, Christoph Hellwig wrote:
+> 
+> You don't need to set them the time you go secure.  You just need to
+> set the flag from the beginning on any VM you might want to go secure.
+> Or for simplicity just any VM - if the DT/ACPI tables exposed by
+> qemu are good enough that will always exclude a iommu and not set a
+> DMA offset, so nothing will change on the qemu side of he processing,
+> and with the new direct calls for the direct dma ops performance in
+> the guest won't change either.
 
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
+So that's where I'm not sure things are "good enough" due to how
+pseries works. (remember it's paravirtualized).
 
-Changes in v3:
-* Dropped unnecessary memory allocation hunk in fadump_setup_crash_memory_ranges()
+A pseries system starts with a default iommu on all devices, that uses
+translation using 4k entires with a "pinhole" window (usually 2G with
+qemu iirc). There's no "pass through" by default.
 
+Qemu virtio bypasses that iommu when the VIRTIO_F_IOMMU_PLATFORM flag
+is not set (default) but there's nothing in the device-tree to tell the
+guest about this since it's a violation of our pseries architecture, so
+we just rely on Linux virtio "knowing" that it happens. It's a bit
+yucky but that's now history...
 
- arch/powerpc/kernel/fadump.c |   37 ++++++++++++++++++++++++++++---------
- 1 file changed, 28 insertions(+), 9 deletions(-)
+Essentially pseries "architecturally" does not have the concept of not
+having an iommu in the way and qemu violates that architecture today.
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 9f80a78..5436600c 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -909,22 +909,41 @@ static int allocate_crash_memory_ranges(void)
- static inline int fadump_add_crash_memory(unsigned long long base,
- 					  unsigned long long end)
- {
-+	u64  start, size;
-+	bool is_adjacent = false;
-+
- 	if (base == end)
- 		return 0;
- 
--	if (crash_mem_ranges == max_crash_mem_ranges) {
--		int ret;
-+	/*
-+	 * Fold adjacent memory ranges to bring down the memory ranges/
-+	 * PT_LOAD segments count.
-+	 */
-+	if (crash_mem_ranges) {
-+		start = crash_memory_ranges[crash_mem_ranges-1].base;
-+		size = crash_memory_ranges[crash_mem_ranges-1].size;
- 
--		ret = allocate_crash_memory_ranges();
--		if (ret)
--			return ret;
-+		if ((start + size) == base)
-+			is_adjacent = true;
-+	}
-+	if (!is_adjacent) {
-+		/* resize the array on reaching the limit */
-+		if (crash_mem_ranges == max_crash_mem_ranges) {
-+			int ret;
-+
-+			ret = allocate_crash_memory_ranges();
-+			if (ret)
-+				return ret;
-+		}
-+
-+		start = base;
-+		crash_memory_ranges[crash_mem_ranges].base = start;
-+		crash_mem_ranges++;
- 	}
- 
-+	crash_memory_ranges[crash_mem_ranges-1].size = (end - start);
- 	pr_debug("crash_memory_range[%d] [%#016llx-%#016llx], %#llx bytes\n",
--		crash_mem_ranges, base, end - 1, (end - base));
--	crash_memory_ranges[crash_mem_ranges].base = base;
--	crash_memory_ranges[crash_mem_ranges].size = end - base;
--	crash_mem_ranges++;
-+		(crash_mem_ranges - 1), start, end - 1, (end - start));
- 	return 0;
- }
- 
+(Remember it comes from pHyp, our priorietary HV, which we are somewhat
+mimmicing here).
+
+So if we always set VIRTIO_F_IOMMU_PLATFORM, it *will* force all virtio
+through that iommu and performance will suffer (esp vhost I suspect),
+especially since adding/removing translations in the iommu is a
+hypercall.
+
+Now, we do have HV APIs to create a second window that's "permanently
+mapped" to the guest memory, thus avoiding dynamic map/unmaps, and
+Linux can make use of this but I don't know if that works with qemu and
+the performance impact with vhost.
+
+So the situation isn't that great.... On the other hand, I think the
+other approach works for us:
+
+> > It's nicer if we have a way in the guest virtio driver to do something
+> > along the lines of
+> > 
+> > 	if ((flags & VIRTIO_F_IOMMU_PLATFORM) || arch_virtio_wants_dma_ops())
+> > 
+> > Which would have the same effect and means the issue is entirely
+> > contained in the guest.
+> 
+> It would not be the same effect.  The problem with that is that you must
+> now assumes that your qemu knows that for example you might be passing
+> a dma offset if the bus otherwise requires it. 
+
+I would assume that arch_virtio_wants_dma_ops() only returns true when
+no such offsets are involved, at least in our case that would be what
+happens.
+
+>  Or in other words:
+> you potentially break the contract between qemu and the guest of always
+> passing down physical addresses.  If we explicitly change that contract
+> through using a flag that says you pass bus address everything is fine.
+
+For us a "bus address" is behind the iommu so that's what
+VIRTIO_F_IOMMU_PLATFORM does already. We don't have the concept of a
+bus address that is different. I suppose it's an ARMism to have DMA
+offsets that are separate from iommus ? 
+
+> Note that in practice your scheme will probably just work for your
+> initial prototype, but chances are it will get us in trouble later on.
+
+Not on pseries, at least not in any way I can think of mind you... but
+maybe other architectures would abuse it... We could add a WARN_ON if
+that calls returns true on a bus with an offset I suppose.
+
+Cheers,
+Ben.
