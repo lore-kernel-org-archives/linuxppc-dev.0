@@ -2,16 +2,19 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltwp5mJHzDqhV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:18 +1000 (AEST)
-In-Reply-To: <20180726130717.18761-2-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltww2dnVzDqhV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:24 +1000 (AEST)
+In-Reply-To: <20180727114817.27190-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: paulus@samba.org, anton@samba.org, npiggin@gmail.com
-Subject: Re: [01/16] powerpc/64s: Move SET_SCRATCH0() into
- EXCEPTION_PROLOG_PSERIES()
-Message-Id: <41ltwl1LHXz9s8W@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:26:07 +1000 (AEST)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Nicholas Piggin <npiggin@gmail.com>, linux-mm@kvack.org
+Subject: Re: [resend] powerpc/64s: fix page table fragment refcount race vs
+ speculative references
+Message-Id: <41ltwv4RJjz9s4V@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:26:10 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-07-26 at 13:07:02 UTC, Michael Ellerman wrote:
-> EXCEPTION_PROLOG_PSERIES() only has two users, STD_EXCEPTION_PSERIES()
-> and STD_EXCEPTION_HV() both of which "call" SET_SCRATCH0(), so just
-> move SET_SCRATCH0() into EXCEPTION_PROLOG_PSERIES().
+On Fri, 2018-07-27 at 11:48:17 UTC, Nicholas Piggin wrote:
+> The page table fragment allocator uses the main page refcount racily
+> with respect to speculative references. A customer observed a BUG due
+> to page table page refcount underflow in the fragment allocator. This
+> can be caused by the fragment allocator set_page_count stomping on a
+> speculative reference, and then the speculative failure handler
+> decrements the new reference, and the underflow eventually pops when
+> the page tables are freed.
 > 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Fix this by using a dedicated field in the struct page for the page
+> table fragment allocator.
+> 
+> Fixes: 5c1f6ee9a31c ("powerpc: Reduce PTE table memory wastage")
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-Series applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/4a7a0a8444ba4cebb3a6744e9c14fc
+https://git.kernel.org/powerpc/c/4231aba000f5a4583dd9f67057aadb
 
 cheers
