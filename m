@@ -2,24 +2,23 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lst56GrtzDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 23:38:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lt1l3wX2zDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 23:45:31 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: John Allen <jallen@linux.ibm.com>, nfont@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-In-Reply-To: <20180807192628.uf3nycnagabjs55o@p50.austin.ibm.com>
-References: <20180717194048.3057-1-jallen@linux.ibm.com>
- <20180717194048.3057-3-jallen@linux.ibm.com>
- <87k1pmhxx7.fsf@concordia.ellerman.id.au>
- <20180723152223.mydr5dovcv26domv@p50>
- <87in4ufcrd.fsf@concordia.ellerman.id.au>
- <20180807192628.uf3nycnagabjs55o@p50.austin.ibm.com>
-Date: Wed, 08 Aug 2018 23:38:52 +1000
-Message-ID: <878t5hasgj.fsf@concordia.ellerman.id.au>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: pmenzel@molgen.mpg.de, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Several suspected memory leaks
+In-Reply-To: <CAHkRjk7aYtMJXmQ_zuV7B12JiCkLfg3-8x+ayTD2DU9gDwi8Hw@mail.gmail.com>
+References: <468d3c5b-d71d-c95b-dab4-ea8c2cebe129@molgen.mpg.de>
+ <69a6086d25c17b03ecf3ab7ed34fe941fd993410.camel@kernel.crashing.org>
+ <CAHkRjk7aYtMJXmQ_zuV7B12JiCkLfg3-8x+ayTD2DU9gDwi8Hw@mail.gmail.com>
+Date: Wed, 08 Aug 2018 23:45:30 +1000
+Message-ID: <87600las5h.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,78 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-John Allen <jallen@linux.ibm.com> writes:
-> On Wed, Aug 01, 2018 at 11:16:22PM +1000, Michael Ellerman wrote:
->>John Allen <jallen@linux.ibm.com> writes:
->>> On Mon, Jul 23, 2018 at 11:41:24PM +1000, Michael Ellerman wrote:
->>>>John Allen <jallen@linux.ibm.com> writes:
->>>>
->>>>> While handling PRRN events, the time to handle the actual hotplug events
->>>>> dwarfs the time it takes to perform the device tree updates and queue the
->>>>> hotplug events. In the case that PRRN events are being queued continuously,
->>>>> hotplug events have been observed to be queued faster than the kernel can
->>>>> actually handle them. This patch avoids the problem by waiting for a
->>>>> hotplug request to complete before queueing more hotplug events.
+Catalin Marinas <catalin.marinas@arm.com> writes:
+> On Wed, 11 Jul 2018 at 00:40, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+>> On Tue, 2018-07-10 at 17:17 +0200, Paul Menzel wrote:
+>> > On a the IBM S822LC (8335-GTA) with Ubuntu 18.04 I built Linux master
+>> > =E2=80=93 4.18-rc4+, commit 092150a2 (Merge branch 'for-linus'
+>> > of git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid) =E2=80=93 =
+with
+>> > kmemleak. Several issues are found.
 >>
->>Have you tested this patch in isolation, ie. not with patch 1?
+>> Some of these are completely uninteresting though and look like
+>> kmemleak bugs to me :-)
+>>
+>> >     [<00000000bc285bbf>] __pud_alloc+0x80/0x270
+>> >     [<0000000007135d64>] hash__map_kernel_page+0x30c/0x4d0
+>> >     [<0000000071677858>] __ioremap_at+0x108/0x140
+>> >     [<000000000023e921>] __ioremap_caller+0x130/0x180
+>> >     [<000000009dbc3923>] icp_native_init_one_node+0x5cc/0x760
+>> >     [<0000000015f3168a>] icp_native_init+0x70/0x13c
+>> >     [<00000000655550ed>] xics_init+0x38/0x1ac
+>> >     [<0000000088dbf9d1>] pnv_init_IRQ+0x30/0x5c
+>>
+>> This is the interrupt controller mapping its registers, why on earth
+>> would that be considered a leak ? kmemleak needs to learn to ignore
+>> kernel page tables allocations.
 >
-> While I was away on vacation, I believe a build was tested with just 
-> this patch and not the first and it has been running with no problems.  
-> However, I think they've had problems recreating the problem in general 
-> so it may just be that the environment is not setup properly to recreate 
-> the issue.
+> Indeed, that's just a false positive for powerpc. Kmemleak ignores
+> page allocations and most architectures use __get_free_pages() for the
+> page table. In this particular case, the powerpc code uses
+> kmem_cache_alloc() and that's tracked by kmemleak. Since the pgd
+> stores the __pa(pud), kmemleak doesn't detect this pointer and reports
+> it as a leak. To work around this, you can pass SLAB_NOLEAKTRACE to
+> kmem_cache_create() in pgtable_cache_add()
 
-Yes I asked Haren to test it :)
+Ah thanks, I didn't know we could do it that way.
 
->From memory there were some warnings still about the work queue being
-blocked for long periods, but they weren't fatal.
+I did this instead which seems to work:
 
->>>>So do we need the hotplug work queue at all? Can we just call
->>>>handle_dlpar_errorlog() directly?
->>>>
->>>>Or are we using the work queue to serialise things? And if so would a
->>>>mutex be better?
->>>
->>> Right, the workqueue is meant to serialize all hotplug events and it
->>> gets used for more than just PRRN events. I believe the motivation for
->>> using the workqueue over a mutex is that KVM guests initiate hotplug
->>> events through the hotplug interrupt and can queue fairly large requests
->>> meaning that in this scenario, waiting for a lock would block interrupts
->>> for a while.
->>
->>OK, but that just means that path needs to schedule work to run later.
->>
->>> Using the workqueue allows us to serialize hotplug events
->>> from different sources in the same way without worrying about the
->>> context in which the event is generated.
->>
->>A lock would be so much simpler.
->>
->>It looks like we have three callers of queue_hotplug_event(), the dlpar
->>code, the mobility code and the ras interrupt.
->>
->>The dlpar code already waits synchronously:
->>
->>  init_completion(&hotplug_done);
->>  queue_hotplug_event(hp_elog, &hotplug_done, &rc);
->>  wait_for_completion(&hotplug_done);
->>
->>You're changing mobility to do the same (this patch), leaving only the
->>ras interrupt that actually queues work and returns.
->>
->>
->>So it really seems like a mutex would do the trick, and the ras
->>interrupt would be the only case that needs to schedule work for later.
->
-> I think you may be right, but I would need some feedback from Nathan 
-> Fontenot before I redesign the queue. He's been thinking about that 
-> design for longer than I have and may know something that I don't 
-> regarding the reason we're using a workqueue rather than a mutex.
+  https://git.kernel.org/torvalds/c/a984506c542e
 
-> Given that the bug this is meant to address is pretty high priority, 
-> would you consider the wait_for_completion an acceptable stopgap while a 
-> more substantial redesign of this code is discussed?
-
-Yeah that would be OK.
 
 cheers
