@@ -1,35 +1,24 @@
-Return-Path: <oss@buserror.net>
-Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <msuchanek@suse.de>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lzmB1ZPYzDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 04:04:10 +1000 (AEST)
-Message-ID: <bef421feea16da2fdab333e63a6828741bd59055.camel@buserror.net>
-From: Scott Wood <oss@buserror.net>
-To: Bharat Bhushan <bharat.bhushan@nxp.com>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>,  "mark.rutland@arm.com"
- <mark.rutland@arm.com>, "kstewart@linuxfoundation.org"
- <kstewart@linuxfoundation.org>, "gregkh@linuxfoundation.org"
- <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org"
- <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Cc: "robh@kernel.org" <robh@kernel.org>, "keescook@chromium.org"
- <keescook@chromium.org>, "tyreld@linux.vnet.ibm.com"
- <tyreld@linux.vnet.ibm.com>,  "joe@perches.com" <joe@perches.com>
-Date: Wed, 08 Aug 2018 12:57:27 -0500
-In-Reply-To: <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
-References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
- <1532684881-19310-6-git-send-email-Bharat.Bhushan@nxp.com>
- <ab2a113620123cb71364b6ae89328ae2fca49821.camel@buserror.net>
- <AM5PR0401MB254592DC0E917FD292B323BA9A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
- <aeff83355ee5235cfd6107dba06a5f7957b45c92.camel@buserror.net>
- <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m2rQ5DTvzDqk9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 06:22:56 +1000 (AEST)
+Date: Wed, 8 Aug 2018 22:22:52 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>, Mahesh Jagannath Salgaonkar
+ <mahesh@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/64s: move machine check SLB flushing to
+ mm/slb.c
+Message-ID: <20180808222252.5be0feac@kitsune.suse.cz>
+In-Reply-To: <20180803041350.25493-1-npiggin@gmail.com>
+References: <20180803041350.25493-1-npiggin@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,91 +28,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-08-08 at 06:28 +0000, Bharat Bhushan wrote:
-> > -----Original Message-----
-> > From: Scott Wood [mailto:oss@buserror.net]
-> > Sent: Wednesday, August 8, 2018 11:26 AM
-> > To: Bharat Bhushan <bharat.bhushan@nxp.com>;
-> > benh@kernel.crashing.org; paulus@samba.org; mpe@ellerman.id.au;
-> > galak@kernel.crashing.org; mark.rutland@arm.com;
-> > kstewart@linuxfoundation.org; gregkh@linuxfoundation.org;
-> > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > kernel@vger.kernel.org
-> > Cc: robh@kernel.org; keescook@chromium.org; tyreld@linux.vnet.ibm.com;
-> > joe@perches.com
-> > Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
-> > 
-> > On Wed, 2018-08-08 at 03:44 +0000, Bharat Bhushan wrote:
-> > > > -----Original Message-----
-> > > > From: Scott Wood [mailto:oss@buserror.net]
-> > > > Sent: Wednesday, August 8, 2018 2:44 AM
-> > > > To: Bharat Bhushan <bharat.bhushan@nxp.com>;
-> > > > benh@kernel.crashing.org; paulus@samba.org; mpe@ellerman.id.au;
-> > > > galak@kernel.crashing.org; mark.rutland@arm.com;
-> > > > kstewart@linuxfoundation.org; gregkh@linuxfoundation.org;
-> > > > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > > > kernel@vger.kernel.org
-> > > > Cc: robh@kernel.org; keescook@chromium.org;
-> > > > tyreld@linux.vnet.ibm.com; joe@perches.com
-> > > > Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for
-> > > > P2020
-> > > > 
-> > > > On Fri, 2018-07-27 at 15:18 +0530, Bharat Bhushan wrote:
-> > > > > MPIC on NXP (Freescale) P2020 supports following irq
-> > > > > ranges:
-> > > > >   > 0 - 11      (External interrupt)
-> > > > >   > 16 - 79     (Internal interrupt)
-> > > > >   > 176 - 183   (Messaging interrupt)
-> > > > >   > 224 - 231   (Shared message signaled interrupt)
-> > > > 
-> > > > Why don't you convert to the 4-cell interrupt specifiers that make
-> > > > dealing with these ranges less error-prone?
-> > > 
-> > > Ok , will do if we agree to have this series as per comment on other
-> > > patch.
-> > 
-> > If you're concerned with errors, this would be a good things to do
-> > regardless.
-> >  Actually, it seems that p2020si-post.dtsi already uses 4-cell interrupts.
-> > 
-> > What is motivating this patchset?  Is there something wrong in the
-> > existing
-> > dts files?
+On Fri,  3 Aug 2018 14:13:49 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
+
+> The machine check code that flushes and restores bolted segments in
+> real mode belongs in mm/slb.c. This will be used by pseries machine
+> check and idle code.
 > 
-> There is no error in device tree. Main motivation is to improve code for
-> following reasons: 
->   - While code study it was found that if a reserved irq-number used then
-> there are no check in driver. irq will be configured as correct and
-> interrupt will never fire.
-
-Again, a wrong interrupt number won't fire, whether an interrupt by that
-number exists or not.  I wouldn't mind a sanity check in the driver if the
-programming model made it properly discoverable, but I don't think it's worth
-messing with device trees just for this (and even less so given that there
-don't seem to be new chips coming out that this would be relevant for).
-
-> > > One other confusing observation I have is that "irq_count" from
-> > > platform code is given precedence over "last-interrupt-source" in
-> > > device-
-> > 
-> > tree.
-> > > Should not device-tree should have precedence otherwise there is no
-> > > point using " last-interrupt-source" if platform code passes
-> > > "irq_count" in mpic_alloc().
-> > 
-> > Maybe, though I don't think it matters much given that last-interrupt-
-> > source
-> > was only added to avoid having to pass irq_count in platform code.
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  3 ++
+>  arch/powerpc/kernel/mce_power.c               | 21 ++--------
+>  arch/powerpc/mm/slb.c                         | 38
+> +++++++++++++++++++ 3 files changed, 44 insertions(+), 18 deletions(-)
 > 
-> Thanks for clarifying;
-> 
-> My understanding was that "last-interrupt-source" added to ensure that we
-> can over-ride value passed from platform code. In that case we do not need
-> to change code and can control from device tree.
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h index
+> 2f74bdc805e0..d4e398185b3a 100644 ---
+> a/arch/powerpc/include/asm/book3s/64/mmu-hash.h +++
+> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h @@ -497,6 +497,9 @@
+> extern void hpte_init_native(void); 
+>  extern void slb_initialize(void);
+>  extern void slb_flush_and_rebolt(void);
+> +extern void slb_flush_all_realmode(void);
+> +extern void __slb_restore_bolted_realmode(void);
+> +extern void slb_restore_bolted_realmode(void);
+>  
+>  extern void slb_vmalloc_update(void);
+>  extern void slb_set_size(u16 size);
+> diff --git a/arch/powerpc/kernel/mce_power.c
+> b/arch/powerpc/kernel/mce_power.c index d6756af6ec78..50f7b9817246
+> 100644 --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -62,11 +62,8 @@ static unsigned long addr_to_pfn(struct pt_regs
+> *regs, unsigned long addr) #ifdef CONFIG_PPC_BOOK3S_64
+>  static void flush_and_reload_slb(void)
+>  {
+> -	struct slb_shadow *slb;
+> -	unsigned long i, n;
+> -
+>  	/* Invalidate all SLBs */
+> -	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+> +	slb_flush_all_realmode();
+>  
+>  #ifdef CONFIG_KVM_BOOK3S_HANDLER
+>  	/*
+> @@ -76,22 +73,10 @@ static void flush_and_reload_slb(void)
+>  	if (get_paca()->kvm_hstate.in_guest)
+>  		return;
+>  #endif
+> -
+> -	/* For host kernel, reload the SLBs from shadow SLB buffer.
+> */
+> -	slb = get_slb_shadow();
+> -	if (!slb)
+> +	if (early_radix_enabled())
+>  		return;
 
-The changelog says, "To avoid needing to write custom board-specific code to
-detect that scenario, allow it to be easily overridden in the device-tree,"
-where "it" means the value provided by hardware.  The goal was to pass in 256
-without board code in the kernel, not to override the 256.
+And we lose the check that the shadow slb exists. Is !slb equivalent to
+early_radix_enabled() 
 
--Scott
+>  
+> -	n = min_t(u32, be32_to_cpu(slb->persistent), SLB_MIN_SIZE);
+> -
+> -	/* Load up the SLB entries from shadow SLB */
+> -	for (i = 0; i < n; i++) {
+> -		unsigned long rb =
+> be64_to_cpu(slb->save_area[i].esid);
+> -		unsigned long rs =
+> be64_to_cpu(slb->save_area[i].vsid); -
+> -		rb = (rb & ~0xFFFul) | i;
+> -		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
+> -	}
+> +	slb_restore_bolted_realmode();
+>  }
+>  #endif
+>  
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index cb796724a6fc..136db8652577 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -90,6 +90,44 @@ static inline void create_shadowed_slbe(unsigned
+> long ea, int ssize, : "memory" );
+>  }
+>  
+> +/*
+> + * Insert bolted entries into SLB (which may not be empty).
+> + */
+> +void __slb_restore_bolted_realmode(void)
+> +{
+> +	struct slb_shadow *p = get_slb_shadow();
+> +	enum slb_index index;
+
+or can we get here at some point when shadow slb is not populated?
+
+Thanks
+
+Michal
+
+> +
+> +	 /* No isync needed because realmode. */
+> +	for (index = 0; index < SLB_NUM_BOLTED; index++) {
+> +		asm volatile("slbmte  %0,%1" :
+> +		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
+> +		       "r" (be64_to_cpu(p->save_area[index].esid)));
+> +	}
+> +}
+> +
+> +/*
+> + * Insert bolted entries into an empty SLB.
+> + * This is not the same as rebolt because the bolted segments
+> + * (e.g., kstack) are not changed (rebolted).
+> + */
+> +void slb_restore_bolted_realmode(void)
+> +{
+> +	__slb_restore_bolted_realmode();
+> +	get_paca()->slb_cache_ptr = 0;
+> +}
+> +
+> +/*
+> + * This flushes all SLB entries including 0, so it must be realmode.
+> + */
+> +void slb_flush_all_realmode(void)
+> +{
+> +	/*
+> +	 * This flushes all SLB entries including 0, so it must be
+> realmode.
+> +	 */
+> +	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+> +}
+> +
+>  static void __slb_flush_and_rebolt(void)
+>  {
+>  	/* If you change this make sure you change SLB_NUM_BOLTED
