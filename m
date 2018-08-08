@@ -2,20 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltw75bgJzDqkP
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltw75zL1zDqrN
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:25:43 +1000 (AEST)
-In-Reply-To: <153072702900.29016.3698488484610157863.stgit@jupiter.in.ibm.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <25463c4f-4901-b86f-2002-6c65c9ee9fd2@infradead.org>
+To: Randy Dunlap <rdunlap@infradead.org>,
+ PowerPC <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michal Suchanek <msuchanek@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
- stable@vger.kernel.org, Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [v6,
- 2/8] powerpc/pseries: Defer the logging of rtas error to irq work
- queue.
-Message-Id: <41ltvz2J03z9s4Z@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:25:34 +1000 (AEST)
+Cc: Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>
+Subject: Re: powerpc/platforms/85xx: fix t1042rdb_diu.c build errors & warning
+Message-Id: <41ltw05Ljlz9s7Q@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:25:36 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-07-04 at 17:57:21 UTC, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Sun, 2018-07-15 at 17:34:46 UTC, Randy Dunlap wrote:
+> From: Randy Dunlap <rdunlap@infradead.org>
 > 
-> rtas_log_buf is a buffer to hold RTAS event data that are communicated
-> to kernel by hypervisor. This buffer is then used to pass RTAS event
-> data to user through proc fs. This buffer is allocated from vmalloc
-> (non-linear mapping) area.
+> Fix build errors and warnings in t1042rdb_diu.c by adding header files
+> and MODULE_LICENSE().
 > 
-> On Machine check interrupt, register r3 points to RTAS extended event
-> log passed by hypervisor that contains the MCE event. The pseries
-> machine check handler then logs this error into rtas_log_buf. The
-> rtas_log_buf is a vmalloc-ed (non-linear) buffer we end up taking up a
-> page fault (vector 0x300) while accessing it. Since machine check
-> interrupt handler runs in NMI context we can not afford to take any
-> page fault. Page faults are not honored in NMI context and causes
-> kernel panic. Apart from that, as Nick pointed out, pSeries_log_error()
-> also takes a spin_lock while logging error which is not safe in NMI
-> context. It may endup in deadlock if we get another MCE before releasing
-> the lock. Fix this by deferring the logging of rtas error to irq work queue.
+> ../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: data definition has no type or storage class
+>  early_initcall(t1042rdb_diu_init);
+> ../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: error: type defaults to 'int' in declaration of 'early_initcall' [-Werror=implicit-int]
+> ../arch/powerpc/platforms/85xx/t1042rdb_diu.c:152:1: warning: parameter names (without types) in function declaration
 > 
-> Current implementation uses two different buffers to hold rtas error log
-> depending on whether extended log is provided or not. This makes bit
-> difficult to identify which buffer has valid data that needs to logged
-> later in irq work. Simplify this using single buffer, one per paca, and
-> copy rtas log to it irrespective of whether extended log is provided or
-> not. Allocate this buffer below RMA region so that it can be accessed
-> in real mode mce handler.
+> and
+> WARNING: modpost: missing MODULE_LICENSE() in arch/powerpc/platforms/85xx/t1042rdb_diu.o
 > 
-> Fixes: b96672dd840f ("powerpc: Machine check interrupt is a non-maskable interrupt")
-> Cc: stable@vger.kernel.org
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Scott Wood <oss@buserror.net>
+> Cc: Kumar Gala <galak@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/94675cceacaec27a30eefb142c4c59
+https://git.kernel.org/powerpc/c/f5daf77a55ef0e695cc90c440ed650
 
 cheers
