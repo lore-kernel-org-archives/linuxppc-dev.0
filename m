@@ -1,27 +1,35 @@
-Return-Path: <srs0=lg8k=kx=c-s.fr=christophe.leroy@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lxhS73MTzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 02:30:48 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41lxhS6Yjcz8vqJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 02:30:48 +1000 (AEST)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41lxhR531Wz9s1c
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 02:30:47 +1000 (AEST)
-Subject: Re: [PATCH 1/5] powerpc/asm: Add a patch_site macro & helpers for
- patching instructions
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20180723150756.11108-1-mpe@ellerman.id.au>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
-Date: Wed, 8 Aug 2018 18:30:44 +0200
-MIME-Version: 1.0
-In-Reply-To: <20180723150756.11108-1-mpe@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lzmB1ZPYzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 04:04:10 +1000 (AEST)
+Message-ID: <bef421feea16da2fdab333e63a6828741bd59055.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Bharat Bhushan <bharat.bhushan@nxp.com>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "galak@kernel.crashing.org"
+ <galak@kernel.crashing.org>,  "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "gregkh@linuxfoundation.org"
+ <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org"
+ <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Cc: "robh@kernel.org" <robh@kernel.org>, "keescook@chromium.org"
+ <keescook@chromium.org>, "tyreld@linux.vnet.ibm.com"
+ <tyreld@linux.vnet.ibm.com>,  "joe@perches.com" <joe@perches.com>
+Date: Wed, 08 Aug 2018 12:57:27 -0500
+In-Reply-To: <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
+ <1532684881-19310-6-git-send-email-Bharat.Bhushan@nxp.com>
+ <ab2a113620123cb71364b6ae89328ae2fca49821.camel@buserror.net>
+ <AM5PR0401MB254592DC0E917FD292B323BA9A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+ <aeff83355ee5235cfd6107dba06a5f7957b45c92.camel@buserror.net>
+ <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,99 +39,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2018-08-08 at 06:28 +0000, Bharat Bhushan wrote:
+> > -----Original Message-----
+> > From: Scott Wood [mailto:oss@buserror.net]
+> > Sent: Wednesday, August 8, 2018 11:26 AM
+> > To: Bharat Bhushan <bharat.bhushan@nxp.com>;
+> > benh@kernel.crashing.org; paulus@samba.org; mpe@ellerman.id.au;
+> > galak@kernel.crashing.org; mark.rutland@arm.com;
+> > kstewart@linuxfoundation.org; gregkh@linuxfoundation.org;
+> > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > kernel@vger.kernel.org
+> > Cc: robh@kernel.org; keescook@chromium.org; tyreld@linux.vnet.ibm.com;
+> > joe@perches.com
+> > Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
+> > 
+> > On Wed, 2018-08-08 at 03:44 +0000, Bharat Bhushan wrote:
+> > > > -----Original Message-----
+> > > > From: Scott Wood [mailto:oss@buserror.net]
+> > > > Sent: Wednesday, August 8, 2018 2:44 AM
+> > > > To: Bharat Bhushan <bharat.bhushan@nxp.com>;
+> > > > benh@kernel.crashing.org; paulus@samba.org; mpe@ellerman.id.au;
+> > > > galak@kernel.crashing.org; mark.rutland@arm.com;
+> > > > kstewart@linuxfoundation.org; gregkh@linuxfoundation.org;
+> > > > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > > > kernel@vger.kernel.org
+> > > > Cc: robh@kernel.org; keescook@chromium.org;
+> > > > tyreld@linux.vnet.ibm.com; joe@perches.com
+> > > > Subject: Re: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for
+> > > > P2020
+> > > > 
+> > > > On Fri, 2018-07-27 at 15:18 +0530, Bharat Bhushan wrote:
+> > > > > MPIC on NXP (Freescale) P2020 supports following irq
+> > > > > ranges:
+> > > > >   > 0 - 11      (External interrupt)
+> > > > >   > 16 - 79     (Internal interrupt)
+> > > > >   > 176 - 183   (Messaging interrupt)
+> > > > >   > 224 - 231   (Shared message signaled interrupt)
+> > > > 
+> > > > Why don't you convert to the 4-cell interrupt specifiers that make
+> > > > dealing with these ranges less error-prone?
+> > > 
+> > > Ok , will do if we agree to have this series as per comment on other
+> > > patch.
+> > 
+> > If you're concerned with errors, this would be a good things to do
+> > regardless.
+> >  Actually, it seems that p2020si-post.dtsi already uses 4-cell interrupts.
+> > 
+> > What is motivating this patchset?  Is there something wrong in the
+> > existing
+> > dts files?
+> 
+> There is no error in device tree. Main motivation is to improve code for
+> following reasons: 
+>   - While code study it was found that if a reserved irq-number used then
+> there are no check in driver. irq will be configured as correct and
+> interrupt will never fire.
 
+Again, a wrong interrupt number won't fire, whether an interrupt by that
+number exists or not.  I wouldn't mind a sanity check in the driver if the
+programming model made it properly discoverable, but I don't think it's worth
+messing with device trees just for this (and even less so given that there
+don't seem to be new chips coming out that this would be relevant for).
 
-Le 23/07/2018 à 17:07, Michael Ellerman a écrit :
-> Add a macro and some helper C functions for patching single asm
-> instructions.
+> > > One other confusing observation I have is that "irq_count" from
+> > > platform code is given precedence over "last-interrupt-source" in
+> > > device-
+> > 
+> > tree.
+> > > Should not device-tree should have precedence otherwise there is no
+> > > point using " last-interrupt-source" if platform code passes
+> > > "irq_count" in mpic_alloc().
+> > 
+> > Maybe, though I don't think it matters much given that last-interrupt-
+> > source
+> > was only added to avoid having to pass irq_count in platform code.
 > 
-> The gas macro means we can do something like:
+> Thanks for clarifying;
 > 
->    1:	nop
->    	patch_site 1b, patch__foo
-> 
-> Which is less visually distracting than defining a GLOBAL symbol at 1,
-> and also doesn't pollute the symbol table which can confuse eg. perf.
-> 
-> These are obviously similar to our existing feature sections, but are
-> not automatically patched based on CPU/MMU features, rather they are
-> designed to be manually patched by C code at some arbitrary point.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->   arch/powerpc/include/asm/code-patching-asm.h | 18 ++++++++++++++++++
->   arch/powerpc/include/asm/code-patching.h     |  2 ++
->   arch/powerpc/lib/code-patching.c             | 16 ++++++++++++++++
->   3 files changed, 36 insertions(+)
->   create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
-> 
-> diff --git a/arch/powerpc/include/asm/code-patching-asm.h b/arch/powerpc/include/asm/code-patching-asm.h
-> new file mode 100644
-> index 000000000000..ed7b1448493a
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/code-patching-asm.h
-> @@ -0,0 +1,18 @@
-> +/* SPDX-License-Identifier: GPL-2.0+ */
-> +/*
-> + * Copyright 2018, Michael Ellerman, IBM Corporation.
-> + */
-> +#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
-> +#define _ASM_POWERPC_CODE_PATCHING_ASM_H
-> +
-> +/* Define a "site" that can be patched */
-> +.macro patch_site label name
-> +	.pushsection ".rodata"
-> +	.balign 4
-> +	.global \name
-> +\name:
-> +	.4byte	\label - .
-> +	.popsection
-> +.endm
-> +
-> +#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
-> diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
-> index 812535f40124..b2051234ada8 100644
-> --- a/arch/powerpc/include/asm/code-patching.h
-> +++ b/arch/powerpc/include/asm/code-patching.h
-> @@ -32,6 +32,8 @@ unsigned int create_cond_branch(const unsigned int *addr,
->   int patch_branch(unsigned int *addr, unsigned long target, int flags);
->   int patch_instruction(unsigned int *addr, unsigned int instr);
->   int raw_patch_instruction(unsigned int *addr, unsigned int instr);
-> +int patch_instruction_site(s32 *addr, unsigned int instr);
-> +int patch_branch_site(s32 *site, unsigned long target, int flags);
+> My understanding was that "last-interrupt-source" added to ensure that we
+> can over-ride value passed from platform code. In that case we do not need
+> to change code and can control from device tree.
 
-Why use s32* instead of unsigned int* as usual for pointer to code ?
+The changelog says, "To avoid needing to write custom board-specific code to
+detect that scenario, allow it to be easily overridden in the device-tree,"
+where "it" means the value provided by hardware.  The goal was to pass in 256
+without board code in the kernel, not to override the 256.
 
-Christophe
-
->   
->   int instr_is_relative_branch(unsigned int instr);
->   int instr_is_relative_link_branch(unsigned int instr);
-> diff --git a/arch/powerpc/lib/code-patching.c b/arch/powerpc/lib/code-patching.c
-> index e0d881ab304e..850f3b8f4da5 100644
-> --- a/arch/powerpc/lib/code-patching.c
-> +++ b/arch/powerpc/lib/code-patching.c
-> @@ -195,6 +195,22 @@ int patch_branch(unsigned int *addr, unsigned long target, int flags)
->   	return patch_instruction(addr, create_branch(addr, target, flags));
->   }
->   
-> +int patch_branch_site(s32 *site, unsigned long target, int flags)
-> +{
-> +	unsigned int *addr;
-> +
-> +	addr = (unsigned int *)((unsigned long)site + *site);
-> +	return patch_instruction(addr, create_branch(addr, target, flags));
-> +}
-> +
-> +int patch_instruction_site(s32 *site, unsigned int instr)
-> +{
-> +	unsigned int *addr;
-> +
-> +	addr = (unsigned int *)((unsigned long)site + *site);
-> +	return patch_instruction(addr, instr);
-> +}
-> +
->   bool is_offset_in_branch_range(long offset)
->   {
->   	/*
-> 
+-Scott
