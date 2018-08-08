@@ -1,25 +1,29 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <jallen@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lvb503HRzF0PT
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:56:01 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
- action on MCE.
-In-Reply-To: <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
-Date: Thu, 09 Aug 2018 00:56:00 +1000
-Message-ID: <87o9ecaovz.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lwKp3ZCPzDrWq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 01:29:34 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w78FOCfx002395
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Aug 2018 11:29:32 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kqyjstecg-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 11:29:32 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
+ Wed, 8 Aug 2018 11:29:30 -0400
+From: John Allen <jallen@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Cc: nfont@linux.vnet.ibm.com, desnesn@linux.vnet.ibm.com
+Subject: [PATCH v3 0/2] powerpc/pseries: Improve serialization of PRRN events
+Date: Wed,  8 Aug 2018 10:29:24 -0500
+Message-Id: <20180808152926.28842-1-jallen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->
-> Introduce recovery action for recovered memory errors (MCEs). There are
-> soft memory errors like SLB Multihit, which can be a result of a bad
-> hardware OR software BUG. Kernel can easily recover from these soft errors
-> by flushing SLB contents. After the recovery kernel can still continue to
-> function without any issue. But in some scenario's we may keep getting
-> these soft errors until the root cause is fixed. To be able to analyze and
-> find the root cause, best way is to gather enough data and system state at
-> the time of MCE. Hence this patch introduces a sysctl knob where user can
-> decide either to continue after recovery or panic the kernel to capture the
-> dump.
+Stress testing has uncovered issues with handling continuously queued PRRN
+events. Running PRRN events in this way can seriously load the system given
+the sheer volume of dlpar being handled. This patchset ensures that PRRN
+events are handled more synchronously, only allowing the PRRN handler to
+queue a single dlpar event at any given time.  Additionally, it ensures
+that rtas polling continues normally when multiple PRRN events are queued
+simultaneously.
 
-I'm not convinced we want this.
+v3:
+  -Scrap the PRRN mutex as it only replicates existing workqueue behavior.
+v2:
+  -Unlock prrn_lock when PRRN operations are complete, not after handler is
+   scheduled.
+  -Remove call to flush_work, the previous broken method of serializing
+   PRRN events.
 
-As we've discovered it's often not possible to reconstruct what happened
-based on a dump anyway.
+John Allen (2):
+  powerpc/pseries: Avoid blocking rtas polling handling multiple PRRN
+    events
+  powerpc/pseries: Wait for completion of hotplug events during PRRN
+    handling
 
-The key thing you need is the content of the SLB and that's not included
-in a dump.
+ arch/powerpc/kernel/rtasd.c               | 10 +++++++---
+ arch/powerpc/platforms/pseries/mobility.c |  5 ++++-
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-So I think we should dump the SLB content when we get the MCE (which
-this series does) and any other useful info, and then if we can recover
-we should.
-
-cheers
+-- 
+2.17.1
