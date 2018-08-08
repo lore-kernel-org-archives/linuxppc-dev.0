@@ -1,39 +1,26 @@
-Return-Path: <BATV+e58a793fbb47aa1f3849+5463+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lrMY2pJ6zDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 22:30:46 +1000 (AEST)
-Date: Wed, 8 Aug 2018 05:30:36 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180808123036.GA2525@infradead.org>
-References: <20180805072930.GB23288@infradead.org>
- <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
- <20180806094243.GA16032@infradead.org>
- <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
- <20180807062117.GD32709@infradead.org>
- <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
- <20180807135505.GA29034@infradead.org>
- <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
- <20180808063158.GA2474@infradead.org>
- <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lsN454YdzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 23:16:20 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "npiggin\@gmail.com" <npiggin@gmail.com>
+Subject: Re: Build regressions/improvements in v4.17-rc1
+In-Reply-To: <87lg9hb12y.fsf@concordia.ellerman.id.au>
+References: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
+ <20180806155440.9dcb271a3b075bd964aec60f@linux-foundation.org>
+ <87lg9hb12y.fsf@concordia.ellerman.id.au>
+Date: Wed, 08 Aug 2018 23:16:16 +1000
+Message-ID: <87d0utati7.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,66 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 08, 2018 at 08:07:49PM +1000, Benjamin Herrenschmidt wrote:
-> Qemu virtio bypasses that iommu when the VIRTIO_F_IOMMU_PLATFORM flag
-> is not set (default) but there's nothing in the device-tree to tell the
-> guest about this since it's a violation of our pseries architecture, so
-> we just rely on Linux virtio "knowing" that it happens. It's a bit
-> yucky but that's now history...
+Michael Ellerman <mpe@ellerman.id.au> writes:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>> On Mon, 6 Aug 2018 12:39:21 +0200 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>
+>>> CC Dan, Michael, AKPM, powerpc
+>>> 
+>>> On Mon, Apr 16, 2018 at 3:10 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>> > Below is the list of build error/warning regressions/improvements in
+>>> > v4.17-rc1[1] compared to v4.16[2].
+>>> 
+>>> I'd like to point your attention to:
+>>> 
+>>> >   + warning: vmlinux.o(.text+0x376518): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
+>>> >   + warning: vmlinux.o(.text+0x376d64): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
+>>
+>> hm.  Dan isn't around at present so we're on our own with this one.
+>>
+>> x86 doesn't put arch_add_memory and arch_remove_memory into __meminit. 
+>> x86 does
+>>
+>> #ifdef CONFIG_MEMORY_HOTPLUG
+>> int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
+>> 		bool want_memblock)
+>> {
+>> 	...
+>>
+>>
+>> So I guess powerpc should do that as well?
+>
+> But we only recently added it to fix a section mismatch warning:
+>
+>   WARNING: vmlinux.o(.text+0x6da88): Section mismatch in reference from the function .arch_add_memory() to the function .meminit.text:.create_section_mapping()
+>   The function .arch_add_memory() references
+>   the function __meminit .create_section_mapping().
+>   This is often because .arch_add_memory lacks a __meminit 
+>   annotation or the annotation of .create_section_mapping is wrong.
+>
+>
+> I think the problem is that the section mismatch logic isn't able to
+> cope with __meminit's changing semantics.
+>
+> When CONFIG_MEMORY_HOTPLUG=y references from .text to .meminit.text
+> should be allowed, because they're just folded in together in the linker
+> script.
+>
+> When CONFIG_MEMORY_HOTPLUG=n references from .text to .meminit.text
+> should NOT be allowed, because .meminit.text becomes .init.text and will
+> be freed.
+>
+> I don't see anything in the section mismatch logic to cope with that
+> difference.
+>
+> It looks like __meminit is saving us about 1K on powerpc, so I'm
+> strongly inclined to just remove it entirely from arch/powerpc.
 
-That is ugly as hell, but it is how virtio works everywhere, so nothing
-special so far.
+Gah that doesn't work.
 
-> Essentially pseries "architecturally" does not have the concept of not
-> having an iommu in the way and qemu violates that architecture today.
-> 
-> (Remember it comes from pHyp, our priorietary HV, which we are somewhat
-> mimmicing here).
+Our arch routines call things in mm/ that are __meminit, so we have to
+mark our code __meminit too, otherwise we get a section mismatch
+warning.
 
-It shouldnt be too hard to have a dt property that communicates this,
-should it?
-
-> So if we always set VIRTIO_F_IOMMU_PLATFORM, it *will* force all virtio
-> through that iommu and performance will suffer (esp vhost I suspect),
-> especially since adding/removing translations in the iommu is a
-> hypercall.
-
-Well, we'd nee to make sure that for this particular bus we skip the
-actualy iommu.
-
-> > It would not be the same effect.  The problem with that is that you must
-> > now assumes that your qemu knows that for example you might be passing
-> > a dma offset if the bus otherwise requires it. 
-> 
-> I would assume that arch_virtio_wants_dma_ops() only returns true when
-> no such offsets are involved, at least in our case that would be what
-> happens.
-
-That would work, but we're really piling hacĸs ontop of hacks here.
-
-> >  Or in other words:
-> > you potentially break the contract between qemu and the guest of always
-> > passing down physical addresses.  If we explicitly change that contract
-> > through using a flag that says you pass bus address everything is fine.
-> 
-> For us a "bus address" is behind the iommu so that's what
-> VIRTIO_F_IOMMU_PLATFORM does already. We don't have the concept of a
-> bus address that is different. I suppose it's an ARMism to have DMA
-> offsets that are separate from iommus ? 
-
-No, a lot of platforms support a bus address that has an offset from
-the physical address. including a lot of power platforms:
-
-arch/powerpc/kernel/pci-common.c:       set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
-arch/powerpc/platforms/cell/iommu.c:            set_dma_offset(dev, cell_dma_nommu_offset);
-arch/powerpc/platforms/cell/iommu.c:            set_dma_offset(dev, addr);
-arch/powerpc/platforms/powernv/pci-ioda.c:      set_dma_offset(&pdev->dev, pe->tce_bypass_base);
-arch/powerpc/platforms/powernv/pci-ioda.c:                      set_dma_offset(&pdev->dev, (1ULL << 32));
-arch/powerpc/platforms/powernv/pci-ioda.c:              set_dma_offset(&dev->dev, pe->tce_bypass_base);
-arch/powerpc/platforms/pseries/iommu.c:                         set_dma_offset(dev, dma_offset);
-arch/powerpc/sysdev/dart_iommu.c:               set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
-arch/powerpc/sysdev/fsl_pci.c:          set_dma_offset(dev, pci64_dma_offset);
-
-to make things worse some platforms (at least on arm/arm64/mips/x86) can
-also require additional banking where it isn't even a single linear map
-but multiples windows.
+cheers
