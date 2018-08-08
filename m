@@ -3,27 +3,31 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lwKp3ZCPzDrWq
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lwKp6wWgzDqgZ
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 01:29:34 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w78FOCfx002395
+ w78FOBeV074180
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Aug 2018 11:29:32 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kqyjstecg-1
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kr08c8pex-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 11:29:32 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <jallen@linux.ibm.com>;
- Wed, 8 Aug 2018 11:29:30 -0400
+ Wed, 8 Aug 2018 09:29:31 -0600
 From: John Allen <jallen@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Cc: nfont@linux.vnet.ibm.com, desnesn@linux.vnet.ibm.com
-Subject: [PATCH v3 0/2] powerpc/pseries: Improve serialization of PRRN events
-Date: Wed,  8 Aug 2018 10:29:24 -0500
-Message-Id: <20180808152926.28842-1-jallen@linux.ibm.com>
+Cc: nfont@linux.vnet.ibm.com, desnesn@linux.vnet.ibm.com,
+ John Allen <jallen@linux.ibm.com>
+Subject: [PATCH v3 2/2] powerpc/pseries: Wait for completion of hotplug events
+ during PRRN handling
+Date: Wed,  8 Aug 2018 10:29:26 -0500
+In-Reply-To: <20180808152926.28842-1-jallen@linux.ibm.com>
+References: <20180808152926.28842-1-jallen@linux.ibm.com>
+Message-Id: <20180808152926.28842-3-jallen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stress testing has uncovered issues with handling continuously queued PRRN
-events. Running PRRN events in this way can seriously load the system given
-the sheer volume of dlpar being handled. This patchset ensures that PRRN
-events are handled more synchronously, only allowing the PRRN handler to
-queue a single dlpar event at any given time.  Additionally, it ensures
-that rtas polling continues normally when multiple PRRN events are queued
-simultaneously.
+While handling PRRN events, the time to handle the actual hotplug events
+dwarfs the time it takes to perform the device tree updates and queue the
+hotplug events. In the case that PRRN events are being queued continuously,
+hotplug events have been observed to be queued faster than the kernel can
+actually handle them. This patch avoids the problem by waiting for a
+hotplug request to complete before queueing more hotplug events.
 
-v3:
-  -Scrap the PRRN mutex as it only replicates existing workqueue behavior.
-v2:
-  -Unlock prrn_lock when PRRN operations are complete, not after handler is
-   scheduled.
-  -Remove call to flush_work, the previous broken method of serializing
-   PRRN events.
+Signed-off-by: John Allen <jallen@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/mobility.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-John Allen (2):
-  powerpc/pseries: Avoid blocking rtas polling handling multiple PRRN
-    events
-  powerpc/pseries: Wait for completion of hotplug events during PRRN
-    handling
-
- arch/powerpc/kernel/rtasd.c               | 10 +++++++---
- arch/powerpc/platforms/pseries/mobility.c |  5 ++++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
-
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 8a8033a249c7..49930848fa78 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -242,6 +242,7 @@ static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ static void prrn_update_node(__be32 phandle)
+ {
+ 	struct pseries_hp_errorlog *hp_elog;
++	struct completion hotplug_done;
+ 	struct device_node *dn;
+ 
+ 	/*
+@@ -263,7 +264,9 @@ static void prrn_update_node(__be32 phandle)
+ 	hp_elog->id_type = PSERIES_HP_ELOG_ID_DRC_INDEX;
+ 	hp_elog->_drc_u.drc_index = phandle;
+ 
+-	queue_hotplug_event(hp_elog, NULL, NULL);
++	init_completion(&hotplug_done);
++	queue_hotplug_event(hp_elog, &hotplug_done, NULL);
++	wait_for_completion(&hotplug_done);
+ 
+ 	kfree(hp_elog);
+ }
 -- 
 2.17.1
