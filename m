@@ -1,16 +1,18 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltvl5bdWzDqhV
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:25:23 +1000 (AEST)
-In-Reply-To: <20180411051801.30194-2-benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltvq2FJFzDqhV
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:25:27 +1000 (AEST)
+In-Reply-To: <273f8ed3e980b9385c6e1b31e17f890ea08ce33c.1528365638.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, npiggin@gmail.com
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [2/3] powerpc/xive: Remove now useless pr_debug statements
-Message-Id: <41ltvk2nJsz9s4V@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:25:20 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [1/3] powerpc: make CPU selection logic generic in Makefile
+Message-Id: <41ltvp2kNYz9ryt@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:25:26 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,16 +22,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-04-11 at 05:18:00 UTC, Benjamin Herrenschmidt wrote:
-> Those overly verbose statement in the setup of the pool VP
-> aren't particularly useful (esp. considering we don't actually
-> use the pool, we configure it bcs HW requires it only). So
-> remove them which improves the code readability.
+On Thu, 2018-06-07 at 10:10:18 UTC, Christophe Leroy wrote:
+> At the time being, when adding a new CPU for selection, both
+> Kconfig.cputype and Makefile have to be modified.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> This patch moves into Kconfig.cputype the name of the CPU to me
+> passed to the -mcpu= argument.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/dbc5740247961d6b060737620520dc
+https://git.kernel.org/powerpc/c/cc62d20ce4ca4fe73a09d571144b29
 
 cheers
