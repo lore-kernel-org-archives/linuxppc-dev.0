@@ -2,16 +2,18 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltx76tDpzDqk8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:35 +1000 (AEST)
-In-Reply-To: <20180731120842.32715-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltxF0fFBzDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:41 +1000 (AEST)
+In-Reply-To: <b3d7b6cdb89a48be06a2630bf0d762d9d17d931f.1531511429.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, wei.guo.simon@gmail.com,
+ segher@kernel.crashing.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: mikey@neuling.org, andrew.donnellan@au1.ibm.com
-Subject: Re: [v2,
- 1/2] selftests/powerpc: Skip earlier in alignment_handler test
-Message-Id: <41ltx45GNVz9s4Z@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:26:24 +1000 (AEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [v8,1/4] selftests/powerpc: add test for 32 bits memcmp
+Message-Id: <41ltx75dhJz9s9l@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:26:28 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-07-31 at 12:08:41 UTC, Michael Ellerman wrote:
-> Currently the alignment_handler test prints "Can't open /dev/fb0"
-> about 80 times per run, which is a little annoying.
+On Wed, 2018-08-01 at 09:01:10 UTC, Christophe Leroy wrote:
+> This patch renames memcmp test to memcmp_64 and adds
+> a memcmp_32 test for testing the 32 bits version of memcmp()
 > 
-> Refactor it to check earlier if it can open /dev/fb0 and skip if not,
-> this results in each test printing something like:
-> 
->   test: test_alignment_handler_vsx_206
->   tags: git_version:v4.18-rc3-134-gfb21a48904aa
->   [SKIP] Test skipped on line 291
->   skip: test_alignment_handler_vsx_206
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Series applied to powerpc next.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/edba42cd14dbb0cc8b48cf786b006a
+https://git.kernel.org/powerpc/c/1bb07b593adc1934a526eb04acfe8b
 
 cheers
