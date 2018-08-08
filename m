@@ -2,11 +2,11 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m7K44PK1zDqkP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 09:44:40 +1000 (AEST)
-Message-ID: <74068e4d2135ecad8645048ed97b1114891ccace.camel@kernel.crashing.org>
-Subject: Re: [PATCH 01/20] kernel/dma/direct: take DMA offset into account
- in dma_direct_supported
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m7Y107ZXzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 09:55:00 +1000 (AEST)
+Message-ID: <7177553cdb5cd1b968f653a52d7e88bd71aae4d8.camel@kernel.crashing.org>
+Subject: Re: [PATCH 02/20] kernel/dma/direct: refine dma_direct_alloc zone
+ selection
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
@@ -14,10 +14,10 @@ To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
  <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 09:44:18 +1000
-In-Reply-To: <20180730163824.10064-2-hch@lst.de>
+Date: Thu, 09 Aug 2018 09:54:33 +1000
+In-Reply-To: <20180730163824.10064-3-hch@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-2-hch@lst.de>
+ <20180730163824.10064-3-hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,95 +30,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> When a device has a DMA offset the dma capable result will change due
-> to the difference between the physical and DMA address.  Take that into
-> account.
+> We need to take the DMA offset and encryption bit into account when selecting
+> a zone.  Add a helper that takes those into account and use it.
 
-The patch in itself makes sense.
+That whole "encryption" stuff seems to be completely specific to the
+way x86 does memory encryption, or am I mistaken ? It's not clear to me
+what that does in practice and how it relates to DMA mappings.
 
-However, there are a number of things in that dma_direct.c file that I
-don't quite get:
+I'm also not sure about that whole business with ZONE_DMA and
+ARCH_ZONE_DMA_BITS...
 
- - looking more generally at what that function does, I worry about the
-switch of ppc32 to this later on:
+On ppc64, unless you enable swiotlb (which we only do currently on
+some embedded platforms), you have all of memory in ZONE_DMA.
 
-We do have the occasional device with things like 31-bit DMA
-limitation. We know they happens to work because those systems
-can't have enough memory to be a problem. This is why our current
-DMA direct ops in powerpc just unconditionally return true on ppc32.
+[    0.000000] Zone ranges:
+[    0.000000]   DMA      [mem 0x0000000000000000-0x0000001fffffffff]
+[    0.000000]   DMA32    empty
+[    0.000000]   Normal   empty
+[    0.000000]   Device   empty
 
-The test against a full 32-bit mask here will break them I think.
+I'm not sure how this will work with that dma direct code.
 
-Thing is, I'm not sure I still have access to one of these things
-to test, I'll have to dig (from memory things like b43 wifi).
+I also see a number of tests against a 64-bit mask rather than the
+top of memory...
 
-Also those platforms don't have an iommu.
-
- - What is this trying to achieve ?
-
-	/*
-	 * Various PCI/PCIe bridges have broken support for > 32bit DMA even
-	 * if the device itself might support it.
-	 */
-	if (dev->dma_32bit_limit && mask > phys_to_dma(dev, DMA_BIT_MASK(32)))
-		return 0;
-
-IE, if the device has a 32-bit limit, we fail an attempt at checking
-if a >32-bit mask works ? That doesn't quite seem to be the right thing
-to do... Shouldn't this be in dma_set_mask() and just clamp the mask down ?
-
-IE, dma_set_mask() is what a driver uses to establish the device capability,
-so it makes sense tot have dma_32bit_limit just reduce that capability, not
-fail because the device can do more than what the bridge can.... 
-
-Sorry if I'm a bit confused here.
-
- - How is that file supposed to work on 64-bit platforms ? From what I can
-tell, dma_supported() will unconditionally return true if the mask is
-32-bit or larger (appart from the above issue). This doesn't look right,
-the mask needs to be compared to the max memory address. There are a bunch
-of devices out there with masks anywhere bettween 40 and 64 bits, and
-some of these will not work "out of the box" if the offseted top
-of memory is beyond the mask limit. Or am I missing something ?
-
-Cheers,
 Ben.
 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Reviewed-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
 > ---
->  kernel/dma/direct.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  kernel/dma/direct.c | 16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
 > 
 > diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
-> index 8be8106270c2..d32d4f0d2c0c 100644
+> index d32d4f0d2c0c..c2c1df8827f2 100644
 > --- a/kernel/dma/direct.c
 > +++ b/kernel/dma/direct.c
-> @@ -167,7 +167,7 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
->  int dma_direct_supported(struct device *dev, u64 mask)
->  {
->  #ifdef CONFIG_ZONE_DMA
-> -	if (mask < DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
-> +	if (mask < phys_to_dma(dev, DMA_BIT_MASK(ARCH_ZONE_DMA_BITS)))
->  		return 0;
->  #else
->  	/*
-> @@ -176,14 +176,14 @@ int dma_direct_supported(struct device *dev, u64 mask)
->  	 * memory, or by providing a ZONE_DMA32.  If neither is the case, the
->  	 * architecture needs to use an IOMMU instead of the direct mapping.
->  	 */
-> -	if (mask < DMA_BIT_MASK(32))
-> +	if (mask < phys_to_dma(dev, DMA_BIT_MASK(32)))
->  		return 0;
->  #endif
->  	/*
->  	 * Various PCI/PCIe bridges have broken support for > 32bit DMA even
->  	 * if the device itself might support it.
->  	 */
-> -	if (dev->dma_32bit_limit && mask > DMA_BIT_MASK(32))
-> +	if (dev->dma_32bit_limit && mask > phys_to_dma(dev, DMA_BIT_MASK(32)))
->  		return 0;
->  	return 1;
+> @@ -58,6 +58,14 @@ static bool dma_coherent_ok(struct device *dev, phys_addr_t phys, size_t size)
+>  	return addr + size - 1 <= dev->coherent_dma_mask;
 >  }
+>  
+> +static bool dma_coherent_below(struct device *dev, u64 mask)
+> +{
+> +	dma_addr_t addr = force_dma_unencrypted() ?
+> +		__phys_to_dma(dev, mask) : phys_to_dma(dev, mask);
+> +
+> +	return dev->coherent_dma_mask <= addr;
+> +}
+> +
+>  void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+>  		gfp_t gfp, unsigned long attrs)
+>  {
+> @@ -70,9 +78,9 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+>  	gfp &= ~__GFP_ZERO;
+>  
+>  	/* GFP_DMA32 and GFP_DMA are no ops without the corresponding zones: */
+> -	if (dev->coherent_dma_mask <= DMA_BIT_MASK(ARCH_ZONE_DMA_BITS))
+> +	if (dma_coherent_below(dev, DMA_BIT_MASK(ARCH_ZONE_DMA_BITS)))
+>  		gfp |= GFP_DMA;
+> -	if (dev->coherent_dma_mask <= DMA_BIT_MASK(32) && !(gfp & GFP_DMA))
+> +	if (dma_coherent_below(dev, DMA_BIT_MASK(32) && !(gfp & GFP_DMA)))
+>  		gfp |= GFP_DMA32;
+>  
+>  again:
+> @@ -92,14 +100,14 @@ void *dma_direct_alloc(struct device *dev, size_t size, dma_addr_t *dma_handle,
+>  		page = NULL;
+>  
+>  		if (IS_ENABLED(CONFIG_ZONE_DMA32) &&
+> -		    dev->coherent_dma_mask < DMA_BIT_MASK(64) &&
+> +		    dma_coherent_below(dev, DMA_BIT_MASK(64)) &&
+>  		    !(gfp & (GFP_DMA32 | GFP_DMA))) {
+>  			gfp |= GFP_DMA32;
+>  			goto again;
+>  		}
+>  
+>  		if (IS_ENABLED(CONFIG_ZONE_DMA) &&
+> -		    dev->coherent_dma_mask < DMA_BIT_MASK(32) &&
+> +		    dma_coherent_below(dev, DMA_BIT_MASK(32)) &&
+>  		    !(gfp & GFP_DMA)) {
+>  			gfp = (gfp & ~GFP_DMA32) | GFP_DMA;
+>  			goto again;
