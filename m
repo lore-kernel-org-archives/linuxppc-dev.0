@@ -1,18 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltx36jHWzDqk8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:31 +1000 (AEST)
-In-Reply-To: <20180727230639.25413-2-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- diana.craciun@nxp.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltx76tDpzDqk8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:26:35 +1000 (AEST)
+In-Reply-To: <20180731120842.32715-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: oss@buserror.net, bharat.bhushan@nxp.com, leoyang.li@nxp.com
-Subject: Re: [v5,
- 1/8] powerpc/64: Disable the speculation barrier from the command line
-Message-Id: <41ltwy2SDqz9s7Q@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:26:15 +1000 (AEST)
+Cc: mikey@neuling.org, andrew.donnellan@au1.ibm.com
+Subject: Re: [v2,
+ 1/2] selftests/powerpc: Skip earlier in alignment_handler test
+Message-Id: <41ltx45GNVz9s4Z@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:26:24 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,17 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2018-07-27 at 23:06:32 UTC, Michael Ellerman wrote:
-> From: Diana Craciun <diana.craciun@nxp.com>
+On Tue, 2018-07-31 at 12:08:41 UTC, Michael Ellerman wrote:
+> Currently the alignment_handler test prints "Can't open /dev/fb0"
+> about 80 times per run, which is a little annoying.
 > 
-> The speculation barrier can be disabled from the command line
-> with the parameter: "nospectre_v1".
+> Refactor it to check earlier if it can open /dev/fb0 and skip if not,
+> this results in each test printing something like:
 > 
-> Signed-off-by: Diana Craciun <diana.craciun@nxp.com>
+>   test: test_alignment_handler_vsx_206
+>   tags: git_version:v4.18-rc3-134-gfb21a48904aa
+>   [SKIP] Test skipped on line 291
+>   skip: test_alignment_handler_vsx_206
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
 Series applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/cf175dc315f90185128fb061dc05b6
+https://git.kernel.org/powerpc/c/edba42cd14dbb0cc8b48cf786b006a
 
 cheers
