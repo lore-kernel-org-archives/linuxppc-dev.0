@@ -1,18 +1,39 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+e58a793fbb47aa1f3849+5463+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lhWT24J2zDq6t
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 16:37:08 +1000 (AEST)
-Message-Id: <f3112437f62c2f48300535510918e8be1dceacfb.1533610877.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] lib/test_hexdump: fix failure on big endian cpu
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed,  8 Aug 2018 06:37:03 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lhmV5LT7zDqhV
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 16:48:26 +1000 (AEST)
+Date: Tue, 7 Aug 2018 23:31:58 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180808063158.GA2474@infradead.org>
+References: <20180804082120.GB4421@infradead.org>
+ <a3ec0a454928e880dabc3782ea906e318634abf9.camel@kernel.crashing.org>
+ <20180805072930.GB23288@infradead.org>
+ <b7e8294e3e70d24072883a7e8e5375719d5af870.camel@kernel.crashing.org>
+ <20180806094243.GA16032@infradead.org>
+ <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ <20180807062117.GD32709@infradead.org>
+ <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
+ <20180807135505.GA29034@infradead.org>
+ <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,107 +43,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On a big endian cpu, test_hexdump fails as follows. The logs show
-that bytes are expected in reversed order.
+On Wed, Aug 08, 2018 at 06:32:45AM +1000, Benjamin Herrenschmidt wrote:
+> As for the flag itself, while we could set it from qemu when we get
+> notified that the guest is going secure, both Michael and I think it's
+> rather gross, it requires qemu to go iterate all virtio devices and
+> "poke" something into them.
 
-[...]
-[   16.643648] test_hexdump: Len: 24 buflen: 130 strlen: 97
-[   16.648681] test_hexdump: Result: 97 'be32db7b 0a1893b2 70bac424 7d83349b a69c31ad 9c0face9                    .2.{....p..$}.4...1.....'
-[   16.660951] test_hexdump: Expect: 97 '7bdb32be b293180a 24c4ba70 9b34837d ad319ca6 e9ac0f9c                    .2.{....p..$}.4...1.....'
-[   16.673129] test_hexdump: Len: 8 buflen: 130 strlen: 77
-[   16.678113] test_hexdump: Result: 77 'be32db7b0a1893b2                                                     .2.{....'
-[   16.688660] test_hexdump: Expect: 77 'b293180a7bdb32be                                                     .2.{....'
-[   16.699170] test_hexdump: Len: 6 buflen: 131 strlen: 87
-[   16.704238] test_hexdump: Result: 87 'be32 db7b 0a18                                                                   .2.{..'
-[   16.715511] test_hexdump: Expect: 87 '32be 7bdb 180a                                                                   .2.{..'
-[   16.726864] test_hexdump: Len: 24 buflen: 131 strlen: 97
-[   16.731902] test_hexdump: Result: 97 'be32db7b 0a1893b2 70bac424 7d83349b a69c31ad 9c0face9                    .2.{....p..$}.4...1.....'
-[   16.744175] test_hexdump: Expect: 97 '7bdb32be b293180a 24c4ba70 9b34837d ad319ca6 e9ac0f9c                    .2.{....p..$}.4...1.....'
-[   16.756379] test_hexdump: Len: 32 buflen: 131 strlen: 101
-[   16.761507] test_hexdump: Result: 101 'be32db7b0a1893b2 70bac4247d83349b a69c31ad9c0face9 4cd1199943b1af0c  .2.{....p..$}.4...1.....L...C...'
-[   16.774212] test_hexdump: Expect: 101 'b293180a7bdb32be 9b34837d24c4ba70 e9ac0f9cad319ca6 0cafb1439919d14c  .2.{....p..$}.4...1.....L...C...'
-[   16.786763] test_hexdump: failed 801 out of 1184 tests
+You don't need to set them the time you go secure.  You just need to
+set the flag from the beginning on any VM you might want to go secure.
+Or for simplicity just any VM - if the DT/ACPI tables exposed by
+qemu are good enough that will always exclude a iommu and not set a
+DMA offset, so nothing will change on the qemu side of he processing,
+and with the new direct calls for the direct dma ops performance in
+the guest won't change either.
 
-This patch fixes it.
+> It's nicer if we have a way in the guest virtio driver to do something
+> along the lines of
+> 
+> 	if ((flags & VIRTIO_F_IOMMU_PLATFORM) || arch_virtio_wants_dma_ops())
+> 
+> Which would have the same effect and means the issue is entirely
+> contained in the guest.
 
-Fixes: 64d1d77a44697 ("hexdump: introduce test suite")
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- lib/test_hexdump.c | 28 +++++++++++++++++++++++-----
- 1 file changed, 23 insertions(+), 5 deletions(-)
+It would not be the same effect.  The problem with that is that you must
+now assumes that your qemu knows that for example you might be passing
+a dma offset if the bus otherwise requires it.  Or in other words:
+you potentially break the contract between qemu and the guest of always
+passing down physical addresses.  If we explicitly change that contract
+through using a flag that says you pass bus address everything is fine.
 
-diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
-index 3f415d8101f3..626f580b4ff7 100644
---- a/lib/test_hexdump.c
-+++ b/lib/test_hexdump.c
-@@ -18,7 +18,7 @@ static const unsigned char data_b[] = {
- 
- static const unsigned char data_a[] = ".2.{....p..$}.4...1.....L...C...";
- 
--static const char * const test_data_1_le[] __initconst = {
-+static const char * const test_data_1[] __initconst = {
- 	"be", "32", "db", "7b", "0a", "18", "93", "b2",
- 	"70", "ba", "c4", "24", "7d", "83", "34", "9b",
- 	"a6", "9c", "31", "ad", "9c", "0f", "ac", "e9",
-@@ -32,16 +32,33 @@ static const char * const test_data_2_le[] __initconst = {
- 	"d14c", "9919", "b143", "0caf",
- };
- 
-+static const char * const test_data_2_be[] __initconst = {
-+	"be32", "db7b", "0a18", "93b2",
-+	"70ba", "c424", "7d83", "349b",
-+	"a69c", "31ad", "9c0f", "ace9",
-+	"4cd1", "1999", "43b1", "af0c",
-+};
-+
- static const char * const test_data_4_le[] __initconst = {
- 	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
- 	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
- };
- 
-+static const char * const test_data_4_be[] __initconst = {
-+	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
-+	"a69c31ad", "9c0face9", "4cd11999", "43b1af0c",
-+};
-+
- static const char * const test_data_8_le[] __initconst = {
- 	"b293180a7bdb32be", "9b34837d24c4ba70",
- 	"e9ac0f9cad319ca6", "0cafb1439919d14c",
- };
- 
-+static const char * const test_data_8_be[] __initconst = {
-+	"be32db7b0a1893b2", "70bac4247d83349b",
-+	"a69c31ad9c0face9", "4cd1199943b1af0c",
-+};
-+
- #define FILL_CHAR	'#'
- 
- static unsigned total_tests __initdata;
-@@ -56,6 +73,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
- 	size_t l = len;
- 	int gs = groupsize, rs = rowsize;
- 	unsigned int i;
-+	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN);
- 
- 	if (rs != 16 && rs != 32)
- 		rs = 16;
-@@ -67,13 +85,13 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
- 		gs = 1;
- 
- 	if (gs == 8)
--		result = test_data_8_le;
-+		result = is_be ? test_data_8_be : test_data_8_le;
- 	else if (gs == 4)
--		result = test_data_4_le;
-+		result = is_be ? test_data_4_be : test_data_4_le;
- 	else if (gs == 2)
--		result = test_data_2_le;
-+		result = is_be ? test_data_2_be : test_data_2_le;
- 	else
--		result = test_data_1_le;
-+		result = test_data_1;
- 
- 	/* hex dump */
- 	p = test;
--- 
-2.13.3
+Note that in practice your scheme will probably just work for your
+initial prototype, but chances are it will get us in trouble later on.
