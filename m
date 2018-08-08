@@ -1,42 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pl0-x22f.google.com (mail-pl0-x22f.google.com
- [IPv6:2607:f8b0:400e:c01::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41llF34M4wzDqhV
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 18:39:49 +1000 (AEST)
-Received: by mail-pl0-x22f.google.com with SMTP id t17-v6so712902ply.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 01:39:49 -0700 (PDT)
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA Tesla
- V100
-To: Alex Williamson <alex.williamson@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
- Alistair Popple <alistair@popple.id.au>
-References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
- <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
- <20180607214455.51ecfa1a@w520.home>
- <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
- <20180607230323.0148344e@w520.home>
- <20180710141020.759983a6@aik.ozlabs.ibm.com>
- <20180710163715.5c326985@t450s.home>
- <20180711192621.174d849a@aik.ozlabs.ibm.com>
- <4089d9ed-0c6b-3ba2-d447-049ce5b98764@ozlabs.ru>
- <20180730102957.47fa1191@t450s.home>
- <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
- <20180731082905.5c7cdeee@t450s.home>
- <38e4455c-e3b8-b867-1771-0f4ccf9d31d8@ozlabs.ru>
- <20180801101646.2de997c3@t450s.home>
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Message-ID: <dc0e5c0b-c6de-df1c-176f-7f64cbd6a7ba@ozlabs.ru>
-Date: Wed, 8 Aug 2018 18:39:41 +1000
-MIME-Version: 1.0
-In-Reply-To: <20180801101646.2de997c3@t450s.home>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41llhn0WV2zDqgZ
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 19:00:24 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w788xAu4120004
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Aug 2018 05:00:22 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kquwduqw8-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 05:00:21 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Wed, 8 Aug 2018 10:00:20 +0100
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Michael Bringmann <mbringm@us.ibm.com>,
+ Manjunatha H R <manjuhr1@in.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: [PATCH v2] powerpc/topology: Check at boot for topology updates
+Date: Wed,  8 Aug 2018 14:30:11 +0530
+Message-Id: <1533718811-14701-1-git-send-email-srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,133 +37,227 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On a shared lpar, Phyp will not update the cpu associativity at boot
+time. Just after the boot system does recognize itself as a shared lpar and
+trigger a request for correct cpu associativity. But by then the scheduler
+would have already created/destroyed its sched domains.
 
+This causes
+- Broken load balance across Nodes causing islands of cores.
+- Performance degradation esp if the system is lightly loaded
+- dmesg to wrongly report all cpus to be in Node 0.
+- Messages in dmesg saying borken topology.
+- With commit 051f3ca02e46 ("sched/topology: Introduce NUMA identity node sched
+  domain"), can cause rcu stalls at boot up.
 
-On 02/08/2018 02:16, Alex Williamson wrote:
-> On Wed, 1 Aug 2018 18:37:35 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
->> On 01/08/2018 00:29, Alex Williamson wrote:
->>> On Tue, 31 Jul 2018 14:03:35 +1000
->>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>>   
->>>> On 31/07/2018 02:29, Alex Williamson wrote:  
->>>>> On Mon, 30 Jul 2018 18:58:49 +1000
->>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:  
->>>>>> After some local discussions, it was pointed out that force disabling
->>>>>> nvlinks won't bring us much as for an nvlink to work, both sides need to
->>>>>> enable it so malicious guests cannot penetrate good ones (or a host)
->>>>>> unless a good guest enabled the link but won't happen with a well
->>>>>> behaving guest. And if two guests became malicious, then can still only
->>>>>> harm each other, and so can they via other ways such network. This is
->>>>>> different from PCIe as once PCIe link is unavoidably enabled, a well
->>>>>> behaving device cannot firewall itself from peers as it is up to the
->>>>>> upstream bridge(s) now to decide the routing; with nvlink2, a GPU still
->>>>>> has means to protect itself, just like a guest can run "firewalld" for
->>>>>> network.
->>>>>>
->>>>>> Although it would be a nice feature to have an extra barrier between
->>>>>> GPUs, is inability to block the links in hypervisor still a blocker for
->>>>>> V100 pass through?    
->>>>>
->>>>> How is the NVLink configured by the guest, is it 'on'/'off' or are
->>>>> specific routes configured?     
->>>>
->>>> The GPU-GPU links need not to be blocked and need to be enabled
->>>> (==trained) by a driver in the guest. There are no routes between GPUs
->>>> in NVLink fabric, these are direct links, it is just a switch on each
->>>> side, both switches need to be on for a link to work.  
->>>
->>> Ok, but there is at least the possibility of multiple direct links per
->>> GPU, the very first diagram I find of NVlink shows 8 interconnected
->>> GPUs:
->>>
->>> https://www.nvidia.com/en-us/data-center/nvlink/  
->>
->> Out design is like the left part of the picture but it is just a detail.
-> 
-> Unless we can specifically identify a direct link vs a mesh link, we
-> shouldn't be making assumptions about the degree of interconnect.
->  
->>> So if each switch enables one direct, point to point link, how does the
->>> guest know which links to open for which peer device?  
->>
->> It uses PCI config space on GPUs to discover the topology.
-> 
-> So do we need to virtualize this config space if we're going to
-> virtualize the topology?
-> 
->>> And of course
->>> since we can't see the spec, a security audit is at best hearsay :-\  
->>
->> Yup, the exact discovery protocol is hidden.
-> 
-> It could be reverse engineered...
-> 
->>>> The GPU-CPU links - the GPU bit is the same switch, the CPU NVlink state
->>>> is controlled via the emulated PCI bridges which I pass through together
->>>> with the GPU.  
->>>
->>> So there's a special emulated switch, is that how the guest knows which
->>> GPUs it can enable NVLinks to?  
->>
->> Since it only has PCI config space (there is nothing relevant in the
->> device tree at all), I assume (double checking with the NVIDIA folks
->> now) the guest driver enables them all, tests which pair works and
->> disables the ones which do not. This gives a malicious guest a tiny
->> window of opportunity to break into a good guest. Hm :-/
-> 
-> Let's not minimize that window, that seems like a prime candidate for
-> an exploit.
-> 
->>>>> If the former, then isn't a non-malicious
->>>>> guest still susceptible to a malicious guest?    
->>>>
->>>> A non-malicious guest needs to turn its switch on for a link to a GPU
->>>> which belongs to a malicious guest.  
->>>
->>> Actual security, or obfuscation, will we ever know...  
->>>>>> If the latter, how is  
->>>>> routing configured by the guest given that the guest view of the
->>>>> topology doesn't match physical hardware?  Are these routes
->>>>> deconfigured by device reset?  Are they part of the save/restore
->>>>> state?  Thanks,    
->>>
->>> Still curious what happens to these routes on reset.  Can a later user
->>> of a GPU inherit a device where the links are already enabled?  Thanks,  
->>
->> I am told that the GPU reset disables links. As a side effect, we get an
->> HMI (a hardware fault which reset the host machine) when trying
->> accessing the GPU RAM which indicates that the link is down as the
->> memory is only accessible via the nvlink. We have special fencing code
->> in our host firmware (skiboot) to fence this memory on PCI reset so
->> reading from it returns zeroes instead of HMIs.
-> 
-> What sort of reset is required for this?  Typically we rely on
-> secondary bus reset for GPUs, but it would be a problem if GPUs were to
-> start implementing FLR and nobody had a spec to learn that FLR maybe
-> didn't disable the link.  The better approach to me still seems to be
-> virtualizing these NVLink config registers to an extent that the user
-> can only enabling links where they have ownership of both ends of the
-> connection.  Thanks,
+>From a scheduler maintainer's perspective, moving cpus from one node to
+another or creating more numa levels after boot is not appropriate
+without some notification to the user space.
+https://lore.kernel.org/lkml/20150406214558.GA38501@linux.vnet.ibm.com/T/#u
 
+The sched_domains_numa_masks table which is used to generate cpumasks is
+only created at boot time just before creating sched domains and never
+updated.  Hence, its better to get the topology correct before the sched
+domains are created.
 
-I re-read what I wrote and I owe some explanation.
+For example on 64 core Power 8 shared lpar, dmesg reports
 
-The link state can be:
-- disabled (or masked),
-- enabled (or not-disabled? unmasked?),
-- trained (configured).
+[    2.088360] Brought up 512 CPUs
+[    2.088368] Node 0 CPUs: 0-511
+[    2.088371] Node 1 CPUs:
+[    2.088373] Node 2 CPUs:
+[    2.088375] Node 3 CPUs:
+[    2.088376] Node 4 CPUs:
+[    2.088378] Node 5 CPUs:
+[    2.088380] Node 6 CPUs:
+[    2.088382] Node 7 CPUs:
+[    2.088386] Node 8 CPUs:
+[    2.088388] Node 9 CPUs:
+[    2.088390] Node 10 CPUs:
+[    2.088392] Node 11 CPUs:
+...
+[    3.916091] BUG: arch topology borken
+[    3.916103]      the DIE domain not a subset of the NUMA domain
+[    3.916105] BUG: arch topology borken
+[    3.916106]      the DIE domain not a subset of the NUMA domain
+...
 
-At the moment no reset disables links, on sec bus reset they are
-unconfigured and go to the initial enabled-and-not-trained state which
-is the default config. The NVIDIA driver in the guest trains links to do
-the topology discovery. We can disable links and this disabled status
-remains until sec bus reset and there is no way to re-enable links other
-than sec bus reset. This is what I get from NVIDIA. FLR should not be
-able to change a thing here.
+numactl/lscpu output will still be correct with cores spreading across
+all nodes.
 
+Socket(s):             64
+NUMA node(s):          12
+Model:                 2.0 (pvr 004d 0200)
+Model name:            POWER8 (architected), altivec supported
+Hypervisor vendor:     pHyp
+Virtualization type:   para
+L1d cache:             64K
+L1i cache:             32K
+NUMA node0 CPU(s): 0-7,32-39,64-71,96-103,176-183,272-279,368-375,464-471
+NUMA node1 CPU(s): 8-15,40-47,72-79,104-111,184-191,280-287,376-383,472-479
+NUMA node2 CPU(s): 16-23,48-55,80-87,112-119,192-199,288-295,384-391,480-487
+NUMA node3 CPU(s): 24-31,56-63,88-95,120-127,200-207,296-303,392-399,488-495
+NUMA node4 CPU(s):     208-215,304-311,400-407,496-503
+NUMA node5 CPU(s):     168-175,264-271,360-367,456-463
+NUMA node6 CPU(s):     128-135,224-231,320-327,416-423
+NUMA node7 CPU(s):     136-143,232-239,328-335,424-431
+NUMA node8 CPU(s):     216-223,312-319,408-415,504-511
+NUMA node9 CPU(s):     144-151,240-247,336-343,432-439
+NUMA node10 CPU(s):    152-159,248-255,344-351,440-447
+NUMA node11 CPU(s):    160-167,256-263,352-359,448-455
 
+Currently on this lpar, the scheduler detects 2 levels of Numa and
+created numa sched domains for all cpus, but it finds a single DIE
+domain consisting of all cpus. Hence it deletes all numa sched domains.
 
+To address this, split the topology update init, such that the first
+part detects vphn/prrn soon after cpus are setup and force updates
+topology just before scheduler creates sched domain.
+
+With the fix, dmesg reports
+
+[    0.491336] numa: Node 0 CPUs: 0-7 32-39 64-71 96-103 176-183 272-279 368-375 464-471
+[    0.491351] numa: Node 1 CPUs: 8-15 40-47 72-79 104-111 184-191 280-287 376-383 472-479
+[    0.491359] numa: Node 2 CPUs: 16-23 48-55 80-87 112-119 192-199 288-295 384-391 480-487
+[    0.491366] numa: Node 3 CPUs: 24-31 56-63 88-95 120-127 200-207 296-303 392-399 488-495
+[    0.491374] numa: Node 4 CPUs: 208-215 304-311 400-407 496-503
+[    0.491379] numa: Node 5 CPUs: 168-175 264-271 360-367 456-463
+[    0.491384] numa: Node 6 CPUs: 128-135 224-231 320-327 416-423
+[    0.491389] numa: Node 7 CPUs: 136-143 232-239 328-335 424-431
+[    0.491394] numa: Node 8 CPUs: 216-223 312-319 408-415 504-511
+[    0.491399] numa: Node 9 CPUs: 144-151 240-247 336-343 432-439
+[    0.491404] numa: Node 10 CPUs: 152-159 248-255 344-351 440-447
+[    0.491409] numa: Node 11 CPUs: 160-167 256-263 352-359 448-455
+
+and lscpu would also report
+
+Socket(s):             64
+NUMA node(s):          12
+Model:                 2.0 (pvr 004d 0200)
+Model name:            POWER8 (architected), altivec supported
+Hypervisor vendor:     pHyp
+Virtualization type:   para
+L1d cache:             64K
+L1i cache:             32K
+NUMA node0 CPU(s): 0-7,32-39,64-71,96-103,176-183,272-279,368-375,464-471
+NUMA node1 CPU(s): 8-15,40-47,72-79,104-111,184-191,280-287,376-383,472-479
+NUMA node2 CPU(s): 16-23,48-55,80-87,112-119,192-199,288-295,384-391,480-487
+NUMA node3 CPU(s): 24-31,56-63,88-95,120-127,200-207,296-303,392-399,488-495
+NUMA node4 CPU(s):     208-215,304-311,400-407,496-503
+NUMA node5 CPU(s):     168-175,264-271,360-367,456-463
+NUMA node6 CPU(s):     128-135,224-231,320-327,416-423
+NUMA node7 CPU(s):     136-143,232-239,328-335,424-431
+NUMA node8 CPU(s):     216-223,312-319,408-415,504-511
+NUMA node9 CPU(s):     144-151,240-247,336-343,432-439
+NUMA node10 CPU(s):    152-159,248-255,344-351,440-447
+NUMA node11 CPU(s):    160-167,256-263,352-359,448-455
+
+Previous attempt to solve this problem
+https://patchwork.ozlabs.org/patch/530090/
+
+Reported-by: Manjunatha H R <manjuhr1@in.ibm.com>
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+Changelog v1->v2:
+Fix compile warnings and checkpatch issues.
+
+ arch/powerpc/include/asm/topology.h |  4 ++++
+ arch/powerpc/kernel/smp.c           |  6 ++++++
+ arch/powerpc/mm/numa.c              | 22 ++++++++++++++--------
+ 3 files changed, 24 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+index 16b077801a5f..1024f1587e18 100644
+--- a/arch/powerpc/include/asm/topology.h
++++ b/arch/powerpc/include/asm/topology.h
+@@ -43,6 +43,7 @@ extern void __init dump_numa_cpu_topology(void);
+ extern int sysfs_add_device_to_node(struct device *dev, int nid);
+ extern void sysfs_remove_device_from_node(struct device *dev, int nid);
+ extern int numa_update_cpu_topology(bool cpus_locked);
++extern void check_topology_updates(void);
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node)
+ {
+@@ -84,6 +85,9 @@ static inline int numa_update_cpu_topology(bool cpus_locked)
+ 
+ static inline void update_numa_cpu_lookup_table(unsigned int cpu, int node) {}
+ 
++static void check_topology_updates(void)
++{
++}
+ #endif /* CONFIG_NUMA */
+ 
+ #if defined(CONFIG_NUMA) && defined(CONFIG_PPC_SPLPAR)
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 4794d6b4f4d2..2aa0ffd954c9 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -1156,6 +1156,12 @@ void __init smp_cpus_done(unsigned int max_cpus)
+ 	if (smp_ops && smp_ops->bringup_done)
+ 		smp_ops->bringup_done();
+ 
++	/*
++	 * On a shared LPAR, associativity needs to be requested.
++	 * Hence, check for numa topology updates before dumping
++	 * cpu topology
++	 */
++	check_topology_updates();
+ 	dump_numa_cpu_topology();
+ 
+ 	/*
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0c7e05d89244..eab46a44436f 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1515,6 +1515,7 @@ int start_topology_update(void)
+ 		   lppaca_shared_proc(get_lppaca())) {
+ 		if (!vphn_enabled) {
+ 			vphn_enabled = 1;
++			topology_update_needed = 1;
+ 			setup_cpu_associativity_change_counters();
+ 			timer_setup(&topology_timer, topology_timer_fn,
+ 				    TIMER_DEFERRABLE);
+@@ -1551,6 +1552,19 @@ int prrn_is_enabled(void)
+ 	return prrn_enabled;
+ }
+ 
++void check_topology_updates(void)
++{
++	/* Do not poll for changes if disabled at boot */
++	if (topology_updates_enabled)
++		start_topology_update();
++
++	if (topology_update_needed) {
++		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
++			    nr_cpumask_bits);
++		numa_update_cpu_topology(false);
++	}
++}
++
+ static int topology_read(struct seq_file *file, void *v)
+ {
+ 	if (vphn_enabled || prrn_enabled)
+@@ -1597,10 +1611,6 @@ static const struct file_operations topology_ops = {
+ 
+ static int topology_update_init(void)
+ {
+-	/* Do not poll for changes if disabled at boot */
+-	if (topology_updates_enabled)
+-		start_topology_update();
+-
+ 	if (vphn_enabled)
+ 		topology_schedule_update();
+ 
+@@ -1608,10 +1618,6 @@ static int topology_update_init(void)
+ 		return -ENOMEM;
+ 
+ 	topology_inited = 1;
+-	if (topology_update_needed)
+-		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+-					nr_cpumask_bits);
+-
+ 	return 0;
+ }
+ device_initcall(topology_update_init);
 -- 
-Alexey
+2.17.1
