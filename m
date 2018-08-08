@@ -1,24 +1,43 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=st7t=kx=linux.vnet.ibm.com=naveen.n.rao@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lvH80Fk7zDqyG
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:42:12 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 4/9] powerpc/pseries: Define MCE error event section.
-In-Reply-To: <153365141396.14256.7147876868875454254.stgit@jupiter.in.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365141396.14256.7147876868875454254.stgit@jupiter.in.ibm.com>
-Date: Thu, 09 Aug 2018 00:42:10 +1000
-Message-ID: <87r2j8apj1.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lvJ425YyzDr5r
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:43:00 +1000 (AEST)
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41lvJ33RpLz8tD9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:42:59 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41lvJ24zc3z9s3Z
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 00:42:58 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w78EeQX2087847
+ for <linuxppc-dev@ozlabs.org>; Wed, 8 Aug 2018 10:42:57 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kqyb81058-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 10:42:56 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 8 Aug 2018 15:42:54 +0100
+Date: Wed, 08 Aug 2018 20:12:47 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/64s: Make unrecoverable SLB miss less confusing
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Cc: anton@samba.org, linuxppc-dev@ozlabs.org, paulus@samba.org
+References: <20180726130151.16410-1-mpe@ellerman.id.au>
+ <20180801121111.308ff705@roar.ozlabs.ibm.com>
+ <87tvo59c1d.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87tvo59c1d.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1533739262.go63i3r5vv.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,157 +47,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mahesh,
+Michael Ellerman wrote:
+> Nicholas Piggin <npiggin@gmail.com> writes:
+>> On Thu, 26 Jul 2018 23:01:51 +1000
+>> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>>
+>>> If we take an SLB miss while MSR[RI]=3D0 we can't recover and have to
+>>> oops. Currently this is reported by faking up a 0x4100 exception, eg:
+>>>=20
+>>>   Unrecoverable exception 4100 at 0
+>>>   Oops: Unrecoverable exception, sig: 6 [#1]
+>>>   ...
+>>>   CPU: 0 PID: 1262 Comm: sh Not tainted 4.18.0-rc3-gcc-7.3.1-00098-g7fc=
+2229fb2ab-dirty #9
+>>>   NIP:  0000000000000000 LR: c00000000000b9e4 CTR: 00007fff8bb971b0
+>>>   REGS: c0000000ee02bbb0 TRAP: 4100
+>>>   ...
+>>>   LR [c00000000000b9e4] system_call+0x5c/0x70
+>>>=20
+>>> The 0x4100 value was chosen back in 2004 as part of the fix for the
+>>> "mega bug" - "ppc64: Fix SLB reload bug". Back then it was obvious
+>>> that 0x4100 was not a real trap value, as the highest actual trap was
+>>> less than 0x2000.
+>>>=20
+>>> Since then however the architecture has changed and now we have
+>>> "virtual mode" or "relon" exceptions, in which exceptions can be
+>>> delivered with the MMU on starting at 0x4000.
+>>>=20
+>>> At a glance 0x4100 looks like a virtual mode 0x100 exception, aka
+>>> system reset exception. A close reading of the architecture will show
+>>> that system reset exceptions can't be delivered in virtual mode, and
+>>> so 0x4100 is not a valid trap number. But that's not immediately
+>>> obvious. There's also nothing about 0x4100 that suggests SLB miss.
+>>>=20
+>>> So to make things a bit less confusing switch to a fake but unique and
+>>> hopefully more helpful numbering. For data SLB misses we report a
+>>> 0x390 trap and for instruction we report 0x490. Compared to 0x380 and
+>>> 0x480 for the actual data & instruction SLB exceptions.
+>>>=20
+>>> Also add a C handler that prints a more explicit message. The end
+>>> result is something like:
+>>>=20
+>>>   Oops: Unrecoverable SLB miss (MSR[RI]=3D0), sig: 6 [#3]
+>>
+>> This is all good, but allow me to nitpick. Our unrecoverable
+>> exception messages (and other messages, but those) are becoming a bit
+>> ad-hoc and messy.
+>>
+>> It would be nice to go the other way eventually and consolidate them
+>> into one. Would be nice to have a common function that takes regs and
+>> returns the string of the corresponding exception name that makes
+>> these more readable.
+>=20
+> Yeah that's true, though some of them aren't simply a mapping from the
+> trap number, eg. the kernel bad stack one.
+>=20
+> But in general our whole oops output, regs, stack trace etc. could use a
+> revamp.
+>=20
+> I've been thinking of making the trap number more prominent and
+> providing a text description, because apparently not everyone knows the
+> trap numbers by heart :)
 
-A few nitpicks.
+Yes please, guilty as charged :)
+https://patchwork.ozlabs.org/patch/899980/
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->
-> On pseries, the machine check error details are part of RTAS extended
-> event log passed under Machine check exception section. This patch adds
-> the definition of rtas MCE event section and related helper
-> functions.
->
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/rtas.h |  111 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 111 insertions(+)
+Thanks,
+Naveen
 
-AFIACS none of this ever gets used outside of ras.c, should it should
-just go in there.
-
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index 71e393c46a49..adc677c5e3a4 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -326,6 +334,109 @@ struct pseries_hp_errorlog {
->  #define PSERIES_HP_ELOG_ID_DRC_COUNT	3
->  #define PSERIES_HP_ELOG_ID_DRC_IC	4
->  
-> +/* RTAS pseries MCE errorlog section */
-> +#pragma pack(push, 1)
-> +struct pseries_mc_errorlog {
-> +	__be32	fru_id;
-> +	__be32	proc_id;
-> +	uint8_t	error_type;
-
-Please use kernel types, so u8.
-
-> +	union {
-> +		struct {
-> +			uint8_t	ue_err_type;
-> +			/* XXXXXXXX
-> +			 * X		1: Permanent or Transient UE.
-> +			 *  X		1: Effective address provided.
-> +			 *   X		1: Logical address provided.
-> +			 *    XX	2: Reserved.
-> +			 *      XXX	3: Type of UE error.
-> +			 */
-
-But which bit is bit 0? And is that the LSB or MSB?
-
-
-> +			uint8_t	reserved_1[6];
-> +			__be64	effective_address;
-> +			__be64	logical_address;
-> +		} ue_error;
-> +		struct {
-> +			uint8_t	soft_err_type;
-> +			/* XXXXXXXX
-> +			 * X		1: Effective address provided.
-> +			 *  XXXXX	5: Reserved.
-> +			 *       XX	2: Type of SLB/ERAT/TLB error.
-> +			 */
-> +			uint8_t	reserved_1[6];
-> +			__be64	effective_address;
-> +			uint8_t	reserved_2[8];
-> +		} soft_error;
-> +	} u;
-> +};
-> +#pragma pack(pop)
-
-Why not __packed ?
-
-> +/* RTAS pseries MCE error types */
-> +#define PSERIES_MC_ERROR_TYPE_UE		0x00
-> +#define PSERIES_MC_ERROR_TYPE_SLB		0x01
-> +#define PSERIES_MC_ERROR_TYPE_ERAT		0x02
-> +#define PSERIES_MC_ERROR_TYPE_TLB		0x04
-> +#define PSERIES_MC_ERROR_TYPE_D_CACHE		0x05
-> +#define PSERIES_MC_ERROR_TYPE_I_CACHE		0x07
-
-Once these are in ras.c they can have less unwieldy names, ie. the
-PSERIES at least can be dropped.
-
-> +/* RTAS pseries MCE error sub types */
-> +#define PSERIES_MC_ERROR_UE_INDETERMINATE		0
-> +#define PSERIES_MC_ERROR_UE_IFETCH			1
-> +#define PSERIES_MC_ERROR_UE_PAGE_TABLE_WALK_IFETCH	2
-> +#define PSERIES_MC_ERROR_UE_LOAD_STORE			3
-> +#define PSERIES_MC_ERROR_UE_PAGE_TABLE_WALK_LOAD_STORE	4
-> +
-> +#define PSERIES_MC_ERROR_SLB_PARITY		0
-> +#define PSERIES_MC_ERROR_SLB_MULTIHIT		1
-> +#define PSERIES_MC_ERROR_SLB_INDETERMINATE	2
-> +
-> +#define PSERIES_MC_ERROR_ERAT_PARITY		1
-> +#define PSERIES_MC_ERROR_ERAT_MULTIHIT		2
-> +#define PSERIES_MC_ERROR_ERAT_INDETERMINATE	3
-> +
-> +#define PSERIES_MC_ERROR_TLB_PARITY		1
-> +#define PSERIES_MC_ERROR_TLB_MULTIHIT		2
-> +#define PSERIES_MC_ERROR_TLB_INDETERMINATE	3
-> +
-> +static inline uint8_t rtas_mc_error_type(const struct pseries_mc_errorlog *mlog)
-> +{
-> +	return mlog->error_type;
-> +}
-
-Why not just access it directly?
-
-> +static inline uint8_t rtas_mc_error_sub_type(
-> +					const struct pseries_mc_errorlog *mlog)
-> +{
-> +	switch (mlog->error_type) {
-> +	case	PSERIES_MC_ERROR_TYPE_UE:
-> +		return (mlog->u.ue_error.ue_err_type & 0x07);
-> +	case	PSERIES_MC_ERROR_TYPE_SLB:
-> +	case	PSERIES_MC_ERROR_TYPE_ERAT:
-> +	case	PSERIES_MC_ERROR_TYPE_TLB:
-> +		return (mlog->u.soft_error.soft_err_type & 0x03);
-> +	default:
-> +		return 0;
-> +	}
-> +}
-> +
-> +static inline uint64_t rtas_mc_get_effective_addr(
-> +					const struct pseries_mc_errorlog *mlog)
-> +{
-> +	uint64_t addr = 0;
-
-That should be __be64.
-
-> +
-> +	switch (mlog->error_type) {
-> +	case	PSERIES_MC_ERROR_TYPE_UE:
-> +		if (mlog->u.ue_error.ue_err_type & 0x40)
-> +			addr = mlog->u.ue_error.effective_address;
-> +		break;
-> +	case	PSERIES_MC_ERROR_TYPE_SLB:
-> +	case	PSERIES_MC_ERROR_TYPE_ERAT:
-> +	case	PSERIES_MC_ERROR_TYPE_TLB:
-> +		if (mlog->u.soft_error.soft_err_type & 0x80)
-> +			addr = mlog->u.soft_error.effective_address;
-> +	default:
-> +		break;
-> +	}
-> +	return be64_to_cpu(addr);
-> +}
-> +
->  struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
->  					      uint16_t section_id);
->  
-
-
-cheers
+=
