@@ -1,26 +1,16 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41lsN454YdzDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 23:16:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "npiggin\@gmail.com" <npiggin@gmail.com>
-Subject: Re: Build regressions/improvements in v4.17-rc1
-In-Reply-To: <87lg9hb12y.fsf@concordia.ellerman.id.au>
-References: <1523884165-17044-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdXxV1nWGWAAXSkBWm-9VWHVc57nhFLfQ4BijbKGh-vaUQ@mail.gmail.com>
- <20180806155440.9dcb271a3b075bd964aec60f@linux-foundation.org>
- <87lg9hb12y.fsf@concordia.ellerman.id.au>
-Date: Wed, 08 Aug 2018 23:16:16 +1000
-Message-ID: <87d0utati7.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41lsQl37BzzDrbj
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2018 23:18:38 +1000 (AEST)
+Message-Id: <7dabf1cbde67a346a187881d4f0bd17347e0334a.1533732583.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/mm: Fix address space layout randomization (ASLR)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Wed,  8 Aug 2018 13:18:34 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +20,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Andrew Morton <akpm@linux-foundation.org> writes:
->> On Mon, 6 Aug 2018 12:39:21 +0200 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>
->>> CC Dan, Michael, AKPM, powerpc
->>> 
->>> On Mon, Apr 16, 2018 at 3:10 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>> > Below is the list of build error/warning regressions/improvements in
->>> > v4.17-rc1[1] compared to v4.16[2].
->>> 
->>> I'd like to point your attention to:
->>> 
->>> >   + warning: vmlinux.o(.text+0x376518): Section mismatch in reference from the function .devm_memremap_pages() to the function .meminit.text:.arch_add_memory():  => N/A
->>> >   + warning: vmlinux.o(.text+0x376d64): Section mismatch in reference from the function .devm_memremap_pages_release() to the function .meminit.text:.arch_remove_memory():  => N/A
->>
->> hm.  Dan isn't around at present so we're on our own with this one.
->>
->> x86 doesn't put arch_add_memory and arch_remove_memory into __meminit. 
->> x86 does
->>
->> #ifdef CONFIG_MEMORY_HOTPLUG
->> int arch_add_memory(int nid, u64 start, u64 size, struct vmem_altmap *altmap,
->> 		bool want_memblock)
->> {
->> 	...
->>
->>
->> So I guess powerpc should do that as well?
->
-> But we only recently added it to fix a section mismatch warning:
->
->   WARNING: vmlinux.o(.text+0x6da88): Section mismatch in reference from the function .arch_add_memory() to the function .meminit.text:.create_section_mapping()
->   The function .arch_add_memory() references
->   the function __meminit .create_section_mapping().
->   This is often because .arch_add_memory lacks a __meminit 
->   annotation or the annotation of .create_section_mapping is wrong.
->
->
-> I think the problem is that the section mismatch logic isn't able to
-> cope with __meminit's changing semantics.
->
-> When CONFIG_MEMORY_HOTPLUG=y references from .text to .meminit.text
-> should be allowed, because they're just folded in together in the linker
-> script.
->
-> When CONFIG_MEMORY_HOTPLUG=n references from .text to .meminit.text
-> should NOT be allowed, because .meminit.text becomes .init.text and will
-> be freed.
->
-> I don't see anything in the section mismatch logic to cope with that
-> difference.
->
-> It looks like __meminit is saving us about 1K on powerpc, so I'm
-> strongly inclined to just remove it entirely from arch/powerpc.
+Today, when stack size is set to unlimited (ulimit -s unlimited),
+mmap() doesn't randomise the stack address returned by mmap()
 
-Gah that doesn't work.
+This patch fixes it by applying the random factor on
+TASK_UNMAPPED_BASE when setting mm->mmap_base
 
-Our arch routines call things in mm/ that are __meminit, so we have to
-mark our code __meminit too, otherwise we get a section mismatch
-warning.
+Link: https://github.com/linuxppc/linux/issues/59
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/mmap.c  | 4 ++--
+ arch/powerpc/mm/slice.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-cheers
+diff --git a/arch/powerpc/mm/mmap.c b/arch/powerpc/mm/mmap.c
+index b24ce40acd47..07de04c4fb56 100644
+--- a/arch/powerpc/mm/mmap.c
++++ b/arch/powerpc/mm/mmap.c
+@@ -201,7 +201,7 @@ static void radix__arch_pick_mmap_layout(struct mm_struct *mm,
+ 					struct rlimit *rlim_stack)
+ {
+ 	if (mmap_is_legacy(rlim_stack)) {
+-		mm->mmap_base = TASK_UNMAPPED_BASE;
++		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
+ 		mm->get_unmapped_area = radix__arch_get_unmapped_area;
+ 	} else {
+ 		mm->mmap_base = mmap_base(random_factor, rlim_stack);
+@@ -233,7 +233,7 @@ void arch_pick_mmap_layout(struct mm_struct *mm, struct rlimit *rlim_stack)
+ 	 * bit is set, or if the expected stack growth is unlimited:
+ 	 */
+ 	if (mmap_is_legacy(rlim_stack)) {
+-		mm->mmap_base = TASK_UNMAPPED_BASE;
++		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
+ 		mm->get_unmapped_area = arch_get_unmapped_area;
+ 	} else {
+ 		mm->mmap_base = mmap_base(random_factor, rlim_stack);
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 205fe557ca10..cc1af565b813 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -329,7 +329,7 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+ 	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+ 	info.align_offset = 0;
+ 
+-	addr = TASK_UNMAPPED_BASE;
++	addr = mm->mmap_base;
+ 	/*
+ 	 * Check till the allow max value for this mmap request
+ 	 */
+-- 
+2.13.3
