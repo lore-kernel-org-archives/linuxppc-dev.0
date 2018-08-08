@@ -1,23 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltxg5NkDzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:27:03 +1000 (AEST)
-In-Reply-To: <1533573723-29692-1-git-send-email-rosattig@linux.vnet.ibm.com>
-To: "Rodrigo R. Galvao" <rosattig@linux.vnet.ibm.com>, 
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltyy150WzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:28:10 +1000 (AEST)
+In-Reply-To: <20180807114846.6198-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kstewart@linuxfoundation.org, rosattig@linux.vnet.ibm.com,
- mgreer@animalcreek.com, paulus@samba.org, sfr@canb.auug.org.au,
- daniel@iogearbox.net, dale@farnsworth.org, nfont@linux.vnet.ibm.com,
- naveen.n.rao@linux.vnet.ibm.com, agust@denx.de, linux@roeck-us.net,
- arnd@arndb.de, npiggin@gmail.com, ast@kernel.org, hare@suse.de,
- tglx@linutronix.de, maurosr@linux.vnet.ibm.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, pombredanne@nexb.com,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc/Makefiles: Convert ifeq to ifdef where possible
-Message-Id: <41ltxc3PYJz9s0n@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:26:42 +1000 (AEST)
+Cc: npiggin@gmail.com
+Subject: Re: powerpc/64: Disable irq restore warning for now
+Message-Id: <41ltyw6LLNz9s0n@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:28:08 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-08-06 at 16:42:03 UTC, "Rodrigo R. Galvao" wrote:
-> In Makefiles if we're testing a CONFIG_FOO symbol for equality with 'y'
-> we can instead just use ifdef. The latter reads easily, so convert to
-> it where possible.
+On Tue, 2018-08-07 at 11:48:46 UTC, Michael Ellerman wrote:
+> We recently added a warning in arch_local_irq_restore() to check that
+> the soft masking state matches reality.
 > 
-> Signed-off-by: Rodrigo R. Galvao <rosattig@linux.vnet.ibm.com>
-> Reviewed-by: Mauro S. M. Rodrigues <maurosr@linux.vnet.ibm.com>
+> Unfortunately it trips in a few places, which are not entirely trivial
+> to fix. The key problem is if we're doing function_graph tracing of
+> restore_math(), the warning pops and then seems to recurse. It's not
+> entirely clear because the system continuously oopses on all CPUs,
+> with the output interleaved and unreadable.
+> 
+> It's also been observed on a G5 coming out of idle.
+> 
+> Until we can fix those cases disable the warning for now.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/badf436f6fa5dc864d579d73fe7538
+https://git.kernel.org/powerpc/c/4da1f79227ad42550e3e70e7b4812e
 
 cheers
