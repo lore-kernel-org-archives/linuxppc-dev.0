@@ -1,24 +1,37 @@
-Return-Path: <msuchanek@suse.de>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <mst@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m2rQ5DTvzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 06:22:56 +1000 (AEST)
-Date: Wed, 8 Aug 2018 22:22:52 +0200
-From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
- <ego@linux.vnet.ibm.com>, Mahesh Jagannath Salgaonkar
- <mahesh@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Akshay Adiga
- <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/64s: move machine check SLB flushing to
- mm/slb.c
-Message-ID: <20180808222252.5be0feac@kitsune.suse.cz>
-In-Reply-To: <20180803041350.25493-1-npiggin@gmail.com>
-References: <20180803041350.25493-1-npiggin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m32j5TlzzDqyG
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 06:31:57 +1000 (AEST)
+Date: Wed, 8 Aug 2018 23:31:46 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org,
+ srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
+ jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
+Message-ID: <20180808232210-mutt-send-email-mst@kernel.org>
+References: <20180806094243.GA16032@infradead.org>
+ <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ <20180807062117.GD32709@infradead.org>
+ <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
+ <20180807135505.GA29034@infradead.org>
+ <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+ <20180808063158.GA2474@infradead.org>
+ <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+ <20180808123036.GA2525@infradead.org>
+ <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,136 +41,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri,  3 Aug 2018 14:13:49 +1000
-Nicholas Piggin <npiggin@gmail.com> wrote:
-
-> The machine check code that flushes and restores bolted segments in
-> real mode belongs in mm/slb.c. This will be used by pseries machine
-> check and idle code.
+On Wed, Aug 08, 2018 at 11:18:13PM +1000, Benjamin Herrenschmidt wrote:
+> Sure, but all of this is just the configuration of the iommu. But I
+> think we agree here, and your point remains valid, indeed my proposed
+> hack:
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  3 ++
->  arch/powerpc/kernel/mce_power.c               | 21 ++--------
->  arch/powerpc/mm/slb.c                         | 38
-> +++++++++++++++++++ 3 files changed, 44 insertions(+), 18 deletions(-)
+> >       if ((flags & VIRTIO_F_IOMMU_PLATFORM) || arch_virtio_wants_dma_ops())
 > 
-> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h index
-> 2f74bdc805e0..d4e398185b3a 100644 ---
-> a/arch/powerpc/include/asm/book3s/64/mmu-hash.h +++
-> b/arch/powerpc/include/asm/book3s/64/mmu-hash.h @@ -497,6 +497,9 @@
-> extern void hpte_init_native(void); 
->  extern void slb_initialize(void);
->  extern void slb_flush_and_rebolt(void);
-> +extern void slb_flush_all_realmode(void);
-> +extern void __slb_restore_bolted_realmode(void);
-> +extern void slb_restore_bolted_realmode(void);
->  
->  extern void slb_vmalloc_update(void);
->  extern void slb_set_size(u16 size);
-> diff --git a/arch/powerpc/kernel/mce_power.c
-> b/arch/powerpc/kernel/mce_power.c index d6756af6ec78..50f7b9817246
-> 100644 --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -62,11 +62,8 @@ static unsigned long addr_to_pfn(struct pt_regs
-> *regs, unsigned long addr) #ifdef CONFIG_PPC_BOOK3S_64
->  static void flush_and_reload_slb(void)
->  {
-> -	struct slb_shadow *slb;
-> -	unsigned long i, n;
-> -
->  	/* Invalidate all SLBs */
-> -	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
-> +	slb_flush_all_realmode();
->  
->  #ifdef CONFIG_KVM_BOOK3S_HANDLER
->  	/*
-> @@ -76,22 +73,10 @@ static void flush_and_reload_slb(void)
->  	if (get_paca()->kvm_hstate.in_guest)
->  		return;
->  #endif
-> -
-> -	/* For host kernel, reload the SLBs from shadow SLB buffer.
-> */
-> -	slb = get_slb_shadow();
-> -	if (!slb)
-> +	if (early_radix_enabled())
->  		return;
+> Will only work if the IOMMU and non-IOMMU path are completely equivalent.
+> 
+> We can provide that guarantee for our secure VM case, but not generally so if
+> we were to go down the route of a quirk in virtio, it might be better to
+> make it painfully obvious that it's specific to that one case with a different
+> kind of turd:
+> 
+> -	if (xen_domain())
+> +	if (xen_domain() || pseries_secure_vm())
+> 		return true;
 
-And we lose the check that the shadow slb exists. Is !slb equivalent to
-early_radix_enabled() 
+I don't think it's pseries specific actually. E.g. I suspect AMD SEV
+might benefit from the same kind of hack.
 
->  
-> -	n = min_t(u32, be32_to_cpu(slb->persistent), SLB_MIN_SIZE);
-> -
-> -	/* Load up the SLB entries from shadow SLB */
-> -	for (i = 0; i < n; i++) {
-> -		unsigned long rb =
-> be64_to_cpu(slb->save_area[i].esid);
-> -		unsigned long rs =
-> be64_to_cpu(slb->save_area[i].vsid); -
-> -		rb = (rb & ~0xFFFul) | i;
-> -		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
-> -	}
-> +	slb_restore_bolted_realmode();
->  }
->  #endif
->  
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index cb796724a6fc..136db8652577 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -90,6 +90,44 @@ static inline void create_shadowed_slbe(unsigned
-> long ea, int ssize, : "memory" );
->  }
->  
-> +/*
-> + * Insert bolted entries into SLB (which may not be empty).
-> + */
-> +void __slb_restore_bolted_realmode(void)
-> +{
-> +	struct slb_shadow *p = get_slb_shadow();
-> +	enum slb_index index;
 
-or can we get here at some point when shadow slb is not populated?
+> So to summarize, and make sure I'm not missing something, the two approaches
+> at hand are either:
+> 
+>  1- The above, which is a one liner and contained in the guest, so that's nice, but
+> also means another turd in virtio which isn't ...
+> 
+>  2- We force pseries to always set VIRTIO_F_IOMMU_PLATFORM, but with the current
+> architecture on our side that will force virtio to always go through an emulated
+> iommu, as pseries doesn't have the concept of a real bypass window, and thus will
+> impact performance for both secure and non-secure VMs.
+> 
+>  3- Invent a property that can be put in selected PCI device tree nodes that
+> indicates that for that device specifically, the iommu can be bypassed, along with
+> a hypercall to turn that bypass on/off. Virtio would then use VIRTIO_F_IOMMU_PLATFORM
+> but its DT nodes would also have that property and Linux would notice it and turn
+> bypass on.
 
-Thanks
+For completeness, virtio could also have its own bounce buffer
+outside of DMA API one. I don't see lots of benefits to this
+though.
 
-Michal
 
-> +
-> +	 /* No isync needed because realmode. */
-> +	for (index = 0; index < SLB_NUM_BOLTED; index++) {
-> +		asm volatile("slbmte  %0,%1" :
-> +		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
-> +		       "r" (be64_to_cpu(p->save_area[index].esid)));
-> +	}
-> +}
-> +
-> +/*
-> + * Insert bolted entries into an empty SLB.
-> + * This is not the same as rebolt because the bolted segments
-> + * (e.g., kstack) are not changed (rebolted).
-> + */
-> +void slb_restore_bolted_realmode(void)
-> +{
-> +	__slb_restore_bolted_realmode();
-> +	get_paca()->slb_cache_ptr = 0;
-> +}
-> +
-> +/*
-> + * This flushes all SLB entries including 0, so it must be realmode.
-> + */
-> +void slb_flush_all_realmode(void)
-> +{
-> +	/*
-> +	 * This flushes all SLB entries including 0, so it must be
-> realmode.
-> +	 */
-> +	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
-> +}
-> +
->  static void __slb_flush_and_rebolt(void)
->  {
->  	/* If you change this make sure you change SLB_NUM_BOLTED
+> The resulting properties of those options are:
+> 
+> 1- Is what I want because it's the simplest, provides the best performance now,
+>    and works without code changes to qemu or non-secure Linux. However it does
+>    add a tiny turd to virtio which is annoying.
+> 
+> 2- This works but it puts the iommu in the way always, thus reducing virtio performance
+>    accross the board for pseries unless we only do that for secure VMs but that is
+>    difficult (as discussed earlier).
+> 
+> 3- This would recover the performance lost in -2-, however it requires qemu *and*
+>    guest changes. Specifically, existing guests (RHEL 7 etc...) would get the
+>    performance hit of -2- unless modified to call that 'enable bypass' call, which
+>    isn't great.
+> 
+> So imho we have to chose one of 3 not-great solutions here... Unless I missed
+> something in your ideas of course.
+> 
+> Cheers,
+> Ben.
+> 
+> 
