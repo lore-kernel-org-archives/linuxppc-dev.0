@@ -2,15 +2,16 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ltwF3WLHzDqk9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:25:49 +1000 (AEST)
-In-Reply-To: <20180723150756.11108-1-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ltwL4N1VzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 00:25:54 +1000 (AEST)
+In-Reply-To: <20180725135806.29648-1-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Subject: Re: [1/5] powerpc/asm: Add a patch_site macro & helpers for patching
- instructions
-Message-Id: <41ltw948whz9s4V@ozlabs.org>
-Date: Thu,  9 Aug 2018 00:25:43 +1000 (AEST)
+Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: powerpc/64s/radix: tlb do not flush on page size when fullmm
+Message-Id: <41ltwK0NRNz9s0n@ozlabs.org>
+Date: Thu,  9 Aug 2018 00:25:51 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,26 +21,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-23 at 15:07:52 UTC, Michael Ellerman wrote:
-> Add a macro and some helper C functions for patching single asm
-> instructions.
+On Wed, 2018-07-25 at 13:58:06 UTC, Nicholas Piggin wrote:
+> When the mm is being torn down there will be a full PID flush so
+> there is no need to flush the TLB on page size changes.
 > 
-> The gas macro means we can do something like:
-> 
->   1:	nop
->   	patch_site 1b, patch__foo
-> 
-> Which is less visually distracting than defining a GLOBAL symbol at 1,
-> and also doesn't pollute the symbol table which can confuse eg. perf.
-> 
-> These are obviously similar to our existing feature sections, but are
-> not automatically patched based on CPU/MMU features, rather they are
-> designed to be manually patched by C code at some arbitrary point.
-> 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Series applied to powerpc next.
+Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/06d0bbc6d0f56dacac3a79900e9a9a
+https://git.kernel.org/powerpc/c/5a6099346c41792f1ba23aea6f74ad
 
 cheers
