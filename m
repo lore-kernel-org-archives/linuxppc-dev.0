@@ -2,11 +2,10 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m8d42VgNzDqkP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:43:36 +1000 (AEST)
-Message-ID: <a28a4e70e829f25ccd1286f8fba657f670f2a685.camel@kernel.crashing.org>
-Subject: Re: [PATCH 12/20] powerpc/dma: use phys_to_dma instead of
- get_dma_offset
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m8gY0RsKzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:45:44 +1000 (AEST)
+Message-ID: <65b4dfcc38a7ace49f3bcac95cf9e2d3ef544650.camel@kernel.crashing.org>
+Subject: Re: [PATCH 13/20] powerpc/dma: remove get_dma_offset
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
@@ -14,10 +13,10 @@ To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
  <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 10:43:15 +1000
-In-Reply-To: <20180730163824.10064-13-hch@lst.de>
+Date: Thu, 09 Aug 2018 10:45:22 +1000
+In-Reply-To: <20180730163824.10064-14-hch@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-13-hch@lst.de>
+ <20180730163824.10064-14-hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,97 +29,64 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> Use the standard portable helper instead of the powerpc specific one,
-> which is about to go away.
+> Just fold the calculation into __phys_to_dma/__dma_to_phys as those are
+> the only places that should know about it.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/kernel/dma-swiotlb.c |  5 ++---
->  arch/powerpc/kernel/dma.c         | 12 ++++++------
->  2 files changed, 8 insertions(+), 9 deletions(-)
+>  arch/powerpc/include/asm/dma-direct.h  |  8 ++++++--
+>  arch/powerpc/include/asm/dma-mapping.h | 16 ----------------
+>  2 files changed, 6 insertions(+), 18 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-> index 88f3963ca30f..f6e0701c5303 100644
-> --- a/arch/powerpc/kernel/dma-swiotlb.c
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -11,7 +11,7 @@
->   *
->   */
+> diff --git a/arch/powerpc/include/asm/dma-direct.h b/arch/powerpc/include/asm/dma-direct.h
+> index 7702875aabb7..0fba19445ae8 100644
+> --- a/arch/powerpc/include/asm/dma-direct.h
+> +++ b/arch/powerpc/include/asm/dma-direct.h
+> @@ -19,11 +19,15 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
 >  
-> -#include <linux/dma-mapping.h>
-> +#include <linux/dma-direct.h>
->  #include <linux/memblock.h>
->  #include <linux/pfn.h>
->  #include <linux/of_platform.h>
-> @@ -31,9 +31,8 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
->         end = memblock_end_of_DRAM();
->         if (max_direct_dma_addr && end > max_direct_dma_addr)
->                 end = max_direct_dma_addr;
-> -       end += get_dma_offset(dev);
->  
-> -       mask = 1ULL << (fls64(end) - 1);
-> +       mask = 1ULL << (fls64(phys_to_dma(dev, end)) - 1);
->         mask += mask - 1;
->  
->         return mask;
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index eceaa92e6986..3487de83bb37 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -6,7 +6,7 @@
->   */
->  
->  #include <linux/device.h>
-> -#include <linux/dma-mapping.h>
-> +#include <linux/dma-direct.h>
->  #include <linux/dma-debug.h>
->  #include <linux/gfp.h>
->  #include <linux/memblock.h>
-> @@ -43,7 +43,7 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
->  static int dma_nommu_dma_supported(struct device *dev, u64 mask)
+>  static inline dma_addr_t __phys_to_dma(struct device *dev, phys_addr_t paddr)
 >  {
->  #ifdef CONFIG_PPC64
-> -       u64 limit = get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
-> +       u64 limit = phys_to_dma(dev, (memblock_end_of_DRAM() - 1));
->  
->         /* Limit fits in the mask, we are good */
->         if (mask >= limit)
-> @@ -104,7 +104,7 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
->                 return NULL;
->         ret = page_address(page);
->         memset(ret, 0, size);
-> -       *dma_handle = __pa(ret) + get_dma_offset(dev);
-> +       *dma_handle = phys_to_dma(dev,__pa(ret));
->  
->         return ret;
->  }
-> @@ -188,7 +188,7 @@ static int dma_nommu_map_sg(struct device *dev, struct scatterlist *sgl,
->         int i;
->  
->         for_each_sg(sgl, sg, nents, i) {
-> -               sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
-> +               sg->dma_address = phys_to_dma(dev, sg_phys(sg));
->                 sg->dma_length = sg->length;
->  
->                 if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
-> @@ -210,7 +210,7 @@ static u64 dma_nommu_get_required_mask(struct device *dev)
->  {
->         u64 end, mask;
->  
-> -       end = memblock_end_of_DRAM() + get_dma_offset(dev);
-> +       end = phys_to_dma(dev, memblock_end_of_DRAM());
->  
->         mask = 1ULL << (fls64(end) - 1);
->         mask += mask - 1;
-> @@ -228,7 +228,7 @@ static inline dma_addr_t dma_nommu_map_page(struct device *dev,
->         if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
->                 __dma_sync_page(page, offset, size, dir);
->  
-> -       return page_to_phys(page) + offset + get_dma_offset(dev);
-> +       return phys_to_dma(dev, page_to_phys(page)) + offset;
+> -	return paddr + get_dma_offset(dev);
+> +	if (!dev)
+> +		return paddr + PCI_DRAM_OFFSET;
+> +	return paddr + dev->archdata.dma_offset;
 >  }
 >  
->  static inline void dma_nommu_unmap_page(struct device *dev,
+>  static inline phys_addr_t __dma_to_phys(struct device *dev, dma_addr_t daddr)
+>  {
+> -	return daddr - get_dma_offset(dev);
+> +	if (!dev)
+> +		return daddr - PCI_DRAM_OFFSET;
+> +	return daddr - dev->archdata.dma_offset;
+>  }
+>  #endif /* ASM_POWERPC_DMA_DIRECT_H */
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index dacd0f93f2b2..f0bf7ac2686c 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -80,22 +80,6 @@ static inline const struct dma_map_ops *get_arch_dma_ops(struct bus_type *bus)
+>  	return NULL;
+>  }
+>  
+> -/*
+> - * get_dma_offset()
+> - *
+> - * Get the dma offset on configurations where the dma address can be determined
+> - * from the physical address by looking at a simple offset.  Direct dma and
+> - * swiotlb use this function, but it is typically not used by implementations
+> - * with an iommu.
+> - */
+> -static inline dma_addr_t get_dma_offset(struct device *dev)
+> -{
+> -	if (dev)
+> -		return dev->archdata.dma_offset;
+> -
+> -	return PCI_DRAM_OFFSET;
+> -}
+> -
+>  static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+>  {
+>  	if (dev)
