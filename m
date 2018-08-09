@@ -2,11 +2,11 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m8Yb6t78zDqkP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:40:35 +1000 (AEST)
-Message-ID: <16a4fdba41021f2c444eed720948b1b698882baf.camel@kernel.crashing.org>
-Subject: Re: [PATCH 11/20] powerpc/dma: split the two __dma_alloc_coherent
- implementations
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m8d42VgNzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:43:36 +1000 (AEST)
+Message-ID: <a28a4e70e829f25ccd1286f8fba657f670f2a685.camel@kernel.crashing.org>
+Subject: Re: [PATCH 12/20] powerpc/dma: use phys_to_dma instead of
+ get_dma_offset
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
@@ -14,10 +14,10 @@ To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
  <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 10:40:11 +1000
-In-Reply-To: <20180730163824.10064-12-hch@lst.de>
+Date: Thu, 09 Aug 2018 10:43:15 +1000
+In-Reply-To: <20180730163824.10064-13-hch@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-12-hch@lst.de>
+ <20180730163824.10064-13-hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,165 +30,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> The implemementation for the CONFIG_NOT_COHERENT_CACHE case doesn't share
-> any code with the one for systems with coherent caches.  Split it off
-> and merge it with the helpers in dma-noncoherent.c that have no other
-> callers.
+> Use the standard portable helper instead of the powerpc specific one,
+> which is about to go away.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/include/asm/dma-mapping.h |  5 -----
->  arch/powerpc/kernel/dma.c              | 14 ++------------
->  arch/powerpc/mm/dma-noncoherent.c      | 15 +++++++--------
->  arch/powerpc/platforms/44x/warp.c      |  2 +-
->  4 files changed, 10 insertions(+), 26 deletions(-)
+>  arch/powerpc/kernel/dma-swiotlb.c |  5 ++---
+>  arch/powerpc/kernel/dma.c         | 12 ++++++------
+>  2 files changed, 8 insertions(+), 9 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index f2a4a7142b1e..dacd0f93f2b2 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -39,9 +39,6 @@ extern int dma_nommu_mmap_coherent(struct device *dev,
->   * to ensure it is consistent.
->   */
->  struct device;
-> -extern void *__dma_alloc_coherent(struct device *dev, size_t size,
-> -				  dma_addr_t *handle, gfp_t gfp);
-> -extern void __dma_free_coherent(size_t size, void *vaddr);
->  extern void __dma_sync(void *vaddr, size_t size, int direction);
->  extern void __dma_sync_page(struct page *page, unsigned long offset,
->  				 size_t size, int direction);
-> @@ -52,8 +49,6 @@ extern unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr);
->   * Cache coherent cores.
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+> index 88f3963ca30f..f6e0701c5303 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -11,7 +11,7 @@
+>   *
 >   */
 >  
-> -#define __dma_alloc_coherent(dev, gfp, size, handle)	NULL
-> -#define __dma_free_coherent(size, addr)		((void)0)
->  #define __dma_sync(addr, size, rw)		((void)0)
->  #define __dma_sync_page(pg, off, sz, rw)	((void)0)
->  
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index 3939589aab04..eceaa92e6986 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -62,18 +62,12 @@ static int dma_nommu_dma_supported(struct device *dev, u64 mask)
->  #endif
->  }
->  
-> +#ifndef CONFIG_NOT_COHERENT_CACHE
->  void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
->  				  dma_addr_t *dma_handle, gfp_t flag,
->  				  unsigned long attrs)
->  {
->  	void *ret;
-> -#ifdef CONFIG_NOT_COHERENT_CACHE
-> -	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
-> -	if (ret == NULL)
-> -		return NULL;
-> -	*dma_handle += get_dma_offset(dev);
-> -	return ret;
-> -#else
->  	struct page *page;
->  	int node = dev_to_node(dev);
->  #ifdef CONFIG_FSL_SOC
-> @@ -113,19 +107,15 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
->  	*dma_handle = __pa(ret) + get_dma_offset(dev);
->  
->  	return ret;
-> -#endif
->  }
->  
->  void __dma_nommu_free_coherent(struct device *dev, size_t size,
->  				void *vaddr, dma_addr_t dma_handle,
->  				unsigned long attrs)
->  {
-> -#ifdef CONFIG_NOT_COHERENT_CACHE
-> -	__dma_free_coherent(size, vaddr);
-> -#else
->  	free_pages((unsigned long)vaddr, get_order(size));
-> -#endif
->  }
-> +#endif /* !CONFIG_NOT_COHERENT_CACHE */
->  
->  static void *dma_nommu_alloc_coherent(struct device *dev, size_t size,
->  				       dma_addr_t *dma_handle, gfp_t flag,
-> diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
-> index d1c16456abac..cfc48a253707 100644
-> --- a/arch/powerpc/mm/dma-noncoherent.c
-> +++ b/arch/powerpc/mm/dma-noncoherent.c
-> @@ -29,7 +29,7 @@
->  #include <linux/string.h>
->  #include <linux/types.h>
->  #include <linux/highmem.h>
 > -#include <linux/dma-mapping.h>
 > +#include <linux/dma-direct.h>
->  #include <linux/export.h>
+>  #include <linux/memblock.h>
+>  #include <linux/pfn.h>
+>  #include <linux/of_platform.h>
+> @@ -31,9 +31,8 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+>         end = memblock_end_of_DRAM();
+>         if (max_direct_dma_addr && end > max_direct_dma_addr)
+>                 end = max_direct_dma_addr;
+> -       end += get_dma_offset(dev);
 >  
->  #include <asm/tlbflush.h>
-> @@ -151,8 +151,8 @@ static struct ppc_vm_region *ppc_vm_region_find(struct ppc_vm_region *head, unsi
->   * Allocate DMA-coherent memory space and return both the kernel remapped
->   * virtual and bus address for that space.
+> -       mask = 1ULL << (fls64(end) - 1);
+> +       mask = 1ULL << (fls64(phys_to_dma(dev, end)) - 1);
+>         mask += mask - 1;
+>  
+>         return mask;
+> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> index eceaa92e6986..3487de83bb37 100644
+> --- a/arch/powerpc/kernel/dma.c
+> +++ b/arch/powerpc/kernel/dma.c
+> @@ -6,7 +6,7 @@
 >   */
-> -void *
-> -__dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t gfp)
-> +void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
-> +		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
->  {
->  	struct page *page;
->  	struct ppc_vm_region *c;
-> @@ -223,7 +223,7 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
->  		/*
->  		 * Set the "dma handle"
->  		 */
-> -		*handle = page_to_phys(page);
-> +		*dma_handle = phys_to_dma(dev, page_to_phys(page));
 >  
->  		do {
->  			SetPageReserved(page);
-> @@ -249,12 +249,12 @@ __dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *handle, gfp_t
->   no_page:
->  	return NULL;
+>  #include <linux/device.h>
+> -#include <linux/dma-mapping.h>
+> +#include <linux/dma-direct.h>
+>  #include <linux/dma-debug.h>
+>  #include <linux/gfp.h>
+>  #include <linux/memblock.h>
+> @@ -43,7 +43,7 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
+>  static int dma_nommu_dma_supported(struct device *dev, u64 mask)
+>  {
+>  #ifdef CONFIG_PPC64
+> -       u64 limit = get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
+> +       u64 limit = phys_to_dma(dev, (memblock_end_of_DRAM() - 1));
+>  
+>         /* Limit fits in the mask, we are good */
+>         if (mask >= limit)
+> @@ -104,7 +104,7 @@ void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
+>                 return NULL;
+>         ret = page_address(page);
+>         memset(ret, 0, size);
+> -       *dma_handle = __pa(ret) + get_dma_offset(dev);
+> +       *dma_handle = phys_to_dma(dev,__pa(ret));
+>  
+>         return ret;
 >  }
-> -EXPORT_SYMBOL(__dma_alloc_coherent);
+> @@ -188,7 +188,7 @@ static int dma_nommu_map_sg(struct device *dev, struct scatterlist *sgl,
+>         int i;
 >  
->  /*
->   * free a page as defined by the above mapping.
->   */
-> -void __dma_free_coherent(size_t size, void *vaddr)
-> +void __dma_nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
-> +		dma_addr_t dma_handle, unsigned long attrs)
+>         for_each_sg(sgl, sg, nents, i) {
+> -               sg->dma_address = sg_phys(sg) + get_dma_offset(dev);
+> +               sg->dma_address = phys_to_dma(dev, sg_phys(sg));
+>                 sg->dma_length = sg->length;
+>  
+>                 if (attrs & DMA_ATTR_SKIP_CPU_SYNC)
+> @@ -210,7 +210,7 @@ static u64 dma_nommu_get_required_mask(struct device *dev)
 >  {
->  	struct ppc_vm_region *c;
->  	unsigned long flags, addr;
-> @@ -309,7 +309,6 @@ void __dma_free_coherent(size_t size, void *vaddr)
->  	       __func__, vaddr);
->  	dump_stack();
+>         u64 end, mask;
+>  
+> -       end = memblock_end_of_DRAM() + get_dma_offset(dev);
+> +       end = phys_to_dma(dev, memblock_end_of_DRAM());
+>  
+>         mask = 1ULL << (fls64(end) - 1);
+>         mask += mask - 1;
+> @@ -228,7 +228,7 @@ static inline dma_addr_t dma_nommu_map_page(struct device *dev,
+>         if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+>                 __dma_sync_page(page, offset, size, dir);
+>  
+> -       return page_to_phys(page) + offset + get_dma_offset(dev);
+> +       return phys_to_dma(dev, page_to_phys(page)) + offset;
 >  }
-> -EXPORT_SYMBOL(__dma_free_coherent);
 >  
->  /*
->   * make an area consistent.
-> @@ -397,7 +396,7 @@ EXPORT_SYMBOL(__dma_sync_page);
->  
->  /*
->   * Return the PFN for a given cpu virtual address returned by
-> - * __dma_alloc_coherent. This is used by dma_mmap_coherent()
-> + * __dma_nommu_alloc_coherent. This is used by dma_mmap_coherent()
->   */
->  unsigned long __dma_get_coherent_pfn(unsigned long cpu_addr)
->  {
-> diff --git a/arch/powerpc/platforms/44x/warp.c b/arch/powerpc/platforms/44x/warp.c
-> index a886c2c22097..7e4f8ca19ce8 100644
-> --- a/arch/powerpc/platforms/44x/warp.c
-> +++ b/arch/powerpc/platforms/44x/warp.c
-> @@ -47,7 +47,7 @@ static int __init warp_probe(void)
->  	if (!of_machine_is_compatible("pika,warp"))
->  		return 0;
->  
-> -	/* For __dma_alloc_coherent */
-> +	/* For __dma_nommu_alloc_coherent */
->  	ISA_DMA_THRESHOLD = ~0L;
->  
->  	return 1;
+>  static inline void dma_nommu_unmap_page(struct device *dev,
