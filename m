@@ -1,38 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rashmicy@gmail.com>
+Received: from mail-pl0-x244.google.com (mail-pl0-x244.google.com
+ [IPv6:2607:f8b0:400e:c01::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mBLy6QvszDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 12:01:30 +1000 (AEST)
-Message-ID: <7995ee537c416e30d0aac57042cb36f84c6edef9.camel@kernel.crashing.org>
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
- robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Date: Thu, 09 Aug 2018 12:00:47 +1000
-In-Reply-To: <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
-References: <20180806094243.GA16032@infradead.org>
- <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
- <20180807062117.GD32709@infradead.org>
- <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
- <20180807135505.GA29034@infradead.org>
- <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
- <20180808063158.GA2474@infradead.org>
- <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
- <20180808123036.GA2525@infradead.org>
- <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
- <20180808232210-mutt-send-email-mst@kernel.org>
- <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mBQD2qYDzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 12:04:16 +1000 (AEST)
+Received: by mail-pl0-x244.google.com with SMTP id j8-v6so1826261pll.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 19:04:16 -0700 (PDT)
+Subject: Re: [PATCH] lib/test_hexdump: fix failure on big endian cpu
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Christophe Leroy <christophe.leroy@c-s.fr>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <f3112437f62c2f48300535510918e8be1dceacfb.1533610877.git.christophe.leroy@c-s.fr>
+ <87mutxb9qy.fsf@concordia.ellerman.id.au>
+From: rashmica <rashmicy@gmail.com>
+Message-ID: <7857c69a-a209-541b-b2e1-9fe2e288ca65@gmail.com>
+Date: Thu, 9 Aug 2018 12:04:07 +1000
+MIME-Version: 1.0
+In-Reply-To: <87mutxb9qy.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,29 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-09 at 08:13 +1000, Benjamin Herrenschmidt wrote:
-> > For completeness, virtio could also have its own bounce buffer
-> > outside of DMA API one. I don't see lots of benefits to this
-> > though.
-> 
-> Not fan of that either...
 
-To elaborate a bit ...
 
-For our secure VMs, we will need bounce buffering for everything
-anyway. virtio, emulated PCI, or vfio.
+On 08/08/18 17:25, Michael Ellerman wrote:
+> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>> diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+>> index 3f415d8101f3..626f580b4ff7 100644
+>> --- a/lib/test_hexdump.c
+>> +++ b/lib/test_hexdump.c
+>> @@ -32,16 +32,33 @@ static const char * const test_data_2_le[] __initconst = {
+>>  	"d14c", "9919", "b143", "0caf",
+>>  };
+>>  
+>> +static const char * const test_data_2_be[] __initconst = {
+>> +	"be32", "db7b", "0a18", "93b2",
+>> +	"70ba", "c424", "7d83", "349b",
+>> +	"a69c", "31ad", "9c0f", "ace9",
+>> +	"4cd1", "1999", "43b1", "af0c",
+>> +};
+>> +
+>>  static const char * const test_data_4_le[] __initconst = {
+>>  	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
+>>  	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
+>>  };
+>>  
+>> +static const char * const test_data_4_be[] __initconst = {
+>> +	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
+>> +	"a69c31ad", "9c0face9", "4cd11999", "43b1af0c",
+>> +};
+>> +
+> Is there a reason we can't do it all at compile time?
 
-By ensuring that we create an identity mapping in the IOMMU for
-the bounce buffering pool, we enable virtio "legacy/direct" to
-use the same mapping ops as things using the iommu.
+mpe I sent a patch doing that awhile ago and you obviously didn't like
+it because you never merged it :P
+http://patchwork.ozlabs.org/patch/620405/ I prefer this version because
+of the IS_ENABLED
 
-That said, we still need somewhere in arch/powerpc a set of dma
-ops which we'll attach to all PCI devices of a secure VM to force
-bouncing always, rather than just based on address (which is what
-the standard swiotlb ones do)... Unless we can tweak the swiotlb
-"threshold" for example by using an empty mask.
 
-We'll need the same set of DMA ops for VIO devices too, not just PCI.
 
-Cheers,
-Ben.
+> eg:
+>
+> static const char * const test_data_4[] __initconst = {
+> #ifdef CONFIG_CPU_LITTLE_ENDIAN
+> 	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
+> 	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
+> #else
+> 	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
+> 	"a69c31ad", "9c0face9", "4cd11999", "43b1af0c",
+> #endif
+> };
+>
+>
+> cheers
