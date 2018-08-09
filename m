@@ -2,22 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m8mn1TJnzDr5t
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:50:16 +1000 (AEST)
-Message-ID: <1c1a9507fef0a06843bedd91de8bfbe6d27e8beb.camel@kernel.crashing.org>
-Subject: Re: [PATCH 15/20] powerpc/dma: remove the unused unmap_page and
- unmap_sg methods
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m8rJ6Lr2zDrZC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 10:53:20 +1000 (AEST)
+Message-ID: <4d5c934ea7bc9802eb3653e6afe7583cb05e4484.camel@kernel.crashing.org>
+Subject: Re: [PATCH 16/20] powerpc/dma: use dma_direct_{alloc,free}
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
  Fenghua Yu <fenghua.yu@intel.com>
 Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
  <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
- iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 10:49:57 +1000
-In-Reply-To: <20180730163824.10064-16-hch@lst.de>
+ iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org, Scott Wood
+ <oss@buserror.net>
+Date: Thu, 09 Aug 2018 10:52:56 +1000
+In-Reply-To: <20180730163824.10064-17-hch@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-16-hch@lst.de>
+ <20180730163824.10064-17-hch@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,57 +30,189 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> These methods are optional to start with, no need to implement no-op
-> versions.
+> These do the same functionality as the existing helpers, but do it
+> simpler, and also allow the (optional) use of CMA.
 > 
+> Note that the swiotlb code now calls into the dma_direct code directly,
+> given that it doesn't work with noncoherent caches at all, and isn't called
+> when we have an iommu either, so the iommu special case in
+> dma_nommu_alloc_coherent isn't required for swiotlb.
+
+I am not convinced that this will produce the same results due to
+the way the zone picking works.
+
+As for the interaction with swiotlb, we'll need the FSL guys to have
+a look. Scott, do you remember what this is about ?
+
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
 > ---
->  arch/powerpc/kernel/dma.c | 16 ----------------
->  1 file changed, 16 deletions(-)
+>  arch/powerpc/include/asm/pgtable.h |  1 -
+>  arch/powerpc/kernel/dma-swiotlb.c  |  4 +-
+>  arch/powerpc/kernel/dma.c          | 78 ++++--------------------------
+>  arch/powerpc/mm/mem.c              | 19 --------
+>  4 files changed, 11 insertions(+), 91 deletions(-)
 > 
+> diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+> index 14c79a7dc855..123de4958d2e 100644
+> --- a/arch/powerpc/include/asm/pgtable.h
+> +++ b/arch/powerpc/include/asm/pgtable.h
+> @@ -38,7 +38,6 @@ extern unsigned long empty_zero_page[];
+>  extern pgd_t swapper_pg_dir[];
+>  
+>  void limit_zone_pfn(enum zone_type zone, unsigned long max_pfn);
+> -int dma_pfn_limit_to_zone(u64 pfn_limit);
+>  extern void paging_init(void);
+>  
+>  /*
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+> index f6e0701c5303..25986fcd1e5e 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -46,8 +46,8 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+>   * for everything else.
+>   */
+>  const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+> -	.alloc = __dma_nommu_alloc_coherent,
+> -	.free = __dma_nommu_free_coherent,
+> +	.alloc = dma_direct_alloc,
+> +	.free = dma_direct_free,
+>  	.mmap = dma_nommu_mmap_coherent,
+>  	.map_sg = swiotlb_map_sg_attrs,
+>  	.unmap_sg = swiotlb_unmap_sg_attrs,
 > diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index 511a4972560d..2cfc45acbb52 100644
+> index 2cfc45acbb52..2b90a403cdac 100644
 > --- a/arch/powerpc/kernel/dma.c
 > +++ b/arch/powerpc/kernel/dma.c
-> @@ -178,12 +178,6 @@ static int dma_nommu_map_sg(struct device *dev, struct scatterlist *sgl,
->  	return nents;
->  }
->  
-> -static void dma_nommu_unmap_sg(struct device *dev, struct scatterlist *sg,
-> -				int nents, enum dma_data_direction direction,
+> @@ -26,75 +26,6 @@
+>   * can set archdata.dma_data to an unsigned long holding the offset. By
+>   * default the offset is PCI_DRAM_OFFSET.
+>   */
+> -
+> -static u64 __maybe_unused get_pfn_limit(struct device *dev)
+> -{
+> -	u64 pfn = (dev->coherent_dma_mask >> PAGE_SHIFT) + 1;
+> -	struct dev_archdata __maybe_unused *sd = &dev->archdata;
+> -
+> -#ifdef CONFIG_SWIOTLB
+> -	if (sd->max_direct_dma_addr && dev->dma_ops == &powerpc_swiotlb_dma_ops)
+> -		pfn = min_t(u64, pfn, sd->max_direct_dma_addr >> PAGE_SHIFT);
+> -#endif
+> -
+> -	return pfn;
+> -}
+> -
+> -#ifndef CONFIG_NOT_COHERENT_CACHE
+> -void *__dma_nommu_alloc_coherent(struct device *dev, size_t size,
+> -				  dma_addr_t *dma_handle, gfp_t flag,
+> -				  unsigned long attrs)
+> -{
+> -	void *ret;
+> -	struct page *page;
+> -	int node = dev_to_node(dev);
+> -#ifdef CONFIG_FSL_SOC
+> -	u64 pfn = get_pfn_limit(dev);
+> -	int zone;
+> -
+> -	/*
+> -	 * This code should be OK on other platforms, but we have drivers that
+> -	 * don't set coherent_dma_mask. As a workaround we just ifdef it. This
+> -	 * whole routine needs some serious cleanup.
+> -	 */
+> -
+> -	zone = dma_pfn_limit_to_zone(pfn);
+> -	if (zone < 0) {
+> -		dev_err(dev, "%s: No suitable zone for pfn %#llx\n",
+> -			__func__, pfn);
+> -		return NULL;
+> -	}
+> -
+> -	switch (zone) {
+> -	case ZONE_DMA:
+> -		flag |= GFP_DMA;
+> -		break;
+> -#ifdef CONFIG_ZONE_DMA32
+> -	case ZONE_DMA32:
+> -		flag |= GFP_DMA32;
+> -		break;
+> -#endif
+> -	};
+> -#endif /* CONFIG_FSL_SOC */
+> -
+> -	page = alloc_pages_node(node, flag, get_order(size));
+> -	if (page == NULL)
+> -		return NULL;
+> -	ret = page_address(page);
+> -	memset(ret, 0, size);
+> -	*dma_handle = phys_to_dma(dev,__pa(ret));
+> -
+> -	return ret;
+> -}
+> -
+> -void __dma_nommu_free_coherent(struct device *dev, size_t size,
+> -				void *vaddr, dma_addr_t dma_handle,
 > -				unsigned long attrs)
 > -{
+> -	free_pages((unsigned long)vaddr, get_order(size));
 > -}
+> -#endif /* !CONFIG_NOT_COHERENT_CACHE */
 > -
->  static u64 dma_nommu_get_required_mask(struct device *dev)
->  {
->  	u64 end, mask;
-> @@ -209,14 +203,6 @@ static inline dma_addr_t dma_nommu_map_page(struct device *dev,
->  	return phys_to_dma(dev, page_to_phys(page)) + offset;
+>  static void *dma_nommu_alloc_coherent(struct device *dev, size_t size,
+>  				       dma_addr_t *dma_handle, gfp_t flag,
+>  				       unsigned long attrs)
+> @@ -105,8 +36,12 @@ static void *dma_nommu_alloc_coherent(struct device *dev, size_t size,
+>  	 * we can really use the direct ops
+>  	 */
+>  	if (dma_direct_supported(dev, dev->coherent_dma_mask))
+> +#ifdef CONFIG_NOT_COHERENT_CACHE
+>  		return __dma_nommu_alloc_coherent(dev, size, dma_handle,
+>  						   flag, attrs);
+> +#else
+> +		return dma_direct_alloc(dev, size, dma_handle, flag, attrs);
+> +#endif
+>  
+>  	/* Ok we can't ... do we have an iommu ? If not, fail */
+>  	iommu = get_iommu_table_base(dev);
+> @@ -127,8 +62,13 @@ static void dma_nommu_free_coherent(struct device *dev, size_t size,
+>  
+>  	/* See comments in dma_nommu_alloc_coherent() */
+>  	if (dma_direct_supported(dev, dev->coherent_dma_mask))
+> +#ifdef CONFIG_NOT_COHERENT_CACHE
+>  		return __dma_nommu_free_coherent(dev, size, vaddr, dma_handle,
+>  						  attrs);
+> +#else
+> +		return dma_direct_free(dev, size, vaddr, dma_handle, attrs);
+> +#endif
+> +
+>  	/* Maybe we used an iommu ... */
+>  	iommu = get_iommu_table_base(dev);
+>  
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index 5c8530d0c611..ec8ed9d7abef 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -276,25 +276,6 @@ void __init limit_zone_pfn(enum zone_type zone, unsigned long pfn_limit)
+>  	}
 >  }
 >  
-> -static inline void dma_nommu_unmap_page(struct device *dev,
-> -					 dma_addr_t dma_address,
-> -					 size_t size,
-> -					 enum dma_data_direction direction,
-> -					 unsigned long attrs)
+> -/*
+> - * Find the least restrictive zone that is entirely below the
+> - * specified pfn limit.  Returns < 0 if no suitable zone is found.
+> - *
+> - * pfn_limit must be u64 because it can exceed 32 bits even on 32-bit
+> - * systems -- the DMA limit can be higher than any possible real pfn.
+> - */
+> -int dma_pfn_limit_to_zone(u64 pfn_limit)
 > -{
+> -	int i;
+> -
+> -	for (i = TOP_ZONE; i >= 0; i--) {
+> -		if (max_zone_pfns[i] <= pfn_limit)
+> -			return i;
+> -	}
+> -
+> -	return -EPERM;
 > -}
 > -
->  #ifdef CONFIG_NOT_COHERENT_CACHE
->  static inline void dma_nommu_sync_sg(struct device *dev,
->  		struct scatterlist *sgl, int nents,
-> @@ -242,10 +228,8 @@ const struct dma_map_ops dma_nommu_ops = {
->  	.free				= dma_nommu_free_coherent,
->  	.mmap				= dma_nommu_mmap_coherent,
->  	.map_sg				= dma_nommu_map_sg,
-> -	.unmap_sg			= dma_nommu_unmap_sg,
->  	.dma_supported			= dma_direct_supported,
->  	.map_page			= dma_nommu_map_page,
-> -	.unmap_page			= dma_nommu_unmap_page,
->  	.get_required_mask		= dma_nommu_get_required_mask,
->  #ifdef CONFIG_NOT_COHERENT_CACHE
->  	.sync_single_for_cpu 		= dma_nommu_sync_single,
+>  /*
+>   * paging_init() sets up the page tables - in fact we've already done this.
+>   */
