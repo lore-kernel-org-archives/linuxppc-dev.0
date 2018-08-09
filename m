@@ -1,26 +1,37 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <srs0=nndc=ky=gmail.com=npiggin@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m96x31d1zDr5k
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:06:01 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 7/9] powerpc/pseries: Dump the SLB contents on SLB MCE
- errors.
-In-Reply-To: <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m9yS3pWszDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:43:44 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41m9yS334Yz8tBY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:43:44 +1000 (AEST)
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
+ [IPv6:2607:f8b0:4864:20::544])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41m9yR1wDVz9s4c
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 11:43:42 +1000 (AEST)
+Received: by mail-pg1-x544.google.com with SMTP id k3-v6so1941674pgq.5
+ for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 18:43:42 -0700 (PDT)
+Date: Thu, 9 Aug 2018 11:43:30 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Michal Suchanek <msuchanek@suse.com>,
+ Ananth Narayan <ananth@in.ibm.com>, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
+ action on MCE.
+Message-ID: <20180809114330.7cad9866@roar.ozlabs.ibm.com>
+In-Reply-To: <87o9ecaovz.fsf@concordia.ellerman.id.au>
 References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
-Date: Thu, 09 Aug 2018 11:05:58 +1000
-Message-ID: <87lg9g9wnd.fsf@concordia.ellerman.id.au>
+ <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
+ <87o9ecaovz.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+On Thu, 09 Aug 2018 00:56:00 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> index 7f22929ce915..233d25ff6f64 100644
-> --- a/arch/powerpc/include/asm/paca.h
-> +++ b/arch/powerpc/include/asm/paca.h
-> @@ -254,6 +254,10 @@ struct paca_struct {
->  #endif
->  #ifdef CONFIG_PPC_PSERIES
->  	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
-> +
-> +	/* Capture SLB related old contents in MCE handler. */
-> +	struct slb_entry *mce_faulty_slbs;
-> +	u16 slb_save_cache_ptr;
->  #endif /* CONFIG_PPC_PSERIES */
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> >
+> > Introduce recovery action for recovered memory errors (MCEs). There are
+> > soft memory errors like SLB Multihit, which can be a result of a bad
+> > hardware OR software BUG. Kernel can easily recover from these soft errors
+> > by flushing SLB contents. After the recovery kernel can still continue to
+> > function without any issue. But in some scenario's we may keep getting
+> > these soft errors until the root cause is fixed. To be able to analyze and
+> > find the root cause, best way is to gather enough data and system state at
+> > the time of MCE. Hence this patch introduces a sysctl knob where user can
+> > decide either to continue after recovery or panic the kernel to capture the
+> > dump.  
+> 
+> I'm not convinced we want this.
+> 
+> As we've discovered it's often not possible to reconstruct what happened
+> based on a dump anyway.
+> 
+> The key thing you need is the content of the SLB and that's not included
+> in a dump.
+> 
+> So I think we should dump the SLB content when we get the MCE (which
+> this series does) and any other useful info, and then if we can recover
+> we should.
 
-             ^^^^^^^^^^^^^^^^^
+Yeah it's a lot of knobs that administrators can hardly be expected to
+tune. Hypervisor or firmware should really eventually make the MCE
+unrecoverable if we aren't making progress.
 
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index e89f675f1b5e..16a53689ffd4 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -151,6 +151,79 @@ void slb_flush_and_rebolt_realmode(void)
->  	get_paca()->slb_cache_ptr = 0;
->  }
->  
-> +void slb_save_contents(struct slb_entry *slb_ptr)
-> +{
-> +	int i;
-> +	unsigned long e, v;
-> +
-> +	/* Save slb_cache_ptr value. */
-> +	get_paca()->slb_save_cache_ptr = get_paca()->slb_cache_ptr;
+That said, x86 has a bunch of options, and for debugging a rare crash
+or specialised installations it might be useful. But we should follow
+the normal format, /proc/sys/kernel/panic_on_mce.
 
-This isn't inside CONFIG_PPC_PSERIES which breaks lots of configs, eg
-powernv.
-
-  arch/powerpc/mm/slb.c:160:12: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
-  arch/powerpc/mm/slb.c:218:27: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
-  arch/powerpc/mm/slb.c:216:49: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
-
-http://kisskb.ozlabs.ibm.com/kisskb/head/219f20e490add009194d94fdeb480da2e385f1c6/
-
-cheers
+Thanks,
+Nick
