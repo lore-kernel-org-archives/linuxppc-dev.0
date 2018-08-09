@@ -2,22 +2,35 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mBHD69pLzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:58:16 +1000 (AEST)
-Message-ID: <777010cd04645b55aa4197eddcc880f010f0ef6d.camel@kernel.crashing.org>
-Subject: Re: [PATCH 17/20] powerpc/dma-swiotlb: use generic swiotlb_dma_ops
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mBLy6QvszDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 12:01:30 +1000 (AEST)
+Message-ID: <7995ee537c416e30d0aac57042cb36f84c6edef9.camel@kernel.crashing.org>
+Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
- <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
- iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 11:57:53 +1000
-In-Reply-To: <556a4302d13b1caafb223112c4de43d959146215.camel@kernel.crashing.org>
-References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-18-hch@lst.de>
- <556a4302d13b1caafb223112c4de43d959146215.camel@kernel.crashing.org>
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ virtualization@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
+ elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
+ jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
+ haren@linux.vnet.ibm.com, paulus@samba.org, srikar@linux.vnet.ibm.com,
+ robin.murphy@arm.com, jean-philippe.brucker@arm.com, marc.zyngier@arm.com
+Date: Thu, 09 Aug 2018 12:00:47 +1000
+In-Reply-To: <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
+References: <20180806094243.GA16032@infradead.org>
+ <6c707d6d33ac25a42265c2e9b521c2416d72c739.camel@kernel.crashing.org>
+ <20180807062117.GD32709@infradead.org>
+ <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
+ <20180807135505.GA29034@infradead.org>
+ <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
+ <20180808063158.GA2474@infradead.org>
+ <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
+ <20180808123036.GA2525@infradead.org>
+ <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
+ <20180808232210-mutt-send-email-mst@kernel.org>
+ <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,120 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-09 at 10:54 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> > These are identical to the arch specific ones, so remove them.
-> > 
-> > Signed-off-by: Christoph Hellwig <hch@lst.de>
+On Thu, 2018-08-09 at 08:13 +1000, Benjamin Herrenschmidt wrote:
+> > For completeness, virtio could also have its own bounce buffer
+> > outside of DMA API one. I don't see lots of benefits to this
+> > though.
 > 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Not fan of that either...
 
-Note: We will still need to implement some custom variant of this
-for our secure VMs ... 
+To elaborate a bit ...
 
-Basically we'll need to use the existing bounce bufferring as-is but
-the condition will be different, it won't be whether the address is
-below a certain limit, it will be *always*.
+For our secure VMs, we will need bounce buffering for everything
+anyway. virtio, emulated PCI, or vfio.
+
+By ensuring that we create an identity mapping in the IOMMU for
+the bounce buffering pool, we enable virtio "legacy/direct" to
+use the same mapping ops as things using the iommu.
+
+That said, we still need somewhere in arch/powerpc a set of dma
+ops which we'll attach to all PCI devices of a secure VM to force
+bouncing always, rather than just based on address (which is what
+the standard swiotlb ones do)... Unless we can tweak the swiotlb
+"threshold" for example by using an empty mask.
+
+We'll need the same set of DMA ops for VIO devices too, not just PCI.
 
 Cheers,
 Ben.
-
-> > ---
-> >  arch/powerpc/include/asm/dma-direct.h |  4 ++++
-> >  arch/powerpc/include/asm/swiotlb.h    |  2 --
-> >  arch/powerpc/kernel/dma-swiotlb.c     | 28 ++-------------------------
-> >  arch/powerpc/sysdev/fsl_pci.c         |  2 +-
-> >  4 files changed, 7 insertions(+), 29 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/dma-direct.h b/arch/powerpc/include/asm/dma-direct.h
-> > index 0fba19445ae8..657f84ddb20d 100644
-> > --- a/arch/powerpc/include/asm/dma-direct.h
-> > +++ b/arch/powerpc/include/asm/dma-direct.h
-> > @@ -30,4 +30,8 @@ static inline phys_addr_t __dma_to_phys(struct device *dev, dma_addr_t daddr)
-> >  		return daddr - PCI_DRAM_OFFSET;
-> >  	return daddr - dev->archdata.dma_offset;
-> >  }
-> > +
-> > +u64 swiotlb_powerpc_get_required(struct device *dev);
-> > +#define swiotlb_get_required_mask swiotlb_powerpc_get_required
-> > +
-> >  #endif /* ASM_POWERPC_DMA_DIRECT_H */
-> > diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-> > index f65ecf57b66c..1d8c1da26ab3 100644
-> > --- a/arch/powerpc/include/asm/swiotlb.h
-> > +++ b/arch/powerpc/include/asm/swiotlb.h
-> > @@ -13,8 +13,6 @@
-> >  
-> >  #include <linux/swiotlb.h>
-> >  
-> > -extern const struct dma_map_ops powerpc_swiotlb_dma_ops;
-> > -
-> >  extern unsigned int ppc_swiotlb_enable;
-> >  int __init swiotlb_setup_bus_notifier(void);
-> >  
-> > diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-> > index 25986fcd1e5e..0c269de61f39 100644
-> > --- a/arch/powerpc/kernel/dma-swiotlb.c
-> > +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> > @@ -24,7 +24,7 @@
-> >  
-> >  unsigned int ppc_swiotlb_enable;
-> >  
-> > -static u64 swiotlb_powerpc_get_required(struct device *dev)
-> > +u64 swiotlb_powerpc_get_required(struct device *dev)
-> >  {
-> >  	u64 end, mask, max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
-> >  
-> > @@ -38,30 +38,6 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
-> >  	return mask;
-> >  }
-> >  
-> > -/*
-> > - * At the moment, all platforms that use this code only require
-> > - * swiotlb to be used if we're operating on HIGHMEM.  Since
-> > - * we don't ever call anything other than map_sg, unmap_sg,
-> > - * map_page, and unmap_page on highmem, use normal dma_ops
-> > - * for everything else.
-> > - */
-> > -const struct dma_map_ops powerpc_swiotlb_dma_ops = {
-> > -	.alloc = dma_direct_alloc,
-> > -	.free = dma_direct_free,
-> > -	.mmap = dma_nommu_mmap_coherent,
-> > -	.map_sg = swiotlb_map_sg_attrs,
-> > -	.unmap_sg = swiotlb_unmap_sg_attrs,
-> > -	.dma_supported = swiotlb_dma_supported,
-> > -	.map_page = swiotlb_map_page,
-> > -	.unmap_page = swiotlb_unmap_page,
-> > -	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
-> > -	.sync_single_for_device = swiotlb_sync_single_for_device,
-> > -	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
-> > -	.sync_sg_for_device = swiotlb_sync_sg_for_device,
-> > -	.mapping_error = swiotlb_dma_mapping_error,
-> > -	.get_required_mask = swiotlb_powerpc_get_required,
-> > -};
-> > -
-> >  void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
-> >  {
-> >  	struct pci_controller *hose;
-> > @@ -88,7 +64,7 @@ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
-> >  
-> >  	/* May need to bounce if the device can't address all of DRAM */
-> >  	if ((dma_get_mask(dev) + 1) < memblock_end_of_DRAM())
-> > -		set_dma_ops(dev, &powerpc_swiotlb_dma_ops);
-> > +		set_dma_ops(dev, &swiotlb_dma_ops);
-> >  
-> >  	return NOTIFY_DONE;
-> >  }
-> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> > index 918be816b097..daf44bc0108d 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -118,7 +118,7 @@ static void setup_swiotlb_ops(struct pci_controller *hose)
-> >  {
-> >  	if (ppc_swiotlb_enable) {
-> >  		hose->controller_ops.dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> > -		set_pci_dma_ops(&powerpc_swiotlb_dma_ops);
-> > +		set_pci_dma_ops(&swiotlb_dma_ops);
-> >  	}
-> >  }
-> >  #else
