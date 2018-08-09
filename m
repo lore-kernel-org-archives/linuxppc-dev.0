@@ -1,23 +1,23 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mH2S661FzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 15:32:31 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w795So6O021735
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 01:32:29 -0400
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2krddpv5kx-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mH2T2kPXzDqCD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 15:32:33 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w795T3SV132656
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 01:32:30 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kreetj5mk-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 01:32:29 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 01:32:30 -0400
 Received: from localhost
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Wed, 8 Aug 2018 23:32:28 -0600
+ Wed, 8 Aug 2018 23:32:29 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
@@ -32,10 +32,12 @@ To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Anton Blanchard <anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v6 0/2] powerpc: Detection and scheduler optimization for
- POWER9 bigcore
-Date: Thu,  9 Aug 2018 11:02:06 +0530
-Message-Id: <1533792728-6304-1-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v6 1/2] powerpc: Detect the presence of big-cores via "ibm,
+ thread-groups"
+Date: Thu,  9 Aug 2018 11:02:07 +0530
+In-Reply-To: <1533792728-6304-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1533792728-6304-1-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1533792728-6304-2-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,309 +49,352 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi,
+On IBM POWER9, the device tree exposes a property array identifed by
+"ibm,thread-groups" which will indicate which groups of threads share a
+particular set of resources.
 
-This is the fifth iteration of the patchset to add support for
-big-core on POWER9. This patch also optimizes the task placement on
-such big-core systems.
+As of today we only have one form of grouping identifying the group of
+threads in the core that share the L1 cache, translation cache and
+instruction data flow.
 
-The previous versions can be found here:
+This patch defines the helper function to parse the contents of
+"ibm,thread-groups" and a new structure to contain the parsed output.
 
-v5: https://lkml.org/lkml/2018/8/6/587
-v4: https://lkml.org/lkml/2018/7/24/79
-v3: https://lkml.org/lkml/2018/7/6/255
-v2: https://lkml.org/lkml/2018/7/3/401
-v1: https://lkml.org/lkml/2018/5/11/245
+The patch also creates the sysfs file named "small_core_siblings" that
+returns the physical ids of the threads in the core that share the L1
+cache, translation cache and instruction data flow.
 
-Changes :
-
-v5 --> v6:
-   - Fixed the code to build without warnings for !CONFIG_SCHED_SMT.
-   - While checking for shared caches on big-core system, use the
-     smallcore_sibling_mask to compare with compare with
-     l2_cache_mask, which will ensure that the CACHE level
-     sched-domain is created.
-   - Added benchmark results with hackbench to demonstrate the
-     benefits of having the CACHE level sched-domain.
-
-v4 --> v5:
-   - Patch 2 is entirely different: Instead of using CPU_FTR_ASYM_SMT
-     feature, use the small core siblings at the SMT level
-     sched-domain. This was suggested by Nicholas Piggin and Michael
-     Ellerman.
-
-   - A more detailed description follows below.
-
-v3 --> v4:
-   - Build fix for powerpc-g5 : Enable CPU_FTR_ASYM_SMT only on
-     CONFIG_PPC_POWERNV and CONFIG_PPC_PSERIES.
-   - Fixed a minor error in the ABI description.
-
-v2 --> v3
-    - Set sane values in the tg->property, tg->nr_groups inside
-    parse_thread_groups before returning due to an error.
-    - Define a helper function to determine whether a CPU device node
-      is a big-core or not.
-    - Updated the comments around the functions to describe the
-      arguments passed to them.
-
-v1 --> v2
-    - Added comments explaining the "ibm,thread-groups" device tree property.
-    - Uses cleaner device-tree parsing functions to parse the u32 arrays.
-    - Adds a sysfs file listing the small-core siblings for every CPU.
-    - Enables the scheduler optimization by setting the CPU_FTR_ASYM_SMT bit
-      in the cur_cpu_spec->cpu_features on detecting the presence
-      of interleaved big-core.
-    - Handles the corner case where there is only a single thread-group
-      or when there is a single thread in a thread-group.
-
-Description:
-~~~~~~~~~~~~~~~~~~~~
-A pair of IBM POWER9 SMT4 cores can be fused together to form a
-big-core with 8 SMT threads. This can be discovered via the
-"ibm,thread-groups" CPU property in the device tree which will
-indicate which group of threads that share the L1 cache, translation
-cache and instruction data flow.  If there are multiple such group of
-threads, then the core is a big-core. Furthermore, on POWER9 the thread-ids of
-such a big-core is obtained by interleaving the thread-ids of the
-component SMT4 cores.
-
-Eg: Threads in the pair of component SMT4 cores of an interleaved
-big-core are numbered {0,2,4,6} and {1,3,5,7} respectively.
-
- 	   -------------------------
-	   |  	    L1 Cache       |
-       ----------------------------------
-       |L2|     |     |     |      |
-       |  |  0  |  2  |  4  |  6   |Small Core0
-       |C |     |     |     |      |
-Big    |a --------------------------
-Core   |c |     |     |     |      |
-       |h |  1  |  3  |  5  |  7   | Small Core1
-       |e |     |     |     |      |
-       -----------------------------
-	  |  	    L1 Cache       |
-	  --------------------------
-
-On such a big-core system, when multiple tasks are scheduled to run on
-the big-core, we get the best performance when the tasks are spread
-across the pair of SMT4 cores.
-
-Eg: Suppose there 4 tasks {p1, p2, p3, p4} are run on a big core, then
-
-An Example of Optimal Task placement:
-	   --------------------------
-           |     |     |     |      |
-           |  0  |  2  |  4  |  6   |   Small Core0
-           | (p1)| (p2)|     |      |
-Big Core   --------------------------
-           |     |     |     |      |
-           |  1  |  3  |  5  |  7   |   Small Core1
-           |     | (p3)|     | (p4) |
-           --------------------------
-
-An example of Suboptimal Task placement:
-	   --------------------------
-           |     |     |     |      |
-           |  0  |  2  |  4  |  6   |   Small Core0
-           | (p1)| (p2)|     |  (p4)|
-Big Core   --------------------------
-           |     |     |     |      |
-           |  1  |  3  |  5  |  7   |   Small Core1
-           |     | (p3)|     |      |
-           --------------------------
-
-In order to achieve optimal task placement, on big-core systems, we
-define the SMT level sched-domain to consist of the threads belonging
-to the small cores. The CACHE level sched domain will consist of all
-the threads belonging to the big-core. With this, the Linux Kernel
-load-balancer will ensure that the tasks are spread across all the
-component small cores in the system, thereby yielding optimum
-performance.
-
-Furthermore, this solution works correctly across all SMT modes
-(8,4,2), as the interleaved thread-ids ensures that when we go to
-lower SMT modes (4,2) the threads are offlined in a descending order,
-thereby leaving equal number of threads from the component small cores
-online as illustrated below.
-
-With Patches: (ppc64_cpu --smt=on) : SMT domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- CPU0 attaching sched-domain(s):
-  domain-0: span=0,2,4,6 level=SMT
-   groups: 0:{ span=0 cap=294 }, 2:{ span=2 cap=294 },
-           4:{ span=4 cap=294 }, 6:{ span=6 cap=294 }
- CPU1 attaching sched-domain(s):
-  domain-0: span=1,3,5,7 level=SMT
-   groups: 1:{ span=1 cap=294 }, 3:{ span=3 cap=294 },
-           5:{ span=5 cap=294 }, 7:{ span=7 cap=294 }
-
-            Optimal Task placement (SMT 8)
-	   --------------------------
-           |     |     |     |      |
-           |  0  |  2  |  4  |  6   |   Small Core0
-           | (p1)| (p2)|     |      |
-Big Core   --------------------------
-           |     |     |     |      |
-           |  1  |  3  |  5  |  7   |   Small Core1
-           |     | (p3)|     | (p4) |
-           --------------------------
-
-With Patches : (ppc64_cpu --smt=4) : SMT domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- CPU0 attaching sched-domain(s):
-  domain-0: span=0,2 level=SMT
-   groups: 0:{ span=0 cap=589 }, 2:{ span=2 cap=589 }
- CPU1 attaching sched-domain(s):
-  domain-0: span=1,3 level=SMT
-   groups: 1:{ span=1 cap=589 }, 3:{ span=3 cap=589 }
-
-            Optimal Task placement (SMT 4)
-	   --------------------------
-           |     |     |     |      |
-           |  0  |  2  |  4  |  6   |   Small Core0
-           | (p1)| (p2)| Off | Off  |
-Big Core   --------------------------
-           |     |     |     |      |
-           |  1  |  3  |  5  |  7   |   Small Core1
-           | (p4)| (p3)| Off | Off  |
-           --------------------------
-
-With Patches : (ppc64_cpu --smt=2) : SMT domain ceases to exist.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            Optimal Task placement (SMT 2)
-	   --------------------------
-           | (p2)|     |     |      |
-           |  0  |  2  |  4  |  6   |   Small Core0
-           | (p1)| Off | Off | Off  |
-Big Core   --------------------------
-           | (p3)|     |     |      |
-           |  1  |  3  |  5  |  7   |   Small Core1
-           | (p4)| Off | Off | Off  |
-           --------------------------
-
-Thus, as an added advantage in SMT=2 mode, we will only have 3 levels
-in the sched-domain topology (CACHE, DIE and NUMA).
-
-The SMT levels, without the patches are as follows.
-
-Without Patches: (ppc64_cpu --smt=on) : SMT domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- CPU0 attaching sched-domain(s):
-  domain-0: span=0-7 level=SMT
-   groups: 0:{ span=0 cap=147 }, 1:{ span=1 cap=147 },
-           2:{ span=2 cap=147 }, 3:{ span=3 cap=147 },
-           4:{ span=4 cap=147 }, 5:{ span=5 cap=147 },
-	   6:{ span=6 cap=147 }, 7:{ span=7 cap=147 }
- CPU1 attaching sched-domain(s):
-  domain-0: span=0-7 level=SMT
-   groups: 1:{ span=1 cap=147 }, 2:{ span=2 cap=147 },
-           3:{ span=3 cap=147 }, 4:{ span=4 cap=147 },
-	   5:{ span=5 cap=147 }, 6:{ span=6 cap=147 },
-	   7:{ span=7 cap=147 }, 0:{ span=0 cap=147 }
-
-Without Patches: (ppc64_cpu --smt=4) : SMT domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- CPU0 attaching sched-domain(s):
-  domain-0: span=0-3 level=SMT
-   groups: 0:{ span=0 cap=294 }, 1:{ span=1 cap=294 },
-           2:{ span=2 cap=294 }, 3:{ span=3 cap=294 },
- CPU1 attaching sched-domain(s):
-  domain-0: span=0-3 level=SMT
-   groups: 1:{ span=1 cap=294 }, 2:{ span=2 cap=294 },
-           3:{ span=3 cap=294 }, 0:{ span=0 cap=294 }
-
-Without Patches: (ppc64_cpu --smt=2) : SMT domain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- CPU0 attaching sched-domain(s):
-  domain-0: span=0-1 level=SMT
-   groups: 0:{ span=0 cap=589 }, 1:{ span=1 cap=589 },
-
- CPU1 attaching sched-domain(s):
-  domain-0: span=0-1 level=SMT
-   groups: 1:{ span=1 cap=589 }, 0:{ span=0 cap=589 },
-
-This patchset contains two patches which on detecting the presence of
-big-cores, defines the SMT level sched domain to correspond to the
-threads of the small cores.
-
-Patch 1: adds support to detect the presence of
-big-cores and reports the small-core siblings of each CPU X
-via the sysfs file "/sys/devices/system/cpu/cpuX/small_core_siblings".
-
-Patch 2: Defines the SMT level sched domain to correspond to the
-threads of the small cores.
-
-Results:
-~~~~~~~~~~~~~~~~~
-1) 2 thread ebizzy
-~~~~~~~~~~~~~~~~~~~~~~
-Experimental results for ebizzy with 2 threads, bound to a single big-core
-show a marked improvement with this patchset over the 4.18-rc5 vanilla
-kernel.
-
-The result of 100 such runs for 4.18-rc7 kernel and the 4.18-rc7 +
-big-core-smt-patches are as follows
-
-4.18.0-rc7 vanilla
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        records/s    :  # samples  : Histogram
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-[      0 - 1000000]  :      0      : #
-[1000000 - 2000000]  :      3      : #
-[2000000 - 3000000]  :      7      : ##
-[3000000 - 4000000]  :      26     : ######
-[4000000 - 5000000]  :      4      : #
-[5000000 - 6000000]  :      60     : #############
-
-4.18.0-rc7 + big-core-smt-patches
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        records/s    :  # samples  : Histogram
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-[      0 - 1000000]  :      0      : #
-[1000000 - 2000000]  :      0      : #
-[2000000 - 3000000]  :      11     : ###
-[3000000 - 4000000]  :      0      : #
-[4000000 - 5000000]  :      0      : #
-[5000000 - 6000000]  :      89     : ##################
-
-2) Hackbench (perf bench sched pipe)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-100 iterations of the hackbench run both on 4.18-rc7 vanilla kernel
-and v.18-rc7 + big-core-smt-patches. All the values are time in
-seconds (Lower the better)
-
-4.18.0-rc7 vanilla
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    N           Min           Max        Median           Avg        Stddev
-x 100         4.225         9.754         6.174       6.00402    0.88311027
-
-4.18.0-rc7 + big-core-smt-patches (v6 : the present version)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    N           Min           Max        Median           Avg        Stddev
-x 100         4.069         6.745          6.08       5.72414    0.73853727
-
-The presence of the CACHE level sched-domain in v6, which was absent
-in v5 of the patches seems to be making a difference, as the median
-and the average times taken by hackbench both drop.
-
-4.18.0-rc7 + big-core-smt-patches (v5 : the previous version)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    N           Min           Max        Median           Avg        Stddev
-x 100         4.972        10.123         6.177         6.323    0.68728617
-
-
-Gautham R. Shenoy (2):
-  powerpc: Detect the presence of big-cores via "ibm,thread-groups"
-  powerpc: Use cpu_smallcore_sibling_mask at SMT level on bigcores
-
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
  Documentation/ABI/testing/sysfs-devices-system-cpu |   8 ++
  arch/powerpc/include/asm/cputhreads.h              |  22 +++
- arch/powerpc/include/asm/smp.h                     |   6 +
  arch/powerpc/kernel/setup-common.c                 | 154 +++++++++++++++++++++
- arch/powerpc/kernel/smp.c                          |  62 ++++++++-
  arch/powerpc/kernel/sysfs.c                        |  35 +++++
- 6 files changed, 282 insertions(+), 5 deletions(-)
+ 4 files changed, 219 insertions(+)
 
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+index 9c5e7732..52c9b50 100644
+--- a/Documentation/ABI/testing/sysfs-devices-system-cpu
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -487,3 +487,11 @@ Description:	Information about CPU vulnerabilities
+ 		"Not affected"	  CPU is not affected by the vulnerability
+ 		"Vulnerable"	  CPU is affected and no mitigation in effect
+ 		"Mitigation: $M"  CPU is affected and mitigation $M is in effect
++
++What: 		/sys/devices/system/cpu/cpu[0-9]+/small_core_siblings
++Date:		06-Aug-2018
++KernelVersion:	v4.19.0
++Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
++Description:	List of Physical ids of CPUs which share the L1 cache,
++		translation cache and instruction data-flow with this CPU.
++Values:		Comma separated list of decimal integers.
+diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
+index d71a909..33226d7 100644
+--- a/arch/powerpc/include/asm/cputhreads.h
++++ b/arch/powerpc/include/asm/cputhreads.h
+@@ -23,11 +23,13 @@
+ extern int threads_per_core;
+ extern int threads_per_subcore;
+ extern int threads_shift;
++extern bool has_big_cores;
+ extern cpumask_t threads_core_mask;
+ #else
+ #define threads_per_core	1
+ #define threads_per_subcore	1
+ #define threads_shift		0
++#define has_big_cores		0
+ #define threads_core_mask	(*get_cpu_mask(0))
+ #endif
+ 
+@@ -69,12 +71,32 @@ static inline cpumask_t cpu_online_cores_map(void)
+ 	return cpu_thread_mask_to_cores(cpu_online_mask);
+ }
+ 
++#define MAX_THREAD_LIST_SIZE	8
++struct thread_groups {
++	unsigned int property;
++	unsigned int nr_groups;
++	unsigned int threads_per_group;
++	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
++};
++
+ #ifdef CONFIG_SMP
+ int cpu_core_index_of_thread(int cpu);
+ int cpu_first_thread_of_core(int core);
++int parse_thread_groups(struct device_node *dn, struct thread_groups *tg);
++int get_cpu_thread_group_start(int cpu, struct thread_groups *tg);
+ #else
+ static inline int cpu_core_index_of_thread(int cpu) { return cpu; }
+ static inline int cpu_first_thread_of_core(int core) { return core; }
++static inline int parse_thread_groups(struct device_node *dn,
++				      struct thread_groups *tg)
++{
++	return -ENODATA;
++}
++
++static inline int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
++{
++	return -1;
++}
+ #endif
+ 
+ static inline int cpu_thread_in_core(int cpu)
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 40b44bb..989edc1 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -402,10 +402,12 @@ void __init check_for_initrd(void)
+ #ifdef CONFIG_SMP
+ 
+ int threads_per_core, threads_per_subcore, threads_shift;
++bool has_big_cores;
+ cpumask_t threads_core_mask;
+ EXPORT_SYMBOL_GPL(threads_per_core);
+ EXPORT_SYMBOL_GPL(threads_per_subcore);
+ EXPORT_SYMBOL_GPL(threads_shift);
++EXPORT_SYMBOL_GPL(has_big_cores);
+ EXPORT_SYMBOL_GPL(threads_core_mask);
+ 
+ static void __init cpu_init_thread_core_maps(int tpc)
+@@ -433,6 +435,152 @@ static void __init cpu_init_thread_core_maps(int tpc)
+ 
+ u32 *cpu_to_phys_id = NULL;
+ 
++/*
++ * parse_thread_groups: Parses the "ibm,thread-groups" device tree
++ *                      property for the CPU device node @dn and stores
++ *                      the parsed output in the thread_groups
++ *                      structure @tg.
++ *
++ * @dn: The device node of the CPU device.
++ * @tg: Pointer to a thread group structure into which the parsed
++ *     output of "ibm,thread-groups" is stored.
++ *
++ * ibm,thread-groups[0..N-1] array defines which group of threads in
++ * the CPU-device node can be grouped together based on the property.
++ *
++ * ibm,thread-groups[0] tells us the property based on which the
++ * threads are being grouped together. If this value is 1, it implies
++ * that the threads in the same group share L1, translation cache.
++ *
++ * ibm,thread-groups[1] tells us how many such thread groups exist.
++ *
++ * ibm,thread-groups[2] tells us the number of threads in each such
++ * group.
++ *
++ * ibm,thread-groups[3..N-1] is the list of threads identified by
++ * "ibm,ppc-interrupt-server#s" arranged as per their membership in
++ * the grouping.
++ *
++ * Example: If ibm,thread-groups = [1,2,4,5,6,7,8,9,10,11,12] it
++ * implies that there are 2 groups of 4 threads each, where each group
++ * of threads share L1, translation cache.
++ *
++ * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
++ * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
++ * 11, 12} structure
++ *
++ * Returns 0 on success, -EINVAL if the property does not exist,
++ * -ENODATA if property does not have a value, and -EOVERFLOW if the
++ * property data isn't large enough.
++ */
++int parse_thread_groups(struct device_node *dn,
++			struct thread_groups *tg)
++{
++	unsigned int nr_groups, threads_per_group, property;
++	int i;
++	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
++	u32 *thread_list;
++	size_t total_threads;
++	int ret;
++
++	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
++					 thread_group_array, 3);
++
++	if (ret)
++		goto out_err;
++
++	property = thread_group_array[0];
++	nr_groups = thread_group_array[1];
++	threads_per_group = thread_group_array[2];
++	total_threads = nr_groups * threads_per_group;
++
++	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
++					 thread_group_array,
++					 3 + total_threads);
++	if (ret)
++		goto out_err;
++
++	thread_list = &thread_group_array[3];
++
++	for (i = 0 ; i < total_threads; i++)
++		tg->thread_list[i] = thread_list[i];
++
++	tg->property = property;
++	tg->nr_groups = nr_groups;
++	tg->threads_per_group = threads_per_group;
++
++	return 0;
++out_err:
++	tg->property = 0;
++	tg->nr_groups = 0;
++	tg->threads_per_group = 0;
++	return ret;
++}
++
++/*
++ * dt_has_big_core : Parses the device tree property
++ *		    "ibm,thread-groups" for device node pointed by @dn
++ *		    and stores the parsed output in the structure
++ *		    pointed to by @tg.  Then checks if the output in
++ *		    @tg corresponds to a big-core.
++ *
++ * @dn: Device node pointer of the CPU node being checked for a
++ *      big-core.
++ * @tg: Pointer to thread_groups struct in which parsed output of
++ *      "ibm,thread-groups" is recorded.
++ *
++ * Returns true if the @dn points to a big-core.
++ * Returns false if there is an error in parsing "ibm,thread-groups"
++ * or the parsed output doesn't correspond to a big-core.
++ */
++static inline bool dt_has_big_core(struct device_node *dn,
++				   struct thread_groups *tg)
++{
++	if (parse_thread_groups(dn, tg))
++		return false;
++
++	if (tg->property != 1)
++		return false;
++
++	if (tg->nr_groups < 1)
++		return false;
++
++	return true;
++}
++
++/*
++ * get_cpu_thread_group_start : Searches the thread group in tg->thread_list
++ *                              that @cpu belongs to.
++ *
++ * @cpu : The logical CPU whose thread group is being searched.
++ * @tg : The thread-group structure of the CPU node which @cpu belongs
++ *       to.
++ *
++ * Returns the index to tg->thread_list that points to the the start
++ * of the thread_group that @cpu belongs to.
++ *
++ * Returns -1 if cpu doesn't belong to any of the groups pointed to by
++ * tg->thread_list.
++ */
++int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
++{
++	int hw_cpu_id = get_hard_smp_processor_id(cpu);
++	int i, j;
++
++	for (i = 0; i < tg->nr_groups; i++) {
++		int group_start = i * tg->threads_per_group;
++
++		for (j = 0; j < tg->threads_per_group; j++) {
++			int idx = group_start + j;
++
++			if (tg->thread_list[idx] == hw_cpu_id)
++				return group_start;
++		}
++	}
++
++	return -1;
++}
++
+ /**
+  * setup_cpu_maps - initialize the following cpu maps:
+  *                  cpu_possible_mask
+@@ -457,6 +605,7 @@ void __init smp_setup_cpu_maps(void)
+ 	int cpu = 0;
+ 	int nthreads = 1;
+ 
++	has_big_cores = true;
+ 	DBG("smp_setup_cpu_maps()\n");
+ 
+ 	cpu_to_phys_id = __va(memblock_alloc(nr_cpu_ids * sizeof(u32),
+@@ -467,6 +616,7 @@ void __init smp_setup_cpu_maps(void)
+ 		const __be32 *intserv;
+ 		__be32 cpu_be;
+ 		int j, len;
++		struct thread_groups tg;
+ 
+ 		DBG("  * %pOF...\n", dn);
+ 
+@@ -505,6 +655,10 @@ void __init smp_setup_cpu_maps(void)
+ 			cpu++;
+ 		}
+ 
++		if (has_big_cores && !dt_has_big_core(dn, &tg)) {
++			has_big_cores = false;
++		}
++
+ 		if (cpu >= nr_cpu_ids) {
+ 			of_node_put(dn);
+ 			break;
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 755dc98..f5717de 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -18,6 +18,7 @@
+ #include <asm/smp.h>
+ #include <asm/pmc.h>
+ #include <asm/firmware.h>
++#include <asm/cputhreads.h>
+ 
+ #include "cacheinfo.h"
+ #include "setup.h"
+@@ -1025,6 +1026,33 @@ static ssize_t show_physical_id(struct device *dev,
+ }
+ static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
+ 
++static ssize_t show_small_core_siblings(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, dev);
++	struct device_node *dn = of_get_cpu_node(cpu->dev.id, NULL);
++	struct thread_groups tg;
++	int i, j;
++	ssize_t ret = 0;
++
++	if (parse_thread_groups(dn, &tg))
++		return -ENODATA;
++
++	i = get_cpu_thread_group_start(cpu->dev.id, &tg);
++
++	if (i == -1)
++		return -ENODATA;
++
++	for (j = 0; j < tg.threads_per_group - 1; j++)
++		ret += sprintf(buf + ret, "%d,", tg.thread_list[i + j]);
++
++	ret += sprintf(buf + ret, "%d\n", tg.thread_list[i + j]);
++
++	return ret;
++}
++static DEVICE_ATTR(small_core_siblings, 0444, show_small_core_siblings, NULL);
++
+ static int __init topology_init(void)
+ {
+ 	int cpu, r;
+@@ -1048,6 +1076,13 @@ static int __init topology_init(void)
+ 			register_cpu(c, cpu);
+ 
+ 			device_create_file(&c->dev, &dev_attr_physical_id);
++
++			if (has_big_cores) {
++				const struct device_attribute *attr =
++				       &dev_attr_small_core_siblings;
++
++			       device_create_file(&c->dev, attr);
++			}
+ 		}
+ 	}
+ 	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
 -- 
 1.9.4
