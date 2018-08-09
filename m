@@ -1,24 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m96c6Xf3zDqkP
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:05:44 +1000 (AEST)
-Message-ID: <0b6b08b001ca2f7998192cc4bb7b8e13a0758b43.camel@kernel.crashing.org>
-Subject: Re: [PATCH 20/20] powerpc/dma: remove dma_nommu_mmap_coherent
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
- <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
- iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Date: Thu, 09 Aug 2018 11:05:09 +1000
-In-Reply-To: <20180730163824.10064-21-hch@lst.de>
-References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-21-hch@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41m96x31d1zDr5k
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:06:01 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 7/9] powerpc/pseries: Dump the SLB contents on SLB MCE
+ errors.
+In-Reply-To: <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
+References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
+ <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
+Date: Thu, 09 Aug 2018 11:05:58 +1000
+Message-ID: <87lg9g9wnd.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,91 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> The remaining implementation for coherent caches is functionally
-> identical to the default provided in common code.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index 7f22929ce915..233d25ff6f64 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -254,6 +254,10 @@ struct paca_struct {
+>  #endif
+>  #ifdef CONFIG_PPC_PSERIES
+>  	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
+> +
+> +	/* Capture SLB related old contents in MCE handler. */
+> +	struct slb_entry *mce_faulty_slbs;
+> +	u16 slb_save_cache_ptr;
+>  #endif /* CONFIG_PPC_PSERIES */
 
-> ---
->  arch/powerpc/include/asm/dma-mapping.h |  7 -------
->  arch/powerpc/kernel/dma-iommu.c        |  1 -
->  arch/powerpc/kernel/dma.c              | 13 -------------
->  arch/powerpc/platforms/pseries/vio.c   |  1 -
->  4 files changed, 22 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 879c4efba785..e62e23aa3714 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -18,13 +18,6 @@
->  #include <asm/io.h>
->  #include <asm/swiotlb.h>
->  
-> -/* Some dma direct funcs must be visible for use in other dma_ops */
-> -extern int dma_nommu_mmap_coherent(struct device *dev,
-> -				    struct vm_area_struct *vma,
-> -				    void *cpu_addr, dma_addr_t handle,
-> -				    size_t size, unsigned long attrs);
-> -
-> -
->  static inline unsigned long device_to_mask(struct device *dev)
->  {
->  	if (dev->dma_mask && *dev->dma_mask)
-> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-> index f9fe2080ceb9..bf5234e1f71b 100644
-> --- a/arch/powerpc/kernel/dma-iommu.c
-> +++ b/arch/powerpc/kernel/dma-iommu.c
-> @@ -114,7 +114,6 @@ int dma_iommu_mapping_error(struct device *dev, dma_addr_t dma_addr)
->  struct dma_map_ops dma_iommu_ops = {
->  	.alloc			= dma_iommu_alloc_coherent,
->  	.free			= dma_iommu_free_coherent,
-> -	.mmap			= dma_nommu_mmap_coherent,
->  	.map_sg			= dma_iommu_map_sg,
->  	.unmap_sg		= dma_iommu_unmap_sg,
->  	.dma_supported		= dma_iommu_dma_supported,
-> diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> index 08b12cbd7abf..5b71c9d1b8cc 100644
-> --- a/arch/powerpc/kernel/dma.c
-> +++ b/arch/powerpc/kernel/dma.c
-> @@ -70,18 +70,6 @@ static void dma_nommu_free_coherent(struct device *dev, size_t size,
->  	iommu_free_coherent(iommu, size, vaddr, dma_handle);
+             ^^^^^^^^^^^^^^^^^
+
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index e89f675f1b5e..16a53689ffd4 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -151,6 +151,79 @@ void slb_flush_and_rebolt_realmode(void)
+>  	get_paca()->slb_cache_ptr = 0;
 >  }
 >  
-> -int dma_nommu_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
-> -			     void *cpu_addr, dma_addr_t handle, size_t size,
-> -			     unsigned long attrs)
-> -{
-> -	unsigned long pfn = page_to_pfn(virt_to_page(cpu_addr));
-> -
-> -	return remap_pfn_range(vma, vma->vm_start,
-> -			       pfn + vma->vm_pgoff,
-> -			       vma->vm_end - vma->vm_start,
-> -			       vma->vm_page_prot);
-> -}
-> -
->  /* note: needs to be called arch_get_required_mask for dma-noncoherent.c */
->  u64 arch_get_required_mask(struct device *dev)
->  {
-> @@ -98,7 +86,6 @@ u64 arch_get_required_mask(struct device *dev)
->  const struct dma_map_ops dma_nommu_ops = {
->  	.alloc				= dma_nommu_alloc_coherent,
->  	.free				= dma_nommu_free_coherent,
-> -	.mmap				= dma_nommu_mmap_coherent,
->  	.map_sg				= dma_direct_map_sg,
->  	.map_page			= dma_direct_map_page,
->  	.get_required_mask		= arch_get_required_mask,
-> diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-> index 49e04ec19238..51d564313bd0 100644
-> --- a/arch/powerpc/platforms/pseries/vio.c
-> +++ b/arch/powerpc/platforms/pseries/vio.c
-> @@ -618,7 +618,6 @@ static u64 vio_dma_get_required_mask(struct device *dev)
->  static const struct dma_map_ops vio_dma_mapping_ops = {
->  	.alloc             = vio_dma_iommu_alloc_coherent,
->  	.free              = vio_dma_iommu_free_coherent,
-> -	.mmap		   = dma_nommu_mmap_coherent,
->  	.map_sg            = vio_dma_iommu_map_sg,
->  	.unmap_sg          = vio_dma_iommu_unmap_sg,
->  	.map_page          = vio_dma_iommu_map_page,
+> +void slb_save_contents(struct slb_entry *slb_ptr)
+> +{
+> +	int i;
+> +	unsigned long e, v;
+> +
+> +	/* Save slb_cache_ptr value. */
+> +	get_paca()->slb_save_cache_ptr = get_paca()->slb_cache_ptr;
+
+This isn't inside CONFIG_PPC_PSERIES which breaks lots of configs, eg
+powernv.
+
+  arch/powerpc/mm/slb.c:160:12: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+  arch/powerpc/mm/slb.c:218:27: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+  arch/powerpc/mm/slb.c:216:49: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+
+http://kisskb.ozlabs.ibm.com/kisskb/head/219f20e490add009194d94fdeb480da2e385f1c6/
+
+cheers
