@@ -1,41 +1,39 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mVRt4MWnzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 00:06:50 +1000 (AEST)
-Date: Thu, 9 Aug 2018 08:06:45 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
- kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>,
- kvm@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
-Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA
- Tesla V100
-Message-ID: <20180809080645.02f688c8@t450s.home>
-In-Reply-To: <cbe30444-9ac4-fc70-dfc0-4430a4d26905@ozlabs.ru>
-References: <20180607084420.29513-1-aik@ozlabs.ru>
- <20180607110409.5057ebac@w520.home>
- <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
- <20180607161541.21df6434@w520.home>
- <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
- <20180607214455.51ecfa1a@w520.home>
- <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
- <20180607230323.0148344e@w520.home>
- <20180710141020.759983a6@aik.ozlabs.ibm.com>
- <20180710163715.5c326985@t450s.home>
- <20180711192621.174d849a@aik.ozlabs.ibm.com>
- <4089d9ed-0c6b-3ba2-d447-049ce5b98764@ozlabs.ru>
- <20180730102957.47fa1191@t450s.home>
- <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
- <20180731082905.5c7cdeee@t450s.home>
- <38e4455c-e3b8-b867-1771-0f4ccf9d31d8@ozlabs.ru>
- <20180801101646.2de997c3@t450s.home>
- <dc0e5c0b-c6de-df1c-176f-7f64cbd6a7ba@ozlabs.ru>
- <cbe30444-9ac4-fc70-dfc0-4430a4d26905@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mWJv5PMjzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 00:45:50 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w79EjdLk054569
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 10:45:48 -0400
+Received: from e14.ny.us.ibm.com (e14.ny.us.ibm.com [129.33.205.204])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2krnmjdsgn-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 10:45:42 -0400
+Received: from localhost
+ by e14.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 9 Aug 2018 10:45:12 -0400
+Date: Thu, 9 Aug 2018 20:15:04 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>,
+ Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/64s: reimplement book3s idle code in C
+Reply-To: ego@linux.vnet.ibm.com
+References: <20180803041350.25493-1-npiggin@gmail.com>
+ <20180803041350.25493-2-npiggin@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180803041350.25493-2-npiggin@gmail.com>
+Message-Id: <20180809144504.GB14215@in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,154 +43,350 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 9 Aug 2018 14:21:29 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> On 08/08/2018 18:39, Alexey Kardashevskiy wrote:
-> > 
-> > 
-> > On 02/08/2018 02:16, Alex Williamson wrote:  
-> >> On Wed, 1 Aug 2018 18:37:35 +1000
-> >> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>  
-> >>> On 01/08/2018 00:29, Alex Williamson wrote:  
-> >>>> On Tue, 31 Jul 2018 14:03:35 +1000
-> >>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>>>     
-> >>>>> On 31/07/2018 02:29, Alex Williamson wrote:    
-> >>>>>> On Mon, 30 Jul 2018 18:58:49 +1000
-> >>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:    
-> >>>>>>> After some local discussions, it was pointed out that force disabling
-> >>>>>>> nvlinks won't bring us much as for an nvlink to work, both sides need to
-> >>>>>>> enable it so malicious guests cannot penetrate good ones (or a host)
-> >>>>>>> unless a good guest enabled the link but won't happen with a well
-> >>>>>>> behaving guest. And if two guests became malicious, then can still only
-> >>>>>>> harm each other, and so can they via other ways such network. This is
-> >>>>>>> different from PCIe as once PCIe link is unavoidably enabled, a well
-> >>>>>>> behaving device cannot firewall itself from peers as it is up to the
-> >>>>>>> upstream bridge(s) now to decide the routing; with nvlink2, a GPU still
-> >>>>>>> has means to protect itself, just like a guest can run "firewalld" for
-> >>>>>>> network.
-> >>>>>>>
-> >>>>>>> Although it would be a nice feature to have an extra barrier between
-> >>>>>>> GPUs, is inability to block the links in hypervisor still a blocker for
-> >>>>>>> V100 pass through?      
-> >>>>>>
-> >>>>>> How is the NVLink configured by the guest, is it 'on'/'off' or are
-> >>>>>> specific routes configured?       
-> >>>>>
-> >>>>> The GPU-GPU links need not to be blocked and need to be enabled
-> >>>>> (==trained) by a driver in the guest. There are no routes between GPUs
-> >>>>> in NVLink fabric, these are direct links, it is just a switch on each
-> >>>>> side, both switches need to be on for a link to work.    
-> >>>>
-> >>>> Ok, but there is at least the possibility of multiple direct links per
-> >>>> GPU, the very first diagram I find of NVlink shows 8 interconnected
-> >>>> GPUs:
-> >>>>
-> >>>> https://www.nvidia.com/en-us/data-center/nvlink/    
-> >>>
-> >>> Out design is like the left part of the picture but it is just a detail.  
-> >>
-> >> Unless we can specifically identify a direct link vs a mesh link, we
-> >> shouldn't be making assumptions about the degree of interconnect.
-> >>    
-> >>>> So if each switch enables one direct, point to point link, how does the
-> >>>> guest know which links to open for which peer device?    
-> >>>
-> >>> It uses PCI config space on GPUs to discover the topology.  
-> >>
-> >> So do we need to virtualize this config space if we're going to
-> >> virtualize the topology?
-> >>  
-> >>>> And of course
-> >>>> since we can't see the spec, a security audit is at best hearsay :-\    
-> >>>
-> >>> Yup, the exact discovery protocol is hidden.  
-> >>
-> >> It could be reverse engineered...
-> >>  
-> >>>>> The GPU-CPU links - the GPU bit is the same switch, the CPU NVlink state
-> >>>>> is controlled via the emulated PCI bridges which I pass through together
-> >>>>> with the GPU.    
-> >>>>
-> >>>> So there's a special emulated switch, is that how the guest knows which
-> >>>> GPUs it can enable NVLinks to?    
-> >>>
-> >>> Since it only has PCI config space (there is nothing relevant in the
-> >>> device tree at all), I assume (double checking with the NVIDIA folks
-> >>> now) the guest driver enables them all, tests which pair works and
-> >>> disables the ones which do not. This gives a malicious guest a tiny
-> >>> window of opportunity to break into a good guest. Hm :-/  
-> >>
-> >> Let's not minimize that window, that seems like a prime candidate for
-> >> an exploit.
-> >>  
-> >>>>>> If the former, then isn't a non-malicious
-> >>>>>> guest still susceptible to a malicious guest?      
-> >>>>>
-> >>>>> A non-malicious guest needs to turn its switch on for a link to a GPU
-> >>>>> which belongs to a malicious guest.    
-> >>>>
-> >>>> Actual security, or obfuscation, will we ever know...    
-> >>>>>>> If the latter, how is    
-> >>>>>> routing configured by the guest given that the guest view of the
-> >>>>>> topology doesn't match physical hardware?  Are these routes
-> >>>>>> deconfigured by device reset?  Are they part of the save/restore
-> >>>>>> state?  Thanks,      
-> >>>>
-> >>>> Still curious what happens to these routes on reset.  Can a later user
-> >>>> of a GPU inherit a device where the links are already enabled?  Thanks,    
-> >>>
-> >>> I am told that the GPU reset disables links. As a side effect, we get an
-> >>> HMI (a hardware fault which reset the host machine) when trying
-> >>> accessing the GPU RAM which indicates that the link is down as the
-> >>> memory is only accessible via the nvlink. We have special fencing code
-> >>> in our host firmware (skiboot) to fence this memory on PCI reset so
-> >>> reading from it returns zeroes instead of HMIs.  
-> >>
-> >> What sort of reset is required for this?  Typically we rely on
-> >> secondary bus reset for GPUs, but it would be a problem if GPUs were to
-> >> start implementing FLR and nobody had a spec to learn that FLR maybe
-> >> didn't disable the link.  The better approach to me still seems to be
-> >> virtualizing these NVLink config registers to an extent that the user
-> >> can only enabling links where they have ownership of both ends of the
-> >> connection.  Thanks,  
-> > 
-> > 
-> > I re-read what I wrote and I owe some explanation.
-> > 
-> > The link state can be:
-> > - disabled (or masked),
-> > - enabled (or not-disabled? unmasked?),
-> > - trained (configured).
-> > 
-> > At the moment no reset disables links, on sec bus reset they are
-> > unconfigured and go to the initial enabled-and-not-trained state which
-> > is the default config. The NVIDIA driver in the guest trains links to do
-> > the topology discovery. We can disable links and this disabled status
-> > remains until sec bus reset and there is no way to re-enable links other
-> > than sec bus reset. This is what I get from NVIDIA. FLR should not be
-> > able to change a thing here.  
+Hello Nicholas,
+On Fri, Aug 03, 2018 at 02:13:50PM +1000, Nicholas Piggin wrote:
+> Reimplement Book3S idle code in C, moving POWER7/8/9 implementation
+> speific HV idle code to the powernv platform code. Generic book3s
+> assembly stubs are kept in common code and used only to save and
+> restore the stack frame and non-volatile GPRs just before going to
+> idle and just after waking up, which can return into C code.
 > 
+> Moving the HMI, SPR, OPAL, locking, etc. to C is the only real
+> way this stuff will cope with non-trivial new CPU implementation
+> details, firmware changes, etc., without becoming unmaintainable.
 > 
-> btw using this masking mechanism does not involve any virtualizing -
-> these are MMIO registers which a powernv platform reset hook will write
-> to in order to stay in sync with already configured IOMMU groups and
-> that's all, the guest will still be able to access them with no
-> filtering on the way, it just won't do anything. Or this is still called
-> virtualizing?
+> This is not a strict translation to C code, there are some
+> differences.
+> 
+> - Idle wakeup no longer uses the ->cpu_restore call to reinit SPRs,
+>   but saves and restores them all explicitly.
+> 
+> - The optimisation where EC=ESL=0 idle modes did not have to save
+>   GPRs or change MSR is restored, because it's now simple to do.
+>   State loss modes that did not actually lose GPRs can use this
+>   optimization too.
+> 
+> - KVM secondary entry code is now more of a call/return style
+>   rather than spaghetti. nap_state_lost is not required beccause
+>   KVM always returns via NVGPR restorig path.
+> 
+> This seems pretty solid, so needs more review and testing now. The
+> KVM changes are pretty significant and complicated. POWER7 needs to
+> be tested too.
+> 
+> Open question:
+> - Why does P9 restore some of the PMU SPRs (but not others), and
+>   P8 only zeroes them?
 
-The only thing POWER specific here seems to be the NVLink interface to
-the CPU, so why would a reset hook be implemented as a powernv platform
-reset hook?  We know these GPUs also exist in x86 platforms, so
-anything we do on the endpoint should be shared regardless of the
-platform.  I'm envisioning that even if we simply disable the NVLink
-via a device specific reset, we'd probably still want to hide the
-NVLink capability from the user, otherwise it seems likely that they
-might try to interact with NVLink and we might induce problems that
-it's not in an expected state.  So if we hide the capability or trap
-access to the configuration registers, I'd call that virtualization.
-Thanks,
+We are restoring MMCR0 (from the value saved in the stack) and MMCR1,
+MMCR2, and MMCRA in the stop_sprs in PACA. We saw that MMCRH and MMCRC
+are cleared on both POWER8 and POWER9. Hence we didn't restore
+them. MMCRS is being initialized by the KVM code.
 
-Alex
+Is there anything apart from these that need to be restored ?
+
+> 
+> Since RFC v1:
+> - Now tested and working with POWER9 hash and radix.
+> - KVM support added. This took a bit of work to untangle and might
+>   still have some issues, but POWER9 seems to work including hash on
+>   radix with dependent threads mode.
+> - This snowballed a bit because of KVM and other details making it
+>   not feasible to leave POWER7/8 code alone. That's only half done
+>   at the moment.
+> - So far this trades about 800 lines of asm for 500 of C. With POWER7/8
+>   support done it might be another hundred or so lines of C.
+> 
+> Since RFC v2:
+> - Fixed deep state SLB reloading
+> - Now tested and working with POWER8.
+> - Accounted for most feedback.
+> 
+> Since RFC v3:
+> - Rebased to powerpc merge + idle state bugfix
+> - Split SLB flush/restore code out and shared with MCE code (pseries
+>   MCE patches can also use).
+> - More testing on POWER8 including KVM with secondaries.
+> - Performance testing looks good. EC=ESL=0 is about 5% faster, other
+>   stop states look a little faster too.
+> - Adjusted SPR saving to handler POWER7, haven't tested it.
+
+
+This patch looks good to me.
+
+A couple of comments below. 
+
+> ---
+
+[... snip ..]
+
+> @@ -178,23 +177,30 @@ struct paca_struct {
+>  #endif
+> 
+>  #ifdef CONFIG_PPC_POWERNV
+> -	/* Per-core mask tracking idle threads and a lock bit-[L][TTTTTTTT] */
+> -	u32 *core_idle_state_ptr;
+> -	u8 thread_idle_state;		/* PNV_THREAD_RUNNING/NAP/SLEEP	*/
+> -	/* Mask to indicate thread id in core */
+> -	u8 thread_mask;
+> -	/* Mask to denote subcore sibling threads */
+> -	u8 subcore_sibling_mask;
+> -	/* Flag to request this thread not to stop */
+> -	atomic_t dont_stop;
+> -	/* The PSSCR value that the kernel requested before going to stop */
+> -	u64 requested_psscr;
+> +	/* PowerNV idle fields */
+> +	/* PNV_CORE_IDLE_* bits, all siblings work on thread 0 paca */
+> +	unsigned long idle_state;
+> +	union {
+> +		/* P7/P8 specific fields */
+> +		struct {
+> +			/* PNV_THREAD_RUNNING/NAP/SLEEP	*/
+> +			u8 thread_idle_state;
+> +			/* Mask to indicate thread id in core */
+> +			u8 thread_mask;
+
+This is no longer needed. We can get this from cpu_thread_in_core()
+from the C code.
+
+The only place where we are currently using this is to DUMP the value
+of the thread_mask from xmon but not anywhere else in the idle entry
+code.
+
+
+
+> +			/* Mask to denote subcore sibling threads */
+> +			u8 subcore_sibling_mask;
+> +		};
+> 
+> -	/*
+> -	 * Save area for additional SPRs that need to be
+> -	 * saved/restored during cpuidle stop.
+> -	 */
+> -	struct stop_sprs stop_sprs;
+> +		/* P9 specific fields */
+> +		struct {
+> +#ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+> +			/* The PSSCR value that the kernel requested before going to stop */
+> +			u64 requested_psscr;
+> +			/* Flag to request this thread not to stop */
+> +			atomic_t dont_stop;
+> +#endif
+> +		};
+> +	};
+>  #endif
+[..snip..]
+
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -136,8 +136,9 @@ TRAMP_KVM(PACA_EXNMI, 0x100)
+> 
+>  #ifdef CONFIG_PPC_P7_NAP
+>  EXC_COMMON_BEGIN(system_reset_idle_common)
+> -	mfspr	r12,SPRN_SRR1
+> -	b	pnv_powersave_wakeup
+> +	mfspr	r3,SPRN_SRR1
+> +	bltlr	cr3	/* no state loss, return to idle caller */
+
+So, if we are in an ESL=EC=0 stop, and we get an xscom SRESET,
+I guess the expected value in SPRN_SRR1[46:47] will be
+SRR1_WS_NOLOSS.
+
+In this case, though the LR would correspond to the caller of
+isa3_idle_stop_noloss(), r3 would have SPRN_SRR1 as opposed to 0 which
+is what we would have returned from isa3_idle_stop_noloss().
+
+Do we use the value to service the NMI ?
+
+> +	b	idle_return_gpr_loss
+>  #endif
+> 
+>  /*
+> @@ -416,17 +417,17 @@ EXC_COMMON_BEGIN(machine_check_idle_common)
+>  	 * Then decrement MCE nesting after finishing with the stack.
+>  	 */
+>  	ld	r3,_MSR(r1)
+> +	ld	r4,_LINK(r1)
+> 
+>  	lhz	r11,PACA_IN_MCE(r13)
+>  	subi	r11,r11,1
+>  	sth	r11,PACA_IN_MCE(r13)
+> 
+> -	/* Turn off the RI bit because SRR1 is used by idle wakeup code. */
+> -	/* Recoverability could be improved by reducing the use of SRR1. */
+> -	li	r11,0
+> -	mtmsrd	r11,1
+> -
+> -	b	pnv_powersave_wakeup_mce
+> +	mtlr	r4
+> +	rlwinm	r10,r3,47-31,30,31
+> +	cmpwi	cr3,r10,2
+
+Can we use SRR1_WS_GPRLOSS here as well as in IDLETEST() ?
+
+> +	bltlr	cr3	/* no state loss, return to idle caller */
+> +	b	idle_return_gpr_loss
+
+[..snip..]
+
+> +_GLOBAL(isa206_idle_insn_mayloss)
+> +	std	r1,PACAR1(r13)
+> +	mflr	r4
+> +	mfcr	r5
+> +	/* use stack red zone rather than a new frame */
+> +	addi	r6,r1,-INT_FRAME_SIZE
+> +	SAVE_GPR(2, r6)
+> +	SAVE_NVGPRS(r6)
+> +	std	r4,_LINK(r6)
+> +	std	r5,_CCR(r6)
+> +	cmpwi	r3,PNV_THREAD_NAP
+> +	bne	1f
+> +	IDLE_STATE_ENTER_SEQ_NORET(PPC_NAP)
+
+We can have the following here, since we don't expect to return from
+nap. 
+
+        b	. /* catch bugs */"
+
+> +1:	cmpwi	r3,PNV_THREAD_SLEEP
+
+
+
+[..snip..]
+
+> +static unsigned long power7_idle_insn(unsigned long type)
+> +{
+> +	int cpu = raw_smp_processor_id();
+> +	int first = cpu_first_thread_sibling(cpu);
+> +	unsigned long thread = 1UL << cpu_thread_in_core(cpu);
+> +	unsigned long *state = &paca_ptrs[first]->idle_state;
+> +	unsigned long srr1;
+> +	bool full_winkle;
+> +	struct p7_sprs sprs;
+> +	bool sprs_saved = false;
+> +	int rc;
+> +
+> +	memset(&sprs, 0, sizeof(sprs));
+> +
+> +	if (unlikely(type != PNV_THREAD_NAP)) {
+> +		atomic_lock_thread_idle();
+> +
+> +		BUG_ON(!(*state & thread));
+> +		*state &= ~thread;
+> +
+> +		if (power7_fastsleep_workaround_entry) {
+> +			if ((*state & ((1 << threads_per_core) - 1)) == 0) {
+> +				rc = opal_config_cpu_idle_state(
+> +						OPAL_CONFIG_IDLE_FASTSLEEP,
+> +						OPAL_CONFIG_IDLE_APPLY);
+> +				BUG_ON(rc);
+> +			}
+> +		}
+> +
+> +		if (type == PNV_THREAD_WINKLE) {
+> +			sprs.tscr	= mfspr(SPRN_TSCR);
+> +			sprs.worc	= mfspr(SPRN_WORC);
+> +
+> +			sprs.sdr1	= mfspr(SPRN_SDR1);
+> +			sprs.rpr	= mfspr(SPRN_RPR);
+> +			sprs.amor	= mfspr(SPRN_AMOR);
+> +
+> +			sprs.lpcr	= mfspr(SPRN_LPCR);
+> +			if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
+> +				sprs.hfscr	= mfspr(SPRN_HFSCR);
+> +				sprs.fscr	= mfspr(SPRN_FSCR);
+> +			}
+> +			sprs.purr	= mfspr(SPRN_PURR);
+> +			sprs.spurr	= mfspr(SPRN_SPURR);
+> +			sprs.dscr	= mfspr(SPRN_DSCR);
+> +			sprs.wort	= mfspr(SPRN_WORT);
+> +
+> +			sprs_saved = true;
+> +
+> +			/*
+> +			 * Increment winkle counter and set all winkle bits if
+> +			 * all threads are winkling. This allows wakeup side to
+> +			 * distinguish between fast sleep and winkle state
+> +			 * loss. Fast sleep still has to resync the timebase so
+> +			 * this may not be a really big win.
+> +			 */
+> +			*state += 1 << PNV_CORE_IDLE_WINKLE_COUNT_SHIFT;
+> +			if ((*state & PNV_CORE_IDLE_WINKLE_COUNT_BITS) >> PNV_CORE_IDLE_WINKLE_COUNT_SHIFT == threads_per_core)
+> +				*state |= PNV_CORE_IDLE_THREAD_WINKLE_BITS;
+> +			WARN_ON((*state & PNV_CORE_IDLE_WINKLE_COUNT_BITS) == 0);
+> +		}
+> +
+> +		atomic_unlock_thread_idle();
+> +	}
+> +
+
+Could we add the following for debug purposes. We are already dumping
+thread_idle_state in xmon.
+
+      	paca->thread_idle_state = type; 
+
+> +	srr1 = isa206_idle_insn_mayloss(type);
+
+And the following: 
+      paca->thread_idle_state = PNV_THREAD_RUNNING;
+
+Apart from debugging purpose, IIRC, on some versions of POWER8,
+SRR1[46:47] wasn't being updated to 0b00 when we get an xscom SRESET
+while in running state. Thus, the only way to distinguish whether we
+entered 0x100 is due to a nap/fastsleep/winkle wakeup or due to an NMI
+caused when the processor wasn't in idle state was
+paca->thread_idle_state.
+
+> +
+> +	WARN_ON_ONCE(!srr1);
+> +	WARN_ON_ONCE(mfmsr() & (MSR_IR|MSR_DR));
+> +
+> +	if (unlikely((srr1 & SRR1_WAKEMASK_P8) == SRR1_WAKEHMI))
+[..snip..]
+
+> +static unsigned long power9_idle_stop(unsigned long psscr, bool mmu_on)
+> +{
+> +	int cpu = raw_smp_processor_id();
+> +	int first = cpu_first_thread_sibling(cpu);
+> +	unsigned long *state = &paca_ptrs[first]->idle_state;
+> +	unsigned long srr1;
+> +	unsigned long mmcr0 = 0;
+> +	struct p9_sprs sprs;
+> +	bool sprs_saved = false;
+> +
+> +	memset(&sprs, 0, sizeof(sprs));
+> +
+> +	if (!(psscr & (PSSCR_EC|PSSCR_ESL))) {
+> +		BUG_ON(!mmu_on);
+> +
+> +		/*
+> +		 * Wake synchronously. SRESET via xscom may still cause
+> +		 * a 0x100 powersave wakeup with SRR1 reason!
+> +		 */
+> +		srr1 = isa3_idle_stop_noloss(psscr);
+> +		if (likely(!srr1))
+> +			return 0;
+> +
+
+We come here if if we were woken up from a ESL=0 stop by a xscom
+SRESET. Where would the SRESET be handled ?
+
+> +		/*
+> +		 * Registers not saved, can't recover!
+> +		 * This would be a hardware bug
+> +		 */
+> +		BUG_ON((srr1 & SRR1_WAKESTATE) != SRR1_WS_NOLOSS);
+> +
+> +		goto out;
+> +	}
+> +
+
+
+The patch looks good otherwise, especially the idle_book3s.S :-)
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
+
+--
+Thanks and Regards
+gautham.
