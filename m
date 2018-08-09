@@ -1,39 +1,24 @@
-Return-Path: <BATV+f549808562659eaf3d0e+5464+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mHk86BgYzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:03:28 +1000 (AEST)
-Date: Wed, 8 Aug 2018 22:40:13 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>,
- Christoph Hellwig <hch@infradead.org>, Will Deacon <will.deacon@arm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- virtualization@lists.linux-foundation.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- aik@ozlabs.ru, robh@kernel.org, joe@perches.com,
- elfring@users.sourceforge.net, david@gibson.dropbear.id.au,
- jasowang@redhat.com, mpe@ellerman.id.au, linuxram@us.ibm.com,
- haren@linux.vnet.ibm.com, paulus@samba.org,
- srikar@linux.vnet.ibm.com, robin.murphy@arm.com,
- jean-philippe.brucker@arm.com, marc.zyngier@arm.com
-Subject: Re: [RFC 0/4] Virtio uses DMA API for all devices
-Message-ID: <20180809054013.GA20507@infradead.org>
-References: <20180807062117.GD32709@infradead.org>
- <aa59c7f8556bd4b332394a1dcf2d4a8faf3dc4a2.camel@kernel.crashing.org>
- <20180807135505.GA29034@infradead.org>
- <2103ecfe52d23cec03f185d08a87bfad9c9d82b5.camel@kernel.crashing.org>
- <20180808063158.GA2474@infradead.org>
- <4b596883892b5cb5560bef26fcd249e7107173ac.camel@kernel.crashing.org>
- <20180808123036.GA2525@infradead.org>
- <b8b9150a747453c070ad3b0e4c92d2b1b052ad06.camel@kernel.crashing.org>
- <20180808232210-mutt-send-email-mst@kernel.org>
- <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mJ316bK3zDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:18:05 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: rashmica <rashmicy@gmail.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] lib/test_hexdump: fix failure on big endian cpu
+In-Reply-To: <7857c69a-a209-541b-b2e1-9fe2e288ca65@gmail.com>
+References: <f3112437f62c2f48300535510918e8be1dceacfb.1533610877.git.christophe.leroy@c-s.fr>
+ <87mutxb9qy.fsf@concordia.ellerman.id.au>
+ <7857c69a-a209-541b-b2e1-9fe2e288ca65@gmail.com>
+Date: Thu, 09 Aug 2018 16:18:04 +1000
+Message-ID: <87ftzo9i77.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <98eb367ce322ad84baa31e3c7beffc4a42be8458.camel@kernel.crashing.org>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,21 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 09, 2018 at 08:13:32AM +1000, Benjamin Herrenschmidt wrote:
-> > > -	if (xen_domain())
-> > > +	if (xen_domain() || pseries_secure_vm())
-> > > 		return true;
-> > 
-> > I don't think it's pseries specific actually. E.g. I suspect AMD SEV
-> > might benefit from the same kind of hack.
-> 
-> As long as they can provide the same guarantee that the DMA ops are
-> completely equivalent between virtio and other PCI devices, at least on
-> the same bus, ie, we don't have to go hack special DMA ops.
-> 
-> I think the latter is really what Christoph wants to avoid for good
-> reasons.
+rashmica <rashmicy@gmail.com> writes:
+> On 08/08/18 17:25, Michael Ellerman wrote:
+>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
+>>> diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+>>> index 3f415d8101f3..626f580b4ff7 100644
+>>> --- a/lib/test_hexdump.c
+>>> +++ b/lib/test_hexdump.c
+>>> @@ -32,16 +32,33 @@ static const char * const test_data_2_le[] __initconst = {
+>>>  	"d14c", "9919", "b143", "0caf",
+>>>  };
+>>>  
+>>> +static const char * const test_data_2_be[] __initconst = {
+>>> +	"be32", "db7b", "0a18", "93b2",
+>>> +	"70ba", "c424", "7d83", "349b",
+>>> +	"a69c", "31ad", "9c0f", "ace9",
+>>> +	"4cd1", "1999", "43b1", "af0c",
+>>> +};
+>>> +
+>>>  static const char * const test_data_4_le[] __initconst = {
+>>>  	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
+>>>  	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
+>>>  };
+>>>  
+>>> +static const char * const test_data_4_be[] __initconst = {
+>>> +	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
+>>> +	"a69c31ad", "9c0face9", "4cd11999", "43b1af0c",
+>>> +};
+>>> +
+>> Is there a reason we can't do it all at compile time?
+>
+> mpe I sent a patch doing that awhile ago and you obviously didn't like
+> it because you never merged it :P
 
-Yes.  I also generally want to avoid too much arch specific magic.
+Sorry, I wasn't sure who should merge it, and never followed up.
 
-FYI, I'm off to a week-long vacation today, don't expect quick replies.
+cheers
