@@ -1,37 +1,25 @@
-Return-Path: <srs0=nndc=ky=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41m9yS3pWszDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:43:44 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41m9yS334Yz8tBY
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:43:44 +1000 (AEST)
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com
- [IPv6:2607:f8b0:4864:20::544])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41m9yR1wDVz9s4c
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 11:43:42 +1000 (AEST)
-Received: by mail-pg1-x544.google.com with SMTP id k3-v6so1941674pgq.5
- for <linuxppc-dev@ozlabs.org>; Wed, 08 Aug 2018 18:43:42 -0700 (PDT)
-Date: Thu, 9 Aug 2018 11:43:30 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
- <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Michal Suchanek <msuchanek@suse.com>,
- Ananth Narayan <ananth@in.ibm.com>, Laurent Dufour
- <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
- action on MCE.
-Message-ID: <20180809114330.7cad9866@roar.ozlabs.ibm.com>
-In-Reply-To: <87o9ecaovz.fsf@concordia.ellerman.id.au>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
- <87o9ecaovz.fsf@concordia.ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mBHD69pLzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 11:58:16 +1000 (AEST)
+Message-ID: <777010cd04645b55aa4197eddcc880f010f0ef6d.camel@kernel.crashing.org>
+Subject: Re: [PATCH 17/20] powerpc/dma-swiotlb: use generic swiotlb_dma_ops
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
+ <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
+Date: Thu, 09 Aug 2018 11:57:53 +1000
+In-Reply-To: <556a4302d13b1caafb223112c4de43d959146215.camel@kernel.crashing.org>
+References: <20180730163824.10064-1-hch@lst.de>
+ <20180730163824.10064-18-hch@lst.de>
+ <556a4302d13b1caafb223112c4de43d959146215.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,42 +29,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 09 Aug 2018 00:56:00 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
-> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> >
-> > Introduce recovery action for recovered memory errors (MCEs). There are
-> > soft memory errors like SLB Multihit, which can be a result of a bad
-> > hardware OR software BUG. Kernel can easily recover from these soft errors
-> > by flushing SLB contents. After the recovery kernel can still continue to
-> > function without any issue. But in some scenario's we may keep getting
-> > these soft errors until the root cause is fixed. To be able to analyze and
-> > find the root cause, best way is to gather enough data and system state at
-> > the time of MCE. Hence this patch introduces a sysctl knob where user can
-> > decide either to continue after recovery or panic the kernel to capture the
-> > dump.  
+On Thu, 2018-08-09 at 10:54 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
+> > These are identical to the arch specific ones, so remove them.
+> > 
+> > Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> I'm not convinced we want this.
-> 
-> As we've discovered it's often not possible to reconstruct what happened
-> based on a dump anyway.
-> 
-> The key thing you need is the content of the SLB and that's not included
-> in a dump.
-> 
-> So I think we should dump the SLB content when we get the MCE (which
-> this series does) and any other useful info, and then if we can recover
-> we should.
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Yeah it's a lot of knobs that administrators can hardly be expected to
-tune. Hypervisor or firmware should really eventually make the MCE
-unrecoverable if we aren't making progress.
+Note: We will still need to implement some custom variant of this
+for our secure VMs ... 
 
-That said, x86 has a bunch of options, and for debugging a rare crash
-or specialised installations it might be useful. But we should follow
-the normal format, /proc/sys/kernel/panic_on_mce.
+Basically we'll need to use the existing bounce bufferring as-is but
+the condition will be different, it won't be whether the address is
+below a certain limit, it will be *always*.
 
-Thanks,
-Nick
+Cheers,
+Ben.
+
+> > ---
+> >  arch/powerpc/include/asm/dma-direct.h |  4 ++++
+> >  arch/powerpc/include/asm/swiotlb.h    |  2 --
+> >  arch/powerpc/kernel/dma-swiotlb.c     | 28 ++-------------------------
+> >  arch/powerpc/sysdev/fsl_pci.c         |  2 +-
+> >  4 files changed, 7 insertions(+), 29 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/dma-direct.h b/arch/powerpc/include/asm/dma-direct.h
+> > index 0fba19445ae8..657f84ddb20d 100644
+> > --- a/arch/powerpc/include/asm/dma-direct.h
+> > +++ b/arch/powerpc/include/asm/dma-direct.h
+> > @@ -30,4 +30,8 @@ static inline phys_addr_t __dma_to_phys(struct device *dev, dma_addr_t daddr)
+> >  		return daddr - PCI_DRAM_OFFSET;
+> >  	return daddr - dev->archdata.dma_offset;
+> >  }
+> > +
+> > +u64 swiotlb_powerpc_get_required(struct device *dev);
+> > +#define swiotlb_get_required_mask swiotlb_powerpc_get_required
+> > +
+> >  #endif /* ASM_POWERPC_DMA_DIRECT_H */
+> > diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
+> > index f65ecf57b66c..1d8c1da26ab3 100644
+> > --- a/arch/powerpc/include/asm/swiotlb.h
+> > +++ b/arch/powerpc/include/asm/swiotlb.h
+> > @@ -13,8 +13,6 @@
+> >  
+> >  #include <linux/swiotlb.h>
+> >  
+> > -extern const struct dma_map_ops powerpc_swiotlb_dma_ops;
+> > -
+> >  extern unsigned int ppc_swiotlb_enable;
+> >  int __init swiotlb_setup_bus_notifier(void);
+> >  
+> > diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+> > index 25986fcd1e5e..0c269de61f39 100644
+> > --- a/arch/powerpc/kernel/dma-swiotlb.c
+> > +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> > @@ -24,7 +24,7 @@
+> >  
+> >  unsigned int ppc_swiotlb_enable;
+> >  
+> > -static u64 swiotlb_powerpc_get_required(struct device *dev)
+> > +u64 swiotlb_powerpc_get_required(struct device *dev)
+> >  {
+> >  	u64 end, mask, max_direct_dma_addr = dev->archdata.max_direct_dma_addr;
+> >  
+> > @@ -38,30 +38,6 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+> >  	return mask;
+> >  }
+> >  
+> > -/*
+> > - * At the moment, all platforms that use this code only require
+> > - * swiotlb to be used if we're operating on HIGHMEM.  Since
+> > - * we don't ever call anything other than map_sg, unmap_sg,
+> > - * map_page, and unmap_page on highmem, use normal dma_ops
+> > - * for everything else.
+> > - */
+> > -const struct dma_map_ops powerpc_swiotlb_dma_ops = {
+> > -	.alloc = dma_direct_alloc,
+> > -	.free = dma_direct_free,
+> > -	.mmap = dma_nommu_mmap_coherent,
+> > -	.map_sg = swiotlb_map_sg_attrs,
+> > -	.unmap_sg = swiotlb_unmap_sg_attrs,
+> > -	.dma_supported = swiotlb_dma_supported,
+> > -	.map_page = swiotlb_map_page,
+> > -	.unmap_page = swiotlb_unmap_page,
+> > -	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
+> > -	.sync_single_for_device = swiotlb_sync_single_for_device,
+> > -	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
+> > -	.sync_sg_for_device = swiotlb_sync_sg_for_device,
+> > -	.mapping_error = swiotlb_dma_mapping_error,
+> > -	.get_required_mask = swiotlb_powerpc_get_required,
+> > -};
+> > -
+> >  void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev)
+> >  {
+> >  	struct pci_controller *hose;
+> > @@ -88,7 +64,7 @@ static int ppc_swiotlb_bus_notify(struct notifier_block *nb,
+> >  
+> >  	/* May need to bounce if the device can't address all of DRAM */
+> >  	if ((dma_get_mask(dev) + 1) < memblock_end_of_DRAM())
+> > -		set_dma_ops(dev, &powerpc_swiotlb_dma_ops);
+> > +		set_dma_ops(dev, &swiotlb_dma_ops);
+> >  
+> >  	return NOTIFY_DONE;
+> >  }
+> > diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+> > index 918be816b097..daf44bc0108d 100644
+> > --- a/arch/powerpc/sysdev/fsl_pci.c
+> > +++ b/arch/powerpc/sysdev/fsl_pci.c
+> > @@ -118,7 +118,7 @@ static void setup_swiotlb_ops(struct pci_controller *hose)
+> >  {
+> >  	if (ppc_swiotlb_enable) {
+> >  		hose->controller_ops.dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> > -		set_pci_dma_ops(&powerpc_swiotlb_dma_ops);
+> > +		set_pci_dma_ops(&swiotlb_dma_ops);
+> >  	}
+> >  }
+> >  #else
