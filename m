@@ -1,36 +1,43 @@
-Return-Path: <bharat.bhushan@nxp.com>
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com
- (mail-eopbgr70085.outbound.protection.outlook.com [40.107.7.85])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl0-x22a.google.com (mail-pl0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c01::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mDH32gGLzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 13:28:14 +1000 (AEST)
-From: Bharat Bhushan <bharat.bhushan@nxp.com>
-To: Scott Wood <oss@buserror.net>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
- "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "robh@kernel.org" <robh@kernel.org>, "keescook@chromium.org"
- <keescook@chromium.org>, "tyreld@linux.vnet.ibm.com"
- <tyreld@linux.vnet.ibm.com>, "joe@perches.com" <joe@perches.com>
-Subject: RE: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
-Date: Thu, 9 Aug 2018 03:28:07 +0000
-Message-ID: <AM5PR0401MB25458654D6CEFBF2F05FC7709A250@AM5PR0401MB2545.eurprd04.prod.outlook.com>
-References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
- <1532684881-19310-6-git-send-email-Bharat.Bhushan@nxp.com>
- <ab2a113620123cb71364b6ae89328ae2fca49821.camel@buserror.net>
- <AM5PR0401MB254592DC0E917FD292B323BA9A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
- <aeff83355ee5235cfd6107dba06a5f7957b45c92.camel@buserror.net>
- <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
- <bef421feea16da2fdab333e63a6828741bd59055.camel@buserror.net>
-In-Reply-To: <bef421feea16da2fdab333e63a6828741bd59055.camel@buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mFSh5nDJzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 14:21:38 +1000 (AEST)
+Received: by mail-pl0-x22a.google.com with SMTP id j8-v6so1964875pll.12
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Aug 2018 21:21:38 -0700 (PDT)
+Subject: Re: [RFC PATCH kernel 0/5] powerpc/P9/vfio: Pass through NVIDIA Tesla
+ V100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>,
+ kvm-ppc@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>, kvm@vger.kernel.org,
+ Alistair Popple <alistair@popple.id.au>
+References: <20180607084420.29513-1-aik@ozlabs.ru>
+ <20180607110409.5057ebac@w520.home>
+ <e35a7bbea8b82c17f93eb6eb438df38a94097f2d.camel@kernel.crashing.org>
+ <20180607161541.21df6434@w520.home>
+ <f0561258-698c-9086-255d-ff6c1aa16cfd@ozlabs.ru>
+ <20180607214455.51ecfa1a@w520.home>
+ <ff6de203-9287-8158-f0fb-ee9146245bea@ozlabs.ru>
+ <20180607230323.0148344e@w520.home>
+ <20180710141020.759983a6@aik.ozlabs.ibm.com>
+ <20180710163715.5c326985@t450s.home>
+ <20180711192621.174d849a@aik.ozlabs.ibm.com>
+ <4089d9ed-0c6b-3ba2-d447-049ce5b98764@ozlabs.ru>
+ <20180730102957.47fa1191@t450s.home>
+ <09755067-29e2-8d9c-9a4b-a368d0b5add4@ozlabs.ru>
+ <20180731082905.5c7cdeee@t450s.home>
+ <38e4455c-e3b8-b867-1771-0f4ccf9d31d8@ozlabs.ru>
+ <20180801101646.2de997c3@t450s.home>
+ <dc0e5c0b-c6de-df1c-176f-7f64cbd6a7ba@ozlabs.ru>
+Message-ID: <cbe30444-9ac4-fc70-dfc0-4430a4d26905@ozlabs.ru>
+Date: Thu, 9 Aug 2018 14:21:29 +1000
 MIME-Version: 1.0
+In-Reply-To: <dc0e5c0b-c6de-df1c-176f-7f64cbd6a7ba@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,91 +47,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCBbbWFp
-bHRvOm9zc0BidXNlcnJvci5uZXRdDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXVndXN0IDgsIDIwMTgg
-MTE6MjcgUE0NCj4gVG86IEJoYXJhdCBCaHVzaGFuIDxiaGFyYXQuYmh1c2hhbkBueHAuY29tPjsN
-Cj4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOyBtcGVAZWxsZXJt
-YW4uaWQuYXU7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IG1hcmsucnV0bGFuZEBhcm0u
-Y29tOw0KPiBrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnOyBncmVna2hAbGludXhmb3VuZGF0
-aW9uLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBDYzogcm9i
-aEBrZXJuZWwub3JnOyBrZWVzY29va0BjaHJvbWl1bS5vcmc7IHR5cmVsZEBsaW51eC52bmV0Lmli
-bS5jb207DQo+IGpvZUBwZXJjaGVzLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1JGQyA1LzVdIHBvd2Vy
-cGMvZnNsOiBBZGQgc3VwcG9ydGVkLWlycS1yYW5nZXMgZm9yIFAyMDIwDQo+IA0KPiBPbiBXZWQs
-IDIwMTgtMDgtMDggYXQgMDY6MjggKzAwMDAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFNjb3R0IFdvb2QgW21haWx0
-bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgOCwgMjAx
-OCAxMToyNiBBTQ0KPiA+ID4gVG86IEJoYXJhdCBCaHVzaGFuIDxiaGFyYXQuYmh1c2hhbkBueHAu
-Y29tPjsNCj4gPiA+IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgcGF1bHVzQHNhbWJhLm9yZzsg
-bXBlQGVsbGVybWFuLmlkLmF1Ow0KPiA+ID4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbWFy
-ay5ydXRsYW5kQGFybS5jb207DQo+ID4gPiBrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnOyBn
-cmVna2hAbGludXhmb3VuZGF0aW9uLm9yZzsNCj4gPiA+IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
-b3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+ID4gPiBrZXJuZWxA
-dmdlci5rZXJuZWwub3JnDQo+ID4gPiBDYzogcm9iaEBrZXJuZWwub3JnOyBrZWVzY29va0BjaHJv
-bWl1bS5vcmc7DQo+ID4gPiB0eXJlbGRAbGludXgudm5ldC5pYm0uY29tOyBqb2VAcGVyY2hlcy5j
-b20NCj4gPiA+IFN1YmplY3Q6IFJlOiBbUkZDIDUvNV0gcG93ZXJwYy9mc2w6IEFkZCBzdXBwb3J0
-ZWQtaXJxLXJhbmdlcyBmb3INCj4gPiA+IFAyMDIwDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAyMDE4
-LTA4LTA4IGF0IDAzOjQ0ICswMDAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiAt
-LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFNjb3R0IFdvb2QgW21h
-aWx0bzpvc3NAYnVzZXJyb3IubmV0XQ0KPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgQXVndXN0
-IDgsIDIwMTggMjo0NCBBTQ0KPiA+ID4gPiA+IFRvOiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJo
-dXNoYW5AbnhwLmNvbT47DQo+ID4gPiA+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVs
-dXNAc2FtYmEub3JnOyBtcGVAZWxsZXJtYW4uaWQuYXU7DQo+ID4gPiA+ID4gZ2FsYWtAa2VybmVs
-LmNyYXNoaW5nLm9yZzsgbWFyay5ydXRsYW5kQGFybS5jb207DQo+ID4gPiA+ID4ga3N0ZXdhcnRA
-bGludXhmb3VuZGF0aW9uLm9yZzsgZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7DQo+ID4gPiA+
-ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnOw0KPiA+ID4gPiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gPiA+ID4g
-Q2M6IHJvYmhAa2VybmVsLm9yZzsga2Vlc2Nvb2tAY2hyb21pdW0ub3JnOw0KPiA+ID4gPiA+IHR5
-cmVsZEBsaW51eC52bmV0LmlibS5jb207IGpvZUBwZXJjaGVzLmNvbQ0KPiA+ID4gPiA+IFN1Ympl
-Y3Q6IFJlOiBbUkZDIDUvNV0gcG93ZXJwYy9mc2w6IEFkZCBzdXBwb3J0ZWQtaXJxLXJhbmdlcyBm
-b3INCj4gPiA+ID4gPiBQMjAyMA0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gRnJpLCAyMDE4LTA3
-LTI3IGF0IDE1OjE4ICswNTMwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+IE1Q
-SUMgb24gTlhQIChGcmVlc2NhbGUpIFAyMDIwIHN1cHBvcnRzIGZvbGxvd2luZyBpcnENCj4gPiA+
-ID4gPiA+IHJhbmdlczoNCj4gPiA+ID4gPiA+ICAgPiAwIC0gMTEgICAgICAoRXh0ZXJuYWwgaW50
-ZXJydXB0KQ0KPiA+ID4gPiA+ID4gICA+IDE2IC0gNzkgICAgIChJbnRlcm5hbCBpbnRlcnJ1cHQp
-DQo+ID4gPiA+ID4gPiAgID4gMTc2IC0gMTgzICAgKE1lc3NhZ2luZyBpbnRlcnJ1cHQpDQo+ID4g
-PiA+ID4gPiAgID4gMjI0IC0gMjMxICAgKFNoYXJlZCBtZXNzYWdlIHNpZ25hbGVkIGludGVycnVw
-dCkNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFdoeSBkb24ndCB5b3UgY29udmVydCB0byB0aGUgNC1j
-ZWxsIGludGVycnVwdCBzcGVjaWZpZXJzIHRoYXQNCj4gPiA+ID4gPiBtYWtlIGRlYWxpbmcgd2l0
-aCB0aGVzZSByYW5nZXMgbGVzcyBlcnJvci1wcm9uZT8NCj4gPiA+ID4NCj4gPiA+ID4gT2sgLCB3
-aWxsIGRvIGlmIHdlIGFncmVlIHRvIGhhdmUgdGhpcyBzZXJpZXMgYXMgcGVyIGNvbW1lbnQgb24N
-Cj4gPiA+ID4gb3RoZXIgcGF0Y2guDQo+ID4gPg0KPiA+ID4gSWYgeW91J3JlIGNvbmNlcm5lZCB3
-aXRoIGVycm9ycywgdGhpcyB3b3VsZCBiZSBhIGdvb2QgdGhpbmdzIHRvIGRvDQo+ID4gPiByZWdh
-cmRsZXNzLg0KPiA+ID4gIEFjdHVhbGx5LCBpdCBzZWVtcyB0aGF0IHAyMDIwc2ktcG9zdC5kdHNp
-IGFscmVhZHkgdXNlcyA0LWNlbGwgaW50ZXJydXB0cy4NCj4gPiA+DQo+ID4gPiBXaGF0IGlzIG1v
-dGl2YXRpbmcgdGhpcyBwYXRjaHNldD8gIElzIHRoZXJlIHNvbWV0aGluZyB3cm9uZyBpbiB0aGUN
-Cj4gPiA+IGV4aXN0aW5nIGR0cyBmaWxlcz8NCj4gPg0KPiA+IFRoZXJlIGlzIG5vIGVycm9yIGlu
-IGRldmljZSB0cmVlLiBNYWluIG1vdGl2YXRpb24gaXMgdG8gaW1wcm92ZSBjb2RlDQo+ID4gZm9y
-IGZvbGxvd2luZyByZWFzb25zOg0KPiA+ICAgLSBXaGlsZSBjb2RlIHN0dWR5IGl0IHdhcyBmb3Vu
-ZCB0aGF0IGlmIGEgcmVzZXJ2ZWQgaXJxLW51bWJlciB1c2VkDQo+ID4gdGhlbiB0aGVyZSBhcmUg
-bm8gY2hlY2sgaW4gZHJpdmVyLiBpcnEgd2lsbCBiZSBjb25maWd1cmVkIGFzIGNvcnJlY3QNCj4g
-PiBhbmQgaW50ZXJydXB0IHdpbGwgbmV2ZXIgZmlyZS4NCj4gDQo+IEFnYWluLCBhIHdyb25nIGlu
-dGVycnVwdCBudW1iZXIgd29uJ3QgZmlyZSwgd2hldGhlciBhbiBpbnRlcnJ1cHQgYnkgdGhhdA0K
-PiBudW1iZXIgZXhpc3RzIG9yIG5vdC4gIEkgd291bGRuJ3QgbWluZCBhIHNhbml0eSBjaGVjayBp
-biB0aGUgZHJpdmVyIGlmIHRoZQ0KPiBwcm9ncmFtbWluZyBtb2RlbCBtYWRlIGl0IHByb3Blcmx5
-IGRpc2NvdmVyYWJsZSwgYnV0IEkgZG9uJ3QgdGhpbmsgaXQncw0KPiB3b3J0aCBtZXNzaW5nIHdp
-dGggZGV2aWNlIHRyZWVzIGp1c3QgZm9yIHRoaXMgKGFuZCBldmVuIGxlc3Mgc28gZ2l2ZW4gdGhh
-dA0KPiB0aGVyZSBkb24ndCBzZWVtIHRvIGJlIG5ldyBjaGlwcyBjb21pbmcgb3V0IHRoYXQgdGhp
-cyB3b3VsZCBiZSByZWxldmFudA0KPiBmb3IpLg0KDQpGYWlyIGVub3VnaCwgd2UgY2FuIHVzZSBN
-UElDIHZlcnNpb24gdG8gZGVmaW5lIHN1cHBvcnRlZCBpbnRlcnJ1cHRzIHJhbmdlcy4gV2lsbCB0
-aGF0IGJlIGFjY2VwdGFibGUuDQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiA+ID4gPiBPbmUg
-b3RoZXIgY29uZnVzaW5nIG9ic2VydmF0aW9uIEkgaGF2ZSBpcyB0aGF0ICJpcnFfY291bnQiIGZy
-b20NCj4gPiA+ID4gcGxhdGZvcm0gY29kZSBpcyBnaXZlbiBwcmVjZWRlbmNlIG92ZXIgImxhc3Qt
-aW50ZXJydXB0LXNvdXJjZSIgaW4NCj4gPiA+ID4gZGV2aWNlLQ0KPiA+ID4NCj4gPiA+IHRyZWUu
-DQo+ID4gPiA+IFNob3VsZCBub3QgZGV2aWNlLXRyZWUgc2hvdWxkIGhhdmUgcHJlY2VkZW5jZSBv
-dGhlcndpc2UgdGhlcmUgaXMNCj4gPiA+ID4gbm8gcG9pbnQgdXNpbmcgIiBsYXN0LWludGVycnVw
-dC1zb3VyY2UiIGlmIHBsYXRmb3JtIGNvZGUgcGFzc2VzDQo+ID4gPiA+ICJpcnFfY291bnQiIGlu
-IG1waWNfYWxsb2MoKS4NCj4gPiA+DQo+ID4gPiBNYXliZSwgdGhvdWdoIEkgZG9uJ3QgdGhpbmsg
-aXQgbWF0dGVycyBtdWNoIGdpdmVuIHRoYXQNCj4gPiA+IGxhc3QtaW50ZXJydXB0LSBzb3VyY2Ug
-d2FzIG9ubHkgYWRkZWQgdG8gYXZvaWQgaGF2aW5nIHRvIHBhc3MNCj4gPiA+IGlycV9jb3VudCBp
-biBwbGF0Zm9ybSBjb2RlLg0KPiA+DQo+ID4gVGhhbmtzIGZvciBjbGFyaWZ5aW5nOw0KPiA+DQo+
-ID4gTXkgdW5kZXJzdGFuZGluZyB3YXMgdGhhdCAibGFzdC1pbnRlcnJ1cHQtc291cmNlIiBhZGRl
-ZCB0byBlbnN1cmUgdGhhdA0KPiA+IHdlIGNhbiBvdmVyLXJpZGUgdmFsdWUgcGFzc2VkIGZyb20g
-cGxhdGZvcm0gY29kZS4gSW4gdGhhdCBjYXNlIHdlIGRvDQo+ID4gbm90IG5lZWQgdG8gY2hhbmdl
-IGNvZGUgYW5kIGNhbiBjb250cm9sIGZyb20gZGV2aWNlIHRyZWUuDQo+IA0KPiBUaGUgY2hhbmdl
-bG9nIHNheXMsICJUbyBhdm9pZCBuZWVkaW5nIHRvIHdyaXRlIGN1c3RvbSBib2FyZC1zcGVjaWZp
-YyBjb2RlDQo+IHRvIGRldGVjdCB0aGF0IHNjZW5hcmlvLCBhbGxvdyBpdCB0byBiZSBlYXNpbHkg
-b3ZlcnJpZGRlbiBpbiB0aGUgZGV2aWNlLXRyZWUsIg0KPiB3aGVyZSAiaXQiIG1lYW5zIHRoZSB2
-YWx1ZSBwcm92aWRlZCBieSBoYXJkd2FyZS4gIFRoZSBnb2FsIHdhcyB0byBwYXNzIGluDQo+IDI1
-NiB3aXRob3V0IGJvYXJkIGNvZGUgaW4gdGhlIGtlcm5lbCwgbm90IHRvIG92ZXJyaWRlIHRoZSAy
-NTYuDQo+IA0KPiAtU2NvdHQNCg0K
+
+
+On 08/08/2018 18:39, Alexey Kardashevskiy wrote:
+> 
+> 
+> On 02/08/2018 02:16, Alex Williamson wrote:
+>> On Wed, 1 Aug 2018 18:37:35 +1000
+>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>
+>>> On 01/08/2018 00:29, Alex Williamson wrote:
+>>>> On Tue, 31 Jul 2018 14:03:35 +1000
+>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>>   
+>>>>> On 31/07/2018 02:29, Alex Williamson wrote:  
+>>>>>> On Mon, 30 Jul 2018 18:58:49 +1000
+>>>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:  
+>>>>>>> After some local discussions, it was pointed out that force disabling
+>>>>>>> nvlinks won't bring us much as for an nvlink to work, both sides need to
+>>>>>>> enable it so malicious guests cannot penetrate good ones (or a host)
+>>>>>>> unless a good guest enabled the link but won't happen with a well
+>>>>>>> behaving guest. And if two guests became malicious, then can still only
+>>>>>>> harm each other, and so can they via other ways such network. This is
+>>>>>>> different from PCIe as once PCIe link is unavoidably enabled, a well
+>>>>>>> behaving device cannot firewall itself from peers as it is up to the
+>>>>>>> upstream bridge(s) now to decide the routing; with nvlink2, a GPU still
+>>>>>>> has means to protect itself, just like a guest can run "firewalld" for
+>>>>>>> network.
+>>>>>>>
+>>>>>>> Although it would be a nice feature to have an extra barrier between
+>>>>>>> GPUs, is inability to block the links in hypervisor still a blocker for
+>>>>>>> V100 pass through?    
+>>>>>>
+>>>>>> How is the NVLink configured by the guest, is it 'on'/'off' or are
+>>>>>> specific routes configured?     
+>>>>>
+>>>>> The GPU-GPU links need not to be blocked and need to be enabled
+>>>>> (==trained) by a driver in the guest. There are no routes between GPUs
+>>>>> in NVLink fabric, these are direct links, it is just a switch on each
+>>>>> side, both switches need to be on for a link to work.  
+>>>>
+>>>> Ok, but there is at least the possibility of multiple direct links per
+>>>> GPU, the very first diagram I find of NVlink shows 8 interconnected
+>>>> GPUs:
+>>>>
+>>>> https://www.nvidia.com/en-us/data-center/nvlink/  
+>>>
+>>> Out design is like the left part of the picture but it is just a detail.
+>>
+>> Unless we can specifically identify a direct link vs a mesh link, we
+>> shouldn't be making assumptions about the degree of interconnect.
+>>  
+>>>> So if each switch enables one direct, point to point link, how does the
+>>>> guest know which links to open for which peer device?  
+>>>
+>>> It uses PCI config space on GPUs to discover the topology.
+>>
+>> So do we need to virtualize this config space if we're going to
+>> virtualize the topology?
+>>
+>>>> And of course
+>>>> since we can't see the spec, a security audit is at best hearsay :-\  
+>>>
+>>> Yup, the exact discovery protocol is hidden.
+>>
+>> It could be reverse engineered...
+>>
+>>>>> The GPU-CPU links - the GPU bit is the same switch, the CPU NVlink state
+>>>>> is controlled via the emulated PCI bridges which I pass through together
+>>>>> with the GPU.  
+>>>>
+>>>> So there's a special emulated switch, is that how the guest knows which
+>>>> GPUs it can enable NVLinks to?  
+>>>
+>>> Since it only has PCI config space (there is nothing relevant in the
+>>> device tree at all), I assume (double checking with the NVIDIA folks
+>>> now) the guest driver enables them all, tests which pair works and
+>>> disables the ones which do not. This gives a malicious guest a tiny
+>>> window of opportunity to break into a good guest. Hm :-/
+>>
+>> Let's not minimize that window, that seems like a prime candidate for
+>> an exploit.
+>>
+>>>>>> If the former, then isn't a non-malicious
+>>>>>> guest still susceptible to a malicious guest?    
+>>>>>
+>>>>> A non-malicious guest needs to turn its switch on for a link to a GPU
+>>>>> which belongs to a malicious guest.  
+>>>>
+>>>> Actual security, or obfuscation, will we ever know...  
+>>>>>>> If the latter, how is  
+>>>>>> routing configured by the guest given that the guest view of the
+>>>>>> topology doesn't match physical hardware?  Are these routes
+>>>>>> deconfigured by device reset?  Are they part of the save/restore
+>>>>>> state?  Thanks,    
+>>>>
+>>>> Still curious what happens to these routes on reset.  Can a later user
+>>>> of a GPU inherit a device where the links are already enabled?  Thanks,  
+>>>
+>>> I am told that the GPU reset disables links. As a side effect, we get an
+>>> HMI (a hardware fault which reset the host machine) when trying
+>>> accessing the GPU RAM which indicates that the link is down as the
+>>> memory is only accessible via the nvlink. We have special fencing code
+>>> in our host firmware (skiboot) to fence this memory on PCI reset so
+>>> reading from it returns zeroes instead of HMIs.
+>>
+>> What sort of reset is required for this?  Typically we rely on
+>> secondary bus reset for GPUs, but it would be a problem if GPUs were to
+>> start implementing FLR and nobody had a spec to learn that FLR maybe
+>> didn't disable the link.  The better approach to me still seems to be
+>> virtualizing these NVLink config registers to an extent that the user
+>> can only enabling links where they have ownership of both ends of the
+>> connection.  Thanks,
+> 
+> 
+> I re-read what I wrote and I owe some explanation.
+> 
+> The link state can be:
+> - disabled (or masked),
+> - enabled (or not-disabled? unmasked?),
+> - trained (configured).
+> 
+> At the moment no reset disables links, on sec bus reset they are
+> unconfigured and go to the initial enabled-and-not-trained state which
+> is the default config. The NVIDIA driver in the guest trains links to do
+> the topology discovery. We can disable links and this disabled status
+> remains until sec bus reset and there is no way to re-enable links other
+> than sec bus reset. This is what I get from NVIDIA. FLR should not be
+> able to change a thing here.
+
+
+btw using this masking mechanism does not involve any virtualizing -
+these are MMIO registers which a powernv platform reset hook will write
+to in order to stay in sync with already configured IOMMU groups and
+that's all, the guest will still be able to access them with no
+filtering on the way, it just won't do anything. Or this is still called
+virtualizing?
+
+
+
+
+-- 
+Alexey
