@@ -1,31 +1,32 @@
 Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mTnP6HkQzDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 23:36:57 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w79DTtCO141562
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 09:36:54 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2krnftu9jh-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mTnh5lGbzDqkP
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 23:37:12 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w79DTw8Z050980
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 09:37:10 -0400
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2krnmeaxdt-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 09:36:54 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 09:37:10 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Thu, 9 Aug 2018 07:36:52 -0600
+ Thu, 9 Aug 2018 07:37:09 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH] powerpc/mm/hash: Remove unnecessary do { }while(0) loop
-Date: Thu,  9 Aug 2018 19:06:42 +0530
-Message-Id: <20180809133642.16007-1-aneesh.kumar@linux.ibm.com>
+Subject: [PATCH] powerpc/mm/tlbflush: update the mmu_gather page size while
+ iterating address range
+Date: Thu,  9 Aug 2018 19:06:59 +0530
+Message-Id: <20180809133659.16230-1-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Avoid coverity false warnings like
-
-*** CID 187347:  Control flow issues  (UNREACHABLE)
-/arch/powerpc/mm/hash_native_64.c: 819 in native_flush_hash_range()
-813        slot += hidx & _PTEIDX_GROUP_IX;
-814        hptep = htab_address + slot;
-815        want_v = hpte_encode_avpn(vpn, psize, ssize);
-816        hpte_v = hpte_get_old_v(hptep);
-817
-818        if (!HPTE_V_COMPARE(hpte_v, want_v) || !(hpte_v & HPTE_V_VALID))
->>>     CID 187347:  Control flow issues  (UNREACHABLE)
+This patch makes sure we update the mmu_gather page size even if we are
+requesting for a fullmm flush. This avoids triggering VM_WARN_ON in code
+paths like __tlb_remove_page_size that explicitly check for removing range page
+size to be same as mmu gather page size.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-64k.h | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/tlb.h | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-64k.h b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-index c81793d47af9..f82ee8a3b561 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-64k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-64k.h
-@@ -137,10 +137,9 @@ extern bool __rpte_sub_valid(real_pte_t rpte, unsigned long index);
- 		shift = mmu_psize_defs[psize].shift;			\
- 		for (index = 0; vpn < __end; index++,			\
- 			     vpn += (1L << (shift - VPN_SHIFT))) {	\
--			if (!__split || __rpte_sub_valid(rpte, index))	\
--				do {
-+		if (!__split || __rpte_sub_valid(rpte, index))
- 
--#define pte_iterate_hashed_end() } while(0); } } while(0)
-+#define pte_iterate_hashed_end()  } } while(0)
- 
- #define pte_pagesize_index(mm, addr, pte)	\
- 	(((pte) & H_PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
+diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
+index 97ecef697e1b..f0e571b2dc7c 100644
+--- a/arch/powerpc/include/asm/tlb.h
++++ b/arch/powerpc/include/asm/tlb.h
+@@ -49,13 +49,11 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
+ static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
+ 						     unsigned int page_size)
+ {
+-	if (tlb->fullmm)
+-		return;
+-
+ 	if (!tlb->page_size)
+ 		tlb->page_size = page_size;
+ 	else if (tlb->page_size != page_size) {
+-		tlb_flush_mmu(tlb);
++		if (!tlb->fullmm)
++			tlb_flush_mmu(tlb);
+ 		/*
+ 		 * update the page size after flush for the new
+ 		 * mmu_gather.
 -- 
 2.17.1
