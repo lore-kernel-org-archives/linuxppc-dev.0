@@ -1,21 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <srs0=mbsl=ky=suse.de=msuchanek@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mNpS1F49zDqCD
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 19:52:32 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe LEROY <christophe.leroy@c-s.fr>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/5] powerpc/asm: Add a patch_site macro & helpers for
- patching instructions
-In-Reply-To: <831e6e06-764a-89e8-1d0a-f46c3004d24f@c-s.fr>
-References: <20180723150756.11108-1-mpe@ellerman.id.au>
- <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
- <831e6e06-764a-89e8-1d0a-f46c3004d24f@c-s.fr>
-Date: Thu, 09 Aug 2018 19:52:27 +1000
-Message-ID: <877ekzamuc.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mPZ55vRCzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 20:26:53 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41mPZ55MF6z8tBY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 20:26:53 +1000 (AEST)
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41mPZ45C50z9s0n
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 20:26:52 +1000 (AEST)
+Date: Thu, 9 Aug 2018 12:26:46 +0200
+From: Michal =?UTF-8?B?U3VjaMOhbmVr?= <msuchanek@suse.de>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.ibm.com>, Michal Suchanek <msuchanek@suse.com>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>, linuxppc-dev
+ <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Laurent Dufour
+ <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
+ action on MCE.
+Message-ID: <20180809122646.2f1a827d@naga.suse.cz>
+In-Reply-To: <20180809183333.6097d5ec@roar.ozlabs.ibm.com>
+References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
+ <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
+ <87o9ecaovz.fsf@concordia.ellerman.id.au>
+ <d08a7794-e5c2-2b05-c21a-ae5a7baa7d88@linux.ibm.com>
+ <87d0us9hgg.fsf@concordia.ellerman.id.au>
+ <20180809180253.5665ddf5@roar.ozlabs.ibm.com>
+ <20180809080945.5wgxevm5oq7otbpe@in.ibm.com>
+ <20180809183333.6097d5ec@roar.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +44,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Christophe LEROY <christophe.leroy@c-s.fr> writes:
-> Le 08/08/2018 =C3=A0 18:30, Christophe LEROY a =C3=A9crit=C2=A0:
->> Le 23/07/2018 =C3=A0 17:07, Michael Ellerman a =C3=A9crit=C2=A0:
-...
->>> diff --git a/arch/powerpc/include/asm/code-patching.h=20
->>> b/arch/powerpc/include/asm/code-patching.h
->>> index 812535f40124..b2051234ada8 100644
->>> --- a/arch/powerpc/include/asm/code-patching.h
->>> +++ b/arch/powerpc/include/asm/code-patching.h
->>> @@ -32,6 +32,8 @@ unsigned int create_cond_branch(const unsigned int=20
->>> *addr,
->>> =C2=A0 int patch_branch(unsigned int *addr, unsigned long target, int f=
-lags);
->>> =C2=A0 int patch_instruction(unsigned int *addr, unsigned int instr);
->>> =C2=A0 int raw_patch_instruction(unsigned int *addr, unsigned int instr=
-);
->>> +int patch_instruction_site(s32 *addr, unsigned int instr);
->>> +int patch_branch_site(s32 *site, unsigned long target, int flags);
->>=20
->> Why use s32* instead of unsigned int* as usual for pointer to code ?
->
-> Forget my stupid question, I didn't see it was a relative address and=20
-> not an absolute one.
+On Thu, 9 Aug 2018 18:33:33 +1000
+Nicholas Piggin <npiggin@gmail.com> wrote:
 
-No worries.=20
+> On Thu, 9 Aug 2018 13:39:45 +0530
+> Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com> wrote:
+> 
+> > On Thu, Aug 09, 2018 at 06:02:53PM +1000, Nicholas Piggin wrote:  
+> > > On Thu, 09 Aug 2018 16:34:07 +1000
+> > > Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > >     
+> > > > "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:    
+> > > > > On 08/08/2018 08:26 PM, Michael Ellerman wrote:      
+> > > > >> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:      
+> > > > >>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> > > > >>>
+> > > > >>> Introduce recovery action for recovered memory errors
+> > > > >>> (MCEs). There are soft memory errors like SLB Multihit,
+> > > > >>> which can be a result of a bad hardware OR software BUG.
+> > > > >>> Kernel can easily recover from these soft errors by
+> > > > >>> flushing SLB contents. After the recovery kernel can still
+> > > > >>> continue to function without any issue. But in some
+> > > > >>> scenario's we may keep getting these soft errors until the
+> > > > >>> root cause is fixed. To be able to analyze and find the
+> > > > >>> root cause, best way is to gather enough data and system
+> > > > >>> state at the time of MCE. Hence this patch introduces a
+> > > > >>> sysctl knob where user can decide either to continue after
+> > > > >>> recovery or panic the kernel to capture the dump.      
+> > > > >> 
+> > > > >> I'm not convinced we want this.
+> > > > >> 
+> > > > >> As we've discovered it's often not possible to reconstruct
+> > > > >> what happened based on a dump anyway.
+> > > > >> 
+> > > > >> The key thing you need is the content of the SLB and that's
+> > > > >> not included in a dump.
+> > > > >> 
+> > > > >> So I think we should dump the SLB content when we get the
+> > > > >> MCE (which this series does) and any other useful info, and
+> > > > >> then if we can recover we should.      
+> > > > >
+> > > > > The reasoning there is what if we got multi-hit due to some
+> > > > > corruption in slb_cache_ptr. ie. some part of kernel is
+> > > > > wrongly updating the paca data structure due to wrong
+> > > > > pointer. Now that is far fetched, but then possible right?.
+> > > > > Hence the idea that, if we don't have much insight into why a
+> > > > > slb multi-hit occur from the dmesg which include slb content,
+> > > > > slb_cache contents etc, there should be an easy way to force
+> > > > > a dump that might assist in further debug.      
+> > > > 
+> > > > If you're debugging something complex that you can't determine
+> > > > from the SLB dump then you should be running a debug kernel
+> > > > anyway. And if anything you want to drop into xmon and sit
+> > > > there, preserving the most state, rather than taking a dump.    
+> > > 
+> > > I'm not saying for a dump specifically, just some form of crash.
+> > > And we really should have an option to xmon on panic, but that's
+> > > another story.    
+> > 
+> > That's fine during development or in a lab, not something we could
+> > enforce in a customer environment, could we?  
+> 
+> xmon on panic? Not something to enforce but IMO (without thinking
+> about it too much but having encountered it several times) it should
+> probably be tied xmon on BUG option.
 
-It is a bit non-obvious at first glance, it looks like the s32 * points
-to the instruction. But it points to the s32 that holds the relative
-offset from itself, of the instruction.
+You should get that with this patch and xmon=on or am I missing
+something?
 
-We could add a typedef to try and make that more obvious, but I
-generally don't like typedefs that hide pointerness.
+Thanks
 
-cheers
+Michal
