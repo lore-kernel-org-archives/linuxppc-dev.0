@@ -1,28 +1,38 @@
-Return-Path: <srs0=nroa=ky=c-s.fr=christophe.leroy@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bharat.bhushan@nxp.com>
+Received: from EUR03-DB5-obe.outbound.protection.outlook.com
+ (mail-eopbgr40070.outbound.protection.outlook.com [40.107.4.70])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mJv23SggzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:56:14 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41mJv22cslz8tPq
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:56:14 +1000 (AEST)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41mJv112Yxz9s1x
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 16:56:11 +1000 (AEST)
-Subject: Re: [PATCH 1/5] powerpc/asm: Add a patch_site macro & helpers for
- patching instructions
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-References: <20180723150756.11108-1-mpe@ellerman.id.au>
- <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <831e6e06-764a-89e8-1d0a-f46c3004d24f@c-s.fr>
-Date: Thu, 9 Aug 2018 08:56:07 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mK4r59WWzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 17:04:41 +1000 (AEST)
+From: Bharat Bhushan <bharat.bhushan@nxp.com>
+To: Scott Wood <oss@buserror.net>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, "paulus@samba.org" <paulus@samba.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>, "galak@kernel.crashing.org"
+ <galak@kernel.crashing.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "kstewart@linuxfoundation.org" <kstewart@linuxfoundation.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "robh@kernel.org" <robh@kernel.org>, "keescook@chromium.org"
+ <keescook@chromium.org>, "tyreld@linux.vnet.ibm.com"
+ <tyreld@linux.vnet.ibm.com>, "joe@perches.com" <joe@perches.com>
+Subject: RE: [RFC 5/5] powerpc/fsl: Add supported-irq-ranges for P2020
+Date: Thu, 9 Aug 2018 07:04:35 +0000
+Message-ID: <AM5PR0401MB2545EA3D59F997C8483AE8E89A250@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+References: <1532684881-19310-1-git-send-email-Bharat.Bhushan@nxp.com>
+ <1532684881-19310-6-git-send-email-Bharat.Bhushan@nxp.com>
+ <ab2a113620123cb71364b6ae89328ae2fca49821.camel@buserror.net>
+ <AM5PR0401MB254592DC0E917FD292B323BA9A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+ <aeff83355ee5235cfd6107dba06a5f7957b45c92.camel@buserror.net>
+ <AM5PR0401MB2545041D99EEDC3136B201719A260@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+ <bef421feea16da2fdab333e63a6828741bd59055.camel@buserror.net>
+ <AM5PR0401MB25458654D6CEFBF2F05FC7709A250@AM5PR0401MB2545.eurprd04.prod.outlook.com>
+ <5c1bcbd2c753f4224764c1932e5a9a99b4a604f5.camel@buserror.net>
+In-Reply-To: <5c1bcbd2c753f4224764c1932e5a9a99b4a604f5.camel@buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,111 +42,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 08/08/2018 à 18:30, Christophe LEROY a écrit :
-> 
-> 
-> Le 23/07/2018 à 17:07, Michael Ellerman a écrit :
->> Add a macro and some helper C functions for patching single asm
->> instructions.
->>
->> The gas macro means we can do something like:
->>
->>    1:    nop
->>        patch_site 1b, patch__foo
->>
->> Which is less visually distracting than defining a GLOBAL symbol at 1,
->> and also doesn't pollute the symbol table which can confuse eg. perf.
->>
->> These are obviously similar to our existing feature sections, but are
->> not automatically patched based on CPU/MMU features, rather they are
->> designed to be manually patched by C code at some arbitrary point.
->>
->> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->> ---
->>   arch/powerpc/include/asm/code-patching-asm.h | 18 ++++++++++++++++++
->>   arch/powerpc/include/asm/code-patching.h     |  2 ++
->>   arch/powerpc/lib/code-patching.c             | 16 ++++++++++++++++
->>   3 files changed, 36 insertions(+)
->>   create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
->>
->> diff --git a/arch/powerpc/include/asm/code-patching-asm.h 
->> b/arch/powerpc/include/asm/code-patching-asm.h
->> new file mode 100644
->> index 000000000000..ed7b1448493a
->> --- /dev/null
->> +++ b/arch/powerpc/include/asm/code-patching-asm.h
->> @@ -0,0 +1,18 @@
->> +/* SPDX-License-Identifier: GPL-2.0+ */
->> +/*
->> + * Copyright 2018, Michael Ellerman, IBM Corporation.
->> + */
->> +#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
->> +#define _ASM_POWERPC_CODE_PATCHING_ASM_H
->> +
->> +/* Define a "site" that can be patched */
->> +.macro patch_site label name
->> +    .pushsection ".rodata"
->> +    .balign 4
->> +    .global \name
->> +\name:
->> +    .4byte    \label - .
->> +    .popsection
->> +.endm
->> +
->> +#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
->> diff --git a/arch/powerpc/include/asm/code-patching.h 
->> b/arch/powerpc/include/asm/code-patching.h
->> index 812535f40124..b2051234ada8 100644
->> --- a/arch/powerpc/include/asm/code-patching.h
->> +++ b/arch/powerpc/include/asm/code-patching.h
->> @@ -32,6 +32,8 @@ unsigned int create_cond_branch(const unsigned int 
->> *addr,
->>   int patch_branch(unsigned int *addr, unsigned long target, int flags);
->>   int patch_instruction(unsigned int *addr, unsigned int instr);
->>   int raw_patch_instruction(unsigned int *addr, unsigned int instr);
->> +int patch_instruction_site(s32 *addr, unsigned int instr);
->> +int patch_branch_site(s32 *site, unsigned long target, int flags);
-> 
-> Why use s32* instead of unsigned int* as usual for pointer to code ?
-
-Forget my stupid question, I didn't see it was a relative address and 
-not an absolute one.
-
-Christophe
-
-> 
-> Christophe
-> 
->>   int instr_is_relative_branch(unsigned int instr);
->>   int instr_is_relative_link_branch(unsigned int instr);
->> diff --git a/arch/powerpc/lib/code-patching.c 
->> b/arch/powerpc/lib/code-patching.c
->> index e0d881ab304e..850f3b8f4da5 100644
->> --- a/arch/powerpc/lib/code-patching.c
->> +++ b/arch/powerpc/lib/code-patching.c
->> @@ -195,6 +195,22 @@ int patch_branch(unsigned int *addr, unsigned 
->> long target, int flags)
->>       return patch_instruction(addr, create_branch(addr, target, flags));
->>   }
->> +int patch_branch_site(s32 *site, unsigned long target, int flags)
->> +{
->> +    unsigned int *addr;
->> +
->> +    addr = (unsigned int *)((unsigned long)site + *site);
->> +    return patch_instruction(addr, create_branch(addr, target, flags));
->> +}
->> +
->> +int patch_instruction_site(s32 *site, unsigned int instr)
->> +{
->> +    unsigned int *addr;
->> +
->> +    addr = (unsigned int *)((unsigned long)site + *site);
->> +    return patch_instruction(addr, instr);
->> +}
->> +
->>   bool is_offset_in_branch_range(long offset)
->>   {
->>       /*
->>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2NvdHQgV29vZCBbbWFp
+bHRvOm9zc0BidXNlcnJvci5uZXRdDQo+IFNlbnQ6IFRodXJzZGF5LCBBdWd1c3QgOSwgMjAxOCAx
+MTo0MiBBTQ0KPiBUbzogQmhhcmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQG54cC5jb20+Ow0K
+PiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IHBhdWx1c0BzYW1iYS5vcmc7IG1wZUBlbGxlcm1h
+bi5pZC5hdTsNCj4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgbWFyay5ydXRsYW5kQGFybS5j
+b207DQo+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IGdyZWdraEBsaW51eGZvdW5kYXRp
+b24ub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IENjOiByb2Jo
+QGtlcm5lbC5vcmc7IGtlZXNjb29rQGNocm9taXVtLm9yZzsgdHlyZWxkQGxpbnV4LnZuZXQuaWJt
+LmNvbTsNCj4gam9lQHBlcmNoZXMuY29tDQo+IFN1YmplY3Q6IFJlOiBbUkZDIDUvNV0gcG93ZXJw
+Yy9mc2w6IEFkZCBzdXBwb3J0ZWQtaXJxLXJhbmdlcyBmb3IgUDIwMjANCj4gDQo+IE9uIFRodSwg
+MjAxOC0wOC0wOSBhdCAwMzoyOCArMDAwMCwgQmhhcmF0IEJodXNoYW4gd3JvdGU6DQo+ID4gPiAt
+LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogU2NvdHQgV29vZCBbbWFpbHRv
+Om9zc0BidXNlcnJvci5uZXRdDQo+ID4gPiBTZW50OiBXZWRuZXNkYXksIEF1Z3VzdCA4LCAyMDE4
+IDExOjI3IFBNDQo+ID4gPiBUbzogQmhhcmF0IEJodXNoYW4gPGJoYXJhdC5iaHVzaGFuQG54cC5j
+b20+Ow0KPiA+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOyBt
+cGVAZWxsZXJtYW4uaWQuYXU7DQo+ID4gPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBtYXJr
+LnJ1dGxhbmRAYXJtLmNvbTsNCj4gPiA+IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7IGdy
+ZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOw0KPiA+ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5v
+cmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4gPiA+IGtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmcNCj4gPiA+IENjOiByb2JoQGtlcm5lbC5vcmc7IGtlZXNjb29rQGNocm9t
+aXVtLm9yZzsNCj4gPiA+IHR5cmVsZEBsaW51eC52bmV0LmlibS5jb207IGpvZUBwZXJjaGVzLmNv
+bQ0KPiA+ID4gU3ViamVjdDogUmU6IFtSRkMgNS81XSBwb3dlcnBjL2ZzbDogQWRkIHN1cHBvcnRl
+ZC1pcnEtcmFuZ2VzIGZvcg0KPiA+ID4gUDIwMjANCj4gPiA+DQo+ID4gPiBPbiBXZWQsIDIwMTgt
+MDgtMDggYXQgMDY6MjggKzAwMDAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+ID4gPiA+IC0t
+LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogU2NvdHQgV29vZCBbbWFp
+bHRvOm9zc0BidXNlcnJvci5uZXRdDQo+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3Qg
+OCwgMjAxOCAxMToyNiBBTQ0KPiA+ID4gPiA+IFRvOiBCaGFyYXQgQmh1c2hhbiA8YmhhcmF0LmJo
+dXNoYW5AbnhwLmNvbT47DQo+ID4gPiA+ID4gYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVs
+dXNAc2FtYmEub3JnOyBtcGVAZWxsZXJtYW4uaWQuYXU7DQo+ID4gPiA+ID4gZ2FsYWtAa2VybmVs
+LmNyYXNoaW5nLm9yZzsgbWFyay5ydXRsYW5kQGFybS5jb207DQo+ID4gPiA+ID4ga3N0ZXdhcnRA
+bGludXhmb3VuZGF0aW9uLm9yZzsgZ3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc7DQo+ID4gPiA+
+ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnOw0KPiA+ID4gPiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gPiA+ID4g
+Q2M6IHJvYmhAa2VybmVsLm9yZzsga2Vlc2Nvb2tAY2hyb21pdW0ub3JnOw0KPiA+ID4gPiA+IHR5
+cmVsZEBsaW51eC52bmV0LmlibS5jb207IGpvZUBwZXJjaGVzLmNvbQ0KPiA+ID4gPiA+IFN1Ympl
+Y3Q6IFJlOiBbUkZDIDUvNV0gcG93ZXJwYy9mc2w6IEFkZCBzdXBwb3J0ZWQtaXJxLXJhbmdlcyBm
+b3INCj4gPiA+ID4gPiBQMjAyMA0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gV2VkLCAyMDE4LTA4
+LTA4IGF0IDAzOjQ0ICswMDAwLCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+ID4g
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gRnJvbTogU2NvdHQgV29v
+ZCBbbWFpbHRvOm9zc0BidXNlcnJvci5uZXRdDQo+ID4gPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2Rh
+eSwgQXVndXN0IDgsIDIwMTggMjo0NCBBTQ0KPiA+ID4gPiA+ID4gPiBUbzogQmhhcmF0IEJodXNo
+YW4gPGJoYXJhdC5iaHVzaGFuQG54cC5jb20+Ow0KPiA+ID4gPiA+ID4gPiBiZW5oQGtlcm5lbC5j
+cmFzaGluZy5vcmc7IHBhdWx1c0BzYW1iYS5vcmc7DQo+ID4gPiA+ID4gPiA+IG1wZUBlbGxlcm1h
+bi5pZC5hdTsgZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsNCj4gPiA+ID4gPiA+ID4gbWFyay5y
+dXRsYW5kQGFybS5jb207IGtzdGV3YXJ0QGxpbnV4Zm91bmRhdGlvbi5vcmc7DQo+ID4gPiA+ID4g
+PiA+IGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9y
+ZzsNCj4gPiA+ID4gPiA+ID4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+
+ID4gPiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+ID4gPiA+ID4gPiA+IENjOiBy
+b2JoQGtlcm5lbC5vcmc7IGtlZXNjb29rQGNocm9taXVtLm9yZzsNCj4gPiA+ID4gPiA+ID4gdHly
+ZWxkQGxpbnV4LnZuZXQuaWJtLmNvbTsgam9lQHBlcmNoZXMuY29tDQo+ID4gPiA+ID4gPiA+IFN1
+YmplY3Q6IFJlOiBbUkZDIDUvNV0gcG93ZXJwYy9mc2w6IEFkZCBzdXBwb3J0ZWQtaXJxLXJhbmdl
+cw0KPiA+ID4gPiA+ID4gPiBmb3INCj4gPiA+ID4gPiA+ID4gUDIwMjANCj4gPiA+ID4gPiA+ID4N
+Cj4gPiA+ID4gPiA+ID4gT24gRnJpLCAyMDE4LTA3LTI3IGF0IDE1OjE4ICswNTMwLCBCaGFyYXQg
+Qmh1c2hhbiB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiBNUElDIG9uIE5YUCAoRnJlZXNjYWxlKSBQ
+MjAyMCBzdXBwb3J0cyBmb2xsb3dpbmcgaXJxDQo+ID4gPiA+ID4gPiA+ID4gcmFuZ2VzOg0KPiA+
+ID4gPiA+ID4gPiA+ICAgPiAwIC0gMTEgICAgICAoRXh0ZXJuYWwgaW50ZXJydXB0KQ0KPiA+ID4g
+PiA+ID4gPiA+ICAgPiAxNiAtIDc5ICAgICAoSW50ZXJuYWwgaW50ZXJydXB0KQ0KPiA+ID4gPiA+
+ID4gPiA+ICAgPiAxNzYgLSAxODMgICAoTWVzc2FnaW5nIGludGVycnVwdCkNCj4gPiA+ID4gPiA+
+ID4gPiAgID4gMjI0IC0gMjMxICAgKFNoYXJlZCBtZXNzYWdlIHNpZ25hbGVkIGludGVycnVwdCkN
+Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gV2h5IGRvbid0IHlvdSBjb252ZXJ0IHRvIHRo
+ZSA0LWNlbGwgaW50ZXJydXB0IHNwZWNpZmllcnMNCj4gPiA+ID4gPiA+ID4gdGhhdCBtYWtlIGRl
+YWxpbmcgd2l0aCB0aGVzZSByYW5nZXMgbGVzcyBlcnJvci1wcm9uZT8NCj4gPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gPiBPayAsIHdpbGwgZG8gaWYgd2UgYWdyZWUgdG8gaGF2ZSB0aGlzIHNlcmllcyBh
+cyBwZXIgY29tbWVudCBvbg0KPiA+ID4gPiA+ID4gb3RoZXIgcGF0Y2guDQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPiBJZiB5b3UncmUgY29uY2VybmVkIHdpdGggZXJyb3JzLCB0aGlzIHdvdWxkIGJlIGEg
+Z29vZCB0aGluZ3MgdG8NCj4gPiA+ID4gPiBkbyByZWdhcmRsZXNzLg0KPiA+ID4gPiA+ICBBY3R1
+YWxseSwgaXQgc2VlbXMgdGhhdCBwMjAyMHNpLXBvc3QuZHRzaSBhbHJlYWR5IHVzZXMgNC1jZWxs
+DQo+ID4gPiA+ID4gaW50ZXJydXB0cy4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFdoYXQgaXMgbW90
+aXZhdGluZyB0aGlzIHBhdGNoc2V0PyAgSXMgdGhlcmUgc29tZXRoaW5nIHdyb25nIGluDQo+ID4g
+PiA+ID4gdGhlIGV4aXN0aW5nIGR0cyBmaWxlcz8NCj4gPiA+ID4NCj4gPiA+ID4gVGhlcmUgaXMg
+bm8gZXJyb3IgaW4gZGV2aWNlIHRyZWUuIE1haW4gbW90aXZhdGlvbiBpcyB0byBpbXByb3ZlDQo+
+ID4gPiA+IGNvZGUgZm9yIGZvbGxvd2luZyByZWFzb25zOg0KPiA+ID4gPiAgIC0gV2hpbGUgY29k
+ZSBzdHVkeSBpdCB3YXMgZm91bmQgdGhhdCBpZiBhIHJlc2VydmVkIGlycS1udW1iZXINCj4gPiA+
+ID4gdXNlZCB0aGVuIHRoZXJlIGFyZSBubyBjaGVjayBpbiBkcml2ZXIuIGlycSB3aWxsIGJlIGNv
+bmZpZ3VyZWQgYXMNCj4gPiA+ID4gY29ycmVjdCBhbmQgaW50ZXJydXB0IHdpbGwgbmV2ZXIgZmly
+ZS4NCj4gPiA+DQo+ID4gPiBBZ2FpbiwgYSB3cm9uZyBpbnRlcnJ1cHQgbnVtYmVyIHdvbid0IGZp
+cmUsIHdoZXRoZXIgYW4gaW50ZXJydXB0IGJ5DQo+ID4gPiB0aGF0IG51bWJlciBleGlzdHMgb3Ig
+bm90LiAgSSB3b3VsZG4ndCBtaW5kIGEgc2FuaXR5IGNoZWNrIGluIHRoZQ0KPiA+ID4gZHJpdmVy
+IGlmIHRoZSBwcm9ncmFtbWluZyBtb2RlbCBtYWRlIGl0IHByb3Blcmx5IGRpc2NvdmVyYWJsZSwg
+YnV0IEkNCj4gPiA+IGRvbid0IHRoaW5rIGl0J3Mgd29ydGggbWVzc2luZyB3aXRoIGRldmljZSB0
+cmVlcyBqdXN0IGZvciB0aGlzIChhbmQNCj4gPiA+IGV2ZW4gbGVzcyBzbyBnaXZlbiB0aGF0IHRo
+ZXJlIGRvbid0IHNlZW0gdG8gYmUgbmV3IGNoaXBzIGNvbWluZyBvdXQNCj4gPiA+IHRoYXQgdGhp
+cyB3b3VsZCBiZSByZWxldmFudCBmb3IpLg0KPiA+DQo+ID4gRmFpciBlbm91Z2gsIHdlIGNhbiB1
+c2UgTVBJQyB2ZXJzaW9uIHRvIGRlZmluZSBzdXBwb3J0ZWQgaW50ZXJydXB0cw0KPiByYW5nZXMu
+DQo+ID4gV2lsbCB0aGF0IGJlIGFjY2VwdGFibGUuDQo+IA0KPiBJdCdzIGJldHRlciB0aGFuIGRl
+dmljZSB0cmVlIGNoYW5nZXMgYnV0IEknbSBub3QgY29udmluY2VkIGl0J3Mgd29ydGh3aGlsZSBq
+dXN0DQo+IHRvIHN1cHByZXNzIHNvbWUgc2ltdWxhdG9yIHdhcm5pbmdzLg0KPiAgSWYgdGhlIHdh
+cm5pbmdzIHJlYWxseSBib3RoZXIgeW91LCB5b3UNCj4gY2FuIHVzZSBwaWMtbm8tcmVzZXQgaW4g
+dGhlIGRldmljZSB0cmVlIChhc3N1bWluZyB0aGlzIGlzbid0IHNvbWUgbmV3IGNoaXANCj4gdGhh
+dCB5b3Ugd2FudCB0byBtYWtlIHN1cmUgZG9lc24ndCBmYWxsIG92ZXIgd2hlbiB0aGUgdXN1YWwg
+bXBpYyBpbml0DQo+IGhhcHBlbnMpIGFuZC9vciBjb252aW5jZSB0aGUgaGFyZHdhcmUgcGVvcGxl
+IHRvIG1ha2UgdGhlIGludGVyZmFjZQ0KPiBwcm9wZXJseSBkaXNjb3ZlcmFibGUgaW5jbHVkaW5n
+IGRpc2NvbnRpZ3VvdXMgcmVnaW9ucyAoaWYgdGhlcmUgKmlzKiBzb21lDQo+IG5ldyBjaGlwIEkg
+aGF2ZW4ndCBoZWFyZCBhYm91dCkuDQoNClRoZXJlIGlzIG5ldyBjaGlwIHVuZGVyIGRldmVsb3Bt
+ZW50IGJhc2VkIG9uIGUyMDAsIHdoaWNoIHVzZXMgc2FtZSBtcGljIGFzIGluIG9sZGVyIFBvd2Vy
+UEMgdmVyc2lvbnMuDQpUaGlzIHBhdGNoIHdhcyBub3QganVzdCBhYm91dCBzdXBwcmVzc2luZyB0
+aGUgd2FybmluZyBidXQgd2FybmluZyB3YXMgdGhlIG9ic2VydmF0aW9uIHRoYXQgcmVzZXJ2ZWQg
+cmVnaW9uIGlzIGdldHRpbmcgYWNjZXNzZWQgZHVyaW5nIGluaXQvdW5pbml0L3NhdmUvcmVzdG9y
+ZS4gVGhpcyBwYXRjaCB3YXMganVzdCBhbiBtaW5vciBpbXByb3ZlbWVudCB0byBhdm9pZCB0aGVz
+ZSBhY2Nlc3Nlcy4gV2Ugd2lsbCBkcm9wIHRoaXMgc2VyaWVzIGlmIHRoaXMgaW1wcm92ZW1lbnQg
+aXMgbm90IGNvbnZpbmNpbmcuDQoNClRoYW5rcw0KLUJoYXJhdA0KDQo+IA0KPiAtU2NvdHQNCg0K
