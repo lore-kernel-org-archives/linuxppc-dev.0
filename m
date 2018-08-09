@@ -1,26 +1,46 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mSNN5KTTzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 22:33:40 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- rashmica <rashmicy@gmail.com>, Christophe Leroy <christophe.leroy@c-s.fr>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lib/test_hexdump: fix failure on big endian cpu
-In-Reply-To: <17a90b003bcc2f1dda2b92b65f16c212ffddc571.camel@linux.intel.com>
-References: <f3112437f62c2f48300535510918e8be1dceacfb.1533610877.git.christophe.leroy@c-s.fr>
- <87mutxb9qy.fsf@concordia.ellerman.id.au>
- <7857c69a-a209-541b-b2e1-9fe2e288ca65@gmail.com>
- <87ftzo9i77.fsf@concordia.ellerman.id.au>
- <17a90b003bcc2f1dda2b92b65f16c212ffddc571.camel@linux.intel.com>
-Date: Thu, 09 Aug 2018 22:33:38 +1000
-Message-ID: <8736vnafdp.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mTZB2096zDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 23:27:14 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w79DOAqn063224
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2018 09:27:11 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2krmxsvd3a-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 09:27:11 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Thu, 9 Aug 2018 14:27:03 +0100
+Date: Thu, 9 Aug 2018 06:26:57 -0700
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v6 2/2] powerpc: Use cpu_smallcore_sibling_mask at SMT
+ level on bigcores
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1533792728-6304-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1533792728-6304-3-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1533792728-6304-3-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <20180809132657.GA42474@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +50,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com> writes:
-> On Thu, 2018-08-09 at 16:18 +1000, Michael Ellerman wrote:
->> rashmica <rashmicy@gmail.com> writes:
->> > On 08/08/18 17:25, Michael Ellerman wrote:
->> > > Christophe Leroy <christophe.leroy@c-s.fr> writes:
->> > > > 
->> > mpe I sent a patch doing that awhile ago and you obviously didn't
->> > like
->> > it because you never merged it :P
->
-> Hmm... I (as an author of the test case) never saw that patch.
+* Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2018-08-09 11:02:08]:
 
-I probably told Rashmica to send it to the linuxppc list and then I was
-meant to follow up who should merge it. So my fault.
+> 
+> 3) ppc64_cpu --smt=2
+>    SMT domain ceases to exist as each domain consists of just one
+>    group.
+> 
 
->> Sorry, I wasn't sure who should merge it, and never followed up.
->
-> lib/* most of the time under Andrew's responsibility, though since it's
-> orphaned in MAINTAINERS, anyone can push, though, I think, it's good to
-> notify Andrew.
+When seen in isolation, the above looks as if ppc64_cpu --smt=2 o/p says
+" SMT domain ceases to exist...."
 
-Yeah. I was going to apply it with your Ack because it seems pretty
-uncontroversial, and there's nothing else in linux-next touching that
-file so it should be conflict-free.
+> @@ -999,7 +1012,17 @@ static void add_cpu_to_masks(int cpu)
+>  {
+>  	int first_thread = cpu_first_thread_sibling(cpu);
+>  	int chipid = cpu_to_chip_id(cpu);
+> -	int i;
+> +
+> +	struct thread_groups tg;
+> +	int i, cpu_group_start = -1;
+> +
+> +	if (has_big_cores) {
+> +		struct device_node *dn = of_get_cpu_node(cpu, NULL);
+> +
 
-I guess I'll wait and see if Andrew would prefer to take it.
+Not checking for validity of dn and no of_node_puts?
 
-cheers
+> +		parse_thread_groups(dn, &tg);
+> +		cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
+> +		cpumask_set_cpu(cpu, cpu_smallcore_sibling_mask(cpu));
+> +	}
+> 
+>  	/*
+>  	 * This CPU will not be in the online mask yet so we need to manually
+
+The rest looks good
