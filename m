@@ -1,28 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <srs0=nroa=ky=c-s.fr=christophe.leroy@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mJPX3CmTzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:34:08 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
- action on MCE.
-In-Reply-To: <d08a7794-e5c2-2b05-c21a-ae5a7baa7d88@linux.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
- <87o9ecaovz.fsf@concordia.ellerman.id.au>
- <d08a7794-e5c2-2b05-c21a-ae5a7baa7d88@linux.ibm.com>
-Date: Thu, 09 Aug 2018 16:34:07 +1000
-Message-ID: <87d0us9hgg.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mJv23SggzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:56:14 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41mJv22cslz8tPq
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2018 16:56:14 +1000 (AEST)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41mJv112Yxz9s1x
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2018 16:56:11 +1000 (AEST)
+Subject: Re: [PATCH 1/5] powerpc/asm: Add a patch_site macro & helpers for
+ patching instructions
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+References: <20180723150756.11108-1-mpe@ellerman.id.au>
+ <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <831e6e06-764a-89e8-1d0a-f46c3004d24f@c-s.fr>
+Date: Thu, 9 Aug 2018 08:56:07 +0200
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <4572374a-d131-b1ad-0d2d-9564925b52cf@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,53 +32,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> writes:
-> On 08/08/2018 08:26 PM, Michael Ellerman wrote:
->> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
->>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>
->>> Introduce recovery action for recovered memory errors (MCEs). There are
->>> soft memory errors like SLB Multihit, which can be a result of a bad
->>> hardware OR software BUG. Kernel can easily recover from these soft errors
->>> by flushing SLB contents. After the recovery kernel can still continue to
->>> function without any issue. But in some scenario's we may keep getting
->>> these soft errors until the root cause is fixed. To be able to analyze and
->>> find the root cause, best way is to gather enough data and system state at
->>> the time of MCE. Hence this patch introduces a sysctl knob where user can
->>> decide either to continue after recovery or panic the kernel to capture the
->>> dump.
->> 
->> I'm not convinced we want this.
->> 
->> As we've discovered it's often not possible to reconstruct what happened
->> based on a dump anyway.
->> 
->> The key thing you need is the content of the SLB and that's not included
->> in a dump.
->> 
->> So I think we should dump the SLB content when we get the MCE (which
->> this series does) and any other useful info, and then if we can recover
->> we should.
->
-> The reasoning there is what if we got multi-hit due to some corruption 
-> in slb_cache_ptr. ie. some part of kernel is wrongly updating the paca 
-> data structure due to wrong pointer. Now that is far fetched, but then 
-> possible right?. Hence the idea that, if we don't have much insight into 
-> why a slb multi-hit occur from the dmesg which include slb content, 
-> slb_cache contents etc, there should be an easy way to force a dump that 
-> might assist in further debug.
-
-If you're debugging something complex that you can't determine from the
-SLB dump then you should be running a debug kernel anyway. And if
-anything you want to drop into xmon and sit there, preserving the most
-state, rather than taking a dump.
-
-The last SLB multi-hit I debugged was this:
-
-  https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git/commit/?id=db7130d63fd8
 
 
-Which took quite a while to track down, including a bunch of tracing and
-so on. A dump would not have helped in the slightest.
+Le 08/08/2018 à 18:30, Christophe LEROY a écrit :
+> 
+> 
+> Le 23/07/2018 à 17:07, Michael Ellerman a écrit :
+>> Add a macro and some helper C functions for patching single asm
+>> instructions.
+>>
+>> The gas macro means we can do something like:
+>>
+>>    1:    nop
+>>        patch_site 1b, patch__foo
+>>
+>> Which is less visually distracting than defining a GLOBAL symbol at 1,
+>> and also doesn't pollute the symbol table which can confuse eg. perf.
+>>
+>> These are obviously similar to our existing feature sections, but are
+>> not automatically patched based on CPU/MMU features, rather they are
+>> designed to be manually patched by C code at some arbitrary point.
+>>
+>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>> ---
+>>   arch/powerpc/include/asm/code-patching-asm.h | 18 ++++++++++++++++++
+>>   arch/powerpc/include/asm/code-patching.h     |  2 ++
+>>   arch/powerpc/lib/code-patching.c             | 16 ++++++++++++++++
+>>   3 files changed, 36 insertions(+)
+>>   create mode 100644 arch/powerpc/include/asm/code-patching-asm.h
+>>
+>> diff --git a/arch/powerpc/include/asm/code-patching-asm.h 
+>> b/arch/powerpc/include/asm/code-patching-asm.h
+>> new file mode 100644
+>> index 000000000000..ed7b1448493a
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/asm/code-patching-asm.h
+>> @@ -0,0 +1,18 @@
+>> +/* SPDX-License-Identifier: GPL-2.0+ */
+>> +/*
+>> + * Copyright 2018, Michael Ellerman, IBM Corporation.
+>> + */
+>> +#ifndef _ASM_POWERPC_CODE_PATCHING_ASM_H
+>> +#define _ASM_POWERPC_CODE_PATCHING_ASM_H
+>> +
+>> +/* Define a "site" that can be patched */
+>> +.macro patch_site label name
+>> +    .pushsection ".rodata"
+>> +    .balign 4
+>> +    .global \name
+>> +\name:
+>> +    .4byte    \label - .
+>> +    .popsection
+>> +.endm
+>> +
+>> +#endif /* _ASM_POWERPC_CODE_PATCHING_ASM_H */
+>> diff --git a/arch/powerpc/include/asm/code-patching.h 
+>> b/arch/powerpc/include/asm/code-patching.h
+>> index 812535f40124..b2051234ada8 100644
+>> --- a/arch/powerpc/include/asm/code-patching.h
+>> +++ b/arch/powerpc/include/asm/code-patching.h
+>> @@ -32,6 +32,8 @@ unsigned int create_cond_branch(const unsigned int 
+>> *addr,
+>>   int patch_branch(unsigned int *addr, unsigned long target, int flags);
+>>   int patch_instruction(unsigned int *addr, unsigned int instr);
+>>   int raw_patch_instruction(unsigned int *addr, unsigned int instr);
+>> +int patch_instruction_site(s32 *addr, unsigned int instr);
+>> +int patch_branch_site(s32 *site, unsigned long target, int flags);
+> 
+> Why use s32* instead of unsigned int* as usual for pointer to code ?
 
-cheers
+Forget my stupid question, I didn't see it was a relative address and 
+not an absolute one.
+
+Christophe
+
+> 
+> Christophe
+> 
+>>   int instr_is_relative_branch(unsigned int instr);
+>>   int instr_is_relative_link_branch(unsigned int instr);
+>> diff --git a/arch/powerpc/lib/code-patching.c 
+>> b/arch/powerpc/lib/code-patching.c
+>> index e0d881ab304e..850f3b8f4da5 100644
+>> --- a/arch/powerpc/lib/code-patching.c
+>> +++ b/arch/powerpc/lib/code-patching.c
+>> @@ -195,6 +195,22 @@ int patch_branch(unsigned int *addr, unsigned 
+>> long target, int flags)
+>>       return patch_instruction(addr, create_branch(addr, target, flags));
+>>   }
+>> +int patch_branch_site(s32 *site, unsigned long target, int flags)
+>> +{
+>> +    unsigned int *addr;
+>> +
+>> +    addr = (unsigned int *)((unsigned long)site + *site);
+>> +    return patch_instruction(addr, create_branch(addr, target, flags));
+>> +}
+>> +
+>> +int patch_instruction_site(s32 *site, unsigned int instr)
+>> +{
+>> +    unsigned int *addr;
+>> +
+>> +    addr = (unsigned int *)((unsigned long)site + *site);
+>> +    return patch_instruction(addr, instr);
+>> +}
+>> +
+>>   bool is_offset_in_branch_range(long offset)
+>>   {
+>>       /*
+>>
