@@ -1,24 +1,20 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pl0-x242.google.com (mail-pl0-x242.google.com
- [IPv6:2607:f8b0:400e:c01::242])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41mmw15ZFTzDqww
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 10:58:41 +1000 (AEST)
-Received: by mail-pl0-x242.google.com with SMTP id x6-v6so3272349plv.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Aug 2018 17:58:41 -0700 (PDT)
-Date: Fri, 10 Aug 2018 10:58:32 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/mm/tlbflush: update the mmu_gather page size
- while iterating address range
-Message-ID: <20180810105832.5074a7fc@roar.ozlabs.ibm.com>
-In-Reply-To: <20180809133659.16230-1-aneesh.kumar@linux.ibm.com>
-References: <20180809133659.16230-1-aneesh.kumar@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41mnz434B3zDqww
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 11:46:24 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Bringmann <mwb@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v02] powerpc/mobility: Fix node detach/rename problem
+In-Reply-To: <19f9e274-26ae-2ae5-de9f-c0fcd6c00570@linux.vnet.ibm.com>
+References: <b3f658d9-efc5-e532-e8d4-162494b88194@linux.vnet.ibm.com>
+ <87zhxx9cs7.fsf@concordia.ellerman.id.au>
+ <19f9e274-26ae-2ae5-de9f-c0fcd6c00570@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2018 11:46:23 +1000
+Message-ID: <87zhxv8040.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  9 Aug 2018 19:06:59 +0530
-"Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+> On 08/08/2018 09:02 AM, Michael Ellerman wrote:
+>> Michael Bringmann <mwb@linux.vnet.ibm.com> writes:
+>>> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+>>> index e245a88..efc9442 100644
+>>> --- a/arch/powerpc/platforms/pseries/mobility.c
+>>> +++ b/arch/powerpc/platforms/pseries/mobility.c
+>>> @@ -22,6 +22,9 @@
+>>>  #include <asm/rtas.h>
+>>>  #include "pseries.h"
+>>>  
+>>> +extern int of_free_phandle_cache(void);
+>>> +extern void of_populate_phandle_cache(void);
+>> 
+>> We don't do that, they should be in a header.
+>> 
+>> But that's a minor problem given that the patch doesn't compile, because
+>> both those functions are static.
+>
+> I am building against the latest 'linux-ppc' kernel.  It includes patch
 
-> This patch makes sure we update the mmu_gather page size even if we are
-> requesting for a fullmm flush. This avoids triggering VM_WARN_ON in code
-> paths like __tlb_remove_page_size that explicitly check for removing range page
-> size to be same as mmu gather page size.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+OK you must be using the master branch.
 
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+> Commit b9952b5218added5577e4a3443969bc20884cea9 Mon Sep 17 00:00:00 2001
+> From: Frank Rowand <frank.rowand@sony.com>
+> Date: Thu, 12 Jul 2018 14:00:07 -0700
+> Subject: of: overlay: update phandle cache on overlay apply and remove
 
-Thanks, sorry bout that.
+That only landed in v4.18-rc6, so it's not in my next branch which is
+where patches like this targeted for the next release are applied.
 
-> ---
->  arch/powerpc/include/asm/tlb.h | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-> index 97ecef697e1b..f0e571b2dc7c 100644
-> --- a/arch/powerpc/include/asm/tlb.h
-> +++ b/arch/powerpc/include/asm/tlb.h
-> @@ -49,13 +49,11 @@ static inline void __tlb_remove_tlb_entry(struct mmu_gather *tlb, pte_t *ptep,
->  static inline void tlb_remove_check_page_size_change(struct mmu_gather *tlb,
->  						     unsigned int page_size)
->  {
-> -	if (tlb->fullmm)
-> -		return;
-> -
->  	if (!tlb->page_size)
->  		tlb->page_size = page_size;
->  	else if (tlb->page_size != page_size) {
-> -		tlb_flush_mmu(tlb);
-> +		if (!tlb->fullmm)
-> +			tlb_flush_mmu(tlb);
->  		/*
->  		 * update the page size after flush for the new
->  		 * mmu_gather.
+> which makes the functions static.  I will rebuild and test with an
+> earlier version if you will specify which one.
+
+No that's fine it will just have to wait until next and master are
+merged before it can go in.
+
+cheers
