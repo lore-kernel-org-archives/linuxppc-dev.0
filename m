@@ -1,30 +1,23 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41n2M22chnzDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 21:04:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41n3Bt30JrzDqrN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 21:42:30 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michal =?utf-8?Q?Such=C3=A1nek?= <msuchanek@suse.de>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.ibm.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>, Ananth Narayan <ananth@in.ibm.com>
-Subject: Re: [PATCH v7 8/9] powerpc/mce: Add sysctl control for recovery
- action on MCE.
-In-Reply-To: <20180808180943.7e8ca319@kitsune.suse.cz>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365146712.14256.11869543914717297278.stgit@jupiter.in.ibm.com>
- <87o9ecaovz.fsf@concordia.ellerman.id.au>
- <d08a7794-e5c2-2b05-c21a-ae5a7baa7d88@linux.ibm.com>
- <20180808180943.7e8ca319@kitsune.suse.cz>
-Date: Fri, 10 Aug 2018 21:04:26 +1000
-Message-ID: <87h8k28oud.fsf@concordia.ellerman.id.au>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Michael Bringmann <mbringm@us.ibm.com>,
+ Manjunatha H R <manjuhr1@in.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] powerpc/topology: Check at boot for topology updates
+In-Reply-To: <1533884198-20862-1-git-send-email-srikar@linux.vnet.ibm.com>
+References: <1533884198-20862-1-git-send-email-srikar@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2018 21:42:28 +1000
+Message-ID: <87bmaa8n2z.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +27,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michal Such=C3=A1nek <msuchanek@suse.de> writes:
-> On Wed, 8 Aug 2018 21:07:11 +0530
-> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
->> On 08/08/2018 08:26 PM, Michael Ellerman wrote:
->> > Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:=20=20
->> >> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> >>
->> >> Introduce recovery action for recovered memory errors (MCEs).
->> >> There are soft memory errors like SLB Multihit, which can be a
->> >> result of a bad hardware OR software BUG. Kernel can easily
->> >> recover from these soft errors by flushing SLB contents. After the
->> >> recovery kernel can still continue to function without any issue.
->> >> But in some scenario's we may keep getting these soft errors until
->> >> the root cause is fixed. To be able to analyze and find the root
->> >> cause, best way is to gather enough data and system state at the
->> >> time of MCE. Hence this patch introduces a sysctl knob where user
->> >> can decide either to continue after recovery or panic the kernel
->> >> to capture the dump.=20=20
->> >=20
->> > I'm not convinced we want this.
->> >=20
->> > As we've discovered it's often not possible to reconstruct what
->> > happened based on a dump anyway.
->> >=20
->> > The key thing you need is the content of the SLB and that's not
->> > included in a dump.
->> >=20
->> > So I think we should dump the SLB content when we get the MCE (which
->> > this series does) and any other useful info, and then if we can
->> > recover we should.
->>=20
->> The reasoning there is what if we got multi-hit due to some
->> corruption in slb_cache_ptr. ie. some part of kernel is wrongly
->> updating the paca data structure due to wrong pointer. Now that is
->> far fetched, but then possible right?. Hence the idea that, if we
->> don't have much insight into why a slb multi-hit occur from the dmesg
->> which include slb content, slb_cache contents etc, there should be an
->> easy way to force a dump that might assist in further debug.
->
-> Nonetheless this turns all MCEs into crashes. Are there any MCEs that
-> could happen during normal operation and should be handled by default?
+Hi Srikar,
 
-An MCE should always be an indication of an abnormal condition, but
-the exact set of things that are reported as MCEs is CPU specific, and
-potentially even configurable at the hardware level.
+Thanks for debugging this.
 
-However we only "handle" certain types of MCEs, so if we get an MCE for
-something we don't understand then we'll panic already.
+Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+> index 16b077801a5f..70f2d2285ba7 100644
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -113,6 +114,10 @@ static inline int timed_topology_update(int nsecs)
+>  {
+>  	return 0;
+>  }
+> +
+> +#ifdef CONFIG_SMP
+> +static inline void check_topology_updates(void) {}
+> +#endif
 
-SLB multi-hit / parity error is one that we do handle (on bare metal),
-because there is a well defined recovery action.
+I realise that's only called from smp.c but it doesn't really need to be
+inside #ifdef CONFIG_SMP, it's harmless to have an empty version for
+SMP=n.
+
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 4794d6b4f4d2..2aa0ffd954c9 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1156,6 +1156,12 @@ void __init smp_cpus_done(unsigned int max_cpus)
+>  	if (smp_ops && smp_ops->bringup_done)
+>  		smp_ops->bringup_done();
+>  
+> +	/*
+> +	 * On a shared LPAR, associativity needs to be requested.
+> +	 * Hence, check for numa topology updates before dumping
+> +	 * cpu topology
+> +	 */
+> +	check_topology_updates();
+
+I get that you're calling it here because you want to get it correct
+before we do the dump below, but we could move the dump later also.
+
+You mention we need to do the check before the sched domains are
+initialised, but where exactly does that happen?
+
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 0c7e05d89244..32c13a208589 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1515,6 +1515,7 @@ int start_topology_update(void)
+>  		   lppaca_shared_proc(get_lppaca())) {
+>  		if (!vphn_enabled) {
+>  			vphn_enabled = 1;
+> +			topology_update_needed = 1;
+
+I really don't understand what topology_update_needed is for.
+We set it here.
+
+>  			setup_cpu_associativity_change_counters();
+>  			timer_setup(&topology_timer, topology_timer_fn,
+>  				    TIMER_DEFERRABLE);
+> @@ -1551,6 +1552,19 @@ int prrn_is_enabled(void)
+>  	return prrn_enabled;
+>  }
+>  
+> +void __init check_topology_updates(void)
+> +{
+> +	/* Do not poll for changes if disabled at boot */
+> +	if (topology_updates_enabled)
+> +		start_topology_update();
+
+Here we call start_topology_update(), which might set
+topology_update_needed to 1.
+
+> +
+> +	if (topology_update_needed) {
+
+And then we check it here?
+Why is this logic not *in* start_topology_update() ?
+
+> +		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+> +			    nr_cpumask_bits);
+> +		numa_update_cpu_topology(false);
+> +	}
+> +}
+
+I'm not really clear on what check_topology_update() is responsible for
+doing vs topology_update_init(). Why do we need both?
+
+> @@ -1608,10 +1618,6 @@ static int topology_update_init(void)
+>  		return -ENOMEM;
+>  
+>  	topology_inited = 1;
+
+What does that mean? Didn't we already do the init earlier?
+
+> -	if (topology_update_needed)
+> -		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
+> -					nr_cpumask_bits);
+> -
+>  	return 0;
+>  }
+>  device_initcall(topology_update_init);
+
 
 cheers
