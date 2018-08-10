@@ -2,20 +2,19 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41n3JB1n02zDqrN
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 21:47:06 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41n3RR12BbzDqrN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 21:53:23 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
- John Allen <jallen@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: desnesn@linux.vnet.ibm.com
-Subject: Re: [PATCH v3 2/2] powerpc/pseries: Wait for completion of hotplug
- events during PRRN handling
-In-Reply-To: <5a15ca87-74ae-171f-1506-b0bc5cee11bc@linux.vnet.ibm.com>
+To: John Allen <jallen@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, desnesn@linux.vnet.ibm.com,
+ John Allen <jallen@linux.ibm.com>
+Subject: Re: [PATCH v3 1/2] powerpc/pseries: Avoid blocking rtas polling
+ handling multiple PRRN events
+In-Reply-To: <20180808152926.28842-2-jallen@linux.ibm.com>
 References: <20180808152926.28842-1-jallen@linux.ibm.com>
- <20180808152926.28842-3-jallen@linux.ibm.com>
- <5a15ca87-74ae-171f-1506-b0bc5cee11bc@linux.vnet.ibm.com>
-Date: Fri, 10 Aug 2018 21:47:03 +1000
-Message-ID: <878t5e8mvc.fsf@concordia.ellerman.id.au>
+ <20180808152926.28842-2-jallen@linux.ibm.com>
+Date: Fri, 10 Aug 2018 21:53:22 +1000
+Message-ID: <87600i8mkt.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,35 +26,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nathan,
-
-Nathan Fontenot <nfont@linux.vnet.ibm.com> writes:
-> On 08/08/2018 10:29 AM, John Allen wrote:
->> While handling PRRN events, the time to handle the actual hotplug events
->> dwarfs the time it takes to perform the device tree updates and queue the
->> hotplug events. In the case that PRRN events are being queued continuously,
->> hotplug events have been observed to be queued faster than the kernel can
->> actually handle them. This patch avoids the problem by waiting for a
->> hotplug request to complete before queueing more hotplug events.
->> 
->> Signed-off-by: John Allen <jallen@linux.ibm.com>
+John Allen <jallen@linux.ibm.com> writes:
+> When a PRRN event is being handled and another PRRN event comes in, the
+> second event will block rtas polling waiting on the first to complete,
+> preventing any further rtas events from being handled. This can be
+> especially problematic in case that PRRN events are continuously being
+> queued in which case rtas polling gets indefinitely blocked completely.
 >
-> In the V2 thread it was mentioned that we could just call the DLPAR operation
-> directly instead of going through the workqueue. I have written a patch to do
-> this that also cleans up some of the request handling.
+> This patch removes the blocking call to flush_work and allows the
+> default workqueue behavior to handle duplicate events.
 >
-> requests that come through the hotplug interrupt still use the workqueue. The
-> other requests, PRRN and sysfs, just call the dlpar handler directly. This
-> eliminates the need for a wait conditional and return code handling in the
-> workqueue handler and should solve the issue that John solves with his patch.
+> Signed-off-by: John Allen <jallen@linux.ibm.com>
+> ---
+> v3:
+>   -Scrap the mutex as it only replicates existing workqueue behavior.
+> v2:
+>   -Unlock prrn_lock when PRRN operations are complete, not after handler is
+>    scheduled.
+>   -Remove call to flush_work, the previous broken method of serializing
+>    PRRN events.
+> ---
+>  arch/powerpc/kernel/rtasd.c | 1 -
+>  1 file changed, 1 deletion(-)
 >
-> This still needs testing but wanted to get people's thoughts.
+> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> index 44d66c33d59d..2017934e5985 100644
+> --- a/arch/powerpc/kernel/rtasd.c
+> +++ b/arch/powerpc/kernel/rtasd.c
+> @@ -290,7 +290,6 @@ static DECLARE_WORK(prrn_work, prrn_work_fn);
+>  
+>  static void prrn_schedule_update(u32 scope)
+>  {
+> -	flush_work(&prrn_work);
+>  	prrn_update_scope = scope;
+>  	schedule_work(&prrn_work);
+>  }
 
-It looks great to me.
+I think we can still lose a "scope" value here.
 
-I guess I thought we'd need to add a lock, but I think you're right that
-the existing device hotplug lock will work.
+ie.
 
-So if this survives a bit of testing then I'd love to merge it.
+prrn_schedule_update(1)
+  prrn_update_scope = 1;
+  schedule_work(&prrn_work);    // scheduled but doesn't run yet
+
+...
+
+prrn_schedule_update(2)
+  prrn_update_scope = 2;
+  schedule_work(&prrn_work);   // it's still scheduled
+
+// finally
+
+prrn_work_fn(..)
+  pseries_devicetree_update(-prrn_update_scope); // aka 2
+
+
+So we lost the "1" value.
+
+We could fix that by allocating a work struct that holds the scope value.
+
+But I'd really like to try just calling the prrn_work_fn() directly,
+we're already running as a scheduled work function, I don't see any
+benefit in scheduling more work.
 
 cheers
