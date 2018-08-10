@@ -2,48 +2,47 @@ Return-Path: <srs0=ib65=kz=linux.vnet.ibm.com=mahesh@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41n1cJ1Gr1zF0WR
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 20:30:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41n1dy5MG9zDrtm
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 20:32:22 +1000 (AEST)
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41n1cJ0nCvz8tBY
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 20:30:56 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41n1dy3nZ3z8tBY
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2018 20:32:22 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41n1cH3dcCz9s7Q
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 20:30:55 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTPS id 41n1dx1XpMz9s7Q
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 20:32:20 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7AAONx5104082
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 06:30:53 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ks5ea09kf-1
+ w7AAOO2N114085
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 06:32:19 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ks6h7wryr-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 06:30:53 -0400
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2018 06:32:18 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 10 Aug 2018 11:30:51 +0100
-Subject: Re: [PATCH v7 5/9] powerpc/pseries: flush SLB contents on SLB MCE
+ Fri, 10 Aug 2018 11:32:16 +0100
+Subject: Re: [PATCH v7 7/9] powerpc/pseries: Dump the SLB contents on SLB MCE
  errors.
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michal Suchanek <msuchanek@suse.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Ananth Narayan <ananth@in.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
 References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365142349.14256.9954484737438718329.stgit@jupiter.in.ibm.com>
- <20180808190456.59c03b8b@roar.ozlabs.ibm.com>
+ <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
+ <87lg9g9wnd.fsf@concordia.ellerman.id.au>
 From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 10 Aug 2018 16:00:46 +0530
+Date: Fri, 10 Aug 2018 16:02:12 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180808190456.59c03b8b@roar.ozlabs.ibm.com>
+In-Reply-To: <87lg9g9wnd.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <63bf4cc1-d595-5af6-1e5f-e9047461f3a2@linux.vnet.ibm.com>
+Message-Id: <39ebc2b1-0139-2946-2d9b-1b7998bd4560@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,57 +52,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/08/2018 02:34 PM, Nicholas Piggin wrote:
-> On Tue, 07 Aug 2018 19:47:14 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On 08/09/2018 06:35 AM, Michael Ellerman wrote:
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
 > 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> On pseries, as of today system crashes if we get a machine check
->> exceptions due to SLB errors. These are soft errors and can be fixed by
->> flushing the SLBs so the kernel can continue to function instead of
->> system crash. We do this in real mode before turning on MMU. Otherwise
->> we would run into nested machine checks. This patch now fetches the
->> rtas error log in real mode and flushes the SLBs on SLB errors.
->>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> Signed-off-by: Michal Suchanek <msuchanek@suse.com>
->> ---
->>
->> Changes in V7:
->> - Fold Michal's patch into this patch.
->> - Handle MSR_RI=0 and evil context case in MC handler.
->> ---
+>> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+>> index 7f22929ce915..233d25ff6f64 100644
+>> --- a/arch/powerpc/include/asm/paca.h
+>> +++ b/arch/powerpc/include/asm/paca.h
+>> @@ -254,6 +254,10 @@ struct paca_struct {
+>>  #endif
+>>  #ifdef CONFIG_PPC_PSERIES
+>>  	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
+>> +
+>> +	/* Capture SLB related old contents in MCE handler. */
+>> +	struct slb_entry *mce_faulty_slbs;
+>> +	u16 slb_save_cache_ptr;
+>>  #endif /* CONFIG_PPC_PSERIES */
 > 
+>              ^^^^^^^^^^^^^^^^^
+
+I will pull that out of CONFIG_PPC_PSERIES.
+
 > 
 >> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
->> index cb796724a6fc..e89f675f1b5e 100644
+>> index e89f675f1b5e..16a53689ffd4 100644
 >> --- a/arch/powerpc/mm/slb.c
 >> +++ b/arch/powerpc/mm/slb.c
->> @@ -145,6 +145,12 @@ void slb_flush_and_rebolt(void)
+>> @@ -151,6 +151,79 @@ void slb_flush_and_rebolt_realmode(void)
 >>  	get_paca()->slb_cache_ptr = 0;
 >>  }
 >>  
->> +void slb_flush_and_rebolt_realmode(void)
+>> +void slb_save_contents(struct slb_entry *slb_ptr)
 >> +{
->> +	__slb_flush_and_rebolt();
->> +	get_paca()->slb_cache_ptr = 0;
->> +}
+>> +	int i;
+>> +	unsigned long e, v;
 >> +
->>  void slb_vmalloc_update(void)
->>  {
->>  	unsigned long vflags;
+>> +	/* Save slb_cache_ptr value. */
+>> +	get_paca()->slb_save_cache_ptr = get_paca()->slb_cache_ptr;
 > 
-> Can you use this patch for the SLB flush?
+> This isn't inside CONFIG_PPC_PSERIES which breaks lots of configs, eg
+> powernv.
 > 
-> https://patchwork.ozlabs.org/patch/953034/
+>   arch/powerpc/mm/slb.c:160:12: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+>   arch/powerpc/mm/slb.c:218:27: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+>   arch/powerpc/mm/slb.c:216:49: error: 'struct paca_struct' has no member named 'slb_save_cache_ptr'
+> 
+> http://kisskb.ozlabs.ibm.com/kisskb/head/219f20e490add009194d94fdeb480da2e385f1c6/
+> 
+> cheers
+> 
 
-Will use your v2.
+Ouch.. my bad. Will fix it.
 
 Thanks,
 -Mahesh.
-
-> 
-> Thanks,
-> Nick
-> 
