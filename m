@@ -2,22 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ptcs2wKyzDr5t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:22:53 +1000 (AEST)
-In-Reply-To: <0dd9d938-8d89-f0e0-f05f-9a3e5dc42a57@users.sourceforge.net>
-To: SF Markus Elfring <elfring@users.sourceforge.net>,
- linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Borislav Petkov <bp@suse.de>, Brijesh Singh <brijesh.singh@amd.com>,
- Josh Sklar <sklar@linux.vnet.ibm.com>, Kees Cook <keescook@chromium.org>,
- Paul Mackerras <paulus@samba.org>,
- Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, Tom Lendacky <thomas.lendacky@amd.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ptct3wQvzDr5t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:22:54 +1000 (AEST)
+In-Reply-To: <20180322202007.23088-17-malat@debian.org>
+To: Mathieu Malaterre <malat@debian.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: powerpc: Use common error handling code in setup_new_fdt()
-Message-Id: <41ptcs19GYz9s7c@ozlabs.org>
-Date: Mon, 13 Aug 2018 21:22:52 +1000 (AEST)
+Cc: Mathieu Malaterre <malat@debian.org>, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [16/19] powerpc/powermac: Add missing include of header pmac.h
+Message-Id: <41ptct30gwz9ryt@ozlabs.org>
+Date: Mon, 13 Aug 2018 21:22:54 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2018-03-11 at 08:16:47 UTC, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 11 Mar 2018 09:03:42 +0100
+On Thu, 2018-03-22 at 20:20:02 UTC, Mathieu Malaterre wrote:
+> The header `pmac.h` was not included, leading to the following warnings,
+> treated as error with W=1:
 > 
-> Add a jump target so that a bit of exception handling can be better reused
-> at the end of this function.
+>   arch/powerpc/platforms/powermac/time.c:69:13: error: no previous prototype for ‘pmac_time_init’ [-Werror=missing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:207:15: error: no previous prototype for ‘pmac_get_boot_time’ [-Werror=missing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:222:6: error: no previous prototype for ‘pmac_get_rtc_time’ [-Werror=missing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:240:5: error: no previous prototype for ‘pmac_set_rtc_time’ [-Werror=missing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:259:12: error: no previous prototype for ‘via_calibrate_decr’ [-Werror=missing-prototypes]
+>   arch/powerpc/platforms/powermac/time.c:311:13: error: no previous prototype for ‘pmac_calibrate_decr’ [-Werror=missing-prototypes]
 > 
-> This issue was detected by using the Coccinelle software.
+> The function `via_calibrate_decr` was made static to silence a warning.
 > 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> Reviewed-by: Thiago Jung Bauermann <bauerman@linux.vnet.ibm.com>
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/baedcdf5054c151a33e34392af7d8c
+https://git.kernel.org/powerpc/c/2fff0f07b8441a481eb5fc0bfcd0e4
 
 cheers
