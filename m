@@ -1,34 +1,35 @@
-Return-Path: <fbarrat@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <arbab@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41pzD861TTzDrYj
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 00:50:16 +1000 (AEST)
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7DEdeCG110624
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 10:50:14 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kub31u2fx-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41q0XJ0nzszDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 01:49:19 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7DFldwJ114595
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 11:49:17 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kua1c89k1-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 10:50:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 11:49:17 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <fbarrat@linux.ibm.com>;
- Mon, 13 Aug 2018 15:50:10 +0100
-Subject: Re: [PATCH V2] ocxl: Fix access to the AFU Descriptor Data
-To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
-References: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
-From: Frederic Barrat <fbarrat@linux.ibm.com>
-Date: Mon, 13 Aug 2018 16:50:05 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <arbab@linux.ibm.com>;
+ Mon, 13 Aug 2018 09:49:16 -0600
+Date: Mon, 13 Aug 2018 10:49:10 -0500
+From: Reza Arbab <arbab@linux.ibm.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, oohall@gmail.com, npiggin@gmail.com,
+ linux-nvdimm@lists.01.org
+Subject: Re: [PATCH v2 3/3] powerpc/mce: Handle memcpy_mcsafe
+References: <20180405071500.22320-1-bsingharora@gmail.com>
+ <20180405071500.22320-4-bsingharora@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <115b11c1-00de-f169-977c-b864405e2435@linux.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+In-Reply-To: <20180405071500.22320-4-bsingharora@gmail.com>
+Message-Id: <20180813154910.lzrkd2ivdorge3ro@arbab-laptop.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +39,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Apr 05, 2018 at 05:15:00PM +1000, Balbir Singh wrote:
+>Add a blocking notifier callback to be called in real-mode
+>on machine check exceptions for UE (ld/st) errors only.
 
+It's been a while, but is this patchset still being pursued?
 
-Le 13/08/2018 à 16:09, Christophe Lombard a écrit :
-> The AFU Information DVSEC capability is a means to extract common,
-> general information about all of the AFUs associated with a Function
-> independent of the specific functionality that each AFU provides.
-> 
-> This patch fixes the access to the AFU Descriptor Data indexed by the
-> AFU Info Index field.
-> 
-> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
-> Cc: stable <stable@vger.kernel.org>     # 4.16
-> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
-> ---
+This patch in particular (callbacks for MCE handling) has other device 
+memory use cases and I'd like to move it along.
 
-Thanks!
-Acked-by: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+>The patch registers a callback on boot to be notified
+>of machine check exceptions and returns a NOTIFY_STOP when
+>a page of interest is seen as the source of the machine
+>check exception. This page of interest is a ZONE_DEVICE
+>page and hence for now, for memcpy_mcsafe to work, the page
+>needs to belong to ZONE_DEVICE and memcpy_mcsafe should be
+>used to access the memory.
+>
+>The patch also modifies the NIP of the exception context
+>to go back to the fixup handler (in memcpy_mcsafe) and does
+>not print any error message as the error is treated as
+>returned via a return value and handled.
+>
+>Signed-off-by: Balbir Singh <bsingharora@gmail.com>
+>---
+> arch/powerpc/include/asm/mce.h |  3 +-
+> arch/powerpc/kernel/mce.c      | 77 ++++++++++++++++++++++++++++++++++++++++--
+> 2 files changed, 77 insertions(+), 3 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+>index 3a1226e9b465..a76638e3e47e 100644
+>--- a/arch/powerpc/include/asm/mce.h
+>+++ b/arch/powerpc/include/asm/mce.h
+>@@ -125,7 +125,8 @@ struct machine_check_event {
+> 			enum MCE_UeErrorType ue_error_type:8;
+> 			uint8_t		effective_address_provided;
+> 			uint8_t		physical_address_provided;
+>-			uint8_t		reserved_1[5];
+>+			uint8_t		error_return;
+>+			uint8_t		reserved_1[4];
+> 			uint64_t	effective_address;
+> 			uint64_t	physical_address;
+> 			uint8_t		reserved_2[8];
+>diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+>index efdd16a79075..b9e4881fa8c5 100644
+>--- a/arch/powerpc/kernel/mce.c
+>+++ b/arch/powerpc/kernel/mce.c
+>@@ -28,7 +28,9 @@
+> #include <linux/percpu.h>
+> #include <linux/export.h>
+> #include <linux/irq_work.h>
+>+#include <linux/extable.h>
+>
+>+#include <asm/extable.h>
+> #include <asm/machdep.h>
+> #include <asm/mce.h>
+>
+>@@ -54,6 +56,52 @@ static struct irq_work mce_event_process_work = {
+>
+> DECLARE_WORK(mce_ue_event_work, machine_process_ue_event);
+>
+>+static BLOCKING_NOTIFIER_HEAD(mce_notifier_list);
+>+
+>+int register_mce_notifier(struct notifier_block *nb)
+>+{
+>+	return blocking_notifier_chain_register(&mce_notifier_list, nb);
+>+}
+>+EXPORT_SYMBOL_GPL(register_mce_notifier);
+>+
+>+int unregister_mce_notifier(struct notifier_block *nb)
+>+{
+>+	return blocking_notifier_chain_unregister(&mce_notifier_list, nb);
+>+}
+>+EXPORT_SYMBOL_GPL(unregister_mce_notifier);
+>+
+>+
+>+static int check_memcpy_mcsafe(struct notifier_block *nb,
+>+			unsigned long val, void *data)
+>+{
+>+	/*
+>+	 * val contains the physical_address of the bad address
+>+	 */
+>+	unsigned long pfn = val >> PAGE_SHIFT;
+>+	struct page *page = realmode_pfn_to_page(pfn);
+>+	int rc = NOTIFY_DONE;
+>+
+>+	if (!page)
+>+		goto out;
+>+
+>+	if (is_zone_device_page(page))	/* for HMM and PMEM */
+>+		rc = NOTIFY_STOP;
+>+out:
+>+	return rc;
+>+}
+>+
+>+struct notifier_block memcpy_mcsafe_nb = {
+>+	.priority = 0,
+>+	.notifier_call = check_memcpy_mcsafe,
+>+};
+>+
+>+int  mce_mcsafe_register(void)
+>+{
+>+	register_mce_notifier(&memcpy_mcsafe_nb);
+>+	return 0;
+>+}
+>+arch_initcall(mce_mcsafe_register);
+>+
+> static void mce_set_error_info(struct machine_check_event *mce,
+> 			       struct mce_error_info *mce_err)
+> {
+>@@ -151,9 +199,31 @@ void save_mce_event(struct pt_regs *regs, long handled,
+> 		mce->u.ue_error.effective_address_provided = true;
+> 		mce->u.ue_error.effective_address = addr;
+> 		if (phys_addr != ULONG_MAX) {
+>+			int rc;
+>+			const struct exception_table_entry *entry;
+>+
+>+			/*
+>+			 * Once we have the physical address, we check to
+>+			 * see if the current nip has a fixup entry.
+>+			 * Having a fixup entry plus the notifier stating
+>+			 * that it can handle the exception is an indication
+>+			 * that we should return to the fixup entry and
+>+			 * return an error from there
+>+			 */
+> 			mce->u.ue_error.physical_address_provided = true;
+> 			mce->u.ue_error.physical_address = phys_addr;
+>-			machine_check_ue_event(mce);
+>+
+>+			rc = blocking_notifier_call_chain(&mce_notifier_list,
+>+							phys_addr, NULL);
 
+Could we pass mce entirely here instead of just phys_addr? It would 
+allow the callback itself to set error_return if needed.
 
-> Changelog[v2]
->   - Rebase to latest upstream.
->   - Use pci_write_config_byte instead of pci_write_config_word
-> ---
->   drivers/misc/ocxl/config.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
-> index 2e30de9..57a6bb1 100644
-> --- a/drivers/misc/ocxl/config.c
-> +++ b/drivers/misc/ocxl/config.c
-> @@ -280,7 +280,9 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
->   	u32 val;
->   	int rc, templ_major, templ_minor, len;
-> 
-> -	pci_write_config_word(dev, fn->dvsec_afu_info_pos, afu_idx);
-> +	pci_write_config_byte(dev,
-> +			fn->dvsec_afu_info_pos + OCXL_DVSEC_AFU_INFO_AFU_IDX,
-> +			afu_idx);
->   	rc = read_afu_info(dev, fn, OCXL_DVSEC_TEMPL_VERSION, &val);
->   	if (rc)
->   		return rc;
-> 
+>+			if (rc & NOTIFY_STOP_MASK) {
+>+				entry = search_exception_tables(regs->nip);
+>+				if (entry != NULL) {
+>+					mce->u.ue_error.error_return = 1;
+>+					regs->nip = extable_fixup(entry);
+>+				} else
+>+					machine_check_ue_event(mce);
+>+			} else
+>+				machine_check_ue_event(mce);
+> 		}
+> 	}
+> 	return;
+
+With the above, this logic would be simplified. So,
+
+	rc = blocking_notifier_call_chain(&mce_notifier_list,
+				(unsigned long)mce, NULL);
+	if (rc & NOTIFY_STOP_MASK) {
+		entry = search_exception_tables(regs->nip);
+		if (entry != NULL) {
+			mce->u.ue_error.error_return = 1;
+			regs->nip = extable_fixup(entry);
+		}
+	}
+
+	if (!mce->u.ue_error.error_return)
+		machine_check_ue_event(mce);
+
+>@@ -208,7 +278,6 @@ void release_mce_event(void)
+> 	get_mce_event(NULL, true);
+> }
+>
+>-
+> /*
+>  * Queue up the MCE event which then can be handled later.
+>  */
+>@@ -239,6 +308,10 @@ void machine_check_queue_event(void)
+> 	if (!get_mce_event(&evt, MCE_EVENT_RELEASE))
+> 		return;
+>
+>+	if (evt.error_type == MCE_ERROR_TYPE_UE &&
+>+			evt.u.ue_error.error_return == 1)
+>+		return;
+>+
+> 	index = __this_cpu_inc_return(mce_queue_count) - 1;
+> 	/* If queue is full, just return for now. */
+> 	if (index >= MAX_MC_EVT) {
+>-- 
+>2.13.6
+>
+
+-- 
+Reza Arbab
