@@ -1,35 +1,25 @@
-Return-Path: <srs0=aror=k4=gmail.com=npiggin@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41pykH0KKSzF0Rr
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 00:27:51 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41pykG5rrwz8vFK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 00:27:50 +1000 (AEST)
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
- [IPv6:2607:f8b0:4864:20::443])
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41pykF6RGzz9sBD
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Aug 2018 00:27:49 +1000 (AEST)
-Received: by mail-pf1-x443.google.com with SMTP id k19-v6so7746339pfi.1
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2018 07:27:49 -0700 (PDT)
-Date: Tue, 14 Aug 2018 00:27:35 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41pz2L1fpSzDrYj
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 00:41:45 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id j26-v6so7741405pfi.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 07:41:45 -0700 (PDT)
+Date: Tue, 14 Aug 2018 00:41:36 +1000
 From: Nicholas Piggin <npiggin@gmail.com>
 To: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v7 7/9] powerpc/pseries: Dump the SLB contents on SLB
- MCE errors.
-Message-ID: <20180814002616.18546185@roar.ozlabs.ibm.com>
-In-Reply-To: <e188218a-f470-58ca-ebc9-0efb2d8e322e@linux.vnet.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
- <20180811143327.12255ffb@roar.ozlabs.ibm.com>
- <e188218a-f470-58ca-ebc9-0efb2d8e322e@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, "Gautham R . Shenoy"
+ <ego@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>, Akshay Adiga
+ <akshay.adiga@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/2] powerpc/64s: move machine check SLB flushing to
+ mm/slb.c
+Message-ID: <20180814004136.6ad6b356@roar.ozlabs.ibm.com>
+In-Reply-To: <a216c87b-99ac-3a64-1c92-9e90ac28c8b6@linux.vnet.ibm.com>
+References: <20180810064249.13724-1-npiggin@gmail.com>
+ <a216c87b-99ac-3a64-1c92-9e90ac28c8b6@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,171 +31,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 13 Aug 2018 09:47:04 +0530
+On Mon, 13 Aug 2018 09:57:33 +0530
 Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
 
-> On 08/11/2018 10:03 AM, Nicholas Piggin wrote:
-> > On Tue, 07 Aug 2018 19:47:39 +0530
-> > Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> >   
-> >> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> >>
-> >> If we get a machine check exceptions due to SLB errors then dump the
-> >> current SLB contents which will be very much helpful in debugging the
-> >> root cause of SLB errors. Introduce an exclusive buffer per cpu to hold
-> >> faulty SLB entries. In real mode mce handler saves the old SLB contents
-> >> into this buffer accessible through paca and print it out later in virtual
-> >> mode.
-> >>
-> >> With this patch the console will log SLB contents like below on SLB MCE
-> >> errors:
-> >>
-> >> [  507.297236] SLB contents of cpu 0x1
-> >> [  507.297237] Last SLB entry inserted at slot 16
-> >> [  507.297238] 00 c000000008000000 400ea1b217000500
-> >> [  507.297239]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
-> >> [  507.297240] 01 d000000008000000 400d43642f000510
-> >> [  507.297242]   1T  ESID=   d00000  VSID=      d43642f LLP:110
-> >> [  507.297243] 11 f000000008000000 400a86c85f000500
-> >> [  507.297244]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
-> >> [  507.297245] 12 00007f0008000000 4008119624000d90
-> >> [  507.297246]   1T  ESID=       7f  VSID=      8119624 LLP:110
-> >> [  507.297247] 13 0000000018000000 00092885f5150d90
-> >> [  507.297247]  256M ESID=        1  VSID=   92885f5150 LLP:110
-> >> [  507.297248] 14 0000010008000000 4009e7cb50000d90
-> >> [  507.297249]   1T  ESID=        1  VSID=      9e7cb50 LLP:110
-> >> [  507.297250] 15 d000000008000000 400d43642f000510
-> >> [  507.297251]   1T  ESID=   d00000  VSID=      d43642f LLP:110
-> >> [  507.297252] 16 d000000008000000 400d43642f000510
-> >> [  507.297253]   1T  ESID=   d00000  VSID=      d43642f LLP:110
-> >> [  507.297253] ----------------------------------
-> >> [  507.297254] SLB cache ptr value = 3
-> >> [  507.297254] Valid SLB cache entries:
-> >> [  507.297255] 00 EA[0-35]=    7f000
-> >> [  507.297256] 01 EA[0-35]=        1
-> >> [  507.297257] 02 EA[0-35]=     1000
-> >> [  507.297257] Rest of SLB cache entries:
-> >> [  507.297258] 03 EA[0-35]=    7f000
-> >> [  507.297258] 04 EA[0-35]=        1
-> >> [  507.297259] 05 EA[0-35]=     1000
-> >> [  507.297260] 06 EA[0-35]=       12
-> >> [  507.297260] 07 EA[0-35]=    7f000
-> >>
-> >> Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
-> >> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> >> ---
-> >>
-> >> Changes in V7:
-> >> - Print slb cache ptr value and slb cache data
-> >> ---
-> >>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 ++
-> >>  arch/powerpc/include/asm/paca.h               |    4 +
-> >>  arch/powerpc/mm/slb.c                         |   73 +++++++++++++++++++++++++
-> >>  arch/powerpc/platforms/pseries/ras.c          |   10 +++
-> >>  arch/powerpc/platforms/pseries/setup.c        |   10 +++
-> >>  5 files changed, 103 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> >> index cc00a7088cf3..5a3fe282076d 100644
-> >> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> >> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-> >> @@ -485,9 +485,16 @@ static inline void hpte_init_pseries(void) { }
-> >>  
-> >>  extern void hpte_init_native(void);
-> >>  
-> >> +struct slb_entry {
-> >> +	u64	esid;
-> >> +	u64	vsid;
-> >> +};
-> >> +
-> >>  extern void slb_initialize(void);
-> >>  extern void slb_flush_and_rebolt(void);
-> >>  extern void slb_flush_and_rebolt_realmode(void);
-> >> +extern void slb_save_contents(struct slb_entry *slb_ptr);
-> >> +extern void slb_dump_contents(struct slb_entry *slb_ptr);
-> >>  
-> >>  extern void slb_vmalloc_update(void);
-> >>  extern void slb_set_size(u16 size);
-> >> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-> >> index 7f22929ce915..233d25ff6f64 100644
-> >> --- a/arch/powerpc/include/asm/paca.h
-> >> +++ b/arch/powerpc/include/asm/paca.h
-> >> @@ -254,6 +254,10 @@ struct paca_struct {
-> >>  #endif
-> >>  #ifdef CONFIG_PPC_PSERIES
-> >>  	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
-> >> +
-> >> +	/* Capture SLB related old contents in MCE handler. */
-> >> +	struct slb_entry *mce_faulty_slbs;
-> >> +	u16 slb_save_cache_ptr;
-> >>  #endif /* CONFIG_PPC_PSERIES */
-> >>  } ____cacheline_aligned;
-> >>  
-> >> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> >> index e89f675f1b5e..16a53689ffd4 100644
-> >> --- a/arch/powerpc/mm/slb.c
-> >> +++ b/arch/powerpc/mm/slb.c
-> >> @@ -151,6 +151,79 @@ void slb_flush_and_rebolt_realmode(void)
-> >>  	get_paca()->slb_cache_ptr = 0;
-> >>  }
-> >>  
-> >> +void slb_save_contents(struct slb_entry *slb_ptr)
-> >> +{
-> >> +	int i;
-> >> +	unsigned long e, v;
-> >> +
-> >> +	/* Save slb_cache_ptr value. */
-> >> +	get_paca()->slb_save_cache_ptr = get_paca()->slb_cache_ptr;  
+> On 08/10/2018 12:12 PM, Nicholas Piggin wrote:
+> > The machine check code that flushes and restores bolted segments in
+> > real mode belongs in mm/slb.c. This will also be used by pseries
+> > machine check and idle code in future changes.
 > > 
-> > What's the point of saving this?  
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > 
+> > Since v1:
+> > - Restore the test for slb_shadow (mpe)
+> > ---
+> >  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  3 ++
+> >  arch/powerpc/kernel/mce_power.c               | 26 +++++--------
+> >  arch/powerpc/mm/slb.c                         | 39 +++++++++++++++++++
+> >  3 files changed, 51 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > index 2f74bdc805e0..d4e398185b3a 100644
+> > --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> > @@ -497,6 +497,9 @@ extern void hpte_init_native(void);
+> > 
+> >  extern void slb_initialize(void);
+> >  extern void slb_flush_and_rebolt(void);
+> > +extern void slb_flush_all_realmode(void);
+> > +extern void __slb_restore_bolted_realmode(void);
+> > +extern void slb_restore_bolted_realmode(void);
+> > 
+> >  extern void slb_vmalloc_update(void);
+> >  extern void slb_set_size(u16 size);
+> > diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> > index d6756af6ec78..3497c8329c1d 100644
+> > --- a/arch/powerpc/kernel/mce_power.c
+> > +++ b/arch/powerpc/kernel/mce_power.c
+> > @@ -62,11 +62,8 @@ static unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
+> >  #ifdef CONFIG_PPC_BOOK3S_64
+> >  static void flush_and_reload_slb(void)
+> >  {
+> > -	struct slb_shadow *slb;
+> > -	unsigned long i, n;
+> > -
+> >  	/* Invalidate all SLBs */
+> > -	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+> > +	slb_flush_all_realmode();
+> > 
+> >  #ifdef CONFIG_KVM_BOOK3S_HANDLER
+> >  	/*
+> > @@ -76,22 +73,17 @@ static void flush_and_reload_slb(void)
+> >  	if (get_paca()->kvm_hstate.in_guest)
+> >  		return;
+> >  #endif
+> > -
+> > -	/* For host kernel, reload the SLBs from shadow SLB buffer. */
+> > -	slb = get_slb_shadow();
+> > -	if (!slb)
+> > +	if (early_radix_enabled())
+> >  		return;  
 > 
-> This is to know how many valid cache entries were present at the time of
-> SLB mutlihit. We use this index value while dumping the slb cahce entries.
+> Would we ever get MCE for SLB errors when radix is enabled ?
 
-Oh I see you're dumping that thing as well. I don't know if that's
-worth doing, it just gives you the first 8 SLB entries installed but
-you already have those (or they're overwritten and irrelevat).
+Well I'm not 100% sure. I don't think the MMU should in radix mode,
+but KVM will put guests into HPT mode and put entries into the SLB.
+I'm not completely sure we would never get a MCE come through here.
 
 > 
-> >   
-> >> +
-> >> +	if (!slb_ptr)
-> >> +		return;  
 > > 
-> > Can this ever happen?  
+> > -	n = min_t(u32, be32_to_cpu(slb->persistent), SLB_MIN_SIZE);
+> > -
+> > -	/* Load up the SLB entries from shadow SLB */
+> > -	for (i = 0; i < n; i++) {
+> > -		unsigned long rb = be64_to_cpu(slb->save_area[i].esid);
+> > -		unsigned long rs = be64_to_cpu(slb->save_area[i].vsid);
+> > +	/*
+> > +	 * This probably shouldn't happen, but it may be possible it's
+> > +	 * called in early boot before SLB shadows are allocated.
+> > +	 */
+> > +	if (!get_slb_shadow())
+> > +		return;  
 > 
-> May be Never. We allocate the memory at very early stage. But just added
-> as sanity check.
+> Any reason you added above check here instead on mm/slb.c ? Should we
+> move above check inside slb_restore_bolted_realmode() ? I guess mm/slb.c
+> is right place for this check. This will also help pseries machine check
+> to avoid calling this extra check explicitly.
 
-Okay if you think it's needed.
-
-> 
-> >   
-> >> +
-> >> +	for (i = 0; i < mmu_slb_size; i++) {
-> >> +		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
-> >> +		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));  
-> > 
-> > Does the UM say these instructions can cause machine checks if the SLB
-> > is corrupted? It talks about mfslb instruction causing MCE, but there
-> > seems to be no such instruction so I wonder if that's a typo for slbmf?
-> > 
-> > Seems like a parity error in the SLB should cause a MCE, at least,
-> > because it can't guarantee valid data for the instruction in that case
-> > (multi-hit may be different because you aren't searching by EA).
-> > 
-> > You could limit slb saving to a single level of recursion to avoid
-> > the problem.  
-> 
-> Yeah, we could do this OR restrict slb saving only for SLB multi-hit.
-> Parity errors are anyway hardware errors. If parity error is transient
-> then saving of SLBs may not trigger another MCE. In that case old SLB
-> content would look ok even if we dump them on console. What do you say ?
-
-I'm not sure. A parity error I think can cause a multi hit. Can you be
-sure of a software caused multi hit? Would be a good idea if you can I
-think. It may be a good idea to avoid recursion as well, just in case.
+I thought it was a corner case because the slb.c code should not
+be called before it's initialised. I'd prefer these exceptional
+machine check cases be tested in the MCE code. Anything else calling
+flush_and_reload_slb so early would be a bad bug.
 
 Thanks,
 Nick
