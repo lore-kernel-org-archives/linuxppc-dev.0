@@ -1,35 +1,37 @@
-Return-Path: <clombard@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41pxjj0J84zDr5t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 23:42:16 +1000 (AEST)
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7DDZWjZ038448
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 09:42:14 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2kua332t59-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41pxlw4SxpzF0jn
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 23:44:12 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7DDeoKJ034809
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 09:44:10 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kub31r3uf-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 09:42:13 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 09:44:09 -0400
 Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clombard@linux.vnet.ibm.com>;
- Mon, 13 Aug 2018 14:42:12 +0100
-Subject: Re: [PATCH] ocxl: Fix access to the AFU Descriptor Data
-To: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
- vaibhav@linux.vnet.ibm.com
-References: <1534150891-19394-1-git-send-email-clombard@linux.vnet.ibm.com>
- <85eab07a-5ef8-0d0a-fe82-9860ae84015e@au1.ibm.com>
-From: christophe lombard <clombard@linux.vnet.ibm.com>
-Date: Mon, 13 Aug 2018 15:42:09 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Mon, 13 Aug 2018 07:44:08 -0600
+Subject: Re: [PATCH 1/3] powerpc/mm: fix a warning when a cache is common to
+ PGD and hugepages
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <1cbc8dba537393edbb6384b67cbb123431ba6a32.1534166756.git.christophe.leroy@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Mon, 13 Aug 2018 19:14:01 +0530
 MIME-Version: 1.0
-In-Reply-To: <85eab07a-5ef8-0d0a-fe82-9860ae84015e@au1.ibm.com>
+In-Reply-To: <1cbc8dba537393edbb6384b67cbb123431ba6a32.1534166756.git.christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <bb174873-18af-ba7a-e38e-2d9aca0db882@linux.vnet.ibm.com>
+Message-Id: <40132e5c-e7a7-46d1-be1d-24cb1b91923a@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,51 +41,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 13/08/2018 à 11:48, Andrew Donnellan a écrit :
-> On 13/08/18 19:01, Christophe Lombard wrote:
->> From: Christophe Lombard <christophe_lombard@fr.ibm.cm>
+On 08/13/2018 06:57 PM, Christophe Leroy wrote:
+> While implementing TLB miss HW assistance on the 8xx, the following
+> warning was encountered:
 > 
-> Your git committer email should probably match your sign-off email.
+> [  423.732965] WARNING: CPU: 0 PID: 345 at mm/slub.c:2412 ___slab_alloc.constprop.30+0x26c/0x46c
+> [  423.733033] CPU: 0 PID: 345 Comm: mmap Not tainted 4.18.0-rc8-00664-g2dfff9121c55 #671
+> [  423.733075] NIP:  c0108f90 LR: c0109ad0 CTR: 00000004
+> [  423.733121] REGS: c455bba0 TRAP: 0700   Not tainted  (4.18.0-rc8-00664-g2dfff9121c55)
+> [  423.733147] MSR:  00021032 <ME,IR,DR,RI>  CR: 24224848  XER: 20000000
+> [  423.733319]
+> [  423.733319] GPR00: c0109ad0 c455bc50 c4521910 c60053c0 007080c0 c0011b34 c7fa41e0 c455be30
+> [  423.733319] GPR08: 00000001 c00103a0 c7fa41e0 c49afcc4 24282842 10018840 c079b37c 00000040
+> [  423.733319] GPR16: 73f00000 00210d00 00000000 00000001 c455a000 00000100 00000200 c455a000
+> [  423.733319] GPR24: c60053c0 c0011b34 007080c0 c455a000 c455a000 c7fa41e0 00000000 00009032
+> [  423.734190] NIP [c0108f90] ___slab_alloc.constprop.30+0x26c/0x46c
+> [  423.734257] LR [c0109ad0] kmem_cache_alloc+0x210/0x23c
+> [  423.734283] Call Trace:
+> [  423.734326] [c455bc50] [00000100] 0x100 (unreliable)
+> [  423.734430] [c455bcc0] [c0109ad0] kmem_cache_alloc+0x210/0x23c
+> [  423.734543] [c455bcf0] [c0011b34] huge_pte_alloc+0xc0/0x1dc
+> [  423.734633] [c455bd20] [c01044dc] hugetlb_fault+0x408/0x48c
+> [  423.734720] [c455bdb0] [c0104b20] follow_hugetlb_page+0x14c/0x44c
+> [  423.734826] [c455be10] [c00e8e54] __get_user_pages+0x1c4/0x3dc
+> [  423.734919] [c455be80] [c00e9924] __mm_populate+0xac/0x140
+> [  423.735020] [c455bec0] [c00db14c] vm_mmap_pgoff+0xb4/0xb8
+> [  423.735127] [c455bf00] [c00f27c0] ksys_mmap_pgoff+0xcc/0x1fc
+> [  423.735222] [c455bf40] [c000e0f8] ret_from_syscall+0x0/0x38
+> [  423.735271] Instruction dump:
+> [  423.735321] 7cbf482e 38fd0008 7fa6eb78 7fc4f378 4bfff5dd 7fe3fb78 4bfffe24 81370010
+> [  423.735536] 71280004 41a2ff88 4840c571 4bffff80 <0fe00000> 4bfffeb8 81340010 712a0004
+> [  423.735757] ---[ end trace e9b222919a470790 ]---
 > 
->>
->> The AFU Information DVSEC capability is a means to extract common,
->> general information about all of the AFUs associated with a Function
->> independent of the specific functionality that each AFU provides.
->>
->> This patch fixes the access to the AFU Descriptor Data indexed by the
->> AFU Info Index field.
->>
->> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
->>
->> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+> This warning occurs when calling kmem_cache_zalloc() on a
+> cache having a constructor.
 > 
-> This looks like it should go to stable? I assume the reason we haven't 
-> noticed this previously is because we have not been testing with 
-> multi-AFU cards.
+> In this case it happens because PGD cache and 512k hugepte cache are
+> the same size (4k). While a cache with constructor is created for
+> the PGD, hugepages create cache without constructor and uses
+> kmem_cache_zalloc(). As both expect a cache with the same size,
+> the hugepages reuse the cache created for PGD, hence the conflict.
 > 
->> ---
->>   drivers/misc/ocxl/config.c | 4 +++-
->>   1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
->> index 2e30de9..de01623 100644
->> --- a/drivers/misc/ocxl/config.c
->> +++ b/drivers/misc/ocxl/config.c
->> @@ -280,7 +280,9 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
->>       u32 val;
->>       int rc, templ_major, templ_minor, len;
->> -    pci_write_config_word(dev, fn->dvsec_afu_info_pos, afu_idx);
->> +    pci_write_config_word(dev,
->> +                  fn->dvsec_afu_info_pos + OCXL_DVSEC_AFU_INFO_AFU_IDX,
->> +                  afu_idx);
-> 
-> pci_write_config_byte() would be more appropriate here (see 
-> ocxl_config_read_afu() at line 454)
-> 
->>       rc = read_afu_info(dev, fn, OCXL_DVSEC_TEMPL_VERSION, &val);
->>       if (rc)
->>           return rc;
->>
+> As the constructors only aim at zeroing the allocated memory, this
+> patch fixes this issue by removing the constructors and using
+> kmem_cache_zalloc() instead.
 > 
 
-right. Thanks for the review.
+But that means we zero out on each alloc from the slab right? Earlier we 
+allocated we we added memory to the slab. Also we have code that 
+carefully zero things out when we free the page table back to slab.
+The idea there was, it is better take the cost of zeroing out during 
+free rather than fault.
+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>   arch/powerpc/include/asm/book3s/32/pgalloc.h |  2 +-
+>   arch/powerpc/include/asm/book3s/64/pgalloc.h |  4 ++--
+>   arch/powerpc/include/asm/nohash/32/pgalloc.h |  2 +-
+>   arch/powerpc/include/asm/nohash/64/pgalloc.h |  6 +++---
+>   arch/powerpc/mm/init-common.c                | 21 +++------------------
+>   5 files changed, 10 insertions(+), 25 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> index 82e44b1a00ae..4c23cc1ae7a1 100644
+> --- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> +++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+> @@ -32,7 +32,7 @@ extern struct kmem_cache *pgtable_cache[];
+> 
+>   static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+>   {
+> -	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+> +	return kmem_cache_zalloc(PGT_CACHE(PGD_INDEX_SIZE),
+>   			pgtable_gfp_flags(mm, GFP_KERNEL));
+>   }
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> index 76234a14b97d..074359cd632a 100644
+> --- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> +++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+> @@ -81,7 +81,7 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+>   	if (radix_enabled())
+>   		return radix__pgd_alloc(mm);
+> 
+> -	pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+> +	pgd = kmem_cache_zalloc(PGT_CACHE(PGD_INDEX_SIZE),
+>   			       pgtable_gfp_flags(mm, GFP_KERNEL));
+>   	/*
+>   	 * Don't scan the PGD for pointers, it contains references to PUDs but
+> @@ -120,7 +120,7 @@ static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+>   {
+>   	pud_t *pud;
+> 
+> -	pud = kmem_cache_alloc(PGT_CACHE(PUD_CACHE_INDEX),
+> +	pud = kmem_cache_zalloc(PGT_CACHE(PUD_CACHE_INDEX),
+>   			       pgtable_gfp_flags(mm, GFP_KERNEL));
+>   	/*
+>   	 * Tell kmemleak to ignore the PUD, that means don't scan it for
+> diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> index 8825953c225b..766cf0c90d19 100644
+> --- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> +++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+> @@ -32,7 +32,7 @@ extern struct kmem_cache *pgtable_cache[];
+> 
+>   static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+>   {
+> -	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+> +	return kmem_cache_zalloc(PGT_CACHE(PGD_INDEX_SIZE),
+>   			pgtable_gfp_flags(mm, GFP_KERNEL));
+>   }
+> 
+> diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> index e2d62d033708..54ee5ac02d81 100644
+> --- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> +++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+> @@ -43,7 +43,7 @@ extern struct kmem_cache *pgtable_cache[];
+> 
+>   static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+>   {
+> -	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+> +	return kmem_cache_zalloc(PGT_CACHE(PGD_INDEX_SIZE),
+>   			pgtable_gfp_flags(mm, GFP_KERNEL));
+>   }
+> 
+> @@ -56,7 +56,7 @@ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+> 
+>   static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
+>   {
+> -	return kmem_cache_alloc(PGT_CACHE(PUD_INDEX_SIZE),
+> +	return kmem_cache_zalloc(PGT_CACHE(PUD_INDEX_SIZE),
+>   			pgtable_gfp_flags(mm, GFP_KERNEL));
+>   }
+> 
+> @@ -86,7 +86,7 @@ static inline void pmd_populate(struct mm_struct *mm, pmd_t *pmd,
+> 
+>   static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
+>   {
+> -	return kmem_cache_alloc(PGT_CACHE(PMD_CACHE_INDEX),
+> +	return kmem_cache_zalloc(PGT_CACHE(PMD_CACHE_INDEX),
+>   			pgtable_gfp_flags(mm, GFP_KERNEL));
+>   }
+> 
+> diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+> index 2b656e67f2ea..2ae15ff8f76f 100644
+> --- a/arch/powerpc/mm/init-common.c
+> +++ b/arch/powerpc/mm/init-common.c
+> @@ -25,21 +25,6 @@
+>   #include <asm/pgalloc.h>
+>   #include <asm/pgtable.h>
+> 
+> -static void pgd_ctor(void *addr)
+> -{
+> -	memset(addr, 0, PGD_TABLE_SIZE);
+> -}
+> -
+> -static void pud_ctor(void *addr)
+> -{
+> -	memset(addr, 0, PUD_TABLE_SIZE);
+> -}
+> -
+> -static void pmd_ctor(void *addr)
+> -{
+> -	memset(addr, 0, PMD_TABLE_SIZE);
+> -}
+> -
+>   struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
+>   EXPORT_SYMBOL_GPL(pgtable_cache);	/* used by kvm_hv module */
+> 
+> @@ -91,15 +76,15 @@ EXPORT_SYMBOL_GPL(pgtable_cache_add);	/* used by kvm_hv module */
+> 
+>   void pgtable_cache_init(void)
+>   {
+> -	pgtable_cache_add(PGD_INDEX_SIZE, pgd_ctor);
+> +	pgtable_cache_add(PGD_INDEX_SIZE, NULL);
+> 
+>   	if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX))
+> -		pgtable_cache_add(PMD_CACHE_INDEX, pmd_ctor);
+> +		pgtable_cache_add(PMD_CACHE_INDEX, NULL);
+>   	/*
+>   	 * In all current configs, when the PUD index exists it's the
+>   	 * same size as either the pgd or pmd index except with THP enabled
+>   	 * on book3s 64
+>   	 */
+>   	if (PUD_CACHE_INDEX && !PGT_CACHE(PUD_CACHE_INDEX))
+> -		pgtable_cache_add(PUD_CACHE_INDEX, pud_ctor);
+> +		pgtable_cache_add(PUD_CACHE_INDEX, NULL);
+>   }
+> 
