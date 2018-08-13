@@ -1,48 +1,36 @@
-Return-Path: <srs0=+4xf=k4=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41pj9t1NkgzDr5t
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 14:17:22 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41pj9t0kjWz8tD9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 14:17:22 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41pj9s3FjHz9s7Q
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2018 14:17:20 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7D4EBHK098431
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2018 00:17:18 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2ku1gy24x2-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41pjPp56mJzDr5t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 14:27:42 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7D4OE3K098682
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 00:27:40 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ktqcm0ayy-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Aug 2018 00:17:18 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 00:27:40 -0400
 Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 13 Aug 2018 05:17:09 +0100
-Subject: Re: [PATCH v7 7/9] powerpc/pseries: Dump the SLB contents on SLB MCE
- errors.
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ for <linuxppc-dev@lists.ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 13 Aug 2018 05:27:37 +0100
+Subject: Re: [PATCH v2 1/2] powerpc/64s: move machine check SLB flushing to
+ mm/slb.c
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "Gautham R . Shenoy" <ego@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Michal Suchanek <msuchanek@suse.com>, Ananth Narayan <ananth@in.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
- <153365145460.14256.11932687379471923123.stgit@jupiter.in.ibm.com>
- <20180811143327.12255ffb@roar.ozlabs.ibm.com>
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+References: <20180810064249.13724-1-npiggin@gmail.com>
 From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 13 Aug 2018 09:47:04 +0530
+Date: Mon, 13 Aug 2018 09:57:33 +0530
 MIME-Version: 1.0
-In-Reply-To: <20180811143327.12255ffb@roar.ozlabs.ibm.com>
+In-Reply-To: <20180810064249.13724-1-npiggin@gmail.com>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <e188218a-f470-58ca-ebc9-0efb2d8e322e@linux.vnet.ibm.com>
+Message-Id: <a216c87b-99ac-3a64-1c92-9e90ac28c8b6@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,158 +40,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2018 10:03 AM, Nicholas Piggin wrote:
-> On Tue, 07 Aug 2018 19:47:39 +0530
-> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On 08/10/2018 12:12 PM, Nicholas Piggin wrote:
+> The machine check code that flushes and restores bolted segments in
+> real mode belongs in mm/slb.c. This will also be used by pseries
+> machine check and idle code in future changes.
 > 
->> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>
->> If we get a machine check exceptions due to SLB errors then dump the
->> current SLB contents which will be very much helpful in debugging the
->> root cause of SLB errors. Introduce an exclusive buffer per cpu to hold
->> faulty SLB entries. In real mode mce handler saves the old SLB contents
->> into this buffer accessible through paca and print it out later in virtual
->> mode.
->>
->> With this patch the console will log SLB contents like below on SLB MCE
->> errors:
->>
->> [  507.297236] SLB contents of cpu 0x1
->> [  507.297237] Last SLB entry inserted at slot 16
->> [  507.297238] 00 c000000008000000 400ea1b217000500
->> [  507.297239]   1T  ESID=   c00000  VSID=      ea1b217 LLP:100
->> [  507.297240] 01 d000000008000000 400d43642f000510
->> [  507.297242]   1T  ESID=   d00000  VSID=      d43642f LLP:110
->> [  507.297243] 11 f000000008000000 400a86c85f000500
->> [  507.297244]   1T  ESID=   f00000  VSID=      a86c85f LLP:100
->> [  507.297245] 12 00007f0008000000 4008119624000d90
->> [  507.297246]   1T  ESID=       7f  VSID=      8119624 LLP:110
->> [  507.297247] 13 0000000018000000 00092885f5150d90
->> [  507.297247]  256M ESID=        1  VSID=   92885f5150 LLP:110
->> [  507.297248] 14 0000010008000000 4009e7cb50000d90
->> [  507.297249]   1T  ESID=        1  VSID=      9e7cb50 LLP:110
->> [  507.297250] 15 d000000008000000 400d43642f000510
->> [  507.297251]   1T  ESID=   d00000  VSID=      d43642f LLP:110
->> [  507.297252] 16 d000000008000000 400d43642f000510
->> [  507.297253]   1T  ESID=   d00000  VSID=      d43642f LLP:110
->> [  507.297253] ----------------------------------
->> [  507.297254] SLB cache ptr value = 3
->> [  507.297254] Valid SLB cache entries:
->> [  507.297255] 00 EA[0-35]=    7f000
->> [  507.297256] 01 EA[0-35]=        1
->> [  507.297257] 02 EA[0-35]=     1000
->> [  507.297257] Rest of SLB cache entries:
->> [  507.297258] 03 EA[0-35]=    7f000
->> [  507.297258] 04 EA[0-35]=        1
->> [  507.297259] 05 EA[0-35]=     1000
->> [  507.297260] 06 EA[0-35]=       12
->> [  507.297260] 07 EA[0-35]=    7f000
->>
->> Suggested-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> Suggested-by: Michael Ellerman <mpe@ellerman.id.au>
->> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->> ---
->>
->> Changes in V7:
->> - Print slb cache ptr value and slb cache data
->> ---
->>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 ++
->>  arch/powerpc/include/asm/paca.h               |    4 +
->>  arch/powerpc/mm/slb.c                         |   73 +++++++++++++++++++++++++
->>  arch/powerpc/platforms/pseries/ras.c          |   10 +++
->>  arch/powerpc/platforms/pseries/setup.c        |   10 +++
->>  5 files changed, 103 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> index cc00a7088cf3..5a3fe282076d 100644
->> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
->> @@ -485,9 +485,16 @@ static inline void hpte_init_pseries(void) { }
->>  
->>  extern void hpte_init_native(void);
->>  
->> +struct slb_entry {
->> +	u64	esid;
->> +	u64	vsid;
->> +};
->> +
->>  extern void slb_initialize(void);
->>  extern void slb_flush_and_rebolt(void);
->>  extern void slb_flush_and_rebolt_realmode(void);
->> +extern void slb_save_contents(struct slb_entry *slb_ptr);
->> +extern void slb_dump_contents(struct slb_entry *slb_ptr);
->>  
->>  extern void slb_vmalloc_update(void);
->>  extern void slb_set_size(u16 size);
->> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
->> index 7f22929ce915..233d25ff6f64 100644
->> --- a/arch/powerpc/include/asm/paca.h
->> +++ b/arch/powerpc/include/asm/paca.h
->> @@ -254,6 +254,10 @@ struct paca_struct {
->>  #endif
->>  #ifdef CONFIG_PPC_PSERIES
->>  	u8 *mce_data_buf;		/* buffer to hold per cpu rtas errlog */
->> +
->> +	/* Capture SLB related old contents in MCE handler. */
->> +	struct slb_entry *mce_faulty_slbs;
->> +	u16 slb_save_cache_ptr;
->>  #endif /* CONFIG_PPC_PSERIES */
->>  } ____cacheline_aligned;
->>  
->> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
->> index e89f675f1b5e..16a53689ffd4 100644
->> --- a/arch/powerpc/mm/slb.c
->> +++ b/arch/powerpc/mm/slb.c
->> @@ -151,6 +151,79 @@ void slb_flush_and_rebolt_realmode(void)
->>  	get_paca()->slb_cache_ptr = 0;
->>  }
->>  
->> +void slb_save_contents(struct slb_entry *slb_ptr)
->> +{
->> +	int i;
->> +	unsigned long e, v;
->> +
->> +	/* Save slb_cache_ptr value. */
->> +	get_paca()->slb_save_cache_ptr = get_paca()->slb_cache_ptr;
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > 
-> What's the point of saving this?
+> Since v1:
+> - Restore the test for slb_shadow (mpe)
+> ---
+>  arch/powerpc/include/asm/book3s/64/mmu-hash.h |  3 ++
+>  arch/powerpc/kernel/mce_power.c               | 26 +++++--------
+>  arch/powerpc/mm/slb.c                         | 39 +++++++++++++++++++
+>  3 files changed, 51 insertions(+), 17 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> index 2f74bdc805e0..d4e398185b3a 100644
+> --- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> +++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
+> @@ -497,6 +497,9 @@ extern void hpte_init_native(void);
+> 
+>  extern void slb_initialize(void);
+>  extern void slb_flush_and_rebolt(void);
+> +extern void slb_flush_all_realmode(void);
+> +extern void __slb_restore_bolted_realmode(void);
+> +extern void slb_restore_bolted_realmode(void);
+> 
+>  extern void slb_vmalloc_update(void);
+>  extern void slb_set_size(u16 size);
+> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
+> index d6756af6ec78..3497c8329c1d 100644
+> --- a/arch/powerpc/kernel/mce_power.c
+> +++ b/arch/powerpc/kernel/mce_power.c
+> @@ -62,11 +62,8 @@ static unsigned long addr_to_pfn(struct pt_regs *regs, unsigned long addr)
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  static void flush_and_reload_slb(void)
+>  {
+> -	struct slb_shadow *slb;
+> -	unsigned long i, n;
+> -
+>  	/* Invalidate all SLBs */
+> -	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+> +	slb_flush_all_realmode();
+> 
+>  #ifdef CONFIG_KVM_BOOK3S_HANDLER
+>  	/*
+> @@ -76,22 +73,17 @@ static void flush_and_reload_slb(void)
+>  	if (get_paca()->kvm_hstate.in_guest)
+>  		return;
+>  #endif
+> -
+> -	/* For host kernel, reload the SLBs from shadow SLB buffer. */
+> -	slb = get_slb_shadow();
+> -	if (!slb)
+> +	if (early_radix_enabled())
+>  		return;
 
-This is to know how many valid cache entries were present at the time of
-SLB mutlihit. We use this index value while dumping the slb cahce entries.
+Would we ever get MCE for SLB errors when radix is enabled ?
 
 > 
->> +
->> +	if (!slb_ptr)
->> +		return;
-> 
-> Can this ever happen?
+> -	n = min_t(u32, be32_to_cpu(slb->persistent), SLB_MIN_SIZE);
+> -
+> -	/* Load up the SLB entries from shadow SLB */
+> -	for (i = 0; i < n; i++) {
+> -		unsigned long rb = be64_to_cpu(slb->save_area[i].esid);
+> -		unsigned long rs = be64_to_cpu(slb->save_area[i].vsid);
+> +	/*
+> +	 * This probably shouldn't happen, but it may be possible it's
+> +	 * called in early boot before SLB shadows are allocated.
+> +	 */
+> +	if (!get_slb_shadow())
+> +		return;
 
-May be Never. We allocate the memory at very early stage. But just added
-as sanity check.
+Any reason you added above check here instead on mm/slb.c ? Should we
+move above check inside slb_restore_bolted_realmode() ? I guess mm/slb.c
+is right place for this check. This will also help pseries machine check
+to avoid calling this extra check explicitly.
 
-> 
->> +
->> +	for (i = 0; i < mmu_slb_size; i++) {
->> +		asm volatile("slbmfee  %0,%1" : "=r" (e) : "r" (i));
->> +		asm volatile("slbmfev  %0,%1" : "=r" (v) : "r" (i));
-> 
-> Does the UM say these instructions can cause machine checks if the SLB
-> is corrupted? It talks about mfslb instruction causing MCE, but there
-> seems to be no such instruction so I wonder if that's a typo for slbmf?
-> 
-> Seems like a parity error in the SLB should cause a MCE, at least,
-> because it can't guarantee valid data for the instruction in that case
-> (multi-hit may be different because you aren't searching by EA).
-> 
-> You could limit slb saving to a single level of recursion to avoid
-> the problem.
-
-Yeah, we could do this OR restrict slb saving only for SLB multi-hit.
-Parity errors are anyway hardware errors. If parity error is transient
-then saving of SLBs may not trigger another MCE. In that case old SLB
-content would look ok even if we dump them on console. What do you say ?
+Thanks,
+-Mahesh.
 
 > 
-> Thanks,
-> Nick
+> -		rb = (rb & ~0xFFFul) | i;
+> -		asm volatile("slbmte %0,%1" : : "r" (rs), "r" (rb));
+> -	}
+> +	slb_restore_bolted_realmode();
+>  }
+>  #endif
+> 
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index cb796724a6fc..0b095fa54049 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -90,6 +90,45 @@ static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+>  		     : "memory" );
+>  }
+> 
+> +/*
+> + * Insert bolted entries into SLB (which may not be empty, so don't clear
+> + * slb_cache_ptr).
+> + */
+> +void __slb_restore_bolted_realmode(void)
+> +{
+> +	struct slb_shadow *p = get_slb_shadow();
+> +	enum slb_index index;
+> +
+> +	 /* No isync needed because realmode. */
+> +	for (index = 0; index < SLB_NUM_BOLTED; index++) {
+> +		asm volatile("slbmte  %0,%1" :
+> +		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
+> +		       "r" (be64_to_cpu(p->save_area[index].esid)));
+> +	}
+> +}
+> +
+> +/*
+> + * Insert the bolted entries into an empty SLB.
+> + * This is not the same as rebolt because the bolted segments are not
+> + * changed, just loaded from the shadow area.
+> + */
+> +void slb_restore_bolted_realmode(void)
+> +{
+> +	__slb_restore_bolted_realmode();
+> +	get_paca()->slb_cache_ptr = 0;
+> +}
+> +
+> +/*
+> + * This flushes all SLB entries including 0, so it must be realmode.
+> + */
+> +void slb_flush_all_realmode(void)
+> +{
+> +	/*
+> +	 * This flushes all SLB entries including 0, so it must be realmode.
+> +	 */
+> +	asm volatile("slbmte %0,%0; slbia" : : "r" (0));
+> +}
+> +
+>  static void __slb_flush_and_rebolt(void)
+>  {
+>  	/* If you change this make sure you change SLB_NUM_BOLTED
 > 
