@@ -1,48 +1,17 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41pvcd2ZWCzF0jn
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 22:07:45 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7DC3vwZ097678
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 08:07:43 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2ku6a082xs-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 08:07:42 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 13 Aug 2018 06:07:41 -0600
-Date: Mon, 13 Aug 2018 17:37:32 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Neuling <mikey@neuling.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- "Oliver O'Halloran" <oohall@gmail.com>,
- Nicholas Piggin <npiggin@gmail.com>,
- Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6 2/2] powerpc: Use cpu_smallcore_sibling_mask at SMT
- level on bigcores
-Reply-To: ego@linux.vnet.ibm.com
-References: <1533792728-6304-1-git-send-email-ego@linux.vnet.ibm.com>
- <1533792728-6304-3-git-send-email-ego@linux.vnet.ibm.com>
- <20180809132657.GA42474@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180809132657.GA42474@linux.vnet.ibm.com>
-Message-Id: <20180813120732.GA13369@in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41pxCz4pJ9zDr5t
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 23:19:58 +1000 (AEST)
+Message-Id: <fa22576baa70fd0cdf8b3f5af3767116a1c680e7.1534164087.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/mm: Don't report hugepage tables as memory leaks when
+ using kmemleak
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 13 Aug 2018 13:19:52 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,52 +21,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 09, 2018 at 06:26:57AM -0700, Srikar Dronamraju wrote:
-> * Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2018-08-09 11:02:08]:
-> 
-> > 
-> > 3) ppc64_cpu --smt=2
-> >    SMT domain ceases to exist as each domain consists of just one
-> >    group.
-> > 
-> 
-> When seen in isolation, the above looks as if ppc64_cpu --smt=2 o/p says
-> " SMT domain ceases to exist...."
+When a process allocates a hugepage, the following leak is
+reported by kmemleak. This is a false positive which is
+due to the pointer to the table being stored in the PGD
+as physical memory address and not virtual memory pointer.
 
-Ok. The intent was to say that one of the sched-domain level
-collapses, thereby leaving only CACHE, DIE and NUMA. Will word it
-better.
+unreferenced object 0xc30f8200 (size 512):
+  comm "mmap", pid 374, jiffies 4872494 (age 627.630s)
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<e32b68da>] huge_pte_alloc+0xdc/0x1f8
+    [<9e0df1e1>] hugetlb_fault+0x560/0x8f8
+    [<7938ec6c>] follow_hugetlb_page+0x14c/0x44c
+    [<afbdb405>] __get_user_pages+0x1c4/0x3dc
+    [<b8fd7cd9>] __mm_populate+0xac/0x140
+    [<3215421e>] vm_mmap_pgoff+0xb4/0xb8
+    [<c148db69>] ksys_mmap_pgoff+0xcc/0x1fc
+    [<4fcd760f>] ret_from_syscall+0x0/0x38
 
-> 
-> > @@ -999,7 +1012,17 @@ static void add_cpu_to_masks(int cpu)
-> >  {
-> >  	int first_thread = cpu_first_thread_sibling(cpu);
-> >  	int chipid = cpu_to_chip_id(cpu);
-> > -	int i;
-> > +
-> > +	struct thread_groups tg;
-> > +	int i, cpu_group_start = -1;
-> > +
-> > +	if (has_big_cores) {
-> > +		struct device_node *dn = of_get_cpu_node(cpu, NULL);
-> > +
-> 
-> Not checking for validity of dn and no of_node_puts?
+See commit a984506c542e2 ("powerpc/mm: Don't report PUDs as
+memory leaks when using kmemleak") for detailed explanation.
 
-Will fix this. Thanks for catching this.
+To fix that, this patch tells kmemleak to ignore the allocated
+hugepage table.
 
-> 
-> > +		parse_thread_groups(dn, &tg);
-> > +		cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
-> > +		cpumask_set_cpu(cpu, cpu_smallcore_sibling_mask(cpu));
-> > +	}
-> > 
-> >  	/*
-> >  	 * This CPU will not be in the online mask yet so we need to manually
-> 
-> The rest looks good
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/mm/hugetlbpage.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Thanks for the review.
-
-
-> 
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index e87f9ef9115b..7296a42eb62e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -19,6 +19,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/swap.h>
+ #include <linux/swapops.h>
++#include <linux/kmemleak.h>
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+ #include <asm/tlb.h>
+@@ -112,6 +113,8 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+ 		for (i = i - 1 ; i >= 0; i--, hpdp--)
+ 			*hpdp = __hugepd(0);
+ 		kmem_cache_free(cachep, new);
++	} else {
++		kmemleak_ignore(new);
+ 	}
+ 	spin_unlock(ptl);
+ 	return 0;
+-- 
+2.13.3
