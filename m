@@ -1,18 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mathieu.malaterre@gmail.com>
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ptdT3n1xzF0WK
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:23:25 +1000 (AEST)
-In-Reply-To: <20180813054457.13241-1-aneesh.kumar@linux.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org
-From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [V2] powerpc/mm/book3s/radix: Add mapping statistics
-Message-Id: <41ptdT1q0Qz9sCn@ozlabs.org>
-Date: Mon, 13 Aug 2018 21:23:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41pth85fJKzF0WS
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:25:44 +1000 (AEST)
+Received: by mail-oi0-f68.google.com with SMTP id n21-v6so26597063oig.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 04:25:43 -0700 (PDT)
+MIME-Version: 1.0
+References: <20180322210528.22017-1-malat@debian.org>
+ <41ptcv2xyYz9sC7@ozlabs.org>
+In-Reply-To: <41ptcv2xyYz9sC7@ozlabs.org>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 13 Aug 2018 13:25:30 +0200
+Message-ID: <CA+7wUsxG-Ys7snbY_=wgGRxcUYTN-tEMM9gqHOWidvEBmB5ogA@mail.gmail.com>
+Subject: Re: cxl: remove a dead branch
+To: Frederic Barrat <fbarrat@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-08-13 at 05:44:57 UTC, "Aneesh Kumar K.V" wrote:
-> Add statistics that show how memory is mapped within the kernel linear mapping.
-> This is similar to commit 37cd944c8d8f ("s390/pgtable: add mapping statistics")
-> 
-> We don't do this with Hash translation mode. Hash uses one size (mmu_linear_psize)
-> to map the kernel linear mapping and we print the linear psize during boot as
-> below.
-> 
-> "Page orders: linear mapping = 24, virtual = 16, io = 16, vmemmap = 24"
-> 
-> A sample output looks like:
-> 
-> DirectMap4k:           0 kB
-> DirectMap64k:       18432 kB
-> DirectMap2M:     1030144 kB
-> DirectMap1G:    11534336 kB
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Frederic,
 
-Applied to powerpc next, thanks.
+Could you double check with Michael what is now best to do.
 
-https://git.kernel.org/powerpc/c/a2dc009afa9ae8b92305be77286765
+Thanks
 
-cheers
+On Mon, Aug 13, 2018 at 1:23 PM Michael Ellerman
+<patch-notifications@ellerman.id.au> wrote:
+>
+> On Thu, 2018-03-22 at 21:05:28 UTC, Mathieu Malaterre wrote:
+> > In commit 14baf4d9c739 ("cxl: Add guest-specific code") the following code
+> > was added:
+> >
+> >       if (afu->crs_len < 0) {
+> >               dev_err(&afu->dev, "Unexpected configuration record size value\n");
+> >               return -EINVAL;
+> >       }
+> >
+> > However the variable `crs_len` is of type u64 and cannot be compared < 0.
+> > Remove the dead code section. Fix the following warning treated as error
+> > with W=1:
+> >
+> > ../drivers/misc/cxl/guest.c:919:19: error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
+> >
+> > Signed-off-by: Mathieu Malaterre <malat@debian.org>
+>
+> Applied to powerpc next, thanks.
+>
+> https://git.kernel.org/powerpc/c/e4ecafb14fd9cd77d8f4320af1922e
+>
+> cheers
