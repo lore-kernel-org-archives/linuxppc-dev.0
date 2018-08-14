@@ -1,16 +1,16 @@
 Return-Path: <golf@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0237.hostedemail.com
- [216.40.44.237])
+Received: from smtprelay.hostedemail.com (smtprelay0017.hostedemail.com
+ [216.40.44.17])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qKx00ZRWzF0Qs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 14:53:23 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qL2w2BsTzF0Ws
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 14:58:32 +1000 (AEST)
 Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
  [10.5.19.251])
- by smtpgrave07.hostedemail.com (Postfix) with ESMTP id 2CF3B18047AA9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:45:16 +0000 (UTC)
-Message-ID: <81ae2b1b7ea395217dbf3494457a232bdfdc79c5.camel@perches.com>
-Subject: Re: [PATCH 1/2] ia64: Use ARRAY_SIZE to replace its implementation
+ by smtpgrave03.hostedemail.com (Postfix) with ESMTP id 3BAF918038158
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:49:44 +0000 (UTC)
+Message-ID: <c998658f11cd202fffa4b96b97af196049d78ec0.camel@perches.com>
+Subject: Re: [PATCH 2/2] powerpc: Use ARRAY_SIZE to replace its implementation
 From: Joe Perches <golf@perches.com>
 To: zhong jiang <zhongjiang@huawei.com>, tony.luck@intel.com,
  fenghua.yu@intel.com, benh@kernel.crashing.org, paulus@samba.org,
@@ -18,10 +18,10 @@ To: zhong jiang <zhongjiang@huawei.com>, tony.luck@intel.com,
  dhowells@redhat.com,  akpm@linux-foundation.org, viro@zeniv.linux.org.uk
 Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Date: Mon, 13 Aug 2018 21:45:05 -0700
-In-Reply-To: <1534214814-9043-2-git-send-email-zhongjiang@huawei.com>
+Date: Mon, 13 Aug 2018 21:49:36 -0700
+In-Reply-To: <1534214814-9043-3-git-send-email-zhongjiang@huawei.com>
 References: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
- <1534214814-9043-2-git-send-email-zhongjiang@huawei.com>
+ <1534214814-9043-3-git-send-email-zhongjiang@huawei.com>
 Content-Type: text/plain; charset="ISO-8859-1"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,42 +34,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2018-08-14 at 10:46 +0800, zhong jiang wrote:
-> We prefer to ARRAY_SIZE rather than duplicating its implementation.
+> Use ARRAY_SIZE instead of dividing sizeof array with sizeof an element.
 > So just replace it.
-[]
-> diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-[]
-> @@ -4645,7 +4645,7 @@ static char *pfmfs_dname(struct dentry *dentry, char *buffer, int buflen)
->  /* 32 */PFM_CMD(pfm_write_ibrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL),
->  /* 33 */PFM_CMD(pfm_write_dbrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL)
+
+Better to remove the extern and the const altogether here as well.
+
+$ git grep -w powerpc_num_opcodes
+arch/powerpc/xmon/ppc-dis.c:  opcode_end = powerpc_opcodes + powerpc_num_opcodes;
+arch/powerpc/xmon/ppc-opc.c:const int powerpc_num_opcodes =
+arch/powerpc/xmon/ppc.h:extern const int powerpc_num_opcodes;
+
+And this one could be removed instead:
+
+$ git grep -w vle_num_opcodes
+arch/powerpc/xmon/ppc-opc.c:const int vle_num_opcodes =
+arch/powerpc/xmon/ppc.h:extern const int vle_num_opcodes;
+
+> Signed-off-by: zhong jiang <zhongjiang@huawei.com>
+> ---
+>  arch/powerpc/xmon/ppc-opc.c | 12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/xmon/ppc-opc.c b/arch/powerpc/xmon/ppc-opc.c
+> index ac2b55b..f3f57a1 100644
+> --- a/arch/powerpc/xmon/ppc-opc.c
+> +++ b/arch/powerpc/xmon/ppc-opc.c
+> @@ -966,8 +966,7 @@
+>    { 0xff, 11, NULL, NULL, PPC_OPERAND_SIGNOPT },
 >  };
-> -#define PFM_CMD_COUNT	(sizeof(pfm_cmd_tab)/sizeof(pfm_cmd_desc_t))
-> +#define PFM_CMD_COUNT	ARRAY_SIZE(pfm_cmd_tab)
-
-Better would be to remove the #define altogether and change
-the one place where it's used to ARRAY_SIZE(...)
----
- arch/ia64/kernel/perfmon.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
-index a9d4dc6c0427..08ece2c7b6e1 100644
---- a/arch/ia64/kernel/perfmon.c
-+++ b/arch/ia64/kernel/perfmon.c
-@@ -4645,7 +4645,6 @@ static pfm_cmd_desc_t pfm_cmd_tab[]={
- /* 32 */PFM_CMD(pfm_write_ibrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL),
- /* 33 */PFM_CMD(pfm_write_dbrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL)
- };
--#define PFM_CMD_COUNT	(sizeof(pfm_cmd_tab)/sizeof(pfm_cmd_desc_t))
- 
- static int
- pfm_check_task_state(pfm_context_t *ctx, int cmd, unsigned long flags)
-@@ -4770,7 +4769,7 @@ sys_perfmonctl (int fd, int cmd, void __user *arg, int count)
- 	 */
- 	if (unlikely(pmu_conf == NULL)) return -ENOSYS;
- 
--	if (unlikely(cmd < 0 || cmd >= PFM_CMD_COUNT)) {
-+	if (unlikely(cmd < 0 || cmd >= ARRAY_SIZE(pfm_cmd_tab)) {
- 		DPRINT(("invalid cmd=%d\n", cmd));
- 		return -EINVAL;
- 	}
+>  
+> -const unsigned int num_powerpc_operands = (sizeof (powerpc_operands)
+> -					   / sizeof (powerpc_operands[0]));
+> +const unsigned int num_powerpc_operands = ARRAY_SIZE(powerpc_operands);
+>  
+>  /* The functions used to insert and extract complicated operands.  */
+>  
+> @@ -6980,8 +6979,7 @@
+>  {"fcfidu.",	XRC(63,974,1),	XRA_MASK, POWER7|PPCA2,	PPCVLE,		{FRT, FRB}},
+>  };
+>  
+> -const int powerpc_num_opcodes =
+> -  sizeof (powerpc_opcodes) / sizeof (powerpc_opcodes[0]);
+> +const int powerpc_num_opcodes = ARRAY_SIZE(powerpc_opcodes);
+>  
+>  /* The VLE opcode table.
+>  
+> @@ -7219,8 +7217,7 @@
+>  {"se_bl",	BD8(58,0,1),	BD8_MASK,	PPCVLE,	0,		{B8}},
+>  };
+>  
+> -const int vle_num_opcodes =
+> -  sizeof (vle_opcodes) / sizeof (vle_opcodes[0]);
+> +const int vle_num_opcodes = ARRAY_SIZE(vle_opcodes);
+>  
+>  /* The macro table.  This is only used by the assembler.  */
+>  
+> @@ -7288,5 +7285,4 @@
+>  {"e_clrlslwi",4, PPCVLE, "e_rlwinm %0,%1,%3,(%2)-(%3),31-(%3)"},
+>  };
+>  
+> -const int powerpc_num_macros =
+> -  sizeof (powerpc_macros) / sizeof (powerpc_macros[0]);
+> +const int powerpc_num_macros = ARRAY_SIZE(powerpc_macros);
