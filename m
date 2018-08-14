@@ -1,37 +1,18 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qXzN04tBzF15Q
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 23:11:11 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7EAERwA017751
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 06:16:51 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kuudhc5tw-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 06:16:50 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 14 Aug 2018 11:16:49 +0100
-Subject: Re: [PATCH] powerpc/perf: Update perf_regs structure to include SIER
-To: mpe@ellerman.id.au, Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Jiri Olsa <jolsa@redhat.com>,
- Namhyung Kim <namhyung@kernel.org>,
- Alexander Shishkin <alexander.shishkin@linux.intel.com>,
- Anju T Sudhakar <anju@linux.vnet.ibm.com>,
- Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-References: <1531218587-20742-1-git-send-email-maddy@linux.vnet.ibm.com>
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Date: Tue, 14 Aug 2018 15:46:43 +0530
-MIME-Version: 1.0
-In-Reply-To: <1531218587-20742-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <6284589d-d8ef-da3d-c220-b6d5abf8c50e@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qbGx1QF3zF1R0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2018 00:54:47 +1000 (AEST)
+Message-Id: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v2 1/4] powerpc/mm: enable the use of page table cache of
+ order 0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Tue, 14 Aug 2018 14:54:42 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,95 +22,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi arnaldo,
+hugepages uses a cache of order 0. Lets allow page tables
+of order 0 in the common part in order to avoid open coding
+in hugetlb
 
-Any comments or ack for this patch.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 5 +----
+ arch/powerpc/include/asm/book3s/64/pgalloc.h | 5 +----
+ arch/powerpc/include/asm/nohash/32/pgalloc.h | 5 +----
+ arch/powerpc/include/asm/nohash/64/pgalloc.h | 5 +----
+ arch/powerpc/mm/init-common.c                | 6 +++---
+ 5 files changed, 7 insertions(+), 19 deletions(-)
 
-With regards
-Maddy
-
-On Tuesday 10 July 2018 03:59 PM, Madhavan Srinivasan wrote:
-> On each sample, Sample Instruction Event Register (SIER) content
-> is saved in pt_regs. SIER does not have a entry as-is in the pt_regs
-> but instead, SIER content is saved in the "dar" register of pt_regs.
->
-> Patch adds another entry to the perf_regs structure to include the "SIER"
-> printing which internally maps to the "dar" of pt_regs.
->
-> Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-> Cc: Jiri Olsa <jolsa@redhat.com>
-> Cc: Namhyung Kim <namhyung@kernel.org>
-> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-> Cc: Anju T Sudhakar <anju@linux.vnet.ibm.com>
-> Cc: Ravi Bangoria <ravi.bangoria@linux.vnet.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/uapi/asm/perf_regs.h       | 1 +
->   arch/powerpc/perf/perf_regs.c                   | 1 +
->   tools/arch/powerpc/include/uapi/asm/perf_regs.h | 1 +
->   tools/perf/arch/powerpc/include/perf_regs.h     | 3 ++-
->   tools/perf/arch/powerpc/util/perf_regs.c        | 1 +
->   5 files changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
-> index 9e52c86ccbd3..ff91192407d1 100644
-> --- a/arch/powerpc/include/uapi/asm/perf_regs.h
-> +++ b/arch/powerpc/include/uapi/asm/perf_regs.h
-> @@ -46,6 +46,7 @@ enum perf_event_powerpc_regs {
->   	PERF_REG_POWERPC_TRAP,
->   	PERF_REG_POWERPC_DAR,
->   	PERF_REG_POWERPC_DSISR,
-> +	PERF_REG_POWERPC_SIER,
->   	PERF_REG_POWERPC_MAX,
->   };
->   #endif /* _UAPI_ASM_POWERPC_PERF_REGS_H */
-> diff --git a/arch/powerpc/perf/perf_regs.c b/arch/powerpc/perf/perf_regs.c
-> index 09ceea6175ba..c262aea22ad9 100644
-> --- a/arch/powerpc/perf/perf_regs.c
-> +++ b/arch/powerpc/perf/perf_regs.c
-> @@ -69,6 +69,7 @@ static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
->   	PT_REGS_OFFSET(PERF_REG_POWERPC_TRAP, trap),
->   	PT_REGS_OFFSET(PERF_REG_POWERPC_DAR, dar),
->   	PT_REGS_OFFSET(PERF_REG_POWERPC_DSISR, dsisr),
-> +	PT_REGS_OFFSET(PERF_REG_POWERPC_SIER, dar),
->   };
->
->   u64 perf_reg_value(struct pt_regs *regs, int idx)
-> diff --git a/tools/arch/powerpc/include/uapi/asm/perf_regs.h b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-> index 9e52c86ccbd3..ff91192407d1 100644
-> --- a/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-> +++ b/tools/arch/powerpc/include/uapi/asm/perf_regs.h
-> @@ -46,6 +46,7 @@ enum perf_event_powerpc_regs {
->   	PERF_REG_POWERPC_TRAP,
->   	PERF_REG_POWERPC_DAR,
->   	PERF_REG_POWERPC_DSISR,
-> +	PERF_REG_POWERPC_SIER,
->   	PERF_REG_POWERPC_MAX,
->   };
->   #endif /* _UAPI_ASM_POWERPC_PERF_REGS_H */
-> diff --git a/tools/perf/arch/powerpc/include/perf_regs.h b/tools/perf/arch/powerpc/include/perf_regs.h
-> index 00e37b106913..1076393e6f43 100644
-> --- a/tools/perf/arch/powerpc/include/perf_regs.h
-> +++ b/tools/perf/arch/powerpc/include/perf_regs.h
-> @@ -62,7 +62,8 @@ static const char *reg_names[] = {
->   	[PERF_REG_POWERPC_SOFTE] = "softe",
->   	[PERF_REG_POWERPC_TRAP] = "trap",
->   	[PERF_REG_POWERPC_DAR] = "dar",
-> -	[PERF_REG_POWERPC_DSISR] = "dsisr"
-> +	[PERF_REG_POWERPC_DSISR] = "dsisr",
-> +	[PERF_REG_POWERPC_SIER] = "sier"
->   };
->
->   static inline const char *perf_reg_name(int id)
-> diff --git a/tools/perf/arch/powerpc/util/perf_regs.c b/tools/perf/arch/powerpc/util/perf_regs.c
-> index ec50939b0418..07fcd977d93e 100644
-> --- a/tools/perf/arch/powerpc/util/perf_regs.c
-> +++ b/tools/perf/arch/powerpc/util/perf_regs.c
-> @@ -52,6 +52,7 @@ const struct sample_reg sample_reg_masks[] = {
->   	SMPL_REG(trap, PERF_REG_POWERPC_TRAP),
->   	SMPL_REG(dar, PERF_REG_POWERPC_DAR),
->   	SMPL_REG(dsisr, PERF_REG_POWERPC_DSISR),
-> +	SMPL_REG(sier, PERF_REG_POWERPC_SIER),
->   	SMPL_REG_END
->   };
->
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index 82e44b1a00ae..96138ab3ddd6 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -25,10 +25,7 @@
+ extern void __bad_pte(pmd_t *pmd);
+ 
+ extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) ({				\
+-			BUG_ON(!(shift));		\
+-			pgtable_cache[(shift) - 1];	\
+-		})
++#define PGT_CACHE(shift) pgtable_cache[shift]
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+diff --git a/arch/powerpc/include/asm/book3s/64/pgalloc.h b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+index 391ed2c3b697..bfed4cf3b2f3 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/64/pgalloc.h
+@@ -37,10 +37,7 @@ extern struct vmemmap_backing *vmemmap_list;
+ #define MAX_PGTABLE_INDEX_SIZE	0xf
+ 
+ extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) ({				\
+-			BUG_ON(!(shift));		\
+-			pgtable_cache[(shift) - 1];	\
+-		})
++#define PGT_CACHE(shift) pgtable_cache[shift]
+ 
+ extern pte_t *pte_fragment_alloc(struct mm_struct *, unsigned long, int);
+ extern pmd_t *pmd_fragment_alloc(struct mm_struct *, unsigned long);
+diff --git a/arch/powerpc/include/asm/nohash/32/pgalloc.h b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+index 8825953c225b..6fbbb90043c0 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/32/pgalloc.h
+@@ -25,10 +25,7 @@
+ extern void __bad_pte(pmd_t *pmd);
+ 
+ extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) ({				\
+-			BUG_ON(!(shift));		\
+-			pgtable_cache[(shift) - 1];	\
+-		})
++#define PGT_CACHE(shift) pgtable_cache[shift]
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+diff --git a/arch/powerpc/include/asm/nohash/64/pgalloc.h b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+index e2d62d033708..e95eb499a174 100644
+--- a/arch/powerpc/include/asm/nohash/64/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/64/pgalloc.h
+@@ -36,10 +36,7 @@ extern struct vmemmap_backing *vmemmap_list;
+ #define MAX_PGTABLE_INDEX_SIZE	0xf
+ 
+ extern struct kmem_cache *pgtable_cache[];
+-#define PGT_CACHE(shift) ({				\
+-			BUG_ON(!(shift));		\
+-			pgtable_cache[(shift) - 1];	\
+-		})
++#define PGT_CACHE(shift) pgtable_cache[shift]
+ 
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
+index 2b656e67f2ea..41190f2b60c2 100644
+--- a/arch/powerpc/mm/init-common.c
++++ b/arch/powerpc/mm/init-common.c
+@@ -40,7 +40,7 @@ static void pmd_ctor(void *addr)
+ 	memset(addr, 0, PMD_TABLE_SIZE);
+ }
+ 
+-struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE];
++struct kmem_cache *pgtable_cache[MAX_PGTABLE_INDEX_SIZE + 1];
+ EXPORT_SYMBOL_GPL(pgtable_cache);	/* used by kvm_hv module */
+ 
+ /*
+@@ -71,7 +71,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ 	 * moment, gcc doesn't seem to recognize is_power_of_2 as a
+ 	 * constant expression, so so much for that. */
+ 	BUG_ON(!is_power_of_2(minalign));
+-	BUG_ON((shift < 1) || (shift > MAX_PGTABLE_INDEX_SIZE));
++	BUG_ON(shift > MAX_PGTABLE_INDEX_SIZE);
+ 
+ 	if (PGT_CACHE(shift))
+ 		return; /* Already have a cache of this size */
+@@ -83,7 +83,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ 		panic("Could not allocate pgtable cache for order %d", shift);
+ 
+ 	kfree(name);
+-	pgtable_cache[shift - 1] = new;
++	pgtable_cache[shift] = new;
+ 
+ 	pr_debug("Allocated pgtable cache for order %d\n", shift);
+ }
+-- 
+2.13.3
