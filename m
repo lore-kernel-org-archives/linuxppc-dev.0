@@ -1,20 +1,23 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qbH03JSwzF15Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2018 00:54:52 +1000 (AEST)
-Message-Id: <5c322925aee8231af448a302aead72834cdb2ef0.1534258290.git.christophe.leroy@c-s.fr>
-In-Reply-To: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
-References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 4/4] powerpc/mm: remove unnecessary test in
- pgtable_cache_init()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 14 Aug 2018 14:54:48 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qd7c4m4gzF15Q
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2018 02:18:33 +1000 (AEST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
+References: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
+To: zhong jiang <zhongjiang@huawei.com>
+Cc: dhowells@redhat.com, tony.luck@intel.com, fenghua.yu@intel.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ oleg@redhat.com, rppt@linux.vnet.ibm.com, akpm@linux-foundation.org,
+ viro@zeniv.linux.org.uk, linux-ia64@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/2] Use ARRAY_SIZE to replace its implementation
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 14 Aug 2018 17:18:26 +0100
+Message-ID: <31000.1534263506@warthog.procyon.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +27,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pgtable_cache_add() gracefully handles the case when a cache that
-size already exists by returning early with the following test:
+> "Use ARRAY_SIZE to replace its implementation"
 
-	if (PGT_CACHE(shift))
-		return; /* Already have a cache of this size */
+Um, the subject line doesn't make sense.
 
-It is then not needed to test the existence of the cache before.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/mm/init-common.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/mm/init-common.c b/arch/powerpc/mm/init-common.c
-index b7ca03643d0b..1e6910eb70ed 100644
---- a/arch/powerpc/mm/init-common.c
-+++ b/arch/powerpc/mm/init-common.c
-@@ -111,13 +111,13 @@ void pgtable_cache_init(void)
- {
- 	pgtable_cache_add(PGD_INDEX_SIZE);
- 
--	if (PMD_CACHE_INDEX && !PGT_CACHE(PMD_CACHE_INDEX))
-+	if (PMD_CACHE_INDEX)
- 		pgtable_cache_add(PMD_CACHE_INDEX);
- 	/*
- 	 * In all current configs, when the PUD index exists it's the
- 	 * same size as either the pgd or pmd index except with THP enabled
- 	 * on book3s 64
- 	 */
--	if (PUD_CACHE_INDEX && !PGT_CACHE(PUD_CACHE_INDEX))
-+	if (PUD_CACHE_INDEX)
- 		pgtable_cache_add(PUD_CACHE_INDEX);
- }
--- 
-2.13.3
+David
