@@ -1,22 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <zhongjiang@huawei.com>
+Received: from huawei.com (szxga05-in.huawei.com [45.249.212.191])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qK6x0sDTzF0Qs
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 14:16:57 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Gustavo Romero <gromero@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] selftests/powerpc: Avoid remaining process/threads
-In-Reply-To: <a4f9f03b-51dd-55d4-cfec-9ae48fbbd9d6@debian.org>
-References: <87bmajhh40.fsf@concordia.ellerman.id.au>
- <1533307039-13744-1-git-send-email-leitao@debian.org>
- <87bmafoiu5.fsf@concordia.ellerman.id.au>
- <a4f9f03b-51dd-55d4-cfec-9ae48fbbd9d6@debian.org>
-Date: Tue, 14 Aug 2018 14:16:56 +1000
-Message-ID: <87a7pplgzr.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qL1S6TfwzF0Qs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 14:57:16 +1000 (AEST)
+Message-ID: <5B726124.5030308@huawei.com>
+Date: Tue, 14 Aug 2018 12:57:08 +0800
+From: zhong jiang <zhongjiang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Joe Perches <golf@perches.com>
+CC: <tony.luck@intel.com>, <fenghua.yu@intel.com>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <mpe@ellerman.id.au>, <oleg@redhat.com>,
+ <rppt@linux.vnet.ibm.com>, <dhowells@redhat.com>,
+ <akpm@linux-foundation.org>, <viro@zeniv.linux.org.uk>,
+ <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 1/2] ia64: Use ARRAY_SIZE to replace its implementation
+References: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
+ <1534214814-9043-2-git-send-email-zhongjiang@huawei.com>
+ <81ae2b1b7ea395217dbf3494457a232bdfdc79c5.camel@perches.com>
+In-Reply-To: <81ae2b1b7ea395217dbf3494457a232bdfdc79c5.camel@perches.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Breno Leitao <leitao@debian.org> writes:
-
-> Hello Michael,
+On 2018/8/14 12:45, Joe Perches wrote:
+> On Tue, 2018-08-14 at 10:46 +0800, zhong jiang wrote:
+>> We prefer to ARRAY_SIZE rather than duplicating its implementation.
+>> So just replace it.
+> []
+>> diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+> []
+>> @@ -4645,7 +4645,7 @@ static char *pfmfs_dname(struct dentry *dentry, char *buffer, int buflen)
+>>  /* 32 */PFM_CMD(pfm_write_ibrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL),
+>>  /* 33 */PFM_CMD(pfm_write_dbrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL)
+>>  };
+>> -#define PFM_CMD_COUNT	(sizeof(pfm_cmd_tab)/sizeof(pfm_cmd_desc_t))
+>> +#define PFM_CMD_COUNT	ARRAY_SIZE(pfm_cmd_tab)
+> Better would be to remove the #define altogether and change
+> the one place where it's used to ARRAY_SIZE(...)
+> ---
+>  arch/ia64/kernel/perfmon.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 >
-> On 08/06/2018 08:06 AM, Michael Ellerman wrote:
->> Breno Leitao <leitao@debian.org> writes:
->> 
->>> diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
->>> index 66d31de60b9a..06c51e8d8ccb 100644
->>> --- a/tools/testing/selftests/powerpc/harness.c
->>> +++ b/tools/testing/selftests/powerpc/harness.c
->>> @@ -85,13 +85,16 @@ int run_test(int (test_function)(void), char *name)
->>>  	return status;
->>>  }
->>>  
->>> -static void alarm_handler(int signum)
->>> +static void sig_handler(int signum)
->>>  {
->>> -	/* Jut wake us up from waitpid */
->>> +	if (signum == SIGINT)
->>> +		kill(-pid, SIGTERM);
->> 
->> I don't think we need to do that here, if we just return then we'll pop
->> out of the waitpid() and go via the normal path.
+> diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+> index a9d4dc6c0427..08ece2c7b6e1 100644
+> --- a/arch/ia64/kernel/perfmon.c
+> +++ b/arch/ia64/kernel/perfmon.c
+> @@ -4645,7 +4645,6 @@ static pfm_cmd_desc_t pfm_cmd_tab[]={
+>  /* 32 */PFM_CMD(pfm_write_ibrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL),
+>  /* 33 */PFM_CMD(pfm_write_dbrs, PFM_CMD_PCLRWS, PFM_CMD_ARG_MANY, pfarg_dbreg_t, NULL)
+>  };
+> -#define PFM_CMD_COUNT	(sizeof(pfm_cmd_tab)/sizeof(pfm_cmd_desc_t))
+>  
+>  static int
+>  pfm_check_task_state(pfm_context_t *ctx, int cmd, unsigned long flags)
+> @@ -4770,7 +4769,7 @@ sys_perfmonctl (int fd, int cmd, void __user *arg, int count)
+>  	 */
+>  	if (unlikely(pmu_conf == NULL)) return -ENOSYS;
+>  
+> -	if (unlikely(cmd < 0 || cmd >= PFM_CMD_COUNT)) {
+> +	if (unlikely(cmd < 0 || cmd >= ARRAY_SIZE(pfm_cmd_tab)) {
+>  		DPRINT(("invalid cmd=%d\n", cmd));
+>  		return -EINVAL;
+>  	}
 >
-> Correct, if we press ^C while the parent process is waiting at waitpid(),
-> then waitpid() syscall will be interrupted (EINTR) and never restarted again
-> (unless we set sa_flags = SA_RESTART), thus, the code will restart to execute
-> the next instruction when the signal handler is done, as we had skipped
-> waitpid().
 >
-> From a theoretical point of view, the user can press ^C before the process
-> executes waitpid() syscall. In this case and the process will not 'skip' the
-> waitpid(), which will continue to wait. We can clearly force this behavior
-> putting a sleep(1) before waitpid() and pressing  ^C in the very first
-> second, it will 'skip' the nanosleep() syscall instead of waitpid() which
-> will be there, and the ^C will be ignored (thus not calling kill(-pid, SIGTERM)).
+> .
+>
+ Thank you for suggestion.  That's indeed better if just one palce use it.  I will repost in v2.
 
-True.
-
-Though that race also exists vs us registering the SIGINT handler, so
-it's basically not solvable, the user can always press ^C before we're
-ready.
-
-cheers
+ Sincerely,
+zhong jiang
