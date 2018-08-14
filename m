@@ -1,21 +1,18 @@
-Return-Path: <zhongjiang@huawei.com>
-Received: from huawei.com (szxga04-in.huawei.com [45.249.212.190])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qHNr1QDRzF0WK
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 12:58:50 +1000 (AEST)
-From: zhong jiang <zhongjiang@huawei.com>
-To: <tony.luck@intel.com>, <fenghua.yu@intel.com>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>, <oleg@redhat.com>,
- <rppt@linux.vnet.ibm.com>, <dhowells@redhat.com>,
- <akpm@linux-foundation.org>, <viro@zeniv.linux.org.uk>
-CC: <linux-ia64@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc: Use ARRAY_SIZE to replace its implementation
-Date: Tue, 14 Aug 2018 10:46:54 +0800
-Message-ID: <1534214814-9043-3-git-send-email-zhongjiang@huawei.com>
-In-Reply-To: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
-References: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qJ0P1FSCzF0Qs
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 13:26:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com, andrew.donnellan@au1.ibm.com
+Subject: Re: [PATCH V2] ocxl: Fix access to the AFU Descriptor Data
+In-Reply-To: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
+References: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
+Date: Tue, 14 Aug 2018 13:26:06 +1000
+Message-ID: <87in4dljch.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,54 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use ARRAY_SIZE instead of dividing sizeof array with sizeof an element.
-So just replace it.
+Hi Christophe,
 
-Signed-off-by: zhong jiang <zhongjiang@huawei.com>
----
- arch/powerpc/xmon/ppc-opc.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
+The patch looks fine, just a nit about the change log:
 
-diff --git a/arch/powerpc/xmon/ppc-opc.c b/arch/powerpc/xmon/ppc-opc.c
-index ac2b55b..f3f57a1 100644
---- a/arch/powerpc/xmon/ppc-opc.c
-+++ b/arch/powerpc/xmon/ppc-opc.c
-@@ -966,8 +966,7 @@
-   { 0xff, 11, NULL, NULL, PPC_OPERAND_SIGNOPT },
- };
- 
--const unsigned int num_powerpc_operands = (sizeof (powerpc_operands)
--					   / sizeof (powerpc_operands[0]));
-+const unsigned int num_powerpc_operands = ARRAY_SIZE(powerpc_operands);
- 
- /* The functions used to insert and extract complicated operands.  */
- 
-@@ -6980,8 +6979,7 @@
- {"fcfidu.",	XRC(63,974,1),	XRA_MASK, POWER7|PPCA2,	PPCVLE,		{FRT, FRB}},
- };
- 
--const int powerpc_num_opcodes =
--  sizeof (powerpc_opcodes) / sizeof (powerpc_opcodes[0]);
-+const int powerpc_num_opcodes = ARRAY_SIZE(powerpc_opcodes);
- 
- /* The VLE opcode table.
- 
-@@ -7219,8 +7217,7 @@
- {"se_bl",	BD8(58,0,1),	BD8_MASK,	PPCVLE,	0,		{B8}},
- };
- 
--const int vle_num_opcodes =
--  sizeof (vle_opcodes) / sizeof (vle_opcodes[0]);
-+const int vle_num_opcodes = ARRAY_SIZE(vle_opcodes);
- 
- /* The macro table.  This is only used by the assembler.  */
- 
-@@ -7288,5 +7285,4 @@
- {"e_clrlslwi",4, PPCVLE, "e_rlwinm %0,%1,%3,(%2)-(%3),31-(%3)"},
- };
- 
--const int powerpc_num_macros =
--  sizeof (powerpc_macros) / sizeof (powerpc_macros[0]);
-+const int powerpc_num_macros = ARRAY_SIZE(powerpc_macros);
--- 
-1.7.12.4
+Christophe Lombard <clombard@linux.vnet.ibm.com> writes:
+> The AFU Information DVSEC capability is a means to extract common,
+> general information about all of the AFUs associated with a Function
+> independent of the specific functionality that each AFU provides.
+>
+> This patch fixes the access to the AFU Descriptor Data indexed by the
+> AFU Info Index field.
+
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+> Cc: stable <stable@vger.kernel.org>     # 4.16
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
+
+When fixing a bug it's always good to describe how the bug manifests.
+ie. in this case we are clearly writing to the wrong location in config
+space, but what is the consequence of that? Does it kill the device, or
+just fails to initialise something correctly? How could I tell if I'm
+hitting this bug currently? How would I tell if the fix is applied
+correctly?
+
+cheers
+
+> ---
+> Changelog[v2]
+>  - Rebase to latest upstream.
+>  - Use pci_write_config_byte instead of pci_write_config_word
+> ---
+>  drivers/misc/ocxl/config.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 2e30de9..57a6bb1 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -280,7 +280,9 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
+>  	u32 val;
+>  	int rc, templ_major, templ_minor, len;
+>  
+> -	pci_write_config_word(dev, fn->dvsec_afu_info_pos, afu_idx);
+> +	pci_write_config_byte(dev,
+> +			fn->dvsec_afu_info_pos + OCXL_DVSEC_AFU_INFO_AFU_IDX,
+> +			afu_idx);
+>  	rc = read_afu_info(dev, fn, OCXL_DVSEC_TEMPL_VERSION, &val);
+>  	if (rc)
+>  		return rc;
+> -- 
+> 2.7.4
