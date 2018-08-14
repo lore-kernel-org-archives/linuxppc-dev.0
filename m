@@ -1,31 +1,49 @@
-Return-Path: <alex@ghiti.fr>
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net
- [217.70.183.201])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41q4Dq2rmrzF0Vv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:36:07 +1000 (AEST)
-Subject: Re: [PATCH v6 00/11] hugetlb: Factorize hugetlb architecture
- primitives
-To: linux-mm@kvack.org, mike.kravetz@oracle.com, linux@armlinux.org.uk,
- catalin.marinas@arm.com, will.deacon@arm.com, tony.luck@intel.com,
- fenghua.yu@intel.com, ralf@linux-mips.org, paul.burton@mips.com,
- jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- ysato@users.sourceforge.jp, dalias@libc.org, davem@davemloft.net,
- tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org,
- arnd@arndb.de, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20180806175711.24438-1-alex@ghiti.fr>
-From: Alex Ghiti <alex@ghiti.fr>
-Message-ID: <55833b7d-3c29-d7ac-41f1-82f1ac228e4a@ghiti.fr>
-Date: Mon, 13 Aug 2018 18:35:53 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qF5X2vJdzDrtm
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 11:15:28 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7E19ADM140498
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:15:25 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kugy6yyw6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2018 21:15:25 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Tue, 14 Aug 2018 02:15:24 +0100
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com
+ [9.149.105.61])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ w7E1FLZ739059626
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 01:15:21 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 8D85511C04C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:15:25 +0100 (BST)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+ by IMSVA (Postfix) with ESMTP id 3B2AC11C04A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:15:25 +0100 (BST)
+Received: from ozlabs.au.ibm.com (unknown [9.192.253.14])
+ by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2018 04:15:25 +0100 (BST)
+Subject: Re: [PATCH V2] ocxl: Fix access to the AFU Descriptor Data
+To: Christophe Lombard <clombard@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, fbarrat@linux.vnet.ibm.com,
+ vaibhav@linux.vnet.ibm.com
+References: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Tue, 14 Aug 2018 11:15:16 +1000
 MIME-Version: 1.0
-In-Reply-To: <20180806175711.24438-1-alex@ghiti.fr>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+In-Reply-To: <1534169362-9394-1-git-send-email-clombard@linux.vnet.ibm.com>
+Message-Id: <cc1b1a05-6c56-ea61-0e5e-743cdf9b2013@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,82 +53,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi everyone,
+On 14/08/18 00:09, Christophe Lombard wrote:
+> The AFU Information DVSEC capability is a means to extract common,
+> general information about all of the AFUs associated with a Function
+> independent of the specific functionality that each AFU provides.
+> 
+> This patch fixes the access to the AFU Descriptor Data indexed by the
+> AFU Info Index field.
+> 
+> Fixes: 5ef3166e8a32 ("ocxl: Driver code for 'generic' opencapi devices")
+> Cc: stable <stable@vger.kernel.org>     # 4.16
+> Signed-off-by: Christophe Lombard <clombard@linux.vnet.ibm.com>
 
-Does someone need anything more to be done regarding this series ?
+Thanks
 
-Thanks,
+Acked-by: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
 
-Alex
+> ---
+> Changelog[v2]
+>   - Rebase to latest upstream.
+>   - Use pci_write_config_byte instead of pci_write_config_word
+> ---
+>   drivers/misc/ocxl/config.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/misc/ocxl/config.c b/drivers/misc/ocxl/config.c
+> index 2e30de9..57a6bb1 100644
+> --- a/drivers/misc/ocxl/config.c
+> +++ b/drivers/misc/ocxl/config.c
+> @@ -280,7 +280,9 @@ int ocxl_config_check_afu_index(struct pci_dev *dev,
+>   	u32 val;
+>   	int rc, templ_major, templ_minor, len;
+>   
+> -	pci_write_config_word(dev, fn->dvsec_afu_info_pos, afu_idx);
+> +	pci_write_config_byte(dev,
+> +			fn->dvsec_afu_info_pos + OCXL_DVSEC_AFU_INFO_AFU_IDX,
+> +			afu_idx);
+>   	rc = read_afu_info(dev, fn, OCXL_DVSEC_TEMPL_VERSION, &val);
+>   	if (rc)
+>   		return rc;
+> 
 
-
-On 08/06/2018 05:57 PM, Alexandre Ghiti wrote:
-> [CC linux-mm for inclusion in -mm tree]
->                                                                                   
-> In order to reduce copy/paste of functions across architectures and then
-> make riscv hugetlb port (and future ports) simpler and smaller, this
-> patchset intends to factorize the numerous hugetlb primitives that are
-> defined across all the architectures.
->                                                                                   
-> Except for prepare_hugepage_range, this patchset moves the versions that
-> are just pass-through to standard pte primitives into
-> asm-generic/hugetlb.h by using the same #ifdef semantic that can be
-> found in asm-generic/pgtable.h, i.e. __HAVE_ARCH_***.
->                                                                                   
-> s390 architecture has not been tackled in this serie since it does not
-> use asm-generic/hugetlb.h at all.
->                                                                                   
-> This patchset has been compiled on all addressed architectures with
-> success (except for parisc, but the problem does not come from this
-> series).
->                                                                                   
-> v6:
->    - Remove nohash/32 and book3s/32 powerpc specific implementations in
->      order to use the generic ones.
->    - Add all the Reviewed-by, Acked-by and Tested-by in the commits,
->      thanks to everyone.
->                                                                                   
-> v5:
->    As suggested by Mike Kravetz, no need to move the #include
->    <asm-generic/hugetlb.h> for arm and x86 architectures, let it live at
->    the top of the file.
->                                                                                   
-> v4:
->    Fix powerpc build error due to misplacing of #include
->    <asm-generic/hugetlb.h> outside of #ifdef CONFIG_HUGETLB_PAGE, as
->    pointed by Christophe Leroy.
->                                                                                   
-> v1, v2, v3:
->    Same version, just problems with email provider and misuse of
->    --batch-size option of git send-email
->
-> Alexandre Ghiti (11):
->    hugetlb: Harmonize hugetlb.h arch specific defines with pgtable.h
->    hugetlb: Introduce generic version of hugetlb_free_pgd_range
->    hugetlb: Introduce generic version of set_huge_pte_at
->    hugetlb: Introduce generic version of huge_ptep_get_and_clear
->    hugetlb: Introduce generic version of huge_ptep_clear_flush
->    hugetlb: Introduce generic version of huge_pte_none
->    hugetlb: Introduce generic version of huge_pte_wrprotect
->    hugetlb: Introduce generic version of prepare_hugepage_range
->    hugetlb: Introduce generic version of huge_ptep_set_wrprotect
->    hugetlb: Introduce generic version of huge_ptep_set_access_flags
->    hugetlb: Introduce generic version of huge_ptep_get
->
->   arch/arm/include/asm/hugetlb-3level.h        | 32 +---------
->   arch/arm/include/asm/hugetlb.h               | 30 ----------
->   arch/arm64/include/asm/hugetlb.h             | 39 +++---------
->   arch/ia64/include/asm/hugetlb.h              | 47 ++-------------
->   arch/mips/include/asm/hugetlb.h              | 40 +++----------
->   arch/parisc/include/asm/hugetlb.h            | 33 +++--------
->   arch/powerpc/include/asm/book3s/32/pgtable.h |  6 --
->   arch/powerpc/include/asm/book3s/64/pgtable.h |  1 +
->   arch/powerpc/include/asm/hugetlb.h           | 43 ++------------
->   arch/powerpc/include/asm/nohash/32/pgtable.h |  6 --
->   arch/powerpc/include/asm/nohash/64/pgtable.h |  1 +
->   arch/sh/include/asm/hugetlb.h                | 54 ++---------------
->   arch/sparc/include/asm/hugetlb.h             | 40 +++----------
->   arch/x86/include/asm/hugetlb.h               | 69 ----------------------
->   include/asm-generic/hugetlb.h                | 88 +++++++++++++++++++++++++++-
->   15 files changed, 135 insertions(+), 394 deletions(-)
->
+-- 
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
