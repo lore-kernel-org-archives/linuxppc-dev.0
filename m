@@ -1,23 +1,21 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41qd7c4m4gzF15Q
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2018 02:18:33 +1000 (AEST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
-References: <1534214814-9043-1-git-send-email-zhongjiang@huawei.com>
-To: zhong jiang <zhongjiang@huawei.com>
-Cc: dhowells@redhat.com, tony.luck@intel.com, fenghua.yu@intel.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- oleg@redhat.com, rppt@linux.vnet.ibm.com, akpm@linux-foundation.org,
- viro@zeniv.linux.org.uk, linux-ia64@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/2] Use ARRAY_SIZE to replace its implementation
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41qpV46YWjzDrYf
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2018 09:20:12 +1000 (AEST)
+Date: Wed, 15 Aug 2018 09:19:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, PowerPC <linuxppc-dev@lists.ozlabs.org>
+Cc: Linux-Next Mailing List <linux-next@vger.kernel.org>, Linux Kernel
+ Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner
+ <tglx@linutronix.de>, Diana Craciun <diana.craciun@nxp.com>
+Subject: linux-next: manual merge of the powerpc tree with Linus' tree
+Message-ID: <20180815091945.16b2ead9@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 14 Aug 2018 17:18:26 +0100
-Message-ID: <31000.1534263506@warthog.procyon.org.uk>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/eOa9bvzEeNV/i6qES_KhouF"; protocol="application/pgp-signature"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,8 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> "Use ARRAY_SIZE to replace its implementation"
+--Sig_/eOa9bvzEeNV/i6qES_KhouF
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Um, the subject line doesn't make sense.
+Hi all,
 
-David
+Today's linux-next merge of the powerpc tree got a conflict in:
+
+  Documentation/admin-guide/kernel-parameters.txt
+
+between commits:
+
+  05736e4ac13c ("cpu/hotplug: Provide knobs to control SMT")
+  506a66f37489 ("Revert "x86/apic: Ignore secondary threads if nosmt=3Dforc=
+e"")
+
+from Linus' tree and commit:
+
+  26cb1f36c43e ("Documentation: Add nospectre_v1 parameter")
+
+from the powerpc tree.
+
+I fixed it up (see below) and can carry the fix as necessary. This
+is now fixed as far as linux-next is concerned, but any non trivial
+conflicts should be mentioned to your upstream maintainer when your tree
+is submitted for merging.  You may also want to consider cooperating
+with the maintainer of the conflicting tree to minimise any particularly
+complex conflicts.
+
+--=20
+Cheers,
+Stephen Rothwell
+
+diff --cc Documentation/admin-guide/kernel-parameters.txt
+index 5a67e409d370,4167bbea51e1..000000000000
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@@ -2761,10 -2687,10 +2761,14 @@@
+  	nosmt		[KNL,S390] Disable symmetric multithreading (SMT).
+  			Equivalent to smt=3D1.
+ =20
+ +			[KNL,x86] Disable symmetric multithreading (SMT).
+ +			nosmt=3Dforce: Force disable SMT, cannot be undone
+ +				     via the sysfs control file.
+ +
++ 	nospectre_v1	[PPC] Disable mitigations for Spectre Variant 1 (bounds
++ 			check bypass). With this option data leaks are possible
++ 			in the system.
++=20
+  	nospectre_v2	[X86] Disable all mitigations for the Spectre variant 2
+  			(indirect branch prediction) vulnerability. System may
+  			allow data leaks with this option, which is equivalent
+
+--Sig_/eOa9bvzEeNV/i6qES_KhouF
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAltzY5EACgkQAVBC80lX
+0GxLoAf+ICsDkgWQEtbkv5uSmmzKHAuvyGjRsEdxd6t4UEHyhqH17jOxVNALCnSS
+yFf6xCAqDe08T006mSRKtji48cJAwTTzSvidQVlm6+QA0rQMmyzKprxtFQunAYyx
+HUl5KhFzL8ZuuASDZcdlRfayt5/Ve4p+Wp5N4YknUpagHQ9XQzoizQUVp+UwSErb
+2lyaebPZP4A2SZc4gxndxvlO/pLLpEnzrESzrIb4p1fD3NB0hYvnA7QcSoUmR4v4
+KC9gHzcJoFEyqbywZUSxLzEk2qRsjhkfNdUCoJdkwQ9YPM3/ows8g01DgDi/sk49
+3dxwTZLuLOGopdzA6SIK6GUdaNrsjA==
+=Cpuw
+-----END PGP SIGNATURE-----
+
+--Sig_/eOa9bvzEeNV/i6qES_KhouF--
