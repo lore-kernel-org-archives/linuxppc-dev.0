@@ -1,24 +1,36 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt0-f195.google.com (mail-qt0-f195.google.com
- [209.85.216.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=fute=k7=kernel.crashing.org=segher@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41rpPC0YhjzDqrM
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 00:19:26 +1000 (AEST)
-Received: by mail-qt0-f195.google.com with SMTP id q12-v6so4824675qtp.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2018 07:19:26 -0700 (PDT)
-Subject: Re: [PATCH v2 4/4] powerpc/tm: Do not recheckpoint non-tm task
-To: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
-References: <201806160346.lDndh49W%fengguang.wu@intel.com>
- <1529362784-14194-1-git-send-email-leitao@debian.org>
- <1529362784-14194-4-git-send-email-leitao@debian.org>
- <cb89f5cf8d751da3de587b33cc07cc9292f5b324.camel@neuling.org>
-From: Breno Leitao <leitao@debian.org>
-Message-ID: <2d206f31-fb01-2f16-65b7-5135c918156d@debian.org>
-Date: Thu, 16 Aug 2018 11:19:17 -0300
-MIME-Version: 1.0
-In-Reply-To: <cb89f5cf8d751da3de587b33cc07cc9292f5b324.camel@neuling.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41rpyc3J6QzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 00:44:56 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41rpyc2Yy3z8wGN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 00:44:56 +1000 (AEST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41rpyb50phz9s3x
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 00:44:55 +1000 (AEST)
+Date: Thu, 16 Aug 2018 09:44:36 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>, Ananth Narayan <ananth@in.ibm.com>
+Subject: Re: [PATCH v7 4/9] powerpc/pseries: Define MCE error event section.
+Message-ID: <20180816144435.GZ31204@gate.crashing.org>
+References: <153365127532.14256.1965469477086140841.stgit@jupiter.in.ibm.com>
+ <153365141396.14256.7147876868875454254.stgit@jupiter.in.ibm.com>
+ <87r2j8apj1.fsf@concordia.ellerman.id.au>
+ <13f8280f-02c1-7b00-0a40-a045bf6ee1f6@linux.vnet.ibm.com>
+ <87lg97aqxc.fsf@concordia.ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87lg97aqxc.fsf@concordia.ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,54 +40,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hey Mikey,
+Hi!
 
-Thanks for the review.
-
-On 08/15/2018 08:50 PM, Michael Neuling wrote:
-> On Mon, 2018-06-18 at 19:59 -0300, Breno Leitao wrote:
->> If __switch_to() tries to context switch from task A to task B, and task A
->>  had task->thread->regs->msr[TM] enabled, then __switch_to_tm() will call
->> tm_recheckpoint_new_task(), which will call trecheckpoint, for task B, which
->>  is clearly wrong since task B might not be an active TM user.
->>
->> This does not cause a lot of damage because tm_recheckpoint() will abort
->> the call since it realize that the current task does not have msr[TM] bit
->> set.
->>
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> ---
->>  arch/powerpc/kernel/process.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
->> index f8beee03f00a..d26a150766ef 100644
->> --- a/arch/powerpc/kernel/process.c
->> +++ b/arch/powerpc/kernel/process.c
->> @@ -1036,7 +1036,8 @@ static inline void __switch_to_tm(struct task_struct
->> *prev,
->>  				prev->thread.regs->msr &= ~MSR_TM;
->>  		}
->>  
->> -		tm_recheckpoint_new_task(new);
->> +		if (tm_enabled(new))
->> +			tm_recheckpoint_new_task(new);
+On Thu, Aug 16, 2018 at 02:14:39PM +1000, Michael Ellerman wrote:
+> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> > On 08/08/2018 08:12 PM, Michael Ellerman wrote:
+> >>> +			uint8_t	reserved_1[6];
+> >>> +			__be64	effective_address;
+> >>> +			__be64	logical_address;
+> >>> +		} ue_error;
+> >>> +		struct {
+> >>> +			uint8_t	soft_err_type;
+> >>> +			/* XXXXXXXX
+> >>> +			 * X		1: Effective address provided.
+> >>> +			 *  XXXXX	5: Reserved.
+> >>> +			 *       XX	2: Type of SLB/ERAT/TLB error.
+> >>> +			 */
+> >>> +			uint8_t	reserved_1[6];
+> >>> +			__be64	effective_address;
+> >>> +			uint8_t	reserved_2[8];
+> >>> +		} soft_error;
+> >>> +	} u;
+> >>> +};
+> >>> +#pragma pack(pop)
+> >> 
+> >> Why not __packed ?
+> >
+> > Because when used __packed it added 1 byte extra padding between
+> > reserved_1[6] and effective_address. That caused wrong effective address
+> > to be printed on the console. Hence I switched to #pragma pack to force
+> > 1 byte alignment for this structure alone.
 > 
-> I'm not sure we need this patch as tm_recheckpoint_new_task() does this itself.
+> OK, that's weird.
 
-My plan is to move this check prior to calling these TM functions, doing
-early checking and avoiding calling tm_recheckpoint on a non-tm enabled task.
-It is very weird when you see, during a tracing, a kernel thread (PF_KTHREAD)
-being tm_recheckpointed. :-/
+Yes, if that is true, then please open a GCC bugzilla report.
 
-That said, the TM function would do the operation other than "check and do
-it" mode.
 
-Ideally I would like to check the thread before calling any TM functions,
-and warning (WARN_ON) if we detect, later in the game, that a thread is not
-TM enabled.
-
-This helps on two different fronts, in my opinion:
-
- * Code readability
- * Understanding tracing (ftrace) outputs.
+Segher
