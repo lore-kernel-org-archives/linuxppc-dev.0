@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sKKW6MDgzF0vb
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:33:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sKKY2mfpzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:33:05 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>
@@ -12,9 +12,9 @@ Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [RFC 15/15] PCI: make pcibios_add_bus/remove_bus callbacks
-Date: Fri, 17 Aug 2018 12:26:45 +0200
-Message-Id: <20180817102645.3839621-16-arnd@arndb.de>
+Subject: [RFC 12/15] PCI: make pcibios_bus_add_device() a callback function
+Date: Fri, 17 Aug 2018 12:26:42 +0200
+Message-Id: <20180817102645.3839621-13-arnd@arndb.de>
 In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
 References: <20180817102645.3839621-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,158 +26,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are mostly not architecture specific but are meant for particular
-PCI host bridge implementations, in particular for the ACPI version.
-
-Turn them both into callback functions that are implemented by the
-APCI PCI implementation as well as the one architecture that overrides
-pcibios_remove_bus.
+Weak functions are confusion, and we can now add callback pointers
+to pci host bridges for any controller, so let's make this one
+a callback rather than a __weak global function.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm64/kernel/pci.c | 10 ----------
- arch/ia64/pci/pci.c     | 10 ----------
- arch/s390/pci/pci.c     |  3 ++-
- arch/x86/pci/common.c   | 10 ----------
- drivers/acpi/pci_root.c |  2 ++
- drivers/pci/probe.c     | 12 ++++++++++--
- include/linux/pci.h     |  2 ++
- 7 files changed, 16 insertions(+), 33 deletions(-)
+ arch/powerpc/kernel/pci-common.c  | 7 +------
+ arch/sh/drivers/pci/pci.c         | 1 +
+ arch/sh/drivers/pci/pcie-sh7786.c | 3 ++-
+ arch/sh/include/asm/pci.h         | 2 ++
+ drivers/pci/bus.c                 | 8 +++++++-
+ include/linux/pci.h               | 2 +-
+ 6 files changed, 14 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/kernel/pci.c b/arch/arm64/kernel/pci.c
-index 8958a7c32a9f..99fac25efe88 100644
---- a/arch/arm64/kernel/pci.c
-+++ b/arch/arm64/kernel/pci.c
-@@ -191,14 +191,4 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
- 	return bus;
- }
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 096011ec8670..afc9598e4349 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -270,12 +270,6 @@ int pcibios_sriov_disable(struct pci_dev *pdev)
  
--void pcibios_add_bus(struct pci_bus *bus)
--{
--	acpi_pci_add_bus(bus);
--}
--
--void pcibios_remove_bus(struct pci_bus *bus)
--{
--	acpi_pci_remove_bus(bus);
--}
--
- #endif
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index 511b8a058d80..f47e0920d308 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -367,16 +367,6 @@ void pcibios_fixup_bus(struct pci_bus *b)
- 	platform_pci_fixup_bus(b);
- }
+ #endif /* CONFIG_PCI_IOV */
  
--void pcibios_add_bus(struct pci_bus *bus)
+-void pcibios_bus_add_device(struct pci_dev *pdev)
 -{
--	acpi_pci_add_bus(bus);
+-	if (ppc_md.pcibios_bus_add_device)
+-		ppc_md.pcibios_bus_add_device(pdev);
 -}
 -
--void pcibios_remove_bus(struct pci_bus *bus)
--{
--	acpi_pci_remove_bus(bus);
--}
--
- void pcibios_set_master (struct pci_dev *dev)
+ static resource_size_t pcibios_io_size(const struct pci_controller *hose)
  {
- 	/* No special bus mastering setup handling */
-diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-index b21205f131ce..120beb83b6a5 100644
---- a/arch/s390/pci/pci.c
-+++ b/arch/s390/pci/pci.c
-@@ -769,7 +769,7 @@ static void zpci_free_domain(struct zpci_dev *zdev)
- 	spin_unlock(&zpci_domain_lock);
+ #ifdef CONFIG_PPC64
+@@ -1617,6 +1611,7 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	hose->busn.flags = IORESOURCE_BUS;
+ 	pci_add_resource(&bridge->windows, &hose->busn);
+ 
++	bridge->bus_add_device = ppc_md->pcibios_bus_add_device;
+ 	bridge->dev.parent = hose->parent;
+ 	bridge->sysdata = hose;
+ 	bridge->busnr = hose->first_busno;
+diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
+index 8256626bc53c..d5c01a86cde1 100644
+--- a/arch/sh/drivers/pci/pci.c
++++ b/arch/sh/drivers/pci/pci.c
+@@ -65,6 +65,7 @@ static void pcibios_scanbus(struct pci_channel *hose)
+ 	bridge->ops = hose->pci_ops;
+ 	bridge->swizzle_irq = pci_common_swizzle;
+ 	bridge->map_irq = pcibios_map_platform_irq;
++	bridge->bus_add_device = hose->bus_add_device;
+ 
+ 	ret = pci_scan_root_bus_bridge(bridge);
+ 	if (ret) {
+diff --git a/arch/sh/drivers/pci/pcie-sh7786.c b/arch/sh/drivers/pci/pcie-sh7786.c
+index 3d81a8b80942..ab78356681a0 100644
+--- a/arch/sh/drivers/pci/pcie-sh7786.c
++++ b/arch/sh/drivers/pci/pcie-sh7786.c
+@@ -122,6 +122,7 @@ extern struct pci_ops sh7786_pci_ops;
+ 	.reg_base	= start,					\
+ 	.mem_offset	= 0,						\
+ 	.io_offset	= 0,						\
++	.bus_add_device = sh7786_pci_bus_add_device,			\
  }
  
--void pcibios_remove_bus(struct pci_bus *bus)
-+static void zpci_remove_bus(struct pci_bus *bus)
+ static struct pci_channel sh7786_pci_channels[] = {
+@@ -488,7 +489,7 @@ int pcibios_map_platform_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
+         return evt2irq(0xae0);
+ }
+ 
+-void pcibios_bus_add_device(struct pci_dev *pdev)
++static void sh7786_pci_bus_add_device(struct pci_dev *pdev)
  {
- 	struct zpci_dev *zdev = get_zdev_by_bus(bus);
- 
-@@ -801,6 +801,7 @@ static struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
- 	bridge->sysdata = sysdata;
- 	bridge->busnr = bus;
- 	bridge->ops = ops;
-+	bridge->remove_bus = zpci_remove_bus;
- 
- 	error = pci_scan_root_bus_bridge(bridge);
- 	if (error < 0)
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 920d0885434c..987e6fefd5d3 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -168,16 +168,6 @@ void pcibios_fixup_bus(struct pci_bus *b)
- 		pcibios_fixup_device_resources(dev);
+ 	pdev->dev.dma_pfn_offset = dma_pfn_offset;
  }
- 
--void pcibios_add_bus(struct pci_bus *bus)
--{
--	acpi_pci_add_bus(bus);
--}
--
--void pcibios_remove_bus(struct pci_bus *bus)
--{
--	acpi_pci_remove_bus(bus);
--}
--
- /*
-  * Only use DMI information to set this if nothing was passed
-  * on the kernel command line (which was parsed earlier).
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 5da0f70c4e65..cf7a9a7bf1e7 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -911,6 +911,8 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
- 	bridge->busnr = busnum;
- 	bridge->ops = ops->pci_ops;
- 	bridge->prepare = acpi_pci_root_bridge_prepare;
-+	bridge->add_bus = acpi_pci_add_bus;
-+	bridge->remove_bus = acpi_pci_remove_bus;
- 	pci_set_host_bridge_release(bridge, acpi_pci_root_release_info,
- 				    info);
- 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index f493d7e299e6..86a678fa8c13 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -2905,12 +2905,20 @@ unsigned int pci_scan_child_bus(struct pci_bus *bus)
- }
- EXPORT_SYMBOL_GPL(pci_scan_child_bus);
- 
--void __weak pcibios_add_bus(struct pci_bus *bus)
-+void pcibios_add_bus(struct pci_bus *bus)
- {
-+	struct pci_host_bridge *bridge = pci_find_host_bridge(bus);
+diff --git a/arch/sh/include/asm/pci.h b/arch/sh/include/asm/pci.h
+index 10a36b1cf2ea..e605141cbcbe 100644
+--- a/arch/sh/include/asm/pci.h
++++ b/arch/sh/include/asm/pci.h
+@@ -35,6 +35,8 @@ struct pci_channel {
+ 	/* Optional error handling */
+ 	struct timer_list	err_timer, serr_timer;
+ 	unsigned int		err_irq, serr_irq;
 +
-+	if (bridge->add_bus)
-+		bridge->add_bus(bus);
- }
++	void (*bus_add_device)(struct pci_dev *pdev);
+ };
  
--void __weak pcibios_remove_bus(struct pci_bus *bus)
-+void pcibios_remove_bus(struct pci_bus *bus)
- {
-+	struct pci_host_bridge *bridge = pci_find_host_bridge(bus);
+ /* arch/sh/drivers/pci/pci.c */
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index 5cb40b2518f9..45873ac1a49c 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -299,7 +299,13 @@ bool pci_bus_clip_resource(struct pci_dev *dev, int idx)
+ 
+ void __weak pcibios_resource_survey_bus(struct pci_bus *bus) { }
+ 
+-void __weak pcibios_bus_add_device(struct pci_dev *pdev) { }
++static void pcibios_bus_add_device(struct pci_dev *pdev)
++{
++	struct pci_host_bridge *bridge = pci_find_host_bridge(pdev->bus);
 +
-+	if (bridge->remove_bus)
-+		bridge->remove_bus(bus);
- }
++	if (bridge->bus_add_device)
++		bridge->bus_add_device(pdev);
++}
  
- int pci_host_probe(struct pci_host_bridge *bridge)
+ /**
+  * pci_bus_add_device - start driver for a single device
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 24216daef6f8..bc9635313747 100644
+index 1dd8a3ecf753..d1072690cb4f 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -479,6 +479,8 @@ struct pci_host_bridge {
- 	void (*bus_add_device)(struct pci_dev *pdev);
- 	int (*alloc_irq)(struct pci_dev *);
- 	int (*free_irq)(struct pci_dev *);
-+	void (*add_bus)(struct pci_bus *);
-+	void (*remove_bus)(struct pci_bus *);
+@@ -475,6 +475,7 @@ struct pci_host_bridge {
+ 	u8 (*swizzle_irq)(struct pci_dev *, u8 *); /* Platform IRQ swizzler */
+ 	int (*map_irq)(const struct pci_dev *, u8, u8);
+ 	void (*release_fn)(struct pci_host_bridge *);
++	void (*bus_add_device)(struct pci_dev *pdev);
  	void		*release_data;
  	struct msi_controller *msi;
  	unsigned int	ignore_reset_delay:1;	/* For entire hierarchy */
+@@ -880,7 +881,6 @@ extern struct list_head pci_root_buses;	/* List of all known PCI buses */
+ int no_pci_devices(void);
+ 
+ void pcibios_resource_survey_bus(struct pci_bus *bus);
+-void pcibios_bus_add_device(struct pci_dev *pdev);
+ void pcibios_add_bus(struct pci_bus *bus);
+ void pcibios_remove_bus(struct pci_bus *bus);
+ void pcibios_fixup_bus(struct pci_bus *);
 -- 
 2.18.0
