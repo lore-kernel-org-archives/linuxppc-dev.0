@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+Received: from mout.kundenserver.de (mout.kundenserver.de [217.72.192.75])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sKK61ljZzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:32:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sKKB4GR2zDrRN
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:32:45 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>
@@ -12,9 +12,9 @@ Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [RFC 11/15] PCI: hyperv: convert to pci_scan_root_bus_bridge
-Date: Fri, 17 Aug 2018 12:26:41 +0200
-Message-Id: <20180817102645.3839621-12-arnd@arndb.de>
+Subject: [RFC 14/15] PCI: make pcibios_root_bridge_prepare a callback
+Date: Fri, 17 Aug 2018 12:26:44 +0200
+Message-Id: <20180817102645.3839621-15-arnd@arndb.de>
 In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
 References: <20180817102645.3839621-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,139 +26,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-create_root_hv_pci_bus() uses a rather generic method of probing the host
-bridge, which can be simplified by just calling pci_scan_root_bus_bridge()
-after setting up the pci_host_bridge structure.
+pcibios_root_bridge_prepare() is always used as a per host bridge
+function, not per architecture.
 
-Since we can no longer assign hbus->pci_bus in the middle, I just remove
-that member completely and use the pci_host_bridge instead.
+Making it a callback in the pci_host_bridge instead lets the host
+bridge implementation easily override it, and avoids the checks
+in the architecture for which host bridge implementation is being
+used.
 
-Ideally we'd convert it to pci_host_probe() for simplicity, but
-that is a bit different and I could not easily test it. Using
-pci_scan_root_bus_bridge should not change the behavior at all.
+Alternatively, we could probably just call the pcibios_root_bridge_prepare
+after alloc_pci_host_bridge() here and get rid of it as a generic
+interface altogether, but doing that has a slightly higher chance
+of breaking something subtle.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/pci/controller/pci-hyperv.c | 75 +++++++++++------------------
- 1 file changed, 28 insertions(+), 47 deletions(-)
+ arch/arm64/kernel/pci.c          | 18 ++++++++----------
+ arch/ia64/pci/pci.c              | 15 ++++-----------
+ arch/powerpc/kernel/pci-common.c |  9 +--------
+ arch/x86/pci/acpi.c              | 15 ++++-----------
+ drivers/acpi/pci_root.c          |  1 +
+ drivers/pci/probe.c              | 28 ++++++++++++++++------------
+ include/linux/acpi.h             |  2 ++
+ include/linux/pci.h              |  3 +--
+ 8 files changed, 37 insertions(+), 54 deletions(-)
 
-diff --git a/drivers/pci/controller/pci-hyperv.c b/drivers/pci/controller/pci-hyperv.c
-index df7cddea8e30..49586aefa38b 100644
---- a/drivers/pci/controller/pci-hyperv.c
-+++ b/drivers/pci/controller/pci-hyperv.c
-@@ -443,7 +443,7 @@ struct hv_pcibus_device {
- 	struct resource *high_mmio_res;
- 	struct completion *survey_event;
- 	struct completion remove_event;
--	struct pci_bus *pci_bus;
-+	struct pci_host_bridge *bridge;
- 	spinlock_t config_lock;	/* Avoid two threads writing index page */
- 	spinlock_t device_list_lock;	/* Protect lists below */
- 	void __iomem *cfg_addr;
-@@ -1457,34 +1457,6 @@ static void prepopulate_bars(struct hv_pcibus_device *hbus)
- 	spin_unlock_irqrestore(&hbus->device_list_lock, flags);
+diff --git a/arch/arm64/kernel/pci.c b/arch/arm64/kernel/pci.c
+index 3d196c68e362..8958a7c32a9f 100644
+--- a/arch/arm64/kernel/pci.c
++++ b/arch/arm64/kernel/pci.c
+@@ -71,19 +71,17 @@ int acpi_pci_bus_find_domain_nr(struct pci_bus *bus)
+ 	return root->segment;
  }
  
--static struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
--		struct pci_ops *ops, void *sysdata, struct list_head *resources)
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
++int acpi_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	if (!acpi_disabled) {
+-		struct pci_config_window *cfg = bridge->bus->sysdata;
+-		struct acpi_device *adev = to_acpi_device(cfg->parent);
+-		struct device *bus_dev = &bridge->bus->dev;
++	struct pci_config_window *cfg = bridge->bus->sysdata;
++	struct acpi_device *adev = to_acpi_device(cfg->parent);
++	struct device *bus_dev = &bridge->bus->dev;
+ 
+-		ACPI_COMPANION_SET(&bridge->dev, adev);
+-		set_dev_node(bus_dev, acpi_get_node(acpi_device_handle(adev)));
++	ACPI_COMPANION_SET(&bridge->dev, adev);
++	set_dev_node(bus_dev, acpi_get_node(acpi_device_handle(adev)));
+ 
+-		/* Try to assign the IRQ number when probing a new device */
+-		bridge->alloc_irq = acpi_pci_irq_enable;
+-	}
++	/* Try to assign the IRQ number when probing a new device */
++	bridge->alloc_irq = acpi_pci_irq_enable;
+ 
+ 	return 0;
+ }
+diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
+index 7ccc64d5fe3e..511b8a058d80 100644
+--- a/arch/ia64/pci/pci.c
++++ b/arch/ia64/pci/pci.c
+@@ -308,18 +308,11 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ 				    &info->common, &info->controller);
+ }
+ 
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
++int acpi_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	/*
+-	 * We pass NULL as parent to pci_create_root_bus(), so if it is not NULL
+-	 * here, pci_create_root_bus() has been called by someone else and
+-	 * sysdata is likely to be different from what we expect.  Let it go in
+-	 * that case.
+-	 */
+-	if (!bridge->dev.parent) {
+-		struct pci_controller *controller = bridge->bus->sysdata;
+-		ACPI_COMPANION_SET(&bridge->dev, controller->companion);
+-	}
++	struct pci_controller *controller = bridge->bus->sysdata;
++	ACPI_COMPANION_SET(&bridge->dev, controller->companion);
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index afc9598e4349..5e5c6dd7ebe8 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -771,14 +771,6 @@ int pci_proc_domain(struct pci_bus *bus)
+ 	return 1;
+ }
+ 
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
 -{
--	int error;
--	struct pci_host_bridge *bridge;
+-	if (ppc_md.pcibios_root_bridge_prepare)
+-		return ppc_md.pcibios_root_bridge_prepare(bridge);
 -
--	bridge = pci_alloc_host_bridge(0);
--	if (!bridge)
--		return NULL;
--
--	bridge->dev.parent = parent;
--
--	list_splice_init(resources, &bridge->windows);
--	bridge->sysdata = sysdata;
--	bridge->busnr = bus;
--	bridge->ops = ops;
--
--	error = pci_register_host_bridge(bridge);
--	if (error < 0)
--		goto err_out;
--
--	return bridge->bus;
--
--err_out:
--	kfree(bridge);
--	return NULL;
+-	return 0;
 -}
 -
- /**
-  * create_root_hv_pci_bus() - Expose a new root PCI bus
-  * @hbus:	Root PCI bus, as understood by this driver
-@@ -1493,25 +1465,34 @@ static struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+ /* This header fixup will do the resource fixup for all devices as they are
+  * probed, but not for bridge ranges
   */
- static int create_root_hv_pci_bus(struct hv_pcibus_device *hbus)
- {
--	/* Register the device */
--	hbus->pci_bus = pci_create_root_bus(&hbus->hdev->device,
--					    0, /* bus number is always zero */
--					    &hv_pcifront_ops,
--					    &hbus->sysdata,
--					    &hbus->resources_for_children);
--	if (!hbus->pci_bus)
--		return -ENODEV;
-+	struct pci_host_bridge *bridge;
-+	int ret;
-+
-+	bridge = pci_alloc_host_bridge(0);
-+	if (!bridge)
-+		return -ENOMEM;
+@@ -1612,6 +1604,7 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	pci_add_resource(&bridge->windows, &hose->busn);
  
--	hbus->pci_bus->msi = &hbus->msi_chip;
--	hbus->pci_bus->msi->dev = &hbus->hdev->device;
-+	hbus->bridge = bridge;
-+	bridge->dev.parent = &hbus->hdev->device;
-+	list_splice_init(&hbus->resources_for_children, &bridge->windows);
-+	bridge->sysdata = &hbus->sysdata;
-+	bridge->ops = &hv_pcifront_ops;
-+	bridge->msi = &hbus->msi_chip;
-+	bridge->msi->dev = &hbus->hdev->device;
- 
- 	pci_lock_rescan_remove();
--	pci_scan_child_bus(hbus->pci_bus);
--	pci_bus_assign_resources(hbus->pci_bus);
--	pci_bus_add_devices(hbus->pci_bus);
--	pci_unlock_rescan_remove();
-+	/* ideally we should use pci_host_probe here */
-+	ret = pci_scan_root_bus_bridge(bridge);
-+	if (ret < 0) {
-+		pci_free_host_bridge(bridge);
-+		goto error;
-+	}
-+	pci_bus_assign_resources(bridge->bus);
-+	pci_bus_add_devices(bridge->bus);
- 	hbus->state = hv_pcibus_installed;
--	return 0;
-+error:
-+	pci_unlock_rescan_remove();
-+	return ret;
+ 	bridge->bus_add_device = ppc_md->pcibios_bus_add_device;
++	bridge->prepare = ppc_md->pcibios_root_bridge_prepare;
+ 	bridge->dev.parent = hose->parent;
+ 	bridge->sysdata = hose;
+ 	bridge->busnr = hose->first_busno;
+diff --git a/arch/x86/pci/acpi.c b/arch/x86/pci/acpi.c
+index 5559dcaddd5e..041b2003707c 100644
+--- a/arch/x86/pci/acpi.c
++++ b/arch/x86/pci/acpi.c
+@@ -382,18 +382,11 @@ struct pci_bus *pci_acpi_scan_root(struct acpi_pci_root *root)
+ 	return bus;
  }
  
- struct q_res_req_compl {
-@@ -1769,7 +1750,7 @@ static void pci_devices_present_work(struct work_struct *work)
- 		 * because there may have been changes.
- 		 */
- 		pci_lock_rescan_remove();
--		pci_scan_child_bus(hbus->pci_bus);
-+		pci_scan_child_bus(hbus->bridge->bus);
- 		pci_unlock_rescan_remove();
- 		break;
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
++int acpi_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	/*
+-	 * We pass NULL as parent to pci_create_root_bus(), so if it is not NULL
+-	 * here, pci_create_root_bus() has been called by someone else and
+-	 * sysdata is likely to be different from what we expect.  Let it go in
+-	 * that case.
+-	 */
+-	if (!bridge->dev.parent) {
+-		struct pci_sysdata *sd = bridge->bus->sysdata;
+-		ACPI_COMPANION_SET(&bridge->dev, sd->companion);
+-	}
++	struct pci_sysdata *sd = bridge->bus->sysdata;
++	ACPI_COMPANION_SET(&bridge->dev, sd->companion);
++
+ 	return 0;
+ }
  
-@@ -2669,8 +2650,8 @@ static int hv_pci_remove(struct hv_device *hdev)
- 	if (hbus->state == hv_pcibus_installed) {
- 		/* Remove the bus from PCI's point of view. */
- 		pci_lock_rescan_remove();
--		pci_stop_root_bus(hbus->pci_bus);
--		pci_remove_root_bus(hbus->pci_bus);
-+		pci_stop_root_bus(hbus->bridge->bus);
-+		pci_remove_root_bus(hbus->bridge->bus);
- 		pci_unlock_rescan_remove();
- 		hbus->state = hv_pcibus_removed;
- 	}
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 5f73de3b67c8..5da0f70c4e65 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -910,6 +910,7 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+ 	bridge->sysdata = sysdata;
+ 	bridge->busnr = busnum;
+ 	bridge->ops = ops->pci_ops;
++	bridge->prepare = acpi_pci_root_bridge_prepare;
+ 	pci_set_host_bridge_release(bridge, acpi_pci_root_release_info,
+ 				    info);
+ 
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index eaedb4fe143a..f493d7e299e6 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -762,6 +762,22 @@ static void pci_set_bus_msi_domain(struct pci_bus *bus)
+ 	dev_set_msi_domain(&bus->dev, d);
+ }
+ 
++/**
++ * pcibios_root_bridge_prepare - Platform-specific host bridge setup
++ * @bridge: Host bridge to set up
++ *
++ * Host bridge drivers can do some last minute fixups on the bridge
++ * here. Usually this should be done before calling pci_register_host_bridge
++ * though, so this hook can be removed.
++ */
++static int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
++{
++	if (bridge->prepare)
++		return bridge->prepare(bridge);
++
++	return 0;
++}
++
+ /*
+  * pci_register_host_bridge() - Register a host bridge without scanning
+  *
+@@ -2889,18 +2905,6 @@ unsigned int pci_scan_child_bus(struct pci_bus *bus)
+ }
+ EXPORT_SYMBOL_GPL(pci_scan_child_bus);
+ 
+-/**
+- * pcibios_root_bridge_prepare - Platform-specific host bridge setup
+- * @bridge: Host bridge to set up
+- *
+- * Default empty implementation.  Replace with an architecture-specific setup
+- * routine, if necessary.
+- */
+-int __weak pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+-{
+-	return 0;
+-}
+-
+ void __weak pcibios_add_bus(struct pci_bus *bus)
+ {
+ }
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 9967ba2e0b31..62c0278a7614 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -336,12 +336,14 @@ extern int acpi_get_override_irq(u32 gsi, int *trigger, int *polarity);
+ void acpi_unregister_gsi (u32 gsi);
+ 
+ struct pci_dev;
++struct pci_host_bridge;
+ 
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+ bool acpi_isa_irq_available(int irq);
+ void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
++int acpi_pci_root_bridge_prepare(struct pci_host_bridge *bridge);
+ 
+ extern int ec_read(u8 addr, u8 *val);
+ extern int ec_write(u8 addr, u8 val);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 1296d9fcc5da..24216daef6f8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -472,6 +472,7 @@ struct pci_host_bridge {
+ 	void		*sysdata;
+ 	int		busnr;
+ 	struct list_head windows;	/* resource_entry */
++	int (*prepare)(struct pci_host_bridge *bridge);
+ 	u8 (*swizzle_irq)(struct pci_dev *, u8 *); /* Platform IRQ swizzler */
+ 	int (*map_irq)(const struct pci_dev *, u8, u8);
+ 	void (*release_fn)(struct pci_host_bridge *);
+@@ -518,8 +519,6 @@ void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+ 				 void (*release_fn)(struct pci_host_bridge *),
+ 				 void *release_data);
+ 
+-int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge);
+-
+ /*
+  * The first PCI_BRIDGE_RESOURCE_NUM PCI bus resources (those that correspond
+  * to P2P or CardBus bridge windows) go in a table.  Additional ones (for
 -- 
 2.18.0
