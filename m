@@ -1,21 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41s4NZ1cttzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 10:49:50 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>, Breno Leitao <leitao@debian.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 1/4] powerpc/tm: Remove msr_tm_active()
-In-Reply-To: <e2f169e3ce57e5b092642088127f67a52da2bf93.camel@neuling.org>
-References: <201806160346.lDndh49W%fengguang.wu@intel.com>
- <1529362784-14194-1-git-send-email-leitao@debian.org>
- <e2f169e3ce57e5b092642088127f67a52da2bf93.camel@neuling.org>
-Date: Fri, 17 Aug 2018 10:49:49 +1000
-Message-ID: <87tvntakb6.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41s8011Q2NzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 13:32:16 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7H3UeLG027407
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2018 23:32:14 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kwj8pqxm7-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2018 23:32:13 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Thu, 16 Aug 2018 23:32:12 -0400
+Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
+ to PGD and hugepages
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
+ <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Fri, 17 Aug 2018 09:02:03 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +42,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On 08/14/2018 08:24 PM, Christophe Leroy wrote:
+> While implementing TLB miss HW assistance on the 8xx, the following
+> warning was encountered:
+> 
+> [  423.732965] WARNING: CPU: 0 PID: 345 at mm/slub.c:2412 ___slab_alloc.constprop.30+0x26c/0x46c
+> [  423.733033] CPU: 0 PID: 345 Comm: mmap Not tainted 4.18.0-rc8-00664-g2dfff9121c55 #671
+> [  423.733075] NIP:  c0108f90 LR: c0109ad0 CTR: 00000004
+> [  423.733121] REGS: c455bba0 TRAP: 0700   Not tainted  (4.18.0-rc8-00664-g2dfff9121c55)
+> [  423.733147] MSR:  00021032 <ME,IR,DR,RI>  CR: 24224848  XER: 20000000
+> [  423.733319]
+> [  423.733319] GPR00: c0109ad0 c455bc50 c4521910 c60053c0 007080c0 c0011b34 c7fa41e0 c455be30
+> [  423.733319] GPR08: 00000001 c00103a0 c7fa41e0 c49afcc4 24282842 10018840 c079b37c 00000040
+> [  423.733319] GPR16: 73f00000 00210d00 00000000 00000001 c455a000 00000100 00000200 c455a000
+> [  423.733319] GPR24: c60053c0 c0011b34 007080c0 c455a000 c455a000 c7fa41e0 00000000 00009032
+> [  423.734190] NIP [c0108f90] ___slab_alloc.constprop.30+0x26c/0x46c
+> [  423.734257] LR [c0109ad0] kmem_cache_alloc+0x210/0x23c
+> [  423.734283] Call Trace:
+> [  423.734326] [c455bc50] [00000100] 0x100 (unreliable)
+> [  423.734430] [c455bcc0] [c0109ad0] kmem_cache_alloc+0x210/0x23c
+> [  423.734543] [c455bcf0] [c0011b34] huge_pte_alloc+0xc0/0x1dc
+> [  423.734633] [c455bd20] [c01044dc] hugetlb_fault+0x408/0x48c
+> [  423.734720] [c455bdb0] [c0104b20] follow_hugetlb_page+0x14c/0x44c
+> [  423.734826] [c455be10] [c00e8e54] __get_user_pages+0x1c4/0x3dc
+> [  423.734919] [c455be80] [c00e9924] __mm_populate+0xac/0x140
+> [  423.735020] [c455bec0] [c00db14c] vm_mmap_pgoff+0xb4/0xb8
+> [  423.735127] [c455bf00] [c00f27c0] ksys_mmap_pgoff+0xcc/0x1fc
+> [  423.735222] [c455bf40] [c000e0f8] ret_from_syscall+0x0/0x38
+> [  423.735271] Instruction dump:
+> [  423.735321] 7cbf482e 38fd0008 7fa6eb78 7fc4f378 4bfff5dd 7fe3fb78 4bfffe24 81370010
+> [  423.735536] 71280004 41a2ff88 4840c571 4bffff80 <0fe00000> 4bfffeb8 81340010 712a0004
+> [  423.735757] ---[ end trace e9b222919a470790 ]---
+> 
+> This warning occurs when calling kmem_cache_zalloc() on a
+> cache having a constructor.
+> 
+> In this case it happens because PGD cache and 512k hugepte cache are
+> the same size (4k). While a cache with constructor is created for
+> the PGD, hugepages create cache without constructor and uses
+> kmem_cache_zalloc(). As both expect a cache with the same size,
+> the hugepages reuse the cache created for PGD, hence the conflict.
+> 
+> In order to avoid this conflict, this patch:
+> - modifies pgtable_cache_add() so that a zeroising constructor is
+> added for any cache size.
+> - replaces calls to kmem_cache_zalloc() by kmem_cache_alloc()
+> 
 
-> On Mon, 2018-06-18 at 19:59 -0300, Breno Leitao wrote:
->> Currently msr_tm_active() is a wrapper around MSR_TM_ACTIVE() if
->> CONFIG_PPC_TRANSACTIONAL_MEM is set, or it is just a function that
->> returns false if CONFIG_PPC_TRANSACTIONAL_MEM is not set.
->> 
->> This function is not necessary, since MSR_TM_ACTIVE() just do the same,
->> checking for the TS bits and does not require any TM facility.
->> 
->> This patchset remove every instance of msr_tm_active() and replaced it
->> by MSR_TM_ACTIVE().
->> 
->> Signed-off-by: Breno Leitao <leitao@debian.org>
->> 
->
-> Patch looks good... one minor nit below...
->
->>  
->> -	if (!msr_tm_active(regs->msr) &&
->> -		!current->thread.load_fp && !loadvec(current->thread))
->> +	if (!current->thread.load_fp && !loadvec(current->thread)) {
->> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->> +		if (!MSR_TM_ACTIVE(regs->msr))
->> +			return;
->
-> Can you make a MSR_TM_ACTIVE() that returns false when
-> !CONFIG_PPC_TRANSACTIONAL_MEM. Then you don't need this inline #ifdef.
+Can't we just do kmem_cache_alloc with gfp flags __GFP_ZERO? and remove 
+the constructor completely?
 
-Is that safe?
 
-I see ~50 callers of MSR_TM_ACTIVE(), are they all inside #ifdef TM ?
-
-cheers
+-aneesh
