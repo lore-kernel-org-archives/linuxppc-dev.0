@@ -1,41 +1,24 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <breno.debian@gmail.com>
+Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
+ [209.85.216.193])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sMB21rsPzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 21:56:42 +1000 (AEST)
-Subject: Re: [PATCH RFC 1/2] drivers/base: export
- lock_device_hotplug/unlock_device_hotplug
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
- sthemmin@microsoft.com, Pavel Tatashin <pasha.tatashin@oracle.com>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org,
- Len Brown <lenb@kernel.org>, haiyangz@microsoft.com,
- Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
- osalvador@suse.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Vitaly Kuznetsov <vkuznets@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <20180817075901.4608-1-david@redhat.com>
- <20180817075901.4608-2-david@redhat.com> <20180817084146.GB14725@kroah.com>
- <5a5d73e9-e4aa-ffed-a2e3-8aef64e61923@redhat.com>
- <CAJZ5v0gkYV8o2Eq+EcGT=OP1tQGPGVVe3n9VGD6z7KAVVqhv9w@mail.gmail.com>
- <42df9062-f647-3ad6-5a07-be2b99531119@redhat.com>
- <20180817100604.GA18164@kroah.com>
- <4ac624be-d2d6-5975-821f-b20a475781dc@redhat.com>
- <20180817112850.GB3565@osiris>
-From: David Hildenbrand <david@redhat.com>
-Message-ID: <ecc08303-96ee-76ad-fba4-0425413afa5a@redhat.com>
-Date: Fri, 17 Aug 2018 13:56:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sMrR0fDxzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 22:26:30 +1000 (AEST)
+Received: by mail-qt0-f193.google.com with SMTP id y5-v6so8448565qti.12
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 05:26:30 -0700 (PDT)
+Subject: Re: [PATCH v2 1/4] powerpc/tm: Remove msr_tm_active()
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+References: <201806160346.lDndh49W%fengguang.wu@intel.com>
+ <1529362784-14194-1-git-send-email-leitao@debian.org>
+ <e2f169e3ce57e5b092642088127f67a52da2bf93.camel@neuling.org>
+ <87tvntakb6.fsf@concordia.ellerman.id.au>
+From: Breno Leitao <leitao@debian.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Message-ID: <7433b095-ce67-5097-8dd7-0f47ab797914@debian.org>
+Date: Fri, 17 Aug 2018 09:26:22 -0300
 MIME-Version: 1.0
-In-Reply-To: <20180817112850.GB3565@osiris>
+In-Reply-To: <87tvntakb6.fsf@concordia.ellerman.id.au>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -46,75 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17.08.2018 13:28, Heiko Carstens wrote:
-> On Fri, Aug 17, 2018 at 01:04:58PM +0200, David Hildenbrand wrote:
->>>> If there are no objections, I'll go into that direction. But I'll wait
->>>> for more comments regarding the general concept first.
+Hi Michael,
+
+On 08/16/2018 09:49 PM, Michael Ellerman wrote:
+> Michael Neuling <mikey@neuling.org> writes:
+> 
+>> On Mon, 2018-06-18 at 19:59 -0300, Breno Leitao wrote:
+>>> Currently msr_tm_active() is a wrapper around MSR_TM_ACTIVE() if
+>>> CONFIG_PPC_TRANSACTIONAL_MEM is set, or it is just a function that
+>>> returns false if CONFIG_PPC_TRANSACTIONAL_MEM is not set.
 >>>
->>> It is the middle of the merge window, and maintainers are really busy
->>> right now.  I doubt you will get many review comments just yet...
+>>> This function is not necessary, since MSR_TM_ACTIVE() just do the same,
+>>> checking for the TS bits and does not require any TM facility.
+>>>
+>>> This patchset remove every instance of msr_tm_active() and replaced it
+>>> by MSR_TM_ACTIVE().
+>>>
+>>> Signed-off-by: Breno Leitao <leitao@debian.org>
 >>>
 >>
->> This has been broken since 2015, so I guess it can wait a bit :)
+>> Patch looks good... one minor nit below...
+>>
+>>>  
+>>> -	if (!msr_tm_active(regs->msr) &&
+>>> -		!current->thread.load_fp && !loadvec(current->thread))
+>>> +	if (!current->thread.load_fp && !loadvec(current->thread)) {
+>>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>>> +		if (!MSR_TM_ACTIVE(regs->msr))
+>>> +			return;
+>>
+>> Can you make a MSR_TM_ACTIVE() that returns false when
+>> !CONFIG_PPC_TRANSACTIONAL_MEM. Then you don't need this inline #ifdef.
 > 
-> I hope you figured out what needs to be locked why. Your patch description
-> seems to be "only" about locking order ;)
-
-Well I hope so, too ... but there is a reason for the RFC mark ;) There
-is definitely a lot of magic in the current code. And that's why it is
-also not that obvious that locking is wrong.
-
-To avoid/fix the locking order problem was the motivation for the
-original patch that dropped mem_hotplug_lock on one path. So I focused
-on that in my description.
-
+> Is that safe?
 > 
-> I tried to figure out and document that partially with 55adc1d05dca ("mm:
-> add private lock to serialize memory hotplug operations"), and that wasn't
-> easy to figure out. I was especially concerned about sprinkling
+> I see ~50 callers of MSR_TM_ACTIVE(), are they all inside #ifdef TM ?
 
-Haven't seen that so far as that was reworked by 3f906ba23689
-("mm/memory-hotplug: switch locking to a percpu rwsem"). Thanks for the
-pointer. There is a long history to all this.
+I checked all of them, and the only two that are not called inside a #ifdef
+are at kvm/book3s_hv_tm.c. They are:
 
-> lock/unlock_device_hotplug() calls, which has the potential to make it the
-> next BKL thing.
+  kvm/book3s_hv_tm.c:		if (!MSR_TM_ACTIVE(msr)) {
+  kvm/book3s_hv_tm.c:		if (MSR_TM_ACTIVE(msr) || !(vcpu->arch.texasr & TEXASR_FS)) {
 
-Well, the thing with memory hotplug and device_hotplug_lock is that
+All the others are being called inside the #ifdef
 
-a) ACPI already holds it while adding/removing memory via add_memory()
-b) we hold it during online/offline of memory (via sysfs calls to
-   device_online()/device_offline())
+Other than that, I do not see why it would be a problem in the way I
+implemented it, since it will return false for the two cases above, which
+seems correct. Take a look on how the definition became:
 
-So it is already pretty much involved in all memory hotplug/unplug
-activities on x86 (except paravirt). And as far as I understand, there
-are good reasons to hold the lock in core.c and ACPI. (as mentioned by
-Rafael)
+  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+  #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
+  #else
+  #define MSR_TM_ACTIVE(x) 0
+  #endif
 
-The exceptions are add_memory() called on s390x, hyper-v, xen and ppc
-(including manual probing). And device_online()/device_offline() called
-from the kernel.
+I also tested it with different config files, and I didn't see any complain.
+These are the platforms I built for.
 
-Holding device_hotplug_lock when adding/removing memory from the system
-doesn't sound too wrong (especially as devices are created/removed). At
-least that way (documenting and following the rules in the patch
-description) we might at least get locking right.
+* powernv_defconfig
+* pseries_le_defconfig
+* pseries_defconfig
+* ppc64_defconfig
+* ppc64e_defconfig
+* pmac32_defconfig
+* ppc44x_defconfig
+* mpc85xx_smp_defconfig
+* mpc85xx_defconfig
+* ps3_defconfig
 
+Anyway, if you have any other suggestion I can follow in order to guarantee
+that I am not causing any regression, I would be happy. Touching these core
+kernel macros is scary!
 
-I am very open to other suggestions (but as noted by Greg, many
-maintainers might be busy by know).
-
-E.g. When adding the memory block devices, we know that there won't be a
-driver to attach to (as there are no drivers for the "memory" subsystem)
-- the bus_probe_device() function that takes the device_lock() could
-pretty much be avoided for that case. But burying such special cases
-down in core driver code definitely won't make locking related to memory
-hotplug easier.
-
-Thanks for having a look!
-
--- 
-
-Thanks,
-
-David / dhildenb
+Thanks!
