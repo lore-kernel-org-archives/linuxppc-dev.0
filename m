@@ -1,19 +1,16 @@
-Return-Path: <rashmica.g@gmail.com>
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com
- [IPv6:2607:f8b0:4864:20::542])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41s9BF6NkPzDr5t
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 14:26:13 +1000 (AEST)
-Received: by mail-pg1-x542.google.com with SMTP id r64-v6so1846815pgr.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2018 21:26:13 -0700 (PDT)
-From: Rashmica Gupta <rashmica.g@gmail.com>
-To: mpe@ellerman.id.au, bsingharora@gmail.com, mikey@neuling.org,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org
-Cc: Rashmica Gupta <rashmica.g@gmail.com>
-Subject: [PATCH] powerpc/memtrace: Remove memory in chunks
-Date: Fri, 17 Aug 2018 14:25:01 +1000
-Message-Id: <20180817042501.15538-1-rashmica.g@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sDV26jpYzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 16:55:06 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Cc: muriloo@linux.ibm.com
+Subject: [PATCH] powerpc/traps: Avoid rate limit messages from show unhandled
+ signals
+Date: Fri, 17 Aug 2018 16:55:00 +1000
+Message-Id: <20180817065500.16899-1-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When hot-removing memory release_mem_region_adjustable() splits iomem
-resources if they are not the exact size of the memory being
-hot-deleted. Adding this memory back to the kernel adds a new resource.
+In the recent commit to add an explicit ratelimit state when showing
+unhandled signals, commit 35a52a10c3ac ("powerpc/traps: Use an
+explicit ratelimit state for show_signal_msg()"), I put the check of
+show_unhandled_signals and the ratelimit state before the call to
+unhandled_signal() so as to avoid unnecessarily calling the latter
+when show_unhandled_signals is false.
 
-Eg a node has memory 0x0 - 0xfffffffff. Hot-removing 1GB from
-0xf40000000 results in the single resource 0x0-0xfffffffff being split
-into two resources: 0x0-0xf3fffffff and 0xf80000000-0xfffffffff.
+However that causes us to check the ratelimit state on every call, so
+if we take a lot of *handled* signals that has the effect of making
+the ratelimit code print warnings that callbacks have been suppressed
+when they haven't.
 
-When we hot-add the memory back we now have three resources:
-0x0-0xf3fffffff, 0xf40000000-0xf7fffffff, and 0xf80000000-0xfffffffff.
+So rearrange the code so that we check show_unhandled_signals first,
+then call unhandled_signal() and finally check the ratelimit state.
 
-This is an issue if we try to remove some memory that overlaps
-resources. Eg when trying to remove 2GB at address 0xf40000000,
-release_mem_region_adjustable() fails as it expects the chunk of memory
-to be within the boundaries of a single resource. We then get the
-warning: "Unable to release resource" and attempting to use memtrace
-again gives us this error: "bash: echo: write error: Resource
-temporarily unavailable"
-
-This patch makes memtrace remove memory in chunks that are always the
-same size from an address that is always equal to end_of_memory -
-n*size, for some n. So hotremoving and hotadding memory of different
-sizes will now not attempt to remove memory that spans multiple
-resources.
-
-Signed-off-by: Rashmica Gupta <rashmica.g@gmail.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+ arch/powerpc/kernel/traps.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-To replicate the above issue hot-remove and hot-add memory of different
-sizes a bunch of times. This does it for me on POWER8 and POWER9: 
-for i in `seq 1 10`; do
-echo $(( $i * 268435456))  >  /sys/kernel/debug/powerpc/memtrace/enable 
-echo '.'
-done
-
- arch/powerpc/platforms/powernv/memtrace.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index 51fe0862dcab..c5749f898652 100644
---- a/arch/powerpc/platforms/powernv/memtrace.c
-+++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -119,17 +119,15 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
- 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
- 			  change_memblock_state);
- 
--	lock_device_hotplug();
--	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
--	unlock_device_hotplug();
- 
- 	return true;
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 070e96f1773a..c85adb858271 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -315,22 +315,21 @@ void user_single_step_siginfo(struct task_struct *tsk,
+ 	info->si_addr = (void __user *)regs->nip;
  }
  
- static u64 memtrace_alloc_node(u32 nid, u64 size)
+-static bool show_unhandled_signals_ratelimited(void)
++static void show_signal_msg(int signr, struct pt_regs *regs, int code,
++			    unsigned long addr)
  {
--	u64 start_pfn, end_pfn, nr_pages;
-+	u64 start_pfn, end_pfn, nr_pages, pfn;
- 	u64 base_pfn;
-+	u64 bytes = memory_block_size_bytes();
+ 	static DEFINE_RATELIMIT_STATE(rs, DEFAULT_RATELIMIT_INTERVAL,
+ 				      DEFAULT_RATELIMIT_BURST);
+-	return show_unhandled_signals && __ratelimit(&rs);
+-}
  
- 	if (!node_spanned_pages(nid))
- 		return 0;
-@@ -142,8 +140,20 @@ static u64 memtrace_alloc_node(u32 nid, u64 size)
- 	end_pfn = round_down(end_pfn - nr_pages, nr_pages);
+-static void show_signal_msg(int signr, struct pt_regs *regs, int code,
+-			    unsigned long addr)
+-{
+-	if (!show_unhandled_signals_ratelimited())
++	if (!show_unhandled_signals)
+ 		return;
  
- 	for (base_pfn = end_pfn; base_pfn > start_pfn; base_pfn -= nr_pages) {
--		if (memtrace_offline_pages(nid, base_pfn, nr_pages) == true)
-+		if (memtrace_offline_pages(nid, base_pfn, nr_pages) == true) {
-+			/* Remove memory in memory block size chunks so that
-+			 * iomem resources are always split to the same size
-+			 * and we never try to remove memory that spans two
-+			 * iomem resources.
-+			 */
-+			lock_device_hotplug();
-+			end_pfn = base_pfn + nr_pages;
-+			for (pfn = base_pfn; pfn < end_pfn; pfn += bytes>> PAGE_SHIFT) {
-+				remove_memory(nid, pfn << PAGE_SHIFT, bytes);
-+			}
-+			unlock_device_hotplug();
- 			return base_pfn << PAGE_SHIFT;
-+		}
- 	}
+ 	if (!unhandled_signal(current, signr))
+ 		return;
  
- 	return 0;
++	if (!__ratelimit(&rs))
++		return;
++
+ 	pr_info("%s[%d]: %s (%d) at %lx nip %lx lr %lx code %x",
+ 		current->comm, current->pid, signame(signr), signr,
+ 		addr, regs->nip, regs->link, code);
 -- 
-2.14.4
+2.17.1
