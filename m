@@ -1,42 +1,36 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sJkV1WjWzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:06:09 +1000 (AEST)
-Date: Fri, 17 Aug 2018 12:06:04 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: David Hildenbrand <david@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@suse.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
- sthemmin@microsoft.com, Pavel Tatashin <pasha.tatashin@oracle.com>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- David Rientjes <rientjes@google.com>,
- xen-devel@lists.xenproject.org, Len Brown <lenb@kernel.org>,
- haiyangz@microsoft.com, Dan Williams <dan.j.williams@intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Vlastimil Babka <vbabka@suse.cz>, osalvador@suse.de,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
- Vitaly Kuznetsov <vkuznets@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH RFC 1/2] drivers/base: export
- lock_device_hotplug/unlock_device_hotplug
-Message-ID: <20180817100604.GA18164@kroah.com>
-References: <20180817075901.4608-1-david@redhat.com>
- <20180817075901.4608-2-david@redhat.com>
- <20180817084146.GB14725@kroah.com>
- <5a5d73e9-e4aa-ffed-a2e3-8aef64e61923@redhat.com>
- <CAJZ5v0gkYV8o2Eq+EcGT=OP1tQGPGVVe3n9VGD6z7KAVVqhv9w@mail.gmail.com>
- <42df9062-f647-3ad6-5a07-be2b99531119@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sK9D6gPjzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:25:52 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7HANZX2096033
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 06:25:48 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kwufnth2n-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 06:25:48 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 17 Aug 2018 11:25:47 +0100
+Date: Fri, 17 Aug 2018 15:55:40 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc64/ftrace: Include ftrace.h needed for
+ enable/disable calls
+To: Luke Dashjr <luke@dashjr.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@ozlabs.org>, Steven Rostedt <rostedt@goodmis.org>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Michael Ellerman
+ <mpe@ellerman.id.au>
+References: <201808162136.27788.luke@dashjr.org>
+In-Reply-To: <201808162136.27788.luke@dashjr.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <42df9062-f647-3ad6-5a07-be2b99531119@redhat.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1534501411.hvsbp9w9ur.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,71 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 17, 2018 at 11:41:24AM +0200, David Hildenbrand wrote:
-> On 17.08.2018 11:03, Rafael J. Wysocki wrote:
-> > On Fri, Aug 17, 2018 at 10:56 AM David Hildenbrand <david@redhat.com> wrote:
-> >>
-> >> On 17.08.2018 10:41, Greg Kroah-Hartman wrote:
-> >>> On Fri, Aug 17, 2018 at 09:59:00AM +0200, David Hildenbrand wrote:
-> >>>> From: Vitaly Kuznetsov <vkuznets@redhat.com>
-> >>>>
-> >>>> Well require to call add_memory()/add_memory_resource() with
-> >>>> device_hotplug_lock held, to avoid a lock inversion. Allow external modules
-> >>>> (e.g. hv_balloon) that make use of add_memory()/add_memory_resource() to
-> >>>> lock device hotplug.
-> >>>>
-> >>>> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> >>>> [modify patch description]
-> >>>> Signed-off-by: David Hildenbrand <david@redhat.com>
-> >>>> ---
-> >>>>  drivers/base/core.c | 2 ++
-> >>>>  1 file changed, 2 insertions(+)
-> >>>>
-> >>>> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> >>>> index 04bbcd779e11..9010b9e942b5 100644
-> >>>> --- a/drivers/base/core.c
-> >>>> +++ b/drivers/base/core.c
-> >>>> @@ -700,11 +700,13 @@ void lock_device_hotplug(void)
-> >>>>  {
-> >>>>      mutex_lock(&device_hotplug_lock);
-> >>>>  }
-> >>>> +EXPORT_SYMBOL_GPL(lock_device_hotplug);
-> >>>>
-> >>>>  void unlock_device_hotplug(void)
-> >>>>  {
-> >>>>      mutex_unlock(&device_hotplug_lock);
-> >>>>  }
-> >>>> +EXPORT_SYMBOL_GPL(unlock_device_hotplug);
-> >>>
-> >>> If these are going to be "global" symbols, let's properly name them.
-> >>> device_hotplug_lock/unlock would be better.  But I am _really_ nervous
-> >>> about letting stuff outside of the driver core mess with this, as people
-> >>> better know what they are doing.
-> >>
-> >> The only "problem" is that we have kernel modules (for paravirtualized
-> >> devices) that call add_memory(). This is Hyper-V right now, but we might
-> >> have other ones in the future. Without them we would not have to export
-> >> it. We might also get kernel modules that want to call remove_memory() -
-> >> which will require the device_hotplug_lock as of now.
-> >>
-> >> What we could do is
-> >>
-> >> a) add_memory() -> _add_memory() and don't export it
-> >> b) add_memory() takes the device_hotplug_lock and calls _add_memory() .
-> >> We export that one.
-> >> c) Use add_memory() in external modules only
-> >>
-> >> Similar wrapper would be needed e.g. for remove_memory() later on.
-> > 
-> > That would be safer IMO, as it would prevent developers from using
-> > add_memory() without the lock, say.
-> > 
-> > If the lock is always going to be required for add_memory(), make it
-> > hard (or event impossible) to use the latter without it.
-> > 
-> 
-> If there are no objections, I'll go into that direction. But I'll wait
-> for more comments regarding the general concept first.
+Luke Dashjr wrote:
+> this_cpu_disable_ftrace and this_cpu_enable_ftrace are inlines in ftrace.=
+h
+> Without it included, the build fails.
 
-It is the middle of the merge window, and maintainers are really busy
-right now.  I doubt you will get many review comments just yet...
+I'm unable to reproduce this. Can you share your .config and the build=20
+environment?
+
+>=20
+> Fixes: a4bc64d305af ("powerpc64/ftrace: Disable ftrace during kvm entry/e=
+xit")
+> Signed-off-by: Luke Dashjr <luke-jr+git@utopios.org>
+> Cc: stable@vger.kernel.org
+> ---
+>  arch/powerpc/kvm/book3s_hv.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index ee4a8854985e..15c2c64291f4 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -46,6 +46,7 @@
+>  #include <linux/compiler.h>
+>  #include <linux/of.h>
+>=20
+> +#include <asm/ftrace.h>
+>  #include <asm/reg.h>
+>  #include <asm/ppc-opcode.h>
+>  #include <asm/asm-prototypes.h>
+
+In any case, this change itself looks alright to me. So:
+Acked-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+
+
+Thanks,
+Naveen
+
+=
