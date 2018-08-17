@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sKKY2mfpzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:33:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sKNw33gNzDrHP
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:36:00 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>
@@ -12,9 +12,10 @@ Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [RFC 12/15] PCI: make pcibios_bus_add_device() a callback function
-Date: Fri, 17 Aug 2018 12:26:42 +0200
-Message-Id: <20180817102645.3839621-13-arnd@arndb.de>
+Subject: [RFC 06/15] powerpc/pci: fold pci_create_root_bus into
+ pcibios_scan_phb
+Date: Fri, 17 Aug 2018 12:26:36 +0200
+Message-Id: <20180817102645.3839621-7-arnd@arndb.de>
 In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
 References: <20180817102645.3839621-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,129 +27,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Weak functions are confusion, and we can now add callback pointers
-to pci host bridges for any controller, so let's make this one
-a callback rather than a __weak global function.
+This slightly simplifies the pcibios_scan_phb() implementation, and
+gives us an easier point to add further fields in the pci_host_bridge
+structure.
+
+I tried removing fields that are duplicated between pci_host_bridge
+and pci_controller (which really serve the same purpose), but
+ran into the problem that we can't call pci_alloc_host_bridge()
+as early as pcibios_alloc_controller(). Some more refactoring
+is needed for that, but it could noticably clean the powerpc code
+up more.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/powerpc/kernel/pci-common.c  | 7 +------
- arch/sh/drivers/pci/pci.c         | 1 +
- arch/sh/drivers/pci/pcie-sh7786.c | 3 ++-
- arch/sh/include/asm/pci.h         | 2 ++
- drivers/pci/bus.c                 | 8 +++++++-
- include/linux/pci.h               | 2 +-
- 6 files changed, 14 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h |  3 ++
+ arch/powerpc/kernel/pci-common.c      | 72 ++++++++++-----------------
+ 2 files changed, 30 insertions(+), 45 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 94d449031b18..42ae567084d9 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -51,8 +51,11 @@ struct pci_controller_ops {
+ 
+ /*
+  * Structure of a PCI controller (host bridge)
++ * Some members here are duplicated in struct pci_host_bridge
++ * and should be moved there.
+  */
+ struct pci_controller {
++	struct pci_host_bridge *bridge;
+ 	struct pci_bus *bus;
+ 	char is_dynamic;
+ #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 096011ec8670..afc9598e4349 100644
+index 57ca621a32f4..096011ec8670 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -270,12 +270,6 @@ int pcibios_sriov_disable(struct pci_dev *pdev)
+@@ -1587,81 +1587,63 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+ 	return of_node_get(hose->dn);
+ }
  
- #endif /* CONFIG_PCI_IOV */
- 
--void pcibios_bus_add_device(struct pci_dev *pdev)
+-static struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+-		struct pci_ops *ops, void *sysdata, struct list_head *resources)
 -{
--	if (ppc_md.pcibios_bus_add_device)
--		ppc_md.pcibios_bus_add_device(pdev);
+-	int error;
+-	struct pci_host_bridge *bridge;
+-
+-	bridge = pci_alloc_host_bridge(0);
+-	if (!bridge)
+-		return NULL;
+-
+-	bridge->dev.parent = parent;
+-
+-	list_splice_init(resources, &bridge->windows);
+-	bridge->sysdata = sysdata;
+-	bridge->busnr = bus;
+-	bridge->ops = ops;
+-
+-	error = pci_register_host_bridge(bridge);
+-	if (error < 0)
+-		goto err_out;
+-
+-	return bridge->bus;
+-
+-err_out:
+-	kfree(bridge);
+-	return NULL;
 -}
 -
- static resource_size_t pcibios_io_size(const struct pci_controller *hose)
- {
- #ifdef CONFIG_PPC64
-@@ -1617,6 +1611,7 @@ void pcibios_scan_phb(struct pci_controller *hose)
- 	hose->busn.flags = IORESOURCE_BUS;
- 	pci_add_resource(&bridge->windows, &hose->busn);
- 
-+	bridge->bus_add_device = ppc_md->pcibios_bus_add_device;
- 	bridge->dev.parent = hose->parent;
- 	bridge->sysdata = hose;
- 	bridge->busnr = hose->first_busno;
-diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-index 8256626bc53c..d5c01a86cde1 100644
---- a/arch/sh/drivers/pci/pci.c
-+++ b/arch/sh/drivers/pci/pci.c
-@@ -65,6 +65,7 @@ static void pcibios_scanbus(struct pci_channel *hose)
- 	bridge->ops = hose->pci_ops;
- 	bridge->swizzle_irq = pci_common_swizzle;
- 	bridge->map_irq = pcibios_map_platform_irq;
-+	bridge->bus_add_device = hose->bus_add_device;
- 
- 	ret = pci_scan_root_bus_bridge(bridge);
- 	if (ret) {
-diff --git a/arch/sh/drivers/pci/pcie-sh7786.c b/arch/sh/drivers/pci/pcie-sh7786.c
-index 3d81a8b80942..ab78356681a0 100644
---- a/arch/sh/drivers/pci/pcie-sh7786.c
-+++ b/arch/sh/drivers/pci/pcie-sh7786.c
-@@ -122,6 +122,7 @@ extern struct pci_ops sh7786_pci_ops;
- 	.reg_base	= start,					\
- 	.mem_offset	= 0,						\
- 	.io_offset	= 0,						\
-+	.bus_add_device = sh7786_pci_bus_add_device,			\
- }
- 
- static struct pci_channel sh7786_pci_channels[] = {
-@@ -488,7 +489,7 @@ int pcibios_map_platform_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
-         return evt2irq(0xae0);
- }
- 
--void pcibios_bus_add_device(struct pci_dev *pdev)
-+static void sh7786_pci_bus_add_device(struct pci_dev *pdev)
- {
- 	pdev->dev.dma_pfn_offset = dma_pfn_offset;
- }
-diff --git a/arch/sh/include/asm/pci.h b/arch/sh/include/asm/pci.h
-index 10a36b1cf2ea..e605141cbcbe 100644
---- a/arch/sh/include/asm/pci.h
-+++ b/arch/sh/include/asm/pci.h
-@@ -35,6 +35,8 @@ struct pci_channel {
- 	/* Optional error handling */
- 	struct timer_list	err_timer, serr_timer;
- 	unsigned int		err_irq, serr_irq;
-+
-+	void (*bus_add_device)(struct pci_dev *pdev);
- };
- 
- /* arch/sh/drivers/pci/pci.c */
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index 5cb40b2518f9..45873ac1a49c 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -299,7 +299,13 @@ bool pci_bus_clip_resource(struct pci_dev *dev, int idx)
- 
- void __weak pcibios_resource_survey_bus(struct pci_bus *bus) { }
- 
--void __weak pcibios_bus_add_device(struct pci_dev *pdev) { }
-+static void pcibios_bus_add_device(struct pci_dev *pdev)
-+{
-+	struct pci_host_bridge *bridge = pci_find_host_bridge(pdev->bus);
-+
-+	if (bridge->bus_add_device)
-+		bridge->bus_add_device(pdev);
-+}
- 
  /**
-  * pci_bus_add_device - start driver for a single device
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 1dd8a3ecf753..d1072690cb4f 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -475,6 +475,7 @@ struct pci_host_bridge {
- 	u8 (*swizzle_irq)(struct pci_dev *, u8 *); /* Platform IRQ swizzler */
- 	int (*map_irq)(const struct pci_dev *, u8, u8);
- 	void (*release_fn)(struct pci_host_bridge *);
-+	void (*bus_add_device)(struct pci_dev *pdev);
- 	void		*release_data;
- 	struct msi_controller *msi;
- 	unsigned int	ignore_reset_delay:1;	/* For entire hierarchy */
-@@ -880,7 +881,6 @@ extern struct list_head pci_root_buses;	/* List of all known PCI buses */
- int no_pci_devices(void);
+  * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
+  * @hose: Pointer to the PCI host controller instance structure
+  */
+ void pcibios_scan_phb(struct pci_controller *hose)
+ {
+-	LIST_HEAD(resources);
+-	struct pci_bus *bus;
+ 	struct device_node *node = hose->dn;
+ 	int mode;
++	struct pci_host_bridge *bridge;
++	int error;
  
- void pcibios_resource_survey_bus(struct pci_bus *bus);
--void pcibios_bus_add_device(struct pci_dev *pdev);
- void pcibios_add_bus(struct pci_bus *bus);
- void pcibios_remove_bus(struct pci_bus *bus);
- void pcibios_fixup_bus(struct pci_bus *);
+ 	pr_debug("PCI: Scanning PHB %pOF\n", node);
+ 
++	/* The allocation should ideally be done in pcibios_alloc_controller(),
++	 * but pci_alloc_host_bridge() requires slab to work first */
++	bridge = pci_alloc_host_bridge(0);
++	if (!bridge)
++		return;
++
+ 	/* Get some IO space for the new PHB */
+ 	pcibios_setup_phb_io_space(hose);
+ 
+ 	/* Wire up PHB bus resources */
+-	pcibios_setup_phb_resources(hose, &resources);
++	pcibios_setup_phb_resources(hose, &bridge->windows);
+ 
+ 	hose->busn.start = hose->first_busno;
+ 	hose->busn.end	 = hose->last_busno;
+ 	hose->busn.flags = IORESOURCE_BUS;
+-	pci_add_resource(&resources, &hose->busn);
++	pci_add_resource(&bridge->windows, &hose->busn);
++
++	bridge->dev.parent = hose->parent;
++	bridge->sysdata = hose;
++	bridge->busnr = hose->first_busno;
++	bridge->ops = hose->ops;
+ 
+-	/* Create an empty bus for the toplevel */
+-	bus = pci_create_root_bus(hose->parent, hose->first_busno,
+-				  hose->ops, hose, &resources);
+-	if (bus == NULL) {
++	error = pci_register_host_bridge(bridge);
++	if (error < 0) {
+ 		pr_err("Failed to create bus for PCI domain %04x\n",
+ 			hose->global_number);
+-		pci_free_resource_list(&resources);
++		pci_free_host_bridge(bridge);
+ 		return;
+ 	}
+-	hose->bus = bus;
++	hose->bridge = bridge;
++	hose->bus = bridge->bus;
+ 
+ 	/* Get probe mode and perform scan */
+ 	mode = PCI_PROBE_NORMAL;
+ 	if (node && hose->controller_ops.probe_mode)
+-		mode = hose->controller_ops.probe_mode(bus);
++		mode = hose->controller_ops.probe_mode(bridge->bus);
+ 	pr_debug("    probe mode: %d\n", mode);
+ 	if (mode == PCI_PROBE_DEVTREE)
+-		of_scan_bus(node, bus);
++		of_scan_bus(node, bridge->bus);
+ 
+ 	if (mode == PCI_PROBE_NORMAL) {
+-		pci_bus_update_busn_res_end(bus, 255);
+-		hose->last_busno = pci_scan_child_bus(bus);
+-		pci_bus_update_busn_res_end(bus, hose->last_busno);
++		pci_bus_update_busn_res_end(bridge->bus, 255);
++		hose->last_busno = pci_scan_child_bus(bridge->bus);
++		pci_bus_update_busn_res_end(bridge->bus, hose->last_busno);
+ 	}
+ 
+ 	/* Platform gets a chance to do some global fixups before
+@@ -1671,9 +1653,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 		ppc_md.pcibios_fixup_phb(hose);
+ 
+ 	/* Configure PCI Express settings */
+-	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
++	if (bridge->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+ 		struct pci_bus *child;
+-		list_for_each_entry(child, &bus->children, node)
++		list_for_each_entry(child, &bridge->bus->children, node)
+ 			pcie_bus_configure_settings(child);
+ 	}
+ }
 -- 
 2.18.0
