@@ -1,25 +1,40 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sKZW6gvYzF12N
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:44:19 +1000 (AEST)
-Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
- to PGD and hugepages
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sL2W3K0kzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 21:05:07 +1000 (AEST)
+Subject: Re: [PATCH RFC 1/2] drivers/base: export
+ lock_device_hotplug/unlock_device_hotplug
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Michal Hocko <mhocko@suse.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
- <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
- <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
-Date: Fri, 17 Aug 2018 12:44:10 +0200
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
+ sthemmin@microsoft.com, Pavel Tatashin <pasha.tatashin@oracle.com>,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+ David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org,
+ Len Brown <lenb@kernel.org>, haiyangz@microsoft.com,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>,
+ osalvador@suse.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, devel@linuxdriverproject.org,
+ Vitaly Kuznetsov <vkuznets@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <20180817075901.4608-1-david@redhat.com>
+ <20180817075901.4608-2-david@redhat.com> <20180817084146.GB14725@kroah.com>
+ <5a5d73e9-e4aa-ffed-a2e3-8aef64e61923@redhat.com>
+ <CAJZ5v0gkYV8o2Eq+EcGT=OP1tQGPGVVe3n9VGD6z7KAVVqhv9w@mail.gmail.com>
+ <42df9062-f647-3ad6-5a07-be2b99531119@redhat.com>
+ <20180817100604.GA18164@kroah.com>
+From: David Hildenbrand <david@redhat.com>
+Message-ID: <4ac624be-d2d6-5975-821f-b20a475781dc@redhat.com>
+Date: Fri, 17 Aug 2018 13:04:58 +0200
 MIME-Version: 1.0
-In-Reply-To: <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+In-Reply-To: <20180817100604.GA18164@kroah.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,82 +44,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Le 17/08/2018 à 05:32, Aneesh Kumar K.V a écrit :
-> On 08/14/2018 08:24 PM, Christophe Leroy wrote:
->> While implementing TLB miss HW assistance on the 8xx, the following
->> warning was encountered:
+On 17.08.2018 12:06, Greg Kroah-Hartman wrote:
+> On Fri, Aug 17, 2018 at 11:41:24AM +0200, David Hildenbrand wrote:
+>> On 17.08.2018 11:03, Rafael J. Wysocki wrote:
+>>> On Fri, Aug 17, 2018 at 10:56 AM David Hildenbrand <david@redhat.com> wrote:
+>>>>
+>>>> On 17.08.2018 10:41, Greg Kroah-Hartman wrote:
+>>>>> On Fri, Aug 17, 2018 at 09:59:00AM +0200, David Hildenbrand wrote:
+>>>>>> From: Vitaly Kuznetsov <vkuznets@redhat.com>
+>>>>>>
+>>>>>> Well require to call add_memory()/add_memory_resource() with
+>>>>>> device_hotplug_lock held, to avoid a lock inversion. Allow external modules
+>>>>>> (e.g. hv_balloon) that make use of add_memory()/add_memory_resource() to
+>>>>>> lock device hotplug.
+>>>>>>
+>>>>>> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+>>>>>> [modify patch description]
+>>>>>> Signed-off-by: David Hildenbrand <david@redhat.com>
+>>>>>> ---
+>>>>>>  drivers/base/core.c | 2 ++
+>>>>>>  1 file changed, 2 insertions(+)
+>>>>>>
+>>>>>> diff --git a/drivers/base/core.c b/drivers/base/core.c
+>>>>>> index 04bbcd779e11..9010b9e942b5 100644
+>>>>>> --- a/drivers/base/core.c
+>>>>>> +++ b/drivers/base/core.c
+>>>>>> @@ -700,11 +700,13 @@ void lock_device_hotplug(void)
+>>>>>>  {
+>>>>>>      mutex_lock(&device_hotplug_lock);
+>>>>>>  }
+>>>>>> +EXPORT_SYMBOL_GPL(lock_device_hotplug);
+>>>>>>
+>>>>>>  void unlock_device_hotplug(void)
+>>>>>>  {
+>>>>>>      mutex_unlock(&device_hotplug_lock);
+>>>>>>  }
+>>>>>> +EXPORT_SYMBOL_GPL(unlock_device_hotplug);
+>>>>>
+>>>>> If these are going to be "global" symbols, let's properly name them.
+>>>>> device_hotplug_lock/unlock would be better.  But I am _really_ nervous
+>>>>> about letting stuff outside of the driver core mess with this, as people
+>>>>> better know what they are doing.
+>>>>
+>>>> The only "problem" is that we have kernel modules (for paravirtualized
+>>>> devices) that call add_memory(). This is Hyper-V right now, but we might
+>>>> have other ones in the future. Without them we would not have to export
+>>>> it. We might also get kernel modules that want to call remove_memory() -
+>>>> which will require the device_hotplug_lock as of now.
+>>>>
+>>>> What we could do is
+>>>>
+>>>> a) add_memory() -> _add_memory() and don't export it
+>>>> b) add_memory() takes the device_hotplug_lock and calls _add_memory() .
+>>>> We export that one.
+>>>> c) Use add_memory() in external modules only
+>>>>
+>>>> Similar wrapper would be needed e.g. for remove_memory() later on.
+>>>
+>>> That would be safer IMO, as it would prevent developers from using
+>>> add_memory() without the lock, say.
+>>>
+>>> If the lock is always going to be required for add_memory(), make it
+>>> hard (or event impossible) to use the latter without it.
+>>>
 >>
->> [  423.732965] WARNING: CPU: 0 PID: 345 at mm/slub.c:2412 
->> ___slab_alloc.constprop.30+0x26c/0x46c
->> [  423.733033] CPU: 0 PID: 345 Comm: mmap Not tainted 
->> 4.18.0-rc8-00664-g2dfff9121c55 #671
->> [  423.733075] NIP:  c0108f90 LR: c0109ad0 CTR: 00000004
->> [  423.733121] REGS: c455bba0 TRAP: 0700   Not tainted  
->> (4.18.0-rc8-00664-g2dfff9121c55)
->> [  423.733147] MSR:  00021032 <ME,IR,DR,RI>  CR: 24224848  XER: 20000000
->> [  423.733319]
->> [  423.733319] GPR00: c0109ad0 c455bc50 c4521910 c60053c0 007080c0 
->> c0011b34 c7fa41e0 c455be30
->> [  423.733319] GPR08: 00000001 c00103a0 c7fa41e0 c49afcc4 24282842 
->> 10018840 c079b37c 00000040
->> [  423.733319] GPR16: 73f00000 00210d00 00000000 00000001 c455a000 
->> 00000100 00000200 c455a000
->> [  423.733319] GPR24: c60053c0 c0011b34 007080c0 c455a000 c455a000 
->> c7fa41e0 00000000 00009032
->> [  423.734190] NIP [c0108f90] ___slab_alloc.constprop.30+0x26c/0x46c
->> [  423.734257] LR [c0109ad0] kmem_cache_alloc+0x210/0x23c
->> [  423.734283] Call Trace:
->> [  423.734326] [c455bc50] [00000100] 0x100 (unreliable)
->> [  423.734430] [c455bcc0] [c0109ad0] kmem_cache_alloc+0x210/0x23c
->> [  423.734543] [c455bcf0] [c0011b34] huge_pte_alloc+0xc0/0x1dc
->> [  423.734633] [c455bd20] [c01044dc] hugetlb_fault+0x408/0x48c
->> [  423.734720] [c455bdb0] [c0104b20] follow_hugetlb_page+0x14c/0x44c
->> [  423.734826] [c455be10] [c00e8e54] __get_user_pages+0x1c4/0x3dc
->> [  423.734919] [c455be80] [c00e9924] __mm_populate+0xac/0x140
->> [  423.735020] [c455bec0] [c00db14c] vm_mmap_pgoff+0xb4/0xb8
->> [  423.735127] [c455bf00] [c00f27c0] ksys_mmap_pgoff+0xcc/0x1fc
->> [  423.735222] [c455bf40] [c000e0f8] ret_from_syscall+0x0/0x38
->> [  423.735271] Instruction dump:
->> [  423.735321] 7cbf482e 38fd0008 7fa6eb78 7fc4f378 4bfff5dd 7fe3fb78 
->> 4bfffe24 81370010
->> [  423.735536] 71280004 41a2ff88 4840c571 4bffff80 <0fe00000> 4bfffeb8 
->> 81340010 712a0004
->> [  423.735757] ---[ end trace e9b222919a470790 ]---
->>
->> This warning occurs when calling kmem_cache_zalloc() on a
->> cache having a constructor.
->>
->> In this case it happens because PGD cache and 512k hugepte cache are
->> the same size (4k). While a cache with constructor is created for
->> the PGD, hugepages create cache without constructor and uses
->> kmem_cache_zalloc(). As both expect a cache with the same size,
->> the hugepages reuse the cache created for PGD, hence the conflict.
->>
->> In order to avoid this conflict, this patch:
->> - modifies pgtable_cache_add() so that a zeroising constructor is
->> added for any cache size.
->> - replaces calls to kmem_cache_zalloc() by kmem_cache_alloc()
->>
+>> If there are no objections, I'll go into that direction. But I'll wait
+>> for more comments regarding the general concept first.
 > 
-> Can't we just do kmem_cache_alloc with gfp flags __GFP_ZERO? and remove 
-> the constructor completely?
-
-I don't understand what you mean. That's exactly what I did in v1 (by 
-using kmem_cache_zalloc()), and you commented that doing this we would 
-zeroise at allocation whereas the constructors are called when adding 
-memory to the slab and when freeing the allocated block. Or did I 
-misunderstood your comment ?
-
-static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
-{
-	return kmem_cache_alloc(k, flags | __GFP_ZERO);
-}
-
-Christophe
-
-
+> It is the middle of the merge window, and maintainers are really busy
+> right now.  I doubt you will get many review comments just yet...
 > 
-> 
-> -aneesh
+
+This has been broken since 2015, so I guess it can wait a bit :)
+
+-- 
+
+Thanks,
+
+David / dhildenb
