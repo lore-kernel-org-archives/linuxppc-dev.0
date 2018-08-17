@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sR066fwkzDr5p
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 00:48:22 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sR7b6ZBKzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 00:54:51 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7HEiAtQ005493
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 10:48:20 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kwvcjt29c-1
+ w7HErsBq065912
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 10:54:49 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kwwjkqs5a-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 10:48:19 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 10:54:48 -0400
 Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Fri, 17 Aug 2018 15:48:17 +0100
+ Fri, 17 Aug 2018 15:54:46 +0100
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Michael Ellerman <mpe@ellerman.id.au>
@@ -27,8 +27,8 @@ Cc: Michael Bringmann <mbringm@us.ibm.com>,
  Michal Suchanek <msuchanek@suse.de>
 Subject: [PATCH v5] powerpc/topology: Get topology for shared processors at
  boot
-Date: Fri, 17 Aug 2018 20:18:10 +0530
-Message-Id: <1534517290-10243-1-git-send-email-srikar@linux.vnet.ibm.com>
+Date: Fri, 17 Aug 2018 20:24:39 +0530
+Message-Id: <1534517679-10792-1-git-send-email-srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -170,10 +170,6 @@ Changelog v3->v4
  for vphn enabled.  However we want this update to happen even when
  topology_updates=off.  Changed patch title accordingly
 
-Changelog v4->v5:
- Handled comments from Michael Ellerman where numa_update_cpu_topology
- was simply returning without updating the topology.
-
  arch/powerpc/include/asm/topology.h |  5 +++++
  arch/powerpc/kernel/smp.c           |  6 ++++++
  arch/powerpc/mm/numa.c              | 22 ++++++++++++++--------
@@ -275,5 +271,8 @@ index 0c7e05d89244..35ac5422903a 100644
 -		bitmap_fill(cpumask_bits(&cpu_associativity_changes_mask),
 -					nr_cpumask_bits);
 -
+ 	return 0;
+ }
+ device_initcall(topology_update_init);
 -- 
 2.17.1
