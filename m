@@ -1,9 +1,9 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sKK45V5rzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:32:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sKK63ZXZzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 20:32:41 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-pci@vger.kernel.org,
 	Bjorn Helgaas <bhelgaas@google.com>
@@ -12,9 +12,9 @@ Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  Arnd Bergmann <arnd@arndb.de>
-Subject: [RFC 08/15] x86: PCI: clean up pcibios_scan_root()
-Date: Fri, 17 Aug 2018 12:26:38 +0200
-Message-Id: <20180817102645.3839621-9-arnd@arndb.de>
+Subject: [RFC 07/15] PCI/ACPI: clean up acpi_pci_root_create()
+Date: Fri, 17 Aug 2018 12:26:37 +0200
+Message-Id: <20180817102645.3839621-8-arnd@arndb.de>
 In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
 References: <20180817102645.3839621-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,96 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pcibios_scan_root() is now just a wrapper around pci_scan_root_bus(),
-and merging the two into one makes it shorter and more readable.
+The acpi_pci_create_root_bus() can be fully integrated into
+acpi_pci_root_create(), improving a few things:
 
-We can also take advantage of pci_alloc_host_bridge() doing the
-allocation of the sysdata for us, which helps if we ever want to
-allow hot-unplugging the host bridge itself.
-
-We might be able to simplify it further using pci_host_probe(),
-but I wasn't sure about the resource registration there.
+* We can call pci_scan_root_bus_bridge(), which registers and
+  scans the bridge in one step.
+* After a failure in pci_register_host_bridge(), we correctly
+  clean up the resources.
+* The bridge settings (release function, flags, operations etc)
+  can get set up before registering the bridge.
+* Further cleanup would be possible, removing duplication between
+  pci_host_bridge and some ACPI structures.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/x86/pci/common.c | 53 ++++++++++++++-----------------------------
- 1 file changed, 17 insertions(+), 36 deletions(-)
+ drivers/acpi/pci_root.c | 68 +++++++++++++++--------------------------
+ 1 file changed, 24 insertions(+), 44 deletions(-)
 
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index e740d9aa4024..920d0885434c 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -453,54 +453,35 @@ void __init dmi_check_pciprobe(void)
- 	dmi_check_system(pciprobe_dmi_table);
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 85dbcf47015b..5f73de3b67c8 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -873,34 +873,6 @@ static void acpi_pci_root_release_info(struct pci_host_bridge *bridge)
+ 	__acpi_pci_root_release_info(bridge->release_data);
  }
  
--static struct pci_bus *pci_scan_root_bus(struct device *parent, int bus,
+-static struct pci_bus *acpi_pci_create_root_bus(struct device *parent, int bus,
 -		struct pci_ops *ops, void *sysdata, struct list_head *resources)
-+void pcibios_scan_root(int busnum)
- {
-+	struct pci_sysdata *sd;
- 	struct pci_host_bridge *bridge;
- 	int error;
- 
+-{
+-	int error;
+-	struct pci_host_bridge *bridge;
+-
 -	bridge = pci_alloc_host_bridge(0);
 -	if (!bridge)
 -		return NULL;
-+	bridge = pci_alloc_host_bridge(sizeof(sd));
-+	if (!bridge) {
-+		printk(KERN_ERR "PCI: OOM, skipping PCI bus %02x\n", busnum);
-+		return;
-+	}
-+	sd = pci_host_bridge_priv(bridge);
- 
--	list_splice_init(resources, &bridge->windows);
+-
 -	bridge->dev.parent = parent;
+-
+-	list_splice_init(resources, &bridge->windows);
 -	bridge->sysdata = sysdata;
 -	bridge->busnr = bus;
 -	bridge->ops = ops;
-+	sd->node = x86_pci_root_bus_node(busnum);
-+	x86_pci_root_bus_resources(busnum, &bridge->windows);
-+	bridge->sysdata = sd;
-+	bridge->busnr = busnum;
-+	bridge->ops = &pci_root_ops;
- 
-+	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x)\n", busnum);
- 	error = pci_scan_root_bus_bridge(bridge);
- 	if (error < 0)
- 		goto err_out;
- 
+-
+-	error = pci_register_host_bridge(bridge);
+-	if (error < 0)
+-		goto err_out;
+-
 -	return bridge->bus;
-+	pci_bus_add_devices(bridge->bus);
-+	return;
- 
- err_out:
+-
+-err_out:
 -	kfree(bridge);
 -	return NULL;
 -}
 -
--void pcibios_scan_root(int busnum)
--{
+ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+ 				     struct acpi_pci_root_ops *ops,
+ 				     struct acpi_pci_root_info *info,
+@@ -909,8 +881,7 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+ 	int ret, busnum = root->secondary.start;
+ 	struct acpi_device *device = root->device;
+ 	int node = acpi_get_node(device->handle);
 -	struct pci_bus *bus;
--	struct pci_sysdata *sd;
--	LIST_HEAD(resources);
--
--	sd = kzalloc(sizeof(*sd), GFP_KERNEL);
--	if (!sd) {
--		printk(KERN_ERR "PCI: OOM, skipping PCI bus %02x\n", busnum);
--		return;
--	}
--	sd->node = x86_pci_root_bus_node(busnum);
--	x86_pci_root_bus_resources(busnum, &resources);
--	printk(KERN_DEBUG "PCI: Probing PCI hardware (bus %02x)\n", busnum);
--	bus = pci_scan_root_bus(NULL, busnum, &pci_root_ops, sd, &resources);
--	if (!bus) {
--		pci_free_resource_list(&resources);
--		kfree(sd);
--		return;
--	}
--	pci_bus_add_devices(bus);
-+	pci_free_host_bridge(bridge);
- }
+-	struct pci_host_bridge *host_bridge;
++	struct pci_host_bridge *bridge;
  
- void __init pcibios_set_cache_line_size(void)
+ 	info->root = root;
+ 	info->bridge = device;
+@@ -930,30 +901,39 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+ 
+ 	pci_acpi_root_add_resources(info);
+ 	pci_add_resource(&info->resources, &root->secondary);
+-	bus = acpi_pci_create_root_bus(NULL, busnum, ops->pci_ops,
+-				  sysdata, &info->resources);
+-	if (!bus)
++
++	bridge = pci_alloc_host_bridge(0);
++	if (!bridge)
+ 		goto out_release_info;
+ 
+-	host_bridge = to_pci_host_bridge(bus->bridge);
++	list_splice_init(&info->resources, &bridge->windows);
++	bridge->sysdata = sysdata;
++	bridge->busnr = busnum;
++	bridge->ops = ops->pci_ops;
++	pci_set_host_bridge_release(bridge, acpi_pci_root_release_info,
++				    info);
++
+ 	if (!(root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL))
+-		host_bridge->native_pcie_hotplug = 0;
++		bridge->native_pcie_hotplug = 0;
+ 	if (!(root->osc_control_set & OSC_PCI_SHPC_NATIVE_HP_CONTROL))
+-		host_bridge->native_shpc_hotplug = 0;
++		bridge->native_shpc_hotplug = 0;
+ 	if (!(root->osc_control_set & OSC_PCI_EXPRESS_AER_CONTROL))
+-		host_bridge->native_aer = 0;
++		bridge->native_aer = 0;
+ 	if (!(root->osc_control_set & OSC_PCI_EXPRESS_PME_CONTROL))
+-		host_bridge->native_pme = 0;
++		bridge->native_pme = 0;
+ 	if (!(root->osc_control_set & OSC_PCI_EXPRESS_LTR_CONTROL))
+-		host_bridge->native_ltr = 0;
++		bridge->native_ltr = 0;
++
++	ret = pci_scan_root_bus_bridge(bridge);
++	if (ret < 0)
++		goto out_release_bridge;
+ 
+-	pci_scan_child_bus(bus);
+-	pci_set_host_bridge_release(host_bridge, acpi_pci_root_release_info,
+-				    info);
+ 	if (node != NUMA_NO_NODE)
+-		dev_printk(KERN_DEBUG, &bus->dev, "on NUMA node %d\n", node);
+-	return bus;
++		dev_printk(KERN_DEBUG, &bridge->bus->dev, "on NUMA node %d\n", node);
++	return bridge->bus;
+ 
++out_release_bridge:
++	pci_free_host_bridge(bridge);
+ out_release_info:
+ 	__acpi_pci_root_release_info(info);
+ 	return NULL;
 -- 
 2.18.0
