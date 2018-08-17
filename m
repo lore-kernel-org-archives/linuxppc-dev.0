@@ -1,25 +1,37 @@
-Return-Path: <breno.debian@gmail.com>
-Received: from mail-qt0-f193.google.com (mail-qt0-f193.google.com
- [209.85.216.193])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <muriloo@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sMrR0fDxzDr5p
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 22:26:30 +1000 (AEST)
-Received: by mail-qt0-f193.google.com with SMTP id y5-v6so8448565qti.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 05:26:30 -0700 (PDT)
-Subject: Re: [PATCH v2 1/4] powerpc/tm: Remove msr_tm_active()
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-References: <201806160346.lDndh49W%fengguang.wu@intel.com>
- <1529362784-14194-1-git-send-email-leitao@debian.org>
- <e2f169e3ce57e5b092642088127f67a52da2bf93.camel@neuling.org>
- <87tvntakb6.fsf@concordia.ellerman.id.au>
-From: Breno Leitao <leitao@debian.org>
-Cc: Michael Neuling <mikey@neuling.org>
-Message-ID: <7433b095-ce67-5097-8dd7-0f47ab797914@debian.org>
-Date: Fri, 17 Aug 2018 09:26:22 -0300
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sN242z4LzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 22:34:52 +1000 (AEST)
+Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7HCY9AQ023962
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 08:34:49 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kwwjfa5w6-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 08:34:49 -0400
+Received: from localhost
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <muriloo@linux.ibm.com>;
+ Fri, 17 Aug 2018 06:34:48 -0600
+Date: Fri, 17 Aug 2018 09:34:41 -0300
+From: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/process: fix nested output in
+ show_user_instructions()
+References: <718cc9c9bd1d4bb2b4c2596f1a7ee00334e77055.1534192631.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-In-Reply-To: <87tvntakb6.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <718cc9c9bd1d4bb2b4c2596f1a7ee00334e77055.1534192631.git.christophe.leroy@c-s.fr>
+Message-Id: <20180817123441.GA7458@kermit-br-ibm-com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +41,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Hi, Christophe.
 
-On 08/16/2018 09:49 PM, Michael Ellerman wrote:
-> Michael Neuling <mikey@neuling.org> writes:
+On Tue, Aug 14, 2018 at 08:59:18AM +0000, Christophe Leroy wrote:
+> When two processes crash at the same time, we sometimes encounter
+> nesting in the middle of a line:
 > 
->> On Mon, 2018-06-18 at 19:59 -0300, Breno Leitao wrote:
->>> Currently msr_tm_active() is a wrapper around MSR_TM_ACTIVE() if
->>> CONFIG_PPC_TRANSACTIONAL_MEM is set, or it is just a function that
->>> returns false if CONFIG_PPC_TRANSACTIONAL_MEM is not set.
->>>
->>> This function is not necessary, since MSR_TM_ACTIVE() just do the same,
->>> checking for the TS bits and does not require any TM facility.
->>>
->>> This patchset remove every instance of msr_tm_active() and replaced it
->>> by MSR_TM_ACTIVE().
->>>
->>> Signed-off-by: Breno Leitao <leitao@debian.org>
->>>
->>
->> Patch looks good... one minor nit below...
->>
->>>  
->>> -	if (!msr_tm_active(regs->msr) &&
->>> -		!current->thread.load_fp && !loadvec(current->thread))
->>> +	if (!current->thread.load_fp && !loadvec(current->thread)) {
->>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->>> +		if (!MSR_TM_ACTIVE(regs->msr))
->>> +			return;
->>
->> Can you make a MSR_TM_ACTIVE() that returns false when
->> !CONFIG_PPC_TRANSACTIONAL_MEM. Then you don't need this inline #ifdef.
+> [    4.365317] init[1]: segfault (11) at 0 nip 0 lr 0 code 1
+> [    4.370452] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> [    4.372042] init[74]: segfault (11) at 10a74 nip 1000c198 lr 100078c8 code 1 in sh[10000000+14000]
+> [    4.386829] XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> [    4.391542] init[1]: code: XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+> [    4.400863] init[74]: code: 90010024 bf61000c 91490a7c 3fa01002 3be00000 7d3e4b78 3bbd0c20 3b600000
+> [    4.409867] init[74]: code: 3b9d0040 7c7fe02e 2f830000 419e0028 <89230000> 2f890000 41be001c 4b7f6e79
+
+My smoke test passed with the two patches.
+
+Perhaps adding an output sample of how messages would look like after your patch
+could be an enhancement to the commit message.
+
+Otherwise:
+
+Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+
+> This patch fixes it by preparing complete lines in a buffer and
+> printing it at once.
 > 
-> Is that safe?
+> Fixes: 88b0fe1757359 ("powerpc: Add show_user_instructions()")
+> Cc: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/kernel/process.c | 17 +++++++++--------
+>  1 file changed, 9 insertions(+), 8 deletions(-)
 > 
-> I see ~50 callers of MSR_TM_ACTIVE(), are they all inside #ifdef TM ?
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 913c5725cdb2..c722ce4ca1c0 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1303,32 +1303,33 @@ void show_user_instructions(struct pt_regs *regs)
+>  {
+>  	unsigned long pc;
+>  	int i;
+> +	char buf[96]; /* enough for 8 times 9 + 2 chars */
+> +	int l = 0;
+>  
+>  	pc = regs->nip - (instructions_to_print * 3 / 4 * sizeof(int));
+>  
+> -	pr_info("%s[%d]: code: ", current->comm, current->pid);
+> -
+>  	for (i = 0; i < instructions_to_print; i++) {
+>  		int instr;
+>  
+>  		if (!(i % 8) && (i > 0)) {
+> -			pr_cont("\n");
+> -			pr_info("%s[%d]: code: ", current->comm, current->pid);
+> +			pr_info("%s[%d]: code: %s\n", current->comm, current->pid, buf);
+> +			l = 0;
+>  		}
+>  
+>  		if (probe_kernel_address((unsigned int __user *)pc, instr)) {
+> -			pr_cont("XXXXXXXX ");
+> +			l += sprintf(buf + l, "XXXXXXXX ");
+>  		} else {
+>  			if (regs->nip == pc)
+> -				pr_cont("<%08x> ", instr);
+> +				l += sprintf(buf + l, "<%08x> ", instr);
+>  			else
+> -				pr_cont("%08x ", instr);
+> +				l += sprintf(buf + l, "%08x ", instr);
+>  		}
+>  
+>  		pc += sizeof(int);
+>  	}
+>  
+> -	pr_cont("\n");
+> +	if (l)
+> +		pr_info("%s[%d]: code: %s\n", current->comm, current->pid, buf);
+>  }
+>  
+>  struct regbit {
+> -- 
+> 2.13.3
+> 
 
-I checked all of them, and the only two that are not called inside a #ifdef
-are at kvm/book3s_hv_tm.c. They are:
-
-  kvm/book3s_hv_tm.c:		if (!MSR_TM_ACTIVE(msr)) {
-  kvm/book3s_hv_tm.c:		if (MSR_TM_ACTIVE(msr) || !(vcpu->arch.texasr & TEXASR_FS)) {
-
-All the others are being called inside the #ifdef
-
-Other than that, I do not see why it would be a problem in the way I
-implemented it, since it will return false for the two cases above, which
-seems correct. Take a look on how the definition became:
-
-  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-  #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
-  #else
-  #define MSR_TM_ACTIVE(x) 0
-  #endif
-
-I also tested it with different config files, and I didn't see any complain.
-These are the platforms I built for.
-
-* powernv_defconfig
-* pseries_le_defconfig
-* pseries_defconfig
-* ppc64_defconfig
-* ppc64e_defconfig
-* pmac32_defconfig
-* ppc44x_defconfig
-* mpc85xx_smp_defconfig
-* mpc85xx_defconfig
-* ps3_defconfig
-
-Anyway, if you have any other suggestion I can follow in order to guarantee
-that I am not causing any regression, I would be happy. Touching these core
-kernel macros is scary!
-
-Thanks!
+-- 
+Murilo
