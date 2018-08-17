@@ -1,18 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <david@redhat.com>
+Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sFHC6dCNzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 17:30:47 +1000 (AEST)
-Message-ID: <3a742dd7a457874516daaf615ac0b883f87c2139.camel@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/powernv/pci: Work around  races in PCI bridge
- enabling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <michaele@au1.ibm.com>
-Date: Fri, 17 Aug 2018 17:30:39 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sFw35hjyzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 17:59:15 +1000 (AEST)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-acpi@vger.kernel.org, devel@linuxdriverproject.org,
+ linux-s390@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Dan Williams <dan.j.williams@intel.com>,
+ Pavel Tatashin <pasha.tatashin@oracle.com>,
+ Oscar Salvador <osalvador@suse.de>, Vitaly Kuznetsov <vkuznets@redhat.com>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ David Hildenbrand <david@redhat.com>,
+ "K . Y . Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>,
+ Stephen Hemminger <sthemmin@microsoft.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ David Rientjes <rientjes@google.com>
+Subject: [PATCH RFC 1/2] drivers/base: export
+ lock_device_hotplug/unlock_device_hotplug
+Date: Fri, 17 Aug 2018 09:59:00 +0200
+Message-Id: <20180817075901.4608-2-david@redhat.com>
+In-Reply-To: <20180817075901.4608-1-david@redhat.com>
+References: <20180817075901.4608-1-david@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,81 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic code is race when multiple children of a PCI bridge try to
-enable it simultaneously.
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
 
-This leads to drivers trying to access a device through a not-yet-enabled
-bridge, and this EEH errors under various circumstances when using parallel
-driver probing.
+Well require to call add_memory()/add_memory_resource() with
+device_hotplug_lock held, to avoid a lock inversion. Allow external modules
+(e.g. hv_balloon) that make use of add_memory()/add_memory_resource() to
+lock device hotplug.
 
-There is work going on to fix that properly in the PCI core but it will
-take some time.
-
-x86 gets away with it because (outside of hotplug), the BIOS enables all
-the bridges at boot time.
-
-This patch does the same thing on powernv by enabling all bridges that
-have child devices at boot time, thus avoiding subsequent races. It's suitable
-for backporting to stable and distros, while the proper PCI fix will probably
-be significantly more invasive.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: stable@vger.kernel.org
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+[modify patch description]
+Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
+ drivers/base/core.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-v2. Fix unused variables warning.
-
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 5bd0eb6681bc..ca720d530c6d 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -3367,12 +3367,49 @@ static void pnv_pci_ioda_create_dbgfs(void)
- #endif /* CONFIG_DEBUG_FS */
- }
- 
-+static void pnv_pci_enable_bridge(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev = bus->self;
-+	struct pci_bus *child;
-+
-+	/* Empty bus ? bail */
-+	if (list_empty(&bus->devices))
-+		return;
-+
-+	/*
-+	 * If there's a bridge associated with that bus enable it. This works
-+	 * around races in the generic code if the enabling is done during
-+	 * parallel probing. This can be removed once those races have been
-+	 * fixed.
-+	 */
-+	if (dev) {
-+		int rc = pci_enable_device(dev);
-+		if (rc)
-+			pci_err(dev, "Error enabling bridge (%d)\n", rc);
-+		pci_set_master(dev);
-+	}
-+
-+	/* Perform the same to child busses */
-+	list_for_each_entry(child, &bus->children, node)
-+		pnv_pci_enable_bridge(child);
-+}
-+
-+static void pnv_pci_enable_bridges(void)
-+{
-+	struct pci_controller *hose;
-+
-+	list_for_each_entry(hose, &hose_list, list_node)
-+		pnv_pci_enable_bridge(hose->bus);
-+}
-+
- static void pnv_pci_ioda_fixup(void)
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 04bbcd779e11..9010b9e942b5 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -700,11 +700,13 @@ void lock_device_hotplug(void)
  {
- 	pnv_pci_ioda_setup_PEs();
- 	pnv_pci_ioda_setup_iommu_api();
- 	pnv_pci_ioda_create_dbgfs();
+ 	mutex_lock(&device_hotplug_lock);
+ }
++EXPORT_SYMBOL_GPL(lock_device_hotplug);
  
-+	pnv_pci_enable_bridges();
-+
- #ifdef CONFIG_EEH
- 	pnv_eeh_post_init();
- #endif
+ void unlock_device_hotplug(void)
+ {
+ 	mutex_unlock(&device_hotplug_lock);
+ }
++EXPORT_SYMBOL_GPL(unlock_device_hotplug);
+ 
+ int lock_device_hotplug_sysfs(void)
+ {
+-- 
+2.17.1
