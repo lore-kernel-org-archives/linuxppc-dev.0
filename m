@@ -1,21 +1,38 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sRWw47LtzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 01:12:28 +1000 (AEST)
-Subject: Re: [PATCH 3/3] powerpc/mm/ Add proper pte access check helper
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org
-References: <20171204021912.25974-1-aneesh.kumar@linux.vnet.ibm.com>
- <20171204021912.25974-3-aneesh.kumar@linux.vnet.ibm.com>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <d4c28fbf-5663-b40a-c083-daf9f816fe91@c-s.fr>
-Date: Fri, 17 Aug 2018 17:12:18 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sTVR73kGzDqm6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 02:41:19 +1000 (AEST)
+Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7HGcVms013215
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 12:41:17 -0400
+Received: from e06smtp07.uk.ibm.com (e06smtp07.uk.ibm.com [195.75.94.103])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kx1u70me5-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 12:41:17 -0400
+Received: from localhost
+ by e06smtp07.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 17 Aug 2018 17:41:15 +0100
+Date: Fri, 17 Aug 2018 22:11:10 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc64/ftrace: Include ftrace.h needed for
+ enable/disable calls
+To: Luke Dashjr <luke@dashjr.org>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Ingo Molnar
+ <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras
+ <paulus@ozlabs.org>, Steven Rostedt <rostedt@goodmis.org>
+References: <201808162136.27788.luke@dashjr.org>
+ <1534501411.hvsbp9w9ur.naveen@linux.ibm.com>
+ <201808171516.34356.luke@dashjr.org>
+In-Reply-To: <201808171516.34356.luke@dashjr.org>
 MIME-Version: 1.0
-In-Reply-To: <20171204021912.25974-3-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <1534524010.ixq4fqaac8.naveen@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,121 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Luke Dashjr wrote:
+> On Friday 17 August 2018 10:25:40 Naveen N. Rao wrote:
+>> Luke Dashjr wrote:
+>> > this_cpu_disable_ftrace and this_cpu_enable_ftrace are inlines in
+>> > ftrace.h Without it included, the build fails.
+>>
+>> I'm unable to reproduce this. Can you share your .config and the build
+>> environment?
+>=20
+> https://luke.dashjr.org/tmp/code/4.18-config.xz
+>=20
+> Gentoo GNU/Linux (mostly stable keywords) on a Raptor Talos II POWER9 sys=
+tem.
 
+Thanks. Your config is missing CONFIG_TRACEPOINTS and I hadn't tested=20
+that. The below fix looks good and I've confirmed that the other uses=20
+are fine as well.
 
-Le 04/12/2017 à 03:19, Aneesh Kumar K.V a écrit :
-> pte_access_premitted get called in get_user_pages_fast path. If we have marked
-> the pte PROT_NONE, we should not allow a read access on the address. With
-> the current implementation we are not checking the READ and only check for
-> WRITE. This is needed on archs like ppc64 that implement PROT_NONE using
-> _PAGE_USER access instead of _PAGE_PRESENT. Also add pte_user check just to make sure
-> we are not accessing kernel mapping.
-> 
-> Even though there is code duplication, keeping the low level pte accessors
-> different for different platforms helps in code readability.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/asm/book3s/32/pgtable.h | 23 +++++++++++++++++++++++
->   arch/powerpc/include/asm/nohash/pgtable.h    | 23 +++++++++++++++++++++++
->   2 files changed, 46 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> index 016579ef16d3..30a155c0a6b0 100644
-> --- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-> +++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-> @@ -311,6 +311,29 @@ static inline int pte_present(pte_t pte)
->   	return pte_val(pte) & _PAGE_PRESENT;
->   }
->   
-> +/*
-> + * We only find page table entry in the last level
-> + * Hence no need for other accessors
-> + */
-> +#define pte_access_permitted pte_access_permitted
-> +static inline bool pte_access_permitted(pte_t pte, bool write)
-> +{
-> +	unsigned long pteval = pte_val(pte);
-> +	/*
-> +	 * A read-only access is controlled by _PAGE_USER bit.
-> +	 * We have _PAGE_READ set for WRITE and EXECUTE
-> +	 */
-> +	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
-> +
-> +	if (write)
-> +		need_pte_bits |= _PAGE_WRITE;
-> +
-> +	if ((pteval & need_pte_bits) != need_pte_bits)
-> +		return false;
-> +
-> +	return true;
-> +}
-> +
->   /* Conversion functions: convert a page and protection to a page entry,
->    * and a page entry and page directory to the page they refer to.
->    *
-> diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-> index 5c68f4a59f75..fc4376c8d444 100644
-> --- a/arch/powerpc/include/asm/nohash/pgtable.h
-> +++ b/arch/powerpc/include/asm/nohash/pgtable.h
-> @@ -45,6 +45,29 @@ static inline int pte_present(pte_t pte)
->   	return pte_val(pte) & _PAGE_PRESENT;
->   }
->   
-> +/*
-> + * We only find page table entry in the last level
-> + * Hence no need for other accessors
-> + */
-> +#define pte_access_permitted pte_access_permitted
-> +static inline bool pte_access_permitted(pte_t pte, bool write)
-> +{
-> +	unsigned long pteval = pte_val(pte);
-> +	/*
-> +	 * A read-only access is controlled by _PAGE_USER bit.
-> +	 * We have _PAGE_READ set for WRITE and EXECUTE
-> +	 */
+- Naveen
 
-Not fully right. asm/pte-common.h defines:
-
-#define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_NA)
-#define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
-#define PAGE_SHARED_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW | \
-				 _PAGE_EXEC)
-#define PAGE_COPY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO)
-#define PAGE_COPY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO | \
-				 _PAGE_EXEC)
-#define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO)
-#define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO | \
-				 _PAGE_EXEC)
-
-On the 8xx, _PAGE_USER = 0
-
-> +	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
-> +
-> +	if (write)
-> +		need_pte_bits |= _PAGE_WRITE;
-> +
-> +	if ((pteval & need_pte_bits) != need_pte_bits)
-> +		return false;
-
-This test is not fully correct:
-- To check access(read) permission, you also have to check that _PAGE_NA 
-is not set.
-- To check write permission, you also have to check that neither 
-_PAGE_NA nor _PAGE_RO are set.
-
-On the 8xx, you have:
-_PAGE_RW = _PAGE_WRITE = 0
-_PAGE_NA = 0x0200
-_PAGE_RO = 0x0600
-
-Christophe
-
-> +
-> +	return true;
-> +}
-> +
->   /* Conversion functions: convert a page and protection to a page entry,
->    * and a page entry and page directory to the page they refer to.
->    *
-> 
+=
