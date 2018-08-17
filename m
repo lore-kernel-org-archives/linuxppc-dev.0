@@ -1,42 +1,41 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
- [209.85.218.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=qmjp=la=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sHL41X0LzDqm6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 19:03:23 +1000 (AEST)
-Received: by mail-oi0-f65.google.com with SMTP id y207-v6so12815804oie.13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 02:03:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41sHlX2BvJzDr5p
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 19:22:00 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41sHlW143Xz8wRX
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2018 19:21:59 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41sHlV1lpDz9s3x
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 19:21:58 +1000 (AEST)
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7H9ImYZ093959
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 05:21:55 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kwufnrcwv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 05:21:55 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 17 Aug 2018 10:21:54 +0100
+Subject: [PATCH] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Fri, 17 Aug 2018 14:51:47 +0530
 MIME-Version: 1.0
-References: <20180817075901.4608-1-david@redhat.com>
- <20180817075901.4608-2-david@redhat.com>
- <20180817084146.GB14725@kroah.com>
- <5a5d73e9-e4aa-ffed-a2e3-8aef64e61923@redhat.com>
-In-Reply-To: <5a5d73e9-e4aa-ffed-a2e3-8aef64e61923@redhat.com>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Fri, 17 Aug 2018 11:03:09 +0200
-Message-ID: <CAJZ5v0gkYV8o2Eq+EcGT=OP1tQGPGVVe3n9VGD6z7KAVVqhv9w@mail.gmail.com>
-Subject: Re: [PATCH RFC 1/2] drivers/base: export
- lock_device_hotplug/unlock_device_hotplug
-To: David Hildenbrand <david@redhat.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
- devel@linuxdriverproject.org,
- linux-s390@vger.kernel.org, xen-devel@lists.xenproject.org,
- Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>,
- Vlastimil Babka <vbabka@suse.cz>, Dan Williams <dan.j.williams@intel.com>,
- Pavel Tatashin <pasha.tatashin@oracle.com>, osalvador@suse.de,
- Vitaly Kuznetsov <vkuznets@redhat.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, kys@microsoft.com,
- haiyangz@microsoft.com,
- sthemmin@microsoft.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>, David Rientjes <rientjes@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,62 +45,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 17, 2018 at 10:56 AM David Hildenbrand <david@redhat.com> wrote:
->
-> On 17.08.2018 10:41, Greg Kroah-Hartman wrote:
-> > On Fri, Aug 17, 2018 at 09:59:00AM +0200, David Hildenbrand wrote:
-> >> From: Vitaly Kuznetsov <vkuznets@redhat.com>
-> >>
-> >> Well require to call add_memory()/add_memory_resource() with
-> >> device_hotplug_lock held, to avoid a lock inversion. Allow external modules
-> >> (e.g. hv_balloon) that make use of add_memory()/add_memory_resource() to
-> >> lock device hotplug.
-> >>
-> >> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> >> [modify patch description]
-> >> Signed-off-by: David Hildenbrand <david@redhat.com>
-> >> ---
-> >>  drivers/base/core.c | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> >> index 04bbcd779e11..9010b9e942b5 100644
-> >> --- a/drivers/base/core.c
-> >> +++ b/drivers/base/core.c
-> >> @@ -700,11 +700,13 @@ void lock_device_hotplug(void)
-> >>  {
-> >>      mutex_lock(&device_hotplug_lock);
-> >>  }
-> >> +EXPORT_SYMBOL_GPL(lock_device_hotplug);
-> >>
-> >>  void unlock_device_hotplug(void)
-> >>  {
-> >>      mutex_unlock(&device_hotplug_lock);
-> >>  }
-> >> +EXPORT_SYMBOL_GPL(unlock_device_hotplug);
-> >
-> > If these are going to be "global" symbols, let's properly name them.
-> > device_hotplug_lock/unlock would be better.  But I am _really_ nervous
-> > about letting stuff outside of the driver core mess with this, as people
-> > better know what they are doing.
->
-> The only "problem" is that we have kernel modules (for paravirtualized
-> devices) that call add_memory(). This is Hyper-V right now, but we might
-> have other ones in the future. Without them we would not have to export
-> it. We might also get kernel modules that want to call remove_memory() -
-> which will require the device_hotplug_lock as of now.
->
-> What we could do is
->
-> a) add_memory() -> _add_memory() and don't export it
-> b) add_memory() takes the device_hotplug_lock and calls _add_memory() .
-> We export that one.
-> c) Use add_memory() in external modules only
->
-> Similar wrapper would be needed e.g. for remove_memory() later on.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-That would be safer IMO, as it would prevent developers from using
-add_memory() without the lock, say.
+With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
+during MCE recovery path.), the SLB error recovery is broken. The
+commit missed a crucial change of OR-ing index value to RB[52-63] which
+selects the SLB entry while rebolting. This patch fixes that.
 
-If the lock is always going to be required for add_memory(), make it
-hard (or event impossible) to use the latter without it.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ arch/powerpc/mm/slb.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 0b095fa54049..6dd9913425bc 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -101,9 +101,12 @@ void __slb_restore_bolted_realmode(void)
+ 
+ 	 /* No isync needed because realmode. */
+ 	for (index = 0; index < SLB_NUM_BOLTED; index++) {
++		unsigned long rb = be64_to_cpu(p->save_area[index].esid);
++
++		rb = (rb & ~0xFFFul) | index;
+ 		asm volatile("slbmte  %0,%1" :
+ 		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
+-		       "r" (be64_to_cpu(p->save_area[index].esid)));
++		       "r" (rb));
+ 	}
+ }
+ 
