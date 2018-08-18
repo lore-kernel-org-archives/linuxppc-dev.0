@@ -1,40 +1,22 @@
-Return-Path: <srs0=hqgh=la=linux.ibm.com=hbathini@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com
+ [IPv6:2a00:1450:4864:20::542])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41sZq70chyzDrWY
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 06:41:07 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41sZq66xfBz8t83
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 06:41:06 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41sZq61S38z9s3Z
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2018 06:41:05 +1000 (AEST)
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7HKcuGq000637
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 16:41:03 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kx30k5fa2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2018 16:41:02 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.ibm.com>;
- Fri, 17 Aug 2018 21:41:01 +0100
-Subject: [PATCH] powerpc/fadump: cleanup crash memory ranges support
-From: Hari Bathini <hbathini@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41t15J2jqWzF0gL
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 23:24:52 +1000 (AEST)
+Received: by mail-ed1-x542.google.com with SMTP id b10-v6so5979156eds.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2018 06:24:52 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>
-Date: Sat, 18 Aug 2018 02:10:56 +0530
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153453843169.1010.11894303551198228940.stgit@hbathini.in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 7/8] powerpc/pseries: use seq_open_data in
+ hcall_inst_seq_open
+Date: Sat, 18 Aug 2018 15:24:33 +0200
+Message-Id: <20180818132434.9515-7-linux@rasmusvillemoes.dk>
+In-Reply-To: <20180818132434.9515-1-linux@rasmusvillemoes.dk>
+References: <20180818132434.9515-1-linux@rasmusvillemoes.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,51 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 1bd6a1c4b80a ("powerpc/fadump: handle crash memory ranges array
-index overflow") changed crash memory ranges to a dynamic array that
-is reallocated on-demand with krealloc(). The relevant header for this
-call was not included. The kernel compiles though. But be cautious and
-add the header anyway.
+This code should check the return value of seq_open(); if it failed,
+file->private_data is NULL. But we can avoid the issue entirely and
+simplify the code by letting seq_open_data() set the ->private member.
 
-Also, memory allocation logic in fadump_add_crash_memory() takes care
-of memory allocation for crash memory ranges in all scenarios. Drop
-unnecessary memory allocation in fadump_setup_crash_memory_ranges().
-
-Fixes: 1bd6a1c4b80a ("powerpc/fadump: handle crash memory ranges array index overflow")
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
+Depends on 1/8 introducing seq_open_data.
 
-* Actually posted a V3 with this changes but V2 made it!
-    - https://patchwork.ozlabs.org/project/linuxppc-dev/list/?series=59839
+arch/powerpc/platforms/pseries/hvCall_inst.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-
- arch/powerpc/kernel/fadump.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 986ec47..a711d22 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -34,6 +34,7 @@
- #include <linux/crash_dump.h>
- #include <linux/kobject.h>
- #include <linux/sysfs.h>
-+#include <linux/slab.h>
+diff --git a/arch/powerpc/platforms/pseries/hvCall_inst.c b/arch/powerpc/platforms/pseries/hvCall_inst.c
+index 6da320c786cd..4816916dc8a1 100644
+--- a/arch/powerpc/platforms/pseries/hvCall_inst.c
++++ b/arch/powerpc/platforms/pseries/hvCall_inst.c
+@@ -92,14 +92,7 @@ static const struct seq_operations hcall_inst_seq_ops = {
  
- #include <asm/debugfs.h>
- #include <asm/page.h>
-@@ -1019,13 +1020,6 @@ static int fadump_setup_crash_memory_ranges(void)
- 	pr_debug("Setup crash memory ranges.\n");
- 	crash_mem_ranges = 0;
- 
--	/* allocate memory for crash memory ranges for the first time */
--	if (!max_crash_mem_ranges) {
--		ret = allocate_crash_memory_ranges();
--		if (ret)
--			return ret;
--	}
+ static int hcall_inst_seq_open(struct inode *inode, struct file *file)
+ {
+-	int rc;
+-	struct seq_file *seq;
 -
- 	/*
- 	 * add the first memory chunk (RMA_START through boot_memory_size) as
- 	 * a separate memory chunk. The reason is, at the time crash firmware
+-	rc = seq_open(file, &hcall_inst_seq_ops);
+-	seq = file->private_data;
+-	seq->private = file_inode(file)->i_private;
+-
+-	return rc;
++	return seq_open_data(file, &hcall_inst_seq_ops, file_inode(file)->i_private);
+ }
+ 
+ static const struct file_operations hcall_inst_seq_fops = {
+-- 
+2.16.4
