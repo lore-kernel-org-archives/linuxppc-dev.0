@@ -1,17 +1,17 @@
 Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41tqgl6SlzzF2FQ
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 07:24:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41tqkg2YgqzF2Dc
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 07:26:34 +1000 (AEST)
 From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 CC: Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Sun, 19 Aug 2018 21:23:57 +0100 (BST)
-Message-ID: <4c6da0b4b44.4b608222@auth.smtp.1and1.co.uk>
-Subject: [PATCH NEXT v2 3/4] powerpc/pasemi: Add Nemo board device init code.
+Date: Sun, 19 Aug 2018 21:26:28 +0100 (BST)
+Message-ID: <4c6da168591.7567d73b@auth.smtp.1and1.co.uk>
+Subject: [PATCH NEXT v2 4/4] powerpc/pasemi: Connect Nemo boot code.
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c124c60de690c6.9f"
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c124c601c8edb48.f1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,14 +33,12 @@ mail programs for common platforms:
 General information about MIME can be found at:
 http://en.wikipedia.org/wiki/MIME
 
-----=_BOUNDARY.6c124c60de690c6.9f
+----=_BOUNDARY.6c124c601c8edb48.f1
 Content-Type: text/plain
 
-Add routines for Nemo specific devices to init at boot time, these
-being board level power-off and SB600's rtc.
-    
-Also add a run time variable to prevent these being activated
-if we boot on a reference board.
+The previous 3 commits added support code for the Nemo motherbard
+as used in the Amigaone X1000, now wire them up so the board can
+be detected and initalised at boot time.
     
 Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
@@ -48,58 +46,96 @@ Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
 Changes made:
 
-v2: Merged some #ifdef blocks
-----=_BOUNDARY.6c124c60de690c6.9f
+v2: Changed init code to be empty when NEMO=n rather than using
+    #ifdefs
+----=_BOUNDARY.6c124c601c8edb48.f1
 Content-Type: text/plain;
-	name="devs.patch"
+	name="link.patch"
 Content-Disposition: attachment;
-	filename="devs.patch";
-	size=1088
+	filename="link.patch";
+	size=2437
 
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index fad5280..98bf2f7 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -73,6 +73,40 @@ static void __noreturn pas_restart(char *cmd)
- 		out_le32(reset_reg, 0x6000000);
+diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
+index c230acc..3ed0ff6 100644
+--- a/arch/powerpc/platforms/pasemi/pci.c
++++ b/arch/powerpc/platforms/pasemi/pci.c
+@@ -27,6 +27,7 @@
+ #include <linux/pci.h>
+ 
+ #include <asm/pci-bridge.h>
++#include <asm/isa-bridge.h>
+ #include <asm/machdep.h>
+ 
+ #include <asm/ppc-pci.h>
+@@ -182,6 +183,8 @@ static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
+ 
+ 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
+ 
++	sb600_set_flag(bus->number);
++
+ 	/*
+ 	 * Note: the caller has already checked that offset is
+ 	 * suitably aligned and that len is 1, 2 or 4.
+@@ -216,6 +219,8 @@ static int pa_pxp_write_config(struct pci_bus *bus, unsigned int devfn,
+ 
+ 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
+ 
++	sb600_set_flag(bus->number);
++
+ 	/*
+ 	 * Note: the caller has already checked that offset is
+ 	 * suitably aligned and that len is 1, 2 or 4.
+@@ -266,6 +271,11 @@ static int __init pas_add_bridge(struct device_node *dev)
+ 	/* Interpret the "ranges" property */
+ 	pci_process_bridge_OF_ranges(hose, dev, 1);
+ 
++	/* Scan for an isa bridge. This is needed to find the SB600
++	   on the nemo and does nothing on machines without one
++	 */
++	isa_bridge_find_early(hose);
++
+ 	return 0;
  }
  
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index 98bf2f7..49e67cf 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -314,6 +314,8 @@ static __init void pas_init_IRQ(void)
+ 		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
+ 	}
+ 
++	nemo_init_IRQ(mpic);
++
+ 	of_node_put(mpic_node);
+ 	of_node_put(root);
+ }
+@@ -475,6 +477,8 @@ static int __init pasemi_publish_devices(void)
+ 	/* Publish OF platform devices for SDC and other non-PCI devices */
+ 	of_platform_bus_probe(NULL, pasemi_bus_ids, NULL);
+ 
++	nemo_init_rtc();
++
+ 	return 0;
+ }
+ machine_device_initcall(pasemi, pasemi_publish_devices);
+@@ -489,6 +493,17 @@ static int __init pas_probe(void)
+ 	    !of_machine_is_compatible("pasemi,pwrficient"))
+ 		return 0;
+ 
 +#ifdef CONFIG_PPC_PASEMI_NEMO
-+void pas_shutdown(void)
-+{
-+	/* Set the PLD bit that makes the SB600 think the power button is being pressed */
-+	void __iomem *pld_map = ioremap(0xf5000000,4096);
-+	while (1)
-+		out_8(pld_map+7,0x01);
-+}
-+
-+/* RTC platform device structure as is not in device tree */
-+static struct resource rtc_resource[] = {{
-+	.name = "rtc",
-+	.start = 0x70,
-+	.end = 0x71,
-+	.flags = IORESOURCE_IO,
-+}, {
-+	.name = "rtc",
-+	.start = 8,
-+	.end = 8,
-+	.flags = IORESOURCE_IRQ,
-+}};
-+
-+static inline void nemo_init_rtc(void)
-+{
-+	platform_device_register_simple("rtc_cmos", -1, rtc_resource, 2);
-+}
-+
-+#else
-+
-+static inline void nemo_init_rtc(void)
-+{
-+}
++	/*
++	 * Check for the Nemo motherboard here, if we are running on one
++	 * change the machine definition to fit
++	 */
++	if (of_machine_is_compatible("pasemi,nemo")) {
++		pm_power_off		= pas_shutdown;
++		ppc_md.name		= "A-EON Amigaone X1000";
++	}
 +#endif
 +
- #ifdef CONFIG_SMP
- static arch_spinlock_t timebase_lock;
- static unsigned long timebase;
+ 	iommu_init_early_pasemi();
+ 
+ 	return 1;
 
-----=_BOUNDARY.6c124c60de690c6.9f--
+----=_BOUNDARY.6c124c601c8edb48.f1--
