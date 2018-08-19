@@ -1,30 +1,45 @@
-Return-Path: <andy.shevchenko@gmail.com>
-Received: from mail-qk0-x241.google.com (mail-qk0-x241.google.com
- [IPv6:2607:f8b0:400d:c09::241])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=hvng=lc=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41tbf72F4pzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2018 22:21:50 +1000 (AEST)
-Received: by mail-qk0-x241.google.com with SMTP id b19-v6so304446qkc.6
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2018 05:21:50 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41tk0b4rGHzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 03:08:15 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41tk0b46fZz8tCQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 03:08:15 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41tk0b0gr6z9s5b
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 03:08:13 +1000 (AEST)
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7JH3Vi7029732
+ for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2018 13:08:11 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2ky0qus516-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Sun, 19 Aug 2018 13:08:11 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Sun, 19 Aug 2018 18:08:09 +0100
+Subject: [PATCH v8 0/5] powerpc/pseries: Machine check handler improvements.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Michal Suchanek <msuchanek@suse.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Ananth Narayan <ananth@in.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>
+Date: Sun, 19 Aug 2018 22:38:02 +0530
 MIME-Version: 1.0
-References: <20180818132434.9515-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20180818132434.9515-1-linux@rasmusvillemoes.dk>
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sun, 19 Aug 2018 15:21:36 +0300
-Message-ID: <CAHp75Ve21BhYsXQHsr285VArqALi0Rt4BXudfmTXU+E+xr+5NQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/8] seq_file: introduce seq_open_data helper
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Jonathan Corbet <corbet@lwn.net>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, adilger@dilger.ca,
- Linux Documentation List <linux-doc@vger.kernel.org>,
- Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- Alexey Dobriyan <adobriyan@gmail.com>, linux-nfs@vger.kernel.org,
- cluster-devel@redhat.com, Michael Ellerman <mpe@ellerman.id.au>,
- "open list:LINUX FOR POWERPC PA SEMI PWRFICIENT"
- <linuxppc-dev@lists.ozlabs.org>, Thierry Reding <thierry.reding@gmail.com>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153469837203.21878.11524005112982522827.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,128 +49,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Aug 18, 2018 at 4:26 PM Rasmus Villemoes
-<linux@rasmusvillemoes.dk> wrote:
->
-> There are quite a few callers of seq_open that could be simplified by
-> setting the ->private member via the seq_open call instead of fetching
-> file->private_data afterwards.
->
+This patch series includes some improvement to Machine check handler
+for pSeries. First 3 patches from v7 revision are already in powerpc next.
+Posting rest of the patches with review comments. This patch series drops
+the sysctl knob patch that was proposed in v7. The SLB recovery code now
+uses flush_and_reload_slb() from mce_power.c. This series depends on patch
+at http://patchwork.ozlabs.org/patch/958720/ for successful SLB error
+recovery.
 
-I like this series,
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Patch 1 defines MCE error event section.
+Patch 2 implements a real mode mce handler and flushes the SLBs on SLB error.
+Patch 3 display's the MCE error details on console.
+Patch 4 saves and dumps the SLB contents on SLB MCE errors to improve the
+debugability.
+Patch 5 consolidates mce early real mode handling code.
 
-P.S. ...though it seems patch 3 missed a commit message.
+Change in V8:
+- Move mce error log structure definition to ras.c
+- Use flush_and_reload_slb() from mce_power.c.
+- Limit the slb saving to single level of mce recursion.
+- Move mce_faulty_slbs and slb_save_cache_ptr under CONFIG_PPC_BOOK3S_64
+  instead of CONFIG_PPC_PSERIES.
+- Drop the sysctl knob patch.
 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> ---
-> v2:
-> - Fix some copy-pastos spotted by Andreas.
-> - Ensure everybody hit by an example patch also gets this cover letter/introducing patch.
-> - Include a few fs/ examples.
->
-> I've just included a few examples of possible users of this helper,
-> there are many more similar cases. As a bonus, 7/8 fix a potential
-> NULL deref (if one believes that seq_open can actually fail).
->
-> seq_open_private would have been a better name, but that one is
-> already taken...
->
-> Documentation/filesystems/seq_file.txt |  9 +++++----
->  fs/seq_file.c                          | 16 ++++++++++++----
->  include/linux/seq_file.h               |  1 +
->  3 files changed, 18 insertions(+), 8 deletions(-)
->
-> diff --git a/Documentation/filesystems/seq_file.txt b/Documentation/filesystems/seq_file.txt
-> index 9de4303201e1..68571b8275d8 100644
-> --- a/Documentation/filesystems/seq_file.txt
-> +++ b/Documentation/filesystems/seq_file.txt
-> @@ -234,10 +234,11 @@ Here, the call to seq_open() takes the seq_operations structure we created
->  before, and gets set up to iterate through the virtual file.
->
->  On a successful open, seq_open() stores the struct seq_file pointer in
-> -file->private_data. If you have an application where the same iterator can
-> -be used for more than one file, you can store an arbitrary pointer in the
-> -private field of the seq_file structure; that value can then be retrieved
-> -by the iterator functions.
-> +file->private_data. If you have an application where the same iterator
-> +can be used for more than one file, you can store an arbitrary pointer
-> +in the private field of the seq_file structure; that value can then be
-> +retrieved by the iterator functions. Using the wrapper seq_open_data()
-> +allows you to set the initial value for that field.
->
->  There is also a wrapper function to seq_open() called seq_open_private(). It
->  kmallocs a zero filled block of memory and stores a pointer to it in the
-> diff --git a/fs/seq_file.c b/fs/seq_file.c
-> index 4cc090b50cc5..c8c86660f6db 100644
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -33,11 +33,12 @@ static void *seq_buf_alloc(unsigned long size)
->  }
->
->  /**
-> - *     seq_open -      initialize sequential file
-> + *     seq_open_data - initialize sequential file
->   *     @file: file we initialize
->   *     @op: method table describing the sequence
-> + *     @data: initial value for ->private field
->   *
-> - *     seq_open() sets @file, associating it with a sequence described
-> + *     seq_open_data() sets @file, associating it with a sequence described
->   *     by @op.  @op->start() sets the iterator up and returns the first
->   *     element of sequence. @op->stop() shuts it down.  @op->next()
->   *     returns the next element of sequence.  @op->show() prints element
-> @@ -45,10 +46,10 @@ static void *seq_buf_alloc(unsigned long size)
->   *     ERR_PTR(error).  In the end of sequence they return %NULL. ->show()
->   *     returns 0 in case of success and negative number in case of error.
->   *     Returning SEQ_SKIP means "discard this element and move on".
-> - *     Note: seq_open() will allocate a struct seq_file and store its
-> + *     Note: seq_open_data() will allocate a struct seq_file and store its
->   *     pointer in @file->private_data. This pointer should not be modified.
->   */
-> -int seq_open(struct file *file, const struct seq_operations *op)
-> +int seq_open_data(struct file *file, const struct seq_operations *op, void *data)
->  {
->         struct seq_file *p;
->
-> @@ -62,6 +63,7 @@ int seq_open(struct file *file, const struct seq_operations *op)
->
->         mutex_init(&p->lock);
->         p->op = op;
-> +       p->private = data;
->
->         // No refcounting: the lifetime of 'p' is constrained
->         // to the lifetime of the file.
-> @@ -86,6 +88,12 @@ int seq_open(struct file *file, const struct seq_operations *op)
->         file->f_mode &= ~FMODE_PWRITE;
->         return 0;
->  }
-> +EXPORT_SYMBOL(seq_open_data);
-> +
-> +int seq_open(struct file *file, const struct seq_operations *op)
-> +{
-> +       return seq_open_data(file, op, NULL);
-> +}
->  EXPORT_SYMBOL(seq_open);
->
->  static int traverse(struct seq_file *m, loff_t offset)
-> diff --git a/include/linux/seq_file.h b/include/linux/seq_file.h
-> index a121982af0f5..1142e39bfad2 100644
-> --- a/include/linux/seq_file.h
-> +++ b/include/linux/seq_file.h
-> @@ -107,6 +107,7 @@ void seq_pad(struct seq_file *m, char c);
->
->  char *mangle_path(char *s, const char *p, const char *esc);
->  int seq_open(struct file *, const struct seq_operations *);
-> +int seq_open_data(struct file *, const struct seq_operations *, void *);
->  ssize_t seq_read(struct file *, char __user *, size_t, loff_t *);
->  loff_t seq_lseek(struct file *, loff_t, int);
->  int seq_release(struct inode *, struct file *);
-> --
-> 2.16.4
->
+Change in V7:
+- Fold Michal's patch into patch 5
+- Handle MSR_RI=0 and evil context case in MC handler in patch 5.
+- Patch 7: Print slb cache ptr value and slb cache data.
+- Move patch 8 to patch 9.
+- Introduce patch 8 add sysctl knob for recovery action on recovered MCEs.
+
+Change in V6:
+- Introduce patch 8 to consolidate early real mode handling code.
+- Address Nick's comment on erroneous hunk.
+
+Change in V5:
+- Use min_t instead of max_t.
+- Fix an issue reported by kbuild test robot and address review comments.
+
+Change in V4:
+- Flush the SLBs in real mode mce handler to handle SLB errors for entry 0.
+- Allocate buffers per cpu to hold rtas error log and old slb contents.
+- Defer the logging of rtas error log to irq work queue.
+
+Change in V3:
+- Moved patch 5 to patch 2
+
+Change in V2:
+- patch 3: Display additional info (NIP and task info) in MCE error details.
+- patch 5: Fix endain bug while restoring of r3 in MCE handler.
+
+---
+
+Mahesh Salgaonkar (5):
+      powerpc/pseries: Define MCE error event section.
+      powerpc/pseries: flush SLB contents on SLB MCE errors.
+      powerpc/pseries: Display machine check error details.
+      powerpc/pseries: Dump the SLB contents on SLB MCE errors.
+      powernv/pseries: consolidate code for mce early handling.
 
 
--- 
-With Best Regards,
-Andy Shevchenko
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |    7 +
+ arch/powerpc/include/asm/machdep.h            |    1 
+ arch/powerpc/include/asm/mce.h                |    3 
+ arch/powerpc/include/asm/paca.h               |    6 +
+ arch/powerpc/include/asm/rtas.h               |   13 +
+ arch/powerpc/kernel/exceptions-64s.S          |   42 +++-
+ arch/powerpc/kernel/mce.c                     |   15 +
+ arch/powerpc/kernel/mce_power.c               |    2 
+ arch/powerpc/mm/slb.c                         |   73 ++++++
+ arch/powerpc/platforms/powernv/setup.c        |   11 +
+ arch/powerpc/platforms/pseries/pseries.h      |    1 
+ arch/powerpc/platforms/pseries/ras.c          |  297 +++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/setup.c        |   14 +
+ 13 files changed, 474 insertions(+), 11 deletions(-)
+
+--
+Thanks,
+-Mahesh
