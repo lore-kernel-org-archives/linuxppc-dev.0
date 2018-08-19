@@ -1,18 +1,17 @@
 Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41tqdR1wmLzF1S4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 07:22:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41tqgl6SlzzF2FQ
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 07:24:03 +1000 (AEST)
 From: Darren Stevens <darren@stevens-zone.net>
 To: linuxppc-dev@lists.ozlabs.org
-CC: chzigotzky@xenosoft.de
-Date: Sun, 19 Aug 2018 21:21:55 +0100 (BST)
-Message-ID: <4c6da03cac4.3957dfc0@auth.smtp.1and1.co.uk>
-Subject: [PATCH NEXT v2 1/4] powerpc/pasemi: Add PCI initialisation for
- Nemo board.
+CC: Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Sun, 19 Aug 2018 21:23:57 +0100 (BST)
+Message-ID: <4c6da0b4b44.4b608222@auth.smtp.1and1.co.uk>
+Subject: [PATCH NEXT v2 3/4] powerpc/pasemi: Add Nemo board device init code.
 MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c124c6035e4feb9.65"
+Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c124c60de690c6.9f"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,17 +33,14 @@ mail programs for common platforms:
 General information about MIME can be found at:
 http://en.wikipedia.org/wiki/MIME
 
-----=_BOUNDARY.6c124c6035e4feb9.65
+----=_BOUNDARY.6c124c60de690c6.9f
 Content-Type: text/plain
 
-The A-Eon Amigaone X1000's Nemo motherboard has an AMD SB600
-connected to one of the PCI-e root ports on its PaSemi
-Pwrficient 1628M SoC. Normally the SB600 southbridge would be
-connected to a hidden PCI-e port on the system's northbridge,
-and as a result doesn't fully comply with the PCI-e spec.
+Add routines for Nemo specific devices to init at boot time, these
+being board level power-off and SB600's rtc.
     
-Add code to relax the PCI-e detection in both the root port
-and the Linux kernel allowing on board devices to be detected.
+Also add a run time variable to prevent these being activated
+if we boot on a reference board.
     
 Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
@@ -52,83 +48,58 @@ Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
 
 Changes made:
 
-v2: Replaced sb600_bus with a define, moved iob_mapbase into 
-    sb600_set_flag()
-    Created some register/Flag names (as I don't have the docs
-    for the PA6T-1682M)
-
-----=_BOUNDARY.6c124c6035e4feb9.65
+v2: Merged some #ifdef blocks
+----=_BOUNDARY.6c124c60de690c6.9f
 Content-Type: text/plain;
-	name="pci.patch"
+	name="devs.patch"
 Content-Disposition: attachment;
-	filename="pci.patch";
-	size=1664
+	filename="devs.patch";
+	size=1088
 
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index c3c6417..116c0fe 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -108,6 +108,61 @@ static int workaround_5945(struct pci_bus *bus, unsigned int devfn,
- 	return 1;
+diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
+index fad5280..98bf2f7 100644
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -73,6 +73,40 @@ static void __noreturn pas_restart(char *cmd)
+ 		out_le32(reset_reg, 0x6000000);
  }
  
 +#ifdef CONFIG_PPC_PASEMI_NEMO
-+#define PXP_ERR_CFG_REG	0x4
-+#define PXP_IGNORE_PCIE_ERRORS	0x800
-+#define SB600_BUS 5
-+
-+static void sb600_set_flag(int bus)
++void pas_shutdown(void)
 +{
-+	static void __iomem *iob_mapbase = NULL;
-+	struct resource res;
-+	struct device_node *dn;
-+	int err;
++	/* Set the PLD bit that makes the SB600 think the power button is being pressed */
++	void __iomem *pld_map = ioremap(0xf5000000,4096);
++	while (1)
++		out_8(pld_map+7,0x01);
++}
 +
-+	if (iob_mapbase == NULL) {
-+		dn = of_find_compatible_node(NULL, "isa", "pasemi,1682m-iob");
-+		if (!dn) {
-+			pr_crit("NEMO SB600 missing iob node\n");
-+			return;
-+		}
++/* RTC platform device structure as is not in device tree */
++static struct resource rtc_resource[] = {{
++	.name = "rtc",
++	.start = 0x70,
++	.end = 0x71,
++	.flags = IORESOURCE_IO,
++}, {
++	.name = "rtc",
++	.start = 8,
++	.end = 8,
++	.flags = IORESOURCE_IRQ,
++}};
 +
-+		err = of_address_to_resource(dn, 0, &res);
-+		of_node_put(dn);
-+
-+		if (err) {
-+			pr_crit("NEMO SB600 missing resource\n");
-+			return;
-+		}
-+
-+		pr_info("NEMO SB600 IOB base %08llx\n",res.start);
-+
-+		iob_mapbase = ioremap(res.start + 0x100, 0x94);
-+	}
-+
-+	if (iob_mapbase != NULL) {
-+		if (bus == SB600_BUS) {
-+			/*
-+			 * This is the SB600's bus, tell the PCI-e root port
-+			 * to allow non-zero devices to enumerate.
-+			 */
-+			out_le32(iob_mapbase + PXP_ERR_CFG_REG, in_le32(iob_mapbase + PXP_ERR_CFG_REG) | PXP_IGNORE_PCIE_ERRORS);
-+		} else {
-+			/*
-+			 * Only scan device 0 on other busses
-+			 */
-+			out_le32(iob_mapbase + PXP_ERR_CFG_REG, in_le32(iob_mapbase + PXP_ERR_CFG_REG) & ~PXP_IGNORE_PCIE_ERRORS);
-+		}
-+	}
++static inline void nemo_init_rtc(void)
++{
++	platform_device_register_simple("rtc_cmos", -1, rtc_resource, 2);
 +}
 +
 +#else
 +
-+static void sb600_set_flag(int bus)
++static inline void nemo_init_rtc(void)
 +{
 +}
 +#endif
 +
- static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
- 			      int offset, int len, u32 *val)
- {
+ #ifdef CONFIG_SMP
+ static arch_spinlock_t timebase_lock;
+ static unsigned long timebase;
 
-----=_BOUNDARY.6c124c6035e4feb9.65--
+----=_BOUNDARY.6c124c60de690c6.9f--
