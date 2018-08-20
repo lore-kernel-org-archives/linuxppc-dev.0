@@ -1,24 +1,46 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vJXw27rYzDqp5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 02:04:48 +1000 (AEST)
-Subject: Re: Odd SIGSEGV issue introduced by commit 6b31d5955cb29 ("mm, oom:
- fix potential data corruption when oom_reaper races with writer")
-To: Michal Hocko <mhocko@kernel.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Ram Pai <linuxram@us.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-mm <linux-mm@kvack.org>
-References: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
- <20180820160133.GP29735@dhcp22.suse.cz>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <9da441a7-5ac2-2e2a-e26f-63d4b21e3d42@c-s.fr>
-Date: Mon, 20 Aug 2018 18:04:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vM5G4xwbzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 03:59:30 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7KHx6dW019191
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 13:59:27 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m010vkmhf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 13:59:27 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Mon, 20 Aug 2018 18:59:24 +0100
+Date: Mon, 20 Aug 2018 10:59:18 -0700
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Neuling <mikey@neuling.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ "Oliver O'Halloran" <oohall@gmail.com>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Murilo Opsfelder Araujo <muriloo@linux.ibm.com>,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 1/2] powerpc: Detect the presence of big-cores via
+ "ibm,thread-groups"
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <1534743704-4760-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1534743704-4760-2-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20180820160133.GP29735@dhcp22.suse.cz>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1534743704-4760-2-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <20180820175918.GA23117@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +50,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Gautham R. Shenoy <ego@linux.vnet.ibm.com> [2018-08-20 11:11:43]:
 
-
-Le 20/08/2018 à 18:01, Michal Hocko a écrit :
-> On Mon 20-08-18 17:23:58, Christophe LEROY wrote:
->> Hello,
->>
->> I have an odd issue on my powerpc 8xx board.
->>
->> I am running latest 4.14 and get the following SIGSEGV which appears more or
->> less randomly.
->>
->> [    9.190354] touch[91]: unhandled signal 11 at 67807b58 nip 777cf114 lr
->> 777cf100 code 30001
->> [   24.634810] ifconfig[160]: unhandled signal 11 at 67ae7b58 nip 77aaf114
->> lr 77aaf100 code 30001
->> [   30.383737] default.deconfi[231]: unhandled signal 11 at 67c8bb58 nip
->> 77c53114 lr 77c53100 code 30001
->> [   37.655588] S15syslogd[251]: unhandled signal 11 at 6784fb58 nip 77817114
->> lr 77817100 code 30001
->> [   40.974649] snmpd[315]: unhandled signal 11 at 67e0bb58 nip 77dd3114 lr
->> 77dd3100 code 30001
->> [   43.220964] exe[338]: unhandled signal 11 at 67cd3b58 nip 77c9b114 lr
->> 77c9b100 code 30001
->> [   44.191494] exe[348]: unhandled signal 11 at 67c1fb58 nip 77be7114 lr
->> 77be7100 code 30001
->> [   59.175022] sleep[655]: unhandled signal 11 at 67ca3b58 nip 77c6b114 lr
->> 77c6b100 code 30001
->> [   61.853406] smcroute[705]: unhandled signal 11 at 6789bb58 nip 77863114
->> lr 77863100 code 30001
->> [   64.662431] smcroute[778]: unhandled signal 11 at 67e03b58 nip 77dcb114
->> lr 77dcb100 code 30001
->> [   65.623103] smcroute[795]: unhandled signal 11 at 67bdbb58 nip 77ba3114
->> lr 77ba3100 code 30001
->> [   66.579416] exe[825]: unhandled signal 11 at 67edbb58 nip 77ea3114 lr
->> 77ea3100 code 30001
->> [   68.382941] exe[864]: unhandled signal 11 at 6789bb58 nip 77863114 lr
->> 77863100 code 30001
->> [   95.187346] exe[1147]: unhandled signal 11 at 67e83b58 nip 77e4b114 lr
->> 77e4b100 code 30001
->> [  105.238218] exe[1158]: unhandled signal 11 at 67ca3b58 nip 77c6b114 lr
->> 77c6b100 code 30001
->> [  127.556731] exe[1181]: unhandled signal 11 at 67cc3b58 nip 77c8b114 lr
->> 77c8b100 code 30001
->> [  135.558982] exe[1195]: unhandled signal 11 at 678d7b58 nip 7789f114 lr
->> 7789f100 code 30001
->> [  147.579142] exe[1216]: unhandled signal 11 at 67c6bb58 nip 77c33114 lr
->> 77c33100 code 30001
->> [  175.538747] exe[1262]: unhandled signal 11 at 67e2fb58 nip 77df7114 lr
->> 77df7100 code 30001
->> [  186.552670] exe[1275]: unhandled signal 11 at 6781fb58 nip 777e7114 lr
->> 777e7100 code 30001
->> [  230.629786] exe[1344]: unhandled signal 11 at 67cb3b58 nip 77c7b114 lr
->> 77c7b100 code 30001
->> [  249.640396] repair-service.[1369]: unhandled signal 11 at 67e5fb58 nip
->> 77e27114 lr 77e27100 code 30001
->> [  378.003410] exe[1593]: unhandled signal 11 at 678d7b58 nip 7789f114 lr
->> 7789f100 code 30001
->> [  414.060661] exe[1656]: unhandled signal 11 at 67cc7b58 nip 77c8f114 lr
->> 77c8f100 code 30001
->>
->> The problem is present in 3.13, 3.14 and 3.15.
->>
->> I bisected its appearance with commit 6b31d5955cb29 ("mm, oom: fix potential
->> data corruption when oom_reaper races with writer")
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> Do you see any oom killer invocations preceeding the SEGV? Some of those
-> killed tasks simply do not look like a sensible oom victims (e.g.
-> touch)...
+> On IBM POWER9, the device tree exposes a property array identifed by
+one small nit:
+s/identifed/identified/g
 
-No I don't see any.
+> "ibm,thread-groups" which will indicate which groups of threads share
+> a particular set of resources.
+> 
+> As of today we only have one form of grouping identifying the group of
+> threads in the core that share the L1 cache, translation cache and
+> instruction data flow.
+> 
+> This patch defines the helper function to parse the contents of
+> "ibm,thread-groups" and a new structure to contain the parsed output.
+> 
+> The patch also creates the sysfs file named "small_core_siblings" that
+> returns the physical ids of the threads in the core that share the L1
+> cache, translation cache and instruction data flow.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-> 
->> And I bisected its disappearance with commit 99cd1302327a2 ("powerpc:
->> Deliver SEGV signal on pkey violation")
-> 
-> Those two seem completely unrelated.
-> 
+Otherwise looks good to me.
 
-That's my feeling too, hence my incredulity
+Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
