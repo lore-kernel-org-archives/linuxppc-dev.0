@@ -1,20 +1,19 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 41v7TJ0qZrzDqp5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 19:16:03 +1000 (AEST)
-Date: Mon, 20 Aug 2018 11:07:18 +0200
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Darren Stevens <darren@stevens-zone.net>
-Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RESEND PATCH] i2c/busses/pasemi: Remove hardcoded bus numbers
- on smbus
-Message-ID: <20180820090718.eb4kgadzg7qevqrx@ninjato>
-References: <4b3d0f2cad0.58555470@auth.smtp.1and1.co.uk>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="c47ohostxojzrm6n"
-In-Reply-To: <4b3d0f2cad0.58555470@auth.smtp.1and1.co.uk>
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com
+ [IPv6:2607:f8b0:4864:20::543])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v83Y2bN0zDrb6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 19:42:16 +1000 (AEST)
+Received: by mail-pg1-x543.google.com with SMTP id z4-v6so1519250pgv.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 02:42:16 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Subject: [RFC PATCH 0/5] rewriting SLB miss handler in C
+Date: Mon, 20 Aug 2018 19:41:55 +1000
+Message-Id: <20180820094200.13003-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+I'd like to rewrite the SLB miss handlers in C for maintainability
+and ability to more easily extend the code.
 
---c47ohostxojzrm6n
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have not benchmarked it yet but obviously setting up the stack
+and going to C code rather than carefully hand optimised assembly
+is likely to slow down SLB misses by a reasonable amount. So I've
+started looked at a few basic optimisations we can make to justify
+this change. There is still more that can be done, but SLB misses
+have been reduced significantly, and with more tuning and optimization
+I think we could bring it down quite a bit more.
 
-On Sun, Dec 31, 2017 at 08:53:55PM +0000, Darren Stevens wrote:
-> The pasemi smbus controller uses PCI_FUNC(dev->devfn) to define which
-> number bus to attach to, however this fails when something else is=20
-> probed first, for example an ATI Radeon graphics card will claim 9 or
-> 10 busses, including the ones the pasemi wants.
-> Patch the driver to call i2c_add_adapter rather than
-> i2c_add_numbered_adapter.
->=20
-> Signed-off-by: Darren Stevens <darren@stevens-zone.net>
->=20
+I'm trying to get the first patch solid, and it is the big change so
+would really appreciate review and commets on that. Other patches are
+not quite polished but comments would still be welcome on those (keep
+in mind they are obviously not all polished).
 
-Applied to for-next, thanks!
+Thanks,
+Nick
 
-Disclaimer: I usually do not like to change the bus numbering because
-some people may rely on that. But numbering based on PCI functions seems
-really weak and all known users of pasemi seem to have issues here, so I
-make an exception.
+Nicholas Piggin (5):
+  powerpc/64s/hash: convert SLB miss handlers to C
+  powerpc/64s/hash: remove user SLB data from the paca
+  powerpc/64s/hash: remove the first vmalloc segment from the bolted SLB
+  powerpc/64s/hash: Add SLB allocation bitmaps
+  powerpc/64s/hash: Add a SLB preload cache
 
-Thanks to Michael Ellerman for the additional info.
+ arch/powerpc/include/asm/asm-prototypes.h     |   2 +
+ arch/powerpc/include/asm/book3s/64/mmu-hash.h |   3 +-
+ arch/powerpc/include/asm/paca.h               |  19 +-
+ arch/powerpc/include/asm/thread_info.h        |   4 +
+ arch/powerpc/kernel/asm-offsets.c             |   9 -
+ arch/powerpc/kernel/exceptions-64s.S          | 200 ++-------
+ arch/powerpc/kernel/paca.c                    |  21 -
+ arch/powerpc/kernel/process.c                 |   6 +
+ arch/powerpc/mm/Makefile                      |   2 +-
+ arch/powerpc/mm/hash_utils_64.c               |  46 +--
+ arch/powerpc/mm/mmu_context.c                 |   3 +-
+ arch/powerpc/mm/mmu_context_book3s64.c        |  10 +-
+ arch/powerpc/mm/slb.c                         | 382 +++++++++++-------
+ arch/powerpc/mm/slb_low.S                     | 338 ----------------
+ arch/powerpc/mm/slice.c                       |  29 +-
+ arch/powerpc/xmon/xmon.c                      |   2 +-
+ 16 files changed, 328 insertions(+), 748 deletions(-)
+ delete mode 100644 arch/powerpc/mm/slb_low.S
 
-
---c47ohostxojzrm6n
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlt6hMYACgkQFA3kzBSg
-KbYBqg/9EWQNUMoeNhGwRrKaMNO33hZCrOpJxvlEanmPyfFGddCNh4+bIqHbA0rs
-i/XVqdHCa1gtRCxh2x67dnt9UMcW1Ftq//cgWeEu+oDBYHj1EvLtBx1jUdnuq3OY
-UEkKZXUagPAiYE7o4NvhfAG0Uw3TdhGFWvJkQft1h5aOrtQjqmOqoMzbra0MgbCq
-49auz5PomKjRDcKsJs+sDM0OAjisElsFAD9O2nbFJA5/Fr2eymN5uWtb4lGmJuxq
-0+Yd0ThvROSULc+9XusvqFw27Jh8ShShZR7+QyPy5m/gm9j/YDxpw3lPKupAb9K+
-11QJotldy2JkqUwv/d7BWdhj+8qBPcqekbqot4yy6jhBOugfF6lWflDe/nJ1TNcM
-gtK8IES5BwkGL+uxQkpF4pZyQ1Cp/PN1N0ADVXi9xoQbF2YVwESbgC8BG8l4hsuk
-NfV4HqDV6qAVzDtCSRfKi4FHJMvb5ThM1rz9hz1XBylK3anAnauZXBA7UZwiIWUh
-UKCfbm9IUjVruvaLOUAMI6yVabnMWGgAFbbvDdZHqpVr5Ps0icijVTrqLKLGzuZ2
-0u8YLlWgSZfeenkj6tJ7P9wmLRropMSxmmb4rqBN08x6iZWRSrEynuQt1FbQbUwz
-VvDaRpQY6d9XrNu4yNOx+D52+3MoGPOlDQDH1m/eIFp+sWPAp58=
-=4t8c
------END PGP SIGNATURE-----
-
---c47ohostxojzrm6n--
+-- 
+2.17.0
