@@ -1,45 +1,29 @@
-Return-Path: <srs0=b3cw=ld=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <rjwysocki@gmail.com>
+Received: from mail-oi0-f65.google.com (mail-oi0-f65.google.com
+ [209.85.218.65])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41v69y4hMTzF1d7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:42 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41v69y3QnGz8tFw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:42 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41v69x5t7rz9s4s
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 18:17:41 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7K8E0wN015718
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:39 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kysahsku5-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:39 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 20 Aug 2018 09:17:38 +0100
-Subject: [PATCH v7 3/3] powerpc/fadump: Do not allow hot-remove memory from
- fadump reserved area.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Ananth Narayan <ananth@in.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Hari Bathini <hbathini@linux.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, kernelfans@gmail.com
-Date: Mon, 20 Aug 2018 13:47:32 +0530
-In-Reply-To: <153475298147.22527.9680437074324546897.stgit@jupiter.in.ibm.com>
-References: <153475298147.22527.9680437074324546897.stgit@jupiter.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v6Jb1H70zF1Rx
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:23:26 +1000 (AEST)
+Received: by mail-oi0-f65.google.com with SMTP id d189-v6so24385489oib.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:23:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153475305244.22527.4616656376582634549.stgit@jupiter.in.ibm.com>
+References: <20180817102645.3839621-1-arnd@arndb.de>
+ <20180817102645.3839621-8-arnd@arndb.de>
+In-Reply-To: <20180817102645.3839621-8-arnd@arndb.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 20 Aug 2018 10:23:13 +0200
+Message-ID: <CAJZ5v0iCgQxxuoCB9B4-Ho3xeLwb4v99Xyw-9e-tT53mRD+YVQ@mail.gmail.com>
+Subject: Re: [RFC 07/15] PCI/ACPI: clean up acpi_pci_root_create()
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Christoph Hellwig <hch@infradead.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,81 +33,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Fri, Aug 17, 2018 at 12:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
+>
+> The acpi_pci_create_root_bus() can be fully integrated into
+> acpi_pci_root_create(), improving a few things:
+>
+> * We can call pci_scan_root_bus_bridge(), which registers and
+>   scans the bridge in one step.
+> * After a failure in pci_register_host_bridge(), we correctly
+>   clean up the resources.
+> * The bridge settings (release function, flags, operations etc)
+>   can get set up before registering the bridge.
+> * Further cleanup would be possible, removing duplication between
+>   pci_host_bridge and some ACPI structures.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/acpi/pci_root.c | 68 +++++++++++++++--------------------------
+>  1 file changed, 24 insertions(+), 44 deletions(-)
+>
+> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+> index 85dbcf47015b..5f73de3b67c8 100644
+> --- a/drivers/acpi/pci_root.c
+> +++ b/drivers/acpi/pci_root.c
+> @@ -873,34 +873,6 @@ static void acpi_pci_root_release_info(struct pci_host_bridge *bridge)
+>         __acpi_pci_root_release_info(bridge->release_data);
+>  }
+>
+> -static struct pci_bus *acpi_pci_create_root_bus(struct device *parent, int bus,
+> -               struct pci_ops *ops, void *sysdata, struct list_head *resources)
+> -{
+> -       int error;
+> -       struct pci_host_bridge *bridge;
+> -
+> -       bridge = pci_alloc_host_bridge(0);
+> -       if (!bridge)
+> -               return NULL;
+> -
+> -       bridge->dev.parent = parent;
+> -
+> -       list_splice_init(resources, &bridge->windows);
+> -       bridge->sysdata = sysdata;
+> -       bridge->busnr = bus;
+> -       bridge->ops = ops;
+> -
+> -       error = pci_register_host_bridge(bridge);
+> -       if (error < 0)
+> -               goto err_out;
+> -
+> -       return bridge->bus;
+> -
+> -err_out:
+> -       kfree(bridge);
+> -       return NULL;
+> -}
+> -
+>  struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+>                                      struct acpi_pci_root_ops *ops,
+>                                      struct acpi_pci_root_info *info,
+> @@ -909,8 +881,7 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+>         int ret, busnum = root->secondary.start;
+>         struct acpi_device *device = root->device;
+>         int node = acpi_get_node(device->handle);
+> -       struct pci_bus *bus;
+> -       struct pci_host_bridge *host_bridge;
+> +       struct pci_host_bridge *bridge;
 
-For fadump to work successfully there should not be any holes in reserved
-memory ranges where kernel has asked firmware to move the content of old
-kernel memory in event of crash. Now that fadump uses CMA for reserved
-area, this memory area is now not protected from hot-remove operations
-unless it is cma allocated. Hence, fadump service can fail to re-register
-after the hot-remove operation, if hot-removed memory belongs to fadump
-reserved region. To avoid this make sure that memory from fadump reserved
-area is not hot-removable if fadump is registered.
+Why "bridge" and not "host" or even something to stand for "root complex"?
 
-However, if user still wants to remove that memory, he can do so by
-manually stopping fadump service before hot-remove operation.
+Or maybe it can still be "host_bridge"?
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/fadump.h               |    2 +-
- arch/powerpc/kernel/fadump.c                    |   10 ++++++++--
- arch/powerpc/platforms/pseries/hotplug-memory.c |    7 +++++--
- 3 files changed, 14 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/fadump.h b/arch/powerpc/include/asm/fadump.h
-index e9764b541927..43825111c479 100644
---- a/arch/powerpc/include/asm/fadump.h
-+++ b/arch/powerpc/include/asm/fadump.h
-@@ -208,7 +208,7 @@ struct fad_crash_memory_ranges {
- 	unsigned long long	size;
- };
- 
--extern int is_fadump_boot_memory_area(u64 addr, ulong size);
-+extern int is_fadump_memory_area(u64 addr, ulong size);
- extern int early_init_dt_scan_fw_dump(unsigned long node,
- 		const char *uname, int depth, void *data);
- extern int fadump_reserve_mem(void);
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 44a29e4d419c..89bee4f4fe5c 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -180,13 +180,19 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 
- /*
-  * If fadump is registered, check if the memory provided
-- * falls within boot memory area.
-+ * falls within boot memory area and reserved memory area.
-  */
--int is_fadump_boot_memory_area(u64 addr, ulong size)
-+int is_fadump_memory_area(u64 addr, ulong size)
- {
-+	u64 d_start = fw_dump.reserve_dump_area_start;
-+	u64 d_end = d_start + fw_dump.reserve_dump_area_size;
-+
- 	if (!fw_dump.dump_registered)
- 		return 0;
- 
-+	if (((addr + size) > d_start) && (addr <= d_end))
-+		return 1;
-+
- 	return (addr + size) > RMA_START && addr <= fw_dump.boot_memory_size;
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index c1578f54c626..e4c658cda3a7 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -389,8 +389,11 @@ static bool lmb_is_removable(struct drmem_lmb *lmb)
- 	phys_addr = lmb->base_addr;
- 
- #ifdef CONFIG_FA_DUMP
--	/* Don't hot-remove memory that falls in fadump boot memory area */
--	if (is_fadump_boot_memory_area(phys_addr, block_sz))
-+	/*
-+	 * Don't hot-remove memory that falls in fadump boot memory area
-+	 * and memory that is reserved for capturing old kernel memory.
-+	 */
-+	if (is_fadump_memory_area(phys_addr, block_sz))
- 		return false;
- #endif
- 
+>
+>         info->root = root;
+>         info->bridge = device;
+> @@ -930,30 +901,39 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
+>
+>         pci_acpi_root_add_resources(info);
+>         pci_add_resource(&info->resources, &root->secondary);
+> -       bus = acpi_pci_create_root_bus(NULL, busnum, ops->pci_ops,
+> -                                 sysdata, &info->resources);
+> -       if (!bus)
+> +
+> +       bridge = pci_alloc_host_bridge(0);
+> +       if (!bridge)
+>                 goto out_release_info;
+>
+> -       host_bridge = to_pci_host_bridge(bus->bridge);
+> +       list_splice_init(&info->resources, &bridge->windows);
+> +       bridge->sysdata = sysdata;
+> +       bridge->busnr = busnum;
+> +       bridge->ops = ops->pci_ops;
+> +       pci_set_host_bridge_release(bridge, acpi_pci_root_release_info,
+> +                                   info);
+> +
+>         if (!(root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL))
+> -               host_bridge->native_pcie_hotplug = 0;
+> +               bridge->native_pcie_hotplug = 0;
+>         if (!(root->osc_control_set & OSC_PCI_SHPC_NATIVE_HP_CONTROL))
+> -               host_bridge->native_shpc_hotplug = 0;
+> +               bridge->native_shpc_hotplug = 0;
+>         if (!(root->osc_control_set & OSC_PCI_EXPRESS_AER_CONTROL))
+> -               host_bridge->native_aer = 0;
+> +               bridge->native_aer = 0;
+>         if (!(root->osc_control_set & OSC_PCI_EXPRESS_PME_CONTROL))
+> -               host_bridge->native_pme = 0;
+> +               bridge->native_pme = 0;
+>         if (!(root->osc_control_set & OSC_PCI_EXPRESS_LTR_CONTROL))
+> -               host_bridge->native_ltr = 0;
+> +               bridge->native_ltr = 0;
+> +
+> +       ret = pci_scan_root_bus_bridge(bridge);
+> +       if (ret < 0)
+> +               goto out_release_bridge;
+>
+> -       pci_scan_child_bus(bus);
+> -       pci_set_host_bridge_release(host_bridge, acpi_pci_root_release_info,
+> -                                   info);
+>         if (node != NUMA_NO_NODE)
+> -               dev_printk(KERN_DEBUG, &bus->dev, "on NUMA node %d\n", node);
+> -       return bus;
+> +               dev_printk(KERN_DEBUG, &bridge->bus->dev, "on NUMA node %d\n", node);
+> +       return bridge->bus;
+>
+> +out_release_bridge:
+> +       pci_free_host_bridge(bridge);
+>  out_release_info:
+>         __acpi_pci_root_release_info(info);
+>         return NULL;
+> --
+> 2.18.0
+>
