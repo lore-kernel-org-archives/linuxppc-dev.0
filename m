@@ -1,30 +1,20 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vGRW3zyrzF0h9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 00:29:59 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7KETqhs088823
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 10:29:57 -0400
-Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kywftw7pq-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 10:29:55 -0400
-Received: from localhost
- by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 20 Aug 2018 15:29:40 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: aneesh.kumar@linux.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
- paulus@samba.org, npiggin@gmail.com
-Subject: [PATCH v2 0/3] powerpc/pseries: use H_BLOCK_REMOVE
-Date: Mon, 20 Aug 2018 16:29:33 +0200
-Message-Id: <1534775376-22480-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vHf64jQyzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 01:24:14 +1000 (AEST)
+To: Michal Hocko <mhocko@kernel.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Ram Pai <linuxram@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-mm <linux-mm@kvack.org>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Subject: Odd SIGSEGV issue introduced by commit 6b31d5955cb29 ("mm, oom: fix
+ potential data corruption when oom_reaper races with writer")
+Message-ID: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+Date: Mon, 20 Aug 2018 17:23:58 +0200
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,71 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On very large system we could see soft lockup fired when a process is
-exiting
+Hello,
 
-watchdog: BUG: soft lockup - CPU#851 stuck for 21s! [forkoff:215523]
-Modules linked in: pseries_rng rng_core xfs raid10 vmx_crypto btrfs libcrc32c xor zstd_decompress zstd_compress xxhash lzo_compress raid6_pq crc32c_vpmsum lpfc crc_t10dif crct10dif_generic crct10dif_common dm_multipath scsi_dh_rdac scsi_dh_alua autofs4
-CPU: 851 PID: 215523 Comm: forkoff Not tainted 4.17.0 #1
-NIP:  c0000000000b995c LR: c0000000000b8f64 CTR: 000000000000aa18
-REGS: c00006b0645b7610 TRAP: 0901   Not tainted  (4.17.0)
-MSR:  800000010280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE,TM[E]>  CR: 22042082  XER: 00000000
-CFAR: 00000000006cf8f0 SOFTE: 0 
-GPR00: 0010000000000000 c00006b0645b7890 c000000000f99200 0000000000000000 
-GPR04: 8e000001a5a4de58 400249cf1bfd5480 8e000001a5a4de50 400249cf1bfd5480 
-GPR08: 8e000001a5a4de48 400249cf1bfd5480 8e000001a5a4de40 400249cf1bfd5480 
-GPR12: ffffffffffffffff c00000001e690800 
-NIP [c0000000000b995c] plpar_hcall9+0x44/0x7c
-LR [c0000000000b8f64] pSeries_lpar_flush_hash_range+0x324/0x3d0
-Call Trace:
-[c00006b0645b7890] [8e000001a5a4dd20] 0x8e000001a5a4dd20 (unreliable)
-[c00006b0645b7a00] [c00000000006d5b0] flush_hash_range+0x60/0x110
-[c00006b0645b7a50] [c000000000072a2c] __flush_tlb_pending+0x4c/0xd0
-[c00006b0645b7a80] [c0000000002eaf44] unmap_page_range+0x984/0xbd0
-[c00006b0645b7bc0] [c0000000002eb594] unmap_vmas+0x84/0x100
-[c00006b0645b7c10] [c0000000002f8afc] exit_mmap+0xac/0x1f0
-[c00006b0645b7cd0] [c0000000000f2638] mmput+0x98/0x1b0
-[c00006b0645b7d00] [c0000000000fc9d0] do_exit+0x330/0xc00
-[c00006b0645b7dc0] [c0000000000fd384] do_group_exit+0x64/0x100
-[c00006b0645b7e00] [c0000000000fd44c] sys_exit_group+0x2c/0x30
-[c00006b0645b7e30] [c00000000000b960] system_call+0x58/0x6c
-Instruction dump:
-60000000 f8810028 7ca42b78 7cc53378 7ce63b78 7d074378 7d284b78 7d495378 
-e9410060 e9610068 e9810070 44000022 <7d806378> e9810028 f88c0000 f8ac0008
+I have an odd issue on my powerpc 8xx board.
 
-This happens when removing the PTE by calling the hypervisor using the
-H_BULK_REMOVE call. This call is processing up to 4 PTEs but is doing a
-tlbie for each PTE it is processing. This could lead to long time spent in
-the hypervisor (sometimes up to 4s) and soft lockup being raised because
-the scheduler is not called in zap_pte_range().
+I am running latest 4.14 and get the following SIGSEGV which appears 
+more or less randomly.
 
-Since the Power7's time, the hypervisor is providing a new hcall
-H_BLOCK_REMOVE allowing processing up to 8 PTEs with one call to
-tlbie. By limiting the amount of tlbie generated, this reduces the time
-spent invalidating the PTEs.
+[    9.190354] touch[91]: unhandled signal 11 at 67807b58 nip 777cf114 
+lr 777cf100 code 30001
+[   24.634810] ifconfig[160]: unhandled signal 11 at 67ae7b58 nip 
+77aaf114 lr 77aaf100 code 30001
+[   30.383737] default.deconfi[231]: unhandled signal 11 at 67c8bb58 nip 
+77c53114 lr 77c53100 code 30001
+[   37.655588] S15syslogd[251]: unhandled signal 11 at 6784fb58 nip 
+77817114 lr 77817100 code 30001
+[   40.974649] snmpd[315]: unhandled signal 11 at 67e0bb58 nip 77dd3114 
+lr 77dd3100 code 30001
+[   43.220964] exe[338]: unhandled signal 11 at 67cd3b58 nip 77c9b114 lr 
+77c9b100 code 30001
+[   44.191494] exe[348]: unhandled signal 11 at 67c1fb58 nip 77be7114 lr 
+77be7100 code 30001
+[   59.175022] sleep[655]: unhandled signal 11 at 67ca3b58 nip 77c6b114 
+lr 77c6b100 code 30001
+[   61.853406] smcroute[705]: unhandled signal 11 at 6789bb58 nip 
+77863114 lr 77863100 code 30001
+[   64.662431] smcroute[778]: unhandled signal 11 at 67e03b58 nip 
+77dcb114 lr 77dcb100 code 30001
+[   65.623103] smcroute[795]: unhandled signal 11 at 67bdbb58 nip 
+77ba3114 lr 77ba3100 code 30001
+[   66.579416] exe[825]: unhandled signal 11 at 67edbb58 nip 77ea3114 lr 
+77ea3100 code 30001
+[   68.382941] exe[864]: unhandled signal 11 at 6789bb58 nip 77863114 lr 
+77863100 code 30001
+[   95.187346] exe[1147]: unhandled signal 11 at 67e83b58 nip 77e4b114 
+lr 77e4b100 code 30001
+[  105.238218] exe[1158]: unhandled signal 11 at 67ca3b58 nip 77c6b114 
+lr 77c6b100 code 30001
+[  127.556731] exe[1181]: unhandled signal 11 at 67cc3b58 nip 77c8b114 
+lr 77c8b100 code 30001
+[  135.558982] exe[1195]: unhandled signal 11 at 678d7b58 nip 7789f114 
+lr 7789f100 code 30001
+[  147.579142] exe[1216]: unhandled signal 11 at 67c6bb58 nip 77c33114 
+lr 77c33100 code 30001
+[  175.538747] exe[1262]: unhandled signal 11 at 67e2fb58 nip 77df7114 
+lr 77df7100 code 30001
+[  186.552670] exe[1275]: unhandled signal 11 at 6781fb58 nip 777e7114 
+lr 777e7100 code 30001
+[  230.629786] exe[1344]: unhandled signal 11 at 67cb3b58 nip 77c7b114 
+lr 77c7b100 code 30001
+[  249.640396] repair-service.[1369]: unhandled signal 11 at 67e5fb58 
+nip 77e27114 lr 77e27100 code 30001
+[  378.003410] exe[1593]: unhandled signal 11 at 678d7b58 nip 7789f114 
+lr 7789f100 code 30001
+[  414.060661] exe[1656]: unhandled signal 11 at 67cc7b58 nip 77c8f114 
+lr 77c8f100 code 30001
 
-This hcall requires that the pages are "all within the same naturally
-aligned 8 page virtual address block".
+The problem is present in 3.13, 3.14 and 3.15.
 
-With this patch series applied, I couldn't see any soft lockup raised on
-the victim LPAR I was running the test one.
+I bisected its appearance with commit 6b31d5955cb29 ("mm, oom: fix 
+potential data corruption when oom_reaper races with writer")
 
-Changes since V1:
-- Remove a call to BUG_ON() in call_block_remove() since this one can be
-  handled gently.
-- Remove uneeded of current_vpgb to 0 when retrying entries in
-  hugepage_block_invalidate() and do_block_remove().
+And I bisected its disappearance with commit 99cd1302327a2 ("powerpc: 
+Deliver SEGV signal on pkey violation")
 
-Laurent Dufour (3):
-  powerpc/pseries/mm: Introducing FW_FEATURE_BLOCK_REMOVE
-  powerpc/pseries/mm: factorize PTE slot computation
-  powerpc/pseries/mm: call H_BLOCK_REMOVE
+Looking at those two commits, especially the one which makes it 
+dissapear, I'm quite sceptic. Any idea on what could be the cause and/or 
+how to investigate further ?
 
- arch/powerpc/include/asm/firmware.h       |   3 +-
- arch/powerpc/include/asm/hvcall.h         |   1 +
- arch/powerpc/platforms/pseries/firmware.c |   1 +
- arch/powerpc/platforms/pseries/lpar.c     | 241 ++++++++++++++++++++++++++++--
- 4 files changed, 230 insertions(+), 16 deletions(-)
-
--- 
-2.7.4
+Thanks
+Christophe
