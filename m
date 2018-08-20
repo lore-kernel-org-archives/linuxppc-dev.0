@@ -1,37 +1,44 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
- [209.85.218.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=b3cw=ld=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41v6706htjzDrb6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:15:08 +1000 (AEST)
-Received: by mail-oi0-f67.google.com with SMTP id b16-v6so24342357oic.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:15:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v69W4f9mzDrb6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:19 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41v69W3vP4z8tFw
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:19 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41v69V6T3mz9s4s
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 18:17:18 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7K8DwMO015618
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:17 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kysahskbv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:16 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 20 Aug 2018 09:17:15 +0100
+Subject: [PATCH v7 0/3] powerpc/fadump: Improvements for firmware-assisted
+ dump.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Ananth N Mavinakayanahalli <ananth@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>, Ananth Narayan <ananth@in.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, kernelfans@gmail.com
+Date: Mon, 20 Aug 2018 13:47:08 +0530
 MIME-Version: 1.0
-References: <cover.1534686484.git.lukas@wunner.de>
- <a364bcc959e01f2ebab27cefc5b87ff01633275c.1534686485.git.lukas@wunner.de>
-In-Reply-To: <a364bcc959e01f2ebab27cefc5b87ff01633275c.1534686485.git.lukas@wunner.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 20 Aug 2018 10:14:55 +0200
-Message-ID: <CAJZ5v0hRFXPmGH_etMM1UHRsPL8HqOStvts1zgsyyXKCOCp1Aw@mail.gmail.com>
-Subject: Re: [PATCH 7/9] PCI: hotplug: Drop hotplug_slot_info
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
- okaya@kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>, scott@spiteful.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, gwshan@linux.vnet.ibm.com,
- sebott@linux.vnet.ibm.com,
- gerald.schaefer@de.ibm.com, Corentin Chary <corentin.chary@gmail.com>,
- Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-s390@vger.kernel.org,
- Platform Driver <platform-driver-x86@vger.kernel.org>,
- acpi4asus-user@lists.sourceforge.net,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153475298147.22527.9680437074324546897.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,60 +48,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 19, 2018 at 4:43 PM Lukas Wunner <lukas@wunner.de> wrote:
->
-> Ever since the PCI hotplug core was introduced in 2002, drivers had to
-> allocate and register a struct hotplug_slot_info for every slot:
-> https://git.kernel.org/tglx/history/c/a8a2069f432c
->
-> Apparently the idea was that drivers furnish the hotplug core with an
-> up-to-date card presence status, power status, latch status and
-> attention indicator status as well as notify the hotplug core of changes
-> thereof.  However only 4 out of 12 hotplug drivers bother to notify the
-> hotplug core with pci_hp_change_slot_info() and the hotplug core never
-> made any use of the information:  There is just a single macro in
-> pci_hotplug_core.c, GET_STATUS(), which uses the hotplug_slot_info if
-> the driver lacks the corresponding callback in hotplug_slot_ops.  The
-> macro is called when the user reads the attribute via sysfs.
->
-> Now, if the callback isn't defined, the attribute isn't exposed in sysfs
-> in the first place (see e.g. has_power_file()).  There are only two
-> situations when the hotplug_slot_info would actually be accessed:
->
-> * If the driver defines ->enable_slot or ->disable_slot but not
->   ->get_power_status.
->
-> * If the driver defines ->set_attention_status but not
->   ->get_attention_status.
->
-> There is no driver doing the former and just a single driver doing the
-> latter, namely pnv_php.c.  Amend it with a ->get_attention_status
-> callback.  With that, the hotplug_slot_info becomes completely unused by
-> the PCI hotplug core.  But a few drivers use it internally as a cache:
->
-> cpcihp uses it to cache the latch_status and adapter_status.
-> cpqhp uses it to cache the adapter_status.
-> pnv_php and rpaphp use it to cache the attention_status.
-> shpchp uses it to cache all four values.
->
-> Amend these drivers to cache the information in their private slot
-> struct.  shpchp's slot struct already contains members to cache the
-> power_status and adapter_status, so additional members are only needed
-> for the other two values.  In the case of cpqphp, the cached value is
-> only accessed in a single place, so instead of caching it, read the
-> current value from the hardware.
->
-> Caution:  acpiphp, cpci, cpqhp, shpchp, asus-wmi and eeepc-laptop
-> populate the hotplug_slot_info with initial values on probe.  That code
-> is herewith removed.  There is a theoretical chance that the code has
-> side effects without which the driver fails to function, e.g. if the
-> ACPI method to read the adapter status needs to be executed at least
-> once on probe.  That seems unlikely to me, still maintainers should
-> review the changes carefully for this possibility.
+One of the primary issues with Firmware Assisted Dump (fadump) on Power
+is that it needs a large amount of memory to be reserved. This reserved
+memory is used for saving the contents of old crashed kernel's memory before
+fadump capture kernel uses old kernel's memory area to boot. However, This
+reserved memory area stays unused until system crash and isn't available
+for production kernel to use.
 
-I'm not aware of any case in which it will break anything, so
+Instead of setting aside a significant chunk of memory that nobody can use,
+take advantage Linux kernel's Contiguous Memory Allocator (CMA) feature,
+to reserve a significant chunk of memory that the kernel is prevented from
+using, but applications are free to use it.
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Patch 1 implements the usage of CMA region to allow production kernel to
+use that memory for applications usage, making fadump reservationless.
+We now initialize siginificant chunk of faump reserved memory for CMA.
 
-but if that happens, it may be necessary to add the execution of the
-control methods in question directly to the initialization part.
+Cahnges in V7:
+- Revert back to use CMA for fadump reservation.
+- Add fadump=nocma option to fall back default behaviour.
+
+Changes in V6:
+- Introduce an interface to mark reserved memory as ZONE_MOVABLE. Hence
+  sending this series as RFC again.
+- Mark reserved area as ZONE_MOVABLE instead of CMA.
+- Add fadump=nonmovable parameter for user who don't want to use ZONE_MOVABLE.
+
+Changes in V5:
+- Drop the patch that does metadata movement.
+- Move the kexec fix patch to top (patch 1)
+- Fold CMA documenation patch into patch 2
+- Fix the compilation issues when CONFIG_CMA is not set reported by Hari.
+- Use the approach of using boot memory size for CMA as suggested by Hari
+  except the movement of sections. Thanks to Hari.
+
+Changes in V4:
+- patch 1: Make fadump compatible irrespective of kernel versions.
+- patch 4: moved out of the series and been posted seperatly at
+  http://patchwork.ozlabs.org/patch/896716/
+- Documentation update about CMA reservation.
+
+Changes in V3:
+- patch 1 & 2: move metadata region and documentation update.
+- patch 7: Un-register the faudmp on kexec path
+
+
+---
+
+Mahesh Salgaonkar (3):
+      powerpc/fadump: Reservationless firmware assisted dump
+      powerpc/fadump: throw proper error message on fadump registration failure.
+      powerpc/fadump: Do not allow hot-remove memory from fadump reserved area.
+
+
+ Documentation/powerpc/firmware-assisted-dump.txt |   17 +++
+ arch/powerpc/include/asm/fadump.h                |    7 +
+ arch/powerpc/kernel/fadump.c                     |  140 ++++++++++++++++++++--
+ arch/powerpc/platforms/pseries/hotplug-memory.c  |    7 +
+ 4 files changed, 155 insertions(+), 16 deletions(-)
+
+--
+Signature
