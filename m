@@ -1,17 +1,19 @@
-Return-Path: <darren@stevens-zone.net>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.133])
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
+ [IPv6:2607:f8b0:4864:20::442])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41tqkg2YgqzF2Dc
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 07:26:34 +1000 (AEST)
-From: Darren Stevens <darren@stevens-zone.net>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-CC: Christian Zigotzky <chzigotzky@xenosoft.de>
-Date: Sun, 19 Aug 2018 21:26:28 +0100 (BST)
-Message-ID: <4c6da168591.7567d73b@auth.smtp.1and1.co.uk>
-Subject: [PATCH NEXT v2 4/4] powerpc/pasemi: Connect Nemo boot code.
-MIME-Version: 1.0
-Content-type: multipart/mixed; boundary="--=_BOUNDARY.6c124c601c8edb48.f1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41txQ62LTszDr4h
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 11:42:38 +1000 (AEST)
+Received: by mail-pf1-x442.google.com with SMTP id k19-v6so5936845pfi.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2018 18:42:38 -0700 (PDT)
+Sender: "joel.stan@gmail.com" <joel.stan@gmail.com>
+From: Joel Stanley <joel@jms.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Stewart Smith <stewart@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: configs: Update skiroot defconfig
+Date: Mon, 20 Aug 2018 11:12:27 +0930
+Message-Id: <20180820014227.10400-1-joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,121 +23,308 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Warning: This is a message in MIME format. Your mail reader does
-not support MIME. Some parts of this message will be readable as
-plain text. To see the rest, you will need to upgrade your mail
-reader. Following are some URLs where you can find MIME-capable
-mail programs for common platforms:
+Disable new features from recent releases, and clean out some other
+unused options:
 
-  AmigaOS...........: http://yam.ch/
-  Unix/MacOS/Windows: http://www.mozilla.com/thunderbird/
+ - Enable EXPERT, so we can disable some things
+ - Disable non-powerpc BPF decoders
+ - Disable TASKSTATS
+ - Disable unused syscalls
+ - Set more things to be modules
+ - Turn off unused network vendors
 
-General information about MIME can be found at:
-http://en.wikipedia.org/wiki/MIME
-
-----=_BOUNDARY.6c124c601c8edb48.f1
-Content-Type: text/plain
-
-The previous 3 commits added support code for the Nemo motherbard
-as used in the Amigaone X1000, now wire them up so the board can
-be detected and initalised at boot time.
-    
-Signed-off-by: Darren Stevens <Darren@stevens-zone.net>
-
+Signed-off-by: Joel Stanley <joel@jms.id.au>
 ---
+ arch/powerpc/configs/skiroot_defconfig | 148 ++++++++++++++++++-------
+ 1 file changed, 110 insertions(+), 38 deletions(-)
 
-Changes made:
-
-v2: Changed init code to be empty when NEMO=n rather than using
-    #ifdefs
-----=_BOUNDARY.6c124c601c8edb48.f1
-Content-Type: text/plain;
-	name="link.patch"
-Content-Disposition: attachment;
-	filename="link.patch";
-	size=2437
-
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index c230acc..3ed0ff6 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -27,6 +27,7 @@
- #include <linux/pci.h>
- 
- #include <asm/pci-bridge.h>
-+#include <asm/isa-bridge.h>
- #include <asm/machdep.h>
- 
- #include <asm/ppc-pci.h>
-@@ -182,6 +183,8 @@ static int pa_pxp_read_config(struct pci_bus *bus, unsigned int devfn,
- 
- 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
- 
-+	sb600_set_flag(bus->number);
-+
- 	/*
- 	 * Note: the caller has already checked that offset is
- 	 * suitably aligned and that len is 1, 2 or 4.
-@@ -216,6 +219,8 @@ static int pa_pxp_write_config(struct pci_bus *bus, unsigned int devfn,
- 
- 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
- 
-+	sb600_set_flag(bus->number);
-+
- 	/*
- 	 * Note: the caller has already checked that offset is
- 	 * suitably aligned and that len is 1, 2 or 4.
-@@ -266,6 +271,11 @@ static int __init pas_add_bridge(struct device_node *dev)
- 	/* Interpret the "ranges" property */
- 	pci_process_bridge_OF_ranges(hose, dev, 1);
- 
-+	/* Scan for an isa bridge. This is needed to find the SB600
-+	   on the nemo and does nothing on machines without one
-+	 */
-+	isa_bridge_find_early(hose);
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 98bf2f7..49e67cf 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -314,6 +314,8 @@ static __init void pas_init_IRQ(void)
- 		mpic_unmask_irq(irq_get_irq_data(nmi_virq));
- 	}
- 
-+	nemo_init_IRQ(mpic);
-+
- 	of_node_put(mpic_node);
- 	of_node_put(root);
- }
-@@ -475,6 +477,8 @@ static int __init pasemi_publish_devices(void)
- 	/* Publish OF platform devices for SDC and other non-PCI devices */
- 	of_platform_bus_probe(NULL, pasemi_bus_ids, NULL);
- 
-+	nemo_init_rtc();
-+
- 	return 0;
- }
- machine_device_initcall(pasemi, pasemi_publish_devices);
-@@ -489,6 +493,17 @@ static int __init pas_probe(void)
- 	    !of_machine_is_compatible("pasemi,pwrficient"))
- 		return 0;
- 
-+#ifdef CONFIG_PPC_PASEMI_NEMO
-+	/*
-+	 * Check for the Nemo motherboard here, if we are running on one
-+	 * change the machine definition to fit
-+	 */
-+	if (of_machine_is_compatible("pasemi,nemo")) {
-+		pm_power_off		= pas_shutdown;
-+		ppc_md.name		= "A-EON Amigaone X1000";
-+	}
-+#endif
-+
- 	iommu_init_early_pasemi();
- 
- 	return 1;
-
-----=_BOUNDARY.6c124c601c8edb48.f1--
+diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
+index 6bd5e7261335..a3db40d15efd 100644
+--- a/arch/powerpc/configs/skiroot_defconfig
++++ b/arch/powerpc/configs/skiroot_defconfig
+@@ -3,20 +3,17 @@ CONFIG_ALTIVEC=y
+ CONFIG_VSX=y
+ CONFIG_NR_CPUS=2048
+ CONFIG_CPU_LITTLE_ENDIAN=y
++CONFIG_KERNEL_XZ=y
+ # CONFIG_SWAP is not set
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ # CONFIG_CROSS_MEMORY_ATTACH is not set
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_TASKSTATS=y
+-CONFIG_TASK_DELAY_ACCT=y
+-CONFIG_TASK_XACCT=y
+-CONFIG_TASK_IO_ACCOUNTING=y
++# CONFIG_CPU_ISOLATION is not set
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=20
+-CONFIG_RELAY=y
+ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_GZIP is not set
+ # CONFIG_RD_BZIP2 is not set
+@@ -24,8 +21,14 @@ CONFIG_BLK_DEV_INITRD=y
+ # CONFIG_RD_LZO is not set
+ # CONFIG_RD_LZ4 is not set
+ CONFIG_CC_OPTIMIZE_FOR_SIZE=y
++CONFIG_EXPERT=y
++# CONFIG_SGETMASK_SYSCALL is not set
++# CONFIG_SYSFS_SYSCALL is not set
++# CONFIG_SHMEM is not set
++# CONFIG_AIO is not set
+ CONFIG_PERF_EVENTS=y
+ # CONFIG_COMPAT_BRK is not set
++CONFIG_SLAB_FREELIST_HARDENED=y
+ CONFIG_JUMP_LABEL=y
+ CONFIG_STRICT_KERNEL_RWX=y
+ CONFIG_MODULES=y
+@@ -35,6 +38,7 @@ CONFIG_MODULE_SIG_FORCE=y
+ CONFIG_MODULE_SIG_SHA512=y
+ CONFIG_PARTITION_ADVANCED=y
+ # CONFIG_IOSCHED_DEADLINE is not set
++# CONFIG_PPC_VAS is not set
+ # CONFIG_PPC_PSERIES is not set
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_IDLE=y
+@@ -48,8 +52,9 @@ CONFIG_NUMA=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_CMDLINE_BOOL=y
+-CONFIG_CMDLINE="console=tty0 console=hvc0 powersave=off"
++CONFIG_CMDLINE="console=tty0 console=hvc0 ipr.fast_reboot=1 quiet"
+ # CONFIG_SECCOMP is not set
++# CONFIG_PPC_MEM_KEYS is not set
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+@@ -73,8 +78,10 @@ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=65536
+ CONFIG_VIRTIO_BLK=m
+ CONFIG_BLK_DEV_NVME=m
+-CONFIG_EEPROM_AT24=y
++CONFIG_NVME_MULTIPATH=y
++CONFIG_EEPROM_AT24=m
+ # CONFIG_CXL is not set
++# CONFIG_OCXL is not set
+ CONFIG_BLK_DEV_SD=m
+ CONFIG_BLK_DEV_SR=m
+ CONFIG_BLK_DEV_SR_VENDOR=y
+@@ -85,7 +92,6 @@ CONFIG_SCSI_FC_ATTRS=y
+ CONFIG_SCSI_CXGB3_ISCSI=m
+ CONFIG_SCSI_CXGB4_ISCSI=m
+ CONFIG_SCSI_BNX2_ISCSI=m
+-CONFIG_BE2ISCSI=m
+ CONFIG_SCSI_AACRAID=m
+ CONFIG_MEGARAID_NEWGEN=y
+ CONFIG_MEGARAID_MM=m
+@@ -102,7 +108,7 @@ CONFIG_SCSI_VIRTIO=m
+ CONFIG_SCSI_DH=y
+ CONFIG_SCSI_DH_ALUA=m
+ CONFIG_ATA=y
+-CONFIG_SATA_AHCI=y
++CONFIG_SATA_AHCI=m
+ # CONFIG_ATA_SFF is not set
+ CONFIG_MD=y
+ CONFIG_BLK_DEV_MD=m
+@@ -119,25 +125,72 @@ CONFIG_DM_SNAPSHOT=m
+ CONFIG_DM_MIRROR=m
+ CONFIG_DM_ZERO=m
+ CONFIG_DM_MULTIPATH=m
++# CONFIG_NET_VENDOR_3COM is not set
++# CONFIG_NET_VENDOR_ADAPTEC is not set
++# CONFIG_NET_VENDOR_AGERE is not set
++# CONFIG_NET_VENDOR_ALACRITECH is not set
+ CONFIG_ACENIC=m
+ CONFIG_ACENIC_OMIT_TIGON_I=y
+-CONFIG_TIGON3=y
++# CONFIG_NET_VENDOR_AMAZON is not set
++# CONFIG_NET_VENDOR_AMD is not set
++# CONFIG_NET_VENDOR_AQUANTIA is not set
++# CONFIG_NET_VENDOR_ARC is not set
++# CONFIG_NET_VENDOR_ATHEROS is not set
++CONFIG_TIGON3=m
+ CONFIG_BNX2X=m
+-CONFIG_CHELSIO_T1=y
++# CONFIG_NET_VENDOR_BROCADE is not set
++# CONFIG_NET_CADENCE is not set
++# CONFIG_NET_VENDOR_CAVIUM is not set
++CONFIG_CHELSIO_T1=m
++# CONFIG_NET_VENDOR_CISCO is not set
++# CONFIG_NET_VENDOR_CORTINA is not set
++# CONFIG_NET_VENDOR_DEC is not set
++# CONFIG_NET_VENDOR_DLINK is not set
+ CONFIG_BE2NET=m
+-CONFIG_S2IO=m
+-CONFIG_E100=m
++# CONFIG_NET_VENDOR_EZCHIP is not set
++# CONFIG_NET_VENDOR_HP is not set
++# CONFIG_NET_VENDOR_HUAWEI is not set
+ CONFIG_E1000=m
+-CONFIG_E1000E=m
++CONFIG_IGB=m
+ CONFIG_IXGB=m
+ CONFIG_IXGBE=m
++CONFIG_I40E=m
++CONFIG_S2IO=m
++# CONFIG_NET_VENDOR_MARVELL is not set
+ CONFIG_MLX4_EN=m
++# CONFIG_MLX4_CORE_GEN2 is not set
+ CONFIG_MLX5_CORE=m
+-CONFIG_MLX5_CORE_EN=y
++# CONFIG_NET_VENDOR_MICREL is not set
+ CONFIG_MYRI10GE=m
++# CONFIG_NET_VENDOR_NATSEMI is not set
++# CONFIG_NET_VENDOR_NETRONOME is not set
++# CONFIG_NET_VENDOR_NI is not set
++# CONFIG_NET_VENDOR_NVIDIA is not set
++# CONFIG_NET_VENDOR_OKI is not set
++# CONFIG_NET_PACKET_ENGINE is not set
+ CONFIG_QLGE=m
+ CONFIG_NETXEN_NIC=m
++# CONFIG_NET_VENDOR_QUALCOMM is not set
++# CONFIG_NET_VENDOR_RDC is not set
++# CONFIG_NET_VENDOR_REALTEK is not set
++# CONFIG_NET_VENDOR_RENESAS is not set
++# CONFIG_NET_VENDOR_ROCKER is not set
++# CONFIG_NET_VENDOR_SAMSUNG is not set
++# CONFIG_NET_VENDOR_SEEQ is not set
+ CONFIG_SFC=m
++# CONFIG_NET_VENDOR_SILAN is not set
++# CONFIG_NET_VENDOR_SIS is not set
++# CONFIG_NET_VENDOR_SMSC is not set
++# CONFIG_NET_VENDOR_SOCIONEXT is not set
++# CONFIG_NET_VENDOR_STMICRO is not set
++# CONFIG_NET_VENDOR_SUN is not set
++# CONFIG_NET_VENDOR_SYNOPSYS is not set
++# CONFIG_NET_VENDOR_TEHUTI is not set
++# CONFIG_NET_VENDOR_TI is not set
++# CONFIG_NET_VENDOR_VIA is not set
++# CONFIG_NET_VENDOR_WIZNET is not set
++# CONFIG_NET_VENDOR_XILINX is not set
++CONFIG_PHYLIB=y
+ # CONFIG_USB_NET_DRIVERS is not set
+ # CONFIG_WLAN is not set
+ CONFIG_INPUT_EVDEV=y
+@@ -149,14 +202,22 @@ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_IPMI_HANDLER=y
+ CONFIG_IPMI_DEVICE_INTERFACE=y
+ CONFIG_IPMI_POWERNV=y
++CONFIG_IPMI_WATCHDOG=y
+ CONFIG_HW_RANDOM=y
++CONFIG_TCG_TPM=y
+ CONFIG_TCG_TIS_I2C_NUVOTON=y
++CONFIG_I2C=y
+ # CONFIG_I2C_COMPAT is not set
+-CONFIG_I2C_CHARDEV=y
++CONFIG_I2C_CHARDEV=m
+ # CONFIG_I2C_HELPER_AUTO is not set
+-CONFIG_DRM=y
+-CONFIG_DRM_RADEON=y
++CONFIG_I2C_ALGOBIT=y
++CONFIG_I2C_OPAL=m
++CONFIG_PPS=y
++CONFIG_SENSORS_IBMPOWERNV=m
++CONFIG_DRM=m
++CONFIG_DRM_RADEON=m
+ CONFIG_DRM_AST=m
++CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_OF=y
+@@ -165,23 +226,37 @@ CONFIG_FB_MATROX_MILLENIUM=y
+ CONFIG_FB_MATROX_MYSTIQUE=y
+ CONFIG_FB_MATROX_G=y
+ # CONFIG_LCD_CLASS_DEVICE is not set
++CONFIG_BACKLIGHT_CLASS_DEVICE=y
+ # CONFIG_BACKLIGHT_GENERIC is not set
+ # CONFIG_VGA_CONSOLE is not set
++CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_LOGO=y
+ # CONFIG_LOGO_LINUX_MONO is not set
+ # CONFIG_LOGO_LINUX_VGA16 is not set
++CONFIG_HID_GENERIC=m
++CONFIG_HID_A4TECH=y
++CONFIG_HID_BELKIN=y
++CONFIG_HID_CHERRY=y
++CONFIG_HID_CHICONY=y
++CONFIG_HID_CYPRESS=y
++CONFIG_HID_EZKEY=y
++CONFIG_HID_ITE=y
++CONFIG_HID_KENSINGTON=y
++CONFIG_HID_LOGITECH=y
++CONFIG_HID_MICROSOFT=y
++CONFIG_HID_MONTEREY=y
+ CONFIG_USB_HIDDEV=y
+-CONFIG_USB=y
+-CONFIG_USB_MON=y
+-CONFIG_USB_XHCI_HCD=y
+-CONFIG_USB_EHCI_HCD=y
++CONFIG_USB=m
++CONFIG_USB_XHCI_HCD=m
++CONFIG_USB_EHCI_HCD=m
+ # CONFIG_USB_EHCI_HCD_PPC_OF is not set
+-CONFIG_USB_OHCI_HCD=y
+-CONFIG_USB_STORAGE=y
++CONFIG_USB_OHCI_HCD=m
++CONFIG_USB_STORAGE=m
+ CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_OPAL=m
+ CONFIG_RTC_DRV_GENERIC=m
+ CONFIG_VIRT_DRIVERS=y
+-CONFIG_VIRTIO_PCI=y
++CONFIG_VIRTIO_PCI=m
+ # CONFIG_IOMMU_SUPPORT is not set
+ CONFIG_EXT4_FS=m
+ CONFIG_EXT4_FS_POSIX_ACL=y
+@@ -195,10 +270,9 @@ CONFIG_UDF_FS=m
+ CONFIG_MSDOS_FS=m
+ CONFIG_VFAT_FS=m
+ CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_TMPFS_POSIX_ACL=y
+ # CONFIG_MISC_FILESYSTEMS is not set
+ # CONFIG_NETWORK_FILESYSTEMS is not set
++CONFIG_NLS=y
+ CONFIG_NLS_DEFAULT="utf8"
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=y
+@@ -207,26 +281,24 @@ CONFIG_NLS_UTF8=y
+ CONFIG_CRC16=y
+ CONFIG_CRC_ITU_T=y
+ CONFIG_LIBCRC32C=y
++# CONFIG_XZ_DEC_X86 is not set
++# CONFIG_XZ_DEC_IA64 is not set
++# CONFIG_XZ_DEC_ARM is not set
++# CONFIG_XZ_DEC_ARMTHUMB is not set
++# CONFIG_XZ_DEC_SPARC is not set
+ CONFIG_PRINTK_TIME=y
+ CONFIG_MAGIC_SYSRQ=y
+-CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_STACKOVERFLOW=y
+ CONFIG_SOFTLOCKUP_DETECTOR=y
++CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
+ CONFIG_HARDLOCKUP_DETECTOR=y
+ CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
+-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
+ CONFIG_WQ_WATCHDOG=y
+-CONFIG_SCHEDSTATS=y
++# CONFIG_SCHED_DEBUG is not set
+ # CONFIG_FTRACE is not set
++# CONFIG_RUNTIME_TESTING_MENU is not set
+ CONFIG_XMON=y
+ CONFIG_XMON_DEFAULT=y
+-CONFIG_SECURITY=y
+-CONFIG_IMA=y
+-CONFIG_EVM=y
++CONFIG_ENCRYPTED_KEYS=y
+ # CONFIG_CRYPTO_ECHAINIV is not set
+-CONFIG_CRYPTO_ECB=y
+-CONFIG_CRYPTO_CMAC=y
+-CONFIG_CRYPTO_MD4=y
+-CONFIG_CRYPTO_ARC4=y
+-CONFIG_CRYPTO_DES=y
+ # CONFIG_CRYPTO_HW is not set
+-- 
+2.17.1
