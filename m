@@ -1,37 +1,45 @@
-Return-Path: <rjwysocki@gmail.com>
-Received: from mail-oi0-f67.google.com (mail-oi0-f67.google.com
- [209.85.218.67])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=b3cw=ld=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41v69l0VthzF1P8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:30 +1000 (AEST)
-Received: by mail-oi0-f67.google.com with SMTP id b16-v6so24351700oic.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:17:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v69q07glzF1bR
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:35 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41v69p6ZrCz8x2C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 18:17:34 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41v69p3FBSz9s5c
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 18:17:34 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7K8E1b5110853
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:32 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kysjmh1w9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2018 04:17:32 -0400
+Received: from localhost
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 20 Aug 2018 09:17:30 +0100
+Subject: [PATCH v7 2/3] powerpc/fadump: throw proper error message on fadump
+ registration failure.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Ananth Narayan <ananth@in.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Hari Bathini <hbathini@linux.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>, kernelfans@gmail.com
+Date: Mon, 20 Aug 2018 13:47:24 +0530
+In-Reply-To: <153475298147.22527.9680437074324546897.stgit@jupiter.in.ibm.com>
+References: <153475298147.22527.9680437074324546897.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-References: <cover.1534686484.git.lukas@wunner.de>
- <9918fbca94bcfc03d1560b191d138d3e6664cc86.1534686485.git.lukas@wunner.de>
-In-Reply-To: <9918fbca94bcfc03d1560b191d138d3e6664cc86.1534686485.git.lukas@wunner.de>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 20 Aug 2018 10:17:17 +0200
-Message-ID: <CAJZ5v0g-fNj7ESGMDOiotiGM9ztngCRgpKLfQaXmH+cgObi+iQ@mail.gmail.com>
-Subject: Re: [PATCH 8/9] PCI: hotplug: Embed hotplug_slot
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
- okaya@kernel.org, Mika Westerberg <mika.westerberg@linux.intel.com>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Len Brown <lenb@kernel.org>, scott@spiteful.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, gwshan@linux.vnet.ibm.com,
- sebott@linux.vnet.ibm.com,
- gerald.schaefer@de.ibm.com, Corentin Chary <corentin.chary@gmail.com>,
- Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-s390@vger.kernel.org,
- Platform Driver <platform-driver-x86@vger.kernel.org>,
- acpi4asus-user@lists.sourceforge.net,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Message-Id: <153475304473.22527.6346461873197204245.stgit@jupiter.in.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,78 +49,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 19, 2018 at 4:46 PM Lukas Wunner <lukas@wunner.de> wrote:
->
-> When the PCI hotplug core and its first user, cpqphp, were introduced in
-> February 2002 with historic commit a8a2069f432c, cpqphp allocated a slot
-> struct for its internal use plus a hotplug_slot struct to be registered
-> with the hotplug core and linked the two with pointers:
-> https://git.kernel.org/tglx/history/c/a8a2069f432c
->
-> Nowadays, the predominant pattern in the tree is to embed ("subclass")
-> such structures in one another and cast to the containing struct with
-> container_of().  But it wasn't until July 2002 that container_of() was
-> introduced with historic commit ec4f214232cf:
-> https://git.kernel.org/tglx/history/c/ec4f214232cf
->
-> pnv_php, introduced in 2016, did the right thing and embedded struct
-> hotplug_slot in its internal struct pnv_php_slot, but all other drivers
-> cargo-culted cpqphp's design and linked separate structs with pointers.
->
-> Embedding structs is preferrable to linking them with pointers because
-> it requires fewer allocations, thereby reducing overhead and simplifying
-> error paths.  Casting an embedded struct to the containing struct
-> becomes a cheap subtraction rather than a dereference.  And having fewer
-> pointers reduces the risk of them pointing nowhere either accidentally
-> or due to an attack.
->
-> Convert all drivers to embed struct hotplug_slot in their internal slot
-> struct.  The "private" pointer in struct hotplug_slot thereby becomes
-> unused, so drop it.
->
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Scott Murray <scott@spiteful.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
-> Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-> Cc: Corentin Chary <corentin.chary@gmail.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Andy Shevchenko <andy@infradead.org>
-> ---
->  drivers/pci/hotplug/acpiphp.h           |  9 ++-
->  drivers/pci/hotplug/acpiphp_core.c      | 28 +++-----
->  drivers/pci/hotplug/acpiphp_ibm.c       |  2 +-
->  drivers/pci/hotplug/cpci_hotplug.h      |  9 ++-
->  drivers/pci/hotplug/cpci_hotplug_core.c | 37 ++++------
->  drivers/pci/hotplug/cpci_hotplug_pci.c  |  6 +-
->  drivers/pci/hotplug/cpqphp.h            |  9 ++-
->  drivers/pci/hotplug/cpqphp_core.c       | 37 ++++------
->  drivers/pci/hotplug/cpqphp_ctrl.c       |  2 -
->  drivers/pci/hotplug/ibmphp.h            |  7 +-
->  drivers/pci/hotplug/ibmphp_core.c       | 92 +++++++++++--------------
->  drivers/pci/hotplug/ibmphp_ebda.c       | 37 +++-------
->  drivers/pci/hotplug/pciehp.h            | 11 ++-
->  drivers/pci/hotplug/pciehp_core.c       | 37 ++++------
->  drivers/pci/hotplug/pciehp_ctrl.c       |  4 +-
->  drivers/pci/hotplug/pciehp_hpc.c        |  8 +--
->  drivers/pci/hotplug/pnv_php.c           |  9 ++-
->  drivers/pci/hotplug/rpaphp.h            |  7 +-
->  drivers/pci/hotplug/rpaphp_core.c       | 14 ++--
->  drivers/pci/hotplug/rpaphp_slot.c       | 15 ++--
->  drivers/pci/hotplug/s390_pci_hpc.c      | 30 ++++----
->  drivers/pci/hotplug/sgi_hotplug.c       | 52 ++++++--------
->  drivers/pci/hotplug/shpchp.h            |  6 +-
->  drivers/pci/hotplug/shpchp_core.c       | 17 ++---
->  drivers/platform/x86/asus-wmi.c         | 26 +++----
->  drivers/platform/x86/eeepc-laptop.c     | 30 ++++----
->  include/linux/pci_hotplug.h             |  3 -
->  27 files changed, 223 insertions(+), 321 deletions(-)
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Good cleanup.
+fadump fails to register when there are holes in reserved memory area.
+This can happen if user has hot-removed a memory that falls in the fadump
+reserved memory area. Throw a meaningful error message to the user in
+such case.
 
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/fadump.c |   33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
+index 166e71635921..44a29e4d419c 100644
+--- a/arch/powerpc/kernel/fadump.c
++++ b/arch/powerpc/kernel/fadump.c
+@@ -234,6 +234,36 @@ static int is_boot_memory_area_contiguous(void)
+ 	return ret;
+ }
+ 
++/*
++ * Returns 1, if there are no holes in reserved memory area,
++ * 0 otherwise.
++ */
++static int is_reserved_memory_area_contiguous(void)
++{
++	struct memblock_region *reg;
++	unsigned long start, end;
++	unsigned long d_start = fw_dump.reserve_dump_area_start;
++	unsigned long d_end = d_start + fw_dump.reserve_dump_area_size;
++	int ret = 0;
++
++	for_each_memblock(memory, reg) {
++		start = max(d_start, (unsigned long)reg->base);
++		end = min(d_end, (unsigned long)(reg->base + reg->size));
++		if (d_start < end) {
++			/* Memory hole from d_start to start */
++			if (start > d_start)
++				break;
++
++			if (end == d_end) {
++				ret = 1;
++				break;
++			}
++			d_start = end + 1;
++		}
++	}
++	return ret;
++}
++
+ /* Print firmware assisted dump configurations for debugging purpose. */
+ static void fadump_show_config(void)
+ {
+@@ -602,6 +632,9 @@ static int register_fw_dump(struct fadump_mem_struct *fdm)
+ 		if (!is_boot_memory_area_contiguous())
+ 			pr_err("Can't have holes in boot memory area while "
+ 			       "registering fadump\n");
++		else if (!is_reserved_memory_area_contiguous())
++			pr_err("Can't have holes in reserved memory area while"
++			       " registering fadump\n");
+ 
+ 		printk(KERN_ERR "Failed to register firmware-assisted kernel"
+ 			" dump. Parameter Error(%d).\n", rc);
