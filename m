@@ -1,20 +1,19 @@
 Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com
- [IPv6:2607:f8b0:4864:20::442])
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com
+ [IPv6:2607:f8b0:4864:20::52c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41v83f4P4ZzF162
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 19:42:22 +1000 (AEST)
-Received: by mail-pf1-x442.google.com with SMTP id k21-v6so6479996pff.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 02:42:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v83h6ZkYzF1Rh
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 19:42:24 +1000 (AEST)
+Received: by mail-pg1-x52c.google.com with SMTP id z25-v6so1814507pgu.7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 02:42:24 -0700 (PDT)
 From: Nicholas Piggin <npiggin@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: Nicholas Piggin <npiggin@gmail.com>,
  "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
-Subject: [RFC PATCH 3/5] powerpc/64s/hash: remove the first vmalloc segment
- from the bolted SLB
-Date: Mon, 20 Aug 2018 19:41:58 +1000
-Message-Id: <20180820094200.13003-4-npiggin@gmail.com>
+Subject: [RFC PATCH 4/5] powerpc/64s/hash: Add SLB allocation bitmaps
+Date: Mon, 20 Aug 2018 19:41:59 +1000
+Message-Id: <20180820094200.13003-5-npiggin@gmail.com>
 In-Reply-To: <20180820094200.13003-1-npiggin@gmail.com>
 References: <20180820094200.13003-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,88 +25,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the first vmalloc segment from bolted SLBEs. This is not
-required to be bolted, and seems like it was added to help pre-load
-the SLB on context switch. However there are now other segments like
-the vmemmap segment that often take misses after a context switch, so
-it is better to solve this a different way and save a bolted entry.
+Add 32-entry bitmaps to track the allocation status of the first 32
+SLB entries, and whether they are user or kernel entries. These are
+used to prevent context switches rolling the SLB round robin allocator
+and evicting important kernel SLBEs when there are obvious free
+entries.
 ---
- arch/powerpc/include/asm/book3s/64/mmu-hash.h |  2 +-
- arch/powerpc/mm/slb.c                         | 16 ++++------------
- 2 files changed, 5 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/paca.h |  6 +++--
+ arch/powerpc/mm/slb.c           | 42 +++++++++++++++++++++++----------
+ arch/powerpc/xmon/xmon.c        |  2 +-
+ 3 files changed, 35 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/mmu-hash.h b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-index 39764214aef5..4c8d413ce99a 100644
---- a/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/mmu-hash.h
-@@ -30,7 +30,7 @@
-  * SLB
-  */
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index 8c258a057207..bf7ab59be3b8 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -113,7 +113,10 @@ struct paca_struct {
+  				 * on the linear mapping */
+ 	/* SLB related definitions */
+ 	u16 vmalloc_sllp;
+-	u16 slb_cache_ptr;
++	u8 slb_cache_ptr;
++	u8 stab_rr;			/* stab/slb round-robin counter */
++	u32 slb_used_bitmap;		/* Bitmaps for first 32 SLB entries. */
++	u32 slb_kern_bitmap;
+ 	u32 slb_cache[SLB_CACHE_ENTRIES];
+ #endif /* CONFIG_PPC_BOOK3S_64 */
  
--#define SLB_NUM_BOLTED		3
-+#define SLB_NUM_BOLTED		2
- #define SLB_CACHE_ENTRIES	8
- #define SLB_MIN_SIZE		32
- 
+@@ -148,7 +151,6 @@ struct paca_struct {
+ 	 */
+ 	struct task_struct *__current;	/* Pointer to current */
+ 	u64 kstack;			/* Saved Kernel stack addr */
+-	u64 stab_rr;			/* stab/slb round-robin counter */
+ 	u64 saved_r1;			/* r1 save for RTAS calls or PM or EE=0 */
+ 	u64 saved_msr;			/* MSR saved here by enter_rtas */
+ 	u16 trap_save;			/* Used when bad stack is encountered */
 diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 221d94b4f9cf..6e595d75d997 100644
+index 6e595d75d997..3de63598f7c4 100644
 --- a/arch/powerpc/mm/slb.c
 +++ b/arch/powerpc/mm/slb.c
-@@ -133,13 +133,11 @@ static void __slb_flush_and_rebolt(void)
- {
- 	/* If you change this make sure you change SLB_NUM_BOLTED
- 	 * and PR KVM appropriately too. */
--	unsigned long linear_llp, vmalloc_llp, lflags, vflags;
-+	unsigned long linear_llp, lflags;
- 	unsigned long ksp_esid_data, ksp_vsid_data;
+@@ -267,6 +267,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
  
- 	linear_llp = mmu_psize_defs[mmu_linear_psize].sllp;
--	vmalloc_llp = mmu_psize_defs[mmu_vmalloc_psize].sllp;
- 	lflags = SLB_VSID_KERNEL | linear_llp;
--	vflags = SLB_VSID_KERNEL | vmalloc_llp;
+ 		get_paca()->slb_cache_ptr = 0;
+ 	}
++	get_paca()->slb_used_bitmap = get_paca()->slb_kern_bitmap;
  
- 	ksp_esid_data = mk_esid_data(get_paca()->kstack, mmu_kernel_ssize, KSTACK_INDEX);
- 	if ((ksp_esid_data & ~0xfffffffUL) <= PAGE_OFFSET) {
-@@ -157,14 +155,10 @@ static void __slb_flush_and_rebolt(void)
- 	 * the stack between the slbia and rebolting it. */
- 	asm volatile("isync\n"
- 		     "slbia\n"
--		     /* Slot 1 - first VMALLOC segment */
-+		     /* Slot 1 - kernel stack */
- 		     "slbmte	%0,%1\n"
--		     /* Slot 2 - kernel stack */
--		     "slbmte	%2,%3\n"
- 		     "isync"
--		     :: "r"(mk_vsid_data(VMALLOC_START, mmu_kernel_ssize, vflags)),
--		        "r"(mk_esid_data(VMALLOC_START, mmu_kernel_ssize, VMALLOC_INDEX)),
--		        "r"(ksp_vsid_data),
-+		     :: "r"(ksp_vsid_data),
- 		        "r"(ksp_esid_data)
- 		     : "memory");
- }
-@@ -321,7 +315,7 @@ void core_flush_all_slbs(struct mm_struct *mm)
- void slb_initialize(void)
- {
- 	unsigned long linear_llp, vmalloc_llp, io_llp;
--	unsigned long lflags, vflags;
-+	unsigned long lflags;
- 	static int slb_encoding_inited;
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- 	unsigned long vmemmap_llp;
-@@ -347,14 +341,12 @@ void slb_initialize(void)
+ 	/*
+ 	 * preload some userspace segments into the SLB.
+@@ -339,6 +340,8 @@ void slb_initialize(void)
+ 	}
+ 
  	get_paca()->stab_rr = SLB_NUM_BOLTED - 1;
++	get_paca()->slb_kern_bitmap |= (1U << SLB_NUM_BOLTED) - 1;
++	get_paca()->slb_used_bitmap = get_paca()->slb_kern_bitmap;
  
  	lflags = SLB_VSID_KERNEL | linear_llp;
--	vflags = SLB_VSID_KERNEL | vmalloc_llp;
  
- 	/* Invalidate the entire SLB (even entry 0) & all the ERATS */
- 	asm volatile("isync":::"memory");
- 	asm volatile("slbmte  %0,%0"::"r" (0) : "memory");
- 	asm volatile("isync; slbia; isync":::"memory");
- 	create_shadowed_slbe(PAGE_OFFSET, mmu_kernel_ssize, lflags, LINEAR_INDEX);
--	create_shadowed_slbe(VMALLOC_START, mmu_kernel_ssize, vflags, VMALLOC_INDEX);
+@@ -390,27 +393,42 @@ static void slb_cache_update(unsigned long esid_data)
+ 	}
+ }
  
- 	/* For the boot cpu, we're running on the stack in init_thread_union,
- 	 * which is in the first segment of the linear mapping, and also
+-static enum slb_index alloc_slb_index(void)
++static enum slb_index alloc_slb_index(bool kernel)
+ {
+ 	enum slb_index index;
+ 
+-	/* round-robin replacement of slb starting at SLB_NUM_BOLTED. */
+-	index = get_paca()->stab_rr;
+-	if (index < (mmu_slb_size - 1))
+-		index++;
+-	else
+-		index = SLB_NUM_BOLTED;
+-	get_paca()->stab_rr = index;
++	/*
++	 * SLBs beyond 32 entries are allocated with stab_rr only
++	 * POWER7/8/9 have 32 SLB entries, this could be expanded if a
++	 * future CPU has more.
++	 */
++	if (get_paca()->slb_used_bitmap != U32_MAX) {
++		index = ffz(get_paca()->slb_used_bitmap);
++		get_paca()->slb_used_bitmap |= 1U << index;
++		if (kernel)
++			get_paca()->slb_kern_bitmap |= 1U << index;
++	} else {
++		/* round-robin replacement of slb starting at SLB_NUM_BOLTED. */
++		index = get_paca()->stab_rr;
++		if (index < (mmu_slb_size - 1))
++			index++;
++		else
++			index = SLB_NUM_BOLTED;
++		get_paca()->stab_rr = index;
++		if (kernel && index < 32)
++			get_paca()->slb_kern_bitmap |= 1U << index;
++	}
++	BUG_ON(index < SLB_NUM_BOLTED);
+ 
+ 	return index;
+ }
+ 
+ static void slb_insert_entry(unsigned long ea, unsigned long context,
+-				unsigned long flags, int ssize)
++				unsigned long flags, int ssize, bool kernel)
+ {
+ 	unsigned long vsid;
+ 	unsigned long vsid_data, esid_data;
+-	enum slb_index index = alloc_slb_index();
++	enum slb_index index = alloc_slb_index(kernel);
+ 
+ 	vsid = get_vsid(context, ea, ssize);
+ 	vsid_data = (vsid << slb_vsid_shift(ssize)) | flags |
+@@ -454,7 +472,7 @@ static long slb_allocate_kernel(unsigned long ea, unsigned long id)
+ 
+ 	context = id - KERNEL_REGION_CONTEXT_OFFSET;
+ 
+-	slb_insert_entry(ea, context, flags, ssize);
++	slb_insert_entry(ea, context, flags, ssize, true);
+ 
+ 	return 0;
+ }
+@@ -487,7 +505,7 @@ static long slb_allocate_user(struct mm_struct *mm, unsigned long ea)
+ 	bpsize = get_slice_psize(mm, ea);
+ 	flags = SLB_VSID_USER | mmu_psize_defs[bpsize].sllp;
+ 
+-	slb_insert_entry(ea, context, flags, ssize);
++	slb_insert_entry(ea, context, flags, ssize, false);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 8c1d8b4bf6d5..44e16675c7f9 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2415,7 +2415,7 @@ static void dump_one_paca(int cpu)
+ 	DUMP(p, __current, "%-*px");
+ 	DUMP(p, kstack, "%#-*llx");
+ 	printf(" %-*s = 0x%016llx\n", 25, "kstack_base", p->kstack & ~(THREAD_SIZE - 1));
+-	DUMP(p, stab_rr, "%#-*llx");
++	DUMP(p, stab_rr, "%#-*x");
+ 	DUMP(p, saved_r1, "%#-*llx");
+ 	DUMP(p, trap_save, "%#-*x");
+ 	DUMP(p, irq_soft_mask, "%#-*x");
 -- 
 2.17.0
