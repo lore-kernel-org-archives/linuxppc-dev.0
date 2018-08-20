@@ -3,21 +3,21 @@ Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
  [148.163.156.1])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41v2kH5T8FzF0gv
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41v2kH6s0SzF0h9
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 15:41:59 +1000 (AEST)
 Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
  by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7K5cbFf031690
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:41:57 -0400
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2kymp1n28h-1
+ w7K5caSV031643
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:41:58 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2kymp1n28y-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 01:41:57 -0400
 Received: from localhost
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 20 Aug 2018 01:41:56 -0400
+ Sun, 19 Aug 2018 23:41:57 -0600
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
@@ -32,12 +32,12 @@ To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Anton Blanchard <anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v7 1/2] powerpc: Detect the presence of big-cores via "ibm,
- thread-groups"
-Date: Mon, 20 Aug 2018 11:11:43 +0530
+Subject: [PATCH v7 2/2] powerpc: Use cpu_smallcore_sibling_mask at SMT level
+ on bigcores
+Date: Mon, 20 Aug 2018 11:11:44 +0530
 In-Reply-To: <1534743704-4760-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1534743704-4760-1-git-send-email-ego@linux.vnet.ibm.com>
-Message-Id: <1534743704-4760-2-git-send-email-ego@linux.vnet.ibm.com>
+Message-Id: <1534743704-4760-3-git-send-email-ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,355 +49,285 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On IBM POWER9, the device tree exposes a property array identifed by
-"ibm,thread-groups" which will indicate which groups of threads share
-a particular set of resources.
+Each of the SMT4 cores forming a big-core are more or less independent
+units. Thus when multiple tasks are scheduled to run on the fused
+core, we get the best performance when the tasks are spread across the
+pair of SMT4 cores.
 
-As of today we only have one form of grouping identifying the group of
-threads in the core that share the L1 cache, translation cache and
-instruction data flow.
+This patch achieves this by setting the SMT level mask to correspond
+to the smallcore sibling mask on big-core systems. This patch also
+ensures that while checked for shared-caches on big-core system, we
+use the smallcore_sibling_mask to compare with the l2_cache_mask.
+This ensure that the CACHE level sched-domain is created, whose groups
+correspond to the threads of the big-core.
 
-This patch defines the helper function to parse the contents of
-"ibm,thread-groups" and a new structure to contain the parsed output.
+With this patch, the SMT sched-domain with SMT=8,4,2 on big-core
+systems are as follows:
 
-The patch also creates the sysfs file named "small_core_siblings" that
-returns the physical ids of the threads in the core that share the L1
-cache, translation cache and instruction data flow.
+1) ppc64_cpu --smt=8
+
+ CPU0 attaching sched-domain(s):
+  domain-0: span=0,2,4,6 level=SMT
+   groups: 0:{ span=0 cap=294 }, 2:{ span=2 cap=294 },
+           4:{ span=4 cap=294 }, 6:{ span=6 cap=294 }
+ CPU1 attaching sched-domain(s):
+  domain-0: span=1,3,5,7 level=SMT
+   groups: 1:{ span=1 cap=294 }, 3:{ span=3 cap=294 },
+           5:{ span=5 cap=294 }, 7:{ span=7 cap=294 }
+
+2) ppc64_cpu --smt=4
+
+ CPU0 attaching sched-domain(s):
+  domain-0: span=0,2 level=SMT
+   groups: 0:{ span=0 cap=589 }, 2:{ span=2 cap=589 }
+ CPU1 attaching sched-domain(s):
+  domain-0: span=1,3 level=SMT
+   groups: 1:{ span=1 cap=589 }, 3:{ span=3 cap=589 }
+
+3) ppc64_cpu --smt=2
+   SMT domain is a trivial domain consisting of just
+   1 CPU. Hence this domain gets collapsed leaving only CACHE, DIE and
+   NUMA domains.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |   8 ++
- arch/powerpc/include/asm/cputhreads.h              |  25 ++++
- arch/powerpc/kernel/setup-common.c                 | 151 +++++++++++++++++++++
- arch/powerpc/kernel/sysfs.c                        |  38 ++++++
- 4 files changed, 222 insertions(+)
+ arch/powerpc/kernel/smp.c | 136 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 134 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 9c5e7732..b09b051 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -487,3 +487,11 @@ Description:	Information about CPU vulnerabilities
- 		"Not affected"	  CPU is not affected by the vulnerability
- 		"Vulnerable"	  CPU is affected and no mitigation in effect
- 		"Mitigation: $M"  CPU is affected and mitigation $M is in effect
-+
-+What: 		/sys/devices/system/cpu/cpu[0-9]+/small_core_siblings
-+Date:		Aug-2018
-+KernelVersion:	v4.19.0
-+Contact:	Linux for PowerPC mailing list <linuxppc-dev@ozlabs.org>
-+Description:	List of Physical ids of CPUs which share the L1 cache,
-+		translation cache and instruction data-flow with this CPU.
-+Values:		Comma separated list of decimal integers.
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index d71a909..cb8b4a4 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -23,11 +23,13 @@
- extern int threads_per_core;
- extern int threads_per_subcore;
- extern int threads_shift;
-+extern bool has_big_cores;
- extern cpumask_t threads_core_mask;
- #else
- #define threads_per_core	1
- #define threads_per_subcore	1
- #define threads_shift		0
-+#define has_big_cores		0
- #define threads_core_mask	(*get_cpu_mask(0))
- #endif
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 4794d6b..00f60a8 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -76,6 +76,7 @@
+ struct thread_info *secondary_ti;
  
-@@ -69,12 +71,35 @@ static inline cpumask_t cpu_online_cores_map(void)
- 	return cpu_thread_mask_to_cores(cpu_online_mask);
- }
+ DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
++DEFINE_PER_CPU(cpumask_var_t, cpu_smallcore_map);
+ DEFINE_PER_CPU(cpumask_var_t, cpu_l2_cache_map);
+ DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
  
-+#define MAX_THREAD_LIST_SIZE	8
-+#define THREAD_GROUP_SHARE_L1   1
-+struct thread_groups {
-+	unsigned int property;
-+	unsigned int nr_groups;
-+	unsigned int threads_per_group;
-+	unsigned int thread_list[MAX_THREAD_LIST_SIZE];
+@@ -83,6 +84,23 @@
+ EXPORT_PER_CPU_SYMBOL(cpu_l2_cache_map);
+ EXPORT_PER_CPU_SYMBOL(cpu_core_map);
+ 
++/*
++ * On big-cores system, cpu_l1_cache_map for each CPU corresponds to
++ * the set its siblings that share the l1-cache. This map is
++ * initialized the first time the CPU comes online, and subsequently
++ * remains unchanged.
++ *
++ * parse_success records if there has been an error in parsing the
++ * "ibm,thread-groups" property which tells us which set of siblings
++ * share the l1-cache with the CPU.
++ */
++struct small_core_sibling {
++	cpumask_var_t cpu_l1_cache_map;
++	bool parse_success;
 +};
 +
- #ifdef CONFIG_SMP
- int cpu_core_index_of_thread(int cpu);
- int cpu_first_thread_of_core(int core);
-+int parse_thread_groups(struct device_node *dn, struct thread_groups *tg,
-+			unsigned property);
-+int get_cpu_thread_group_start(int cpu, struct thread_groups *tg);
- #else
- static inline int cpu_core_index_of_thread(int cpu) { return cpu; }
- static inline int cpu_first_thread_of_core(int core) { return core; }
-+static inline int parse_thread_groups(struct device_node *dn,
-+				      struct thread_groups *tg,
-+				      unsigned property)
++DEFINE_PER_CPU(struct small_core_sibling, small_core);
++
+ /* SMP operations for this machine */
+ struct smp_ops_t *smp_ops;
+ 
+@@ -91,6 +109,11 @@
+ 
+ int smt_enabled_at_boot = 1;
+ 
++static inline struct cpumask *cpu_smallcore_mask(int cpu)
 +{
-+	return -ENODATA;
++	return per_cpu(cpu_smallcore_map, cpu);
 +}
 +
-+static inline int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-+{
-+	return -1;
-+}
+ /*
+  * Returns 1 if the specified cpu should be brought up during boot.
+  * Used to inhibit booting threads if they've been disabled or
+@@ -670,6 +693,18 @@ static void set_cpus_unrelated(int i, int j,
+ }
  #endif
  
- static inline int cpu_thread_in_core(int cpu)
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index 40b44bb..272dbe5 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -402,10 +402,12 @@ void __init check_for_initrd(void)
- #ifdef CONFIG_SMP
- 
- int threads_per_core, threads_per_subcore, threads_shift;
-+bool has_big_cores;
- cpumask_t threads_core_mask;
- EXPORT_SYMBOL_GPL(threads_per_core);
- EXPORT_SYMBOL_GPL(threads_per_subcore);
- EXPORT_SYMBOL_GPL(threads_shift);
-+EXPORT_SYMBOL_GPL(has_big_cores);
- EXPORT_SYMBOL_GPL(threads_core_mask);
- 
- static void __init cpu_init_thread_core_maps(int tpc)
-@@ -433,6 +435,150 @@ static void __init cpu_init_thread_core_maps(int tpc)
- 
- u32 *cpu_to_phys_id = NULL;
- 
-+/*
-+ * parse_thread_groups: Parses the "ibm,thread-groups" device tree
-+ *                      property for the CPU device node @dn and stores
-+ *                      the parsed output in the thread_groups
-+ *                      structure @tg if the ibm,thread-groups[0]
-+ *                      matches @property.
-+ *
-+ * @dn: The device node of the CPU device.
-+ * @tg: Pointer to a thread group structure into which the parsed
-+ *      output of "ibm,thread-groups" is stored.
-+ * @property: The property of the thread-group that the caller is
-+ *            interested in.
-+ *
-+ * ibm,thread-groups[0..N-1] array defines which group of threads in
-+ * the CPU-device node can be grouped together based on the property.
-+ *
-+ * ibm,thread-groups[0] tells us the property based on which the
-+ * threads are being grouped together. If this value is 1, it implies
-+ * that the threads in the same group share L1, translation cache.
-+ *
-+ * ibm,thread-groups[1] tells us how many such thread groups exist.
-+ *
-+ * ibm,thread-groups[2] tells us the number of threads in each such
-+ * group.
-+ *
-+ * ibm,thread-groups[3..N-1] is the list of threads identified by
-+ * "ibm,ppc-interrupt-server#s" arranged as per their membership in
-+ * the grouping.
-+ *
-+ * Example: If ibm,thread-groups = [1,2,4,5,6,7,8,9,10,11,12] it
-+ * implies that there are 2 groups of 4 threads each, where each group
-+ * of threads share L1, translation cache.
-+ *
-+ * The "ibm,ppc-interrupt-server#s" of the first group is {5,6,7,8}
-+ * and the "ibm,ppc-interrupt-server#s" of the second group is {9, 10,
-+ * 11, 12} structure
-+ *
-+ * Returns 0 on success, -EINVAL if the property does not exist,
-+ * -ENODATA if property does not have a value, and -EOVERFLOW if the
-+ * property data isn't large enough.
-+ */
-+int parse_thread_groups(struct device_node *dn,
-+			struct thread_groups *tg,
-+			unsigned int property)
++static inline void alloc_small_core_data(int cpu)
 +{
-+	int i;
-+	u32 thread_group_array[3 + MAX_THREAD_LIST_SIZE];
-+	u32 *thread_list;
-+	size_t total_threads;
-+	int ret;
++	struct small_core_sibling *this_small_core;
 +
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array, 3);
-+	if (ret)
-+		goto out_err;
++	zalloc_cpumask_var_node(&per_cpu(cpu_smallcore_map, cpu),
++				GFP_KERNEL, cpu_to_node(cpu));
 +
-+	ret = -ENODATA;
-+	tg->property = thread_group_array[0];
-+	tg->nr_groups = thread_group_array[1];
-+	tg->threads_per_group = thread_group_array[2];
-+	if (tg->property != property ||
-+	    tg->nr_groups < 1 ||
-+	    tg->threads_per_group < 1)
-+		goto out_err;
-+
-+	total_threads = tg->nr_groups * tg->threads_per_group;
-+
-+	ret = of_property_read_u32_array(dn, "ibm,thread-groups",
-+					 thread_group_array,
-+					 3 + total_threads);
-+	if (ret)
-+		goto out_err;
-+
-+	thread_list = &thread_group_array[3];
-+
-+	for (i = 0 ; i < total_threads; i++)
-+		tg->thread_list[i] = thread_list[i];
-+
-+	return 0;
-+out_err:
-+	tg->property = 0;
-+	tg->nr_groups = 0;
-+	tg->threads_per_group = 0;
-+	return ret;
++	this_small_core = &per_cpu(small_core, cpu);
++	zalloc_cpumask_var_node(&this_small_core->cpu_l1_cache_map,
++				GFP_KERNEL, cpu_to_node(cpu));
 +}
 +
-+/*
-+ * dt_has_big_core : Parses the device tree property
-+ *		    "ibm,thread-groups" for device node pointed by @dn
-+ *		    and stores the parsed output in the structure
-+ *		    pointed to by @tg.  Then checks if the output in
-+ *		    @tg corresponds to a big-core.
-+ *
-+ * @dn: Device node pointer of the CPU node being checked for a
-+ *      big-core.
-+ * @tg: Pointer to thread_groups struct in which parsed output of
-+ *      "ibm,thread-groups" is recorded.
-+ *
-+ * Returns true if the @dn points to a big-core.
-+ * Returns false if there is an error in parsing "ibm,thread-groups"
-+ * or the parsed output doesn't correspond to a big-core.
-+ */
-+static inline bool dt_has_big_core(struct device_node *dn,
-+				   struct thread_groups *tg)
+ void __init smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	unsigned int cpu;
+@@ -701,12 +736,19 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ 			set_cpu_numa_mem(cpu,
+ 				local_memory_node(numa_cpu_lookup_table[cpu]));
+ 		}
++
++		if (has_big_cores)
++			alloc_small_core_data(cpu);
+ 	}
+ 
+ 	/* Init the cpumasks so the boot CPU is related to itself */
+ 	cpumask_set_cpu(boot_cpuid, cpu_sibling_mask(boot_cpuid));
+ 	cpumask_set_cpu(boot_cpuid, cpu_l2_cache_mask(boot_cpuid));
+ 	cpumask_set_cpu(boot_cpuid, cpu_core_mask(boot_cpuid));
++	if (has_big_cores) {
++		cpumask_set_cpu(boot_cpuid,
++				cpu_smallcore_mask(boot_cpuid));
++	}
+ 
+ 	if (smp_ops && smp_ops->probe)
+ 		smp_ops->probe();
+@@ -991,10 +1033,83 @@ static void remove_cpu_from_masks(int cpu)
+ 		set_cpus_unrelated(cpu, i, cpu_core_mask);
+ 		set_cpus_unrelated(cpu, i, cpu_l2_cache_mask);
+ 		set_cpus_unrelated(cpu, i, cpu_sibling_mask);
++		if (has_big_cores)
++			set_cpus_unrelated(cpu, i, cpu_smallcore_mask);
+ 	}
+ }
+ #endif
+ 
++static inline void init_small_core_data(int cpu,
++					struct small_core_sibling *cpu_sc)
 +{
-+	if (parse_thread_groups(dn, tg, THREAD_GROUP_SHARE_L1))
-+		return false;
++	struct device_node *dn;
++	int first_thread = cpu_first_thread_sibling(cpu);
++	int i, cpu_group_start = -1;
++	struct thread_groups tg;
 +
-+	return true;
-+}
++	cpumask_set_cpu(cpu, cpu_sc->cpu_l1_cache_map);
 +
-+/*
-+ * get_cpu_thread_group_start : Searches the thread group in tg->thread_list
-+ *                              that @cpu belongs to.
-+ *
-+ * @cpu : The logical CPU whose thread group is being searched.
-+ * @tg : The thread-group structure of the CPU node which @cpu belongs
-+ *       to.
-+ *
-+ * Returns the index to tg->thread_list that points to the the start
-+ * of the thread_group that @cpu belongs to.
-+ *
-+ * Returns -1 if cpu doesn't belong to any of the groups pointed to by
-+ * tg->thread_list.
-+ */
-+int get_cpu_thread_group_start(int cpu, struct thread_groups *tg)
-+{
-+	int hw_cpu_id = get_hard_smp_processor_id(cpu);
-+	int i, j;
-+
-+	for (i = 0; i < tg->nr_groups; i++) {
-+		int group_start = i * tg->threads_per_group;
-+
-+		for (j = 0; j < tg->threads_per_group; j++) {
-+			int idx = group_start + j;
-+
-+			if (tg->thread_list[idx] == hw_cpu_id)
-+				return group_start;
-+		}
++	dn = of_get_cpu_node(cpu, NULL);
++	if (unlikely(!dn)) {
++		WARN_ON(1);
++		goto out;
 +	}
 +
-+	return -1;
-+}
++	if (unlikely(parse_thread_groups(dn, &tg,
++					 THREAD_GROUP_SHARE_L1))) {
++		WARN_ON(1);
++		goto out;
++	}
 +
- /**
-  * setup_cpu_maps - initialize the following cpu maps:
-  *                  cpu_possible_mask
-@@ -457,6 +603,7 @@ void __init smp_setup_cpu_maps(void)
- 	int cpu = 0;
- 	int nthreads = 1;
- 
-+	has_big_cores = true;
- 	DBG("smp_setup_cpu_maps()\n");
- 
- 	cpu_to_phys_id = __va(memblock_alloc(nr_cpu_ids * sizeof(u32),
-@@ -467,6 +614,7 @@ void __init smp_setup_cpu_maps(void)
- 		const __be32 *intserv;
- 		__be32 cpu_be;
- 		int j, len;
-+		struct thread_groups tg;
- 
- 		DBG("  * %pOF...\n", dn);
- 
-@@ -505,6 +653,9 @@ void __init smp_setup_cpu_maps(void)
- 			cpu++;
- 		}
- 
-+		if (has_big_cores && !dt_has_big_core(dn, &tg))
-+			has_big_cores = false;
++	cpu_group_start = get_cpu_thread_group_start(cpu, &tg);
 +
- 		if (cpu >= nr_cpu_ids) {
- 			of_node_put(dn);
- 			break;
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 755dc98..83fd26b 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -18,6 +18,7 @@
- #include <asm/smp.h>
- #include <asm/pmc.h>
- #include <asm/firmware.h>
-+#include <asm/cputhreads.h>
- 
- #include "cacheinfo.h"
- #include "setup.h"
-@@ -1025,6 +1026,36 @@ static ssize_t show_physical_id(struct device *dev,
- }
- static DEVICE_ATTR(physical_id, 0444, show_physical_id, NULL);
- 
-+static ssize_t show_small_core_siblings(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	struct device_node *dn = of_get_cpu_node(cpu->dev.id, NULL);
-+	struct thread_groups tg;
-+	int i, j, err;
-+	ssize_t ret = 0;
++	if (unlikely(cpu_group_start == -1)) {
++		WARN_ON(1);
++		goto out;
++	}
 +
-+	err = parse_thread_groups(dn, &tg, THREAD_GROUP_SHARE_L1);
++	for (i = first_thread; i < first_thread + threads_per_core; i++) {
++		int i_group_start = get_cpu_thread_group_start(i, &tg);
++
++		if (unlikely(i_group_start == -1)) {
++			WARN_ON(1);
++			goto out;
++		}
++
++		if (i_group_start == cpu_group_start)
++			cpumask_set_cpu(i, cpu_sc->cpu_l1_cache_map);
++	}
++
++	cpu_sc->parse_success = true;
++out:
 +	of_node_put(dn);
-+
-+	if (err)
-+		return -ENODATA;
-+
-+	i = get_cpu_thread_group_start(cpu->dev.id, &tg);
-+
-+	if (i == -1)
-+		return -ENODATA;
-+
-+	for (j = 0; j < tg.threads_per_group - 1; j++)
-+		ret += sprintf(buf + ret, "%d,", tg.thread_list[i + j]);
-+
-+	ret += sprintf(buf + ret, "%d\n", tg.thread_list[i + j]);
-+
-+	return ret;
 +}
-+static DEVICE_ATTR(small_core_siblings, 0444, show_small_core_siblings, NULL);
 +
- static int __init topology_init(void)
++static inline void add_cpu_to_smallcore_masks(int cpu)
++{
++	struct small_core_sibling *this_small_core = &per_cpu(small_core, cpu);
++	int i, first_thread = cpu_first_thread_sibling(cpu);
++
++	if (!has_big_cores)
++		return;
++
++	if (unlikely(cpumask_empty(this_small_core->cpu_l1_cache_map)))
++		init_small_core_data(cpu, this_small_core);
++
++	cpumask_set_cpu(cpu, cpu_smallcore_mask(cpu));
++
++	for (i = first_thread; i < first_thread + threads_per_core; i++) {
++		if (unlikely(!this_small_core->parse_success)) {
++			/* Fallback to siblings of the big-core */
++			set_cpus_related(i, cpu, cpu_smallcore_mask);
++			continue;
++		}
++
++		if (cpumask_test_cpu(i, this_small_core->cpu_l1_cache_map))
++			set_cpus_related(i, cpu, cpu_smallcore_mask);
++	}
++}
++
+ static void add_cpu_to_masks(int cpu)
  {
- 	int cpu, r;
-@@ -1048,6 +1079,13 @@ static int __init topology_init(void)
- 			register_cpu(c, cpu);
+ 	int first_thread = cpu_first_thread_sibling(cpu);
+@@ -1006,11 +1121,11 @@ static void add_cpu_to_masks(int cpu)
+ 	 * add it to it's own thread sibling mask.
+ 	 */
+ 	cpumask_set_cpu(cpu, cpu_sibling_mask(cpu));
+-
+ 	for (i = first_thread; i < first_thread + threads_per_core; i++)
+ 		if (cpu_online(i))
+ 			set_cpus_related(i, cpu, cpu_sibling_mask);
  
- 			device_create_file(&c->dev, &dev_attr_physical_id);
++	add_cpu_to_smallcore_masks(cpu);
+ 	/*
+ 	 * Copy the thread sibling mask into the cache sibling mask
+ 	 * and mark any CPUs that share an L2 with this CPU.
+@@ -1040,6 +1155,7 @@ static void add_cpu_to_masks(int cpu)
+ void start_secondary(void *unused)
+ {
+ 	unsigned int cpu = smp_processor_id();
++	struct cpumask *(*sibling_mask)(int) = cpu_sibling_mask;
+ 
+ 	mmgrab(&init_mm);
+ 	current->active_mm = &init_mm;
+@@ -1065,11 +1181,13 @@ void start_secondary(void *unused)
+ 	/* Update topology CPU masks */
+ 	add_cpu_to_masks(cpu);
+ 
++	if (has_big_cores)
++		sibling_mask = cpu_smallcore_mask;
+ 	/*
+ 	 * Check for any shared caches. Note that this must be done on a
+ 	 * per-core basis because one core in the pair might be disabled.
+ 	 */
+-	if (!cpumask_equal(cpu_l2_cache_mask(cpu), cpu_sibling_mask(cpu)))
++	if (!cpumask_equal(cpu_l2_cache_mask(cpu), sibling_mask(cpu)))
+ 		shared_caches = true;
+ 
+ 	set_numa_node(numa_cpu_lookup_table[cpu]);
+@@ -1136,6 +1254,13 @@ static const struct cpumask *shared_cache_mask(int cpu)
+ 	return cpu_l2_cache_mask(cpu);
+ }
+ 
++#ifdef CONFIG_SCHED_SMT
++static const struct cpumask *smallcore_smt_mask(int cpu)
++{
++	return cpu_smallcore_mask(cpu);
++}
++#endif
 +
-+			if (has_big_cores) {
-+				const struct device_attribute *attr =
-+				       &dev_attr_small_core_siblings;
-+
-+			       device_create_file(&c->dev, attr);
-+			}
- 		}
- 	}
- 	r = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "powerpc/topology:online",
+ static struct sched_domain_topology_level power9_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+ 	{ cpu_smt_mask, powerpc_smt_flags, SD_INIT_NAME(SMT) },
+@@ -1158,6 +1283,13 @@ void __init smp_cpus_done(unsigned int max_cpus)
+ 
+ 	dump_numa_cpu_topology();
+ 
++#ifdef CONFIG_SCHED_SMT
++	if (has_big_cores) {
++		pr_info("Using small cores at SMT level\n");
++		power9_topology[0].mask = smallcore_smt_mask;
++		powerpc_topology[0].mask = smallcore_smt_mask;
++	}
++#endif
+ 	/*
+ 	 * If any CPU detects that it's sharing a cache with another CPU then
+ 	 * use the deeper topology that is aware of this sharing.
 -- 
 1.9.4
