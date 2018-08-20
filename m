@@ -1,32 +1,32 @@
-Return-Path: <arndbergmann@gmail.com>
-Received: from mail-qk0-f195.google.com (mail-qk0-f195.google.com
- [209.85.220.195])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vBbV585nzF1R0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 21:36:38 +1000 (AEST)
-Received: by mail-qk0-f195.google.com with SMTP id d131-v6so511389qke.11
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 04:36:38 -0700 (PDT)
-MIME-Version: 1.0
-References: <20180817102645.3839621-1-arnd@arndb.de>
- <20180817102645.3839621-8-arnd@arndb.de>
- <CAJZ5v0iCgQxxuoCB9B4-Ho3xeLwb4v99Xyw-9e-tT53mRD+YVQ@mail.gmail.com>
- <CAK8P3a31Ds14Ke1qLoMapK1Wq1M4tR6n+nL1VOKzR8+oN0eOBw@mail.gmail.com>
- <CAJZ5v0gu_agFQBS7UjTMY3FR7woPPN-riJ6frwk1QoetGoVjfA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0gu_agFQBS7UjTMY3FR7woPPN-riJ6frwk1QoetGoVjfA@mail.gmail.com>
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 20 Aug 2018 13:36:19 +0200
-Message-ID: <CAK8P3a2nHxGTo9ajAweQpoutLhUns8SK0c6NWf4nV=PZhf0j_A@mail.gmail.com>
-Subject: Re: [RFC 07/15] PCI/ACPI: clean up acpi_pci_root_create()
-To: Rafael Wysocki <rafael@kernel.org>
-Cc: linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Christoph Hellwig <hch@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vGRH6VbyzDqp5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 00:29:47 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7KETVwA139129
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 10:29:45 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2kyvpb73rs-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 10:29:44 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 20 Aug 2018 15:29:43 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: aneesh.kumar@linux.ibm.com, mpe@ellerman.id.au, benh@kernel.crashing.org,
+ paulus@samba.org, npiggin@gmail.com
+Subject: [PATCH v2 1/3] powerpc/pseries/mm: Introducing FW_FEATURE_BLOCK_REMOVE
+Date: Mon, 20 Aug 2018 16:29:34 +0200
+In-Reply-To: <1534775376-22480-1-git-send-email-ldufour@linux.vnet.ibm.com>
+References: <1534775376-22480-1-git-send-email-ldufour@linux.vnet.ibm.com>
+Message-Id: <1534775376-22480-2-git-send-email-ldufour@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,30 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 20, 2018 at 1:24 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Mon, Aug 20, 2018 at 1:20 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> >
-> > On Mon, Aug 20, 2018 at 10:23 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > > On Fri, Aug 17, 2018 at 12:33 PM Arnd Bergmann <arnd@arndb.de> wrote:
-> > > > @@ -909,8 +881,7 @@ struct pci_bus *acpi_pci_root_create(struct acpi_pci_root *root,
-> > > >         int ret, busnum = root->secondary.start;
-> > > >         struct acpi_device *device = root->device;
-> > > >         int node = acpi_get_node(device->handle);
-> > > > -       struct pci_bus *bus;
-> > > > -       struct pci_host_bridge *host_bridge;
-> > > > +       struct pci_host_bridge *bridge;
-> > >
-> > > Why "bridge" and not "host" or even something to stand for "root complex"?
-> > >
-> > > Or maybe it can still be "host_bridge"?
-> >
-> > I did this for consistency with the naming in drivers/pci/probe.c,
-> > which always declares the local variable as 'struct pci_host_bridge *bridge'.
-> > It's easy to change here if you feel strongly about it (I don't).
->
-> I would leave host_bridge here.  It would make the patch smaller too I think.
+This feature tells if the hcall H_BLOCK_REMOVE is available.
 
-Ok, I've changed my local copy as you suggested now.
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/firmware.h       | 3 ++-
+ arch/powerpc/platforms/pseries/firmware.c | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-      Arnd
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 7a051bd21f87..2aca2655fe30 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -52,6 +52,7 @@
+ #define FW_FEATURE_PRRN		ASM_CONST(0x0000000200000000)
+ #define FW_FEATURE_DRMEM_V2	ASM_CONST(0x0000000400000000)
+ #define FW_FEATURE_DRC_INFO	ASM_CONST(0x0000000800000000)
++#define FW_FEATURE_BLOCK_REMOVE ASM_CONST(0x0000001000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -69,7 +70,7 @@ enum {
+ 		FW_FEATURE_SET_MODE | FW_FEATURE_BEST_ENERGY |
+ 		FW_FEATURE_TYPE1_AFFINITY | FW_FEATURE_PRRN |
+ 		FW_FEATURE_HPT_RESIZE | FW_FEATURE_DRMEM_V2 |
+-		FW_FEATURE_DRC_INFO,
++		FW_FEATURE_DRC_INFO | FW_FEATURE_BLOCK_REMOVE,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index a3bbeb43689e..1624501386f4 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -65,6 +65,7 @@ hypertas_fw_features_table[] = {
+ 	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
+ 	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
+ 	{FW_FEATURE_HPT_RESIZE,		"hcall-hpt-resize"},
++	{FW_FEATURE_BLOCK_REMOVE,	"hcall-block-remove"},
+ };
+ 
+ /* Build up the firmware features bitmask using the contents of
+-- 
+2.7.4
