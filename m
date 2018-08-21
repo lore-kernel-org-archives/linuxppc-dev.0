@@ -3,22 +3,22 @@ Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
  [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vX1x3zzdzDrWY
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 10:42:13 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7L0dLuM100469
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:42:11 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m04x76ha7-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vX3P5k0zzF162
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 10:43:29 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7L0dLnT007617
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:43:27 -0400
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m04x1xh6j-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:42:10 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:43:27 -0400
 Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 20 Aug 2018 20:42:10 -0400
-Subject: Re: [PATCH 7/9] PCI: hotplug: Drop hotplug_slot_info
+ Mon, 20 Aug 2018 20:43:26 -0400
+Subject: Re: [PATCH 8/9] PCI: hotplug: Embed hotplug_slot
 To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
  linux-pci@vger.kernel.org, Sinan Kaya <okaya@kernel.org>,
  Mika Westerberg <mika.westerberg@linux.intel.com>
@@ -33,13 +33,13 @@ Cc: Scott Murray <scott@spiteful.org>, linux-s390@vger.kernel.org,
  Andy Shevchenko <andy@infradead.org>,
  Gerald Schaefer <gerald.schaefer@de.ibm.com>, Len Brown <lenb@kernel.org>
 References: <cover.1534686484.git.lukas@wunner.de>
- <a364bcc959e01f2ebab27cefc5b87ff01633275c.1534686485.git.lukas@wunner.de>
+ <9918fbca94bcfc03d1560b191d138d3e6664cc86.1534686485.git.lukas@wunner.de>
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 20 Aug 2018 17:41:58 -0700
+Date: Mon, 20 Aug 2018 17:43:17 -0700
 MIME-Version: 1.0
-In-Reply-To: <a364bcc959e01f2ebab27cefc5b87ff01633275c.1534686485.git.lukas@wunner.de>
+In-Reply-To: <9918fbca94bcfc03d1560b191d138d3e6664cc86.1534686485.git.lukas@wunner.de>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <a3cb1919-6796-ae68-718d-d5c13caef3f1@linux.vnet.ibm.com>
+Message-Id: <f2ff6486-35bc-2ade-deec-caa7ab15d8e5@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,54 +50,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 08/19/2018 07:29 AM, Lukas Wunner wrote:
-> Ever since the PCI hotplug core was introduced in 2002, drivers had to
-> allocate and register a struct hotplug_slot_info for every slot:
+> When the PCI hotplug core and its first user, cpqphp, were introduced in
+> February 2002 with historic commit a8a2069f432c, cpqphp allocated a slot
+> struct for its internal use plus a hotplug_slot struct to be registered
+> with the hotplug core and linked the two with pointers:
 > https://git.kernel.org/tglx/history/c/a8a2069f432c
 > 
-> Apparently the idea was that drivers furnish the hotplug core with an
-> up-to-date card presence status, power status, latch status and
-> attention indicator status as well as notify the hotplug core of changes
-> thereof.  However only 4 out of 12 hotplug drivers bother to notify the
-> hotplug core with pci_hp_change_slot_info() and the hotplug core never
-> made any use of the information:  There is just a single macro in
-> pci_hotplug_core.c, GET_STATUS(), which uses the hotplug_slot_info if
-> the driver lacks the corresponding callback in hotplug_slot_ops.  The
-> macro is called when the user reads the attribute via sysfs.
+> Nowadays, the predominant pattern in the tree is to embed ("subclass")
+> such structures in one another and cast to the containing struct with
+> container_of().  But it wasn't until July 2002 that container_of() was
+> introduced with historic commit ec4f214232cf:
+> https://git.kernel.org/tglx/history/c/ec4f214232cf
 > 
-> Now, if the callback isn't defined, the attribute isn't exposed in sysfs
-> in the first place (see e.g. has_power_file()).  There are only two
-> situations when the hotplug_slot_info would actually be accessed:
+> pnv_php, introduced in 2016, did the right thing and embedded struct
+> hotplug_slot in its internal struct pnv_php_slot, but all other drivers
+> cargo-culted cpqphp's design and linked separate structs with pointers.
 > 
-> * If the driver defines ->enable_slot or ->disable_slot but not
->   ->get_power_status.
+> Embedding structs is preferrable to linking them with pointers because
+> it requires fewer allocations, thereby reducing overhead and simplifying
+> error paths.  Casting an embedded struct to the containing struct
+> becomes a cheap subtraction rather than a dereference.  And having fewer
+> pointers reduces the risk of them pointing nowhere either accidentally
+> or due to an attack.
 > 
-> * If the driver defines ->set_attention_status but not
->   ->get_attention_status.
-> 
-> There is no driver doing the former and just a single driver doing the
-> latter, namely pnv_php.c.  Amend it with a ->get_attention_status
-> callback.  With that, the hotplug_slot_info becomes completely unused by
-> the PCI hotplug core.  But a few drivers use it internally as a cache:
-> 
-> cpcihp uses it to cache the latch_status and adapter_status.
-> cpqhp uses it to cache the adapter_status.
-> pnv_php and rpaphp use it to cache the attention_status.
-> shpchp uses it to cache all four values.
-> 
-> Amend these drivers to cache the information in their private slot
-> struct.  shpchp's slot struct already contains members to cache the
-> power_status and adapter_status, so additional members are only needed
-> for the other two values.  In the case of cpqphp, the cached value is
-> only accessed in a single place, so instead of caching it, read the
-> current value from the hardware.
-> 
-> Caution:  acpiphp, cpci, cpqhp, shpchp, asus-wmi and eeepc-laptop
-> populate the hotplug_slot_info with initial values on probe.  That code
-> is herewith removed.  There is a theoretical chance that the code has
-> side effects without which the driver fails to function, e.g. if the
-> ACPI method to read the adapter status needs to be executed at least
-> once on probe.  That seems unlikely to me, still maintainers should
-> review the changes carefully for this possibility.
+> Convert all drivers to embed struct hotplug_slot in their internal slot
+> struct.  The "private" pointer in struct hotplug_slot thereby becomes
+> unused, so drop it.
 > 
 > Signed-off-by: Lukas Wunner <lukas@wunner.de>
 > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
@@ -110,9 +88,7 @@ On 08/19/2018 07:29 AM, Lukas Wunner wrote:
 > Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
 > Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 > Cc: Corentin Chary <corentin.chary@gmail.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Andy Shevchenko <andy@infradead.org>
-> ---
+> Cc: Darren Hart <dvhart@infradead.org
 
 With regards to driver/pci/hotplug/rpa*
 
