@@ -1,29 +1,45 @@
-Return-Path: <vabhav.sharma@nxp.com>
-Received: from EUR03-DB5-obe.outbound.protection.outlook.com
- (mail-eopbgr40087.outbound.protection.outlook.com [40.107.4.87])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vNGK1YmQzF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 04:52:25 +1000 (AEST)
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- robh+dt@kernel.org, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, mturquette@baylibre.com,
- sboyd@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org,
- linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
- linux-kernel-owner@vger.kernel.org, catalin.marinas@arm.com,
- will.deacon@arm.com, gregkh@linuxfoundation.org, arnd@arndb.de,
- kstewart@linuxfoundation.org, yamada.masahiro@socionext.com
-Cc: linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
- Vabhav Sharma <vabhav.sharma@nxp.com>,
- Priyanka Jain <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
-Subject: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
-Date: Mon, 20 Aug 2018 12:17:16 +0530
-Message-Id: <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
-In-Reply-To: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vWxR2qSKzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 10:38:19 +1000 (AEST)
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7L0Xlt5055851
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:38:17 -0400
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m066g3w6x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 20:38:17 -0400
+Received: from localhost
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Mon, 20 Aug 2018 20:38:15 -0400
+Subject: Re: [PATCH 6/9] PCI: hotplug: Constify hotplug_slot_ops
+To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
+ linux-pci@vger.kernel.org, Sinan Kaya <okaya@kernel.org>,
+ Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Scott Murray <scott@spiteful.org>, linux-s390@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ acpi4asus-user@lists.sourceforge.net, "Rafael J. Wysocki"
+ <rjw@rjwysocki.net>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ platform-driver-x86@vger.kernel.org, linux-acpi@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Sebastian Ott
+ <sebott@linux.vnet.ibm.com>, Corentin Chary <corentin.chary@gmail.com>,
+ Darren Hart <dvhart@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ Andy Shevchenko <andy@infradead.org>,
+ Gerald Schaefer <gerald.schaefer@de.ibm.com>, Len Brown <lenb@kernel.org>
+References: <cover.1534686484.git.lukas@wunner.de>
+ <40b17d029c4fbf099535f989b1d6dd013f708a73.1534686485.git.lukas@wunner.de>
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 20 Aug 2018 17:38:06 -0700
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <40b17d029c4fbf099535f989b1d6dd013f708a73.1534686485.git.lukas@wunner.de>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <92f4ee2a-39b8-daa6-ea36-4214e4a438bd@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,128 +49,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-LX2160A reference design board (RDB) is a high-performance
-computing, evaluation, and development platform with LX2160A
-SoC.
+On 08/19/2018 07:29 AM, Lukas Wunner wrote:
+> Hotplug drivers cannot declare their hotplug_slot_ops const, making them
+> attractive targets for attackers, because upon registration of a hotplug
+> slot, __pci_hp_initialize() writes to the "owner" and "mod_name" members
+> in that struct.
+> 
+> Fix by moving these members to struct hotplug_slot and constify every
+> driver's hotplug_slot_ops except for pciehp.
+> 
+> pciehp constructs its hotplug_slot_ops at runtime based on the PCIe
+> port's capabilities, hence cannot declare them const.  It can be
+> converted to __write_rarely once that's mainlined:
+> http://www.openwall.com/lists/kernel-hardening/2016/11/16/3
+> 
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Scott Murray <scott@spiteful.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Cc: Sebastian Ott <sebott@linux.vnet.ibm.com>
+> Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> Cc: Corentin Chary <corentin.chary@gmail.com>
+> Cc: Darren Hart <dvhart@infradead.org>
+> Cc: Andy Shevchenko <andy@infradead.org>
+> ---
 
-Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
----
- arch/arm64/boot/dts/freescale/Makefile            |  1 +
- arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 95 +++++++++++++++++++++++
- 2 files changed, 96 insertions(+)
- create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
+With regards to drivers/pci/hotplug/rpa*
 
-diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 86e18ad..445b72b 100644
---- a/arch/arm64/boot/dts/freescale/Makefile
-+++ b/arch/arm64/boot/dts/freescale/Makefile
-@@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
- dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-+dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-new file mode 100644
-index 0000000..70fad20
---- /dev/null
-+++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-@@ -0,0 +1,95 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+//
-+// Device Tree file for LX2160ARDB
-+//
-+// Copyright 2018 NXP
-+
-+/dts-v1/;
-+
-+#include "fsl-lx2160a.dtsi"
-+
-+/ {
-+	model = "NXP Layerscape LX2160ARDB";
-+	compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-+
-+	aliases {
-+		crypto = &crypto;
-+		serial0 = &uart0;
-+		serial1 = &uart1;
-+		serial2 = &uart2;
-+		serial3 = &uart3;
-+	};
-+	chosen {
-+		stdout-path = "serial0:115200n8";
-+	};
-+};
-+
-+&uart0 {
-+	status = "okay";
-+};
-+
-+&uart1 {
-+	status = "okay";
-+};
-+
-+&i2c0 {
-+	status = "okay";
-+	pca9547@77 {
-+		compatible = "nxp,pca9547";
-+		reg = <0x77>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		i2c@2 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x2>;
-+
-+			ina220@40 {
-+				compatible = "ti,ina220";
-+				reg = <0x40>;
-+				shunt-resistor = <1000>;
-+			};
-+		};
-+
-+		i2c@3 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <0x3>;
-+
-+			sa56004@4c {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4c>;
-+			};
-+
-+			sa56004@4d {
-+				compatible = "nxp,sa56004";
-+				reg = <0x4d>;
-+			};
-+		};
-+	};
-+};
-+
-+&i2c4 {
-+	status = "okay";
-+
-+	rtc@51 {
-+		compatible = "nxp,pcf2129";
-+		reg = <0x51>;
-+		// IRQ10_B
-+		interrupts = <0 150 0x4>;
-+		};
-+
-+};
-+
-+&usb0 {
-+	status = "okay";
-+};
-+
-+&usb1 {
-+	status = "okay";
-+};
-+
-+&crypto {
-+	status = "okay";
-+};
--- 
-2.7.4
+Acked-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
