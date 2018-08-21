@@ -2,36 +2,35 @@ Return-Path: <marcelo.cerri@canonical.com>
 Received: from youngberry.canonical.com (youngberry.canonical.com
  [91.189.89.112]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vvKx0n52zF0kx
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 01:12:13 +1000 (AEST)
-Received: from mail-qt0-f197.google.com ([209.85.216.197])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vxK14YqfzF0kx
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 02:41:40 +1000 (AEST)
+Received: from mail-qt0-f199.google.com ([209.85.216.199])
  by youngberry.canonical.com with esmtps (TLS1.0:RSA_AES_128_CBC_SHA1:16)
  (Exim 4.76) (envelope-from <marcelo.cerri@canonical.com>)
- id 1fs8KI-0001Xq-Ga
- for linuxppc-dev@lists.ozlabs.org; Tue, 21 Aug 2018 15:12:10 +0000
-Received: by mail-qt0-f197.google.com with SMTP id z6-v6so16758581qto.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 08:12:10 -0700 (PDT)
-Date: Tue, 21 Aug 2018 12:12:00 -0300
+ id 1fs9iq-0006FY-Np
+ for linuxppc-dev@lists.ozlabs.org; Tue, 21 Aug 2018 16:41:36 +0000
+Received: by mail-qt0-f199.google.com with SMTP id z44-v6so1660462qtg.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 09:41:36 -0700 (PDT)
+Date: Tue, 21 Aug 2018 13:41:26 -0300
 From: Marcelo Henrique Cerri <marcelo.cerri@canonical.com>
-To: Christophe LEROY <christophe.leroy@c-s.fr>
-Cc: Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek@gmail.com>,
- Stephan Mueller <smueller@chronox.de>, linux-crypto@vger.kernel.org,
- Herbert Xu <herbert@gondor.apana.org.au>,
+To: Ondrej =?utf-8?B?TW9zbsOhxI1law==?= <omosnacek+linux-crypto@gmail.com>
+Cc: omosnace@redhat.com, Herbert Xu <herbert@gondor.apana.org.au>,
+ linux-crypto@vger.kernel.org, Stephan Mueller <smueller@chronox.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-Subject: Re: BUG: libkcapi tests trigger sleep-in-atomic bug in VMX code
- (ppc64)
-Message-ID: <20180821151200.GD28751@gallifrey>
-References: <CAAUqJDvErj0Y4=GBtXgvBRON7MEic7_-jBZNvjacwcOd0TF_2g@mail.gmail.com>
- <3627129.cWTIy1uDMC@tauon.chronox.de>
- <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
- <708f0ba5-6ce2-19e6-1269-ea9a14090694@c-s.fr>
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, leo.barbosa@canonical.com,
+ stable@vger.kernel.org,
+ Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] crypto: vmx - Fix sleep-in-atomic bugs
+Message-ID: <20180821164126.GF28751@gallifrey>
+References: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
+ <20180821151623.26061-1-omosnace@redhat.com>
+ <CAAUqJDu1ib4Rfr6fnV2L001Uf3frkv6KQ-WJz6UvQ=R0VuXipg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
- protocol="application/pgp-signature"; boundary="5p8PegU4iirBW1oA"
-In-Reply-To: <708f0ba5-6ce2-19e6-1269-ea9a14090694@c-s.fr>
+ protocol="application/pgp-signature"; boundary="rMWmSaSbD7nr+du9"
+In-Reply-To: <CAAUqJDu1ib4Rfr6fnV2L001Uf3frkv6KQ-WJz6UvQ=R0VuXipg@mail.gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,102 +41,221 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---5p8PegU4iirBW1oA
+--rMWmSaSbD7nr+du9
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-CC: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+On Tue, Aug 21, 2018 at 05:24:45PM +0200, Ondrej Mosn=C3=A1=C4=8Dek wrote:
+> CC: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
+> linuxppc-dev@lists.ozlabs.org
+>=20
+> (Sorry, sent this before reading new e-mails in the thread...)
+>=20
+> ut 21. 8. 2018 o 17:18 Ondrej Mosnacek <omosnace@redhat.com> nap=C3=ADsal=
+(a):
+> >
+> > This patch fixes sleep-in-atomic bugs in AES-CBC and AES-XTS VMX
+> > implementations. The problem is that the blkcipher_* functions should
+> > not be called in atomic context.
+> >
+> > The bugs can be reproduced via the AF_ALG interface by trying to
+> > encrypt/decrypt sufficiently large buffers (at least 64 KiB) using the
+> > VMX implementations of 'cbc(aes)' or 'xts(aes)'. Such operations then
+> > trigger BUG in crypto_yield():
+> >
+> > [  891.863680] BUG: sleeping function called from invalid context at in=
+clude/crypto/algapi.h:424
+> > [  891.864622] in_atomic(): 1, irqs_disabled(): 0, pid: 12347, name: kc=
+api-enc
+> > [  891.864739] 1 lock held by kcapi-enc/12347:
+> > [  891.864811]  #0: 00000000f5d42c46 (sk_lock-AF_ALG){+.+.}, at: skciph=
+er_recvmsg+0x50/0x530
+> > [  891.865076] CPU: 5 PID: 12347 Comm: kcapi-enc Not tainted 4.19.0-0.r=
+c0.git3.1.fc30.ppc64le #1
+> > [  891.865251] Call Trace:
+> > [  891.865340] [c0000003387578c0] [c000000000d67ea4] dump_stack+0xe8/0x=
+164 (unreliable)
+> > [  891.865511] [c000000338757910] [c000000000172a58] ___might_sleep+0x2=
+f8/0x310
+> > [  891.865679] [c000000338757990] [c0000000006bff74] blkcipher_walk_don=
+e+0x374/0x4a0
+> > [  891.865825] [c0000003387579e0] [d000000007e73e70] p8_aes_cbc_encrypt=
++0x1c8/0x260 [vmx_crypto]
+> > [  891.865993] [c000000338757ad0] [c0000000006c0ee0] skcipher_encrypt_b=
+lkcipher+0x60/0x80
+> > [  891.866128] [c000000338757b10] [c0000000006ec504] skcipher_recvmsg+0=
+x424/0x530
+> > [  891.866283] [c000000338757bd0] [c000000000b00654] sock_recvmsg+0x74/=
+0xa0
+> > [  891.866403] [c000000338757c10] [c000000000b00f64] ___sys_recvmsg+0xf=
+4/0x2f0
+> > [  891.866515] [c000000338757d90] [c000000000b02bb8] __sys_recvmsg+0x68=
+/0xe0
+> > [  891.866631] [c000000338757e30] [c00000000000bbe4] system_call+0x5c/0=
+x70
+> >
+> > Fixes: 8c755ace357c ("crypto: vmx - Adding CBC routines for VMX module")
+> > Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+> > ---
+> > This patch should fix the issue, but I didn't test it. (I'll see if I
+> > can find some time tomorrow to try and recompile the kernel on a PPC
+> > machine... in the meantime please review :)
+> >
+> >  drivers/crypto/vmx/aes_cbc.c | 30 ++++++++++++++----------------
+> >  drivers/crypto/vmx/aes_xts.c | 19 ++++++++++++-------
+> >  2 files changed, 26 insertions(+), 23 deletions(-)
+> >
+> > diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
+> > index 5285ece4f33a..b71895871be3 100644
+> > --- a/drivers/crypto/vmx/aes_cbc.c
+> > +++ b/drivers/crypto/vmx/aes_cbc.c
+> > @@ -107,24 +107,23 @@ static int p8_aes_cbc_encrypt(struct blkcipher_de=
+sc *desc,
+> >                 ret =3D crypto_skcipher_encrypt(req);
+> >                 skcipher_request_zero(req);
+> >         } else {
+> > -               preempt_disable();
+> > -               pagefault_disable();
+> > -               enable_kernel_vsx();
+> > -
+> >                 blkcipher_walk_init(&walk, dst, src, nbytes);
+> >                 ret =3D blkcipher_walk_virt(desc, &walk);
+> >                 while ((nbytes =3D walk.nbytes)) {
+> > +                       preempt_disable();
+> > +                       pagefault_disable();
+> > +                       enable_kernel_vsx();
+> >                         aes_p8_cbc_encrypt(walk.src.virt.addr,
+> >                                            walk.dst.virt.addr,
+> >                                            nbytes & AES_BLOCK_MASK,
+> >                                            &ctx->enc_key, walk.iv, 1);
+> > +                       disable_kernel_vsx();
+> > +                       pagefault_enable();
+> > +                       preempt_enable();
+> > +
+> >                         nbytes &=3D AES_BLOCK_SIZE - 1;
+> >                         ret =3D blkcipher_walk_done(desc, &walk, nbytes=
+);
+> >                 }
+> > -
+> > -               disable_kernel_vsx();
+> > -               pagefault_enable();
+> > -               preempt_enable();
+> >         }
+> >
+> >         return ret;
+> > @@ -147,24 +146,23 @@ static int p8_aes_cbc_decrypt(struct blkcipher_de=
+sc *desc,
+> >                 ret =3D crypto_skcipher_decrypt(req);
+> >                 skcipher_request_zero(req);
+> >         } else {
+> > -               preempt_disable();
+> > -               pagefault_disable();
+> > -               enable_kernel_vsx();
+> > -
+> >                 blkcipher_walk_init(&walk, dst, src, nbytes);
+> >                 ret =3D blkcipher_walk_virt(desc, &walk);
+> >                 while ((nbytes =3D walk.nbytes)) {
+> > +                       preempt_disable();
+> > +                       pagefault_disable();
+> > +                       enable_kernel_vsx();
+> >                         aes_p8_cbc_encrypt(walk.src.virt.addr,
+> >                                            walk.dst.virt.addr,
+> >                                            nbytes & AES_BLOCK_MASK,
+> >                                            &ctx->dec_key, walk.iv, 0);
+> > +                       disable_kernel_vsx();
+> > +                       pagefault_enable();
+> > +                       preempt_enable();
+> > +
+> >                         nbytes &=3D AES_BLOCK_SIZE - 1;
+> >                         ret =3D blkcipher_walk_done(desc, &walk, nbytes=
+);
+> >                 }
+> > -
+> > -               disable_kernel_vsx();
+> > -               pagefault_enable();
+> > -               preempt_enable();
+> >         }
+> >
+> >         return ret;
+> > diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
+> > index 8bd9aff0f55f..016ef52390c9 100644
+> > --- a/drivers/crypto/vmx/aes_xts.c
+> > +++ b/drivers/crypto/vmx/aes_xts.c
+> > @@ -116,13 +116,14 @@ static int p8_aes_xts_crypt(struct blkcipher_desc=
+ *desc,
+> >                 ret =3D enc? crypto_skcipher_encrypt(req) : crypto_skci=
+pher_decrypt(req);
+> >                 skcipher_request_zero(req);
+> >         } else {
+> > +               blkcipher_walk_init(&walk, dst, src, nbytes);
+> > +
+> > +               ret =3D blkcipher_walk_virt(desc, &walk);
+> > +
+> >                 preempt_disable();
+> >                 pagefault_disable();
+> >                 enable_kernel_vsx();
+> >
+> > -               blkcipher_walk_init(&walk, dst, src, nbytes);
+> > -
+> > -               ret =3D blkcipher_walk_virt(desc, &walk);
+> >                 iv =3D walk.iv;
+> >                 memset(tweak, 0, AES_BLOCK_SIZE);
+> >                 aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
+> > @@ -135,13 +136,17 @@ static int p8_aes_xts_crypt(struct blkcipher_desc=
+ *desc,
+> >                                 aes_p8_xts_decrypt(walk.src.virt.addr, =
+walk.dst.virt.addr,
+> >                                                 nbytes & AES_BLOCK_MASK=
+, &ctx->dec_key, NULL, tweak);
+> >
+> > +                       disable_kernel_vsx();
+> > +                       pagefault_enable();
+> > +                       preempt_enable();
+> > +
+> >                         nbytes &=3D AES_BLOCK_SIZE - 1;
+> >                         ret =3D blkcipher_walk_done(desc, &walk, nbytes=
+);
+> > -               }
+> >
+> > -               disable_kernel_vsx();
+> > -               pagefault_enable();
+> > -               preempt_enable();
+> > +                       preempt_disable();
+> > +                       pagefault_disable();
+> > +                       enable_kernel_vsx();
+> > +               }
 
-Yes, I do believe that CTR is doing it right. Preemption only needs to be
-disabled during the aes_p8_cbc_encrypt() call, to avoid trashing the
-VSX registers during the AES operation.
+That doesn't seem right. It would leave preemption disabled when
+leaving the function.
 
---=20
+
+> >         }
+> >         return ret;
+> >  }
+> > --
+> > 2.17.1
+> >
+
+--
 Regards,
 Marcelo
 
-On Tue, Aug 21, 2018 at 05:03:50PM +0200, Christophe LEROY wrote:
->=20
->=20
-> Le 21/08/2018 =C3=A0 16:38, Ondrej Mosn=C3=A1=C4=8Dek a =C3=A9crit=C2=A0:
-> > ut 21. 8. 2018 o 16:18 Stephan Mueller <smueller@chronox.de> nap=C3=ADs=
-al(a):
-> > > Am Dienstag, 21. August 2018, 14:48:11 CEST schrieb Ondrej Mosn=C3=A1=
-=C4=8Dek:
-> > >=20
-> > > Hi Ondrej, Marcelo,
-> > >=20
-> > > (+Marcelo)
-> > >=20
-> > > > Looking at crypto/algif_skcipher.c, I can see that skcipher_recvmsg=
-()
-> > > > holds the socket lock the whole time and yet passes
-> > > > CRYPTO_TFM_REQ_MAY_SLEEP to the cipher implementation. Isn't that
-> > > > wrong?
-> > >=20
-> > > I think you are referring to lock_sock(sk)?
-> > >=20
-> > > If so, this should not be the culprit: the socket lock is in essence =
-a mutex-
-> > > like operation with its own wait queue that it allowed to sleep. In
-> > > lock_sock_nested that is called by lock_sock it even has the call of
-> > > might_sleep which indicates that the caller may be put to sleep.
-> > >=20
-> > > Looking into the code (without too much debugging) I see in the funct=
-ion
-> > > p8_aes_cbc_encrypt that is part of the stack trace the call to
-> > > preempt_disable() which starts an atomic context. The preempt_enable(=
-) is
-> > > invoked after the walk operation.
-> > >=20
-> > > The preempt_disable increases the preempt_count. That counter is used=
- by
-> > > in_atomic() to check whether we are in atomic context.
-> > >=20
-> > > The issue is that blkcipher_walk_done may call crypto_yield() which t=
-hen
-> > > invokes cond_resched if the implementation is allowed to sleep.
-> >=20
-> > Indeed, you're right, the issue is actually in the vmx_crypto code. I
-> > remember having looked at the 'ctr(aes)' implementation in there a few
-> > days ago (I think I was trying to debug this very issue, but for some
-> > reason I only looked at ctr(aes)...) and I didn't find any bug, so
-> > that's why I jumped to suspecting the algif_skcipher code... I should
-> > have double-checked :)
-> >=20
-> > It turns out the 'cbc(aes)' (and actually also 'xts(aes)')
-> > implementation is coded a bit differently and they both *do* contain
-> > the sleep-in-atomic bug. I will try to fix them according to the
-> > correct CTR implementation and send a patch.
->=20
-> CC: linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
->=20
-> >=20
-> > Thanks,
-> > Ondrej
-> >=20
-> > > @Marcelo: shouldn't be the sleep flag be cleared when entering the
-> > > preempt_disable section?
-> > >=20
-> > > Ciao
-> > > Stephan
-> > >=20
-> > >=20
-
---5p8PegU4iirBW1oA
+--rMWmSaSbD7nr+du9
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEDWI6S4SUeUOX/xHQzxpLxzTV7UcFAlt8K8AACgkQzxpLxzTV
-7Ue3nAf/YyKY6KgeWd3M8jMzNsWBWGl8/cCmHxtrHPa8RcOdMsaajCyJGTLwIkt/
-dQCth8WNTCrl36IQ1WY7v4J7jPNb+D4ApqPhNRJgyKZileAfctpKpLadzHc9laIZ
-7f92OC/zTvquIcgiDKxTiVWxcck1n7070L0pI9aANMlsRm5L3of0RqgtkAfb2bpW
-cEp1NcpF82NI5Qw1ikYNziYhawQ79Qt0Nc67RGrj+NNKpULchFEsQ5g2ubZofYuP
-txknzHwuP4cI8VTK0odkdCtQYiBYskd8CADHl2Ycm0/3HawjC7TpsyLfEGNoxARe
-wkfpTi5XTL9CzwnY3vk+NJwdDyiMwA==
-=bcNb
+iQEzBAABCgAdFiEEDWI6S4SUeUOX/xHQzxpLxzTV7UcFAlt8QLYACgkQzxpLxzTV
+7Uc7BwgAxEIT2zS17X1MmKKDI6eEopU1q+xWekfv6DYkh/+joDZYJ6c7A6ozhVXx
+gUd390TY+OsawcEKWB9WgjdOjyuKfQzSG0STJ3MMkYlQ8ENrH0YSasMIQnUvRMnK
+xS1s+YJ9fd2uh6CHL03mtUt9FHCIPiX5Nfd5/2I5tANnqkYe51LEKpmOe9O7PRed
+i5OHMskP1EKCGJWrDRjZ9hbi9atBcfDjgRWxAVTDvAVtPLaSAsIizdoe0kuckLM3
+xBcpTe4TSUuH0X5bSxvxiISjxE4Vnyd2Y4+/rRBOlTJaSSy4vZTuikxocGH5Zb7l
+GgMq6P/MolrjUgpbJkoBJTpPmavTQg==
+=UL2m
 -----END PGP SIGNATURE-----
 
---5p8PegU4iirBW1oA--
+--rMWmSaSbD7nr+du9--
