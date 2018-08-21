@@ -1,22 +1,42 @@
-Return-Path: <david@redhat.com>
-Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vnPN12V1zF162
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:44:55 +1000 (AEST)
-From: David Hildenbrand <david@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
- xen-devel@lists.xenproject.org, devel@linuxdriverproject.org,
- David Hildenbrand <david@redhat.com>, Jonathan Corbet <corbet@lwn.net>,
- Michal Hocko <mhocko@suse.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH RFCv2 6/6] memory-hotplug.txt: Add some details about locking
- internals
-Date: Tue, 21 Aug 2018 12:44:18 +0200
-Message-Id: <20180821104418.12710-7-david@redhat.com>
-In-Reply-To: <20180821104418.12710-1-david@redhat.com>
-References: <20180821104418.12710-1-david@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vnpP41xvzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 21:03:09 +1000 (AEST)
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7LAwmkG107730
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 07:03:06 -0400
+Received: from e06smtp01.uk.ibm.com (e06smtp01.uk.ibm.com [195.75.94.97])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m0e2prmbf-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 07:03:06 -0400
+Received: from localhost
+ by e06smtp01.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Tue, 21 Aug 2018 12:03:04 +0100
+Date: Tue, 21 Aug 2018 04:02:58 -0700
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+ Mel Gorman <mgorman@techsingularity.net>,
+ Rik van Riel <riel@surriel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Suravee Suthikulpanit <suravee.suthikulpanit@amd.com>,
+ Andre Wild <wild@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 1/2] sched/topology: Set correct numa topology type
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <20180808081942.GA37418@linux.vnet.ibm.com>
+ <1533920419-17410-1-git-send-email-srikar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1533920419-17410-1-git-send-email-srikar@linux.vnet.ibm.com>
+Message-Id: <20180821110258.GA2080@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,74 +46,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Let's document the magic a bit, especially why device_hotplug_lock is
-required when adding/removing memory and how it all play together with
-requests to online/offline memory from user space.
+* Srikar Dronamraju <srikar@linux.vnet.ibm.com> [2018-08-10 22:30:18]:
 
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: David Hildenbrand <david@redhat.com>
----
- Documentation/memory-hotplug.txt | 39 +++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+> With commit 051f3ca02e46 ("sched/topology: Introduce NUMA identity node
+> sched domain") scheduler introduces an new numa level. However this
+> leads to numa topology on 2 node systems no more marked as NUMA_DIRECT.
+> After this commit, it gets reported as NUMA_BACKPLANE. This is because
+> sched_domains_numa_level is now 2 on 2 node systems.
+> 
+> Fix this by allowing setting systems that have upto 2 numa levels as
+> NUMA_DIRECT.
+> 
+> While here remove a code that assumes level can be 0.
+> 
+> Fixes: 051f3ca02e46 "Introduce NUMA identity node sched domain"
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
 
-diff --git a/Documentation/memory-hotplug.txt b/Documentation/memory-hotplug.txt
-index 7f49ebf3ddb2..03aaad7d7373 100644
---- a/Documentation/memory-hotplug.txt
-+++ b/Documentation/memory-hotplug.txt
-@@ -3,7 +3,7 @@ Memory Hotplug
- ==============
- 
- :Created:							Jul 28 2007
--:Updated: Add description of notifier of memory hotplug:	Oct 11 2007
-+:Updated: Add some details about locking internals:		Aug 20 2018
- 
- This document is about memory hotplug including how-to-use and current status.
- Because Memory Hotplug is still under development, contents of this text will
-@@ -495,6 +495,43 @@ further processing of the notification queue.
- 
- NOTIFY_STOP stops further processing of the notification queue.
- 
-+
-+Locking Internals
-+=================
-+
-+When adding/removing memory that uses memory block devices (i.e. ordinary RAM),
-+the device_hotplug_lock should be held to:
-+
-+- synchronize against online/offline requests (e.g. via sysfs). This way, memory
-+  block devices can only be accessed (.online/.state attributes) by user
-+  space once memory has been fully added. And when removing memory, we
-+  know nobody is in critical sections.
-+- synchronize against CPU hotplug and similar (e.g. relevant for ACPI and PPC)
-+
-+Especially, there is a possible lock inversion that is avoided using
-+device_hotplug_lock when adding memory and user space tries to online that
-+memory faster than expected:
-+
-+- device_online() will first take the device_lock(), followed by
-+  mem_hotplug_lock
-+- add_memory_resource() will first take the mem_hotplug_lock, followed by
-+  the device_lock() (while creating the devices, during bus_add_device()).
-+
-+As the device is visible to user space before taking the device_lock(), this
-+can result in a lock inversion.
-+
-+onlining/offlining of memory should be done via device_online()/
-+device_offline() - to make sure it is properly synchronized to actions
-+via sysfs. Holding device_hotplug_lock is advised (to e.g. protect online_type)
-+
-+When adding/removing/onlining/offlining memory or adding/removing
-+heterogeneous/device memory, we should always hold the mem_hotplug_lock to
-+serialise memory hotplug (e.g. access to global/zone variables).
-+
-+In addition, mem_hotplug_lock (in contrast to device_hotplug_lock) allows
-+for a quite efficient get_online_mems/put_online_mems implementation.
-+
-+
- Future Work
- ===========
- 
+Hey Peter,
+
+Did you look at these two patches?
+
 -- 
-2.17.1
+Thanks and Regards
+Srikar Dronamraju
