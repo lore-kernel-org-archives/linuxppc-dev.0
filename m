@@ -1,18 +1,27 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <BATV+d4094ddc20615de85f15+5476+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vrTH67SpzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 23:03:30 +1000 (AEST)
-Message-Id: <8097a1d32403ea47d076803e9070869badfe24bc.1534856426.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH] powerpc/nohash: fix pte_access_permitted()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- stable@vger.kernel.org
-Date: Tue, 21 Aug 2018 13:03:23 +0000 (UTC)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vrkY4KHFzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 23:14:57 +1000 (AEST)
+Date: Tue, 21 Aug 2018 06:14:41 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+ linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-kernel@vger.kernel.org,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org
+Subject: Re: [RFC 00/15] PCI: turn some __weak functions into callbacks
+Message-ID: <20180821131441.GA6156@infradead.org>
+References: <20180817102645.3839621-1-arnd@arndb.de>
+ <20180821061451.GB481@infradead.org>
+ <1534851050.14722.3.camel@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1534851050.14722.3.camel@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper
-for other platforms") replaced generic pte_access_permitted() by an
-arch specific one.
+On Tue, Aug 21, 2018 at 12:30:50PM +0100, David Woodhouse wrote:
+> On Mon, 2018-08-20 at 23:14 -0700, Christoph Hellwig wrote:
+> > On Fri, Aug 17, 2018 at 12:26:30PM +0200, Arnd Bergmann wrote:
+> > > Hi Bjorn and others,
+> > > 
+> > > Triggered by Christoph's patches, I had another go at converting
+> > > all of the remaining pci host bridge implementations to be based
+> > > on pci_alloc_host_bridge and a separate registration function.
+> > 
+> > I really like the idea behind this series.
+> 
+> Hm... are you turning direct calls into retpolined indirect calls?
 
-The generic one is defined as
-(pte_present(pte) && (!(write) || pte_write(pte)))
-
-The arch specific one is open coded checking that _PAGE_USER and
-_PAGE_WRITE (_PAGE_RW) flags are set, but lacking to check that
-_PAGE_RO and _PAGE_PRIVILEGED are unset, leading to a useless test
-on targets like the 8xx which defines _PAGE_RW and _PAGE_USER as 0.
-
-Commit 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted
-for hugetlb access check") replaced some tests performed with
-pte helpers by a call to pte_access_permitted(), leading to the same
-issue.
-
-This patch rewrites powerpc/nohash pte_access_permitted()
-using pte helpers.
-
-Fixes: 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper for other platforms")
-Fixes: 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted for hugetlb access check")
-Cc: stable@vger.kernel.org # v4.15+
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/include/asm/nohash/pgtable.h | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index 2160be2e4339..b321c82b3624 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -51,17 +51,14 @@ static inline int pte_present(pte_t pte)
- #define pte_access_permitted pte_access_permitted
- static inline bool pte_access_permitted(pte_t pte, bool write)
- {
--	unsigned long pteval = pte_val(pte);
- 	/*
- 	 * A read-only access is controlled by _PAGE_USER bit.
- 	 * We have _PAGE_READ set for WRITE and EXECUTE
- 	 */
--	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
--
--	if (write)
--		need_pte_bits |= _PAGE_WRITE;
-+	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
-+		return false;
- 
--	if ((pteval & need_pte_bits) != need_pte_bits)
-+	if (write && !pte_write(pte))
- 		return false;
- 
- 	return true;
--- 
-2.13.3
+He does.  But not anywhere near the fast path.
