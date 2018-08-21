@@ -1,44 +1,24 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41w2kR6DzrzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 06:45:35 +1000 (AEST)
-Received: from mail-qt0-f171.google.com (mail-qt0-f171.google.com
- [209.85.216.171])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
+ [209.85.218.66])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id D62AF21854
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:45:32 +0000 (UTC)
-Received: by mail-qt0-f171.google.com with SMTP id r13-v6so3195740qtr.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 13:45:32 -0700 (PDT)
-MIME-Version: 1.0
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
-In-Reply-To: <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Tue, 21 Aug 2018 15:45:20 -0500
-Message-ID: <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
-Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
-To: vabhav.sharma@nxp.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
- linux-clk <linux-clk@vger.kernel.org>,
- "open list:THERMAL" <linux-pm@vger.kernel.org>,
- linux-kernel-owner@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Arnd Bergmann <arnd@arndb.de>, Kate Stewart <kstewart@linuxfoundation.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Russell King <linux@armlinux.org.uk>, V.Sethi@nxp.com,
- Udit Kumar <udit.kumar@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>,
- Sriram Dash <sriram.dash@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41w4H53CfFzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 07:55:29 +1000 (AEST)
+Received: by mail-oi0-f66.google.com with SMTP id q11-v6so34755641oic.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 14:55:29 -0700 (PDT)
+From: Rob Herring <robh@kernel.org>
+To: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Cc: Frank Rowand <frowand.list@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/8] powerpc: build .dtb files in dts directory
+Date: Tue, 21 Aug 2018 16:55:17 -0500
+Message-Id: <20180821215524.23040-2-robh@kernel.org>
+In-Reply-To: <20180821215524.23040-1-robh@kernel.org>
+References: <20180821215524.23040-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,141 +28,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 20, 2018 at 1:52 PM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
->
-> LX2160A reference design board (RDB) is a high-performance
-> computing, evaluation, and development platform with LX2160A
-> SoC.
->
-> Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
-> ---
->  arch/arm64/boot/dts/freescale/Makefile            |  1 +
->  arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts | 95 +++++++++++++++++++++++
->  2 files changed, 96 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
->
-> diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-> index 86e18ad..445b72b 100644
-> --- a/arch/arm64/boot/dts/freescale/Makefile
-> +++ b/arch/arm64/boot/dts/freescale/Makefile
-> @@ -13,3 +13,4 @@ dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-rdb.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2080a-simu.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-qds.dtb
->  dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-ls2088a-rdb.dtb
-> +dtb-$(CONFIG_ARCH_LAYERSCAPE) += fsl-lx2160a-rdb.dtb
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-> new file mode 100644
-> index 0000000..70fad20
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a-rdb.dts
-> @@ -0,0 +1,95 @@
-> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-> +//
-> +// Device Tree file for LX2160ARDB
-> +//
-> +// Copyright 2018 NXP
-> +
-> +/dts-v1/;
-> +
-> +#include "fsl-lx2160a.dtsi"
-> +
-> +/ {
-> +       model = "NXP Layerscape LX2160ARDB";
-> +       compatible = "fsl,lx2160a-rdb", "fsl,lx2160a";
-> +
-> +       aliases {
-> +               crypto = &crypto;
+Align powerpc with other architectures which build the dtb files in the
+same directory as the dts files. This is also in line with most other
+build targets which are located in the same directory as the source.
+This move will help enable the 'dtbs' target which builds all the dtbs
+regardless of kernel config.
 
-Drop this. Aliases should be numbered, and this is not a standard
-alias name either.
+This transition could break some scripts if they expect dtb files in the
+old location.
 
-> +               serial0 = &uart0;
-> +               serial1 = &uart1;
-> +               serial2 = &uart2;
-> +               serial3 = &uart3;
-> +       };
-> +       chosen {
-> +               stdout-path = "serial0:115200n8";
-> +       };
-> +};
-> +
-> +&uart0 {
-> +       status = "okay";
-> +};
-> +
-> +&uart1 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c0 {
-> +       status = "okay";
-> +       pca9547@77 {
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ arch/powerpc/Makefile          |  2 +-
+ arch/powerpc/boot/Makefile     | 49 ++++++++++++++++------------------
+ arch/powerpc/boot/dts/Makefile |  1 +
+ 3 files changed, 25 insertions(+), 27 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/Makefile
 
-i2c-mux@77
-
-> +               compatible = "nxp,pca9547";
-> +               reg = <0x77>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               i2c@2 {
-> +                       #address-cells = <1>;
-> +                       #size-cells = <0>;
-> +                       reg = <0x2>;
-> +
-> +                       ina220@40 {
-> +                               compatible = "ti,ina220";
-> +                               reg = <0x40>;
-> +                               shunt-resistor = <1000>;
-> +                       };
-> +               };
-> +
-> +               i2c@3 {
-> +                       #address-cells = <1>;
-> +                       #size-cells = <0>;
-> +                       reg = <0x3>;
-> +
-> +                       sa56004@4c {
-
-temperature-sensor@4c
-
-> +                               compatible = "nxp,sa56004";
-> +                               reg = <0x4c>;
-> +                       };
-> +
-> +                       sa56004@4d {
-> +                               compatible = "nxp,sa56004";
-> +                               reg = <0x4d>;
-> +                       };
-> +               };
-> +       };
-> +};
-> +
-> +&i2c4 {
-> +       status = "okay";
-> +
-> +       rtc@51 {
-> +               compatible = "nxp,pcf2129";
-> +               reg = <0x51>;
-> +               // IRQ10_B
-> +               interrupts = <0 150 0x4>;
-> +               };
-> +
-> +};
-> +
-> +&usb0 {
-> +       status = "okay";
-> +};
-> +
-> +&usb1 {
-> +       status = "okay";
-> +};
-> +
-> +&crypto {
-> +       status = "okay";
-> +};
-> --
-> 2.7.4
->
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 8397c7bd5880..9bacffa3b72e 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -294,7 +294,7 @@ bootwrapper_install:
+ 	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
+ %.dtb: scripts
+-	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
++	$(Q)$(MAKE) $(build)=$(boot)/dts $(patsubst %,$(boot)/dts/%,$@)
+ 
+ # Used to create 'merged defconfigs'
+ # To use it $(call) it with the first argument as the base defconfig
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 0fb96c26136f..b201d93e1725 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -381,11 +381,11 @@ $(addprefix $(obj)/, $(sort $(filter zImage.%, $(image-y)))): vmlinux $(wrapperb
+ 	$(call if_changed,wrap,$(subst $(obj)/zImage.,,$@))
+ 
+ # dtbImage% - a dtbImage is a zImage with an embedded device tree blob
+-$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb FORCE
+-	$(call if_changed,wrap,$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/dts/%.dtb FORCE
++	$(call if_changed,wrap,$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb FORCE
+-	$(call if_changed,wrap,$*,,$(obj)/$*.dtb)
++$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/dts/%.dtb FORCE
++	$(call if_changed,wrap,$*,,$(obj)/dts/$*.dtb)
+ 
+ # This cannot be in the root of $(src) as the zImage rule always adds a $(obj)
+ # prefix
+@@ -395,36 +395,33 @@ $(obj)/vmlinux.strip: vmlinux
+ $(obj)/uImage: vmlinux $(wrapperbits) FORCE
+ 	$(call if_changed,wrap,uboot)
+ 
+-$(obj)/uImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++$(obj)/uImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,uboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/uImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb)
++$(obj)/uImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,uboot-$*,,$(obj)/dts/$*.dtb)
+ 
+-$(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++$(obj)/cuImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,cuboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
++$(obj)/cuImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,cuboot-$*,,$(obj)/dts/$*.dtb)
+ 
+-$(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++$(obj)/simpleImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,simpleboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/simpleImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb)
++$(obj)/simpleImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,simpleboot-$*,,$(obj)/dts/$*.dtb)
+ 
+-$(obj)/treeImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
++$(obj)/treeImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,treeboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
+ 
+-$(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
+-	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
++$(obj)/treeImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
++	$(call if_changed,wrap,treeboot-$*,,$(obj)/dts/$*.dtb)
+ 
+-# Rule to build device tree blobs
+-$(obj)/%.dtb: $(src)/dts/%.dts FORCE
+-	$(call if_changed_dep,dtc)
+-
+-$(obj)/%.dtb: $(src)/dts/fsl/%.dts FORCE
+-	$(call if_changed_dep,dtc)
++# Needed for the above targets to work with dts/fsl/ files
++$(obj)/dts/%.dtb: $(obj)/dts/fsl/%.dtb
++	@cp $< $@
+ 
+ # If there isn't a platform selected then just strip the vmlinux.
+ ifeq (,$(image-y))
+diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
+new file mode 100644
+index 000000000000..f66554cd5c45
+--- /dev/null
++++ b/arch/powerpc/boot/dts/Makefile
+@@ -0,0 +1 @@
++# SPDX-License-Identifier: GPL-2.0
+-- 
+2.17.1
