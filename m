@@ -1,6 +1,6 @@
 Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 41vv6w4ZfwzF0kx
+ by lists.ozlabs.org (Postfix) with ESMTP id 41vv6w4dY1zF0pD
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 01:02:46 +1000 (AEST)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
@@ -8,9 +8,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
  Wolfram Sang <wsa@the-dreams.de>
-Subject: [PATCH 1/2] macintosh: therm_windtunnel: drop using attach_adapter
-Date: Tue, 21 Aug 2018 17:02:39 +0200
-Message-Id: <20180821150240.19964-2-wsa@the-dreams.de>
+Subject: [PATCH 2/2] i2c: remove deprecated attach_adapter callback
+Date: Tue, 21 Aug 2018 17:02:40 +0200
+Message-Id: <20180821150240.19964-3-wsa@the-dreams.de>
 In-Reply-To: <20180821150240.19964-1-wsa@the-dreams.de>
 References: <20180821150240.19964-1-wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,56 +22,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we now have deferred probing, we can use a custom mechanism and
-finally get rid of the legacy interface from the i2c core.
+There aren't any users left. Remove this callback from the 2.4 times.
+Phew, finally, that took years to reach...
 
 Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
- drivers/macintosh/therm_windtunnel.c | 25 +++++++++++++++++++++++--
- 1 file changed, 23 insertions(+), 2 deletions(-)
+ drivers/i2c/i2c-core-base.c | 11 +----------
+ include/linux/i2c.h         |  6 ------
+ 2 files changed, 1 insertion(+), 16 deletions(-)
 
-diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-index 68dcbcb4fc5b..8c744578122a 100644
---- a/drivers/macintosh/therm_windtunnel.c
-+++ b/drivers/macintosh/therm_windtunnel.c
-@@ -432,7 +432,6 @@ static struct i2c_driver g4fan_driver = {
- 	.driver = {
- 		.name	= "therm_windtunnel",
- 	},
--	.attach_adapter = do_attach,
- 	.probe		= do_probe,
- 	.remove		= do_remove,
- 	.id_table	= therm_windtunnel_id,
-@@ -445,7 +444,29 @@ static struct i2c_driver g4fan_driver = {
+diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+index 5a937109a289..f15737763608 100644
+--- a/drivers/i2c/i2c-core-base.c
++++ b/drivers/i2c/i2c-core-base.c
+@@ -62,7 +62,7 @@
  
- static int therm_of_probe(struct platform_device *dev)
- {
--	return i2c_add_driver( &g4fan_driver );
-+	struct i2c_adapter *adap;
-+	int ret, i = 0;
-+
-+	adap = i2c_get_adapter(0);
-+	if (!adap)
-+		return -EPROBE_DEFER;
-+
-+	ret = i2c_add_driver(&g4fan_driver);
-+	if (ret) {
-+		i2c_put_adapter(adap);
-+		return ret;
-+	}
-+
-+	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
-+	while (adap) {
-+		do_attach(adap);
-+		if (x.running)
-+			return 0;
-+		i2c_put_adapter(adap);
-+		adap = i2c_get_adapter(++i);
-+	}
-+
-+	return -ENODEV;
+ /*
+  * core_lock protects i2c_adapter_idr, and guarantees that device detection,
+- * deletion of detected devices, and attach_adapter calls are serialized
++ * deletion of detected devices are serialized
+  */
+ static DEFINE_MUTEX(core_lock);
+ static DEFINE_IDR(i2c_adapter_idr);
+@@ -1124,15 +1124,6 @@ static int i2c_do_add_adapter(struct i2c_driver *driver,
+ 	/* Detect supported devices on that bus, and instantiate them */
+ 	i2c_detect(adap, driver);
+ 
+-	/* Let legacy drivers scan this bus for matching devices */
+-	if (driver->attach_adapter) {
+-		dev_warn(&adap->dev, "%s: attach_adapter method is deprecated\n",
+-			 driver->driver.name);
+-		dev_warn(&adap->dev,
+-			 "Please use another way to instantiate your i2c_client\n");
+-		/* We ignore the return code; if it fails, too bad */
+-		driver->attach_adapter(adap);
+-	}
+ 	return 0;
  }
  
- static int
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index 36f357ecdf67..b79387fd57da 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -231,7 +231,6 @@ enum i2c_alert_protocol {
+ /**
+  * struct i2c_driver - represent an I2C device driver
+  * @class: What kind of i2c device we instantiate (for detect)
+- * @attach_adapter: Callback for bus addition (deprecated)
+  * @probe: Callback for device binding - soon to be deprecated
+  * @probe_new: New callback for device binding
+  * @remove: Callback for device unbinding
+@@ -268,11 +267,6 @@ enum i2c_alert_protocol {
+ struct i2c_driver {
+ 	unsigned int class;
+ 
+-	/* Notifies the driver that a new bus has appeared. You should avoid
+-	 * using this, it will be removed in a near future.
+-	 */
+-	int (*attach_adapter)(struct i2c_adapter *) __deprecated;
+-
+ 	/* Standard driver model interfaces */
+ 	int (*probe)(struct i2c_client *, const struct i2c_device_id *);
+ 	int (*remove)(struct i2c_client *);
 -- 
 2.11.0
