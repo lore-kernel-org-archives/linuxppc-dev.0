@@ -1,32 +1,31 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 41vmnd6crDzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:17:21 +1000 (AEST)
-Date: Tue, 21 Aug 2018 11:17:02 +0100
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: Vabhav Sharma <vabhav.sharma@nxp.com>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
- robh+dt@kernel.org, mark.rutland@arm.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- mturquette@baylibre.com, sboyd@kernel.org, rjw@rjwysocki.net,
- viresh.kumar@linaro.org, linux-clk@vger.kernel.org,
- linux-pm@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
- catalin.marinas@arm.com, will.deacon@arm.com,
- gregkh@linuxfoundation.org, arnd@arndb.de,
- kstewart@linuxfoundation.org, yamada.masahiro@socionext.com,
- linux@armlinux.org.uk, V.Sethi@nxp.com, udit.kumar@nxp.com,
- Ramneek Mehresh <ramneek.mehresh@nxp.com>,
- Zhang Ying-22455 <ying.zhang22455@nxp.com>,
- Nipun Gupta <nipun.gupta@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>,
- Yogesh Gaur <yogeshnarayan.gaur@nxp.com>,
- Sriram Dash <sriram.dash@nxp.com>, Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 4/5] arm64: dts: add QorIQ LX2160A SoC support
-Message-ID: <20180821101652.GA18139@e107155-lin>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-5-git-send-email-vabhav.sharma@nxp.com>
+Return-Path: <srs0=tidg=le=gmail.com=npiggin@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vn0w0M4dzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:27:12 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41vn0v6xrDz8tCx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:27:11 +1000 (AEST)
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
+ [IPv6:2607:f8b0:4864:20::541])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41vn0t5zwlz9s78
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2018 20:27:10 +1000 (AEST)
+Received: by mail-pg1-x541.google.com with SMTP id y4-v6so8248746pgp.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2018 03:27:10 -0700 (PDT)
+Date: Tue, 21 Aug 2018 20:27:02 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [PATCH] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
+Message-ID: <20180821202702.4198d426@roar.ozlabs.ibm.com>
+In-Reply-To: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
+References: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1534747636-20064-5-git-send-email-vabhav.sharma@nxp.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,99 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 20, 2018 at 12:17:15PM +0530, Vabhav Sharma wrote:
-> LX2160A SoC is based on Layerscape Chassis Generation 3.2 Architecture.
+On Fri, 17 Aug 2018 14:51:47 +0530
+Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> LX2160A features an advanced 16 64-bit ARM v8 CortexA72 processor cores
-> in 8 cluster, CCN508, GICv3,two 64-bit DDR4 memory controller, 8 I2C
-> controllers, 3 dspi, 2 esdhc,2 USB 3.0, mmu 500, 3 SATA, 4 PL011 SBSA
-> UARTs etc.
+> With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
+> during MCE recovery path.), the SLB error recovery is broken. The
+> commit missed a crucial change of OR-ing index value to RB[52-63] which
+> selects the SLB entry while rebolting. This patch fixes that.
 > 
-> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@nxp.com>
-> Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
-> Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
-> Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
-> Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
-> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-> Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 572 +++++++++++++++++++++++++
->  1 file changed, 572 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+>  arch/powerpc/mm/slb.c |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
-> new file mode 100644
-> index 0000000..e35e494
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
-> @@ -0,0 +1,572 @@
-> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-> +//
-> +// Device Tree Include file for Layerscape-LX2160A family SoC.
-> +//
-> +// Copyright 2018 NXP
+> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+> index 0b095fa54049..6dd9913425bc 100644
+> --- a/arch/powerpc/mm/slb.c
+> +++ b/arch/powerpc/mm/slb.c
+> @@ -101,9 +101,12 @@ void __slb_restore_bolted_realmode(void)
+>  
+>  	 /* No isync needed because realmode. */
+>  	for (index = 0; index < SLB_NUM_BOLTED; index++) {
+> +		unsigned long rb = be64_to_cpu(p->save_area[index].esid);
 > +
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
-> +
-> +/memreserve/ 0x80000000 0x00010000;
-> +
-> +/ {
-> +	compatible = "fsl,lx2160a";
-> +	interrupt-parent = <&gic>;
-> +	#address-cells = <2>;
-> +	#size-cells = <2>;
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		// 8 clusters having 2 Cortex-A72 cores each
-> +		cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a72";
-> +			reg = <0x0>;
-> +			clocks = <&clockgen 1 0>;
-> +			next-level-cache = <&cluster0_l2>;
+> +		rb = (rb & ~0xFFFul) | index;
+>  		asm volatile("slbmte  %0,%1" :
+>  		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
+> -		       "r" (be64_to_cpu(p->save_area[index].esid)));
+> +		       "r" (rb));
+>  	}
+>  }
+>  
+> 
 
-If you expect to get cache properties in sysfs entries, you need to populate
-them here and for each L2 cache.
+I'm just looking at this again. The bolted save areas do have the
+index field set. So for the OS, your patch should be equivalent to
+this, right?
 
-[...]
+ static inline void slb_shadow_clear(enum slb_index index)
+ {
+-       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
++       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, index);
+ }
 
-> +
-> +	rstcr: syscon@1e60000 {
-> +		compatible = "syscon";
-> +		reg = <0x0 0x1e60000 0x0 0x4>;
-> +	};
-> +
-> +	reboot {
-> +		compatible ="syscon-reboot";
-> +		regmap = <&rstcr>;
-> +		offset = <0x0>;
-> +		mask = <0x2>;
+Which seems like a better fix.
 
-Is this disabled in bootloader ? With PSCI, it's preferred to use
-SYSTEM_RESET/OFF. EL3 f/w may need to do some housekeeping on poweroff.
+PAPR says:
 
-> +	};
-> +
-> +	timer {
-> +		compatible = "arm,armv8-timer";
-> +		interrupts = <1 13 4>, // Physical Secure PPI, active-low
+  Note: SLB is filled sequentially starting at index 0
+  from the shadow buffer ignoring the contents of
+  RB field bits 52-63
 
-The comment says active low but the value 4 indicates it's HIGH from
-"include/dt-bindings/interrupt-controller/irq.h"
+So that shouldn't be an issue.
 
-> +			     <1 14 4>, // Physical Non-Secure PPI, active-low
-> +			     <1 11 4>, // Virtual PPI, active-low
-> +			     <1 10 4>; // Hypervisor PPI, active-low
-> +	};
-> +
-> +	pmu {
-> +		compatible = "arm,armv8-pmuv3";
-
-More specific compatible preferably "arm,cortex-a72-pmu" ?
-
---
-Regards,
-Sudeep
+Thanks,
+Nick
