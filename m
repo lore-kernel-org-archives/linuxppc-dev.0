@@ -1,16 +1,27 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [88.99.104.3])
- by lists.ozlabs.org (Postfix) with ESMTP id 41vv6w4Tw5zF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 01:02:46 +1000 (AEST)
-From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-i2c@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vv8C6T63zF1Rh
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 01:03:55 +1000 (AEST)
+Subject: Re: BUG: libkcapi tests trigger sleep-in-atomic bug in VMX code
+ (ppc64)
+To: =?UTF-8?B?T25kcmVqIE1vc27DocSNZWs=?= <omosnacek@gmail.com>,
+ Stephan Mueller <smueller@chronox.de>
+Cc: marcelo.cerri@canonical.com, linux-crypto@vger.kernel.org,
+ Herbert Xu <herbert@gondor.apana.org.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org,
- Wolfram Sang <wsa@the-dreams.de>
-Subject: [PATCH 0/2] i2c: remove deprecated attach_adapter callback
-Date: Tue, 21 Aug 2018 17:02:38 +0200
-Message-Id: <20180821150240.19964-1-wsa@the-dreams.de>
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <CAAUqJDvErj0Y4=GBtXgvBRON7MEic7_-jBZNvjacwcOd0TF_2g@mail.gmail.com>
+ <3627129.cWTIy1uDMC@tauon.chronox.de>
+ <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <708f0ba5-6ce2-19e6-1269-ea9a14090694@c-s.fr>
+Date: Tue, 21 Aug 2018 17:03:50 +0200
+MIME-Version: 1.0
+In-Reply-To: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,39 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-So, I wanted to do this in the next cycle, but Linus seems to want it this
-cycle already [1], so here it is:
 
-Remove the attach_adapter callback from the 2.4 times by converting
-the last user to a custom probing mechanism based on deferred probing. We used
-this already in commit ac397c80de89 ("ALSA: ppc: keywest: drop using attach
-adapter") successfully on HW, so we agreed to use it on the windtunnel driver
-as well.
 
-With the last user gone, we can then remove the callback \o/ I think this
-allows for more cleanup in the core, but let's do this later and focus on the
-removal for now.
+Le 21/08/2018 à 16:38, Ondrej Mosnáček a écrit :
+> ut 21. 8. 2018 o 16:18 Stephan Mueller <smueller@chronox.de> napísal(a):
+>> Am Dienstag, 21. August 2018, 14:48:11 CEST schrieb Ondrej Mosnáček:
+>>
+>> Hi Ondrej, Marcelo,
+>>
+>> (+Marcelo)
+>>
+>>> Looking at crypto/algif_skcipher.c, I can see that skcipher_recvmsg()
+>>> holds the socket lock the whole time and yet passes
+>>> CRYPTO_TFM_REQ_MAY_SLEEP to the cipher implementation. Isn't that
+>>> wrong?
+>>
+>> I think you are referring to lock_sock(sk)?
+>>
+>> If so, this should not be the culprit: the socket lock is in essence a mutex-
+>> like operation with its own wait queue that it allowed to sleep. In
+>> lock_sock_nested that is called by lock_sock it even has the call of
+>> might_sleep which indicates that the caller may be put to sleep.
+>>
+>> Looking into the code (without too much debugging) I see in the function
+>> p8_aes_cbc_encrypt that is part of the stack trace the call to
+>> preempt_disable() which starts an atomic context. The preempt_enable() is
+>> invoked after the walk operation.
+>>
+>> The preempt_disable increases the preempt_count. That counter is used by
+>> in_atomic() to check whether we are in atomic context.
+>>
+>> The issue is that blkcipher_walk_done may call crypto_yield() which then
+>> invokes cond_resched if the implementation is allowed to sleep.
+> 
+> Indeed, you're right, the issue is actually in the vmx_crypto code. I
+> remember having looked at the 'ctr(aes)' implementation in there a few
+> days ago (I think I was trying to debug this very issue, but for some
+> reason I only looked at ctr(aes)...) and I didn't find any bug, so
+> that's why I jumped to suspecting the algif_skcipher code... I should
+> have double-checked :)
+> 
+> It turns out the 'cbc(aes)' (and actually also 'xts(aes)')
+> implementation is coded a bit differently and they both *do* contain
+> the sleep-in-atomic bug. I will try to fix them according to the
+> correct CTR implementation and send a patch.
 
-Tested on a Renesas R-Car Salvator-XS board (M3N) by using and rebinding
-various I2C busses. Build bot and checkpatch are happy, too.
+CC: linuxppc-dev@lists.ozlabs.org <linuxppc-dev@lists.ozlabs.org>
 
-I'd like to send a pull request to Linus this merge window, so looking forward
-to super fast comments, acks, etc...
-
-Thanks,
-
-   Wolfram
-
-[1] http://patchwork.ozlabs.org/patch/959322/#1976742
-
-Wolfram Sang (2):
-  macintosh: therm_windtunnel: drop using attach_adapter
-  i2c: remove deprecated attach_adapter callback
-
- drivers/i2c/i2c-core-base.c          | 11 +----------
- drivers/macintosh/therm_windtunnel.c | 25 +++++++++++++++++++++++--
- include/linux/i2c.h                  |  6 ------
- 3 files changed, 24 insertions(+), 18 deletions(-)
-
--- 
-2.11.0
+> 
+> Thanks,
+> Ondrej
+> 
+>> @Marcelo: shouldn't be the sleep flag be cleared when entering the
+>> preempt_disable section?
+>>
+>> Ciao
+>> Stephan
+>>
+>>
