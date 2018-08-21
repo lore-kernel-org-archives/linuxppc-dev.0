@@ -1,16 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vnBK54g5zF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:35:21 +1000 (AEST)
-In-Reply-To: <20180807132156.6183-1-npiggin@gmail.com>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vnBL4g0JzF0pD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:35:22 +1000 (AEST)
+In-Reply-To: <20180817065500.16899-1-mpe@ellerman.id.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Subject: Re: powerpc/64s: idle_power4 fix PACA_IRQ_HARD_DIS accounting
-Message-Id: <41vnBK4SdPz9s7X@ozlabs.org>
-Date: Tue, 21 Aug 2018 20:35:21 +1000 (AEST)
+Cc: muriloo@linux.ibm.com
+Subject: Re: powerpc/traps: Avoid rate limit messages from show unhandled
+ signals
+Message-Id: <41vnBL2ZpGz9s7c@ozlabs.org>
+Date: Tue, 21 Aug 2018 20:35:22 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,19 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-07 at 13:21:56 UTC, Nicholas Piggin wrote:
-> When idle_power4 hard disables interrupts then finds a soft pending
-> interrupt, it returns with interrupts hard disabled but without
-> PACA_IRQ_HARD_DIS set. Commit 9b81c0211c ("powerpc/64s: make
-> PACA_IRQ_HARD_DIS track MSR[EE] closely") added a warning for that
-> condition.
+On Fri, 2018-08-17 at 06:55:00 UTC, Michael Ellerman wrote:
+> In the recent commit to add an explicit ratelimit state when showing
+> unhandled signals, commit 35a52a10c3ac ("powerpc/traps: Use an
+> explicit ratelimit state for show_signal_msg()"), I put the check of
+> show_unhandled_signals and the ratelimit state before the call to
+> unhandled_signal() so as to avoid unnecessarily calling the latter
+> when show_unhandled_signals is false.
 > 
-> Fix this by adding the PACA_IRQ_HARD_DIS for that case.
+> However that causes us to check the ratelimit state on every call, so
+> if we take a lot of *handled* signals that has the effect of making
+> the ratelimit code print warnings that callbacks have been suppressed
+> when they haven't.
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> So rearrange the code so that we check show_unhandled_signals first,
+> then call unhandled_signal() and finally check the ratelimit state.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Reviewed-by: Murilo Opsfelder Araujo <muriloo@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Applied to powerpc next.
 
-https://git.kernel.org/powerpc/c/993ff6d9df74305bc7b5bbc7a0810c
+https://git.kernel.org/powerpc/c/997dd26cb3c8b7c9b8765751cc1491
 
 cheers
