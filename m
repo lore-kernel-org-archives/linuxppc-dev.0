@@ -1,24 +1,23 @@
-Return-Path: <BATV+d4094ddc20615de85f15+5476+infradead.org+hch@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2607:7c80:54:e::133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vgy42r0BzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:39:23 +1000 (AEST)
-Date: Mon, 20 Aug 2018 23:14:51 -0700
-From: Christoph Hellwig <hch@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
- Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org
-Subject: Re: [RFC 00/15] PCI: turn some __weak functions into callbacks
-Message-ID: <20180821061451.GB481@infradead.org>
-References: <20180817102645.3839621-1-arnd@arndb.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vgz43qh0zF1Wr
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:40:16 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michal Hocko <mhocko@kernel.org>, Ram Pai <linuxram@us.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-mm <linux-mm@kvack.org>
+Subject: Re: Odd SIGSEGV issue introduced by commit 6b31d5955cb29 ("mm,
+ oom: fix potential data corruption when oom_reaper races with writer")
+In-Reply-To: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+References: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+Date: Tue, 21 Aug 2018 16:40:15 +1000
+Message-ID: <871sasmddc.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,21 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 17, 2018 at 12:26:30PM +0200, Arnd Bergmann wrote:
-> Hi Bjorn and others,
-> 
-> Triggered by Christoph's patches, I had another go at converting
-> all of the remaining pci host bridge implementations to be based
-> on pci_alloc_host_bridge and a separate registration function.
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+...
+>
+> And I bisected its disappearance with commit 99cd1302327a2 ("powerpc: 
+> Deliver SEGV signal on pkey violation")
 
-I really like the idea behind this series.
+Whoa that's weird.
 
-> I'm adding a bit of duplication into the less maintained code
-> here, but it makes everything more consistent, and gives an
-> easy place to hook up callback functions etc.
+> Looking at those two commits, especially the one which makes it 
+> dissapear, I'm quite sceptic. Any idea on what could be the cause and/or 
+> how to investigate further ?
 
-I wonder if there is a way to avoid some of that by adding a few
-more helpers, but even without the helpers that approach looks
-ok to me.
+Are you sure it's not some corruption that just happens to be masked by
+that commit? I can't see anything in that commit that could explain that
+change in behaviour.
 
-Do you have a git tree somewhere to play around with the changes?
+The only real change is if you're hitting DSISR_KEYFAULT isn't it?
+
+What happens if you take 087003e9ef7c and apply the various hunks from
+99cd1302327a2 gradually (or those that you can anyway)?
+
+cheers
