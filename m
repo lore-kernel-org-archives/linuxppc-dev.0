@@ -2,8 +2,8 @@ Return-Path: <david@redhat.com>
 Received: from mx1.redhat.com (mx3-rdu2.redhat.com [66.187.233.73])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vnPH5lrYzF1qF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:44:51 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vnPK6N45zF1R0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:44:53 +1000 (AEST)
 From: David Hildenbrand <david@redhat.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
@@ -14,10 +14,10 @@ Cc: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Rashmica Gupta <rashmica.g@gmail.com>,
  Balbir Singh <bsingharora@gmail.com>, Michael Neuling <mikey@neuling.org>
-Subject: [PATCH RFCv2 4/6] powerpc/powernv: hold device_hotplug_lock when
- calling device_online()
-Date: Tue, 21 Aug 2018 12:44:16 +0200
-Message-Id: <20180821104418.12710-5-david@redhat.com>
+Subject: [PATCH RFCv2 5/6] powerpc/powernv: hold device_hotplug_lock in
+ memtrace_offline_pages()
+Date: Tue, 21 Aug 2018 12:44:17 +0200
+Message-Id: <20180821104418.12710-6-david@redhat.com>
 In-Reply-To: <20180821104418.12710-1-david@redhat.com>
 References: <20180821104418.12710-1-david@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,7 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-device_online() should be called with device_hotplug_lock() held.
+Let's perform all checking + offlining + removing under
+device_hotplug_lock, so nobody can mess with these devices via
+sysfs concurrently.
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
@@ -39,24 +41,45 @@ Cc: Balbir Singh <bsingharora@gmail.com>
 Cc: Michael Neuling <mikey@neuling.org>
 Signed-off-by: David Hildenbrand <david@redhat.com>
 ---
- arch/powerpc/platforms/powernv/memtrace.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/powernv/memtrace.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/memtrace.c b/arch/powerpc/platforms/powernv/memtrace.c
-index 8f1cd4f3bfd5..ef7181d4fe68 100644
+index ef7181d4fe68..473e59842ec5 100644
 --- a/arch/powerpc/platforms/powernv/memtrace.c
 +++ b/arch/powerpc/platforms/powernv/memtrace.c
-@@ -229,9 +229,11 @@ static int memtrace_online(void)
- 		 * we need to online the memory ourselves.
- 		 */
- 		if (!memhp_auto_online) {
-+			lock_device_hotplug();
- 			walk_memory_range(PFN_DOWN(ent->start),
- 					  PFN_UP(ent->start + ent->size - 1),
- 					  NULL, online_mem_block);
-+			unlock_device_hotplug();
- 		}
+@@ -74,9 +74,13 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+ {
+ 	u64 end_pfn = start_pfn + nr_pages - 1;
  
- 		/*
++	lock_device_hotplug();
++
+ 	if (walk_memory_range(start_pfn, end_pfn, NULL,
+-	    check_memblock_online))
++	    check_memblock_online)) {
++		unlock_device_hotplug();
+ 		return false;
++	}
+ 
+ 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_GOING_OFFLINE,
+ 			  change_memblock_state);
+@@ -84,14 +88,16 @@ static bool memtrace_offline_pages(u32 nid, u64 start_pfn, u64 nr_pages)
+ 	if (offline_pages(start_pfn, nr_pages)) {
+ 		walk_memory_range(start_pfn, end_pfn, (void *)MEM_ONLINE,
+ 				  change_memblock_state);
++		unlock_device_hotplug();
+ 		return false;
+ 	}
+ 
+ 	walk_memory_range(start_pfn, end_pfn, (void *)MEM_OFFLINE,
+ 			  change_memblock_state);
+ 
+-	remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
++	__remove_memory(nid, start_pfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+ 
++	unlock_device_hotplug();
+ 	return true;
+ }
+ 
 -- 
 2.17.1
