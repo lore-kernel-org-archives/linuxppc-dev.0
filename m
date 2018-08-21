@@ -1,24 +1,36 @@
 Return-Path: <robherring2@gmail.com>
-Received: from mail-oi0-f66.google.com (mail-oi0-f66.google.com
- [209.85.218.66])
+Received: from mail-oi0-f68.google.com (mail-oi0-f68.google.com
+ [209.85.218.68])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41w4H53CfFzF0pD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 07:55:29 +1000 (AEST)
-Received: by mail-oi0-f66.google.com with SMTP id q11-v6so34755641oic.12
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 14:55:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41w4H51zBnzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 07:55:28 +1000 (AEST)
+Received: by mail-oi0-f68.google.com with SMTP id q204-v6so5569856oig.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 14:55:28 -0700 (PDT)
 From: Rob Herring <robh@kernel.org>
 To: devicetree@vger.kernel.org,
 	linux-kernel@vger.kernel.org
 Cc: Frank Rowand <frowand.list@gmail.com>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Michal Marek <michal.lkml@markovi.net>, Vineet Gupta <vgupta@synopsys.com>,
+ Russell King <linux@armlinux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>,
+ Michal Simek <monstr@monstr.eu>, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>,
+ Ley Foon Tan <lftan@altera.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/8] powerpc: build .dtb files in dts directory
-Date: Tue, 21 Aug 2018 16:55:17 -0500
-Message-Id: <20180821215524.23040-2-robh@kernel.org>
-In-Reply-To: <20180821215524.23040-1-robh@kernel.org>
-References: <20180821215524.23040-1-robh@kernel.org>
+ Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
+ linux-kbuild@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org,
+ uclinux-h8-devel@lists.sourceforge.jp, linux-mips@linux-mips.org,
+ nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
+ linux-xtensa@linux-xtensa.org
+Subject: [PATCH 0/8] Devicetree build consolidation
+Date: Tue, 21 Aug 2018 16:55:16 -0500
+Message-Id: <20180821215524.23040-1-robh@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,122 +40,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Align powerpc with other architectures which build the dtb files in the
-same directory as the dts files. This is also in line with most other
-build targets which are located in the same directory as the source.
-This move will help enable the 'dtbs' target which builds all the dtbs
-regardless of kernel config.
+This series addresses a couple of issues I have with building dts files.
 
-This transition could break some scripts if they expect dtb files in the
-old location.
+First, the ability to build all the dts files in the tree. This has been
+supported on most arches for some time with powerpc being the main
+exception. The reason powerpc wasn't supported was it needed a change
+in the location built dtb files are put.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- arch/powerpc/Makefile          |  2 +-
- arch/powerpc/boot/Makefile     | 49 ++++++++++++++++------------------
- arch/powerpc/boot/dts/Makefile |  1 +
- 3 files changed, 25 insertions(+), 27 deletions(-)
+Secondly, it's a pain to acquire all the cross-compilers needed to build
+dtbs for each arch. There's no reason to build with the cross compiler and
+the host compiler is perfectly fine as we only need the pre-processor.
+
+I started addressing just those 2 problems, but kept finding small
+differences such as target dependencies and dtbs_install support across
+architectures. Instead of trying to align all these, I've consolidated the
+build targets moving them out of the arch makefiles.
+
+I'd like to take the series via the DT tree.
+
+Rob
+
+Rob Herring (8):
+  powerpc: build .dtb files in dts directory
+  nios2: build .dtb files in dts directory
+  nios2: use common rules to build built-in dtb
+  nios2: fix building all dtbs
+  c6x: use common built-in dtb support
+  kbuild: consolidate Devicetree dtb build rules
+  powerpc: enable building all dtbs
+  c6x: enable building all dtbs
+
+ Makefile                           | 30 ++++++++++++++++++
+ arch/arc/Makefile                  |  6 ----
+ arch/arm/Makefile                  | 20 +-----------
+ arch/arm64/Makefile                | 17 +----------
+ arch/c6x/Makefile                  |  2 --
+ arch/c6x/boot/dts/Makefile         | 17 +++++------
+ arch/c6x/boot/dts/linked_dtb.S     |  2 --
+ arch/c6x/include/asm/sections.h    |  1 -
+ arch/c6x/kernel/setup.c            |  4 +--
+ arch/c6x/kernel/vmlinux.lds.S      | 10 ------
+ arch/h8300/Makefile                | 11 +------
+ arch/microblaze/Makefile           |  4 +--
+ arch/mips/Makefile                 | 15 +--------
+ arch/nds32/Makefile                |  2 +-
+ arch/nios2/Makefile                | 11 +------
+ arch/nios2/boot/Makefile           | 22 --------------
+ arch/nios2/boot/dts/Makefile       |  6 ++++
+ arch/nios2/boot/linked_dtb.S       | 19 ------------
+ arch/powerpc/Makefile              |  3 --
+ arch/powerpc/boot/Makefile         | 49 ++++++++++++++----------------
+ arch/powerpc/boot/dts/Makefile     |  6 ++++
+ arch/powerpc/boot/dts/fsl/Makefile |  4 +++
+ arch/xtensa/Makefile               | 12 +-------
+ scripts/Makefile                   |  1 -
+ scripts/Makefile.lib               |  2 +-
+ 25 files changed, 87 insertions(+), 189 deletions(-)
+ delete mode 100644 arch/c6x/boot/dts/linked_dtb.S
+ create mode 100644 arch/nios2/boot/dts/Makefile
+ delete mode 100644 arch/nios2/boot/linked_dtb.S
  create mode 100644 arch/powerpc/boot/dts/Makefile
+ create mode 100644 arch/powerpc/boot/dts/fsl/Makefile
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 8397c7bd5880..9bacffa3b72e 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -294,7 +294,7 @@ bootwrapper_install:
- 	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
- %.dtb: scripts
--	$(Q)$(MAKE) $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
-+	$(Q)$(MAKE) $(build)=$(boot)/dts $(patsubst %,$(boot)/dts/%,$@)
- 
- # Used to create 'merged defconfigs'
- # To use it $(call) it with the first argument as the base defconfig
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 0fb96c26136f..b201d93e1725 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -381,11 +381,11 @@ $(addprefix $(obj)/, $(sort $(filter zImage.%, $(image-y)))): vmlinux $(wrapperb
- 	$(call if_changed,wrap,$(subst $(obj)/zImage.,,$@))
- 
- # dtbImage% - a dtbImage is a zImage with an embedded device tree blob
--$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb FORCE
--	$(call if_changed,wrap,$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+$(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/dts/%.dtb FORCE
-+	$(call if_changed,wrap,$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
- 
--$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/%.dtb FORCE
--	$(call if_changed,wrap,$*,,$(obj)/$*.dtb)
-+$(obj)/dtbImage.%: vmlinux $(wrapperbits) $(obj)/dts/%.dtb FORCE
-+	$(call if_changed,wrap,$*,,$(obj)/dts/$*.dtb)
- 
- # This cannot be in the root of $(src) as the zImage rule always adds a $(obj)
- # prefix
-@@ -395,36 +395,33 @@ $(obj)/vmlinux.strip: vmlinux
- $(obj)/uImage: vmlinux $(wrapperbits) FORCE
- 	$(call if_changed,wrap,uboot)
- 
--$(obj)/uImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+$(obj)/uImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,uboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
- 
--$(obj)/uImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,uboot-$*,,$(obj)/$*.dtb)
-+$(obj)/uImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,uboot-$*,,$(obj)/dts/$*.dtb)
- 
--$(obj)/cuImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+$(obj)/cuImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,cuboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
- 
--$(obj)/cuImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,cuboot-$*,,$(obj)/$*.dtb)
-+$(obj)/cuImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,cuboot-$*,,$(obj)/dts/$*.dtb)
- 
--$(obj)/simpleImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+$(obj)/simpleImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,simpleboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
- 
--$(obj)/simpleImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,simpleboot-$*,,$(obj)/$*.dtb)
-+$(obj)/simpleImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,simpleboot-$*,,$(obj)/dts/$*.dtb)
- 
--$(obj)/treeImage.initrd.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb,$(obj)/ramdisk.image.gz)
-+$(obj)/treeImage.initrd.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,treeboot-$*,,$(obj)/dts/$*.dtb,$(obj)/ramdisk.image.gz)
- 
--$(obj)/treeImage.%: vmlinux $(obj)/%.dtb $(wrapperbits) FORCE
--	$(call if_changed,wrap,treeboot-$*,,$(obj)/$*.dtb)
-+$(obj)/treeImage.%: vmlinux $(obj)/dts/%.dtb $(wrapperbits) FORCE
-+	$(call if_changed,wrap,treeboot-$*,,$(obj)/dts/$*.dtb)
- 
--# Rule to build device tree blobs
--$(obj)/%.dtb: $(src)/dts/%.dts FORCE
--	$(call if_changed_dep,dtc)
--
--$(obj)/%.dtb: $(src)/dts/fsl/%.dts FORCE
--	$(call if_changed_dep,dtc)
-+# Needed for the above targets to work with dts/fsl/ files
-+$(obj)/dts/%.dtb: $(obj)/dts/fsl/%.dtb
-+	@cp $< $@
- 
- # If there isn't a platform selected then just strip the vmlinux.
- ifeq (,$(image-y))
-diff --git a/arch/powerpc/boot/dts/Makefile b/arch/powerpc/boot/dts/Makefile
-new file mode 100644
-index 000000000000..f66554cd5c45
---- /dev/null
-+++ b/arch/powerpc/boot/dts/Makefile
-@@ -0,0 +1 @@
-+# SPDX-License-Identifier: GPL-2.0
--- 
+--
 2.17.1
