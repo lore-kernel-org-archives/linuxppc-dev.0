@@ -1,23 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <BATV+d4094ddc20615de85f15+5476+infradead.org+hch@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vgpq0h4pzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:33:07 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-Cc: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v2 1/4] powerpc/tm: Remove msr_tm_active()
-In-Reply-To: <7433b095-ce67-5097-8dd7-0f47ab797914@debian.org>
-References: <201806160346.lDndh49W%fengguang.wu@intel.com>
- <1529362784-14194-1-git-send-email-leitao@debian.org>
- <e2f169e3ce57e5b092642088127f67a52da2bf93.camel@neuling.org>
- <87tvntakb6.fsf@concordia.ellerman.id.au>
- <7433b095-ce67-5097-8dd7-0f47ab797914@debian.org>
-Date: Tue, 21 Aug 2018 16:33:06 +1000
-Message-ID: <874lfomdp9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vgy42r0BzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:39:23 +1000 (AEST)
+Date: Mon, 20 Aug 2018 23:14:51 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+ Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org
+Subject: Re: [RFC 00/15] PCI: turn some __weak functions into callbacks
+Message-ID: <20180821061451.GB481@infradead.org>
+References: <20180817102645.3839621-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180817102645.3839621-1-arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,76 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Breno Leitao <leitao@debian.org> writes:
-> On 08/16/2018 09:49 PM, Michael Ellerman wrote:
->> Michael Neuling <mikey@neuling.org> writes:
->> 
->>> On Mon, 2018-06-18 at 19:59 -0300, Breno Leitao wrote:
->>>> Currently msr_tm_active() is a wrapper around MSR_TM_ACTIVE() if
->>>> CONFIG_PPC_TRANSACTIONAL_MEM is set, or it is just a function that
->>>> returns false if CONFIG_PPC_TRANSACTIONAL_MEM is not set.
->>>>
->>>> This function is not necessary, since MSR_TM_ACTIVE() just do the same,
->>>> checking for the TS bits and does not require any TM facility.
->>>>
->>>> This patchset remove every instance of msr_tm_active() and replaced it
->>>> by MSR_TM_ACTIVE().
->>>>
->>>> Signed-off-by: Breno Leitao <leitao@debian.org>
->>>>
->>>
->>> Patch looks good... one minor nit below...
->>>
->>>>  
->>>> -	if (!msr_tm_active(regs->msr) &&
->>>> -		!current->thread.load_fp && !loadvec(current->thread))
->>>> +	if (!current->thread.load_fp && !loadvec(current->thread)) {
->>>> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->>>> +		if (!MSR_TM_ACTIVE(regs->msr))
->>>> +			return;
->>>
->>> Can you make a MSR_TM_ACTIVE() that returns false when
->>> !CONFIG_PPC_TRANSACTIONAL_MEM. Then you don't need this inline #ifdef.
->> 
->> Is that safe?
->> 
->> I see ~50 callers of MSR_TM_ACTIVE(), are they all inside #ifdef TM ?
->
-> I checked all of them, and the only two that are not called inside a #ifdef
-> are at kvm/book3s_hv_tm.c. They are:
->
->   kvm/book3s_hv_tm.c:		if (!MSR_TM_ACTIVE(msr)) {
->   kvm/book3s_hv_tm.c:		if (MSR_TM_ACTIVE(msr) || !(vcpu->arch.texasr & TEXASR_FS)) {
+On Fri, Aug 17, 2018 at 12:26:30PM +0200, Arnd Bergmann wrote:
+> Hi Bjorn and others,
+> 
+> Triggered by Christoph's patches, I had another go at converting
+> all of the remaining pci host bridge implementations to be based
+> on pci_alloc_host_bridge and a separate registration function.
 
-That whole file is only built if TM=y:
+I really like the idea behind this series.
 
-kvm-hv-$(CONFIG_PPC_TRANSACTIONAL_MEM) += \
-	book3s_hv_tm.o
+> I'm adding a bit of duplication into the less maintained code
+> here, but it makes everything more consistent, and gives an
+> easy place to hook up callback functions etc.
 
-> All the others are being called inside the #ifdef
->
-> Other than that, I do not see why it would be a problem in the way I
-> implemented it, since it will return false for the two cases above, which
-> seems correct. Take a look on how the definition became:
->
->   #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
->   #define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
->   #else
->   #define MSR_TM_ACTIVE(x) 0
->   #endif
+I wonder if there is a way to avoid some of that by adding a few
+more helpers, but even without the helpers that approach looks
+ok to me.
 
-
-Imagine we had some code somewhere that checked for TM being active in a
-non-TM aware kernel, that would break with this change, because now the
-MSR check does nothing when TM=n.
-
-eg. we might check at boot time that we're not transactional, eg. in
-case we came from a kdump kernel that was in a transaction.
-
-So if all the call-sites are already inside an #ifdef I'd be inclined to
-not add the #ifdef around the MSR_TM_ACTIVE macro.
-
-That way the macro can always be used to check the MSR value, whether TM
-is compiled in or out.
-
-cheers
+Do you have a git tree somewhere to play around with the changes?
