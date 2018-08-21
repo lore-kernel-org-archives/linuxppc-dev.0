@@ -1,31 +1,19 @@
-Return-Path: <srs0=tidg=le=gmail.com=npiggin@ozlabs.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vn0w0M4dzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:27:12 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41vn0v6xrDz8tCx
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:27:11 +1000 (AEST)
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com
- [IPv6:2607:f8b0:4864:20::541])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41vn0t5zwlz9s78
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2018 20:27:10 +1000 (AEST)
-Received: by mail-pg1-x541.google.com with SMTP id y4-v6so8248746pgp.9
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Aug 2018 03:27:10 -0700 (PDT)
-Date: Tue, 21 Aug 2018 20:27:02 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Michael Ellerman
- <mpe@ellerman.id.au>, "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: Re: [PATCH] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
-Message-ID: <20180821202702.4198d426@roar.ozlabs.ibm.com>
-In-Reply-To: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
-References: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vnBJ4JdGzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:35:20 +1000 (AEST)
+In-Reply-To: <20180430145558.4308-16-npiggin@gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [15/15] powerpc/powernv: provide a console flush operation for
+ opal hvc driver
+Message-Id: <41vnBJ3c54z9s78@ozlabs.org>
+Date: Tue, 21 Aug 2018 20:35:20 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,61 +23,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 17 Aug 2018 14:51:47 +0530
-Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Mon, 2018-04-30 at 14:55:58 UTC, Nicholas Piggin wrote:
+> Provide the flush hv_op for the opal hvc driver. This will flush the
+> firmware console buffers without spinning with interrupts disabled.
 > 
-> With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
-> during MCE recovery path.), the SLB error recovery is broken. The
-> commit missed a crucial change of OR-ing index value to RB[52-63] which
-> selects the SLB entry while rebolting. This patch fixes that.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/mm/slb.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-> index 0b095fa54049..6dd9913425bc 100644
-> --- a/arch/powerpc/mm/slb.c
-> +++ b/arch/powerpc/mm/slb.c
-> @@ -101,9 +101,12 @@ void __slb_restore_bolted_realmode(void)
->  
->  	 /* No isync needed because realmode. */
->  	for (index = 0; index < SLB_NUM_BOLTED; index++) {
-> +		unsigned long rb = be64_to_cpu(p->save_area[index].esid);
-> +
-> +		rb = (rb & ~0xFFFul) | index;
->  		asm volatile("slbmte  %0,%1" :
->  		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
-> -		       "r" (be64_to_cpu(p->save_area[index].esid)));
-> +		       "r" (rb));
->  	}
->  }
->  
-> 
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 
-I'm just looking at this again. The bolted save areas do have the
-index field set. So for the OS, your patch should be equivalent to
-this, right?
+Applied to powerpc next, thanks.
 
- static inline void slb_shadow_clear(enum slb_index index)
- {
--       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
-+       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, index);
- }
+https://git.kernel.org/powerpc/c/95b861a76c1ded3e89d33a3d9f4552
 
-Which seems like a better fix.
-
-PAPR says:
-
-  Note: SLB is filled sequentially starting at index 0
-  from the shadow buffer ignoring the contents of
-  RB field bits 52-63
-
-So that shouldn't be an issue.
-
-Thanks,
-Nick
+cheers
