@@ -1,34 +1,25 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com
+ [IPv6:2607:f8b0:4864:20::441])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41vgMV2GhNzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:12:53 +1000 (AEST)
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7L6AFMM141803
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 02:12:51 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m07vdje5s-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 02:12:51 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 21 Aug 2018 07:12:49 +0100
-Subject: Re: [PATCH] powerpc/64s/hash: convert SLB miss handlers to C
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Reply-To: benh@au1.ibm.com
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
-Date: Tue, 21 Aug 2018 16:12:44 +1000
-In-Reply-To: <20180821051306.17869-1-npiggin@gmail.com>
-References: <20180821051306.17869-1-npiggin@gmail.com>
-Mime-Version: 1.0
-Message-Id: <a8f6f7ca5ae67e0a7bce6ed8a37d50f6e282d256.camel@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41vgfR6pX5zF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 16:25:51 +1000 (AEST)
+Received: by mail-pf1-x441.google.com with SMTP id u24-v6so7981262pfn.13
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2018 23:25:51 -0700 (PDT)
+Date: Tue, 21 Aug 2018 16:25:43 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Anton Blanchard <anton@ozlabs.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, benh@kernel.crashing.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/Makefiles: Fix clang/llvm build
+Message-ID: <20180821162543.30e7f4b2@roar.ozlabs.ibm.com>
+In-Reply-To: <20180821153839.6ce0a287@kryten>
+References: <20180821010203.23213-1-anton@ozlabs.org>
+ <87ftz8mh60.fsf@concordia.ellerman.id.au>
+ <20180821153839.6ce0a287@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,47 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-21 at 15:13 +1000, Nicholas Piggin wrote:
-> This patch moves SLB miss handlers completely to C, using the standard
-> exception handler macros to set up the stack and branch to C.
-> 
-> This can be done because the segment containing the kernel stack is
-> always bolted, so accessing it with relocation on will not cause an
-> SLB exception.
-> 
-> Arbitrary kernel memory may not be accessed when handling kernel space
-> SLB misses, so care should be taken there. However user SLB misses can
-> access any kernel memory, which can be used to move some fields out of
-> the paca (in later patches).
-> 
-> User SLB misses could quite easily reconcile IRQs and set up a first
-> class kernel environment and exit via ret_from_except, however that
-> doesn't seem to be necessary at the moment, so we only do that if a
-> bad fault is encountered.
-> 
-> [ Credit to Aneesh for bug fixes, error checks, and improvements to bad
->   address handling, etc ]
-> 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> 
-> Since RFC:
-> - Send patch 1 by itself to focus on the big change.
-> - Added MSR[RI] handling
-> - Fixed up a register loss bug exposed by irq tracing (Aneesh)
-> - Reject misses outside the defined kernel regions (Aneesh)
-> - Added several more sanity checks and error handlig (Aneesh), we may
->   look at consolidating these tests and tightenig up the code but for
->   a first pass we decided it's better to check carefully.
-> ---
->  arch/powerpc/include/asm/asm-prototypes.h |   2 +
->  arch/powerpc/kernel/exceptions-64s.S      | 202 +++----------
->  arch/powerpc/mm/Makefile                  |   2 +-
->  arch/powerpc/mm/slb.c                     | 257 +++++++++--------
->  arch/powerpc/mm/slb_low.S                 | 335 ----------------------
->  5 files changed, 185 insertions(+), 613 deletions(-)
-                    ^^^                ^^^
+On Tue, 21 Aug 2018 15:38:39 +1000
+Anton Blanchard <anton@ozlabs.org> wrote:
 
-Nice ! :-)
+> Hi Michael,
+> 
+> > This breaks GCC 4.6.3 at least, which we still support:
+> > 
+> >   Assembler messages:
+> >   Error: invalid switch -mpower8
+> >   Error: unrecognized option -mpower8
+> >   ../scripts/mod/empty.c:1:0: fatal error: error closing -: Broken
+> > pipe  
+> 
+> Yuck. We have POWER8 instructions in our assembly code, and a toolchain
+> that doesn't understand the -mpower8 flag, but has support for
+> power8 instructions.
+> 
+> This is what I see on clang with -mpower7:
+> 
+> /tmp/sstep-2afa55.s:7584: Error: unrecognized opcode: `lbarx'
+> /tmp/sstep-2afa55.s:7626: Error: unrecognized opcode: `stbcx.'
+> /tmp/sstep-2afa55.s:8077: Error: unrecognized opcode: `lharx'
+> /tmp/sstep-2afa55.s:8140: Error: unrecognized opcode: `stbcx.'
+> 
+> Nick: any suggestions?
 
-Cheers,
-Ben.
+ cpu-as-$(CONFIG_PPC_BOOK3S_64)	+= $(call as-option,-Wa$(comma)-mpower8,-Wa$(comma)-mpower4)
+
+?
+
+Thanks,
+Nick
