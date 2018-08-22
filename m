@@ -1,23 +1,26 @@
-Return-Path: <mhocko@kernel.org>
-Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wPYS69DwzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 20:54:03 +1000 (AEST)
-Date: Wed, 22 Aug 2018 12:53:55 +0200
-From: Michal Hocko <mhocko@kernel.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Cc: Haren Myneni <haren@linux.vnet.ibm.com>, n-horiguchi@ah.jp.nec.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kamezawa.hiroyu@jp.fujitsu.com, mgorman@suse.de
-Subject: Re: Infinite looping observed in __offline_pages
-Message-ID: <20180822105355.GI29735@dhcp22.suse.cz>
-References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
- <20180725200336.GP28386@dhcp22.suse.cz>
- <87bm9ug34l.fsf@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wTnL0BBvzF2QJ
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:04:36 +1000 (AEST)
+Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
+ to PGD and hugepages
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ aneesh.kumar@linux.vnet.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
+ <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
+ <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
+ <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
+Message-ID: <1aa6d8c1-d5af-fe03-79fe-afb10c9b1bec@c-s.fr>
+Date: Wed, 22 Aug 2018 16:04:32 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87bm9ug34l.fsf@linux.ibm.com>
+In-Reply-To: <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,145 +30,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 22-08-18 15:00:18, Aneesh Kumar K.V wrote:
-> 
-> Hi Michal,
-> 
-> Michal Hocko <mhocko@kernel.org> writes:
-> 
-> > On Wed 25-07-18 13:11:15, John Allen wrote:
-> > [...]
-> >> Does a failure in do_migrate_range indicate that the range is unmigratable
-> >> and the loop in __offline_pages should terminate and goto failed_removal? Or
-> >> should we allow a certain number of retrys before we
-> >> give up on migrating the range?
-> >
-> > Unfortunatelly not. Migration code doesn't tell a difference between
-> > ephemeral and permanent failures. We are relying on
-> > start_isolate_page_range to tell us this. So the question is, what kind
-> > of page is not migratable and for what reason.
-> >
-> > Are you able to add some debugging to give us more information. The
-> > current debugging code in the hotplug/migration sucks...
-> 
-> Haren did most of the debugging, so at minimum we need a patch like this
-> I guess. 
-> 
-> modified   mm/page_alloc.c
-> @@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
->  		 * handle each tail page individually in migration.
->  		 */
->  		if (PageHuge(page)) {
-> +
-> +			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
-> +				goto unmovable;
-> +
->  			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
->  			continue;
->  		}
-> 
-> 
-> The problem is start_isolate_range, doesn't look at hugetlbpage and
-> return error if the architecture didn't support HUGEPAGE migration. 
+Aneesh,
 
-Yes this makes sense. I didn't really have arches without huge page
-migration in mind.
- 
-> Now discussing with Naoya, I was suggsting whether we should add a
-> similar check in 
+Le 17/08/2018 à 12:44, Christophe LEROY a écrit :
 > 
-> modified   mm/memory_hotplug.c
-> @@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
->  				return pfn;
->  			if (__PageMovable(page))
->  				return pfn;
-> -			if (PageHuge(page)) {
-> +			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
-> +			    PageHuge(page)) {
->  				if (page_huge_active(page))
->  					return pfn;
 > 
-> One of the thinking there is it possible to get new hugetlb pages
-> allocated in that range after start_isolate_range ran. But i guess since
-> we marked all the free pages as  MIGRATE_ISOLATE that is not possible?
-
-I do not follow. You are usually allocating new pages outside of the
-offlined range. But the above change makes sense because it doesn't
-really make sense to migrate pfn if it is backed by a non-migrateable
-huge page. dissolve_free_huge_pages should then try to remove it
-completely and the offlining fails if that is not possible.
-
-> But then it is good to have scan_movable_pages also check for
-> HUGEPAGE_MIGRATION?
-
-Good question. It is not necessary right now because has_unmovable_pages
-called earlier should take care of it. But I guess it will not hurt to
-have it there as well for the clarity.
-
+> Le 17/08/2018 à 05:32, Aneesh Kumar K.V a écrit :
+>> On 08/14/2018 08:24 PM, Christophe Leroy wrote:
+>>> While implementing TLB miss HW assistance on the 8xx, the following
+>>> warning was encountered:
+>>>
+>>> [  423.732965] WARNING: CPU: 0 PID: 345 at mm/slub.c:2412 
+>>> ___slab_alloc.constprop.30+0x26c/0x46c
+>>> [  423.733033] CPU: 0 PID: 345 Comm: mmap Not tainted 
+>>> 4.18.0-rc8-00664-g2dfff9121c55 #671
+>>> [  423.733075] NIP:  c0108f90 LR: c0109ad0 CTR: 00000004
+>>> [  423.733121] REGS: c455bba0 TRAP: 0700   Not tainted 
+>>> (4.18.0-rc8-00664-g2dfff9121c55)
+>>> [  423.733147] MSR:  00021032 <ME,IR,DR,RI>  CR: 24224848  XER: 20000000
+>>> [  423.733319]
+>>> [  423.733319] GPR00: c0109ad0 c455bc50 c4521910 c60053c0 007080c0 
+>>> c0011b34 c7fa41e0 c455be30
+>>> [  423.733319] GPR08: 00000001 c00103a0 c7fa41e0 c49afcc4 24282842 
+>>> 10018840 c079b37c 00000040
+>>> [  423.733319] GPR16: 73f00000 00210d00 00000000 00000001 c455a000 
+>>> 00000100 00000200 c455a000
+>>> [  423.733319] GPR24: c60053c0 c0011b34 007080c0 c455a000 c455a000 
+>>> c7fa41e0 00000000 00009032
+>>> [  423.734190] NIP [c0108f90] ___slab_alloc.constprop.30+0x26c/0x46c
+>>> [  423.734257] LR [c0109ad0] kmem_cache_alloc+0x210/0x23c
+>>> [  423.734283] Call Trace:
+>>> [  423.734326] [c455bc50] [00000100] 0x100 (unreliable)
+>>> [  423.734430] [c455bcc0] [c0109ad0] kmem_cache_alloc+0x210/0x23c
+>>> [  423.734543] [c455bcf0] [c0011b34] huge_pte_alloc+0xc0/0x1dc
+>>> [  423.734633] [c455bd20] [c01044dc] hugetlb_fault+0x408/0x48c
+>>> [  423.734720] [c455bdb0] [c0104b20] follow_hugetlb_page+0x14c/0x44c
+>>> [  423.734826] [c455be10] [c00e8e54] __get_user_pages+0x1c4/0x3dc
+>>> [  423.734919] [c455be80] [c00e9924] __mm_populate+0xac/0x140
+>>> [  423.735020] [c455bec0] [c00db14c] vm_mmap_pgoff+0xb4/0xb8
+>>> [  423.735127] [c455bf00] [c00f27c0] ksys_mmap_pgoff+0xcc/0x1fc
+>>> [  423.735222] [c455bf40] [c000e0f8] ret_from_syscall+0x0/0x38
+>>> [  423.735271] Instruction dump:
+>>> [  423.735321] 7cbf482e 38fd0008 7fa6eb78 7fc4f378 4bfff5dd 7fe3fb78 
+>>> 4bfffe24 81370010
+>>> [  423.735536] 71280004 41a2ff88 4840c571 4bffff80 <0fe00000> 
+>>> 4bfffeb8 81340010 712a0004
+>>> [  423.735757] ---[ end trace e9b222919a470790 ]---
+>>>
+>>> This warning occurs when calling kmem_cache_zalloc() on a
+>>> cache having a constructor.
+>>>
+>>> In this case it happens because PGD cache and 512k hugepte cache are
+>>> the same size (4k). While a cache with constructor is created for
+>>> the PGD, hugepages create cache without constructor and uses
+>>> kmem_cache_zalloc(). As both expect a cache with the same size,
+>>> the hugepages reuse the cache created for PGD, hence the conflict.
+>>>
+>>> In order to avoid this conflict, this patch:
+>>> - modifies pgtable_cache_add() so that a zeroising constructor is
+>>> added for any cache size.
+>>> - replaces calls to kmem_cache_zalloc() by kmem_cache_alloc()
+>>>
+>>
+>> Can't we just do kmem_cache_alloc with gfp flags __GFP_ZERO? and 
+>> remove the constructor completely?
 > 
-> Complete patch below.
+> I don't understand what you mean. That's exactly what I did in v1 (by 
+> using kmem_cache_zalloc()), and you commented that doing this we would 
+> zeroise at allocation whereas the constructors are called when adding 
+> memory to the slab and when freeing the allocated block. Or did I 
+> misunderstood your comment ?
 > 
-> commit 2e9d754ac211f2af3731f15df3cd8cd070b4cc54
-> Author: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-> Date:   Tue Aug 21 14:17:55 2018 +0530
+> static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
+> {
+>      return kmem_cache_alloc(k, flags | __GFP_ZERO);
+> }
 > 
->     mm/hugetlb: filter out hugetlb pages if HUGEPAGE migration is not supported.
->     
->     When scanning for movable pages, filter out Hugetlb pages if hugepage migration
->     is not supported. Without this we hit infinte loop in __offline pages where we
->     do
->             pfn = scan_movable_pages(start_pfn, end_pfn);
->             if (pfn) { /* We have movable pages */
->                     ret = do_migrate_range(pfn, end_pfn);
->                     goto repeat;
->             }
->     
->     We do support hugetlb migration ony if the hugetlb pages are at pmd level. Here
->     we just check for Kernel config. The gigantic page size check is done in
->     page_huge_active.
 
-That being said. The patch makes sense to me.
+Wasn't it what you meant in your comment to v1 ? If not, could you 
+detail your thought so that I can take it in account in a v3 ?
 
->     
->     Reported-by: Haren Myneni <haren@linux.vnet.ibm.com>
->     CC: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
->     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-
-I guess we should mark it for stable even though I am not sure how often
-do we see CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION=n
-
-Acked-by: Michal Hocko <mhocko@suse.com>
-
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 4eb6e824a80c..f9bdea685cf4 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
->  				return pfn;
->  			if (__PageMovable(page))
->  				return pfn;
-> -			if (PageHuge(page)) {
-> +			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
-> +			    PageHuge(page)) {
->  				if (page_huge_active(page))
->  					return pfn;
->  				else
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 15ea511fb41c..a3f81e18c882 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
->  		 * handle each tail page individually in migration.
->  		 */
->  		if (PageHuge(page)) {
-> +
-> +			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
-> +				goto unmovable;
-> +
->  			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
->  			continue;
->  		}
-
--- 
-Michal Hocko
-SUSE Labs
+Thanks
+Christophe
