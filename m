@@ -1,25 +1,26 @@
-Return-Path: <npiggin@gmail.com>
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
- [IPv6:2607:f8b0:4864:20::444])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wCQR0WWkzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 13:17:18 +1000 (AEST)
-Received: by mail-pf1-x444.google.com with SMTP id l9-v6so284547pff.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:17:18 -0700 (PDT)
-Date: Wed, 22 Aug 2018 13:17:10 +1000
-From: Nicholas Piggin <npiggin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
- <aneesh.kumar@linux.ibm.com>
-Subject: Re: [RFC PATCH 1/5] powerpc/64s/hash: convert SLB miss handlers to C
-Message-ID: <20180822131710.5e2c45f5@roar.ozlabs.ibm.com>
-In-Reply-To: <87y3d0kyj9.fsf@concordia.ellerman.id.au>
-References: <20180820094200.13003-1-npiggin@gmail.com>
- <20180820094200.13003-2-npiggin@gmail.com>
- <87y3d0kyj9.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wJ0n55WhzF2FK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 16:43:52 +1000 (AEST)
+Date: Wed, 22 Aug 2018 08:45:31 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ linux-ia64@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH 08/20] powerpc/dma: remove the unused dma_nommu_ops export
+Message-ID: <20180822064531.GA19284@lst.de>
+References: <20180730163824.10064-1-hch@lst.de>
+ <20180730163824.10064-9-hch@lst.de> <20180731121625.GA29793@lst.de>
+ <f7daffa5481ab82f345aa5bf9f63f40caa068456.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f7daffa5481ab82f345aa5bf9f63f40caa068456.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +30,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Aug 2018 16:46:02 +1000
-Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Nicholas Piggin <npiggin@gmail.com> writes:
+On Thu, Aug 09, 2018 at 10:01:16AM +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2018-07-31 at 14:16 +0200, Christoph Hellwig wrote:
+> > It turns out cxl actually uses it.  So for now skip this patch,
+> > although random code in drivers messing with dma ops will need to
+> > be sorted out sooner or later.
 > 
-> > This patch moves SLB miss handlers completely to C, using the standard
-> > exception handler macros to set up the stack and branch to C.
-> >
-> > This can be done because the segment containing the kernel stack is
-> > always bolted, so accessing it with relocation on will not cause an
-> > SLB exception.
-> >
-> > Arbitrary kernel memory may not be accessed when handling kernel space
-> > SLB misses, so care should be taken there.  
+> CXL devices are "special", they bypass the classic iommu in favor of
+> allowing the device to operate using the main processor page tables
+> using an MMU context (so basically the device can use userspace
+> addresses directly), akin to ATS.
 > 
-> We'll need to mark everything that's used in slb.c as notrace, otherwise
-> 
-> Probably we just need to mark the whole file as not traceable.
+> I think the code currently uses the nommu ops as a way to do a simple
+> kernel mapping for kernel drivers using CXL (not userspace stuff)
+> though.
 
-Yeah good point there. I'll do that. The whole file including things we
-allow today? How do we do that, like this?
-
-CFLAGS_REMOVE_slb.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
-
-Thanks,
-Nick
+Its still a horrible idea to have this in drivers/, we need some
+core API to mediate this behavior.  Also if the device supports
+using virtual addresses dma_nommu_ops seems wrong as it won't do
+the right thing for e.g. vmalloc addresses not mapped into the
+kernel linear mapping (which I guess can't currently happen on
+powerpc, but still..)
