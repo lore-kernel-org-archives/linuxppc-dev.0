@@ -1,26 +1,40 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wTnL0BBvzF2QJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:04:36 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wV874Y56zDr4h
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:20:55 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7MEJ98P067747
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:20:53 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m168bgk1x-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:20:53 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 22 Aug 2018 08:20:52 -0600
 Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
  to PGD and hugepages
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- aneesh.kumar@linux.vnet.ibm.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
  <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
  <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
  <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
-Message-ID: <1aa6d8c1-d5af-fe03-79fe-afb10c9b1bec@c-s.fr>
-Date: Wed, 22 Aug 2018 16:04:32 +0200
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Wed, 22 Aug 2018 19:50:43 +0530
 MIME-Version: 1.0
 In-Reply-To: <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <3e6412ac-c645-908f-a3bb-c9a2a72f4b68@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,9 +44,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aneesh,
-
-Le 17/08/2018 à 12:44, Christophe LEROY a écrit :
+On 08/17/2018 04:14 PM, Christophe LEROY wrote:
 > 
 > 
 > Le 17/08/2018 à 05:32, Aneesh Kumar K.V a écrit :
@@ -106,9 +118,15 @@ Le 17/08/2018 à 12:44, Christophe LEROY a écrit :
 >      return kmem_cache_alloc(k, flags | __GFP_ZERO);
 > }
 > 
+>
 
-Wasn't it what you meant in your comment to v1 ? If not, could you 
-detail your thought so that I can take it in account in a v3 ?
+I completely misunderstood kmem_cache_zalloc. I took it as we zero out 
+after each alloc. I guess your earlier patch is then good. We may want 
+to double check this, I haven't looked at the slab internals.
 
-Thanks
-Christophe
+What we want is to make sure when we add new memory to slab, we want it 
+zeroed. If we are allocating objects from existing slab memory pool, we 
+don't need to zero out, because when we release objects to slab we make 
+sure we clear it.
+
+-aneesh
