@@ -1,37 +1,23 @@
-Return-Path: <michaele@au1.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@kernel.org>
+Received: from mx1.suse.de (mx2.suse.de [195.135.220.15])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wNdS2SX6zF2QJ
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 20:12:27 +1000 (AEST)
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7MA9KNo038855
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 06:12:25 -0400
-Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m14nt2s6w-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 06:12:25 -0400
-Received: from localhost
- by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michaele@au1.ibm.com>;
- Wed, 22 Aug 2018 11:12:23 +0100
-From: Michael Ellerman <michaele@au1.ibm.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michal Suchanek <msuchanek@suse.de>, Manjunatha H R <manjuhr1@in.ibm.com>,
- Michael Bringmann <mbringm@us.ibm.com>
-Subject: Re: [v5] powerpc/topology: Get topology for shared processors at boot
-In-Reply-To: <20180822020542.GC2080@linux.vnet.ibm.com>
-References: <1534517679-10792-1-git-send-email-srikar@linux.vnet.ibm.com>
- <41vnBN2hf3z9s8T@ozlabs.org> <20180822020542.GC2080@linux.vnet.ibm.com>
-Date: Wed, 22 Aug 2018 20:12:16 +1000
-Message-Id: <87sh36lngf.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wPYS69DwzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 20:54:03 +1000 (AEST)
+Date: Wed, 22 Aug 2018 12:53:55 +0200
+From: Michal Hocko <mhocko@kernel.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Cc: Haren Myneni <haren@linux.vnet.ibm.com>, n-horiguchi@ah.jp.nec.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kamezawa.hiroyu@jp.fujitsu.com, mgorman@suse.de
+Subject: Re: Infinite looping observed in __offline_pages
+Message-ID: <20180822105355.GI29735@dhcp22.suse.cz>
+References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
+ <20180725200336.GP28386@dhcp22.suse.cz>
+ <87bm9ug34l.fsf@linux.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87bm9ug34l.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,43 +27,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Srikar Dronamraju <srikar@linux.vnet.ibm.com> writes:
-> * Michael Ellerman <patch-notifications@ellerman.id.au> [2018-08-21 20:35=
-:23]:
->
->> On Fri, 2018-08-17 at 14:54:39 UTC, Srikar Dronamraju wrote:
->> > On a shared lpar, Phyp will not update the cpu associativity at boot
->> > time. Just after the boot system does recognize itself as a shared lpa=
-r and
->> > trigger a request for correct cpu associativity. But by then the sched=
-uler
->> > would have already created/destroyed its sched domains.
->> >=20
->> > This causes
->> > - Broken load balance across Nodes causing islands of cores.
->> > - Performance degradation esp if the system is lightly loaded
->> > - dmesg to wrongly report all cpus to be in Node 0.
->> > - Messages in dmesg saying borken topology.
->> > - With commit 051f3ca02e46 ("sched/topology: Introduce NUMA identity
->> >   node sched domain"), can cause rcu stalls at boot up.
->> >=20
->> >=20
->> > Previous attempt to solve this problem
->> > https://patchwork.ozlabs.org/patch/530090/
->> >=20
->> > Reported-by: Manjunatha H R <manjuhr1@in.ibm.com>
->> > Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
->>=20
->> Applied to powerpc next, thanks.
->>=20
->> https://git.kernel.org/powerpc/c/2ea62630681027c455117aa471ea3a
->>=20
->
-> Once it gets to Linus's tree, can we request this to be included in
-> stable trees?
+On Wed 22-08-18 15:00:18, Aneesh Kumar K.V wrote:
+> 
+> Hi Michal,
+> 
+> Michal Hocko <mhocko@kernel.org> writes:
+> 
+> > On Wed 25-07-18 13:11:15, John Allen wrote:
+> > [...]
+> >> Does a failure in do_migrate_range indicate that the range is unmigratable
+> >> and the loop in __offline_pages should terminate and goto failed_removal? Or
+> >> should we allow a certain number of retrys before we
+> >> give up on migrating the range?
+> >
+> > Unfortunatelly not. Migration code doesn't tell a difference between
+> > ephemeral and permanent failures. We are relying on
+> > start_isolate_page_range to tell us this. So the question is, what kind
+> > of page is not migratable and for what reason.
+> >
+> > Are you able to add some debugging to give us more information. The
+> > current debugging code in the hotplug/migration sucks...
+> 
+> Haren did most of the debugging, so at minimum we need a patch like this
+> I guess. 
+> 
+> modified   mm/page_alloc.c
+> @@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
+>  		 * handle each tail page individually in migration.
+>  		 */
+>  		if (PageHuge(page)) {
+> +
+> +			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
+> +				goto unmovable;
+> +
+>  			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
+>  			continue;
+>  		}
+> 
+> 
+> The problem is start_isolate_range, doesn't look at hugetlbpage and
+> return error if the architecture didn't support HUGEPAGE migration. 
 
-You can yes.
+Yes this makes sense. I didn't really have arches without huge page
+migration in mind.
+ 
+> Now discussing with Naoya, I was suggsting whether we should add a
+> similar check in 
+> 
+> modified   mm/memory_hotplug.c
+> @@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
+>  				return pfn;
+>  			if (__PageMovable(page))
+>  				return pfn;
+> -			if (PageHuge(page)) {
+> +			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
+> +			    PageHuge(page)) {
+>  				if (page_huge_active(page))
+>  					return pfn;
+> 
+> One of the thinking there is it possible to get new hugetlb pages
+> allocated in that range after start_isolate_range ran. But i guess since
+> we marked all the free pages as  MIGRATE_ISOLATE that is not possible?
 
-I'd prefer if we wait a week or two so it can get some testing first.
+I do not follow. You are usually allocating new pages outside of the
+offlined range. But the above change makes sense because it doesn't
+really make sense to migrate pfn if it is backed by a non-migrateable
+huge page. dissolve_free_huge_pages should then try to remove it
+completely and the offlining fails if that is not possible.
 
-cheers
+> But then it is good to have scan_movable_pages also check for
+> HUGEPAGE_MIGRATION?
+
+Good question. It is not necessary right now because has_unmovable_pages
+called earlier should take care of it. But I guess it will not hurt to
+have it there as well for the clarity.
+
+> 
+> Complete patch below.
+> 
+> commit 2e9d754ac211f2af3731f15df3cd8cd070b4cc54
+> Author: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Date:   Tue Aug 21 14:17:55 2018 +0530
+> 
+>     mm/hugetlb: filter out hugetlb pages if HUGEPAGE migration is not supported.
+>     
+>     When scanning for movable pages, filter out Hugetlb pages if hugepage migration
+>     is not supported. Without this we hit infinte loop in __offline pages where we
+>     do
+>             pfn = scan_movable_pages(start_pfn, end_pfn);
+>             if (pfn) { /* We have movable pages */
+>                     ret = do_migrate_range(pfn, end_pfn);
+>                     goto repeat;
+>             }
+>     
+>     We do support hugetlb migration ony if the hugetlb pages are at pmd level. Here
+>     we just check for Kernel config. The gigantic page size check is done in
+>     page_huge_active.
+
+That being said. The patch makes sense to me.
+
+>     
+>     Reported-by: Haren Myneni <haren@linux.vnet.ibm.com>
+>     CC: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+>     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+
+I guess we should mark it for stable even though I am not sure how often
+do we see CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION=n
+
+Acked-by: Michal Hocko <mhocko@suse.com>
+
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 4eb6e824a80c..f9bdea685cf4 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
+>  				return pfn;
+>  			if (__PageMovable(page))
+>  				return pfn;
+> -			if (PageHuge(page)) {
+> +			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
+> +			    PageHuge(page)) {
+>  				if (page_huge_active(page))
+>  					return pfn;
+>  				else
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 15ea511fb41c..a3f81e18c882 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
+>  		 * handle each tail page individually in migration.
+>  		 */
+>  		if (PageHuge(page)) {
+> +
+> +			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
+> +				goto unmovable;
+> +
+>  			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
+>  			continue;
+>  		}
+
+-- 
+Michal Hocko
+SUSE Labs
