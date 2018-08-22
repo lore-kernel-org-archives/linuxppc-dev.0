@@ -1,37 +1,25 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com
+ [IPv6:2607:f8b0:4864:20::444])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41w9qz4FSNzDqnw
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 12:05:51 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7M242s2091524
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 22:05:49 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m0x41s567-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 22:05:49 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Wed, 22 Aug 2018 03:05:47 +0100
-Date: Tue, 21 Aug 2018 19:05:42 -0700
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michal Suchanek <msuchanek@suse.de>, Manjunatha H R <manjuhr1@in.ibm.com>,
- Michael Bringmann <mbringm@us.ibm.com>
-Subject: Re: [v5] powerpc/topology: Get topology for shared processors at boot
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-References: <1534517679-10792-1-git-send-email-srikar@linux.vnet.ibm.com>
- <41vnBN2hf3z9s8T@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wCQR0WWkzDr4h
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 13:17:18 +1000 (AEST)
+Received: by mail-pf1-x444.google.com with SMTP id l9-v6so284547pff.9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 20:17:18 -0700 (PDT)
+Date: Wed, 22 Aug 2018 13:17:10 +1000
+From: Nicholas Piggin <npiggin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, "Aneesh Kumar K . V"
+ <aneesh.kumar@linux.ibm.com>
+Subject: Re: [RFC PATCH 1/5] powerpc/64s/hash: convert SLB miss handlers to C
+Message-ID: <20180822131710.5e2c45f5@roar.ozlabs.ibm.com>
+In-Reply-To: <87y3d0kyj9.fsf@concordia.ellerman.id.au>
+References: <20180820094200.13003-1-npiggin@gmail.com>
+ <20180820094200.13003-2-npiggin@gmail.com>
+ <87y3d0kyj9.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <41vnBN2hf3z9s8T@ozlabs.org>
-Message-Id: <20180822020542.GC2080@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,37 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Michael Ellerman <patch-notifications@ellerman.id.au> [2018-08-21 20:35:23]:
+On Tue, 21 Aug 2018 16:46:02 +1000
+Michael Ellerman <mpe@ellerman.id.au> wrote:
 
-> On Fri, 2018-08-17 at 14:54:39 UTC, Srikar Dronamraju wrote:
-> > On a shared lpar, Phyp will not update the cpu associativity at boot
-> > time. Just after the boot system does recognize itself as a shared lpar and
-> > trigger a request for correct cpu associativity. But by then the scheduler
-> > would have already created/destroyed its sched domains.
-> > 
-> > This causes
-> > - Broken load balance across Nodes causing islands of cores.
-> > - Performance degradation esp if the system is lightly loaded
-> > - dmesg to wrongly report all cpus to be in Node 0.
-> > - Messages in dmesg saying borken topology.
-> > - With commit 051f3ca02e46 ("sched/topology: Introduce NUMA identity
-> >   node sched domain"), can cause rcu stalls at boot up.
-> > 
-> > 
-> > Previous attempt to solve this problem
-> > https://patchwork.ozlabs.org/patch/530090/
-> > 
-> > Reported-by: Manjunatha H R <manjuhr1@in.ibm.com>
-> > Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Nicholas Piggin <npiggin@gmail.com> writes:
 > 
-> Applied to powerpc next, thanks.
+> > This patch moves SLB miss handlers completely to C, using the standard
+> > exception handler macros to set up the stack and branch to C.
+> >
+> > This can be done because the segment containing the kernel stack is
+> > always bolted, so accessing it with relocation on will not cause an
+> > SLB exception.
+> >
+> > Arbitrary kernel memory may not be accessed when handling kernel space
+> > SLB misses, so care should be taken there.  
 > 
-> https://git.kernel.org/powerpc/c/2ea62630681027c455117aa471ea3a
+> We'll need to mark everything that's used in slb.c as notrace, otherwise
 > 
+> Probably we just need to mark the whole file as not traceable.
 
-Once it gets to Linus's tree, can we request this to be included in
-stable trees?
+Yeah good point there. I'll do that. The whole file including things we
+allow today? How do we do that, like this?
 
--- 
-Thanks and Regards
-Srikar Dronamraju
+CFLAGS_REMOVE_slb.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
+
+Thanks,
+Nick
