@@ -1,21 +1,25 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wL2F1mKrzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 18:15:16 +1000 (AEST)
-Subject: Patch "net/ethernet/freescale/fman: fix cross-build error" has been
- added to the 4.9-stable tree
-To: alexander.levin@microsoft.com, davem@davemloft.net,
- gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
- madalin.bucur@nxp.com, rdunlap@infradead.org
-Cc: <stable-commits@vger.kernel.org>
-From: <gregkh@linuxfoundation.org>
-Date: Wed, 22 Aug 2018 10:06:08 +0200
-Message-ID: <15349251685936@kroah.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wL6j0GTkzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 18:19:08 +1000 (AEST)
+Subject: Re: Odd SIGSEGV issue introduced by commit 6b31d5955cb29 ("mm, oom:
+ fix potential data corruption when oom_reaper races with writer")
+To: Ram Pai <linuxram@us.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michal Hocko <mhocko@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-mm <linux-mm@kvack.org>
+References: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+ <871sasmddc.fsf@concordia.ellerman.id.au>
+ <20180821175049.GA5905@ram.oc3035372033.ibm.com>
+From: Christophe LEROY <christophe.leroy@c-s.fr>
+Message-ID: <633145ae-162c-9e03-6e8d-7442cbc8356c@c-s.fr>
+Date: Wed, 22 Aug 2018 10:19:02 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ANSI_X3.4-1968
+In-Reply-To: <20180821175049.GA5905@ram.oc3035372033.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +30,55 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-This is a note to let you know that I've just added the patch titled
 
-    net/ethernet/freescale/fman: fix cross-build error
+Le 21/08/2018 à 19:50, Ram Pai a écrit :
+> On Tue, Aug 21, 2018 at 04:40:15PM +1000, Michael Ellerman wrote:
+>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>> ...
+>>>
+>>> And I bisected its disappearance with commit 99cd1302327a2 ("powerpc:
+>>> Deliver SEGV signal on pkey violation")
+>>
+>> Whoa that's weird.
+>>
+>>> Looking at those two commits, especially the one which makes it
+>>> dissapear, I'm quite sceptic. Any idea on what could be the cause and/or
+>>> how to investigate further ?
+>>
+>> Are you sure it's not some corruption that just happens to be masked by
+>> that commit? I can't see anything in that commit that could explain that
+>> change in behaviour.
+>>
+>> The only real change is if you're hitting DSISR_KEYFAULT isn't it?
+> 
+> even with the 'commit 99cd1302327a2', a SEGV signal should get generated;
+> which should kill the process. Unless the process handles SEGV signals
+> with SEGV_PKUERR differently.
 
-to the 4.9-stable tree which can be found at:
-    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+No, the sigsegv are not handled differently. And the trace shown it is 
+SEGV_MAPERR which is generated.
 
-The filename of the patch is:
-     net-ethernet-freescale-fman-fix-cross-build-error.patch
-and it can be found in the queue-4.9 subdirectory.
+> 
+> The other surprising thing is, why is DSISR_KEYFAULT getting generated
+> in the first place?  Are keys somehow getting programmed into the HPTE?
 
-If you, or anyone else, feels it should not be added to the stable tree,
-please let <stable@vger.kernel.org> know about it.
+Can't be that, because DSISR_KEYFAULT is filtered out when applying 
+DSISR_SRR1_MATCH_32S mask.
 
+> 
+> Feels like some random corruption.
 
->From foo@baz Wed Aug 22 09:42:09 CEST 2018
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Fri, 13 Jul 2018 21:25:19 -0700
-Subject: net/ethernet/freescale/fman: fix cross-build error
+In a way yes, except that it is always at the same instruction (in 
+ld.so) and always because the accessed address is 0x67xxxxxx instead of 
+0x77xxxxxx
+I also tested with TASK_SIZE set to 0xa0000000 instead of 0x80000000, 
+and I get same failure with bad address being 0x87xxxxxx instead of 
+0x97xxxxxx
 
-From: Randy Dunlap <rdunlap@infradead.org>
+Christophe
 
-[ Upstream commit c133459765fae249ba482f62e12f987aec4376f0 ]
-
-  CC [M]  drivers/net/ethernet/freescale/fman/fman.o
-In file included from ../drivers/net/ethernet/freescale/fman/fman.c:35:
-../include/linux/fsl/guts.h: In function 'guts_set_dmacr':
-../include/linux/fsl/guts.h:165:2: error: implicit declaration of function 'clrsetbits_be32' [-Werror=implicit-function-declaration]
-  clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
-  ^~~~~~~~~~~~~~~
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Madalin Bucur <madalin.bucur@nxp.com>
-Cc: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- include/linux/fsl/guts.h |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/include/linux/fsl/guts.h
-+++ b/include/linux/fsl/guts.h
-@@ -16,6 +16,7 @@
- #define __FSL_GUTS_H__
- 
- #include <linux/types.h>
-+#include <linux/io.h>
- 
- /**
-  * Global Utility Registers.
-
-
-Patches currently in stable-queue which might be from rdunlap@infradead.org are
-
-queue-4.9/tcp-identify-cryptic-messages-as-tcp-seq-bugs.patch
-queue-4.9/net-ethernet-freescale-fman-fix-cross-build-error.patch
+> 
+> Is this behavior seen with power8 or power9?
+> 
+> RP
+> 
