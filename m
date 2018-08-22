@@ -1,36 +1,23 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wMj34FfMzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 19:30:30 +1000 (AEST)
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7M9Te7F074536
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 05:30:28 -0400
-Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m14ypgm9v-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 05:30:27 -0400
-Received: from localhost
- by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 22 Aug 2018 10:30:25 +0100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-To: Michal Hocko <mhocko@kernel.org>, Haren Myneni <haren@linux.vnet.ibm.com>
-Cc: n-horiguchi@ah.jp.nec.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
- mgorman@suse.de
-Subject: Re: Infinite looping observed in __offline_pages
-In-Reply-To: <20180725200336.GP28386@dhcp22.suse.cz>
-References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
- <20180725200336.GP28386@dhcp22.suse.cz>
-Date: Wed, 22 Aug 2018 15:00:18 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wNc00nQbzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 20:11:12 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>
+Subject: Re: [RFC PATCH 1/5] powerpc/64s/hash: convert SLB miss handlers to C
+In-Reply-To: <20180822131710.5e2c45f5@roar.ozlabs.ibm.com>
+References: <20180820094200.13003-1-npiggin@gmail.com>
+ <20180820094200.13003-2-npiggin@gmail.com>
+ <87y3d0kyj9.fsf@concordia.ellerman.id.au>
+ <20180822131710.5e2c45f5@roar.ozlabs.ibm.com>
+Date: Wed, 22 Aug 2018 20:11:11 +1000
+Message-ID: <87va82lni8.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Message-Id: <87bm9ug34l.fsf@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,118 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Michal,
-
-Michal Hocko <mhocko@kernel.org> writes:
-
-> On Wed 25-07-18 13:11:15, John Allen wrote:
-> [...]
->> Does a failure in do_migrate_range indicate that the range is unmigratable
->> and the loop in __offline_pages should terminate and goto failed_removal? Or
->> should we allow a certain number of retrys before we
->> give up on migrating the range?
+Nicholas Piggin <npiggin@gmail.com> writes:
+> On Tue, 21 Aug 2018 16:46:02 +1000
+> Michael Ellerman <mpe@ellerman.id.au> wrote:
+>> Nicholas Piggin <npiggin@gmail.com> writes:
+>> > This patch moves SLB miss handlers completely to C, using the standard
+>> > exception handler macros to set up the stack and branch to C.
+>> >
+>> > This can be done because the segment containing the kernel stack is
+>> > always bolted, so accessing it with relocation on will not cause an
+>> > SLB exception.
+>> >
+>> > Arbitrary kernel memory may not be accessed when handling kernel space
+>> > SLB misses, so care should be taken there.  
+>> 
+>> We'll need to mark everything that's used in slb.c as notrace, otherwise
+>> 
+>> Probably we just need to mark the whole file as not traceable.
 >
-> Unfortunatelly not. Migration code doesn't tell a difference between
-> ephemeral and permanent failures. We are relying on
-> start_isolate_page_range to tell us this. So the question is, what kind
-> of page is not migratable and for what reason.
->
-> Are you able to add some debugging to give us more information. The
-> current debugging code in the hotplug/migration sucks...
+> Yeah good point there. I'll do that. The whole file including things we
+> allow today? How do we do that, like this?
 
-Haren did most of the debugging, so at minimum we need a patch like this
-I guess. 
+For now yeah do the whole file, if there's anything in there we're sure
+is safe then we can move it out later.
 
-modified   mm/page_alloc.c
-@@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
- 		 * handle each tail page individually in migration.
- 		 */
- 		if (PageHuge(page)) {
-+
-+			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
-+				goto unmovable;
-+
- 			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
- 			continue;
- 		}
+> CFLAGS_REMOVE_slb.o = -mno-sched-epilog $(CC_FLAGS_FTRACE)
 
+Yeah AFAIK.
 
-The problem is start_isolate_range, doesn't look at hugetlbpage and
-return error if the architecture didn't support HUGEPAGE migration. 
+And yet another reminder for me to finally work out if we still need the
+epilog crap.
 
-Now discussing with Naoya, I was suggsting whether we should add a
-similar check in 
-
-modified   mm/memory_hotplug.c
-@@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
- 				return pfn;
- 			if (__PageMovable(page))
- 				return pfn;
--			if (PageHuge(page)) {
-+			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
-+			    PageHuge(page)) {
- 				if (page_huge_active(page))
- 					return pfn;
-
-One of the thinking there is it possible to get new hugetlb pages
-allocated in that range after start_isolate_range ran. But i guess since
-we marked all the free pages as  MIGRATE_ISOLATE that is not possible?
-
-But then it is good to have scan_movable_pages also check for
-HUGEPAGE_MIGRATION?
-
-Complete patch below.
-
-commit 2e9d754ac211f2af3731f15df3cd8cd070b4cc54
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Date:   Tue Aug 21 14:17:55 2018 +0530
-
-    mm/hugetlb: filter out hugetlb pages if HUGEPAGE migration is not supported.
-    
-    When scanning for movable pages, filter out Hugetlb pages if hugepage migration
-    is not supported. Without this we hit infinte loop in __offline pages where we
-    do
-            pfn = scan_movable_pages(start_pfn, end_pfn);
-            if (pfn) { /* We have movable pages */
-                    ret = do_migrate_range(pfn, end_pfn);
-                    goto repeat;
-            }
-    
-    We do support hugetlb migration ony if the hugetlb pages are at pmd level. Here
-    we just check for Kernel config. The gigantic page size check is done in
-    page_huge_active.
-    
-    Reported-by: Haren Myneni <haren@linux.vnet.ibm.com>
-    CC: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 4eb6e824a80c..f9bdea685cf4 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
- 				return pfn;
- 			if (__PageMovable(page))
- 				return pfn;
--			if (PageHuge(page)) {
-+			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
-+			    PageHuge(page)) {
- 				if (page_huge_active(page))
- 					return pfn;
- 				else
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 15ea511fb41c..a3f81e18c882 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -7649,6 +7649,10 @@ bool has_unmovable_pages(struct zone *zone, struct page *page, int count,
- 		 * handle each tail page individually in migration.
- 		 */
- 		if (PageHuge(page)) {
-+
-+			if (!IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION))
-+				goto unmovable;
-+
- 			iter = round_up(iter + 1, 1<<compound_order(page)) - 1;
- 			continue;
- 		}
+cheers
