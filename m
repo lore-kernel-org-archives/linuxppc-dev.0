@@ -1,40 +1,78 @@
-Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wV874Y56zDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:20:55 +1000 (AEST)
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7MEJ98P067747
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:20:53 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m168bgk1x-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wVBz3061zDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:23:23 +1000 (AEST)
+Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7MEJgTD114598
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:23:21 -0400
+Received: from e06smtp05.uk.ibm.com (e06smtp05.uk.ibm.com [195.75.94.101])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m18xx1ngw-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:20:53 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 10:23:20 -0400
 Received: from localhost
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp05.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Wed, 22 Aug 2018 08:20:52 -0600
-Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
- to PGD and hugepages
-To: Christophe LEROY <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
- <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
- <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
- <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Date: Wed, 22 Aug 2018 19:50:43 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 22 Aug 2018 15:23:17 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH v11 00/26] Speculative page faults
+To: "Song, HaiyanX" <haiyanx.song@intel.com>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+ "mhocko@kernel.org" <mhocko@kernel.org>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "kirill@shutemov.name" <kirill@shutemov.name>,
+ "ak@linux.intel.com" <ak@linux.intel.com>,
+ "dave@stgolabs.net" <dave@stgolabs.net>, "jack@suse.cz" <jack@suse.cz>,
+ Matthew Wilcox <willy@infradead.org>,
+ "khandual@linux.vnet.ibm.com" <khandual@linux.vnet.ibm.com>,
+ "aneesh.kumar@linux.vnet.ibm.com" <aneesh.kumar@linux.vnet.ibm.com>,
+ "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+ "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+ "paulus@samba.org" <paulus@samba.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "hpa@zytor.com" <hpa@zytor.com>, Will Deacon <will.deacon@arm.com>,
+ Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+ "sergey.senozhatsky.work@gmail.com" <sergey.senozhatsky.work@gmail.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Alexei Starovoitov <alexei.starovoitov@gmail.com>,
+ "Wang, Kemi" <kemi.wang@intel.com>,
+ Daniel Jordan <daniel.m.jordan@oracle.com>,
+ David Rientjes <rientjes@google.com>, Jerome Glisse <jglisse@redhat.com>,
+ Ganesh Mahendran <opensource.ganesh@gmail.com>,
+ Minchan Kim <minchan@kernel.org>, Punit Agrawal <punitagrawal@gmail.com>,
+ vinayak menon <vinayakm.list@gmail.com>,
+ Yang Shi <yang.shi@linux.alibaba.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "haren@linux.vnet.ibm.com" <haren@linux.vnet.ibm.com>,
+ "npiggin@gmail.com" <npiggin@gmail.com>,
+ "bsingharora@gmail.com" <bsingharora@gmail.com>,
+ "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "x86@kernel.org" <x86@kernel.org>
+References: <1526555193-7242-1-git-send-email-ldufour@linux.vnet.ibm.com>
+ <9FE19350E8A7EE45B64D8D63D368C8966B834B67@SHSMSX101.ccr.corp.intel.com>
+ <1327633f-8bb9-99f7-fab4-4cfcbf997200@linux.vnet.ibm.com>
+ <20180528082235.e5x4oiaaf7cjoddr@haiyan.lkp.sh.intel.com>
+ <316c6936-203d-67e9-c18c-6cf10d0d4bee@linux.vnet.ibm.com>
+ <9FE19350E8A7EE45B64D8D63D368C8966B847F54@SHSMSX101.ccr.corp.intel.com>
+ <3849e991-1354-d836-94ac-077d29a0dee4@linux.vnet.ibm.com>
+ <9FE19350E8A7EE45B64D8D63D368C8966B85F660@SHSMSX101.ccr.corp.intel.com>
+ <a69cc75c-8252-246b-5583-04f6a7478ecd@linux.vnet.ibm.com>
+ <4f201590-9b5c-1651-282e-7e3b26a069f3@linux.vnet.ibm.com>
+ <9FE19350E8A7EE45B64D8D63D368C8966B86A721@SHSMSX101.ccr.corp.intel.com>
+ <166434ae-ecaf-05d8-3cc7-7aa75bc3737b@linux.vnet.ibm.com>
+ <9FE19350E8A7EE45B64D8D63D368C8966B876B4B@SHSMSX101.ccr.corp.intel.com>
+Date: Wed, 22 Aug 2018 16:23:04 +0200
 MIME-Version: 1.0
-In-Reply-To: <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Message-Id: <3e6412ac-c645-908f-a3bb-c9a2a72f4b68@linux.ibm.com>
+In-Reply-To: <9FE19350E8A7EE45B64D8D63D368C8966B876B4B@SHSMSX101.ccr.corp.intel.com>
+Content-Type: multipart/mixed; boundary="------------0310CFA19BFE594B390135F4"
+Message-Id: <f9bc4701-ef52-d2de-0d72-4b29736cb1eb@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,89 +82,871 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/17/2018 04:14 PM, Christophe LEROY wrote:
+This is a multi-part message in MIME format.
+--------------0310CFA19BFE594B390135F4
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+
+On 03/08/2018 08:36, Song, HaiyanX wrote:
+> Hi Laurent,
+
+Hi Haiyan,
+
+Sorry for the late answer, I was off a couple of days.
+
+> 
+> Thanks for your analysis for the last perf results.
+> Your mentioned ," the major differences at the head of the perf report is the 92% testcase which is weirdly not reported
+> on the head side", which is a bug of 0-day,and it caused the item is not counted in perf. 
+> 
+> I've triggered the test page_fault2 and page_fault3 again only with thread mode of will-it-scale on 0-day (on the same test box,every case tested 3 times).
+> I checked the perf report have no above mentioned problem.
+> 
+> I have compared them, found some items have difference, such as below case:
+>        page_fault2-thp-always: handle_mm_fault, base: 45.22%    head: 29.41%
+>        page_fault3-thp-always: handle_mm_fault, base: 22.95%    head: 14.15%       
+
+These would mean that the system spends lees time running handle_mm_fault()
+when SPF is in the picture in this 2 cases which is good. This should lead to
+better results with the SPF series, and I can't find any values higher on the
+head side.
+
+> 
+> So i attached the perf result in mail again, could your have a look again for checking the difference between base and head commit.
+
+I took a close look to all the perf result you sent, but I can't identify any
+major difference. But the compiler optimization is getting rid of the
+handle_pte_fault() symbol on the base kernel which add complexity to check the
+differences.
+
+To get rid of that, I'm proposing that you applied the attached patch to the
+spf kernel. This patch is allowing to turn on/off the SPF handler through
+/proc/sys/vm/speculative_page_fault.
+
+This should ease the testing by limiting the reboot and avoid kernel's symbols
+mismatch. Obviously there is still a small overhead due to the check but it
+should not be viewable.
+
+With this patch applied you can simply run
+echo 1 > /proc/sys/vm/speculative_page_fault
+to run a test with the speculative page fault handler activated. Or run
+echo 0 > /proc/sys/vm/speculative_page_fault
+to run a test without it.
+
+I'm really sorry to asking that again, but could please run the test
+page_fault3_base_THP-Always with and without SPF and capture the perf output.
+
+I think we should focus on that test which showed the biggest regression.
+
+Thanks,
+Laurent.
+
+
+> 
+> Thanks,
+> Haiyan, Song
+>  
+> ________________________________________
+> From: owner-linux-mm@kvack.org [owner-linux-mm@kvack.org] on behalf of Laurent Dufour [ldufour@linux.vnet.ibm.com]
+> Sent: Tuesday, July 17, 2018 5:36 PM
+> To: Song, HaiyanX
+> Cc: akpm@linux-foundation.org; mhocko@kernel.org; peterz@infradead.org; kirill@shutemov.name; ak@linux.intel.com; dave@stgolabs.net; jack@suse.cz; Matthew Wilcox; khandual@linux.vnet.ibm.com; aneesh.kumar@linux.vnet.ibm.com; benh@kernel.crashing.org; mpe@ellerman.id.au; paulus@samba.org; Thomas Gleixner; Ingo Molnar; hpa@zytor.com; Will Deacon; Sergey Senozhatsky; sergey.senozhatsky.work@gmail.com; Andrea Arcangeli; Alexei Starovoitov; Wang, Kemi; Daniel Jordan; David Rientjes; Jerome Glisse; Ganesh Mahendran; Minchan Kim; Punit Agrawal; vinayak menon; Yang Shi; linux-kernel@vger.kernel.org; linux-mm@kvack.org; haren@linux.vnet.ibm.com; npiggin@gmail.com; bsingharora@gmail.com; paulmck@linux.vnet.ibm.com; Tim Chen; linuxppc-dev@lists.ozlabs.org; x86@kernel.org
+> Subject: Re: [PATCH v11 00/26] Speculative page faults
+> 
+> On 13/07/2018 05:56, Song, HaiyanX wrote:
+>> Hi Laurent,
+> 
+> Hi Haiyan,
+> 
+> Thanks a lot for sharing this perf reports.
+> 
+> I looked at them closely, and I've to admit that I was not able to found a
+> major difference between the base and the head report, except that
+> handle_pte_fault() is no more in-lined in the head one.
+> 
+> As expected, __handle_speculative_fault() is never traced since these tests are
+> dealing with file mapping, not handled in the speculative way.
+> 
+> When running these test did you seen a major differences in the test's result
+> between base and head ?
+> 
+> From the number of cycles counted, the biggest difference is page_fault3 when
+> run with the THP enabled:
+>                                 BASE            HEAD            Delta
+> page_fault2_base_thp_never      1142252426747   1065866197589   -6.69%
+> page_fault2_base_THP-Alwasys    1124844374523   1076312228927   -4.31%
+> page_fault3_base_thp_never      1099387298152   1134118402345   3.16%
+> page_fault3_base_THP-Always     1059370178101   853985561949    -19.39%
 > 
 > 
-> Le 17/08/2018 à 05:32, Aneesh Kumar K.V a écrit :
->> On 08/14/2018 08:24 PM, Christophe Leroy wrote:
->>> While implementing TLB miss HW assistance on the 8xx, the following
->>> warning was encountered:
+> The very weird thing is the difference of the delta cycles reported between
+> thp never and thp always, because the speculative way is aborted when checking
+> for the vma->ops field, which is the same in both case, and the thp is never
+> checked. So there is no code covering differnce, on the speculative path,
+> between these 2 cases. This leads me to think that there are other interactions
+> interfering in the measure.
+> 
+> Looking at the perf-profile_page_fault3_*_THP-Always, the major differences at
+> the head of the perf report is the 92% testcase which is weirdly not reported
+> on the head side :
+>     92.02%    22.33%  page_fault3_processes  [.] testcase
+> 92.02% testcase
+> 
+> Then the base reported 37.67% for __do_page_fault() where the head reported
+> 48.41%, but the only difference in this function, between base and head, is the
+> call to handle_speculative_fault(). But this is a macro checking for the fault
+> flags, and mm->users and then calling __handle_speculative_fault() if needed.
+> So this can't explain this difference, except if __handle_speculative_fault()
+> is inlined in __do_page_fault().
+> Is this the case on your build ?
+> 
+> Haiyan, do you still have the output of the test to check those numbers too ?
+> 
+> Cheers,
+> Laurent
+> 
+>> I attached the perf-profile.gz file for case page_fault2 and page_fault3. These files were captured during test the related test case.
+>> Please help to check on these data if it can help you to find the higher change. Thanks.
+>>
+>> File name perf-profile_page_fault2_head_THP-Always.gz, means the perf-profile result get from page_fault2
+>>     tested for head commit (a7a8993bfe3ccb54ad468b9f1799649e4ad1ff12) with THP_always configuration.
+>>
+>> Best regards,
+>> Haiyan Song
+>>
+>> ________________________________________
+>> From: owner-linux-mm@kvack.org [owner-linux-mm@kvack.org] on behalf of Laurent Dufour [ldufour@linux.vnet.ibm.com]
+>> Sent: Thursday, July 12, 2018 1:05 AM
+>> To: Song, HaiyanX
+>> Cc: akpm@linux-foundation.org; mhocko@kernel.org; peterz@infradead.org; kirill@shutemov.name; ak@linux.intel.com; dave@stgolabs.net; jack@suse.cz; Matthew Wilcox; khandual@linux.vnet.ibm.com; aneesh.kumar@linux.vnet.ibm.com; benh@kernel.crashing.org; mpe@ellerman.id.au; paulus@samba.org; Thomas Gleixner; Ingo Molnar; hpa@zytor.com; Will Deacon; Sergey Senozhatsky; sergey.senozhatsky.work@gmail.com; Andrea Arcangeli; Alexei Starovoitov; Wang, Kemi; Daniel Jordan; David Rientjes; Jerome Glisse; Ganesh Mahendran; Minchan Kim; Punit Agrawal; vinayak menon; Yang Shi; linux-kernel@vger.kernel.org; linux-mm@kvack.org; haren@linux.vnet.ibm.com; npiggin@gmail.com; bsingharora@gmail.com; paulmck@linux.vnet.ibm.com; Tim Chen; linuxppc-dev@lists.ozlabs.org; x86@kernel.org
+>> Subject: Re: [PATCH v11 00/26] Speculative page faults
+>>
+>> Hi Haiyan,
+>>
+>> Do you get a chance to capture some performance cycles on your system ?
+>> I still can't get these numbers on my hardware.
+>>
+>> Thanks,
+>> Laurent.
+>>
+>> On 04/07/2018 09:51, Laurent Dufour wrote:
+>>> On 04/07/2018 05:23, Song, HaiyanX wrote:
+>>>> Hi Laurent,
+>>>>
+>>>>
+>>>> For the test result on Intel 4s skylake platform (192 CPUs, 768G Memory), the below test cases all were run 3 times.
+>>>> I check the test results, only page_fault3_thread/enable THP have 6% stddev for head commit, other tests have lower stddev.
 >>>
->>> [  423.732965] WARNING: CPU: 0 PID: 345 at mm/slub.c:2412 
->>> ___slab_alloc.constprop.30+0x26c/0x46c
->>> [  423.733033] CPU: 0 PID: 345 Comm: mmap Not tainted 
->>> 4.18.0-rc8-00664-g2dfff9121c55 #671
->>> [  423.733075] NIP:  c0108f90 LR: c0109ad0 CTR: 00000004
->>> [  423.733121] REGS: c455bba0 TRAP: 0700   Not tainted 
->>> (4.18.0-rc8-00664-g2dfff9121c55)
->>> [  423.733147] MSR:  00021032 <ME,IR,DR,RI>  CR: 24224848  XER: 20000000
->>> [  423.733319]
->>> [  423.733319] GPR00: c0109ad0 c455bc50 c4521910 c60053c0 007080c0 
->>> c0011b34 c7fa41e0 c455be30
->>> [  423.733319] GPR08: 00000001 c00103a0 c7fa41e0 c49afcc4 24282842 
->>> 10018840 c079b37c 00000040
->>> [  423.733319] GPR16: 73f00000 00210d00 00000000 00000001 c455a000 
->>> 00000100 00000200 c455a000
->>> [  423.733319] GPR24: c60053c0 c0011b34 007080c0 c455a000 c455a000 
->>> c7fa41e0 00000000 00009032
->>> [  423.734190] NIP [c0108f90] ___slab_alloc.constprop.30+0x26c/0x46c
->>> [  423.734257] LR [c0109ad0] kmem_cache_alloc+0x210/0x23c
->>> [  423.734283] Call Trace:
->>> [  423.734326] [c455bc50] [00000100] 0x100 (unreliable)
->>> [  423.734430] [c455bcc0] [c0109ad0] kmem_cache_alloc+0x210/0x23c
->>> [  423.734543] [c455bcf0] [c0011b34] huge_pte_alloc+0xc0/0x1dc
->>> [  423.734633] [c455bd20] [c01044dc] hugetlb_fault+0x408/0x48c
->>> [  423.734720] [c455bdb0] [c0104b20] follow_hugetlb_page+0x14c/0x44c
->>> [  423.734826] [c455be10] [c00e8e54] __get_user_pages+0x1c4/0x3dc
->>> [  423.734919] [c455be80] [c00e9924] __mm_populate+0xac/0x140
->>> [  423.735020] [c455bec0] [c00db14c] vm_mmap_pgoff+0xb4/0xb8
->>> [  423.735127] [c455bf00] [c00f27c0] ksys_mmap_pgoff+0xcc/0x1fc
->>> [  423.735222] [c455bf40] [c000e0f8] ret_from_syscall+0x0/0x38
->>> [  423.735271] Instruction dump:
->>> [  423.735321] 7cbf482e 38fd0008 7fa6eb78 7fc4f378 4bfff5dd 7fe3fb78 
->>> 4bfffe24 81370010
->>> [  423.735536] 71280004 41a2ff88 4840c571 4bffff80 <0fe00000> 
->>> 4bfffeb8 81340010 712a0004
->>> [  423.735757] ---[ end trace e9b222919a470790 ]---
+>>> Repeating the test only 3 times seems a bit too low to me.
 >>>
->>> This warning occurs when calling kmem_cache_zalloc() on a
->>> cache having a constructor.
+>>> I'll focus on the higher change for the moment, but I don't have access to such
+>>> a hardware.
 >>>
->>> In this case it happens because PGD cache and 512k hugepte cache are
->>> the same size (4k). While a cache with constructor is created for
->>> the PGD, hugepages create cache without constructor and uses
->>> kmem_cache_zalloc(). As both expect a cache with the same size,
->>> the hugepages reuse the cache created for PGD, hence the conflict.
+>>> Is possible to provide a diff between base and SPF of the performance cycles
+>>> measured when running page_fault3 and page_fault2 when the 20% change is detected.
 >>>
->>> In order to avoid this conflict, this patch:
->>> - modifies pgtable_cache_add() so that a zeroising constructor is
->>> added for any cache size.
->>> - replaces calls to kmem_cache_zalloc() by kmem_cache_alloc()
+>>> Please stay focus on the test case process to see exactly where the series is
+>>> impacting.
+>>>
+>>> Thanks,
+>>> Laurent.
+>>>
+>>>>
+>>>> And I did not find other high variation on test case result.
+>>>>
+>>>> a). Enable THP
+>>>> testcase                          base     stddev       change      head     stddev         metric
+>>>> page_fault3/enable THP           10519      � 3%        -20.5%      8368      �6%          will-it-scale.per_thread_ops
+>>>> page_fault2/enalbe THP            8281      � 2%        -18.8%      6728                   will-it-scale.per_thread_ops
+>>>> brk1/eanble THP                 998475                   -2.2%    976893                   will-it-scale.per_process_ops
+>>>> context_switch1/enable THP      223910                   -1.3%    220930                   will-it-scale.per_process_ops
+>>>> context_switch1/enable THP      233722                   -1.0%    231288                   will-it-scale.per_thread_ops
+>>>>
+>>>> b). Disable THP
+>>>> page_fault3/disable THP          10856                  -23.1%      8344                   will-it-scale.per_thread_ops
+>>>> page_fault2/disable THP           8147                  -18.8%      6613                   will-it-scale.per_thread_ops
+>>>> brk1/disable THP                   957                    -7.9%      881                   will-it-scale.per_thread_ops
+>>>> context_switch1/disable THP     237006                    -2.2%    231907                  will-it-scale.per_thread_ops
+>>>> brk1/disable THP                997317                    -2.0%    977778                  will-it-scale.per_process_ops
+>>>> page_fault3/disable THP         467454                    -1.8%    459251                  will-it-scale.per_process_ops
+>>>> context_switch1/disable THP     224431                    -1.3%    221567                  will-it-scale.per_process_ops
+>>>>
+>>>>
+>>>> Best regards,
+>>>> Haiyan Song
+>>>> ________________________________________
+>>>> From: Laurent Dufour [ldufour@linux.vnet.ibm.com]
+>>>> Sent: Monday, July 02, 2018 4:59 PM
+>>>> To: Song, HaiyanX
+>>>> Cc: akpm@linux-foundation.org; mhocko@kernel.org; peterz@infradead.org; kirill@shutemov.name; ak@linux.intel.com; dave@stgolabs.net; jack@suse.cz; Matthew Wilcox; khandual@linux.vnet.ibm.com; aneesh.kumar@linux.vnet.ibm.com; benh@kernel.crashing.org; mpe@ellerman.id.au; paulus@samba.org; Thomas Gleixner; Ingo Molnar; hpa@zytor.com; Will Deacon; Sergey Senozhatsky; sergey.senozhatsky.work@gmail.com; Andrea Arcangeli; Alexei Starovoitov; Wang, Kemi; Daniel Jordan; David Rientjes; Jerome Glisse; Ganesh Mahendran; Minchan Kim; Punit Agrawal; vinayak menon; Yang Shi; linux-kernel@vger.kernel.org; linux-mm@kvack.org; haren@linux.vnet.ibm.com; npiggin@gmail.com; bsingharora@gmail.com; paulmck@linux.vnet.ibm.com; Tim Chen; linuxppc-dev@lists.ozlabs.org; x86@kernel.org
+>>>> Subject: Re: [PATCH v11 00/26] Speculative page faults
+>>>>
+>>>> On 11/06/2018 09:49, Song, HaiyanX wrote:
+>>>>> Hi Laurent,
+>>>>>
+>>>>> Regression test for v11 patch serials have been run, some regression is found by LKP-tools (linux kernel performance)
+>>>>> tested on Intel 4s skylake platform. This time only test the cases which have been run and found regressions on
+>>>>> V9 patch serials.
+>>>>>
+>>>>> The regression result is sorted by the metric will-it-scale.per_thread_ops.
+>>>>> branch: Laurent-Dufour/Speculative-page-faults/20180520-045126
+>>>>> commit id:
+>>>>>   head commit : a7a8993bfe3ccb54ad468b9f1799649e4ad1ff12
+>>>>>   base commit : ba98a1cdad71d259a194461b3a61471b49b14df1
+>>>>> Benchmark: will-it-scale
+>>>>> Download link: https://github.com/antonblanchard/will-it-scale/tree/master
+>>>>>
+>>>>> Metrics:
+>>>>>   will-it-scale.per_process_ops=processes/nr_cpu
+>>>>>   will-it-scale.per_thread_ops=threads/nr_cpu
+>>>>>   test box: lkp-skl-4sp1(nr_cpu=192,memory=768G)
+>>>>> THP: enable / disable
+>>>>> nr_task:100%
+>>>>>
+>>>>> 1. Regressions:
+>>>>>
+>>>>> a). Enable THP
+>>>>> testcase                          base           change      head           metric
+>>>>> page_fault3/enable THP           10519          -20.5%        836      will-it-scale.per_thread_ops
+>>>>> page_fault2/enalbe THP            8281          -18.8%       6728      will-it-scale.per_thread_ops
+>>>>> brk1/eanble THP                 998475           -2.2%     976893      will-it-scale.per_process_ops
+>>>>> context_switch1/enable THP      223910           -1.3%     220930      will-it-scale.per_process_ops
+>>>>> context_switch1/enable THP      233722           -1.0%     231288      will-it-scale.per_thread_ops
+>>>>>
+>>>>> b). Disable THP
+>>>>> page_fault3/disable THP          10856          -23.1%       8344      will-it-scale.per_thread_ops
+>>>>> page_fault2/disable THP           8147          -18.8%       6613      will-it-scale.per_thread_ops
+>>>>> brk1/disable THP                   957           -7.9%        881      will-it-scale.per_thread_ops
+>>>>> context_switch1/disable THP     237006           -2.2%     231907      will-it-scale.per_thread_ops
+>>>>> brk1/disable THP                997317           -2.0%     977778      will-it-scale.per_process_ops
+>>>>> page_fault3/disable THP         467454           -1.8%     459251      will-it-scale.per_process_ops
+>>>>> context_switch1/disable THP     224431           -1.3%     221567      will-it-scale.per_process_ops
+>>>>>
+>>>>> Notes: for the above  values of test result, the higher is better.
+>>>>
+>>>> I tried the same tests on my PowerPC victim VM (1024 CPUs, 11TB) and I can't
+>>>> get reproducible results. The results have huge variation, even on the vanilla
+>>>> kernel, and I can't state on any changes due to that.
+>>>>
+>>>> I tried on smaller node (80 CPUs, 32G), and the tests ran better, but I didn't
+>>>> measure any changes between the vanilla and the SPF patched ones:
+>>>>
+>>>> test THP enabled                4.17.0-rc4-mm1  spf             delta
+>>>> page_fault3_threads             2697.7          2683.5          -0.53%
+>>>> page_fault2_threads             170660.6        169574.1        -0.64%
+>>>> context_switch1_threads         6915269.2       6877507.3       -0.55%
+>>>> context_switch1_processes       6478076.2       6529493.5       0.79%
+>>>> brk1                            243391.2        238527.5        -2.00%
+>>>>
+>>>> Tests were run 10 times, no high variation detected.
+>>>>
+>>>> Did you see high variation on your side ? How many times the test were run to
+>>>> compute the average values ?
+>>>>
+>>>> Thanks,
+>>>> Laurent.
+>>>>
+>>>>
+>>>>>
+>>>>> 2. Improvement: not found improvement based on the selected test cases.
+>>>>>
+>>>>>
+>>>>> Best regards
+>>>>> Haiyan Song
+>>>>> ________________________________________
+>>>>> From: owner-linux-mm@kvack.org [owner-linux-mm@kvack.org] on behalf of Laurent Dufour [ldufour@linux.vnet.ibm.com]
+>>>>> Sent: Monday, May 28, 2018 4:54 PM
+>>>>> To: Song, HaiyanX
+>>>>> Cc: akpm@linux-foundation.org; mhocko@kernel.org; peterz@infradead.org; kirill@shutemov.name; ak@linux.intel.com; dave@stgolabs.net; jack@suse.cz; Matthew Wilcox; khandual@linux.vnet.ibm.com; aneesh.kumar@linux.vnet.ibm.com; benh@kernel.crashing.org; mpe@ellerman.id.au; paulus@samba.org; Thomas Gleixner; Ingo Molnar; hpa@zytor.com; Will Deacon; Sergey Senozhatsky; sergey.senozhatsky.work@gmail.com; Andrea Arcangeli; Alexei Starovoitov; Wang, Kemi; Daniel Jordan; David Rientjes; Jerome Glisse; Ganesh Mahendran; Minchan Kim; Punit Agrawal; vinayak menon; Yang Shi; linux-kernel@vger.kernel.org; linux-mm@kvack.org; haren@linux.vnet.ibm.com; npiggin@gmail.com; bsingharora@gmail.com; paulmck@linux.vnet.ibm.com; Tim Chen; linuxppc-dev@lists.ozlabs.org; x86@kernel.org
+>>>>> Subject: Re: [PATCH v11 00/26] Speculative page faults
+>>>>>
+>>>>> On 28/05/2018 10:22, Haiyan Song wrote:
+>>>>>> Hi Laurent,
+>>>>>>
+>>>>>> Yes, these tests are done on V9 patch.
+>>>>>
+>>>>> Do you plan to give this V11 a run ?
+>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Best regards,
+>>>>>> Haiyan Song
+>>>>>>
+>>>>>> On Mon, May 28, 2018 at 09:51:34AM +0200, Laurent Dufour wrote:
+>>>>>>> On 28/05/2018 07:23, Song, HaiyanX wrote:
+>>>>>>>>
+>>>>>>>> Some regression and improvements is found by LKP-tools(linux kernel performance) on V9 patch series
+>>>>>>>> tested on Intel 4s Skylake platform.
+>>>>>>>
+>>>>>>> Hi,
+>>>>>>>
+>>>>>>> Thanks for reporting this benchmark results, but you mentioned the "V9 patch
+>>>>>>> series" while responding to the v11 header series...
+>>>>>>> Were these tests done on v9 or v11 ?
+>>>>>>>
+>>>>>>> Cheers,
+>>>>>>> Laurent.
+>>>>>>>
+>>>>>>>>
+>>>>>>>> The regression result is sorted by the metric will-it-scale.per_thread_ops.
+>>>>>>>> Branch: Laurent-Dufour/Speculative-page-faults/20180316-151833 (V9 patch series)
+>>>>>>>> Commit id:
+>>>>>>>>     base commit: d55f34411b1b126429a823d06c3124c16283231f
+>>>>>>>>     head commit: 0355322b3577eeab7669066df42c550a56801110
+>>>>>>>> Benchmark suite: will-it-scale
+>>>>>>>> Download link:
+>>>>>>>> https://github.com/antonblanchard/will-it-scale/tree/master/tests
+>>>>>>>> Metrics:
+>>>>>>>>     will-it-scale.per_process_ops=processes/nr_cpu
+>>>>>>>>     will-it-scale.per_thread_ops=threads/nr_cpu
+>>>>>>>> test box: lkp-skl-4sp1(nr_cpu=192,memory=768G)
+>>>>>>>> THP: enable / disable
+>>>>>>>> nr_task: 100%
+>>>>>>>>
+>>>>>>>> 1. Regressions:
+>>>>>>>> a) THP enabled:
+>>>>>>>> testcase                        base            change          head       metric
+>>>>>>>> page_fault3/ enable THP         10092           -17.5%          8323       will-it-scale.per_thread_ops
+>>>>>>>> page_fault2/ enable THP          8300           -17.2%          6869       will-it-scale.per_thread_ops
+>>>>>>>> brk1/ enable THP                  957.67         -7.6%           885       will-it-scale.per_thread_ops
+>>>>>>>> page_fault3/ enable THP        172821            -5.3%        163692       will-it-scale.per_process_ops
+>>>>>>>> signal1/ enable THP              9125            -3.2%          8834       will-it-scale.per_process_ops
+>>>>>>>>
+>>>>>>>> b) THP disabled:
+>>>>>>>> testcase                        base            change          head       metric
+>>>>>>>> page_fault3/ disable THP        10107           -19.1%          8180       will-it-scale.per_thread_ops
+>>>>>>>> page_fault2/ disable THP         8432           -17.8%          6931       will-it-scale.per_thread_ops
+>>>>>>>> context_switch1/ disable THP   215389            -6.8%        200776       will-it-scale.per_thread_ops
+>>>>>>>> brk1/ disable THP                 939.67         -6.6%           877.33    will-it-scale.per_thread_ops
+>>>>>>>> page_fault3/ disable THP       173145            -4.7%        165064       will-it-scale.per_process_ops
+>>>>>>>> signal1/ disable THP             9162            -3.9%          8802       will-it-scale.per_process_ops
+>>>>>>>>
+>>>>>>>> 2. Improvements:
+>>>>>>>> a) THP enabled:
+>>>>>>>> testcase                        base            change          head       metric
+>>>>>>>> malloc1/ enable THP               66.33        +469.8%           383.67    will-it-scale.per_thread_ops
+>>>>>>>> writeseek3/ enable THP          2531             +4.5%          2646       will-it-scale.per_thread_ops
+>>>>>>>> signal1/ enable THP              989.33          +2.8%          1016       will-it-scale.per_thread_ops
+>>>>>>>>
+>>>>>>>> b) THP disabled:
+>>>>>>>> testcase                        base            change          head       metric
+>>>>>>>> malloc1/ disable THP              90.33        +417.3%           467.33    will-it-scale.per_thread_ops
+>>>>>>>> read2/ disable THP             58934            +39.2%         82060       will-it-scale.per_thread_ops
+>>>>>>>> page_fault1/ disable THP        8607            +36.4%         11736       will-it-scale.per_thread_ops
+>>>>>>>> read1/ disable THP            314063            +12.7%        353934       will-it-scale.per_thread_ops
+>>>>>>>> writeseek3/ disable THP         2452            +12.5%          2759       will-it-scale.per_thread_ops
+>>>>>>>> signal1/ disable THP             971.33          +5.5%          1024       will-it-scale.per_thread_ops
+>>>>>>>>
+>>>>>>>> Notes: for above values in column "change", the higher value means that the related testcase result
+>>>>>>>> on head commit is better than that on base commit for this benchmark.
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Best regards
+>>>>>>>> Haiyan Song
+>>>>>>>>
+>>>>>>>> ________________________________________
+>>>>>>>> From: owner-linux-mm@kvack.org [owner-linux-mm@kvack.org] on behalf of Laurent Dufour [ldufour@linux.vnet.ibm.com]
+>>>>>>>> Sent: Thursday, May 17, 2018 7:06 PM
+>>>>>>>> To: akpm@linux-foundation.org; mhocko@kernel.org; peterz@infradead.org; kirill@shutemov.name; ak@linux.intel.com; dave@stgolabs.net; jack@suse.cz; Matthew Wilcox; khandual@linux.vnet.ibm.com; aneesh.kumar@linux.vnet.ibm.com; benh@kernel.crashing.org; mpe@ellerman.id.au; paulus@samba.org; Thomas Gleixner; Ingo Molnar; hpa@zytor.com; Will Deacon; Sergey Senozhatsky; sergey.senozhatsky.work@gmail.com; Andrea Arcangeli; Alexei Starovoitov; Wang, Kemi; Daniel Jordan; David Rientjes; Jerome Glisse; Ganesh Mahendran; Minchan Kim; Punit Agrawal; vinayak menon; Yang Shi
+>>>>>>>> Cc: linux-kernel@vger.kernel.org; linux-mm@kvack.org; haren@linux.vnet.ibm.com; npiggin@gmail.com; bsingharora@gmail.com; paulmck@linux.vnet.ibm.com; Tim Chen; linuxppc-dev@lists.ozlabs.org; x86@kernel.org
+>>>>>>>> Subject: [PATCH v11 00/26] Speculative page faults
+>>>>>>>>
+>>>>>>>> This is a port on kernel 4.17 of the work done by Peter Zijlstra to handle
+>>>>>>>> page fault without holding the mm semaphore [1].
+>>>>>>>>
+>>>>>>>> The idea is to try to handle user space page faults without holding the
+>>>>>>>> mmap_sem. This should allow better concurrency for massively threaded
+>>>>>>>> process since the page fault handler will not wait for other threads memory
+>>>>>>>> layout change to be done, assuming that this change is done in another part
+>>>>>>>> of the process's memory space. This type page fault is named speculative
+>>>>>>>> page fault. If the speculative page fault fails because of a concurrency is
+>>>>>>>> detected or because underlying PMD or PTE tables are not yet allocating, it
+>>>>>>>> is failing its processing and a classic page fault is then tried.
+>>>>>>>>
+>>>>>>>> The speculative page fault (SPF) has to look for the VMA matching the fault
+>>>>>>>> address without holding the mmap_sem, this is done by introducing a rwlock
+>>>>>>>> which protects the access to the mm_rb tree. Previously this was done using
+>>>>>>>> SRCU but it was introducing a lot of scheduling to process the VMA's
+>>>>>>>> freeing operation which was hitting the performance by 20% as reported by
+>>>>>>>> Kemi Wang [2]. Using a rwlock to protect access to the mm_rb tree is
+>>>>>>>> limiting the locking contention to these operations which are expected to
+>>>>>>>> be in a O(log n) order. In addition to ensure that the VMA is not freed in
+>>>>>>>> our back a reference count is added and 2 services (get_vma() and
+>>>>>>>> put_vma()) are introduced to handle the reference count. Once a VMA is
+>>>>>>>> fetched from the RB tree using get_vma(), it must be later freed using
+>>>>>>>> put_vma(). I can't see anymore the overhead I got while will-it-scale
+>>>>>>>> benchmark anymore.
+>>>>>>>>
+>>>>>>>> The VMA's attributes checked during the speculative page fault processing
+>>>>>>>> have to be protected against parallel changes. This is done by using a per
+>>>>>>>> VMA sequence lock. This sequence lock allows the speculative page fault
+>>>>>>>> handler to fast check for parallel changes in progress and to abort the
+>>>>>>>> speculative page fault in that case.
+>>>>>>>>
+>>>>>>>> Once the VMA has been found, the speculative page fault handler would check
+>>>>>>>> for the VMA's attributes to verify that the page fault has to be handled
+>>>>>>>> correctly or not. Thus, the VMA is protected through a sequence lock which
+>>>>>>>> allows fast detection of concurrent VMA changes. If such a change is
+>>>>>>>> detected, the speculative page fault is aborted and a *classic* page fault
+>>>>>>>> is tried.  VMA sequence lockings are added when VMA attributes which are
+>>>>>>>> checked during the page fault are modified.
+>>>>>>>>
+>>>>>>>> When the PTE is fetched, the VMA is checked to see if it has been changed,
+>>>>>>>> so once the page table is locked, the VMA is valid, so any other changes
+>>>>>>>> leading to touching this PTE will need to lock the page table, so no
+>>>>>>>> parallel change is possible at this time.
+>>>>>>>>
+>>>>>>>> The locking of the PTE is done with interrupts disabled, this allows
+>>>>>>>> checking for the PMD to ensure that there is not an ongoing collapsing
+>>>>>>>> operation. Since khugepaged is firstly set the PMD to pmd_none and then is
+>>>>>>>> waiting for the other CPU to have caught the IPI interrupt, if the pmd is
+>>>>>>>> valid at the time the PTE is locked, we have the guarantee that the
+>>>>>>>> collapsing operation will have to wait on the PTE lock to move forward.
+>>>>>>>> This allows the SPF handler to map the PTE safely. If the PMD value is
+>>>>>>>> different from the one recorded at the beginning of the SPF operation, the
+>>>>>>>> classic page fault handler will be called to handle the operation while
+>>>>>>>> holding the mmap_sem. As the PTE lock is done with the interrupts disabled,
+>>>>>>>> the lock is done using spin_trylock() to avoid dead lock when handling a
+>>>>>>>> page fault while a TLB invalidate is requested by another CPU holding the
+>>>>>>>> PTE.
+>>>>>>>>
+>>>>>>>> In pseudo code, this could be seen as:
+>>>>>>>>     speculative_page_fault()
+>>>>>>>>     {
+>>>>>>>>             vma = get_vma()
+>>>>>>>>             check vma sequence count
+>>>>>>>>             check vma's support
+>>>>>>>>             disable interrupt
+>>>>>>>>                   check pgd,p4d,...,pte
+>>>>>>>>                   save pmd and pte in vmf
+>>>>>>>>                   save vma sequence counter in vmf
+>>>>>>>>             enable interrupt
+>>>>>>>>             check vma sequence count
+>>>>>>>>             handle_pte_fault(vma)
+>>>>>>>>                     ..
+>>>>>>>>                     page = alloc_page()
+>>>>>>>>                     pte_map_lock()
+>>>>>>>>                             disable interrupt
+>>>>>>>>                                     abort if sequence counter has changed
+>>>>>>>>                                     abort if pmd or pte has changed
+>>>>>>>>                                     pte map and lock
+>>>>>>>>                             enable interrupt
+>>>>>>>>                     if abort
+>>>>>>>>                        free page
+>>>>>>>>                        abort
+>>>>>>>>                     ...
+>>>>>>>>     }
+>>>>>>>>
+>>>>>>>>     arch_fault_handler()
+>>>>>>>>     {
+>>>>>>>>             if (speculative_page_fault(&vma))
+>>>>>>>>                goto done
+>>>>>>>>     again:
+>>>>>>>>             lock(mmap_sem)
+>>>>>>>>             vma = find_vma();
+>>>>>>>>             handle_pte_fault(vma);
+>>>>>>>>             if retry
+>>>>>>>>                unlock(mmap_sem)
+>>>>>>>>                goto again;
+>>>>>>>>     done:
+>>>>>>>>             handle fault error
+>>>>>>>>     }
+>>>>>>>>
+>>>>>>>> Support for THP is not done because when checking for the PMD, we can be
+>>>>>>>> confused by an in progress collapsing operation done by khugepaged. The
+>>>>>>>> issue is that pmd_none() could be true either if the PMD is not already
+>>>>>>>> populated or if the underlying PTE are in the way to be collapsed. So we
+>>>>>>>> cannot safely allocate a PMD if pmd_none() is true.
+>>>>>>>>
+>>>>>>>> This series add a new software performance event named 'speculative-faults'
+>>>>>>>> or 'spf'. It counts the number of successful page fault event handled
+>>>>>>>> speculatively. When recording 'faults,spf' events, the faults one is
+>>>>>>>> counting the total number of page fault events while 'spf' is only counting
+>>>>>>>> the part of the faults processed speculatively.
+>>>>>>>>
+>>>>>>>> There are some trace events introduced by this series. They allow
+>>>>>>>> identifying why the page faults were not processed speculatively. This
+>>>>>>>> doesn't take in account the faults generated by a monothreaded process
+>>>>>>>> which directly processed while holding the mmap_sem. This trace events are
+>>>>>>>> grouped in a system named 'pagefault', they are:
+>>>>>>>>  - pagefault:spf_vma_changed : if the VMA has been changed in our back
+>>>>>>>>  - pagefault:spf_vma_noanon : the vma->anon_vma field was not yet set.
+>>>>>>>>  - pagefault:spf_vma_notsup : the VMA's type is not supported
+>>>>>>>>  - pagefault:spf_vma_access : the VMA's access right are not respected
+>>>>>>>>  - pagefault:spf_pmd_changed : the upper PMD pointer has changed in our
+>>>>>>>>    back.
+>>>>>>>>
+>>>>>>>> To record all the related events, the easier is to run perf with the
+>>>>>>>> following arguments :
+>>>>>>>> $ perf stat -e 'faults,spf,pagefault:*' <command>
+>>>>>>>>
+>>>>>>>> There is also a dedicated vmstat counter showing the number of successful
+>>>>>>>> page fault handled speculatively. I can be seen this way:
+>>>>>>>> $ grep speculative_pgfault /proc/vmstat
+>>>>>>>>
+>>>>>>>> This series builds on top of v4.16-mmotm-2018-04-13-17-28 and is functional
+>>>>>>>> on x86, PowerPC and arm64.
+>>>>>>>>
+>>>>>>>> ---------------------
+>>>>>>>> Real Workload results
+>>>>>>>>
+>>>>>>>> As mentioned in previous email, we did non official runs using a "popular
+>>>>>>>> in memory multithreaded database product" on 176 cores SMT8 Power system
+>>>>>>>> which showed a 30% improvements in the number of transaction processed per
+>>>>>>>> second. This run has been done on the v6 series, but changes introduced in
+>>>>>>>> this new version should not impact the performance boost seen.
+>>>>>>>>
+>>>>>>>> Here are the perf data captured during 2 of these runs on top of the v8
+>>>>>>>> series:
+>>>>>>>>                 vanilla         spf
+>>>>>>>> faults          89.418          101.364         +13%
+>>>>>>>> spf                n/a           97.989
+>>>>>>>>
+>>>>>>>> With the SPF kernel, most of the page fault were processed in a speculative
+>>>>>>>> way.
+>>>>>>>>
+>>>>>>>> Ganesh Mahendran had backported the series on top of a 4.9 kernel and gave
+>>>>>>>> it a try on an android device. He reported that the application launch time
+>>>>>>>> was improved in average by 6%, and for large applications (~100 threads) by
+>>>>>>>> 20%.
+>>>>>>>>
+>>>>>>>> Here are the launch time Ganesh mesured on Android 8.0 on top of a Qcom
+>>>>>>>> MSM845 (8 cores) with 6GB (the less is better):
+>>>>>>>>
+>>>>>>>> Application                             4.9     4.9+spf delta
+>>>>>>>> com.tencent.mm                          416     389     -7%
+>>>>>>>> com.eg.android.AlipayGphone             1135    986     -13%
+>>>>>>>> com.tencent.mtt                         455     454     0%
+>>>>>>>> com.qqgame.hlddz                        1497    1409    -6%
+>>>>>>>> com.autonavi.minimap                    711     701     -1%
+>>>>>>>> com.tencent.tmgp.sgame                  788     748     -5%
+>>>>>>>> com.immomo.momo                         501     487     -3%
+>>>>>>>> com.tencent.peng                        2145    2112    -2%
+>>>>>>>> com.smile.gifmaker                      491     461     -6%
+>>>>>>>> com.baidu.BaiduMap                      479     366     -23%
+>>>>>>>> com.taobao.taobao                       1341    1198    -11%
+>>>>>>>> com.baidu.searchbox                     333     314     -6%
+>>>>>>>> com.tencent.mobileqq                    394     384     -3%
+>>>>>>>> com.sina.weibo                          907     906     0%
+>>>>>>>> com.youku.phone                         816     731     -11%
+>>>>>>>> com.happyelements.AndroidAnimal.qq      763     717     -6%
+>>>>>>>> com.UCMobile                            415     411     -1%
+>>>>>>>> com.tencent.tmgp.ak                     1464    1431    -2%
+>>>>>>>> com.tencent.qqmusic                     336     329     -2%
+>>>>>>>> com.sankuai.meituan                     1661    1302    -22%
+>>>>>>>> com.netease.cloudmusic                  1193    1200    1%
+>>>>>>>> air.tv.douyu.android                    4257    4152    -2%
+>>>>>>>>
+>>>>>>>> ------------------
+>>>>>>>> Benchmarks results
+>>>>>>>>
+>>>>>>>> Base kernel is v4.17.0-rc4-mm1
+>>>>>>>> SPF is BASE + this series
+>>>>>>>>
+>>>>>>>> Kernbench:
+>>>>>>>> ----------
+>>>>>>>> Here are the results on a 16 CPUs X86 guest using kernbench on a 4.15
+>>>>>>>> kernel (kernel is build 5 times):
+>>>>>>>>
+>>>>>>>> Average Half load -j 8
+>>>>>>>>                  Run    (std deviation)
+>>>>>>>>                  BASE                   SPF
+>>>>>>>> Elapsed Time     1448.65 (5.72312)      1455.84 (4.84951)       0.50%
+>>>>>>>> User    Time     10135.4 (30.3699)      10148.8 (31.1252)       0.13%
+>>>>>>>> System  Time     900.47  (2.81131)      923.28  (7.52779)       2.53%
+>>>>>>>> Percent CPU      761.4   (1.14018)      760.2   (0.447214)      -0.16%
+>>>>>>>> Context Switches 85380   (3419.52)      84748   (1904.44)       -0.74%
+>>>>>>>> Sleeps           105064  (1240.96)      105074  (337.612)       0.01%
+>>>>>>>>
+>>>>>>>> Average Optimal load -j 16
+>>>>>>>>                  Run    (std deviation)
+>>>>>>>>                  BASE                   SPF
+>>>>>>>> Elapsed Time     920.528 (10.1212)      927.404 (8.91789)       0.75%
+>>>>>>>> User    Time     11064.8 (981.142)      11085   (990.897)       0.18%
+>>>>>>>> System  Time     979.904 (84.0615)      1001.14 (82.5523)       2.17%
+>>>>>>>> Percent CPU      1089.5  (345.894)      1086.1  (343.545)       -0.31%
+>>>>>>>> Context Switches 159488  (78156.4)      158223  (77472.1)       -0.79%
+>>>>>>>> Sleeps           110566  (5877.49)      110388  (5617.75)       -0.16%
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> During a run on the SPF, perf events were captured:
+>>>>>>>>  Performance counter stats for '../kernbench -M':
+>>>>>>>>          526743764      faults
+>>>>>>>>                210      spf
+>>>>>>>>                  3      pagefault:spf_vma_changed
+>>>>>>>>                  0      pagefault:spf_vma_noanon
+>>>>>>>>               2278      pagefault:spf_vma_notsup
+>>>>>>>>                  0      pagefault:spf_vma_access
+>>>>>>>>                  0      pagefault:spf_pmd_changed
+>>>>>>>>
+>>>>>>>> Very few speculative page faults were recorded as most of the processes
+>>>>>>>> involved are monothreaded (sounds that on this architecture some threads
+>>>>>>>> were created during the kernel build processing).
+>>>>>>>>
+>>>>>>>> Here are the kerbench results on a 80 CPUs Power8 system:
+>>>>>>>>
+>>>>>>>> Average Half load -j 40
+>>>>>>>>                  Run    (std deviation)
+>>>>>>>>                  BASE                   SPF
+>>>>>>>> Elapsed Time     117.152 (0.774642)     117.166 (0.476057)      0.01%
+>>>>>>>> User    Time     4478.52 (24.7688)      4479.76 (9.08555)       0.03%
+>>>>>>>> System  Time     131.104 (0.720056)     134.04  (0.708414)      2.24%
+>>>>>>>> Percent CPU      3934    (19.7104)      3937.2  (19.0184)       0.08%
+>>>>>>>> Context Switches 92125.4 (576.787)      92581.6 (198.622)       0.50%
+>>>>>>>> Sleeps           317923  (652.499)      318469  (1255.59)       0.17%
+>>>>>>>>
+>>>>>>>> Average Optimal load -j 80
+>>>>>>>>                  Run    (std deviation)
+>>>>>>>>                  BASE                   SPF
+>>>>>>>> Elapsed Time     107.73  (0.632416)     107.31  (0.584936)      -0.39%
+>>>>>>>> User    Time     5869.86 (1466.72)      5871.71 (1467.27)       0.03%
+>>>>>>>> System  Time     153.728 (23.8573)      157.153 (24.3704)       2.23%
+>>>>>>>> Percent CPU      5418.6  (1565.17)      5436.7  (1580.91)       0.33%
+>>>>>>>> Context Switches 223861  (138865)       225032  (139632)        0.52%
+>>>>>>>> Sleeps           330529  (13495.1)      332001  (14746.2)       0.45%
+>>>>>>>>
+>>>>>>>> During a run on the SPF, perf events were captured:
+>>>>>>>>  Performance counter stats for '../kernbench -M':
+>>>>>>>>          116730856      faults
+>>>>>>>>                  0      spf
+>>>>>>>>                  3      pagefault:spf_vma_changed
+>>>>>>>>                  0      pagefault:spf_vma_noanon
+>>>>>>>>                476      pagefault:spf_vma_notsup
+>>>>>>>>                  0      pagefault:spf_vma_access
+>>>>>>>>                  0      pagefault:spf_pmd_changed
+>>>>>>>>
+>>>>>>>> Most of the processes involved are monothreaded so SPF is not activated but
+>>>>>>>> there is no impact on the performance.
+>>>>>>>>
+>>>>>>>> Ebizzy:
+>>>>>>>> -------
+>>>>>>>> The test is counting the number of records per second it can manage, the
+>>>>>>>> higher is the best. I run it like this 'ebizzy -mTt <nrcpus>'. To get
+>>>>>>>> consistent result I repeated the test 100 times and measure the average
+>>>>>>>> result. The number is the record processes per second, the higher is the
+>>>>>>>> best.
+>>>>>>>>
+>>>>>>>>                 BASE            SPF             delta
+>>>>>>>> 16 CPUs x86 VM  742.57          1490.24         100.69%
+>>>>>>>> 80 CPUs P8 node 13105.4         24174.23        84.46%
+>>>>>>>>
+>>>>>>>> Here are the performance counter read during a run on a 16 CPUs x86 VM:
+>>>>>>>>  Performance counter stats for './ebizzy -mTt 16':
+>>>>>>>>            1706379      faults
+>>>>>>>>            1674599      spf
+>>>>>>>>              30588      pagefault:spf_vma_changed
+>>>>>>>>                  0      pagefault:spf_vma_noanon
+>>>>>>>>                363      pagefault:spf_vma_notsup
+>>>>>>>>                  0      pagefault:spf_vma_access
+>>>>>>>>                  0      pagefault:spf_pmd_changed
+>>>>>>>>
+>>>>>>>> And the ones captured during a run on a 80 CPUs Power node:
+>>>>>>>>  Performance counter stats for './ebizzy -mTt 80':
+>>>>>>>>            1874773      faults
+>>>>>>>>            1461153      spf
+>>>>>>>>             413293      pagefault:spf_vma_changed
+>>>>>>>>                  0      pagefault:spf_vma_noanon
+>>>>>>>>                200      pagefault:spf_vma_notsup
+>>>>>>>>                  0      pagefault:spf_vma_access
+>>>>>>>>                  0      pagefault:spf_pmd_changed
+>>>>>>>>
+>>>>>>>> In ebizzy's case most of the page fault were handled in a speculative way,
+>>>>>>>> leading the ebizzy performance boost.
+>>>>>>>>
+>>>>>>>> ------------------
+>>>>>>>> Changes since v10 (https://lkml.org/lkml/2018/4/17/572):
+>>>>>>>>  - Accounted for all review feedbacks from Punit Agrawal, Ganesh Mahendran
+>>>>>>>>    and Minchan Kim, hopefully.
+>>>>>>>>  - Remove unneeded check on CONFIG_SPECULATIVE_PAGE_FAULT in
+>>>>>>>>    __do_page_fault().
+>>>>>>>>  - Loop in pte_spinlock() and pte_map_lock() when pte try lock fails
+>>>>>>>>    instead
+>>>>>>>>    of aborting the speculative page fault handling. Dropping the now
+>>>>>>>> useless
+>>>>>>>>    trace event pagefault:spf_pte_lock.
+>>>>>>>>  - No more try to reuse the fetched VMA during the speculative page fault
+>>>>>>>>    handling when retrying is needed. This adds a lot of complexity and
+>>>>>>>>    additional tests done didn't show a significant performance improvement.
+>>>>>>>>  - Convert IS_ENABLED(CONFIG_NUMA) back to #ifdef due to build error.
+>>>>>>>>
+>>>>>>>> [1] http://linux-kernel.2935.n7.nabble.com/RFC-PATCH-0-6-Another-go-at-speculative-page-faults-tt965642.html#none
+>>>>>>>> [2] https://patchwork.kernel.org/patch/9999687/
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Laurent Dufour (20):
+>>>>>>>>   mm: introduce CONFIG_SPECULATIVE_PAGE_FAULT
+>>>>>>>>   x86/mm: define ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+>>>>>>>>   powerpc/mm: set ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+>>>>>>>>   mm: introduce pte_spinlock for FAULT_FLAG_SPECULATIVE
+>>>>>>>>   mm: make pte_unmap_same compatible with SPF
+>>>>>>>>   mm: introduce INIT_VMA()
+>>>>>>>>   mm: protect VMA modifications using VMA sequence count
+>>>>>>>>   mm: protect mremap() against SPF hanlder
+>>>>>>>>   mm: protect SPF handler against anon_vma changes
+>>>>>>>>   mm: cache some VMA fields in the vm_fault structure
+>>>>>>>>   mm/migrate: Pass vm_fault pointer to migrate_misplaced_page()
+>>>>>>>>   mm: introduce __lru_cache_add_active_or_unevictable
+>>>>>>>>   mm: introduce __vm_normal_page()
+>>>>>>>>   mm: introduce __page_add_new_anon_rmap()
+>>>>>>>>   mm: protect mm_rb tree with a rwlock
+>>>>>>>>   mm: adding speculative page fault failure trace events
+>>>>>>>>   perf: add a speculative page fault sw event
+>>>>>>>>   perf tools: add support for the SPF perf event
+>>>>>>>>   mm: add speculative page fault vmstats
+>>>>>>>>   powerpc/mm: add speculative page fault
+>>>>>>>>
+>>>>>>>> Mahendran Ganesh (2):
+>>>>>>>>   arm64/mm: define ARCH_SUPPORTS_SPECULATIVE_PAGE_FAULT
+>>>>>>>>   arm64/mm: add speculative page fault
+>>>>>>>>
+>>>>>>>> Peter Zijlstra (4):
+>>>>>>>>   mm: prepare for FAULT_FLAG_SPECULATIVE
+>>>>>>>>   mm: VMA sequence count
+>>>>>>>>   mm: provide speculative fault infrastructure
+>>>>>>>>   x86/mm: add speculative pagefault handling
+>>>>>>>>
+>>>>>>>>  arch/arm64/Kconfig                    |   1 +
+>>>>>>>>  arch/arm64/mm/fault.c                 |  12 +
+>>>>>>>>  arch/powerpc/Kconfig                  |   1 +
+>>>>>>>>  arch/powerpc/mm/fault.c               |  16 +
+>>>>>>>>  arch/x86/Kconfig                      |   1 +
+>>>>>>>>  arch/x86/mm/fault.c                   |  27 +-
+>>>>>>>>  fs/exec.c                             |   2 +-
+>>>>>>>>  fs/proc/task_mmu.c                    |   5 +-
+>>>>>>>>  fs/userfaultfd.c                      |  17 +-
+>>>>>>>>  include/linux/hugetlb_inline.h        |   2 +-
+>>>>>>>>  include/linux/migrate.h               |   4 +-
+>>>>>>>>  include/linux/mm.h                    | 136 +++++++-
+>>>>>>>>  include/linux/mm_types.h              |   7 +
+>>>>>>>>  include/linux/pagemap.h               |   4 +-
+>>>>>>>>  include/linux/rmap.h                  |  12 +-
+>>>>>>>>  include/linux/swap.h                  |  10 +-
+>>>>>>>>  include/linux/vm_event_item.h         |   3 +
+>>>>>>>>  include/trace/events/pagefault.h      |  80 +++++
+>>>>>>>>  include/uapi/linux/perf_event.h       |   1 +
+>>>>>>>>  kernel/fork.c                         |   5 +-
+>>>>>>>>  mm/Kconfig                            |  22 ++
+>>>>>>>>  mm/huge_memory.c                      |   6 +-
+>>>>>>>>  mm/hugetlb.c                          |   2 +
+>>>>>>>>  mm/init-mm.c                          |   3 +
+>>>>>>>>  mm/internal.h                         |  20 ++
+>>>>>>>>  mm/khugepaged.c                       |   5 +
+>>>>>>>>  mm/madvise.c                          |   6 +-
+>>>>>>>>  mm/memory.c                           | 612 +++++++++++++++++++++++++++++-----
+>>>>>>>>  mm/mempolicy.c                        |  51 ++-
+>>>>>>>>  mm/migrate.c                          |   6 +-
+>>>>>>>>  mm/mlock.c                            |  13 +-
+>>>>>>>>  mm/mmap.c                             | 229 ++++++++++---
+>>>>>>>>  mm/mprotect.c                         |   4 +-
+>>>>>>>>  mm/mremap.c                           |  13 +
+>>>>>>>>  mm/nommu.c                            |   2 +-
+>>>>>>>>  mm/rmap.c                             |   5 +-
+>>>>>>>>  mm/swap.c                             |   6 +-
+>>>>>>>>  mm/swap_state.c                       |   8 +-
+>>>>>>>>  mm/vmstat.c                           |   5 +-
+>>>>>>>>  tools/include/uapi/linux/perf_event.h |   1 +
+>>>>>>>>  tools/perf/util/evsel.c               |   1 +
+>>>>>>>>  tools/perf/util/parse-events.c        |   4 +
+>>>>>>>>  tools/perf/util/parse-events.l        |   1 +
+>>>>>>>>  tools/perf/util/python.c              |   1 +
+>>>>>>>>  44 files changed, 1161 insertions(+), 211 deletions(-)
+>>>>>>>>  create mode 100644 include/trace/events/pagefault.h
+>>>>>>>>
+>>>>>>>> --
+>>>>>>>> 2.7.4
+>>>>>>>>
+>>>>>>>>
+>>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>>>
 >>>
 >>
->> Can't we just do kmem_cache_alloc with gfp flags __GFP_ZERO? and 
->> remove the constructor completely?
 > 
-> I don't understand what you mean. That's exactly what I did in v1 (by 
-> using kmem_cache_zalloc()), and you commented that doing this we would 
-> zeroise at allocation whereas the constructors are called when adding 
-> memory to the slab and when freeing the allocated block. Or did I 
-> misunderstood your comment ?
-> 
-> static inline void *kmem_cache_zalloc(struct kmem_cache *k, gfp_t flags)
-> {
->      return kmem_cache_alloc(k, flags | __GFP_ZERO);
-> }
-> 
->
 
-I completely misunderstood kmem_cache_zalloc. I took it as we zero out 
-after each alloc. I guess your earlier patch is then good. We may want 
-to double check this, I haven't looked at the slab internals.
 
-What we want is to make sure when we add new memory to slab, we want it 
-zeroed. If we are allocating objects from existing slab memory pool, we 
-don't need to zero out, because when we release objects to slab we make 
-sure we clear it.
+--------------0310CFA19BFE594B390135F4
+Content-Type: text/x-patch;
+ name="0001-mm-Add-a-speculative-page-fault-switch-in-sysctl.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-mm-Add-a-speculative-page-fault-switch-in-sysctl.patch"
 
--aneesh
+>From b6c7fa413f25b8574edf8c764b136715c40299c2 Mon Sep 17 00:00:00 2001
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 20 Aug 2018 17:51:26 +0200
+Subject: [PATCH] mm: Add a speculative page fault switch in sysctl
+
+This allows to turn on/off the use of the speculative page fault handler.
+
+By default it's turned on.
+
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ include/linux/mm.h | 3 +++
+ kernel/sysctl.c    | 9 +++++++++
+ mm/memory.c        | 3 +++
+ 3 files changed, 15 insertions(+)
+
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 31acf98a7d92..ac102efc4c86 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1422,6 +1422,7 @@ extern int handle_mm_fault(struct vm_area_struct *vma, unsigned long address,
+ 		unsigned int flags);
+ 
+ #ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++extern int sysctl_speculative_page_fault;
+ extern int __handle_speculative_fault(struct mm_struct *mm,
+ 				      unsigned long address,
+ 				      unsigned int flags);
+@@ -1429,6 +1430,8 @@ static inline int handle_speculative_fault(struct mm_struct *mm,
+ 					   unsigned long address,
+ 					   unsigned int flags)
+ {
++	if (unlikely(!sysctl_speculative_page_fault))
++		return VM_FAULT_RETRY;
+ 	/*
+ 	 * Try speculative page fault for multithreaded user space task only.
+ 	 */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index f45ed9e696eb..0fb81edd22c1 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1243,6 +1243,15 @@ static struct ctl_table vm_table[] = {
+ 		.extra1		= &zero,
+ 		.extra2		= &two,
+ 	},
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++	{
++		.procname	= "speculative_page_fault",
++		.data		= &sysctl_speculative_page_fault,
++		.maxlen		= sizeof(sysctl_speculative_page_fault),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec,
++	},
++#endif
+ 	{
+ 		.procname	= "panic_on_oom",
+ 		.data		= &sysctl_panic_on_oom,
+diff --git a/mm/memory.c b/mm/memory.c
+index 48e1cf0a54ef..c3db3bc4347b 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -82,6 +82,9 @@
+ 
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/pagefault.h>
++#ifdef CONFIG_SPECULATIVE_PAGE_FAULT
++int sysctl_speculative_page_fault = 1;
++#endif
+ 
+ #if defined(LAST_CPUPID_NOT_IN_PAGE_FLAGS) && !defined(CONFIG_COMPILE_TEST)
+ #warning Unfortunate NUMA and NUMA Balancing config, growing page-frame for last_cpupid.
+-- 
+2.7.4
+
+
+
+--------------0310CFA19BFE594B390135F4--
