@@ -1,17 +1,36 @@
-Return-Path: <mroos@linux.ee>
-Received: from smtp2.it.da.ut.ee (smtp2.it.da.ut.ee
- [IPv6:2001:bb8:2002:500::47])
- by lists.ozlabs.org (Postfix) with ESMTP id 41wVLY08RBzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:29:56 +1000 (AEST)
-Date: Wed, 22 Aug 2018 17:10:14 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-Sender: mroos@math.ut.ee
-To: Linux Kernel list <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: powerpc compile failure: linux/crc32poly.h: No such file or directory
-Message-ID: <alpine.LRH.2.21.1808221159360.13181@math.ut.ee>
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wfJ717n6zDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 06:28:22 +1000 (AEST)
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7MHDtFM037762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 13:18:36 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m1aqfkvd9-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 13:18:36 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 22 Aug 2018 11:18:35 -0600
+Subject: Re: [PATCH 2/2] powerpc/mm/hash: Only need the Nest MMU workaround
+ for R -> RW transition
+To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org
+References: <20180822171605.15054-1-aneesh.kumar@linux.ibm.com>
+ <20180822171605.15054-2-aneesh.kumar@linux.ibm.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Wed, 22 Aug 2018 22:48:27 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20180822171605.15054-2-aneesh.kumar@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ba23b282-ccc4-5743-d688-50b2cf190dd6@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +40,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In 4.18 + todays git on 32-bit powerpc:
+On 08/22/2018 10:46 PM, Aneesh Kumar K.V wrote:
+> The Nest MMU workaround is only needed for RW upgrades. Avoid doing that
+> for other pte updates.
+> 
+> We also avoid clearing the pte while marking it invalid. This is because other
+> page table walk will find this pte none and can result in unexpected behaviour
+> due to that. Instead we clear _PAGE_PRESENT and set the software pte bit
+> _PAGE_INVALID. pte_present is already updated to check for bot the bits. This
+> make sure page table walkers will find the pte present and things like
+> pte_pfn(pte) returns the right value.
+> 
+> Based on the original patch from Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
 
-  BOOTCC  arch/powerpc/boot/decompress.o
-In file included from arch/powerpc/boot/../../../lib/decompress_unxz.c:233,
-                 from arch/powerpc/boot/decompress.c:42:
-arch/powerpc/boot/../../../lib/xz/xz_crc32.c:18:10: fatal error: linux/crc32poly.h: No such file or directory
- #include <linux/crc32poly.h>
-          ^~~~~~~~~~~~~~~~~~~
+Fixes: bd5050e38aec3
+("powerpc/mm/radix: Change pte relax sequence to handle nest MMU hang")
 
-
--- 
-Meelis Roos (mroos@linux.ee)
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> ---
+>   arch/powerpc/mm/pgtable-radix.c | 8 +++++---
+>   1 file changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> index 7be99fd9af15..c879979faa73 100644
+> --- a/arch/powerpc/mm/pgtable-radix.c
+> +++ b/arch/powerpc/mm/pgtable-radix.c
+> @@ -1045,20 +1045,22 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
+>   	struct mm_struct *mm = vma->vm_mm;
+>   	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
+>   					      _PAGE_RW | _PAGE_EXEC);
+> +
+> +	unsigned long change = pte_val(entry) ^ pte_val(*ptep);
+>   	/*
+>   	 * To avoid NMMU hang while relaxing access, we need mark
+>   	 * the pte invalid in between.
+>   	 */
+> -	if (atomic_read(&mm->context.copros) > 0) {
+> +	if ((change & _PAGE_RW) && atomic_read(&mm->context.copros) > 0) {
+>   		unsigned long old_pte, new_pte;
+>   
+> -		old_pte = __radix_pte_update(ptep, ~0, 0);
+> +		old_pte = __radix_pte_update(ptep, _PAGE_PRESENT, _PAGE_INVALID);
+>   		/*
+>   		 * new value of pte
+>   		 */
+>   		new_pte = old_pte | set;
+>   		radix__flush_tlb_page_psize(mm, address, psize);
+> -		__radix_pte_update(ptep, 0, new_pte);
+> +		__radix_pte_update(ptep, _PAGE_INVALID, new_pte);
+>   	} else {
+>   		__radix_pte_update(ptep, 0, set);
+>   		/*
+> 
