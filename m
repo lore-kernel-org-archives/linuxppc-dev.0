@@ -3,17 +3,17 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wKVc4p5xzDqC8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 17:51:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wL2F1mKrzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 18:15:16 +1000 (AEST)
 Subject: Patch "net/ethernet/freescale/fman: fix cross-build error" has been
- added to the 4.17-stable tree
+ added to the 4.9-stable tree
 To: alexander.levin@microsoft.com, davem@davemloft.net,
  gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
  madalin.bucur@nxp.com, rdunlap@infradead.org
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Wed, 22 Aug 2018 09:37:33 +0200
-Message-ID: <153492345330117@kroah.com>
+Date: Wed, 22 Aug 2018 10:06:08 +0200
+Message-ID: <15349251685936@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,18 +30,18 @@ This is a note to let you know that I've just added the patch titled
 
     net/ethernet/freescale/fman: fix cross-build error
 
-to the 4.17-stable tree which can be found at:
+to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      net-ethernet-freescale-fman-fix-cross-build-error.patch
-and it can be found in the queue-4.17 subdirectory.
+and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
->From foo@baz Wed Aug 22 09:16:56 CEST 2018
+>From foo@baz Wed Aug 22 09:42:09 CEST 2018
 From: Randy Dunlap <rdunlap@infradead.org>
 Date: Fri, 13 Jul 2018 21:25:19 -0700
 Subject: net/ethernet/freescale/fman: fix cross-build error
@@ -82,5 +82,5 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from rdunlap@infradead.org are
 
-queue-4.17/tcp-identify-cryptic-messages-as-tcp-seq-bugs.patch
-queue-4.17/net-ethernet-freescale-fman-fix-cross-build-error.patch
+queue-4.9/tcp-identify-cryptic-messages-as-tcp-seq-bugs.patch
+queue-4.9/net-ethernet-freescale-fman-fix-cross-build-error.patch
