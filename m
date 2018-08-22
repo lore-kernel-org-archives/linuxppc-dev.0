@@ -2,9 +2,9 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wJBW6YPrzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 16:52:19 +1000 (AEST)
-Date: Wed, 22 Aug 2018 08:53:59 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wJJF16nLzF2FK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 16:57:16 +1000 (AEST)
+Date: Wed, 22 Aug 2018 08:58:56 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
@@ -13,15 +13,15 @@ Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Robin Murphy <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 01/20] kernel/dma/direct: take DMA offset into account
- in dma_direct_supported
-Message-ID: <20180822065359.GB19284@lst.de>
+Subject: Re: [PATCH 02/20] kernel/dma/direct: refine dma_direct_alloc zone
+ selection
+Message-ID: <20180822065856.GC19284@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-2-hch@lst.de>
- <74068e4d2135ecad8645048ed97b1114891ccace.camel@kernel.crashing.org>
+ <20180730163824.10064-3-hch@lst.de>
+ <7177553cdb5cd1b968f653a52d7e88bd71aae4d8.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <74068e4d2135ecad8645048ed97b1114891ccace.camel@kernel.crashing.org>
+In-Reply-To: <7177553cdb5cd1b968f653a52d7e88bd71aae4d8.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 09, 2018 at 09:44:18AM +1000, Benjamin Herrenschmidt wrote:
-> We do have the occasional device with things like 31-bit DMA
-> limitation. We know they happens to work because those systems
-> can't have enough memory to be a problem. This is why our current
-> DMA direct ops in powerpc just unconditionally return true on ppc32.
+On Thu, Aug 09, 2018 at 09:54:33AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
+> > We need to take the DMA offset and encryption bit into account when selecting
+> > a zone.  Add a helper that takes those into account and use it.
 > 
-> The test against a full 32-bit mask here will break them I think.
+> That whole "encryption" stuff seems to be completely specific to the
+> way x86 does memory encryption, or am I mistaken ? It's not clear to me
+> what that does in practice and how it relates to DMA mappings.
+
+Not even all of x86, but AMD in particular, Intel does it yet another
+way.  But it still is easier to take this into the core with a few
+overrides than duplicating all the code.
+
+> I'm also not sure about that whole business with ZONE_DMA and
+> ARCH_ZONE_DMA_BITS...
+
+ZONE_DMA usually (but not always) maps to 24-bits of address space,
+if it doesn't (I mostly through about s390 with it's odd 31-bits)
+the architecture can override it if it cares).
+
+> On ppc64, unless you enable swiotlb (which we only do currently on
+> some embedded platforms), you have all of memory in ZONE_DMA.
 > 
-> Thing is, I'm not sure I still have access to one of these things
-> to test, I'll have to dig (from memory things like b43 wifi).
+> [    0.000000] Zone ranges:
+> [    0.000000]   DMA      [mem 0x0000000000000000-0x0000001fffffffff]
+> [    0.000000]   DMA32    empty
+> [    0.000000]   Normal   empty
+> [    0.000000]   Device   empty
 
-Yeah, the other platforms that support these devices support ZONE_DMA
-to reliably handle these devices. But there is two other ways the
-current code would actually handle these fine despite the dma_direct
-checks:
+This is really weird.  Why would you wire up ZONE_DMA like this?
+The general scheme that architectures should implement is:
 
- 1) if the device only has physical addresses up to 31-bit anyway
- 2) by trying again to find a lower address.  But this only works
-    for coherent allocations and not streaming maps (unless we have
-    swiotlb with a buffer below 31-bits).
-
-It seems powerpc can have ZONE_DMA, though and we will cover these
-devices just fine.  If it didn't have that the current powerpc
-code would not work either.
-
->  - What is this trying to achieve ?
-> 
-> 	/*
-> 	 * Various PCI/PCIe bridges have broken support for > 32bit DMA even
-> 	 * if the device itself might support it.
-> 	 */
-> 	if (dev->dma_32bit_limit && mask > phys_to_dma(dev, DMA_BIT_MASK(32)))
-> 		return 0;
-> 
-> IE, if the device has a 32-bit limit, we fail an attempt at checking
-> if a >32-bit mask works ? That doesn't quite seem to be the right thing
-> to do... Shouldn't this be in dma_set_mask() and just clamp the mask down ?
-> 
-> IE, dma_set_mask() is what a driver uses to establish the device capability,
-> so it makes sense tot have dma_32bit_limit just reduce that capability, not
-> fail because the device can do more than what the bridge can.... 
-
-If your PCI bridge / PCIe root port doesn't support dma to addresses
-larger than 32-bit the device capabilities above that don't matter, it
-just won't work.  We have this case at least for some old VIA x86 chipsets
-and some relatively modern Xilinx FPGAs with PCIe.
-
->  - How is that file supposed to work on 64-bit platforms ? From what I can
-> tell, dma_supported() will unconditionally return true if the mask is
-> 32-bit or larger (appart from the above issue). This doesn't look right,
-> the mask needs to be compared to the max memory address. There are a bunch
-> of devices out there with masks anywhere bettween 40 and 64 bits, and
-> some of these will not work "out of the box" if the offseted top
-> of memory is beyond the mask limit. Or am I missing something ?
-
-Your are not missing anything except for the history of this code.
-
-Your observation is right, but there always has been the implicit
-assumption that architectures with more than 4GB of physical address
-space must either support and iommu or swiotlb and use that.  It's
-never been document anywhere, but I'm working on integrating all
-this code to make more sense.
+ZONE_DMA:	Any memory below a magic threshold that is lower than
+		32-bit.  Only enabled if actually required (usually
+		either 24-bit for ISA, or some other weird architecture
+		specific value like 32-bit for S/390)
+ZONE_DMA32:	Memory <= 32-bit if the architecture supports more than
+		32-bits worth of physical address space.  Should generally
+		be enabled on all 64-bit architectures unless you have
+		a very good reason not to.
+ZONE_NORMAL:	Everything above 32-bit not falling into HIGHMEM or
+		MOVEABLE.
