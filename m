@@ -2,9 +2,9 @@ Return-Path: <hch@lst.de>
 Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wJJF16nLzF2FK
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 16:57:16 +1000 (AEST)
-Date: Wed, 22 Aug 2018 08:58:56 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wJNZ0BNTzF2FK
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 17:01:02 +1000 (AEST)
+Date: Wed, 22 Aug 2018 09:02:41 +0200
 From: Christoph Hellwig <hch@lst.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
@@ -13,15 +13,15 @@ Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Robin Murphy <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
  iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH 02/20] kernel/dma/direct: refine dma_direct_alloc zone
- selection
-Message-ID: <20180822065856.GC19284@lst.de>
+Subject: Re: [PATCH 10/20] powerpc/dma-noncoherent: don't disable irqs over
+ kmap_atomic
+Message-ID: <20180822070241.GD19284@lst.de>
 References: <20180730163824.10064-1-hch@lst.de>
- <20180730163824.10064-3-hch@lst.de>
- <7177553cdb5cd1b968f653a52d7e88bd71aae4d8.camel@kernel.crashing.org>
+ <20180730163824.10064-11-hch@lst.de>
+ <bfa22816fee0759cfee28705b427be3586c7d2e3.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7177553cdb5cd1b968f653a52d7e88bd71aae4d8.camel@kernel.crashing.org>
+In-Reply-To: <bfa22816fee0759cfee28705b427be3586c7d2e3.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 09, 2018 at 09:54:33AM +1000, Benjamin Herrenschmidt wrote:
+On Thu, Aug 09, 2018 at 10:27:46AM +1000, Benjamin Herrenschmidt wrote:
 > On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
-> > We need to take the DMA offset and encryption bit into account when selecting
-> > a zone.  Add a helper that takes those into account and use it.
+> > The requirement to disable local irqs over kmap_atomic is long gone,
+> > so remove those calls.
 > 
-> That whole "encryption" stuff seems to be completely specific to the
-> way x86 does memory encryption, or am I mistaken ? It's not clear to me
-> what that does in practice and how it relates to DMA mappings.
-
-Not even all of x86, but AMD in particular, Intel does it yet another
-way.  But it still is easier to take this into the core with a few
-overrides than duplicating all the code.
-
-> I'm also not sure about that whole business with ZONE_DMA and
-> ARCH_ZONE_DMA_BITS...
-
-ZONE_DMA usually (but not always) maps to 24-bits of address space,
-if it doesn't (I mostly through about s390 with it's odd 31-bits)
-the architecture can override it if it cares).
-
-> On ppc64, unless you enable swiotlb (which we only do currently on
-> some embedded platforms), you have all of memory in ZONE_DMA.
+> Really ? I'm trying to verify that and getting lost in a mess of macros
+> from hell in the per-cpu stuff but if you look at our implementation
+> of kmap_atomic_prot(), all it does is a preempt_disable(), and then
+> it uses kmap_atomic_idx_push():
 > 
-> [    0.000000] Zone ranges:
-> [    0.000000]   DMA      [mem 0x0000000000000000-0x0000001fffffffff]
-> [    0.000000]   DMA32    empty
-> [    0.000000]   Normal   empty
-> [    0.000000]   Device   empty
+> 	int idx = __this_cpu_inc_return(__kmap_atomic_idx) - 1;
+> 
+> Note the use of __this_cpu_inc_return(), not this_cpu_inc_return(),
+> ie this is the non-interrupt safe version...
 
-This is really weird.  Why would you wire up ZONE_DMA like this?
-The general scheme that architectures should implement is:
+Looks like the powerpc variant indeed isn't save.
 
-ZONE_DMA:	Any memory below a magic threshold that is lower than
-		32-bit.  Only enabled if actually required (usually
-		either 24-bit for ISA, or some other weird architecture
-		specific value like 32-bit for S/390)
-ZONE_DMA32:	Memory <= 32-bit if the architecture supports more than
-		32-bits worth of physical address space.  Should generally
-		be enabled on all 64-bit architectures unless you have
-		a very good reason not to.
-ZONE_NORMAL:	Everything above 32-bit not falling into HIGHMEM or
-		MOVEABLE.
+I did look a bit more through the code and history, and it seems
+like we remove the need to disable irqs when called from process
+context a while ago, but we still require disabling irqs when called
+from irq context.  Given that this code can also be called from
+irq context we'll have to keep the local_irq_save.
