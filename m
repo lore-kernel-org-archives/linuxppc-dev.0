@@ -1,26 +1,21 @@
-Return-Path: <omosnace@redhat.com>
-Received: from mail-wm0-f66.google.com (mail-wm0-f66.google.com [74.125.82.66])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wHd666RlzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 16:26:46 +1000 (AEST)
-Received: by mail-wm0-f66.google.com with SMTP id s12-v6so947822wmc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2018 23:26:46 -0700 (PDT)
-From: Ondrej Mosnacek <omosnace@redhat.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-crypto@vger.kernel.org, Stephan Mueller <smueller@chronox.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Marcelo Henrique Cerri <marcelo.cerri@canonical.com>,
- "Leonidas S . Barbosa" <leo.barbosa@canonical.com>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Ondrej Mosnacek <omosnace@redhat.com>,
- stable@vger.kernel.org
-Subject: [PATCH v2] crypto: vmx - Fix sleep-in-atomic bugs
-Date: Wed, 22 Aug 2018 08:26:31 +0200
-Message-Id: <20180822062631.5664-1-omosnace@redhat.com>
-In-Reply-To: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
-References: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wLln4DGtzF2R6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 18:47:49 +1000 (AEST)
+Subject: Patch "net/ethernet/freescale/fman: fix cross-build error" has been
+ added to the 4.4-stable tree
+To: alexander.levin@microsoft.com, davem@davemloft.net,
+ gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org,
+ madalin.bucur@nxp.com, rdunlap@infradead.org
+Cc: <stable-commits@vger.kernel.org>
+From: <gregkh@linuxfoundation.org>
+Date: Wed, 22 Aug 2018 10:37:32 +0200
+Message-ID: <1534927052135133@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,166 +25,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes sleep-in-atomic bugs in AES-CBC and AES-XTS VMX
-implementations. The problem is that the blkcipher_* functions should
-not be called in atomic context.
 
-The bugs can be reproduced via the AF_ALG interface by trying to
-encrypt/decrypt sufficiently large buffers (at least 64 KiB) using the
-VMX implementations of 'cbc(aes)' or 'xts(aes)'. Such operations then
-trigger BUG in crypto_yield():
+This is a note to let you know that I've just added the patch titled
 
-[  891.863680] BUG: sleeping function called from invalid context at include/crypto/algapi.h:424
-[  891.864622] in_atomic(): 1, irqs_disabled(): 0, pid: 12347, name: kcapi-enc
-[  891.864739] 1 lock held by kcapi-enc/12347:
-[  891.864811]  #0: 00000000f5d42c46 (sk_lock-AF_ALG){+.+.}, at: skcipher_recvmsg+0x50/0x530
-[  891.865076] CPU: 5 PID: 12347 Comm: kcapi-enc Not tainted 4.19.0-0.rc0.git3.1.fc30.ppc64le #1
-[  891.865251] Call Trace:
-[  891.865340] [c0000003387578c0] [c000000000d67ea4] dump_stack+0xe8/0x164 (unreliable)
-[  891.865511] [c000000338757910] [c000000000172a58] ___might_sleep+0x2f8/0x310
-[  891.865679] [c000000338757990] [c0000000006bff74] blkcipher_walk_done+0x374/0x4a0
-[  891.865825] [c0000003387579e0] [d000000007e73e70] p8_aes_cbc_encrypt+0x1c8/0x260 [vmx_crypto]
-[  891.865993] [c000000338757ad0] [c0000000006c0ee0] skcipher_encrypt_blkcipher+0x60/0x80
-[  891.866128] [c000000338757b10] [c0000000006ec504] skcipher_recvmsg+0x424/0x530
-[  891.866283] [c000000338757bd0] [c000000000b00654] sock_recvmsg+0x74/0xa0
-[  891.866403] [c000000338757c10] [c000000000b00f64] ___sys_recvmsg+0xf4/0x2f0
-[  891.866515] [c000000338757d90] [c000000000b02bb8] __sys_recvmsg+0x68/0xe0
-[  891.866631] [c000000338757e30] [c00000000000bbe4] system_call+0x5c/0x70
+    net/ethernet/freescale/fman: fix cross-build error
 
-Fixes: 8c755ace357c ("crypto: vmx - Adding CBC routines for VMX module")
-Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
-Cc: stable@vger.kernel.org
-Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+to the 4.4-stable tree which can be found at:
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+The filename of the patch is:
+     net-ethernet-freescale-fman-fix-cross-build-error.patch
+and it can be found in the queue-4.4 subdirectory.
+
+If you, or anyone else, feels it should not be added to the stable tree,
+please let <stable@vger.kernel.org> know about it.
+
+
+>From foo@baz Wed Aug 22 10:28:26 CEST 2018
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Fri, 13 Jul 2018 21:25:19 -0700
+Subject: net/ethernet/freescale/fman: fix cross-build error
+
+From: Randy Dunlap <rdunlap@infradead.org>
+
+[ Upstream commit c133459765fae249ba482f62e12f987aec4376f0 ]
+
+  CC [M]  drivers/net/ethernet/freescale/fman/fman.o
+In file included from ../drivers/net/ethernet/freescale/fman/fman.c:35:
+../include/linux/fsl/guts.h: In function 'guts_set_dmacr':
+../include/linux/fsl/guts.h:165:2: error: implicit declaration of function 'clrsetbits_be32' [-Werror=implicit-function-declaration]
+  clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
+  ^~~~~~~~~~~~~~~
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Madalin Bucur <madalin.bucur@nxp.com>
+Cc: netdev@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
-Still untested, please test and review if possible.
+ include/linux/fsl/guts.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Changes in v2:
-- fix leaving preemtption, etc. disabled when leaving the function
-  (I switched to the more obvious and less efficient variant for the
-  sake of clarity.)
+--- a/include/linux/fsl/guts.h
++++ b/include/linux/fsl/guts.h
+@@ -16,6 +16,7 @@
+ #define __FSL_GUTS_H__
+ 
+ #include <linux/types.h>
++#include <linux/io.h>
+ 
+ /**
+  * Global Utility Registers.
 
- drivers/crypto/vmx/aes_cbc.c | 30 ++++++++++++++----------------
- drivers/crypto/vmx/aes_xts.c | 21 ++++++++++++++-------
- 2 files changed, 28 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/crypto/vmx/aes_cbc.c b/drivers/crypto/vmx/aes_cbc.c
-index 5285ece4f33a..b71895871be3 100644
---- a/drivers/crypto/vmx/aes_cbc.c
-+++ b/drivers/crypto/vmx/aes_cbc.c
-@@ -107,24 +107,23 @@ static int p8_aes_cbc_encrypt(struct blkcipher_desc *desc,
- 		ret = crypto_skcipher_encrypt(req);
- 		skcipher_request_zero(req);
- 	} else {
--		preempt_disable();
--		pagefault_disable();
--		enable_kernel_vsx();
--
- 		blkcipher_walk_init(&walk, dst, src, nbytes);
- 		ret = blkcipher_walk_virt(desc, &walk);
- 		while ((nbytes = walk.nbytes)) {
-+			preempt_disable();
-+			pagefault_disable();
-+			enable_kernel_vsx();
- 			aes_p8_cbc_encrypt(walk.src.virt.addr,
- 					   walk.dst.virt.addr,
- 					   nbytes & AES_BLOCK_MASK,
- 					   &ctx->enc_key, walk.iv, 1);
-+			disable_kernel_vsx();
-+			pagefault_enable();
-+			preempt_enable();
-+
- 			nbytes &= AES_BLOCK_SIZE - 1;
- 			ret = blkcipher_walk_done(desc, &walk, nbytes);
- 		}
--
--		disable_kernel_vsx();
--		pagefault_enable();
--		preempt_enable();
- 	}
- 
- 	return ret;
-@@ -147,24 +146,23 @@ static int p8_aes_cbc_decrypt(struct blkcipher_desc *desc,
- 		ret = crypto_skcipher_decrypt(req);
- 		skcipher_request_zero(req);
- 	} else {
--		preempt_disable();
--		pagefault_disable();
--		enable_kernel_vsx();
--
- 		blkcipher_walk_init(&walk, dst, src, nbytes);
- 		ret = blkcipher_walk_virt(desc, &walk);
- 		while ((nbytes = walk.nbytes)) {
-+			preempt_disable();
-+			pagefault_disable();
-+			enable_kernel_vsx();
- 			aes_p8_cbc_encrypt(walk.src.virt.addr,
- 					   walk.dst.virt.addr,
- 					   nbytes & AES_BLOCK_MASK,
- 					   &ctx->dec_key, walk.iv, 0);
-+			disable_kernel_vsx();
-+			pagefault_enable();
-+			preempt_enable();
-+
- 			nbytes &= AES_BLOCK_SIZE - 1;
- 			ret = blkcipher_walk_done(desc, &walk, nbytes);
- 		}
--
--		disable_kernel_vsx();
--		pagefault_enable();
--		preempt_enable();
- 	}
- 
- 	return ret;
-diff --git a/drivers/crypto/vmx/aes_xts.c b/drivers/crypto/vmx/aes_xts.c
-index 8bd9aff0f55f..e9954a7d4694 100644
---- a/drivers/crypto/vmx/aes_xts.c
-+++ b/drivers/crypto/vmx/aes_xts.c
-@@ -116,32 +116,39 @@ static int p8_aes_xts_crypt(struct blkcipher_desc *desc,
- 		ret = enc? crypto_skcipher_encrypt(req) : crypto_skcipher_decrypt(req);
- 		skcipher_request_zero(req);
- 	} else {
-+		blkcipher_walk_init(&walk, dst, src, nbytes);
-+
-+		ret = blkcipher_walk_virt(desc, &walk);
-+
- 		preempt_disable();
- 		pagefault_disable();
- 		enable_kernel_vsx();
- 
--		blkcipher_walk_init(&walk, dst, src, nbytes);
--
--		ret = blkcipher_walk_virt(desc, &walk);
- 		iv = walk.iv;
- 		memset(tweak, 0, AES_BLOCK_SIZE);
- 		aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
- 
-+		disable_kernel_vsx();
-+		pagefault_enable();
-+		preempt_enable();
-+
- 		while ((nbytes = walk.nbytes)) {
-+			preempt_disable();
-+			pagefault_disable();
-+			enable_kernel_vsx();
- 			if (enc)
- 				aes_p8_xts_encrypt(walk.src.virt.addr, walk.dst.virt.addr,
- 						nbytes & AES_BLOCK_MASK, &ctx->enc_key, NULL, tweak);
- 			else
- 				aes_p8_xts_decrypt(walk.src.virt.addr, walk.dst.virt.addr,
- 						nbytes & AES_BLOCK_MASK, &ctx->dec_key, NULL, tweak);
-+			disable_kernel_vsx();
-+			pagefault_enable();
-+			preempt_enable();
- 
- 			nbytes &= AES_BLOCK_SIZE - 1;
- 			ret = blkcipher_walk_done(desc, &walk, nbytes);
- 		}
--
--		disable_kernel_vsx();
--		pagefault_enable();
--		preempt_enable();
- 	}
- 	return ret;
- }
--- 
-2.17.1
+Patches currently in stable-queue which might be from rdunlap@infradead.org are
+
+queue-4.4/tcp-identify-cryptic-messages-as-tcp-seq-bugs.patch
+queue-4.4/net-ethernet-freescale-fman-fix-cross-build-error.patch
