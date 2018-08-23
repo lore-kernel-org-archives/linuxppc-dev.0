@@ -1,19 +1,19 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x6354c4mzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:18:41 +1000 (AEST)
-In-Reply-To: <8097a1d32403ea47d076803e9070869badfe24bc.1534856426.git.christophe.leroy@c-s.fr>
-To: Christophe Leroy <christophe.leroy@c-s.fr>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x63733JZzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:18:43 +1000 (AEST)
+In-Reply-To: <20180822171605.15054-1-aneesh.kumar@linux.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>, npiggin@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org
-Subject: Re: powerpc/nohash: fix pte_access_permitted()
-Message-Id: <41x63533G3z9s5b@ozlabs.org>
-Date: Fri, 24 Aug 2018 00:18:40 +1000 (AEST)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [1/2] powerpc/mm/books3s: Add new pte bit to mark pte temporarily
+ invalid.
+Message-Id: <41x6366MjYz9s7X@ozlabs.org>
+Date: Fri, 24 Aug 2018 00:18:42 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2018-08-21 at 13:03:23 UTC, Christophe Leroy wrote:
-> Commit 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper
-> for other platforms") replaced generic pte_access_permitted() by an
-> arch specific one.
+On Wed, 2018-08-22 at 17:16:04 UTC, "Aneesh Kumar K.V" wrote:
+> When splitting a huge pmd pte, we need to mark the pmd entry invalid. We
+> can do that by clearing _PAGE_PRESENT bit. But then that will be taken as a
+> swap pte. In order to differentiate between the two use a software pte bit
+> when invalidating.
 > 
-> The generic one is defined as
-> (pte_present(pte) && (!(write) || pte_write(pte)))
+> For regular pte, due to bd5050e38aec ("powerpc/mm/radix: Change pte relax
+> sequence to handle nest MMU hang") we need to mark the pte entry invalid when
+> relaxing access permission. Instead of marking pte_none which can result in
+> different page table walk routines possibly skipping this pte entry, invalidate
+> it but still keep it marked present.
 > 
-> The arch specific one is open coded checking that _PAGE_USER and
-> _PAGE_WRITE (_PAGE_RW) flags are set, but lacking to check that
-> _PAGE_RO and _PAGE_PRIVILEGED are unset, leading to a useless test
-> on targets like the 8xx which defines _PAGE_RW and _PAGE_USER as 0.
-> 
-> Commit 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted
-> for hugetlb access check") replaced some tests performed with
-> pte helpers by a call to pte_access_permitted(), leading to the same
-> issue.
-> 
-> This patch rewrites powerpc/nohash pte_access_permitted()
-> using pte helpers.
-> 
-> Fixes: 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper for other platforms")
-> Fixes: 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted for hugetlb access check")
-> Cc: stable@vger.kernel.org # v4.15+
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Applied to powerpc next, thanks.
+Series applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/810e9f86f36f59f1d6f6710220c49a
+https://git.kernel.org/powerpc/c/bd0dbb73e01306a1060e56f81e5fe2
 
 cheers
