@@ -1,36 +1,43 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vabhav.sharma@nxp.com>
+Received: from EUR04-DB3-obe.outbound.protection.outlook.com
+ (mail-eopbgr60073.outbound.protection.outlook.com [40.107.6.73])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x6m62Yf9zF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:50:45 +1000 (AEST)
-Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
- to PGD and hugepages
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, aneesh.kumar@linux.vnet.ibm.com
-Cc: Andrew Donnellan <andrew.donnellan@au1.ibm.com>,
- Russell Currey <ruscur@russell.cc>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
- <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
- <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
- <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
- <3e6412ac-c645-908f-a3bb-c9a2a72f4b68@linux.ibm.com>
- <cb121f38-ac89-4971-fd84-5473e7e9ced5@c-s.fr>
- <20180823103625.GR24439@gate.crashing.org>
- <8ada20e9-3bc1-fdaf-d78f-2f5a317e8216@c-s.fr>
- <87a7pdl2jy.fsf@concordia.ellerman.id.au>
- <d561e11b-b85e-6f6c-0936-4a93cf309915@au1.ibm.com>
- <20180823144118.GU24439@gate.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <118d50a1-ccbf-7a15-a190-ac14f2a50d27@c-s.fr>
-Date: Thu, 23 Aug 2018 16:50:41 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x6z45qg6zF2Py
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 01:00:14 +1000 (AEST)
+From: Vabhav Sharma <vabhav.sharma@nxp.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com"
+ <mark.rutland@arm.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org"
+ <linux-arm-kernel@lists.infradead.org>, "mturquette@baylibre.com"
+ <mturquette@baylibre.com>, "sboyd@kernel.org" <sboyd@kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org"
+ <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org"
+ <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org"
+ <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
+ <linux-kernel-owner@vger.kernel.org>, "catalin.marinas@arm.com"
+ <catalin.marinas@arm.com>, "will.deacon@arm.com" <will.deacon@arm.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "arnd@arndb.de"
+ <arnd@arndb.de>, "kstewart@linuxfoundation.org"
+ <kstewart@linuxfoundation.org>, "yamada.masahiro@socionext.com"
+ <yamada.masahiro@socionext.com>, "linux@armlinux.org.uk"
+ <linux@armlinux.org.uk>, Varun Sethi <V.Sethi@nxp.com>, Udit Kumar
+ <udit.kumar@nxp.com>, Ramneek Mehresh <ramneek.mehresh@nxp.com>, Ying Zhang
+ <ying.zhang22455@nxp.com>, Nipun Gupta <nipun.gupta@nxp.com>, Priyanka Jain
+ <priyanka.jain@nxp.com>, Yogesh Narayan Gaur <yogeshnarayan.gaur@nxp.com>,
+ Sriram Dash <sriram.dash@nxp.com>
+Subject: RE: [PATCH 4/5] arm64: dts: add QorIQ LX2160A SoC support
+Date: Thu, 23 Aug 2018 15:00:03 +0000
+Message-ID: <AM6PR04MB47899CE5F871731749E59636F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-5-git-send-email-vabhav.sharma@nxp.com>
+ <20180821101652.GA18139@e107155-lin>
+In-Reply-To: <20180821101652.GA18139@e107155-lin>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <20180823144118.GU24439@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +49,132 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-Le 23/08/2018 à 16:41, Segher Boessenkool a écrit :
-> On Thu, Aug 23, 2018 at 11:32:16PM +1000, Andrew Donnellan wrote:
->> On 23/08/18 21:56, Michael Ellerman wrote:
->>> Christophe LEROY <christophe.leroy@c-s.fr> writes:
->>>
->>>> Le 23/08/2018 à 12:36, Segher Boessenkool a écrit :
->>>>> On Thu, Aug 23, 2018 at 11:40:22AM +0200, Christophe LEROY wrote:
->>>>>> The only small problème I have is that some version of GCC seems to
->>>>>> complain about big memset() (132k and 256k ones). Is there a way to tell
->>>>>> GCC we really want to do it ?
->>>>>
->>>>> I'm not sure what you mean.  Complain, is that a warning, is that an
->>>>> error?
->>>>> What does it say?  Do you have some example code to reproduce it?  Etc.
->>>>
->>>> I saw the warnings in the checks at
->>>> https://patchwork.ozlabs.org/patch/957566/
->>>> Unfortunatly the link is now broken.
->>>
->>> ruscur/ajd any idea what happened to the snowpatch links here?
->>
->> I think they've disappeared because our log rotation is too fast - I've
->> now upped it to 30 days. I guess over time we'll figure out what we need
->> in this regard, ideally we'd keep logs indefinitely but they're several
->> megs per build.
->>
->> I've kicked off another build for this series and the links in Patchwork
->> should update to point to the new job when it's done (probably in the
->> next couple of hours).
-> 
-> It's back, thanks Andrew!
-> 
-> The warnings are not from GCC at all: the warnings are from sparse.
-
-Oh, ok, my mistake, I reminded seeing those warnings without paying much 
-attention to them at that time.
-
-Anyway, should we do anything about this warning ? If so, what 
-could/should be done ?
-
-Christophe
+> -----Original Message-----
+> From: Sudeep Holla <sudeep.holla@arm.com>
+> Sent: Tuesday, August 21, 2018 3:47 PM
+> To: Vabhav Sharma <vabhav.sharma@nxp.com>
+> Cc: linux-kernel@vger.kernel.org; devicetree@vger.kernel.org;
+> robh+dt@kernel.org; mark.rutland@arm.com; linuxppc-dev@lists.ozlabs.org;
+> linux-arm-kernel@lists.infradead.org; mturquette@baylibre.com;
+> sboyd@kernel.org; rjw@rjwysocki.net; viresh.kumar@linaro.org; linux-
+> clk@vger.kernel.org; linux-pm@vger.kernel.org; linux-kernel-
+> owner@vger.kernel.org; catalin.marinas@arm.com; will.deacon@arm.com;
+> gregkh@linuxfoundation.org; arnd@arndb.de;
+> kstewart@linuxfoundation.org; yamada.masahiro@socionext.com;
+> linux@armlinux.org.uk; Varun Sethi <V.Sethi@nxp.com>; Udit Kumar
+> <udit.kumar@nxp.com>; Ramneek Mehresh <ramneek.mehresh@nxp.com>;
+> Ying Zhang <ying.zhang22455@nxp.com>; Nipun Gupta
+> <nipun.gupta@nxp.com>; Priyanka Jain <priyanka.jain@nxp.com>; Yogesh
+> Narayan Gaur <yogeshnarayan.gaur@nxp.com>; Sriram Dash
+> <sriram.dash@nxp.com>; Sudeep Holla <sudeep.holla@arm.com>
+> Subject: Re: [PATCH 4/5] arm64: dts: add QorIQ LX2160A SoC support
+>=20
+> On Mon, Aug 20, 2018 at 12:17:15PM +0530, Vabhav Sharma wrote:
+> > LX2160A SoC is based on Layerscape Chassis Generation 3.2 Architecture.
+> >
+> > LX2160A features an advanced 16 64-bit ARM v8 CortexA72 processor
+> > cores in 8 cluster, CCN508, GICv3,two 64-bit DDR4 memory controller, 8
+> > I2C controllers, 3 dspi, 2 esdhc,2 USB 3.0, mmu 500, 3 SATA, 4 PL011
+> > SBSA UARTs etc.
+> >
+> > Signed-off-by: Ramneek Mehresh <ramneek.mehresh@nxp.com>
+> > Signed-off-by: Zhang Ying-22455 <ying.zhang22455@nxp.com>
+> > Signed-off-by: Nipun Gupta <nipun.gupta@nxp.com>
+> > Signed-off-by: Priyanka Jain <priyanka.jain@nxp.com>
+> > Signed-off-by: Yogesh Gaur <yogeshnarayan.gaur@nxp.com>
+> > Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+> > Signed-off-by: Vabhav Sharma <vabhav.sharma@nxp.com>
+> > ---
+> >  arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi | 572
+> > +++++++++++++++++++++++++
+> >  1 file changed, 572 insertions(+)
+> >  create mode 100644 arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> >
+> > diff --git a/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> > b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> > new file mode 100644
+> > index 0000000..e35e494
+> > --- /dev/null
+> > +++ b/arch/arm64/boot/dts/freescale/fsl-lx2160a.dtsi
+> > @@ -0,0 +1,572 @@
+> > +// SPDX-License-Identifier: (GPL-2.0 OR MIT) // // Device Tree
+> > +Include file for Layerscape-LX2160A family SoC.
+> > +//
+> > +// Copyright 2018 NXP
+> > +
+> > +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +
+> > +/memreserve/ 0x80000000 0x00010000;
+> > +
+> > +/ {
+> > +	compatible =3D "fsl,lx2160a";
+> > +	interrupt-parent =3D <&gic>;
+> > +	#address-cells =3D <2>;
+> > +	#size-cells =3D <2>;
+> > +
+> > +	cpus {
+> > +		#address-cells =3D <1>;
+> > +		#size-cells =3D <0>;
+> > +
+> > +		// 8 clusters having 2 Cortex-A72 cores each
+> > +		cpu@0 {
+> > +			device_type =3D "cpu";
+> > +			compatible =3D "arm,cortex-a72";
+> > +			reg =3D <0x0>;
+> > +			clocks =3D <&clockgen 1 0>;
+> > +			next-level-cache =3D <&cluster0_l2>;
+>=20
+> If you expect to get cache properties in sysfs entries, you need to popul=
+ate
+> them here and for each L2 cache.
+Rather sysfs, If Entry is not present then print  "cacheinfo: Unable to det=
+ect cache hierarchy for CPU 0" appears in boot log which is bad saying some=
+thing is not present.
+Either this print is require change to debug instead of warning.
+>=20
+> [...]
+>=20
+> > +
+> > +	rstcr: syscon@1e60000 {
+> > +		compatible =3D "syscon";
+> > +		reg =3D <0x0 0x1e60000 0x0 0x4>;
+> > +	};
+> > +
+> > +	reboot {
+> > +		compatible =3D"syscon-reboot";
+> > +		regmap =3D <&rstcr>;
+> > +		offset =3D <0x0>;
+> > +		mask =3D <0x2>;
+>=20
+> Is this disabled in bootloader ? With PSCI, it's preferred to use
+> SYSTEM_RESET/OFF. EL3 f/w may need to do some housekeeping on
+> poweroff.
+No, PSCIv0.2 is used and control passes to EL3 fw via smc call, psci node i=
+s present in the file.
+This node is not required and keeping it in case PSCI is not used.
+>=20
+> > +	};
+> > +
+> > +	timer {
+> > +		compatible =3D "arm,armv8-timer";
+> > +		interrupts =3D <1 13 4>, // Physical Secure PPI, active-low
+>=20
+> The comment says active low but the value 4 indicates it's HIGH from
+> "include/dt-bindings/interrupt-controller/irq.h"
+Thanks, I will change the entries to existing definition IRQ_TYPE_LEVEL_LOW=
+,GIC_PPI which is self-explanatory and not require comments
+>=20
+> > +			     <1 14 4>, // Physical Non-Secure PPI, active-low
+> > +			     <1 11 4>, // Virtual PPI, active-low
+> > +			     <1 10 4>; // Hypervisor PPI, active-low
+> > +	};
+> > +
+> > +	pmu {
+> > +		compatible =3D "arm,armv8-pmuv3";
+>=20
+> More specific compatible preferably "arm,cortex-a72-pmu" ?
+Sure.
+>=20
+> --
+> Regards,
+> Sudeep
