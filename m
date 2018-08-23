@@ -1,47 +1,19 @@
-Return-Path: <srs0=gqm2=lg=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x5mW3gkpzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:06:03 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41x5mV4HRdz8wRV
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:06:02 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41x5mT5B7Cz9s8f
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2018 00:06:01 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7NE43Gx156147
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 10:05:59 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m1uf1829a-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 10:05:59 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 23 Aug 2018 15:05:57 +0100
-Subject: Re: [RESEND PATCH v2] powerpc/mce: Fix SLB rebolting during MCE
- recovery path.
-To: Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-References: <153500619258.20614.8965724795728734200.stgit@jupiter.in.ibm.com>
- <87d0u9lgyt.fsf@concordia.ellerman.id.au>
- <10dfea17-e98b-7a46-6dba-b222a6cf0c96@linux.vnet.ibm.com>
- <871sapl24w.fsf@concordia.ellerman.id.au>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Thu, 23 Aug 2018 19:35:51 +0530
-MIME-Version: 1.0
-In-Reply-To: <871sapl24w.fsf@concordia.ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Message-Id: <09a2ca4e-9c51-9214-f3e0-ab207acf1536@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x6354c4mzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:18:41 +1000 (AEST)
+In-Reply-To: <8097a1d32403ea47d076803e9070869badfe24bc.1534856426.git.christophe.leroy@c-s.fr>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
+Subject: Re: powerpc/nohash: fix pte_access_permitted()
+Message-Id: <41x63533G3z9s5b@ozlabs.org>
+Date: Fri, 24 Aug 2018 00:18:40 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,37 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/23/2018 05:35 PM, Michael Ellerman wrote:
-> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+On Tue, 2018-08-21 at 13:03:23 UTC, Christophe Leroy wrote:
+> Commit 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper
+> for other platforms") replaced generic pte_access_permitted() by an
+> arch specific one.
 > 
->> On 08/23/2018 12:14 PM, Michael Ellerman wrote:
->>> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
->>>
->>>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>>
->>>> With the powerpc next commit e7e81847478 (powerpc/mce: Fix SLB rebolting
->>>> during MCE recovery path.),
->>>
->>> That commit description is wrong, I'll fix it up.
->>
->> Ouch.. My bad.. :-(
+> The generic one is defined as
+> (pte_present(pte) && (!(write) || pte_write(pte)))
 > 
-> To make it easier to get right, if you don't already, add these to your
-> ~/.gitconfig:
+> The arch specific one is open coded checking that _PAGE_USER and
+> _PAGE_WRITE (_PAGE_RW) flags are set, but lacking to check that
+> _PAGE_RO and _PAGE_PRIVILEGED are unset, leading to a useless test
+> on targets like the 8xx which defines _PAGE_RW and _PAGE_USER as 0.
 > 
-> [pretty]
-> 	fixes = Fixes: %h (\"%s\")
-> 	quote = %h (\"%s\")
+> Commit 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted
+> for hugetlb access check") replaced some tests performed with
+> pte helpers by a call to pte_access_permitted(), leading to the same
+> issue.
 > 
+> This patch rewrites powerpc/nohash pte_access_permitted()
+> using pte helpers.
 > 
-> And then you can do:
-> 
-> $ git log -1 --pretty=quote e7e81847478 
-> e7e81847478b ("powerpc/64s: move machine check SLB flushing to mm/slb.c")
-> 
-> $ git log -1 --pretty=fixes e7e81847478 
-> Fixes: e7e81847478b ("powerpc/64s: move machine check SLB flushing to mm/slb.c")
+> Fixes: 5769beaf180a8 ("powerpc/mm: Add proper pte access check helper for other platforms")
+> Fixes: 5fa5b16be5b31 ("powerpc/mm/hugetlb: Use pte_access_permitted for hugetlb access check")
+> Cc: stable@vger.kernel.org # v4.15+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 
-Thank you very much :-) This is going to be very handy...
+Applied to powerpc next, thanks.
 
--Mahesh.
+https://git.kernel.org/powerpc/c/810e9f86f36f59f1d6f6710220c49a
+
+cheers
