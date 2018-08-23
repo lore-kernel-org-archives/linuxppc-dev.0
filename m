@@ -1,24 +1,45 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <srs0=gqm2=lg=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wxgf274LzF2Py
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:01:18 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41wxgd3mvgz8w0X
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:01:17 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wxgM2f5XzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:01:03 +1000 (AEST)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>,
- Madalin Bucur <madalin.bucur@nxp.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.4 60/79] net/ethernet/freescale/fman: fix cross-build error
-Date: Thu, 23 Aug 2018 09:53:36 +0200
-Message-Id: <20180823074923.061576969@linuxfoundation.org>
-In-Reply-To: <20180823074918.641878835@linuxfoundation.org>
-References: <20180823074918.641878835@linuxfoundation.org>
+ by ozlabs.org (Postfix) with ESMTPS id 41wxgc4f3Bz9sBn
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 18:01:16 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7N7xaxt069170
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 04:01:13 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m1r06jnej-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 04:01:12 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 23 Aug 2018 09:01:11 +0100
+Subject: Re: [RESEND PATCH v2] powerpc/mce: Fix SLB rebolting during MCE
+ recovery path.
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+References: <153500619258.20614.8965724795728734200.stgit@jupiter.in.ibm.com>
+ <87d0u9lgyt.fsf@concordia.ellerman.id.au>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 23 Aug 2018 13:31:07 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <87d0u9lgyt.fsf@concordia.ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <10dfea17-e98b-7a46-6dba-b222a6cf0c96@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +49,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.4-stable review patch.  If anyone has any objections, please let me know.
+On 08/23/2018 12:14 PM, Michael Ellerman wrote:
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> writes:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> With the powerpc next commit e7e81847478 (powerpc/mce: Fix SLB rebolting
+>> during MCE recovery path.),
+> 
+> That commit description is wrong, I'll fix it up.
 
-------------------
+Ouch.. My bad.. :-(
 
-From: Randy Dunlap <rdunlap@infradead.org>
-
-[ Upstream commit c133459765fae249ba482f62e12f987aec4376f0 ]
-
-  CC [M]  drivers/net/ethernet/freescale/fman/fman.o
-In file included from ../drivers/net/ethernet/freescale/fman/fman.c:35:
-../include/linux/fsl/guts.h: In function 'guts_set_dmacr':
-../include/linux/fsl/guts.h:165:2: error: implicit declaration of function 'clrsetbits_be32' [-Werror=implicit-function-declaration]
-  clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
-  ^~~~~~~~~~~~~~~
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Madalin Bucur <madalin.bucur@nxp.com>
-Cc: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- include/linux/fsl/guts.h |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/include/linux/fsl/guts.h
-+++ b/include/linux/fsl/guts.h
-@@ -16,6 +16,7 @@
- #define __FSL_GUTS_H__
- 
- #include <linux/types.h>
-+#include <linux/io.h>
- 
- /**
-  * Global Utility Registers.
+> 
+> cheers
+> 
+>> the SLB error recovery is broken. The new
+>> change now does not add index value to RB[52-63] that selects the SLB
+>> entry while rebolting, instead it assumes that the shadow save area
+>> already have index embeded correctly in esid field. While all valid bolted
+>> save areas do contain index value set correctly, there is a case where
+>> 3rd (KSTACK_INDEX) entry for kernel stack does not embed index for NULL
+>> esid entry. This patch fixes that.
+>>
+>> Without this patch the SLB rebolt code overwrites the 1st entry of kernel
+>> linear mapping and causes SLB recovery to fail.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  arch/powerpc/mm/slb.c |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+>> index 0b095fa54049..9f574e59d178 100644
+>> --- a/arch/powerpc/mm/slb.c
+>> +++ b/arch/powerpc/mm/slb.c
+>> @@ -70,7 +70,7 @@ static inline void slb_shadow_update(unsigned long ea, int ssize,
+>>  
+>>  static inline void slb_shadow_clear(enum slb_index index)
+>>  {
+>> -	WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
+>> +	WRITE_ONCE(get_slb_shadow()->save_area[index].esid, cpu_to_be64(index));
+>>  }
+>>  
+>>  static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+> 
