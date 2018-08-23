@@ -2,25 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x2jQ3ZrdzF2Py
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 21:48:10 +1000 (AEST)
-Message-ID: <e9009f6dd3aded2b9aa735973f4eed8386dd9afb.camel@kernel.crashing.org>
-Subject: Re: DT case sensitivity
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x2nQ2NJHzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 21:51:37 +1000 (AEST)
+Message-ID: <123ac03b1e446ea31fa908b734a5f778e4bf03cf.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] powerpc/mm/hash: Only need the Nest MMU workaround
+ for R -> RW transition
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robh@kernel.org>, Grant Likely <grant.likely@arm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Michael Ellerman
- <mpe@ellerman.id.au>, Kumar Gala <kumar.gala@linaro.org>, David Gibson
- <david@gibson.dropbear.id.au>,
- Frank Rowand <frowand.list@gmail.com>, devicetree-spec@vger.kernel.org,
- devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 23 Aug 2018 21:47:30 +1000
-In-Reply-To: <CAL_Jsq+1T8k5mtc-DgDBtX3Qco9sQG9RWv6FTZ8NXppNbNg3Ww@mail.gmail.com>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
- <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
- <13bf5b39-0461-351e-57e3-60264eaa374d@arm.com>
- <CAL_Jsq+1T8k5mtc-DgDBtX3Qco9sQG9RWv6FTZ8NXppNbNg3Ww@mail.gmail.com>
+To: Nicholas Piggin <npiggin@gmail.com>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.ibm.com>
+Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Date: Thu, 23 Aug 2018 21:51:19 +1000
+In-Reply-To: <20180823192319.5f06041f@roar.ozlabs.ibm.com>
+References: <20180822171605.15054-1-aneesh.kumar@linux.ibm.com>
+ <20180822171605.15054-2-aneesh.kumar@linux.ibm.com>
+ <20180823192319.5f06041f@roar.ozlabs.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -32,34 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-23 at 06:43 -0500, Rob Herring wrote:
-> On Thu, Aug 23, 2018 at 4:02 AM Grant Likely <grant.likely@arm.com> wrote:
+On Thu, 2018-08-23 at 19:23 +1000, Nicholas Piggin wrote:
+> On Wed, 22 Aug 2018 22:46:05 +0530
+> "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com> wrote:
+> 
+> > The Nest MMU workaround is only needed for RW upgrades. Avoid doing that
+> > for other pte updates.
 > > 
+> > We also avoid clearing the pte while marking it invalid. This is because other
+> > page table walk will find this pte none and can result in unexpected behaviour
+> > due to that. Instead we clear _PAGE_PRESENT and set the software pte bit
+> > _PAGE_INVALID. pte_present is already updated to check for bot the bits. This
+> > make sure page table walkers will find the pte present and things like
+> > pte_pfn(pte) returns the right value.
 > > 
-> > What problem are you trying to solve?
+> > Based on the original patch from Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+> > ---
+> >  arch/powerpc/mm/pgtable-radix.c | 8 +++++---
 > 
-> I'm looking at removing device_node.name and using full_name instead
-> (which now is only the local node name plus unit-address). This means
-> replacing of_node_cmp() (and still some strcmp) calls in a lot of
-> places. I need to use either strncmp or strncasecmp instead.
+> This is powerpc/mm/radix, isn't it? Subject says hash.
 > 
-> > I would think making everything
-> > case insensitive would be the direction to go if you do anything. Least
-> > possibility of breaking existing platforms in that scenario.
+> Could we make this fix POWER9 only and use a RSV bit for it
+> rather than use up a SW bit? Other than that,
+
+Well, the SW bit is necessary for THP as well isn't it ?
 > 
-> Really? Even if all the "new" arches are effectively case sensitive?
-> Anything using dtc and libfdt are (and json-schema certainly will be).
-> But I frequently say the kernel's job is not DT validation, so you
-> pass crap in, you get undefined results.
-
-I tend to agree with Grant. Let's put it this way:
-
-What is the drawback of being case insensitive ?
-
-Do we expect that there exist a case where we will want to distinguish
-between nodes that have the same name with a different case ?
-
-If not, I don't see the point of being strict about it.
-
-Cheers,
-Ben.
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+> 
+> >  1 file changed, 5 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/mm/pgtable-radix.c b/arch/powerpc/mm/pgtable-radix.c
+> > index 7be99fd9af15..c879979faa73 100644
+> > --- a/arch/powerpc/mm/pgtable-radix.c
+> > +++ b/arch/powerpc/mm/pgtable-radix.c
+> > @@ -1045,20 +1045,22 @@ void radix__ptep_set_access_flags(struct vm_area_struct *vma, pte_t *ptep,
+> >  	struct mm_struct *mm = vma->vm_mm;
+> >  	unsigned long set = pte_val(entry) & (_PAGE_DIRTY | _PAGE_ACCESSED |
+> >  					      _PAGE_RW | _PAGE_EXEC);
+> > +
+> > +	unsigned long change = pte_val(entry) ^ pte_val(*ptep);
+> >  	/*
+> >  	 * To avoid NMMU hang while relaxing access, we need mark
+> >  	 * the pte invalid in between.
+> >  	 */
+> > -	if (atomic_read(&mm->context.copros) > 0) {
+> > +	if ((change & _PAGE_RW) && atomic_read(&mm->context.copros) > 0) {
+> >  		unsigned long old_pte, new_pte;
+> >  
+> > -		old_pte = __radix_pte_update(ptep, ~0, 0);
+> > +		old_pte = __radix_pte_update(ptep, _PAGE_PRESENT, _PAGE_INVALID);
+> >  		/*
+> >  		 * new value of pte
+> >  		 */
+> >  		new_pte = old_pte | set;
+> >  		radix__flush_tlb_page_psize(mm, address, psize);
+> > -		__radix_pte_update(ptep, 0, new_pte);
+> > +		__radix_pte_update(ptep, _PAGE_INVALID, new_pte);
+> >  	} else {
+> >  		__radix_pte_update(ptep, 0, set);
+> >  		/*
