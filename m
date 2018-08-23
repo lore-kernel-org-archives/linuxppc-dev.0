@@ -3,8 +3,8 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wxvk40tZzF2QJ
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:11:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wyMt50dbzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:32:41 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
@@ -12,11 +12,12 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
  Madalin Bucur <madalin.bucur@nxp.com>, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
  Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.9 110/130] net/ethernet/freescale/fman: fix cross-build error
-Date: Thu, 23 Aug 2018 09:53:46 +0200
-Message-Id: <20180823074934.193429161@linuxfoundation.org>
-In-Reply-To: <20180823074927.161454870@linuxfoundation.org>
-References: <20180823074927.161454870@linuxfoundation.org>
+Subject: [PATCH 4.14 186/217] net/ethernet/freescale/fman: fix cross-build
+ error
+Date: Thu, 23 Aug 2018 09:54:59 +0200
+Message-Id: <20180823075513.988513575@linuxfoundation.org>
+In-Reply-To: <20180823075505.090246914@linuxfoundation.org>
+References: <20180823075505.090246914@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,7 +29,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.9-stable review patch.  If anyone has any objections, please let me know.
+4.14-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
