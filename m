@@ -1,37 +1,42 @@
-Return-Path: <vabhav.sharma@nxp.com>
-Received: from EUR03-AM5-obe.outbound.protection.outlook.com
- (mail-eopbgr30065.outbound.protection.outlook.com [40.107.3.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <pfsmorigo@linux.vnet.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x78G5n06zF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 01:08:14 +1000 (AEST)
-From: Vabhav Sharma <vabhav.sharma@nxp.com>
-To: Rob Herring <robh+dt@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland
- <mark.rutland@arm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>, Michael Turquette
- <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, "Rafael J.
- Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
- linux-clk <linux-clk@vger.kernel.org>, "open list:THERMAL"
- <linux-pm@vger.kernel.org>, "linux-kernel-owner@vger.kernel.org"
- <linux-kernel-owner@vger.kernel.org>, Catalin Marinas
- <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>,
- Kate Stewart <kstewart@linuxfoundation.org>, Masahiro Yamada
- <yamada.masahiro@socionext.com>, Russell King <linux@armlinux.org.uk>, Varun
- Sethi <V.Sethi@nxp.com>, Udit Kumar <udit.kumar@nxp.com>, Priyanka Jain
- <priyanka.jain@nxp.com>, Sriram Dash <sriram.dash@nxp.com>
-Subject: RE: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
-Date: Thu, 23 Aug 2018 15:08:07 +0000
-Message-ID: <AM6PR04MB478980C90EE825D024D8B977F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
- <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
-In-Reply-To: <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xGDK318lzDqBy
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 06:27:06 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7NKNqAh011485
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 16:27:04 -0400
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m22j63mqv-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 16:27:04 -0400
+Received: from localhost
+ by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
+ Thu, 23 Aug 2018 16:27:03 -0400
 MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Date: Thu, 23 Aug 2018 17:34:27 -0300
+From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
+To: Marcelo Henrique Cerri <marcelo.cerri@canonical.com>
+Cc: Ondrej Mosnacek <omosnace@redhat.com>, Herbert Xu
+ <herbert@gondor.apana.org.au>,
+ linux-crypto@vger.kernel.org, Stephan Mueller <smueller@chronox.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ "Leonidas S . Barbosa" <leo.barbosa@canonical.com>,
+ linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+Subject: Re: [PATCH v2] crypto: vmx - Fix sleep-in-atomic bugs
+In-Reply-To: <20180823000446.GA26297@gallifrey>
+References: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
+ <20180822062631.5664-1-omosnace@redhat.com>
+ <20180823000446.GA26297@gallifrey>
+Message-Id: <11128af3ef7474136485261b5d53b679@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,101 +46,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUm9iIEhlcnJpbmcgPHJv
-YmgrZHRAa2VybmVsLm9yZz4NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjIsIDIwMTggMjox
-NSBBTQ0KPiBUbzogVmFiaGF2IFNoYXJtYSA8dmFiaGF2LnNoYXJtYUBueHAuY29tPg0KPiBDYzog
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7
-IE1hcmsgUnV0bGFuZA0KPiA8bWFyay5ydXRsYW5kQGFybS5jb20+OyBsaW51eHBwYy1kZXYgPGxp
-bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPjsNCj4gbW9kZXJhdGVkIGxpc3Q6QVJNL0ZSRUVT
-Q0FMRSBJTVggLyBNWEMgQVJNIEFSQ0hJVEVDVFVSRSA8bGludXgtYXJtLQ0KPiBrZXJuZWxAbGlz
-dHMuaW5mcmFkZWFkLm9yZz47IE1pY2hhZWwgVHVycXVldHRlIDxtdHVycXVldHRlQGJheWxpYnJl
-LmNvbT47DQo+IFN0ZXBoZW4gQm95ZCA8c2JveWRAa2VybmVsLm9yZz47IFJhZmFlbCBKLiBXeXNv
-Y2tpIDxyandAcmp3eXNvY2tpLm5ldD47DQo+IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxp
-bmFyby5vcmc+OyBsaW51eC1jbGsgPGxpbnV4LQ0KPiBjbGtAdmdlci5rZXJuZWwub3JnPjsgb3Bl
-biBsaXN0OlRIRVJNQUwgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47IGxpbnV4LQ0KPiBrZXJu
-ZWwtb3duZXJAdmdlci5rZXJuZWwub3JnOyBDYXRhbGluIE1hcmluYXMgPGNhdGFsaW4ubWFyaW5h
-c0Bhcm0uY29tPjsNCj4gV2lsbCBEZWFjb24gPHdpbGwuZGVhY29uQGFybS5jb20+OyBHcmVnIEty
-b2FoLUhhcnRtYW4NCj4gPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPjsgQXJuZCBCZXJnbWFu
-biA8YXJuZEBhcm5kYi5kZT47IEthdGUNCj4gU3Rld2FydCA8a3N0ZXdhcnRAbGludXhmb3VuZGF0
-aW9uLm9yZz47IE1hc2FoaXJvIFlhbWFkYQ0KPiA8eWFtYWRhLm1hc2FoaXJvQHNvY2lvbmV4dC5j
-b20+OyBSdXNzZWxsIEtpbmcgPGxpbnV4QGFybWxpbnV4Lm9yZy51az47DQo+IFZhcnVuIFNldGhp
-IDxWLlNldGhpQG54cC5jb20+OyBVZGl0IEt1bWFyIDx1ZGl0Lmt1bWFyQG54cC5jb20+Ow0KPiBQ
-cml5YW5rYSBKYWluIDxwcml5YW5rYS5qYWluQG54cC5jb20+OyBTcmlyYW0gRGFzaA0KPiA8c3Jp
-cmFtLmRhc2hAbnhwLmNvbT4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCA1LzVdIGFybTY0OiBkdHM6
-IGFkZCBMWDIxNjBBUkRCIGJvYXJkIHN1cHBvcnQNCj4gDQo+IE9uIE1vbiwgQXVnIDIwLCAyMDE4
-IGF0IDE6NTIgUE0gVmFiaGF2IFNoYXJtYQ0KPiA8dmFiaGF2LnNoYXJtYUBueHAuY29tPiB3cm90
-ZToNCj4gPg0KPiA+IExYMjE2MEEgcmVmZXJlbmNlIGRlc2lnbiBib2FyZCAoUkRCKSBpcyBhIGhp
-Z2gtcGVyZm9ybWFuY2UgY29tcHV0aW5nLA0KPiA+IGV2YWx1YXRpb24sIGFuZCBkZXZlbG9wbWVu
-dCBwbGF0Zm9ybSB3aXRoIExYMjE2MEEgU29DLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogUHJp
-eWFua2EgSmFpbiA8cHJpeWFua2EuamFpbkBueHAuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFNy
-aXJhbSBEYXNoIDxzcmlyYW0uZGFzaEBueHAuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFZhYmhh
-diBTaGFybWEgPHZhYmhhdi5zaGFybWFAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiAgYXJjaC9hcm02
-NC9ib290L2R0cy9mcmVlc2NhbGUvTWFrZWZpbGUgICAgICAgICAgICB8ICAxICsNCj4gPiAgYXJj
-aC9hcm02NC9ib290L2R0cy9mcmVlc2NhbGUvZnNsLWx4MjE2MGEtcmRiLmR0cyB8IDk1DQo+ID4g
-KysrKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMiBmaWxlcyBjaGFuZ2VkLCA5NiBpbnNlcnRp
-b25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVz
-Y2FsZS9mc2wtbHgyMTYwYS1yZGIuZHRzDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02
-NC9ib290L2R0cy9mcmVlc2NhbGUvTWFrZWZpbGUNCj4gPiBiL2FyY2gvYXJtNjQvYm9vdC9kdHMv
-ZnJlZXNjYWxlL01ha2VmaWxlDQo+ID4gaW5kZXggODZlMThhZC4uNDQ1YjcyYiAxMDA2NDQNCj4g
-PiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9NYWtlZmlsZQ0KPiA+ICsrKyBi
-L2FyY2gvYXJtNjQvYm9vdC9kdHMvZnJlZXNjYWxlL01ha2VmaWxlDQo+ID4gQEAgLTEzLDMgKzEz
-LDQgQEAgZHRiLSQoQ09ORklHX0FSQ0hfTEFZRVJTQ0FQRSkgKz0gZnNsLWxzMjA4MGEtDQo+IHJk
-Yi5kdGINCj4gPiAgZHRiLSQoQ09ORklHX0FSQ0hfTEFZRVJTQ0FQRSkgKz0gZnNsLWxzMjA4MGEt
-c2ltdS5kdGINCj4gPiAgZHRiLSQoQ09ORklHX0FSQ0hfTEFZRVJTQ0FQRSkgKz0gZnNsLWxzMjA4
-OGEtcWRzLmR0Yg0KPiA+ICBkdGItJChDT05GSUdfQVJDSF9MQVlFUlNDQVBFKSArPSBmc2wtbHMy
-MDg4YS1yZGIuZHRiDQo+ID4gK2R0Yi0kKENPTkZJR19BUkNIX0xBWUVSU0NBUEUpICs9IGZzbC1s
-eDIxNjBhLXJkYi5kdGINCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9mcmVl
-c2NhbGUvZnNsLWx4MjE2MGEtcmRiLmR0cw0KPiA+IGIvYXJjaC9hcm02NC9ib290L2R0cy9mcmVl
-c2NhbGUvZnNsLWx4MjE2MGEtcmRiLmR0cw0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4g
-aW5kZXggMDAwMDAwMC4uNzBmYWQyMA0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9hcmNo
-L2FybTY0L2Jvb3QvZHRzL2ZyZWVzY2FsZS9mc2wtbHgyMTYwYS1yZGIuZHRzDQo+ID4gQEAgLTAs
-MCArMSw5NSBAQA0KPiA+ICsvLyBTUERYLUxpY2Vuc2UtSWRlbnRpZmllcjogKEdQTC0yLjAgT1Ig
-TUlUKSAvLyAvLyBEZXZpY2UgVHJlZSBmaWxlDQo+ID4gK2ZvciBMWDIxNjBBUkRCIC8vIC8vIENv
-cHlyaWdodCAyMDE4IE5YUA0KPiA+ICsNCj4gPiArL2R0cy12MS87DQo+ID4gKw0KPiA+ICsjaW5j
-bHVkZSAiZnNsLWx4MjE2MGEuZHRzaSINCj4gPiArDQo+ID4gKy8gew0KPiA+ICsgICAgICAgbW9k
-ZWwgPSAiTlhQIExheWVyc2NhcGUgTFgyMTYwQVJEQiI7DQo+ID4gKyAgICAgICBjb21wYXRpYmxl
-ID0gImZzbCxseDIxNjBhLXJkYiIsICJmc2wsbHgyMTYwYSI7DQo+ID4gKw0KPiA+ICsgICAgICAg
-YWxpYXNlcyB7DQo+ID4gKyAgICAgICAgICAgICAgIGNyeXB0byA9ICZjcnlwdG87DQo+IA0KPiBE
-cm9wIHRoaXMuIEFsaWFzZXMgc2hvdWxkIGJlIG51bWJlcmVkLCBhbmQgdGhpcyBpcyBub3QgYSBz
-dGFuZGFyZCBhbGlhcyBuYW1lDQo+IGVpdGhlci4NCk9rDQo+IA0KPiA+ICsgICAgICAgICAgICAg
-ICBzZXJpYWwwID0gJnVhcnQwOw0KPiA+ICsgICAgICAgICAgICAgICBzZXJpYWwxID0gJnVhcnQx
-Ow0KPiA+ICsgICAgICAgICAgICAgICBzZXJpYWwyID0gJnVhcnQyOw0KPiA+ICsgICAgICAgICAg
-ICAgICBzZXJpYWwzID0gJnVhcnQzOw0KPiA+ICsgICAgICAgfTsNCj4gPiArICAgICAgIGNob3Nl
-biB7DQo+ID4gKyAgICAgICAgICAgICAgIHN0ZG91dC1wYXRoID0gInNlcmlhbDA6MTE1MjAwbjgi
-Ow0KPiA+ICsgICAgICAgfTsNCj4gPiArfTsNCj4gPiArDQo+ID4gKyZ1YXJ0MCB7DQo+ID4gKyAg
-ICAgICBzdGF0dXMgPSAib2theSI7DQo+ID4gK307DQo+ID4gKw0KPiA+ICsmdWFydDEgew0KPiA+
-ICsgICAgICAgc3RhdHVzID0gIm9rYXkiOw0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArJmkyYzAgew0K
-PiA+ICsgICAgICAgc3RhdHVzID0gIm9rYXkiOw0KPiA+ICsgICAgICAgcGNhOTU0N0A3NyB7DQo+
-IA0KPiBpMmMtbXV4QDc3DQpTdXJlDQo+IA0KPiA+ICsgICAgICAgICAgICAgICBjb21wYXRpYmxl
-ID0gIm54cCxwY2E5NTQ3IjsNCj4gPiArICAgICAgICAgICAgICAgcmVnID0gPDB4Nzc+Ow0KPiA+
-ICsgICAgICAgICAgICAgICAjYWRkcmVzcy1jZWxscyA9IDwxPjsNCj4gPiArICAgICAgICAgICAg
-ICAgI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gKw0KPiA+ICsgICAgICAgICAgICAgICBpMmNAMiB7
-DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8MT47DQo+ID4g
-KyAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8MD47DQo+ID4gKyAgICAgICAg
-ICAgICAgICAgICAgICAgcmVnID0gPDB4Mj47DQo+ID4gKw0KPiA+ICsgICAgICAgICAgICAgICAg
-ICAgICAgIGluYTIyMEA0MCB7DQpwb3dlci1zZW5zb3JANDANCj4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAidGksaW5hMjIwIjsNCj4gPiArICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDQwPjsNCj4gPiArICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHNodW50LXJlc2lzdG9yID0gPDEwMDA+Ow0KPiA+ICsgICAgICAgICAg
-ICAgICAgICAgICAgIH07DQo+ID4gKyAgICAgICAgICAgICAgIH07DQo+ID4gKw0KPiA+ICsgICAg
-ICAgICAgICAgICBpMmNAMyB7DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgI2FkZHJlc3Mt
-Y2VsbHMgPSA8MT47DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8
-MD47DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgcmVnID0gPDB4Mz47DQo+ID4gKw0KPiA+
-ICsgICAgICAgICAgICAgICAgICAgICAgIHNhNTYwMDRANGMgew0KPiANCj4gdGVtcGVyYXR1cmUt
-c2Vuc29yQDRjDQpPaywgdGVtcGVyYXR1cmUtc2Vuc29yLTFANGMNCj4gDQo+ID4gKyAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxzYTU2MDA0IjsNCj4gPiAr
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDRjPjsNCj4gPiArICAgICAg
-ICAgICAgICAgICAgICAgICB9Ow0KPiA+ICsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBz
-YTU2MDA0QDRkIHsNCk9rLHRlbXBlcmF0dXJlLXNlbnNvci0yQDRkDQo+ID4gKyAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gIm54cCxzYTU2MDA0IjsNCj4gPiArICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwweDRkPjsNCj4gPiArICAgICAgICAg
-ICAgICAgICAgICAgICB9Ow0KPiA+ICsgICAgICAgICAgICAgICB9Ow0KPiA+ICsgICAgICAgfTsN
-Cj4gPiArfTsNCj4gPiArDQo+ID4gKyZpMmM0IHsNCj4gPiArICAgICAgIHN0YXR1cyA9ICJva2F5
-IjsNCj4gPiArDQo+ID4gKyAgICAgICBydGNANTEgew0KPiA+ICsgICAgICAgICAgICAgICBjb21w
-YXRpYmxlID0gIm54cCxwY2YyMTI5IjsNCj4gPiArICAgICAgICAgICAgICAgcmVnID0gPDB4NTE+
-Ow0KPiA+ICsgICAgICAgICAgICAgICAvLyBJUlExMF9CDQo+ID4gKyAgICAgICAgICAgICAgIGlu
-dGVycnVwdHMgPSA8MCAxNTAgMHg0PjsNCj4gPiArICAgICAgICAgICAgICAgfTsNCj4gPiArDQo+
-ID4gK307DQo+ID4gKw0KPiA+ICsmdXNiMCB7DQo+ID4gKyAgICAgICBzdGF0dXMgPSAib2theSI7
-DQo+ID4gK307DQo+ID4gKw0KPiA+ICsmdXNiMSB7DQo+ID4gKyAgICAgICBzdGF0dXMgPSAib2th
-eSI7DQo+ID4gK307DQo+ID4gKw0KPiA+ICsmY3J5cHRvIHsNCj4gPiArICAgICAgIHN0YXR1cyA9
-ICJva2F5IjsNCj4gPiArfTsNCj4gPiAtLQ0KPiA+IDIuNy40DQo+ID4NCg==
+On 2018-08-22 21:04, Marcelo Henrique Cerri wrote:
+> That looks good to me. Maybe Paulo can help testing it.
+> 
+> --
+> Regards,
+> Marcelo
+> 
+> On Wed, Aug 22, 2018 at 08:26:31AM +0200, Ondrej Mosnacek wrote:
+>> This patch fixes sleep-in-atomic bugs in AES-CBC and AES-XTS VMX
+>> implementations. The problem is that the blkcipher_* functions should
+>> not be called in atomic context.
+>> 
+>> The bugs can be reproduced via the AF_ALG interface by trying to
+>> encrypt/decrypt sufficiently large buffers (at least 64 KiB) using the
+>> VMX implementations of 'cbc(aes)' or 'xts(aes)'. Such operations then
+>> trigger BUG in crypto_yield():
+>> 
+>> [  891.863680] BUG: sleeping function called from invalid context at 
+>> include/crypto/algapi.h:424
+>> [  891.864622] in_atomic(): 1, irqs_disabled(): 0, pid: 12347, name: 
+>> kcapi-enc
+>> [  891.864739] 1 lock held by kcapi-enc/12347:
+>> [  891.864811]  #0: 00000000f5d42c46 (sk_lock-AF_ALG){+.+.}, at: 
+>> skcipher_recvmsg+0x50/0x530
+>> [  891.865076] CPU: 5 PID: 12347 Comm: kcapi-enc Not tainted 
+>> 4.19.0-0.rc0.git3.1.fc30.ppc64le #1
+>> [  891.865251] Call Trace:
+>> [  891.865340] [c0000003387578c0] [c000000000d67ea4] 
+>> dump_stack+0xe8/0x164 (unreliable)
+>> [  891.865511] [c000000338757910] [c000000000172a58] 
+>> ___might_sleep+0x2f8/0x310
+>> [  891.865679] [c000000338757990] [c0000000006bff74] 
+>> blkcipher_walk_done+0x374/0x4a0
+>> [  891.865825] [c0000003387579e0] [d000000007e73e70] 
+>> p8_aes_cbc_encrypt+0x1c8/0x260 [vmx_crypto]
+>> [  891.865993] [c000000338757ad0] [c0000000006c0ee0] 
+>> skcipher_encrypt_blkcipher+0x60/0x80
+>> [  891.866128] [c000000338757b10] [c0000000006ec504] 
+>> skcipher_recvmsg+0x424/0x530
+>> [  891.866283] [c000000338757bd0] [c000000000b00654] 
+>> sock_recvmsg+0x74/0xa0
+>> [  891.866403] [c000000338757c10] [c000000000b00f64] 
+>> ___sys_recvmsg+0xf4/0x2f0
+>> [  891.866515] [c000000338757d90] [c000000000b02bb8] 
+>> __sys_recvmsg+0x68/0xe0
+>> [  891.866631] [c000000338757e30] [c00000000000bbe4] 
+>> system_call+0x5c/0x70
+>> 
+>> Fixes: 8c755ace357c ("crypto: vmx - Adding CBC routines for VMX 
+>> module")
+>> Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+>> ---
+>> Still untested, please test and review if possible.
+>> 
+>> Changes in v2:
+>> - fix leaving preemtption, etc. disabled when leaving the function
+>>   (I switched to the more obvious and less efficient variant for the
+>>   sake of clarity.)
+>> 
+>>  drivers/crypto/vmx/aes_cbc.c | 30 ++++++++++++++----------------
+>>  drivers/crypto/vmx/aes_xts.c | 21 ++++++++++++++-------
+>>  2 files changed, 28 insertions(+), 23 deletions(-)
+>> 
+>> diff --git a/drivers/crypto/vmx/aes_cbc.c 
+>> b/drivers/crypto/vmx/aes_cbc.c
+>> index 5285ece4f33a..b71895871be3 100644
+>> --- a/drivers/crypto/vmx/aes_cbc.c
+>> +++ b/drivers/crypto/vmx/aes_cbc.c
+>> @@ -107,24 +107,23 @@ static int p8_aes_cbc_encrypt(struct 
+>> blkcipher_desc *desc,
+>>  		ret = crypto_skcipher_encrypt(req);
+>>  		skcipher_request_zero(req);
+>>  	} else {
+>> -		preempt_disable();
+>> -		pagefault_disable();
+>> -		enable_kernel_vsx();
+>> -
+>>  		blkcipher_walk_init(&walk, dst, src, nbytes);
+>>  		ret = blkcipher_walk_virt(desc, &walk);
+>>  		while ((nbytes = walk.nbytes)) {
+>> +			preempt_disable();
+>> +			pagefault_disable();
+>> +			enable_kernel_vsx();
+>>  			aes_p8_cbc_encrypt(walk.src.virt.addr,
+>>  					   walk.dst.virt.addr,
+>>  					   nbytes & AES_BLOCK_MASK,
+>>  					   &ctx->enc_key, walk.iv, 1);
+>> +			disable_kernel_vsx();
+>> +			pagefault_enable();
+>> +			preempt_enable();
+>> +
+>>  			nbytes &= AES_BLOCK_SIZE - 1;
+>>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
+>>  		}
+>> -
+>> -		disable_kernel_vsx();
+>> -		pagefault_enable();
+>> -		preempt_enable();
+>>  	}
+>> 
+>>  	return ret;
+>> @@ -147,24 +146,23 @@ static int p8_aes_cbc_decrypt(struct 
+>> blkcipher_desc *desc,
+>>  		ret = crypto_skcipher_decrypt(req);
+>>  		skcipher_request_zero(req);
+>>  	} else {
+>> -		preempt_disable();
+>> -		pagefault_disable();
+>> -		enable_kernel_vsx();
+>> -
+>>  		blkcipher_walk_init(&walk, dst, src, nbytes);
+>>  		ret = blkcipher_walk_virt(desc, &walk);
+>>  		while ((nbytes = walk.nbytes)) {
+>> +			preempt_disable();
+>> +			pagefault_disable();
+>> +			enable_kernel_vsx();
+>>  			aes_p8_cbc_encrypt(walk.src.virt.addr,
+>>  					   walk.dst.virt.addr,
+>>  					   nbytes & AES_BLOCK_MASK,
+>>  					   &ctx->dec_key, walk.iv, 0);
+>> +			disable_kernel_vsx();
+>> +			pagefault_enable();
+>> +			preempt_enable();
+>> +
+>>  			nbytes &= AES_BLOCK_SIZE - 1;
+>>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
+>>  		}
+>> -
+>> -		disable_kernel_vsx();
+>> -		pagefault_enable();
+>> -		preempt_enable();
+>>  	}
+>> 
+>>  	return ret;
+>> diff --git a/drivers/crypto/vmx/aes_xts.c 
+>> b/drivers/crypto/vmx/aes_xts.c
+>> index 8bd9aff0f55f..e9954a7d4694 100644
+>> --- a/drivers/crypto/vmx/aes_xts.c
+>> +++ b/drivers/crypto/vmx/aes_xts.c
+>> @@ -116,32 +116,39 @@ static int p8_aes_xts_crypt(struct 
+>> blkcipher_desc *desc,
+>>  		ret = enc? crypto_skcipher_encrypt(req) : 
+>> crypto_skcipher_decrypt(req);
+>>  		skcipher_request_zero(req);
+>>  	} else {
+>> +		blkcipher_walk_init(&walk, dst, src, nbytes);
+>> +
+>> +		ret = blkcipher_walk_virt(desc, &walk);
+>> +
+>>  		preempt_disable();
+>>  		pagefault_disable();
+>>  		enable_kernel_vsx();
+>> 
+>> -		blkcipher_walk_init(&walk, dst, src, nbytes);
+>> -
+>> -		ret = blkcipher_walk_virt(desc, &walk);
+>>  		iv = walk.iv;
+>>  		memset(tweak, 0, AES_BLOCK_SIZE);
+>>  		aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
+>> 
+>> +		disable_kernel_vsx();
+>> +		pagefault_enable();
+>> +		preempt_enable();
+>> +
+>>  		while ((nbytes = walk.nbytes)) {
+>> +			preempt_disable();
+>> +			pagefault_disable();
+>> +			enable_kernel_vsx();
+>>  			if (enc)
+>>  				aes_p8_xts_encrypt(walk.src.virt.addr, walk.dst.virt.addr,
+>>  						nbytes & AES_BLOCK_MASK, &ctx->enc_key, NULL, tweak);
+>>  			else
+>>  				aes_p8_xts_decrypt(walk.src.virt.addr, walk.dst.virt.addr,
+>>  						nbytes & AES_BLOCK_MASK, &ctx->dec_key, NULL, tweak);
+>> +			disable_kernel_vsx();
+>> +			pagefault_enable();
+>> +			preempt_enable();
+>> 
+>>  			nbytes &= AES_BLOCK_SIZE - 1;
+>>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
+>>  		}
+>> -
+>> -		disable_kernel_vsx();
+>> -		pagefault_enable();
+>> -		preempt_enable();
+>>  	}
+>>  	return ret;
+>>  }
+>> --
+>> 2.17.1
+>> 
+
+Sure thing. I'll test it later today. Thanks Ondrej for the fix.
+
+-- 
+Paulo Flabiano Smorigo
+IBM Linux Technology Center
