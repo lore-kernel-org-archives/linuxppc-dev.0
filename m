@@ -1,42 +1,29 @@
-Return-Path: <srs0=gqm2=lg=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wsZD2l0LzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 14:56:20 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41wsZD1xwnz8wKk
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 14:56:20 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41wsZC535Hz9s4v
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 14:56:19 +1000 (AEST)
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7N4nKo1007411
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 00:56:17 -0400
-Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m1hc6sdk2-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 00:56:17 -0400
-Received: from localhost
- by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Thu, 23 Aug 2018 05:56:16 +0100
-Subject: [PATCH v2] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>, Nicholas Piggin <npiggin@gmail.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Nicholas Piggin <npiggin@gmail.com>
-Date: Thu, 23 Aug 2018 10:26:08 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wt8929d7zF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 15:22:16 +1000 (AEST)
+Date: Thu, 23 Aug 2018 07:24:03 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Hellwig <hch@lst.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Robin Murphy <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 01/20] kernel/dma/direct: take DMA offset into account
+ in dma_direct_supported
+Message-ID: <20180823052403.GA14388@lst.de>
+References: <20180730163824.10064-1-hch@lst.de>
+ <20180730163824.10064-2-hch@lst.de>
+ <74068e4d2135ecad8645048ed97b1114891ccace.camel@kernel.crashing.org>
+ <20180822065359.GB19284@lst.de>
+ <079a961eaf548644250719df83930d3d72e34cac.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <153500011126.9482.8367068862900987587.stgit@jupiter.in.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <079a961eaf548644250719df83930d3d72e34cac.camel@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,37 +33,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, Aug 23, 2018 at 09:59:18AM +1000, Benjamin Herrenschmidt wrote:
+> > Yeah, the other platforms that support these devices support ZONE_DMA
+> > to reliably handle these devices. But there is two other ways the
+> > current code would actually handle these fine despite the dma_direct
+> > checks:
+> > 
+> >  1) if the device only has physical addresses up to 31-bit anyway
+> >  2) by trying again to find a lower address.  But this only works
+> >     for coherent allocations and not streaming maps (unless we have
+> >     swiotlb with a buffer below 31-bits).
+> > 
+> > It seems powerpc can have ZONE_DMA, though and we will cover these
+> > devices just fine.  If it didn't have that the current powerpc
+> > code would not work either.
+> 
+> Not exactly. powerpc has ZONE_DMA covering all of system memory.
+> 
+> What happens in ppc32 is that we somewhat "know" that none of the
+> systems with those stupid 31-bit limited pieces of HW is capable of
+> having more than 2GB of memory anyway.
+> 
+> So we get away with just returning "1".
 
-With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
-during MCE recovery path.), the SLB error recovery is broken. The new
-change now does not add index value to RB[52-63] that selects the SLB
-entry while rebolting, instead it assumes that the shadow save area
-already have index embeded correctly in esid field. While all valid bolted
-save areas do contain index value set correctly, there is a case where
-3rd (KSTACK_INDEX) entry for kernel stack does not embed index for NULL
-esid entry. This patch fixes that.
+I think I can up with a proper way of handling that by checking
+the actual amount of physical memory present instead of the hard coded
+32-bit.
 
-Without this patch the SLB rebolt code overwirtes the 1st entry of kernel
-linear mapping and causes SLB recovery to fail.
+> > If your PCI bridge / PCIe root port doesn't support dma to addresses
+> > larger than 32-bit the device capabilities above that don't matter, it
+> > just won't work.  We have this case at least for some old VIA x86 chipsets
+> > and some relatively modern Xilinx FPGAs with PCIe.
+> 
+> Hrm... that's the usual confusion dma_capable() vs. dma_set_mask().
+> 
+> It's always been perfectly fine for a driver to do a dma_set_mask(64-
+> bit) on a system where the bridge can only do 32-bits ...
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
----
- arch/powerpc/mm/slb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+No, it hasn't.  That's why we have this pattern of trying a 64-bit
+mask first and then setting a 32-bit mask if that fails all over
+drivers/.  However with all the work we've done over the last month
+we are getting really close to a world where:
 
-diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
-index 0b095fa54049..9f574e59d178 100644
---- a/arch/powerpc/mm/slb.c
-+++ b/arch/powerpc/mm/slb.c
-@@ -70,7 +70,7 @@ static inline void slb_shadow_update(unsigned long ea, int ssize,
- 
- static inline void slb_shadow_clear(enum slb_index index)
- {
--	WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
-+	WRITE_ONCE(get_slb_shadow()->save_area[index].esid, cpu_to_be64(index));
- }
- 
- static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+ - the driver just does one dma_set_mask for the capabilities and
+   stores that in the dma_mask
+ - other limitations go elsewhere and will be automatically taken
+   into account.
+
+Which is I guess what you always wanted, but which wasn't how things
+actually worked before.
+
+> We shouldn't fail there, we should instead "clamp" the mask to 32-bit,
+> see what I mean ? It doesn't matter that the device itself is capable
+> of issuing >32 addresses, I agree, but what we need to express is that
+> the combination device+bridge doesn't want addresses above 32-bit, so
+> it's equivalent to making the device do a set_mask(32-bit).
+
+As said, we'll get there (but with the new separate bus_dma_mask in 4.19),
+but this is not how things currently work.
+
+> > Your observation is right, but there always has been the implicit
+> > assumption that architectures with more than 4GB of physical address
+> > space must either support and iommu or swiotlb and use that.  It's
+> > never been document anywhere, but I'm working on integrating all
+> > this code to make more sense.
+> 
+> Well, iommus can have bypass regions, which we also use for
+> performance, so we do at dma_set_mask() time "swap" the ops around, and
+> in that case, we do want to check the mask against the actual top of
+> memory...
+
+That is a bit of a powerpc special case (we also had one other arch
+doing that, but it got removed in the great purge, can't rember which
+one right now).  Everyone else has one set of ops, and they just switch
+to the direct mapping inside the iommu ops.
