@@ -1,33 +1,28 @@
-Return-Path: <leitao@debian.org>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Grant.Likely@arm.com>
+Received: from EUR04-HE1-obe.outbound.protection.outlook.com
+ (mail-eopbgr70081.outbound.protection.outlook.com [40.107.7.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xLCZ1WxMzDqKl
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 09:26:49 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7NNNl3j142104
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 19:26:47 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m263092k9-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 19:26:47 -0400
-Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <leitao@debian.org>;
- Thu, 23 Aug 2018 17:26:46 -0600
-From: Breno Leitao <leitao@debian.org>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: mpe@ellerman.id.au, clg@kaod.org, Breno Leitao <leitao@debian.org>
-Subject: [PATCH v2] powerpc/xive: Avoid unitialized variable
-Date: Thu, 23 Aug 2018 20:26:39 -0300
-In-Reply-To: <3b8841ac-ebbb-523e-0d65-ebe27a702d3c@kaod.org>
-References: <3b8841ac-ebbb-523e-0d65-ebe27a702d3c@kaod.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wz2k6ymZzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 19:02:48 +1000 (AEST)
+Subject: Re: DT case sensitivity
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Rob Herring <robh@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Michael Ellerman <mpe@ellerman.id.au>, Kumar Gala <kumar.gala@linaro.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Frank Rowand <frowand.list@gmail.com>, devicetree-spec@vger.kernel.org,
+ devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
+ <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
+ <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
+ <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
+From: Grant Likely <grant.likely@arm.com>
+Message-ID: <13bf5b39-0461-351e-57e3-60264eaa374d@arm.com>
+Date: Thu, 23 Aug 2018 10:02:38 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=y
-Message-Id: <1535066799-8493-1-git-send-email-leitao@debian.org>
+In-Reply-To: <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Breno Leitao <breno.leitao@gmail.com>
+On 23/08/2018 02:29, Benjamin Herrenschmidt wrote:
+> On Wed, 2018-08-22 at 20:26 -0500, Rob Herring wrote:
+>> On Wed, Aug 22, 2018 at 8:14 PM Benjamin Herrenschmidt
+>> <benh@kernel.crashing.org> wrote:
+>>>
+>>> On Wed, 2018-08-22 at 19:47 -0500, Rob Herring wrote:
+>>>> The default DT string handling in the kernel is node names and
+>>>> compatibles are case insensitive and property names are case sensitive
+>>>> (Sparc is the the only variation and is opposite). It seems only PPC
+>>>> (and perhaps only Power Macs?) needs to support case insensitive
+>>>> comparisons. It was probably a mistake to follow PPC for new arches
+>>>> and we should have made everything case sensitive from the start. So I
+>>>> have a few questions for the DT historians. :)
+>>>
+>>> Open Firmware itself is insensitive.
+>>
+>> Doesn't it depend on the implementation? Otherwise, how is Sparc differe=
+nt?
+>
+> Not sure ... Forth itself is insensitive for words but maybe not for
+> string comparisons.
 
-Function xive_native_get_ipi() might uses chip_id without it being
-initialized.
+What problem are you trying to solve? I would think making everything
+case insensitive would be the direction to go if you do anything. Least
+possibility of breaking existing platforms in that scenario.
 
-This gives the following error on 'smatch' tool:
+g.
 
-	error: uninitialized symbol 'chip_id'
+>
+>>
+>>>> What PPC systems are case insensitive? Can we limit that to certain sy=
+stems?
+>>>
+>>> All PowerMacs at least, the problem is that I don't have DT images or
+>>> access to all the historical systems (and yes some people occasionally
+>>> still use them) to properly test a change in that area.
+>>
+>> I'm temped to break them so I can find folks to provide me with DT dumps=
+. :)
+>
+> I have a collection of DT dumps but I'm not sure about the legality of
+> publishing them...
+>
+> Cheers,
+> Ben.
+>
+>
 
-The suggestion is using xc->chip_id instead of consulting the OF for chip id,
-which is safe since xive_prepare_cpu() should have initialized ->chip_id by
-the time xive_native_get_ipi() is called.
-
-CC: Cédric Le Goater <clg@kaod.org>
-Signed-off-by: Breno Leitao <leitao@debian.org>
----
- arch/powerpc/sysdev/xive/native.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-index 311185b9960a..bd90fd464a3a 100644
---- a/arch/powerpc/sysdev/xive/native.c
-+++ b/arch/powerpc/sysdev/xive/native.c
-@@ -238,20 +238,11 @@ static bool xive_native_match(struct device_node *node)
- #ifdef CONFIG_SMP
- static int xive_native_get_ipi(unsigned int cpu, struct xive_cpu *xc)
- {
--	struct device_node *np;
--	unsigned int chip_id;
- 	s64 irq;
- 
--	/* Find the chip ID */
--	np = of_get_cpu_node(cpu, NULL);
--	if (np) {
--		if (of_property_read_u32(np, "ibm,chip-id", &chip_id) < 0)
--			chip_id = 0;
--	}
--
- 	/* Allocate an IPI and populate info about it */
- 	for (;;) {
--		irq = opal_xive_allocate_irq(chip_id);
-+		irq = opal_xive_allocate_irq(xc->chip_id);
- 		if (irq == OPAL_BUSY) {
- 			msleep(1);
- 			continue;
--- 
-2.17.1
+IMPORTANT NOTICE: The contents of this email and any attachments are confid=
+ential and may also be privileged. If you are not the intended recipient, p=
+lease notify the sender immediately and do not disclose the contents to any=
+ other person, use it for any purpose, or store or copy the information in =
+any medium. Thank you.
