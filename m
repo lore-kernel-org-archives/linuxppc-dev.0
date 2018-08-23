@@ -1,42 +1,16 @@
-Return-Path: <pfsmorigo@linux.vnet.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xGDK318lzDqBy
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 06:27:06 +1000 (AEST)
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
- by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7NKNqAh011485
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 16:27:04 -0400
-Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
- by mx0b-001b2d01.pphosted.com with ESMTP id 2m22j63mqv-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 16:27:04 -0400
-Received: from localhost
- by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pfsmorigo@linux.vnet.ibm.com>;
- Thu, 23 Aug 2018 16:27:03 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Date: Thu, 23 Aug 2018 17:34:27 -0300
-From: Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>
-To: Marcelo Henrique Cerri <marcelo.cerri@canonical.com>
-Cc: Ondrej Mosnacek <omosnace@redhat.com>, Herbert Xu
- <herbert@gondor.apana.org.au>,
- linux-crypto@vger.kernel.org, Stephan Mueller <smueller@chronox.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- "Leonidas S . Barbosa" <leo.barbosa@canonical.com>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2] crypto: vmx - Fix sleep-in-atomic bugs
-In-Reply-To: <20180823000446.GA26297@gallifrey>
-References: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
- <20180822062631.5664-1-omosnace@redhat.com>
- <20180823000446.GA26297@gallifrey>
-Message-Id: <11128af3ef7474136485261b5d53b679@linux.vnet.ibm.com>
+Return-Path: <alexandre.belloni@bootlin.com>
+Received: from mail.bootlin.com (mail.bootlin.com [62.4.15.54])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41xHlz00QyzDq5k
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 07:36:10 +1000 (AEST)
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+To: Li Yang <leoyang.li@nxp.com>
+Cc: Roy Pledge <roy.pledge@nxp.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Alexandre Belloni <alexandre.belloni@bootlin.com>
+Subject: [PATCH 1/2] soc: fsl: qbman: qman_portal: defer probing when qman is
+ not available
+Date: Thu, 23 Aug 2018 23:35:59 +0200
+Message-Id: <20180823213600.23426-1-alexandre.belloni@bootlin.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,202 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2018-08-22 21:04, Marcelo Henrique Cerri wrote:
-> That looks good to me. Maybe Paulo can help testing it.
-> 
-> --
-> Regards,
-> Marcelo
-> 
-> On Wed, Aug 22, 2018 at 08:26:31AM +0200, Ondrej Mosnacek wrote:
->> This patch fixes sleep-in-atomic bugs in AES-CBC and AES-XTS VMX
->> implementations. The problem is that the blkcipher_* functions should
->> not be called in atomic context.
->> 
->> The bugs can be reproduced via the AF_ALG interface by trying to
->> encrypt/decrypt sufficiently large buffers (at least 64 KiB) using the
->> VMX implementations of 'cbc(aes)' or 'xts(aes)'. Such operations then
->> trigger BUG in crypto_yield():
->> 
->> [  891.863680] BUG: sleeping function called from invalid context at 
->> include/crypto/algapi.h:424
->> [  891.864622] in_atomic(): 1, irqs_disabled(): 0, pid: 12347, name: 
->> kcapi-enc
->> [  891.864739] 1 lock held by kcapi-enc/12347:
->> [  891.864811]  #0: 00000000f5d42c46 (sk_lock-AF_ALG){+.+.}, at: 
->> skcipher_recvmsg+0x50/0x530
->> [  891.865076] CPU: 5 PID: 12347 Comm: kcapi-enc Not tainted 
->> 4.19.0-0.rc0.git3.1.fc30.ppc64le #1
->> [  891.865251] Call Trace:
->> [  891.865340] [c0000003387578c0] [c000000000d67ea4] 
->> dump_stack+0xe8/0x164 (unreliable)
->> [  891.865511] [c000000338757910] [c000000000172a58] 
->> ___might_sleep+0x2f8/0x310
->> [  891.865679] [c000000338757990] [c0000000006bff74] 
->> blkcipher_walk_done+0x374/0x4a0
->> [  891.865825] [c0000003387579e0] [d000000007e73e70] 
->> p8_aes_cbc_encrypt+0x1c8/0x260 [vmx_crypto]
->> [  891.865993] [c000000338757ad0] [c0000000006c0ee0] 
->> skcipher_encrypt_blkcipher+0x60/0x80
->> [  891.866128] [c000000338757b10] [c0000000006ec504] 
->> skcipher_recvmsg+0x424/0x530
->> [  891.866283] [c000000338757bd0] [c000000000b00654] 
->> sock_recvmsg+0x74/0xa0
->> [  891.866403] [c000000338757c10] [c000000000b00f64] 
->> ___sys_recvmsg+0xf4/0x2f0
->> [  891.866515] [c000000338757d90] [c000000000b02bb8] 
->> __sys_recvmsg+0x68/0xe0
->> [  891.866631] [c000000338757e30] [c00000000000bbe4] 
->> system_call+0x5c/0x70
->> 
->> Fixes: 8c755ace357c ("crypto: vmx - Adding CBC routines for VMX 
->> module")
->> Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
->> Cc: stable@vger.kernel.org
->> Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
->> ---
->> Still untested, please test and review if possible.
->> 
->> Changes in v2:
->> - fix leaving preemtption, etc. disabled when leaving the function
->>   (I switched to the more obvious and less efficient variant for the
->>   sake of clarity.)
->> 
->>  drivers/crypto/vmx/aes_cbc.c | 30 ++++++++++++++----------------
->>  drivers/crypto/vmx/aes_xts.c | 21 ++++++++++++++-------
->>  2 files changed, 28 insertions(+), 23 deletions(-)
->> 
->> diff --git a/drivers/crypto/vmx/aes_cbc.c 
->> b/drivers/crypto/vmx/aes_cbc.c
->> index 5285ece4f33a..b71895871be3 100644
->> --- a/drivers/crypto/vmx/aes_cbc.c
->> +++ b/drivers/crypto/vmx/aes_cbc.c
->> @@ -107,24 +107,23 @@ static int p8_aes_cbc_encrypt(struct 
->> blkcipher_desc *desc,
->>  		ret = crypto_skcipher_encrypt(req);
->>  		skcipher_request_zero(req);
->>  	} else {
->> -		preempt_disable();
->> -		pagefault_disable();
->> -		enable_kernel_vsx();
->> -
->>  		blkcipher_walk_init(&walk, dst, src, nbytes);
->>  		ret = blkcipher_walk_virt(desc, &walk);
->>  		while ((nbytes = walk.nbytes)) {
->> +			preempt_disable();
->> +			pagefault_disable();
->> +			enable_kernel_vsx();
->>  			aes_p8_cbc_encrypt(walk.src.virt.addr,
->>  					   walk.dst.virt.addr,
->>  					   nbytes & AES_BLOCK_MASK,
->>  					   &ctx->enc_key, walk.iv, 1);
->> +			disable_kernel_vsx();
->> +			pagefault_enable();
->> +			preempt_enable();
->> +
->>  			nbytes &= AES_BLOCK_SIZE - 1;
->>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
->>  		}
->> -
->> -		disable_kernel_vsx();
->> -		pagefault_enable();
->> -		preempt_enable();
->>  	}
->> 
->>  	return ret;
->> @@ -147,24 +146,23 @@ static int p8_aes_cbc_decrypt(struct 
->> blkcipher_desc *desc,
->>  		ret = crypto_skcipher_decrypt(req);
->>  		skcipher_request_zero(req);
->>  	} else {
->> -		preempt_disable();
->> -		pagefault_disable();
->> -		enable_kernel_vsx();
->> -
->>  		blkcipher_walk_init(&walk, dst, src, nbytes);
->>  		ret = blkcipher_walk_virt(desc, &walk);
->>  		while ((nbytes = walk.nbytes)) {
->> +			preempt_disable();
->> +			pagefault_disable();
->> +			enable_kernel_vsx();
->>  			aes_p8_cbc_encrypt(walk.src.virt.addr,
->>  					   walk.dst.virt.addr,
->>  					   nbytes & AES_BLOCK_MASK,
->>  					   &ctx->dec_key, walk.iv, 0);
->> +			disable_kernel_vsx();
->> +			pagefault_enable();
->> +			preempt_enable();
->> +
->>  			nbytes &= AES_BLOCK_SIZE - 1;
->>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
->>  		}
->> -
->> -		disable_kernel_vsx();
->> -		pagefault_enable();
->> -		preempt_enable();
->>  	}
->> 
->>  	return ret;
->> diff --git a/drivers/crypto/vmx/aes_xts.c 
->> b/drivers/crypto/vmx/aes_xts.c
->> index 8bd9aff0f55f..e9954a7d4694 100644
->> --- a/drivers/crypto/vmx/aes_xts.c
->> +++ b/drivers/crypto/vmx/aes_xts.c
->> @@ -116,32 +116,39 @@ static int p8_aes_xts_crypt(struct 
->> blkcipher_desc *desc,
->>  		ret = enc? crypto_skcipher_encrypt(req) : 
->> crypto_skcipher_decrypt(req);
->>  		skcipher_request_zero(req);
->>  	} else {
->> +		blkcipher_walk_init(&walk, dst, src, nbytes);
->> +
->> +		ret = blkcipher_walk_virt(desc, &walk);
->> +
->>  		preempt_disable();
->>  		pagefault_disable();
->>  		enable_kernel_vsx();
->> 
->> -		blkcipher_walk_init(&walk, dst, src, nbytes);
->> -
->> -		ret = blkcipher_walk_virt(desc, &walk);
->>  		iv = walk.iv;
->>  		memset(tweak, 0, AES_BLOCK_SIZE);
->>  		aes_p8_encrypt(iv, tweak, &ctx->tweak_key);
->> 
->> +		disable_kernel_vsx();
->> +		pagefault_enable();
->> +		preempt_enable();
->> +
->>  		while ((nbytes = walk.nbytes)) {
->> +			preempt_disable();
->> +			pagefault_disable();
->> +			enable_kernel_vsx();
->>  			if (enc)
->>  				aes_p8_xts_encrypt(walk.src.virt.addr, walk.dst.virt.addr,
->>  						nbytes & AES_BLOCK_MASK, &ctx->enc_key, NULL, tweak);
->>  			else
->>  				aes_p8_xts_decrypt(walk.src.virt.addr, walk.dst.virt.addr,
->>  						nbytes & AES_BLOCK_MASK, &ctx->dec_key, NULL, tweak);
->> +			disable_kernel_vsx();
->> +			pagefault_enable();
->> +			preempt_enable();
->> 
->>  			nbytes &= AES_BLOCK_SIZE - 1;
->>  			ret = blkcipher_walk_done(desc, &walk, nbytes);
->>  		}
->> -
->> -		disable_kernel_vsx();
->> -		pagefault_enable();
->> -		preempt_enable();
->>  	}
->>  	return ret;
->>  }
->> --
->> 2.17.1
->> 
+If the qman driver (qman_ccsr) doesn't probe or fail to probe before
+qman_portal, qm_ccsr_start will be either NULL or a stale pointer to an
+unmapped page.
 
-Sure thing. I'll test it later today. Thanks Ondrej for the fix.
+This leads to a crash when probing  qman_portal as the init_pcfg function
+calls qman_liodn_fixup that tries to read qman registers.
 
+Assume that qman didn't probe when the pool mask is 0.
+
+Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+---
+ drivers/soc/fsl/qbman/qman_portal.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/soc/fsl/qbman/qman_portal.c b/drivers/soc/fsl/qbman/qman_portal.c
+index a120002b630e..4fc80d2c8feb 100644
+--- a/drivers/soc/fsl/qbman/qman_portal.c
++++ b/drivers/soc/fsl/qbman/qman_portal.c
+@@ -277,6 +277,8 @@ static int qman_portal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pcfg->pools = qm_get_pools_sdqcr();
++	if (pcfg->pools == 0)
++		return -EPROBE_DEFER;
+ 
+ 	spin_lock(&qman_lock);
+ 	cpu = cpumask_next_zero(-1, &portal_cpus);
 -- 
-Paulo Flabiano Smorigo
-IBM Linux Technology Center
+2.18.0
