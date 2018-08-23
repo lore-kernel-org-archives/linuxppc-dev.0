@@ -1,20 +1,30 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <robh@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wlBk46x8zF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 10:09:02 +1000 (AEST)
-Date: Thu, 23 Aug 2018 10:08:58 +1000
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH] KVM: PPC: Book3S: Fix guest DMA when guest partially backed
- by THP pages
-Message-ID: <20180823000858.GA17719@fergus>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wm3W6z9YzF0gv
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 10:47:48 +1000 (AEST)
+Received: from mail-qk0-f171.google.com (mail-qk0-f171.google.com
+ [209.85.220.171])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by mail.kernel.org (Postfix) with ESMTPSA id 94EF620A8B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 00:47:46 +0000 (UTC)
+Received: by mail-qk0-f171.google.com with SMTP id c126-v6so2555716qkd.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 17:47:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 22 Aug 2018 19:47:34 -0500
+Message-ID: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
+Subject: DT case sensitivity
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+ Grant Likely <grant.likely@arm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Kumar Gala <kumar.gala@linaro.org>, David Gibson <david@gibson.dropbear.id.au>,
+ Frank Rowand <frowand.list@gmail.com>, devicetree-spec@vger.kernel.org,
+ devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,110 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 76fa4975f3ed ("KVM: PPC: Check if IOMMU page is contained in the
-pinned physical page", 2018-07-17) added some checks to ensure that guest
-DMA mappings don't attempt to map more than the guest is entitled to
-access.  However, errors in the logic mean that legitimate guest requests
-to map pages for DMA are being denied in some situations.  Specifically,
-if the first page of the range passed to mm_iommu_get() is mapped with
-a normal page, and subsequent pages are mapped with transparent huge
-pages, we end up with mem->pageshift == 0.  That means that the page
-size checks in mm_iommu_ua_to_hpa() and mm_iommu_up_to_hpa_rm() will
-always fail for every page in that region, and thus the guest can never
-map any memory in that region for DMA, typically leading to a flood of
-error messages like this:
+The default DT string handling in the kernel is node names and
+compatibles are case insensitive and property names are case sensitive
+(Sparc is the the only variation and is opposite). It seems only PPC
+(and perhaps only Power Macs?) needs to support case insensitive
+comparisons. It was probably a mistake to follow PPC for new arches
+and we should have made everything case sensitive from the start. So I
+have a few questions for the DT historians. :)
 
-qemu-system-ppc64: VFIO_MAP_DMA: -22
-qemu-system-ppc64: vfio_dma_map(0x10005f47780, 0x800000000000000, 0x10000, 0x7fff63ff0000) = -22 (Invalid argument)
+What PPC systems are case insensitive? Can we limit that to certain systems?
 
-The logic errors in mm_iommu_get() are:
+AFAICT, dtc at least (if not anything FDT based) has always been case
+sensitive at least for node and property names. I'm not sure about
+compatible strings?
 
-(a) use of 'ua' not 'ua + (i << PAGE_SHIFT)' in the find_linux_pte() call
-    (meaning that find_linux_pte() returns the pte for the first address
-    in the range, not the address we are currently up to);
-(b) use of 'pageshift' as the variable to receive the hugepage shift
-    returned by find_linux_pte() - for a normal page this gets set to
-    0, leading to us setting mem->pageshift to 0 when we conclude that
-    the pte returned by find_linux_pte didn't match the page we were
-    looking at;
-(c) comparing 'compshift', which is a page order, i.e. log base 2 of the
-    number of pages, with 'pageshift', which is a log base 2 of the number
-    of bytes.
+Anyone see potential issues with switching all platforms except PPC
+and Sparc to case sensitive comparisons?
 
-To fix these problems, this patch introduces 'cur_ua' to hold the current
-user address and uses that in the find_linux_pte call; introduces
-'pteshift' to hold the hugepage shift found by find_linux_pte(); and
-compares 'pteshift' with 'compshift + PAGE_SHIFT' rather than 'compshift'.
-The patch also moves the local_irq_restore to the point after the pte
-pointer returned by find_linux_pte has been dereferenced because that
-seems safer, and adds a check to avoid doing the find_linux_pte() call
-once mem->pageshift has been reduced to PAGE_SHIFT, as an optimization.
-
-Cc: stable@vger.kernel.org # v4.12+
-Fixes: 76fa4975f3ed ("KVM: PPC: Check if IOMMU page is contained in the
-pinned physical page")
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
----
- arch/powerpc/mm/mmu_context_iommu.c | 17 ++++++++++-------
- 1 file changed, 10 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/mm/mmu_context_iommu.c b/arch/powerpc/mm/mmu_context_iommu.c
-index a4ca57612558..c9ee9e23845f 100644
---- a/arch/powerpc/mm/mmu_context_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_iommu.c
-@@ -129,6 +129,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 	long i, j, ret = 0, locked_entries = 0;
- 	unsigned int pageshift;
- 	unsigned long flags;
-+	unsigned long cur_ua;
- 	struct page *page = NULL;
- 
- 	mutex_lock(&mem_list_mutex);
-@@ -177,7 +178,8 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 	}
- 
- 	for (i = 0; i < entries; ++i) {
--		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
-+		cur_ua = ua + (i << PAGE_SHIFT);
-+		if (1 != get_user_pages_fast(cur_ua,
- 					1/* pages */, 1/* iswrite */, &page)) {
- 			ret = -EFAULT;
- 			for (j = 0; j < i; ++j)
-@@ -196,7 +198,7 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		if (is_migrate_cma_page(page)) {
- 			if (mm_iommu_move_page_from_cma(page))
- 				goto populate;
--			if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
-+			if (1 != get_user_pages_fast(cur_ua,
- 						1/* pages */, 1/* iswrite */,
- 						&page)) {
- 				ret = -EFAULT;
-@@ -210,20 +212,21 @@ long mm_iommu_get(struct mm_struct *mm, unsigned long ua, unsigned long entries,
- 		}
- populate:
- 		pageshift = PAGE_SHIFT;
--		if (PageCompound(page)) {
-+		if (mem->pageshift > PAGE_SHIFT && PageCompound(page)) {
- 			pte_t *pte;
- 			struct page *head = compound_head(page);
- 			unsigned int compshift = compound_order(head);
-+			unsigned int pteshift;
- 
- 			local_irq_save(flags); /* disables as well */
--			pte = find_linux_pte(mm->pgd, ua, NULL, &pageshift);
--			local_irq_restore(flags);
-+			pte = find_linux_pte(mm->pgd, cur_ua, NULL, &pteshift);
- 
- 			/* Double check it is still the same pinned page */
- 			if (pte && pte_page(*pte) == head &&
--					pageshift == compshift)
--				pageshift = max_t(unsigned int, pageshift,
-+			    pteshift == compshift + PAGE_SHIFT)
-+				pageshift = max_t(unsigned int, pteshift,
- 						PAGE_SHIFT);
-+			local_irq_restore(flags);
- 		}
- 		mem->pageshift = min(mem->pageshift, pageshift);
- 		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
--- 
-2.11.0
+Rob
