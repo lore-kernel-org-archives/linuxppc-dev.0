@@ -1,19 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wqgj5sBrzDqnw
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 13:30:57 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wqhW3bG2zF2Ps
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 13:31:39 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 0/2] i2c: remove deprecated attach_adapter callback
-In-Reply-To: <20180821150240.19964-1-wsa@the-dreams.de>
+Subject: Re: [PATCH 1/2] macintosh: therm_windtunnel: drop using attach_adapter
+In-Reply-To: <20180821150240.19964-2-wsa@the-dreams.de>
 References: <20180821150240.19964-1-wsa@the-dreams.de>
-Date: Thu, 23 Aug 2018 13:30:57 +1000
-Message-ID: <87in41lpxq.fsf@concordia.ellerman.id.au>
+ <20180821150240.19964-2-wsa@the-dreams.de>
+Date: Thu, 23 Aug 2018 13:31:39 +1000
+Message-ID: <87ftz5lpwk.fsf@concordia.ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,26 +28,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Wolfram Sang <wsa@the-dreams.de> writes:
 
-> So, I wanted to do this in the next cycle, but Linus seems to want it this
-> cycle already [1], so here it is:
+> As we now have deferred probing, we can use a custom mechanism and
+> finally get rid of the legacy interface from the i2c core.
 >
-> Remove the attach_adapter callback from the 2.4 times by converting
-> the last user to a custom probing mechanism based on deferred probing. We used
-> this already in commit ac397c80de89 ("ALSA: ppc: keywest: drop using attach
-> adapter") successfully on HW, so we agreed to use it on the windtunnel driver
-> as well.
->
-> With the last user gone, we can then remove the callback \o/ I think this
-> allows for more cleanup in the core, but let's do this later and focus on the
-> removal for now.
->
-> Tested on a Renesas R-Car Salvator-XS board (M3N) by using and rebinding
-> various I2C busses. Build bot and checkpatch are happy, too.
->
-> I'd like to send a pull request to Linus this merge window, so looking forward
-> to super fast comments, acks, etc...
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+>  drivers/macintosh/therm_windtunnel.c | 25 +++++++++++++++++++++++--
+>  1 file changed, 23 insertions(+), 2 deletions(-)
 
-Sure, I don't have a G4 hooked up to test this, so just merge it and if
-it breaks we can fix it.
+I don't have a G4 to test this on, so merge it and if it breaks we can
+fix it up later.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
+
+> diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+> index 68dcbcb4fc5b..8c744578122a 100644
+> --- a/drivers/macintosh/therm_windtunnel.c
+> +++ b/drivers/macintosh/therm_windtunnel.c
+> @@ -432,7 +432,6 @@ static struct i2c_driver g4fan_driver = {
+>  	.driver = {
+>  		.name	= "therm_windtunnel",
+>  	},
+> -	.attach_adapter = do_attach,
+>  	.probe		= do_probe,
+>  	.remove		= do_remove,
+>  	.id_table	= therm_windtunnel_id,
+> @@ -445,7 +444,29 @@ static struct i2c_driver g4fan_driver = {
+>  
+>  static int therm_of_probe(struct platform_device *dev)
+>  {
+> -	return i2c_add_driver( &g4fan_driver );
+> +	struct i2c_adapter *adap;
+> +	int ret, i = 0;
+> +
+> +	adap = i2c_get_adapter(0);
+> +	if (!adap)
+> +		return -EPROBE_DEFER;
+> +
+> +	ret = i2c_add_driver(&g4fan_driver);
+> +	if (ret) {
+> +		i2c_put_adapter(adap);
+> +		return ret;
+> +	}
+> +
+> +	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
+> +	while (adap) {
+> +		do_attach(adap);
+> +		if (x.running)
+> +			return 0;
+> +		i2c_put_adapter(adap);
+> +		adap = i2c_get_adapter(++i);
+> +	}
+> +
+> +	return -ENODEV;
+>  }
+>  
+>  static int
+> -- 
+> 2.11.0
