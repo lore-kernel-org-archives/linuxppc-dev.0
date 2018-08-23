@@ -1,26 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wmzS26GyzF0hg
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 11:29:24 +1000 (AEST)
-Message-ID: <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
-Subject: Re: DT case sensitivity
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robh@kernel.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Grant Likely
- <grant.likely@arm.com>, Michael Ellerman <mpe@ellerman.id.au>, Kumar Gala
- <kumar.gala@linaro.org>, David Gibson <david@gibson.dropbear.id.au>, Frank
- Rowand <frowand.list@gmail.com>,
- devicetree-spec@vger.kernel.org, devicetree@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 23 Aug 2018 11:29:01 +1000
-In-Reply-To: <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wq263189zDrWY
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 13:01:49 +1000 (AEST)
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7N2x2Pv135188
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 23:01:46 -0400
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m1eeeuvnk-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2018 23:01:46 -0400
+Received: from localhost
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
+ Wed, 22 Aug 2018 21:01:45 -0600
+Subject: Re: Infinite looping observed in __offline_pages
+To: Mike Kravetz <mike.kravetz@oracle.com>, Michal Hocko <mhocko@kernel.org>,
+ Haren Myneni <haren@linux.vnet.ibm.com>
+Cc: n-horiguchi@ah.jp.nec.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, kamezawa.hiroyu@jp.fujitsu.com,
+ mgorman@suse.de
+References: <20180725181115.hmlyd3tmnu3mn3sf@p50.austin.ibm.com>
+ <20180725200336.GP28386@dhcp22.suse.cz> <87bm9ug34l.fsf@linux.ibm.com>
+ <54c72a22-a921-fc64-460d-f66985d0df4e@oracle.com>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+Date: Thu, 23 Aug 2018 08:31:34 +0530
+MIME-Version: 1.0
+In-Reply-To: <54c72a22-a921-fc64-460d-f66985d0df4e@oracle.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Message-Id: <ba980214-5189-cd9e-6775-6f619656a041@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,37 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-08-22 at 20:26 -0500, Rob Herring wrote:
-> On Wed, Aug 22, 2018 at 8:14 PM Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > 
-> > On Wed, 2018-08-22 at 19:47 -0500, Rob Herring wrote:
-> > > The default DT string handling in the kernel is node names and
-> > > compatibles are case insensitive and property names are case sensitive
-> > > (Sparc is the the only variation and is opposite). It seems only PPC
-> > > (and perhaps only Power Macs?) needs to support case insensitive
-> > > comparisons. It was probably a mistake to follow PPC for new arches
-> > > and we should have made everything case sensitive from the start. So I
-> > > have a few questions for the DT historians. :)
-> > 
-> > Open Firmware itself is insensitive.
+On 08/23/2018 12:28 AM, Mike Kravetz wrote:
+> On 08/22/2018 02:30 AM, Aneesh Kumar K.V wrote:
+>> commit 2e9d754ac211f2af3731f15df3cd8cd070b4cc54
+>> Author: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>> Date:   Tue Aug 21 14:17:55 2018 +0530
+>>
+>>      mm/hugetlb: filter out hugetlb pages if HUGEPAGE migration is not supported.
+>>      
+>>      When scanning for movable pages, filter out Hugetlb pages if hugepage migration
+>>      is not supported. Without this we hit infinte loop in __offline pages where we
+>>      do
+>>              pfn = scan_movable_pages(start_pfn, end_pfn);
+>>              if (pfn) { /* We have movable pages */
+>>                      ret = do_migrate_range(pfn, end_pfn);
+>>                      goto repeat;
+>>              }
+>>      
+>>      We do support hugetlb migration ony if the hugetlb pages are at pmd level. Here
 > 
-> Doesn't it depend on the implementation? Otherwise, how is Sparc different?
-
-Not sure ... Forth itself is insensitive for words but maybe not for
-string comparisons.
-
+> I thought migration at pgd level was added for POWER?  commit 94310cbcaa3c
+> (mm/madvise: enable (soft|hard) offline of HugeTLB pages at PGD level).
+> Only remember, because I did not fully understand the use case. :)
 > 
-> > > What PPC systems are case insensitive? Can we limit that to certain systems?
-> > 
-> > All PowerMacs at least, the problem is that I don't have DT images or
-> > access to all the historical systems (and yes some people occasionally
-> > still use them) to properly test a change in that area.
+
+yes. We hit the issue on older distro kernels.
+
+>>      we just check for Kernel config. The gigantic page size check is done in
+>>      page_huge_active.
+>>      
+>>      Reported-by: Haren Myneni <haren@linux.vnet.ibm.com>
+>>      CC: Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>
+>>      Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+>>
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 4eb6e824a80c..f9bdea685cf4 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1338,7 +1338,8 @@ static unsigned long scan_movable_pages(unsigned long start, unsigned long end)
+>>   				return pfn;
+>>   			if (__PageMovable(page))
+>>   				return pfn;
+>> -			if (PageHuge(page)) {
+>> +			if (IS_ENABLED(CONFIG_ARCH_ENABLE_HUGEPAGE_MIGRATION) &&
+>> +			    PageHuge(page)) {
 > 
-> I'm temped to break them so I can find folks to provide me with DT dumps. :)
+> How about using hugepage_migration_supported instead?  It would automatically
+> catch those non-migratable huge page sizes.  Something like:
+> 
 
-I have a collection of DT dumps but I'm not sure about the legality of
-publishing them...
 
-Cheers,
-Ben.
+Will do that.
+
+> 			if (PageHuge(page) &&
+> 			    hugepage_migration_supported(page_hstate(page))) {
+> 
+
+-aneesh
