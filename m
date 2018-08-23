@@ -1,22 +1,44 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+Return-Path: <srs0=gqm2=lg=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wqhW3bG2zF2Ps
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 13:31:39 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 1/2] macintosh: therm_windtunnel: drop using attach_adapter
-In-Reply-To: <20180821150240.19964-2-wsa@the-dreams.de>
-References: <20180821150240.19964-1-wsa@the-dreams.de>
- <20180821150240.19964-2-wsa@the-dreams.de>
-Date: Thu, 23 Aug 2018 13:31:39 +1000
-Message-ID: <87ftz5lpwk.fsf@concordia.ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wryK4WjwzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 14:28:41 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41wryK3kyfz8wHR
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 14:28:41 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41wryJ6nXHz9s7X
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 14:28:40 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7N4OMWp073095
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 00:28:38 -0400
+Received: from e06smtp03.uk.ibm.com (e06smtp03.uk.ibm.com [195.75.94.99])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m1kucbtkb-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 00:28:37 -0400
+Received: from localhost
+ by e06smtp03.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 23 Aug 2018 05:28:36 +0100
+Subject: Re: [PATCH] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
+References: <153449765953.21426.6928471250286444535.stgit@jupiter.in.ibm.com>
+ <20180821202702.4198d426@roar.ozlabs.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 23 Aug 2018 09:58:31 +0530
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20180821202702.4198d426@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <4dc90537-0fde-ab1a-8372-aba2d82ebd8c@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +48,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Wolfram Sang <wsa@the-dreams.de> writes:
-
-> As we now have deferred probing, we can use a custom mechanism and
-> finally get rid of the legacy interface from the i2c core.
->
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> ---
->  drivers/macintosh/therm_windtunnel.c | 25 +++++++++++++++++++++++--
->  1 file changed, 23 insertions(+), 2 deletions(-)
-
-I don't have a G4 to test this on, so merge it and if it breaks we can
-fix it up later.
-
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
-
-> diff --git a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
-> index 68dcbcb4fc5b..8c744578122a 100644
-> --- a/drivers/macintosh/therm_windtunnel.c
-> +++ b/drivers/macintosh/therm_windtunnel.c
-> @@ -432,7 +432,6 @@ static struct i2c_driver g4fan_driver = {
->  	.driver = {
->  		.name	= "therm_windtunnel",
->  	},
-> -	.attach_adapter = do_attach,
->  	.probe		= do_probe,
->  	.remove		= do_remove,
->  	.id_table	= therm_windtunnel_id,
-> @@ -445,7 +444,29 @@ static struct i2c_driver g4fan_driver = {
->  
->  static int therm_of_probe(struct platform_device *dev)
+On 08/21/2018 03:57 PM, Nicholas Piggin wrote:
+> On Fri, 17 Aug 2018 14:51:47 +0530
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
+>> during MCE recovery path.), the SLB error recovery is broken. The
+>> commit missed a crucial change of OR-ing index value to RB[52-63] which
+>> selects the SLB entry while rebolting. This patch fixes that.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+>> ---
+>>  arch/powerpc/mm/slb.c |    5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+>> index 0b095fa54049..6dd9913425bc 100644
+>> --- a/arch/powerpc/mm/slb.c
+>> +++ b/arch/powerpc/mm/slb.c
+>> @@ -101,9 +101,12 @@ void __slb_restore_bolted_realmode(void)
+>>  
+>>  	 /* No isync needed because realmode. */
+>>  	for (index = 0; index < SLB_NUM_BOLTED; index++) {
+>> +		unsigned long rb = be64_to_cpu(p->save_area[index].esid);
+>> +
+>> +		rb = (rb & ~0xFFFul) | index;
+>>  		asm volatile("slbmte  %0,%1" :
+>>  		     : "r" (be64_to_cpu(p->save_area[index].vsid)),
+>> -		       "r" (be64_to_cpu(p->save_area[index].esid)));
+>> +		       "r" (rb));
+>>  	}
+>>  }
+>>  
+>>
+> 
+> I'm just looking at this again. The bolted save areas do have the
+> index field set. So for the OS, your patch should be equivalent to
+> this, right?
+> 
+>  static inline void slb_shadow_clear(enum slb_index index)
 >  {
-> -	return i2c_add_driver( &g4fan_driver );
-> +	struct i2c_adapter *adap;
-> +	int ret, i = 0;
-> +
-> +	adap = i2c_get_adapter(0);
-> +	if (!adap)
-> +		return -EPROBE_DEFER;
-> +
-> +	ret = i2c_add_driver(&g4fan_driver);
-> +	if (ret) {
-> +		i2c_put_adapter(adap);
-> +		return ret;
-> +	}
-> +
-> +	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
-> +	while (adap) {
-> +		do_attach(adap);
-> +		if (x.running)
-> +			return 0;
-> +		i2c_put_adapter(adap);
-> +		adap = i2c_get_adapter(++i);
-> +	}
-> +
-> +	return -ENODEV;
+> -       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, 0);
+> +       WRITE_ONCE(get_slb_shadow()->save_area[index].esid, index);
 >  }
->  
->  static int
-> -- 
-> 2.11.0
+> 
+> Which seems like a better fix.
+
+Yeah this also fixes the issue. The only additional change required is
+cpu_to_be64(index). As long as we maintain index in bolted save areas
+(for valid/invalid entries) we should be ok. Will respin v2 with this
+change.
+
+Thanks,
+-Mahesh.
