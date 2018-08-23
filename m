@@ -1,25 +1,47 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
+Return-Path: <srs0=gqm2=lg=linux.vnet.ibm.com=mahesh@ozlabs.org>
+Received: from ozlabs.org (lists.ozlabs.org [IPv6:2401:3900:2:1::3])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wycD5QfwzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:43:24 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41wycD2XDYz8v0T
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:43:24 +1000 (AEST)
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wyMt50dbzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 18:32:41 +1000 (AEST)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- Randy Dunlap <rdunlap@infradead.org>,
- Madalin Bucur <madalin.bucur@nxp.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Sasha Levin <alexander.levin@microsoft.com>
-Subject: [PATCH 4.14 186/217] net/ethernet/freescale/fman: fix cross-build
- error
-Date: Thu, 23 Aug 2018 09:54:59 +0200
-Message-Id: <20180823075513.988513575@linuxfoundation.org>
-In-Reply-To: <20180823075505.090246914@linuxfoundation.org>
-References: <20180823075505.090246914@linuxfoundation.org>
+ by ozlabs.org (Postfix) with ESMTPS id 41wycC3rPYz9ryt
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 18:43:23 +1000 (AEST)
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7N8ejor115806
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 04:43:21 -0400
+Received: from e06smtp02.uk.ibm.com (e06smtp02.uk.ibm.com [195.75.94.98])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m1rtn29gj-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2018 04:43:21 -0400
+Received: from localhost
+ by e06smtp02.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Thu, 23 Aug 2018 09:43:19 +0100
+Subject: Re: [PATCH v8 5/5] powernv/pseries: consolidate code for mce early
+ handling.
+To: Nicholas Piggin <npiggin@gmail.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Ananth Narayan <ananth@in.ibm.com>,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Michal Suchanek <msuchanek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>
+References: <153469837203.21878.11524005112982522827.stgit@jupiter.in.ibm.com>
+ <153469851942.21878.15396539991879060950.stgit@jupiter.in.ibm.com>
+ <20180820213445.3b7dc3ee@roar.ozlabs.ibm.com>
+From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Thu, 23 Aug 2018 14:13:13 +0530
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20180820213445.3b7dc3ee@roar.ozlabs.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Message-Id: <57fb2d6c-4713-0fa8-3cff-6e66d2c02a69@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +51,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.14-stable review patch.  If anyone has any objections, please let me know.
+On 08/20/2018 05:04 PM, Nicholas Piggin wrote:
+> On Sun, 19 Aug 2018 22:38:39 +0530
+> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> 
+>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>>
+>> Now that other platforms also implements real mode mce handler,
+>> lets consolidate the code by sharing existing powernv machine check
+>> early code. Rename machine_check_powernv_early to
+>> machine_check_common_early and reuse the code.
+>>
+>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/exceptions-64s.S |  155 ++++++----------------------------
+>>  1 file changed, 28 insertions(+), 127 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+>> index 12f056179112..2f85a7baf026 100644
+>> --- a/arch/powerpc/kernel/exceptions-64s.S
+>> +++ b/arch/powerpc/kernel/exceptions-64s.S
+>> @@ -243,14 +243,13 @@ EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
+>>  	SET_SCRATCH0(r13)		/* save r13 */
+>>  	EXCEPTION_PROLOG_0(PACA_EXMC)
+>>  BEGIN_FTR_SECTION
+>> -	b	machine_check_powernv_early
+>> +	b	machine_check_common_early
+>>  FTR_SECTION_ELSE
+>>  	b	machine_check_pSeries_0
+>>  ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+>>  EXC_REAL_END(machine_check, 0x200, 0x100)
+>>  EXC_VIRT_NONE(0x4200, 0x100)
+>> -TRAMP_REAL_BEGIN(machine_check_powernv_early)
+>> -BEGIN_FTR_SECTION
+>> +TRAMP_REAL_BEGIN(machine_check_common_early)
+>>  	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+>>  	/*
+>>  	 * Register contents:
+>> @@ -306,7 +305,9 @@ BEGIN_FTR_SECTION
+>>  	/* Save r9 through r13 from EXMC save area to stack frame. */
+>>  	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
+>>  	mfmsr	r11			/* get MSR value */
+>> +BEGIN_FTR_SECTION
+>>  	ori	r11,r11,MSR_ME		/* turn on ME bit */
+>> +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+>>  	ori	r11,r11,MSR_RI		/* turn on RI bit */
+>>  	LOAD_HANDLER(r12, machine_check_handle_early)
+>>  1:	mtspr	SPRN_SRR0,r12
+>> @@ -325,7 +326,6 @@ BEGIN_FTR_SECTION
+>>  	andc	r11,r11,r10		/* Turn off MSR_ME */
+>>  	b	1b
+>>  	b	.	/* prevent speculative execution */
+>> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+>>  
+>>  TRAMP_REAL_BEGIN(machine_check_pSeries)
+>>  	.globl machine_check_fwnmi
+>> @@ -333,7 +333,7 @@ machine_check_fwnmi:
+>>  	SET_SCRATCH0(r13)		/* save r13 */
+>>  	EXCEPTION_PROLOG_0(PACA_EXMC)
+>>  BEGIN_FTR_SECTION
+>> -	b	machine_check_pSeries_early
+>> +	b	machine_check_common_early
+>>  END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+>>  machine_check_pSeries_0:
+>>  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
+>> @@ -346,103 +346,6 @@ machine_check_pSeries_0:
+>>  
+>>  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
+>>  
+>> -TRAMP_REAL_BEGIN(machine_check_pSeries_early)
+>> -BEGIN_FTR_SECTION
+>> -	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
+>> -	mr	r10,r1			/* Save r1 */
+>> -	lhz	r11,PACA_IN_MCE(r13)
+>> -	cmpwi	r11,0			/* Are we in nested machine check */
+>> -	bne	0f			/* Yes, we are. */
+>> -	/* First machine check entry */
+>> -	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
+>> -0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
+>> -	addi	r11,r11,1		/* increment paca->in_mce */
+>> -	sth	r11,PACA_IN_MCE(r13)
+>> -	/* Limit nested MCE to level 4 to avoid stack overflow */
+>> -	cmpwi	r11,MAX_MCE_DEPTH
+>> -	bgt	1f			/* Check if we hit limit of 4 */
+>> -	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
+>> -	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
+>> -	EXCEPTION_PROLOG_COMMON_1()
+>> -	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
+>> -	EXCEPTION_PROLOG_COMMON_3(0x200)
+>> -	addi	r3,r1,STACK_FRAME_OVERHEAD
+>> -	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI */
+>> -	ld	r12,_MSR(r1)
+>> -	andi.	r11,r12,MSR_PR		/* See if coming from user. */
+>> -	bne	2f			/* continue in V mode if we are. */
+>> -
+>> -	/*
+>> -	 * At this point we are not sure about what context we come from.
+>> -	 * We may be in the middle of swithing stack. r1 may not be valid.
+>> -	 * Hence stay on emergency stack, call machine_check_exception and
+>> -	 * return from the interrupt.
+>> -	 * But before that, check if this is an un-recoverable exception.
+>> -	 * If yes, then stay on emergency stack and panic.
+>> -	 */
+>> -	andi.	r11,r12,MSR_RI
+>> -	beq	1f
+>> -
+>> -	/*
+>> -	 * Check if we have successfully handled/recovered from error, if not
+>> -	 * then stay on emergency stack and panic.
+>> -	 */
+>> -	cmpdi	r3,0		/* see if we handled MCE successfully */
+>> -	beq	1f		/* if !handled then panic */
+>> -
+>> -	/* Stay on emergency stack and return from interrupt. */
+>> -	LOAD_HANDLER(r10,mce_return)
+>> -	mtspr	SPRN_SRR0,r10
+>> -	ld	r10,PACAKMSR(r13)
+>> -	mtspr	SPRN_SRR1,r10
+>> -	RFI_TO_KERNEL
+>> -	b	.
+>> -
+>> -1:	LOAD_HANDLER(r10,unrecover_mce)
+>> -	mtspr	SPRN_SRR0,r10
+>> -	ld	r10,PACAKMSR(r13)
+>> -	/*
+>> -	 * We are going down. But there are chances that we might get hit by
+>> -	 * another MCE during panic path and we may run into unstable state
+>> -	 * with no way out. Hence, turn ME bit off while going down, so that
+>> -	 * when another MCE is hit during panic path, hypervisor will
+>> -	 * power cycle the lpar, instead of getting into MCE loop.
+>> -	 */
+>> -	li	r3,MSR_ME
+>> -	andc	r10,r10,r3		/* Turn off MSR_ME */
+>> -	mtspr	SPRN_SRR1,r10
+>> -	RFI_TO_KERNEL
+>> -	b	.
+>> -
+>> -	/* Move original SRR0 and SRR1 into the respective regs */
+>> -2:	ld	r9,_MSR(r1)
+>> -	mtspr	SPRN_SRR1,r9
+>> -	ld	r3,_NIP(r1)
+>> -	mtspr	SPRN_SRR0,r3
+>> -	ld	r9,_CTR(r1)
+>> -	mtctr	r9
+>> -	ld	r9,_XER(r1)
+>> -	mtxer	r9
+>> -	ld	r9,_LINK(r1)
+>> -	mtlr	r9
+>> -	REST_GPR(0, r1)
+>> -	REST_8GPRS(2, r1)
+>> -	REST_GPR(10, r1)
+>> -	ld	r11,_CCR(r1)
+>> -	mtcr	r11
+>> -	/* Decrement paca->in_mce. */
+>> -	lhz	r12,PACA_IN_MCE(r13)
+>> -	subi	r12,r12,1
+>> -	sth	r12,PACA_IN_MCE(r13)
+>> -	REST_GPR(11, r1)
+>> -	REST_2GPRS(12, r1)
+>> -	/* restore original r1. */
+>> -	ld	r1,GPR1(r1)
+>> -	SET_SCRATCH0(r13)		/* save r13 */
+>> -	EXCEPTION_PROLOG_0(PACA_EXMC)
+>> -	b	machine_check_pSeries_0
+>> -END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+>> -
+>>  EXC_COMMON_BEGIN(machine_check_common)
+>>  	/*
+>>  	 * Machine check is different because we use a different
+>> @@ -541,6 +444,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+>>  	bl	machine_check_early
+>>  	std	r3,RESULT(r1)	/* Save result */
+>>  	ld	r12,_MSR(r1)
+>> +BEGIN_FTR_SECTION
+>> +	b	4f
+>> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
+>>  
+>>  #ifdef	CONFIG_PPC_P7_NAP
+>>  	/*
+>> @@ -564,10 +470,11 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+>>  	 */
+>>  	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
+>>  	beq	5f
+>> -	andi.	r11,r12,MSR_PR		/* See if coming from user. */
+>> +4:	andi.	r11,r12,MSR_PR		/* See if coming from user. */
+>>  	bne	9f			/* continue in V mode if we are. */
+>>  
+>>  5:
+>> +BEGIN_FTR_SECTION
+>>  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+>>  	/*
+>>  	 * We are coming from kernel context. Check if we are coming from
+>> @@ -578,6 +485,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+>>  	cmpwi	r11,0			/* Check if coming from guest */
+>>  	bne	9f			/* continue if we are. */
+>>  #endif
+>> +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+> 
+> Put these inside the ifdef?
+> 
+> 
+>>  	/*
+>>  	 * At this point we are not sure about what context we come from.
+>>  	 * Queue up the MCE event and return from the interrupt.
+>> @@ -611,6 +519,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+>>  	cmpdi	r3,0		/* see if we handled MCE successfully */
+>>  
+>>  	beq	1b		/* if !handled then panic */
+>> +BEGIN_FTR_SECTION
+>>  	/*
+>>  	 * Return from MC interrupt.
+>>  	 * Queue up the MCE event so that we can log it later, while
+>> @@ -619,10 +528,24 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
+>>  	bl	machine_check_queue_event
+>>  	MACHINE_CHECK_HANDLER_WINDUP
+>>  	RFI_TO_USER_OR_KERNEL
+>> +FTR_SECTION_ELSE
+>> +	/*
+>> +	 * pSeries: Return from MC interrupt. Before that stay on emergency
+>> +	 * stack and call machine_check_exception to log the MCE event.
+>> +	 */
+>> +	LOAD_HANDLER(r10,mce_return)
+>> +	mtspr	SPRN_SRR0,r10
+>> +	ld	r10,PACAKMSR(r13)
+>> +	mtspr	SPRN_SRR1,r10
+>> +	RFI_TO_KERNEL
+>> +	b	.
+>> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
+> 
+> Do you still need mce_return? Why can't you consolidate it as well? ...
+> Hmm, okay so now I look back at patch 2, I don't think you should call
+> machine_check_exception there. You're supposed to call
+> machine_check_queue_event here and it will be handled by irq work.
 
-------------------
+machine_check_queue_event does not handle RTAS mce event. Also, we need
+to call fwnmi_release_errinfo() as early as possible which is why I am
+calling machine_check_exception() in mce_return path for pSeries.
+Otherwise if we get another MCE before calling fwnmi_release_errinfo()
+then lpar will get rebooted without any logs getting printed.
 
-From: Randy Dunlap <rdunlap@infradead.org>
-
-[ Upstream commit c133459765fae249ba482f62e12f987aec4376f0 ]
-
-  CC [M]  drivers/net/ethernet/freescale/fman/fman.o
-In file included from ../drivers/net/ethernet/freescale/fman/fman.c:35:
-../include/linux/fsl/guts.h: In function 'guts_set_dmacr':
-../include/linux/fsl/guts.h:165:2: error: implicit declaration of function 'clrsetbits_be32' [-Werror=implicit-function-declaration]
-  clrsetbits_be32(&guts->dmacr, 3 << shift, device << shift);
-  ^~~~~~~~~~~~~~~
-
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Madalin Bucur <madalin.bucur@nxp.com>
-Cc: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- include/linux/fsl/guts.h |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/include/linux/fsl/guts.h
-+++ b/include/linux/fsl/guts.h
-@@ -16,6 +16,7 @@
- #define __FSL_GUTS_H__
- 
- #include <linux/types.h>
-+#include <linux/io.h>
- 
- /**
-  * Global Utility Registers.
+Thanks,
+-Mahesh.
