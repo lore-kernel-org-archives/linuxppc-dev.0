@@ -1,27 +1,47 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <andrew.donnellan@au1.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x3pc2jj7zF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 22:37:44 +1000 (AEST)
-Date: Thu, 23 Aug 2018 07:36:50 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Rob Herring <robh@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Kumar Gala <kumar.gala@linaro.org>, devicetree@vger.kernel.org,
- devicetree-spec@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Grant Likely <grant.likely@arm.com>, Frank Rowand <frowand.list@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: DT case sensitivity
-Message-ID: <20180823123650.GT24439@gate.crashing.org>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
- <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x51q1Z3rzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 23:32:30 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7NDTRNH023736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 09:32:28 -0400
+Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m1utkwbst-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 09:32:28 -0400
+Received: from localhost
+ by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <andrew.donnellan@au1.ibm.com>;
+ Thu, 23 Aug 2018 14:32:26 +0100
+Subject: Re: [PATCH v2 3/4] powerpc/mm: fix a warning when a cache is common
+ to PGD and hugepages
+To: Michael Ellerman <mpe@ellerman.id.au>, Russell Currey <ruscur@russell.cc>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, aneesh.kumar@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Christophe LEROY <christophe.leroy@c-s.fr>,
+ Segher Boessenkool <segher@kernel.crashing.org>
+References: <2f96bf1a8df1091c642de099ed07c34b5ab9b90a.1534258290.git.christophe.leroy@c-s.fr>
+ <4aaca2d27429e6bdadc340fd3b96e7c350c4b2f4.1534258290.git.christophe.leroy@c-s.fr>
+ <6dea8d0c-c4ab-49aa-da26-a729c18fa818@linux.ibm.com>
+ <006e5f33-b816-7508-faac-da26a860659c@c-s.fr>
+ <3e6412ac-c645-908f-a3bb-c9a2a72f4b68@linux.ibm.com>
+ <cb121f38-ac89-4971-fd84-5473e7e9ced5@c-s.fr>
+ <20180823103625.GR24439@gate.crashing.org>
+ <8ada20e9-3bc1-fdaf-d78f-2f5a317e8216@c-s.fr>
+ <87a7pdl2jy.fsf@concordia.ellerman.id.au>
+From: Andrew Donnellan <andrew.donnellan@au1.ibm.com>
+Date: Thu, 23 Aug 2018 23:32:16 +1000
+In-Reply-To: <87a7pdl2jy.fsf@concordia.ellerman.id.au>
+Message-Id: <d561e11b-b85e-6f6c-0936-4a93cf309915@au1.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +51,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2018 at 11:29:01AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2018-08-22 at 20:26 -0500, Rob Herring wrote:
-> > On Wed, Aug 22, 2018 at 8:14 PM Benjamin Herrenschmidt
-> > <benh@kernel.crashing.org> wrote:
-> > > 
-> > > On Wed, 2018-08-22 at 19:47 -0500, Rob Herring wrote:
-> > > > The default DT string handling in the kernel is node names and
-> > > > compatibles are case insensitive and property names are case sensitive
-> > > > (Sparc is the the only variation and is opposite). It seems only PPC
-> > > > (and perhaps only Power Macs?) needs to support case insensitive
-> > > > comparisons. It was probably a mistake to follow PPC for new arches
-> > > > and we should have made everything case sensitive from the start. So I
-> > > > have a few questions for the DT historians. :)
-> > > 
-> > > Open Firmware itself is insensitive.
-> > 
-> > Doesn't it depend on the implementation? Otherwise, how is Sparc different?
-> 
-> Not sure ...
+On 23/08/18 21:56, Michael Ellerman wrote:
+> Christophe LEROY <christophe.leroy@c-s.fr> writes:
+>=20
+>> Le 23/08/2018 =C3=A0 12:36, Segher Boessenkool a =C3=A9crit=C2=A0:
+>>> On Thu, Aug 23, 2018 at 11:40:22AM +0200, Christophe LEROY wrote:
+>>>> The only small probl=C3=A8me I have is that some version of GCC seems =
+to
+>>>> complain about big memset() (132k and 256k ones). Is there a way to te=
+ll
+>>>> GCC we really want to do it ?
+>>>
+>>> I'm not sure what you mean.  Complain, is that a warning, is that an er=
+ror?
+>>> What does it say?  Do you have some example code to reproduce it?  Etc.
+>>
+>> I saw the warnings in the checks at
+>> https://patchwork.ozlabs.org/patch/957566/
+>> Unfortunatly the link is now broken.
+>=20
+> ruscur/ajd any idea what happened to the snowpatch links here?
 
-The standard requires case-sensitive.
+I think they've disappeared because our log rotation is too fast - I've=20
+now upped it to 30 days. I guess over time we'll figure out what we need=20
+in this regard, ideally we'd keep logs indefinitely but they're several=20
+megs per build.
 
-> Forth itself is insensitive for words
+I've kicked off another build for this series and the links in Patchwork=20
+should update to point to the new job when it's done (probably in the=20
+next couple of hours).
 
-Not even.   http://forth.sourceforge.net/std/dpans/dpans3.htm#3.3.1.2
-
-(Most non-ancient implementations are though).
-
-> but maybe not for string comparisons.
-
-Only COMPARE is standardised, and that is case-sensitive comparison.  Many
-systems have other words to do case-insensitive comparisons, or words where
-some runtime flag determines the case-sensitivity.
-
-Btw.  A node name in Open Firmware is generically
-  driver-name@unit-address:device-arguments
-where driver-name is the part that is in the "name" property; this whole
-case-sensitivity business is even worse for FDT, where you also treat the
-unit address as part of the name.  In real Open Firmware the address is
-compared *as a number* (or as a few numbers), so it is naturally case-
-insensitive (it does not care if you write 01a0 or 01A0, or 1a0 or 000001a0
-etc.)
-
-
-Segher
+--=20
+Andrew Donnellan              OzLabs, ADL Canberra
+andrew.donnellan@au1.ibm.com  IBM Australia Limited
