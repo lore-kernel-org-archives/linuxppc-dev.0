@@ -2,19 +2,17 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
  (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x6381j69zF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:18:44 +1000 (AEST)
-In-Reply-To: <20180823000858.GA17719@fergus>
-To: Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@ozlabs.org,
- kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41x6391ccWzF2Dd
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:18:45 +1000 (AEST)
+In-Reply-To: <153500011126.9482.8367068862900987587.stgit@jupiter.in.ibm.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 From: Michael Ellerman <patch-notifications@ellerman.id.au>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: KVM: PPC: Book3S: Fix guest DMA when guest partially backed by
- THP pages
-Message-Id: <41x6374LGgz9s3C@ozlabs.org>
-Date: Fri, 24 Aug 2018 00:18:43 +1000 (AEST)
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Nicholas Piggin <npiggin@gmail.com>
+Subject: Re: [v2] poewrpc/mce: Fix SLB rebolting during MCE recovery path.
+Message-Id: <41x6384j4Vz9sBZ@ozlabs.org>
+Date: Fri, 24 Aug 2018 00:18:44 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2018-08-23 at 00:08:58 UTC, Paul Mackerras wrote:
-> Commit 76fa4975f3ed ("KVM: PPC: Check if IOMMU page is contained in the
-> pinned physical page", 2018-07-17) added some checks to ensure that guest
-> DMA mappings don't attempt to map more than the guest is entitled to
-> access.  However, errors in the logic mean that legitimate guest requests
-> to map pages for DMA are being denied in some situations.  Specifically,
-> if the first page of the range passed to mm_iommu_get() is mapped with
-> a normal page, and subsequent pages are mapped with transparent huge
-> pages, we end up with mem->pageshift == 0.  That means that the page
-> size checks in mm_iommu_ua_to_hpa() and mm_iommu_up_to_hpa_rm() will
-> always fail for every page in that region, and thus the guest can never
-> map any memory in that region for DMA, typically leading to a flood of
-> error messages like this:
+On Thu, 2018-08-23 at 04:56:08 UTC, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> qemu-system-ppc64: VFIO_MAP_DMA: -22
-> qemu-system-ppc64: vfio_dma_map(0x10005f47780, 0x800000000000000, 0x10000, 0x7fff63ff0000) = -22 (Invalid argument)
+> With the powrpc next commit e7e81847478 (poewrpc/mce: Fix SLB rebolting
+> during MCE recovery path.), the SLB error recovery is broken. The new
+> change now does not add index value to RB[52-63] that selects the SLB
+> entry while rebolting, instead it assumes that the shadow save area
+> already have index embeded correctly in esid field. While all valid bolted
+> save areas do contain index value set correctly, there is a case where
+> 3rd (KSTACK_INDEX) entry for kernel stack does not embed index for NULL
+> esid entry. This patch fixes that.
 > 
-> The logic errors in mm_iommu_get() are:
+> Without this patch the SLB rebolt code overwirtes the 1st entry of kernel
+> linear mapping and causes SLB recovery to fail.
 > 
-> (a) use of 'ua' not 'ua + (i << PAGE_SHIFT)' in the find_linux_pte() call
->     (meaning that find_linux_pte() returns the pte for the first address
->     in the range, not the address we are currently up to);
-> (b) use of 'pageshift' as the variable to receive the hugepage shift
->     returned by find_linux_pte() - for a normal page this gets set to
->     0, leading to us setting mem->pageshift to 0 when we conclude that
->     the pte returned by find_linux_pte didn't match the page we were
->     looking at;
-> (c) comparing 'compshift', which is a page order, i.e. log base 2 of the
->     number of pages, with 'pageshift', which is a log base 2 of the number
->     of bytes.
-> 
-> To fix these problems, this patch introduces 'cur_ua' to hold the current
-> user address and uses that in the find_linux_pte call; introduces
-> 'pteshift' to hold the hugepage shift found by find_linux_pte(); and
-> compares 'pteshift' with 'compshift + PAGE_SHIFT' rather than 'compshift'.
-> The patch also moves the local_irq_restore to the point after the pte
-> pointer returned by find_linux_pte has been dereferenced because that
-> seems safer, and adds a check to avoid doing the find_linux_pte() call
-> once mem->pageshift has been reduced to PAGE_SHIFT, as an optimization.
-> 
-> Cc: stable@vger.kernel.org # v4.12+
-> Fixes: 76fa4975f3ed ("KVM: PPC: Check if IOMMU page is contained in the
-> pinned physical page")
-> Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
 
 Applied to powerpc next, thanks.
 
-https://git.kernel.org/powerpc/c/8cfbdbdc24815417a3ab35101ccf70
+https://git.kernel.org/powerpc/c/0f52b3a00c789569d7ed822b5a6b30
 
 cheers
