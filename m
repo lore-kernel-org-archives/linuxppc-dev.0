@@ -1,23 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41wmds20z6zF0gv
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 11:14:09 +1000 (AEST)
-Message-ID: <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
-Subject: Re: DT case sensitivity
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robh@kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Grant Likely <grant.likely@arm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Kumar Gala <kumar.gala@linaro.org>, David Gibson
- <david@gibson.dropbear.id.au>,
- Frank Rowand <frowand.list@gmail.com>, devicetree-spec@vger.kernel.org,
- devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 23 Aug 2018 11:03:28 +1000
-In-Reply-To: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41wmvW66MBzF0hg
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 11:25:59 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christophe LEROY <christophe.leroy@c-s.fr>,
+ Michal Hocko <mhocko@kernel.org>, Ram Pai <linuxram@us.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: "linuxppc-dev\@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-mm <linux-mm@kvack.org>
+Subject: Re: Odd SIGSEGV issue introduced by commit 6b31d5955cb29 ("mm,
+ oom: fix potential data corruption when oom_reaper races with writer")
+In-Reply-To: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+References: <7767bdf4-a034-ecb9-1ac8-4fa87f335818@c-s.fr>
+Date: Thu, 23 Aug 2018 11:25:56 +1000
+Message-ID: <87o9dtlvq3.fsf@concordia.ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2018-08-22 at 19:47 -0500, Rob Herring wrote:
-> The default DT string handling in the kernel is node names and
-> compatibles are case insensitive and property names are case sensitive
-> (Sparc is the the only variation and is opposite). It seems only PPC
-> (and perhaps only Power Macs?) needs to support case insensitive
-> comparisons. It was probably a mistake to follow PPC for new arches
-> and we should have made everything case sensitive from the start. So I
-> have a few questions for the DT historians. :)
+Christophe LEROY <christophe.leroy@c-s.fr> writes:
+> Hello,
+>
+> I have an odd issue on my powerpc 8xx board.
+>
+> I am running latest 4.14 and get the following SIGSEGV which appears 
+> more or less randomly.
+>
+> [    9.190354] touch[91]: unhandled signal 11 at 67807b58 nip 777cf114 
+> lr 777cf100 code 30001
+> [   24.634810] ifconfig[160]: unhandled signal 11 at 67ae7b58 nip 
+> 77aaf114 lr 77aaf100 code 30001
 
-Open Firmware itself is insensitive.
 
-> What PPC systems are case insensitive? Can we limit that to certain systems?
+It would be interesting to see the code dump here and which registers
+are being used.
 
-All PowerMacs at least, the problem is that I don't have DT images or
-access to all the historical systems (and yes some people occasionally
-still use them) to properly test a change in that area.
+Can you backport the show unhandled signal changes and see what that
+shows us?
 
-> AFAICT, dtc at least (if not anything FDT based) has always been case
-> sensitive at least for node and property names. I'm not sure about
-> compatible strings?
-> 
-> Anyone see potential issues with switching all platforms except PPC
-> and Sparc to case sensitive comparisons?
-
-Cheers,
-Ben.
+cheers
