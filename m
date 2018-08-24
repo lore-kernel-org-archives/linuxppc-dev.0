@@ -1,34 +1,34 @@
 Return-Path: <aneesh.kumar@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
+Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
+ [148.163.158.5])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xVxl3wRHzDqx4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 16:00:27 +1000 (AEST)
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7O5xtax145605
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 02:00:25 -0400
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m2c270jrq-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xVxp4DGkzDqrV
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 16:00:30 +1000 (AEST)
+Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
+ by mx0b-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7O5xw92000783
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 02:00:28 -0400
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ by mx0b-001b2d01.pphosted.com with ESMTP id 2m2bp8s9ry-1
  (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 02:00:25 -0400
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 02:00:27 -0400
 Received: from localhost
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.ibm.com>;
- Fri, 24 Aug 2018 00:00:24 -0600
+ Fri, 24 Aug 2018 00:00:27 -0600
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
 To: npiggin@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
  mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>
-Subject: [PATCH V3 2/6] powerpc/mm/hugetlb/book3s: add _PAGE_PRESENT to hugepd
- pointer.
-Date: Fri, 24 Aug 2018 11:30:04 +0530
+Subject: [PATCH V3 3/6] powerpc/mm/book3s: Check for pmd_large instead of
+ pmd_trans_huge
+Date: Fri, 24 Aug 2018 11:30:05 +0530
 In-Reply-To: <20180824060008.18396-1-aneesh.kumar@linux.ibm.com>
 References: <20180824060008.18396-1-aneesh.kumar@linux.ibm.com>
-Message-Id: <20180824060008.18396-2-aneesh.kumar@linux.ibm.com>
+Message-Id: <20180824060008.18396-3-aneesh.kumar@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +38,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This make hugetlb directory pointer similar to other page able entries. A hugepd
-entry is identified by lack of _PAGE_PTE bit set and directory size stored in
-HUGEPD_SHIFT_MASK. We update that to also look at _PAGE_PRESENT
+Update few code paths to check for pmd_large.
+
+set_pmd_at:
+We want to use this to store swap pte at pmd level. For swap ptes we don't want
+to set H_PAGE_THP_HUGE. Hence check for pmd_large in set_pmd_at. This remove
+the false WARN_ON when using this with swap pmd entry.
+
+pmd_page:
+We don't really use them on pmd migration entries. But they can also work with
+migration entries and we don't differentiate at the pte level. Hence update
+pmd_page to work with pmd migration entries too
+
+__find_linux_pte:
+lockless page table walk need to handle pmd migration entries. pmd_trans_huge
+check will return false on them. We don't set thp = 1 for such entries, but
+update hpage_shift correctly. Without this we will walk pmd migration entries
+as a pte page pointer which is wrong.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/hash-4k.h | 2 +-
- arch/powerpc/include/asm/book3s/64/hugetlb.h | 3 +++
- arch/powerpc/mm/hugetlbpage.c                | 2 +-
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/mm/hugetlbpage.c      | 8 ++++++--
+ arch/powerpc/mm/pgtable-book3s64.c | 2 +-
+ arch/powerpc/mm/pgtable_64.c       | 2 +-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/hash-4k.h b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-index 9a3798660cef..15bc16b1dc9c 100644
---- a/arch/powerpc/include/asm/book3s/64/hash-4k.h
-+++ b/arch/powerpc/include/asm/book3s/64/hash-4k.h
-@@ -66,7 +66,7 @@ static inline int hash__hugepd_ok(hugepd_t hpd)
- 	 * if it is not a pte and have hugepd shift mask
- 	 * set, then it is a hugepd directory pointer
- 	 */
--	if (!(hpdval & _PAGE_PTE) &&
-+	if (!(hpdval & _PAGE_PTE) && (hpdval & _PAGE_PRESENT) &&
- 	    ((hpdval & HUGEPD_SHIFT_MASK) != 0))
- 		return true;
- 	return false;
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index 50888388a359..5b0177733994 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -39,4 +39,7 @@ static inline bool gigantic_page_supported(void)
- }
- #endif
- 
-+/* hugepd entry valid bit */
-+#define HUGEPD_VAL_BITS		(0x8000000000000000UL)
-+
- #endif
 diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index e87f9ef9115b..c6df73c66c40 100644
+index c6df73c66c40..9504641bd4d9 100644
 --- a/arch/powerpc/mm/hugetlbpage.c
 +++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -95,7 +95,7 @@ static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
- 			break;
- 		else {
- #ifdef CONFIG_PPC_BOOK3S_64
--			*hpdp = __hugepd(__pa(new) |
-+			*hpdp = __hugepd(__pa(new) | HUGEPD_VAL_BITS |
- 					 (shift_to_mmu_psize(pshift) << 2));
- #elif defined(CONFIG_PPC_8xx)
- 			*hpdp = __hugepd(__pa(new) | _PMD_USER |
+@@ -837,8 +837,12 @@ pte_t *__find_linux_pte(pgd_t *pgdir, unsigned long ea,
+ 				ret_pte = (pte_t *) pmdp;
+ 				goto out;
+ 			}
+-
+-			if (pmd_huge(pmd)) {
++			/*
++			 * pmd_large check below will handle the swap pmd pte
++			 * we need to do both the check because they are config
++			 * dependent.
++			 */
++			if (pmd_huge(pmd) || pmd_large(pmd)) {
+ 				ret_pte = (pte_t *) pmdp;
+ 				goto out;
+ 			} else if (is_hugepd(__hugepd(pmd_val(pmd))))
+diff --git a/arch/powerpc/mm/pgtable-book3s64.c b/arch/powerpc/mm/pgtable-book3s64.c
+index cb73b3f9912c..30bd47c44af3 100644
+--- a/arch/powerpc/mm/pgtable-book3s64.c
++++ b/arch/powerpc/mm/pgtable-book3s64.c
+@@ -76,7 +76,7 @@ void set_pmd_at(struct mm_struct *mm, unsigned long addr,
+ 	WARN_ON((pte_raw(pmd_pte(*pmdp)) & cpu_to_be64(_PAGE_PRESENT)) &&
+ 		!pte_protnone(pmd_pte(*pmdp)));
+ 	assert_spin_locked(pmd_lockptr(mm, pmdp));
+-	WARN_ON(!(pmd_trans_huge(pmd) || pmd_devmap(pmd)));
++	WARN_ON(!(pmd_large(pmd) || pmd_devmap(pmd)));
+ #endif
+ 	trace_hugepage_set_pmd(addr, pmd_val(pmd));
+ 	return set_pte_at(mm, addr, pmdp_ptep(pmdp), pmd_pte(pmd));
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 53e9eeecd5d4..e15e63079ba8 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -306,7 +306,7 @@ struct page *pud_page(pud_t pud)
+  */
+ struct page *pmd_page(pmd_t pmd)
+ {
+-	if (pmd_trans_huge(pmd) || pmd_huge(pmd) || pmd_devmap(pmd))
++	if (pmd_large(pmd) || pmd_huge(pmd) || pmd_devmap(pmd))
+ 		return pte_page(pmd_pte(pmd));
+ 	return virt_to_page(pmd_page_vaddr(pmd));
+ }
 -- 
 2.17.1
