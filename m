@@ -1,23 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xdqj61L7zDqk8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 21:10:41 +1000 (AEST)
-Subject: Re: [PATCH] drivers/video/fbdev: use ioremap_wc() instead of
- __ioremap(_PAGE_NO_CACHE)
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-References: <0fe514f6e105a2c7f773679a14fce80216594a9b.1535103285.git.christophe.leroy@c-s.fr>
- <20180824110548.GV24439@gate.crashing.org>
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Message-ID: <78342b34-1a47-26a5-1636-0f7f64588c73@c-s.fr>
-Date: Fri, 24 Aug 2018 13:10:37 +0200
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [88.99.104.3])
+ by lists.ozlabs.org (Postfix) with ESMTP id 41xgzl1MpmzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 22:47:45 +1000 (AEST)
+Date: Fri, 24 Aug 2018 14:47:37 +0200
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] macintosh: therm_windtunnel: drop using attach_adapter
+Message-ID: <20180824124737.pdiktpor5ofpfo45@ninjato>
+References: <20180821150240.19964-1-wsa@the-dreams.de>
+ <20180821150240.19964-2-wsa@the-dreams.de>
 MIME-Version: 1.0
-In-Reply-To: <20180824110548.GV24439@gate.crashing.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="exskspteuohzfyut"
+In-Reply-To: <20180821150240.19964-2-wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +26,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+--exskspteuohzfyut
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Le 24/08/2018 à 13:05, Segher Boessenkool a écrit :
-> On Fri, Aug 24, 2018 at 10:16:22AM +0000, Christophe Leroy wrote:
->> _PAGE_NO_CACHE is a target specific flag. Prefer generic functions.
-> 
->>   #ifdef CONFIG_PPC
->> -	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
->> +	p->screen_base = ioremap_wc(addr, 0x200000);
->>   #else
-> 
-> But that is not the same.  I think you want ioremap_nocache?
-> 
-> 
+On Tue, Aug 21, 2018 at 05:02:39PM +0200, Wolfram Sang wrote:
+> As we now have deferred probing, we can use a custom mechanism and
+> finally get rid of the legacy interface from the i2c core.
+>=20
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 
-No, ioremap_nocache() is _PAGE_NO_CACHE | _PAGE_GUARDED
+Applied to for-next, thanks!
 
 
+--exskspteuohzfyut
+Content-Type: application/pgp-signature; name="signature.asc"
 
-/arch/powerpc/include/asm/io.h
+-----BEGIN PGP SIGNATURE-----
 
-#define ioremap_nocache(addr, size)	ioremap((addr), (size))
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlt//mUACgkQFA3kzBSg
+KbZYGg//U81jqO+xJivJmJi18OYtguMoRFghC2VH4BjYdMP9yyy6JsXqr63AIRF4
+IBkR4zmRtm5xU8IOL8LAHBIOHQ5blY1HvqXG7y4uV2X1L7vpSD7vneKR0noJg/OC
+k2DFPyFdIahTkVvhYAbJLo/ypmpccWYP9ySkGIl7haLktoSGKkZJCT+lRl6qKRx+
+Jw0aOykpHgVFt/Tg2WDcMwnM+jpQwZ0pGmzdZ69bQT4kH/bUJJDFa+fGHSzw0GOj
+c6si5muNsw/Yj12IBRlXYJf7Xg8C7dZLkqqWeX7wYlvOSuAaTksJaZ2ZrNB22hiD
+k5UsyNgONl6cfT2gvXdidVk5QPB5NkXgTLxejeLp9Lk8kD5jpqno+eOpD8xTVjQv
+0POmu0fAkgla7Hmaq5xCj+8aXNUwogpInnUcE7R4/4tYs+nOcAYRdFMnTR/olHUP
+LfEyYeX+0WX+04IVZY5BrxoyNJyRuxJuqQ1NggifYl9xPwMSSdSA0Ba6uvFh3G9F
+HvpG/PYZmzHS3T7pmFVe25Jm0implMScwP7OrUcYeSMzOdz4+g7rEDVYGF+Jg9HP
+oMLGrZRwnIg1ZPzRwVV7oOs73V03q3TSuJbN5W/aSb9vE4K9irhvL7+4JlwwaNfE
+teacpRRlN3sboLv+k+jG23J4XcPXc/bjd4FIcdk6RRBKZTiuTWk=
+=Qivk
+-----END PGP SIGNATURE-----
 
-
-/arch/powerpc/mm/pgtable_32.c:
-
-void __iomem *
-ioremap_wc(phys_addr_t addr, unsigned long size)
-{
-	return __ioremap_caller(addr, size, _PAGE_NO_CACHE,
-				__builtin_return_address(0));
-}
-
-void __iomem *
-ioremap(phys_addr_t addr, unsigned long size)
-{
-	return __ioremap_caller(addr, size, _PAGE_NO_CACHE | _PAGE_GUARDED,
-				__builtin_return_address(0));
-}
-
-Christophe
+--exskspteuohzfyut--
