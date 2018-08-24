@@ -1,39 +1,27 @@
-Return-Path: <bauerman@linux.ibm.com>
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
- [148.163.156.1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com
+ [IPv6:2607:f8b0:4864:20::643])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xQyT4wHkzDqrT
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 13:00:49 +1000 (AEST)
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7O2wxrp040146
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 23:00:47 -0400
-Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m26k5nx47-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 23:00:47 -0400
-Received: from localhost
- by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
- Thu, 23 Aug 2018 23:00:46 -0400
-From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xR351hbQzDr3g
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 13:04:47 +1000 (AEST)
+Received: by mail-pl1-x643.google.com with SMTP id c6-v6so455395pls.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 20:04:47 -0700 (PDT)
+Subject: Re: [PATCH kernel RFC 0/3] powerpc/pseries/iommu: GPU coherent memory
+ pass through
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Anshuman Khandual <anshuman.linux@gmail.com>,
+Cc: David Gibson <david@gibson.dropbear.id.au>, kvm-ppc@vger.kernel.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
- Mike Anderson <andmike@linux.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Ram Pai <linuxram@us.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Thiago Jung Bauermann <bauerman@linux.ibm.com>
-Subject: [RFC PATCH 11/11] powerpc/svm: Increase SWIOTLB buffer size
-Date: Thu, 23 Aug 2018 23:59:33 -0300
-In-Reply-To: <20180824025933.24319-1-bauerman@linux.ibm.com>
-References: <20180824025933.24319-1-bauerman@linux.ibm.com>
-Message-Id: <20180824025933.24319-12-bauerman@linux.ibm.com>
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>,
+ Russell Currey <ruscur@russell.cc>
+References: <20180725095032.2196-1-aik@ozlabs.ru>
+ <f5bb1df3-1b15-9c2b-8bb1-7733bb743926@ozlabs.ru>
+Message-ID: <a28c139e-deb6-cdb3-1eb5-b8d6e7378ce1@ozlabs.ru>
+Date: Fri, 24 Aug 2018 13:04:38 +1000
+MIME-Version: 1.0
+In-Reply-To: <f5bb1df3-1b15-9c2b-8bb1-7733bb743926@ozlabs.ru>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,66 +31,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-SWIOTLB buffer default size (64MB) is not enough for large sequential write
-operations which eventually leads to kernel crash like here.
 
-virtio-pci 0000:00:05.0: swiotlb buffer is full (sz: 327680 bytes)
-virtio-pci 0000:00:05.0: DMA: Out of SW-IOMMU space for 327680 bytes
-Kernel panic - not syncing: DMA: Random memory could be DMA read
-CPU: 12 PID: 3985 Comm: mkfs.ext4 Not tainted 4.18.0-rc4+ #285
-Call Trace:
-[c0000007d2a27020] [c000000000cfdffc] dump_stack+0xb0/0xf4 (unreliable)
-[c0000007d2a27060] [c000000000112a98] panic+0x140/0x328
-[c0000007d2a270f0] [c0000000001b4f88] swiotlb_full+0x108/0x130
-[c0000007d2a27180] [c0000000001b5f6c] swiotlb_map_page+0x25c/0x2c0
-[c0000007d2a271e0] [c0000000007bfaf8] vring_map_one_sg.isra.0+0x58/0x70
-[c0000007d2a27200] [c0000000007c08dc] virtqueue_add_sgs+0x1bc/0x690
-[c0000007d2a272f0] [d0000000042a1280] virtio_queue_rq+0x358/0x4a0 [virtio_blk]
-[c0000007d2a273d0] [c0000000006b5d68] blk_mq_dispatch_rq_list+0x1f8/0x6d0
-..................
+On 09/08/2018 14:41, Alexey Kardashevskiy wrote:
+> 
+> 
+> On 25/07/2018 19:50, Alexey Kardashevskiy wrote:
+>> I am trying to pass through a 3D controller:
+>> [0302]: NVIDIA Corporation GV100GL [Tesla V100 SXM2] [10de:1db1] (rev a1)
+>>
+>> which has a quite unique feature as coherent memory directly accessible
+>> from a POWER9 CPU via an NVLink2 transport.
+>>
+>> So in addition to passing a PCI device + accompanying NPU devices,
+>> we will also be passing the host physical address range as it is done
+>> on the bare metal system.
+>>
+>> The memory on the host is presented as:
+>>
+>> ===
+>> [aik@yc02goos ~]$ lsprop /proc/device-tree/memory@42000000000
+>> ibm,chip-id      000000fe (254)
+>> device_type      "memory"
+>> compatible       "ibm,coherent-device-memory"
+>> reg              00000420 00000000 00000020 00000000
+>> linux,usable-memory
+>>                  00000420 00000000 00000000 00000000
+>> phandle          00000726 (1830)
+>> name             "memory"
+>> ibm,associativity
+>>                  00000004 000000fe 000000fe 000000fe 000000fe
+>> ===
+>>
+>> and the host does not touch it as the second 64bit value of
+>> "linux,usable-memory" - the size - is null. Later on the NVIDIA driver
+>> trains the NVLink2 and probes this memory and this is how it becomes
+>> onlined.
+>>
+>> In the virtual environment I am planning on doing the same thing,
+>> however there is a difference in 64bit DMA handling. The powernv
+>> platform uses a PHB3 bypass mode and that just works but
+>> the pseries platform uses DDW RTAS API to achieve the same
+>> result and the problem with this is that we need a huge DMA
+>> window to start from zero (because this GPU supports less than
+>> 50bits for DMA address space) and cover not just present memory
+>> but also this new coherent memory.
+>>
+>>
+>> This is based on sha1
+>> d72e90f3 Linus Torvalds "Linux 4.18-rc6".
+>>
+>> Please comment. Thanks.
+> 
+> 
+> Ping?
 
-Increase the SWIOTLB size to 1GB on Ultravisor based secure guests.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
----
- arch/powerpc/Kconfig | 5 +++++
- kernel/dma/swiotlb.c | 5 +++++
- 2 files changed, 10 insertions(+)
+Ping?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 1466d1234723..fee7194ce9e4 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -457,6 +457,11 @@ config PPC_SVM
- 
- 	 If unsure, say "N".
- 
-+config SWIOTLB_DEFAULT_SIZE
-+       int "Size of Software I/O TLB buffer (in MiB)"
-+       default "1024"
-+       depends on PPC_SVM
-+
- config PPC_TRANSACTIONAL_MEM
-        bool "Transactional Memory support for POWERPC"
-        depends on PPC_BOOK3S_64
-diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
-index 04b68d9dffac..32dc67422d8a 100644
---- a/kernel/dma/swiotlb.c
-+++ b/kernel/dma/swiotlb.c
-@@ -146,8 +146,13 @@ void swiotlb_set_max_segment(unsigned int val)
- 		max_segment = rounddown(val, PAGE_SIZE);
- }
- 
-+#ifdef CONFIG_SWIOTLB_DEFAULT_SIZE
-+#define IO_TLB_DEFAULT_SIZE ((unsigned long) CONFIG_SWIOTLB_DEFAULT_SIZE << 20)
-+#else
- /* default to 64MB */
- #define IO_TLB_DEFAULT_SIZE (64UL<<20)
-+#endif
-+
- unsigned long swiotlb_size_or_default(void)
- {
- 	unsigned long size;
+> 
+> 
+>>
+>>
+>>
+>> Alexey Kardashevskiy (3):
+>>   powerpc/pseries/iommu: Allow dynamic window to start from zero
+>>   powerpc/pseries/iommu: Force default DMA window removal
+>>   powerpc/pseries/iommu: Use memory@ nodes in max RAM address
+>>     calculation
+>>
+>>  arch/powerpc/platforms/pseries/iommu.c | 77 ++++++++++++++++++++++++++++++----
+>>  1 file changed, 70 insertions(+), 7 deletions(-)
+>>
+> 
+
+-- 
+Alexey
