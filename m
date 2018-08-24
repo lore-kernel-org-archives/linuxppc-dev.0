@@ -1,30 +1,29 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rdunlap@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2607:7c80:54:e::133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xnR930b2zDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:53:24 +1000 (AEST)
-Date: Fri, 24 Aug 2018 11:52:42 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Rob Herring <robh@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Kumar Gala <kumar.gala@linaro.org>, devicetree@vger.kernel.org,
- devicetree-spec@vger.kernel.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Grant Likely <grant.likely@arm.com>, Frank Rowand <frowand.list@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: DT case sensitivity
-Message-ID: <20180824165242.GW24439@gate.crashing.org>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
- <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
- <20180823123650.GT24439@gate.crashing.org>
- <CAL_Jsq+VnhT_4H4yECWsuXnmpQRnSHNRXAohRYds1LxcRjUHkw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_Jsq+VnhT_4H4yECWsuXnmpQRnSHNRXAohRYds1LxcRjUHkw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xnyP2N4QzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 03:17:01 +1000 (AEST)
+Subject: Re: [RFC PATCH 11/11] powerpc/svm: Increase SWIOTLB buffer size
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Anshuman Khandual <anshuman.linux@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mike Anderson <andmike@linux.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Ram Pai <linuxram@us.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+References: <20180824162535.22798-1-bauerman@linux.ibm.com>
+ <20180824162535.22798-12-bauerman@linux.ibm.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <45561478-ee75-ee62-52d6-a96d60132669@infradead.org>
+Date: Fri, 24 Aug 2018 10:16:46 -0700
+MIME-Version: 1.0
+In-Reply-To: <20180824162535.22798-12-bauerman@linux.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +33,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 24, 2018 at 10:14:01AM -0500, Rob Herring wrote:
-> Another question: Is there ever a case where the node name in the path
-> aka 'driver-name' doesn't match the 'name' property? I think this
-> generally can't happen on FDT as the 'name' property is generated when
-> we unflatten it though I suppose one could craft an FDT with name
-> properties.
+On 08/24/2018 09:25 AM, Thiago Jung Bauermann wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> 
+> SWIOTLB buffer default size (64MB) is not enough for large sequential write
+> operations which eventually leads to kernel crash like here.
+> 
+> virtio-pci 0000:00:05.0: swiotlb buffer is full (sz: 327680 bytes)
+> virtio-pci 0000:00:05.0: DMA: Out of SW-IOMMU space for 327680 bytes
+> Kernel panic - not syncing: DMA: Random memory could be DMA read
+> CPU: 12 PID: 3985 Comm: mkfs.ext4 Not tainted 4.18.0-rc4+ #285
+> Call Trace:
+> [c0000007d2a27020] [c000000000cfdffc] dump_stack+0xb0/0xf4 (unreliable)
+> [c0000007d2a27060] [c000000000112a98] panic+0x140/0x328
+> [c0000007d2a270f0] [c0000000001b4f88] swiotlb_full+0x108/0x130
+> [c0000007d2a27180] [c0000000001b5f6c] swiotlb_map_page+0x25c/0x2c0
+> [c0000007d2a271e0] [c0000000007bfaf8] vring_map_one_sg.isra.0+0x58/0x70
+> [c0000007d2a27200] [c0000000007c08dc] virtqueue_add_sgs+0x1bc/0x690
+> [c0000007d2a272f0] [d0000000042a1280] virtio_queue_rq+0x358/0x4a0 [virtio_blk]
+> [c0000007d2a273d0] [c0000000006b5d68] blk_mq_dispatch_rq_list+0x1f8/0x6d0
+> ..................
+> 
+> Increase the SWIOTLB size to 1GB on Ultravisor based secure guests.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> ---
+>  arch/powerpc/Kconfig | 5 +++++
+>  kernel/dma/swiotlb.c | 5 +++++
+>  2 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1466d1234723..fee7194ce9e4 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -457,6 +457,11 @@ config PPC_SVM
+>  
+>  	 If unsure, say "N".
+>  
+> +config SWIOTLB_DEFAULT_SIZE
+> +       int "Size of Software I/O TLB buffer (in MiB)"
+> +       default "1024"
 
-In Open Firmware, it *is* the "name" property :-)
+I would add a "range" to limit (restrict) how small or large that can be.  E.g.:
 
-> There's also various places in the kernel that check for a NULL name
-> which doesn't seem like it could happen either other than the root
-> node.
+	range 16 102400
 
-In Open Firmware the root node is required to have a "name" property, too.
-There are systems that violate that rule (as with most rules...)
+or even smaller for the maximum value...
+
+> +       depends on PPC_SVM
+> +
+>  config PPC_TRANSACTIONAL_MEM
+>         bool "Transactional Memory support for POWERPC"
+>         depends on PPC_BOOK3S_64
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index 04b68d9dffac..32dc67422d8a 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -146,8 +146,13 @@ void swiotlb_set_max_segment(unsigned int val)
+>  		max_segment = rounddown(val, PAGE_SIZE);
+>  }
+>  
+> +#ifdef CONFIG_SWIOTLB_DEFAULT_SIZE
+> +#define IO_TLB_DEFAULT_SIZE ((unsigned long) CONFIG_SWIOTLB_DEFAULT_SIZE << 20)
+> +#else
+>  /* default to 64MB */
+>  #define IO_TLB_DEFAULT_SIZE (64UL<<20)
+> +#endif
+> +
+>  unsigned long swiotlb_size_or_default(void)
+>  {
+>  	unsigned long size;
+> 
 
 
-Segher
+-- 
+~Randy
