@@ -1,46 +1,19 @@
-Return-Path: <robh+dt@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xmcq4tybzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:16:43 +1000 (AEST)
-Received: from mail-qt0-f172.google.com (mail-qt0-f172.google.com
- [209.85.216.172])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id C777421581
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 16:16:40 +0000 (UTC)
-Received: by mail-qt0-f172.google.com with SMTP id m13-v6so10757971qth.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 09:16:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xmm15w4dzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:22:57 +1000 (AEST)
+Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
+To: Radu Rendec <radu.rendec@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <oss@buserror.net>
+References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
+Date: Fri, 24 Aug 2018 16:20:32 +0000
 MIME-Version: 1.0
-References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
- <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
- <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
- <AM6PR04MB478980C90EE825D024D8B977F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
-In-Reply-To: <AM6PR04MB478980C90EE825D024D8B977F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
-From: Rob Herring <robh+dt@kernel.org>
-Date: Fri, 24 Aug 2018 11:16:28 -0500
-Message-ID: <CAL_Jsq+QrDR_YyZ+icftUrwOoMZcSCMkmj8cR=bqEJ-q+pdntg@mail.gmail.com>
-Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
-To: vabhav.sharma@nxp.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
- <linux-arm-kernel@lists.infradead.org>,
- Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
- linux-clk <linux-clk@vger.kernel.org>,
- "open list:THERMAL" <linux-pm@vger.kernel.org>,
- linux-kernel-owner@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Arnd Bergmann <arnd@arndb.de>, Kate Stewart <kstewart@linuxfoundation.org>,
- Masahiro Yamada <yamada.masahiro@socionext.com>,
- Russell King <linux@armlinux.org.uk>, V.Sethi@nxp.com,
- Udit Kumar <udit.kumar@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>,
- Sriram Dash <sriram.dash@nxp.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,61 +23,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2018 at 10:08 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
+Hi
 
-[...]
+On 08/03/2018 04:36 PM, Radu Rendec wrote:
+> Hi Everyone,
+> 
+> Is there any kernel code that handles the "reset status register" (RSR)
+> on MPC83xx? I looked at arch/powerpc/platforms/83xx/misc.c, but it seems
+> to only map the reset register area and it's static. The watchdog driver
+> (drivers/watchdog/mpc8xxx_wdt.c) doesn't seem to look at it either (for
+> the bootstatus flags).
 
-> > > +               i2c@3 {
-> > > +                       #address-cells = <1>;
-> > > +                       #size-cells = <0>;
-> > > +                       reg = <0x3>;
-> > > +
-> > > +                       sa56004@4c {
-> >
-> > temperature-sensor@4c
-> Ok, temperature-sensor-1@4c
+How do you boot your Linux kernel ?
 
-No, that's not what I said. You don't need the '-1' because the
-unit-address makes the node name unique. Node names are supposed to be
-generic based on the class/type of device. See the DT spec.
+My 832x board boots using U-boot, and U-boot reads the RSR then clears 
+it. So when Linux kernel reads it, it is just 0.
 
-> >
-> > > +                               compatible = "nxp,sa56004";
-> > > +                               reg = <0x4c>;
-> > > +                       };
-> > > +
-> > > +                       sa56004@4d {
-> Ok,temperature-sensor-2@4d
-> > > +                               compatible = "nxp,sa56004";
-> > > +                               reg = <0x4d>;
-> > > +                       };
-> > > +               };
-> > > +       };
-> > > +};
-> > > +
-> > > +&i2c4 {
-> > > +       status = "okay";
-> > > +
-> > > +       rtc@51 {
-> > > +               compatible = "nxp,pcf2129";
-> > > +               reg = <0x51>;
-> > > +               // IRQ10_B
-> > > +               interrupts = <0 150 0x4>;
-> > > +               };
-> > > +
-> > > +};
-> > > +
-> > > +&usb0 {
-> > > +       status = "okay";
-> > > +};
-> > > +
-> > > +&usb1 {
-> > > +       status = "okay";
-> > > +};
-> > > +
-> > > +&crypto {
-> > > +       status = "okay";
-> > > +};
-> > > --
-> > > 2.7.4
-> > >
+> 
+> Basically I need to check the CPU reset reason and I thought I would ask
+> first, before starting to write any code of my own.
+
+Anyway, find below a set of two patches I used for testing. Feel free to 
+use them if you bootloader doesn't clear the register
+
+Christophe
+
+commit f5171b463b149d6d60816fd9673e0367c0d6a90c
+Author: Christophe Leroy <christophe.leroy@c-s.fr>
+Date:   Wed Aug 22 12:49:42 2018 +0000
+
+     powerpc/83xx: Show reset status at startup
+
+     The 83xx has a register called Reset Status Register that
+     shows the reason of the last reset.
+
+     Print this reason at startup.
+
+     Suggested-by: Radu Rendec <radu.rendec@gmail.com>
+
+diff --git a/arch/powerpc/platforms/83xx/misc.c 
+b/arch/powerpc/platforms/83xx/misc.c
+index 773559431459..a3dbc22088d9 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -24,6 +24,16 @@
+  #include "mpc83xx.h"
+
+  #define RST_OFFSET	0x00000900
++#define RST_STAT_REG	0x00000010
++#define RSR_BSF		BIT(15)
++#define RSR_SWSR	BIT(18)
++#define RSR_SWHR	BIT(19)
++#define RSR_JSRS	BIT(23)
++#define RSR_CSHR	BIT(27)
++#define RSR_SWRS	BIT(28)
++#define RSR_BMRS	BIT(29)
++#define RSR_SRS		BIT(30)
++#define RSR_HRS		BIT(31)
+  #define RST_PROT_REG	0x00000018
+  #define RST_CTRL_REG	0x0000001c
+
+@@ -34,6 +44,32 @@ static int __init mpc83xx_restart_init(void)
+  	/* map reset restart_reg_baseister space */
+  	restart_reg_base = ioremap(get_immrbase() + RST_OFFSET, 0xff);
+
++	if (restart_reg_base) {
++		u32 status = in_be32(restart_reg_base + (RST_STAT_REG >> 2));
++
++		if (status & RSR_BSF)
++			pr_info("Reset Status: Boot Sequencer Fail\n");
++		if (status & RSR_SWSR)
++			pr_info("Reset Status: Software soft reset\n");
++		if (status & RSR_SWHR)
++			pr_info("Reset Status: Software hard reset\n");
++		if (status & RSR_JSRS)
++			pr_info("Reset Status: JTAG soft reset\n");
++		if (status & RSR_CSHR)
++			pr_info("Reset Status: Checkstop reset\n");
++		if (status & RSR_SWRS)
++			pr_info("Reset Status: Software watchdog reset\n");
++		if (status & RSR_BMRS)
++			pr_info("Reset Status: Bus monitor reset\n");
++		if (status & RSR_SRS)
++			pr_info("Reset Status: Soft reset\n");
++		if (status & RSR_HRS)
++			pr_info("Reset Status: Hard reset\n");
++
++		/* clear reset statuses */
++		out_be32(restart_reg_base + (RST_STAT_REG >> 2), status);
++	}
++
+  	return 0;
+  }
+
+
+commit c1ef17dd9c736c5e1b94da68852ae761a193090f
+Author: Christophe Leroy <christophe.leroy@c-s.fr>
+Date:   Wed Aug 22 12:19:02 2018 +0000
+
+     powerpc/83xx: Move reset registers defines before functions
+
+     Move the registers defines before/out of the functions.
+     Reuse in another function.
+
+diff --git a/arch/powerpc/platforms/83xx/misc.c 
+b/arch/powerpc/platforms/83xx/misc.c
+index d75c9816a5c9..773559431459 100644
+--- a/arch/powerpc/platforms/83xx/misc.c
++++ b/arch/powerpc/platforms/83xx/misc.c
+@@ -23,12 +23,16 @@
+
+  #include "mpc83xx.h"
+
++#define RST_OFFSET	0x00000900
++#define RST_PROT_REG	0x00000018
++#define RST_CTRL_REG	0x0000001c
++
+  static __be32 __iomem *restart_reg_base;
+
+  static int __init mpc83xx_restart_init(void)
+  {
+  	/* map reset restart_reg_baseister space */
+-	restart_reg_base = ioremap(get_immrbase() + 0x900, 0xff);
++	restart_reg_base = ioremap(get_immrbase() + RST_OFFSET, 0xff);
+
+  	return 0;
+  }
+@@ -37,10 +41,6 @@ arch_initcall(mpc83xx_restart_init);
+
+  void __noreturn mpc83xx_restart(char *cmd)
+  {
+-#define RST_OFFSET	0x00000900
+-#define RST_PROT_REG	0x00000018
+-#define RST_CTRL_REG	0x0000001c
+-
+  	local_irq_disable();
+
+  	if (restart_reg_base) {
