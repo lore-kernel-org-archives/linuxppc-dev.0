@@ -1,23 +1,22 @@
-Return-Path: <clg@kaod.org>
-Received: from 17.mo5.mail-out.ovh.net (17.mo5.mail-out.ovh.net
- [46.105.56.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xd522Lz8zDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 20:37:08 +1000 (AEST)
-Received: from player792.ha.ovh.net (unknown [10.109.146.20])
- by mo5.mail-out.ovh.net (Postfix) with ESMTP id A86DD1DB436
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 08:58:22 +0200 (CEST)
-Subject: Re: [PATCH v2] powerpc/xive: Avoid unitialized variable
-To: Breno Leitao <leitao@debian.org>, linuxppc-dev@lists.ozlabs.org
-References: <3b8841ac-ebbb-523e-0d65-ebe27a702d3c@kaod.org>
- <1535066799-8493-1-git-send-email-leitao@debian.org>
-From: =?UTF-8?Q?C=c3=a9dric_Le_Goater?= <clg@kaod.org>
-Message-ID: <f4d40649-e9c8-b5cf-6f9d-3c90a5994bfc@kaod.org>
-Date: Fri, 24 Aug 2018 08:58:17 +0200
-MIME-Version: 1.0
-In-Reply-To: <1535066799-8493-1-git-send-email-leitao@debian.org>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xdkM3y0SzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 21:06:03 +1000 (AEST)
+Date: Fri, 24 Aug 2018 06:05:48 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH] drivers/video/fbdev: use ioremap_wc() instead of
+ __ioremap(_PAGE_NO_CACHE)
+Message-ID: <20180824110548.GV24439@gate.crashing.org>
+References: <0fe514f6e105a2c7f773679a14fce80216594a9b.1535103285.git.christophe.leroy@c-s.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0fe514f6e105a2c7f773679a14fce80216594a9b.1535103285.git.christophe.leroy@c-s.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/24/2018 01:26 AM, Breno Leitao wrote:
-> From: Breno Leitao <breno.leitao@gmail.com>
-> 
-> Function xive_native_get_ipi() might uses chip_id without it being
-> initialized.
-> 
-> This gives the following error on 'smatch' tool:
-> 
-> 	error: uninitialized symbol 'chip_id'
-> 
-> The suggestion is using xc->chip_id instead of consulting the OF for chip id,
-> which is safe since xive_prepare_cpu() should have initialized ->chip_id by
-> the time xive_native_get_ipi() is called.
-> 
-> CC: Cédric Le Goater <clg@kaod.org>
-> Signed-off-by: Breno Leitao <leitao@debian.org>
+On Fri, Aug 24, 2018 at 10:16:22AM +0000, Christophe Leroy wrote:
+> _PAGE_NO_CACHE is a target specific flag. Prefer generic functions.
+
+>  #ifdef CONFIG_PPC
+> -	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
+> +	p->screen_base = ioremap_wc(addr, 0x200000);
+>  #else
+
+But that is not the same.  I think you want ioremap_nocache?
 
 
-
-Reviewed-by: Cédric Le Goater <clg@kaod.org>
-
-Thanks,
-
-C.
-
-> ---
->  arch/powerpc/sysdev/xive/native.c | 11 +----------
->  1 file changed, 1 insertion(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/xive/native.c b/arch/powerpc/sysdev/xive/native.c
-> index 311185b9960a..bd90fd464a3a 100644
-> --- a/arch/powerpc/sysdev/xive/native.c
-> +++ b/arch/powerpc/sysdev/xive/native.c
-> @@ -238,20 +238,11 @@ static bool xive_native_match(struct device_node *node)
->  #ifdef CONFIG_SMP
->  static int xive_native_get_ipi(unsigned int cpu, struct xive_cpu *xc)
->  {
-> -	struct device_node *np;
-> -	unsigned int chip_id;
->  	s64 irq;
->  
-> -	/* Find the chip ID */
-> -	np = of_get_cpu_node(cpu, NULL);
-> -	if (np) {
-> -		if (of_property_read_u32(np, "ibm,chip-id", &chip_id) < 0)
-> -			chip_id = 0;
-> -	}
-> -
->  	/* Allocate an IPI and populate info about it */
->  	for (;;) {
-> -		irq = opal_xive_allocate_irq(chip_id);
-> +		irq = opal_xive_allocate_irq(xc->chip_id);
->  		if (irq == OPAL_BUSY) {
->  			msleep(1);
->  			continue;
-> 
+Segher
