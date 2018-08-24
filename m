@@ -1,33 +1,36 @@
-Return-Path: <Grant.Likely@arm.com>
-Received: from EUR04-HE1-obe.outbound.protection.outlook.com
- (mail-he1eur04on060c.outbound.protection.outlook.com
- [IPv6:2a01:111:f400:fe0d::60c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bauerman@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41x42f6NZxzF2Dd
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 22:48:10 +1000 (AEST)
-Subject: Re: DT case sensitivity
-To: Rob Herring <robh@kernel.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>, Kumar Gala <kumar.gala@linaro.org>,
- David Gibson <david@gibson.dropbear.id.au>,
- Frank Rowand <frowand.list@gmail.com>, devicetree-spec@vger.kernel.org,
- devicetree@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
- <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
- <13bf5b39-0461-351e-57e3-60264eaa374d@arm.com>
- <CAL_Jsq+1T8k5mtc-DgDBtX3Qco9sQG9RWv6FTZ8NXppNbNg3Ww@mail.gmail.com>
- <e9009f6dd3aded2b9aa735973f4eed8386dd9afb.camel@kernel.crashing.org>
- <CAL_JsqKnbFAydf7ets0=KySm3P3b_7np-EVWz3Gh6qO+imJ+eg@mail.gmail.com>
-From: Grant Likely <grant.likely@arm.com>
-Message-ID: <d0e8b2f1-788e-2ad8-10de-7bbc412c301d@arm.com>
-Date: Thu, 23 Aug 2018 13:48:00 +0100
-MIME-Version: 1.0
-In-Reply-To: <CAL_JsqKnbFAydf7ets0=KySm3P3b_7np-EVWz3Gh6qO+imJ+eg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xQxd1DZZzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 13:00:01 +1000 (AEST)
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7O2x4Bf023945
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 22:59:59 -0400
+Received: from e12.ny.us.ibm.com (e12.ny.us.ibm.com [129.33.205.202])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m265w6s55-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2018 22:59:59 -0400
+Received: from localhost
+ by e12.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Thu, 23 Aug 2018 22:59:58 -0400
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Anshuman Khandual <anshuman.linux@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mike Anderson <andmike@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ram Pai <linuxram@us.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: [RFC PATCH 00/11] Secure Virtual Machine Enablement
+Date: Thu, 23 Aug 2018 23:59:22 -0300
+Message-Id: <20180824025933.24319-1-bauerman@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,73 +40,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23/08/2018 13:08, Rob Herring wrote:
-> On Thu, Aug 23, 2018 at 6:48 AM Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
->>
->> On Thu, 2018-08-23 at 06:43 -0500, Rob Herring wrote:
->>> On Thu, Aug 23, 2018 at 4:02 AM Grant Likely <grant.likely@arm.com> wro=
-te:
->>>>
->>>>
->>>> What problem are you trying to solve?
->>>
->>> I'm looking at removing device_node.name and using full_name instead
->>> (which now is only the local node name plus unit-address). This means
->>> replacing of_node_cmp() (and still some strcmp) calls in a lot of
->>> places. I need to use either strncmp or strncasecmp instead.
->>>
->>>> I would think making everything
->>>> case insensitive would be the direction to go if you do anything. Leas=
-t
->>>> possibility of breaking existing platforms in that scenario.
->>>
->>> Really? Even if all the "new" arches are effectively case sensitive?
->>> Anything using dtc and libfdt are (and json-schema certainly will be).
->>> But I frequently say the kernel's job is not DT validation, so you
->>> pass crap in, you get undefined results.
->>
->> I tend to agree with Grant. Let's put it this way:
->>
->> What is the drawback of being case insensitive ?
->
-> It's a more expensive comparison. I don't think it's a hot path, but
-> we do do a lot of string compares.
+This series contains preliminary work to enable Secure Virtual Machines
+(SVM) on powerpc. SVMs request to be migrated to secure memory very early in
+the boot process (in prom_init()), so by default all of their memory is
+inaccessible to the hypervisor. There is an ultravisor call that the VM can
+use to request certain pages to be made accessible (aka shared).
 
-I'd hazard to argue that the cost of the string compare will not be a
-source of performance problems when compared to doing a linear search
-everytime a DT lookup is performed. The search algorithm is far more
-problematic.
+The objective of these patches is to have the guest perform this request for
+buffers that need to be shared with the hypervisor, such as the LPPACAs, the
+SWIOTLB buffer and the Debug Trace Log. This work is incomplete: there are
+surely other memory regions that need to be made accessible, but I'm posting
+it early to get comments on whether the approach being taken is appropriate.
 
-> Property names are case sensitive already. It would be nice if
-> everything was treated the same way.
->
-> If we're case sensitive then it is well defined which node we'll match
-> and which one will be ignored. Otherwise, it is whichever one we
-> happen to match first.
+It should be applied on top of the generic virtio DMA API rework series
+posted earlier, which adds a platform hook to override any arch based DMA
+API operations for any virtio device:
 
-If case-insensitive-always is chosen, then the kernel should probably
-complain at add node time if another matching node name already exists.
-That's a relatively easy thing to test.
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-July/175994.html
 
-You are right however that in the FDT world we're case-sensitive now and
-if it is relaxed then we're never going back. You could try switching
-everyone over to case-sensitive and see if anything falls out in
-linux-next for a few cycles. I would not touch the PPC or SPARC
-behaviour. I don't think it is worth the risk to make the kernel more
-strict when we cannot test the result. Only if everything was changed to
-case-insensitive would it make sense to touch PPC and SPARC at the same
-time because it reduces the number of platform variations.
+I'm aware that changes need to be made to the patch series above, but IIUC
+it depends on upcoming virtio cleanup from Christoph Hellwig so for now the
+patch series above will be used as a stepping stone for this series.
 
-If you do change compatible matches to be case sensitive, then you
-should be prepared to fix bugs where the driver uses a different case
-from the DTS. In which case drivers will need to be modified to accept
-the deviant property names.
+This code has been tested with virtio block, net and scsi devices with and
+without VIRTIO_F_IOMMU_PLATFORM flag. Please let me know what you think.
 
-g.
+For now I am testing on a regular guest with a couple of patches on top
+forcing is_svm_platform() to always return true and adding debug messages to
+confirm that mem_convert_shared() is being called in the expected places.
 
-IMPORTANT NOTICE: The contents of this email and any attachments are confid=
-ential and may also be privileged. If you are not the intended recipient, p=
-lease notify the sender immediately and do not disclose the contents to any=
- other person, use it for any purpose, or store or copy the information in =
-any medium. Thank you.
+These are the commands I'm using to start up the guest:
+
+Without VIRTIO_F_IOMMU_PLATFORM:
+
+qemu-system-ppc64 \
+  -enable-kvm \
+  -kernel /home/bauermann/src/linux/arch/powerpc/boot/zImage \
+  -append "root=PARTUUID=e550ad6f-05 ro" \
+  -machine pseries-2.6 \
+  -m 8G \
+  -smp 2 \
+  -serial mon:stdio \
+  -nographic \
+  -nodefaults \
+  -device virtio-scsi-pci,id=scsi0,bus=pci.0,addr=0x4 \
+  -drive file=/home/bauermann/VMs/svm.qcow2,format=qcow2,if=none,id=drive-scsi0-0-0-0 \
+  -device scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun=0,drive=drive-scsi0-0-0-0,id=scsi0-0-0-0 \
+  -drive file=/home/bauermann/VMs/svm-blk.qcow2,format=qcow2,if=none,id=drive-virtio-disk0 \
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x5,drive=drive-virtio-disk0,id=virtio-disk0 \
+  -device virtio-net,netdev=hostnet0,id=net0,mac=52:54:00:96:70:1f \
+  -netdev user,id=hostnet0 \
+  -set netdev.hostnet0.hostfwd=tcp::42022-:22
+
+With VIRTIO_F_IOMMU_PLATFORM. Same as above plus some -global options so
+that the virtio devices use the modern interface rather than the
+transitional one:
+
+qemu-system-ppc64 \
+  -enable-kvm \
+  -kernel /home/bauermann/src/linux/arch/powerpc/boot/zImage \
+  -append "root=PARTUUID=e550ad6f-05 ro" \
+  -machine pseries-2.6 \
+  -m 8G \
+  -smp 2 \
+  -serial mon:stdio \
+  -nographic \
+  -nodefaults \
+  -device virtio-scsi-pci,id=scsi0,bus=pci.0,addr=0x4 \
+  -drive file=/home/bauermann/VMs/svm.qcow2,format=qcow2,if=none,id=drive-scsi0-0-0-0 \
+  -device scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun=0,drive=drive-scsi0-0-0-0,id=scsi0-0-0-0 \
+  -drive file=/home/bauermann/VMs/svm-blk.qcow2,format=qcow2,if=none,id=drive-virtio-disk0 \
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x5,drive=drive-virtio-disk0,id=virtio-disk0 \
+  -device virtio-net,netdev=hostnet0,id=net0,mac=52:54:00:96:70:1f \
+  -netdev user,id=hostnet0 \
+  -set netdev.hostnet0.hostfwd=tcp::42022-:22 \
+  -global virtio-blk-pci.iommu_platform=true \
+  -global virtio-blk-pci.disable-legacy=on \
+  -global virtio-blk-pci.disable-modern=off \
+  -global virtio-net-pci.iommu_platform=true \
+  -global virtio-net-pci.disable-legacy=on \
+  -global virtio-net-pci.disable-modern=off \
+  -global virtio-scsi-pci.iommu_platform=true \
+  -global virtio-scsi-pci.disable-legacy=on \
+  -global virtio-scsi-pci.disable-modern=off
+
+The code was tested with a couple of other permutations where one virtio
+device has the flag VIRTIO_F_IOMMU_PLATFORM and others don't. Please suggest
+some other scenarios which need to be tested as well.
+
+Anshuman Khandual (10):
+  powerpc/svm: Detect Secure Virtual Machine (SVM) platform
+  powerpc/svm: Select CONFIG_DMA_DIRECT_OPS and CONFIG_SWIOTLB
+  powerpc/svm: Add memory conversion (shared/secure) helper functions
+  powerpc/svm: Convert SWIOTLB buffers to shared memory
+  powerpc/svm: Don't release SWIOTLB buffers on secure guests
+  powerpc/svm: Use SWIOTLB DMA API for all virtio devices
+  powerpc/svm: Use shared memory for Debug Trace Log (DTL)
+  powerpc/svm: Use shared memory for LPPACA structures
+  powerpc/svm: Force the use of bounce buffers
+  powerpc/svm: Increase SWIOTLB buffer size
+
+Thiago Jung Bauermann (1):
+  powerpc: Add and use LPPACA_SIZE constant
+
+ arch/powerpc/Kconfig                   | 22 ++++++++
+ arch/powerpc/include/asm/mem_encrypt.h | 19 +++++++
+ arch/powerpc/include/asm/reg.h         |  3 ++
+ arch/powerpc/include/asm/svm.h         | 26 +++++++++
+ arch/powerpc/kernel/Makefile           |  1 +
+ arch/powerpc/kernel/paca.c             | 41 ++++++++++++--
+ arch/powerpc/kernel/svm.c              | 99 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/iommu.c |  6 ++-
+ arch/powerpc/platforms/pseries/setup.c |  5 +-
+ kernel/dma/swiotlb.c                   |  5 ++
+ 10 files changed, 221 insertions(+), 6 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/mem_encrypt.h
+ create mode 100644 arch/powerpc/include/asm/svm.h
+ create mode 100644 arch/powerpc/kernel/svm.c
