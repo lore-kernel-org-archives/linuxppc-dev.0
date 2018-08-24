@@ -2,22 +2,16 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xcMy5rNwzDqk8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 20:05:02 +1000 (AEST)
-Message-Id: <adb9282f01ca9ae55874639b8c26d6d1bba1fda0.1535104490.git.christophe.leroy@c-s.fr>
-In-Reply-To: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
-References: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xcd6206HzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 20:16:26 +1000 (AEST)
+Message-Id: <0fe514f6e105a2c7f773679a14fce80216594a9b.1535103285.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 3/3] drivers/block/z2ram: use ioremap_wt() instead of
- __ioremap(_PAGE_WRITETHRU)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Jens Axboe <axboe@kernel.dk>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
-Date: Fri, 24 Aug 2018 10:04:59 +0000 (UTC)
+Subject: [PATCH] drivers/video/fbdev: use ioremap_wc() instead of
+ __ioremap(_PAGE_NO_CACHE)
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Fri, 24 Aug 2018 10:16:22 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
+_PAGE_NO_CACHE is a target specific flag. Prefer generic functions.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/block/z2ram.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/chipsfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-index d0c5bc4e0703..cfbd70520eeb 100644
---- a/drivers/block/z2ram.c
-+++ b/drivers/block/z2ram.c
-@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
- 			vfree(vmalloc (size));
- 		}
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index f103665cad43..48fbc22d6867 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -401,7 +401,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ #endif /* CONFIG_PMAC_BACKLIGHT */
  
--		vaddr = (unsigned long) __ioremap (paddr, size, 
--						   _PAGE_WRITETHRU);
-+		vaddr = (unsigned long)ioremap_wt(paddr, size);
- 
+ #ifdef CONFIG_PPC
+-	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
++	p->screen_base = ioremap_wc(addr, 0x200000);
  #else
- 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
+ 	p->screen_base = ioremap(addr, 0x200000);
+ #endif
 -- 
 2.13.3
