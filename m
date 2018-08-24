@@ -1,19 +1,36 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bauerman@linux.ibm.com>
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com
+ [148.163.156.1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xmm15w4dzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:22:57 +1000 (AEST)
-Subject: Re: MPC83xx reset status register (RSR, offset 0x910)
-To: Radu Rendec <radu.rendec@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Scott Wood <oss@buserror.net>
-References: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Message-ID: <e6b9f0f0-1cd9-c183-eff4-bec1ca18a373@c-s.fr>
-Date: Fri, 24 Aug 2018 16:20:32 +0000
-MIME-Version: 1.0
-In-Reply-To: <CAD5jUk_e3LwPZGN7G3ZGHx=zdQBZSdAeoKWjxwE7Ei2=LtXQTg@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xmqV3l2pzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:25:57 +1000 (AEST)
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+ by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
+ w7OGNpwo098570
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 12:25:55 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ by mx0a-001b2d01.pphosted.com with ESMTP id 2m2msq9k4s-1
+ (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 12:25:55 -0400
+Received: from localhost
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <bauerman@linux.ibm.com>;
+ Fri, 24 Aug 2018 10:25:54 -0600
+From: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Anshuman Khandual <anshuman.linux@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mike Anderson <andmike@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ram Pai <linuxram@us.ibm.com>,
+ Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Subject: [RFC PATCH 00/11] Secure Virtual Machine Enablement
+Date: Fri, 24 Aug 2018 13:25:24 -0300
+Message-Id: <20180824162535.22798-1-bauerman@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,140 +40,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
+[ Some people didn't receive all the patches in this series, even though
+  the linuxppc-dev list did so trying to send again. This is exactly the
+  same series I posted yesterday. Sorry for the clutter. ]
 
-On 08/03/2018 04:36 PM, Radu Rendec wrote:
-> Hi Everyone,
-> 
-> Is there any kernel code that handles the "reset status register" (RSR)
-> on MPC83xx? I looked at arch/powerpc/platforms/83xx/misc.c, but it seems
-> to only map the reset register area and it's static. The watchdog driver
-> (drivers/watchdog/mpc8xxx_wdt.c) doesn't seem to look at it either (for
-> the bootstatus flags).
+This series contains preliminary work to enable Secure Virtual Machines
+(SVM) on powerpc. SVMs request to be migrated to secure memory very early in
+the boot process (in prom_init()), so by default all of their memory is
+inaccessible to the hypervisor. There is an ultravisor call that the VM can
+use to request certain pages to be made accessible (aka shared).
 
-How do you boot your Linux kernel ?
+The objective of these patches is to have the guest perform this request for
+buffers that need to be shared with the hypervisor, such as the LPPACAs, the
+SWIOTLB buffer and the Debug Trace Log. This work is incomplete: there are
+surely other memory regions that need to be made accessible, but I'm posting
+it early to get comments on whether the approach being taken is appropriate.
 
-My 832x board boots using U-boot, and U-boot reads the RSR then clears 
-it. So when Linux kernel reads it, it is just 0.
+It should be applied on top of the generic virtio DMA API rework series
+posted earlier, which adds a platform hook to override any arch based DMA
+API operations for any virtio device:
 
-> 
-> Basically I need to check the CPU reset reason and I thought I would ask
-> first, before starting to write any code of my own.
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2018-July/175994.html
 
-Anyway, find below a set of two patches I used for testing. Feel free to 
-use them if you bootloader doesn't clear the register
+I'm aware that changes need to be made to the patch series above, but IIUC
+it depends on upcoming virtio cleanup from Christoph Hellwig so for now the
+patch series above will be used as a stepping stone for this series.
 
-Christophe
+This code has been tested with virtio block, net and scsi devices with and
+without VIRTIO_F_IOMMU_PLATFORM flag. Please let me know what you think.
 
-commit f5171b463b149d6d60816fd9673e0367c0d6a90c
-Author: Christophe Leroy <christophe.leroy@c-s.fr>
-Date:   Wed Aug 22 12:49:42 2018 +0000
+For now I am testing on a regular guest with a couple of patches on top
+forcing is_svm_platform() to always return true and adding debug messages to
+confirm that mem_convert_shared() is being called in the expected places.
 
-     powerpc/83xx: Show reset status at startup
+These are the commands I'm using to start up the guest:
 
-     The 83xx has a register called Reset Status Register that
-     shows the reason of the last reset.
+Without VIRTIO_F_IOMMU_PLATFORM:
 
-     Print this reason at startup.
+qemu-system-ppc64 \
+  -enable-kvm \
+  -kernel /home/bauermann/src/linux/arch/powerpc/boot/zImage \
+  -append "root=PARTUUID=e550ad6f-05 ro" \
+  -machine pseries-2.6 \
+  -m 8G \
+  -smp 2 \
+  -serial mon:stdio \
+  -nographic \
+  -nodefaults \
+  -device virtio-scsi-pci,id=scsi0,bus=pci.0,addr=0x4 \
+  -drive file=/home/bauermann/VMs/svm.qcow2,format=qcow2,if=none,id=drive-scsi0-0-0-0 \
+  -device scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun=0,drive=drive-scsi0-0-0-0,id=scsi0-0-0-0 \
+  -drive file=/home/bauermann/VMs/svm-blk.qcow2,format=qcow2,if=none,id=drive-virtio-disk0 \
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x5,drive=drive-virtio-disk0,id=virtio-disk0 \
+  -device virtio-net,netdev=hostnet0,id=net0,mac=52:54:00:96:70:1f \
+  -netdev user,id=hostnet0 \
+  -set netdev.hostnet0.hostfwd=tcp::42022-:22
 
-     Suggested-by: Radu Rendec <radu.rendec@gmail.com>
+With VIRTIO_F_IOMMU_PLATFORM. Same as above plus some -global options so
+that the virtio devices use the modern interface rather than the
+transitional one:
 
-diff --git a/arch/powerpc/platforms/83xx/misc.c 
-b/arch/powerpc/platforms/83xx/misc.c
-index 773559431459..a3dbc22088d9 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -24,6 +24,16 @@
-  #include "mpc83xx.h"
+qemu-system-ppc64 \
+  -enable-kvm \
+  -kernel /home/bauermann/src/linux/arch/powerpc/boot/zImage \
+  -append "root=PARTUUID=e550ad6f-05 ro" \
+  -machine pseries-2.6 \
+  -m 8G \
+  -smp 2 \
+  -serial mon:stdio \
+  -nographic \
+  -nodefaults \
+  -device virtio-scsi-pci,id=scsi0,bus=pci.0,addr=0x4 \
+  -drive file=/home/bauermann/VMs/svm.qcow2,format=qcow2,if=none,id=drive-scsi0-0-0-0 \
+  -device scsi-hd,bus=scsi0.0,channel=0,scsi-id=0,lun=0,drive=drive-scsi0-0-0-0,id=scsi0-0-0-0 \
+  -drive file=/home/bauermann/VMs/svm-blk.qcow2,format=qcow2,if=none,id=drive-virtio-disk0 \
+  -device virtio-blk-pci,scsi=off,bus=pci.0,addr=0x5,drive=drive-virtio-disk0,id=virtio-disk0 \
+  -device virtio-net,netdev=hostnet0,id=net0,mac=52:54:00:96:70:1f \
+  -netdev user,id=hostnet0 \
+  -set netdev.hostnet0.hostfwd=tcp::42022-:22 \
+  -global virtio-blk-pci.iommu_platform=true \
+  -global virtio-blk-pci.disable-legacy=on \
+  -global virtio-blk-pci.disable-modern=off \
+  -global virtio-net-pci.iommu_platform=true \
+  -global virtio-net-pci.disable-legacy=on \
+  -global virtio-net-pci.disable-modern=off \
+  -global virtio-scsi-pci.iommu_platform=true \
+  -global virtio-scsi-pci.disable-legacy=on \
+  -global virtio-scsi-pci.disable-modern=off
 
-  #define RST_OFFSET	0x00000900
-+#define RST_STAT_REG	0x00000010
-+#define RSR_BSF		BIT(15)
-+#define RSR_SWSR	BIT(18)
-+#define RSR_SWHR	BIT(19)
-+#define RSR_JSRS	BIT(23)
-+#define RSR_CSHR	BIT(27)
-+#define RSR_SWRS	BIT(28)
-+#define RSR_BMRS	BIT(29)
-+#define RSR_SRS		BIT(30)
-+#define RSR_HRS		BIT(31)
-  #define RST_PROT_REG	0x00000018
-  #define RST_CTRL_REG	0x0000001c
+The code was tested with a couple of other permutations where one virtio
+device has the flag VIRTIO_F_IOMMU_PLATFORM and others don't. Please suggest
+some other scenarios which need to be tested as well.
 
-@@ -34,6 +44,32 @@ static int __init mpc83xx_restart_init(void)
-  	/* map reset restart_reg_baseister space */
-  	restart_reg_base = ioremap(get_immrbase() + RST_OFFSET, 0xff);
+Anshuman Khandual (10):
+  powerpc/svm: Detect Secure Virtual Machine (SVM) platform
+  powerpc/svm: Select CONFIG_DMA_DIRECT_OPS and CONFIG_SWIOTLB
+  powerpc/svm: Add memory conversion (shared/secure) helper functions
+  powerpc/svm: Convert SWIOTLB buffers to shared memory
+  powerpc/svm: Don't release SWIOTLB buffers on secure guests
+  powerpc/svm: Use SWIOTLB DMA API for all virtio devices
+  powerpc/svm: Use shared memory for Debug Trace Log (DTL)
+  powerpc/svm: Use shared memory for LPPACA structures
+  powerpc/svm: Force the use of bounce buffers
+  powerpc/svm: Increase SWIOTLB buffer size
 
-+	if (restart_reg_base) {
-+		u32 status = in_be32(restart_reg_base + (RST_STAT_REG >> 2));
-+
-+		if (status & RSR_BSF)
-+			pr_info("Reset Status: Boot Sequencer Fail\n");
-+		if (status & RSR_SWSR)
-+			pr_info("Reset Status: Software soft reset\n");
-+		if (status & RSR_SWHR)
-+			pr_info("Reset Status: Software hard reset\n");
-+		if (status & RSR_JSRS)
-+			pr_info("Reset Status: JTAG soft reset\n");
-+		if (status & RSR_CSHR)
-+			pr_info("Reset Status: Checkstop reset\n");
-+		if (status & RSR_SWRS)
-+			pr_info("Reset Status: Software watchdog reset\n");
-+		if (status & RSR_BMRS)
-+			pr_info("Reset Status: Bus monitor reset\n");
-+		if (status & RSR_SRS)
-+			pr_info("Reset Status: Soft reset\n");
-+		if (status & RSR_HRS)
-+			pr_info("Reset Status: Hard reset\n");
-+
-+		/* clear reset statuses */
-+		out_be32(restart_reg_base + (RST_STAT_REG >> 2), status);
-+	}
-+
-  	return 0;
-  }
+Thiago Jung Bauermann (1):
+  powerpc: Add and use LPPACA_SIZE constant
 
-
-commit c1ef17dd9c736c5e1b94da68852ae761a193090f
-Author: Christophe Leroy <christophe.leroy@c-s.fr>
-Date:   Wed Aug 22 12:19:02 2018 +0000
-
-     powerpc/83xx: Move reset registers defines before functions
-
-     Move the registers defines before/out of the functions.
-     Reuse in another function.
-
-diff --git a/arch/powerpc/platforms/83xx/misc.c 
-b/arch/powerpc/platforms/83xx/misc.c
-index d75c9816a5c9..773559431459 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -23,12 +23,16 @@
-
-  #include "mpc83xx.h"
-
-+#define RST_OFFSET	0x00000900
-+#define RST_PROT_REG	0x00000018
-+#define RST_CTRL_REG	0x0000001c
-+
-  static __be32 __iomem *restart_reg_base;
-
-  static int __init mpc83xx_restart_init(void)
-  {
-  	/* map reset restart_reg_baseister space */
--	restart_reg_base = ioremap(get_immrbase() + 0x900, 0xff);
-+	restart_reg_base = ioremap(get_immrbase() + RST_OFFSET, 0xff);
-
-  	return 0;
-  }
-@@ -37,10 +41,6 @@ arch_initcall(mpc83xx_restart_init);
-
-  void __noreturn mpc83xx_restart(char *cmd)
-  {
--#define RST_OFFSET	0x00000900
--#define RST_PROT_REG	0x00000018
--#define RST_CTRL_REG	0x0000001c
--
-  	local_irq_disable();
-
-  	if (restart_reg_base) {
+ arch/powerpc/Kconfig                   | 22 ++++++++
+ arch/powerpc/include/asm/mem_encrypt.h | 19 +++++++
+ arch/powerpc/include/asm/reg.h         |  3 ++
+ arch/powerpc/include/asm/svm.h         | 26 +++++++++
+ arch/powerpc/kernel/Makefile           |  1 +
+ arch/powerpc/kernel/paca.c             | 41 ++++++++++++--
+ arch/powerpc/kernel/svm.c              | 99 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/iommu.c |  6 ++-
+ arch/powerpc/platforms/pseries/setup.c |  5 +-
+ kernel/dma/swiotlb.c                   |  5 ++
+ 10 files changed, 221 insertions(+), 6 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/mem_encrypt.h
+ create mode 100644 arch/powerpc/include/asm/svm.h
+ create mode 100644 arch/powerpc/kernel/svm.c
