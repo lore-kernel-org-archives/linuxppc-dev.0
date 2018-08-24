@@ -1,35 +1,20 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from mail-wr1-f65.google.com (mail-wr1-f65.google.com
- [209.85.221.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xYG52khKzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 17:44:45 +1000 (AEST)
-Received: by mail-wr1-f65.google.com with SMTP id 20-v6so6649715wrb.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 00:44:44 -0700 (PDT)
-Subject: Re: [PATCH v1] mm: relax deferred struct page requirements
-From: Jiri Slaby <jslaby@suse.cz>
-Cc: mhocko@kernel.org, Steven Sistare <steven.sistare@oracle.com>,
- Daniel Jordan <daniel.m.jordan@oracle.com>, benh@kernel.crashing.org,
- paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>,
- kirill.shutemov@linux.intel.com, Reza Arbab <arbab@linux.vnet.ibm.com>,
- schwidefsky@de.ibm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
- x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org,
- Linux Memory Management List <linux-mm@kvack.org>,
- linux-s390@vger.kernel.org, mgorman@techsingularity.net
-References: <20171117014601.31606-1-pasha.tatashin@oracle.com>
- <20171121072416.v77vu4osm2s4o5sq@dhcp22.suse.cz>
- <b16029f0-ada0-df25-071b-cd5dba0ab756@suse.cz>
- <CAGM2rea=_VJJ26tohWQWgfwcFVkp0gb6j1edH1kVLjtxfugf5Q@mail.gmail.com>
- <CAGM2reYcwyOcKrO=WhB3Cf0FNL3ZearC=KvxmTNUU6rkWviQOg@mail.gmail.com>
- <83d035f1-40b4-bed8-6113-f4c5a0c4d22f@suse.cz>
-To: pavel.tatashin@microsoft.com
-Message-ID: <c4d46b63-5237-d002-faf5-4e0749d825d7@suse.cz>
-Date: Fri, 24 Aug 2018 09:44:40 +0200
-MIME-Version: 1.0
-In-Reply-To: <83d035f1-40b4-bed8-6113-f4c5a0c4d22f@suse.cz>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xcMx2ZXLzDqk8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 20:05:00 +1000 (AEST)
+Message-Id: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH 1/3] powerpc/32: Add ioremap_wt()
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
+Date: Fri, 24 Aug 2018 10:04:55 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,71 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-pasha.tatashin@oracle.com -> pavel.tatashin@microsoft.com
+Other arches have ioremap_wt() to map IO areas write-through.
+Implement it on PPC as well in order to avoid drivers using
+__ioremap(_PAGE_WRITETHRU)
 
-due to
- 550 5.1.1 Unknown recipient address.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/io.h | 6 ++++++
+ arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
+ 2 files changed, 14 insertions(+)
 
-
-On 08/24/2018, 09:32 AM, Jiri Slaby wrote:
-> On 06/19/2018, 09:56 PM, Pavel Tatashin wrote:
->> On Tue, Jun 19, 2018 at 9:50 AM Pavel Tatashin
->> <pasha.tatashin@oracle.com> wrote:
->>>
->>> On Sat, Jun 16, 2018 at 4:04 AM Jiri Slaby <jslaby@suse.cz> wrote:
->>>>
->>>> On 11/21/2017, 08:24 AM, Michal Hocko wrote:
->>>>> On Thu 16-11-17 20:46:01, Pavel Tatashin wrote:
->>>>>> There is no need to have ARCH_SUPPORTS_DEFERRED_STRUCT_PAGE_INIT,
->>>>>> as all the page initialization code is in common code.
->>>>>>
->>>>>> Also, there is no need to depend on MEMORY_HOTPLUG, as initialization code
->>>>>> does not really use hotplug memory functionality. So, we can remove this
->>>>>> requirement as well.
->>>>>>
->>>>>> This patch allows to use deferred struct page initialization on all
->>>>>> platforms with memblock allocator.
->>>>>>
->>>>>> Tested on x86, arm64, and sparc. Also, verified that code compiles on
->>>>>> PPC with CONFIG_MEMORY_HOTPLUG disabled.
->>>>>
->>>>> There is slight risk that we will encounter corner cases on some
->>>>> architectures with weird memory layout/topology
->>>>
->>>> Which x86_32-pae seems to be. Many bad page state errors are emitted
->>>> during boot when this patch is applied:
->>>
->>> Hi Jiri,
->>>
->>> Thank you for reporting this bug.
->>>
->>> Because 32-bit systems are limited in the maximum amount of physical
->>> memory, they don't need deferred struct pages. So, we can add depends
->>> on 64BIT to DEFERRED_STRUCT_PAGE_INIT in mm/Kconfig.
->>>
->>> However, before we do this, I want to try reproducing this problem and
->>> root cause it, as it might expose a general problem that is not 32-bit
->>> specific.
->>
->> Hi Jiri,
->>
->> Could you please attach your config and full qemu arguments that you
->> used to reproduce this bug.
-> 
-> Hi,
-> 
-> I seem I never replied. Attaching .config and the qemu cmdline:
-> $ qemu-kvm -m 2000 -hda /dev/null -kernel bzImage
-> 
-> "-m 2000" is important to reproduce.
-> 
-> If I disable CONFIG_DEFERRED_STRUCT_PAGE_INIT (which the patch allowed
-> to enable), the error goes away, of course.
-> 
-> thanks,
-> 
-
-
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e754568..3380b5b22450 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -3,6 +3,9 @@
+ #ifdef __KERNEL__
+ 
+ #define ARCH_HAS_IOREMAP_WC
++#ifdef CONFIG_PPC32
++#define ARCH_HAS_IOREMAP_WT
++#endif
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -746,6 +749,8 @@ static inline void iosync(void)
+  *
+  * * ioremap_wc enables write combining
+  *
++ * * ioremap_wt enables write through
++ *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ 				  unsigned long flags);
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
+ #define ioremap_cache(addr, size) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 2bbc22384f78..b2e73e82f8fc 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -90,6 +90,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+ void __iomem *
++ioremap_wt(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_wt);
++
++void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
+ 	pte_t pte = __pte(flags);
 -- 
-js
-suse labs
+2.13.3
