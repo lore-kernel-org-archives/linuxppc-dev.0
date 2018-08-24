@@ -1,35 +1,45 @@
-Return-Path: <robh@kernel.org>
+Return-Path: <robh+dt@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41xlDm3JkSzDqj4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 01:14:15 +1000 (AEST)
-Received: from mail-qk0-f178.google.com (mail-qk0-f178.google.com
- [209.85.220.178])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41xmcq4tybzDqj4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 02:16:43 +1000 (AEST)
+Received: from mail-qt0-f172.google.com (mail-qt0-f172.google.com
+ [209.85.216.172])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by mail.kernel.org (Postfix) with ESMTPSA id 648DF20893
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 15:14:13 +0000 (UTC)
-Received: by mail-qk0-f178.google.com with SMTP id f17-v6so6061962qkh.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 08:14:13 -0700 (PDT)
+ by mail.kernel.org (Postfix) with ESMTPSA id C777421581
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 16:16:40 +0000 (UTC)
+Received: by mail-qt0-f172.google.com with SMTP id m13-v6so10757971qth.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2018 09:16:40 -0700 (PDT)
 MIME-Version: 1.0
-References: <CAL_Jsq+XacT2O15CQ=F_6dmWf6OqNf8_fKAOrMJNR79a6mORaw@mail.gmail.com>
- <3335cff2cc999c1dda58d75949ab3d12185fca79.camel@kernel.crashing.org>
- <CAL_JsqKqkO31ekVMFKs+osLvKdZyDzRowF1thWXn5=tWhrJgvw@mail.gmail.com>
- <18175413a0148f7859ab36ed9715dce7a598f318.camel@kernel.crashing.org>
- <20180823123650.GT24439@gate.crashing.org>
-In-Reply-To: <20180823123650.GT24439@gate.crashing.org>
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 24 Aug 2018 10:14:01 -0500
-Message-ID: <CAL_Jsq+VnhT_4H4yECWsuXnmpQRnSHNRXAohRYds1LxcRjUHkw@mail.gmail.com>
-Subject: Re: DT case sensitivity
-To: segher@kernel.crashing.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Kumar Gala <kumar.gala@linaro.org>, devicetree@vger.kernel.org,
- devicetree-spec@vger.kernel.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Grant Likely <grant.likely@arm.com>, Frank Rowand <frowand.list@gmail.com>,
- David Gibson <david@gibson.dropbear.id.au>
+References: <1534747636-20064-1-git-send-email-vabhav.sharma@nxp.com>
+ <1534747636-20064-6-git-send-email-vabhav.sharma@nxp.com>
+ <CAL_JsqKH4haGy2F2_2EP=evC8ip7DmGR8J4wzrO0wWnOLsaZqA@mail.gmail.com>
+ <AM6PR04MB478980C90EE825D024D8B977F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
+In-Reply-To: <AM6PR04MB478980C90EE825D024D8B977F3370@AM6PR04MB4789.eurprd04.prod.outlook.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Fri, 24 Aug 2018 11:16:28 -0500
+Message-ID: <CAL_Jsq+QrDR_YyZ+icftUrwOoMZcSCMkmj8cR=bqEJ-q+pdntg@mail.gmail.com>
+Subject: Re: [PATCH 5/5] arm64: dts: add LX2160ARDB board support
+To: vabhav.sharma@nxp.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE"
+ <linux-arm-kernel@lists.infradead.org>,
+ Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>,
+ linux-clk <linux-clk@vger.kernel.org>,
+ "open list:THERMAL" <linux-pm@vger.kernel.org>,
+ linux-kernel-owner@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Arnd Bergmann <arnd@arndb.de>, Kate Stewart <kstewart@linuxfoundation.org>,
+ Masahiro Yamada <yamada.masahiro@socionext.com>,
+ Russell King <linux@armlinux.org.uk>, V.Sethi@nxp.com,
+ Udit Kumar <udit.kumar@nxp.com>, Priyanka Jain <priyanka.jain@nxp.com>,
+ Sriram Dash <sriram.dash@nxp.com>
 Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -40,64 +50,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2018 at 7:37 AM Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->
-> On Thu, Aug 23, 2018 at 11:29:01AM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2018-08-22 at 20:26 -0500, Rob Herring wrote:
-> > > On Wed, Aug 22, 2018 at 8:14 PM Benjamin Herrenschmidt
-> > > <benh@kernel.crashing.org> wrote:
-> > > >
-> > > > On Wed, 2018-08-22 at 19:47 -0500, Rob Herring wrote:
-> > > > > The default DT string handling in the kernel is node names and
-> > > > > compatibles are case insensitive and property names are case sensitive
-> > > > > (Sparc is the the only variation and is opposite). It seems only PPC
-> > > > > (and perhaps only Power Macs?) needs to support case insensitive
-> > > > > comparisons. It was probably a mistake to follow PPC for new arches
-> > > > > and we should have made everything case sensitive from the start. So I
-> > > > > have a few questions for the DT historians. :)
-> > > >
-> > > > Open Firmware itself is insensitive.
-> > >
-> > > Doesn't it depend on the implementation? Otherwise, how is Sparc different?
+On Thu, Aug 23, 2018 at 10:08 AM Vabhav Sharma <vabhav.sharma@nxp.com> wrote:
+
+[...]
+
+> > > +               i2c@3 {
+> > > +                       #address-cells = <1>;
+> > > +                       #size-cells = <0>;
+> > > +                       reg = <0x3>;
+> > > +
+> > > +                       sa56004@4c {
 > >
-> > Not sure ...
->
-> The standard requires case-sensitive.
->
-> > Forth itself is insensitive for words
->
-> Not even.   http://forth.sourceforge.net/std/dpans/dpans3.htm#3.3.1.2
->
-> (Most non-ancient implementations are though).
->
-> > but maybe not for string comparisons.
->
-> Only COMPARE is standardised, and that is case-sensitive comparison.  Many
-> systems have other words to do case-insensitive comparisons, or words where
-> some runtime flag determines the case-sensitivity.
->
-> Btw.  A node name in Open Firmware is generically
->   driver-name@unit-address:device-arguments
-> where driver-name is the part that is in the "name" property; this whole
-> case-sensitivity business is even worse for FDT, where you also treat the
-> unit address as part of the name.  In real Open Firmware the address is
-> compared *as a number* (or as a few numbers), so it is naturally case-
-> insensitive (it does not care if you write 01a0 or 01A0, or 1a0 or 000001a0
-> etc.)
+> > temperature-sensor@4c
+> Ok, temperature-sensor-1@4c
 
-True, but it is very rare at least in Linux to look at the
-unit-addresses. dtc now does some checking on unit-addresses too, so
-we should at least be consistent.
+No, that's not what I said. You don't need the '-1' because the
+unit-address makes the node name unique. Node names are supposed to be
+generic based on the class/type of device. See the DT spec.
 
-Another question: Is there ever a case where the node name in the path
-aka 'driver-name' doesn't match the 'name' property? I think this
-generally can't happen on FDT as the 'name' property is generated when
-we unflatten it though I suppose one could craft an FDT with name
-properties.
-
-There's also various places in the kernel that check for a NULL name
-which doesn't seem like it could happen either other than the root
-node.
-
-Rob
+> >
+> > > +                               compatible = "nxp,sa56004";
+> > > +                               reg = <0x4c>;
+> > > +                       };
+> > > +
+> > > +                       sa56004@4d {
+> Ok,temperature-sensor-2@4d
+> > > +                               compatible = "nxp,sa56004";
+> > > +                               reg = <0x4d>;
+> > > +                       };
+> > > +               };
+> > > +       };
+> > > +};
+> > > +
+> > > +&i2c4 {
+> > > +       status = "okay";
+> > > +
+> > > +       rtc@51 {
+> > > +               compatible = "nxp,pcf2129";
+> > > +               reg = <0x51>;
+> > > +               // IRQ10_B
+> > > +               interrupts = <0 150 0x4>;
+> > > +               };
+> > > +
+> > > +};
+> > > +
+> > > +&usb0 {
+> > > +       status = "okay";
+> > > +};
+> > > +
+> > > +&usb1 {
+> > > +       status = "okay";
+> > > +};
+> > > +
+> > > +&crypto {
+> > > +       status = "okay";
+> > > +};
+> > > --
+> > > 2.7.4
+> > >
