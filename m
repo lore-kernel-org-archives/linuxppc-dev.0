@@ -2,10 +2,10 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41yLGN13Z8zDqwb
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41yLGN13c4zDqws
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:32:43 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND 2/3] drivers/video/fbdev: use ioremap_wt() instead of
+Subject: [PATCH RESEND 3/3] drivers/block/z2ram: use ioremap_wt() instead of
  __ioremap(_PAGE_WRITETHRU)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
@@ -14,8 +14,8 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180825142700.6C0DD104917@pc16082vm.idsi0.si.c-s.fr>
-Date: Sat, 25 Aug 2018 16:27:00 +0200 (CEST)
+Message-Id: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
+Date: Sat, 25 Aug 2018 16:27:02 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +29,22 @@ _PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/video/fbdev/controlfb.c  |  3 +--
- drivers/video/fbdev/platinumfb.c |  3 +--
- drivers/video/fbdev/valkyriefb.c | 10 ++++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/block/z2ram.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index 8d14b29aafea..058093990218 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -715,8 +715,7 @@ static int __init control_of_init(struct device_node *dp)
- 		goto error_out;
- 	}
- 	/* map at most 8MB for the frame buffer */
--	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
--				    _PAGE_WRITETHRU);
-+	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index d0c5bc4e0703..cfbd70520eeb 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
+ 			vfree(vmalloc (size));
+ 		}
  
- 	if (!p->control_regs_phys ||
- 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index 377d3399a3ad..df79f102fbc6 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -577,8 +577,7 @@ static int platinumfb_probe(struct platform_device* odev)
+-		vaddr = (unsigned long) __ioremap (paddr, size, 
+-						   _PAGE_WRITETHRU);
++		vaddr = (unsigned long)ioremap_wt(paddr, size);
  
- 	/* frame buffer - map only 4MB */
- 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
--	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
--					_PAGE_WRITETHRU);
-+	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
- 	pinfo->base_frame_buffer = pinfo->frame_buffer;
- 
- 	/* registers */
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 275fb98236d3..0c6c1eede800 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -318,7 +318,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- int __init valkyriefb_init(void)
- {
- 	struct fb_info_valkyrie	*p;
--	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
-+	unsigned long frame_buffer_phys, cmap_regs_phys;
- 	int err;
- 	char *option = NULL;
- 
-@@ -337,7 +337,6 @@ int __init valkyriefb_init(void)
- 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
- 	frame_buffer_phys = 0xf9000000;
- 	cmap_regs_phys = 0x50f24000;
--	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
- #else /* ppc (!CONFIG_MAC) */
- 	{
- 		struct device_node *dp;
-@@ -354,7 +353,6 @@ int __init valkyriefb_init(void)
- 
- 		frame_buffer_phys = r.start;
- 		cmap_regs_phys = r.start + 0x304000;
--		flags = _PAGE_WRITETHRU;
- 	}
- #endif /* ppc (!CONFIG_MAC) */
- 
-@@ -369,7 +367,11 @@ int __init valkyriefb_init(void)
- 	}
- 	p->total_vram = 0x100000;
- 	p->frame_buffer_phys = frame_buffer_phys;
--	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
-+#ifdef CONFIG_MAC
-+	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
-+#else
-+	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
-+#endif
- 	p->cmap_regs_phys = cmap_regs_phys;
- 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
- 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
+ #else
+ 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
 -- 
 2.17.1
