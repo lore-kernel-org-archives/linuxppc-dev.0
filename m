@@ -2,10 +2,11 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41yLJK3ZD0zDqx1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:34:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41yLJL5XzjzDqxB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:34:26 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND 1/3] powerpc/32: Add ioremap_wt()
+Subject: [PATCH RESEND 2/3] drivers/video/fbdev: use ioremap_wt() instead of
+ __ioremap(_PAGE_WRITETHRU)
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
@@ -13,8 +14,8 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180825143421.42F4F104912@pc16082vm.idsi0.si.c-s.fr>
-Date: Sat, 25 Aug 2018 16:34:21 +0200 (CEST)
+Message-Id: <20180825143423.47255104912@pc16082vm.idsi0.si.c-s.fr>
+Date: Sat, 25 Aug 2018 16:34:23 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- No change. First serie didn't apply because I generated it on a working branch.
+ drivers/video/fbdev/controlfb.c  |  3 +--
+ drivers/video/fbdev/platinumfb.c |  3 +--
+ drivers/video/fbdev/valkyriefb.c | 10 ++++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
- arch/powerpc/include/asm/io.h | 6 ++++++
- arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
- 2 files changed, 14 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..3380b5b22450 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..058093990218 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -715,8 +715,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
  
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
-+#endif
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..df79f102fbc6 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -577,8 +577,7 @@ static int platinumfb_probe(struct platform_device* odev)
  
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,8 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..528999738645 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -89,6 +89,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- }
- EXPORT_SYMBOL(ioremap_wc);
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
  
-+void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
- void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..0c6c1eede800 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -318,7 +318,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
  {
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
+ 
+@@ -337,7 +337,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +353,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +367,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
++#endif
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
 -- 
 2.17.1
