@@ -1,26 +1,21 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from deadmen.hmeau.com (orcrist.hmeau.com [104.223.48.154])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41yJsL6PFFzDqws
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Aug 2018 23:29:25 +1000 (AEST)
-Date: Sat, 25 Aug 2018 21:28:57 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ondrej Mosnacek <omosnace@redhat.com>
-Cc: linux-crypto@vger.kernel.org, Stephan Mueller <smueller@chronox.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41yLGN13Z8zDqwb
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:32:43 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH RESEND 2/3] drivers/video/fbdev: use ioremap_wt() instead of
+ __ioremap(_PAGE_WRITETHRU)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Marcelo Henrique Cerri <marcelo.cerri@canonical.com>,
- "Leonidas S . Barbosa" <leo.barbosa@canonical.com>,
- Paulo Flabiano Smorigo <pfsmorigo@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2] crypto: vmx - Fix sleep-in-atomic bugs
-Message-ID: <20180825132857.josnvyeztipef4pv@gondor.apana.org.au>
-References: <CAAUqJDt_y04ts7Aq0U0fhXYRus2ckkEohBTkga0pjqfoQaBOCA@mail.gmail.com>
- <20180822062631.5664-1-omosnace@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20180822062631.5664-1-omosnace@redhat.com>
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+ Jens Axboe <axboe@kernel.dk>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
+Message-Id: <20180825142700.6C0DD104917@pc16082vm.idsi0.si.c-s.fr>
+Date: Sat, 25 Aug 2018 16:27:00 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 22, 2018 at 08:26:31AM +0200, Ondrej Mosnacek wrote:
-> This patch fixes sleep-in-atomic bugs in AES-CBC and AES-XTS VMX
-> implementations. The problem is that the blkcipher_* functions should
-> not be called in atomic context.
-> 
-> The bugs can be reproduced via the AF_ALG interface by trying to
-> encrypt/decrypt sufficiently large buffers (at least 64 KiB) using the
-> VMX implementations of 'cbc(aes)' or 'xts(aes)'. Such operations then
-> trigger BUG in crypto_yield():
-> 
-> [  891.863680] BUG: sleeping function called from invalid context at include/crypto/algapi.h:424
-> [  891.864622] in_atomic(): 1, irqs_disabled(): 0, pid: 12347, name: kcapi-enc
-> [  891.864739] 1 lock held by kcapi-enc/12347:
-> [  891.864811]  #0: 00000000f5d42c46 (sk_lock-AF_ALG){+.+.}, at: skcipher_recvmsg+0x50/0x530
-> [  891.865076] CPU: 5 PID: 12347 Comm: kcapi-enc Not tainted 4.19.0-0.rc0.git3.1.fc30.ppc64le #1
-> [  891.865251] Call Trace:
-> [  891.865340] [c0000003387578c0] [c000000000d67ea4] dump_stack+0xe8/0x164 (unreliable)
-> [  891.865511] [c000000338757910] [c000000000172a58] ___might_sleep+0x2f8/0x310
-> [  891.865679] [c000000338757990] [c0000000006bff74] blkcipher_walk_done+0x374/0x4a0
-> [  891.865825] [c0000003387579e0] [d000000007e73e70] p8_aes_cbc_encrypt+0x1c8/0x260 [vmx_crypto]
-> [  891.865993] [c000000338757ad0] [c0000000006c0ee0] skcipher_encrypt_blkcipher+0x60/0x80
-> [  891.866128] [c000000338757b10] [c0000000006ec504] skcipher_recvmsg+0x424/0x530
-> [  891.866283] [c000000338757bd0] [c000000000b00654] sock_recvmsg+0x74/0xa0
-> [  891.866403] [c000000338757c10] [c000000000b00f64] ___sys_recvmsg+0xf4/0x2f0
-> [  891.866515] [c000000338757d90] [c000000000b02bb8] __sys_recvmsg+0x68/0xe0
-> [  891.866631] [c000000338757e30] [c00000000000bbe4] system_call+0x5c/0x70
-> 
-> Fixes: 8c755ace357c ("crypto: vmx - Adding CBC routines for VMX module")
-> Fixes: c07f5d3da643 ("crypto: vmx - Adding support for XTS")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Ondrej Mosnacek <omosnace@redhat.com>
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
-Patch applied.  Thanks.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/video/fbdev/controlfb.c  |  3 +--
+ drivers/video/fbdev/platinumfb.c |  3 +--
+ drivers/video/fbdev/valkyriefb.c | 10 ++++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..058093990218 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -715,8 +715,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+ 
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..df79f102fbc6 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -577,8 +577,7 @@ static int platinumfb_probe(struct platform_device* odev)
+ 
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..0c6c1eede800 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -318,7 +318,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
+ {
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
+ 
+@@ -337,7 +337,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +353,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +367,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
++#endif
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+2.17.1
