@@ -2,11 +2,10 @@ Return-Path: <christophe.leroy@c-s.fr>
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41yLGN13c4zDqws
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:32:43 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41yLJK3ZD0zDqx1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 00:34:25 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND 3/3] drivers/block/z2ram: use ioremap_wt() instead of
- __ioremap(_PAGE_WRITETHRU)
+Subject: [PATCH RESEND 1/3] powerpc/32: Add ioremap_wt()
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
@@ -14,8 +13,8 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
  dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org,
  linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
-Message-Id: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
-Date: Sat, 25 Aug 2018 16:27:02 +0200 (CEST)
+Message-Id: <20180825143421.42F4F104912@pc16082vm.idsi0.si.c-s.fr>
+Date: Sat, 25 Aug 2018 16:34:21 +0200 (CEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
+Other arches have ioremap_wt() to map IO areas write-through.
+Implement it on PPC as well in order to avoid drivers using
+__ioremap(_PAGE_WRITETHRU)
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/block/z2ram.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ No change. First serie didn't apply because I generated it on a working branch.
 
-diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-index d0c5bc4e0703..cfbd70520eeb 100644
---- a/drivers/block/z2ram.c
-+++ b/drivers/block/z2ram.c
-@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
- 			vfree(vmalloc (size));
- 		}
+ arch/powerpc/include/asm/io.h | 6 ++++++
+ arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e754568..3380b5b22450 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -3,6 +3,9 @@
+ #ifdef __KERNEL__
  
--		vaddr = (unsigned long) __ioremap (paddr, size, 
--						   _PAGE_WRITETHRU);
-+		vaddr = (unsigned long)ioremap_wt(paddr, size);
+ #define ARCH_HAS_IOREMAP_WC
++#ifdef CONFIG_PPC32
++#define ARCH_HAS_IOREMAP_WT
++#endif
  
- #else
- 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -746,6 +749,8 @@ static inline void iosync(void)
+  *
+  * * ioremap_wc enables write combining
+  *
++ * * ioremap_wt enables write through
++ *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ 				  unsigned long flags);
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
+ #define ioremap_cache(addr, size) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 120a49bfb9c6..528999738645 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -89,6 +89,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+ }
+ EXPORT_SYMBOL(ioremap_wc);
+ 
++void __iomem *
++ioremap_wt(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_wt);
++
+ void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
 -- 
 2.17.1
