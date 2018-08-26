@@ -3,17 +3,17 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41ymcL4WftzDqgZ
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 17:19:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41ymzj1NJbzDqC8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 17:36:33 +1000 (AEST)
 Subject: Patch "usb/phy: fix PPC64 build errors in phy-fsl-usb.c" has been
- added to the 4.14-stable tree
+ added to the 4.9-stable tree
 To: alexander.levin@microsoft.com, balbi@kernel.org,
  felipe.balbi@linux.intel.com, gregkh@linuxfoundation.org,
  linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, rdunlap@infradead.org
 Cc: <stable-commits@vger.kernel.org>
 From: <gregkh@linuxfoundation.org>
-Date: Sun, 26 Aug 2018 09:14:19 +0200
-Message-ID: <1535267659108193@kroah.com>
+Date: Sun, 26 Aug 2018 09:16:52 +0200
+Message-ID: <153526781224944@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ANSI_X3.4-1968
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,18 +30,18 @@ This is a note to let you know that I've just added the patch titled
 
     usb/phy: fix PPC64 build errors in phy-fsl-usb.c
 
-to the 4.14-stable tree which can be found at:
+to the 4.9-stable tree which can be found at:
     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
 The filename of the patch is:
      usb-phy-fix-ppc64-build-errors-in-phy-fsl-usb.c.patch
-and it can be found in the queue-4.14 subdirectory.
+and it can be found in the queue-4.9 subdirectory.
 
 If you, or anyone else, feels it should not be added to the stable tree,
 please let <stable@vger.kernel.org> know about it.
 
 
->From foo@baz Sun Aug 26 09:13:00 CEST 2018
+>From foo@baz Sun Aug 26 09:16:12 CEST 2018
 From: Randy Dunlap <rdunlap@infradead.org>
 Date: Sun, 15 Jul 2018 10:37:37 -0700
 Subject: usb/phy: fix PPC64 build errors in phy-fsl-usb.c
@@ -87,7 +87,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 --- a/drivers/usb/phy/phy-fsl-usb.c
 +++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -874,6 +874,7 @@ int usb_otg_start(struct platform_device
+@@ -879,6 +879,7 @@ int usb_otg_start(struct platform_device
  	if (pdata->init && pdata->init(pdev) != 0)
  		return -EINVAL;
  
@@ -95,7 +95,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	if (pdata->big_endian_mmio) {
  		_fsl_readl = _fsl_readl_be;
  		_fsl_writel = _fsl_writel_be;
-@@ -881,6 +882,7 @@ int usb_otg_start(struct platform_device
+@@ -886,6 +887,7 @@ int usb_otg_start(struct platform_device
  		_fsl_readl = _fsl_readl_le;
  		_fsl_writel = _fsl_writel_le;
  	}
@@ -103,7 +103,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  
  	/* request irq */
  	p_otg->irq = platform_get_irq(pdev, 0);
-@@ -971,7 +973,7 @@ int usb_otg_start(struct platform_device
+@@ -976,7 +978,7 @@ int usb_otg_start(struct platform_device
  /*
   * state file in sysfs
   */
@@ -116,11 +116,9 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
 Patches currently in stable-queue which might be from rdunlap@infradead.org are
 
-queue-4.14/usb-phy-fix-ppc64-build-errors-in-phy-fsl-usb.c.patch
-queue-4.14/arc-fix-printk-warning-in-arc-plat-eznps-mtm.c.patch
-queue-4.14/arc-add-missing-struct-nps_host_reg_aux_dpc.patch
-queue-4.14/net-prevent-isa-drivers-from-building-on-ppc32.patch
-queue-4.14/arc-fix-build-errors-in-arc-include-asm-delay.h.patch
-queue-4.14/arc-fix-data-type-errors-in-platform-headers.patch
-queue-4.14/media-staging-omap4iss-include-asm-cacheflush.h-after-generic-includes.patch
-queue-4.14/arc-fix-type-warnings-in-arc-mm-cache.c.patch
+queue-4.9/usb-phy-fix-ppc64-build-errors-in-phy-fsl-usb.c.patch
+queue-4.9/net-prevent-isa-drivers-from-building-on-ppc32.patch
+queue-4.9/arc-fix-build-errors-in-arc-include-asm-delay.h.patch
+queue-4.9/arc-fix-data-type-errors-in-platform-headers.patch
+queue-4.9/media-staging-omap4iss-include-asm-cacheflush.h-after-generic-includes.patch
+queue-4.9/arc-fix-type-warnings-in-arc-mm-cache.c.patch
