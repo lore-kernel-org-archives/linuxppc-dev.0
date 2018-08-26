@@ -2,8 +2,8 @@ Return-Path: <hpa@zytor.com>
 Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41z4wc1dhzzDr4h
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 05:34:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41z9z15z5bzDqrV
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 09:22:21 +1000 (AEST)
 Subject: Re: [PATCH] treewide: remove current_text_addr
 From: "H. Peter Anvin" <hpa@zytor.com>
 To: Helge Deller <deller@gmx.de>, Nick Desaulniers <ndesaulniers@google.com>,
@@ -76,11 +76,12 @@ References: <CAKwvOdkWL_2yTnJqM6n6R9UCPwY4iz-9BQYGN2MDAk9EzumUvA@mail.gmail.com>
  <c62e4e00-fb8f-19a6-f3eb-bde60118cb1a@zytor.com>
  <81141365-8168-799b-f34f-da5f92efaaf9@zytor.com>
  <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
-Message-ID: <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
-Date: Sun, 26 Aug 2018 12:30:37 -0700
+ <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
+Message-ID: <e425d208-214b-06a2-a032-7442a10388fc@zytor.com>
+Date: Sun, 26 Aug 2018 16:20:19 -0700
 MIME-Version: 1.0
-In-Reply-To: <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
-Content-Type: multipart/mixed; boundary="------------5E98DEB96C9E8225D80004DF"
+In-Reply-To: <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -90,219 +91,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------5E98DEB96C9E8225D80004DF
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+On 08/26/18 12:30, H. Peter Anvin wrote:
+> Here is a full-blown (user space) test program demonstrating the whole
+> technique and how to use it.
+> 
+> 	-hpa
 
-Here is a full-blown (user space) test program demonstrating the whole
-technique and how to use it.
+Incidentally, it looks like _RET_IP_ really should be defined as:
+
+
+/*
+ * Is there any reason whatsoever to have _RET_IP_ an unsigned int
+ * rather than a pointer throughout?
+ */
+
+#define _RET_IP_PTR_ \
+	__builtin_extract_return_addr(__builtin_return_addr(0))
+#define _RET_IP_ ((unsigned long)_RET_IP_PTR_)
+
+On some architectures __builtin_extract_return_addr() is apparently
+necessary; its a nop on x86.  Why that isn't part of
+__builtin_return_addr() one can really wonder.
+
+So, checking into all of this, the generic _THIS_IP_ DOES NOT WORK on
+x86.  I have tried a tons of variants, including adding various asm
+volatile(...) instructions, and no matter what I do, it will always
+return the address of the surrounding function rather than any kind of
+local IP.  The only way to get a localized address seems to be in
+assembly, but even so, there is absolutely no guarantee that the value
+of _THIS_IP_ has anything to do with where the code is otherwise
+localized in the function.
+
+>From examining the output of gcc, the fundamental problem seems to be
+that *no matter what* one do with the label, unless gcc actually
+produces a computed goto somewhere in the code, that it can't remove
+with dead-code elimination or constant propagation, it will arbitrarily
+hoist the labels all the way to the beginning of the function. Given
+that, I suspect that other versions of gcc might have similar problems.
+
+This is the closest thing to arch-neutral I have been able to find that
+also works on x86, while not at the same time horribly polluting the
+namespace:
+
+#define __here(n) ___here_ ## n
+#define __hereasm(n) ".L___here_" #n
+#define _THIS_IP_CTR_(n)					\
+	({							\
+		extern const char __here(n) asm(__hereasm(n));	\
+		asm volatile(__hereasm(n) ": /* _THIS_IP_ */"); \
+		(unsigned long)&__here(n);			\
+	})
+#define _THIS_IP_ _THIS_IP_CTR_(__COUNTER__)
+
+The use of asm volatile() to define a label means that the position in
+the instruction stream is at least reasonably well-defined.
 
 	-hpa
-
-
---------------5E98DEB96C9E8225D80004DF
-Content-Type: text/x-csrc;
- name="str.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="str.c"
-
-#include <stddef.h>
-#include <string.h>
-
-#define _RET_IP_ ((unsigned long)__builtin_return_address(0))
-#define noinline __attribute__((noinline))
-#define used __attribute__((used))
-/* __always_inline is defined in glibc already */
-#define ifconst(x,y)	__builtin_choose_expr(__builtin_constant_p(x),(x),(y))
-static inline void notailcall(void)
-{
-	asm volatile("");
-}
-
-/* Change this to a null string to make all functions global */
-#define STATIC static
-
-struct myputs_string {
-	unsigned short len;
-	char str[0];
-};
-
-STATIC int _myputs_struct(const struct myputs_string * const strs);
-STATIC int _myputs_string(const char *str);
-STATIC int __myputs(unsigned long ip, const char *str, size_t len);
-
-#if 1
-
-#include <stdio.h>
-
-STATIC void dump_caller(unsigned long where)
-{
-	const char *opname = NULL;
-	const char *wheretoname = NULL;
-	char ichar;
-	unsigned long whereto = 0;
-
-#if defined(__i386__) || defined(__x86_64__)
-	char opname_buf[4];
-	unsigned char opcode;
-	
-	where -= 5;
-	opcode = *(unsigned char *)where;
-
-	switch (opcode) {
-	case 0xe8:
-		opname = "call";
-		whereto = where + 5 + *(signed int *)(where + 1);
-		break;
-	case 0xe9:
-		opname = "jmp";
-		whereto = where + 5 + *(signed int *)(where + 1);
-		break;
-	default:
-		snprintf(opname_buf, sizeof opname_buf, "?%02x", opcode);
-		opname = opname_buf;
-		break;
-	}
-
-#elif defined(__sparc__)
-	const char regtype[4] = "gilo";
-	unsigned int opcode, op1, op3, ibit;
-	signed int simm13, simm30;
-	char opname_buf[32];
-	char *p;
-
-	where -= 8;
-	
-	opcode = *(signed int *)where;
-	op1 = opcode >> 30;
-	op3 = (opcode >> 19) & 0x3f;
-	ibit = (opcode >> 13) & 1;
-	simm13 = (opcode & 0x1fff) << 2;
-	simm30 = (opcode & 0x3fffffff) << 2;
-
-	opname = opname_buf;
-	
-	if (op1 == 1) {
-		opname = "call";
-		whereto = where + simm30;
-	} else if (op1 == 2 && op3 == 0x38) {
-		if (ibit) {
-			snprintf(opname_buf, sizeof opname_buf,
-				 "jmpl %%%c%u %c 0x%x",
-				 regtype[(opcode >> 17) & 3],
-				 (opcode >> 14) & 7,
-				 simm13 < 0 ? '-' : '+',
-				 abs(simm13));
-		} else {
-			snprintf(opname_buf, sizeof opname_buf,
-				 "jmpl %%%c%u + %%%c%u",
-				 regtype[(opcode >> 17) & 3],
-				 (opcode >> 14) & 7,
-				 regtype[(opcode >> 3) & 3],
-				 opcode & 7);
-		}
-	} else {
-		snprintf(opname_buf, sizeof opname_buf,
-			 "?0x08x", opcode);
-	}
-#else
-	/* Unknown architecture */
-#endif
-	if (whereto == (unsigned long)_myputs_struct) {
-		wheretoname = "_myputs_struct";
-	} else if (whereto == (unsigned long)_myputs_string) {
-		wheretoname = "_myputs_string";
-	} else {
-		wheretoname = "?";
-	}
-
-	ichar = '[';
-	
-	if (opname) {
-		printf("%c%p: %s",
-		       ichar, (void *)where, opname);
-		ichar = ' ';
-	}
-	if (whereto) {
-		printf("%c%p <%s>", ichar, (void *)whereto, wheretoname);
-		ichar = ' ';
-	}
-	if (ichar != '[')
-		putchar(']');
-}
-	
-STATIC int __myputs(unsigned long where, const char *str, size_t len)
-{
-	size_t slen = strlen(str);
-	size_t rv;
-	
-	len--;
-	rv = printf("%p: \"%.*s\"%*s", (void *)where, (int)len, str,
-		    16-(int)slen, "");
-	dump_caller(where);
-	if (slen != len)
-		printf(" <err: strlen = %zu, len = %zu>\n", slen, len);
-	else
-		printf(" <ok: len = %zu>\n", len);
-	
-	return rv;
-}
-
-STATIC int noinline _myputs_struct(const struct myputs_string * const strs)
-{
-	return __myputs(_RET_IP_, strs->str, strs->len);
-}
-
-STATIC int noinline _myputs_string(const char *str)
-{
-	return __myputs(_RET_IP_, str, strlen(str)+1);
-}
-#endif
-
-#define myputs(s)							\
-({									\
-	int _rv;							\
-	if (__builtin_constant_p(s) &&					\
-	    __builtin_constant_p(strlen(s)) &&				\
-	    strlen(s)+1 == sizeof(s) &&					\
-	    sizeof(s) <= (size_t)65535) {				\
-	static const struct {						\
-		struct myputs_string _mps_hdr;				\
-		char _mps_str[sizeof(s)];				\
-	} _mps = {							\
-		._mps_hdr.len = sizeof(s),				\
-		._mps_str = ifconst(s,""),				\
-	};								\
-		_rv = _myputs_struct(&_mps._mps_hdr);			\
-	} else {							\
-		_rv = _myputs_string(s);				\
-	}								\
-	notailcall();							\
-	_rv;								\
-})
-
-STATIC int test1(void);
-STATIC int test2(const char *strx);
-
-STATIC int test1(void)
-{
-	return myputs("Foobar");
-}
-
-STATIC int test2(const char *strx)
-{
-	return myputs(strx);
-}
-
-int main(int argc, char *argv[])
-{
-	(void)argc;
-
-	test1();
-	test2(argv[0]);
-	return 0;
-}
-
---------------5E98DEB96C9E8225D80004DF--
