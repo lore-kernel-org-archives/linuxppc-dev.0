@@ -1,21 +1,31 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5301::4])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <konrad.r.wilk@gmail.com>
+Received: from mail-qk0-x244.google.com (mail-qk0-x244.google.com
+ [IPv6:2607:f8b0:400d:c09::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zg6t2g4FzDrS7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:15:47 +1000 (AEST)
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
-Content-Type: text/plain;
-	charset=utf-8
-Mime-Version: 1.0 (1.0)
-Date: Mon, 27 Aug 2018 20:15:39 +0200
-Subject: FSL/NXP P5020: USB problems with the latest Git kernels
-Message-Id: <196C6151-3085-4A42-B6D6-5891F4AF9759@xenosoft.de>
-References: <0F797F4E-755B-499C-BA74-48CC03235393@xenosoft.de>
- <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
-In-Reply-To: <76A7B415-F6D4-4BF8-B4B7-B146C5337CF8@xenosoft.de>
-To: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zgBB4Hc7zDrS7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 04:18:38 +1000 (AEST)
+Received: by mail-qk0-x244.google.com with SMTP id 93-v6so11161402qks.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 11:18:38 -0700 (PDT)
+Sender: Konrad Rzeszutek Wilk <konrad.r.wilk@gmail.com>
+Date: Mon, 27 Aug 2018 14:18:31 -0400
+From: Konrad Rzeszutek Wilk <konrad@darnok.org>
+To: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, iommu@lists.linux-foundation.org,
+ linux-kernel@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Anshuman Khandual <anshuman.linux@gmail.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Christoph Hellwig <hch@lst.de>, Michael Ellerman <mpe@ellerman.id.au>,
+ Mike Anderson <andmike@linux.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ram Pai <linuxram@us.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 11/11] powerpc/svm: Increase SWIOTLB buffer size
+Message-ID: <20180827181830.GB3834@0021ccb48c25>
+References: <20180824162535.22798-1-bauerman@linux.ibm.com>
+ <20180824162535.22798-12-bauerman@linux.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20180824162535.22798-12-bauerman@linux.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,76 +35,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+On Fri, Aug 24, 2018 at 01:25:35PM -0300, Thiago Jung Bauermann wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> 
+> SWIOTLB buffer default size (64MB) is not enough for large sequential write
+> operations which eventually leads to kernel crash like here.
+> 
+> virtio-pci 0000:00:05.0: swiotlb buffer is full (sz: 327680 bytes)
+> virtio-pci 0000:00:05.0: DMA: Out of SW-IOMMU space for 327680 bytes
+> Kernel panic - not syncing: DMA: Random memory could be DMA read
+> CPU: 12 PID: 3985 Comm: mkfs.ext4 Not tainted 4.18.0-rc4+ #285
+> Call Trace:
+> [c0000007d2a27020] [c000000000cfdffc] dump_stack+0xb0/0xf4 (unreliable)
+> [c0000007d2a27060] [c000000000112a98] panic+0x140/0x328
+> [c0000007d2a270f0] [c0000000001b4f88] swiotlb_full+0x108/0x130
+> [c0000007d2a27180] [c0000000001b5f6c] swiotlb_map_page+0x25c/0x2c0
+> [c0000007d2a271e0] [c0000000007bfaf8] vring_map_one_sg.isra.0+0x58/0x70
+> [c0000007d2a27200] [c0000000007c08dc] virtqueue_add_sgs+0x1bc/0x690
+> [c0000007d2a272f0] [d0000000042a1280] virtio_queue_rq+0x358/0x4a0 [virtio_blk]
+> [c0000007d2a273d0] [c0000000006b5d68] blk_mq_dispatch_rq_list+0x1f8/0x6d0
+> ..................
+> 
+> Increase the SWIOTLB size to 1GB on Ultravisor based secure guests.
 
-Our users tested the RC1 of kernel 4.19 on their P5020 boards today. Unfortu=
-nately the USB bug still exists. With mem values bigger than 4096M, the USB m=
-ouse and keyboard doesn=E2=80=99t work. With the bootarg mem=3D4096M, the US=
-B devices work without any problems. Please compile the RC1 and test it on y=
-our P5020 board. There is a problem with the memory management since 22/08/1=
-8.=20
+Gosh, that is huge.
 
-Thanks,
-Christian
+What about making the SWIOTLB be more dynamic? That is expand it's size
+dynamically if it can?
 
-Sent from my iPhone
-
-> On 25. Aug 2018, at 22:19, Christian Zigotzky <chzigotzky@xenosoft.de> wro=
-te:
->=20
-> Hello,
->=20
-> With the boot argument =E2=80=9Cmem=3D3500M=E2=80=9D the USB devices work.=
- Please compile the latest Git kernel and test it on your P5020 board. There=
- is a problem with the memory management since 22/08/18. I can=E2=80=99t tes=
-t because I don=E2=80=99t have a P5020 board here and our users can=E2=80=99=
-t compile kernels.
->=20
-> Thanks,
-> Christian
->=20
-> Sent from my iPhone
->=20
->> On 24. Aug 2018, at 20:11, Christian Zigotzky <chzigotzky@xenosoft.de> wr=
-ote:
->>=20
->> Hello,
->>=20
->> There are USB problems with P5020 boards with the latest Git kernels.
->>=20
->> Some users reported the following error messages:
->>=20
->> skateman@X5000LNX:~$ grep -i -E 'usb.*error' /var/log/syslog
->> Aug 24 13:12:50 X5000LNX kernel: [ 6.552303] usb 1-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 6.649376] usb 2-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 6.794158] usb 1-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 6.883156] usb 2-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 7.139155] usb 1-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 7.226156] usb 2-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 7.363155] usb 1-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 7.451156] usb 2-1: device descriptor r=
-ead/64, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 8.521156] usb 1-1: device not acceptin=
-g address 4, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 8.609156] usb 2-1: device not acceptin=
-g address 4, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 9.057155] usb 1-1: device not acceptin=
-g address 5, error -32
->> Aug 24 13:12:50 X5000LNX kernel: [ 9.145157] usb 2-1: device not acceptin=
-g address 5, error -32
->>=20
->> I don=E2=80=99t have a P5020 board here. That means I can=E2=80=99t bisec=
-t and test. Therefore I need your help. The problematic Git commit must be s=
-omewhere between 22/08/18 1:20 PM UTC and 23/08/18 10:49 AM UTC.
->> The Git kernel from 22/08/18 1:20 PM UTC works with USB devices.
->> Could you please compile a Git kernel and test it on your P5020 board?
->>=20
->> Thanks,
->> Christian
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Thiago Jung Bauermann <bauerman@linux.ibm.com>
+> ---
+>  arch/powerpc/Kconfig | 5 +++++
+>  kernel/dma/swiotlb.c | 5 +++++
+>  2 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 1466d1234723..fee7194ce9e4 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -457,6 +457,11 @@ config PPC_SVM
+>  
+>  	 If unsure, say "N".
+>  
+> +config SWIOTLB_DEFAULT_SIZE
+> +       int "Size of Software I/O TLB buffer (in MiB)"
+> +       default "1024"
+> +       depends on PPC_SVM
+> +
+>  config PPC_TRANSACTIONAL_MEM
+>         bool "Transactional Memory support for POWERPC"
+>         depends on PPC_BOOK3S_64
+> diff --git a/kernel/dma/swiotlb.c b/kernel/dma/swiotlb.c
+> index 04b68d9dffac..32dc67422d8a 100644
+> --- a/kernel/dma/swiotlb.c
+> +++ b/kernel/dma/swiotlb.c
+> @@ -146,8 +146,13 @@ void swiotlb_set_max_segment(unsigned int val)
+>  		max_segment = rounddown(val, PAGE_SIZE);
+>  }
+>  
+> +#ifdef CONFIG_SWIOTLB_DEFAULT_SIZE
+> +#define IO_TLB_DEFAULT_SIZE ((unsigned long) CONFIG_SWIOTLB_DEFAULT_SIZE << 20)
+> +#else
+>  /* default to 64MB */
+>  #define IO_TLB_DEFAULT_SIZE (64UL<<20)
+> +#endif
+> +
+>  unsigned long swiotlb_size_or_default(void)
+>  {
+>  	unsigned long size;
+> 
