@@ -1,17 +1,18 @@
-Return-Path: <yamada.masahiro@socionext.com>
-Received: from conuserg-10.nifty.com (conuserg-10.nifty.com [210.131.2.77])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <npiggin@gmail.com>
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com
+ [IPv6:2607:f8b0:4864:20::443])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zFxQ01pdzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 12:21:13 +1000 (AEST)
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: remove pre-build checks for old GCC versions
-Date: Mon, 27 Aug 2018 11:20:02 +0900
-Message-Id: <1535336402-10632-1-git-send-email-yamada.masahiro@socionext.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zGss4djYzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 13:03:13 +1000 (AEST)
+Received: by mail-pf1-x443.google.com with SMTP id j8-v6so7022005pff.6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2018 20:03:13 -0700 (PDT)
+From: Nicholas Piggin <npiggin@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH 0/2] ERAT invalidation fixes
+Date: Mon, 27 Aug 2018 13:03:00 +1000
+Message-Id: <20180827030302.17541-1-npiggin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,70 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit cafa0010cd51 ("Raise the minimum required gcc version to 4.6")
-bumped the minimum GCC version to 4.6 for all architectures.
+First one is a real bug-fix for POWER8 and earlier CPUs, second I'm
+not exactly sure how POWER9's ERAT behaves in this situation but it
+seems to match what we do in other places.
 
-The GCC version checks in arch/powerpc/Makefile are obsolete now.
+Thanks,
+Nick
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+Nicholas Piggin (2):
+  powerpc/64s/hash: do not use PPC_INVALIDATE_ERAT on CPUs before POWER9
+  powerpc/64s/radix: Explicitly flush ERAT with local LPID invalidation
 
- arch/powerpc/Makefile | 38 +-------------------------------------
- 1 file changed, 1 insertion(+), 37 deletions(-)
+ arch/powerpc/kernel/mce_power.c  | 7 +++++++
+ arch/powerpc/mm/hash_native_64.c | 4 ++--
+ arch/powerpc/mm/tlb-radix.c      | 1 +
+ 3 files changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 11a1acb..57e7358 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -400,40 +400,8 @@ archclean:
- 
- archprepare: checkbin
- 
--# Use the file '.tmp_gas_check' for binutils tests, as gas won't output
--# to stdout and these checks are run even on install targets.
--TOUT	:= .tmp_gas_check
--
--# Check gcc and binutils versions:
--# - gcc-3.4 and binutils-2.14 are a fatal combination
--# - Require gcc 4.0 or above on 64-bit
--# - gcc-4.2.0 has issues compiling modules on 64-bit
-+# Check binutils versions:
- checkbin:
--	@if test "$(cc-name)" != "clang" \
--	    && test "$(cc-version)" = "0304" ; then \
--		if ! /bin/echo mftb 5 | $(AS) -v -mppc -many -o $(TOUT) >/dev/null 2>&1 ; then \
--			echo -n '*** ${VERSION}.${PATCHLEVEL} kernels no longer build '; \
--			echo 'correctly with gcc-3.4 and your version of binutils.'; \
--			echo '*** Please upgrade your binutils or downgrade your gcc'; \
--			false; \
--		fi ; \
--	fi
--	@if test "$(cc-name)" != "clang" \
--	    && test "$(cc-version)" -lt "0400" \
--	    && test "x${CONFIG_PPC64}" = "xy" ; then \
--                echo -n "Sorry, GCC v4.0 or above is required to build " ; \
--                echo "the 64-bit powerpc kernel." ; \
--                false ; \
--        fi
--	@if test "$(cc-name)" != "clang" \
--	    && test "$(cc-fullversion)" = "040200" \
--	    && test "x${CONFIG_MODULES}${CONFIG_PPC64}" = "xyy" ; then \
--		echo -n '*** GCC-4.2.0 cannot compile the 64-bit powerpc ' ; \
--		echo 'kernel with modules enabled.' ; \
--		echo -n '*** Please use a different GCC version or ' ; \
--		echo 'disable kernel modules' ; \
--		false ; \
--	fi
- 	@if test "x${CONFIG_CPU_LITTLE_ENDIAN}" = "xy" \
- 	    && $(LD) --version | head -1 | grep ' 2\.24$$' >/dev/null ; then \
- 		echo -n '*** binutils 2.24 miscompiles weak symbols ' ; \
-@@ -441,7 +409,3 @@ checkbin:
- 		echo -n '*** Please use a different binutils version.' ; \
- 		false ; \
- 	fi
--
--
--CLEAN_FILES += $(TOUT)
--
 -- 
-2.7.4
+2.18.0
