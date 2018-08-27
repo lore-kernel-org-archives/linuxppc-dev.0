@@ -1,76 +1,26 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:8b0:10b:1231::1])
+Return-Path: <oss@buserror.net>
+Received: from baldur.buserror.net (baldur.buserror.net [165.227.176.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zNtx0XhVzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 17:34:32 +1000 (AEST)
-Date: Mon, 27 Aug 2018 09:33:58 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nick Desaulniers <ndesaulniers@google.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
- deller@gmx.de, Andrew Morton <akpm@linux-foundation.org>,
- "Eric W . Biederman" <ebiederm@xmission.com>,
- Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
- Simon Horman <horms@verge.net.au>,
- Nathan Chancellor <natechancellor@gmail.com>,
- Philippe Ombredanne <pombredanne@nexb.com>,
- Kate Stewart <kstewart@linuxfoundation.org>,
- Greg KH <gregkh@linuxfoundation.org>, rth@twiddle.net,
- ink@jurassic.park.msu.ru, mattst88@gmail.com, vgupta@synopsys.com,
- linux@armlinux.org.uk, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, msalter@redhat.com,
- jacquiot.aurelien@gmail.com,
- Yoshinori Sato <ysato@users.sourceforge.jp>, rkuo@codeaurora.org,
- tony.luck@intel.com, fenghua.yu@intel.com,
- Geert Uytterhoeven <geert@linux-m68k.org>, monstr@monstr.eu,
- ralf@linux-mips.org, paul.burton@mips.com, jhogan@kernel.org,
- green.hu@gmail.com, deanbo422@gmail.com, lftan@altera.com,
- jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
- Stafford Horne <shorne@gmail.com>, jejb@parisc-linux.org,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- palmer@sifive.com, aou@eecs.berkeley.edu, schwidefsky@de.ibm.com,
- heiko.carstens@de.ibm.com, dalias@libc.org,
- "David S. Miller" <davem@davemloft.net>, gxt@pku.edu.cn,
- x86@kernel.org, jdike@addtoit.com, richard@nod.at, chris@zankel.net,
- jcmvbkbc@gmail.com, Tobias Klauser <tklauser@distanz.ch>,
- noamc@ezchip.com, mickael.guene@st.com, nicolas.pitre@linaro.org,
- Kees Cook <keescook@chromium.org>, Dave Martin <Dave.Martin@arm.com>,
- Marc Zyngier <marc.zyngier@arm.com>, alex.bennee@linaro.org,
- Laura Abbott <labbott@redhat.com>, Yury Norov <ynorov@caviumnetworks.com>,
- Mark Rutland <mark.rutland@arm.com>, chenhc@lemote.com,
- macro@mips.com, Arnd Bergmann <arnd@arndb.de>, dhowells@redhat.com,
- sukadev@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>,
- aneesh.kumar@linux.vnet.ibm.com, felix@linux.vnet.ibm.com,
- linuxram@us.ibm.com, christophe.leroy@c-s.fr, cohuck@redhat.com,
- gor@linux.vnet.ibm.com, nick.alcock@oracle.com,
- shannon.nelson@oracle.com, nagarathnam.muthusamy@oracle.com,
- luto@kernel.org, bp@suse.de, dave.hansen@linux.intel.com,
- vkuznets@redhat.com, jkosina@suse.cz, linux-alpha@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, linux-snps-arc@lists.infradead.org,
- Linux ARM <linux-arm-kernel@lists.infradead.org>,
- linux-c6x-dev@linux-c6x.org, uclinux-h8-devel@lists.sourceforge.jp,
- linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-m68k@vger.kernel.org, linux-mips@linux-mips.org,
- nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
- linux-um@lists.infradead.org
-Subject: Re: [PATCH] treewide: remove current_text_addr
-Message-ID: <20180827073358.GV24124@hirez.programming.kicks-ass.net>
-References: <CAKwvOdkWL_2yTnJqM6n6R9UCPwY4iz-9BQYGN2MDAk9EzumUvA@mail.gmail.com>
- <20180821202900.208417-1-ndesaulniers@google.com>
- <207784db-4fcc-85e7-a0b2-fec26b7dab81@gmx.de>
- <c62e4e00-fb8f-19a6-f3eb-bde60118cb1a@zytor.com>
- <81141365-8168-799b-f34f-da5f92efaaf9@zytor.com>
- <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
- <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
- <CA+55aFzuSCKfmgT9efHuwtan+m3+bPh4BpwbZwn5gGX_H=Thuw@mail.gmail.com>
- <CAKwvOd=wAaPBkFHAcWxgMW91a--9gbvu7xrt3j-q8c+-mT=7Lw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAKwvOd=wAaPBkFHAcWxgMW91a--9gbvu7xrt3j-q8c+-mT=7Lw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zQj76k3KzDrJ7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 18:56:11 +1000 (AEST)
+Message-ID: <f48ee881bf38c97575202a8921bf8df2ff2136cb.camel@buserror.net>
+From: Scott Wood <oss@buserror.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Christoph Hellwig
+ <hch@lst.de>, Paul Mackerras <paulus@samba.org>, Michael Ellerman
+ <mpe@ellerman.id.au>, Tony Luck <tony.luck@intel.com>, Fenghua Yu
+ <fenghua.yu@intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Robin Murphy
+ <robin.murphy@arm.com>, linuxppc-dev@lists.ozlabs.org,
+ iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org
+Date: Mon, 27 Aug 2018 03:51:23 -0500
+In-Reply-To: <4d5c934ea7bc9802eb3653e6afe7583cb05e4484.camel@kernel.crashing.org>
+References: <20180730163824.10064-1-hch@lst.de>
+ <20180730163824.10064-17-hch@lst.de>
+ <4d5c934ea7bc9802eb3653e6afe7583cb05e4484.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Subject: Re: [PATCH 16/20] powerpc/dma: use dma_direct_{alloc,free}
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -80,38 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Aug 26, 2018 at 07:52:59PM -0700, Nick Desaulniers wrote:
-> On Sun, Aug 26, 2018 at 1:25 PM Linus Torvalds
+On Thu, 2018-08-09 at 10:52 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2018-07-30 at 18:38 +0200, Christoph Hellwig wrote:
+> > These do the same functionality as the existing helpers, but do it
+> > simpler, and also allow the (optional) use of CMA.
+> > 
+> > Note that the swiotlb code now calls into the dma_direct code directly,
+> > given that it doesn't work with noncoherent caches at all, and isn't
+> > called
+> > when we have an iommu either, so the iommu special case in
+> > dma_nommu_alloc_coherent isn't required for swiotlb.
+> 
+> I am not convinced that this will produce the same results due to
+> the way the zone picking works.
+> 
+> As for the interaction with swiotlb, we'll need the FSL guys to have
+> a look. Scott, do you remember what this is about ?
 
-> > Instead, maybe we could encourage something like
-> >
-> >   struct kernel_loc { const char *file; const char *fn; int line; };
-> >
-> >   #define __GEN_LOC__(n) \
-> >         ({ static const struct kernel_loc n = { \
-> >                 __FILE__, __FUNCTION__, __LINE__  \
-> >            }; &n; })
-> >
-> >   #define _THIS_LOC_ __GEN_LOC__(__UNIQUE_ID(loc))
-> >
-> > which is a hell of a lot nicer to use, and actually allows gcc to
-> > optimize things (try it: if you pass a _THIS_LOC_ off to an inline
-> > function, and that inline function uses the name and line number, gcc
-> > will pick them up directly, without the extra structure dereference.
-> >
-> > Wouldn't it be much nicer to pass these kinds of "location pointer"
-> > around, rather than the nasty _THIS_IP_ thing?
-> >
-> > Certainly lockdep looks like it could easily take that "const struct
-> > kernel_loc *" instead of "unsigned long ip". Makes it easy to print
-> > out the lockdep info.
+dma_direct_alloc() has similar (though not identical[1]) zone picking, so I
+think it will work.  Needs testing though, and I no longer have a book3e
+machine with a PCIe card in it.
 
-> This is extremely reasonable.  I can follow up with the lockdep folks
-> to see if they really need _THIS_IP_ to solve their problem, or if
-> there's a simpler solution that can solve their needs.  Sometimes
-> taking a step back and asking for clarity around the big picture
-> allows simpler solutions to shake out.
+The odd thing about this platform (fsl book3e) is the 31-bit[2] limitation on
+PCI.  We currently use ZONE_DMA32 for this, rather than ZONE_DMA, at Ben's
+request[3].  dma_direct_alloc() regards ZONE_DMA32 as being fixed at 32-bits,
+but it doesn't really matter as long as limit_zone_pfn() still works, and the
+allocation is made below 2 GiB.  If we were to switch to ZONE_DMA, and have
+both 31-bit and 32-bit zones, then dma_direct_alloc() would have a problem
+knowing when to use the 31-bit zone since it's based on a non-power-of-2 limit
+that isn't reflected in the dma mask.
 
-What problem are we trying to solve? _THIS_IP_ and _RET_IP_ work fine.
-We're 'good' at dealing with text addresses, we use them for call stacks
-and all sorts. Why does this need changing?
+-Scott
+
+[1] The logic in dma_direct_alloc() seems wrong -- the zone should need to fit
+in the mask, not the other way around.  If ARCH_ZONE_DMA_BITS is 24, then
+0x007fffff should be a failure rather than GFP_DMA, 0x7fffffff should be
+GFP_DMA rather than GFP_DMA32, and 0x3ffffffff should be GFP_DMA32 rather than
+an unrestricted allocation (in each case assuming that the end of RAM is
+beyond the mask).
+
+[2] The actual limit is closer to 4 GiB, but not quite due to special windows.
+ swiotlb still uses the real limit when deciding whether to bounce, so the dma
+mask is still 32 bits.
+
+[3] https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-July/099593.html
