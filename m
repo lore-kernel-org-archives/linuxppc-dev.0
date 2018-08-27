@@ -1,49 +1,77 @@
-Return-Path: <srs0=mams=lk=linux.vnet.ibm.com=mahesh@ozlabs.org>
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zSrN3RMzzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 20:32:36 +1000 (AEST)
-Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
- by bilbo.ozlabs.org (Postfix) with ESMTP id 41zSrN2tKQz8tPw
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 20:32:36 +1000 (AEST)
-Received: from mx0a-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com
- [148.163.158.5])
+Return-Path: <hpa@zytor.com>
+Received: from mail.zytor.com (terminus.zytor.com [198.137.202.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 41zSrM5q3Bz9s2P
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 20:32:35 +1000 (AEST)
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
- by mx0a-001b2d01.pphosted.com (8.16.0.22/8.16.0.22) with SMTP id
- w7RATLsc136183
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 06:32:33 -0400
-Received: from e06smtp04.uk.ibm.com (e06smtp04.uk.ibm.com [195.75.94.100])
- by mx0a-001b2d01.pphosted.com with ESMTP id 2m4cfc78aa-1
- (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=NOT)
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Aug 2018 06:32:33 -0400
-Received: from localhost
- by e06smtp04.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 27 Aug 2018 11:32:31 +0100
-Subject: Re: [PATCH v8 5/5] powernv/pseries: consolidate code for mce early
- handling.
-To: Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Ananth Narayan <ananth@in.ibm.com>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
- Michal Suchanek <msuchanek@suse.com>, Michael Ellerman <mpe@ellerman.id.au>
-References: <153469837203.21878.11524005112982522827.stgit@jupiter.in.ibm.com>
- <153469851942.21878.15396539991879060950.stgit@jupiter.in.ibm.com>
- <20180820213445.3b7dc3ee@roar.ozlabs.ibm.com>
- <57fb2d6c-4713-0fa8-3cff-6e66d2c02a69@linux.vnet.ibm.com>
- <20180823190258.28570701@roar.ozlabs.ibm.com>
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Mon, 27 Aug 2018 16:02:26 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zWYJ5yv0zDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 22:34:44 +1000 (AEST)
+Subject: Re: [PATCH] treewide: remove current_text_addr
+To: Peter Zijlstra <peterz@infradead.org>,
+ Nick Desaulniers <ndesaulniers@google.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, deller@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Eric W . Biederman" <ebiederm@xmission.com>,
+ Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+ Simon Horman <horms@verge.net.au>,
+ Nathan Chancellor <natechancellor@gmail.com>,
+ Philippe Ombredanne <pombredanne@nexb.com>,
+ Kate Stewart <kstewart@linuxfoundation.org>,
+ Greg KH <gregkh@linuxfoundation.org>, rth@twiddle.net,
+ ink@jurassic.park.msu.ru, mattst88@gmail.com, vgupta@synopsys.com,
+ linux@armlinux.org.uk, Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, msalter@redhat.com,
+ jacquiot.aurelien@gmail.com,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, rkuo@codeaurora.org,
+ tony.luck@intel.com, fenghua.yu@intel.com,
+ Geert Uytterhoeven <geert@linux-m68k.org>, monstr@monstr.eu,
+ ralf@linux-mips.org, paul.burton@mips.com, jhogan@kernel.org,
+ green.hu@gmail.com, deanbo422@gmail.com, lftan@altera.com,
+ jonas@southpole.se, stefan.kristiansson@saunalahti.fi,
+ Stafford Horne <shorne@gmail.com>, jejb@parisc-linux.org,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ palmer@sifive.com, aou@eecs.berkeley.edu, schwidefsky@de.ibm.com,
+ heiko.carstens@de.ibm.com, dalias@libc.org,
+ "David S. Miller" <davem@davemloft.net>, gxt@pku.edu.cn,
+ x86@kernel.org, jdike@addtoit.com, richard@nod.at, chris@zankel.net,
+ jcmvbkbc@gmail.com, Tobias Klauser <tklauser@distanz.ch>,
+ noamc@ezchip.com, mickael.guene@st.com, nicolas.pitre@linaro.org,
+ Kees Cook <keescook@chromium.org>, Dave Martin <Dave.Martin@arm.com>,
+ Marc Zyngier <marc.zyngier@arm.com>, alex.bennee@linaro.org,
+ Laura Abbott <labbott@redhat.com>, Yury Norov <ynorov@caviumnetworks.com>,
+ Mark Rutland <mark.rutland@arm.com>, chenhc@lemote.com, macro@mips.com,
+ Arnd Bergmann <arnd@arndb.de>, dhowells@redhat.com,
+ sukadev@linux.vnet.ibm.com, Nicholas Piggin <npiggin@gmail.com>,
+ aneesh.kumar@linux.vnet.ibm.com, felix@linux.vnet.ibm.com,
+ linuxram@us.ibm.com, christophe.leroy@c-s.fr, cohuck@redhat.com,
+ gor@linux.vnet.ibm.com, nick.alcock@oracle.com,
+ shannon.nelson@oracle.com, nagarathnam.muthusamy@oracle.com,
+ luto@kernel.org, bp@suse.de, dave.hansen@linux.intel.com,
+ vkuznets@redhat.com, jkosina@suse.cz, linux-alpha@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>, linux-snps-arc@lists.infradead.org,
+ Linux ARM <linux-arm-kernel@lists.infradead.org>,
+ linux-c6x-dev@linux-c6x.org, uclinux-h8-devel@lists.sourceforge.jp,
+ linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-m68k@vger.kernel.org, linux-mips@linux-mips.org,
+ nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-um@lists.infradead.org
+References: <CAKwvOdkWL_2yTnJqM6n6R9UCPwY4iz-9BQYGN2MDAk9EzumUvA@mail.gmail.com>
+ <20180821202900.208417-1-ndesaulniers@google.com>
+ <207784db-4fcc-85e7-a0b2-fec26b7dab81@gmx.de>
+ <c62e4e00-fb8f-19a6-f3eb-bde60118cb1a@zytor.com>
+ <81141365-8168-799b-f34f-da5f92efaaf9@zytor.com>
+ <7f49eeab-a5cc-867f-58fb-abd266f9c2c9@zytor.com>
+ <6ca8a1d3-ff95-e9f4-f003-0a5af85bcb6f@zytor.com>
+ <CA+55aFzuSCKfmgT9efHuwtan+m3+bPh4BpwbZwn5gGX_H=Thuw@mail.gmail.com>
+ <CAKwvOd=wAaPBkFHAcWxgMW91a--9gbvu7xrt3j-q8c+-mT=7Lw@mail.gmail.com>
+ <20180827073358.GV24124@hirez.programming.kicks-ass.net>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Message-ID: <f9896d68-4a49-e666-cea5-a9c0522f1658@zytor.com>
+Date: Mon, 27 Aug 2018 05:26:53 -0700
 MIME-Version: 1.0
-In-Reply-To: <20180823190258.28570701@roar.ozlabs.ibm.com>
+In-Reply-To: <20180827073358.GV24124@hirez.programming.kicks-ass.net>
 Content-Type: text/plain; charset=utf-8
-Message-Id: <8b86c5c0-be87-030b-d33f-b3bd528f4f15@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -53,271 +81,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/23/2018 02:32 PM, Nicholas Piggin wrote:
-> On Thu, 23 Aug 2018 14:13:13 +0530
-> Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+On 08/27/18 00:33, Peter Zijlstra wrote:
 > 
->> On 08/20/2018 05:04 PM, Nicholas Piggin wrote:
->>> On Sun, 19 Aug 2018 22:38:39 +0530
->>> Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
->>>   
->>>> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>>
->>>> Now that other platforms also implements real mode mce handler,
->>>> lets consolidate the code by sharing existing powernv machine check
->>>> early code. Rename machine_check_powernv_early to
->>>> machine_check_common_early and reuse the code.
->>>>
->>>> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
->>>> ---
->>>>  arch/powerpc/kernel/exceptions-64s.S |  155 ++++++----------------------------
->>>>  1 file changed, 28 insertions(+), 127 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
->>>> index 12f056179112..2f85a7baf026 100644
->>>> --- a/arch/powerpc/kernel/exceptions-64s.S
->>>> +++ b/arch/powerpc/kernel/exceptions-64s.S
->>>> @@ -243,14 +243,13 @@ EXC_REAL_BEGIN(machine_check, 0x200, 0x100)
->>>>  	SET_SCRATCH0(r13)		/* save r13 */
->>>>  	EXCEPTION_PROLOG_0(PACA_EXMC)
->>>>  BEGIN_FTR_SECTION
->>>> -	b	machine_check_powernv_early
->>>> +	b	machine_check_common_early
->>>>  FTR_SECTION_ELSE
->>>>  	b	machine_check_pSeries_0
->>>>  ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)
->>>>  EXC_REAL_END(machine_check, 0x200, 0x100)
->>>>  EXC_VIRT_NONE(0x4200, 0x100)
->>>> -TRAMP_REAL_BEGIN(machine_check_powernv_early)
->>>> -BEGIN_FTR_SECTION
->>>> +TRAMP_REAL_BEGIN(machine_check_common_early)
->>>>  	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
->>>>  	/*
->>>>  	 * Register contents:
->>>> @@ -306,7 +305,9 @@ BEGIN_FTR_SECTION
->>>>  	/* Save r9 through r13 from EXMC save area to stack frame. */
->>>>  	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
->>>>  	mfmsr	r11			/* get MSR value */
->>>> +BEGIN_FTR_SECTION
->>>>  	ori	r11,r11,MSR_ME		/* turn on ME bit */
->>>> +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->>>>  	ori	r11,r11,MSR_RI		/* turn on RI bit */
->>>>  	LOAD_HANDLER(r12, machine_check_handle_early)
->>>>  1:	mtspr	SPRN_SRR0,r12
->>>> @@ -325,7 +326,6 @@ BEGIN_FTR_SECTION
->>>>  	andc	r11,r11,r10		/* Turn off MSR_ME */
->>>>  	b	1b
->>>>  	b	.	/* prevent speculative execution */
->>>> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->>>>  
->>>>  TRAMP_REAL_BEGIN(machine_check_pSeries)
->>>>  	.globl machine_check_fwnmi
->>>> @@ -333,7 +333,7 @@ machine_check_fwnmi:
->>>>  	SET_SCRATCH0(r13)		/* save r13 */
->>>>  	EXCEPTION_PROLOG_0(PACA_EXMC)
->>>>  BEGIN_FTR_SECTION
->>>> -	b	machine_check_pSeries_early
->>>> +	b	machine_check_common_early
->>>>  END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->>>>  machine_check_pSeries_0:
->>>>  	EXCEPTION_PROLOG_1(PACA_EXMC, KVMTEST_PR, 0x200)
->>>> @@ -346,103 +346,6 @@ machine_check_pSeries_0:
->>>>  
->>>>  TRAMP_KVM_SKIP(PACA_EXMC, 0x200)
->>>>  
->>>> -TRAMP_REAL_BEGIN(machine_check_pSeries_early)
->>>> -BEGIN_FTR_SECTION
->>>> -	EXCEPTION_PROLOG_1(PACA_EXMC, NOTEST, 0x200)
->>>> -	mr	r10,r1			/* Save r1 */
->>>> -	lhz	r11,PACA_IN_MCE(r13)
->>>> -	cmpwi	r11,0			/* Are we in nested machine check */
->>>> -	bne	0f			/* Yes, we are. */
->>>> -	/* First machine check entry */
->>>> -	ld	r1,PACAMCEMERGSP(r13)	/* Use MC emergency stack */
->>>> -0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
->>>> -	addi	r11,r11,1		/* increment paca->in_mce */
->>>> -	sth	r11,PACA_IN_MCE(r13)
->>>> -	/* Limit nested MCE to level 4 to avoid stack overflow */
->>>> -	cmpwi	r11,MAX_MCE_DEPTH
->>>> -	bgt	1f			/* Check if we hit limit of 4 */
->>>> -	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
->>>> -	mfspr	r12,SPRN_SRR1		/* Save SRR1 */
->>>> -	EXCEPTION_PROLOG_COMMON_1()
->>>> -	EXCEPTION_PROLOG_COMMON_2(PACA_EXMC)
->>>> -	EXCEPTION_PROLOG_COMMON_3(0x200)
->>>> -	addi	r3,r1,STACK_FRAME_OVERHEAD
->>>> -	BRANCH_LINK_TO_FAR(machine_check_early) /* Function call ABI */
->>>> -	ld	r12,_MSR(r1)
->>>> -	andi.	r11,r12,MSR_PR		/* See if coming from user. */
->>>> -	bne	2f			/* continue in V mode if we are. */
->>>> -
->>>> -	/*
->>>> -	 * At this point we are not sure about what context we come from.
->>>> -	 * We may be in the middle of swithing stack. r1 may not be valid.
->>>> -	 * Hence stay on emergency stack, call machine_check_exception and
->>>> -	 * return from the interrupt.
->>>> -	 * But before that, check if this is an un-recoverable exception.
->>>> -	 * If yes, then stay on emergency stack and panic.
->>>> -	 */
->>>> -	andi.	r11,r12,MSR_RI
->>>> -	beq	1f
->>>> -
->>>> -	/*
->>>> -	 * Check if we have successfully handled/recovered from error, if not
->>>> -	 * then stay on emergency stack and panic.
->>>> -	 */
->>>> -	cmpdi	r3,0		/* see if we handled MCE successfully */
->>>> -	beq	1f		/* if !handled then panic */
->>>> -
->>>> -	/* Stay on emergency stack and return from interrupt. */
->>>> -	LOAD_HANDLER(r10,mce_return)
->>>> -	mtspr	SPRN_SRR0,r10
->>>> -	ld	r10,PACAKMSR(r13)
->>>> -	mtspr	SPRN_SRR1,r10
->>>> -	RFI_TO_KERNEL
->>>> -	b	.
->>>> -
->>>> -1:	LOAD_HANDLER(r10,unrecover_mce)
->>>> -	mtspr	SPRN_SRR0,r10
->>>> -	ld	r10,PACAKMSR(r13)
->>>> -	/*
->>>> -	 * We are going down. But there are chances that we might get hit by
->>>> -	 * another MCE during panic path and we may run into unstable state
->>>> -	 * with no way out. Hence, turn ME bit off while going down, so that
->>>> -	 * when another MCE is hit during panic path, hypervisor will
->>>> -	 * power cycle the lpar, instead of getting into MCE loop.
->>>> -	 */
->>>> -	li	r3,MSR_ME
->>>> -	andc	r10,r10,r3		/* Turn off MSR_ME */
->>>> -	mtspr	SPRN_SRR1,r10
->>>> -	RFI_TO_KERNEL
->>>> -	b	.
->>>> -
->>>> -	/* Move original SRR0 and SRR1 into the respective regs */
->>>> -2:	ld	r9,_MSR(r1)
->>>> -	mtspr	SPRN_SRR1,r9
->>>> -	ld	r3,_NIP(r1)
->>>> -	mtspr	SPRN_SRR0,r3
->>>> -	ld	r9,_CTR(r1)
->>>> -	mtctr	r9
->>>> -	ld	r9,_XER(r1)
->>>> -	mtxer	r9
->>>> -	ld	r9,_LINK(r1)
->>>> -	mtlr	r9
->>>> -	REST_GPR(0, r1)
->>>> -	REST_8GPRS(2, r1)
->>>> -	REST_GPR(10, r1)
->>>> -	ld	r11,_CCR(r1)
->>>> -	mtcr	r11
->>>> -	/* Decrement paca->in_mce. */
->>>> -	lhz	r12,PACA_IN_MCE(r13)
->>>> -	subi	r12,r12,1
->>>> -	sth	r12,PACA_IN_MCE(r13)
->>>> -	REST_GPR(11, r1)
->>>> -	REST_2GPRS(12, r1)
->>>> -	/* restore original r1. */
->>>> -	ld	r1,GPR1(r1)
->>>> -	SET_SCRATCH0(r13)		/* save r13 */
->>>> -	EXCEPTION_PROLOG_0(PACA_EXMC)
->>>> -	b	machine_check_pSeries_0
->>>> -END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->>>> -
->>>>  EXC_COMMON_BEGIN(machine_check_common)
->>>>  	/*
->>>>  	 * Machine check is different because we use a different
->>>> @@ -541,6 +444,9 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->>>>  	bl	machine_check_early
->>>>  	std	r3,RESULT(r1)	/* Save result */
->>>>  	ld	r12,_MSR(r1)
->>>> +BEGIN_FTR_SECTION
->>>> +	b	4f
->>>> +END_FTR_SECTION_IFCLR(CPU_FTR_HVMODE)
->>>>  
->>>>  #ifdef	CONFIG_PPC_P7_NAP
->>>>  	/*
->>>> @@ -564,10 +470,11 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->>>>  	 */
->>>>  	rldicl.	r11,r12,4,63		/* See if MC hit while in HV mode. */
->>>>  	beq	5f
->>>> -	andi.	r11,r12,MSR_PR		/* See if coming from user. */
->>>> +4:	andi.	r11,r12,MSR_PR		/* See if coming from user. */
->>>>  	bne	9f			/* continue in V mode if we are. */
->>>>  
->>>>  5:
->>>> +BEGIN_FTR_SECTION
->>>>  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
->>>>  	/*
->>>>  	 * We are coming from kernel context. Check if we are coming from
->>>> @@ -578,6 +485,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->>>>  	cmpwi	r11,0			/* Check if coming from guest */
->>>>  	bne	9f			/* continue if we are. */
->>>>  #endif
->>>> +END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)  
->>>
->>> Put these inside the ifdef?
->>>
->>>   
->>>>  	/*
->>>>  	 * At this point we are not sure about what context we come from.
->>>>  	 * Queue up the MCE event and return from the interrupt.
->>>> @@ -611,6 +519,7 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->>>>  	cmpdi	r3,0		/* see if we handled MCE successfully */
->>>>  
->>>>  	beq	1b		/* if !handled then panic */
->>>> +BEGIN_FTR_SECTION
->>>>  	/*
->>>>  	 * Return from MC interrupt.
->>>>  	 * Queue up the MCE event so that we can log it later, while
->>>> @@ -619,10 +528,24 @@ EXC_COMMON_BEGIN(machine_check_handle_early)
->>>>  	bl	machine_check_queue_event
->>>>  	MACHINE_CHECK_HANDLER_WINDUP
->>>>  	RFI_TO_USER_OR_KERNEL
->>>> +FTR_SECTION_ELSE
->>>> +	/*
->>>> +	 * pSeries: Return from MC interrupt. Before that stay on emergency
->>>> +	 * stack and call machine_check_exception to log the MCE event.
->>>> +	 */
->>>> +	LOAD_HANDLER(r10,mce_return)
->>>> +	mtspr	SPRN_SRR0,r10
->>>> +	ld	r10,PACAKMSR(r13)
->>>> +	mtspr	SPRN_SRR1,r10
->>>> +	RFI_TO_KERNEL
->>>> +	b	.
->>>> +ALT_FTR_SECTION_END_IFSET(CPU_FTR_HVMODE)  
->>>
->>> Do you still need mce_return? Why can't you consolidate it as well? ...
->>> Hmm, okay so now I look back at patch 2, I don't think you should call
->>> machine_check_exception there. You're supposed to call
->>> machine_check_queue_event here and it will be handled by irq work.  
->>
->> machine_check_queue_event does not handle RTAS mce event.
+> What problem are we trying to solve? _THIS_IP_ and _RET_IP_ work fine.
+> We're 'good' at dealing with text addresses, we use them for call stacks
+> and all sorts. Why does this need changing?
 > 
-> Yes it would need a bit of work.
-> 
->> Also, we need
->> to call fwnmi_release_errinfo() as early as possible which is why I am
->> calling machine_check_exception() in mce_return path for pSeries.
->> Otherwise if we get another MCE before calling fwnmi_release_errinfo()
->> then lpar will get rebooted without any logs getting printed.
-> 
-> I think you can call that in your early handler, but then defer
-> the printing to the irq work.
-> 
-> Although hmm, maybe that's less of a problem now we do nmi_enter
-> in machine check exception so I think printk will use an NMI safe
-> buffer.
-> 
-> We have to be careful actually of soft irq state if we take a
-> machine check in an un-reconciled state or in the middle of
-> the irq replay code I'm not actually sure we do the right thing,
-> but that would be a bug in existing code too. And we definitely
-> have MSR[RI] vs DAR/DSISR bugs in existing code, sigh.
-> 
-> I don't know... maybe just push what you have and we'll try to do
-> some more fixes and cleanups on top of that.
 
-Sure. I will respin the next version addressing your other minor
-comments. Will work on more improvements as separate change.
+_RET_IP_ works fine, with the following two caveats:
 
-Thanks,
--Mahesh.
+1. To get a unique IP for each call site, the function call needs to be
+   tailcall protected (easily done by wrapping the function in an
+  __always_inline function with the notailcall() function I described
+  earlier.  Alternatively, a generic macro wrapper for the same thing:
+
+  #define notailcall(x) ({ typeof(x) _x = (x); asm volatile("");  _x; })
+
+2. To uniformly get the return IP, it needs to be defined as:
+
+#define _RET_IP_((unsigned long) \
+__builtin_extract_return_addr(__builtin_return_address(0)))
+
+[sorry for the line wrapping]
+
+Using the type unsigned long instead of void * seems kind of pointless
+though.
+
+
+_THIS_IP_, however, is completely ill-defined, other than being an
+address *somewhere* in the same global function (not even necessarily
+the same function if the function is static!)  As my experiment show, in
+many (nearly) cases gcc will hoist the address all the way to the top of
+the function, at least for the current generic implementation.
+
+For the case where _THIS_IP_ is passed to an out-of-line function in all
+cases, it is extra pointless because all it does is increase the
+footprint of every caller: _RET_IP_ is inherently passed to the function
+anyway, and with tailcall protection it will uniquely identify a callsite.
+
+For the case where _THIS_IP_ is used inline, I believe the version I
+described will at the very least avoid hoisting around volatile accesses
+like READ_ONCE(). Surrounding the marked code with asm volatile("");
+[which should be turned into a macro or inline, obviously] might be
+necessary for it to make any kind of inherent sense.
+
+The proposed "location identifier" does have a serious problem: with
+inline functions you might very well have a bunch of duplicates pointing
+into the inline function, so a single callsite isn't identifiable.
+
+	-hpa
