@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zPq56VQSzDqSL
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 18:16:17 +1000 (AEST)
-Message-ID: <9fd2cb24976fc3b4534d7ab6186032ac4e27c9d5.camel@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc/64s/radix: Explicitly flush ERAT with local
- LPID invalidation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Paul Mackerras <pmac@au1.ibm.com>
-Date: Mon, 27 Aug 2018 18:16:05 +1000
-In-Reply-To: <20180827030302.17541-3-npiggin@gmail.com>
-References: <20180827030302.17541-1-npiggin@gmail.com>
- <20180827030302.17541-3-npiggin@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zQ445RjkzDqSL
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 18:27:32 +1000 (AEST)
+Message-Id: <c562b688661c64c0b58bfa689c60a6ed38fd82a8.1535358405.git.christophe.leroy@c-s.fr>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH] powerpc/sysdev/ipic: check primary_ipic NULL pointer before
+ using it
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 27 Aug 2018 08:27:27 +0000 (UTC)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2018-08-27 at 13:03 +1000, Nicholas Piggin wrote:
-> Local radix TLB flush operations that operate on congruence classes
-> have explicit ERAT flushes for POWER9. The process scoped LPID flush
-> did not have a flush, so add it.
+ipic_get_mcp_status() is used by targets implementing NMI
+watchdog in target specific machine check handler in order
+to known whether a machine check results from a watchdog
+NMI reset.
 
-Paul, is that an actual bug ? I think the ERAT is flushed on LPID
-changes...
+In case of very early machine check, primary_ipic pointer
+might not have been set yet, so ipic_get_mcp_status() needs
+to check it for nullity before using it.
 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->  arch/powerpc/mm/tlb-radix.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/mm/tlb-radix.c b/arch/powerpc/mm/tlb-radix.c
-> index fef3e1eb3a19..4e798f33c530 100644
-> --- a/arch/powerpc/mm/tlb-radix.c
-> +++ b/arch/powerpc/mm/tlb-radix.c
-> @@ -366,6 +366,7 @@ static inline void _tlbiel_lpid_guest(unsigned long lpid, unsigned long ric)
->  		__tlbiel_lpid_guest(lpid, set, RIC_FLUSH_TLB);
->  
->  	asm volatile("ptesync": : :"memory");
-> +	asm volatile(PPC_INVALIDATE_ERAT : : :"memory");
->  }
->  
->  
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/sysdev/ipic.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
+index 535cf1f6941c..6300123ce965 100644
+--- a/arch/powerpc/sysdev/ipic.c
++++ b/arch/powerpc/sysdev/ipic.c
+@@ -846,7 +846,7 @@ void ipic_disable_mcp(enum ipic_mcp_irq mcp_irq)
+ 
+ u32 ipic_get_mcp_status(void)
+ {
+-	return ipic_read(primary_ipic->regs, IPIC_SERSR);
++	return primary_ipic ? ipic_read(primary_ipic->regs, IPIC_SERSR) : 0;
+ }
+ 
+ void ipic_clear_mcp_status(u32 mask)
+-- 
+2.13.3
