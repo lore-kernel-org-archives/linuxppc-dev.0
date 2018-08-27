@@ -1,32 +1,25 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ua1-f65.google.com (mail-ua1-f65.google.com
- [209.85.222.65])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <srs0=ccls=lk=nefkom.net=whitebox@ozlabs.org>
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ (using TLSv1.2 with cipher ADH-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41zd3C2zZlzDrSg
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 02:42:31 +1000 (AEST)
-Received: by mail-ua1-f65.google.com with SMTP id y10-v6so9952410uao.4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2018 09:42:31 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 41zds23fnbzDrS7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 03:18:46 +1000 (AEST)
+Received: from ozlabs.org (bilbo.ozlabs.org [203.11.71.1])
+ by bilbo.ozlabs.org (Postfix) with ESMTP id 41zds232s6z8tPx
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2018 03:18:46 +1000 (AEST)
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 41zds04k65z9s47
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Aug 2018 03:18:44 +1000 (AEST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: netdev@vger.kernel.org
+Subject: Oops running iptables -F OUTPUT
+CC: linuxppc-dev@ozlabs.org
+Date: Mon, 27 Aug 2018 19:11:01 +0200
+Message-ID: <87bm9n68gq.fsf@igel.home>
 MIME-Version: 1.0
-References: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
- <48bcbeb8e5f57c958e6e0bc7a29feae44821901d.1535385970.git.christophe.leroy@c-s.fr>
-In-Reply-To: <48bcbeb8e5f57c958e6e0bc7a29feae44821901d.1535385970.git.christophe.leroy@c-s.fr>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 27 Aug 2018 18:42:16 +0200
-Message-ID: <CAMuHMdVFUH_6dW0zFP4tuLHjaXWQFr7TXKGuaLz0q57gX9Tpmw@mail.gmail.com>
-Subject: Re: [PATCH v2 3/3] drivers/block/z2ram: use ioremap_wt() instead of
- __ioremap(_PAGE_WRITETHRU)
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
- Jens Axboe <axboe@kernel.dk>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- linux-block@vger.kernel.org, linux-m68k <linux-m68k@lists.linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,38 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 27, 2018 at 6:10 PM Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
-> _PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+I'm getting this Oops when running iptables -F OUTPUT:
 
->From a Zorro bus point of view:
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+[   91.139409] Unable to handle kernel paging request for data at address 0xd0000001fff12f34
+[   91.139414] Faulting instruction address: 0xd0000000016a5718
+[   91.139419] Oops: Kernel access of bad area, sig: 11 [#1]
+[   91.139426] BE SMP NR_CPUS=2 PowerMac
+[   91.139434] Modules linked in: iptable_filter ip_tables x_tables bpfilter nfsd auth_rpcgss lockd grace nfs_acl sunrpc tun af_packet snd_aoa_codec_tas snd_aoa_fabric_layout snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_pcm_oss snd_pcm snd_seq snd_timer snd_seq_device snd_mixer_oss snd sungem sr_mod firewire_ohci cdrom sungem_phy soundcore firewire_core pata_macio crc_itu_t sg hid_generic usbhid linear md_mod ohci_pci ohci_hcd ehci_pci ehci_hcd usbcore usb_common dm_snapshot dm_bufio dm_mirror dm_region_hash dm_log dm_mod sata_svw
+[   91.139522] CPU: 1 PID: 3620 Comm: iptables Not tainted 4.19.0-rc1 #1
+[   91.139526] NIP:  d0000000016a5718 LR: d0000000016a569c CTR: c0000000006f560c
+[   91.139531] REGS: c0000001fa577670 TRAP: 0300   Not tainted  (4.19.0-rc1)
+[   91.139534] MSR:  900000000200b032 <SF,HV,VEC,EE,FP,ME,IR,DR,RI>  CR: 84002484  XER: 20000000
+[   91.139553] DAR: d0000001fff12f34 DSISR: 40000000 IRQMASK: 0 
+GPR00: d0000000016a569c c0000001fa5778f0 d0000000016b0400 0000000000000000 
+GPR04: 0000000000000002 0000000000000000 80000001fa46418e c0000001fa0d05c8 
+GPR08: d0000000016b0400 d00037fffff13000 00000001ff3e7000 d0000000016a6fb8 
+GPR12: c0000000006f560c c00000000ffff780 0000000000000000 0000000000000000 
+GPR16: 0000000011635010 00003fffa1b7aa68 0000000000000000 0000000000000000 
+GPR20: 0000000000000003 0000000010013918 00000000116350c0 c000000000b88990 
+GPR24: c000000000b88ba4 0000000000000000 d0000001fff12f34 0000000000000000 
+GPR28: d0000000016b8000 c0000001fa20f400 c0000001fa20f440 0000000000000000 
+[   91.139627] NIP [d0000000016a5718] .alloc_counters.isra.10+0xbc/0x140 [ip_tables]
+[   91.139634] LR [d0000000016a569c] .alloc_counters.isra.10+0x40/0x140 [ip_tables]
+[   91.139638] Call Trace:
+[   91.139645] [c0000001fa5778f0] [d0000000016a569c] .alloc_counters.isra.10+0x40/0x140 [ip_tables] (unreliable)
+[   91.139655] [c0000001fa5779b0] [d0000000016a5b54] .do_ipt_get_ctl+0x110/0x2ec [ip_tables]
+[   91.139666] [c0000001fa577aa0] [c0000000006233e0] .nf_getsockopt+0x68/0x88
+[   91.139674] [c0000001fa577b40] [c000000000631608] .ip_getsockopt+0xbc/0x128
+[   91.139682] [c0000001fa577bf0] [c00000000065adf4] .raw_getsockopt+0x18/0x5c
+[   91.139690] [c0000001fa577c60] [c0000000005b5f60] .sock_common_getsockopt+0x2c/0x40
+[   91.139697] [c0000001fa577cd0] [c0000000005b3394] .__sys_getsockopt+0xa4/0xd0
+[   91.139704] [c0000001fa577d80] [c0000000005b5ab0] .__se_sys_socketcall+0x238/0x2b4
+[   91.139712] [c0000001fa577e30] [c00000000000a31c] system_call+0x5c/0x70
+[   91.139716] Instruction dump:
+[   91.139721] 39290040 7d3d4a14 7fbe4840 409cff98 81380000 2b890001 419d000c 393e0060 
+[   91.139736] 48000010 7d57c82a e93e0060 7d295214 <815a0000> 794807e1 41e20010 7c210b78 
+[   91.139752] ---[ end trace f5d1d5431651845d ]---
 
-> --- a/drivers/block/z2ram.c
-> +++ b/drivers/block/z2ram.c
-> @@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
->                         vfree(vmalloc (size));
->                 }
->
-> -               vaddr = (unsigned long) __ioremap (paddr, size,
-> -                                                  _PAGE_WRITETHRU);
-> +               vaddr = (unsigned long)ioremap_wt(paddr, size);
->
->  #else
->                 vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
 
-However, since the removal of APUS support, this file can no longer be
-compiled on powerpc.
-
-Gr{oetje,eeting}s,
-
-                        Geert
+Andreas.
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 7578 EB47 D4E5 4D69 2510  2552 DF73 E780 A9DA AEC1
+"And now for something completely different."
